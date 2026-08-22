@@ -1,0 +1,54 @@
+---
+import CodeBlock from '../../../components/CodeBlock.astro'
+import DocsLayout from '../../../layouts/DocsLayout.astro'
+
+const example = `import { expect, test } from 'suitecut'
+
+test('records a product tour', async ({ page, suitecut }) => {
+  await page.goto('/dashboard')
+  suitecut.narrate('Welcome to the dashboard.', {
+    provider: 'kokoro',
+    voice: 'af_heart',
+  })
+
+  const create = page.getByRole('button', { name: 'Create project' })
+  await suitecut.highlight(create, { label: 'Start here' })
+  await create.click()
+
+  const project = page.getByTestId('new-project')
+  await suitecut.zoom(project, { scale: 1.15, holdMs: 900 })
+  await suitecut.checkpoint('Project created')
+  await expect(project).toBeVisible()
+})`
+---
+
+<DocsLayout title="Examples" description="Complete SuiteCut recording examples." section="examples">
+  <p class="kicker">Field manual · 04</p>
+  <h1>Examples</h1>
+  <p>
+    Keep direction beside the product moment it describes. A recorded test should still read like a
+    test when the SuiteCut lines are removed.
+  </p>
+
+  <h2>Product tour</h2>
+  <CodeBlock code={example} />
+
+  <h2>Render one attempt</h2>
+  <CodeBlock
+    label="Terminal"
+    code={`suitecut render \\
+  --manifest .suitecut/latest-run.json \\
+  --test-id <playwright-test-id> \\
+  --retry 0 \\
+  --output .suitecut/videos/tour.webm \\
+  --format webm`}
+  />
+
+  <h2>Included in the repository</h2>
+  <ul>
+    <li>A minimal narrated page.</li>
+    <li>Viewport and full-page checkpoints.</li>
+    <li>A product tour with narration, captions, pointers, highlights, zoom, and holds.</li>
+    <li>A popup flow that returns to its opener.</li>
+  </ul>
+</DocsLayout>

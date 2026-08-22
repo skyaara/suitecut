@@ -1,0 +1,149 @@
+---
+import CodeBlock from '../components/CodeBlock.astro'
+import BaseLayout from '../layouts/BaseLayout.astro'
+import { sitePath } from '../lib/paths.js'
+
+const example = `import { expect, test } from 'suitecut'
+
+test('publishes a report', async ({ page, suitecut }) => {
+  await page.goto('/reports')
+  suitecut.narrate('The reports workspace is ready.', {
+    provider: 'kokoro',
+    voice: 'af_heart',
+  })
+
+  const publish = page.getByRole('button', { name: 'Publish' })
+  await suitecut.highlight(publish)
+  await publish.click()
+  await suitecut.checkpoint('Published')
+  await expect(page.getByText('Live')).toBeVisible()
+})`
+---
+
+<BaseLayout
+  title="SuiteCut · Playwright tests, cut like films"
+  description="Record Playwright tests and render polished narrated videos with local Kokoro speech."
+  current="home"
+>
+  <section class="hero">
+    <div class="hero-copy">
+      <p class="eyebrow">A film room for Playwright</p>
+      <h1>Tests, cut like films.</h1>
+      <p>
+        Record a real browser journey. Add direction in the test. Render a polished video with local
+        narration, captions, highlights, and deliberate timing.
+      </p>
+      <div class="button-row">
+        <a class="button primary" href={sitePath('/docs/')}>Read the field manual</a>
+        <a class="button" href="https://github.com/skyaara/suitecut">View source</a>
+      </div>
+    </div>
+    <aside class="hero-ledger" aria-label="Example render status">
+      <div class="ledger-head"><span>Render ledger</span><span>No. 001</span></div>
+      <div class="ledger-display">
+        <strong>01:24</strong><span>Final picture · 1280 × 720</span>
+      </div>
+      <div class="ledger-rows">
+        <div class="ledger-row">
+          <span class="status-light">Browser source</span><span>Ready</span>
+        </div>
+        <div class="ledger-row">
+          <span class="status-light">Kokoro voice</span><span>Local</span>
+        </div>
+        <div class="ledger-row"><span class="status-light">Captions</span><span>On</span></div>
+        <div class="ledger-row"><span class="status-light">Output</span><span>MP4</span></div>
+      </div>
+    </aside>
+  </section>
+
+  <section class="feature-section" aria-labelledby="why-suitecut">
+    <p class="section-label">Why SuiteCut</p>
+    <div class="section-heading">
+      <h2 id="why-suitecut">The test remains the truth.</h2>
+      <p>
+        No parallel storyboard to maintain. The same assertions that prove the product works also
+        anchor the final recording.
+      </p>
+    </div>
+    <div class="feature-grid">
+      <article>
+        <span class="feature-number">01 / Capture</span>
+        <h3>Playwright-native</h3>
+        <p>Record the browser you already test, including secondary pages and popups.</p>
+      </article>
+      <article>
+        <span class="feature-number">02 / Voice</span>
+        <h3>Local narration</h3>
+        <p>Run Kokoro 82M through WASM on your machine. No hosted speech service or API key.</p>
+      </article>
+      <article>
+        <span class="feature-number">03 / Finish</span>
+        <h3>Deterministic edits</h3>
+        <p>Store timing and direction in a strict manifest, then render MP4 or WebM with FFmpeg.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="workflow-section" aria-labelledby="workflow-title">
+    <p class="section-label">The workflow</p>
+    <div class="section-heading">
+      <h2 id="workflow-title">From assertion to final cut.</h2>
+      <p>Direct only the moments that matter. SuiteCut handles capture, timing, and assembly.</p>
+    </div>
+    <div class="workflow-list">
+      <div class="workflow-item">
+        <span>01</span><strong>Write the journey</strong><p>
+          Use ordinary Playwright locators, actions, and expectations.
+        </p>
+      </div>
+      <div class="workflow-item">
+        <span>02</span><strong>Add direction</strong><p>
+          Narrate, hold, highlight, zoom, and mark checkpoints beside the relevant action.
+        </p>
+      </div>
+      <div class="workflow-item">
+        <span>03</span><strong>Run the test</strong><p>
+          SuiteCut captures each page and writes a validated recording manifest.
+        </p>
+      </div>
+      <div class="workflow-item">
+        <span>04</span><strong>Render the film</strong><p>
+          Select an attempt and produce a captioned, narrated video from saved artifacts.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="demo-section" aria-labelledby="demo-title">
+    <div class="demo-copy">
+      <p class="section-label">Recorded proof</p>
+      <h2 id="demo-title">This film is the test.</h2>
+      <p>
+        The browser journey, local Kokoro narration, captions, highlights, and camera direction all
+        come from the Playwright demo in this repository.
+      </p>
+    </div>
+    <figure class="demo-film">
+      <video
+        controls
+        preload="metadata"
+        poster={sitePath('/demo/suitecut-field-manual-poster.png')}
+        aria-label="SuiteCut field manual demo"
+      >
+        <source src={sitePath('/demo/suitecut-field-manual.mp4')} type="video/mp4" />
+        <p><a href={sitePath('/demo/suitecut-field-manual.mp4')}>Download the demo video</a>.</p>
+      </video>
+      <figcaption>Playwright run 001 · Kokoro af_heart · 17.9 seconds</figcaption>
+    </figure>
+  </section>
+
+  <section class="install-section" aria-labelledby="first-test">
+    <div>
+      <p class="section-label">First test</p>
+      <h2 id="first-test">Direction belongs beside intent.</h2>
+      <p>SuiteCut extends the fixture without replacing Playwright’s runner or assertion model.</p>
+      <a href={sitePath('/docs/examples/')}>See complete examples →</a>
+    </div>
+    <CodeBlock code={example} />
+  </section>
+</BaseLayout>

@@ -1,0 +1,38 @@
+---
+import BaseLayout from './BaseLayout.astro'
+import { sitePath } from '../lib/paths.js'
+
+interface Props {
+  title: string
+  description: string
+  section: 'overview' | 'api' | 'kokoro' | 'examples'
+}
+
+const { title, description, section } = Astro.props
+
+const links = [
+  { key: 'overview', label: 'Getting started', href: '/docs/' },
+  { key: 'api', label: 'Fixture API', href: '/docs/api/' },
+  { key: 'kokoro', label: 'Kokoro speech', href: '/docs/kokoro/' },
+  { key: 'examples', label: 'Examples', href: '/docs/examples/' },
+] as const
+---
+
+<BaseLayout title={`${title} · SuiteCut`} description={description} current="docs">
+  <div class="docs-grid">
+    <aside class="docs-rail" aria-label="Documentation sections">
+      <p class="rail-title">Field manual</p>
+      <nav>
+        {
+          links.map((link, index) => (
+            <a href={sitePath(link.href)} aria-current={section === link.key ? 'page' : undefined}>
+              <span>{String(index + 1).padStart(2, '0')}</span>
+              {link.label}
+            </a>
+          ))
+        }
+      </nav>
+    </aside>
+    <article class="docs-article"><slot /></article>
+  </div>
+</BaseLayout>

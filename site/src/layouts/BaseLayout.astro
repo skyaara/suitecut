@@ -1,0 +1,38 @@
+---
+import SiteHeader from '../components/SiteHeader.astro'
+import { sitePath } from '../lib/paths.js'
+import '../styles/global.css'
+
+interface Props {
+  title: string
+  description: string
+  current?: 'home' | 'docs'
+}
+
+const { title, description, current } = Astro.props
+const canonicalUrl = new URL(Astro.url.pathname, Astro.site)
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#f2ead8" />
+    <link rel="canonical" href={canonicalUrl} />
+    <link rel="icon" href={sitePath('/favicon.svg')} type="image/svg+xml" />
+    <title>{title}</title>
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to content</a>
+    <div class="page-shell">
+      {current ? <SiteHeader current={current} /> : <SiteHeader />}
+      <main id="main-content"><slot /></main>
+      <footer class="site-footer">
+        <p>SuiteCut · Local-first test films</p>
+        <p>MIT licensed · Made for Playwright</p>
+      </footer>
+    </div>
+  </body>
+</html>

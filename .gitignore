@@ -1,0 +1,9 @@
+node_modules/
+dist/
+site/.astro/
+.suitecut/
+test-results/
+playwright-report/
+*.mp4
+!site/public/demo/*.mp4
+*.webm
