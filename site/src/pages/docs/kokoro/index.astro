@@ -1,0 +1,48 @@
+---
+import CodeBlock from '../../../components/CodeBlock.astro'
+import DocsLayout from '../../../layouts/DocsLayout.astro'
+---
+
+<DocsLayout
+  title="Kokoro speech"
+  description="Use local Kokoro WASM narration in SuiteCut."
+  section="kokoro"
+>
+  <p class="kicker">Field manual · 03</p>
+  <h1>Kokoro speech</h1>
+  <p>
+    Kokoro 82M runs in a Node worker through <code>onnxruntime-web</code>. Inference stays local; no
+    hosted model API or speech key is required.
+  </p>
+
+  <h2>Choose a voice</h2>
+  <CodeBlock
+    code={`suitecut.narrate('The final report is ready.', {
+  provider: 'kokoro',
+  voice: 'af_heart',
+  speed: 1,
+  caption: 'The final report is ready.',
+})`}
+  />
+  <p>
+    SuiteCut supports the 28 English Kokoro voices used by Spek. Useful starting points include
+    <code>af_heart</code>, <code>af_bella</code>, <code>am_michael</code>, <code>bf_emma</code>, and
+    <code>bm_george</code>.
+  </p>
+
+  <h2>Model cache</h2>
+  <p>
+    The first run downloads the quantized model, tokenizer, and chosen voice. Later runs reuse the
+    cache. Set <code>SUITECUT_MODEL_CACHE</code> to choose another directory.
+  </p>
+  <div class="note">
+    The first synthesis needs network access. Rendering after the model and voice are cached stays
+    local.
+  </div>
+
+  <h2>Timeline behavior</h2>
+  <p>
+    Narrations are serialized. Each clip adds its measured duration and narration tail to the
+    presentation timeline, so captions and speech do not overlap or slow the browser test.
+  </p>
+</DocsLayout>

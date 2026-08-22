@@ -1,0 +1,21 @@
+---
+import { sitePath } from '../lib/paths.js'
+
+interface Props {
+  current?: 'home' | 'docs'
+}
+
+const { current } = Astro.props
+---
+
+<header class="site-header">
+  <a class="wordmark" href={sitePath('/')} aria-label="SuiteCut home">
+    <span aria-hidden="true">SC</span>
+    <strong>SuiteCut</strong>
+  </a>
+  <nav aria-label="Primary navigation">
+    <a href={sitePath('/')} aria-current={current === 'home' ? 'page' : undefined}>Home</a>
+    <a href={sitePath('/docs/')} aria-current={current === 'docs' ? 'page' : undefined}>Docs</a>
+    <a href="https://github.com/skyaara/suitecut">GitHub</a>
+  </nav>
+</header>

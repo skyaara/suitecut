@@ -1,0 +1,17 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+import { sitePath } from '../lib/paths.js'
+---
+
+<BaseLayout
+  title="Page not found · SuiteCut"
+  description="The requested SuiteCut page was not found."
+>
+  <section class="feature-section">
+    <p class="section-label">404 · Missing reel</p>
+    <div class="section-heading">
+      <h1>That page is not in the cut.</h1>
+      <p><a class="button primary" href={sitePath('/')}>Return home</a></p>
+    </div>
+  </section>
+</BaseLayout>

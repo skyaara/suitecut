@@ -1,0 +1,80 @@
+{
+  "name": "suitecut",
+  "version": "0.0.0",
+  "description": "Build narrated test videos directly from Playwright runs.",
+  "type": "module",
+  "license": "MIT",
+  "bin": {
+    "suitecut": "./dist/cli.js"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./reporter": {
+      "types": "./dist/reporter.d.ts",
+      "default": "./dist/reporter.js"
+    },
+    "./render": {
+      "types": "./dist/render.d.ts",
+      "default": "./dist/render.js"
+    },
+    "./types": {
+      "types": "./dist/types.d.ts",
+      "default": "./dist/types.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "workspaces": [
+    "site"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "examples": "npm run build && playwright test",
+    "example:record": "npm run build && playwright test examples/product-tour.spec.ts",
+    "example:render": "node dist/cli.js render --manifest .suitecut/latest-run.json --output .suitecut/videos/product-tour.mp4",
+    "demo:site": "npm run build && playwright test --config site/playwright.config.ts site-demo.spec.ts && node dist/cli.js render --manifest .suitecut/site-demo-run.json --output .suitecut/videos/suitecut-site-demo.mp4 --width 1280 --height 720 && cp .suitecut/videos/suitecut-site-demo.mp4 site/public/demo/suitecut-field-manual.mp4",
+    "lint": "eslint . --max-warnings 0",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write \"{src,tests,examples}/**/*.ts\" \"site/**/*.{astro,css,ts,json,mjs}\" \".github/**/*.yml\" \"*.{js,json}\"",
+    "format:check": "prettier --check \"{src,tests,examples}/**/*.ts\" \"site/**/*.{astro,css,ts,json,mjs}\" \".github/**/*.yml\" \"*.{js,json}\"",
+    "check": "npm run lint && npm run format:check && npm run typecheck && npm test -- --run && npm run build",
+    "typecheck": "tsc --noEmit",
+    "site:build": "npm run build --workspace suitecut-docs",
+    "site:check": "npm run check --workspace suitecut-docs",
+    "site:test": "playwright test --config site/playwright.config.ts site.spec.ts",
+    "test": "vitest run"
+  },
+  "peerDependencies": {
+    "@playwright/test": ">=1.59.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.62.1",
+    "@types/node": "^24.0.0",
+    "eslint": "^10.9.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-import-resolver-typescript": "^4.4.5",
+    "eslint-plugin-import-x": "^4.17.1",
+    "eslint-plugin-jsdoc": "^63.3.3",
+    "prettier": "^3.9.6",
+    "prettier-plugin-astro": "^0.14.1",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.67.0",
+    "vitest": "^4.1.11"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "onnxruntime-web": "^1.27.0",
+    "phonemizer": "^1.2.1",
+    "zod": "^4.4.3"
+  }
+}
