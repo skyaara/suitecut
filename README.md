@@ -35,6 +35,34 @@ export default defineConfig({
 })
 ```
 
+Set a capture profile when a test needs a fixed source size or cadence:
+
+```ts
+test.use({
+  suitecutCapture: {
+    size: { width: 1280, height: 720 },
+    framesPerSecond: 60,
+    quality: 100,
+  },
+})
+```
+
+SuiteCut otherwise records at the browser viewport's physical pixel size, uses 30 frames per
+second, and requests JPEG quality 100 from Playwright. Playwright does not upscale a screencast
+beyond its CSS viewport. Set the Playwright viewport to the required native source dimensions when
+native capture resolution matters.
+
+Render a 4K delivery at 60 frames per second with:
+
+```sh
+suitecut render \
+  --manifest .suitecut/latest-run.json \
+  --output .suitecut/videos/tour-4k.mp4 \
+  --width 3840 \
+  --height 2160 \
+  --fps 60
+```
+
 SuiteCut uses the public Playwright screencast API and streams frames to its own per-page encoder. This lets it finalize main pages, secondary pages, and popups even when a recorded page closes during the test.
 
 ## Write a recorded test

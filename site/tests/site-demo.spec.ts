@@ -1,5 +1,13 @@
 import { expect, test } from '../../dist/index.js'
 
+test.use({
+  suitecutCapture: {
+    size: { width: 1280, height: 720 },
+    framesPerSecond: 60,
+    quality: 100,
+  },
+})
+
 test('tours the SuiteCut field manual', async ({ page, suitecut }) => {
   await page.goto('./')
   suitecut.narrate('SuiteCut turns real Playwright tests into composed product films.', {

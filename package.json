@@ -39,7 +39,7 @@
     "examples": "npm run build && playwright test",
     "example:record": "npm run build && playwright test examples/product-tour.spec.ts",
     "example:render": "node dist/cli.js render --manifest .suitecut/latest-run.json --output .suitecut/videos/product-tour.mp4",
-    "demo:site": "npm run build && playwright test --config site/playwright.config.ts site-demo.spec.ts && node dist/cli.js render --manifest .suitecut/site-demo-run.json --output .suitecut/videos/suitecut-site-demo.mp4 --width 1280 --height 720 && cp .suitecut/videos/suitecut-site-demo.mp4 site/public/demo/suitecut-field-manual.mp4",
+    "demo:site": "npm run build && playwright test --config site/playwright.config.ts site-demo.spec.ts && node dist/cli.js render --manifest .suitecut/site-demo-run.json --output .suitecut/videos/suitecut-site-demo.mp4 --width 3840 --height 2160 --fps 60 && cp .suitecut/videos/suitecut-site-demo.mp4 site/public/demo/suitecut-field-manual.mp4 && ffmpeg -hide_banner -loglevel error -y -ss 1 -i .suitecut/videos/suitecut-site-demo.mp4 -frames:v 1 site/public/demo/suitecut-field-manual-poster.png",
     "lint": "eslint . --max-warnings 0",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write \"{src,tests,examples}/**/*.ts\" \"site/**/*.{astro,css,ts,json,mjs}\" \".github/**/*.yml\" \"*.{js,json}\"",

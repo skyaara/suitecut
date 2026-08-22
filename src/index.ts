@@ -2,6 +2,7 @@ export { expect, test } from './suitecut.js'
 export { renderSuiteCut } from './render.js'
 export type { SuiteCutRenderConfig, SuiteCutRenderReport, SuiteCutRenderRequest } from './render.js'
 export type {
+  SuiteCutCaptureOptions,
   SuiteCutCheckpointOptions,
   SuiteCutFixture,
   SuiteCutNarrationOptions,

@@ -9,6 +9,7 @@ import { type Locator, type Page, type TestInfo } from '@playwright/test'
 
 import { SUITECUT_EVENT_ATTACHMENT } from './constants.js'
 import {
+  type SuiteCutCaptureOptions,
   type SuiteCutCheckpointOptions,
   type SuiteCutFixture,
   type SuiteCutNarrationOptions,
@@ -39,6 +40,7 @@ import {
 import {
   parseCapturedGeometry,
   parseCapturedViewport,
+  parseCaptureOptions,
   parseCheckpointInput,
   parseHighlightOptions,
   parseHoldInput,
@@ -48,6 +50,7 @@ import {
 
 interface SuiteCutFixtures {
   suitecut: SuiteCutFixture
+  suitecutCapture: SuiteCutCaptureOptions
 }
 
 interface ActivePageListenerRegistration {
@@ -168,8 +171,13 @@ function removeActivePageListeners(markerName: string): void {
 }
 
 export const test = baseTest.extend<SuiteCutFixtures>({
-  suitecut: async ({ page }, use, testInfo) => {
-    const session = await createRecordingSession({ page, testInfo })
+  suitecutCapture: [{}, { option: true }],
+  suitecut: async ({ page, suitecutCapture }, use, testInfo) => {
+    const session = await createRecordingSession({
+      captureOptions: suitecutCapture,
+      page,
+      testInfo,
+    })
     const narration = createNarrationPipeline(testInfo, session)
     const suitecut = createSuiteCutFixture(session, testInfo, narration)
 
@@ -222,9 +230,11 @@ export const test = baseTest.extend<SuiteCutFixtures>({
 })
 
 async function createRecordingSession({
+  captureOptions,
   page,
   testInfo,
 }: {
+  captureOptions: SuiteCutCaptureOptions
   page: Page
   testInfo: TestInfo
 }): Promise<SuiteCutRecordingSession> {
@@ -255,6 +265,9 @@ async function createRecordingSession({
   const streamingRecorders = new Map<SuiteCutPageId, StreamingRecorder>()
   const context = page.context()
   const ffmpegPath = await resolveFfmpeg()
+  const parsedCaptureOptions = parseCaptureOptions(captureOptions)
+  const captureFramesPerSecond = parsedCaptureOptions.framesPerSecond ?? 30
+  const captureFrameDurationMs = 1_000 / captureFramesPerSecond
   let activePageId: SuiteCutPageId
   let active = true
   let endedAtMs: Milliseconds | undefined
@@ -286,6 +299,11 @@ async function createRecordingSession({
     }
     screencasts.set(pageId, activeScreencast)
     await mkdir(dirname(outputPath), { recursive: true })
+    const viewport = parseCapturedViewport(await playwrightPage.evaluate(readSuiteCutViewport))
+    const captureSize = parsedCaptureOptions.size ?? {
+      width: Math.round(viewport.width * viewport.deviceScaleFactor),
+      height: Math.round(viewport.height * viewport.deviceScaleFactor),
+    }
     const child = spawn(
       ffmpegPath,
       [
@@ -294,7 +312,7 @@ async function createRecordingSession({
         '-f',
         'image2pipe',
         '-framerate',
-        '25',
+        String(captureFramesPerSecond),
         '-vcodec',
         'mjpeg',
         '-i',
@@ -302,23 +320,21 @@ async function createRecordingSession({
         '-y',
         '-an',
         '-r',
-        '25',
+        String(captureFramesPerSecond),
         '-c:v',
-        'vp8',
-        '-qmin',
-        '0',
-        '-qmax',
-        '50',
+        'libvpx-vp9',
         '-crf',
-        '8',
+        '18',
+        '-b:v',
+        '0',
         '-deadline',
         'realtime',
-        '-speed',
-        '8',
-        '-b:v',
-        '1M',
-        '-threads',
+        '-cpu-used',
+        '5',
+        '-row-mt',
         '1',
+        '-threads',
+        '8',
         outputPath,
       ],
       {
@@ -358,13 +374,15 @@ async function createRecordingSession({
 
     try {
       await playwrightPage.screencast.start({
+        size: captureSize,
+        quality: parsedCaptureOptions.quality ?? 100,
         onFrame: async ({ data, timestamp }) => {
           if (recorder.closing) return
           recorder.firstFrameEpochMs ??= timestamp
           activeScreencast.firstFrameEpochMs ??= timestamp
           const frameNumber = Math.max(
             recorder.lastFrameNumber + 1,
-            Math.floor((timestamp - recorder.firstFrameEpochMs) / 40),
+            Math.floor((timestamp - recorder.firstFrameEpochMs) / captureFrameDurationMs),
           )
           if (recorder.lastFrame !== undefined) {
             for (let current = recorder.lastFrameNumber + 1; current < frameNumber; current += 1) {
@@ -406,7 +424,9 @@ async function createRecordingSession({
       }
     }
     if (recorder.lastFrame !== undefined && recorder.firstFrameEpochMs !== undefined) {
-      const finalFrameNumber = Math.floor((Date.now() - recorder.firstFrameEpochMs) / 40)
+      const finalFrameNumber = Math.floor(
+        (Date.now() - recorder.firstFrameEpochMs) / captureFrameDurationMs,
+      )
       for (let current = recorder.lastFrameNumber + 1; current <= finalFrameNumber; current += 1) {
         if (!recorder.stdin.write(recorder.lastFrame)) await once(recorder.stdin, 'drain')
       }

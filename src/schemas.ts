@@ -23,6 +23,17 @@ export const SuiteCutCheckpointOptionsSchema = z.strictObject({
   fullPage: z.boolean().exactOptional(),
 })
 
+export const SuiteCutCaptureOptionsSchema = z.strictObject({
+  size: z
+    .strictObject({
+      width: z.number().int().positive().max(7680),
+      height: z.number().int().positive().max(4320),
+    })
+    .exactOptional(),
+  framesPerSecond: z.union([z.literal(30), z.literal(60)]).exactOptional(),
+  quality: z.number().int().min(1).max(100).exactOptional(),
+})
+
 export const SuiteCutNarrationInputSchema = z.strictObject({
   text: SuiteCutNonEmptyTextSchema,
   options: SuiteCutNarrationOptionsSchema.exactOptional(),
@@ -127,6 +138,7 @@ export type SuiteCutNarrationVoice = z.infer<typeof SuiteCutNarrationVoiceSchema
 export type SuiteCutNarrationProvider = z.infer<typeof SuiteCutNarrationProviderSchema>
 export type SuiteCutNarrationOptions = z.infer<typeof SuiteCutNarrationOptionsSchema>
 export type SuiteCutCheckpointOptions = z.infer<typeof SuiteCutCheckpointOptionsSchema>
+export type SuiteCutCaptureOptions = z.infer<typeof SuiteCutCaptureOptionsSchema>
 export type SuiteCutEasing = z.infer<typeof SuiteCutEasingSchema>
 export type SuiteCutVisualAnimation = z.infer<typeof SuiteCutVisualAnimationSchema>
 export type SuiteCutAnimationOptions = z.infer<typeof SuiteCutAnimationOptionsSchema>

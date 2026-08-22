@@ -6,6 +6,7 @@ import { type UntrustedInput } from '../src/untrusted.js'
 import {
   parseCapturedGeometry,
   parseCapturedViewport,
+  parseCaptureOptions,
   parseCheckpointInput,
   parseHighlightOptions,
   parseHoldInput,
@@ -39,6 +40,25 @@ function expectZodIssue(
 }
 
 describe('SuiteCut fixture input validation', () => {
+  it('parses a complete capture profile', () => {
+    const options = {
+      size: { width: 3840, height: 2160 },
+      framesPerSecond: 60 as const,
+      quality: 100,
+    }
+
+    expect(parseCaptureOptions(options)).toEqual(options)
+  })
+
+  it.each<[UntrustedInput, PropertyKey[], z.core.$ZodIssue['code']]>([
+    [{ size: { width: 0, height: 2160 } }, ['size', 'width'], 'too_small'],
+    [{ framesPerSecond: 24 }, ['framesPerSecond'], 'invalid_union'],
+    [{ quality: 101 }, ['quality'], 'too_big'],
+    [{ bitrate: 10_000_000 }, [], 'unrecognized_keys'],
+  ])('rejects invalid capture options', (options, path, code) => {
+    expectZodIssue(() => parseCaptureOptions(options as never), path, code)
+  })
+
   it('parses valid narration and checkpoint inputs', () => {
     expect(
       parseNarrationInput('Explain the result.', {

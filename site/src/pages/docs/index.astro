@@ -56,4 +56,20 @@ suitecut render \\
     The renderer writes a report beside the video with its selected attempt, diagnostics, process
     result, and output duration.
   </p>
+
+  <h2>Render 4K at 60 fps</h2>
+  <CodeBlock
+    label="Terminal"
+    code={`suitecut render \\
+  --manifest .suitecut/latest-run.json \\
+  --output .suitecut/videos/tour-4k.mp4 \\
+  --width 3840 \\
+  --height 2160 \\
+  --fps 60`}
+  />
+  <p>
+    SuiteCut captures the physical viewport size by default. Playwright will downscale a requested
+    screencast size, but it will not upscale beyond the CSS viewport. Set the Playwright viewport to
+    the required native source dimensions when native 4K capture matters.
+  </p>
 </DocsLayout>
