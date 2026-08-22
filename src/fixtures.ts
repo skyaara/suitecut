@@ -8,7 +8,11 @@ import {
 } from './schemas.js'
 import { type Milliseconds } from './types.js'
 
-export type { SuiteCutCheckpointOptions, SuiteCutNarrationOptions } from './schemas.js'
+export type {
+  SuiteCutCaptureOptions,
+  SuiteCutCheckpointOptions,
+  SuiteCutNarrationOptions,
+} from './schemas.js'
 
 /** Controls the recording timeline from a Playwright test. */
 export interface SuiteCutFixture {

@@ -1,5 +1,7 @@
 import {
   SuiteCutCapturedGeometrySchema,
+  SuiteCutCaptureOptionsSchema,
+  type SuiteCutCaptureOptions,
   SuiteCutCheckpointInputSchema,
   type SuiteCutCheckpointOptions,
   type SuiteCutHighlightOptions,
@@ -45,4 +47,9 @@ export function parseCapturedGeometry(rect: SuiteCutRect, viewport: SuiteCutView
 
 export function parseCapturedViewport(viewport: SuiteCutViewport) {
   return SuiteCutViewportSchema.parse(viewport)
+}
+
+/** Validates the image dimensions, cadence, and JPEG quality used during capture. */
+export function parseCaptureOptions(options: SuiteCutCaptureOptions): SuiteCutCaptureOptions {
+  return SuiteCutCaptureOptionsSchema.parse(options)
 }

@@ -363,8 +363,10 @@ async function createCaptionAssets(
   await mkdir(assetDirectory, { recursive: true })
   const browser = await chromium.launch({ headless: true })
   try {
+    const outputScale = Math.max(1, width / 1280)
     const page = await browser.newPage({
       viewport: { width: Math.min(width - 80, 1_000), height: 180 },
+      deviceScaleFactor: outputScale,
     })
     const assets: CaptionAsset[] = []
     for (const [index, placement] of narrationPlacements.entries()) {
@@ -490,7 +492,7 @@ export async function renderSuiteCut(input: SuiteCutRenderRequest): Promise<Suit
         const centerY = (zoom.rect.y + zoom.rect.height / 2) / zoom.viewport.height
         visual += `,crop=w=iw/${scale}:h=ih/${scale}:x='max(0,min(iw-ow,iw*${centerX}-ow/2))':y='max(0,min(ih-oh,ih*${centerY}-oh/2))'`
       }
-      visual += `,scale=${width}:${height}:force_original_aspect_ratio=decrease,pad=${width}:${height}:(ow-iw)/2:(oh-ih)/2:${background},setsar=1,fps=${fps},format=yuv420p`
+      visual += `,scale=${width}:${height}:flags=lanczos:force_original_aspect_ratio=decrease,pad=${width}:${height}:(ow-iw)/2:(oh-ih)/2:${background},setsar=1,fps=${fps},format=yuv420p`
       filters.push(`[${inputIndex}:v]${visual}[${label}]`)
       videoLabels.push(`[${label}]`)
     }
@@ -542,7 +544,7 @@ export async function renderSuiteCut(input: SuiteCutRenderRequest): Promise<Suit
           (event.rect.width + padding * 2) * xScale,
           (event.rect.height + padding * 2) * yScale,
           color(event.options.borderColor ?? '#7C3AED'),
-          event.options.borderWidthPx ?? 4,
+          (event.options.borderWidthPx ?? 4) * Math.min(xScale, yScale),
           atMs,
           visualEnd(event, atMs + (event.options.durationMs ?? 1_200)),
         )
@@ -555,11 +557,12 @@ export async function renderSuiteCut(input: SuiteCutRenderRequest): Promise<Suit
       ) {
         const x = (event.point.x * width) / event.viewport.width
         const y = (event.point.y * height) / event.viewport.height
+        const pointerScale = Math.min(width / event.viewport.width, height / event.viewport.height)
         addDrawBox(
-          x - 5,
-          y - 5,
-          10,
-          10,
+          x - 5 * pointerScale,
+          y - 5 * pointerScale,
+          10 * pointerScale,
+          10 * pointerScale,
           color('#FFFFFF', 0.9),
           -1,
           atMs,
@@ -567,12 +570,12 @@ export async function renderSuiteCut(input: SuiteCutRenderRequest): Promise<Suit
         )
         if (event.type === 'click') {
           addDrawBox(
-            x - 12,
-            y - 12,
-            24,
-            24,
+            x - 12 * pointerScale,
+            y - 12 * pointerScale,
+            24 * pointerScale,
+            24 * pointerScale,
             color('#FACC15', 0.75),
-            3,
+            3 * pointerScale,
             atMs,
             visualEnd(event, atMs + 250),
           )
@@ -586,7 +589,7 @@ export async function renderSuiteCut(input: SuiteCutRenderRequest): Promise<Suit
       const next = `video${++overlayIndex}`
       filters.push(`[${inputIndex}:v]format=rgba[${captionLabel}]`)
       filters.push(
-        `[${currentVideo}][${captionLabel}]overlay=x=(W-w)/2:y=H-h-42:enable='between(t,${seconds(caption.startMs)},${seconds(caption.endMs)})'[${next}]`,
+        `[${currentVideo}][${captionLabel}]overlay=x=(W-w)/2:y=H-h-${(42 * Math.max(1, width / 1280)).toFixed(2)}:enable='between(t,${seconds(caption.startMs)},${seconds(caption.endMs)})'[${next}]`,
       )
       currentVideo = next
     }

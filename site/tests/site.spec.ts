@@ -7,10 +7,20 @@ test.describe('SuiteCut documentation site', () => {
     await expect(page).toHaveTitle('SuiteCut · Playwright tests, cut like films')
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Tests, cut like films.')
     await expect(page.getByText('Kokoro voice')).toBeVisible()
-    await expect(page.getByLabel('SuiteCut field manual demo')).toBeVisible()
+    const demo = page.getByLabel('SuiteCut field manual demo')
+    await expect(demo).toBeVisible()
+    await expect(page.getByText('4K · 60 fps')).toBeVisible()
 
     const videoSource = await page.locator('video source').getAttribute('src')
     expect(videoSource).toBe('/suitecut/demo/suitecut-field-manual.mp4')
+    await expect
+      .poll(async () =>
+        demo.evaluate((element) => {
+          if (!(element instanceof HTMLVideoElement)) return { height: 0, width: 0 }
+          return { height: element.videoHeight, width: element.videoWidth }
+        }),
+      )
+      .toEqual({ height: 2160, width: 3840 })
 
     await page.getByRole('link', { name: 'Read the field manual' }).click()
     await expect(page).toHaveURL(/\/suitecut\/docs\/$/u)
