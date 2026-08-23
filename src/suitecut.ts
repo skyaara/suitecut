@@ -7,15 +7,30 @@ import { dirname } from 'node:path'
 import { expect as baseExpect, test as baseTest } from '@playwright/test'
 import { type Locator, type Page, type TestInfo } from '@playwright/test'
 
+import {
+  DEFAULT_SUITE_CUT_CAPTURE_FRAMES_PER_SECOND,
+  DEFAULT_SUITE_CUT_VIEWPORT,
+  resolveCaptureSize,
+} from './capture.js'
 import { SUITECUT_EVENT_ATTACHMENT } from './constants.js'
 import {
   type SuiteCutCaptureOptions,
   type SuiteCutCheckpointOptions,
   type SuiteCutFixture,
   type SuiteCutNarrationOptions,
+  type SuiteCutPointerActionOptions,
+  type SuiteCutScrollOptions,
 } from './fixtures.js'
 import { createNarrationPipeline, type SuiteCutNarrationPipeline } from './narration.js'
+import {
+  movePresentationCursor,
+  pulsePresentationCursor,
+  showPresentationCaption,
+  showPresentationHighlight,
+  waitForPresentationAnimations,
+} from './presentation.js'
 import { resolveFfmpeg } from './process.js'
+import { scrollLocator, scrollPageTop } from './scroll.js'
 import {
   type Milliseconds,
   type SuiteCutActiveScreencast,
@@ -45,6 +60,8 @@ import {
   parseHighlightOptions,
   parseHoldInput,
   parseNarrationInput,
+  parsePointerActionOptions,
+  parseScrollOptions,
   parseZoomOptions,
 } from './validation.js'
 
@@ -77,10 +94,13 @@ interface StreamingRecorder {
   readonly completion: Promise<void>
   readonly stdin: NodeJS.WritableStream
   readonly stderr: Buffer[]
+  writeQueue: Promise<void>
   firstFrameEpochMs?: number
   lastFrame?: Buffer
   lastFrameNumber: number
   closing: boolean
+  excludedDurationMs: number
+  pausedAtEpochMs?: number
 }
 
 function readSuiteCutViewport(): SuiteCutViewport {
@@ -171,15 +191,20 @@ function removeActivePageListeners(markerName: string): void {
 }
 
 export const test = baseTest.extend<SuiteCutFixtures>({
+  viewport: DEFAULT_SUITE_CUT_VIEWPORT,
   suitecutCapture: [{}, { option: true }],
   suitecut: async ({ page, suitecutCapture }, use, testInfo) => {
+    const captureOptions = parseCaptureOptions(suitecutCapture)
+    if (captureOptions.viewport !== undefined) {
+      await page.setViewportSize(captureOptions.viewport)
+    }
     const session = await createRecordingSession({
-      captureOptions: suitecutCapture,
+      captureOptions,
       page,
       testInfo,
     })
     const narration = createNarrationPipeline(testInfo, session)
-    const suitecut = createSuiteCutFixture(session, testInfo, narration)
+    const suitecut = createSuiteCutFixture(session, testInfo, narration, captureOptions)
 
     let useError: Error | undefined
     const teardownErrors: Error[] = []
@@ -266,15 +291,51 @@ async function createRecordingSession({
   const context = page.context()
   const ffmpegPath = await resolveFfmpeg()
   const parsedCaptureOptions = parseCaptureOptions(captureOptions)
-  const captureFramesPerSecond = parsedCaptureOptions.framesPerSecond ?? 30
+  const captureFramesPerSecond =
+    parsedCaptureOptions.framesPerSecond ?? DEFAULT_SUITE_CUT_CAPTURE_FRAMES_PER_SECOND
   const captureFrameDurationMs = 1_000 / captureFramesPerSecond
   let activePageId: SuiteCutPageId
   let active = true
   let endedAtMs: Milliseconds | undefined
   let endingPromise: Promise<void> | undefined
   let sealedAttachment: Promise<SuiteCutEventAttachment> | undefined
+  let capturePauseDepth = 0
+  let capturePausedAtMonotonicMs: number | undefined
+  let excludedCaptureDurationMs = 0
 
-  const now = (): Milliseconds => performance.now() - originMonotonicMs
+  const now = (): Milliseconds => {
+    const activePauseDurationMs =
+      capturePausedAtMonotonicMs === undefined ? 0 : performance.now() - capturePausedAtMonotonicMs
+    return performance.now() - originMonotonicMs - excludedCaptureDurationMs - activePauseDurationMs
+  }
+
+  const withCapturePaused = async <T>(operation: () => Promise<T>): Promise<T> => {
+    capturePauseDepth += 1
+    if (capturePauseDepth === 1) {
+      capturePausedAtMonotonicMs = performance.now()
+      const pauseEpochMs = Date.now()
+      for (const recorder of streamingRecorders.values()) {
+        recorder.pausedAtEpochMs = pauseEpochMs
+      }
+    }
+
+    try {
+      return await operation()
+    } finally {
+      capturePauseDepth -= 1
+      if (capturePauseDepth === 0 && capturePausedAtMonotonicMs !== undefined) {
+        const resumeEpochMs = Date.now()
+        excludedCaptureDurationMs += performance.now() - capturePausedAtMonotonicMs
+        capturePausedAtMonotonicMs = undefined
+        for (const recorder of streamingRecorders.values()) {
+          if (recorder.pausedAtEpochMs !== undefined) {
+            recorder.excludedDurationMs += resumeEpochMs - recorder.pausedAtEpochMs
+            delete recorder.pausedAtEpochMs
+          }
+        }
+      }
+    }
+  }
 
   const trackPageTask = (task: Promise<void>): void => {
     const trackedTask = task.catch((error) => {
@@ -297,13 +358,10 @@ async function createRecordingSession({
       outputPath,
       attachmentName,
     }
+    const viewportSize = playwrightPage.viewportSize() ?? DEFAULT_SUITE_CUT_VIEWPORT
+    const captureSize = resolveCaptureSize(parsedCaptureOptions, viewportSize)
     screencasts.set(pageId, activeScreencast)
     await mkdir(dirname(outputPath), { recursive: true })
-    const viewport = parseCapturedViewport(await playwrightPage.evaluate(readSuiteCutViewport))
-    const captureSize = parsedCaptureOptions.size ?? {
-      width: Math.round(viewport.width * viewport.deviceScaleFactor),
-      height: Math.round(viewport.height * viewport.deviceScaleFactor),
-    }
     const child = spawn(
       ffmpegPath,
       [
@@ -367,8 +425,11 @@ async function createRecordingSession({
       completion,
       stdin: child.stdin,
       stderr,
+      writeQueue: Promise.resolve(),
       lastFrameNumber: -1,
       closing: false,
+      excludedDurationMs: 0,
+      ...(capturePausedAtMonotonicMs === undefined ? {} : { pausedAtEpochMs: Date.now() }),
     }
     streamingRecorders.set(pageId, recorder)
 
@@ -377,21 +438,37 @@ async function createRecordingSession({
         size: captureSize,
         quality: parsedCaptureOptions.quality ?? 100,
         onFrame: async ({ data, timestamp }) => {
-          if (recorder.closing) return
-          recorder.firstFrameEpochMs ??= timestamp
-          activeScreencast.firstFrameEpochMs ??= timestamp
-          const frameNumber = Math.max(
-            recorder.lastFrameNumber + 1,
-            Math.floor((timestamp - recorder.firstFrameEpochMs) / captureFrameDurationMs),
-          )
-          if (recorder.lastFrame !== undefined) {
-            for (let current = recorder.lastFrameNumber + 1; current < frameNumber; current += 1) {
-              if (!recorder.stdin.write(recorder.lastFrame)) await once(recorder.stdin, 'drain')
+          if (recorder.closing || recorder.pausedAtEpochMs !== undefined) return
+          recorder.writeQueue = recorder.writeQueue.then(async () => {
+            if (recorder.closing || recorder.pausedAtEpochMs !== undefined) return
+            recorder.firstFrameEpochMs ??= timestamp
+            activeScreencast.firstFrameEpochMs ??= timestamp
+            activeScreencast.sourceStartedAtMs ??= now()
+            const frameNumber = Math.max(
+              0,
+              Math.floor(
+                (timestamp - recorder.firstFrameEpochMs - recorder.excludedDurationMs) /
+                  captureFrameDurationMs,
+              ),
+            )
+            if (frameNumber <= recorder.lastFrameNumber) {
+              recorder.lastFrame = data
+              return
             }
-          }
-          if (!recorder.stdin.write(data)) await once(recorder.stdin, 'drain')
-          recorder.lastFrame = data
-          recorder.lastFrameNumber = frameNumber
+            if (recorder.lastFrame !== undefined) {
+              for (
+                let current = recorder.lastFrameNumber + 1;
+                current < frameNumber;
+                current += 1
+              ) {
+                if (!recorder.stdin.write(recorder.lastFrame)) await once(recorder.stdin, 'drain')
+              }
+            }
+            if (!recorder.stdin.write(data)) await once(recorder.stdin, 'drain')
+            recorder.lastFrame = data
+            recorder.lastFrameNumber = frameNumber
+          })
+          await recorder.writeQueue
         },
       })
     } catch (error) {
@@ -423,9 +500,11 @@ async function createRecordingSession({
         throw error instanceof Error ? error : new Error('Chromium rejected screencast shutdown')
       }
     }
+    await recorder.writeQueue
     if (recorder.lastFrame !== undefined && recorder.firstFrameEpochMs !== undefined) {
       const finalFrameNumber = Math.floor(
-        (Date.now() - recorder.firstFrameEpochMs) / captureFrameDurationMs,
+        (Date.now() - recorder.firstFrameEpochMs - recorder.excludedDurationMs) /
+          captureFrameDurationMs,
       )
       for (let current = recorder.lastFrameNumber + 1; current <= finalFrameNumber; current += 1) {
         if (!recorder.stdin.write(recorder.lastFrame)) await once(recorder.stdin, 'drain')
@@ -451,7 +530,7 @@ async function createRecordingSession({
       pageId,
       attachmentName: activeScreencast.attachmentName,
       firstFrameEpochMs: activeScreencast.firstFrameEpochMs,
-      sourceStartedAtMs: activeScreencast.firstFrameEpochMs - originEpochMs,
+      sourceStartedAtMs: activeScreencast.sourceStartedAtMs ?? 0,
     })
   }
 
@@ -722,6 +801,7 @@ async function createRecordingSession({
       if (!active) throw new Error('Cannot record an event after the recording session is sealed')
       events.push(event)
     },
+    withCapturePaused,
     endRecording,
     seal: () => {
       sealedAttachment ??= seal()
@@ -736,6 +816,7 @@ function createSuiteCutFixture(
   session: SuiteCutRecordingSession,
   testInfo: TestInfo,
   narration: SuiteCutNarrationPipeline,
+  captureOptions: SuiteCutCaptureOptions,
 ): SuiteCutFixture {
   const createPageEventBase = (
     pageId: SuiteCutPageId = session.activePageId,
@@ -745,7 +826,10 @@ function createSuiteCutFixture(
     pageId,
   })
 
-  const captureLocatorGeometry = async (locator: Locator, operation: 'highlight' | 'zoom') => {
+  const captureLocatorGeometry = async (
+    locator: Locator,
+    operation: 'highlight' | 'zoom' | 'hover' | 'click',
+  ) => {
     const page = locator.page()
     const pageId = session.selectPage(page)
     const [rect, viewport] = await Promise.all([
@@ -767,7 +851,7 @@ function createSuiteCutFixture(
     selectPage: (page: Page) => {
       session.selectPage(page)
     },
-    narrate: (text: string, options?: SuiteCutNarrationOptions) => {
+    narrate: async (text: string, options?: SuiteCutNarrationOptions) => {
       const input = parseNarrationInput(text, options)
 
       const event: SuiteCutNarrationEvent = {
@@ -792,8 +876,18 @@ function createSuiteCutFixture(
         event.caption = input.options.caption
       }
 
+      const durationMs = await session.withCapturePaused(() => narration.enqueue(event))
+      event.atMs = session.now()
       session.record(event)
-      narration.enqueue(event)
+      const page = session.pageFor(event.pageId)
+      const caption = event.caption ?? event.text
+      if (caption.length > 0) {
+        await showPresentationCaption(page, caption, durationMs)
+      } else {
+        await page.waitForTimeout(durationMs)
+      }
+      const narrationTailMs = captureOptions.narrationTailMs ?? 350
+      if (narrationTailMs > 0) await page.waitForTimeout(narrationTailMs)
     },
     checkpoint: async (label: string, options?: SuiteCutCheckpointOptions) => {
       const input = parseCheckpointInput(label, options)
@@ -836,7 +930,7 @@ function createSuiteCutFixture(
       }
       session.record(event)
     },
-    hold: (durationMs: Milliseconds) => {
+    hold: async (durationMs: Milliseconds) => {
       const parsedDurationMs = parseHoldInput(durationMs)
 
       const event: SuiteCutHoldEvent = {
@@ -847,6 +941,7 @@ function createSuiteCutFixture(
       }
 
       session.record(event)
+      await session.pageFor(event.pageId).waitForTimeout(parsedDurationMs)
     },
     highlight: async (locator: Locator, options: SuiteCutHighlightOptions = {}) => {
       const parsedOptions = parseHighlightOptions(options)
@@ -860,6 +955,12 @@ function createSuiteCutFixture(
         options: parsedOptions,
       }
       session.record(event)
+      await showPresentationHighlight(
+        session.pageFor(pageId),
+        rect,
+        parsedOptions,
+        parsedOptions.durationMs ?? 1_200,
+      )
     },
     zoom: async (locator: Locator, options: SuiteCutZoomOptions = {}) => {
       const parsedOptions = parseZoomOptions(options)
@@ -873,6 +974,54 @@ function createSuiteCutFixture(
         options: parsedOptions,
       }
       session.record(event)
+      const durationMs =
+        (parsedOptions.enter?.durationMs ?? 260) +
+        (parsedOptions.holdMs ?? 900) +
+        (parsedOptions.exit?.durationMs ?? 220)
+      await session.pageFor(pageId).waitForTimeout(durationMs)
+    },
+    hover: async (locator: Locator, options: SuiteCutPointerActionOptions = {}) => {
+      const parsedOptions = parsePointerActionOptions(options)
+      await locator.scrollIntoViewIfNeeded()
+      const { pageId, rect } = await captureLocatorGeometry(locator, 'hover')
+      const page = session.pageFor(pageId)
+      await movePresentationCursor(
+        page,
+        { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 },
+        parsedOptions.moveDurationMs ?? 450,
+      )
+      await locator.hover()
+      const settleMs = parsedOptions.settleMs ?? 120
+      if (settleMs > 0) await page.waitForTimeout(settleMs)
+    },
+    click: async (locator: Locator, options: SuiteCutPointerActionOptions = {}) => {
+      const parsedOptions = parsePointerActionOptions(options)
+      await locator.scrollIntoViewIfNeeded()
+      const { pageId, rect } = await captureLocatorGeometry(locator, 'click')
+      const page = session.pageFor(pageId)
+      await movePresentationCursor(
+        page,
+        { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 },
+        parsedOptions.moveDurationMs ?? 450,
+      )
+      await locator.click()
+
+      const waits: Promise<void>[] = [pulsePresentationCursor(page, 280)]
+      if (parsedOptions.waitForAnimations !== false) {
+        waits.push(waitForPresentationAnimations(page, parsedOptions.animationTimeoutMs ?? 2_000))
+      }
+      await Promise.all(waits)
+      const settleMs = parsedOptions.settleMs ?? 120
+      if (settleMs > 0) await page.waitForTimeout(settleMs)
+    },
+    scrollTo: async (locator: Locator, options: SuiteCutScrollOptions = {}) => {
+      const parsedOptions = parseScrollOptions(options)
+      session.selectPage(locator.page())
+      await scrollLocator(locator, parsedOptions)
+    },
+    scrollTop: async (options: SuiteCutScrollOptions = {}) => {
+      const parsedOptions = parseScrollOptions(options)
+      await scrollPageTop(session.pageFor(session.activePageId), parsedOptions)
     },
   }
   return suitecut

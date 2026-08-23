@@ -202,9 +202,9 @@ interface SuiteCutNarrationEvent extends SuiteCutPageEventBase {
 
 `text` is the speech input. `pageId` records the active page when `narrate()` is called, so narration and visual events such as zoom can begin together without reconstructing page selection from timestamps. `caption`, when present, overrides the displayed caption without changing the spoken text. Speech duration does not belong in this captured event because SuiteCut does not know it until the queued audio has been generated and probed.
 
-The `kokoro` provider runs the quantized Kokoro 82M ONNX model through `onnxruntime-web/wasm` in SuiteCut's Node worker and writes 24 kHz mono PCM WAV. It downloads the model, tokenizer, and selected voice profile once and reuses the local cache. The default Kokoro voice is `af_heart`.
+The `kokoro` provider runs the quantized Kokoro 82M ONNX model through `onnxruntime-web/wasm` in SuiteCut's Node worker and writes 24 kHz mono PCM WAV. SuiteCut bundles the model, tokenizer, and default `af_heart` voice. Other supported voices download once and reuse the local cache.
 
-The `macos-say` provider remains available and is the compatibility default. Its reserved voice ID `default` selects the current system voice. Manifests and narration artifacts record the selected voice and exact speech provider so output differences can be diagnosed across machines.
+Kokoro with `af_heart` is the default narration provider and voice. The optional `macos-say` provider uses the reserved voice ID `default` to select the current macOS system voice. Manifests and narration artifacts record the selected voice and exact speech provider so output differences can be diagnosed across machines.
 
 ### Checkpoint
 
@@ -376,8 +376,7 @@ interface SuiteCutCapturedNarrationArtifact {
 }
 
 type SuiteCutCapturedArtifact =
-  | SuiteCutCapturedCheckpointArtifact
-  | SuiteCutCapturedNarrationArtifact
+  SuiteCutCapturedCheckpointArtifact | SuiteCutCapturedNarrationArtifact
 
 interface SuiteCutCapturedVideo {
   pageId: SuiteCutPageId
@@ -462,13 +461,7 @@ SuiteCut stores a normalized flat list. Parent IDs preserve Playwright's step tr
 
 ```ts
 type SuiteCutStepCategory =
-  | 'hook'
-  | 'fixture'
-  | 'pw:api'
-  | 'expect'
-  | 'test.step'
-  | 'test.attach'
-  | 'unknown'
+  'hook' | 'fixture' | 'pw:api' | 'expect' | 'test.step' | 'test.attach' | 'unknown'
 
 type SuiteCutStepOutcome = 'passed' | 'failed' | 'skipped' | 'interrupted'
 
@@ -571,10 +564,10 @@ interface SuiteCutVideoTiming {
 }
 ```
 
-The mapping is:
+SuiteCut excludes capture pauses, such as narration synthesis, before it stores
+`sourceStartedAtMs`. The mapping is:
 
 ```text
-sourceStartedAtMs = firstFrameEpochMs - clock.originEpochMs
 sourceVideoTimeMs = attemptTimeMs - sourceStartedAtMs
 ```
 
@@ -589,7 +582,7 @@ event.atMs:             2,180
 sourceVideoTimeMs:      2,000
 ```
 
-Each page has one timing record and one source-video media record. Their `pageId` values must match. Source time before zero means the selected page video has not started and cannot be rendered for that attempt interval.
+Each page has one timing record and one source-video media record. Their `pageId` values must match. Source time before zero means the selected page video has not started and cannot be rendered for that attempt interval. SuiteCut pauses frame ingestion while narration is prepared. `sourceStartedAtMs` uses the pause-adjusted attempt clock, while `firstFrameEpochMs` retains the browser timestamp as capture evidence.
 
 The first implementation stores no frame-image archive, frame index, drift estimate, or confidence score. Later frame timestamps are used transiently to pace the streaming encoder but are not serialized. The timing mapping is validated in real Chromium recordings; Firefox and WebKit lifecycle hardening remains release work. If those tests demonstrate drift, the schema can add a final timestamp or sparse samples later.
 
@@ -602,12 +595,7 @@ SuiteCut starts the recording itself, so Playwright Test's separate `use.video` 
 The run manifest is the renderer's required structured input.
 
 ```ts
-type SuiteCutTestStatus =
-  | 'passed'
-  | 'failed'
-  | 'timedOut'
-  | 'skipped'
-  | 'interrupted'
+type SuiteCutTestStatus = 'passed' | 'failed' | 'timedOut' | 'skipped' | 'interrupted'
 
 type SuiteCutRunStatus = 'passed' | 'failed' | 'timedout' | 'interrupted'
 
@@ -657,11 +645,13 @@ import type { Locator, Page } from '@playwright/test'
 
 interface SuiteCutFixture {
   selectPage(page: Page): void
-  narrate(text: string, options?: SuiteCutNarrationOptions): void
+  narrate(text: string, options?: SuiteCutNarrationOptions): Promise<void>
   checkpoint(label: string, options?: SuiteCutCheckpointOptions): Promise<void>
   highlight(locator: Locator, options?: SuiteCutHighlightOptions): Promise<void>
   zoom(locator: Locator, options?: SuiteCutZoomOptions): Promise<void>
-  hold(durationMs: Milliseconds): void
+  hold(durationMs: Milliseconds): Promise<void>
+  hover(locator: Locator, options?: SuiteCutPointerActionOptions): Promise<void>
+  click(locator: Locator, options?: SuiteCutPointerActionOptions): Promise<void>
 }
 
 interface SuiteCutNarrationOptions {
@@ -680,10 +670,11 @@ Runtime method behavior:
 
 - Zod schemas define fixture inputs and infer their public TypeScript option types. Fixture methods record the parsed values and expose Zod's structured issue paths for invalid author input.
 - `selectPage` validates that the Playwright page is registered and open, then changes SuiteCut's active video source. It does not call `page.bringToFront()`, navigate, wait, or change Playwright state.
-- `narrate` requires non-empty text, a supported provider, a non-empty voice ID when supplied, and speed from `0.5` through `2`. An explicit empty caption suppresses displayed caption text. It records the request at call time, queues speech on the per-attempt worker, and returns without waiting for synthesis. Fixture teardown stops page recording, drains the queue, attaches Kokoro WAV or macOS AIFF files, and reports failures before sealing the session.
+- `narrate` requires non-empty text, a supported provider, a non-empty voice ID when supplied, and speed from `0.5` through `2`. An explicit empty caption suppresses displayed caption text. SuiteCut pauses frame ingestion while it prepares and measures speech, then records the caption and application for the measured duration.
 - `checkpoint` validates a non-empty label and a boolean `fullPage` value when supplied. It captures a PNG from the active page, attaches it through `TestInfo`, registers the captured checkpoint, and records an event that references it.
 - `highlight` and `zoom` reject unknown option keys, invalid enum values, non-finite numbers, negative dimensions and timing values, and opacity outside `0` through `1`. They resolve the locator's current bounding box and fail clearly if the locator cannot produce valid geometry.
-- `hold` records a required positive duration and changes presentation timing only. It must not call `page.waitForTimeout()`.
+- `hold` records a required positive duration and waits in browser time so ongoing application animation remains in the source video.
+- `hover` and `click` are direct Playwright action wrappers. SuiteCut moves the injected cursor before the action. `click` records its ripple and waits for CSS or Web Animations created by the action.
 
 The fixture requires non-empty color strings but does not parse the full CSS color grammar. The renderer validates supported CSS colors when it resolves them into its output format. The fixture enforces a zoom scale of at least `1`; the renderer enforces the configured maximum zoom scale because that limit can vary by render configuration.
 
@@ -691,7 +682,7 @@ Example per-call customization:
 
 ```ts
 suitecut.selectPage(popup)
-suitecut.narrate('The preview is open in a separate page.')
+await suitecut.narrate('The preview is open in a separate page.')
 
 await suitecut.highlight(page.getByRole('button', { name: 'Publish' }), {
   mode: 'spotlight',
@@ -715,7 +706,7 @@ await suitecut.zoom(page.getByRole('dialog'), {
 })
 ```
 
-The public fixture contract includes `selectPage`, narration, checkpoints, highlights, zooms, and holds. Each method writes its corresponding event and artifact data. The local v1 renderer applies the core duration, color, crop, and geometry options; advanced easing, spotlight composition, and dashed-border styling remain release-polish work.
+The public fixture contract includes page selection, narration, checkpoints, highlights, zooms, pointer actions, scrolling, and holds. Narration, captions, highlights, cursor travel, click ripples, scrolling, holds, and application animations run while Chromium records the page. Camera zoom remains a render-time crop. Each method writes the event and artifact data needed for validation and final rendering.
 
 The main `suitecut` entry point exports the author-facing fixture and option types. Durable event, recording, media, and manifest types are also available from `suitecut/types`. `SuiteCutReporterOptions` is exported from `suitecut/reporter`.
 
@@ -775,14 +766,11 @@ interface SuiteCutOutputConfig {
   width?: number
   height?: number
   framesPerSecond?: 30 | 60
-  videoCodec?: 'h264' | 'vp9' | 'av1'
-  audioCodec?: 'aac' | 'opus'
-  pixelFormat?: string
-  quality?: number
+  quality?: 'standard' | 'high' | 'master'
 }
 ```
 
-Defaults should be a 1920 by 1080 frame at 30 frames per second. Codec defaults depend on the selected container and local FFmpeg support.
+The default output is 3840 by 2160 at 60 frames per second with the `high` quality profile. Output width and height must be supplied together and must be even. MP4 uses H.264 and AAC. WebM uses VP9 and Opus. The named quality profile maps to codec-specific CRF, encoder speed, and audio bitrate values.
 
 ### Theme and layout
 
@@ -1184,7 +1172,7 @@ interface SuiteCutAudioTrack {
 }
 ```
 
-The capture worker creates narration audio artifacts before final plan compilation because the compiler needs each clip's measured duration. It runs synthesis concurrently with the test body. At fixture teardown, SuiteCut records the attempt end and stops screencasts before it waits for synthesis, then attaches the finished WAV or AIFF files. Kokoro and macOS speech produce the same artifact role, so the renderer does not need provider-specific audio logic.
+The capture worker creates each narration audio artifact before the presentation continues because the browser caption needs the clip's measured duration. SuiteCut pauses frame ingestion and the attempt clock during synthesis, resumes capture, records the caption for the measured duration, and then attaches the finished WAV or AIFF file. Kokoro and macOS speech produce the same artifact role, so the renderer does not need provider-specific audio logic.
 
 ## 16. FFmpeg command model
 
@@ -1308,24 +1296,26 @@ The exact class implementation is not part of the JSON contract. The stable beha
 SuiteCut has one development schema. We can change it directly while the package and file format remain unpublished. There are no schema-version constants, migrations, or compatibility branches yet.
 
 ```ts
-function decodeManifest(input: unknown): SuiteCutManifest
+type UntrustedInput = object | string | number | boolean | bigint | symbol | null | undefined
+
+function decodeManifest(input: UntrustedInput): SuiteCutManifest
 ```
 
 Before SuiteCut promises that saved manifests remain readable across releases, we should review the final shape and decide whether the public format needs a schema version. That decision belongs at the compatibility boundary, not in the first draft.
 
 ## 20. Implemented type map
 
-| Area | Local v1 status |
-| --- | --- |
-| Fixture | captures checkpoints, validates public inputs, records narration, highlights, zooms, holds, page selection, and main-frame pointer activity |
-| Events | strict encoding and decoding for narration, checkpoint, pointer, highlight, zoom, hold, and page lifecycle events |
-| Event attachment | attaches the sealed attempt document through `TestInfo` with captured artifacts and per-page video records |
-| Steps | reporter collects normalized Playwright steps with stable parent IDs |
-| Artifacts | reporter resolves checkpoints, narration, source videos, and traces into durable artifact records |
-| Media | FFprobe-backed container and stream metadata for audio and video |
-| Video timing | first presented-frame epoch and attempt-relative source start for each registered page |
-| Manifest attempt | strict clock, pages, steps, media, timing, errors, retry status, and diagnostics |
-| Rendering | deterministic page sequence, trims, holds, zooms, highlights, pointer marks, rasterized captions, narration mixing, MP4/WebM encoding, and render report |
+| Area             | Local v1 status                                                                                                                                          |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Fixture          | captures checkpoints, validates public inputs, records narration, highlights, zooms, holds, page selection, and main-frame pointer activity              |
+| Events           | strict encoding and decoding for narration, checkpoint, pointer, highlight, zoom, hold, and page lifecycle events                                        |
+| Event attachment | attaches the sealed attempt document through `TestInfo` with captured artifacts and per-page video records                                               |
+| Steps            | reporter collects normalized Playwright steps with stable parent IDs                                                                                     |
+| Artifacts        | reporter resolves checkpoints, narration, source videos, and traces into durable artifact records                                                        |
+| Media            | FFprobe-backed container and stream metadata for audio and video                                                                                         |
+| Video timing     | first presented-frame epoch and attempt-relative source start for each registered page                                                                   |
+| Manifest attempt | strict clock, pages, steps, media, timing, errors, retry status, and diagnostics                                                                         |
+| Rendering        | deterministic page sequence, trims, holds, zooms, highlights, pointer marks, rasterized captions, narration mixing, MP4/WebM encoding, and render report |
 
 ## 21. V1 renderer decisions
 

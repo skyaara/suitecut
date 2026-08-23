@@ -3,5 +3,8 @@ export type {
   SuiteCutCheckpointOptions,
   SuiteCutFixture,
   SuiteCutNarrationOptions,
+  SuiteCutScrollAlignment,
+  SuiteCutScrollBehavior,
+  SuiteCutScrollOptions,
 } from './fixtures.js'
 export * from './types/index.js'

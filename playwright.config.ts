@@ -9,7 +9,7 @@ export default defineConfig({
     ['./dist/reporter.js', { outputFile: '.suitecut/latest-run.json' }],
   ],
   use: {
-    trace: 'on',
+    trace: 'off',
     video: 'off',
   },
 })

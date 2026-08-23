@@ -8,7 +8,7 @@ export default defineConfig({
   reporter: [['line'], ['../dist/reporter.js', { outputFile: '.suitecut/site-demo-run.json' }]],
   use: {
     baseURL: 'http://127.0.0.1:4322/suitecut/',
-    trace: 'on-first-retry',
+    trace: 'off',
     video: 'off',
     viewport: { width: 1280, height: 720 },
   },

@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto'
 
 import { type TestInfo } from '@playwright/test'
 
+import { probeMediaDurationMs } from './media.js'
 import { SuiteCutNarrationWorker } from './narration-worker-client.js'
 import { type SuiteCutNarrationEvent, type SuiteCutRecordingSession } from './types.js'
 import { toError, type UntrustedInput } from './untrusted.js'
@@ -15,6 +16,7 @@ interface CompletedNarration {
   contentType: string
   provider: string
   voice: string
+  durationMs: number
 }
 
 interface FailedNarration {
@@ -26,7 +28,7 @@ interface FailedNarration {
 type NarrationResult = CompletedNarration | FailedNarration
 
 export interface SuiteCutNarrationPipeline {
-  enqueue(event: SuiteCutNarrationEvent): void
+  enqueue(event: SuiteCutNarrationEvent): Promise<number>
   finish(): Promise<void>
 }
 
@@ -37,9 +39,9 @@ export function createNarrationPipeline(
   let worker: SuiteCutNarrationWorker | undefined
   const jobs: Promise<NarrationResult>[] = []
 
-  const enqueue = (event: SuiteCutNarrationEvent): void => {
+  const enqueue = (event: SuiteCutNarrationEvent): Promise<number> => {
     const artifactId = randomUUID()
-    const provider = event.provider ?? 'macos-say'
+    const provider = event.provider ?? 'kokoro'
     const contentType = provider === 'kokoro' ? 'audio/wav' : 'audio/aiff'
     const extension = provider === 'kokoro' ? 'wav' : 'aiff'
     const attachmentName = `suitecut-narration-${artifactId}.${extension}`
@@ -49,7 +51,7 @@ export function createNarrationPipeline(
 
     try {
       worker ??= new SuiteCutNarrationWorker()
-      const job = worker
+      const synthesis = worker
         .synthesize({
           jobId: artifactId,
           text: event.text,
@@ -58,32 +60,39 @@ export function createNarrationPipeline(
           speed,
           outputPath,
         })
-        .then<NarrationResult, NarrationResult>(
-          () => ({
-            status: 'completed',
-            artifactId,
-            attachmentName,
-            outputPath,
-            eventId: event.id,
-            contentType,
-            provider: provider === 'kokoro' ? 'kokoro-82m-wasm' : 'macos-say',
-            voice,
-          }),
-          (error: UntrustedInput) => ({
-            status: 'failed',
-            eventId: event.id,
-            error: toError(error),
-          }),
-        )
-      jobs.push(job)
-    } catch (error) {
-      jobs.push(
-        Promise.resolve({
+        .then(async () => ({
+          durationMs: await probeMediaDurationMs(outputPath),
+        }))
+      const job = synthesis.then<NarrationResult, NarrationResult>(
+        ({ durationMs }) => ({
+          status: 'completed',
+          artifactId,
+          attachmentName,
+          outputPath,
+          eventId: event.id,
+          contentType,
+          provider: provider === 'kokoro' ? 'kokoro-82m-wasm' : 'macos-say',
+          voice,
+          durationMs,
+        }),
+        (error: UntrustedInput) => ({
           status: 'failed',
           eventId: event.id,
-          error: error instanceof Error ? error : new Error(String(error)),
+          error: toError(error),
         }),
       )
+      jobs.push(job)
+      return synthesis.then(({ durationMs }) => durationMs)
+    } catch (error) {
+      const failure = error instanceof Error ? error : new Error(String(error))
+      jobs.push(
+        Promise.resolve<FailedNarration>({
+          status: 'failed',
+          eventId: event.id,
+          error: failure,
+        }),
+      )
+      return Promise.reject(failure)
     }
   }
 

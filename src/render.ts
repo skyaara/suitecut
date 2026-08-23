@@ -1,7 +1,6 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname, extname, resolve } from 'node:path'
 
-import { chromium } from '@playwright/test'
 import * as z from 'zod'
 
 import { decodeManifest } from './manifest.js'
@@ -17,23 +16,34 @@ import {
 } from './types.js'
 import { type UntrustedInput } from './untrusted.js'
 
-const OutputSchema = z.strictObject({
-  format: z.enum(['mp4', 'webm']).exactOptional(),
-  width: z.number().int().positive().max(7680).exactOptional(),
-  height: z.number().int().positive().max(4320).exactOptional(),
-  framesPerSecond: z.union([z.literal(30), z.literal(60)]).exactOptional(),
-  quality: z.number().int().min(0).max(63).exactOptional(),
-})
+const OutputFormatSchema = z.enum(['mp4', 'webm'])
+const RenderQualitySchema = z.enum(['standard', 'high', 'master'])
+const RenderFailureModeSchema = z.enum(['strict', 'best-effort'])
+
+const OutputSchema = z
+  .strictObject({
+    format: OutputFormatSchema.exactOptional(),
+    width: z.number().int().positive().max(7680).multipleOf(2).exactOptional(),
+    height: z.number().int().positive().max(4320).multipleOf(2).exactOptional(),
+    framesPerSecond: z.union([z.literal(30), z.literal(60)]).exactOptional(),
+    quality: RenderQualitySchema.exactOptional(),
+  })
+  .superRefine((output, context) => {
+    if ((output.width === undefined) === (output.height === undefined)) return
+    context.addIssue({
+      code: 'custom',
+      message: 'width and height must be set together',
+      path: output.width === undefined ? ['width'] : ['height'],
+    })
+  })
 
 const RenderConfigSchema = z.strictObject({
   output: OutputSchema.exactOptional(),
   narrationEnabled: z.boolean().exactOptional(),
-  captionsEnabled: z.boolean().exactOptional(),
-  narrationTailMs: z.number().nonnegative().exactOptional(),
   resultHoldMs: z.number().nonnegative().exactOptional(),
-  backgroundColor: z.string().exactOptional(),
+  backgroundColor: z.string().min(1).exactOptional(),
   ffmpegPath: z.string().min(1).exactOptional(),
-  failureMode: z.enum(['strict', 'best-effort']).exactOptional(),
+  failureMode: RenderFailureModeSchema.exactOptional(),
 })
 
 const RenderRequestSchema = z.strictObject({
@@ -49,35 +59,50 @@ const RenderRequestSchema = z.strictObject({
 })
 
 /** A video container supported by the SuiteCut renderer. */
-export type SuiteCutOutputFormat = 'mp4' | 'webm'
+export type SuiteCutOutputFormat = z.infer<typeof OutputFormatSchema>
+/** Named encoder settings with codec-specific CRF and speed values. */
+export type SuiteCutRenderQuality = z.infer<typeof RenderQualitySchema>
 /** Controls whether FFmpeg diagnostics stop the render. */
-export type SuiteCutRenderFailureMode = 'strict' | 'best-effort'
-
-/** Video, audio, caption, and failure settings for one render. */
-export interface SuiteCutRenderConfig {
-  output?: {
-    format?: SuiteCutOutputFormat
-    width?: number
-    height?: number
-    framesPerSecond?: 30 | 60
-    quality?: number
-  }
-  narrationEnabled?: boolean
-  captionsEnabled?: boolean
-  narrationTailMs?: number
-  resultHoldMs?: number
-  backgroundColor?: string
-  ffmpegPath?: string
-  failureMode?: SuiteCutRenderFailureMode
-}
-
+export type SuiteCutRenderFailureMode = z.infer<typeof RenderFailureModeSchema>
+/** Validated dimensions, cadence, container, and encoder quality. */
+export type SuiteCutRenderOutputConfig = z.infer<typeof OutputSchema>
+/** Video, audio, layout, and failure settings for one render. */
+export type SuiteCutRenderConfig = z.infer<typeof RenderConfigSchema>
 /** Selects a recorded attempt and names its rendered output file. */
-export interface SuiteCutRenderRequest {
-  manifestPath: string
-  outputPath: string
-  selection?: { testId?: string; retry?: number }
-  config?: SuiteCutRenderConfig
+export type SuiteCutRenderRequest = z.infer<typeof RenderRequestSchema>
+
+const DEFAULT_RENDER_WIDTH = 3840
+const DEFAULT_RENDER_HEIGHT = 2160
+const DEFAULT_RENDER_FRAMES_PER_SECOND = 60
+const DEFAULT_RENDER_QUALITY: SuiteCutRenderQuality = 'high'
+
+interface EncoderQualityProfile {
+  mp4: {
+    crf: number
+    preset: 'medium' | 'slow' | 'slower'
+    audioBitrate: '160k' | '192k' | '256k'
+  }
+  webm: {
+    crf: number
+    cpuUsed: 1 | 2 | 4
+    audioBitrate: '128k' | '160k' | '192k'
+  }
 }
+
+const ENCODER_QUALITY_PROFILES = {
+  standard: {
+    mp4: { crf: 22, preset: 'medium', audioBitrate: '160k' },
+    webm: { crf: 32, cpuUsed: 4, audioBitrate: '128k' },
+  },
+  high: {
+    mp4: { crf: 18, preset: 'slow', audioBitrate: '192k' },
+    webm: { crf: 24, cpuUsed: 2, audioBitrate: '160k' },
+  },
+  master: {
+    mp4: { crf: 14, preset: 'slower', audioBitrate: '256k' },
+    webm: { crf: 18, cpuUsed: 1, audioBitrate: '192k' },
+  },
+} as const satisfies Record<SuiteCutRenderQuality, EncoderQualityProfile>
 
 /** Maps a span of test time to its position in the presentation timeline. */
 export interface SuiteCutEditSegment {
@@ -118,19 +143,10 @@ interface SequenceItem {
   durationMs: number
 }
 
-interface CaptionAsset {
-  path: string
-  startMs: number
-  endMs: number
-}
-
 interface NarrationPlacement {
   eventId: string
-  pageId: SuiteCutPageId
-  executionAtMs: number
   startMs: number
   durationMs: number
-  holdMs: number
 }
 
 function selectAttempt(
@@ -166,25 +182,9 @@ function pageAt(atMs: number, attempt: SuiteCutAttempt): SuiteCutPageId {
   return selected
 }
 
-function presentationTime(
-  atMs: number,
-  attempt: SuiteCutAttempt,
-  narrationPlacements: readonly NarrationPlacement[] = [],
-): number {
-  let holdTimeMs = 0
-  for (const event of attempt.events) {
-    if (event.type === 'hold' && event.atMs < atMs) holdTimeMs += event.durationMs
-  }
-  for (const placement of narrationPlacements) {
-    if (placement.executionAtMs < atMs) holdTimeMs += placement.holdMs
-  }
-  return atMs + holdTimeMs
-}
-
 function buildNarrationPlacements(
   attempt: SuiteCutAttempt,
   narrationArtifacts: readonly SuiteCutArtifact[],
-  narrationTailMs: number,
 ): NarrationPlacement[] {
   const placements: NarrationPlacement[] = []
   const narrationEvents = attempt.events
@@ -197,11 +197,8 @@ function buildNarrationPlacements(
     if (media === undefined) continue
     placements.push({
       eventId: event.id,
-      pageId: event.pageId,
-      executionAtMs: event.atMs,
-      startMs: presentationTime(event.atMs, attempt, placements),
+      startMs: event.atMs,
       durationMs: media.durationMs,
-      holdMs: media.durationMs + narrationTailMs,
     })
   }
   return placements
@@ -218,11 +215,7 @@ function activeZoom(
   })
 }
 
-function buildSequence(
-  attempt: SuiteCutAttempt,
-  narrationPlacements: readonly NarrationPlacement[],
-  extraTailMs: number,
-): SequenceItem[] {
+function buildSequence(attempt: SuiteCutAttempt, extraTailMs: number): SequenceItem[] {
   const boundarySet = new Set<number>([0, attempt.durationMs])
   for (const event of attempt.events) {
     if (event.atMs >= 0 && event.atMs <= attempt.durationMs) boundarySet.add(event.atMs)
@@ -232,17 +225,6 @@ function buildSequence(
   }
   const boundaries = [...boundarySet].sort((left, right) => left - right)
   const sequence: SequenceItem[] = []
-  for (const placement of narrationPlacements) {
-    if (placement.executionAtMs === 0) {
-      sequence.push({
-        kind: 'hold',
-        pageId: placement.pageId,
-        executionStartMs: 0,
-        executionEndMs: 0,
-        durationMs: placement.holdMs,
-      })
-    }
-  }
   for (let index = 0; index < boundaries.length - 1; index += 1) {
     const start = boundaries[index]
     const end = boundaries[index + 1]
@@ -255,28 +237,6 @@ function buildSequence(
         executionEndMs: end,
         durationMs: end - start,
       })
-    }
-    for (const event of attempt.events) {
-      if (event.type === 'hold' && event.atMs === end) {
-        sequence.push({
-          kind: 'hold',
-          pageId: event.pageId,
-          executionStartMs: end,
-          executionEndMs: end,
-          durationMs: event.durationMs,
-        })
-      }
-    }
-    for (const placement of narrationPlacements) {
-      if (placement.executionAtMs === end) {
-        sequence.push({
-          kind: 'hold',
-          pageId: placement.pageId,
-          executionStartMs: end,
-          executionEndMs: end,
-          durationMs: placement.holdMs,
-        })
-      }
     }
   }
   if (extraTailMs > 0) {
@@ -343,66 +303,6 @@ function edits(sequence: readonly SequenceItem[]): SuiteCutEditSegment[] {
   })
 }
 
-function escapeHtml(value: string): string {
-  return value
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#39;')
-}
-
-async function createCaptionAssets(
-  outputPath: string,
-  width: number,
-  attempt: SuiteCutAttempt,
-  narrationPlacements: readonly NarrationPlacement[],
-): Promise<CaptionAsset[]> {
-  if (narrationPlacements.length === 0) return []
-  const assetDirectory = `${outputPath}.assets`
-  await mkdir(assetDirectory, { recursive: true })
-  const browser = await chromium.launch({ headless: true })
-  try {
-    const outputScale = Math.max(1, width / 1280)
-    const page = await browser.newPage({
-      viewport: { width: Math.min(width - 80, 1_000), height: 180 },
-      deviceScaleFactor: outputScale,
-    })
-    const assets: CaptionAsset[] = []
-    for (const [index, placement] of narrationPlacements.entries()) {
-      const event = attempt.events.find(
-        (candidate) => candidate.type === 'narration' && candidate.id === placement.eventId,
-      )
-      if (event?.type !== 'narration') continue
-      const text = event.caption ?? event.text
-      if (text.length === 0) continue
-      await page.setContent(`
-        <style>
-          html, body { margin: 0; background: transparent; }
-          body { display: grid; place-items: center; min-height: 180px; }
-          #caption {
-            max-width: 920px; padding: 13px 20px; border: 1px solid #ffffff22;
-            border-radius: 13px; color: white; background: #020617dd;
-            box-shadow: 0 10px 36px #00000077; font: 650 24px/1.35 ui-sans-serif, system-ui, sans-serif;
-            text-align: center;
-          }
-        </style>
-        <div id="caption">${escapeHtml(text)}</div>
-      `)
-      const path = resolve(assetDirectory, `caption-${index + 1}.png`)
-      await page.locator('#caption').screenshot({ path, type: 'png' })
-      assets.push({
-        path,
-        startMs: placement.startMs,
-        endMs: placement.startMs + placement.durationMs,
-      })
-    }
-    return assets
-  } finally {
-    await browser.close()
-  }
-}
-
 /** Renders one recorded SuiteCut attempt to an MP4 or WebM file. */
 export async function renderSuiteCut(input: SuiteCutRenderRequest): Promise<SuiteCutRenderReport> {
   const request = RenderRequestSchema.parse(input)
@@ -431,11 +331,12 @@ export async function renderSuiteCut(input: SuiteCutRenderRequest): Promise<Suit
     const format =
       request.config?.output?.format ??
       (extname(outputPath).toLowerCase() === '.webm' ? 'webm' : 'mp4')
-    const width = request.config?.output?.width ?? 1280
-    const height = request.config?.output?.height ?? 720
-    const fps = request.config?.output?.framesPerSecond ?? 30
-    const resultHoldMs = request.config?.resultHoldMs ?? 500
-    const narrationTailMs = request.config?.narrationTailMs ?? 350
+    const width = request.config?.output?.width ?? DEFAULT_RENDER_WIDTH
+    const height = request.config?.output?.height ?? DEFAULT_RENDER_HEIGHT
+    const fps = request.config?.output?.framesPerSecond ?? DEFAULT_RENDER_FRAMES_PER_SECOND
+    const quality = request.config?.output?.quality ?? DEFAULT_RENDER_QUALITY
+    const encoderProfile = ENCODER_QUALITY_PROFILES[quality]
+    const resultHoldMs = request.config?.resultHoldMs ?? 0
     const background = color(request.config?.backgroundColor ?? '#0B1020')
     const sourceArtifacts = attempt.artifacts
       .filter((artifact) => artifact.role === 'source-video')
@@ -451,21 +352,13 @@ export async function renderSuiteCut(input: SuiteCutRenderRequest): Promise<Suit
       throw new Error('SuiteCut output cannot overwrite an input artifact')
     }
 
-    const narrationPlacements =
-      request.config?.narrationEnabled === false && request.config?.captionsEnabled === false
-        ? []
-        : buildNarrationPlacements(
-            attempt,
-            allNarrationArtifacts.map(({ artifact }) => artifact),
-            narrationTailMs,
-          )
-    const sequence = buildSequence(attempt, narrationPlacements, resultHoldMs)
+    const narrationPlacements = buildNarrationPlacements(
+      attempt,
+      allNarrationArtifacts.map(({ artifact }) => artifact),
+    )
+    const sequence = buildSequence(attempt, resultHoldMs)
     const editMap = edits(sequence)
     const presentationDurationMs = editMap.at(-1)?.presentationEndMs ?? 0
-    const captionAssets =
-      request.config?.captionsEnabled === false
-        ? []
-        : await createCaptionAssets(outputPath, width, attempt, narrationPlacements)
 
     const inputIndexByPage = new Map<string, number>()
     sourceArtifacts.forEach(({ artifact }, index) => {
@@ -492,107 +385,14 @@ export async function renderSuiteCut(input: SuiteCutRenderRequest): Promise<Suit
         const centerY = (zoom.rect.y + zoom.rect.height / 2) / zoom.viewport.height
         visual += `,crop=w=iw/${scale}:h=ih/${scale}:x='max(0,min(iw-ow,iw*${centerX}-ow/2))':y='max(0,min(ih-oh,ih*${centerY}-oh/2))'`
       }
-      visual += `,scale=${width}:${height}:flags=lanczos:force_original_aspect_ratio=decrease,pad=${width}:${height}:(ow-iw)/2:(oh-ih)/2:${background},setsar=1,fps=${fps},format=yuv420p`
+      visual += `,scale=${width}:${height}:flags=lanczos+accurate_rnd+full_chroma_int:force_original_aspect_ratio=decrease:in_range=full:out_range=tv,pad=${width}:${height}:(ow-iw)/2:(oh-ih)/2:${background},setsar=1,format=yuv420p`
       filters.push(`[${inputIndex}:v]${visual}[${label}]`)
       videoLabels.push(`[${label}]`)
     }
-    filters.push(`${videoLabels.join('')}concat=n=${videoLabels.length}:v=1:a=0[video0]`)
-
-    let currentVideo = 'video0'
-    let overlayIndex = 0
-    const addDrawBox = (
-      x: number,
-      y: number,
-      boxWidth: number,
-      boxHeight: number,
-      boxColor: string,
-      thickness: number,
-      startMs: number,
-      endMs: number,
-    ): void => {
-      const next = `video${++overlayIndex}`
-      filters.push(
-        `[${currentVideo}]drawbox=x=${x.toFixed(2)}:y=${y.toFixed(2)}:w=${boxWidth.toFixed(2)}:h=${boxHeight.toFixed(2)}:color=${boxColor}:t=${thickness}:enable='between(t,${seconds(startMs)},${seconds(endMs)})'[${next}]`,
-      )
-      currentVideo = next
-    }
-
-    const visualEnd = (
-      event: SuiteCutAttempt['events'][number],
-      preferredEndMs: number,
-    ): number => {
-      const nextPageEvent = attempt.events.find(
-        (candidate) => candidate.atMs > event.atMs && candidate.pageId !== event.pageId,
-      )
-      return nextPageEvent === undefined
-        ? preferredEndMs
-        : Math.min(
-            preferredEndMs,
-            presentationTime(nextPageEvent.atMs, attempt, narrationPlacements),
-          )
-    }
-
-    for (const event of attempt.events) {
-      const atMs = presentationTime(event.atMs, attempt, narrationPlacements)
-      if (event.type === 'highlight') {
-        const xScale = width / event.viewport.width
-        const yScale = height / event.viewport.height
-        const padding = event.options.paddingPx ?? 8
-        addDrawBox(
-          (event.rect.x - padding) * xScale,
-          (event.rect.y - padding) * yScale,
-          (event.rect.width + padding * 2) * xScale,
-          (event.rect.height + padding * 2) * yScale,
-          color(event.options.borderColor ?? '#7C3AED'),
-          (event.options.borderWidthPx ?? 4) * Math.min(xScale, yScale),
-          atMs,
-          visualEnd(event, atMs + (event.options.durationMs ?? 1_200)),
-        )
-      }
-      if (
-        event.type === 'pointer-move' ||
-        event.type === 'pointer-down' ||
-        event.type === 'pointer-up' ||
-        event.type === 'click'
-      ) {
-        const x = (event.point.x * width) / event.viewport.width
-        const y = (event.point.y * height) / event.viewport.height
-        const pointerScale = Math.min(width / event.viewport.width, height / event.viewport.height)
-        addDrawBox(
-          x - 5 * pointerScale,
-          y - 5 * pointerScale,
-          10 * pointerScale,
-          10 * pointerScale,
-          color('#FFFFFF', 0.9),
-          -1,
-          atMs,
-          visualEnd(event, atMs + 550),
-        )
-        if (event.type === 'click') {
-          addDrawBox(
-            x - 12 * pointerScale,
-            y - 12 * pointerScale,
-            24 * pointerScale,
-            24 * pointerScale,
-            color('#FACC15', 0.75),
-            3 * pointerScale,
-            atMs,
-            visualEnd(event, atMs + 250),
-          )
-        }
-      }
-    }
-
-    for (const [captionIndex, caption] of captionAssets.entries()) {
-      const inputIndex = sourceArtifacts.length + narrationArtifacts.length + captionIndex
-      const captionLabel = `caption${captionIndex}`
-      const next = `video${++overlayIndex}`
-      filters.push(`[${inputIndex}:v]format=rgba[${captionLabel}]`)
-      filters.push(
-        `[${currentVideo}][${captionLabel}]overlay=x=(W-w)/2:y=H-h-${(42 * Math.max(1, width / 1280)).toFixed(2)}:enable='between(t,${seconds(caption.startMs)},${seconds(caption.endMs)})'[${next}]`,
-      )
-      currentVideo = next
-    }
+    filters.push(`${videoLabels.join('')}concat=n=${videoLabels.length}:v=1:a=0[joinedvideo]`)
+    filters.push(
+      `[joinedvideo]tpad=stop_mode=clone:stop_duration=${seconds(presentationDurationMs)},trim=duration=${seconds(presentationDurationMs)},fps=${fps}[video0]`,
+    )
 
     const audioLabels: string[] = []
     narrationArtifacts.forEach(({ artifact }, narrationIndex) => {
@@ -615,9 +415,7 @@ export async function renderSuiteCut(input: SuiteCutRenderRequest): Promise<Suit
     const executable = await resolveFfmpeg(request.config?.ffmpegPath)
     const args = ['-y']
     for (const inputArtifact of mediaInputs) args.push('-i', inputArtifact.path)
-    for (const caption of captionAssets)
-      args.push('-loop', '1', '-framerate', String(fps), '-i', caption.path)
-    args.push('-filter_complex', filters.join(';'), '-map', `[${currentVideo}]`)
+    args.push('-filter_complex', filters.join(';'), '-map', '[video0]')
     if (audioLabels.length > 0) args.push('-map', '[audioout]')
     args.push('-r', String(fps), '-t', seconds(presentationDurationMs))
     if (format === 'mp4') {
@@ -625,27 +423,40 @@ export async function renderSuiteCut(input: SuiteCutRenderRequest): Promise<Suit
         '-c:v',
         'libx264',
         '-crf',
-        String(request.config?.output?.quality ?? 22),
+        String(encoderProfile.mp4.crf),
         '-preset',
-        'medium',
+        encoderProfile.mp4.preset,
+        '-profile:v',
+        'high',
         '-pix_fmt',
         'yuv420p',
+        '-color_primaries',
+        'bt709',
+        '-color_trc',
+        'bt709',
+        '-colorspace',
+        'bt709',
         '-movflags',
         '+faststart',
       )
-      if (audioLabels.length > 0) args.push('-c:a', 'aac', '-b:a', '160k')
+      if (audioLabels.length > 0) args.push('-c:a', 'aac', '-b:a', encoderProfile.mp4.audioBitrate)
     } else {
       args.push(
         '-c:v',
         'libvpx-vp9',
         '-crf',
-        String(request.config?.output?.quality ?? 32),
+        String(encoderProfile.webm.crf),
         '-b:v',
         '0',
+        '-cpu-used',
+        String(encoderProfile.webm.cpuUsed),
+        '-row-mt',
+        '1',
         '-pix_fmt',
         'yuv420p',
       )
-      if (audioLabels.length > 0) args.push('-c:a', 'libopus', '-b:a', '128k')
+      if (audioLabels.length > 0)
+        args.push('-c:a', 'libopus', '-b:a', encoderProfile.webm.audioBitrate)
     }
     args.push(outputPath)
 
