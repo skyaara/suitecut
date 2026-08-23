@@ -69,9 +69,9 @@ describe('event attachment decoding', () => {
     expect(() => decodeEventAttachment(input)).toThrowError(SuiteCutSchemaError)
   })
 
-  it('rejects first-frame timing that does not match the attempt clock', () => {
+  it('accepts source timing after excluded preparation time', () => {
     const input = attachment()
-    input.videos[0]!.sourceStartedAtMs = 26
-    expect(() => decodeEventAttachment(input)).toThrowError(SuiteCutSchemaError)
+    input.videos[0]!.sourceStartedAtMs = 0
+    expect(decodeEventAttachment(input)).toEqual(input)
   })
 })

@@ -28,6 +28,7 @@
     }
   },
   "files": [
+    "assets/kokoro",
     "dist",
     "README.md"
   ],
@@ -49,7 +50,8 @@
     "site:build": "npm run build --workspace suitecut-docs",
     "site:check": "npm run check --workspace suitecut-docs",
     "site:test": "playwright test --config site/playwright.config.ts site.spec.ts",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:kokoro": "SUITECUT_KOKORO_INTEGRATION=1 vitest run tests/kokoro.test.ts"
   },
   "peerDependencies": {
     "@playwright/test": ">=1.59.0"

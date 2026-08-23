@@ -1,4 +1,8 @@
-import { describe, expect, it } from 'vitest'
+import { mkdtemp, readFile, rm } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+
+import { describe, expect, it, vi } from 'vitest'
 
 import {
   encodePcm16Wav,
@@ -6,6 +10,8 @@ import {
   splitKokoroText,
   synthesizeKokoro,
 } from '../src/kokoro.js'
+
+const bundledSynthesisTest = process.env.SUITECUT_KOKORO_INTEGRATION === '1' ? it : it.skip
 
 describe('Kokoro narration helpers', () => {
   it('normalizes punctuation, titles, ranges, and whitespace', () => {
@@ -51,4 +57,38 @@ describe('Kokoro narration helpers', () => {
     await expect(synthesizeKokoro('Hello.', 'af_heart', 3, '/tmp/unused.wav')).rejects.toThrow()
     await expect(synthesizeKokoro('Hello.', 'af_heart', 1, '')).rejects.toThrow()
   })
+
+  bundledSynthesisTest(
+    'synthesizes the bundled default voice without a network request',
+    async () => {
+      const directory = await mkdtemp(join(tmpdir(), 'suitecut-kokoro-'))
+      const outputPath = join(directory, 'narration.wav')
+      const originalFetch = globalThis.fetch
+      const fetchSpy = vi.fn((input: string | URL | Request, init?: RequestInit) => {
+        const url =
+          typeof input === 'string' ? input : input instanceof URL ? input.href : input.url
+        if (/^https?:/u.test(url)) return Promise.reject(new Error(`Network disabled: ${url}`))
+        return originalFetch(input, init)
+      })
+      vi.stubGlobal('fetch', fetchSpy)
+
+      try {
+        await synthesizeKokoro('The SuiteCut recording is ready.', 'af_heart', 1, outputPath)
+        const wav = await readFile(outputPath)
+        expect(wav.subarray(0, 4).toString()).toBe('RIFF')
+        expect(wav.byteLength).toBeGreaterThan(44)
+        expect(
+          fetchSpy.mock.calls.some(([input]) => {
+            const url =
+              typeof input === 'string' ? input : input instanceof URL ? input.href : input.url
+            return /^https?:/u.test(url)
+          }),
+        ).toBe(false)
+      } finally {
+        vi.unstubAllGlobals()
+        await rm(directory, { recursive: true, force: true })
+      }
+    },
+    120_000,
+  )
 })

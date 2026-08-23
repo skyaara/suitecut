@@ -9,8 +9,9 @@ import { z } from 'zod'
 
 const SAMPLE_RATE = 24_000
 const MODEL_BASE_URL = 'https://huggingface.co/onnx-community/Kokoro-82M-v1.0-ONNX/resolve/main'
-const MODEL_ASSET = 'onnx/model_quantized.onnx'
-const TOKENIZER_ASSET = 'tokenizer.json'
+const BUNDLED_MODEL_ASSET = new URL('../assets/kokoro/model_quantized.onnx', import.meta.url)
+const BUNDLED_TOKENIZER_ASSET = new URL('../assets/kokoro/tokenizer.json', import.meta.url)
+const BUNDLED_DEFAULT_VOICE_ASSET = new URL('../assets/kokoro/af_heart.bin', import.meta.url)
 
 export const SUITECUT_KOKORO_VOICES = [
   'af_heart',
@@ -122,13 +123,9 @@ function alignedFloat32(bytes: Uint8Array): Float32Array {
 
 async function prepareKokoro(): Promise<void> {
   if (session !== undefined && vocabulary !== undefined) return
-  const [modelPath, tokenizerPath] = await Promise.all([
-    cachedAsset('model_quantized.onnx', MODEL_ASSET),
-    cachedAsset('tokenizer.json', TOKENIZER_ASSET),
-  ])
   const [modelBytes, tokenizerBytes] = await Promise.all([
-    readFile(modelPath),
-    readFile(tokenizerPath, 'utf8'),
+    readFile(BUNDLED_MODEL_ASSET),
+    readFile(BUNDLED_TOKENIZER_ASSET, 'utf8'),
   ])
   const tokenizer = KokoroTokenizerSchema.parse(JSON.parse(tokenizerBytes))
 
@@ -214,8 +211,11 @@ async function phonemizeText(text: string, language: 'en-us' | 'en-gb'): Promise
 async function voiceData(voice: string): Promise<Float32Array> {
   const existing = voices.get(voice)
   if (existing !== undefined) return existing
-  const voicePath = await cachedAsset(`${voice}.bin`, `voices/${voice}.bin`)
-  const data = alignedFloat32(await readFile(voicePath))
+  const voiceAsset =
+    voice === 'af_heart'
+      ? BUNDLED_DEFAULT_VOICE_ASSET
+      : await cachedAsset(`${voice}.bin`, `voices/${voice}.bin`)
+  const data = alignedFloat32(await readFile(voiceAsset))
   if (data.length < VOICE_STYLE_COUNT * VOICE_STYLE_WIDTH) {
     throw new Error(`Kokoro voice profile is incomplete: ${voice}`)
   }

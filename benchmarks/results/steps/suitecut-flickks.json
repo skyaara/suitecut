@@ -1,0 +1,106 @@
+{
+  "flowDurationMs": 75150.636125,
+  "moduleToFlowStartMs": 334.39475000000675,
+  "navigations": [
+    {
+      "decodedBodySize": 87664,
+      "domContentLoadedMs": 1477.2000000476837,
+      "loadMs": 0,
+      "name": "navigate.home",
+      "responseEndMs": 450.60000014305115,
+      "responseStartMs": 446.10000014305115,
+      "transferSize": 15102
+    },
+    {
+      "decodedBodySize": 87664,
+      "domContentLoadedMs": 1477.2000000476837,
+      "loadMs": 3118.9000000953674,
+      "name": "navigate.showcase",
+      "responseEndMs": 450.60000014305115,
+      "responseStartMs": 446.10000014305115,
+      "transferSize": 15102
+    }
+  ],
+  "site": "flickks",
+  "steps": [
+    {
+      "durationMs": 1830.824791,
+      "name": "navigate.home",
+      "startedAt": "2026-08-23T14:22:13.119Z",
+      "url": "https://www.flickks.com/"
+    },
+    {
+      "durationMs": 16.730625,
+      "name": "assert.hero",
+      "startedAt": "2026-08-23T14:22:14.952Z",
+      "url": "https://www.flickks.com/"
+    },
+    {
+      "durationMs": 24599.028541,
+      "name": "narrate.hero",
+      "startedAt": "2026-08-23T14:22:14.969Z",
+      "url": "https://www.flickks.com/"
+    },
+    {
+      "durationMs": 899.924083,
+      "name": "highlight.hero",
+      "startedAt": "2026-08-23T14:22:39.568Z",
+      "url": "https://www.flickks.com/"
+    },
+    {
+      "durationMs": 96.80725,
+      "name": "checkpoint.hero",
+      "startedAt": "2026-08-23T14:22:40.468Z",
+      "url": "https://www.flickks.com/"
+    },
+    {
+      "durationMs": 1186.529333,
+      "name": "scroll.templates",
+      "startedAt": "2026-08-23T14:22:40.565Z",
+      "url": "https://www.flickks.com/"
+    },
+    {
+      "durationMs": 18297.790875,
+      "name": "narrate.templates",
+      "startedAt": "2026-08-23T14:22:41.752Z",
+      "url": "https://www.flickks.com/"
+    },
+    {
+      "durationMs": 883.15025,
+      "name": "highlight.templates",
+      "startedAt": "2026-08-23T14:23:00.050Z",
+      "url": "https://www.flickks.com/"
+    },
+    {
+      "durationMs": 1366.485792,
+      "name": "navigate.showcase",
+      "startedAt": "2026-08-23T14:23:00.933Z",
+      "url": "https://www.flickks.com/showcase"
+    },
+    {
+      "durationMs": 3.425709,
+      "name": "assert.showcase",
+      "startedAt": "2026-08-23T14:23:02.301Z",
+      "url": "https://www.flickks.com/showcase"
+    },
+    {
+      "durationMs": 24994.135875,
+      "name": "narrate.showcase",
+      "startedAt": "2026-08-23T14:23:02.304Z",
+      "url": "https://www.flickks.com/showcase"
+    },
+    {
+      "durationMs": 67.657166,
+      "name": "checkpoint.showcase",
+      "startedAt": "2026-08-23T14:23:27.299Z",
+      "url": "https://www.flickks.com/showcase"
+    },
+    {
+      "durationMs": 901.884041,
+      "name": "hold.final",
+      "startedAt": "2026-08-23T14:23:27.366Z",
+      "url": "https://www.flickks.com/showcase"
+    }
+  ],
+  "version": "suitecut"
+}

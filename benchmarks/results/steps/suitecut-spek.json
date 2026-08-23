@@ -1,0 +1,139 @@
+{
+  "flowDurationMs": 101102.065958,
+  "moduleToFlowStartMs": 196.47241699999722,
+  "navigations": [
+    {
+      "decodedBodySize": 22286,
+      "domContentLoadedMs": 2770.3949999809265,
+      "loadMs": 2770.5049998760223,
+      "name": "navigate.home",
+      "responseEndMs": 2035.5199999809265,
+      "responseStartMs": 2020.4249999523163,
+      "transferSize": 7323
+    },
+    {
+      "decodedBodySize": 22286,
+      "domContentLoadedMs": 2770.3949999809265,
+      "loadMs": 2770.5049998760223,
+      "name": "navigate.features",
+      "responseEndMs": 2035.5199999809265,
+      "responseStartMs": 2020.4249999523163,
+      "transferSize": 7323
+    },
+    {
+      "decodedBodySize": 22286,
+      "domContentLoadedMs": 2770.3949999809265,
+      "loadMs": 2770.5049998760223,
+      "name": "navigate.reader",
+      "responseEndMs": 2035.5199999809265,
+      "responseStartMs": 2020.4249999523163,
+      "transferSize": 7323
+    }
+  ],
+  "site": "spek",
+  "steps": [
+    {
+      "durationMs": 2813.093042,
+      "name": "navigate.home",
+      "startedAt": "2026-08-23T14:26:29.417Z",
+      "url": "https://spek.aakashreddy.com/"
+    },
+    {
+      "durationMs": 15.8085,
+      "name": "assert.hero",
+      "startedAt": "2026-08-23T14:26:32.232Z",
+      "url": "https://spek.aakashreddy.com/"
+    },
+    {
+      "durationMs": 22285.936459,
+      "name": "narrate.hero",
+      "startedAt": "2026-08-23T14:26:32.248Z",
+      "url": "https://spek.aakashreddy.com/"
+    },
+    {
+      "durationMs": 861.787417,
+      "name": "highlight.hero",
+      "startedAt": "2026-08-23T14:26:54.534Z",
+      "url": "https://spek.aakashreddy.com/"
+    },
+    {
+      "durationMs": 43.552958,
+      "name": "checkpoint.hero",
+      "startedAt": "2026-08-23T14:26:55.396Z",
+      "url": "https://spek.aakashreddy.com/"
+    },
+    {
+      "durationMs": 1121.757125,
+      "name": "scroll.cleanup",
+      "startedAt": "2026-08-23T14:26:55.439Z",
+      "url": "https://spek.aakashreddy.com/"
+    },
+    {
+      "durationMs": 22185.593417,
+      "name": "narrate.cleanup",
+      "startedAt": "2026-08-23T14:26:56.561Z",
+      "url": "https://spek.aakashreddy.com/"
+    },
+    {
+      "durationMs": 847.800166,
+      "name": "highlight.cleanup",
+      "startedAt": "2026-08-23T14:27:18.747Z",
+      "url": "https://spek.aakashreddy.com/"
+    },
+    {
+      "durationMs": 1516.240042,
+      "name": "navigate.features",
+      "startedAt": "2026-08-23T14:27:19.595Z",
+      "url": "https://spek.aakashreddy.com/features"
+    },
+    {
+      "durationMs": 3.524041,
+      "name": "assert.features",
+      "startedAt": "2026-08-23T14:27:21.113Z",
+      "url": "https://spek.aakashreddy.com/features"
+    },
+    {
+      "durationMs": 22511.804334,
+      "name": "narrate.features",
+      "startedAt": "2026-08-23T14:27:21.116Z",
+      "url": "https://spek.aakashreddy.com/features"
+    },
+    {
+      "durationMs": 20.3485,
+      "name": "checkpoint.features",
+      "startedAt": "2026-08-23T14:27:43.628Z",
+      "url": "https://spek.aakashreddy.com/features"
+    },
+    {
+      "durationMs": 1884.833084,
+      "name": "navigate.reader",
+      "startedAt": "2026-08-23T14:27:43.649Z",
+      "url": "https://spek.aakashreddy.com/read"
+    },
+    {
+      "durationMs": 4.190583,
+      "name": "assert.reader",
+      "startedAt": "2026-08-23T14:27:45.537Z",
+      "url": "https://spek.aakashreddy.com/read"
+    },
+    {
+      "durationMs": 24005.572584,
+      "name": "narrate.reader",
+      "startedAt": "2026-08-23T14:27:45.541Z",
+      "url": "https://spek.aakashreddy.com/read"
+    },
+    {
+      "durationMs": 68.911208,
+      "name": "checkpoint.reader",
+      "startedAt": "2026-08-23T14:28:09.547Z",
+      "url": "https://spek.aakashreddy.com/read"
+    },
+    {
+      "durationMs": 902.78775,
+      "name": "hold.final",
+      "startedAt": "2026-08-23T14:28:09.616Z",
+      "url": "https://spek.aakashreddy.com/read"
+    }
+  ],
+  "version": "suitecut"
+}

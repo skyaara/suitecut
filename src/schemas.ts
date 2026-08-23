@@ -23,15 +23,39 @@ export const SuiteCutCheckpointOptionsSchema = z.strictObject({
   fullPage: z.boolean().exactOptional(),
 })
 
+export const SuiteCutCaptureViewportSchema = z.strictObject({
+  width: z.number().int().positive().max(7680),
+  height: z.number().int().positive().max(4320),
+})
+
+export const SuiteCutCaptureSizeSchema = z.strictObject({
+  width: z.number().int().positive().max(7680).multipleOf(2),
+  height: z.number().int().positive().max(4320).multipleOf(2),
+})
+
 export const SuiteCutCaptureOptionsSchema = z.strictObject({
-  size: z
-    .strictObject({
-      width: z.number().int().positive().max(7680),
-      height: z.number().int().positive().max(4320),
-    })
-    .exactOptional(),
+  viewport: SuiteCutCaptureViewportSchema.exactOptional(),
+  size: SuiteCutCaptureSizeSchema.exactOptional(),
   framesPerSecond: z.union([z.literal(30), z.literal(60)]).exactOptional(),
   quality: z.number().int().min(1).max(100).exactOptional(),
+  narrationTailMs: NonNegativeNumberSchema.exactOptional(),
+})
+
+export const SuiteCutPointerActionOptionsSchema = z.strictObject({
+  moveDurationMs: NonNegativeNumberSchema.exactOptional(),
+  settleMs: NonNegativeNumberSchema.exactOptional(),
+  waitForAnimations: z.boolean().exactOptional(),
+  animationTimeoutMs: NonNegativeNumberSchema.exactOptional(),
+})
+
+export const SuiteCutScrollBehaviorSchema = z.enum(['auto', 'smooth'])
+export const SuiteCutScrollAlignmentSchema = z.enum(['start', 'center', 'end', 'nearest'])
+export const SuiteCutScrollOptionsSchema = z.strictObject({
+  behavior: SuiteCutScrollBehaviorSchema.exactOptional(),
+  block: SuiteCutScrollAlignmentSchema.exactOptional(),
+  inline: SuiteCutScrollAlignmentSchema.exactOptional(),
+  settleMs: NonNegativeNumberSchema.exactOptional(),
+  timeoutMs: PositiveNumberSchema.exactOptional(),
 })
 
 export const SuiteCutNarrationInputSchema = z.strictObject({
@@ -138,7 +162,13 @@ export type SuiteCutNarrationVoice = z.infer<typeof SuiteCutNarrationVoiceSchema
 export type SuiteCutNarrationProvider = z.infer<typeof SuiteCutNarrationProviderSchema>
 export type SuiteCutNarrationOptions = z.infer<typeof SuiteCutNarrationOptionsSchema>
 export type SuiteCutCheckpointOptions = z.infer<typeof SuiteCutCheckpointOptionsSchema>
+export type SuiteCutCaptureViewport = z.infer<typeof SuiteCutCaptureViewportSchema>
+export type SuiteCutCaptureSize = z.infer<typeof SuiteCutCaptureSizeSchema>
 export type SuiteCutCaptureOptions = z.infer<typeof SuiteCutCaptureOptionsSchema>
+export type SuiteCutPointerActionOptions = z.infer<typeof SuiteCutPointerActionOptionsSchema>
+export type SuiteCutScrollBehavior = z.infer<typeof SuiteCutScrollBehaviorSchema>
+export type SuiteCutScrollAlignment = z.infer<typeof SuiteCutScrollAlignmentSchema>
+export type SuiteCutScrollOptions = z.infer<typeof SuiteCutScrollOptionsSchema>
 export type SuiteCutEasing = z.infer<typeof SuiteCutEasingSchema>
 export type SuiteCutVisualAnimation = z.infer<typeof SuiteCutVisualAnimationSchema>
 export type SuiteCutAnimationOptions = z.infer<typeof SuiteCutAnimationOptionsSchema>

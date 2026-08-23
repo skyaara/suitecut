@@ -21,21 +21,21 @@ test('records a popup and returns to its opener', async ({ page, suitecut }) => 
     <main><h1>Campaign forecast</h1><p>Open the share view without leaving the editor.</p><a target="_blank" href="about:blank">Open preview</a></main>
   `)
 
-  suitecut.narrate('The editor opens its share preview in a second page.')
+  await suitecut.narrate('The editor opens its share preview in a second page.')
   const [popup] = await Promise.all([
     page.waitForEvent('popup'),
     page.getByRole('link', { name: 'Open preview' }).click(),
   ])
   await popup.setContent(popupHtml)
   suitecut.selectPage(popup)
-  suitecut.narrate('SuiteCut follows the popup and records it on the same timeline.')
+  await suitecut.narrate('SuiteCut follows the popup and records it on the same timeline.')
   const total = popup.locator('.total')
   await expect(total).toContainText('$48,200')
   await suitecut.highlight(total, { borderColor: '#A5B4FC', durationMs: 1_000 })
   await suitecut.checkpoint('Popup forecast')
   await popup.close()
 
-  suitecut.narrate('Closing the preview returns the recording to the editor.')
+  await suitecut.narrate('Closing the preview returns the recording to the editor.')
   await expect(page.getByRole('heading')).toHaveText('Campaign forecast')
   await suitecut.checkpoint('Returned to editor')
 })

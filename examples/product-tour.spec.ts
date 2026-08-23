@@ -88,7 +88,7 @@ test('renders a polished product tour', async ({ page, suitecut }) => {
     </script>
   `)
 
-  suitecut.narrate('This workspace keeps the important numbers in one place.', {
+  await suitecut.narrate('This workspace keeps the important numbers in one place.', {
     provider: 'kokoro',
     voice: 'af_heart',
   })
@@ -100,11 +100,11 @@ test('renders a polished product tour', async ({ page, suitecut }) => {
   })
   await createButton.hover()
   await createButton.click()
-  suitecut.hold(650)
+  await suitecut.hold(650)
 
   const report = page.locator('#report')
   await expect(report).toBeVisible()
-  suitecut.narrate('The finished report appears immediately and is ready to share.', {
+  await suitecut.narrate('The finished report appears immediately and is ready to share.', {
     provider: 'kokoro',
     voice: 'af_heart',
   })

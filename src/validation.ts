@@ -9,7 +9,11 @@ import {
   SuiteCutHoldInputSchema,
   SuiteCutNarrationInputSchema,
   type SuiteCutNarrationOptions,
+  type SuiteCutPointerActionOptions,
+  SuiteCutPointerActionOptionsSchema,
   type SuiteCutRect,
+  type SuiteCutScrollOptions,
+  SuiteCutScrollOptionsSchema,
   type SuiteCutViewport,
   SuiteCutViewportSchema,
   type SuiteCutZoomOptions,
@@ -41,6 +45,14 @@ export function parseZoomOptions(options: SuiteCutZoomOptions) {
   return SuiteCutZoomOptionsSchema.parse(options)
 }
 
+export function parsePointerActionOptions(options: SuiteCutPointerActionOptions) {
+  return SuiteCutPointerActionOptionsSchema.parse(options)
+}
+
+export function parseScrollOptions(options: SuiteCutScrollOptions) {
+  return SuiteCutScrollOptionsSchema.parse(options)
+}
+
 export function parseCapturedGeometry(rect: SuiteCutRect, viewport: SuiteCutViewport) {
   return SuiteCutCapturedGeometrySchema.parse({ rect, viewport })
 }
@@ -49,7 +61,7 @@ export function parseCapturedViewport(viewport: SuiteCutViewport) {
   return SuiteCutViewportSchema.parse(viewport)
 }
 
-/** Validates the image dimensions, cadence, and JPEG quality used during capture. */
+/** Validates the CSS viewport, physical source size, cadence, and JPEG capture quality. */
 export function parseCaptureOptions(options: SuiteCutCaptureOptions): SuiteCutCaptureOptions {
   return SuiteCutCaptureOptionsSchema.parse(options)
 }

@@ -104,11 +104,10 @@ export function decodeProbeDocument(input: UntrustedInput): z.infer<typeof Probe
   return ProbeDocumentSchema.parse(input)
 }
 
-export async function probeMedia(
-  artifact: SuiteCutArtifact,
+async function readProbeDocument(
   absolutePath: string,
   ffmpegPath?: string,
-): Promise<SuiteCutMedia> {
+): Promise<z.infer<typeof ProbeDocumentSchema>> {
   const executable = await resolveFfprobe(ffmpegPath)
   const result = await runProcess(executable, [
     '-v',
@@ -123,12 +122,27 @@ export async function probeMedia(
     throw new Error(`FFprobe failed for ${absolutePath}: ${result.stderr.trim()}`)
   }
 
-  let document: z.infer<typeof ProbeDocumentSchema>
   try {
-    document = decodeProbeDocument(JSON.parse(result.stdout) as UntrustedInput)
+    return decodeProbeDocument(JSON.parse(result.stdout) as UntrustedInput)
   } catch (error) {
     throw new Error(`FFprobe returned invalid metadata for ${absolutePath}`, { cause: error })
   }
+}
+
+/** Reads the measured container duration without constructing manifest media records. */
+export async function probeMediaDurationMs(
+  absolutePath: string,
+  ffmpegPath?: string,
+): Promise<number> {
+  return (await readProbeDocument(absolutePath, ffmpegPath)).format.duration * 1_000
+}
+
+export async function probeMedia(
+  artifact: SuiteCutArtifact,
+  absolutePath: string,
+  ffmpegPath?: string,
+): Promise<SuiteCutMedia> {
+  const document = await readProbeDocument(absolutePath, ffmpegPath)
 
   const durationMs = document.format.duration * 1_000
   const streams = document.streams

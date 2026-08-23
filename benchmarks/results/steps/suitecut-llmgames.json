@@ -1,0 +1,124 @@
+{
+  "flowDurationMs": 105208.604625,
+  "moduleToFlowStartMs": 185.79549899999984,
+  "navigations": [
+    {
+      "decodedBodySize": 61085,
+      "domContentLoadedMs": 513.4000000953674,
+      "loadMs": 528.7999999523163,
+      "name": "navigate.home",
+      "responseEndMs": 255.09999990463257,
+      "responseStartMs": 176.09999990463257,
+      "transferSize": 14074
+    },
+    {
+      "decodedBodySize": 61085,
+      "domContentLoadedMs": 513.4000000953674,
+      "loadMs": 528.7999999523163,
+      "name": "navigate.setup",
+      "responseEndMs": 255.09999990463257,
+      "responseStartMs": 176.09999990463257,
+      "transferSize": 14074
+    }
+  ],
+  "site": "llmgames",
+  "steps": [
+    {
+      "durationMs": 558.2945,
+      "name": "navigate.home",
+      "startedAt": "2026-08-23T14:23:41.656Z",
+      "url": "https://www.llmgames.online/"
+    },
+    {
+      "durationMs": 13.0545,
+      "name": "assert.hero",
+      "startedAt": "2026-08-23T14:23:42.216Z",
+      "url": "https://www.llmgames.online/"
+    },
+    {
+      "durationMs": 30736.034959,
+      "name": "narrate.hero",
+      "startedAt": "2026-08-23T14:23:42.229Z",
+      "url": "https://www.llmgames.online/"
+    },
+    {
+      "durationMs": 898.007166,
+      "name": "highlight.hero",
+      "startedAt": "2026-08-23T14:24:12.965Z",
+      "url": "https://www.llmgames.online/"
+    },
+    {
+      "durationMs": 47.019375,
+      "name": "checkpoint.hero",
+      "startedAt": "2026-08-23T14:24:13.863Z",
+      "url": "https://www.llmgames.online/"
+    },
+    {
+      "durationMs": 1104.576292,
+      "name": "scroll.connect-agent",
+      "startedAt": "2026-08-23T14:24:13.910Z",
+      "url": "https://www.llmgames.online/"
+    },
+    {
+      "durationMs": 22517.697834,
+      "name": "narrate.connect-agent",
+      "startedAt": "2026-08-23T14:24:15.015Z",
+      "url": "https://www.llmgames.online/"
+    },
+    {
+      "durationMs": 881.918208,
+      "name": "highlight.command",
+      "startedAt": "2026-08-23T14:24:37.533Z",
+      "url": "https://www.llmgames.online/"
+    },
+    {
+      "durationMs": 1100.797667,
+      "name": "scroll.game-library",
+      "startedAt": "2026-08-23T14:24:38.415Z",
+      "url": "https://www.llmgames.online/"
+    },
+    {
+      "durationMs": 22051.314542,
+      "name": "narrate.game-library",
+      "startedAt": "2026-08-23T14:24:39.516Z",
+      "url": "https://www.llmgames.online/"
+    },
+    {
+      "durationMs": 881.680792,
+      "name": "highlight.game-library",
+      "startedAt": "2026-08-23T14:25:01.567Z",
+      "url": "https://www.llmgames.online/"
+    },
+    {
+      "durationMs": 2101.794917,
+      "name": "navigate.setup",
+      "startedAt": "2026-08-23T14:25:02.449Z",
+      "url": "https://www.llmgames.online/setup"
+    },
+    {
+      "durationMs": 6.856041,
+      "name": "assert.setup",
+      "startedAt": "2026-08-23T14:25:04.553Z",
+      "url": "https://www.llmgames.online/setup"
+    },
+    {
+      "durationMs": 21357.565125,
+      "name": "narrate.setup",
+      "startedAt": "2026-08-23T14:25:04.560Z",
+      "url": "https://www.llmgames.online/setup"
+    },
+    {
+      "durationMs": 45.721625,
+      "name": "checkpoint.setup",
+      "startedAt": "2026-08-23T14:25:25.918Z",
+      "url": "https://www.llmgames.online/setup"
+    },
+    {
+      "durationMs": 901.588084,
+      "name": "hold.final",
+      "startedAt": "2026-08-23T14:25:25.963Z",
+      "url": "https://www.llmgames.online/setup"
+    }
+  ],
+  "version": "suitecut"
+}

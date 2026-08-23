@@ -18,10 +18,10 @@ Render options:
   --test-id <id>       Select a test. Defaults to the first test.
   --retry <number>     Select a retry. Defaults to the latest attempt.
   --format <format>    mp4 or webm. Defaults from the output extension.
-  --width <pixels>     Output width. Default 1280.
-  --height <pixels>    Output height. Default 720.
-  --fps <30|60>        Output frame rate. Default 30.
-  --captions           Enable captions (already enabled by default).
+  --width <pixels>     Output width. Default 3840.
+  --height <pixels>    Output height. Default 2160.
+  --fps <30|60>        Output frame rate. Default 60.
+  --quality <profile>  standard, high, or master. Default high.
   --no-narration       Omit narration audio.
 `
 
@@ -105,9 +105,15 @@ function parseRenderArguments(args: readonly string[]): ParsedRenderArguments {
         index += 1
         break
       }
-      case '--captions':
-        config.captionsEnabled = true
+      case '--quality': {
+        const value = requiredValue(args, index, argument)
+        if (value !== 'standard' && value !== 'high' && value !== 'master') {
+          throw new Error('--quality must be standard, high, or master')
+        }
+        output.quality = value
+        index += 1
         break
+      }
       case '--no-narration':
         config.narrationEnabled = false
         break

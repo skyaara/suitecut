@@ -4,12 +4,12 @@ import DocsLayout from '../../../layouts/DocsLayout.astro'
 
 const example = `test('opens the account', async ({ page, suitecut }) => {
   await page.goto('/account')
-  suitecut.narrate('The account page is open.')
+  await suitecut.narrate('The account page is open.')
 
   const billing = page.getByRole('link', { name: 'Billing' })
   await suitecut.highlight(billing, { borderColor: '#71352e' })
-  await billing.click()
-  suitecut.hold(500)
+  await suitecut.click(billing)
+  await suitecut.hold(500)
   await suitecut.checkpoint('Billing page')
 })`
 ---
@@ -18,7 +18,8 @@ const example = `test('opens the account', async ({ page, suitecut }) => {
   <p class="kicker">Field manual · 02</p>
   <h1>Fixture API</h1>
   <p>
-    The <code>suitecut</code> fixture adds presentation direction without delaying test actions.
+    The <code>suitecut</code> fixture records narration, captions, cursor movement, browser actions, and
+    presentation timing in the same Playwright flow.
   </p>
 
   <ul class="api-list">
@@ -27,28 +28,28 @@ const example = `test('opens the account', async ({ page, suitecut }) => {
       later events.
     </li>
     <li>
-      <strong>narrate(text, options?): void</strong>Queues local speech and an optional caption at
-      the current test time.
+      <strong>narrate(text, options?): Promise&lt;void&gt;</strong>Synthesizes local speech, records
+      its caption, and advances the presentation by the measured clip duration.
     </li>
     <li>
       <strong>checkpoint(label, options?): Promise&lt;void&gt;</strong>Captures named PNG evidence
       and records it in the manifest.
     </li>
     <li>
-      <strong>highlight(locator, options?): Promise&lt;void&gt;</strong>Captures locator geometry
-      for an outline, fill, or spotlight callout.
+      <strong>highlight(locator, options?): Promise&lt;void&gt;</strong>Records an outline, fill, or
+      spotlight callout in the browser.
     </li>
     <li>
       <strong>zoom(locator, options?): Promise&lt;void&gt;</strong>Captures a target region for a
       closer camera crop.
     </li>
     <li>
-      <strong>hold(durationMs): void</strong>Adds presentation time to the render without sleeping
-      in the test.
+      <strong>hold(durationMs): Promise&lt;void&gt;</strong>Keeps the browser recording on the
+      current state for the requested duration.
     </li>
   </ul>
 
-  <h2>A directed test</h2>
+  <h2>A recorded test</h2>
   <CodeBlock code={example} />
 
   <h2>Validation</h2>

@@ -11,6 +11,8 @@ import {
   parseHighlightOptions,
   parseHoldInput,
   parseNarrationInput,
+  parsePointerActionOptions,
+  parseScrollOptions,
   parseZoomOptions,
 } from '../src/validation.js'
 
@@ -42,9 +44,11 @@ function expectZodIssue(
 describe('SuiteCut fixture input validation', () => {
   it('parses a complete capture profile', () => {
     const options = {
+      viewport: { width: 1600, height: 900 },
       size: { width: 3840, height: 2160 },
       framesPerSecond: 60 as const,
       quality: 100,
+      narrationTailMs: 250,
     }
 
     expect(parseCaptureOptions(options)).toEqual(options)
@@ -52,8 +56,12 @@ describe('SuiteCut fixture input validation', () => {
 
   it.each<[UntrustedInput, PropertyKey[], z.core.$ZodIssue['code']]>([
     [{ size: { width: 0, height: 2160 } }, ['size', 'width'], 'too_small'],
+    [{ size: { width: 3839, height: 2160 } }, ['size', 'width'], 'not_multiple_of'],
+    [{ viewport: { width: 0, height: 900 } }, ['viewport', 'width'], 'too_small'],
     [{ framesPerSecond: 24 }, ['framesPerSecond'], 'invalid_union'],
     [{ quality: 101 }, ['quality'], 'too_big'],
+    [{ mode: 'legacy' }, [], 'unrecognized_keys'],
+    [{ narrationTailMs: -1 }, ['narrationTailMs'], 'too_small'],
     [{ bitrate: 10_000_000 }, [], 'unrecognized_keys'],
   ])('rejects invalid capture options', (options, path, code) => {
     expectZodIssue(() => parseCaptureOptions(options as never), path, code)
@@ -160,6 +168,45 @@ describe('SuiteCut fixture input validation', () => {
     [{ durationMs: 100 }, [], 'unrecognized_keys'],
   ])('rejects invalid zoom options', (options, path, code) => {
     expectZodIssue(() => parseZoomOptions(options as never), path, code)
+  })
+
+  it('parses pointer action timing', () => {
+    const options = {
+      moveDurationMs: 420,
+      settleMs: 80,
+      waitForAnimations: true,
+      animationTimeoutMs: 2_500,
+    }
+    expect(parsePointerActionOptions(options)).toEqual(options)
+  })
+
+  it.each<[UntrustedInput, PropertyKey[], z.core.$ZodIssue['code']]>([
+    [{ moveDurationMs: -1 }, ['moveDurationMs'], 'too_small'],
+    [{ animationTimeoutMs: Number.NaN }, ['animationTimeoutMs'], 'invalid_type'],
+    [{ cursorDurationMs: 100 }, [], 'unrecognized_keys'],
+  ])('rejects invalid pointer action options', (options, path, code) => {
+    expectZodIssue(() => parsePointerActionOptions(options as never), path, code)
+  })
+
+  it('parses native scroll options', () => {
+    const options = {
+      behavior: 'smooth' as const,
+      block: 'center' as const,
+      inline: 'nearest' as const,
+      settleMs: 120,
+      timeoutMs: 2_000,
+    }
+    expect(parseScrollOptions(options)).toEqual(options)
+  })
+
+  it.each<[UntrustedInput, PropertyKey[], z.core.$ZodIssue['code']]>([
+    [{ behavior: 'animated' }, ['behavior'], 'invalid_value'],
+    [{ block: 'middle' }, ['block'], 'invalid_value'],
+    [{ settleMs: -1 }, ['settleMs'], 'too_small'],
+    [{ timeoutMs: 0 }, ['timeoutMs'], 'too_small'],
+    [{ durationMs: 500 }, [], 'unrecognized_keys'],
+  ])('rejects invalid native scroll options', (options, path, code) => {
+    expectZodIssue(() => parseScrollOptions(options as never), path, code)
   })
 
   it('parses valid captured geometry', () => {

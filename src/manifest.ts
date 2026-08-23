@@ -9,7 +9,6 @@ import {
   SuiteCutViewportSchema,
   SuiteCutZoomOptionsSchema,
 } from './schemas.js'
-import { deriveSourceStartedAt } from './timing.js'
 import { type SuiteCutEventAttachment, type SuiteCutManifest } from './types.js'
 import { type UntrustedInput } from './untrusted.js'
 
@@ -223,17 +222,6 @@ const EventAttachmentSchema = z
           code: 'custom',
           message: 'unknown video page',
           path: ['videos', index, 'pageId'],
-        })
-      }
-      const expectedStart = deriveSourceStartedAt(
-        video.firstFrameEpochMs,
-        attachment.clock.originEpochMs,
-      )
-      if (video.sourceStartedAtMs !== expectedStart) {
-        context.addIssue({
-          code: 'custom',
-          message: 'source start does not match first frame',
-          path: ['videos', index, 'sourceStartedAtMs'],
         })
       }
     }
@@ -580,18 +568,6 @@ const AttemptSchema = z
         })
       }
       timingMedia.add(timing.mediaId)
-
-      const expectedStart = deriveSourceStartedAt(
-        timing.firstFrameEpochMs,
-        attempt.clock.originEpochMs,
-      )
-      if (timing.sourceStartedAtMs !== expectedStart) {
-        context.addIssue({
-          code: 'custom',
-          message: 'source start does not match first frame',
-          path: ['videoTiming', index, 'sourceStartedAtMs'],
-        })
-      }
     }
     if (timingPages.size !== attempt.pages.length) {
       context.addIssue({

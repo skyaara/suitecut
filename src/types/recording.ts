@@ -51,6 +51,7 @@ export interface SuiteCutActiveScreencast {
   outputPath: FilePath
   attachmentName: string
   firstFrameEpochMs?: EpochMilliseconds
+  sourceStartedAtMs?: Milliseconds
 }
 
 export interface SuiteCutEventAttachment {
@@ -79,6 +80,7 @@ export interface SuiteCutRecordingSession {
   selectPage(page: Page): SuiteCutPageId
   nextEventId(): SuiteCutEventId
   record(event: SuiteCutEvent): void
+  withCapturePaused<T>(operation: () => Promise<T>): Promise<T>
   endRecording(): Promise<void>
   seal(): Promise<SuiteCutEventAttachment>
 }

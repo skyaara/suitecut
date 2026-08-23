@@ -164,10 +164,10 @@ describe('manifest decoding', () => {
     expectSchemaError(manifest, 'tests[0].attempts[0].videoTiming[0].pageId')
   })
 
-  it('validates first-frame timing against the attempt clock', () => {
+  it('accepts timing after capture preparation is excluded', () => {
     const manifest = cloneManifest()
-    attempt(manifest).videoTiming[0]!.sourceStartedAtMs = 181
-    expectSchemaError(manifest, 'tests[0].attempts[0].videoTiming[0].sourceStartedAtMs')
+    attempt(manifest).videoTiming[0]!.sourceStartedAtMs = 0
+    expect(decodeManifest(manifest)).toEqual(manifest)
   })
 
   it('keeps retry timelines separate', () => {
