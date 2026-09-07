@@ -69,9 +69,12 @@ try {
     },
   })
   assert.equal(report.status, 'rendered')
+  // Startup padding and the result hold can split one page into adjacent edits.
+  // Verify page transitions independently of those timing-dependent boundaries.
+  const renderedPages = report.edits.map((edit) => edit.pageId)
   assert.deepEqual(
-    report.edits.map((edit) => edit.pageId),
-    [mainPage.id, popupPage.id, mainPage.id, mainPage.id],
+    renderedPages.filter((pageId, index) => index === 0 || pageId !== renderedPages[index - 1]),
+    [mainPage.id, popupPage.id, mainPage.id],
   )
   const persistedReport = await readFile(`${outputPath}.suitecut.json`, 'utf8')
   assert(!persistedReport.includes(directory), 'Render report leaked its temporary project path')
