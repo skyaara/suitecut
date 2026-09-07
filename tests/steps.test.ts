@@ -1,7 +1,7 @@
 import { type TestStep } from '@playwright/test/reporter'
 import { describe, expect, it } from 'vitest'
 
-import { normalizeExecutionSteps } from '../src/steps.js'
+import { filterExecutionSteps, normalizeExecutionSteps } from '../src/steps.js'
 import { type SuiteCutAttemptClock } from '../src/types.js'
 
 const clock: SuiteCutAttemptClock = {
@@ -123,5 +123,58 @@ describe('reporter step normalization', () => {
       durationMs: 20,
       outcome: 'passed',
     })
+  })
+
+  it('filters configured categories and reconnects retained descendants', () => {
+    const steps = [
+      {
+        id: 'step-1',
+        title: 'setup',
+        category: 'fixture',
+        atMs: 0,
+        durationMs: 20,
+        outcome: 'passed',
+      },
+      {
+        id: 'step-2',
+        parentStepId: 'step-1',
+        title: 'click',
+        category: 'pw:api',
+        atMs: 20,
+        durationMs: 30,
+        outcome: 'passed',
+      },
+      {
+        id: 'step-3',
+        parentStepId: 'step-2',
+        title: 'internal hook',
+        category: 'hook',
+        atMs: 50,
+        durationMs: 10,
+        outcome: 'passed',
+      },
+      {
+        id: 'step-4',
+        parentStepId: 'step-3',
+        title: 'assertion',
+        category: 'expect',
+        atMs: 60,
+        durationMs: 5,
+        outcome: 'passed',
+      },
+    ] as const
+
+    expect(filterExecutionSteps(steps, ['pw:api', 'expect'])).toEqual([
+      {
+        id: 'step-2',
+        title: 'click',
+        category: 'pw:api',
+        atMs: 20,
+        durationMs: 30,
+        outcome: 'passed',
+      },
+      { ...steps[3], parentStepId: 'step-2' },
+    ])
+    expect(filterExecutionSteps(steps, [])).toEqual([])
   })
 })

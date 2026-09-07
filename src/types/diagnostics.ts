@@ -13,6 +13,7 @@ export type SuiteCutDiagnosticCode =
   | 'POINTER_OUTSIDE_VIEWPORT'
   | 'LOCATOR_GEOMETRY_MISSING'
   | 'OPTIONAL_TRACK_OMITTED'
+  | 'RENDER_FAILED'
   | 'FFMPEG_FAILED'
 
 export interface SuiteCutDiagnostic {

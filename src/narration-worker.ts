@@ -3,11 +3,13 @@ import { mkdir } from 'node:fs/promises'
 import { dirname } from 'node:path'
 import { parentPort } from 'node:worker_threads'
 
+import { loadAudioPlugin } from './audio-plugin-loader.js'
 import { synthesizeKokoro } from './kokoro.js'
 import {
-  parseNarrationWorkerRequest,
+  parseNarrationWorkerMessage,
   type SuiteCutNarrationWorkerFailure,
   type SuiteCutNarrationWorkerRequest,
+  type SuiteCutNarrationWorkerResponse,
   type SuiteCutNarrationWorkerSuccess,
 } from './narration-worker-protocol.js'
 import { toError } from './untrusted.js'
@@ -50,18 +52,48 @@ if (port === null) {
   throw new Error('SuiteCut narration worker requires a parent port')
 }
 const workerPort = port
+const plugins = new Map<string, Awaited<ReturnType<typeof loadAudioPlugin>>>()
+
+async function audioPlugin(request: SuiteCutNarrationWorkerRequest) {
+  const reference = request.plugin
+  if (reference === undefined) {
+    throw new Error(`SuiteCut audio plugin is not configured for provider ${request.provider}`)
+  }
+  let plugin = plugins.get(request.provider)
+  if (plugin === undefined) {
+    plugin = await loadAudioPlugin(reference)
+    plugins.set(request.provider, plugin)
+  }
+  return plugin
+}
 
 async function synthesize(request: SuiteCutNarrationWorkerRequest): Promise<void> {
   try {
     await mkdir(dirname(request.outputPath), { recursive: true })
+    let timing
     if (request.provider === 'kokoro') {
-      await synthesizeKokoro(request.text, request.voice, request.speed, request.outputPath)
-    } else {
+      timing = await synthesizeKokoro(
+        request.text,
+        request.voice,
+        request.speed,
+        request.outputPath,
+      )
+    } else if (request.provider === 'macos-say') {
       await runSay(request)
+    } else {
+      const plugin = await audioPlugin(request)
+      await plugin.synthesize({
+        text: request.text,
+        voice: request.voice,
+        speed: request.speed,
+        outputPath: request.outputPath,
+        ...(request.plugin?.options === undefined ? {} : { options: request.plugin.options }),
+      })
     }
     const response: SuiteCutNarrationWorkerSuccess = {
       type: 'synthesized',
       jobId: request.jobId,
+      ...(timing === undefined ? {} : { timing }),
     }
     workerPort.postMessage(response)
   } catch (error) {
@@ -74,9 +106,38 @@ async function synthesize(request: SuiteCutNarrationWorkerRequest): Promise<void
   }
 }
 
+async function closeWorker(): Promise<void> {
+  try {
+    const results = await Promise.allSettled(
+      [...plugins.values()].map(async (plugin) => plugin.dispose?.()),
+    )
+    plugins.clear()
+    const errors = results.flatMap((result) =>
+      result.status === 'rejected' ? [toError(result.reason as UntrustedInput)] : [],
+    )
+    if (errors.length > 0) {
+      throw new AggregateError(errors, 'Failed to dispose SuiteCut audio plugins')
+    }
+    workerPort.postMessage({ type: 'closed' } satisfies SuiteCutNarrationWorkerResponse)
+  } catch (error) {
+    workerPort.postMessage({
+      type: 'close-failed',
+      error: serializeError(error as UntrustedInput),
+    } satisfies SuiteCutNarrationWorkerResponse)
+  }
+}
+
 let queue = Promise.resolve()
+let closing = false
 workerPort.on('message', (message: UntrustedInput) => {
-  const request = parseNarrationWorkerRequest(message)
+  const request = parseNarrationWorkerMessage(message)
+  if (request.type === 'close') {
+    if (closing) return
+    closing = true
+    queue = queue.then(closeWorker, closeWorker)
+    return
+  }
+  if (closing) return
 
   queue = queue.then(
     () => synthesize(request),

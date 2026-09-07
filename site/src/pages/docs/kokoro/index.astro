@@ -1,6 +1,10 @@
 ---
 import CodeBlock from '../../../components/CodeBlock.astro'
 import DocsLayout from '../../../layouts/DocsLayout.astro'
+import { sitePath } from '../../../lib/paths.js'
+
+const heartSample = sitePath('/audio/kokoro-af-heart.wav')
+const bellaSample = sitePath('/audio/kokoro-af-bella.wav')
 ---
 
 <DocsLayout
@@ -8,14 +12,13 @@ import DocsLayout from '../../../layouts/DocsLayout.astro'
   description="Use local Kokoro WASM narration in SuiteCut."
   section="kokoro"
 >
-  <p class="kicker">Field manual · 03</p>
   <h1>Kokoro speech</h1>
   <p>
     Kokoro 82M runs in a Node worker through <code>onnxruntime-web</code>. Inference stays local; no
-    hosted model API or speech key is required.
+    hosted speech API or key is required.
   </p>
 
-  <h2>Choose a voice</h2>
+  <h2 id="choose-a-voice">Choose a voice</h2>
   <CodeBlock
     code={`await suitecut.narrate('The final report is ready.', {
   voice: 'af_heart',
@@ -24,24 +27,70 @@ import DocsLayout from '../../../layouts/DocsLayout.astro'
 })`}
   />
   <p>
-    SuiteCut supports the 28 English Kokoro voices used by Spek. Useful starting points include
+    SuiteCut supports 28 English Kokoro voices. Useful starting points include
     <code>af_heart</code>, <code>af_bella</code>, <code>am_michael</code>, <code>bf_emma</code>, and
     <code>bm_george</code>.
   </p>
 
-  <h2>Bundled default</h2>
+  <h2 id="voice-samples">Listen to voices</h2>
+  <h3>Heart</h3>
   <p>
-    The npm package includes the quantized model, tokenizer, and <code>af_heart</code> voice. The default
-    voice works without a download or network request.
+    Voice <code>af_heart</code>. Speed <code>1</code>. Bundled and available offline. Sample text:
+    &quot;This is the Heart voice, generated locally by SuiteCut.&quot;
+  </p>
+  <audio aria-label="Kokoro Heart voice sample" controls preload="metadata" src={heartSample}>
+    <a href={heartSample}>Download the Kokoro Heart sample</a>
+  </audio>
+
+  <h3>Bella</h3>
+  <p>
+    Voice <code>af_bella</code>. Speed <code>1</code>. Downloads once, then uses the local cache.
+    Sample text: &quot;This is the Bella voice, generated locally by SuiteCut.&quot;
+  </p>
+  <audio aria-label="Kokoro Bella voice sample" controls preload="metadata" src={bellaSample}>
+    <a href={bellaSample}>Download the Kokoro Bella sample</a>
+  </audio>
+  <CodeBlock
+    code={`await suitecut.narrate('The final report is ready.', {
+  voice: 'af_bella',
+  speed: 1,
+})`}
+  />
+
+  <h2 id="bundled-files">Bundled default</h2>
+  <p>
+    The npm package includes the quantized model, tokenizer, and <code>af_heart</code> voice. These files
+    add about 89 MB to the installed package. The default voice works without a download or network request.
   </p>
   <div class="note">
-    Other supported voices download on first use and remain in the local cache. Set
-    <code>SUITECUT_MODEL_CACHE</code> to choose another cache directory.
+    Other supported voice profiles need network access on first use. SuiteCut downloads them from a
+    pinned upstream revision with a 30-second request timeout, then keeps them in the local cache.
+    Set <code>SUITECUT_MODEL_CACHE</code> to choose another cache directory.
   </div>
 
-  <h2>Timeline behavior</h2>
+  <h2 id="macos-voice">Use a macOS system voice</h2>
+  <p>
+    <code>macos-say</code> is optional and only works on macOS with an installed system voice. Kokoro
+    with <code>af_heart</code> remains the default on every platform.
+  </p>
+  <CodeBlock
+    code={`await suitecut.narrate('Use the installed system voice.', {
+  provider: 'macos-say',
+  voice: 'Samantha',
+})`}
+  />
+
+  <h2 id="timing">Timeline behavior</h2>
   <p>
     Narrations are serialized. SuiteCut pauses frame ingestion during synthesis, then records each
-    caption for the measured audio duration. Model startup time does not appear in the video.
+    caption for the measured audio duration. Model startup time does not appear in the video. After
+    five seconds, SuiteCut prints a notice so a cold model load is not mistaken for a stalled test.
+  </p>
+
+  <h2 id="other-models">Other models</h2>
+  <p>
+    Install another model runtime as an <a href="../audio-plugins">audio plugin</a>. SuiteCut keeps
+    those dependencies outside the core package and loads the selected provider in the narration
+    worker.
   </p>
 </DocsLayout>

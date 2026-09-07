@@ -6,7 +6,7 @@ import { type UntrustedInput } from '../src/untrusted.js'
 
 import { cloneManifest } from './fixtures/manifest.js'
 
-const viewport = { width: 1280, height: 720, deviceScaleFactor: 1, scrollX: 0, scrollY: 0 }
+const viewport = { width: 1280, height: 720, scrollX: 0, scrollY: 0 }
 
 function decodeEvent(event: SuiteCutEvent): SuiteCutEvent {
   const manifest = cloneManifest()
@@ -29,6 +29,13 @@ function expectEventError(event: UntrustedInput, path: string): void {
 describe('manifest event decoding', () => {
   it.each<SuiteCutEvent>([
     {
+      id: 'page-selected-1',
+      type: 'page-selected',
+      atMs: 5,
+      pageId: 'page-main',
+      reason: 'closed',
+    },
+    {
       id: 'narration-1',
       type: 'narration',
       atMs: 10,
@@ -46,6 +53,7 @@ describe('manifest event decoding', () => {
       pageId: 'page-main',
       label: 'Project created',
       artifactId: 'artifact-checkpoint',
+      durationMs: 500,
       viewport,
     },
     {
@@ -141,7 +149,7 @@ describe('manifest event decoding', () => {
         pageId: 'page-main',
         rect: { x: 840, y: 120, width: 280, height: 96 },
         viewport,
-        options: { scale: 1.4, holdMs: 1_200 },
+        options: { scale: 1.2, holdMs: 1_200 },
       },
     ]
 
@@ -183,6 +191,17 @@ describe('manifest event decoding', () => {
       'non-finite time',
       { id: 'event-1', type: 'narration', atMs: Number.NaN, pageId: 'page-main', text: 'No.' },
       'atMs',
+    ],
+    [
+      'invalid page-selection reason',
+      {
+        id: 'event-1',
+        type: 'page-selected',
+        atMs: 1,
+        pageId: 'page-main',
+        reason: 'guessed',
+      },
+      'reason',
     ],
     [
       'invalid opacity',

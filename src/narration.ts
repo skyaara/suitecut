@@ -1,10 +1,18 @@
 import { randomUUID } from 'node:crypto'
+import { rm } from 'node:fs/promises'
 
-import { type TestInfo } from '@playwright/test'
-
+import { type SuiteCutArtifactSink } from './artifact-sink.js'
+import { writeTextFileAtomic } from './atomic-file.js'
+import { resolveAudioPluginReferences } from './audio-plugin-loader.js'
+import { encodeWordTimingArtifact } from './captions.js'
 import { probeMediaDurationMs } from './media.js'
 import { SuiteCutNarrationWorker } from './narration-worker-client.js'
-import { type SuiteCutNarrationEvent, type SuiteCutRecordingSession } from './types.js'
+import { type SuiteCutAudioPluginReference } from './schemas.js'
+import {
+  type SuiteCutNarrationEvent,
+  type SuiteCutRecordingSession,
+  type SuiteCutWordTimingArtifact,
+} from './types.js'
 import { toError, type UntrustedInput } from './untrusted.js'
 
 interface CompletedNarration {
@@ -17,6 +25,12 @@ interface CompletedNarration {
   provider: string
   voice: string
   durationMs: number
+  timingArtifact?: {
+    artifact: SuiteCutWordTimingArtifact
+    artifactId: string
+    attachmentName: string
+    outputPath: string
+  }
 }
 
 interface FailedNarration {
@@ -28,29 +42,58 @@ interface FailedNarration {
 type NarrationResult = CompletedNarration | FailedNarration
 
 export interface SuiteCutNarrationPipeline {
-  enqueue(event: SuiteCutNarrationEvent): Promise<number>
+  enqueue(event: SuiteCutNarrationEvent): Promise<SuiteCutNarrationClip>
   finish(): Promise<void>
 }
 
+export interface SuiteCutNarrationClip {
+  durationMs: number
+  timing?: SuiteCutWordTimingArtifact
+}
+
 export function createNarrationPipeline(
-  testInfo: TestInfo,
+  output: SuiteCutArtifactSink,
   session: SuiteCutRecordingSession,
+  audioPlugins: readonly SuiteCutAudioPluginReference[] = [],
+  signal?: AbortSignal,
 ): SuiteCutNarrationPipeline {
   let worker: SuiteCutNarrationWorker | undefined
+  let finishPromise: Promise<void> | undefined
   const jobs: Promise<NarrationResult>[] = []
+  const plugins = resolveAudioPluginReferences(audioPlugins)
 
-  const enqueue = (event: SuiteCutNarrationEvent): Promise<number> => {
+  const enqueue = (event: SuiteCutNarrationEvent): Promise<SuiteCutNarrationClip> => {
+    signal?.throwIfAborted()
+    if (finishPromise !== undefined) {
+      return Promise.reject(new Error('SuiteCut narration is already finishing'))
+    }
     const artifactId = randomUUID()
+    const timingArtifactId = randomUUID()
     const provider = event.provider ?? 'kokoro'
-    const contentType = provider === 'kokoro' ? 'audio/wav' : 'audio/aiff'
-    const extension = provider === 'kokoro' ? 'wav' : 'aiff'
-    const attachmentName = `suitecut-narration-${artifactId}.${extension}`
-    const outputPath = testInfo.outputPath(attachmentName)
+    const contentType = provider === 'macos-say' ? 'audio/aiff' : 'audio/wav'
+    const extension = provider === 'macos-say' ? 'aiff' : 'wav'
+    const attachmentName = `suitecut-narration-${session.attemptId}-${artifactId}.${extension}`
+    const outputPath = output.pathFor(attachmentName)
+    const timingAttachmentName = `suitecut-word-timings-${session.attemptId}-${timingArtifactId}.json`
+    const timingOutputPath = output.pathFor(timingAttachmentName)
     const voice = event.voice ?? (provider === 'kokoro' ? 'af_heart' : 'default')
     const speed = event.speed ?? 1
+    const plugin = plugins.get(provider)
 
     try {
-      worker ??= new SuiteCutNarrationWorker()
+      if (provider !== 'kokoro' && provider !== 'macos-say' && plugin === undefined) {
+        throw new Error(`SuiteCut audio plugin is not configured for provider ${provider}`)
+      }
+      worker ??= new SuiteCutNarrationWorker(signal)
+      const slowNotice =
+        provider === 'kokoro'
+          ? setTimeout(() => {
+              process.stderr.write(
+                '[SuiteCut] Kokoro is still preparing local narration. The recording clock remains paused.\n',
+              )
+            }, 5_000)
+          : undefined
+      slowNotice?.unref()
       const synthesis = worker
         .synthesize({
           jobId: artifactId,
@@ -59,21 +102,45 @@ export function createNarrationPipeline(
           voice,
           speed,
           outputPath,
+          ...(plugin === undefined ? {} : { plugin }),
         })
-        .then(async () => ({
-          durationMs: await probeMediaDurationMs(outputPath),
-        }))
+        .finally(() => {
+          if (slowNotice !== undefined) clearTimeout(slowNotice)
+        })
+        .then(async (response) => {
+          const durationMs = await probeMediaDurationMs(outputPath)
+          if (response.timing === undefined) return { durationMs }
+          const timingArtifact: SuiteCutWordTimingArtifact = {
+            schemaVersion: 1,
+            type: 'word-timings',
+            sourceEventId: event.id,
+            text: response.timing.text,
+            durationMs,
+            words: response.timing.words,
+          }
+          await writeTextFileAtomic(timingOutputPath, encodeWordTimingArtifact(timingArtifact))
+          return {
+            durationMs,
+            timingArtifact: {
+              artifact: timingArtifact,
+              artifactId: timingArtifactId,
+              attachmentName: timingAttachmentName,
+              outputPath: timingOutputPath,
+            },
+          }
+        })
       const job = synthesis.then<NarrationResult, NarrationResult>(
-        ({ durationMs }) => ({
+        ({ durationMs, timingArtifact }) => ({
           status: 'completed',
           artifactId,
           attachmentName,
           outputPath,
           eventId: event.id,
           contentType,
-          provider: provider === 'kokoro' ? 'kokoro-82m-wasm' : 'macos-say',
+          provider: provider === 'kokoro' ? 'kokoro-82m-wasm' : provider,
           voice,
           durationMs,
+          ...(timingArtifact === undefined ? {} : { timingArtifact }),
         }),
         (error: UntrustedInput) => ({
           status: 'failed',
@@ -81,22 +148,34 @@ export function createNarrationPipeline(
           error: toError(error),
         }),
       )
-      jobs.push(job)
-      return synthesis.then(({ durationMs }) => durationMs)
+      if (session.retainArtifacts !== false) jobs.push(job)
+      const clip = synthesis.then(({ durationMs, timingArtifact }) => ({
+        durationMs,
+        ...(timingArtifact === undefined ? {} : { timing: timingArtifact.artifact }),
+      }))
+      return session.retainArtifacts === false
+        ? clip.finally(async () => {
+            await Promise.all([
+              rm(outputPath, { force: true }),
+              rm(timingOutputPath, { force: true }),
+            ])
+          })
+        : clip
     } catch (error) {
       const failure = error instanceof Error ? error : new Error(String(error))
-      jobs.push(
-        Promise.resolve<FailedNarration>({
-          status: 'failed',
-          eventId: event.id,
-          error: failure,
-        }),
-      )
+      if (session.retainArtifacts !== false)
+        jobs.push(
+          Promise.resolve<FailedNarration>({
+            status: 'failed',
+            eventId: event.id,
+            error: failure,
+          }),
+        )
       return Promise.reject(failure)
     }
   }
 
-  const finish = async (): Promise<void> => {
+  const finishOnce = async (): Promise<void> => {
     const results = await Promise.all(jobs)
     const errors: Error[] = []
 
@@ -112,10 +191,7 @@ export function createNarrationPipeline(
       }
 
       try {
-        await testInfo.attach(result.attachmentName, {
-          path: result.outputPath,
-          contentType: result.contentType,
-        })
+        await output.attach(result.attachmentName, result.outputPath, result.contentType)
         session.artifacts.push({
           id: result.artifactId,
           attachmentName: result.attachmentName,
@@ -126,6 +202,21 @@ export function createNarrationPipeline(
           provider: result.provider,
           voice: result.voice,
         })
+        if (result.timingArtifact !== undefined) {
+          await output.attach(
+            result.timingArtifact.attachmentName,
+            result.timingArtifact.outputPath,
+            'application/json',
+          )
+          session.artifacts.push({
+            id: result.timingArtifact.artifactId,
+            attachmentName: result.timingArtifact.attachmentName,
+            role: 'captions',
+            contentType: 'application/json',
+            createdAtMs: session.now(),
+            sourceEventId: result.eventId,
+          })
+        }
       } catch (error) {
         errors.push(error instanceof Error ? error : new Error(String(error)))
       }
@@ -142,6 +233,11 @@ export function createNarrationPipeline(
     if (errors.length > 1) {
       throw new AggregateError(errors, 'Failed to finish SuiteCut narration audio')
     }
+  }
+
+  const finish = (): Promise<void> => {
+    finishPromise ??= finishOnce()
+    return finishPromise
   }
 
   return { enqueue, finish }

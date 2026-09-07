@@ -1,6 +1,7 @@
-import { expect, test } from 'suitecut'
+import { expect, test } from 'suitecut/test'
 
 test('renders a polished product tour', async ({ page, suitecut }) => {
+  test.setTimeout(120_000)
   await page.setViewportSize({ width: 1280, height: 720 })
   await page.setContent(`
     <style>

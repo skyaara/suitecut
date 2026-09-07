@@ -3,6 +3,10 @@
     "target": "ES2023",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
+    "baseUrl": ".",
+    "paths": {
+      "suitecut/audio-plugin": ["./src/audio-plugin.ts"]
+    },
     "lib": ["ES2023", "DOM"],
     "types": ["node"],
     "strict": true,
@@ -17,6 +21,7 @@
     "verbatimModuleSyntax": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
+    "allowJs": true,
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
@@ -24,9 +29,11 @@
   },
   "include": [
     "src/**/*.ts",
+    "plugins/**/*.ts",
     "tests/**/*.ts",
     "examples/**/*.ts",
     "benchmarks/**/*.ts",
+    "scripts/**/*.mjs",
     "playwright.config.ts",
     "vitest.config.ts"
   ]

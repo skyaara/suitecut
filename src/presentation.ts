@@ -1,6 +1,11 @@
-import { type Page } from '@playwright/test'
+import { type Page } from 'playwright'
 
-import { type SuiteCutHighlightOptions, type SuiteCutPoint, type SuiteCutRect } from './types.js'
+import {
+  type SuiteCutHighlightOptions,
+  type SuiteCutPoint,
+  type SuiteCutRect,
+  type SuiteCutWordTiming,
+} from './types.js'
 
 interface PresentationHighlightInput {
   rect: SuiteCutRect
@@ -11,6 +16,7 @@ interface PresentationHighlightInput {
 interface PresentationCaptionInput {
   text: string
   durationMs: number
+  words?: SuiteCutWordTiming[]
 }
 
 interface PresentationCursorInput {
@@ -20,7 +26,18 @@ interface PresentationCursorInput {
 
 /** Installs SuiteCut's non-interactive recording layer in the current document. */
 export function installSuiteCutPresentation(): void {
-  if (document.documentElement.querySelector('[data-suitecut-presentation]') !== null) return
+  const syncZoom = (host: HTMLElement): void => {
+    const computedZoom = Number.parseFloat(getComputedStyle(document.documentElement).zoom)
+    const rootZoom = Number.isFinite(computedZoom) && computedZoom > 0 ? computedZoom : 1
+    host.style.setProperty('zoom', String(1 / rootZoom))
+  }
+  const existingHost = document.documentElement.querySelector<HTMLElement>(
+    '[data-suitecut-presentation]',
+  )
+  if (existingHost !== null) {
+    syncZoom(existingHost)
+    return
+  }
 
   const host = document.createElement('div')
   host.setAttribute('data-suitecut-presentation', '')
@@ -60,8 +77,23 @@ export function installSuiteCutPresentation(): void {
     }
     .highlight {
       position: absolute;
+      box-sizing: border-box;
       pointer-events: none;
-      will-change: opacity, transform;
+      will-change: opacity, filter;
+    }
+    .highlight-label {
+      position: absolute;
+      left: -1px;
+      bottom: calc(100% + 8px);
+      max-width: 280px;
+      padding: 5px 8px;
+      border-radius: 6px;
+      color: white;
+      background: rgb(2 6 23 / 90%);
+      font: 650 13px/1.25 ui-sans-serif, system-ui, sans-serif;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .caption {
       position: absolute;
@@ -72,12 +104,19 @@ export function installSuiteCutPresentation(): void {
       border: 1px solid rgb(255 255 255 / 13%);
       border-radius: 13px;
       color: white;
-      background: rgb(2 6 23 / 88%);
+      background: rgb(2 6 23);
       box-shadow: 0 10px 36px rgb(0 0 0 / 47%);
       font: 650 24px/1.35 ui-sans-serif, system-ui, sans-serif;
       text-align: center;
       transform: translateX(-50%);
-      will-change: opacity, transform;
+    }
+    .caption-word {
+      border-radius: 5px;
+      transition: color 80ms linear, background-color 80ms linear;
+    }
+    .caption-word-current {
+      color: #fde047;
+      background: rgb(250 204 21 / 18%);
     }
     .ripple {
       position: absolute;
@@ -97,6 +136,7 @@ export function installSuiteCutPresentation(): void {
   layer.append(cursor)
   shadow.append(style, layer)
   document.documentElement.append(host)
+  syncZoom(host)
 }
 
 /** Removes SuiteCut's recording layer from the current document. */
@@ -191,17 +231,36 @@ export async function showSuiteCutHighlight(input: PresentationHighlightInput): 
     const backdropOpacity = input.options.backdropOpacity ?? 0.45
     highlight.style.boxShadow = `0 0 0 9999px color-mix(in srgb, ${backdrop} ${backdropOpacity * 100}%, transparent)`
   }
+  if (input.options.label !== undefined) {
+    const label = document.createElement('span')
+    label.className = 'highlight-label'
+    label.setAttribute('data-suitecut-highlight-label', '')
+    label.textContent = input.options.label
+    if (input.rect.y - padding < 48) {
+      label.style.top = 'calc(100% + 8px)'
+      label.style.bottom = 'auto'
+    }
+    if (input.rect.x - padding + 280 > window.innerWidth) {
+      label.style.right = '-1px'
+      label.style.left = 'auto'
+    }
+    highlight.append(label)
+  }
   layer.append(highlight)
 
-  const enterDuration = input.options.enter?.durationMs ?? 180
-  const exitDuration = input.options.exit?.durationMs ?? 140
+  const enterType = input.options.enter?.type ?? 'fade'
+  const exitType = input.options.exit?.type ?? 'fade'
+  const enterDuration = enterType === 'none' ? 0 : (input.options.enter?.durationMs ?? 180)
+  const exitDuration = exitType === 'none' ? 0 : (input.options.exit?.durationMs ?? 140)
   const stableDuration = Math.max(0, input.durationMs - enterDuration - exitDuration)
-  const enterScale = input.options.enter?.type?.includes('scale') === true ? 0.94 : 1
-  const exitScale = input.options.exit?.type?.includes('scale') === true ? 0.96 : 1
+  const enterOpacity = enterType.includes('fade') ? 0 : 1
+  const exitOpacity = exitType.includes('fade') ? 0 : 1
+  const enterFilter = enterType.includes('scale') ? 'brightness(1.35)' : 'brightness(1)'
+  const exitFilter = exitType.includes('scale') ? 'brightness(1.25)' : 'brightness(1)'
   const enter = highlight.animate(
     [
-      { opacity: 0, transform: `scale(${enterScale})` },
-      { opacity: 1, transform: 'scale(1)' },
+      { opacity: enterOpacity, filter: enterFilter },
+      { opacity: 1, filter: 'brightness(1)' },
     ],
     {
       duration: enterDuration,
@@ -213,8 +272,8 @@ export async function showSuiteCutHighlight(input: PresentationHighlightInput): 
   await new Promise((resolve) => window.setTimeout(resolve, stableDuration))
   const exit = highlight.animate(
     [
-      { opacity: 1, transform: 'scale(1)' },
-      { opacity: 0, transform: `scale(${exitScale})` },
+      { opacity: 1, filter: 'brightness(1)' },
+      { opacity: exitOpacity, filter: exitFilter },
     ],
     {
       duration: exitDuration,
@@ -237,29 +296,35 @@ export async function showSuiteCutCaption(input: PresentationCaptionInput): Prom
   const caption = document.createElement('div')
   caption.className = 'caption'
   caption.setAttribute('data-suitecut-caption', '')
-  caption.textContent = input.text
+  const wordElements: HTMLElement[] = []
+  let textOffset = 0
+  for (const word of input.words ?? []) {
+    caption.append(document.createTextNode(input.text.slice(textOffset, word.startOffset)))
+    const element = document.createElement('span')
+    element.className = 'caption-word'
+    element.textContent = word.text
+    caption.append(element)
+    wordElements.push(element)
+    textOffset = word.endOffset
+  }
+  if (wordElements.length === 0) caption.textContent = input.text
+  else caption.append(document.createTextNode(input.text.slice(textOffset)))
   layer.append(caption)
-  const enterDuration = Math.min(180, input.durationMs / 2)
-  const exitDuration = Math.min(140, input.durationMs / 2)
-  const stableDuration = Math.max(0, input.durationMs - enterDuration - exitDuration)
-  const enter = caption.animate(
-    [
-      { opacity: 0, transform: 'translate(-50%, 14px)' },
-      { opacity: 1, transform: 'translate(-50%, 0)' },
-    ],
-    { duration: enterDuration, easing: 'ease-out', fill: 'both' },
-  )
-  await enter.finished
-  await new Promise((resolve) => window.setTimeout(resolve, stableDuration))
-  const exit = caption.animate(
-    [
-      { opacity: 1, transform: 'translate(-50%, 0)' },
-      { opacity: 0, transform: 'translate(-50%, 8px)' },
-    ],
-    { duration: exitDuration, easing: 'ease-in', fill: 'both' },
-  )
-  await exit.finished
-  caption.remove()
+  const timers: number[] = []
+  for (const [index, word] of (input.words ?? []).entries()) {
+    const element = wordElements[index]
+    if (element === undefined) continue
+    timers.push(
+      window.setTimeout(() => element.classList.add('caption-word-current'), word.startMs),
+      window.setTimeout(() => element.classList.remove('caption-word-current'), word.endMs),
+    )
+  }
+  try {
+    await new Promise((resolve) => window.setTimeout(resolve, input.durationMs))
+  } finally {
+    for (const timer of timers) window.clearTimeout(timer)
+    caption.remove()
+  }
 }
 
 /** Waits for application animations without waiting for SuiteCut's own recording layer. */
@@ -310,9 +375,14 @@ export async function showPresentationCaption(
   page: Page,
   text: string,
   durationMs: number,
+  words?: SuiteCutWordTiming[],
 ): Promise<void> {
   await ensurePresentation(page)
-  await page.evaluate(showSuiteCutCaption, { text, durationMs })
+  await page.evaluate(showSuiteCutCaption, {
+    text,
+    durationMs,
+    ...(words === undefined ? {} : { words }),
+  })
 }
 
 export async function waitForPresentationAnimations(page: Page, timeoutMs: number): Promise<void> {

@@ -1,0 +1,59 @@
+{
+  "name": "@suitecut/audio-sherpa-core",
+  "version": "1.0.0",
+  "description": "Shared Sherpa-ONNX WebAssembly runtime for SuiteCut audio plugins.",
+  "keywords": [
+    "suitecut",
+    "sherpa-onnx",
+    "webassembly",
+    "text-to-speech"
+  ],
+  "homepage": "https://github.com/skyaara/suitecut/tree/main/plugins/sherpa-core",
+  "bugs": {
+    "url": "https://github.com/skyaara/suitecut/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/skyaara/suitecut.git",
+    "directory": "plugins/sherpa-core"
+  },
+  "type": "module",
+  "license": "MIT",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "pnpm clean:dist && tsc -p tsconfig.json",
+    "check": "tsc --noEmit -p tsconfig.json",
+    "clean:dist": "node ../../scripts/clean-plugin-dist.mjs",
+    "prepack": "pnpm build"
+  },
+  "peerDependencies": {
+    "suitecut": ">=1.0.0 <2"
+  },
+  "peerDependenciesMeta": {
+    "suitecut": {
+      "optional": true
+    }
+  },
+  "dependencies": {
+    "sherpa-onnx": "^1.13.6",
+    "zod": "^4.4.3"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  }
+}

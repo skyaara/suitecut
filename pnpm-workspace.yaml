@@ -1,0 +1,8 @@
+packages:
+  - 'site'
+  - 'plugins/*'
+allowBuilds:
+  esbuild: true
+  protobufjs: true
+  unrs-resolver: true
+linkWorkspacePackages: true

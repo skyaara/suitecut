@@ -8,6 +8,7 @@ if (manifestPath === undefined || manifestPath.trim() === '') {
 }
 
 export default defineConfig({
+  forbidOnly: !!process.env.CI,
   testDir: '.',
   testMatch: 'public-sites.spec.ts',
   outputDir: resolve('.suitecut', 'benchmarks', 'playwright-results'),

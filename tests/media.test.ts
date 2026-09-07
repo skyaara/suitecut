@@ -9,6 +9,11 @@ describe('FFprobe metadata decoder', () => {
         {
           codec_type: 'video',
           codec_name: 'h264',
+          pix_fmt: 'yuvj420p',
+          color_range: 'pc',
+          color_space: 'bt709',
+          color_transfer: 'bt709',
+          color_primaries: 'bt709',
           width: 1280,
           height: 720,
           duration: '1.25',
@@ -20,6 +25,11 @@ describe('FFprobe metadata decoder', () => {
     })
     expect(document.format.duration).toBe(1.25)
     expect(document.streams).toHaveLength(1)
+    expect(document.streams[0]).toMatchObject({
+      pix_fmt: 'yuvj420p',
+      color_range: 'pc',
+      color_space: 'bt709',
+    })
   })
 
   it.each([

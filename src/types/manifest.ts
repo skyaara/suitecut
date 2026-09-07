@@ -45,6 +45,7 @@ export interface SuiteCutTest {
 }
 
 export interface SuiteCutManifest {
+  schemaVersion: 1
   startedAt: ISODateTime
   endedAt: ISODateTime
   status: SuiteCutRunStatus

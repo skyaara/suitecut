@@ -3,7 +3,7 @@ import { resolve } from 'node:path'
 
 import { type Locator, type Page } from '@playwright/test'
 
-import { expect, test } from 'suitecut'
+import { expect, test } from 'suitecut/test'
 
 type SiteName = 'flickks' | 'llmgames' | 'spek'
 

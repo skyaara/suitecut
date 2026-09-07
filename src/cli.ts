@@ -12,17 +12,26 @@ const USAGE = `SuiteCut
 
 Usage:
   suitecut test [--manifest <path>] -- [Playwright test options]
-  suitecut render --manifest <path> --output <video.mp4|video.webm> [options]
+  suitecut render --manifest <path> --output <video-path> [options]
 
 Render options:
-  --test-id <id>       Select a test. Defaults to the first test.
-  --retry <number>     Select a retry. Defaults to the latest attempt.
-  --format <format>    mp4 or webm. Defaults from the output extension.
-  --width <pixels>     Output width. Default 3840.
-  --height <pixels>    Output height. Default 2160.
-  --fps <30|60>        Output frame rate. Default 60.
-  --quality <profile>  standard, high, or master. Default high.
-  --no-narration       Omit narration audio.
+  --test-id <id>          Select a test. Defaults to the first test.
+  --retry <number>        Select a retry. Defaults to the latest attempt.
+  --container <format>    mp4, webm, mov, or mkv. Defaults from the output extension.
+  --format <format>       Deprecated alias for --container.
+  --video-codec <name>    FFmpeg video encoder. Defaults for the container.
+  --audio-codec <name>    FFmpeg audio encoder. Defaults for the container.
+  --pixel-format <name>   FFmpeg output pixel format. Defaults for the video encoder.
+  --color-range <range>   auto, full, or limited. Default auto.
+  --width <pixels>        Output width. Default 1920.
+  --height <pixels>       Output height. Default 1080.
+  --fps <30|60>           Output frame rate. Default 30.
+  --quality <profile>     standard, high, or master. Default standard.
+  --result-hold-ms <ms>   Freeze the final frame for this duration. Default 0.
+  --background-color <c>  Hex or basic named letterbox color. Default #0B1020.
+  --failure-mode <mode>   strict or best-effort. Default strict.
+  --ffmpeg-path <path>    Executable FFmpeg path.
+  --no-narration          Omit narration audio.
 `
 
 interface ParsedRenderArguments {
@@ -55,6 +64,11 @@ function nonNegativeInteger(value: string, option: string): number {
   return parsed
 }
 
+function outputContainer(value: string, option: string): 'mp4' | 'webm' | 'mov' | 'mkv' {
+  if (value === 'mp4' || value === 'webm' || value === 'mov' || value === 'mkv') return value
+  throw new Error(`${option} must be mp4, webm, mov, or mkv`)
+}
+
 function parseRenderArguments(args: readonly string[]): ParsedRenderArguments {
   let manifestPath: string | undefined
   let outputPath: string | undefined
@@ -83,10 +97,32 @@ function parseRenderArguments(args: readonly string[]): ParsedRenderArguments {
         retry = nonNegativeInteger(requiredValue(args, index, argument), argument)
         index += 1
         break
-      case '--format': {
+      case '--container':
+        output.container = outputContainer(requiredValue(args, index, argument), argument)
+        index += 1
+        break
+      case '--format':
+        output.format = outputContainer(requiredValue(args, index, argument), argument)
+        index += 1
+        break
+      case '--video-codec':
+        output.videoCodec = requiredValue(args, index, argument)
+        index += 1
+        break
+      case '--audio-codec':
+        output.audioCodec = requiredValue(args, index, argument)
+        index += 1
+        break
+      case '--pixel-format':
+        output.pixelFormat = requiredValue(args, index, argument)
+        index += 1
+        break
+      case '--color-range': {
         const value = requiredValue(args, index, argument)
-        if (value !== 'mp4' && value !== 'webm') throw new Error('--format must be mp4 or webm')
-        output.format = value
+        if (value !== 'auto' && value !== 'full' && value !== 'limited') {
+          throw new Error('--color-range must be auto, full, or limited')
+        }
+        output.colorRange = value
         index += 1
         break
       }
@@ -114,6 +150,27 @@ function parseRenderArguments(args: readonly string[]): ParsedRenderArguments {
         index += 1
         break
       }
+      case '--result-hold-ms':
+        config.resultHoldMs = nonNegativeInteger(requiredValue(args, index, argument), argument)
+        index += 1
+        break
+      case '--background-color':
+        config.backgroundColor = requiredValue(args, index, argument)
+        index += 1
+        break
+      case '--failure-mode': {
+        const value = requiredValue(args, index, argument)
+        if (value !== 'strict' && value !== 'best-effort') {
+          throw new Error('--failure-mode must be strict or best-effort')
+        }
+        config.failureMode = value
+        index += 1
+        break
+      }
+      case '--ffmpeg-path':
+        config.ffmpegPath = requiredValue(args, index, argument)
+        index += 1
+        break
       case '--no-narration':
         config.narrationEnabled = false
         break

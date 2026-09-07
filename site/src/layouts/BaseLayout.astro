@@ -2,15 +2,23 @@
 import SiteHeader from '../components/SiteHeader.astro'
 import { sitePath } from '../lib/paths.js'
 import '../styles/global.css'
+import '../styles/syntax.css'
 
 interface Props {
   title: string
   description: string
-  current?: 'home' | 'docs'
+  current?: 'home' | 'docs' | 'examples'
+  socialImage?: string
 }
 
-const { title, description, current } = Astro.props
+const {
+  title,
+  description,
+  current,
+  socialImage = '/demo/suitecut-field-manual-poster.png',
+} = Astro.props
 const canonicalUrl = new URL(Astro.url.pathname, Astro.site)
+const socialImageUrl = new URL(sitePath(socialImage), Astro.site)
 ---
 
 <!doctype html>
@@ -19,20 +27,27 @@ const canonicalUrl = new URL(Astro.url.pathname, Astro.site)
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
     <meta name="description" content={description} />
-    <meta name="theme-color" content="#f2ead8" />
+    <meta name="theme-color" content="#111111" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:image" content={socialImageUrl} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={socialImageUrl} />
     <link rel="canonical" href={canonicalUrl} />
     <link rel="icon" href={sitePath('/favicon.svg')} type="image/svg+xml" />
     <title>{title}</title>
   </head>
   <body>
     <a class="skip-link" href="#main-content">Skip to content</a>
-    <div class="page-shell">
-      {current ? <SiteHeader current={current} /> : <SiteHeader />}
-      <main id="main-content"><slot /></main>
-      <footer class="site-footer">
-        <p>SuiteCut · Local-first test films</p>
-        <p>MIT licensed · Made for Playwright</p>
-      </footer>
-    </div>
+    {current ? <SiteHeader current={current} /> : <SiteHeader />}
+    <main id="main-content"><slot /></main>
+    <footer class="site-footer">
+      <p>SuiteCut</p>
+      <p>MIT License</p>
+    </footer>
   </body>
 </html>

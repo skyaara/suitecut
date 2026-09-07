@@ -1,4 +1,4 @@
-import { type Locator, type Page } from '@playwright/test'
+import { type Locator, type Page } from 'playwright'
 
 import { type SuiteCutScrollOptions } from './schemas.js'
 
@@ -19,6 +19,8 @@ function resolveScrollOptions(options: SuiteCutScrollOptions): ResolvedScrollOpt
 }
 
 async function scrollElement(element: Element, options: ResolvedScrollOptions): Promise<void> {
+  const layoutScale = Number.parseFloat(getComputedStyle(document.documentElement).zoom) || 1
+  const timeoutMs = options.timeoutMs * Math.max(1, layoutScale)
   element.scrollIntoView({
     behavior: options.behavior,
     block: options.block,
@@ -41,8 +43,8 @@ async function scrollElement(element: Element, options: ResolvedScrollOptions): 
         resolve()
         return
       }
-      if (performance.now() - startedAt >= options.timeoutMs) {
-        reject(new Error(`Native element scroll did not settle within ${options.timeoutMs}ms`))
+      if (performance.now() - startedAt >= timeoutMs) {
+        reject(new Error(`Native element scroll did not settle within ${timeoutMs}ms`))
         return
       }
       requestAnimationFrame(sample)
@@ -53,6 +55,8 @@ async function scrollElement(element: Element, options: ResolvedScrollOptions): 
 }
 
 async function scrollWindowToTop(options: ResolvedScrollOptions): Promise<void> {
+  const layoutScale = Number.parseFloat(getComputedStyle(document.documentElement).zoom) || 1
+  const timeoutMs = options.timeoutMs * Math.max(1, layoutScale)
   window.scrollTo({ top: 0, left: 0, behavior: options.behavior })
 
   const startedAt = performance.now()
@@ -71,8 +75,8 @@ async function scrollWindowToTop(options: ResolvedScrollOptions): Promise<void> 
         resolve()
         return
       }
-      if (performance.now() - startedAt >= options.timeoutMs) {
-        reject(new Error(`Native page scroll did not settle within ${options.timeoutMs}ms`))
+      if (performance.now() - startedAt >= timeoutMs) {
+        reject(new Error(`Native page scroll did not settle within ${timeoutMs}ms`))
         return
       }
       requestAnimationFrame(sample)

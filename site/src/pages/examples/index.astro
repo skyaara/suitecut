@@ -1,0 +1,136 @@
+---
+import browserSupportSource from '../../../../examples/browser-support.spec.ts?raw'
+import plainPlaywrightSource from '../../../../examples/playwright.ts?raw'
+
+import CodeBlock from '../../components/CodeBlock.astro'
+import BaseLayout from '../../layouts/BaseLayout.astro'
+
+const browserSupportExample = browserSupportSource.trim()
+const plainPlaywrightExample = plainPlaywrightSource.trim()
+const repositoryUrl = 'https://github.com/skyaara/suitecut/blob/main/'
+---
+
+<BaseLayout
+  title="Examples"
+  description="Run the SuiteCut examples used by the repository and documentation site."
+  current="examples"
+>
+  <div class="standalone-page">
+    <nav class="page-index" aria-label="Example sections">
+      <a href="#playwright-script">Playwright script</a>
+      <a href="#browser-matrix">Browser matrix</a>
+      <a href="#more-examples">More examples</a>
+      <a href="#select-a-retry">Select a retry</a>
+      <a href="#encoders">Encoders</a>
+    </nav>
+    <article class="docs-article standalone-article">
+      <h1>Examples</h1>
+      <p>These code blocks are imported from runnable files in this repository.</p>
+
+      <h2 id="playwright-script">Playwright script</h2>
+      <p>
+        <a href={`${repositoryUrl}examples/playwright.ts`}><code>examples/playwright.ts</code></a>
+        is the primary SuiteCut path. It uses <code>defineSuiteCut()</code> without Playwright Test, a
+        reporter, fixtures, or a Playwright configuration file. It records a local page, uses SuiteCut's
+        cursor and highlight, captures a checkpoint, and prints the manifest path.
+      </p>
+      <CodeBlock code={plainPlaywrightExample} />
+      <CodeBlock
+        label="Terminal"
+        code={`npm run build
+node --experimental-strip-types examples/playwright.ts
+
+suitecut render \\
+  --manifest .suitecut/playwright-example.json \\
+  --output .suitecut/videos/playwright-example.mp4`}
+      />
+
+      <h2 id="browser-matrix">Playwright Test in three browsers</h2>
+      <p>
+        <a href={`${repositoryUrl}examples/browser-support.spec.ts`}
+          ><code>examples/browser-support.spec.ts</code></a
+        > is the focused browser matrix. The repository runs the same recording in Chromium, Firefox,
+        and WebKit, then verifies every attempt, source-video artifact, event set, dimension, frame rate,
+        and duration.
+      </p>
+      <CodeBlock code={browserSupportExample} />
+      <CodeBlock label="Terminal" code="npm run test:browsers" />
+
+      <h2 id="more-examples">More repository examples</h2>
+      <ul>
+        <li>
+          <a href={`${repositoryUrl}examples/product-tour.spec.ts`}
+            ><code>examples/product-tour.spec.ts</code></a
+          > records narration, captions, pointer movement, a click effect, holds, highlights, zoom, and
+          a checkpoint inside Playwright Test.
+        </li>
+        <li>
+          <a href={`${repositoryUrl}examples/popup-tour.spec.ts`}
+            ><code>examples/popup-tour.spec.ts</code></a
+          > records an opener and popup, then returns the active recording to the opener after the popup
+          closes.
+        </li>
+        <li>
+          <a href={`${repositoryUrl}examples/browser-presentation.spec.ts`}
+            ><code>examples/browser-presentation.spec.ts</code></a
+          > checks captions, highlights, pointer actions, application animation waits, native scrolling,
+          navigation, and an off-screen zoom target.
+        </li>
+        <li>
+          <a href={`${repositoryUrl}examples/playwright/product-tour.ts`}
+            ><code>examples/playwright/product-tour.ts</code></a
+          > records the product tour through the standalone Playwright lifecycle.
+        </li>
+        <li>
+          <a href={`${repositoryUrl}examples/playwright/popup-tour.ts`}
+            ><code>examples/playwright/popup-tour.ts</code></a
+          > records a popup and opener without Playwright Test.
+        </li>
+        <li>
+          <a href={`${repositoryUrl}examples/playwright/custom-setup.ts`}
+            ><code>examples/playwright/custom-setup.ts</code></a
+          > starts a local HTTP server in <code>setup()</code>, returns its URL as a typed callback
+          value, and registers reverse-order cleanup.
+        </li>
+        <li>
+          <a href={`${repositoryUrl}examples/playwright/checkpoints.ts`}
+            ><code>examples/playwright/checkpoints.ts</code></a
+          > captures short WebM checkpoint clips from the page screencast.
+        </li>
+        <li>
+          <a href={`${repositoryUrl}site/tests/site-demo.spec.ts`}
+            ><code>site/tests/site-demo.spec.ts</code></a
+          > generates the 4K, 60 fps demo embedded on the homepage.
+        </li>
+      </ul>
+
+      <h2 id="select-a-retry">Select a test or retry</h2>
+      <CodeBlock
+        label="Terminal"
+        code={`suitecut render \\
+  --manifest .suitecut/latest-run.json \\
+  --test-id <playwright-test-id> \\
+  --retry 0 \\
+  --output .suitecut/videos/tour.webm \\
+  --container webm`}
+      />
+
+      <h2 id="encoders">Choose a container and encoders</h2>
+      <CodeBlock
+        label="Terminal"
+        code={`suitecut render \\
+  --manifest .suitecut/latest-run.json \\
+  --output .suitecut/videos/tour.mov \\
+  --container mov \\
+  --video-codec prores_ks \\
+  --audio-codec pcm_s24le \\
+  --pixel-format yuv422p10le`}
+      />
+      <p>
+        SuiteCut infers MP4, WebM, MOV, or MKV from the output extension. You can select any
+        compatible encoder in the installed FFmpeg build. <code>--color-range</code> controls sample range,
+        not the video or audio codec.
+      </p>
+    </article>
+  </div>
+</BaseLayout>

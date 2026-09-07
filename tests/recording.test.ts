@@ -69,6 +69,24 @@ describe('event attachment decoding', () => {
     expect(() => decodeEventAttachment(input)).toThrowError(SuiteCutSchemaError)
   })
 
+  it('decodes caption timing attachments linked to narration events', () => {
+    const input = attachment()
+    input.artifacts.push({
+      id: 'captions-1',
+      attachmentName: 'captions-1.json',
+      role: 'captions',
+      contentType: 'application/json',
+      createdAtMs: 900,
+      sourceEventId: 'event-1',
+    })
+    expect(decodeEventAttachment(input)).toEqual(input)
+
+    const captions = input.artifacts.at(-1)
+    if (captions?.role !== 'captions') throw new Error('Caption fixture missing')
+    captions.sourceEventId = 'missing-event'
+    expect(() => decodeEventAttachment(input)).toThrowError(SuiteCutSchemaError)
+  })
+
   it('accepts source timing after excluded preparation time', () => {
     const input = attachment()
     input.videos[0]!.sourceStartedAtMs = 0

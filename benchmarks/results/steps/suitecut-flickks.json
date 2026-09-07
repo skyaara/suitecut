@@ -1,104 +1,104 @@
 {
-  "flowDurationMs": 75150.636125,
-  "moduleToFlowStartMs": 334.39475000000675,
+  "flowDurationMs": 85623.225208,
+  "moduleToFlowStartMs": 483.54262500000186,
   "navigations": [
     {
       "decodedBodySize": 87664,
-      "domContentLoadedMs": 1477.2000000476837,
+      "domContentLoadedMs": 3756.399999856949,
       "loadMs": 0,
       "name": "navigate.home",
-      "responseEndMs": 450.60000014305115,
-      "responseStartMs": 446.10000014305115,
-      "transferSize": 15102
+      "responseEndMs": 2140.699999809265,
+      "responseStartMs": 2067.699999809265,
+      "transferSize": 15115
     },
     {
       "decodedBodySize": 87664,
-      "domContentLoadedMs": 1477.2000000476837,
-      "loadMs": 3118.9000000953674,
+      "domContentLoadedMs": 3756.399999856949,
+      "loadMs": 27882.89999985695,
       "name": "navigate.showcase",
-      "responseEndMs": 450.60000014305115,
-      "responseStartMs": 446.10000014305115,
-      "transferSize": 15102
+      "responseEndMs": 2140.699999809265,
+      "responseStartMs": 2067.699999809265,
+      "transferSize": 15115
     }
   ],
   "site": "flickks",
   "steps": [
     {
-      "durationMs": 1830.824791,
+      "durationMs": 9589.460667,
       "name": "navigate.home",
-      "startedAt": "2026-08-23T14:22:13.119Z",
+      "startedAt": "2026-08-23T17:03:03.652Z",
       "url": "https://www.flickks.com/"
     },
     {
-      "durationMs": 16.730625,
+      "durationMs": 32.847,
       "name": "assert.hero",
-      "startedAt": "2026-08-23T14:22:14.952Z",
+      "startedAt": "2026-08-23T17:03:13.246Z",
       "url": "https://www.flickks.com/"
     },
     {
-      "durationMs": 24599.028541,
+      "durationMs": 25526.397125,
       "name": "narrate.hero",
-      "startedAt": "2026-08-23T14:22:14.969Z",
+      "startedAt": "2026-08-23T17:03:13.279Z",
       "url": "https://www.flickks.com/"
     },
     {
-      "durationMs": 899.924083,
+      "durationMs": 915.549459,
       "name": "highlight.hero",
-      "startedAt": "2026-08-23T14:22:39.568Z",
+      "startedAt": "2026-08-23T17:03:38.806Z",
       "url": "https://www.flickks.com/"
     },
     {
-      "durationMs": 96.80725,
+      "durationMs": 101.7055,
       "name": "checkpoint.hero",
-      "startedAt": "2026-08-23T14:22:40.468Z",
+      "startedAt": "2026-08-23T17:03:39.721Z",
       "url": "https://www.flickks.com/"
     },
     {
-      "durationMs": 1186.529333,
+      "durationMs": 1198.719125,
       "name": "scroll.templates",
-      "startedAt": "2026-08-23T14:22:40.565Z",
+      "startedAt": "2026-08-23T17:03:39.823Z",
       "url": "https://www.flickks.com/"
     },
     {
-      "durationMs": 18297.790875,
+      "durationMs": 18748.05825,
       "name": "narrate.templates",
-      "startedAt": "2026-08-23T14:22:41.752Z",
+      "startedAt": "2026-08-23T17:03:41.022Z",
       "url": "https://www.flickks.com/"
     },
     {
-      "durationMs": 883.15025,
+      "durationMs": 880.905708,
       "name": "highlight.templates",
-      "startedAt": "2026-08-23T14:23:00.050Z",
+      "startedAt": "2026-08-23T17:03:59.770Z",
       "url": "https://www.flickks.com/"
     },
     {
-      "durationMs": 1366.485792,
+      "durationMs": 1966.159084,
       "name": "navigate.showcase",
-      "startedAt": "2026-08-23T14:23:00.933Z",
+      "startedAt": "2026-08-23T17:04:00.651Z",
       "url": "https://www.flickks.com/showcase"
     },
     {
-      "durationMs": 3.425709,
+      "durationMs": 1.886,
       "name": "assert.showcase",
-      "startedAt": "2026-08-23T14:23:02.301Z",
+      "startedAt": "2026-08-23T17:04:02.618Z",
       "url": "https://www.flickks.com/showcase"
     },
     {
-      "durationMs": 24994.135875,
+      "durationMs": 25680.248833,
       "name": "narrate.showcase",
-      "startedAt": "2026-08-23T14:23:02.304Z",
+      "startedAt": "2026-08-23T17:04:02.620Z",
       "url": "https://www.flickks.com/showcase"
     },
     {
-      "durationMs": 67.657166,
+      "durationMs": 69.776125,
       "name": "checkpoint.showcase",
-      "startedAt": "2026-08-23T14:23:27.299Z",
+      "startedAt": "2026-08-23T17:04:28.301Z",
       "url": "https://www.flickks.com/showcase"
     },
     {
-      "durationMs": 901.884041,
+      "durationMs": 902.626458,
       "name": "hold.final",
-      "startedAt": "2026-08-23T14:23:27.366Z",
+      "startedAt": "2026-08-23T17:04:28.371Z",
       "url": "https://www.flickks.com/showcase"
     }
   ],
