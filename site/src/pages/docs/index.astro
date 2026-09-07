@@ -1,10 +1,17 @@
 ---
+import basicExampleSource from '../../../../examples/basic.spec.ts?raw'
+import playwrightExampleSource from '../../../../examples/playwright.ts?raw'
+
 import CodeBlock from '../../components/CodeBlock.astro'
 import DocsLayout from '../../layouts/DocsLayout.astro'
+import { sitePath } from '../../lib/paths.js'
 
+const basicExample = basicExampleSource.trim()
+const playwrightExample = playwrightExampleSource.trim()
 const config = `import { defineConfig } from '@playwright/test'
 
 export default defineConfig({
+  projects: [{ name: 'chromium', use: { browserName: 'chromium' } }],
   reporter: [
     ['line'],
     ['suitecut/reporter', { outputFile: '.suitecut/latest-run.json' }],
@@ -15,61 +22,92 @@ export default defineConfig({
 
 <DocsLayout
   title="Getting started"
-  description="Install and configure SuiteCut for a Playwright project."
+  description="Install SuiteCut, record a Playwright flow, and render the saved run."
   section="overview"
 >
-  <p class="kicker">Field manual · 01</p>
   <h1>Getting started</h1>
   <p>
-    SuiteCut records a Playwright run into a strict manifest, then renders that saved material into
-    MP4 or WebM. Test execution and video rendering stay separate.
+    SuiteCut records a Playwright script into a validated manifest. Rendering is a separate step, so
+    the browser does not need to stay open while FFmpeg creates the final video. Playwright Test is
+    an optional integration.
   </p>
 
-  <h2>Requirements</h2>
+  <h2 id="requirements">Requirements</h2>
   <ul>
-    <li>Node.js 22 or newer and Playwright 1.59 or newer.</li>
-    <li>Chromium installed through Playwright.</li>
-    <li>FFmpeg and FFprobe available on <code>PATH</code>.</li>
+    <li>Node.js 22 or newer.</li>
+    <li><code>playwright</code> 1.59 or newer.</li>
+    <li>Chromium, Firefox, or WebKit installed through Playwright.</li>
+    <li>FFmpeg and FFprobe on <code>PATH</code>.</li>
   </ul>
 
-  <h2>Install</h2>
-  <CodeBlock label="Terminal" code="npm install --save-dev suitecut @playwright/test" />
-  <p>On macOS, install the media tools with <code>brew install ffmpeg</code>.</p>
-
-  <h2>Configure Playwright</h2>
-  <CodeBlock code={config} />
-  <div class="note">
-    Keep Playwright video off. SuiteCut owns the screencast so it can align every page with its own
-    narration, overlays, and timeline.
-  </div>
-
-  <h2>Record and render</h2>
+  <h2 id="install">Install</h2>
   <CodeBlock
     label="Terminal"
-    code={`suitecut test --manifest .suitecut/latest-run.json -- tests/tour.spec.ts
+    code={`npm install suitecut playwright
+npx playwright install chromium`}
+  />
+  <p>On macOS, install the media tools with <code>brew install ffmpeg</code>.</p>
+
+  <h2 id="record-a-flow">Record a flow</h2>
+  <p>
+    Import <code>record</code> or <code>defineSuiteCut</code> from <code>suitecut</code>. SuiteCut
+    launches and closes the browser, creates the context and page, and writes one manifest attempt.
+    This is the current <a
+      href="https://github.com/skyaara/suitecut/blob/main/examples/playwright.ts"
+      ><code>examples/playwright.ts</code></a
+    > file.
+  </p>
+  <CodeBlock code={playwrightExample} />
+
+  <h2 id="run-and-render">Run and render</h2>
+  <CodeBlock
+    label="Terminal"
+    code={`node --experimental-strip-types examples/playwright.ts
 
 suitecut render \\
-  --manifest .suitecut/latest-run.json \\
-  --output .suitecut/videos/tour.mp4`}
+  --manifest .suitecut/playwright-example.json \\
+  --output .suitecut/videos/playwright-example.mp4`}
   />
   <p>
-    The renderer writes a report beside the video with its selected attempt, diagnostics, process
-    result, and output duration.
+    Each render also writes a <code>.suitecut.json</code> report with the selected attempt, diagnostics,
+    FFmpeg arguments, process result, and output duration.
   </p>
 
-  <h2>Render 4K at 60 fps</h2>
+  <h2 id="playwright-test">Use Playwright Test</h2>
+  <p>
+    If the recording is also a test, install <code>@playwright/test</code> and import
+    <code>test</code> and <code>expect</code> from <code>suitecut/test</code>. Keep Playwright trace
+    and video off because SuiteCut owns the page screencast. The <a href={sitePath('/examples')}
+      >examples page</a
+    > includes the browser-matrix test.
+  </p>
+  <CodeBlock label="Terminal" code="npm install --save-dev @playwright/test" />
+  <CodeBlock code={config} />
+  <CodeBlock code={basicExample} />
+
+  <h2 id="render-quality">Render size and frame rate</h2>
+  <p>
+    The default source is a 1600 × 900 browser viewport recorded at 60 fps. SuiteCut delivers 1920 ×
+    1080 at 30 fps with the standard quality profile unless you request another format. For an HD
+    page composition with native 4K detail, set the viewport to 1920 × 1080 and the capture size to
+    3840 × 2160, then request 4K60 output explicitly.
+  </p>
+  <CodeBlock
+    code={`const record = defineSuiteCut({
+  capture: {
+    viewport: { width: 1920, height: 1080 },
+    size: { width: 3840, height: 2160 },
+    framesPerSecond: 60,
+  },
+})`}
+  />
   <CodeBlock
     label="Terminal"
     code={`suitecut render \\
   --manifest .suitecut/latest-run.json \\
-  --output .suitecut/videos/tour-4k.mp4 \\
+  --output .suitecut/videos/basic-4k.mp4 \\
   --width 3840 \\
   --height 2160 \\
   --fps 60`}
   />
-  <p>
-    SuiteCut captures the physical viewport size by default. Playwright will downscale a requested
-    screencast size, but it will not upscale beyond the CSS viewport. Set the Playwright viewport to
-    the required native source dimensions when native 4K capture matters.
-  </p>
 </DocsLayout>

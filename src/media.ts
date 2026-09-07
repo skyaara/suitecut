@@ -50,6 +50,11 @@ const ProbeDocumentSchema = z.object({
 const ProbeVideoStreamSchema = z.object({
   codec_type: z.literal('video'),
   codec_name: z.string().trim().min(1),
+  pix_fmt: z.string().trim().min(1).optional(),
+  color_range: z.string().trim().min(1).optional(),
+  color_space: z.string().trim().min(1).optional(),
+  color_transfer: z.string().trim().min(1).optional(),
+  color_primaries: z.string().trim().min(1).optional(),
   width: PositiveProbeNumberSchema,
   height: PositiveProbeNumberSchema,
   duration: NonNegativeProbeNumberSchema.optional(),
@@ -69,15 +74,35 @@ const ProbeAudioStreamSchema = z.object({
   duration: NonNegativeProbeNumberSchema.optional(),
 })
 
+function knownProbeValue(value: string | undefined): string | undefined {
+  if (value === undefined || value === 'unknown' || value === 'unspecified') return undefined
+  return value
+}
+
+function probeColorRange(value: string | undefined): 'full' | 'limited' | undefined {
+  if (value === 'pc' || value === 'jpeg' || value === 'full') return 'full'
+  if (value === 'tv' || value === 'mpeg' || value === 'limited') return 'limited'
+  return undefined
+}
+
 function parseStream(
   stream: Record<string, JsonValue>,
   formatDurationMs: number,
 ): SuiteCutMediaStream | undefined {
   if (stream.codec_type === 'video') {
     const parsed = ProbeVideoStreamSchema.parse(stream)
+    const colorRange = probeColorRange(parsed.color_range)
+    const colorSpace = knownProbeValue(parsed.color_space)
+    const colorTransfer = knownProbeValue(parsed.color_transfer)
+    const colorPrimaries = knownProbeValue(parsed.color_primaries)
     return {
       kind: 'video',
       codec: parsed.codec_name,
+      ...(parsed.pix_fmt === undefined ? {} : { pixelFormat: parsed.pix_fmt }),
+      ...(colorRange === undefined ? {} : { colorRange }),
+      ...(colorSpace === undefined ? {} : { colorSpace }),
+      ...(colorTransfer === undefined ? {} : { colorTransfer }),
+      ...(colorPrimaries === undefined ? {} : { colorPrimaries }),
       width: parsed.width,
       height: parsed.height,
       durationMs: (parsed.duration ?? formatDurationMs / 1_000) * 1_000,
@@ -109,15 +134,11 @@ async function readProbeDocument(
   ffmpegPath?: string,
 ): Promise<z.infer<typeof ProbeDocumentSchema>> {
   const executable = await resolveFfprobe(ffmpegPath)
-  const result = await runProcess(executable, [
-    '-v',
-    'error',
-    '-show_format',
-    '-show_streams',
-    '-of',
-    'json',
-    absolutePath,
-  ])
+  const result = await runProcess(
+    executable,
+    ['-v', 'error', '-show_format', '-show_streams', '-of', 'json', absolutePath],
+    { timeoutMs: 30_000 },
+  )
   if (result.exitCode !== 0) {
     throw new Error(`FFprobe failed for ${absolutePath}: ${result.stderr.trim()}`)
   }

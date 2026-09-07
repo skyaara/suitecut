@@ -1,0 +1,53 @@
+.astro-code {
+  max-width: 100%;
+  margin: 0;
+  overflow-x: auto;
+  background: transparent !important;
+  font-family: var(--mono);
+  tab-size: 2;
+}
+
+.astro-code code {
+  display: block;
+  min-width: max-content;
+  font: inherit;
+}
+
+.code-block {
+  min-width: 0;
+  margin: 1rem 0 1.5rem;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: #0b0b0b;
+}
+
+.code-block-header {
+  display: flex;
+  min-height: 2.25rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.45rem 0.7rem 0.45rem 1rem;
+  border-bottom: 1px solid var(--border);
+  color: #8a8a8a;
+  font-size: 0.64rem;
+}
+
+.code-copy {
+  padding: 0.3rem 0.5rem;
+  border: 0;
+  color: var(--muted);
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+}
+
+.code-copy:hover {
+  color: var(--text);
+}
+
+.code-block .astro-code {
+  padding: 1rem 1.1rem;
+  font-size: 0.78rem;
+  line-height: 1.75;
+}

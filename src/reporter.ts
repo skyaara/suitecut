@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto'
-import { mkdir, readFile, stat, writeFile } from 'node:fs/promises'
+import { readFile, stat } from 'node:fs/promises'
 import { dirname, isAbsolute, relative, resolve } from 'node:path'
 
 import {
@@ -12,11 +12,12 @@ import {
   type TestResult,
 } from '@playwright/test/reporter'
 
-import { SUITECUT_EVENT_ATTACHMENT } from './constants.js'
+import { formattedJson, writeTextFileAtomic } from './atomic-file.js'
+import { SUITECUT_EVENT_ATTACHMENT, SUITECUT_MANIFEST_SCHEMA_VERSION } from './constants.js'
 import { decodeEventAttachment, decodeManifest } from './manifest.js'
 import { probeMedia } from './media.js'
 import { type SuiteCutReporterOptions, SuiteCutReporterOptionsSchema } from './schemas.js'
-import { normalizeExecutionSteps } from './steps.js'
+import { filterExecutionSteps, normalizeExecutionSteps } from './steps.js'
 import {
   type SuiteCutArtifact,
   type SuiteCutAttempt,
@@ -76,6 +77,7 @@ export default class SuiteCutReporter implements Reporter {
   #tests = new Map<string, SuiteCutTest>()
   #errors: Error[] = []
   #pending: Promise<void>[] = []
+  #pendingByTest = new Map<string, Promise<void>>()
 
   /** Creates a reporter with validated output and path options. */
   constructor(options: SuiteCutReporterOptions = {}) {
@@ -99,11 +101,14 @@ export default class SuiteCutReporter implements Reporter {
 
   /** Queues one completed Playwright attempt for collection. */
   onTestEnd(test: TestCase, result: TestResult): void {
-    this.#pending.push(
-      this.#recordTest(test, result).catch((error: UntrustedInput) => {
+    const previous = this.#pendingByTest.get(test.id) ?? Promise.resolve()
+    const pending = previous
+      .then(() => this.#recordTest(test, result))
+      .catch((error: UntrustedInput) => {
         this.#errors.push(toError(error))
-      }),
-    )
+      })
+    this.#pendingByTest.set(test.id, pending)
+    this.#pending.push(pending)
   }
 
   async #recordTest(test: TestCase, result: TestResult): Promise<void> {
@@ -130,14 +135,15 @@ export default class SuiteCutReporter implements Reporter {
       startedAt: result.startTime.toISOString(),
     }
     const artifacts: SuiteCutArtifact[] = []
-    const media: SuiteCutMedia[] = []
+    const mediaJobs: Promise<SuiteCutMedia>[] = []
     const usedAttachmentNames = new Set<string>([SUITECUT_EVENT_ATTACHMENT])
+    const attachmentsByName = new Map(
+      result.attachments.map((attachment) => [attachment.name, attachment]),
+    )
 
     if (captured !== undefined) {
       for (const item of captured.artifacts) {
-        const attachment = result.attachments.find(
-          (candidate) => candidate.name === item.attachmentName,
-        )
+        const attachment = attachmentsByName.get(item.attachmentName)
         if (attachment?.path === undefined) {
           throw new Error(`SuiteCut could not resolve attachment ${item.attachmentName}`)
         }
@@ -158,19 +164,19 @@ export default class SuiteCutReporter implements Reporter {
         } else {
           artifact.createdAtMs = item.createdAtMs
           artifact.sourceEventId = item.sourceEventId
-          artifact.provider = item.provider
-          artifact.voice = item.voice
+          if (item.role === 'narration-audio') {
+            artifact.provider = item.provider
+            artifact.voice = item.voice
+          }
         }
         artifacts.push(artifact)
-        if (item.role === 'narration-audio') {
-          media.push(await probeMedia(artifact, attachment.path))
+        if (item.role === 'narration-audio' || item.role === 'checkpoint') {
+          mediaJobs.push(probeMedia(artifact, attachment.path))
         }
       }
 
       for (const video of captured.videos) {
-        const attachment = result.attachments.find(
-          (candidate) => candidate.name === video.attachmentName,
-        )
+        const attachment = attachmentsByName.get(video.attachmentName)
         if (attachment?.path === undefined) {
           throw new Error(`SuiteCut could not resolve source video ${video.attachmentName}`)
         }
@@ -188,7 +194,7 @@ export default class SuiteCutReporter implements Reporter {
           createdAtMs: video.sourceStartedAtMs,
         }
         artifacts.push(artifact)
-        media.push(await probeMedia(artifact, attachment.path))
+        mediaJobs.push(probeMedia(artifact, attachment.path))
       }
     }
 
@@ -209,9 +215,11 @@ export default class SuiteCutReporter implements Reporter {
       })
     }
 
+    const media = await Promise.all(mediaJobs)
+    const mediaByArtifactId = new Map(media.map((item) => [item.artifactId, item]))
     const videoTiming =
       captured?.videos.map((video) => {
-        const probed = media.find((candidate) => candidate.artifactId === video.artifactId)
+        const probed = mediaByArtifactId.get(video.artifactId)
         if (probed === undefined)
           throw new Error(`SuiteCut did not probe video ${video.artifactId}`)
         return {
@@ -230,7 +238,10 @@ export default class SuiteCutReporter implements Reporter {
       durationMs: captured?.endedAtMs ?? result.duration,
       pages: captured?.pages ?? [],
       events: captured?.events ?? [],
-      steps: normalizeExecutionSteps(result.steps, clock),
+      steps: filterExecutionSteps(
+        normalizeExecutionSteps(result.steps, clock),
+        this.options.includeStepCategories,
+      ),
       artifacts,
       media,
       videoTiming,
@@ -270,6 +281,7 @@ export default class SuiteCutReporter implements Reporter {
       )
     }
     const manifest: SuiteCutManifest = {
+      schemaVersion: SUITECUT_MANIFEST_SCHEMA_VERSION,
       startedAt: this.#startedAt.toISOString(),
       endedAt: new Date().toISOString(),
       status: result.status,
@@ -277,8 +289,7 @@ export default class SuiteCutReporter implements Reporter {
       tests: [...this.#tests.values()].sort((left, right) => left.order - right.order),
     }
     const decoded = decodeManifest(manifest)
-    await mkdir(dirname(this.#outputFile), { recursive: true })
-    await writeFile(this.#outputFile, `${JSON.stringify(decoded, null, 2)}\n`, 'utf8')
+    await writeTextFileAtomic(this.#outputFile, formattedJson(decoded))
   }
 
   #manifestPath(absolutePath: string): string {

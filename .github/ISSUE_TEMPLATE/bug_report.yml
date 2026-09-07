@@ -1,0 +1,48 @@
+name: Bug report
+description: Report a reproducible SuiteCut failure.
+title: '[Bug]: '
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Do not include secrets, private recordings, or security reports. Use the private security form for vulnerabilities.
+  - type: input
+    id: version
+    attributes:
+      label: SuiteCut version or commit
+      placeholder: 0.1.0 or a commit SHA
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: Operating system, Node.js, Playwright, browser, FFmpeg, and FFprobe versions.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproduction
+      description: Include the smallest test, configuration, manifest detail, or command that reproduces the problem.
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: observed
+    attributes:
+      label: Observed behavior
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs
+      description: Remove credentials, private paths, and customer data.
+      render: text

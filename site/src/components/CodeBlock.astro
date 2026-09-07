@@ -1,13 +1,55 @@
 ---
+import { Code } from 'astro:components'
+
 interface Props {
   code: string
   label?: string
+  lang?: 'bash' | 'css' | 'html' | 'json' | 'plaintext' | 'typescript'
 }
 
-const { code, label = 'TypeScript' } = Astro.props
+const {
+  code,
+  label = 'TypeScript',
+  lang = label === 'Terminal' ? 'bash' : 'typescript',
+} = Astro.props
 ---
 
-<figure class="code-block">
-  <figcaption>{label}</figcaption>
-  <pre><code>{code}</code></pre>
+<figure class="code-block" aria-label={label}>
+  <figcaption class="code-block-header">
+    <span>{label}</span>
+    <button type="button" class="code-copy" data-copy-code aria-label={`Copy ${label} code`}
+      >Copy</button
+    >
+  </figcaption>
+  <Code code={code} lang={lang} theme="github-dark" />
 </figure>
+
+<script>
+  const resetTimers = new WeakMap<HTMLButtonElement, number>()
+
+  for (const button of document.querySelectorAll<HTMLButtonElement>('[data-copy-code]')) {
+    if (button.dataset.copyReady === 'true') continue
+    button.dataset.copyReady = 'true'
+    button.addEventListener('click', async () => {
+      const code = button.closest('.code-block')?.querySelector('code')?.textContent
+      if (code === undefined) return
+
+      const existingTimer = resetTimers.get(button)
+      if (existingTimer !== undefined) window.clearTimeout(existingTimer)
+
+      try {
+        await navigator.clipboard.writeText(code)
+        button.textContent = 'Copied'
+      } catch {
+        button.textContent = 'Copy failed'
+      }
+
+      resetTimers.set(
+        button,
+        window.setTimeout(() => {
+          button.textContent = 'Copy'
+        }, 1600),
+      )
+    })
+  }
+</script>

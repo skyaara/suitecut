@@ -14,6 +14,8 @@ import {
   type SuiteCutRect,
   type SuiteCutScrollOptions,
   SuiteCutScrollOptionsSchema,
+  SuiteCutTypeInputSchema,
+  type SuiteCutTypeOptions,
   type SuiteCutViewport,
   SuiteCutViewportSchema,
   type SuiteCutZoomOptions,
@@ -47,6 +49,11 @@ export function parseZoomOptions(options: SuiteCutZoomOptions) {
 
 export function parsePointerActionOptions(options: SuiteCutPointerActionOptions) {
   return SuiteCutPointerActionOptionsSchema.parse(options)
+}
+
+export function parseTypeInput(locatorText: string, options: SuiteCutTypeOptions | undefined) {
+  const input = options === undefined ? { text: locatorText } : { text: locatorText, options }
+  return SuiteCutTypeInputSchema.parse(input)
 }
 
 export function parseScrollOptions(options: SuiteCutScrollOptions) {

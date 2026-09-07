@@ -34,6 +34,13 @@ export interface SuiteCutPageEventBase extends SuiteCutEventBase {
   pageId: SuiteCutPageId
 }
 
+export type SuiteCutPageSelectionReason = 'opened' | 'closed' | 'author' | 'interaction'
+
+export interface SuiteCutPageSelectionEvent extends SuiteCutPageEventBase {
+  type: 'page-selected'
+  reason: SuiteCutPageSelectionReason
+}
+
 export interface SuiteCutNarrationEvent extends SuiteCutPageEventBase {
   type: 'narration'
   text: string
@@ -47,6 +54,7 @@ export interface SuiteCutCheckpointEvent extends SuiteCutPageEventBase {
   type: 'checkpoint'
   label: string
   artifactId: SuiteCutArtifactId
+  durationMs: Milliseconds
   viewport: SuiteCutViewport
 }
 
@@ -94,6 +102,7 @@ export interface SuiteCutHoldEvent extends SuiteCutPageEventBase {
 }
 
 export type SuiteCutEvent =
+  | SuiteCutPageSelectionEvent
   | SuiteCutNarrationEvent
   | SuiteCutCheckpointEvent
   | SuiteCutPointerMoveEvent

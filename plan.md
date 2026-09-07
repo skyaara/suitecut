@@ -2,39 +2,43 @@
 
 ## Product direction
 
-SuiteCut extends Playwright Test with a controlled recording fixture and a renderer. It is not a replacement test runner and it does not treat Playwright traces as its primary data source.
+SuiteCut's primary API records a Playwright callback and renders it without a test runner. The
+secondary Playwright Test integration adds the same recording controls to tests. Neither path treats
+Playwright traces as its primary data source.
 
-Consumers use SuiteCut's extended test fixture:
+Most consumers use the standalone recorder:
 
 ```ts
-import { expect, test } from 'suitecut'
+import { record } from 'suitecut'
 
-test('creates a project', async ({ page, suitecut }) => {
+await record('creates a project', async ({ page, suitecut }) => {
   await page.goto('/projects')
-  suitecut.narrate('The projects page is open.')
-  await page.getByRole('button', { name: 'New project' }).click()
+  await suitecut.narrate('The projects page is open.')
+  await suitecut.click(page.getByRole('button', { name: 'New project' }))
   await suitecut.checkpoint('Project form opened')
-  await expect(page.getByRole('heading')).toHaveText('New project')
 })
 ```
 
-The fixture owns SuiteCut's per-test recording state. The target implementation starts one Playwright screencast for each page. Playwright still owns the browser, page, screencast implementation, test lifecycle, retries, and reporter callbacks.
+The recorder owns the browser, context, page, recording state, and cleanup lifecycle. The optional
+`suitecut/test` fixture lets Playwright Test own the browser and test lifecycle instead.
 
 ## Decisions
 
-### Keep the extended fixture
+### Keep the standalone recorder primary
 
-SuiteCut will continue to extend `@playwright/test` and export its own typed `test` fixture. We will not switch to a `setupSuiteCut(test)` API or standalone Recast-style helpers.
+The package root exports `record()` and `defineSuiteCut()`. `suitecut/test` exports the typed test
+fixture. `suitecut/playwright` remains a compatibility alias for the standalone recorder.
 
-The fixture gives SuiteCut:
+The standalone recorder gives SuiteCut:
 
-- guaranteed setup and teardown for each test attempt;
-- direct access to `page` and Playwright's `TestInfo`;
+- one browser lifecycle per recording;
+- typed setup values and reverse-order cleanup callbacks;
 - one typed `suitecut` object for narration, checkpoints, highlights, and recording controls;
 - a reliable place to create, validate, and flush the event document;
 - room for automatic pointer capture and per-page video timing.
 
-Projects with other custom fixtures can compose them through Playwright's fixture APIs. SuiteCut should document that composition without changing its core ownership model.
+Projects that need assertions, retries, parallel workers, or existing fixtures can use
+`suitecut/test`. That integration stays secondary to the direct recording API.
 
 ### Keep SuiteCut's recording model authoritative
 
@@ -277,13 +281,14 @@ The `suitecut-events.json` attachment is internal fixture-to-reporter transport.
 
 ## Public API direction
 
-Keep the current primary shape:
+Keep the standalone recorder as the primary shape:
 
 ```ts
-import { expect, test } from 'suitecut'
+import { record } from 'suitecut'
 ```
 
-The `suitecut` fixture is the recording control object. Its v1 renderer API includes:
+The callback receives the `suitecut` recording control object. Playwright Test users import the
+extended fixture from `suitecut/test`. Its v1 renderer API includes:
 
 ```ts
 interface SuiteCutFixture {

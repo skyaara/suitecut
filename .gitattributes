@@ -1,1 +1,9 @@
+* text=auto eol=lf
+
+*.bin binary
+*.mp4 binary
+*.onnx binary
+*.png binary
+*.wav binary
+*.webm binary
 assets/kokoro/model_quantized.onnx filter=lfs diff=lfs merge=lfs -text

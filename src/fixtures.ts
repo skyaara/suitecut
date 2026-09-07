@@ -1,4 +1,4 @@
-import { type Locator, type Page } from '@playwright/test'
+import { type Locator, type Page } from 'playwright'
 
 import {
   type SuiteCutCheckpointOptions,
@@ -6,6 +6,7 @@ import {
   type SuiteCutNarrationOptions,
   type SuiteCutPointerActionOptions,
   type SuiteCutScrollOptions,
+  type SuiteCutTypeOptions,
   type SuiteCutZoomOptions,
 } from './schemas.js'
 import { type Milliseconds } from './types.js'
@@ -20,9 +21,10 @@ export type {
   SuiteCutScrollAlignment,
   SuiteCutScrollBehavior,
   SuiteCutScrollOptions,
+  SuiteCutTypeOptions,
 } from './schemas.js'
 
-/** Controls the recording timeline from a Playwright test. */
+/** Controls the recording timeline from a Playwright page. */
 export interface SuiteCutFixture {
   /**
    * Makes a page the source for later narration and visual events.
@@ -62,6 +64,8 @@ export interface SuiteCutFixture {
   hover(locator: Locator, options?: SuiteCutPointerActionOptions): Promise<void>
   /** Moves the recorded cursor and performs a real Playwright click. */
   click(locator: Locator, options?: SuiteCutPointerActionOptions): Promise<void>
+  /** Types text one character at a time so the input change is visible in the recording. */
+  type(locator: Locator, text: string, options?: SuiteCutTypeOptions): Promise<void>
   /** Uses the browser's native scrolling to bring a locator into view. */
   scrollTo(locator: Locator, options?: SuiteCutScrollOptions): Promise<void>
   /** Uses the browser's native scrolling to return the active page to its top edge. */

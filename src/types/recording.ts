@@ -1,7 +1,11 @@
-import { type Page } from '@playwright/test'
+import { type Page } from 'playwright'
 
 import { type SuiteCutAttemptClock } from './clock.js'
-import { type SuiteCutEvent } from './events.js'
+import {
+  type SuiteCutCheckpointEvent,
+  type SuiteCutEvent,
+  type SuiteCutZoomEvent,
+} from './events.js'
 import { type SuiteCutPage } from './pages.js'
 import {
   type EpochMilliseconds,
@@ -18,8 +22,9 @@ export interface SuiteCutCapturedCheckpointArtifact {
   id: SuiteCutArtifactId
   attachmentName: string
   role: 'checkpoint'
-  contentType: MimeType
+  contentType: 'video/webm'
   capturedAtMs: Milliseconds
+  durationMs: Milliseconds
   pageId: SuiteCutPageId
 }
 
@@ -34,8 +39,19 @@ export interface SuiteCutCapturedNarrationArtifact {
   voice: string
 }
 
+export interface SuiteCutCapturedCaptionArtifact {
+  id: SuiteCutArtifactId
+  attachmentName: string
+  role: 'captions'
+  contentType: 'application/json'
+  createdAtMs: Milliseconds
+  sourceEventId: SuiteCutEventId
+}
+
 export type SuiteCutCapturedArtifact =
-  SuiteCutCapturedCheckpointArtifact | SuiteCutCapturedNarrationArtifact
+  | SuiteCutCapturedCheckpointArtifact
+  | SuiteCutCapturedNarrationArtifact
+  | SuiteCutCapturedCaptionArtifact
 
 export interface SuiteCutCapturedVideo {
   artifactId: SuiteCutArtifactId
@@ -46,6 +62,7 @@ export interface SuiteCutCapturedVideo {
 }
 
 export interface SuiteCutActiveScreencast {
+  artifactId: SuiteCutArtifactId
   pageId: SuiteCutPageId
   page: Page
   outputPath: FilePath
@@ -65,6 +82,9 @@ export interface SuiteCutEventAttachment {
 }
 
 export interface SuiteCutRecordingSession {
+  readonly playLiveZoom?: (event: SuiteCutZoomEvent) => Promise<void>
+  readonly retainArtifacts?: boolean
+  readonly streamFailure?: Promise<never>
   readonly attemptId: SuiteCutAttemptId
   readonly clock: SuiteCutAttemptClock
   readonly pages: Map<SuiteCutPageId, SuiteCutPage>
@@ -80,6 +100,7 @@ export interface SuiteCutRecordingSession {
   selectPage(page: Page): SuiteCutPageId
   nextEventId(): SuiteCutEventId
   record(event: SuiteCutEvent): void
+  captureCheckpoint(event: SuiteCutCheckpointEvent): Promise<void>
   withCapturePaused<T>(operation: () => Promise<T>): Promise<T>
   endRecording(): Promise<void>
   seal(): Promise<SuiteCutEventAttachment>

@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "verbatimModuleSyntax": false,
+    "paths": {
+      "suitecut/audio-plugin": ["../../dist/audio-plugin.d.ts"]
+    },
+    "rootDir": "src",
+    "outDir": "dist",
+    "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo"
+  },
+  "include": ["src/**/*.ts"]
+}

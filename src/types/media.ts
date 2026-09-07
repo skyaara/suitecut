@@ -9,6 +9,11 @@ import {
 export interface SuiteCutVideoStream {
   kind: 'video'
   codec: string
+  pixelFormat?: string
+  colorRange?: 'full' | 'limited'
+  colorSpace?: string
+  colorTransfer?: string
+  colorPrimaries?: string
   width: number
   height: number
   durationMs: Milliseconds

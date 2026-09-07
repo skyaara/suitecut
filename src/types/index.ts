@@ -1,4 +1,5 @@
 export * from './artifacts.js'
+export * from './captions.js'
 export * from './clock.js'
 export * from './diagnostics.js'
 export * from './errors.js'

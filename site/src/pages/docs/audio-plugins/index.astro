@@ -1,0 +1,137 @@
+---
+import CodeBlock from '../../../components/CodeBlock.astro'
+import DocsLayout from '../../../layouts/DocsLayout.astro'
+import { sitePath } from '../../../lib/paths.js'
+
+const piperAmySample = sitePath('/audio/piper-amy.wav')
+
+const configuration = `import { defineSuiteCut } from 'suitecut'
+
+const record = defineSuiteCut({
+  audioPlugins: [
+    {
+      provider: 'piper-amy',
+      module: '@suitecut/audio-vits',
+      options: {
+        model: './models/piper/en_US-amy-low/en_US-amy-low.onnx',
+        tokens: './models/piper/en_US-amy-low/tokens.txt',
+        dataDir: './models/piper/en_US-amy-low/espeak-ng-data',
+      },
+    },
+  ],
+})
+
+await record('Piper narration', async ({ page, suitecut }) => {
+  await page.goto('https://example.com')
+  await suitecut.narrate('The report is ready.', {
+    provider: 'piper-amy',
+    voice: 'default',
+    speed: 1.1,
+  })
+})`
+
+const namedSpeakerConfiguration = `const record = defineSuiteCut({
+  audioPlugins: [
+    {
+      provider: 'vits-cast',
+      module: '@suitecut/audio-vits',
+      options: {
+        model: './models/cast/model.onnx',
+        tokens: './models/cast/tokens.txt',
+        speakerIds: { narrator: 2 },
+      },
+    },
+  ],
+})
+
+await record('Named speaker', async ({ suitecut }) => {
+  await suitecut.narrate('Welcome to the tour.', {
+    provider: 'vits-cast',
+    voice: 'narrator',
+  })
+})`
+
+const plugin = `import { writeFile } from 'node:fs/promises'
+import {
+  defineSuiteCutAudioPlugin,
+  encodePcm16Wav,
+} from 'suitecut/audio-plugin'
+
+export default defineSuiteCutAudioPlugin({
+  async synthesize({ text, voice, speed, outputPath, options }) {
+    const { samples, sampleRate } = await runModel({ text, voice, speed, options })
+    await writeFile(outputPath, encodePcm16Wav(samples, sampleRate))
+  },
+  async dispose() {
+    await releaseModelResources()
+  },
+})`
+---
+
+<DocsLayout
+  title="Audio plugins"
+  description="Add local text-to-speech models without adding their runtimes to SuiteCut core."
+  section="audio-plugins"
+>
+  <h1>Audio plugins</h1>
+  <p>
+    Audio plugins add narration providers as separate packages. SuiteCut loads the selected package
+    in its narration worker. Built-in Kokoro remains the default.
+  </p>
+
+  <h2 id="install-a-family">Install one model family</h2>
+  <CodeBlock label="Terminal" code="npm install --save-dev @suitecut/audio-vits" />
+  <p>
+    Use <code>@suitecut/audio-vits</code> for VITS and Piper. Other packages are
+    <code>@suitecut/audio-matcha</code>, <code>@suitecut/audio-kokoro-sherpa</code>,
+    <code>@suitecut/audio-kitten</code>, <code>@suitecut/audio-zipvoice</code>,
+    <code>@suitecut/audio-pocket</code>, and <code>@suitecut/audio-supertonic</code>.
+  </p>
+  <CodeBlock code={configuration} />
+  <p>
+    Each package validates only its model family's options. The packages share one Sherpa runtime,
+    which npm deduplicates when a project installs more than one family. The adapters never download
+    models. Download the selected model separately and pass its local file paths in the plugin
+    options. Sherpa publishes compatible files in its <a
+      href="https://github.com/k2-fsa/sherpa-onnx/releases/tag/tts-models">TTS model releases</a
+    >.
+  </p>
+
+  <h2 id="set-a-voice">Listen and set the voice</h2>
+  <h3>Piper Amy</h3>
+  <p>
+    Package <code>@suitecut/audio-vits</code>. Model <code>en_US-amy-low</code>. Voice
+    <code>default</code>. Speed <code>1</code>. Sample text: &quot;This is the Piper Amy voice,
+    running through the VITS audio plugin.&quot;
+  </p>
+  <audio aria-label="Piper Amy voice sample" controls preload="metadata" src={piperAmySample}>
+    <a href={piperAmySample}>Download the Piper Amy sample</a>
+  </audio>
+  <p>
+    Piper Amy has one speaker, so set <code>voice: 'default'</code>. For a multi-speaker model, use
+    its numeric speaker ID as the voice, such as <code>voice: '2'</code>, or give the ID a name in
+    <code>speakerIds</code>.
+  </p>
+  <CodeBlock code={namedSpeakerConfiguration} />
+
+  <h2 id="playwright-test">Playwright Test</h2>
+  <p>
+    The secondary test integration accepts the same references as
+    <code>suitecutAudioPlugins</code> through <code>test.use()</code>. Import <code>test</code> from
+    <code>suitecut/test</code>. The provider in <code>narrate()</code> must match the configured provider
+    ID.
+  </p>
+
+  <h2 id="write-a-plugin">Write a plugin</h2>
+  <p>
+    Export one ESM plugin object from the package default entry. Its <code>synthesize()</code> method
+    receives text, voice, speed, output path, and JSON options. It must write mono PCM WAV before it resolves.
+    An optional <code>dispose()</code> method can release models, workers, files, and subprocesses when
+    the narration worker closes normally.
+  </p>
+  <CodeBlock code={plugin} />
+  <p>
+    Provider IDs use lowercase letters, numbers, dots, underscores, and hyphens. Plugins cannot
+    replace <code>kokoro</code> or <code>macos-say</code>.
+  </p>
+</DocsLayout>

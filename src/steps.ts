@@ -82,3 +82,35 @@ export function normalizeExecutionSteps(
   for (const step of steps) visit(step)
   return normalized
 }
+
+/** Keeps selected step categories and reconnects them to the nearest retained ancestor. */
+export function filterExecutionSteps(
+  steps: readonly SuiteCutExecutionStep[],
+  categories: readonly SuiteCutStepCategory[] | undefined,
+): SuiteCutExecutionStep[] {
+  if (categories === undefined) return [...steps]
+  const allowed = new Set(categories)
+  const byId = new Map(steps.map((step) => [step.id, step]))
+  const retainedIds = new Set(
+    steps.filter((step) => allowed.has(step.category)).map((step) => step.id),
+  )
+
+  return steps
+    .filter((step) => retainedIds.has(step.id))
+    .map((step) => {
+      let parentStepId = step.parentStepId
+      const visited = new Set<SuiteCutStepId>()
+      while (parentStepId !== undefined && !retainedIds.has(parentStepId)) {
+        if (visited.has(parentStepId)) {
+          throw new Error(`Playwright step hierarchy contains a cycle at ${parentStepId}`)
+        }
+        visited.add(parentStepId)
+        parentStepId = byId.get(parentStepId)?.parentStepId
+      }
+
+      const output = { ...step }
+      if (parentStepId === undefined) delete output.parentStepId
+      else output.parentStepId = parentStepId
+      return output
+    })
+}

@@ -13,6 +13,7 @@ import {
   parseNarrationInput,
   parsePointerActionOptions,
   parseScrollOptions,
+  parseTypeInput,
   parseZoomOptions,
 } from '../src/validation.js'
 
@@ -79,16 +80,16 @@ describe('SuiteCut fixture input validation', () => {
       text: 'Explain the result.',
       options: { provider: 'kokoro', voice: 'af_heart', speed: 1.1, caption: '' },
     })
-    expect(parseCheckpointInput('Result loaded', { fullPage: true })).toEqual({
+    expect(parseCheckpointInput('Result loaded', { durationMs: 750 })).toEqual({
       label: 'Result loaded',
-      options: { fullPage: true },
+      options: { durationMs: 750 },
     })
   })
 
   it.each<[UntrustedInput, UntrustedInput, PropertyKey[], z.core.$ZodIssue['code']?]>([
     ['', undefined, ['text'], 'custom'],
     ['Narration', { voice: '' }, ['options', 'voice'], 'custom'],
-    ['Narration', { provider: 'native' }, ['options', 'provider'], 'invalid_value'],
+    ['Narration', { provider: 'Native provider' }, ['options', 'provider'], 'invalid_format'],
     ['Narration', { speed: 0.25 }, ['options', 'speed'], 'too_small'],
     ['Narration', { caption: 10 }, ['options', 'caption'], 'invalid_type'],
     ['Narration', { speech: 'default' }, ['options'], 'unrecognized_keys'],
@@ -98,8 +99,10 @@ describe('SuiteCut fixture input validation', () => {
 
   it.each<[UntrustedInput, UntrustedInput, PropertyKey[], z.core.$ZodIssue['code']?]>([
     ['', undefined, ['label'], 'custom'],
-    ['Loaded', { fullPage: 'yes' }, ['options', 'fullPage'], 'invalid_type'],
-    ['Loaded', { durationMs: 500 }, ['options'], 'unrecognized_keys'],
+    ['Loaded', { durationMs: '500' }, ['options', 'durationMs'], 'invalid_type'],
+    ['Loaded', { durationMs: 0 }, ['options', 'durationMs'], 'too_small'],
+    ['Loaded', { durationMs: 10_001 }, ['options', 'durationMs'], 'too_big'],
+    ['Loaded', { fullPage: true }, ['options'], 'unrecognized_keys'],
   ])('rejects invalid checkpoint input', (label, options, path, code) => {
     expectZodIssue(() => parseCheckpointInput(label as never, options as never), path, code)
   })
@@ -118,6 +121,7 @@ describe('SuiteCut fixture input validation', () => {
     const options = {
       durationMs: 1_400,
       mode: 'spotlight' as const,
+      geometry: 'content' as const,
       paddingPx: 12,
       borderWidthPx: 4,
       borderStyle: 'solid' as const,
@@ -138,6 +142,7 @@ describe('SuiteCut fixture input validation', () => {
   it.each<[UntrustedInput, PropertyKey[], z.core.$ZodIssue['code']?]>([
     [{ durationMs: 0 }, ['durationMs'], 'too_small'],
     [{ mode: 'glow' }, ['mode'], 'invalid_value'],
+    [{ geometry: 'paint' }, ['geometry'], 'invalid_value'],
     [{ paddingPx: -1 }, ['paddingPx'], 'too_small'],
     [{ fillOpacity: 1.1 }, ['fillOpacity'], 'too_big'],
     [{ borderColor: '' }, ['borderColor'], 'custom'],
@@ -151,6 +156,7 @@ describe('SuiteCut fixture input validation', () => {
   it('parses complete zoom options', () => {
     const options = {
       scale: 1.18,
+      geometry: 'content' as const,
       paddingPx: 32,
       holdMs: 1_200,
       enter: { type: 'scale' as const, durationMs: 320, easing: 'ease-out' as const },
@@ -162,6 +168,8 @@ describe('SuiteCut fixture input validation', () => {
 
   it.each<[UntrustedInput, PropertyKey[], z.core.$ZodIssue['code']?]>([
     [{ scale: 0.99 }, ['scale'], 'too_small'],
+    [{ scale: 1.26 }, ['scale'], 'too_big'],
+    [{ geometry: 'paint' }, ['geometry'], 'invalid_value'],
     [{ paddingPx: -1 }, ['paddingPx'], 'too_small'],
     [{ holdMs: -1 }, ['holdMs'], 'too_small'],
     [{ exit: { type: 'slide' } }, ['exit', 'type'], 'invalid_value'],
@@ -186,6 +194,29 @@ describe('SuiteCut fixture input validation', () => {
     [{ cursorDurationMs: 100 }, [], 'unrecognized_keys'],
   ])('rejects invalid pointer action options', (options, path, code) => {
     expectZodIssue(() => parsePointerActionOptions(options as never), path, code)
+  })
+
+  it('parses typewriter text and timing', () => {
+    expect(
+      parseTypeInput('Aakash', {
+        delayMs: 70,
+        settleMs: 250,
+        clearExisting: true,
+      }),
+    ).toEqual({
+      text: 'Aakash',
+      options: { delayMs: 70, settleMs: 250, clearExisting: true },
+    })
+  })
+
+  it.each<[UntrustedInput, UntrustedInput, PropertyKey[], z.core.$ZodIssue['code']]>([
+    ['', undefined, ['text'], 'too_small'],
+    ['Text', { delayMs: -1 }, ['options', 'delayMs'], 'too_small'],
+    ['Text', { settleMs: Number.NaN }, ['options', 'settleMs'], 'invalid_type'],
+    ['Text', { clearExisting: 'yes' }, ['options', 'clearExisting'], 'invalid_type'],
+    ['Text', { speed: 2 }, ['options'], 'unrecognized_keys'],
+  ])('rejects invalid typewriter input', (text, options, path, code) => {
+    expectZodIssue(() => parseTypeInput(text as never, options as never), path, code)
   })
 
   it('parses native scroll options', () => {
@@ -214,7 +245,6 @@ describe('SuiteCut fixture input validation', () => {
     const viewport = {
       width: 1280,
       height: 720,
-      deviceScaleFactor: 2,
       scrollX: 0,
       scrollY: 100,
     }
@@ -223,29 +253,35 @@ describe('SuiteCut fixture input validation', () => {
     expect(parseCapturedViewport(viewport)).toEqual(viewport)
   })
 
+  it('accepts and removes the legacy viewport device scale factor', () => {
+    expect(
+      parseCapturedViewport({
+        width: 1280,
+        height: 720,
+        deviceScaleFactor: 2,
+        scrollX: 0,
+        scrollY: 100,
+      } as never),
+    ).toEqual({ width: 1280, height: 720, scrollX: 0, scrollY: 100 })
+  })
+
   it.each<[UntrustedInput, UntrustedInput, PropertyKey[], z.core.$ZodIssue['code']]>([
     [
       { x: Number.NaN, y: 0, width: 10, height: 10 },
-      { width: 1280, height: 720, deviceScaleFactor: 1, scrollX: 0, scrollY: 0 },
+      { width: 1280, height: 720, scrollX: 0, scrollY: 0 },
       ['rect', 'x'],
       'invalid_type',
     ],
     [
       { x: 0, y: 0, width: -1, height: 10 },
-      { width: 1280, height: 720, deviceScaleFactor: 1, scrollX: 0, scrollY: 0 },
+      { width: 1280, height: 720, scrollX: 0, scrollY: 0 },
       ['rect', 'width'],
       'too_small',
     ],
     [
       { x: 0, y: 0, width: 10, height: 10 },
-      { width: 0, height: 720, deviceScaleFactor: 1, scrollX: 0, scrollY: 0 },
+      { width: 0, height: 720, scrollX: 0, scrollY: 0 },
       ['viewport', 'width'],
-      'too_small',
-    ],
-    [
-      { x: 0, y: 0, width: 10, height: 10 },
-      { width: 1280, height: 720, deviceScaleFactor: 0, scrollX: 0, scrollY: 0 },
-      ['viewport', 'deviceScaleFactor'],
       'too_small',
     ],
   ])('rejects invalid captured geometry', (rect, viewport, path, code) => {

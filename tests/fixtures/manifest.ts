@@ -2,6 +2,7 @@ import { type SuiteCutManifest } from '../../src/types.js'
 
 export function createManifest(): SuiteCutManifest {
   return {
+    schemaVersion: 1,
     startedAt: '2026-08-22T10:00:00.000Z',
     endedAt: '2026-08-22T10:00:05.000Z',
     status: 'passed',
@@ -49,10 +50,10 @@ export function createManifest(): SuiteCutManifest {
                 pageId: 'page-main',
                 label: 'Project form opened',
                 artifactId: 'artifact-checkpoint',
+                durationMs: 500,
                 viewport: {
                   width: 1280,
                   height: 720,
-                  deviceScaleFactor: 1,
                   scrollX: 0,
                   scrollY: 0,
                 },
@@ -71,10 +72,10 @@ export function createManifest(): SuiteCutManifest {
             artifacts: [
               {
                 id: 'artifact-checkpoint',
-                name: 'project-form.png',
+                name: 'project-form.webm',
                 role: 'checkpoint',
-                contentType: 'image/png',
-                path: '/workspace/app/test-results/project-form.png',
+                contentType: 'video/webm',
+                path: '/workspace/app/test-results/project-form.webm',
                 pathKind: 'absolute',
                 sizeBytes: 4_096,
                 pageId: 'page-main',
@@ -102,9 +103,32 @@ export function createManifest(): SuiteCutManifest {
                   {
                     kind: 'video',
                     codec: 'vp8',
+                    pixelFormat: 'yuv420p',
+                    colorRange: 'limited',
+                    colorSpace: 'bt709',
+                    colorTransfer: 'bt709',
+                    colorPrimaries: 'bt709',
                     width: 1280,
                     height: 720,
                     durationMs: 4_820,
+                    frameRate: 30,
+                    hasVariableFrameRate: false,
+                  },
+                ],
+              },
+              {
+                id: 'media-checkpoint',
+                artifactId: 'artifact-checkpoint',
+                formatName: 'webm',
+                durationMs: 500,
+                streams: [
+                  {
+                    kind: 'video',
+                    codec: 'vp9',
+                    pixelFormat: 'yuv420p',
+                    width: 1280,
+                    height: 720,
+                    durationMs: 500,
                     frameRate: 30,
                     hasVariableFrameRate: false,
                   },

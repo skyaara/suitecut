@@ -28,6 +28,20 @@ describe('manifest decoding', () => {
     expect(input).toEqual(snapshot)
   })
 
+  it('upgrades an unversioned legacy manifest to schema version 1', () => {
+    const { schemaVersion: originalVersion, ...input } = structuredClone(createManifest())
+
+    expect(decodeManifest(input)).toMatchObject({ schemaVersion: 1 })
+    expect(originalVersion).toBe(1)
+    expect(input).not.toHaveProperty('schemaVersion')
+  })
+
+  it('rejects unsupported manifest schema versions', () => {
+    const input = { ...structuredClone(createManifest()), schemaVersion: 2 }
+
+    expectSchemaError(input, 'schemaVersion')
+  })
+
   it('accepts negative step times for setup before the attempt clock', () => {
     const manifest = cloneManifest()
     attempt(manifest).steps[0]!.atMs = -25
@@ -55,6 +69,22 @@ describe('manifest decoding', () => {
     if (pageEvent?.type !== 'checkpoint') throw new Error('Fixture checkpoint missing')
     pageEvent.pageId = 'page-missing'
     expectSchemaError(missingPage, 'tests[0].attempts[0].events[1].pageId')
+  })
+
+  it('requires checkpoint artifacts to be probed WebM videos', () => {
+    const wrongContentType = cloneManifest()
+    const checkpointArtifact = attempt(wrongContentType).artifacts.find(
+      (artifact) => artifact.role === 'checkpoint',
+    )
+    if (checkpointArtifact === undefined) throw new Error('Fixture checkpoint artifact missing')
+    checkpointArtifact.contentType = 'image/png'
+    expectSchemaError(wrongContentType, 'tests[0].attempts[0].events[1].artifactId')
+
+    const missingMedia = cloneManifest()
+    attempt(missingMedia).media = attempt(missingMedia).media.filter(
+      (media) => media.artifactId !== 'artifact-checkpoint',
+    )
+    expectSchemaError(missingMedia, 'tests[0].attempts[0].events[1].artifactId')
   })
 
   it('rejects missing and cyclic page opener references', () => {
@@ -134,6 +164,25 @@ describe('manifest decoding', () => {
     expect(decodeManifest(manifest)).toEqual(manifest)
   })
 
+  it('links caption artifacts to narration events', () => {
+    const manifest = cloneManifest()
+    attempt(manifest).artifacts.push({
+      id: 'artifact-captions',
+      name: 'narration.words.json',
+      role: 'captions',
+      contentType: 'application/json',
+      path: '/workspace/app/test-results/narration.words.json',
+      pathKind: 'absolute',
+      sizeBytes: 512,
+      createdAtMs: 200,
+      sourceEventId: 'event-1',
+    })
+    expect(decodeManifest(manifest)).toEqual(manifest)
+
+    attempt(manifest).artifacts.at(-1)!.sourceEventId = 'event-missing'
+    expectSchemaError(manifest, 'tests[0].attempts[0].artifacts[2].sourceEventId')
+  })
+
   it('requires source-video artifacts to identify their page', () => {
     const manifest = cloneManifest()
     delete attempt(manifest).artifacts.find(
@@ -168,6 +217,21 @@ describe('manifest decoding', () => {
     const manifest = cloneManifest()
     attempt(manifest).videoTiming[0]!.sourceStartedAtMs = 0
     expect(decodeManifest(manifest)).toEqual(manifest)
+  })
+
+  it('rejects pages and events outside the attempt timeline', () => {
+    const latePage = cloneManifest()
+    delete attempt(latePage).pages[0]!.closedAtMs
+    attempt(latePage).pages[0]!.createdAtMs = attempt(latePage).durationMs + 1
+    expectSchemaError(latePage, 'tests[0].attempts[0].pages[0].createdAtMs')
+
+    const lateClose = cloneManifest()
+    attempt(lateClose).pages[0]!.closedAtMs = attempt(lateClose).durationMs + 1
+    expectSchemaError(lateClose, 'tests[0].attempts[0].pages[0].closedAtMs')
+
+    const lateEvent = cloneManifest()
+    attempt(lateEvent).events[0]!.atMs = attempt(lateEvent).durationMs + 1
+    expectSchemaError(lateEvent, 'tests[0].attempts[0].events[0].atMs')
   })
 
   it('keeps retry timelines separate', () => {

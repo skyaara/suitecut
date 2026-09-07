@@ -8,6 +8,7 @@ export default tseslint.config(
   {
     ignores: [
       'dist/**',
+      'plugins/*/dist/**',
       '.suitecut/**',
       'test-results/**',
       'playwright-report/**',
@@ -34,7 +35,8 @@ export default tseslint.config(
       'import-x/resolver': {
         typescript: {
           alwaysTryTypes: true,
-          project: './tsconfig.json',
+          noWarnOnMultipleProjects: true,
+          project: ['./tsconfig.json', './plugins/*/tsconfig.json'],
         },
       },
     },
@@ -130,6 +132,12 @@ export default tseslint.config(
     rules: {
       '@typescript-eslint/no-non-null-assertion': 'off',
       '@typescript-eslint/no-unsafe-assignment': 'off',
+    },
+  },
+  {
+    files: ['scripts/**/*.mjs'],
+    rules: {
+      'jsdoc/no-types': 'off',
     },
   },
 )

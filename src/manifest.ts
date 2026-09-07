@@ -1,7 +1,9 @@
 import * as z from 'zod'
 
+import { SUITECUT_MANIFEST_SCHEMA_VERSION } from './constants.js'
 import {
   SuiteCutHighlightOptionsSchema,
+  SuiteCutNarrationProviderSchema,
   SuiteCutPathKindSchema,
   SuiteCutPointSchema,
   SuiteCutRectSchema,
@@ -66,11 +68,17 @@ const EventBase = {
   pageId: NonEmptyStringSchema,
 }
 
+const PageSelectionEventSchema = z.strictObject({
+  ...EventBase,
+  type: z.literal('page-selected'),
+  reason: z.enum(['opened', 'closed', 'author', 'interaction']),
+})
+
 const NarrationEventSchema = z.strictObject({
   ...EventBase,
   type: z.literal('narration'),
   text: NonEmptyStringSchema,
-  provider: z.enum(['kokoro', 'macos-say']).exactOptional(),
+  provider: SuiteCutNarrationProviderSchema.exactOptional(),
   voice: NonEmptyStringSchema.exactOptional(),
   speed: z.number().min(0.5).max(2).exactOptional(),
   caption: z.string().exactOptional(),
@@ -81,6 +89,7 @@ const CheckpointEventSchema = z.strictObject({
   type: z.literal('checkpoint'),
   label: NonEmptyStringSchema,
   artifactId: NonEmptyStringSchema,
+  durationMs: PositiveNumberSchema,
   viewport: SuiteCutViewportSchema,
 })
 
@@ -127,6 +136,7 @@ const HoldEventSchema = z.strictObject({
 })
 
 const EventSchema = z.discriminatedUnion('type', [
+  PageSelectionEventSchema,
   NarrationEventSchema,
   CheckpointEventSchema,
   PointerMoveEventSchema,
@@ -140,8 +150,9 @@ const CapturedCheckpointArtifactSchema = z.strictObject({
   id: NonEmptyStringSchema,
   attachmentName: NonEmptyStringSchema,
   role: z.literal('checkpoint'),
-  contentType: NonEmptyStringSchema,
+  contentType: z.literal('video/webm'),
   capturedAtMs: NonNegativeNumberSchema,
+  durationMs: PositiveNumberSchema,
   pageId: NonEmptyStringSchema,
 })
 
@@ -156,9 +167,19 @@ const CapturedNarrationArtifactSchema = z.strictObject({
   voice: NonEmptyStringSchema,
 })
 
+const CapturedCaptionArtifactSchema = z.strictObject({
+  id: NonEmptyStringSchema,
+  attachmentName: NonEmptyStringSchema,
+  role: z.literal('captions'),
+  contentType: z.literal('application/json'),
+  createdAtMs: NonNegativeNumberSchema,
+  sourceEventId: NonEmptyStringSchema,
+})
+
 const CapturedArtifactSchema = z.discriminatedUnion('role', [
   CapturedCheckpointArtifactSchema,
   CapturedNarrationArtifactSchema,
+  CapturedCaptionArtifactSchema,
 ])
 
 const CapturedVideoSchema = z.strictObject({
@@ -182,7 +203,7 @@ const EventAttachmentSchema = z
   .superRefine((attachment, context) => {
     const pageIds = new Set(attachment.pages.map((page) => page.id))
     const eventIds = new Set(attachment.events.map((event) => event.id))
-    const artifactIds = new Set(attachment.artifacts.map((artifact) => artifact.id))
+    const artifactById = new Map(attachment.artifacts.map((artifact) => [artifact.id, artifact]))
 
     for (const [index, event] of attachment.events.entries()) {
       if (!pageIds.has(event.pageId)) {
@@ -192,12 +213,25 @@ const EventAttachmentSchema = z
           path: ['events', index, 'pageId'],
         })
       }
-      if (event.type === 'checkpoint' && !artifactIds.has(event.artifactId)) {
-        context.addIssue({
-          code: 'custom',
-          message: 'unknown checkpoint artifact',
-          path: ['events', index, 'artifactId'],
-        })
+      if (event.type === 'checkpoint') {
+        const artifact = artifactById.get(event.artifactId)
+        if (artifact?.role !== 'checkpoint') {
+          context.addIssue({
+            code: 'custom',
+            message: 'unknown checkpoint artifact',
+            path: ['events', index, 'artifactId'],
+          })
+        } else if (
+          artifact.pageId !== event.pageId ||
+          artifact.capturedAtMs !== event.atMs ||
+          artifact.durationMs !== event.durationMs
+        ) {
+          context.addIssue({
+            code: 'custom',
+            message: 'checkpoint event does not match its video artifact',
+            path: ['events', index, 'artifactId'],
+          })
+        }
       }
     }
     for (const [index, artifact] of attachment.artifacts.entries()) {
@@ -208,10 +242,13 @@ const EventAttachmentSchema = z
           path: ['artifacts', index, 'pageId'],
         })
       }
-      if (artifact.role === 'narration-audio' && !eventIds.has(artifact.sourceEventId)) {
+      if (
+        (artifact.role === 'narration-audio' || artifact.role === 'captions') &&
+        !eventIds.has(artifact.sourceEventId)
+      ) {
         context.addIssue({
           code: 'custom',
-          message: 'unknown narration event',
+          message: 'unknown source event',
           path: ['artifacts', index, 'sourceEventId'],
         })
       }
@@ -266,6 +303,11 @@ const ArtifactSchema = z.strictObject({
 const VideoStreamSchema = z.strictObject({
   kind: z.literal('video'),
   codec: NonEmptyStringSchema,
+  pixelFormat: NonEmptyStringSchema.exactOptional(),
+  colorRange: z.enum(['full', 'limited']).exactOptional(),
+  colorSpace: NonEmptyStringSchema.exactOptional(),
+  colorTransfer: NonEmptyStringSchema.exactOptional(),
+  colorPrimaries: NonEmptyStringSchema.exactOptional(),
   width: PositiveIntegerSchema,
   height: PositiveIntegerSchema,
   durationMs: NonNegativeNumberSchema,
@@ -310,6 +352,7 @@ const DiagnosticSchema = z.strictObject({
     'POINTER_OUTSIDE_VIEWPORT',
     'LOCATOR_GEOMETRY_MISSING',
     'OPTIONAL_TRACK_OMITTED',
+    'RENDER_FAILED',
     'FFMPEG_FAILED',
   ]),
   message: NonEmptyStringSchema,
@@ -368,6 +411,7 @@ const AttemptSchema = z
     const pageIds = new Set(attempt.pages.map((page) => page.id))
     const artifactById = new Map(attempt.artifacts.map((artifact) => [artifact.id, artifact]))
     const mediaById = new Map(attempt.media.map((media) => [media.id, media]))
+    const mediaByArtifactId = new Map(attempt.media.map((media) => [media.artifactId, media]))
     const eventIds = new Set(attempt.events.map((event) => event.id))
 
     const duplicatePage = duplicateIndex(attempt.pages, (page) => page.id)
@@ -379,6 +423,20 @@ const AttemptSchema = z
       })
     }
     for (const [index, page] of attempt.pages.entries()) {
+      if (page.createdAtMs > attempt.durationMs) {
+        context.addIssue({
+          code: 'custom',
+          message: 'page creation exceeds attempt duration',
+          path: ['pages', index, 'createdAtMs'],
+        })
+      }
+      if (page.closedAtMs !== undefined && page.closedAtMs > attempt.durationMs) {
+        context.addIssue({
+          code: 'custom',
+          message: 'page close exceeds attempt duration',
+          path: ['pages', index, 'closedAtMs'],
+        })
+      }
       if (page.openerPageId !== undefined && !pageIds.has(page.openerPageId)) {
         context.addIssue({
           code: 'custom',
@@ -421,6 +479,13 @@ const AttemptSchema = z
           path: ['events', index, 'pageId'],
         })
       }
+      if (event.atMs > attempt.durationMs) {
+        context.addIssue({
+          code: 'custom',
+          message: 'event time exceeds attempt duration',
+          path: ['events', index, 'atMs'],
+        })
+      }
       if (event.type === 'checkpoint') {
         const artifact = artifactById.get(event.artifactId)
         if (artifact?.role !== 'checkpoint') {
@@ -435,6 +500,18 @@ const AttemptSchema = z
             message: 'checkpoint page does not match its artifact',
             path: ['events', index, 'artifactId'],
           })
+        } else {
+          const media = mediaByArtifactId.get(artifact.id)
+          if (
+            artifact.contentType !== 'video/webm' ||
+            !media?.streams.some((stream) => stream.kind === 'video')
+          ) {
+            context.addIssue({
+              code: 'custom',
+              message: 'checkpoint artifact must be a probed WebM video',
+              path: ['events', index, 'artifactId'],
+            })
+          }
         }
       }
     }
@@ -488,6 +565,16 @@ const AttemptSchema = z
           code: 'custom',
           message: 'unknown artifact page',
           path: ['artifacts', index, 'pageId'],
+        })
+      }
+      if (
+        (artifact.role === 'narration-audio' || artifact.role === 'captions') &&
+        (artifact.sourceEventId === undefined || !eventIds.has(artifact.sourceEventId))
+      ) {
+        context.addIssue({
+          code: 'custom',
+          message: 'narration artifact requires a source event',
+          path: ['artifacts', index, 'sourceEventId'],
         })
       }
     }
@@ -629,6 +716,7 @@ const TestSchema = z
 
 const ManifestSchema = z
   .strictObject({
+    schemaVersion: z.literal(SUITECUT_MANIFEST_SCHEMA_VERSION),
     startedAt: ISODateTimeSchema,
     endedAt: ISODateTimeSchema,
     status: z.enum(['passed', 'failed', 'timedout', 'interrupted']),
@@ -690,7 +778,14 @@ export class SuiteCutSchemaError extends Error {
 
 /** Decodes and cross-validates a persisted SuiteCut manifest. */
 export function decodeManifest(input: UntrustedInput): SuiteCutManifest {
-  const result = ManifestSchema.safeParse(input)
+  const versionedInput =
+    typeof input === 'object' &&
+    input !== null &&
+    !Array.isArray(input) &&
+    !Object.prototype.hasOwnProperty.call(input, 'schemaVersion')
+      ? { ...input, schemaVersion: SUITECUT_MANIFEST_SCHEMA_VERSION }
+      : input
+  const result = ManifestSchema.safeParse(versionedInput)
   if (!result.success) {
     const issue = result.error.issues[0]
     if (issue === undefined) throw new Error('Manifest validation failed without an issue')

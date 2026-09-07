@@ -5,34 +5,107 @@ import { sitePath } from '../lib/paths.js'
 interface Props {
   title: string
   description: string
-  section: 'overview' | 'api' | 'kokoro' | 'examples'
+  section: 'overview' | 'api' | 'kokoro' | 'audio-plugins' | 'streaming'
 }
 
 const { title, description, section } = Astro.props
 
-const links = [
-  { key: 'overview', label: 'Getting started', href: '/docs/' },
-  { key: 'api', label: 'Fixture API', href: '/docs/api/' },
-  { key: 'kokoro', label: 'Kokoro speech', href: '/docs/kokoro/' },
-  { key: 'examples', label: 'Examples', href: '/docs/examples/' },
+const categories = [
+  {
+    key: 'streaming',
+    label: 'Live streaming',
+    href: '/docs/streaming',
+    subcategories: [
+      { label: 'Publish a page', hash: 'publish-a-page' },
+      { label: 'Stream options', hash: 'stream-options' },
+      { label: 'Reconnect and stop', hash: 'reconnect-and-stop' },
+      { label: 'Live effects', hash: 'live-effects' },
+      { label: 'Verify locally', hash: 'verify-locally' },
+    ],
+  },
+  {
+    key: 'overview',
+    label: 'Getting started',
+    href: '/docs',
+    subcategories: [
+      { label: 'Requirements', hash: 'requirements' },
+      { label: 'Install', hash: 'install' },
+      { label: 'Record a flow', hash: 'record-a-flow' },
+      { label: 'Run and render', hash: 'run-and-render' },
+      { label: 'Playwright Test', hash: 'playwright-test' },
+      { label: 'Render quality', hash: 'render-quality' },
+    ],
+  },
+  {
+    key: 'api',
+    label: 'API and CLI',
+    href: '/docs/api',
+    subcategories: [
+      { label: 'Public exports', hash: 'public-exports' },
+      { label: 'Recording options', hash: 'recording-options' },
+      { label: 'Fixture methods', hash: 'fixture-methods' },
+      { label: 'Capture options', hash: 'capture-options' },
+      { label: 'Renderer', hash: 'render-api' },
+      { label: 'Playwright Test', hash: 'playwright-test-api' },
+      { label: 'Reporter options', hash: 'reporter-options' },
+      { label: 'Audio plugins', hash: 'audio-plugin-api' },
+      { label: 'CLI flags', hash: 'command-line-flags' },
+      { label: 'Recorded test', hash: 'recorded-test' },
+    ],
+  },
+  {
+    key: 'kokoro',
+    label: 'Kokoro speech',
+    href: '/docs/kokoro',
+    subcategories: [
+      { label: 'Choose a voice', hash: 'choose-a-voice' },
+      { label: 'Voice samples', hash: 'voice-samples' },
+      { label: 'Bundled files', hash: 'bundled-files' },
+      { label: 'macOS voice', hash: 'macos-voice' },
+      { label: 'Timing', hash: 'timing' },
+      { label: 'Other models', hash: 'other-models' },
+    ],
+  },
+  {
+    key: 'audio-plugins',
+    label: 'Audio plugins',
+    href: '/docs/audio-plugins',
+    subcategories: [
+      { label: 'Install a family', hash: 'install-a-family' },
+      { label: 'Set a voice', hash: 'set-a-voice' },
+      { label: 'Playwright Test', hash: 'playwright-test' },
+      { label: 'Write a plugin', hash: 'write-a-plugin' },
+    ],
+  },
 ] as const
 ---
 
 <BaseLayout title={`${title} · SuiteCut`} description={description} current="docs">
-  <div class="docs-grid">
-    <aside class="docs-rail" aria-label="Documentation sections">
-      <p class="rail-title">Field manual</p>
-      <nav>
-        {
-          links.map((link, index) => (
-            <a href={sitePath(link.href)} aria-current={section === link.key ? 'page' : undefined}>
-              <span>{String(index + 1).padStart(2, '0')}</span>
-              {link.label}
-            </a>
-          ))
-        }
-      </nav>
-    </aside>
+  <div class="docs-shell">
+    <nav class="docs-nav" aria-label="Documentation sections">
+      {
+        categories.map((category) => (
+          <details class="docs-nav-category" open={section === category.key}>
+            <summary>
+              <a
+                class="docs-nav-category-link"
+                href={sitePath(category.href)}
+                aria-current={section === category.key ? 'page' : undefined}
+              >
+                {category.label}
+              </a>
+            </summary>
+            <ul aria-label={`${category.label} sections`}>
+              {category.subcategories.map((subcategory) => (
+                <li>
+                  <a href={`${sitePath(category.href)}#${subcategory.hash}`}>{subcategory.label}</a>
+                </li>
+              ))}
+            </ul>
+          </details>
+        ))
+      }
+    </nav>
     <article class="docs-article"><slot /></article>
   </div>
 </BaseLayout>

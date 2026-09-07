@@ -1,6 +1,28 @@
-export { expect, test } from './suitecut.js'
+export { defineSuiteCut, record } from './playwright.js'
+export type { SuiteCutStreamOptions, SuiteCutReconnectOptions } from './schemas.js'
+export type {
+  SuiteCutBrowserName,
+  SuiteCutCleanup,
+  SuiteCutDefinitionOptions,
+  SuiteCutOutputOptions,
+  SuiteCutRecordOptions,
+  SuiteCutRecordResult,
+  SuiteCutRecorder,
+  SuiteCutRecordingCallback,
+  SuiteCutRecordingContext,
+  SuiteCutSetupContext,
+} from './playwright.js'
+export { decodeWordTimingArtifact } from './captions.js'
+export type {
+  SuiteCutAudioPlugin,
+  SuiteCutAudioPluginReference,
+  SuiteCutAudioSynthesisRequest,
+  SuiteCutJsonValue,
+} from './audio-plugin.js'
 export { renderSuiteCut } from './render.js'
 export type {
+  SuiteCutColorRange,
+  SuiteCutOutputContainer,
   SuiteCutOutputFormat,
   SuiteCutRenderConfig,
   SuiteCutRenderFailureMode,
@@ -18,9 +40,12 @@ export type {
   SuiteCutNarrationOptions,
   SuiteCutPointerActionOptions,
   SuiteCutScrollOptions,
+  SuiteCutTypeOptions,
 } from './fixtures.js'
 export type {
   Milliseconds,
+  SuiteCutWordTiming,
+  SuiteCutWordTimingArtifact,
   SuiteCutAnimationOptions,
   SuiteCutBorderStyle,
   SuiteCutEasing,

@@ -1,60 +1,682 @@
 ---
 import CodeBlock from '../../../components/CodeBlock.astro'
+import { sitePath } from '../../../lib/paths.js'
 import DocsLayout from '../../../layouts/DocsLayout.astro'
 
-const example = `test('opens the account', async ({ page, suitecut }) => {
+const example = `import { expect, test } from 'suitecut/test'
+
+test('opens the account', async ({ page, suitecut }) => {
   await page.goto('/account')
   await suitecut.narrate('The account page is open.')
 
   const billing = page.getByRole('link', { name: 'Billing' })
-  await suitecut.highlight(billing, { borderColor: '#71352e' })
+  await suitecut.highlight(billing, { label: 'Open billing' })
   await suitecut.click(billing)
   await suitecut.hold(500)
   await suitecut.checkpoint('Billing page')
 })`
+
+const rootExports = `import {
+  defineSuiteCut,
+  record,
+  renderSuiteCut,
+  type Milliseconds,
+  type SuiteCutAnimationOptions,
+  type SuiteCutAudioPlugin,
+  type SuiteCutAudioPluginReference,
+  type SuiteCutAudioSynthesisRequest,
+  type SuiteCutBorderStyle,
+  type SuiteCutStreamOptions,
+  type SuiteCutReconnectOptions,
+  type SuiteCutCaptureOptions,
+  type SuiteCutCaptureSize,
+  type SuiteCutCaptureViewport,
+  type SuiteCutCheckpointOptions,
+  type SuiteCutCleanup,
+  type SuiteCutColorRange,
+  type SuiteCutEasing,
+  type SuiteCutFixture,
+  type SuiteCutHighlightMode,
+  type SuiteCutHighlightOptions,
+  type SuiteCutJsonValue,
+  type SuiteCutNarrationOptions,
+  type SuiteCutNarrationProvider,
+  type SuiteCutNarrationVoice,
+  type SuiteCutOutputOptions,
+  type SuiteCutOutputContainer,
+  type SuiteCutOutputFormat,
+  type SuiteCutPointerActionOptions,
+  type SuiteCutRecordOptions,
+  type SuiteCutRecordResult,
+  type SuiteCutRecorder,
+  type SuiteCutRecordingCallback,
+  type SuiteCutRecordingContext,
+  type SuiteCutRenderConfig,
+  type SuiteCutRenderFailureMode,
+  type SuiteCutRenderOutputConfig,
+  type SuiteCutRenderQuality,
+  type SuiteCutRenderReport,
+  type SuiteCutRenderRequest,
+  type SuiteCutScrollAlignment,
+  type SuiteCutScrollBehavior,
+  type SuiteCutScrollOptions,
+  type SuiteCutSetupContext,
+  type SuiteCutTypeOptions,
+  type SuiteCutVisualAnimation,
+  type SuiteCutZoomOptions,
+} from 'suitecut'`
+
+const testExports = `import { expect, test } from 'suitecut/test'`
+
+const playwrightExports = `import {
+  defineSuiteCut,
+  record,
+  type Milliseconds,
+  type SuiteCutAudioPluginReference,
+  type SuiteCutBrowserName,
+  type SuiteCutCaptureOptions,
+  type SuiteCutCheckpointOptions,
+  type SuiteCutCleanup,
+  type SuiteCutDefinitionOptions,
+  type SuiteCutFixture,
+  type SuiteCutHighlightOptions,
+  type SuiteCutNarrationOptions,
+  type SuiteCutOutputOptions,
+  type SuiteCutPointerActionOptions,
+  type SuiteCutRecordOptions,
+  type SuiteCutRecordResult,
+  type SuiteCutRecorder,
+  type SuiteCutRecordingCallback,
+  type SuiteCutRecordingContext,
+  type SuiteCutScrollOptions,
+  type SuiteCutTypeOptions,
+  type SuiteCutSetupContext,
+  type SuiteCutZoomOptions,
+} from 'suitecut/playwright'`
+
+const audioPluginExports = `import {
+  audioPluginReference,
+  defineSuiteCutAudioPlugin,
+  encodePcm16Wav,
+  type SuiteCutAudioPlugin,
+  type SuiteCutAudioPluginReference,
+  type SuiteCutAudioSynthesisRequest,
+  type SuiteCutJsonValue,
+} from 'suitecut/audio-plugin'`
+
+const renderExports = `import {
+  renderSuiteCut,
+  type SuiteCutColorRange,
+  type SuiteCutEditSegment,
+  type SuiteCutOutputContainer,
+  type SuiteCutOutputFormat,
+  type SuiteCutRenderConfig,
+  type SuiteCutRenderFailureMode,
+  type SuiteCutRenderOutputConfig,
+  type SuiteCutRenderQuality,
+  type SuiteCutRenderReport,
+  type SuiteCutRenderRequest,
+} from 'suitecut/render'`
+
+const reporterExports = `import SuiteCutReporter, {
+  type SuiteCutReporterOptions,
+} from 'suitecut/reporter'`
+
+const typeExports = `import {
+  SUITECUT_EVENT_ATTACHMENT,
+  SUITECUT_MANIFEST_SCHEMA_VERSION,
+  type EpochMilliseconds,
+  type FilePath,
+  type ISODateTime,
+  type Milliseconds,
+  type MimeType,
+  type SuiteCutActiveScreencast,
+  type SuiteCutAnimationOptions,
+  type SuiteCutArtifact,
+  type SuiteCutArtifactId,
+  type SuiteCutArtifactRole,
+  type SuiteCutAttempt,
+  type SuiteCutAttemptClock,
+  type SuiteCutAttemptId,
+  type SuiteCutAudioStream,
+  type SuiteCutBorderStyle,
+  type SuiteCutCapturedArtifact,
+  type SuiteCutCapturedCheckpointArtifact,
+  type SuiteCutCapturedNarrationArtifact,
+  type SuiteCutCapturedVideo,
+  type SuiteCutCheckpointEvent,
+  type SuiteCutCheckpointOptions,
+  type SuiteCutDiagnostic,
+  type SuiteCutDiagnosticCode,
+  type SuiteCutDiagnosticLevel,
+  type SuiteCutEasing,
+  type SuiteCutError,
+  type SuiteCutEvent,
+  type SuiteCutEventAttachment,
+  type SuiteCutEventBase,
+  type SuiteCutEventId,
+  type SuiteCutExecutionStep,
+  type SuiteCutFixture,
+  type SuiteCutHighlightEvent,
+  type SuiteCutHighlightMode,
+  type SuiteCutHighlightOptions,
+  type SuiteCutHoldEvent,
+  type SuiteCutHoldReason,
+  type SuiteCutManifest,
+  type SuiteCutMedia,
+  type SuiteCutMediaId,
+  type SuiteCutMediaStream,
+  type SuiteCutNarrationEvent,
+  type SuiteCutNarrationOptions,
+  type SuiteCutNarrationProvider,
+  type SuiteCutNarrationVoice,
+  type SuiteCutPage,
+  type SuiteCutPageEventBase,
+  type SuiteCutPageSelectionEvent,
+  type SuiteCutPageSelectionReason,
+  type SuiteCutPageId,
+  type SuiteCutPageKind,
+  type SuiteCutPathKind,
+  type SuiteCutPoint,
+  type SuiteCutPointerButton,
+  type SuiteCutPointerButtonEvent,
+  type SuiteCutPointerMoveEvent,
+  type SuiteCutPointerType,
+  type SuiteCutRecordingSession,
+  type SuiteCutRect,
+  type SuiteCutRunStatus,
+  type SuiteCutScrollAlignment,
+  type SuiteCutScrollBehavior,
+  type SuiteCutScrollOptions,
+  type SuiteCutSize,
+  type SuiteCutSourceLocation,
+  type SuiteCutStepCategory,
+  type SuiteCutStepId,
+  type SuiteCutStepOutcome,
+  type SuiteCutTest,
+  type SuiteCutTestId,
+  type SuiteCutTestStatus,
+  type SuiteCutTypeOptions,
+  type SuiteCutVideoStream,
+  type SuiteCutVideoTiming,
+  type SuiteCutViewport,
+  type SuiteCutVisualAnimation,
+  type SuiteCutZoomEvent,
+  type SuiteCutZoomOptions,
+} from 'suitecut/types'`
+
+const fixtureInterface = `interface SuiteCutFixture {
+  selectPage(page: Page): void
+  narrate(text: string, options?: SuiteCutNarrationOptions): Promise<void>
+  checkpoint(label: string, options?: SuiteCutCheckpointOptions): Promise<void>
+  hold(durationMs: number): Promise<void>
+  highlight(locator: Locator, options?: SuiteCutHighlightOptions): Promise<void>
+  zoom(locator: Locator, options?: SuiteCutZoomOptions): Promise<void>
+  hover(locator: Locator, options?: SuiteCutPointerActionOptions): Promise<void>
+  click(locator: Locator, options?: SuiteCutPointerActionOptions): Promise<void>
+  type(locator: Locator, text: string, options?: SuiteCutTypeOptions): Promise<void>
+  scrollTo(locator: Locator, options?: SuiteCutScrollOptions): Promise<void>
+  scrollTop(options?: SuiteCutScrollOptions): Promise<void>
+}`
+
+const plainPlaywrightSignatures = `record(
+  name: string,
+  callback: SuiteCutRecordingCallback,
+  options?: SuiteCutRecordOptions,
+): Promise<SuiteCutRecordResult>
+
+defineSuiteCut<Extensions extends object = object>(
+  defaults?: SuiteCutDefinitionOptions<Extensions>,
+): SuiteCutRecorder<Extensions>`
+
+const renderExample = `const report = await renderSuiteCut({
+  manifestPath: '.suitecut/latest-run.json',
+  outputPath: '.suitecut/videos/tour.mp4',
+  selection: { testId, retry: 0 },
+  config: {
+    narrationEnabled: true,
+    resultHoldMs: 500,
+    failureMode: 'strict',
+    output: {
+      container: 'mp4',
+      width: 3840,
+      height: 2160,
+      framesPerSecond: 60,
+      quality: 'high',
+    },
+  },
+})`
 ---
 
-<DocsLayout title="Fixture API" description="SuiteCut Playwright fixture methods." section="api">
-  <p class="kicker">Field manual · 02</p>
-  <h1>Fixture API</h1>
+<DocsLayout
+  title="API and CLI reference"
+  description="SuiteCut fixture methods, capture settings, reporter options, and render flags."
+  section="api"
+>
+  <h1>API and CLI</h1>
   <p>
-    The <code>suitecut</code> fixture records narration, captions, cursor movement, browser actions, and
-    presentation timing in the same Playwright flow.
+    SuiteCut's fixture, capture, output, reporter, and render option objects reject unknown keys and
+    invalid values. Playwright launch and browser-context options pass through to Playwright.
   </p>
 
-  <ul class="api-list">
+  <h2 id="public-exports">Public exports</h2>
+  <p>
+    These are every package entry point and export in the current build. Files below
+    <code>suitecut/src</code> are internal and are not public imports.
+  </p>
+
+  <h3><code>suitecut</code></h3>
+  <p>The runner-free recorder, renderer, and their public option and result types.</p>
+  <CodeBlock code={rootExports} />
+
+  <h3><code>suitecut/test</code></h3>
+  <p>The optional Playwright Test fixture and assertion API.</p>
+  <CodeBlock code={testExports} />
+
+  <h3><code>suitecut/playwright</code></h3>
+  <p>
+    A compatibility alias for the runner-free exports from <code>suitecut</code>.
+  </p>
+  <CodeBlock code={playwrightExports} />
+
+  <h3><code>suitecut/audio-plugin</code></h3>
+  <p>The contract and helpers for external narration packages.</p>
+  <CodeBlock code={audioPluginExports} />
+
+  <h3><code>suitecut/render</code></h3>
+  <p>The programmatic renderer and its complete request, output, edit, and report types.</p>
+  <CodeBlock code={renderExports} />
+
+  <h3><code>suitecut/reporter</code></h3>
+  <p>The Playwright reporter class and reporter configuration type.</p>
+  <CodeBlock code={reporterExports} />
+
+  <h3><code>suitecut/types</code></h3>
+  <p>The complete manifest, event, artifact, media, geometry, diagnostic, and identity model.</p>
+  <CodeBlock code={typeExports} />
+
+  <h2 id="playwright-test-api">Playwright Test</h2>
+  <p>
+    Import from <code>suitecut/test</code>. <code>test</code> extends Playwright Test with the
+    <code>suitecut</code> fixture and two options. <code>expect</code> is Playwright's normal assertion
+    API.
+  </p>
+  <ul>
+    <li><code>suitecut</code>: the recording controls documented below.</li>
     <li>
-      <strong>selectPage(page): void</strong>Chooses the main page, popup, or secondary page for
-      later events.
+      <code>suitecutCapture</code>: viewport, source size, frame rate, quality, and narration tail.
     </li>
     <li>
-      <strong>narrate(text, options?): Promise&lt;void&gt;</strong>Synthesizes local speech, records
-      its caption, and advances the presentation by the measured clip duration.
-    </li>
-    <li>
-      <strong>checkpoint(label, options?): Promise&lt;void&gt;</strong>Captures named PNG evidence
-      and records it in the manifest.
-    </li>
-    <li>
-      <strong>highlight(locator, options?): Promise&lt;void&gt;</strong>Records an outline, fill, or
-      spotlight callout in the browser.
-    </li>
-    <li>
-      <strong>zoom(locator, options?): Promise&lt;void&gt;</strong>Captures a target region for a
-      closer camera crop.
-    </li>
-    <li>
-      <strong>hold(durationMs): Promise&lt;void&gt;</strong>Keeps the browser recording on the
-      current state for the requested duration.
+      <code>suitecutAudioPlugins</code>: external provider references loaded in the narration
+      worker.
     </li>
   </ul>
 
-  <h2>A recorded test</h2>
-  <CodeBlock code={example} />
+  <h2 id="fixture-methods">Fixture methods</h2>
+  <CodeBlock code={fixtureInterface} />
 
-  <h2>Validation</h2>
+  <h3><code>selectPage(page): void</code></h3>
   <p>
-    Public inputs are parsed through strict schemas. Empty labels, invalid durations, unsupported
-    providers, extra option keys, and malformed render requests fail at the boundary.
+    Selects the main page, popup, or secondary page used by later narration, checkpoints, holds, and
+    <code>scrollTop()</code>. Locator methods select their locator's page automatically. Closing a
+    selected popup returns selection to its opener when possible.
   </p>
+
+  <h3><code>narrate(text, options?): Promise&lt;void&gt;</code></h3>
+  <p>
+    Synthesizes speech locally, records its audio, displays a caption, and waits for the measured
+    clip plus the configured narration tail. Synthesis time is excluded from the recording clock.
+    The
+    <code>text</code> must not be empty.
+  </p>
+  <ul>
+    <li>
+      <code>provider</code>: <code>kokoro</code> by default, <code>macos-say</code>, or a configured
+      audio plugin ID.
+    </li>
+    <li>
+      <code>voice</code>: <code>af_heart</code> for Kokoro; the native provider uses its system default
+      when omitted.
+    </li>
+    <li><code>speed</code>: <code>0.5</code> through <code>2</code>; default <code>1</code>.</li>
+    <li>
+      <code>caption</code>: override the spoken text shown on screen. Use an empty string to hide
+      the caption without removing audio.
+    </li>
+  </ul>
+
+  <h3><code>checkpoint(label, options?): Promise&lt;void&gt;</code></h3>
+  <p>
+    Marks the current page state and attaches a WebM clip cut from the same page screencast used by
+    the final render. The label must not be empty. <code>durationMs</code> sets the recording window;
+    the default is <code>500</code> milliseconds and the maximum is <code>10000</code>.
+  </p>
+
+  <h3><code>hold(durationMs): Promise&lt;void&gt;</code></h3>
+  <p>
+    Keeps the selected browser page recording its current state. The duration is in milliseconds and
+    must be greater than zero.
+  </p>
+
+  <h3><code>highlight(locator, options?): Promise&lt;void&gt;</code></h3>
+  <p>
+    Measures a visible locator and records the complete highlight animation in the selected browser.
+    Hidden or geometry-less locators fail clearly.
+  </p>
+  <ul>
+    <li><code>durationMs</code>: total duration; default <code>1200</code>.</li>
+    <li>
+      <code>mode</code>: <code>outline</code> by default, <code>fill</code>, or <code
+        >spotlight</code
+      >.
+    </li>
+    <li>
+      <code>geometry</code>: <code>element</code> by default, or <code>content</code> to tightly wrap
+      rendered text and controls inside a block.
+    </li>
+    <li><code>paddingPx</code>: <code>8</code>; <code>borderWidthPx</code>: <code>4</code>.</li>
+    <li><code>borderStyle</code>: <code>solid</code> by default, or <code>dashed</code>.</li>
+    <li>
+      <code>borderColor</code>: <code>#7C3AED</code>; <code>borderRadiusPx</code>: <code>10</code>.
+    </li>
+    <li>
+      <code>fillColor</code>: <code>#7C3AED</code>; <code>fillOpacity</code>: <code>0.08</code>.
+    </li>
+    <li>
+      <code>backdropColor</code>: <code>#000000</code>; <code>backdropOpacity</code>: <code
+        >0.45</code
+      >.
+    </li>
+    <li><code>label</code>: optional text displayed above the target.</li>
+    <li>
+      <code>enter</code>: default <code
+        >{`{ type: 'fade', durationMs: 180, easing: 'ease-out' }`}</code
+      >.
+    </li>
+    <li>
+      <code>exit</code>: default <code
+        >{`{ type: 'fade', durationMs: 140, easing: 'ease-in' }`}</code
+      >.
+    </li>
+  </ul>
+  <p>
+    Animation type accepts <code>none</code>, <code>fade</code>, <code>scale</code>, or
+    <code>fade-scale</code>. Easing accepts <code>linear</code>, <code>ease-in</code>,
+    <code>ease-out</code>, or <code>ease-in-out</code>. A <code>none</code> phase is instantaneous. Scale
+    emphasis never transforms the highlight box, so its border stays aligned throughout the phase.
+  </p>
+
+  <h3><code>zoom(locator, options?): Promise&lt;void&gt;</code></h3>
+  <p>
+    Scrolls the locator into view and records a continuously evaluated camera move. SuiteCut centers
+    edge targets, pads beyond the captured browser frame when needed, and limits the requested scale
+    when necessary to retain available target padding. Concurrent zoom calls run in call order.
+  </p>
+  <ul>
+    <li>
+      <code>scale</code>: <code>1</code> through <code>1.25</code>; default <code>1.15</code>.
+    </li>
+    <li>
+      <code>geometry</code>: <code>element</code> by default, or <code>content</code> to center rendered
+      text and controls inside a block.
+    </li>
+    <li><code>paddingPx</code>: minimum retained target padding; default <code>24</code>.</li>
+    <li><code>holdMs</code>: time at the closest scale; default <code>900</code>.</li>
+    <li>
+      <code>enter</code>: default <code
+        >{`{ type: 'scale', durationMs: 260, easing: 'ease-out' }`}</code
+      >.
+    </li>
+    <li>
+      <code>exit</code>: default <code
+        >{`{ type: 'scale', durationMs: 220, easing: 'ease-in-out' }`}</code
+      >.
+    </li>
+  </ul>
+  <p>
+    Zoom accepts the same animation values as highlight. <code>none</code> disables a phase;
+    <code>fade</code>, <code>scale</code>, and <code>fade-scale</code> use eased camera interpolation.
+  </p>
+
+  <h3><code>hover(locator, options?): Promise&lt;void&gt;</code></h3>
+  <p>
+    Scrolls the locator into view, moves the recorded cursor to its center, performs a real
+    Playwright hover, waits for resulting application animations by default, and settles.
+  </p>
+  <ul>
+    <li><code>moveDurationMs</code>: <code>450</code>.</li>
+    <li><code>settleMs</code>: <code>120</code>.</li>
+    <li><code>waitForAnimations</code>: <code>true</code>.</li>
+    <li><code>animationTimeoutMs</code>: <code>2000</code>.</li>
+  </ul>
+
+  <h3><code>click(locator, options?): Promise&lt;void&gt;</code></h3>
+  <p>
+    Uses the same options as <code>hover()</code>, performs a real click, and records a 280 ms
+    ripple. The ripple and optional application-animation wait run together. Click-driven navigation
+    is supported.
+  </p>
+
+  <h3><code>type(locator, text, options?): Promise&lt;void&gt;</code></h3>
+  <p>
+    Scrolls the field into view and enters text one character at a time through Playwright's
+    keyboard events. The source recording shows each character as it appears. The text must contain
+    at least one character.
+  </p>
+  <ul>
+    <li><code>delayMs</code>: time between characters; default <code>70</code>.</li>
+    <li><code>settleMs</code>: wait after the last character; default <code>250</code>.</li>
+    <li>
+      <code>clearExisting</code>: replace the current value before typing; default <code>true</code
+      >. Set it to <code>false</code> to type at the current caret.
+    </li>
+  </ul>
+
+  <h3><code>scrollTo(locator, options?): Promise&lt;void&gt;</code></h3>
+  <p>
+    Calls native <code>scrollIntoView()</code> and waits for the target to remain stable for three animation
+    frames.
+  </p>
+  <ul>
+    <li><code>behavior</code>: <code>smooth</code> by default, or <code>auto</code>.</li>
+    <li>
+      <code>block</code>: <code>center</code> by default; also <code>start</code>, <code>end</code>,
+      or <code>nearest</code>.
+    </li>
+    <li>
+      <code>inline</code>: <code>nearest</code> by default; also <code>start</code>, <code
+        >center</code
+      >, or <code>end</code>.
+    </li>
+    <li><code>timeoutMs</code>: <code>2000</code>; <code>settleMs</code>: <code>120</code>.</li>
+  </ul>
+
+  <h3><code>scrollTop(options?): Promise&lt;void&gt;</code></h3>
+  <p>
+    Scrolls the selected window to the origin. It uses <code>behavior</code>, <code>timeoutMs</code
+    >, and
+    <code>settleMs</code> with the defaults above. <code>block</code> and <code>inline</code> are accepted
+    for the shared options type but do not affect a window-to-origin scroll.
+  </p>
+
+  <h2 id="capture-options">Capture options</h2>
+  <p>
+    Set <code>suitecutCapture</code> through <code>test.use()</code> or Playwright Test configuration.
+    Plain Playwright scripts pass the same object as <code>capture</code> to <code>record()</code> or
+    <code>defineSuiteCut()</code>.
+  </p>
+  <ul>
+    <li><code>viewport</code>: default <code>1600x900</code>; maximum <code>7680x4320</code>.</li>
+    <li>
+      <code>size</code>: encoded source size, defaulting to the viewport. A larger proportional size
+      uses a matching layout scale. For example, a <code>1920x1080</code> viewport with a
+      <code>3840x2160</code> size keeps HD composition on a native 4K surface. Both size dimensions must
+      be even and no larger than <code>7680x4320</code>.
+    </li>
+    <li>
+      <code>framesPerSecond</code>: <code>30</code> or <code>60</code>; default <code>30</code>.
+    </li>
+    <li>
+      <code>quality</code>: screencast JPEG quality <code>1</code> through <code>100</code>; default <code
+        >100</code
+      >.
+    </li>
+    <li>
+      <code>narrationTailMs</code>: non-negative post-narration pause; default <code>350</code>.
+    </li>
+  </ul>
+
+  <p>
+    Set <code>capture.stream</code> to publish H.264 video with silent AAC audio over RTMP or RTMPS. This
+    selects streaming-only mode, with no source recordings or checkpoint clips. See <a
+      href={sitePath('/docs/streaming')}>live streaming</a
+    > for options, reconnect behavior, cancellation, and supported effects. Streaming JPEG quality defaults
+    to <code>90</code>.
+  </p>
+
+  <h2 id="reporter-options">Reporter options</h2>
+  <ul>
+    <li>
+      <code>outputFile</code>: default <code>.suitecut/latest-run.json</code>. The
+      <code>SUITECUT_MANIFEST_PATH</code> environment variable takes precedence.
+    </li>
+    <li>
+      <code>pathKind</code>: <code>absolute</code> by default, or <code>manifest-relative</code>.
+    </li>
+    <li>
+      <code>includeStepCategories</code>: optional allowlist of <code>hook</code>, <code
+        >fixture</code
+      >,
+      <code>pw:api</code>, <code>expect</code>, <code>test.step</code>, <code>test.attach</code>, or
+      <code>unknown</code>. Retained descendants reconnect to the nearest retained ancestor.
+    </li>
+  </ul>
+
+  <h2 id="recording-options">Recording options</h2>
+  <p>
+    Import <code>record</code> or <code>defineSuiteCut</code> from <code>suitecut</code>. Each call
+    owns one browser, context, main page, and recording. It writes one manifest attempt with no test
+    steps.
+  </p>
+  <CodeBlock code={plainPlaywrightSignatures} />
+  <ul>
+    <li>
+      <code>browserName</code>: <code>chromium</code>, <code>firefox</code>, or <code>webkit</code>.
+    </li>
+    <li><code>launch</code>: Playwright launch options.</li>
+    <li>
+      <code>context</code>: Playwright browser context options. Do not set <code>recordVideo</code>;
+      SuiteCut owns the page screencasts.
+    </li>
+    <li><code>capture</code>: the capture options listed above.</li>
+    <li>
+      <code>output.directory</code>: artifact directory. The default is a unique directory under
+      <code>.suitecut/recordings</code>.
+    </li>
+    <li>
+      <code>output.manifestPath</code>: default <code>.suitecut/latest-run.json</code>.
+    </li>
+    <li>
+      <code>output.pathKind</code>: <code>absolute</code> by default, or <code
+        >manifest-relative</code
+      >.
+    </li>
+    <li>
+      <code>signal</code>: an <code>AbortSignal</code> that cancels setup, capture, narration, and owned
+      browser resources. Setup and recording callbacks receive the same signal.
+    </li>
+  </ul>
+
+  <h3><code>SuiteCutRecordResult</code></h3>
+  <p>
+    A successful recording returns <code>attemptId</code>, <code>testId</code>, the decoded
+    <code>manifest</code>, its <code>manifestPath</code>, and the <code>outputDirectory</code>.
+    <code>defineSuiteCut()</code> can add typed setup values and reverse-order cleanup callbacks.
+  </p>
+
+  <h2 id="render-api">Renderer</h2>
+  <p>
+    <code>renderSuiteCut(request)</code> selects one recorded attempt, invokes FFmpeg, writes the requested
+    video, and writes <code>&lt;output&gt;.suitecut.json</code>. It returns the same render report.
+  </p>
+  <CodeBlock code={renderExample} />
+  <p>
+    The request accepts <code>manifestPath</code>, <code>outputPath</code>, optional test and retry
+    selection, optional render configuration, and an optional <code>signal</code>. Aborting stops
+    the owned FFmpeg process and rejects with the signal reason. The report includes timing edits,
+    diagnostics, selected IDs, output status, and the FFmpeg command result.
+  </p>
+
+  <h2 id="audio-plugin-api">Audio plugin helpers</h2>
+  <ul>
+    <li>
+      <code>defineSuiteCutAudioPlugin(plugin)</code> preserves the plugin type without wrapping the runtime
+      object.
+    </li>
+    <li>
+      <code>audioPluginReference(reference)</code> validates a provider ID, module name, and optional
+      JSON settings before the worker loads them.
+    </li>
+    <li>
+      <code>encodePcm16Wav(samples, sampleRate)</code> converts a mono <code>Float32Array</code> into
+      a 16-bit PCM WAV byte array.
+    </li>
+    <li>
+      <code>SuiteCutAudioPlugin.synthesize(request)</code> receives text, voice, speed, output path, and
+      plugin settings. It resolves after writing the WAV file.
+    </li>
+    <li>
+      Optional <code>SuiteCutAudioPlugin.dispose()</code> releases plugin-owned models, workers, files,
+      or subprocesses when the narration worker closes normally.
+    </li>
+  </ul>
+  <p>
+    The <a href="../audio-plugins">audio plugin guide</a> shows package installation and provider setup.
+  </p>
+
+  <h2 id="command-line-flags">Command-line flags</h2>
+  <p>
+    <code>suitecut test [--manifest path] -- [Playwright options]</code> forwards Playwright arguments
+    and installs the SuiteCut reporter. <code>suitecut render</code> requires
+    <code>--manifest &lt;path&gt;</code> and <code>--output &lt;path&gt;</code>.
+  </p>
+  <ul>
+    <li><code>--test-id &lt;id&gt;</code>: select a test; default is the first.</li>
+    <li><code>--retry &lt;number&gt;</code>: select an attempt; default is the latest.</li>
+    <li>
+      <code>--container &lt;mp4|webm|mov|mkv&gt;</code>: default comes from the output extension.
+    </li>
+    <li><code>--format</code>: deprecated alias for <code>--container</code>.</li>
+    <li>
+      <code>--video-codec</code>: default <code>libvpx-vp9</code> for WebM, <code>libx264</code> otherwise.
+    </li>
+    <li>
+      <code>--audio-codec</code>: default <code>libopus</code> for WebM, <code>aac</code> otherwise.
+    </li>
+    <li>
+      <code>--pixel-format</code>: default <code>yuv422p10le</code> for ProRes, <code>yuv420p</code> otherwise.
+    </li>
+    <li><code>--color-range &lt;auto|full|limited&gt;</code>: default <code>auto</code>.</li>
+    <li>
+      <code>--width</code> and <code>--height</code>: default <code>1920x1080</code>; supply both,
+      even, maximum <code>7680x4320</code>.
+    </li>
+    <li><code>--fps &lt;30|60&gt;</code>: default <code>30</code>.</li>
+    <li><code>--quality &lt;standard|high|master&gt;</code>: default <code>standard</code>.</li>
+    <li><code>--result-hold-ms</code>: non-negative final-frame hold; default <code>0</code>.</li>
+    <li>
+      <code>--background-color</code>: default <code>#0B1020</code>; three- or six-digit hex or the
+      basic names black, white, red, green, blue, and yellow.
+    </li>
+    <li>
+      <code>--failure-mode &lt;strict|best-effort&gt;</code>: default <code>strict</code>.
+      Best-effort can omit unavailable narration and records an <code>OPTIONAL_TRACK_OMITTED</code> warning;
+      required video failures remain fatal.
+    </li>
+    <li><code>--ffmpeg-path</code>: explicit FFmpeg executable path.</li>
+    <li><code>--no-narration</code>: omit narration audio; recorded captions remain.</li>
+  </ul>
+
+  <h2 id="recorded-test">A recorded test</h2>
+  <CodeBlock code={example} />
 </DocsLayout>

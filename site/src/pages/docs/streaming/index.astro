@@ -1,0 +1,115 @@
+---
+import CodeBlock from '../../../components/CodeBlock.astro'
+import DocsLayout from '../../../layouts/DocsLayout.astro'
+
+const example = `import { record } from 'suitecut'
+
+const url = process.env.SUITECUT_STREAM_URL
+if (!url) throw new Error('Set SUITECUT_STREAM_URL')
+
+const controller = new AbortController()
+process.once('SIGINT', () => controller.abort())
+
+await record('live website tour', async ({ page, suitecut }) => {
+  await page.goto('https://example.com')
+  await suitecut.hold(30_000)
+}, {
+  signal: controller.signal,
+  capture: {
+    viewport: { width: 1280, height: 720 },
+    framesPerSecond: 30,
+    stream: {
+      url,
+      bitrateKbps: 4500,
+      reconnect: { initialDelayMs: 1000, maxDelayMs: 30_000, maxAttempts: 10 },
+    },
+  },
+})`
+---
+
+<DocsLayout
+  title="Live streaming"
+  description="Publish a browser page over RTMP or RTMPS, recover from disconnects, and control live visual effects."
+  section="streaming"
+>
+  <h1>Live streaming</h1>
+  <p>
+    Publish the selected browser page to an RTMP or RTMPS ingest endpoint. Setting
+    <code>capture.stream</code> selects streaming-only operation. SuiteCut saves no source videos or checkpoint
+    clips in this mode.
+  </p>
+
+  <h2 id="publish-a-page">Publish a page</h2>
+  <p>
+    Install Playwright's browser and a full FFmpeg build with libx264, AAC, and RTMP support. RTMPS
+    also requires TLS support. Set <code>SUITECUT_STREAM_URL</code> to the complete publish URL from your
+    streaming service, including its stream key.
+  </p>
+  <CodeBlock code={example} lang="typescript" />
+  <p>
+    Publishing starts before the callback and stops when it returns or the session is aborted. The
+    same capture options work in Playwright Test through <code>suitecutCapture</code>. Use one
+    publisher per stream key. Disable parallel tests and retries that target the same key. RTMP is
+    an ingest protocol; browser playback needs a media server or streaming service.
+  </p>
+
+  <h2 id="stream-options">Stream options</h2>
+  <ul>
+    <li><code>url</code>: required RTMP or RTMPS publish URL.</li>
+    <li><code>bitrateKbps</code>: 100 through 50,000, default 4500.</li>
+    <li>
+      <code>size</code>: fixed output width and height, defaulting to the capture size. Both must be
+      even, with a maximum of 7680 by 4320. Pages are letterboxed to fit.
+    </li>
+    <li><code>capture.framesPerSecond</code>: 30 or 60, default 30.</li>
+    <li><code>capture.quality</code>: JPEG quality 1 through 100, default 90 for streaming.</li>
+  </ul>
+  <p>
+    The output is H.264 video with silent stereo AAC at 48 kHz. Browser audio, microphone input, and
+    synthesized narration are not mixed into the stream. Keep stream keys in environment variables.
+    SuiteCut omits publish URLs and encoder diagnostics from its manifests, but the URL is visible
+    in the encoder's local process arguments.
+  </p>
+
+  <h2 id="reconnect-and-stop">Reconnect and stop</h2>
+  <p>
+    Disconnected or stalled encoders retry with exponential backoff. The default delay starts at one
+    second and reaches a maximum of 30 seconds. Set <code>reconnect.initialDelayMs</code> and
+    <code>reconnect.maxDelayMs</code> to change those delays. Set <code>reconnect.maxAttempts</code>
+    to limit consecutive retries; its default of zero retries indefinitely. A connection lasting at least
+    30 seconds resets the budget. Set <code>reconnect: false</code> to disable retries.
+  </p>
+  <p>
+    The callback waits for the first successful publish. After that, the browser script keeps
+    running during reconnection. Only the latest frame is retained, so missed frames are discarded.
+    Pass an <code>AbortSignal</code> to stop startup waits or a running session. Exhausting the retry
+    budget rejects <code>record()</code> and fails Playwright Test fixture teardown.
+  </p>
+
+  <h2 id="live-effects">Live effects</h2>
+  <p>
+    The stream follows <code>suitecut.selectPage()</code>, popup selection, and page closure. Idle
+    pages repeat their latest frame. Capture pauses freeze the image while the broadcast clock
+    continues. Zoom crops the encoded frames without changing website layout or mouse coordinates.
+    Highlights, cursor movement, click pulses, typing, scrolling, and captions also appear live.
+  </p>
+  <p>
+    <code>checkpoint()</code> holds the view without saving a clip. Final-render editing, result cards,
+    and audio mixing are offline operations. The returned manifest is a session summary with no replay
+    timeline. Closed-page history and completed events are discarded. Narration synthesis uses temporary
+    files that are removed when synthesis completes.
+  </p>
+
+  <h2 id="verify-locally">Verify locally</h2>
+  <CodeBlock
+    code="pnpm install --frozen-lockfile\npnpm exec playwright install chromium\npnpm test:stream"
+    label="Terminal"
+    lang="bash"
+  />
+  <p>
+    From the repository, this check starts a local RTMP receiver, exercises live effects and page
+    switching, interrupts the receiver, and verifies sustained recovery. It also checks that no
+    source artifacts remain. Receiver footage and screenshots are saved under
+    <code>.suitecut/live-verification/</code>. Nothing is published externally.
+  </p>
+</DocsLayout>

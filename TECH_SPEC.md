@@ -2,47 +2,59 @@
 
 Status: implemented local v1; public schema remains pre-release
 
-This document defines the objects that move through SuiteCut, from a running Playwright test to a rendered video. The local v1 described here is implemented in `src/`; the file format is still pre-release and may change before publication.
+This document defines the objects that move through SuiteCut, from a running Playwright browser flow or test to a rendered video. The local v1 described here is implemented in `src/`; the file format is still pre-release and may change before publication.
 
-The fixture records page activity, pointer events, checkpoints, narration, holds, highlights, and zooms on a shared attempt clock. It streams one undecorated WebM source per page, attaches a strict event document and all produced media, and lets the reporter assemble a validated run manifest. The CLI can run Playwright and render a selected attempt to captioned, narrated MP4 or WebM output. SuiteCut has not published a stable file format, so development can still change the schema directly.
+The shared recorder records page activity, pointer events, checkpoints, narration, holds,
+highlights, and zooms on an attempt clock. It streams one undecorated WebM source per page. The
+primary standalone API writes that capture directly to a one-attempt manifest. Playwright Test can
+instead send the capture through attachments to the SuiteCut reporter. The CLI renders a selected
+attempt to captioned, narrated MP4 or WebM output. SuiteCut has not published a stable file format,
+so development can still change the schema directly.
 
 ## 1. Design boundaries
 
-SuiteCut extends Playwright Test. It does not replace Playwright's runner, browser objects, actionability checks, retries, reporter, or raw video capture.
+SuiteCut's primary package entry runs without a test framework and owns one browser, context, main
+page, recording, and cleanup lifecycle per `record()` call. The secondary `suitecut/test` entry
+extends Playwright Test without replacing its runner, actionability checks, retries, or reporter.
+`suitecut/playwright` remains an alias for the primary recorder.
 
 SuiteCut owns:
 
 - its per-attempt recording session;
-- starting, stopping, and attaching one undecorated screencast per page;
+- starting and stopping one undecorated screencast per page;
 - narration, checkpoints, pointer events, highlights, zooms, and pacing hints;
 - the common attempt clock;
-- normalized Playwright execution steps;
+- normalized Playwright execution steps when Playwright Test supplies them;
 - per-page video roles and first-frame timing;
 - the edit map and render plan;
 - cursor artwork, visual effects, captions, and narration audio;
 - the manifest and render diagnostics.
 
-Playwright owns:
+Playwright always owns:
 
-- `Page`, `Locator`, `BrowserContext`, `TestInfo`, and reporter objects;
-- test execution, fixtures, hooks, retries, and parallel workers;
+- `Browser`, `BrowserContext`, `Page`, and `Locator` behavior;
 - action and assertion waiting;
-- the public Screencast implementation, screenshots, traces, attachments, status, and errors.
+- the public screencast implementation, screenshots, and browser processes.
 
-Playwright objects exist only while a test is running. SuiteCut may accept them in fixture methods, but must resolve them into plain serializable data before writing an event attachment. A manifest must never contain a `Page`, `Locator`, `TestInfo`, `TestCase`, `TestResult`, or reporter step instance.
+Playwright Test additionally owns test execution, fixtures, hooks, retries, parallel workers,
+`TestInfo`, attachments, statuses, execution steps, and reporter objects. The plain Playwright entry
+point has no tests, steps, retries, reporter, or Playwright configuration.
+
+Playwright objects exist only while the active test or raw recording callback is running. SuiteCut may accept them in setup and recording methods, but must resolve them into plain serializable data before writing an event attachment or manifest. A manifest must never contain a `Browser`, `BrowserContext`, `Page`, `Locator`, `TestInfo`, `TestCase`, `TestResult`, or reporter step instance.
 
 ## 2. Target object flow
 
 ```text
-Playwright test
-  |
-  | SuiteCutFixture records events and starts per-page screencasts
-  v
-SuiteCutEventAttachment
-  |
-  | reporter resolves videos and adds steps, results, errors, and artifacts
-  v
-SuiteCutManifest
+standalone record()             Playwright Test
+  |                               |
+  | shared recorder               | shared recorder
+  v                               v
+SuiteCutEventAttachment         SuiteCutEventAttachment
+  |                               |
+  | writer adds callback result    | reporter adds test data
+  +---------------+---------------+
+                  v
+            SuiteCutManifest
   |
   | media probe validates timing; timeline compiler applies pacing
   v
@@ -105,7 +117,6 @@ interface SuiteCutSize {
 interface SuiteCutRect extends SuiteCutPoint, SuiteCutSize {}
 
 interface SuiteCutViewport extends SuiteCutSize {
-  deviceScaleFactor: number
   scrollX: number
   scrollY: number
 }
@@ -184,11 +195,27 @@ interface SuiteCutPageEventBase extends SuiteCutEventBase {
 }
 ```
 
+### Page selection
+
+```ts
+type SuiteCutPageSelectionReason = 'opened' | 'closed' | 'author' | 'interaction'
+
+interface SuiteCutPageSelectionEvent extends SuiteCutPageEventBase {
+  type: 'page-selected'
+  reason: SuiteCutPageSelectionReason
+}
+```
+
+The main page starts selected. SuiteCut writes a selection event when a new page becomes active,
+the author calls `selectPage()`, an interaction moves to another page, or a selected popup closes.
+The renderer uses these events instead of reconstructing page state from narration or pointer events.
+It keeps event-based reconstruction only for unversioned legacy manifests.
+
 ### Narration
 
 ```ts
 type SuiteCutNarrationVoice = string
-type SuiteCutNarrationProvider = 'kokoro' | 'macos-say'
+type SuiteCutNarrationProvider = string
 
 interface SuiteCutNarrationEvent extends SuiteCutPageEventBase {
   type: 'narration'
@@ -204,7 +231,46 @@ interface SuiteCutNarrationEvent extends SuiteCutPageEventBase {
 
 The `kokoro` provider runs the quantized Kokoro 82M ONNX model through `onnxruntime-web/wasm` in SuiteCut's Node worker and writes 24 kHz mono PCM WAV. SuiteCut bundles the model, tokenizer, and default `af_heart` voice. Other supported voices download once and reuse the local cache.
 
-Kokoro with `af_heart` is the default narration provider and voice. The optional `macos-say` provider uses the reserved voice ID `default` to select the current macOS system voice. Manifests and narration artifacts record the selected voice and exact speech provider so output differences can be diagnosed across machines.
+Kokoro with `af_heart` is the default narration provider and voice. The optional `macos-say` provider uses the reserved voice ID `default` to select the current macOS system voice. Other provider IDs must match a configured audio plugin. Provider IDs use lowercase letters, numbers, dots, underscores, and hyphens. Manifests and narration artifacts record the selected voice and exact speech provider so output differences can be diagnosed across machines.
+
+### Audio plugins
+
+```ts
+type SuiteCutJsonValue =
+  null | boolean | number | string | SuiteCutJsonValue[] | { [key: string]: SuiteCutJsonValue }
+
+interface SuiteCutAudioPluginReference {
+  provider: SuiteCutNarrationProvider
+  module: string
+  options?: SuiteCutJsonValue
+}
+
+interface SuiteCutAudioSynthesisRequest {
+  text: string
+  voice: string
+  speed: number
+  outputPath: string
+  options?: SuiteCutJsonValue
+}
+
+interface SuiteCutAudioPlugin {
+  synthesize(request: SuiteCutAudioSynthesisRequest): Promise<void>
+}
+```
+
+`suitecut/audio-plugin` exports the interfaces, `defineSuiteCutAudioPlugin()`, and a mono 16-bit PCM
+WAV encoder. Plugin packages use a default ESM export and write WAV audio to `outputPath` before
+resolving. SuiteCut resolves package names from the recording project, converts local paths to file
+URLs, rejects duplicate provider IDs, and prevents plugins from replacing `kokoro` or `macos-say`.
+
+The main thread sends the resolved module reference and JSON options to the narration worker. The
+worker validates the request, imports one plugin per provider, and reuses it for later narration in
+the same recording. Model loading and synthesis stay outside the browser and renderer processes.
+
+Sherpa model families ship as separate packages. VITS, Matcha, Sherpa-compatible Kokoro,
+KittenTTS, ZipVoice, Pocket TTS, and Supertonic each expose one strict family schema. They depend on
+the shared `@suitecut/audio-sherpa-core` package, which owns the Sherpa Node WASM engine cache. npm
+deduplicates that shared runtime when a project installs more than one family package.
 
 ### Checkpoint
 
@@ -213,11 +279,13 @@ interface SuiteCutCheckpointEvent extends SuiteCutPageEventBase {
   type: 'checkpoint'
   label: string
   artifactId: SuiteCutArtifactId
+  durationMs: Milliseconds
   viewport: SuiteCutViewport
 }
 ```
 
-A checkpoint points to a screenshot artifact by ID. It does not depend on the attachment filename for meaning and it is not used to align video timing.
+A checkpoint points to a WebM clip artifact by ID. SuiteCut cuts the clip from the same page
+screencast used by the renderer. The event timestamp maps the checkpoint onto source-video time.
 
 ### Pointer movement and buttons
 
@@ -249,6 +317,7 @@ SuiteCut does not store the continuous browser `pointermove` stream. It records 
 
 ```ts
 type SuiteCutHighlightMode = 'outline' | 'spotlight' | 'fill'
+type SuiteCutHighlightGeometry = 'element' | 'content'
 type SuiteCutBorderStyle = 'solid' | 'dashed'
 type SuiteCutEasing = 'linear' | 'ease-in' | 'ease-out' | 'ease-in-out'
 type SuiteCutVisualAnimation = 'none' | 'fade' | 'scale' | 'fade-scale'
@@ -262,6 +331,7 @@ interface SuiteCutAnimationOptions {
 interface SuiteCutHighlightOptions {
   durationMs?: Milliseconds
   mode?: SuiteCutHighlightMode
+  geometry?: SuiteCutHighlightGeometry
   paddingPx?: number
   borderWidthPx?: number
   borderStyle?: SuiteCutBorderStyle
@@ -284,7 +354,7 @@ interface SuiteCutHighlightEvent extends SuiteCutPageEventBase {
 }
 ```
 
-The runtime API accepts a locator and measures it. `rect` remains the unmodified element bounds. Padding, border, fill, backdrop, and animation choices live in `options`. This distinction matters because video timing and coordinate mapping need the original browser geometry.
+The runtime API accepts a locator and measures it. `element` geometry records the locator box. `content` geometry records the union of rendered text fragments and embedded visual controls, clamped to the locator box. Padding, border, fill, backdrop, and animation choices live in `options`.
 
 Colors use CSS color strings. Opacity values range from `0` through `1`. The renderer must validate both instead of passing arbitrary text into an FFmpeg expression or shell command.
 
@@ -293,6 +363,7 @@ Colors use CSS color strings. Opacity values range from `0` through `1`. The ren
 ```ts
 interface SuiteCutZoomOptions {
   scale?: number
+  geometry?: SuiteCutHighlightGeometry
   paddingPx?: number
   holdMs?: Milliseconds
   enter?: SuiteCutAnimationOptions
@@ -307,7 +378,7 @@ interface SuiteCutZoomEvent extends SuiteCutPageEventBase {
 }
 ```
 
-The target rectangle remains captured browser geometry. `paddingPx` controls the space kept around it after zooming. `enter` controls the move into the crop, `holdMs` controls how long the camera stays there, and `exit` controls the return to the normal frame. A requested scale must be at least `1` and no greater than the configured maximum.
+The target rectangle contains the selected element or content geometry. `paddingPx` controls the space kept around it after zooming. `enter` controls the move into the crop, `holdMs` controls how long the camera stays there, and `exit` controls the return to the normal frame. A requested scale must be at least `1` and no greater than the configured maximum.
 
 ### Explicit pacing
 
@@ -327,6 +398,7 @@ An author hold is an explicit presentation instruction. Narration and checkpoint
 
 ```ts
 type SuiteCutEvent =
+  | SuiteCutPageSelectionEvent
   | SuiteCutNarrationEvent
   | SuiteCutCheckpointEvent
   | SuiteCutPointerMoveEvent
@@ -336,7 +408,8 @@ type SuiteCutEvent =
   | SuiteCutHoldEvent
 ```
 
-The `type` field is the discriminator. Decoders must check every field used by the selected member. Unknown event types fail validation while SuiteCut has one development schema.
+The `type` field is the discriminator. Decoders must check every field used by the selected member.
+Unknown event types fail validation for the selected manifest schema version.
 
 ## 7. Fixture attachment
 
@@ -359,8 +432,9 @@ interface SuiteCutCapturedCheckpointArtifact {
   id: SuiteCutArtifactId
   attachmentName: string
   role: 'checkpoint'
-  contentType: MimeType
+  contentType: 'video/webm'
   capturedAtMs: Milliseconds
+  durationMs: Milliseconds
   pageId: SuiteCutPageId
 }
 
@@ -520,6 +594,11 @@ Artifact roles are explicit. A renderer must not decide that a file is the sourc
 interface SuiteCutVideoStream {
   kind: 'video'
   codec: string
+  pixelFormat?: string
+  colorRange?: 'full' | 'limited'
+  colorSpace?: string
+  colorTransfer?: string
+  colorPrimaries?: string
   width: number
   height: number
   durationMs: Milliseconds
@@ -584,7 +663,7 @@ sourceVideoTimeMs:      2,000
 
 Each page has one timing record and one source-video media record. Their `pageId` values must match. Source time before zero means the selected page video has not started and cannot be rendered for that attempt interval. SuiteCut pauses frame ingestion while narration is prepared. `sourceStartedAtMs` uses the pause-adjusted attempt clock, while `firstFrameEpochMs` retains the browser timestamp as capture evidence.
 
-The first implementation stores no frame-image archive, frame index, drift estimate, or confidence score. Later frame timestamps are used transiently to pace the streaming encoder but are not serialized. The timing mapping is validated in real Chromium recordings; Firefox and WebKit lifecycle hardening remains release work. If those tests demonstrate drift, the schema can add a final timestamp or sparse samples later.
+The first implementation stores no frame-image archive, frame index, drift estimate, or confidence score. Later frame timestamps are used transiently to pace the streaming encoder but are not serialized. Real Chromium, Firefox, and WebKit recordings validate the timing mapping. Browser timestamps pace received frames by relative deltas. Final-frame padding uses the pause-adjusted attempt clock and `sourceStartedAtMs`; it must not subtract a browser timestamp from `Date.now()` because browser engines may use different epoch offsets. If later tests demonstrate drift, the schema can add a final timestamp or sparse samples.
 
 This design requires `@playwright/test` 1.59 or newer. Screenshot matching and hidden synchronization screenshots are not part of the normal or fallback path.
 
@@ -626,6 +705,7 @@ interface SuiteCutTest {
 }
 
 interface SuiteCutManifest {
+  schemaVersion: 1
   startedAt: ISODateTime
   endedAt: ISODateTime
   status: SuiteCutRunStatus
@@ -652,6 +732,9 @@ interface SuiteCutFixture {
   hold(durationMs: Milliseconds): Promise<void>
   hover(locator: Locator, options?: SuiteCutPointerActionOptions): Promise<void>
   click(locator: Locator, options?: SuiteCutPointerActionOptions): Promise<void>
+  type(locator: Locator, text: string, options?: SuiteCutTypeOptions): Promise<void>
+  scrollTo(locator: Locator, options?: SuiteCutScrollOptions): Promise<void>
+  scrollTop(options?: SuiteCutScrollOptions): Promise<void>
 }
 
 interface SuiteCutNarrationOptions {
@@ -662,7 +745,19 @@ interface SuiteCutNarrationOptions {
 }
 
 interface SuiteCutCheckpointOptions {
-  fullPage?: boolean
+  durationMs?: Milliseconds
+}
+
+interface SuiteCutTypeOptions {
+  delayMs?: Milliseconds
+  settleMs?: Milliseconds
+  clearExisting?: boolean
+}
+
+interface SuiteCutAudioPluginReference {
+  provider: SuiteCutNarrationProvider
+  module: string
+  options?: SuiteCutJsonValue
 }
 ```
 
@@ -670,13 +765,19 @@ Runtime method behavior:
 
 - Zod schemas define fixture inputs and infer their public TypeScript option types. Fixture methods record the parsed values and expose Zod's structured issue paths for invalid author input.
 - `selectPage` validates that the Playwright page is registered and open, then changes SuiteCut's active video source. It does not call `page.bringToFront()`, navigate, wait, or change Playwright state.
-- `narrate` requires non-empty text, a supported provider, a non-empty voice ID when supplied, and speed from `0.5` through `2`. An explicit empty caption suppresses displayed caption text. SuiteCut pauses frame ingestion while it prepares and measures speech, then records the caption and application for the measured duration.
-- `checkpoint` validates a non-empty label and a boolean `fullPage` value when supplied. It captures a PNG from the active page, attaches it through `TestInfo`, registers the captured checkpoint, and records an event that references it.
+- `narrate` requires non-empty text, a provider ID, a non-empty voice ID when supplied, and speed from `0.5` through `2`. Non-built-in provider IDs must match `suitecutAudioPlugins` in Playwright Test or `audioPlugins` in the plain Playwright recorder. An explicit empty caption suppresses displayed caption text. SuiteCut pauses frame ingestion while it prepares and measures speech, then records the caption and application for the measured duration.
+- `checkpoint` validates a non-empty label and an optional duration from greater than zero through
+  `10000` milliseconds. It records the event immediately and blocks later test actions for the
+  requested window. After the page screencast closes, SuiteCut trims that window into a WebM clip,
+  attaches it, probes it, and registers it as the checkpoint artifact. The default window is `500`
+  milliseconds.
 - `highlight` and `zoom` reject unknown option keys, invalid enum values, non-finite numbers, negative dimensions and timing values, and opacity outside `0` through `1`. They resolve the locator's current bounding box and fail clearly if the locator cannot produce valid geometry.
 - `hold` records a required positive duration and waits in browser time so ongoing application animation remains in the source video.
-- `hover` and `click` are direct Playwright action wrappers. SuiteCut moves the injected cursor before the action. `click` records its ripple and waits for CSS or Web Animations created by the action.
+- `hover` and `click` are direct Playwright action wrappers. SuiteCut moves the injected cursor before the action. Both wait for CSS or Web Animations created by the action unless `waitForAnimations` is false. `click` also records a ripple.
+- `type` scrolls the locator into view, clears it by default, then uses Playwright `locator.pressSequentially()` to produce a real keyboard and input event sequence for each character. The default delay is `70` milliseconds per character and the default final settle is `250` milliseconds.
+- `scrollTo` and `scrollTop` use native browser scrolling, wait for three stable animation frames, and then apply the requested settle time.
 
-The fixture requires non-empty color strings but does not parse the full CSS color grammar. The renderer validates supported CSS colors when it resolves them into its output format. The fixture enforces a zoom scale of at least `1`; the renderer enforces the configured maximum zoom scale because that limit can vary by render configuration.
+The fixture requires non-empty color strings but leaves full CSS color parsing to the selected browser. Zoom scale is validated from `1` through the fixed maximum of `1.25`. The renderer additionally limits the scale when necessary to retain the target's requested padding.
 
 Example per-call customization:
 
@@ -694,7 +795,7 @@ await suitecut.highlight(page.getByRole('button', { name: 'Publish' }), {
   fillColor: '#22C55E',
   fillOpacity: 0.1,
   durationMs: 1400,
-  enter: { type: 'fade-scale', durationMs: 180, easing: 'ease-out' },
+  enter: { type: 'fade', durationMs: 180, easing: 'ease-out' },
 })
 
 await suitecut.zoom(page.getByRole('dialog'), {
@@ -706,7 +807,11 @@ await suitecut.zoom(page.getByRole('dialog'), {
 })
 ```
 
-The public fixture contract includes page selection, narration, checkpoints, highlights, zooms, pointer actions, scrolling, and holds. Narration, captions, highlights, cursor travel, click ripples, scrolling, holds, and application animations run while Chromium records the page. Camera zoom remains a render-time crop. Each method writes the event and artifact data needed for validation and final rendering.
+The public fixture contract includes page selection, narration, checkpoints, highlights, zooms, pointer actions, scrolling, and holds. Narration, captions, highlights, cursor travel, click ripples, scrolling, holds, and application animations run while Playwright records the selected browser. Recorded sources remain unzoomed; the final renderer applies camera crops from saved events.
+
+With `capture.stream`, a separate encoder publishes the selected page over RTMP/RTMPS. Live zoom crops and resizes the current JPEG before encoding without changing browser layout. Browser presentation effects and captions are visible live; narration audio is not mixed into the broadcast. Disconnected or stalled encoders retry with configurable exponential backoff while browser actions continue. Only the latest frame is retained for replay after reconnect.
+
+Configuring `capture.stream` always disables recording. There is no simultaneous recording option. The session retains the latest frame per open page but no event history, source videos, or checkpoint clips. Closed pages release their capture state. Completed narration synthesis files are removed, and the returned manifest contains an end-of-session summary without replay events or artifacts. `checkpoint()` only holds the current view in this mode.
 
 The main `suitecut` entry point exports the author-facing fixture and option types. Durable event, recording, media, and manifest types are also available from `suitecut/types`. `SuiteCutReporterOptions` is exported from `suitecut/reporter`.
 
@@ -720,7 +825,7 @@ interface SuiteCutReporterOptions {
 }
 ```
 
-The reporter entry point is currently a skeleton and does not write a manifest. When implemented, step filtering should affect presentation defaults, not erase the raw execution record unless the user explicitly requests a smaller manifest.
+The reporter writes a validated manifest after pending attempts are collected. `outputFile` defaults to `.suitecut/latest-run.json`, `pathKind` defaults to `absolute`, and `includeStepCategories` filters normalized Playwright steps when supplied. `SUITECUT_MANIFEST_PATH` takes precedence over `outputFile`.
 
 ## 13. Renderer input and configuration
 
@@ -729,40 +834,44 @@ The renderer takes a manifest plus a test-attempt selection. It does not take a 
 ```ts
 interface SuiteCutRenderRequest {
   manifestPath: FilePath
-  selection: SuiteCutAttemptSelection
+  selection?: SuiteCutAttemptSelection
   outputPath: FilePath
   config?: SuiteCutRenderConfig
 }
 
 interface SuiteCutAttemptSelection {
-  testId: SuiteCutTestId
+  testId?: SuiteCutTestId
   retry?: number
 }
 
 interface SuiteCutRenderConfig {
   output?: SuiteCutOutputConfig
-  theme?: SuiteCutThemeConfig
-  highlight?: SuiteCutHighlightDefaults
-  zoom?: SuiteCutZoomDefaults
-  pacing?: SuiteCutPacingConfig
-  cursor?: SuiteCutCursorConfig
-  captions?: SuiteCutCaptionConfig
-  audio?: SuiteCutAudioConfig
+  narrationEnabled?: boolean
+  resultHoldMs?: Milliseconds
+  backgroundColor?: string
+  ffmpegPath?: FilePath
   failureMode?: SuiteCutRenderFailureMode
 }
 
 type SuiteCutRenderFailureMode = 'strict' | 'best-effort'
 ```
 
-Strict mode stops on missing required media, missing first-frame timing, or invalid geometry. Best-effort mode may omit an optional track, but must write a warning to the render report.
+Strict mode stops when any selected narration artifact or required video input is unavailable. Best-effort mode may omit unavailable narration or narration whose audio encoder is unavailable, and writes an `OPTIONAL_TRACK_OMITTED` warning to the render report. Source video, the video encoder, invalid configuration, and FFmpeg process failures remain fatal.
 
 ### Output settings
 
 ```ts
-type SuiteCutOutputFormat = 'mp4' | 'webm'
+type SuiteCutOutputContainer = 'mp4' | 'webm' | 'mov' | 'mkv'
+type SuiteCutColorRange = 'auto' | 'full' | 'limited'
 
 interface SuiteCutOutputConfig {
-  format?: SuiteCutOutputFormat
+  container?: SuiteCutOutputContainer
+  /** @deprecated Use container. */
+  format?: SuiteCutOutputContainer
+  videoCodec?: string
+  audioCodec?: string
+  pixelFormat?: string
+  colorRange?: SuiteCutColorRange
   width?: number
   height?: number
   framesPerSecond?: 30 | 60
@@ -770,35 +879,26 @@ interface SuiteCutOutputConfig {
 }
 ```
 
-The default output is 3840 by 2160 at 60 frames per second with the `high` quality profile. Output width and height must be supplied together and must be even. MP4 uses H.264 and AAC. WebM uses VP9 and Opus. The named quality profile maps to codec-specific CRF, encoder speed, and audio bitrate values.
+The default output is 1920 by 1080 at 30 frames per second with the `standard` quality profile. Output
+width and height must be supplied together and must be even. SuiteCut infers MP4, WebM, MOV, or
+Matroska from the output extension. MP4, MOV, and Matroska default to `libx264` and `aac`. WebM
+defaults to `libvpx-vp9` and `libopus`.
 
-### Theme and layout
+Codec fields contain FFmpeg encoder names. SuiteCut checks them against the selected FFmpeg build
+before rendering. The muxer and encoder validate container, codec, and pixel-format compatibility.
+Named quality profiles supply tuned options for H.264, HEVC, VP8, VP9, AV1, and ProRes. Unknown
+installed video encoders use their FFmpeg defaults. Known lossy audio encoders receive the profile's
+audio bitrate. Lossless and unknown audio encoders use their FFmpeg defaults.
 
-```ts
-interface SuiteCutThemeConfig {
-  backgroundColor?: string
-  browserCornerRadiusPx?: number
-  browserShadow?: SuiteCutShadow
-  browserPaddingPx?: number
-  maxZoomScale?: number
-  accentColor?: string
-}
-
-interface SuiteCutShadow {
-  color: string
-  blurPx: number
-  offsetX: number
-  offsetY: number
-}
-```
+Color range is independent of the codec. The media probe records source pixel format, range,
+primaries, transfer function, and matrix when FFprobe reports them. `auto` uses the probed input
+range and chooses full-range output for RGB pixel formats or limited-range output for YUV pixel
+formats. Explicit `full` and `limited` values override only the output range.
 
 ### Highlight and zoom defaults
 
-Users can set project-wide defaults and override them on one fixture call. SuiteCut resolves values in this order:
-
-```text
-fixture call options > render configuration > SuiteCut built-in defaults
-```
+Highlight defaults are resolved in the browser from each fixture call. Zoom defaults are shared by
+the fixture's wait and the render-time camera compiler, so capture and render durations cannot drift.
 
 ```ts
 interface SuiteCutResolvedAnimation {
@@ -819,6 +919,7 @@ interface SuiteCutHighlightDefaults {
   fillOpacity?: number
   backdropColor?: string
   backdropOpacity?: number
+  label?: string
   enter?: SuiteCutAnimationOptions
   exit?: SuiteCutAnimationOptions
 }
@@ -838,16 +939,17 @@ Built-in highlight defaults:
 const DEFAULT_HIGHLIGHT = {
   durationMs: 1200,
   mode: 'outline',
+  geometry: 'element',
   paddingPx: 8,
-  borderWidthPx: 3,
+  borderWidthPx: 4,
   borderStyle: 'solid',
   borderColor: '#7C3AED',
   borderRadiusPx: 10,
   fillColor: '#7C3AED',
   fillOpacity: 0.08,
   backdropColor: '#000000',
-  backdropOpacity: 0.35,
-  enter: { type: 'fade-scale', durationMs: 160, easing: 'ease-out' },
+  backdropOpacity: 0.45,
+  enter: { type: 'fade', durationMs: 180, easing: 'ease-out' },
   exit: { type: 'fade', durationMs: 140, easing: 'ease-in' },
 } satisfies Required<SuiteCutHighlightDefaults>
 ```
@@ -859,73 +961,34 @@ Built-in zoom defaults:
 ```ts
 const DEFAULT_ZOOM = {
   scale: 1.15,
+  geometry: 'element',
   paddingPx: 24,
   holdMs: 900,
-  enter: { type: 'scale', durationMs: 300, easing: 'ease-out' },
-  exit: { type: 'scale', durationMs: 250, easing: 'ease-in-out' },
+  enter: { type: 'scale', durationMs: 260, easing: 'ease-out' },
+  exit: { type: 'scale', durationMs: 220, easing: 'ease-in-out' },
 } satisfies Required<SuiteCutZoomDefaults>
 ```
 
-The theme's default `maxZoomScale` is `1.25`. SuiteCut clamps an automatically selected scale to that limit. It rejects an explicit per-call scale above the limit so a typo does not produce a surprising crop.
+The maximum zoom scale is `1.25`. SuiteCut rejects an explicit per-call scale above the limit and
+reduces an otherwise valid scale when the padded target would not fit inside the crop.
 
 ### Pacing
 
 ```ts
-interface SuiteCutPacingConfig {
-  minimumActionMs?: Milliseconds
+interface SuiteCutRenderConfig {
   resultHoldMs?: Milliseconds
-  maximumIdleMs?: Milliseconds
-  idlePlaybackRate?: number
-  preserveApplicationAnimations?: boolean
-  narrationTailMs?: Milliseconds
 }
 ```
 
-The compiler may stretch or compress the presentation timeline. It never alters the test's execution timing.
-
-### Cursor
-
-```ts
-type SuiteCutCursorPath = 'linear' | 'ease-out' | 'curved'
-
-interface SuiteCutCursorConfig {
-  visible?: boolean
-  assetPath?: FilePath
-  widthPx?: number
-  path?: SuiteCutCursorPath
-  minimumTravelMs?: Milliseconds
-  maximumTravelMs?: Milliseconds
-  settleBeforeClickMs?: Milliseconds
-  fadeAfterIdleMs?: Milliseconds
-  clickEffect?: 'none' | 'ring' | 'pulse'
-  clickColor?: string
-}
-```
-
-The default cursor should use bundled artwork so the same manifest renders consistently across machines.
+`resultHoldMs` adds a frozen final-frame segment. Other fixture timing runs in the browser and is
+therefore already present in the recorded source; the renderer does not reconstruct or compress it.
 
 ### Captions and audio
 
-```ts
-interface SuiteCutCaptionConfig {
-  enabled?: boolean
-  fontFile?: FilePath
-  fontSizePx?: number
-  textColor?: string
-  backgroundColor?: string
-  maximumLines?: 1 | 2
-  bottomMarginPx?: number
-}
-
-interface SuiteCutAudioConfig {
-  narrationEnabled?: boolean
-  voice?: SuiteCutNarrationVoice
-  narrationGainDb?: number
-  sampleRate?: number
-}
-```
-
-Font and cursor assets should be bundled or explicitly supplied. Depending on a machine's installed fonts would make output vary. Narration is the only audio track supported in v1. Source-audio capture, mixing, gain, and ducking remain future work.
+The cursor, click ripple, highlights, and captions are recorded in the selected browser rather than rebuilt from
+renderer theme configuration. `narrationEnabled` is the only audio switch in render configuration.
+Narration is the only audio track supported in v1. Source-audio capture, mixing, gain, and ducking
+remain future work.
 
 ## 14. Presentation timeline and edit map
 
@@ -971,6 +1034,11 @@ Every visual and audio event maps through the same edit map. Cursor timing, capt
 
 The timeline compiler produces a plain, deterministic plan. This is the input to the FFmpeg compiler.
 
+If the main-page source begins before its first recorded event, the compiler turns that leading span
+into a hold at the first event's frame-aligned source timestamp. FFmpeg selects that video frame and
+clones it until normal playback reaches the same timestamp. This removes the visible `about:blank`
+startup without adding a screenshot asset or changing event timing.
+
 ```ts
 interface SuiteCutRenderPlan {
   attemptId: SuiteCutAttemptId
@@ -989,13 +1057,14 @@ interface SuiteCutRenderPlan {
 
 interface SuiteCutResolvedOutput {
   path: FilePath
-  format: SuiteCutOutputFormat
+  container: SuiteCutOutputContainer
   width: number
   height: number
   framesPerSecond: number
   videoCodec: string
   audioCodec: string
   pixelFormat: string
+  colorRange: 'full' | 'limited'
 }
 
 interface SuiteCutRenderAsset {
@@ -1204,6 +1273,10 @@ The command uses `-filter_complex` because SuiteCut has several inputs and branc
 - `subtitles` for ASS captions;
 - `atrim`, `asetpts`, `adelay`, `volume`, and `amix` for audio.
 
+Before compiling the command, SuiteCut asks the selected FFmpeg executable for its encoder list.
+It rejects missing video encoders and rejects a missing audio encoder when the render has an audio
+track. FFmpeg reports unsupported container, codec, and pixel-format combinations during the render.
+
 The FFmpeg compiler is a serializer. It must not decide pacing, cursor paths, camera movement, or narration placement. Those decisions already exist in `SuiteCutRenderPlan`.
 
 ## 17. Diagnostics and render report
@@ -1222,6 +1295,7 @@ type SuiteCutDiagnosticCode =
   | 'POINTER_OUTSIDE_VIEWPORT'
   | 'LOCATOR_GEOMETRY_MISSING'
   | 'OPTIONAL_TRACK_OMITTED'
+  | 'RENDER_FAILED'
   | 'FFMPEG_FAILED'
 
 interface SuiteCutDiagnostic {
@@ -1256,7 +1330,9 @@ interface SuiteCutProcessResult {
 }
 ```
 
-The report explains every speed change, hold, trim, warning, and video-timing result. It should redact environment values and must not copy secrets from process output.
+The report explains every speed change, hold, trim, warning, and video-timing result. SuiteCut
+replaces local project, home, temporary, input, and output paths with named placeholders before it
+persists FFmpeg arguments or stderr.
 
 ## 18. Validation rules
 
@@ -1291,9 +1367,11 @@ class SuiteCutSchemaError extends Error {
 
 The exact class implementation is not part of the JSON contract. The stable behavior is a clear error with the failing field path and reason.
 
-## 19. Pre-release schema policy
+## 19. Manifest compatibility policy
 
-SuiteCut has one development schema. We can change it directly while the package and file format remain unpublished. There are no schema-version constants, migrations, or compatibility branches yet.
+Every newly written manifest includes `schemaVersion: 1`. The decoder accepts unversioned manifests
+from pre-version builds as legacy v1 input and returns the normalized versioned shape. It rejects an
+unknown version at `schemaVersion` instead of attempting a partial decode.
 
 ```ts
 type UntrustedInput = object | string | number | boolean | bigint | symbol | null | undefined
@@ -1301,21 +1379,22 @@ type UntrustedInput = object | string | number | boolean | bigint | symbol | nul
 function decodeManifest(input: UntrustedInput): SuiteCutManifest
 ```
 
-Before SuiteCut promises that saved manifests remain readable across releases, we should review the final shape and decide whether the public format needs a schema version. That decision belongs at the compatibility boundary, not in the first draft.
+Add a new decoder or migration before writing a new schema version. Keep golden fixtures for every
+supported version. Removing a decoder follows the package's next major-version policy.
 
 ## 20. Implemented type map
 
-| Area             | Local v1 status                                                                                                                                          |
-| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Fixture          | captures checkpoints, validates public inputs, records narration, highlights, zooms, holds, page selection, and main-frame pointer activity              |
-| Events           | strict encoding and decoding for narration, checkpoint, pointer, highlight, zoom, hold, and page lifecycle events                                        |
-| Event attachment | attaches the sealed attempt document through `TestInfo` with captured artifacts and per-page video records                                               |
-| Steps            | reporter collects normalized Playwright steps with stable parent IDs                                                                                     |
-| Artifacts        | reporter resolves checkpoints, narration, source videos, and traces into durable artifact records                                                        |
-| Media            | FFprobe-backed container and stream metadata for audio and video                                                                                         |
-| Video timing     | first presented-frame epoch and attempt-relative source start for each registered page                                                                   |
-| Manifest attempt | strict clock, pages, steps, media, timing, errors, retry status, and diagnostics                                                                         |
-| Rendering        | deterministic page sequence, trims, holds, zooms, highlights, pointer marks, rasterized captions, narration mixing, MP4/WebM encoding, and render report |
+| Area             | Local v1 status                                                                                                                                               |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Fixture          | captures checkpoints, validates public inputs, records narration, typewriter input, highlights, zooms, holds, page selection, and main-frame pointer activity |
+| Events           | strict encoding and decoding for narration, checkpoint, pointer, highlight, zoom, hold, and page lifecycle events                                             |
+| Event attachment | attaches the sealed attempt document through `TestInfo` with captured artifacts and per-page video records                                                    |
+| Steps            | reporter collects normalized Playwright steps with stable parent IDs                                                                                          |
+| Artifacts        | reporter resolves checkpoints, narration, source videos, and traces into durable artifact records                                                             |
+| Media            | FFprobe-backed container and stream metadata for audio and video                                                                                              |
+| Video timing     | first presented-frame epoch and attempt-relative source start for each registered page                                                                        |
+| Manifest attempt | strict clock, pages, steps, media, timing, errors, retry status, and diagnostics                                                                              |
+| Rendering        | deterministic page sequence, trims, holds, zooms, highlights, pointer marks, rasterized captions, narration mixing, MP4/WebM encoding, and render report      |
 
 ## 21. V1 renderer decisions
 
@@ -1325,6 +1404,6 @@ The first renderer release uses these rules:
 2. Pointer capture stores click targets and author-written hover targets. It does not store the continuous pointer-move stream.
 3. The main page starts selected. A page-specific click, hover, highlight, or zoom selects its page. Authors may override that selection with `selectPage(page)`. The page remains selected until another selection event occurs or the selected popup closes.
 4. V1 supports narration audio only. It does not capture or mix source audio.
-5. V1 supports Kokoro 82M through a local WASM runtime and macOS native speech through `/usr/bin/say`. Kokoro defaults to `af_heart`; macOS speech defaults to the system voice.
+5. V1 supports Kokoro 82M through a local WASM runtime and macOS native speech through `/usr/bin/say`. Kokoro defaults to `af_heart`; macOS speech defaults to the system voice. Optional packages can add narration providers through the audio plugin worker contract.
 
-The local v1 implements the capture-to-render path and exports the renderer API. Before a public release, the remaining work is browser-matrix hardening, richer cursor interpolation and effect styling, schema compatibility policy, and automated golden-video comparison.
+The local v1 implements the capture-to-render path, exports the renderer API, and runs a focused Chromium, Firefox, and WebKit recording matrix. Before a public release, the remaining work is richer cursor interpolation and effect styling, schema compatibility policy, and automated golden-video comparison.

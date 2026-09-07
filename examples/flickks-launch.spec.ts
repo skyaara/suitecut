@@ -1,4 +1,4 @@
-import { expect, test } from 'suitecut'
+import { expect, test } from 'suitecut/test'
 
 const FLICKKS_URL = 'https://www.flickks.com'
 

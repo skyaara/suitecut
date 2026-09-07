@@ -1,6 +1,7 @@
-import { expect, test } from 'suitecut'
+import { expect, test } from 'suitecut/test'
 
 test('records a popup and returns to its opener', async ({ page, suitecut }) => {
+  test.setTimeout(120_000)
   await page.setViewportSize({ width: 960, height: 540 })
   const popupHtml = `
     <style>
