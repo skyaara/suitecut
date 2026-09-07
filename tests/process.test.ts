@@ -1,11 +1,14 @@
-import { chmod, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
-import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import * as childProcess from 'node:child_process'
 import process from 'node:process'
 
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { resolveFfmpeg, runProcess } from '../src/process.js'
+
+vi.mock('node:child_process', async (importOriginal) => {
+  const original = await importOriginal<typeof childProcess>()
+  return { ...original, spawn: vi.fn(original.spawn) }
+})
 
 afterEach(() => {
   vi.unstubAllEnvs()
@@ -66,26 +69,21 @@ describe('SuiteCut process helpers', () => {
   })
 
   it('reuses a successful executable probe while PATH is unchanged', async () => {
-    const directory = await mkdtemp(join(tmpdir(), 'suitecut-process-'))
-    const executable = join(directory, 'ffmpeg')
-    const counter = join(directory, 'starts.txt')
-    await writeFile(
-      executable,
-      `#!/bin/sh\nprintf x >> ${JSON.stringify(counter)}\nexit 0\n`,
-      'utf8',
+    const original = await vi.importActual<typeof childProcess>('node:child_process')
+    const mockedSpawn = vi.mocked(childProcess.spawn)
+    mockedSpawn.mockClear()
+    // Use a real, portable child process for the probe instead of a POSIX shell script.
+    mockedSpawn.mockImplementationOnce((_executable, _args, options) =>
+      original.spawn(process.execPath, ['-e', 'process.exit(0)'], options),
     )
-    await chmod(executable, 0o755)
-    vi.stubEnv('PATH', directory)
+    vi.stubEnv('PATH', 'suitecut-isolated-probe-path')
 
-    try {
-      await expect(Promise.all([resolveFfmpeg(), resolveFfmpeg()])).resolves.toEqual([
-        'ffmpeg',
-        'ffmpeg',
-      ])
-      await expect(resolveFfmpeg()).resolves.toBe('ffmpeg')
-      expect(await readFile(counter, 'utf8')).toBe('x')
-    } finally {
-      await rm(directory, { recursive: true, force: true })
-    }
+    await expect(Promise.all([resolveFfmpeg(), resolveFfmpeg()])).resolves.toEqual([
+      'ffmpeg',
+      'ffmpeg',
+    ])
+    await expect(resolveFfmpeg()).resolves.toBe('ffmpeg')
+    expect(mockedSpawn).toHaveBeenCalledTimes(1)
+    expect(mockedSpawn.mock.calls[0]?.slice(0, 2)).toEqual(['ffmpeg', ['-version']])
   })
 })
