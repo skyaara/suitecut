@@ -1,6 +1,7 @@
 import { expect, test } from 'suitecut/test'
 
 test('records browser-rendered direction and application animation', async ({ page, suitecut }) => {
+  test.setTimeout(120_000)
   await page.setContent(`
     <style>
       body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: #07111f; }
@@ -37,10 +38,10 @@ test('records browser-rendered direction and application animation', async ({ pa
   `)
 
   const narration = suitecut.narrate('SuiteCut follows the browser clock.', {
-    provider: 'macos-say',
+    provider: 'kokoro',
     caption: 'SuiteCut follows the browser clock.',
   })
-  await expect(page.locator('[data-suitecut-caption]')).toBeVisible()
+  await expect(page.locator('[data-suitecut-caption]')).toBeVisible({ timeout: 90_000 })
   const captionPresentation = await page.locator('[data-suitecut-caption]').evaluate((caption) => {
     const style = getComputedStyle(caption)
     return {
