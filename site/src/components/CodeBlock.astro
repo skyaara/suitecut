@@ -12,9 +12,11 @@ const {
   label = 'TypeScript',
   lang = label === 'Terminal' ? 'bash' : 'typescript',
 } = Astro.props
+const lineCount = code.split('\n').length
+const collapsible = lineCount > 24
 ---
 
-<figure class="code-block" aria-label={label}>
+<figure class="code-block" aria-label={label} data-collapsible={collapsible || undefined}>
   <figcaption class="code-block-header">
     <span>{label}</span>
     <button type="button" class="code-copy" data-copy-code aria-label={`Copy ${label} code`}
@@ -22,9 +24,28 @@ const {
     >
   </figcaption>
   <Code code={code} lang={lang} theme="github-dark" />
+  {
+    collapsible && (
+      <button class="code-expand" type="button" data-lines={lineCount} aria-expanded="false">
+        Show all {lineCount} lines <span aria-hidden="true">↓</span>
+      </button>
+    )
+  }
 </figure>
 
 <script>
+  for (const button of document.querySelectorAll<HTMLButtonElement>('.code-expand')) {
+    button.addEventListener('click', () => {
+      const expanded = button.getAttribute('aria-expanded') !== 'true'
+      button.setAttribute('aria-expanded', String(expanded))
+      const block = button.closest('.code-block')
+      block?.toggleAttribute('data-expanded', expanded)
+      button.textContent = expanded ? 'Collapse code ↑' : `Show all ${button.dataset.lines} lines ↓`
+      if (!expanded && block && block.getBoundingClientRect().top < 80) {
+        block.scrollIntoView({ block: 'start', behavior: 'instant' })
+      }
+    })
+  }
   const resetTimers = new WeakMap<HTMLButtonElement, number>()
 
   for (const button of document.querySelectorAll<HTMLButtonElement>('[data-copy-code]')) {

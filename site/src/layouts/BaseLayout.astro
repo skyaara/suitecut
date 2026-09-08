@@ -1,7 +1,9 @@
 ---
 import SiteHeader from '../components/SiteHeader.astro'
 import { sitePath } from '../lib/paths.js'
+import '@fontsource-variable/manrope'
 import '../styles/global.css'
+import '../styles/docs.css'
 import '../styles/syntax.css'
 
 interface Props {
@@ -41,7 +43,7 @@ const socialImageUrl = new URL(sitePath(socialImage), Astro.site)
     <link rel="icon" href={sitePath('/favicon.svg')} type="image/svg+xml" />
     <title>{title}</title>
   </head>
-  <body>
+  <body class:list={{ 'workspace-page': current !== 'home' }}>
     <a class="skip-link" href="#main-content">Skip to content</a>
     {current ? <SiteHeader current={current} /> : <SiteHeader />}
     <main id="main-content"><slot /></main>
