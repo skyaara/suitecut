@@ -78,13 +78,26 @@ const categories = [
     ],
   },
 ] as const
+const orderedCategories = [...categories].sort(
+  (a, b) =>
+    ['overview', 'api', 'streaming', 'kokoro', 'audio-plugins'].indexOf(a.key) -
+    ['overview', 'api', 'streaming', 'kokoro', 'audio-plugins'].indexOf(b.key),
+)
+const content = await Astro.slots.render('default')
+const headings = [...content.matchAll(/<h2[^>]*id="([^"]+)"[^>]*>([\s\S]*?)<\/h2>/gu)].map(
+  (match) => ({ id: match[1], label: match[2]?.replace(/<[^>]+>/gu, '') ?? '' }),
+)
 ---
 
 <BaseLayout title={`${title} · SuiteCut`} description={description} current="docs">
-  <div class="docs-shell">
-    <nav class="docs-nav" aria-label="Documentation sections">
+  <div class="docs-shell" data-section={section}>
+    <button class="docs-nav-toggle" aria-expanded="false" aria-controls="documentation-navigation">
+      <span>Documentation</span><span aria-hidden="true">☰</span>
+    </button>
+    <nav class="docs-nav" id="documentation-navigation" aria-label="Documentation sections">
+      <div class="docs-nav-heading">Documentation <span>v1.0</span></div>
       {
-        categories.map((category) => (
+        orderedCategories.map((category) => (
           <details class="docs-nav-category" open={section === category.key}>
             <summary>
               <a
@@ -106,6 +119,48 @@ const categories = [
         ))
       }
     </nav>
-    <article class="docs-article"><slot /></article>
+    <article class="docs-article">
+      <div class="docs-page-meta">
+        <span>Documentation / {title}</span><a href="https://github.com/skyaara/suitecut"
+          >View source ↗</a
+        >
+      </div>
+      <Fragment set:html={content} />
+      <div class="docs-page-bottom">
+        <a href="https://github.com/skyaara/suitecut/issues">Report an issue ↗</a><span
+          >MIT licensed · Built with Playwright</span
+        >
+      </div>
+    </article>
+    <aside class="docs-toc" aria-label="On this page">
+      <p>On this page</p>
+      {headings.map((heading) => <a href={`#${heading.id}`} set:html={heading.label} />)}
+      <a class="docs-toc-github" href="https://github.com/skyaara/suitecut"
+        >Contribute on GitHub ↗</a
+      >
+    </aside>
   </div>
 </BaseLayout>
+
+<script>
+  const toggle = document.querySelector<HTMLButtonElement>('.docs-nav-toggle')
+  const navigation = document.querySelector<HTMLElement>('.docs-nav')
+  toggle?.addEventListener('click', () => {
+    const expanded = toggle.getAttribute('aria-expanded') !== 'true'
+    toggle.setAttribute('aria-expanded', String(expanded))
+    navigation?.classList.toggle('is-open', expanded)
+  })
+  const links = [...document.querySelectorAll<HTMLAnchorElement>('.docs-toc > a[href^="#"]')]
+  const observer = new IntersectionObserver(
+    (entries) => {
+      const visible = entries.find((entry) => entry.isIntersecting)
+      if (!visible) return
+      for (const link of links) {
+        if (link.hash === `#${visible.target.id}`) link.setAttribute('aria-current', 'location')
+        else link.removeAttribute('aria-current')
+      }
+    },
+    { rootMargin: '-80px 0px -65% 0px' },
+  )
+  document.querySelectorAll('.docs-article h2[id]').forEach((heading) => observer.observe(heading))
+</script>

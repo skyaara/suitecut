@@ -11,6 +11,7 @@
     "sync": "astro sync"
   },
   "dependencies": {
+    "@fontsource-variable/manrope": "^5.3.0",
     "astro": "^7.2.4"
   },
   "devDependencies": {

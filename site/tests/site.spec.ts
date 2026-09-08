@@ -90,7 +90,7 @@ test.describe('SuiteCut documentation site', () => {
       .evaluateAll((categories) =>
         categories.map((category) => category.querySelectorAll('ul a').length),
       )
-    expect(subcategoryCounts).toEqual([5, 6, 10, 6, 4])
+    expect(subcategoryCounts).toEqual([6, 10, 5, 6, 4])
 
     for (const section of ['Live streaming', 'API and CLI', 'Kokoro speech', 'Audio plugins']) {
       await page

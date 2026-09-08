@@ -6,7 +6,7 @@
   --muted: #a0a0a0;
   --border: #303030;
   --mono: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
-  font-family: var(--mono);
+  font-family: 'Manrope Variable', Manrope, sans-serif;
   color: var(--text);
   background: var(--background);
   font-synthesis: none;
@@ -450,14 +450,18 @@ a:hover {
 }
 
 .docs-nav-category summary::after {
-  color: #666666;
-  content: '+';
-  font-size: 0.72rem;
-  font-weight: 400;
+  content: '';
+  width: 0.4rem;
+  height: 0.4rem;
+  flex: none;
+  margin-right: 0.2rem;
+  border-right: 1.5px solid #949494;
+  border-bottom: 1.5px solid #949494;
+  transform: rotate(-45deg);
 }
 
 .docs-nav-category[open] summary::after {
-  content: '−';
+  transform: rotate(45deg);
 }
 
 .docs-nav-category-link {
