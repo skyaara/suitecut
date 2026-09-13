@@ -19,7 +19,13 @@ test('opens the account', async ({ page, suitecut }) => {
 const rootExports = `import {
   defineSuiteCut,
   record,
+  decodeWordTimingArtifact,
   renderSuiteCut,
+  type LiveStreamDiagnostic,
+  type SuiteCutBrowserName,
+  type SuiteCutDefinitionOptions,
+  type SuiteCutWordTiming,
+  type SuiteCutWordTimingArtifact,
   type Milliseconds,
   type SuiteCutAnimationOptions,
   type SuiteCutAudioPlugin,
@@ -304,7 +310,8 @@ const renderExample = `const report = await renderSuiteCut({
   <ul>
     <li><code>suitecut</code>: the recording controls documented below.</li>
     <li>
-      <code>suitecutCapture</code>: viewport, source size, frame rate, quality, and narration tail.
+      <code>suitecutCapture</code>: viewport, device scale, source size, frame rate, quality,
+      narration tail, and streaming options.
     </li>
     <li>
       <code>suitecutAudioPlugins</code>: external provider references loaded in the narration
@@ -404,6 +411,26 @@ const renderExample = `const report = await renderSuiteCut({
     <code>fade-scale</code>. Easing accepts <code>linear</code>, <code>ease-in</code>,
     <code>ease-out</code>, or <code>ease-in-out</code>. A <code>none</code> phase is instantaneous. Scale
     emphasis never transforms the highlight box, so its border stays aligned throughout the phase.
+  </p>
+
+  <h3 id="action-zoom">Action zoom</h3>
+  <p>
+    <code>highlight()</code>, <code>hover()</code>, and <code>click()</code> accept <code
+      >zoom: true</code
+    >
+    or a zoom options object. Zoom is off by default. The camera enters before the action, stays close
+    until it completes, and exits afterward. <code>holdMs</code> adds dwell time after the action. Action
+    zooms share the camera queue with <code>zoom()</code> and work in renders and live streams.
+  </p>
+  <CodeBlock
+    code={`await suitecut.highlight(details, { zoom: true })
+await suitecut.click(publishButton, { zoom: { scale: 1.25, paddingPx: 32 } })`}
+  />
+  <p>
+    The recorded cursor changes between arrow, pointer, and text shapes based on the element under
+    it. Disabled controls use the arrow. Zoom crops the captured image, so capture at a higher
+    resolution when you need more detail. Upscaling a low-resolution source cannot restore missing
+    detail.
   </p>
 
   <h3><code>zoom(locator, options?): Promise&lt;void&gt;</code></h3>
@@ -508,16 +535,23 @@ const renderExample = `const report = await renderSuiteCut({
   <ul>
     <li><code>viewport</code>: default <code>1600x900</code>; maximum <code>7680x4320</code>.</li>
     <li>
-      <code>size</code>: encoded source size, defaulting to the viewport. A larger proportional size
-      uses a matching layout scale. For example, a <code>1920x1080</code> viewport with a
-      <code>3840x2160</code> size keeps HD composition on a native 4K surface. Both size dimensions must
-      be even and no larger than <code>7680x4320</code>.
+      <code>deviceScaleFactor</code>: physical pixels per CSS pixel from <code>1</code> through <code
+        >4</code
+      >. A <code>1920x1080</code> viewport at <code>2</code> renders <code>3840x2160</code> pixels while
+      keeping CSS layout and responsive breakpoints at <code>1920x1080</code>.
+    </li>
+    <li>
+      <code>size</code>: encoded source size, defaulting to the viewport. With <code
+        >deviceScaleFactor</code
+      >, SuiteCut downsamples the physical render to this size with Lanczos filtering. Without a
+      device scale, the existing larger proportional size behavior remains available for
+      compatibility. Both size dimensions must be even and no larger than <code>7680x4320</code>.
     </li>
     <li>
       <code>framesPerSecond</code>: <code>30</code> or <code>60</code>; default <code>30</code>.
     </li>
     <li>
-      <code>quality</code>: screencast JPEG quality <code>1</code> through <code>100</code>; default <code
+      <code>quality</code>: capture JPEG quality <code>1</code> through <code>100</code>; default <code
         >100</code
       >.
     </li>
@@ -634,7 +668,37 @@ const renderExample = `const report = await renderSuiteCut({
     The <a href="../audio-plugins">audio plugin guide</a> shows package installation and provider setup.
   </p>
 
+  <h2 id="stream-options">Streaming API</h2>
+  <p>
+    <code>SuiteCutStreamOptions</code> configures <code>capture.stream</code>. Supply an RTMP or
+    RTMPS
+    <code>url</code>, optional <code>size</code>, and <code>bitrateKbps</code> from 100 to 50,000. Audio
+    defaults to <code>silent</code>; <code>tab</code> requires the standalone Chromium recorder.
+    <code>adaptiveBitrate</code> defaults to enabled. <code>reconnect</code> accepts <code
+      >false</code
+    >
+    or <code>SuiteCutReconnectOptions</code> with <code>initialDelayMs</code>, <code
+      >maxDelayMs</code
+    >, and <code>maxAttempts</code>. <code>onDiagnostic</code> receives <code
+      >LiveStreamDiagnostic</code
+    >. See the <a href={sitePath('/docs/streaming')}>streaming guide</a> for limits and recovery behavior.
+  </p>
+
+  <h2 id="word-timings">Word timing artifacts</h2>
+  <p>
+    <code>decodeWordTimingArtifact(value)</code> validates a saved word-timing artifact.
+    <code>SuiteCutWordTimingArtifact</code> uses <code>schemaVersion: 1</code> and
+    <code>type: 'word-timings'</code>. Entries include character offsets and relative
+    <code>startMs</code>/<code>endMs</code>; <code>sourceEventId</code> links to the narration event.
+    Use timings only when spoken words map to the displayed text.
+  </p>
+
   <h2 id="command-line-flags">Command-line flags</h2>
+  <p>
+    <code>suitecut install</code> installs pinned FFmpeg and FFprobe into the OS cache.
+    <code>suitecut doctor</code> verifies media tools and required codecs and protocols offline. Explicit
+    media-tool environment paths take priority over the managed cache and system PATH.
+  </p>
   <p>
     <code>suitecut test [--manifest path] -- [Playwright options]</code> forwards Playwright arguments
     and installs the SuiteCut reporter. <code>suitecut render</code> requires

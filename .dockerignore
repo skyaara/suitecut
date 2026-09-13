@@ -1,0 +1,17 @@
+.git
+.suitecut
+.codex
+.openai
+**/node_modules
+**/dist
+**/.astro
+**/.env*
+**/.npmrc
+**/*.pem
+**/*.key
+**/*.log
+**/*.tgz
+**/.DS_Store
+test-results
+playwright-report
+site/public

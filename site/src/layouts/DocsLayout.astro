@@ -18,6 +18,8 @@ const categories = [
     subcategories: [
       { label: 'Publish a page', hash: 'publish-a-page' },
       { label: 'Stream options', hash: 'stream-options' },
+      { label: 'Tab audio', hash: 'tab-audio' },
+      { label: 'Adaptive bitrate', hash: 'adaptive-bitrate' },
       { label: 'Reconnect and stop', hash: 'reconnect-and-stop' },
       { label: 'Live effects', hash: 'live-effects' },
       { label: 'Verify locally', hash: 'verify-locally' },
@@ -49,6 +51,9 @@ const categories = [
       { label: 'Playwright Test', hash: 'playwright-test-api' },
       { label: 'Reporter options', hash: 'reporter-options' },
       { label: 'Audio plugins', hash: 'audio-plugin-api' },
+      { label: 'Action zoom', hash: 'action-zoom' },
+      { label: 'Streaming API', hash: 'stream-options' },
+      { label: 'Word timings', hash: 'word-timings' },
       { label: 'CLI flags', hash: 'command-line-flags' },
       { label: 'Recorded test', hash: 'recorded-test' },
     ],
@@ -95,7 +100,7 @@ const headings = [...content.matchAll(/<h2[^>]*id="([^"]+)"[^>]*>([\s\S]*?)<\/h2
       <span>Documentation</span><span aria-hidden="true">☰</span>
     </button>
     <nav class="docs-nav" id="documentation-navigation" aria-label="Documentation sections">
-      <div class="docs-nav-heading">Documentation <span>v1.0</span></div>
+      <div class="docs-nav-heading">Documentation <span>v1.1</span></div>
       {
         orderedCategories.map((category) => (
           <details class="docs-nav-category" open={section === category.key}>

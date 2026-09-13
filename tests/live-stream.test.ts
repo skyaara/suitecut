@@ -135,7 +135,11 @@ describe('live stream publishing', () => {
   it('cancels retry backoff without launching another encoder', async () => {
     const stream = createReconnectingStream(
       'ffmpeg',
-      { url: 'rtmp://localhost/live/key', reconnect: { initialDelayMs: 1000 } },
+      {
+        url: 'rtmp://localhost/live/key',
+        adaptiveBitrate: false,
+        reconnect: { initialDelayMs: 1000 },
+      },
       30,
       { width: 640, height: 360 },
     )
@@ -165,6 +169,7 @@ describe('live stream publishing', () => {
       'ffmpeg',
       {
         url: 'rtmp://localhost/live/key',
+        adaptiveBitrate: false,
         reconnect: { initialDelayMs: 100, maxDelayMs: 100, maxAttempts: 1 },
       },
       30,

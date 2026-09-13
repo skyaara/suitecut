@@ -1,6 +1,7 @@
 import * as z from 'zod'
 
 import { MAX_SUITE_CUT_ZOOM_SCALE } from './constants.js'
+import { type LiveStreamDiagnostic } from './live-congestion.js'
 
 const NonEmptyStringSchema = z
   .string()
@@ -73,24 +74,23 @@ export const SuiteCutStreamOptionsSchema = z.strictObject({
     { message: 'must be an RTMP or RTMPS publish URL with an application and stream path' },
   ),
   size: SuiteCutCaptureSizeSchema.exactOptional(),
+  audio: z.enum(['silent', 'tab']).exactOptional(),
+  adaptiveBitrate: z.boolean().exactOptional(),
   reconnect: z.union([z.literal(false), SuiteCutReconnectOptionsSchema]).exactOptional(),
+  onDiagnostic: z
+    .custom<(event: LiveStreamDiagnostic) => void>((value) => typeof value === 'function')
+    .exactOptional(),
   bitrateKbps: z.number().int().min(100).max(50_000).exactOptional(),
 })
 
 export const SuiteCutCaptureOptionsSchema = z.strictObject({
   viewport: SuiteCutCaptureViewportSchema.exactOptional(),
   size: SuiteCutCaptureSizeSchema.exactOptional(),
+  deviceScaleFactor: z.number().min(1).max(4).exactOptional(),
   framesPerSecond: z.union([z.literal(30), z.literal(60)]).exactOptional(),
   quality: z.number().int().min(1).max(100).exactOptional(),
   narrationTailMs: NonNegativeNumberSchema.exactOptional(),
   stream: SuiteCutStreamOptionsSchema.exactOptional(),
-})
-
-export const SuiteCutPointerActionOptionsSchema = z.strictObject({
-  moveDurationMs: NonNegativeNumberSchema.exactOptional(),
-  settleMs: NonNegativeNumberSchema.exactOptional(),
-  waitForAnimations: z.boolean().exactOptional(),
-  animationTimeoutMs: NonNegativeNumberSchema.exactOptional(),
 })
 
 export const SuiteCutTypeOptionsSchema = z.strictObject({
@@ -142,7 +142,27 @@ export const SuiteCutHighlightModeSchema = z.enum(['outline', 'spotlight', 'fill
 export const SuiteCutHighlightGeometrySchema = z.enum(['element', 'content'])
 export const SuiteCutBorderStyleSchema = z.enum(['solid', 'dashed'])
 
+export const SuiteCutZoomOptionsSchema = z.strictObject({
+  scale: z.number().min(1).max(MAX_SUITE_CUT_ZOOM_SCALE).exactOptional(),
+  geometry: SuiteCutHighlightGeometrySchema.exactOptional(),
+  paddingPx: NonNegativeNumberSchema.exactOptional(),
+  holdMs: NonNegativeNumberSchema.exactOptional(),
+  enter: SuiteCutAnimationOptionsSchema.exactOptional(),
+  exit: SuiteCutAnimationOptionsSchema.exactOptional(),
+})
+
+const SuiteCutActionZoomSchema = z.union([z.boolean(), SuiteCutZoomOptionsSchema])
+
+export const SuiteCutPointerActionOptionsSchema = z.strictObject({
+  zoom: SuiteCutActionZoomSchema.exactOptional(),
+  moveDurationMs: NonNegativeNumberSchema.exactOptional(),
+  settleMs: NonNegativeNumberSchema.exactOptional(),
+  waitForAnimations: z.boolean().exactOptional(),
+  animationTimeoutMs: NonNegativeNumberSchema.exactOptional(),
+})
+
 export const SuiteCutHighlightOptionsSchema = z.strictObject({
+  zoom: SuiteCutActionZoomSchema.exactOptional(),
   durationMs: PositiveNumberSchema.exactOptional(),
   mode: SuiteCutHighlightModeSchema.exactOptional(),
   geometry: SuiteCutHighlightGeometrySchema.exactOptional(),
@@ -156,15 +176,6 @@ export const SuiteCutHighlightOptionsSchema = z.strictObject({
   backdropColor: NonEmptyStringSchema.exactOptional(),
   backdropOpacity: OpacitySchema.exactOptional(),
   label: NonEmptyStringSchema.exactOptional(),
-  enter: SuiteCutAnimationOptionsSchema.exactOptional(),
-  exit: SuiteCutAnimationOptionsSchema.exactOptional(),
-})
-
-export const SuiteCutZoomOptionsSchema = z.strictObject({
-  scale: z.number().min(1).max(MAX_SUITE_CUT_ZOOM_SCALE).exactOptional(),
-  geometry: SuiteCutHighlightGeometrySchema.exactOptional(),
-  paddingPx: NonNegativeNumberSchema.exactOptional(),
-  holdMs: NonNegativeNumberSchema.exactOptional(),
   enter: SuiteCutAnimationOptionsSchema.exactOptional(),
   exit: SuiteCutAnimationOptionsSchema.exactOptional(),
 })

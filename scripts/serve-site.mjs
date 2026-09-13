@@ -28,6 +28,7 @@ const contentTypes = new Map([
   ['.json', 'application/json; charset=utf-8'],
   ['.mp4', 'video/mp4'],
   ['.png', 'image/png'],
+  ['.jpg', 'image/jpeg'],
   ['.svg', 'image/svg+xml'],
   ['.wav', 'audio/wav'],
 ])
@@ -72,10 +73,32 @@ const server = createServer((request, response) => {
     const matchedPath = await routeFile(pathname)
     const path = matchedPath ?? notFoundPath
     const body = await readFile(path)
-    response.writeHead(matchedPath === undefined ? 404 : 200, {
+    const headers = {
       'Cache-Control': 'no-store',
-      'Content-Length': String(body.byteLength),
+      'Accept-Ranges': 'bytes',
       'Content-Type': contentTypes.get(extname(path)) ?? 'application/octet-stream',
+    }
+    const range = request.headers.range?.match(/^bytes=(\d*)-(\d*)$/u)
+    if (matchedPath !== undefined && range && (range[1] || range[2])) {
+      const start = range[1] ? Number(range[1]) : Math.max(0, body.byteLength - Number(range[2]))
+      const end =
+        range[1] && range[2] ? Math.min(Number(range[2]), body.byteLength - 1) : body.byteLength - 1
+      if (start > end || start >= body.byteLength) {
+        response.writeHead(416, { ...headers, 'Content-Range': `bytes */${body.byteLength}` })
+        response.end()
+        return
+      }
+      response.writeHead(206, {
+        ...headers,
+        'Content-Range': `bytes ${start}-${end}/${body.byteLength}`,
+        'Content-Length': String(end - start + 1),
+      })
+      response.end(request.method === 'HEAD' ? undefined : body.subarray(start, end + 1))
+      return
+    }
+    response.writeHead(matchedPath === undefined ? 404 : 200, {
+      ...headers,
+      'Content-Length': String(body.byteLength),
     })
     response.end(request.method === 'HEAD' ? undefined : body)
   })().catch((error) => {

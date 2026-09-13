@@ -83,3 +83,29 @@ it('accepts a stream destination without a recording flag and validates retry li
     }),
   ).toThrow()
 })
+
+it('keeps the live crop active for action playback and clears it on failure', async () => {
+  const camera = createLiveCamera()
+  const input = await imageSharp({
+    create: { width: 200, height: 100, channels: 3, background: '#7c3aed' },
+  })
+    .jpeg()
+    .toBuffer()
+  const event: SuiteCutZoomEvent = {
+    id: 'action-zoom',
+    type: 'zoom',
+    pageId: 'main',
+    atMs: 0,
+    rect: { x: 80, y: 35, width: 40, height: 30 },
+    viewport: { width: 200, height: 100, scrollX: 0, scrollY: 0 },
+    options: { scale: 1.25, enter: { type: 'none' }, holdMs: Number.MAX_SAFE_INTEGER },
+  }
+  await expect(
+    camera.zoom(event, async () => {
+      expect(await camera.render(input, 'main')).not.toBe(input)
+      throw new Error('Action failed')
+    }),
+  ).rejects.toThrow('Action failed')
+  expect(await camera.render(input, 'main')).toBe(input)
+  camera.stop()
+})

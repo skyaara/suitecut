@@ -55,52 +55,6 @@ a:hover {
   transform: translateY(0);
 }
 
-.site-header {
-  display: flex;
-  width: min(calc(100% - 3rem), 60rem);
-  min-height: 4.5rem;
-  align-items: center;
-  justify-content: space-between;
-  gap: 2rem;
-  margin: 0 auto;
-  border-bottom: 1px solid var(--border);
-}
-
-.wordmark {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.6rem;
-  color: var(--text);
-  font-size: 0.88rem;
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  text-decoration: none;
-}
-
-.logo-mark {
-  width: 1.35rem;
-  height: 1.35rem;
-  flex: none;
-}
-
-.site-header nav {
-  display: flex;
-  align-items: center;
-  gap: 1.35rem;
-}
-
-.site-header nav a {
-  color: var(--muted);
-  font-size: 0.7rem;
-  font-weight: 500;
-  text-decoration: none;
-}
-
-.site-header nav a:hover,
-.site-header nav a[aria-current='page'] {
-  color: var(--text);
-}
-
 .site-footer {
   display: grid;
   width: min(calc(100% - 3rem), 60rem);
@@ -583,25 +537,12 @@ a:hover {
 }
 
 @media (max-width: 38rem) {
-  .site-header,
   .site-footer,
   .docs-shell,
   .standalone-page,
   .not-found,
   .home {
     width: min(calc(100% - 2rem), 60rem);
-  }
-
-  .site-header {
-    gap: 1rem;
-  }
-
-  .site-header nav {
-    gap: 0.8rem;
-  }
-
-  .site-header nav a {
-    font-size: 0.62rem;
   }
 
   .docs-article {

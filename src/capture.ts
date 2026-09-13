@@ -10,8 +10,10 @@ export const DEFAULT_SUITE_CUT_CHECKPOINT_DURATION_MS = 500
 
 export interface SuiteCutCaptureLayout {
   captureSize: SuiteCutCaptureSize
+  deviceScaleFactor: number
   layoutScale: number
   layoutViewport: SuiteCutCaptureViewport
+  physicalFrameSize: SuiteCutCaptureViewport
   surfaceViewport: SuiteCutCaptureViewport
 }
 
@@ -25,14 +27,31 @@ export function resolveCaptureLayout(
     width: layoutViewport.width - (layoutViewport.width % 2),
     height: layoutViewport.height - (layoutViewport.height % 2),
   }
+  const deviceScaleFactor = options.deviceScaleFactor ?? 1
+
+  if (options.deviceScaleFactor !== undefined) {
+    return {
+      captureSize,
+      deviceScaleFactor,
+      layoutScale: 1,
+      layoutViewport,
+      physicalFrameSize: {
+        width: Math.round(layoutViewport.width * deviceScaleFactor),
+        height: Math.round(layoutViewport.height * deviceScaleFactor),
+      },
+      surfaceViewport: layoutViewport,
+    }
+  }
   const needsLargerSurface =
     captureSize.width > layoutViewport.width || captureSize.height > layoutViewport.height
 
   if (!needsLargerSurface) {
     return {
       captureSize,
+      deviceScaleFactor,
       layoutScale: 1,
       layoutViewport,
+      physicalFrameSize: captureSize,
       surfaceViewport: layoutViewport,
     }
   }
@@ -51,8 +70,24 @@ export function resolveCaptureLayout(
 
   return {
     captureSize,
+    deviceScaleFactor,
     layoutScale: captureSize.width / layoutViewport.width,
     layoutViewport,
+    physicalFrameSize: captureSize,
     surfaceViewport: captureSize,
   }
+}
+
+/** Builds a high-quality scale filter and only letterboxes differing aspect ratios. */
+export function createCaptureScaleFilter(
+  input: SuiteCutCaptureViewport,
+  output: SuiteCutCaptureSize,
+): string {
+  const scale =
+    `scale=${output.width}:${output.height}:` + 'flags=lanczos+accurate_rnd+full_chroma_int'
+  if (input.width * output.height === input.height * output.width) return `${scale},setsar=1`
+  return (
+    `${scale}:force_original_aspect_ratio=decrease:force_divisible_by=2,` +
+    `pad=${output.width}:${output.height}:(ow-iw)/2:(oh-ih)/2,setsar=1`
+  )
 }

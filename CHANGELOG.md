@@ -4,8 +4,28 @@ SuiteCut follows [Semantic Versioning](https://semver.org/). This file records u
 
 ## Unreleased
 
+## 1.1.0 - 2026-09-13
+
+- Add `capture.deviceScaleFactor` for device-pixel supersampling without changing CSS viewport geometry, with Lanczos downscaling for recordings and streams.
+- Add optional action zoom to highlights, hovering, and clicks, with camera operations queued through action completion.
+- Match recorded cursor shapes to links, buttons, text fields, and disabled controls using bundled macOS-style artwork.
+- Export word-timing artifact validation and timing types from the root package.
+- Update installation, streaming, and API documentation for managed media tools, tab audio, adaptive bitrate, diagnostics, and action zoom.
+
+- Keep the RTMP publisher and AAC encoder alive during bitrate changes. Prepare replacement H.264 encoders and switch at keyframes on a shared timeline, with bounded framing and continuous audio. Verify one-connection handoffs, timestamps, decoder output, and failed replacement recovery.
+
+- Adapt live bitrate to measured network socket backpressure with bounded transport buffers, video encoder handoffs, and gradual recovery. Report pending writes and require output progress before declaring recovery.
+
+- Recover from temporary live congestion without restarting the encoder, bound audio/video retention, and report stage timings through `stream.onDiagnostic`. Escalate repeated congestion and reconnect after 20 seconds without output progress.
+
+- Add `suitecut install` for per-platform, checksum-pinned FFmpeg and FFprobe, plus an offline `suitecut doctor` check. Preserve custom and system tool paths and remove the Playwright FFmpeg fallback.
+
 - Publish selected pages over RTMP or RTMPS with bounded frame retention, automatic reconnect,
-  live visual effects, and no source recording files. Live audio is silent AAC.
+  live visual effects, and no source recording files. Audio defaults to silent AAC; `stream.audio: 'tab'` captures real Chromium tab output.
+- Capture tab audio through an isolated extension in headed or headless Chromium, with timestamped
+  PCM over a persistent local WebSocket, bounded producer and receiver queues, pause silence,
+  page selection, and fresh audio on reconnect.
+- Verify flash/beep synchronization and audio lifecycle through local RTMP in platform CI.
 - Wait for popup capture startup before pausing for narration to avoid first-frame timeouts.
 - Preserve terminal reconnect errors at shutdown so Playwright Test teardown reports failed streams.
 - Document streaming options and verify receiver restart recovery in CI.

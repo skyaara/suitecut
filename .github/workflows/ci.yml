@@ -56,12 +56,16 @@ jobs:
         run: pnpm exec playwright install --with-deps chromium firefox webkit
       - name: Install FFmpeg
         run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - name: Install pinned media tools
+        run: pnpm build && node dist/cli.js install
       - name: Verify live streaming and reconnect recovery
-        run: pnpm test:stream
+        run: pnpm test:stream:audio
       - name: Record every supported browser
         run: pnpm test:browsers
       - name: Test representative recording flows in Chromium
         run: pnpm test:browser-flows
+      - name: Verify device-scale recording and local stream output
+        run: pnpm test:device-scale
       - name: Verify popup page lifecycle and render selection
         run: pnpm test:page-lifecycle
       - name: Record through the plain Playwright API
@@ -94,3 +98,9 @@ jobs:
         run: pnpm build
       - name: Check cross-platform paths and persistence
         run: pnpm test:platform
+      - name: Install Chromium for tab audio verification
+        run: pnpm exec playwright install chromium
+      - name: Install pinned media tools
+        run: node dist/cli.js install
+      - name: Verify browser tab audio through RTMP
+        run: node scripts/verify-tab-audio.mjs

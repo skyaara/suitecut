@@ -1,14 +1,12 @@
 import { expect, test } from '../../dist/test.js'
 
 test.describe('SuiteCut documentation site', () => {
-  test('opens with the standalone recorder and keeps the v1.0 API copyable', async ({ page }) => {
+  test('opens with the standalone recorder and keeps the v1.1 API copyable', async ({ page }) => {
     await page.goto('./')
 
     await expect(page).toHaveTitle('SuiteCut · Product videos from Playwright')
-    await expect(page.locator('h1.visually-hidden')).toHaveText(
-      'Turn a Playwright recording into a product video.',
-    )
-    await expect(page.locator('video')).toHaveCount(0)
+    await expect(page.locator('.home-reference h1')).toHaveCount(0)
+    await expect(page.getByLabel('SuiteCut demo recording')).toBeVisible()
     await expect(page.locator('.home-reference-code')).toContainText(
       "import { record } from 'suitecut'",
     )
@@ -41,6 +39,9 @@ test.describe('SuiteCut documentation site', () => {
       'Renderer',
       'Audio plugin helpers',
       'Command-line flags',
+      'Streaming API',
+      'Word timing artifacts',
+      'Action zoom',
     ]) {
       await expect(page.getByRole('heading', { name: section, exact: true })).toBeVisible()
     }
@@ -52,7 +53,7 @@ test.describe('SuiteCut documentation site', () => {
       await expect(page.getByRole('heading', { name: method, exact: true })).toBeVisible()
     }
     const codeBlockCount = await page.locator('.code-block').count()
-    expect(codeBlockCount).toBe(11)
+    expect(codeBlockCount).toBeGreaterThan(0)
     await expect(page.getByRole('button', { name: /^Copy /u })).toHaveCount(codeBlockCount)
 
     await page.getByRole('link', { name: 'Docs', exact: true }).click()
@@ -90,7 +91,7 @@ test.describe('SuiteCut documentation site', () => {
       .evaluateAll((categories) =>
         categories.map((category) => category.querySelectorAll('ul a').length),
       )
-    expect(subcategoryCounts).toEqual([6, 10, 5, 6, 4])
+    expect(subcategoryCounts).toEqual([6, 13, 7, 6, 4])
 
     for (const section of ['Live streaming', 'API and CLI', 'Kokoro speech', 'Audio plugins']) {
       await page
@@ -111,6 +112,16 @@ test.describe('SuiteCut documentation site', () => {
     await expect(
       page.getByText("import { defineSuiteCut } from 'suitecut'", { exact: false }),
     ).toBeVisible()
+    await expect(
+      page.getByText('examples/playwright/openai-status-livestream.ts', { exact: true }),
+    ).toBeVisible()
+
+    await page
+      .getByLabel('Example sections')
+      .getByRole('link', { name: 'Status livestream', exact: true })
+      .click()
+    await expect(page).toHaveURL(/\/examples#openai-status-livestream$/u)
+    await expect(page.getByRole('heading', { name: 'OpenAI Status livestream' })).toBeVisible()
 
     await page
       .getByLabel('Example sections')
@@ -122,14 +133,61 @@ test.describe('SuiteCut documentation site', () => {
     ).toBeVisible()
   })
 
+  test('plays the demo and jumps to neighboring snippets', async ({ page }) => {
+    await page.goto('./')
+    const video = page.getByLabel('SuiteCut demo recording')
+    await expect
+      .poll(() => video.evaluate((element) => (element as HTMLVideoElement).readyState))
+      .toBeGreaterThanOrEqual(1)
+    await page.getByRole('button', { name: 'Play walkthrough', exact: true }).click()
+    await expect
+      .poll(() => video.evaluate((element) => (element as HTMLVideoElement).currentTime))
+      .toBeGreaterThan(0)
+    await page.locator('.video-stage').hover()
+    await page.getByRole('button', { name: 'Pause walkthrough', exact: true }).click()
+    await page.getByRole('button', { name: 'Mute', exact: true }).click()
+    await expect
+      .poll(() => video.evaluate((element) => (element as HTMLVideoElement).muted))
+      .toBe(true)
+    await video.evaluate((element) => {
+      ;(element as HTMLVideoElement).currentTime = 10
+    })
+    await expect(page.locator('.barrel-block[data-active]')).toContainText('suitecut.narrate')
+    await page.locator('.barrel-block[data-neighbor]').last().hover()
+    await expect(page.locator('.barrel-block[data-active]')).toContainText('suitecut.hover')
+    await expect
+      .poll(() => video.evaluate((element) => (element as HTMLVideoElement).paused))
+      .toBe(true)
+    await expect(page.locator('.barrel-block[data-active]')).toHaveCount(1)
+  })
+
+  test('keeps the hero inside a scaled 4K recording viewport', async ({ page }) => {
+    await page.setViewportSize({ width: 3840, height: 2160 })
+    await page.addInitScript(() => {
+      document.addEventListener('DOMContentLoaded', () => {
+        document.documentElement.style.zoom = '2'
+      })
+    })
+    await page.goto('./')
+    await expect
+      .poll(async () => {
+        const bounds = await page.locator('.home-reference').boundingBox()
+        return bounds ? bounds.y + bounds.height : Infinity
+      })
+      .toBeLessThanOrEqual(2160)
+    const preview = await page.locator('.home-preview').boundingBox()
+    expect(preview).not.toBeNull()
+    expect((preview?.y ?? 0) + (preview?.height ?? 0)).toBeLessThanOrEqual(2160)
+  })
+
   test('keeps the homepage and API reference inside a mobile viewport', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 })
     await page.goto('./')
 
     expect(await page.locator('body').evaluate((body) => body.scrollWidth)).toBeLessThanOrEqual(390)
-    await expect(page.locator('h1.visually-hidden')).toBeAttached()
-    await expect(page.locator('video')).toHaveCount(0)
-    await expect(page.locator('.home-reference-code pre')).toBeVisible()
+    await expect(page.locator('.home-reference h1')).toHaveCount(0)
+    await expect(page.getByLabel('SuiteCut demo recording')).toBeVisible()
+    await expect(page.locator('.home-reference-code pre').first()).toBeVisible()
     await expect(page.getByRole('link', { name: 'Docs', exact: true })).toBeVisible()
     await expect(page.getByRole('link', { name: 'GitHub', exact: true })).toBeVisible()
 

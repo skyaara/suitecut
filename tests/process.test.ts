@@ -3,6 +3,7 @@ import process from 'node:process'
 
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
+import { mediaToolPaths } from '../src/media-tool-paths.js'
 import { resolveFfmpeg, runProcess } from '../src/process.js'
 
 vi.mock('node:child_process', async (importOriginal) => {
@@ -79,11 +80,11 @@ describe('SuiteCut process helpers', () => {
     vi.stubEnv('PATH', 'suitecut-isolated-probe-path')
 
     await expect(Promise.all([resolveFfmpeg(), resolveFfmpeg()])).resolves.toEqual([
-      'ffmpeg',
-      'ffmpeg',
+      mediaToolPaths().ffmpeg,
+      mediaToolPaths().ffmpeg,
     ])
-    await expect(resolveFfmpeg()).resolves.toBe('ffmpeg')
+    await expect(resolveFfmpeg()).resolves.toBe(mediaToolPaths().ffmpeg)
     expect(mockedSpawn).toHaveBeenCalledTimes(1)
-    expect(mockedSpawn.mock.calls[0]?.slice(0, 2)).toEqual(['ffmpeg', ['-version']])
+    expect(mockedSpawn.mock.calls[0]?.slice(0, 2)).toEqual([mediaToolPaths().ffmpeg, ['-version']])
   })
 })

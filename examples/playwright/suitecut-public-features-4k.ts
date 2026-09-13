@@ -21,7 +21,8 @@ const record = defineSuiteCut({
   },
   capture: {
     viewport: { width: 1920, height: 1080 },
-    size: { width: 1920, height: 1080 },
+    deviceScaleFactor: 2,
+    size: { width: 3840, height: 2160 },
     framesPerSecond: 60,
     quality: 95,
     narrationTailMs: 180,

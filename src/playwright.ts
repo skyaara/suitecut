@@ -32,6 +32,7 @@ import {
   SuiteCutOutputOptionsSchema,
 } from './schemas.js'
 import { createRecordingSession, createSuiteCutFixture } from './suitecut.js'
+import { launchTabAudioContext } from './tab-audio.js'
 import {
   type SuiteCutArtifact,
   type SuiteCutAttempt,
@@ -44,6 +45,8 @@ import {
 } from './types.js'
 import { toError, type UntrustedInput } from './untrusted.js'
 import { parseCaptureOptions } from './validation.js'
+
+export type { LiveStreamDiagnostic } from './live-congestion.js'
 
 export type {
   SuiteCutStreamOptions,
@@ -177,6 +180,7 @@ function resolveOptions(
   const defaultOutput = SuiteCutOutputOptionsSchema.parse(defaults.output ?? {})
   const overrideOutput = SuiteCutOutputOptionsSchema.parse(overrides.output ?? {})
   const rootDirectory = process.cwd()
+  const capture = parseCaptureOptions({ ...defaults.capture, ...overrides.capture })
   const context = {
     viewport: DEFAULT_SUITE_CUT_VIEWPORT,
     ...defaults.context,
@@ -187,6 +191,20 @@ function resolveOptions(
       'SuiteCut context.recordVideo must be omitted because SuiteCut owns page screencasts',
     )
   }
+  if (
+    capture.deviceScaleFactor !== undefined &&
+    context.deviceScaleFactor !== undefined &&
+    context.deviceScaleFactor !== capture.deviceScaleFactor
+  ) {
+    throw new Error(
+      `SuiteCut capture.deviceScaleFactor ${String(capture.deviceScaleFactor)} conflicts with ` +
+        `context.deviceScaleFactor ${String(context.deviceScaleFactor)}. Remove the context value ` +
+        'or make both values equal.',
+    )
+  }
+  if (capture.deviceScaleFactor !== undefined) {
+    context.deviceScaleFactor = capture.deviceScaleFactor
+  }
   const signal = resolveSignal(overrides.signal ?? defaults.signal)
   return {
     browserName: SuiteCutBrowserNameSchema.parse(
@@ -194,7 +212,7 @@ function resolveOptions(
     ),
     launch: { headless: true, ...defaults.launch, ...overrides.launch },
     context,
-    capture: parseCaptureOptions({ ...defaults.capture, ...overrides.capture }),
+    capture,
     audioPlugins: [
       ...resolveAudioPluginReferences(
         overrides.audioPlugins ?? defaults.audioPlugins ?? [],
@@ -409,11 +427,19 @@ export function defineSuiteCut<Extensions extends object = object>(
     let captured: SuiteCutEventAttachment | undefined
 
     try {
-      browser = await launchBrowser(resolvedOptions.browserName, resolvedOptions.launch)
+      if (resolvedOptions.capture.stream?.audio === 'tab') {
+        if (resolvedOptions.browserName !== 'chromium')
+          throw new Error('SuiteCut tab audio supports Chromium only')
+        context = await launchTabAudioContext(resolvedOptions.launch, resolvedOptions.context)
+        browser = context.browser() ?? undefined
+        if (!browser) throw new Error('SuiteCut audio browser is unavailable')
+      } else {
+        browser = await launchBrowser(resolvedOptions.browserName, resolvedOptions.launch)
+        context = await browser.newContext(resolvedOptions.context)
+      }
       const recordingBrowser = browser
-      context = await recordingBrowser.newContext(resolvedOptions.context)
       const recordingContext = context
-      const page = await recordingContext.newPage()
+      const page = recordingContext.pages()[0] ?? (await recordingContext.newPage())
       if (resolvedOptions.capture.viewport !== undefined) {
         await page.setViewportSize(resolvedOptions.capture.viewport)
       } else if (page.viewportSize() === null) {

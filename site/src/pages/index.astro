@@ -1,32 +1,800 @@
 ---
 import { Code } from 'astro:components'
+import {
+  PlayIcon,
+  PauseIcon,
+  VolumeHighIcon,
+  VolumeMute02Icon,
+  MaximizeScreenIcon,
+  MinimizeScreenIcon,
+} from '@hugeicons/core-free-icons'
+import PlayerIcon from '../components/PlayerIcon.astro'
 
 import BaseLayout from '../layouts/BaseLayout.astro'
+import { sitePath } from '../lib/paths.js'
 
 const example = `import { record } from 'suitecut'
 
-await record('records the product', async ({
+await record('product tour', async ({
   page,
   suitecut,
 }) => {
   await page.goto('https://suitecut.aakashreddy.com')
-  await suitecut.narrate('The workspace is ready.')
-  await suitecut.checkpoint('Workspace ready')
+  const docs = page.getByRole('link', {
+    name: 'Docs', exact: true,
+  })
+
+  const speech = {
+    provider: 'kokoro', voice: 'af_heart',
+  } as const
+
+  await suitecut.narrate(
+    'We will start by highlighting the documentation link ' +
+    'so viewers can see exactly where this walkthrough goes next.',
+    speech,
+  )
+  await suitecut.highlight(docs, { label: 'Docs' })
+
+  await suitecut.narrate(
+    'Next, we move the pointer over the highlighted link ' +
+    'to show its hover state before opening the documentation.',
+    speech,
+  )
+  await suitecut.hover(docs)
+
+  await suitecut.narrate(
+    'Now we click the same link with Playwright, taking us ' +
+    'to the setup instructions that explain how to record a browser flow.',
+    speech,
+  )
+  await suitecut.click(docs)
+
+  await suitecut.narrate(
+    'We now zoom toward the heading so viewers can read ' +
+    'the title clearly while the page stays in place.',
+    speech,
+  )
+  await suitecut.zoom(page.locator('h1'), { scale: 1.2 })
+
+  await suitecut.narrate(
+    'We then save a named checkpoint of this page so the ' +
+    'recording includes a clear reference to the state we reached.',
+    speech,
+  )
+  await suitecut.checkpoint('Documentation open')
+
+  await suitecut.narrate(
+    'Finally, we hold the completed view for another second ' +
+    'to give the walkthrough a deliberate ending before recording stops.',
+    speech,
+  )
+  await suitecut.hold(1000)
+}, {
+  capture: {
+    viewport: { width: 1920, height: 1080 },
+    deviceScaleFactor: 2,
+    size: { width: 3840, height: 2160 },
+    framesPerSecond: 60,
+    quality: 100,
+  },
 })`
+
+// Cue times come from the manifest for homepage-tour.mp4, in presentation seconds.
+const cueTimes = [
+  0.136, 7.222, 8.55, 16.688, 16.853, 25.544, 26.099, 32.748, 34.129, 41.114, 41.617, 49.572,
+]
+const scriptLines = example.split('\n')
+const actionLines = scriptLines.flatMap((line, index) =>
+  line.includes('await suitecut.') ? [index] : [],
+)
+const demoCues = [
+  { time: 0, start: 0, end: (actionLines[0] ?? 1) - 1, label: 'Set up the recording' },
+  ...actionLines.map((start, index) => ({
+    time: cueTimes[index],
+    start,
+    end: scriptLines[start]?.includes('.narrate(') ? start + 4 : start,
+    label: scriptLines[start]?.includes('.narrate(')
+      ? 'Kokoro narration'
+      : (scriptLines[start]?.match(/suitecut\.(\w+)/)?.[1] ?? 'Recording'),
+  })),
+]
+
+const configuration = `import { defineSuiteCut } from 'suitecut'
+
+export const record = defineSuiteCut({
+  browserName: 'chromium',
+  capture: {
+    viewport: { width: 1920, height: 1080 },
+    size: { width: 1920, height: 1080 },
+    framesPerSecond: 60,
+  },
+  output: { directory: '.suitecut/recordings' },
+})`
+
+const streaming = `import { record } from 'suitecut'
+
+const url = process.env.SUITECUT_STREAM_URL
+if (!url) throw new Error('Set SUITECUT_STREAM_URL')
+
+await record('live tour', async ({ page, suitecut }) => {
+  await page.goto('https://suitecut.aakashreddy.com')
+  await suitecut.hold(30_000)
+}, {
+  capture: {
+    stream: { url, bitrateKbps: 4500 },
+  },
+})`
+
+const apiGroups = [
+  {
+    name: 'Browser actions',
+    methods: 'hover · click · type · scrollTo · scrollTop',
+    description:
+      'Move the recorded cursor, click elements, type character by character, and scroll the page using Playwright locators.',
+    anchor: 'fixture-methods',
+  },
+  {
+    name: 'Presentation and timing',
+    methods: 'narrate · highlight · zoom · hold · checkpoint',
+    description:
+      'Add speech and captions, highlight elements, crop the video around a locator, hold a view, and capture named checkpoints.',
+    anchor: 'fixture-methods',
+  },
+  {
+    name: 'Pages and setup',
+    methods: 'selectPage · defineSuiteCut',
+    description:
+      'Select a page or popup for later events. Reuse browser, capture, output, and setup options across recordings.',
+    anchor: 'recording-options',
+  },
+  {
+    name: 'Playwright Test',
+    methods: 'suitecut/test · suitecut/reporter',
+    description:
+      'Import test and expect, use the suitecut fixture, and configure the reporter to collect recording artifacts into a manifest.',
+    anchor: 'playwright-test-api',
+  },
+  {
+    name: 'Speech plugins',
+    methods: 'audioPluginReference · defineSuiteCutAudioPlugin · encodePcm16Wav',
+    description:
+      'Register a speech provider or implement your own synthesis plugin with helpers exported by suitecut/audio-plugin.',
+    anchor: 'audio-plugin-api',
+  },
+  {
+    name: 'Video output',
+    methods: 'renderSuiteCut · suitecut render',
+    description:
+      'Render a recorded attempt through the API or CLI. Choose MP4, WebM, MOV, or MKV, with output size, frame rate, and codec settings.',
+    anchor: 'render-api',
+  },
+]
 ---
 
 <BaseLayout
   title="SuiteCut · Product videos from Playwright"
-  description="Turn a Playwright recording into a narrated product video."
+  description="Record Playwright flows, add narration and visual effects, render videos, or stream a browser page over RTMP and RTMPS."
   current="home"
 >
-  <section class="home-reference" aria-labelledby="home-title">
-    <h1 id="home-title" class="visually-hidden">
-      Turn a Playwright recording into a product video.
-    </h1>
-    <div class="home-reference-code">
-      <p>recording.ts</p>
-      <Code code={example} lang="typescript" theme="github-dark" />
+  <section class="home-reference" aria-label="SuiteCut walkthrough demo">
+    <div class="home-reference-code" data-demo-cues={JSON.stringify(demoCues)}>
+      <h2 class="walkthrough-heading">A simple SuiteCut script</h2>
+      <div class="code-barrel" aria-label="Code synchronized with the walkthrough">
+        {
+          demoCues.map((cue, index) => (
+            <div
+              class="barrel-block"
+              data-cue-index={index}
+              aria-hidden={index !== 0}
+              role="button"
+              tabindex="-1"
+              aria-label={`Jump to ${cue.label}`}
+            >
+              <Code
+                code={scriptLines
+                  .slice(cue.start, cue.end + 1)
+                  .join('\n')
+                  .trim()}
+                lang="typescript"
+                theme="github-dark"
+              />
+            </div>
+          ))
+        }
+      </div>
+    </div>
+    <div class="home-preview">
+      <h2 class="walkthrough-heading">Fully rendered walkthroughs</h2>
+      <p class="video-hint">Play the video, or hover over a neighboring snippet to jump there.</p>
+      <figure class="home-demo">
+        <div class="video-stage">
+          <video
+            controls
+            playsinline
+            preload="metadata"
+            poster={sitePath('/demo/homepage-tour-poster.jpg')}
+            aria-label="SuiteCut demo recording"
+            src={sitePath('/demo/homepage-tour.mp4')}
+          >
+            <a href={sitePath('/demo/homepage-tour.mp4')}>Watch the demo recording</a>
+          </video>
+          <button class="center-play" data-center-play aria-label="Play walkthrough" hidden>
+            <span class="play-icon"><PlayerIcon icon={PlayIcon} size={24} /></span>
+            <span class="pause-icon"><PlayerIcon icon={PauseIcon} size={24} /></span>
+          </button>
+        </div>
+        <div class="player-controls" hidden>
+          <input
+            type="range"
+            data-seek
+            min="0"
+            max="0"
+            step="0.01"
+            value="0"
+            aria-label="Video position"
+          />
+          <output data-player-time>0:00 / 0:51</output>
+          <button type="button" data-mute aria-label="Mute" title="Mute">
+            <span class="sound-waves"><PlayerIcon icon={VolumeHighIcon} /></span>
+            <span class="sound-muted"><PlayerIcon icon={VolumeMute02Icon} /></span>
+          </button>
+          <button type="button" data-fullscreen aria-label="Enter fullscreen">
+            <span class="expand-icon"><PlayerIcon icon={MaximizeScreenIcon} /></span>
+            <span class="collapse-icon"><PlayerIcon icon={MinimizeScreenIcon} /></span>
+          </button>
+        </div>
+      </figure>
+    </div>
+    <p class="home-note">
+      Record your browser flow with narration, then render the saved manifest into a walkthrough.
+      <a href={sitePath('/docs')}>Installation and setup</a>
+    </p>
+  </section>
+
+  <section class="home-api" aria-labelledby="api-title">
+    <h2 id="api-title">More control over the recording.</h2>
+    <div class="api-grid">
+      {
+        apiGroups.map(({ name, methods, description, anchor }) => (
+          <article>
+            <h3>
+              <a href={`${sitePath('/docs/api')}#${anchor}`}>{name}</a>
+            </h3>
+            <p class="api-methods">{methods}</p>
+            <p>{description}</p>
+          </article>
+        ))
+      }
     </div>
   </section>
+
+  <section class="home-api" aria-labelledby="configuration-title">
+    <h2 id="configuration-title">Reuse your capture settings.</h2>
+    <p>
+      <code>defineSuiteCut()</code> returns a configured recorder. Choose Chromium, Firefox, or WebKit
+      and set capture dimensions and a target frame rate of 30 or 60 fps. Actual frame delivery depends
+      on the browser and workload.
+    </p>
+    <Code code={configuration} lang="typescript" theme="github-dark" />
+  </section>
+
+  <section class="home-api" aria-labelledby="streaming-title">
+    <h2 id="streaming-title">Stream a browser page live.</h2>
+    <p>
+      Set <code>capture.stream</code> to publish H.264 video and AAC audio to an RTMP or RTMPS ingest
+      URL. Publishing stops when the callback finishes. Use <code>signal</code> to abort a session and
+      <code>stream.reconnect</code> to configure reconnect attempts.
+    </p>
+    <Code code={streaming} lang="typescript" theme="github-dark" />
+    <p>
+      Streaming saves no source video for later rendering. Audio defaults to silence.
+      <code>stream.audio: 'tab'</code> captures tab sound with the standalone recorder and supported Playwright
+      Chromium. It is unavailable in Firefox, WebKit, and the Playwright Test fixture. Microphone input
+      and synthesized narration are not mixed into the stream.
+    </p>
+  </section>
 </BaseLayout>
+
+<style>
+  :global(body:not(.workspace-page) .site-footer) {
+    width: calc(100% - 3rem);
+    max-width: none;
+  }
+  .home-reference {
+    width: calc(100% - 3rem);
+    height: calc(var(--hero-viewport-height, 100svh) - 4.5rem);
+    min-height: 0;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: minmax(1.5rem, 1fr) auto auto auto minmax(1.5rem, 1fr) auto;
+    grid-template-areas: '. .' 'script preview' 'script preview' 'script preview' '. .' 'note note';
+    gap: 0 3rem;
+    align-items: center;
+    padding: 2rem 0;
+    margin-bottom: 3rem;
+  }
+  .walkthrough-heading {
+    margin: 0 0 1rem;
+    text-align: center;
+    font-size: clamp(1rem, 1.5vw, 1.4rem);
+    font-weight: 500;
+    letter-spacing: -0.03em;
+    flex-shrink: 0;
+  }
+  .home-reference-code {
+    grid-area: script;
+    display: grid;
+    grid-template-rows: subgrid;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+  }
+  .code-barrel {
+    grid-row: 3;
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+    overflow: hidden;
+    perspective: 1000px;
+    mask-image: linear-gradient(
+      to bottom,
+      transparent,
+      #00000018 6%,
+      #00000080 15%,
+      black 27%,
+      black 73%,
+      #00000080 85%,
+      #00000018 94%,
+      transparent
+    );
+  }
+  .barrel-block {
+    position: absolute;
+    top: 50%;
+    left: 4px;
+    right: 4px;
+    padding: 1rem;
+    border: 3px solid transparent;
+    border-radius: 8px;
+    backface-visibility: hidden;
+    transform: translateY(-50%) translateZ(calc(-1 * var(--radius, 200px)))
+      rotateX(var(--angle, 90deg)) translateZ(var(--radius, 200px));
+    transform-origin: center;
+    opacity: var(--opacity, 0);
+    transition:
+      transform 650ms cubic-bezier(0.22, 1, 0.36, 1),
+      opacity 500ms ease,
+      background-color 400ms ease,
+      border-color 400ms ease;
+    pointer-events: none;
+  }
+  .barrel-block[data-neighbor],
+  .barrel-block[data-active] {
+    pointer-events: auto;
+    cursor: pointer;
+  }
+  .barrel-block:focus-visible {
+    outline: 1px solid #aaa;
+    outline-offset: -4px;
+  }
+
+  .barrel-block[data-neighbor] :global(pre) {
+    max-height: 7rem;
+    mask-image: linear-gradient(transparent, black 25%, black 65%, transparent);
+  }
+
+  .home-reference-code :global(pre) {
+    text-align: left;
+    overflow: hidden;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    font-size: clamp(0.72rem, 0.95vw, 0.9rem);
+    line-height: 1.65;
+    scrollbar-width: none;
+  }
+  .home-reference-code :global(pre code) {
+    min-width: 0;
+    width: fit-content;
+    max-width: 100%;
+    margin-inline: auto;
+  }
+  .code-barrel[data-instant] .barrel-block {
+    transition: none;
+  }
+  .video-stage {
+    position: relative;
+  }
+  .center-play {
+    position: absolute;
+    inset: 50% auto auto 50%;
+    transform: translate(-50%, -50%);
+    display: grid;
+    place-items: center;
+    width: 56px;
+    height: 56px;
+    border: 1px solid #ffffff30;
+    border-radius: 50%;
+    background: #11111199;
+    color: #f5f5f5;
+    cursor: pointer;
+    backdrop-filter: blur(6px);
+  }
+  .center-play {
+    transition:
+      opacity 160ms ease,
+      background-color 160ms ease;
+  }
+  .home-demo[data-playing] .center-play {
+    opacity: 0;
+    pointer-events: none;
+  }
+  .home-demo[data-playing] .video-stage:hover .center-play,
+  .home-demo[data-playing] .video-stage:focus-within .center-play {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .center-play :global(svg),
+  [data-mute] :global(svg),
+  [data-fullscreen] :global(svg) {
+    display: block;
+  }
+  [data-mute] .sound-muted,
+  [data-mute][data-muted] .sound-waves {
+    display: none;
+  }
+  [data-mute][data-muted] .sound-muted {
+    display: inline;
+  }
+  .pause-icon,
+  .collapse-icon,
+  .home-demo[data-playing] .play-icon,
+  [data-fullscreen][data-expanded] .expand-icon {
+    display: none;
+  }
+  .home-demo[data-playing] .pause-icon,
+  [data-fullscreen][data-expanded] .collapse-icon {
+    display: inline;
+  }
+  .center-play:hover {
+    background: #222222cc;
+  }
+  .center-play[hidden],
+  .player-controls[hidden] {
+    display: none;
+  }
+  .player-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 0.35rem 0.8rem;
+    background: #181818;
+  }
+  .player-controls button {
+    border: 0;
+    padding: 0.3rem;
+    color: #eee;
+    background: transparent;
+    font: inherit;
+    font-size: 0.75rem;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .player-controls input {
+    appearance: none;
+    flex: 1;
+    min-width: 2rem;
+    height: 20px;
+    margin: 0;
+    background: transparent;
+    cursor: pointer;
+  }
+  .player-controls input::-webkit-slider-runnable-track {
+    height: 2px;
+    border-radius: 1px;
+    background: #666;
+  }
+  .player-controls input::-moz-range-track {
+    height: 2px;
+    border-radius: 1px;
+    background: #666;
+  }
+  .player-controls input::-webkit-slider-thumb {
+    appearance: none;
+    width: 8px;
+    height: 8px;
+    margin-top: -3px;
+    border-radius: 50%;
+    background: #eee;
+  }
+  .player-controls input::-moz-range-thumb {
+    width: 8px;
+    height: 8px;
+    border: 0;
+    border-radius: 50%;
+    background: #eee;
+  }
+  .player-controls output {
+    color: #aaa;
+    font: 0.65rem var(--mono);
+    white-space: nowrap;
+  }
+  .home-demo:fullscreen {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background: #111;
+  }
+  .home-demo:fullscreen video {
+    max-height: calc(100vh - 7rem);
+  }
+  .home-preview {
+    grid-area: preview;
+    display: grid;
+    grid-template-rows: subgrid;
+    align-self: stretch;
+    width: 100%;
+    min-width: 0;
+  }
+  .home-demo {
+    width: 100%;
+    margin: 0;
+  }
+  .video-hint {
+    text-align: center;
+    color: #888;
+    font-size: 0.75rem;
+    margin: 0 0 0.8rem;
+  }
+  .home-note {
+    text-align: center;
+    grid-area: note;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .barrel-block {
+      transition: none;
+    }
+  }
+  @media (max-width: 48rem) {
+    .home-reference {
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      grid-template-areas: 'preview' 'script' 'note';
+      gap: 1rem;
+      padding: 1.25rem 0;
+    }
+    .walkthrough-heading {
+      font-size: 0.9rem;
+    }
+    .home-reference-code {
+      display: flex;
+      flex-direction: column;
+    }
+    .home-preview {
+      display: block;
+    }
+    .video-hint {
+      display: none;
+    }
+    .home-demo video {
+      max-height: 26svh;
+    }
+  }
+  .home-note,
+  .home-api > p {
+    color: #a3a3a3;
+    font-size: 0.95rem;
+    line-height: 1.8;
+  }
+  .home-note {
+    width: 100%;
+    margin: 0;
+  }
+  .home-note a {
+    margin-left: 0.25rem;
+    white-space: nowrap;
+  }
+  .home-api {
+    width: calc(100% - 3rem);
+    margin: 0 auto;
+    padding-bottom: 5rem;
+  }
+  .home-api h2 {
+    font-size: clamp(1.4rem, 3vw, 2rem);
+    letter-spacing: -0.04em;
+    margin: 0 0 1.5rem;
+  }
+  .api-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 2.5rem 3rem;
+  }
+  .api-grid h3 {
+    font-size: 1rem;
+    margin: 0 0 0.75rem;
+  }
+  .api-grid p {
+    color: #a3a3a3;
+    font-size: 0.9rem;
+    line-height: 1.7;
+    margin: 0.75rem 0 0;
+  }
+  .api-grid .api-methods {
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    color: #d4d4d4;
+    overflow-wrap: anywhere;
+  }
+  .home-api :global(pre) {
+    max-width: 100%;
+    overflow-x: auto;
+    padding: 1.5rem 0;
+    font-size: 0.9rem;
+    line-height: 1.8;
+  }
+  @media (max-width: 38rem) {
+    .home-reference {
+      width: calc(100% - 2rem);
+      padding: 1rem 0;
+    }
+    :global(body:not(.workspace-page) .site-footer) {
+      width: calc(100% - 2rem);
+    }
+    .home-note {
+      font-size: 0.75rem;
+      line-height: 1.5;
+    }
+    .home-reference-code :global(code),
+    .home-api :global(pre code) {
+      min-width: 0;
+    }
+    .home-api {
+      width: calc(100% - 2rem);
+      padding-bottom: 3.5rem;
+    }
+    .api-grid {
+      grid-template-columns: 1fr;
+      gap: 1.75rem;
+    }
+    .home-api :global(pre) {
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+  }
+</style>
+
+<script>
+  const panel = document.querySelector<HTMLElement>('[data-demo-cues]')
+  const video = document.querySelector<HTMLVideoElement>('.home-demo video')
+  const barrel = panel?.querySelector<HTMLElement>('.code-barrel')
+  if (panel && video && barrel) {
+    const cues: { time: number; label: string }[] = JSON.parse(panel.dataset.demoCues ?? '[]')
+    const blocks = [...barrel.querySelectorAll<HTMLElement>('.barrel-block')]
+    let current = -1
+    const update = (instant = false) => {
+      // CSS viewport units do not shrink when a capture applies root-level zoom.
+      const rootZoom = Number.parseFloat(getComputedStyle(document.documentElement).zoom) || 1
+      panel
+        .closest<HTMLElement>('.home-reference')
+        ?.style.setProperty('--hero-viewport-height', `${window.innerHeight / rootZoom}px`)
+      const index = Math.max(
+        0,
+        cues.findLastIndex((cue) => cue.time <= video.currentTime + 0.001),
+      )
+      if (index === current && !instant) return
+      current = index
+      const cue = cues[index]
+      const activeBlock = blocks[index]
+      if (!cue || !activeBlock) return
+      barrel.toggleAttribute('data-instant', instant)
+      const radius = Math.max(130, barrel.clientHeight * 0.62, activeBlock.offsetHeight * 1.1)
+      blocks.forEach((block, blockIndex) => {
+        const distance = blockIndex - index
+        block.style.setProperty('--angle', `${Math.max(-180, Math.min(180, -distance * 38))}deg`)
+        block.style.setProperty('--radius', `${radius}px`)
+        block.style.setProperty(
+          '--opacity',
+          Math.abs(distance) > 1 ? '0' : distance === 0 ? '1' : '0.75',
+        )
+        block.toggleAttribute('data-active', distance === 0)
+        block.toggleAttribute('data-neighbor', Math.abs(distance) === 1)
+        block.setAttribute('aria-hidden', String(Math.abs(distance) > 1))
+        block.tabIndex = Math.abs(distance) <= 1 ? 0 : -1
+      })
+    }
+    let hoverTimer: ReturnType<typeof setTimeout> | undefined
+    let hoverBlockedUntil = 0
+    const jump = (index: number) => {
+      const cue = cues[index]
+      if (!cue || video.readyState < 1) return
+      hoverBlockedUntil = performance.now() + 900
+      video.currentTime = cue.time
+      update()
+    }
+    blocks.forEach((block, index) => {
+      block.addEventListener('pointerenter', (event) => {
+        if (
+          event.pointerType !== 'mouse' ||
+          !block.hasAttribute('data-neighbor') ||
+          performance.now() < hoverBlockedUntil
+        )
+          return
+        hoverTimer = setTimeout(() => jump(index), 200)
+      })
+      block.addEventListener('pointerleave', () => clearTimeout(hoverTimer))
+      block.addEventListener('click', () => jump(index))
+      block.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault()
+          jump(index)
+        }
+      })
+    })
+    video.addEventListener('timeupdate', () => update())
+    video.addEventListener('seeking', () => update())
+    video.addEventListener('loadedmetadata', () => update(true))
+    window.addEventListener('resize', () => update(true))
+    document.fonts.ready.then(() => update(true))
+    update(true)
+  }
+</script>
+
+<script>
+  const player = document.querySelector<HTMLElement>('.home-demo')
+  const media = player?.querySelector('video')
+  const center = player?.querySelector<HTMLButtonElement>('[data-center-play]')
+  const controls = player?.querySelector<HTMLElement>('.player-controls')
+  const seek = player?.querySelector<HTMLInputElement>('[data-seek]')
+  const time = player?.querySelector<HTMLOutputElement>('[data-player-time]')
+  const mute = player?.querySelector<HTMLButtonElement>('[data-mute]')
+  const fullscreen = player?.querySelector<HTMLButtonElement>('[data-fullscreen]')
+  if (player && media && center && controls && seek && time && mute && fullscreen) {
+    media.controls = false
+    controls.hidden = false
+    const format = (seconds: number) =>
+      `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, '0')}`
+    const refresh = () => {
+      center.hidden = false
+      player.toggleAttribute('data-playing', !media.paused && !media.ended)
+      center.setAttribute('aria-label', media.paused ? 'Play walkthrough' : 'Pause walkthrough')
+      const duration = Number.isFinite(media.duration) ? media.duration : 0
+      seek.max = String(duration)
+      seek.value = String(media.currentTime)
+      time.textContent = `${format(media.currentTime)} / ${format(duration)}`
+      mute.toggleAttribute('data-muted', media.muted)
+      mute.title = media.muted ? 'Unmute' : 'Mute'
+      mute.setAttribute('aria-label', media.muted ? 'Unmute' : 'Mute')
+    }
+    const togglePlayback = async () => {
+      if (media.paused) {
+        if (media.ended) media.currentTime = 0
+        try {
+          await media.play()
+        } catch {
+          refresh()
+        }
+      } else media.pause()
+    }
+    center.addEventListener('click', togglePlayback)
+    media.addEventListener('click', togglePlayback)
+    seek.addEventListener('input', () => {
+      media.currentTime = Number(seek.value)
+    })
+    mute.addEventListener('click', () => {
+      media.muted = !media.muted
+    })
+    fullscreen.addEventListener('click', async () => {
+      if (document.fullscreenElement) await document.exitFullscreen()
+      else await player.requestFullscreen()
+    })
+    document.addEventListener('fullscreenchange', () => {
+      fullscreen.toggleAttribute('data-expanded', document.fullscreenElement === player)
+      fullscreen.setAttribute(
+        'aria-label',
+        document.fullscreenElement ? 'Exit fullscreen' : 'Enter fullscreen',
+      )
+    })
+    for (const event of ['loadedmetadata', 'timeupdate', 'play', 'pause', 'ended', 'volumechange'])
+      media.addEventListener(event, refresh)
+    refresh()
+  }
+</script>

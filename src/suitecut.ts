@@ -12,8 +12,10 @@ import {
   DEFAULT_SUITE_CUT_CHECKPOINT_DURATION_MS,
   DEFAULT_SUITE_CUT_CAPTURE_FRAMES_PER_SECOND,
   DEFAULT_SUITE_CUT_VIEWPORT,
+  createCaptureScaleFilter,
   resolveCaptureLayout,
 } from './capture.js'
+import { startDeviceScaleFrameCapture } from './device-scale-capture.js'
 import {
   type SuiteCutCaptureOptions,
   type SuiteCutCheckpointOptions,
@@ -35,6 +37,7 @@ import {
 } from './presentation.js'
 import { resolveFfmpeg, runProcess, waitForProcessExit } from './process.js'
 import { scrollLocator, scrollPageTop } from './scroll.js'
+import { getTabAudio } from './tab-audio.js'
 import { deriveSourceStartedAt } from './timing.js'
 import {
   type Milliseconds,
@@ -119,7 +122,9 @@ interface PendingCheckpointClip {
 }
 
 const INITIAL_FRAME_TIMEOUT_MS = 10_000
-const CAPTURE_GRACEFUL_SHUTDOWN_TIMEOUT_MS = 5_000
+const LIVE_CAPTURE_SHUTDOWN_TIMEOUT_MS = 5_000
+// Offline captures must drain queued frames before the encoder exits.
+const RECORDING_SHUTDOWN_TIMEOUT_MS = 60_000
 const CAPTURE_FORCE_KILL_AFTER_MS = 2_000
 const CAPTURE_STDERR_MAX_BYTES = 64 * 1024
 
@@ -339,8 +344,24 @@ export async function createRecordingSession({
   const context = page.context()
   const ffmpegPath = await raceWithAbort(resolveFfmpeg(), signal)
   const parsedCaptureOptions = parseCaptureOptions(captureOptions)
+  if (parsedCaptureOptions.deviceScaleFactor !== undefined) {
+    const actualDeviceScaleFactor = await page.evaluate(() => window.devicePixelRatio)
+    if (actualDeviceScaleFactor !== parsedCaptureOptions.deviceScaleFactor) {
+      throw new Error(
+        `SuiteCut capture.deviceScaleFactor ${String(parsedCaptureOptions.deviceScaleFactor)} ` +
+          `must be applied when the Playwright browser context is created, but this page uses ` +
+          `${String(actualDeviceScaleFactor)}. Use SuiteCut's record() API, or set the Playwright ` +
+          'deviceScaleFactor option before the page fixture is created.',
+      )
+    }
+  }
   const captureFramesPerSecond =
     parsedCaptureOptions.framesPerSecond ?? DEFAULT_SUITE_CUT_CAPTURE_FRAMES_PER_SECOND
+  const tabAudio = parsedCaptureOptions.stream?.audio === 'tab' ? getTabAudio(context) : undefined
+  if (parsedCaptureOptions.stream?.audio === 'tab' && !tabAudio)
+    throw new Error(
+      'SuiteCut tab audio requires the suitecut/playwright recorder with bundled Chromium',
+    )
   const streamOnly = parsedCaptureOptions.stream !== undefined
   const latestFrames = new Map<SuiteCutPageId, Buffer>()
   const captureFrameDurationMs = 1_000 / captureFramesPerSecond
@@ -368,8 +389,10 @@ export async function createRecordingSession({
   ): SuiteCutPageId => {
     if (activePageId === pageId) return pageId
     activePageId = pageId
+    const selectedAudioPage = livePages.get(pageId)
+    if (selectedAudioPage) void tabAudio?.select(selectedAudioPage).catch(() => undefined)
     const frame = latestFrames.get(pageId) ?? streamingRecorders.get(pageId)?.lastFrame
-    if (frame !== undefined) liveStream?.update(frame)
+    if (frame !== undefined && capturePauseDepth === 0) liveStream?.update(frame)
     if (!streamOnly)
       events.push({ id: randomUUID(), type: 'page-selected', atMs: now(), pageId, reason })
     return pageId
@@ -381,6 +404,7 @@ export async function createRecordingSession({
     if (capturePauseDepth === 0) await drainPageTasks()
     capturePauseDepth += 1
     if (capturePauseDepth === 1) {
+      tabAudio?.pause(true)
       capturePausedAtMonotonicMs = performance.now()
       const pauseEpochMs = Date.now()
       for (const recorder of streamingRecorders.values()) {
@@ -396,6 +420,9 @@ export async function createRecordingSession({
         const resumeEpochMs = Date.now()
         excludedCaptureDurationMs += performance.now() - capturePausedAtMonotonicMs
         capturePausedAtMonotonicMs = undefined
+        tabAudio?.pause(false)
+        const resumedFrame = latestFrames.get(activePageId)
+        if (resumedFrame) liveStream?.update(resumedFrame)
         for (const recorder of streamingRecorders.values()) {
           if (recorder.pausedAtEpochMs !== undefined) {
             if (recorder.firstFrameEpochMs !== undefined) {
@@ -435,6 +462,16 @@ export async function createRecordingSession({
 
   const drainPageTasks = async (): Promise<void> => {
     while (pendingPageTasks.size > 0) await Promise.all([...pendingPageTasks])
+  }
+
+  const stopPageFrameCapture = async (
+    activeScreencast: SuiteCutActiveScreencast,
+    timeoutMs: number,
+  ): Promise<void> => {
+    await raceWithAbort(
+      activeScreencast.stopCapture?.() ?? activeScreencast.page.screencast.stop(),
+      AbortSignal.timeout(timeoutMs),
+    )
   }
 
   const startScreencast = async (
@@ -491,19 +528,32 @@ export async function createRecordingSession({
         received = resolve
       })
       try {
-        await raceWithAbort(
-          playwrightPage.screencast.start({
-            size: captureSize,
-            quality: parsedCaptureOptions.quality ?? 90,
-            onFrame: ({ data }) => {
-              if (!active) return
-              latestFrames.set(pageId, data)
-              if (pageId === activePageId) liveStream?.update(data)
-              received()
-            },
-          }),
-          startSignal,
-        )
+        const onFrame = ({ data }: { data: Buffer }): void => {
+          if (!active) return
+          latestFrames.set(pageId, data)
+          if (pageId === activePageId && capturePauseDepth === 0) liveStream?.update(data)
+          received()
+        }
+        if (parsedCaptureOptions.deviceScaleFactor !== undefined) {
+          const capture = startDeviceScaleFrameCapture(
+            playwrightPage,
+            captureFramesPerSecond,
+            parsedCaptureOptions.quality ?? 90,
+            onFrame,
+            startSignal,
+          )
+          activeScreencast.stopCapture = () => capture.stop()
+          await raceWithAbort(capture.firstFrame, startSignal)
+        } else {
+          await raceWithAbort(
+            playwrightPage.screencast.start({
+              size: captureSize,
+              quality: parsedCaptureOptions.quality ?? 90,
+              onFrame,
+            }),
+            startSignal,
+          )
+        }
         await raceWithAbort(
           first,
           AbortSignal.any([startSignal, AbortSignal.timeout(INITIAL_FRAME_TIMEOUT_MS)]),
@@ -512,10 +562,9 @@ export async function createRecordingSession({
       } catch (error) {
         screencasts.delete(pageId)
         latestFrames.delete(pageId)
-        await raceWithAbort(
-          playwrightPage.screencast.stop(),
-          AbortSignal.timeout(CAPTURE_FORCE_KILL_AFTER_MS),
-        ).catch(() => undefined)
+        await stopPageFrameCapture(activeScreencast, CAPTURE_FORCE_KILL_AFTER_MS).catch(
+          () => undefined,
+        )
         if (startSignal.aborted || playwrightPage.isClosed()) return false
         throw error
       }
@@ -547,6 +596,9 @@ export async function createRecordingSession({
         '-an',
         '-r',
         String(captureFramesPerSecond),
+        ...(parsedCaptureOptions.deviceScaleFactor === undefined
+          ? []
+          : ['-vf', createCaptureScaleFilter(captureLayout.physicalFrameSize, captureSize)]),
         '-c:v',
         'libvpx-vp9',
         '-crf',
@@ -611,52 +663,61 @@ export async function createRecordingSession({
     streamingRecorders.set(pageId, recorder)
 
     try {
-      await raceWithAbort(
-        playwrightPage.screencast.start({
-          size: captureSize,
-          quality: parsedCaptureOptions.quality ?? 100,
-          onFrame: async ({ data, timestamp }) => {
-            if (recorder.closing || recorder.pausedAtEpochMs !== undefined) return
-            if (pageId === activePageId) liveStream?.update(data)
-            recorder.writeQueue = recorder.writeQueue.then(async () => {
-              if (recorder.closing || recorder.pausedAtEpochMs !== undefined) return
-              const isFirstFrame = recorder.firstFrameEpochMs === undefined
-              recorder.firstFrameEpochMs ??= timestamp
-              activeScreencast.firstFrameEpochMs ??= timestamp
-              activeScreencast.sourceStartedAtMs ??= Math.max(
-                0,
-                deriveSourceStartedAt(timestamp, originEpochMs) - excludedCaptureDurationMs,
-              )
-              const frameNumber = Math.max(
-                0,
-                Math.floor(
-                  (timestamp - recorder.firstFrameEpochMs - recorder.excludedDurationMs) /
-                    captureFrameDurationMs,
-                ),
-              )
-              if (frameNumber <= recorder.lastFrameNumber) {
-                recorder.lastFrame = data
-                return
-              }
-              if (recorder.lastFrame !== undefined) {
-                for (
-                  let current = recorder.lastFrameNumber + 1;
-                  current < frameNumber;
-                  current += 1
-                ) {
-                  if (!recorder.stdin.write(recorder.lastFrame)) await once(recorder.stdin, 'drain')
-                }
-              }
-              if (!recorder.stdin.write(data)) await once(recorder.stdin, 'drain')
-              recorder.lastFrame = data
-              recorder.lastFrameNumber = frameNumber
-              if (isFirstFrame) resolveFirstFrame()
-            })
-            await recorder.writeQueue
-          },
-        }),
-        startSignal,
-      )
+      const onFrame = async ({ data, timestamp }: { data: Buffer; timestamp: number }) => {
+        if (recorder.closing || recorder.pausedAtEpochMs !== undefined) return
+        if (pageId === activePageId) liveStream?.update(data)
+        recorder.writeQueue = recorder.writeQueue.then(async () => {
+          if (recorder.closing || recorder.pausedAtEpochMs !== undefined) return
+          const isFirstFrame = recorder.firstFrameEpochMs === undefined
+          recorder.firstFrameEpochMs ??= timestamp
+          activeScreencast.firstFrameEpochMs ??= timestamp
+          activeScreencast.sourceStartedAtMs ??= Math.max(
+            0,
+            deriveSourceStartedAt(timestamp, originEpochMs) - excludedCaptureDurationMs,
+          )
+          const frameNumber = Math.max(
+            0,
+            Math.floor(
+              (timestamp - recorder.firstFrameEpochMs - recorder.excludedDurationMs) /
+                captureFrameDurationMs,
+            ),
+          )
+          if (frameNumber <= recorder.lastFrameNumber) {
+            recorder.lastFrame = data
+            return
+          }
+          if (recorder.lastFrame !== undefined) {
+            for (let current = recorder.lastFrameNumber + 1; current < frameNumber; current += 1) {
+              if (!recorder.stdin.write(recorder.lastFrame)) await once(recorder.stdin, 'drain')
+            }
+          }
+          if (!recorder.stdin.write(data)) await once(recorder.stdin, 'drain')
+          recorder.lastFrame = data
+          recorder.lastFrameNumber = frameNumber
+          if (isFirstFrame) resolveFirstFrame()
+        })
+        await recorder.writeQueue
+      }
+      if (parsedCaptureOptions.deviceScaleFactor !== undefined) {
+        const capture = startDeviceScaleFrameCapture(
+          playwrightPage,
+          captureFramesPerSecond,
+          parsedCaptureOptions.quality ?? 100,
+          onFrame,
+          startSignal,
+        )
+        activeScreencast.stopCapture = () => capture.stop()
+        await raceWithAbort(capture.firstFrame, startSignal)
+      } else {
+        await raceWithAbort(
+          playwrightPage.screencast.start({
+            size: captureSize,
+            quality: parsedCaptureOptions.quality ?? 100,
+            onFrame,
+          }),
+          startSignal,
+        )
+      }
       let initialFrameTimer: ReturnType<typeof setTimeout> | undefined
       try {
         await raceWithAbort(
@@ -682,13 +743,12 @@ export async function createRecordingSession({
       screencasts.delete(pageId)
       streamingRecorders.delete(pageId)
       recorder.closing = true
-      await raceWithAbort(
-        playwrightPage.screencast.stop(),
-        AbortSignal.timeout(CAPTURE_FORCE_KILL_AFTER_MS),
-      ).catch(() => undefined)
+      await stopPageFrameCapture(activeScreencast, CAPTURE_FORCE_KILL_AFTER_MS).catch(
+        () => undefined,
+      )
       recorder.stdin.end()
       await waitForProcessExit(recorder.child, recorder.completion, {
-        gracefulTimeoutMs: CAPTURE_GRACEFUL_SHUTDOWN_TIMEOUT_MS,
+        gracefulTimeoutMs: RECORDING_SHUTDOWN_TIMEOUT_MS,
         forceKillAfterMs: CAPTURE_FORCE_KILL_AFTER_MS,
       }).catch(() => undefined)
       await rm(outputPath, { force: true }).catch(() => undefined)
@@ -707,10 +767,7 @@ export async function createRecordingSession({
     if (streamOnly) {
       latestFrames.delete(pageId)
       try {
-        await raceWithAbort(
-          activeScreencast.page.screencast.stop(),
-          AbortSignal.timeout(CAPTURE_GRACEFUL_SHUTDOWN_TIMEOUT_MS),
-        )
+        await stopPageFrameCapture(activeScreencast, LIVE_CAPTURE_SHUTDOWN_TIMEOUT_MS)
       } catch (error) {
         if (!activeScreencast.page.isClosed()) throw error
       }
@@ -723,12 +780,12 @@ export async function createRecordingSession({
 
     const shutdownErrors: Error[] = []
     const shutdownStartedAt = performance.now()
-    const gracefulSignal = AbortSignal.timeout(CAPTURE_GRACEFUL_SHUTDOWN_TIMEOUT_MS)
+    const gracefulSignal = AbortSignal.timeout(RECORDING_SHUTDOWN_TIMEOUT_MS)
     try {
       await raceWithAbort(
         (async () => {
           try {
-            await activeScreencast.page.screencast.stop()
+            await (activeScreencast.stopCapture?.() ?? activeScreencast.page.screencast.stop())
           } catch (error) {
             if (!activeScreencast.page.isClosed()) throw error
           }
@@ -762,7 +819,7 @@ export async function createRecordingSession({
     try {
       const elapsedMs = performance.now() - shutdownStartedAt
       await waitForProcessExit(recorder.child, recorder.completion, {
-        gracefulTimeoutMs: Math.max(1, Math.ceil(CAPTURE_GRACEFUL_SHUTDOWN_TIMEOUT_MS - elapsedMs)),
+        gracefulTimeoutMs: Math.max(1, Math.ceil(RECORDING_SHUTDOWN_TIMEOUT_MS - elapsedMs)),
         forceKillAfterMs: CAPTURE_FORCE_KILL_AFTER_MS,
       })
     } catch (error) {
@@ -1131,6 +1188,7 @@ export async function createRecordingSession({
         parsedCaptureOptions,
         page.viewportSize() ?? DEFAULT_SUITE_CUT_VIEWPORT,
       )
+      await tabAudio?.select(livePages.get(activePageId) ?? page)
       liveStream = createLiveStream(
         ffmpegPath,
         parsedCaptureOptions.stream,
@@ -1138,11 +1196,13 @@ export async function createRecordingSession({
         layout.captureSize,
         signal,
         (frame) => liveCamera.render(frame, activePageId),
+        tabAudio?.transport,
+        layout.physicalFrameSize,
       )
       const frame =
         latestFrames.get(activePageId) ?? streamingRecorders.get(activePageId)?.lastFrame
       if (frame !== undefined) liveStream.update(frame)
-      await liveStream.ready()
+      await Promise.race([liveStream.ready(), ...(tabAudio ? [tabAudio.failure] : [])])
     }
   } catch (error) {
     active = false
@@ -1205,7 +1265,14 @@ export async function createRecordingSession({
   }
 
   const session: SuiteCutRecordingSession = {
-    ...(liveStream === undefined ? {} : { streamFailure: liveStream.failure }),
+    ...(liveStream === undefined
+      ? {}
+      : {
+          streamFailure: Promise.race([
+            liveStream.failure,
+            ...(tabAudio ? [tabAudio.failure] : []),
+          ]),
+        }),
     ...(parsedCaptureOptions.stream === undefined ? {} : { playLiveZoom: liveCamera.zoom }),
     retainArtifacts: !streamOnly,
     attemptId,
@@ -1322,6 +1389,50 @@ export function createSuiteCutFixture(
     return { pageId, ...geometry }
   }
 
+  const withActionZoom = (
+    locator: Locator,
+    zoom: boolean | SuiteCutZoomOptions | undefined,
+    action: () => Promise<void>,
+  ): Promise<void> => {
+    if (zoom === undefined || zoom === false) return action()
+    const run = async (): Promise<void> => {
+      const options = parseZoomOptions(zoom === true ? {} : zoom)
+      await locator.scrollIntoViewIfNeeded()
+      const { pageId, rect, viewport } = await captureLocatorGeometry(
+        locator,
+        'zoom',
+        options.geometry ?? 'element',
+      )
+      const resolved = resolveSuiteCutZoomOptions(options)
+      const page = session.pageFor(pageId)
+      const event: SuiteCutZoomEvent = {
+        ...createPageEventBase(pageId),
+        type: 'zoom',
+        rect,
+        viewport,
+        // Keep the live camera close until the action's actual duration is known.
+        options: { ...options, holdMs: Number.MAX_SAFE_INTEGER },
+      }
+      session.record(event)
+      const playback = async (): Promise<void> => {
+        try {
+          await page.waitForTimeout(resolved.enter.durationMs)
+          await action()
+          const heldMs = session.now() - event.atMs - resolved.enter.durationMs
+          await page.waitForTimeout(Math.max(0, resolved.holdMs - heldMs))
+        } finally {
+          event.options.holdMs = Math.max(0, session.now() - event.atMs - resolved.enter.durationMs)
+          if (!page.isClosed()) await page.waitForTimeout(resolved.exit.durationMs)
+        }
+      }
+      if (session.playLiveZoom !== undefined) await session.playLiveZoom(event, playback)
+      else await playback()
+    }
+    const pending = zoomQueue.then(run, run)
+    zoomQueue = pending.catch(() => undefined)
+    return pending
+  }
+
   const suitecut: SuiteCutFixture = {
     selectPage: (page: Page) => {
       session.selectPage(page)
@@ -1399,26 +1510,28 @@ export function createSuiteCutFixture(
     },
     highlight: async (locator: Locator, options: SuiteCutHighlightOptions = {}) => {
       const parsedOptions = parseHighlightOptions(options)
-      const { pageId, rect, viewport } = await captureLocatorGeometry(
-        locator,
-        'highlight',
-        parsedOptions.geometry ?? 'element',
-      )
+      return withActionZoom(locator, parsedOptions.zoom, async () => {
+        const { pageId, rect, viewport } = await captureLocatorGeometry(
+          locator,
+          'highlight',
+          parsedOptions.geometry ?? 'element',
+        )
 
-      const event: SuiteCutHighlightEvent = {
-        ...createPageEventBase(pageId),
-        type: 'highlight',
-        rect,
-        viewport,
-        options: parsedOptions,
-      }
-      session.record(event)
-      await showPresentationHighlight(
-        session.pageFor(pageId),
-        rect,
-        parsedOptions,
-        parsedOptions.durationMs ?? 1_200,
-      )
+        const event: SuiteCutHighlightEvent = {
+          ...createPageEventBase(pageId),
+          type: 'highlight',
+          rect,
+          viewport,
+          options: parsedOptions,
+        }
+        session.record(event)
+        await showPresentationHighlight(
+          session.pageFor(pageId),
+          rect,
+          parsedOptions,
+          parsedOptions.durationMs ?? 1_200,
+        )
+      })
     },
     zoom: (locator: Locator, options: SuiteCutZoomOptions = {}) => {
       const runZoom = async () => {
@@ -1451,40 +1564,44 @@ export function createSuiteCutFixture(
     },
     hover: async (locator: Locator, options: SuiteCutPointerActionOptions = {}) => {
       const parsedOptions = parsePointerActionOptions(options)
-      await locator.scrollIntoViewIfNeeded()
-      const { pageId, rect } = await captureLocatorGeometry(locator, 'hover')
-      const page = session.pageFor(pageId)
-      await movePresentationCursor(
-        page,
-        { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 },
-        parsedOptions.moveDurationMs ?? 450,
-      )
-      await locator.hover()
-      if (parsedOptions.waitForAnimations !== false) {
-        await waitForPresentationAnimations(page, parsedOptions.animationTimeoutMs ?? 2_000)
-      }
-      const settleMs = parsedOptions.settleMs ?? 120
-      if (settleMs > 0) await page.waitForTimeout(settleMs)
+      return withActionZoom(locator, parsedOptions.zoom, async () => {
+        await locator.scrollIntoViewIfNeeded()
+        const { pageId, rect } = await captureLocatorGeometry(locator, 'hover')
+        const page = session.pageFor(pageId)
+        await movePresentationCursor(
+          page,
+          { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 },
+          parsedOptions.moveDurationMs ?? 450,
+        )
+        await locator.hover()
+        if (parsedOptions.waitForAnimations !== false) {
+          await waitForPresentationAnimations(page, parsedOptions.animationTimeoutMs ?? 2_000)
+        }
+        const settleMs = parsedOptions.settleMs ?? 120
+        if (settleMs > 0) await page.waitForTimeout(settleMs)
+      })
     },
     click: async (locator: Locator, options: SuiteCutPointerActionOptions = {}) => {
       const parsedOptions = parsePointerActionOptions(options)
-      await locator.scrollIntoViewIfNeeded()
-      const { pageId, rect } = await captureLocatorGeometry(locator, 'click')
-      const page = session.pageFor(pageId)
-      await movePresentationCursor(
-        page,
-        { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 },
-        parsedOptions.moveDurationMs ?? 450,
-      )
-      await locator.click()
+      return withActionZoom(locator, parsedOptions.zoom, async () => {
+        await locator.scrollIntoViewIfNeeded()
+        const { pageId, rect } = await captureLocatorGeometry(locator, 'click')
+        const page = session.pageFor(pageId)
+        await movePresentationCursor(
+          page,
+          { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 },
+          parsedOptions.moveDurationMs ?? 450,
+        )
+        await locator.click()
 
-      const waits: Promise<void>[] = [pulsePresentationCursor(page, 280)]
-      if (parsedOptions.waitForAnimations !== false) {
-        waits.push(waitForPresentationAnimations(page, parsedOptions.animationTimeoutMs ?? 2_000))
-      }
-      await Promise.all(waits)
-      const settleMs = parsedOptions.settleMs ?? 120
-      if (settleMs > 0) await page.waitForTimeout(settleMs)
+        const waits: Promise<void>[] = [pulsePresentationCursor(page, 280)]
+        if (parsedOptions.waitForAnimations !== false) {
+          waits.push(waitForPresentationAnimations(page, parsedOptions.animationTimeoutMs ?? 2_000))
+        }
+        await Promise.all(waits)
+        const settleMs = parsedOptions.settleMs ?? 120
+        if (settleMs > 0) await page.waitForTimeout(settleMs)
+      })
     },
     type: async (locator: Locator, text: string, options: SuiteCutTypeOptions = {}) => {
       const input = parseTypeInput(text, options)

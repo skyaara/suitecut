@@ -1,11 +1,13 @@
 ---
 import browserSupportSource from '../../../../examples/browser-support.spec.ts?raw'
+import openAiStatusSource from '../../../../examples/playwright/openai-status-livestream.ts?raw'
 import plainPlaywrightSource from '../../../../examples/playwright.ts?raw'
 
 import CodeBlock from '../../components/CodeBlock.astro'
 import BaseLayout from '../../layouts/BaseLayout.astro'
 
 const browserSupportExample = browserSupportSource.trim()
+const openAiStatusExample = openAiStatusSource.trim()
 const plainPlaywrightExample = plainPlaywrightSource.trim()
 const repositoryUrl = 'https://github.com/skyaara/suitecut/blob/main/'
 ---
@@ -18,6 +20,7 @@ const repositoryUrl = 'https://github.com/skyaara/suitecut/blob/main/'
   <div class="standalone-page">
     <nav class="page-index" aria-label="Example sections">
       <a href="#playwright-script">Playwright script</a>
+      <a href="#openai-status-livestream">Status livestream</a>
       <a href="#browser-matrix">Browser matrix</a>
       <a href="#more-examples">More examples</a>
       <a href="#select-a-retry">Select a retry</a>
@@ -43,6 +46,19 @@ node --experimental-strip-types examples/playwright.ts
 suitecut render \\
   --manifest .suitecut/playwright-example.json \\
   --output .suitecut/videos/playwright-example.mp4`}
+      />
+
+      <h2 id="openai-status-livestream">OpenAI Status livestream</h2>
+      <p>
+        <code>examples/playwright/openai-status-livestream.ts</code> publishes the public OpenAI Status
+        page at 1080p with tab audio. It highlights the system status, stays live until
+        <code>Ctrl+C</code>, and reconnects after an ingest interruption.
+      </p>
+      <CodeBlock code={openAiStatusExample} />
+      <CodeBlock
+        label="Terminal"
+        code={`SUITECUT_STREAM_URL='rtmps://your-ingest/app/your-stream-key' \\
+pnpm example:livestream:status`}
       />
 
       <h2 id="browser-matrix">Playwright Test in three browsers</h2>

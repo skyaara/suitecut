@@ -2,6 +2,7 @@ import { setTimeout as delay } from 'node:timers/promises'
 
 import imageSharp from 'sharp'
 
+import { raceWithAbort } from './abort.js'
 import { type SuiteCutZoomEvent } from './types.js'
 import {
   resolveSuiteCutZoomOptions,
@@ -16,14 +17,16 @@ export function createLiveCamera(signal?: AbortSignal) {
   let active: { event: SuiteCutZoomEvent; startedAt: number } | undefined
   let cached: { input: Buffer; key: string; output: Buffer } | undefined
   return {
-    zoom: async (event: SuiteCutZoomEvent): Promise<void> => {
+    zoom: async (event: SuiteCutZoomEvent, playback?: () => Promise<void>): Promise<void> => {
       combined.throwIfAborted()
       const animation = { event, startedAt: performance.now() }
       active = animation
       try {
-        await delay(resolveSuiteCutZoomOptions(event.options).totalDurationMs, undefined, {
-          signal: combined,
-        })
+        if (playback !== undefined) await raceWithAbort(playback(), combined)
+        else
+          await delay(resolveSuiteCutZoomOptions(event.options).totalDurationMs, undefined, {
+            signal: combined,
+          })
       } finally {
         if (active === animation) {
           active = undefined
