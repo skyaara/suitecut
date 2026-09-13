@@ -1,6 +1,9 @@
 import { record } from 'suitecut'
 
 const streamUrl = process.env.SUITECUT_STREAM_URL
+const audio = process.env.SUITECUT_STREAM_AUDIO ?? 'silent'
+if (audio !== 'silent' && audio !== 'tab')
+  throw new Error('SUITECUT_STREAM_AUDIO must be silent or tab')
 const websiteUrl = process.env.SUITECUT_WEBSITE_URL
 if (!streamUrl || !websiteUrl) {
   throw new Error(
@@ -29,7 +32,7 @@ try {
       capture: {
         viewport: { width: 1280, height: 720 },
         framesPerSecond: 30,
-        stream: { url: streamUrl, bitrateKbps: 4500 },
+        stream: { url: streamUrl, audio, bitrateKbps: 4500 },
       },
       signal: controller.signal,
     },

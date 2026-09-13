@@ -1,8 +1,9 @@
 import { spawn, type ChildProcess } from 'node:child_process'
 import { constants as fsConstants } from 'node:fs'
-import { access, readdir } from 'node:fs/promises'
-import { homedir } from 'node:os'
+import { access } from 'node:fs/promises'
 import { basename, dirname, join } from 'node:path'
+
+import { mediaToolPaths } from './media-tool-paths.js'
 
 export interface SuiteCutProcessResult {
   executable: string
@@ -228,47 +229,18 @@ async function commandStarts(executable: string): Promise<boolean> {
   return pending
 }
 
-async function playwrightFfmpegPath(): Promise<string | undefined> {
-  const cacheRoot =
-    process.platform === 'darwin'
-      ? join(homedir(), 'Library', 'Caches', 'ms-playwright')
-      : join(homedir(), '.cache', 'ms-playwright')
-  let entries: string[]
-  try {
-    entries = await readdir(cacheRoot)
-  } catch {
-    return undefined
-  }
-
-  const executableName =
-    process.platform === 'win32'
-      ? 'ffmpeg-win64.exe'
-      : process.platform === 'darwin'
-        ? 'ffmpeg-mac'
-        : 'ffmpeg-linux'
-  const candidates = entries
-    .filter((entry) => entry.startsWith('ffmpeg-'))
-    .sort()
-    .reverse()
-    .map((entry) => join(cacheRoot, entry, executableName))
-  for (const candidate of candidates) {
-    if (await isExecutable(candidate)) return candidate
-  }
-  return undefined
-}
-
 export async function resolveFfmpeg(explicitPath?: string): Promise<string> {
   const configuredPath = explicitPath ?? process.env.SUITECUT_FFMPEG_PATH
   if (configuredPath !== undefined) {
     if (await isExecutable(configuredPath)) return configuredPath
     throw new Error(`FFmpeg is not executable: ${configuredPath}`)
   }
-
+  const managed = mediaToolPaths().ffmpeg
+  if (managed && (await commandStarts(managed))) return managed
   if (await commandStarts('ffmpeg')) return 'ffmpeg'
-
-  const playwrightPath = await playwrightFfmpegPath()
-  if (playwrightPath !== undefined) return playwrightPath
-  throw new Error('FFmpeg was not found. Install ffmpeg or set SUITECUT_FFMPEG_PATH.')
+  throw new Error(
+    'FFmpeg was not found. Run npx suitecut install, install system ffmpeg, or set SUITECUT_FFMPEG_PATH.',
+  )
 }
 
 export async function resolveFfprobe(ffmpegPath?: string): Promise<string> {
@@ -277,14 +249,19 @@ export async function resolveFfprobe(ffmpegPath?: string): Promise<string> {
     if (await isExecutable(configuredPath)) return configuredPath
     throw new Error(`FFprobe is not executable: ${configuredPath}`)
   }
-
-  if (await commandStarts('ffprobe')) return 'ffprobe'
-
-  const executable = await resolveFfmpeg(ffmpegPath)
-  if (executable !== 'ffmpeg') {
-    const name = basename(executable).replace(/^ffmpeg/u, 'ffprobe')
-    const sibling = join(dirname(executable), name)
-    if (await isExecutable(sibling)) return sibling
+  // Prefer the companion of a custom encoder before falling back to other installations.
+  const customFfmpeg = ffmpegPath ?? process.env.SUITECUT_FFMPEG_PATH
+  if (customFfmpeg && customFfmpeg !== 'ffmpeg') {
+    const name = basename(customFfmpeg).replace(/^ffmpeg/u, 'ffprobe')
+    if (name !== basename(customFfmpeg)) {
+      const sibling = join(dirname(customFfmpeg), name)
+      if (await commandStarts(sibling)) return sibling
+    }
   }
-  throw new Error('FFprobe was not found. Install ffmpeg or set SUITECUT_FFPROBE_PATH.')
+  const managed = mediaToolPaths().ffprobe
+  if (managed && (await commandStarts(managed))) return managed
+  if (await commandStarts('ffprobe')) return 'ffprobe'
+  throw new Error(
+    'FFprobe was not found. Run npx suitecut install, install system ffmpeg, or set SUITECUT_FFPROBE_PATH.',
+  )
 }

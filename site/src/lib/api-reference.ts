@@ -27,6 +27,7 @@ import { audioPluginReference } from 'suitecut/audio-plugin'
 test.use({
   suitecutCapture: {
     viewport: { width: 1280, height: 720 },
+    deviceScaleFactor: 2,
     size: { width: 1280, height: 720 },
     framesPerSecond: 60,
     quality: 100,
@@ -66,6 +67,7 @@ export const record = defineSuiteCut({
   context: { colorScheme: 'light' },
   capture: {
     viewport: { width: 1280, height: 720 },
+    deviceScaleFactor: 2,
     size: { width: 1280, height: 720 },
     framesPerSecond: 60,
     quality: 100,

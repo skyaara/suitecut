@@ -1,3 +1,4 @@
+export type { LiveStreamDiagnostic } from './live-congestion.js'
 export { defineSuiteCut, record } from './playwright.js'
 export type { SuiteCutStreamOptions, SuiteCutReconnectOptions } from './schemas.js'
 export type {

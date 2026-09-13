@@ -10,14 +10,8 @@ use `playwright-recast`, hosted model APIs, or cloud speech services.
 - Node.js 22 or newer
 - `playwright` or `@playwright/test` 1.59 or newer
 - At least one supported Playwright browser: Chromium, Firefox, or WebKit
-- FFmpeg and FFprobe available on `PATH`, or `SUITECUT_FFMPEG_PATH` and `SUITECUT_FFPROBE_PATH` set explicitly
+- FFmpeg and FFprobe installed with `npx suitecut install`, available on `PATH`, or configured with `SUITECUT_FFMPEG_PATH` and `SUITECUT_FFPROBE_PATH`
 - macOS only when using the optional `/usr/bin/say` provider
-
-On macOS, install the media tools with:
-
-```sh
-brew install ffmpeg
-```
 
 ## Install
 
@@ -26,6 +20,8 @@ Install SuiteCut and Playwright in the project that owns the browser flow:
 ```sh
 npm install suitecut playwright
 npx playwright install chromium
+npx suitecut install
+npx suitecut doctor
 ```
 
 If the flow is already a Playwright Test, install the test package too:
@@ -33,10 +29,71 @@ If the flow is already a Playwright Test, install the test package too:
 ```sh
 npm install --save-dev suitecut playwright @playwright/test
 npx playwright install chromium
+npx suitecut install
+npx suitecut doctor
 ```
 
 The npm package includes the local Kokoro model and default voice, so the installed package uses
 about 89 MB before its JavaScript dependencies.
+
+### Managed media tools
+
+`suitecut install` downloads pinned FFmpeg 9.0.1 and FFprobe builds for macOS
+x64/arm64, Linux x64/arm64, and Windows x64. SuiteCut verifies each archive against
+its pinned SHA-256 checksum and checks the executables before publishing the cache.
+Downloads use existing public build hosting from Martin Riedl, BtbN, and Gyan. No download
+runs during recording or streaming, and npm install itself does not fetch media tools.
+
+Explicit paths take priority, then SuiteCut's versioned cache, then system tools on
+`PATH`. Playwright's limited FFmpeg build is not used. `suitecut doctor` checks
+H.264/AAC and HTTP/RTMP/RTMPS capabilities without downloading anything.
+
+Set `SUITECUT_MEDIA_CACHE` to choose the cache root. By default it is under the
+user's OS cache directory. Run setup during deployment or Docker image construction
+as the runtime user, or use a shared cache path accessible to that user. Browser
+installation and Linux browser libraries are still managed by Playwright. Linux
+media builds require a compatible glibc system and `tar` with xz support; Alpine is not a verified target.
+Unsupported platforms can use explicit media-tool paths or a system installation.
+
+If an upstream archive becomes unavailable or fails its checksum, installation
+fails and leaves existing tools intact. Updating a pin requires changing both its
+URL and checksum and testing that build. See [third-party notices](THIRD_PARTY_NOTICES.md).
+
+### Linux container
+
+Build the included Debian-based image from this checkout:
+
+```sh
+docker build -t suitecut:linux-test .
+docker run --rm --init --shm-size=1g suitecut:linux-test
+```
+
+The image installs Chromium, its Linux libraries, and SuiteCut's pinned media tools
+during the build. It runs as the unprivileged `node` user; the default command checks
+FFmpeg and FFprobe. Docker builds for the host architecture unless you specify
+`--platform`. Use headless Chromium for browser flows in this image.
+
+To run a local JavaScript flow that imports `suitecut`, mount the file into `/app`:
+
+```sh
+docker run --rm --init --shm-size=1g \
+  -v "$PWD/flow.mjs:/app/flow.mjs:ro" \
+  suitecut:linux-test node flow.mjs
+```
+
+The image also includes the local streaming verifiers. This test runs moving video
+with synchronized flashes and beeps, audio interruptions, page switching, capture
+pause, and an encoder restart:
+
+```sh
+docker run --rm --init --shm-size=1g \
+  -e SUITECUT_AUDIO_STRESS=1 -e SUITECUT_AUDIO_SOAK_SECONDS=120 \
+  suitecut:linux-test node scripts/verify-tab-audio.mjs
+```
+
+Verification artifacts are written under `/app/.suitecut`. Omit `--rm` and use
+`docker cp` before removing the container if you want to retain the recordings and
+memory samples. These tests use a local receiver and do not publish to Twitch.
 
 ## Record a browser flow
 
@@ -265,6 +322,19 @@ Animation `type` accepts `none`, `fade`, `scale`, or `fade-scale`; `easing` acce
 durations exceed `durationMs`, SuiteCut still completes both phases and uses no stable interval.
 Scale emphasis never transforms the highlight box, so its border stays aligned throughout the phase.
 
+`highlight()`, `hover()`, and `click()` accept `zoom: true` or a zoom options object:
+
+```ts
+await suitecut.highlight(details, { zoom: true })
+await suitecut.click(publishButton, { zoom: { scale: 1.25, paddingPx: 32 } })
+```
+
+Action zoom is off by default. It scrolls the target into view, zooms in before the
+action, stays close until the action completes, then zooms out. `holdMs` is the
+minimum time spent close, including the action. A longer action extends the hold.
+The zoom applies to rendered video and live streams without changing page layout.
+Action zooms share the camera queue with `zoom()` calls.
+
 ### `zoom(locator, options?): Promise<void>`
 
 Scrolls the locator into view, measures its visible geometry, and records a render-time camera move.
@@ -287,6 +357,7 @@ Zoom uses the same animation values as highlights. `none` disables that phase. `
 Scrolls a locator into view, moves the recorded cursor to its center, performs a real Playwright
 hover, optionally waits for resulting CSS or Web Animations, and then settles.
 
+- `zoom`: optional `true`, `false`, or zoom options object; default `false`.
 - `moveDurationMs`: cursor travel time; default `450`.
 - `settleMs`: wait after the action; default `120`.
 - `waitForAnimations`: wait for application animations; default `true`.
@@ -340,12 +411,46 @@ translated in the current release.
 Set `suitecutCapture` with `test.use()` or in Playwright configuration:
 
 - `viewport`: browser viewport, default `{ width: 1600, height: 900 }`; maximum `7680x4320`.
+- `deviceScaleFactor`: physical pixels per CSS pixel from `1` through `4`. For example, a
+  `1920x1080` viewport at `2` renders `3840x2160` pixels without changing page layout.
 - `size`: encoded source size, defaulting to the viewport. Larger sizes must preserve the viewport
   aspect ratio. Width and height must be even and no larger than `7680x4320`.
 - `framesPerSecond`: `30` or `60`; default `30`.
-- `quality`: Playwright screencast JPEG quality from `1` through `100`; default `100`
+- `quality`: capture JPEG quality from `1` through `100`; default `100`
   when recording, or `90` in streaming-only mode.
 - `narrationTailMs`: non-negative pause after every narration clip; default `350`.
+
+Use `deviceScaleFactor` when you want sharper rasterization without moving responsive breakpoints:
+
+```ts
+capture: {
+  viewport: { width: 1920, height: 1080 },
+  deviceScaleFactor: 2,
+  quality: 100,
+  framesPerSecond: 30,
+  stream: {
+    url,
+    size: { width: 1920, height: 1080 },
+    bitrateKbps: 6000,
+    audio: 'tab',
+  },
+}
+```
+
+This keeps `innerWidth` at `1920`, `innerHeight` at `1080`, and `devicePixelRatio` at `2`.
+SuiteCut captures `3840x2160` device pixels, then uses Lanczos scaling for the `1920x1080`
+recording or stream. It does not set CSS zoom or transforms. Every page in the browser context,
+including popups, uses the same scale.
+
+SuiteCut must set the scale when Playwright creates the browser context. The standalone
+`record()` API does this automatically. The `suitecut/test` fixture also derives Playwright's
+context option from `suitecutCapture.deviceScaleFactor`. If you pass an already-created page to
+the lower-level recording API with a different DPR, SuiteCut reports how to configure the context
+instead of falling back to CSS scaling.
+
+When `deviceScaleFactor` is omitted, the existing `viewport` plus `size` behavior is unchanged.
+In that compatibility mode, a larger proportional `size` still creates a larger browser surface
+and uses SuiteCut's layout scaling. New recordings should use `deviceScaleFactor` for supersampling.
 
 ## Livestream a website
 
@@ -360,22 +465,44 @@ import { record } from 'suitecut'
 const url = process.env.SUITECUT_STREAM_URL
 if (!url) throw new Error('Set SUITECUT_STREAM_URL')
 
-await record('live website tour', async ({ page, suitecut }) => {
-  await page.goto('https://example.com')
-  // Use normal Playwright or SuiteCut actions. Viewers see changes as they happen.
-  await suitecut.hold(30_000)
-}, {
-  capture: {
-    viewport: { width: 1280, height: 720 },
-    framesPerSecond: 30,
-    stream: { url, bitrateKbps: 4500 },
+await record(
+  'live website tour',
+  async ({ page, suitecut }) => {
+    await page.goto('https://example.com')
+    // Use normal Playwright or SuiteCut actions. Viewers see changes as they happen.
+    await suitecut.hold(30_000)
   },
-})
+  {
+    capture: {
+      viewport: { width: 1280, height: 720 },
+      framesPerSecond: 30,
+      stream: { url, bitrateKbps: 4500 },
+    },
+  },
+)
 ```
 
 `stream.url` is required. `stream.bitrateKbps` defaults to 4500 and
 `stream.size` defaults to the capture size. The encoder keeps a fixed output size,
-letterboxing pages as needed. It sends H.264 video and silent stereo AAC at 48 kHz.
+letterboxing pages as needed. It sends H.264 video and stereo AAC at 48 kHz.
+Audio defaults to silence. Set `stream.audio: 'tab'` to capture the selected tab
+through the `suitecut/playwright` recorder:
+
+```ts
+capture: {
+  stream: { url, audio: 'tab', bitrateKbps: 4500 },
+}
+```
+
+Tab audio launches an isolated persistent profile with a bundled capture extension.
+It requires current Playwright Chromium with `Extensions.triggerAction` support
+and works in headed and headless mode. Run `pnpm exec playwright install chromium`
+after updating Playwright. Firefox, WebKit, custom browser executables, blocked
+service workers, and the Playwright Test fixture do not support this option and
+fail explicitly. Popups opened as tabs work; separate popup windows are rejected
+because the current Chromium action command crashes on those windows. Silent streaming remains available with the existing browser setup.
+The audio mode enables autoplay inside its isolated browser.
+
 Install a full FFmpeg build with `libx264`, AAC, and RTMP support, plus TLS for RTMPS.
 
 Streaming-only sessions keep the latest frame per open page and discard closed-page
@@ -386,8 +513,17 @@ this mode.
 
 The live output follows `suitecut.selectPage()` and the existing page-selection
 behavior for popups and page closure. Idle pages repeat their latest frame. A capture
-pause freezes the live image while the broadcast clock continues. Browser audio,
-microphone input, and SuiteCut narration are not mixed into this live output.
+pause freezes the live image and sends silence while the broadcast clock continues.
+Tab audio follows page selection and survives navigation. Switching pages drops
+queued sound from the old page. Capture resumes with current audio after a pause.
+Microphone input and SuiteCut narration are not mixed into the live output.
+Audio mode buffers video and timestamped PCM by 150 ms, uses a shared encoder
+sample timeline, fills missing chunks with silence, and discards expired samples.
+Encoder reconnections start a fresh audio input and discard the old queue.
+The extension sends binary PCM over one persistent loopback WebSocket. Worklet
+credits and receiver acknowledgments bound pending audio to four chunks at each
+stage. Stalls drop audio instead of building a backlog; disconnected sockets retry
+after 250 ms. FFmpeg reads a continuous local HTTP response.
 `zoom()` crops and resizes the live JPEG frames before encoding, including its enter,
 hold, exit, and easing options. Highlights, cursor movement, click pulses, typing,
 scrolling, and captions also appear live. The live camera preserves website layout
@@ -402,6 +538,58 @@ script keep running during reconnection; missed frames are discarded. Before the
 first successful publish, the recording callback waits. Use `signal` to cancel
 that wait or stop an unattended session.
 
+By default, live streaming uses a persistent H.264/AAC publisher, a persistent AAC
+encoder, and a separate H.264 video encoder. Bitrate changes prepare a replacement
+video encoder, wait for its AVC configuration and a keyframe, and switch video on
+the shared capture timeline. The publisher and audio encoder stay running, so a
+bitrate change does not reconnect RTMP or reset audio timestamps. The previous
+video encoder keeps supplying frames during preparation. A failed replacement
+leaves the current encoder running. Handoffs briefly require two video encoders.
+
+Set `stream.adaptiveBitrate: false` to use the simpler fixed-bitrate FFmpeg path.
+`reconnect: false` disables recovery from a failed publishing connection; it does
+not disable video-only bitrate handoffs on an otherwise healthy connection.
+
+A bounded loopback transport measures the upstream network socket independently
+of frame processing. RTMPS remains encrypted and certificate-verified on the
+connection to the streaming service. Local transport uses plain RTMP.
+
+Five seconds of sustained socket pressure triggers a reduction; short drain gaps
+do not reset the observation window. Reductions are at least 30 seconds apart.
+Each lowers video bitrate by 25–50%, using observed socket throughput with room
+for AAC and framing. The floor is 25% of the configured bitrate. After five healthy
+minutes, bitrate rises by 10% of the configured maximum, without exceeding it.
+Resolution and frame rate stay fixed. Frame-processing lag alone never lowers
+bitrate. This follows the measured-output approach used by
+[OBS](https://github.com/obsproject/obs-studio/blob/master/plugins/obs-outputs/rtmp-stream.c),
+while using prepared video encoders rather than a native encoder reconfiguration API.
+
+Temporary capture lag is allowed to catch up. Retained JPEGs are capped at 64 MiB
+and 610 frames per video encoder; PCM retention is capped at 510 chunks, about
+1.9 MiB. Ten seconds of lag, or earlier frame eviction, skips stale video capture
+time while preserving timestamps on the shared audio/video timeline. Repeated
+congestion uses a shorter recovery threshold. Encoded tags are incrementally
+parsed, size-limited, and backpressured rather than collected in an unbounded queue.
+These bounds exclude Chromium, FFmpeg, and operating-system buffers. An actual
+publishing failure or 20 seconds without output frame progress still invokes
+reconnection. Keeping a socket open cannot prevent buffering when bandwidth is
+insufficient or the network stops transmitting.
+
+Use `stream.onDiagnostic` for capture lag, output backlog, progress age, pending
+write durations, and bitrate changes. `bitrate-changing` announces preparation;
+`bitrate-adjusted` confirms the keyframe handoff; `bitrate-change-failed` reports a
+failed preparation. Recovery also considers the publisher's progress and monitored
+network queue. These measurements are not Twitch player latency or TCP acknowledgements,
+and cannot identify the ISP, route, or ingest server responsible for congestion.
+
+Run `pnpm test:stream:congestion` to inject processing stalls and verify the hang
+watchdog. Run `pnpm test:stream:bitrate` to verify video handoffs in both directions,
+a failed replacement, and adaptation to a throttled local RTMP receiver. It checks
+that the receiver sees one connection, timestamps stay monotonic, decoding succeeds,
+and continuous test audio has no handoff gaps. Set `SUITECUT_BITRATE_1080P60=1`
+to run that verification at 1080p60. These tests do not broadcast
+externally or change system network settings.
+
 Configure `stream.reconnect` with `initialDelayMs`, `maxDelayMs`, and `maxAttempts`.
 `maxAttempts: 0`, the default, retries indefinitely. A positive value limits
 consecutive retries; a connection lasting at least 30 seconds resets the budget.
@@ -409,6 +597,23 @@ Set `reconnect: false` to fail immediately. `record()` rejects when the retry bu
 is exhausted. Playwright Test reports terminal stream failures at fixture teardown. Use one publisher per stream key, without parallel tests or retries to
 the same destination. Stream URLs and FFmpeg diagnostics are not included in SuiteCut
 manifests, but publish URLs are visible in local process arguments.
+
+Run `pnpm test:stream:audio` to verify local RTMP reception, flash/beep synchronization,
+navigation, silent-page selection, capture pause, and reconnection. Set
+`SUITECUT_AUDIO_HEADED=1` for a visible browser or `SUITECUT_AUDIO_SOAK_SECONDS=3600`
+for a longer run. Set `SUITECUT_AUDIO_STRESS=1` to run at 720p, repeatedly block
+the audio thread and disconnect its WebSocket, and sample child-process RSS on
+macOS/Linux. For example:
+
+```sh
+pnpm build
+SUITECUT_AUDIO_STRESS=1 SUITECUT_AUDIO_SOAK_SECONDS=600 node scripts/verify-tab-audio.mjs
+```
+
+The verifier writes received FLV files and timing results under
+`.suitecut/tab-audio-verification`. Windows CI is configured to run the short verification; an
+hour-long Windows drift and memory validation is still required before claiming
+long-run Windows reliability.
 
 For a visible browser you can operate manually, set `SUITECUT_STREAM_URL` and
 `SUITECUT_WEBSITE_URL`, then run:
@@ -418,8 +623,8 @@ pnpm build
 node --experimental-strip-types examples/playwright/livestream.ts
 ```
 
-Press Ctrl+C to stop. The same `stream` options work under `suitecutCapture` in
-Playwright Test. RTMP is an ingest output, not a browser player URL; embedded web
+Set `SUITECUT_STREAM_AUDIO=tab` to include website sound. Press Ctrl+C to stop.
+Streaming with silent audio also works under `suitecutCapture` in Playwright Test. RTMP is an ingest output, not a browser player URL; embedded web
 playback requires a media server or livestream service.
 
 ### Verify live streaming locally
@@ -710,7 +915,7 @@ resizing.
 The default 1920x1080 output preserves the source's aspect ratio without paying the cost of a 4K60
 encode. A 1600x900 source rendered at 3840x2160 is a 4K delivery file, but upscaling cannot recover
 detail that the browser did not record. For native 4K source detail, use a proportional 4K capture
-size and request 4K output explicitly.
+size with `deviceScaleFactor: 2`, then request 4K output explicitly.
 
 Programmatic rendering is also exported:
 
@@ -820,7 +1025,7 @@ The renderer reads only this saved manifest and its referenced files. It does no
 - The quantized Kokoro model uses one WASM thread in the current Node worker. Multi-worker inference needs memory and throughput measurements before it becomes a default.
 - Pointer geometry covers the main frame. Cross-origin iframe coordinate translation still needs browser-specific work.
 - Chromium, Firefox, and WebKit have focused end-to-end capture, interaction, checkpoint, manifest, and media evidence.
-- V1 mixes narration only. It does not capture or mix application audio.
+- Offline rendering mixes narration only. Chromium tab audio is available for live streaming.
 
 ## Contributing and security
 

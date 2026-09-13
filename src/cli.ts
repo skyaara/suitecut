@@ -6,11 +6,15 @@ import { createRequire } from 'node:module'
 import process from 'node:process'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
+import { installMediaTools, verifyMediaTools } from './media-tools.js'
+import { resolveFfmpeg, resolveFfprobe } from './process.js'
 import { renderSuiteCut, type SuiteCutRenderConfig } from './render.js'
 
 const USAGE = `SuiteCut
 
 Usage:
+  suitecut install       Download and verify pinned FFmpeg and FFprobe for this machine.
+  suitecut doctor        Verify the selected media tools without downloading.
   suitecut test [--manifest <path>] -- [Playwright test options]
   suitecut render --manifest <path> --output <video-path> [options]
 
@@ -223,6 +227,18 @@ export async function runSuiteCutCli(args: readonly string[]): Promise<number> {
     const [command, ...rest] = args
     if (command === undefined || command === '--help' || command === '-h' || command === 'help') {
       process.stdout.write(USAGE)
+      return 0
+    }
+    if (command === 'install' || command === 'doctor') {
+      if (rest.length) throw new Error(`${command} does not accept arguments`)
+      const paths =
+        command === 'install'
+          ? await installMediaTools()
+          : { ffmpeg: await resolveFfmpeg(), ffprobe: await resolveFfprobe() }
+      if (command === 'doctor') await verifyMediaTools(paths)
+      process.stdout.write(
+        `FFmpeg: ${paths.ffmpeg}\nFFprobe: ${paths.ffprobe}\nMedia tools verified.\n`,
+      )
       return 0
     }
     if (command === 'test') return runPlaywright(rest)

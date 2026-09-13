@@ -1,6 +1,6 @@
 {
   "name": "@suitecut/audio-matcha",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Matcha WebAssembly text-to-speech plugin for SuiteCut.",
   "keywords": [
     "suitecut",
@@ -50,7 +50,7 @@
     }
   },
   "dependencies": {
-    "@suitecut/audio-sherpa-core": "^1.0.0",
+    "@suitecut/audio-sherpa-core": "^1.1.0",
     "zod": "^4.4.3"
   },
   "engines": {

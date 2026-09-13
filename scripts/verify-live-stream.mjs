@@ -4,10 +4,14 @@ import console from 'node:console'
 import { once } from 'node:events'
 import { mkdir, readdir, stat, writeFile, readFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
+import process from 'node:process'
 import { setTimeout as delay } from 'node:timers/promises'
 
 import { record } from '../dist/playwright.js'
-import { runProcess } from '../dist/process.js'
+import { resolveFfmpeg, resolveFfprobe, runProcess } from '../dist/process.js'
+
+const ffmpeg = await resolveFfmpeg()
+const ffprobe = await resolveFfprobe(ffmpeg)
 
 const directory = resolve('.suitecut/live-verification', String(Date.now()))
 await mkdir(directory, { recursive: true })
@@ -23,7 +27,7 @@ let part = 0
 function receive() {
   const path = `${directory}/received-${++part}.flv`
   const child = spawn(
-    'ffmpeg',
+    ffmpeg,
     [
       '-hide_banner',
       '-loglevel',
@@ -51,6 +55,14 @@ try {
   const result = await record(
     'live effects and reconnect',
     async ({ page, context, suitecut }) => {
+      assert.deepEqual(
+        await page.evaluate(() => [
+          globalThis.innerWidth,
+          globalThis.innerHeight,
+          globalThis.devicePixelRatio,
+        ]),
+        [640, 360, 2],
+      )
       await page.setContent(
         `<style>body{margin:0;background:#183044;color:white;font:24px sans-serif}button{position:absolute;left:260px;top:140px;width:120px;height:70px;background:#ffc600;font:22px sans-serif}input{position:absolute;top:270px;left:100px}#bottom{position:absolute;top:1200px}</style><h1>Live effects</h1><button onclick="this.textContent='Moved'">Move</button><input aria-label="Comment"><div id="bottom">Bottom</div>`,
       )
@@ -128,6 +140,8 @@ try {
         'Reconnected output did not keep delivering frames',
       )
       const popup = await context.newPage()
+      await popup.waitForFunction(() => globalThis.innerWidth === 640)
+      assert.equal(await popup.evaluate(() => globalThis.devicePixelRatio), 2)
       await popup.setContent(
         '<body style="background:#b32843;color:white;font:48px sans-serif">SECOND PAGE</body>',
       )
@@ -146,8 +160,10 @@ try {
       audioPlugins: [{ provider: 'live-test', module: pluginPath }],
       capture: {
         viewport: { width: 640, height: 360 },
+        deviceScaleFactor: 2,
         stream: {
           url,
+          size: { width: 640, height: 360 },
           bitrateKbps: 800,
           reconnect: { initialDelayMs: 300, maxDelayMs: 1000, maxAttempts: 20 },
         },
@@ -158,7 +174,7 @@ try {
   )
   await receiver.closed
   const probe = await runProcess(
-    'ffprobe',
+    ffprobe,
     [
       '-v',
       'error',
@@ -182,7 +198,7 @@ try {
   )
   const rawPath = `${directory}/decoded.rgb`
   const decoded = await runProcess(
-    'ffmpeg',
+    ffmpeg,
     [
       '-hide_banner',
       '-loglevel',
@@ -233,3 +249,5 @@ try {
 } finally {
   receiver.child.kill('SIGKILL')
 }
+
+if (process.argv.includes('--audio')) await import('./verify-tab-audio.mjs')

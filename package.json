@@ -1,6 +1,6 @@
 {
   "name": "suitecut",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Build narrated videos directly from Playwright browser flows.",
   "keywords": [
     "playwright",
@@ -58,13 +58,15 @@
   },
   "files": [
     "assets/kokoro",
+    "assets/cursors",
     "CHANGELOG.md",
     "CODE_OF_CONDUCT.md",
     "CONTRIBUTING.md",
     "dist",
     "LICENSE",
     "README.md",
-    "SECURITY.md"
+    "SECURITY.md",
+    "THIRD_PARTY_NOTICES.md"
   ],
   "publishConfig": {
     "access": "public"
@@ -79,6 +81,7 @@
     "examples": "pnpm build && playwright test",
     "test:browsers": "pnpm build && SUITECUT_MANIFEST_PATH=.suitecut/browser-support.json playwright test examples/browser-support.spec.ts && node scripts/verify-browser-manifest.mjs .suitecut/browser-support.json",
     "test:browser-flows": "pnpm build && playwright test --project=chromium examples/browser-presentation.spec.ts examples/checkpoint.spec.ts examples/popup-tour.spec.ts",
+    "test:device-scale": "pnpm build && SUITECUT_MANIFEST_PATH=.suitecut/device-scale-run.json playwright test --project=chromium examples/device-scale.spec.ts && node scripts/verify-device-scale.mjs .suitecut/device-scale-run.json && node scripts/verify-device-scale-stream.mjs",
     "test:retry-parallel": "node scripts/clean-retry-parallel-lib.mjs && tsc -p tsconfig.build.json --outDir .suitecut/retry-parallel-lib && playwright test --config tests/retry-parallel/playwright.config.ts && node scripts/verify-retry-parallel.mjs .suitecut/retry-parallel.json",
     "verify:render-output": "node scripts/verify-render-output.mjs",
     "example:record": "pnpm build && playwright test --project=chromium examples/product-tour.spec.ts",
@@ -87,6 +90,7 @@
     "example:playwright:popup": "pnpm build && node --experimental-strip-types examples/playwright/popup-tour.ts",
     "example:playwright:product": "pnpm build && node --experimental-strip-types examples/playwright/product-tour.ts",
     "example:playwright:setup": "pnpm build && node --experimental-strip-types examples/playwright/custom-setup.ts",
+    "example:livestream:status": "pnpm build && node --experimental-strip-types examples/playwright/openai-status-livestream.ts",
     "examples:playwright": "pnpm build && node --experimental-strip-types examples/playwright.ts && node --experimental-strip-types examples/playwright/checkpoints.ts && node --experimental-strip-types examples/playwright/popup-tour.ts && node --experimental-strip-types examples/playwright/custom-setup.ts && node --experimental-strip-types examples/playwright/product-tour.ts",
     "example:render": "node dist/cli.js render --manifest .suitecut/latest-run.json --output .suitecut/videos/product-tour.mp4",
     "demo:site": "pnpm build && SUITECUT_SITE_RECORD=1 playwright test --config site/playwright.config.ts site-demo.spec.ts && node dist/cli.js render --manifest .suitecut/site-demo-run.json --output .suitecut/videos/suitecut-site-demo.mp4 --width 3840 --height 2160 --fps 60 && cp .suitecut/videos/suitecut-site-demo.mp4 site/public/demo/suitecut-field-manual.mp4 && ffmpeg -hide_banner -loglevel error -y -ss 1 -i .suitecut/videos/suitecut-site-demo.mp4 -frames:v 1 site/public/demo/suitecut-field-manual-poster.png",
@@ -115,10 +119,13 @@
     "test:package": "pnpm build && pnpm audio-plugins:build && pnpm test:package:built",
     "test:package:built": "node scripts/verify-package.mjs",
     "test:page-lifecycle": "pnpm build && node scripts/verify-page-lifecycle.mjs",
+    "test:stream:bitrate": "pnpm build && node scripts/verify-live-bitrate.mjs",
+    "test:stream:congestion": "pnpm build && node scripts/verify-live-congestion.mjs",
     "test:stream": "pnpm build && node scripts/verify-live-stream.mjs",
     "test:platform": "vitest run tests/atomic-file.test.ts tests/cli.test.ts tests/manifest.test.ts tests/process.test.ts tests/report-redaction.test.ts tests/timeline.test.ts",
     "prepack": "pnpm build",
-    "prepublishOnly": "pnpm check && pnpm site:check && pnpm site:build && pnpm test:package:built"
+    "prepublishOnly": "pnpm check && pnpm site:check && pnpm site:build && pnpm test:package:built",
+    "test:stream:audio": "pnpm build && node scripts/verify-live-stream.mjs --audio"
   },
   "peerDependencies": {
     "@playwright/test": ">=1.59.0 <2",
@@ -133,6 +140,8 @@
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.62.1",
     "@types/node": "^24.0.0",
+    "@types/ws": "^8.18.1",
+    "@types/yauzl": "^3.4.0",
     "eslint": "^10.9.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-import-resolver-typescript": "^4.4.5",
@@ -153,6 +162,12 @@
     "onnxruntime-web": "^1.27.0",
     "phonemizer": "^1.2.1",
     "sharp": "^0.35.4",
+    "ws": "^8.21.3",
+    "yauzl": "3.4.0",
     "zod": "^4.4.3"
+  },
+  "directories": {
+    "example": "examples",
+    "test": "tests"
   }
 }

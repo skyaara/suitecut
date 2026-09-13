@@ -69,6 +69,7 @@ export interface SuiteCutActiveScreencast {
   attachmentName: string
   firstFrameEpochMs?: EpochMilliseconds
   sourceStartedAtMs?: Milliseconds
+  stopCapture?: () => Promise<void>
 }
 
 export interface SuiteCutEventAttachment {
@@ -82,7 +83,10 @@ export interface SuiteCutEventAttachment {
 }
 
 export interface SuiteCutRecordingSession {
-  readonly playLiveZoom?: (event: SuiteCutZoomEvent) => Promise<void>
+  readonly playLiveZoom?: (
+    event: SuiteCutZoomEvent,
+    playback?: () => Promise<void>,
+  ) => Promise<void>
   readonly retainArtifacts?: boolean
   readonly streamFailure?: Promise<never>
   readonly attemptId: SuiteCutAttemptId

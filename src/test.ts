@@ -28,6 +28,9 @@ export const test = baseTest.extend<SuiteCutFixtures>({
   viewport: DEFAULT_SUITE_CUT_VIEWPORT,
   suitecutCapture: [{}, { option: true }],
   suitecutAudioPlugins: [[], { option: true }],
+  deviceScaleFactor: async ({ suitecutCapture }, use) => {
+    await use(parseCaptureOptions(suitecutCapture).deviceScaleFactor)
+  },
   suitecut: async ({ page, suitecutAudioPlugins, suitecutCapture }, use, testInfo) => {
     const captureOptions = parseCaptureOptions(suitecutCapture)
     if (captureOptions.viewport !== undefined) {

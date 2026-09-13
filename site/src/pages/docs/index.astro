@@ -37,16 +37,33 @@ export default defineConfig({
     <li>Node.js 22 or newer.</li>
     <li><code>playwright</code> 1.59 or newer.</li>
     <li>Chromium, Firefox, or WebKit installed through Playwright.</li>
-    <li>FFmpeg and FFprobe on <code>PATH</code>.</li>
+    <li>
+      FFmpeg and FFprobe installed with <code>suitecut install</code> or available on <code
+        >PATH</code
+      >.
+    </li>
   </ul>
 
   <h2 id="install">Install</h2>
   <CodeBlock
     label="Terminal"
     code={`npm install suitecut playwright
-npx playwright install chromium`}
+npx playwright install chromium
+npx suitecut install
+npx suitecut doctor`}
   />
-  <p>On macOS, install the media tools with <code>brew install ffmpeg</code>.</p>
+  <p>
+    <code>suitecut install</code> downloads checksum-pinned FFmpeg and FFprobe for macOS x64/arm64, Linux
+    x64/arm64, and Windows x64. Downloads happen only when you run this command.
+    <code>suitecut doctor</code> checks the installed tools without downloading anything.
+  </p>
+  <p>
+    Explicit <code>SUITECUT_FFMPEG_PATH</code> and <code>SUITECUT_FFPROBE_PATH</code> settings take priority,
+    followed by SuiteCut's cache and then <code>PATH</code>. Set
+    <code>SUITECUT_MEDIA_CACHE</code> to share a cache with your runtime user. Linux builds need compatible
+    glibc and tar with xz support. Install browsers and their system libraries separately through Playwright.
+    The repository includes a Debian-based Dockerfile for Chromium flows.
+  </p>
 
   <h2 id="record-a-flow">Record a flow</h2>
   <p>
@@ -89,14 +106,14 @@ suitecut render \\
   <p>
     The default source is a 1600 × 900 browser viewport recorded at 60 fps. SuiteCut delivers 1920 ×
     1080 at 30 fps with the standard quality profile unless you request another format. For an HD
-    page composition with native 4K detail, set the viewport to 1920 × 1080 and the capture size to
-    3840 × 2160, then request 4K60 output explicitly.
+    page composition with a 4K physical render, set a 1920 × 1080 viewport and a device scale factor
+    of 2, then request 4K60 output explicitly.
   </p>
   <CodeBlock
     code={`const record = defineSuiteCut({
   capture: {
     viewport: { width: 1920, height: 1080 },
-    size: { width: 3840, height: 2160 },
+    deviceScaleFactor: 2,
     framesPerSecond: 60,
   },
 })`}

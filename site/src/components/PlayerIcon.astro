@@ -1,0 +1,26 @@
+---
+import type { PlayIcon } from '@hugeicons/core-free-icons'
+
+interface Props {
+  icon: typeof PlayIcon
+  size?: number
+}
+const { icon, size = 20 } = Astro.props
+---
+
+<svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+  {
+    icon.map(([Tag, attributes]) => (
+      <Tag
+        {...Object.fromEntries(
+          Object.entries(attributes)
+            .filter(([name]) => name !== 'key')
+            .map(([name, value]) => [
+              name.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`),
+              value,
+            ]),
+        )}
+      />
+    ))
+  }
+</svg>

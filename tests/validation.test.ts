@@ -47,6 +47,7 @@ describe('SuiteCut fixture input validation', () => {
     const options = {
       viewport: { width: 1600, height: 900 },
       size: { width: 3840, height: 2160 },
+      deviceScaleFactor: 2,
       framesPerSecond: 60 as const,
       quality: 100,
       narrationTailMs: 250,
@@ -59,6 +60,8 @@ describe('SuiteCut fixture input validation', () => {
     [{ size: { width: 0, height: 2160 } }, ['size', 'width'], 'too_small'],
     [{ size: { width: 3839, height: 2160 } }, ['size', 'width'], 'not_multiple_of'],
     [{ viewport: { width: 0, height: 900 } }, ['viewport', 'width'], 'too_small'],
+    [{ deviceScaleFactor: 0.5 }, ['deviceScaleFactor'], 'too_small'],
+    [{ deviceScaleFactor: 4.1 }, ['deviceScaleFactor'], 'too_big'],
     [{ framesPerSecond: 24 }, ['framesPerSecond'], 'invalid_union'],
     [{ quality: 101 }, ['quality'], 'too_big'],
     [{ mode: 'legacy' }, [], 'unrecognized_keys'],
@@ -312,4 +315,14 @@ describe('SuiteCut reporter option validation', () => {
   ])('rejects invalid reporter options', (options, path, code) => {
     expectZodIssue(() => new SuiteCutReporter(options as never), path, code)
   })
+})
+
+it('validates nested action zoom options for both highlights and pointer actions', () => {
+  for (const parse of [parseHighlightOptions, parsePointerActionOptions]) {
+    expect(parse({ zoom: true }).zoom).toBe(true)
+    expect(parse({ zoom: false }).zoom).toBe(false)
+    expect(parse({ zoom: { scale: 1.25, holdMs: 0 } }).zoom).toEqual({ scale: 1.25, holdMs: 0 })
+    expect(() => parse({ zoom: { scale: 2 } })).toThrow()
+    expect(() => parse({ zoom: { holdMs: -1 } })).toThrow()
+  }
 })
