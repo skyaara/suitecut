@@ -259,7 +259,10 @@ let revision = 'unknown'
 let dirty = true
 try {
   revision = (await execute('git', ['rev-parse', '--short=12', 'HEAD'])).stdout.trim()
-  dirty = (await execute('git', ['status', '--porcelain'])).stdout.trim().length > 0
+  dirty =
+    (
+      await execute('git', ['status', '--porcelain', '--', '.', ':(exclude)node_modules'])
+    ).stdout.trim().length > 0
 } catch {
   /* Git metadata is optional for a local benchmark. */
 }

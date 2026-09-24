@@ -31,7 +31,7 @@ interface BenchmarkReport {
   createdAt: string
   revision: string
   trials: number
-  host: { arch: string; logicalCpus: number }
+  host: { arch: string; cpu: string; logicalCpus: number }
   methodology: Record<string, string>
   scenarios: BenchmarkScenario[]
 }
@@ -39,13 +39,17 @@ interface BenchmarkReport {
 const benchmarkReport = report as unknown as BenchmarkReport
 const format = (value: number | null, digits = 1) =>
   value === null ? 'n/a' : value.toFixed(digits)
-const percent = (value: number | null) => (value === null ? 'n/a' : `${value.toFixed(0)}%`)
+const percent = (value: number | null) =>
+  value === null ? 'n/a' : `${value > 0 ? '+' : ''}${value.toFixed(0)}%`
 const created = benchmarkReport.createdAt
   ? new Intl.DateTimeFormat('en', { dateStyle: 'long', timeStyle: 'short' }).format(
       new Date(benchmarkReport.createdAt),
     )
   : 'Pending'
 const scenarios = benchmarkReport.scenarios
+const canvas1080 = scenarios.find((scenario) => scenario.id === 'canvas-1080p60')
+const multiPage = scenarios.find((scenario) => scenario.id === 'multi-page-1080p60')
+const canvas4k = scenarios.find((scenario) => scenario.id === 'canvas-4k30')
 ---
 
 <BaseLayout
@@ -66,9 +70,7 @@ const scenarios = benchmarkReport.scenarios
         <div><span>Revision</span><strong>{benchmarkReport.revision}</strong></div>
         <div><span>Trials</span><strong>{benchmarkReport.trials} per backend</strong></div>
         <div>
-          <span>Host</span><strong
-            >{benchmarkReport.host.arch} · {benchmarkReport.host.logicalCpus} logical CPUs</strong
-          >
+          <span>Host</span><strong>{benchmarkReport.host.cpu} · {benchmarkReport.host.arch}</strong>
         </div>
       </div>
       <p class="benchmark-actions">
@@ -78,6 +80,34 @@ const scenarios = benchmarkReport.scenarios
         >
       </p>
     </header>
+
+    {
+      canvas1080 && multiPage && canvas4k && (
+        <section class="benchmark-findings">
+          <p class="eyebrow">Results from this run</p>
+          <h2>Cadence improved at 1080p60, with clear resource costs.</h2>
+          <ul>
+            <li>
+              Embedded CEF held {format(canvas1080.summary.native.uniqueFps)} distinct FPS on the
+              1080p60 canvas workload; Playwright reached{' '}
+              {format(canvas1080.summary.playwright.uniqueFps)} FPS.
+            </li>
+            <li>
+              Two-source native capture peaked at{' '}
+              {format(multiPage.summary.native.peakProcessTreeRssMiB, 0)} MiB RSS and took{' '}
+              {format(multiPage.summary.native.finalizationMs / 1000)} seconds to finalize, compared
+              with {format(multiPage.summary.playwright.peakProcessTreeRssMiB, 0)} MiB and{' '}
+              {format(multiPage.summary.playwright.finalizationMs / 1000)} seconds for Playwright.
+            </li>
+            <li>
+              4K30 missed its cadence target on both backends: native measured{' '}
+              {format(canvas4k.summary.native.uniqueFps)} distinct FPS and Playwright measured{' '}
+              {format(canvas4k.summary.playwright.uniqueFps)} FPS.
+            </li>
+          </ul>
+        </section>
+      )
+    }
 
     {
       scenarios.length === 0 ? (
@@ -166,9 +196,10 @@ const scenarios = benchmarkReport.scenarios
         }
       </div>
       <p class="benchmark-note">
-        Lower RAM, CPU, startup, finalization, and output size are better. Higher distinct FPS is
-        better. Static and multi-page scenarios intentionally omit pixel cadence because their
-        frames cannot be scored with one continuous source marker. GPU memory is not included.
+        Lower RAM, CPU, startup, and finalization are better. Higher distinct FPS is better. Output
+        size is only comparable when cadence is similar. Static and multi-page scenarios
+        intentionally omit pixel cadence because their frames cannot be scored with one continuous
+        source marker. GPU memory is not included.
       </p>
     </section>
   </div>
@@ -230,6 +261,33 @@ const scenarios = benchmarkReport.scenarios
   }
   .scenario-list {
     padding: 2rem 0;
+  }
+  .benchmark-findings {
+    padding: 3.5rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .benchmark-findings h2 {
+    max-width: 23ch;
+    margin: 0 0 1.5rem;
+    font-size: clamp(1.5rem, 3vw, 2.4rem);
+    font-weight: 600;
+    letter-spacing: -0.04em;
+  }
+  .benchmark-findings ul {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1px;
+    margin: 0;
+    padding: 1px;
+    list-style: none;
+    background: var(--border);
+  }
+  .benchmark-findings li {
+    padding: 1.25rem;
+    color: #bdbdbd;
+    font-size: 0.78rem;
+    line-height: 1.75;
+    background: var(--background);
   }
   .scenario {
     padding: 3.5rem 0;
@@ -362,6 +420,9 @@ const scenarios = benchmarkReport.scenarios
       margin-top: 1.2rem;
     }
     .method-grid {
+      grid-template-columns: 1fr;
+    }
+    .benchmark-findings ul {
       grid-template-columns: 1fr;
     }
   }
