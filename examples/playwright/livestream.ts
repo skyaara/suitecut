@@ -1,9 +1,10 @@
 import { record } from 'suitecut'
 
 const streamUrl = process.env.SUITECUT_STREAM_URL
-const audio = process.env.SUITECUT_STREAM_AUDIO ?? 'silent'
-if (audio !== 'silent' && audio !== 'tab')
-  throw new Error('SUITECUT_STREAM_AUDIO must be silent or tab')
+const audioValue = process.env.SUITECUT_STREAM_AUDIO ?? 'false'
+if (audioValue !== 'false' && audioValue !== 'true')
+  throw new Error('SUITECUT_STREAM_AUDIO must be true or false')
+const audio = audioValue === 'true'
 const websiteUrl = process.env.SUITECUT_WEBSITE_URL
 if (!streamUrl || !websiteUrl) {
   throw new Error(

@@ -54,7 +54,15 @@
       "types": "./dist/types.d.ts",
       "default": "./dist/types.js"
     },
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./native": {
+      "types": "./dist/native.d.ts",
+      "default": "./dist/native.js"
+    },
+    "./beta": {
+      "types": "./dist/beta.d.ts",
+      "default": "./dist/beta.js"
+    }
   },
   "files": [
     "assets/kokoro",
@@ -66,7 +74,8 @@
     "LICENSE",
     "README.md",
     "SECURITY.md",
-    "THIRD_PARTY_NOTICES.md"
+    "THIRD_PARTY_NOTICES.md",
+    "native/browser"
   ],
   "publishConfig": {
     "access": "public"
@@ -125,7 +134,14 @@
     "test:platform": "vitest run tests/atomic-file.test.ts tests/cli.test.ts tests/manifest.test.ts tests/process.test.ts tests/report-redaction.test.ts tests/timeline.test.ts",
     "prepack": "pnpm build",
     "prepublishOnly": "pnpm check && pnpm site:check && pnpm site:build && pnpm test:package:built",
-    "test:stream:audio": "pnpm build && node scripts/verify-live-stream.mjs --audio"
+    "test:stream:audio": "pnpm build && node scripts/verify-live-stream.mjs --audio",
+    "test:native": "pnpm build && node scripts/verify-native-browser.mjs && node scripts/verify-native-stream.mjs && node scripts/verify-native-recording.mjs",
+    "test:native:stream": "pnpm build && node scripts/verify-native-stream.mjs",
+    "test:native:recording": "pnpm build && node scripts/verify-native-recording.mjs",
+    "benchmark:beta": "pnpm build && node scripts/benchmark-beta.mjs",
+    "benchmark:suite": "pnpm build && node scripts/benchmark-suite.mjs",
+    "pack:beta": "pnpm build && node scripts/pack-beta.mjs",
+    "test:beta:package": "node scripts/verify-beta-package.mjs"
   },
   "peerDependencies": {
     "@playwright/test": ">=1.59.0 <2",

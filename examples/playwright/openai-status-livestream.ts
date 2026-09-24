@@ -37,7 +37,7 @@ try {
         framesPerSecond: 30,
         stream: {
           url: streamUrl,
-          audio: 'tab',
+          audio: true,
           bitrateKbps: 4500,
           onDiagnostic: (event) => console.log(event.event, event.bottleneck),
           reconnect: { initialDelayMs: 1_000, maxDelayMs: 30_000, maxAttempts: 0 },

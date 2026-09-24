@@ -24,7 +24,7 @@ export interface SuiteCutLiveStream {
   health(): { captureLagMs: number; outputLagMs: number; progressAgeMs: number }
   setBitrate?(bitrateKbps: number): Promise<void>
   ready(): Promise<void>
-  update(frame: Buffer): void
+  update(frame: Buffer, timestampMs?: number): void
   stop(): Promise<void>
 }
 
@@ -52,7 +52,22 @@ export function createLiveStreamAttempt(
   networkPressure?: () => { networkBlockedMs: number; networkQueuedBytes: number },
   encodedOutput?: LiveEncodedOutput,
   inputSize?: SuiteCutCaptureViewport,
+  inputFormat: 'mjpeg' | 'bgra' | 'i420' = 'mjpeg',
 ): SuiteCutLiveStream {
+  if (inputFormat !== 'mjpeg' && inputSize === undefined)
+    throw new Error('Raw capture requires explicit input dimensions')
+  const rawFrameBytes =
+    inputFormat !== 'mjpeg' && inputSize
+      ? inputSize.width * inputSize.height * (inputFormat === 'bgra' ? 4 : 1.5)
+      : undefined
+  // Keep the audio-delay window in a fixed-size raw video buffer.
+  const frameBufferBytes =
+    rawFrameBytes === undefined
+      ? LIVE_FRAME_BUFFER_BYTES
+      : Math.max(
+          LIVE_FRAME_BUFFER_BYTES,
+          rawFrameBytes * (Math.ceil((framesPerSecond * LIVE_AUDIO_DELAY_MS) / 1000) + 3),
+        )
   const audioInput = encodedOutput ? undefined : audio?.createInput()
   const frames: { at: number; data: Buffer }[] = []
   let frameBytes = 0
@@ -70,13 +85,19 @@ export function createLiveStreamAttempt(
       '-progress',
       'pipe:3',
       '-thread_queue_size',
-      '16',
+      inputFormat !== 'mjpeg' ? '2' : '16',
       '-f',
-      'image2pipe',
+      inputFormat !== 'mjpeg' ? 'rawvideo' : 'image2pipe',
       '-framerate',
       String(framesPerSecond),
-      '-vcodec',
-      'mjpeg',
+      ...(inputFormat !== 'mjpeg' && inputSize
+        ? [
+            '-pixel_format',
+            inputFormat === 'bgra' ? 'bgra' : 'yuv420p',
+            '-video_size',
+            `${inputSize.width}x${inputSize.height}`,
+          ]
+        : ['-vcodec', 'mjpeg']),
       '-probesize',
       '32',
       '-analyzeduration',
@@ -120,6 +141,18 @@ export function createLiveStreamAttempt(
       'zerolatency',
       '-pix_fmt',
       'yuv420p',
+      ...(inputFormat === 'i420'
+        ? [
+            '-colorspace',
+            'bt709',
+            '-color_primaries',
+            'bt709',
+            '-color_trc',
+            'iec61966-2-1',
+            '-color_range',
+            'tv',
+          ]
+        : []),
       '-r',
       String(framesPerSecond),
       '-g',
@@ -392,17 +425,20 @@ export function createLiveStreamAttempt(
       )
       if (failure !== undefined) throw failure
     },
-    update: (frame) => {
-      if (closing || failure !== undefined || frame.length > LIVE_FRAME_BUFFER_BYTES) return
+    update: (frame, timestampMs = performance.now()) => {
+      if (closing || failure !== undefined || frame.length > frameBufferBytes) return
+      if (rawFrameBytes !== undefined && frame.length !== rawFrameBytes)
+        throw new Error('Raw frame length does not match input dimensions')
+      if (!Number.isFinite(timestampMs)) throw new Error('Invalid capture timestamp')
       latestFrame = frame
       if (audio) {
         const now = performance.now()
-        frames.push({ at: now, data: frame })
+        frames.push({ at: timestampMs, data: frame })
         frameBytes += frame.length
         while (
           frames.length > 1 &&
           (frames.length > 610 ||
-            frameBytes > LIVE_FRAME_BUFFER_BYTES ||
+            frameBytes > frameBufferBytes ||
             (frames[0]?.at ?? now) < now - LIVE_RECOVERY_WINDOW_MS - LIVE_AUDIO_DELAY_MS)
         )
           frameBytes -= frames.shift()?.data.length ?? 0
@@ -443,6 +479,7 @@ export function createLiveStream(
   processFrame?: (data: Buffer) => Promise<Buffer>,
   audio?: LiveAudioTransport,
   inputSize?: SuiteCutCaptureViewport,
+  inputFormat: 'mjpeg' | 'bgra' | 'i420' = 'mjpeg',
 ): SuiteCutLiveStream {
   if (options.adaptiveBitrate !== false)
     return createPersistentLiveStream(
@@ -465,6 +502,7 @@ export function createLiveStream(
           undefined,
           output,
           inputSize,
+          inputFormat,
         ),
     )
   if (options.reconnect === false)
@@ -480,12 +518,14 @@ export function createLiveStream(
       undefined,
       undefined,
       inputSize,
+      inputFormat,
     )
   const reconnect = options.reconnect ?? {}
   const controller = new AbortController()
   const combined = signal ? AbortSignal.any([signal, controller.signal]) : controller.signal
   let current: SuiteCutLiveStream | undefined
   let latest: Buffer | undefined
+  let latestTimestamp: number | undefined
   let stopping: Promise<void> | undefined
   let resolveReady = (): void => undefined
   const firstReady = new Promise<void>((resolve) => {
@@ -508,9 +548,10 @@ export function createLiveStream(
           undefined,
           undefined,
           inputSize,
+          inputFormat,
         )
         current = attempt
-        if (latest) attempt.update(latest)
+        if (latest) attempt.update(latest, latestTimestamp)
         const started = performance.now()
         try {
           await attempt.ready()
@@ -546,10 +587,11 @@ export function createLiveStream(
     failure,
     health: () => current?.health() ?? { captureLagMs: 0, outputLagMs: 0, progressAgeMs: 0 },
     ready: () => raceWithAbort(Promise.race([firstReady, failure]), combined),
-    update: (frame) => {
+    update: (frame, timestampMs) => {
       if (combined.aborted) return
       latest = frame
-      current?.update(frame)
+      latestTimestamp = timestampMs
+      current?.update(frame, timestampMs)
     },
     stop: () => {
       stopping ??= (async () => {

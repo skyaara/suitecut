@@ -71,7 +71,7 @@ try {
     ffmpeg,
     {
       url,
-      audio: 'tab',
+      audio: true,
       reconnect: false,
       bitrateKbps: 6000,
       onDiagnostic: (e) => diagnostics.push(e),

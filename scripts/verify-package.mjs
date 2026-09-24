@@ -269,12 +269,18 @@ import { defineSuiteCutAudioPlugin, encodePcm16Wav } from 'suitecut/audio-plugin
 import Reporter from 'suitecut/reporter'
 import { defineSuiteCut as defineFromAlias, record as recordFromAlias } from 'suitecut/playwright'
 import { renderSuiteCut as renderFromSubpath } from 'suitecut/render'
+import { launchNativeBrowser, createNativeBroadcast, recordNative, createNativePage } from 'suitecut/native'
+import { DEFAULT_BACKEND, record as betaRecord } from 'suitecut/beta'
 import { expect, test } from 'suitecut/test'
 import { SUITECUT_EVENT_ATTACHMENT, SUITECUT_MANIFEST_SCHEMA_VERSION } from 'suitecut/types'
 import vitsPlugin from '@suitecut/audio-vits'
 
+if (DEFAULT_BACKEND !== 'native' || typeof betaRecord !== 'function' || betaRecord === record) throw new Error('suitecut beta default is incorrect')
 if (typeof test !== 'function') throw new Error('suitecut test export is unavailable')
 if (typeof expect !== 'function') throw new Error('suitecut expect export is unavailable')
+if (typeof launchNativeBrowser !== 'function' || typeof createNativeBroadcast !== 'function' || typeof recordNative !== 'function' || typeof createNativePage !== 'function') {
+  throw new Error('suitecut native exports are unavailable')
+}
 if (typeof renderSuiteCut !== 'function' || renderSuiteCut !== renderFromSubpath) {
   throw new Error('suitecut render exports do not match')
 }

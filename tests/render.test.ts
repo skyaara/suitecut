@@ -42,6 +42,19 @@ describe('render request schema validation', () => {
     await expect(renderSuiteCut(request)).rejects.toMatchObject({ code: 'ENOENT' })
   })
 
+  it('accepts browser and narration audio mix controls', async () => {
+    const request = {
+      ...baseRequest,
+      config: {
+        sourceAudioEnabled: true,
+        sourceAudioVolume: 0.75,
+        narrationVolume: 1.5,
+      },
+    } satisfies SuiteCutRenderRequest
+
+    await expect(renderSuiteCut(request)).rejects.toMatchObject({ code: 'ENOENT' })
+  })
+
   it('rejects an aborted render before reading its manifest', async () => {
     const controller = new AbortController()
     controller.abort()
@@ -61,6 +74,8 @@ describe('render request schema validation', () => {
     { output: { videoCodec: '-vn' } },
     { output: { audioCodec: 'libopus -y' } },
     { output: { colorRange: 'broadcast' } },
+    { sourceAudioVolume: 4.01 },
+    { narrationVolume: -0.01 },
     { signal: 'not-an-abort-signal' },
   ])('rejects an invalid or incomplete output configuration', async (config) => {
     const request = 'signal' in config ? { ...baseRequest, ...config } : { ...baseRequest, config }

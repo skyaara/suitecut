@@ -288,7 +288,7 @@ const apiGroups = [
     <Code code={streaming} lang="typescript" theme="github-dark" />
     <p>
       Streaming saves no source video for later rendering. Audio defaults to silence.
-      <code>stream.audio: 'tab'</code> captures tab sound with the standalone recorder and supported Playwright
+      <code>stream.audio: true</code> captures tab sound with the standalone recorder and supported Playwright
       Chromium. It is unavailable in Firefox, WebKit, and the Playwright Test fixture. Microphone input
       and synthesized narration are not mixed into the stream.
     </p>

@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "createdAt": "",
+  "revision": "pending",
+  "dirty": true,
+  "trials": 0,
+  "host": {
+    "platform": "pending",
+    "arch": "pending",
+    "release": "pending",
+    "cpu": "pending",
+    "logicalCpus": 0,
+    "node": "pending"
+  },
+  "methodology": {
+    "workload": "Benchmark data has not been generated yet.",
+    "ordering": "",
+    "frameMetric": "",
+    "scope": "",
+    "resourceMetric": "",
+    "limitations": ""
+  },
+  "scenarios": []
+}

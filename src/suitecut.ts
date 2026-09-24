@@ -8,6 +8,7 @@ import { type Locator, type Page } from 'playwright'
 
 import { raceWithAbort } from './abort.js'
 import { type SuiteCutArtifactSink } from './artifact-sink.js'
+import { type PresentationPage, type PresentationLocator } from './browser-control.js'
 import {
   DEFAULT_SUITE_CUT_CHECKPOINT_DURATION_MS,
   DEFAULT_SUITE_CUT_CAPTURE_FRAMES_PER_SECOND,
@@ -357,8 +358,8 @@ export async function createRecordingSession({
   }
   const captureFramesPerSecond =
     parsedCaptureOptions.framesPerSecond ?? DEFAULT_SUITE_CUT_CAPTURE_FRAMES_PER_SECOND
-  const tabAudio = parsedCaptureOptions.stream?.audio === 'tab' ? getTabAudio(context) : undefined
-  if (parsedCaptureOptions.stream?.audio === 'tab' && !tabAudio)
+  const tabAudio = parsedCaptureOptions.stream?.audio === true ? getTabAudio(context) : undefined
+  if (parsedCaptureOptions.stream?.audio === true && !tabAudio)
     throw new Error(
       'SuiteCut tab audio requires the suitecut/playwright recorder with bundled Chromium',
     )
@@ -1350,11 +1351,14 @@ export async function createRecordingSession({
   return session
 }
 
-export function createSuiteCutFixture(
-  session: SuiteCutRecordingSession,
+export function createSuiteCutFixture<
+  P extends PresentationPage = Page,
+  L extends PresentationLocator<P> = Locator & PresentationLocator<P>,
+>(
+  session: SuiteCutRecordingSession<P>,
   narration: SuiteCutNarrationPipeline,
   captureOptions: SuiteCutCaptureOptions,
-): SuiteCutFixture {
+): SuiteCutFixture<P, L> {
   let zoomQueue = Promise.resolve()
 
   const createPageEventBase = (
@@ -1366,7 +1370,7 @@ export function createSuiteCutFixture(
   })
 
   const captureLocatorGeometry = async (
-    locator: Locator,
+    locator: L,
     operation: 'highlight' | 'zoom' | 'hover' | 'click',
     geometryMode: 'element' | 'content' = 'element',
   ) => {
@@ -1390,7 +1394,7 @@ export function createSuiteCutFixture(
   }
 
   const withActionZoom = (
-    locator: Locator,
+    locator: L,
     zoom: boolean | SuiteCutZoomOptions | undefined,
     action: () => Promise<void>,
   ): Promise<void> => {
@@ -1433,8 +1437,8 @@ export function createSuiteCutFixture(
     return pending
   }
 
-  const suitecut: SuiteCutFixture = {
-    selectPage: (page: Page) => {
+  const suitecut: SuiteCutFixture<P, L> = {
+    selectPage: (page: P) => {
       session.selectPage(page)
     },
     narrate: async (text: string, options?: SuiteCutNarrationOptions) => {
@@ -1508,7 +1512,7 @@ export function createSuiteCutFixture(
       session.record(event)
       await session.pageFor(event.pageId).waitForTimeout(parsedDurationMs)
     },
-    highlight: async (locator: Locator, options: SuiteCutHighlightOptions = {}) => {
+    highlight: async (locator: L, options: SuiteCutHighlightOptions = {}) => {
       const parsedOptions = parseHighlightOptions(options)
       return withActionZoom(locator, parsedOptions.zoom, async () => {
         const { pageId, rect, viewport } = await captureLocatorGeometry(
@@ -1533,7 +1537,7 @@ export function createSuiteCutFixture(
         )
       })
     },
-    zoom: (locator: Locator, options: SuiteCutZoomOptions = {}) => {
+    zoom: (locator: L, options: SuiteCutZoomOptions = {}) => {
       const runZoom = async () => {
         const parsedOptions = parseZoomOptions(options)
         await locator.scrollIntoViewIfNeeded()
@@ -1562,7 +1566,7 @@ export function createSuiteCutFixture(
       zoomQueue = pending.catch(() => undefined)
       return pending
     },
-    hover: async (locator: Locator, options: SuiteCutPointerActionOptions = {}) => {
+    hover: async (locator: L, options: SuiteCutPointerActionOptions = {}) => {
       const parsedOptions = parsePointerActionOptions(options)
       return withActionZoom(locator, parsedOptions.zoom, async () => {
         await locator.scrollIntoViewIfNeeded()
@@ -1581,7 +1585,7 @@ export function createSuiteCutFixture(
         if (settleMs > 0) await page.waitForTimeout(settleMs)
       })
     },
-    click: async (locator: Locator, options: SuiteCutPointerActionOptions = {}) => {
+    click: async (locator: L, options: SuiteCutPointerActionOptions = {}) => {
       const parsedOptions = parsePointerActionOptions(options)
       return withActionZoom(locator, parsedOptions.zoom, async () => {
         await locator.scrollIntoViewIfNeeded()
@@ -1603,7 +1607,7 @@ export function createSuiteCutFixture(
         if (settleMs > 0) await page.waitForTimeout(settleMs)
       })
     },
-    type: async (locator: Locator, text: string, options: SuiteCutTypeOptions = {}) => {
+    type: async (locator: L, text: string, options: SuiteCutTypeOptions = {}) => {
       const input = parseTypeInput(text, options)
       const page = locator.page()
       session.selectPage(page)
@@ -1615,7 +1619,7 @@ export function createSuiteCutFixture(
       const settleMs = input.options?.settleMs ?? 250
       if (settleMs > 0) await page.waitForTimeout(settleMs)
     },
-    scrollTo: async (locator: Locator, options: SuiteCutScrollOptions = {}) => {
+    scrollTo: async (locator: L, options: SuiteCutScrollOptions = {}) => {
       const parsedOptions = parseScrollOptions(options)
       session.selectPage(locator.page())
       await scrollLocator(locator, parsedOptions)

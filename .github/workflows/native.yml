@@ -1,0 +1,81 @@
+name: Native CEF
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'native/**'
+      - 'src/native*.ts'
+      - 'src/beta.ts'
+      - 'tests/beta.test.ts'
+      - 'scripts/benchmark-beta*.mjs'
+      - 'scripts/pack-beta.mjs'
+      - 'scripts/verify-beta-package.mjs'
+      - 'src/live*.ts'
+      - 'src/browser-control.ts'
+      - 'src/suitecut.ts'
+      - 'src/recording-output.ts'
+      - 'src/presentation.ts'
+      - 'src/narration*.ts'
+      - 'src/scroll.ts'
+      - 'src/fixtures.ts'
+      - 'src/types/**'
+      - 'tests/native*.test.ts'
+      - 'scripts/verify-native*.mjs'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - '.github/workflows/native.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: native-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  macos-arm64:
+    runs-on: macos-15
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - name: Fetch and verify pinned native dependencies
+        run: |
+          node --input-type=module <<'JS'
+          import { mkdir, readFile } from 'node:fs/promises'
+          import { execFileSync } from 'node:child_process'
+          import { downloadMediaArchive } from './dist/media-tools.js'
+          if (process.platform !== 'darwin' || process.arch !== 'arm64') throw new Error('Expected macOS ARM64')
+          for (const [manifest, directory, strip] of [
+            ['cef-build.json', '.suitecut/cef-sdk', '1'],
+            ['libyuv-build.json', '.suitecut/libyuv', '0'],
+          ]) {
+            const pin = JSON.parse(await readFile(`native/browser/${manifest}`, 'utf8'))
+            await mkdir(directory, { recursive: true })
+            const archive = `${directory}.archive`
+            await downloadMediaArchive(pin.url, pin.sha256, archive)
+            execFileSync('tar', ['-xf', archive, '-C', directory, '--strip-components', strip])
+          }
+          JS
+      - name: Compile and test native code
+        run: |
+          cmake -S native/browser -B .suitecut/native-build -G Ninja \
+            -DCEF_ROOT="$PWD/.suitecut/cef-sdk" \
+            -DLIBYUV_ROOT="$PWD/.suitecut/libyuv" \
+            -DPROJECT_ARCH=arm64 -DCMAKE_BUILD_TYPE=Release
+          cmake --build .suitecut/native-build --parallel 3
+          ctest --test-dir .suitecut/native-build --output-on-failure
+      - run: node dist/cli.js install
+      - name: Verify native capture, recording, and local RTMP output
+        run: |
+          export SUITECUT_NATIVE_EXECUTABLE="$PWD/.suitecut/native-build/suitecut-browser.app/Contents/MacOS/suitecut-browser"
+          pnpm test:native
+          node scripts/pack-beta.mjs
+          node scripts/verify-beta-package.mjs

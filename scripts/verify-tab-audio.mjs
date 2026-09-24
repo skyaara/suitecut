@@ -185,7 +185,7 @@ try {
         viewport: stress ? { width: 1280, height: 720 } : { width: 320, height: 180 },
         stream: {
           url,
-          audio: 'tab',
+          audio: true,
           bitrateKbps: stress ? 2500 : 400,
           reconnect: { initialDelayMs: 300, maxDelayMs: 1000, maxAttempts: 15 },
         },

@@ -32,6 +32,7 @@ export function createPersistentLiveStream(
   const combined = signal ? AbortSignal.any([controller.signal, signal]) : controller.signal
   const bitrate = new LiveBitrate(options.bitrateKbps ?? 4500)
   let latest: Buffer | undefined
+  let latestTimestamp: number | undefined
   let video: SuiteCutLiveStream | undefined
   let warming: SuiteCutLiveStream | undefined
   let change: ((value: number, sample?: NetworkSample) => Promise<void>) | undefined
@@ -383,7 +384,7 @@ export function createPersistentLiveStream(
           void stream.failure.catch(() => {
             if (id === activeId && !activeSignal.aborted) fail()
           })
-          if (latest) stream.update(latest)
+          if (latest) stream.update(latest, latestTimestamp)
           return { stream, switched: committed }
         }
         const initial = prepareVideo(bitrate.current)
@@ -490,11 +491,12 @@ export function createPersistentLiveStream(
     failure,
     ready: () => raceWithAbort(Promise.race([ready, failure]), combined),
     health: () => ({ captureLagMs: video?.health().captureLagMs ?? 0, ...delivery() }),
-    update: (frame) => {
+    update: (frame, timestampMs) => {
       if (combined.aborted) return
       latest = frame
-      video?.update(frame)
-      if (warming !== video) warming?.update(frame)
+      latestTimestamp = timestampMs
+      video?.update(frame, timestampMs)
+      if (warming !== video) warming?.update(frame, timestampMs)
     },
     setBitrate: async (value) => {
       if (!change) throw Error('Live publisher is not ready')

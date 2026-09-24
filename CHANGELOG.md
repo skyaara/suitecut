@@ -4,6 +4,11 @@ SuiteCut follows [Semantic Versioning](https://semver.org/). This file records u
 
 ## Unreleased
 
+- Add opt-in CEF page audio to native recordings and use boolean `capture.audio`
+  and `stream.audio` flags throughout the recording and streaming APIs. Both
+  default to `false`; recorded page audio follows authored source selection and
+  mixes with narration during rendering.
+
 ## 1.1.0 - 2026-09-13
 
 - Add `capture.deviceScaleFactor` for device-pixel supersampling without changing CSS viewport geometry, with Lanczos downscaling for recordings and streams.

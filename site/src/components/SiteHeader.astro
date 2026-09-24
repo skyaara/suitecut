@@ -3,7 +3,7 @@ import { sitePath } from '../lib/paths.js'
 import Logo from './Logo.astro'
 
 interface Props {
-  current?: 'home' | 'docs' | 'examples'
+  current?: 'home' | 'docs' | 'examples' | 'benchmarks'
 }
 
 const { current } = Astro.props
@@ -16,6 +16,9 @@ const { current } = Astro.props
     <a href={sitePath('/docs')} aria-current={current === 'docs' ? 'page' : undefined}>Docs</a>
     <a href={sitePath('/examples')} aria-current={current === 'examples' ? 'page' : undefined}
       >Examples</a
+    >
+    <a href={sitePath('/benchmarks')} aria-current={current === 'benchmarks' ? 'page' : undefined}
+      >Benchmarks</a
     >
     <a href="https://github.com/skyaara/suitecut">GitHub</a>
   </nav>

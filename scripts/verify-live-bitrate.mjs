@@ -167,7 +167,7 @@ try {
     {
       url: `rtmp://127.0.0.1:${address.port}/live/test`,
       bitrateKbps: 6000,
-      audio: 'tab',
+      audio: true,
       onDiagnostic: (event) => {
         diagnostics.push(event)
         console.log(event.event, event.bitrateKbps ?? '')
