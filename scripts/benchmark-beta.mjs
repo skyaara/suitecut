@@ -288,7 +288,7 @@ const report = {
     frameMetric:
       'Canvas and DOM workloads encode monotonically increasing frame IDs into pixels; FFmpeg decodes them from source WebM. Static and multi-page workloads omit cadence scores.',
     scope:
-      'End-to-end recording from worker launch through media probing. Native uses CEF/I420/VP9; Playwright uses Chromium screencast MJPEG/VP9.',
+      'End-to-end silent recording from worker launch through media probing. Native uses CEF/I420/VP9; Playwright uses Chromium screencast MJPEG/VP9. Audio is off because Playwright recording does not expose page-audio capture; embedded recording audio and both live-stream audio paths are verified separately. Streaming performance is outside this recording suite.',
     resourceMetric:
       '200 ms ps samples sum RSS and cumulative CPU across the worker and discovered descendants. CPU percent is sampled CPU seconds divided by total wall time and may exceed 100% across cores.',
     limitations:
