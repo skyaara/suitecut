@@ -55,6 +55,10 @@ export const SuiteCutReconnectOptionsSchema = z.strictObject({
   maxDelayMs: z.number().int().min(100).max(300_000).exactOptional(),
 })
 
+const SuiteCutStreamAudioSchema = z
+  .union([z.boolean(), z.enum(['silent', 'tab'])])
+  .transform((value) => value === true || value === 'tab')
+
 export const SuiteCutStreamOptionsSchema = z.strictObject({
   url: z.string().refine(
     (value) => {
@@ -74,7 +78,7 @@ export const SuiteCutStreamOptionsSchema = z.strictObject({
     { message: 'must be an RTMP or RTMPS publish URL with an application and stream path' },
   ),
   size: SuiteCutCaptureSizeSchema.exactOptional(),
-  audio: z.enum(['silent', 'tab']).exactOptional(),
+  audio: SuiteCutStreamAudioSchema.exactOptional(),
   adaptiveBitrate: z.boolean().exactOptional(),
   reconnect: z.union([z.literal(false), SuiteCutReconnectOptionsSchema]).exactOptional(),
   onDiagnostic: z

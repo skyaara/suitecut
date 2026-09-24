@@ -75,6 +75,9 @@ const OutputSchema = z
 const RenderConfigSchema = z.strictObject({
   output: OutputSchema.exactOptional(),
   narrationEnabled: z.boolean().exactOptional(),
+  sourceAudioEnabled: z.boolean().exactOptional(),
+  sourceAudioVolume: z.number().min(0).max(4).exactOptional(),
+  narrationVolume: z.number().min(0).max(4).exactOptional(),
   resultHoldMs: z.number().nonnegative().exactOptional(),
   backgroundColor: z.string().min(1).exactOptional(),
   ffmpegPath: z.string().min(1).exactOptional(),
@@ -628,6 +631,27 @@ function sourceTrimFilter(
   return `trim=start=${seconds(sourceAtMs)}:duration=${seconds(sourceDurationMs)},setpts=PTS-STARTPTS${leadingPad},tpad=stop_mode=clone:stop_duration=${seconds(item.durationMs)},trim=duration=${seconds(item.durationMs)},fps=${framesPerSecond}`
 }
 
+function sourceAudioTrimFilter(
+  item: SuiteCutSequenceItem,
+  sourceStartedAtMs: number,
+): string | undefined {
+  if (item.kind === 'hold') return undefined
+  const leadingSilenceMs = Math.min(
+    item.durationMs,
+    Math.max(0, sourceStartedAtMs - item.executionStartMs),
+  )
+  const sourceAtMs = Math.max(0, item.executionStartMs - sourceStartedAtMs)
+  const sourceDurationMs = Math.max(0, item.durationMs - leadingSilenceMs)
+  if (sourceDurationMs === 0) return undefined
+  const delay = leadingSilenceMs > 0 ? `,adelay=${String(Math.round(leadingSilenceMs))}:all=1` : ''
+  return (
+    `atrim=start=${seconds(sourceAtMs)}:duration=${seconds(sourceDurationMs)},` +
+    `asetpts=PTS-STARTPTS${delay},apad=pad_dur=${seconds(item.durationMs)},` +
+    `atrim=duration=${seconds(item.durationMs)},aresample=48000,` +
+    'aformat=sample_fmts=fltp:channel_layouts=stereo'
+  )
+}
+
 function ffmpegReport(
   result: SuiteCutProcessResult,
   redact: (text: string) => string,
@@ -716,6 +740,12 @@ export async function renderSuiteCut(input: SuiteCutRenderRequest): Promise<Suit
       .map((artifact) => ({ artifact, path: artifactPath(manifestPath, artifact) }))
     let narrationArtifacts =
       request.config?.narrationEnabled === false ? [] : [...allNarrationArtifacts]
+    const mediaByArtifactId = new Map(attempt.media.map((media) => [media.artifactId, media]))
+    let sourceAudioEnabled =
+      request.config?.sourceAudioEnabled !== false &&
+      sourceArtifacts.some(({ artifact }) =>
+        mediaByArtifactId.get(artifact.id)?.streams.some((stream) => stream.kind === 'audio'),
+      )
     if (narrationArtifacts.length > 0) {
       const availableNarrationArtifacts: typeof narrationArtifacts = []
       for (const narrationArtifact of narrationArtifacts) {
@@ -750,7 +780,7 @@ export async function renderSuiteCut(input: SuiteCutRenderRequest): Promise<Suit
       requireEncoder(executable, outputSettings.videoCodec, 'video'),
       request.signal,
     )
-    if (narrationArtifacts.length > 0) {
+    if (narrationArtifacts.length > 0 || sourceAudioEnabled) {
       try {
         await raceWithAbort(
           requireEncoder(executable, outputSettings.audioCodec, 'audio'),
@@ -762,9 +792,10 @@ export async function renderSuiteCut(input: SuiteCutRenderRequest): Promise<Suit
         diagnostics.push({
           level: 'warning',
           code: 'OPTIONAL_TRACK_OMITTED',
-          message: `Omitted narration because FFmpeg does not provide encoder ${outputSettings.audioCodec}.`,
+          message: `Omitted recording audio because FFmpeg does not provide encoder ${outputSettings.audioCodec}.`,
         })
         narrationArtifacts = []
+        sourceAudioEnabled = false
       }
     }
     const mediaInputs = [...sourceArtifacts, ...narrationArtifacts]
@@ -809,7 +840,6 @@ export async function renderSuiteCut(input: SuiteCutRenderRequest): Promise<Suit
       if (artifact.pageId !== undefined) inputIndexByPage.set(artifact.pageId, index)
     })
     const timingByPage = new Map(attempt.videoTiming.map((timing) => [timing.pageId, timing]))
-    const mediaByArtifactId = new Map(attempt.media.map((media) => [media.artifactId, media]))
     const eventById = new Map(attempt.events.map((event) => [event.id, event]))
     const placementByEventId = new Map(
       narrationPlacements.map((placement) => [placement.eventId, placement]),
@@ -854,6 +884,42 @@ export async function renderSuiteCut(input: SuiteCutRenderRequest): Promise<Suit
     )
 
     const audioLabels: string[] = []
+    if (sourceAudioEnabled) {
+      const sourceSegmentLabels: string[] = []
+      for (const [index, item] of sequence.entries()) {
+        const inputIndex = inputIndexByPage.get(item.pageId)
+        if (inputIndex === undefined)
+          throw new Error(`Missing source audio input for page ${item.pageId}`)
+        const sourceArtifact = sourceArtifacts[inputIndex]?.artifact
+        const sourceMedia =
+          sourceArtifact === undefined ? undefined : mediaByArtifactId.get(sourceArtifact.id)
+        const hasAudio = sourceMedia?.streams.some((stream) => stream.kind === 'audio') === true
+        const label = `sourceaudiosegment${index}`
+        const timing = timingByPage.get(item.pageId)
+        const sourceAudioFilter = hasAudio
+          ? sourceAudioTrimFilter(item, timing?.sourceStartedAtMs ?? 0)
+          : undefined
+        if (sourceAudioFilter !== undefined) {
+          filters.push(`[${inputIndex}:a]${sourceAudioFilter}[${label}]`)
+        } else {
+          filters.push(
+            `anullsrc=r=48000:cl=stereo,atrim=duration=${seconds(item.durationMs)}[${label}]`,
+          )
+        }
+        sourceSegmentLabels.push(`[${label}]`)
+      }
+      const joinedSourceAudio =
+        sourceSegmentLabels.length === 1 ? sourceSegmentLabels[0] : '[joinedsourceaudio]'
+      if (sourceSegmentLabels.length > 1) {
+        filters.push(
+          `${sourceSegmentLabels.join('')}concat=n=${sourceSegmentLabels.length}:v=0:a=1${joinedSourceAudio}`,
+        )
+      }
+      filters.push(
+        `${joinedSourceAudio}volume=${fixed(request.config?.sourceAudioVolume ?? 1)}[sourceaudio]`,
+      )
+      audioLabels.push('[sourceaudio]')
+    }
     narrationArtifacts.forEach(({ artifact }, narrationIndex) => {
       const event =
         artifact.sourceEventId === undefined ? undefined : eventById.get(artifact.sourceEventId)
@@ -863,12 +929,18 @@ export async function renderSuiteCut(input: SuiteCutRenderRequest): Promise<Suit
       if (placement === undefined) return
       const delayMs = Math.round(placement.startMs)
       const label = `audio${narrationIndex}`
-      filters.push(`[${inputIndex}:a]asetpts=PTS-STARTPTS,adelay=${delayMs}|${delayMs}[${label}]`)
+      filters.push(
+        `[${inputIndex}:a]aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,` +
+          `asetpts=PTS-STARTPTS,adelay=${delayMs}:all=1,` +
+          `volume=${fixed(request.config?.narrationVolume ?? 2)}[${label}]`,
+      )
       audioLabels.push(`[${label}]`)
     })
     if (audioLabels.length > 0) {
       filters.push(
-        `${audioLabels.join('')}amix=inputs=${audioLabels.length}:duration=longest:dropout_transition=0:normalize=0,volume=6dB,alimiter=limit=0.75:attack=5:release=50:level=false[audioout]`,
+        `${audioLabels.join('')}amix=inputs=${audioLabels.length}:duration=longest:dropout_transition=0:normalize=0,` +
+          `atrim=duration=${seconds(presentationDurationMs)},` +
+          'alimiter=limit=0.75:attack=5:release=50:level=false[audioout]',
       )
     }
 

@@ -26,3 +26,21 @@ The macOS arrow, pointing hand, and text cursor artwork is from
 and contributors, under GPL-3.0. The original SVG sources, full license,
 pinned revision, and adaptation details are included in assets/cursors.
 The artwork retains its upstream license.
+
+# Optional native browser
+
+The optional CEF backend is built separately from the SuiteCut npm package. CEF
+and Chromium binaries retain their upstream licenses and third-party notices.
+The native CMake build copies the SDK LICENSE.txt and CREDITS.html into the output
+as CEF-LICENSE.txt and CEF-CREDITS.html. Preserve both when redistributing native
+artifacts. The tested SDK version and archive checksum are recorded in
+native/browser/cef-build.json. No CEF binaries are included in the npm tarball.
+
+- CEF project and license: https://github.com/chromiumembedded/cef
+- CEF binary SDKs: https://cef-builds.spotifycdn.com/index.html
+- Native build and API documentation: native/browser/README.md
+
+The native I420 path statically links libyuv (BSD-3-Clause). Its revision and
+archive SHA-256 are pinned in native/browser/libyuv-build.json. The native build
+copies its LICENSE into the bundle as libyuv-LICENSE.txt; retain it in releases.
+Upstream: https://chromium.googlesource.com/libyuv/libyuv/

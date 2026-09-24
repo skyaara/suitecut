@@ -1,0 +1,383 @@
+---
+import report from '../../data/benchmark-report.json'
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import { sitePath } from '../../lib/paths.js'
+
+interface BackendSummary {
+  uniqueFps: number | null
+  repeatedFramePercent: number | null
+  peakProcessTreeRssMiB: number
+  sampledProcessTreeCpuPercent: number
+  startupMs: number
+  finalizationMs: number
+  fileMiB: number
+}
+
+interface BenchmarkScenario {
+  id: string
+  name: string
+  description: string
+  width: number
+  height: number
+  fps: number
+  summary: { native: BackendSummary; playwright: BackendSummary }
+  deltaPercent: {
+    peakProcessTreeRssMiB: number | null
+    sampledProcessTreeCpuPercent: number | null
+  }
+}
+
+interface BenchmarkReport {
+  createdAt: string
+  revision: string
+  trials: number
+  host: { arch: string; logicalCpus: number }
+  methodology: Record<string, string>
+  scenarios: BenchmarkScenario[]
+}
+
+const benchmarkReport = report as unknown as BenchmarkReport
+const format = (value: number | null, digits = 1) =>
+  value === null ? 'n/a' : value.toFixed(digits)
+const percent = (value: number | null) => (value === null ? 'n/a' : `${value.toFixed(0)}%`)
+const created = benchmarkReport.createdAt
+  ? new Intl.DateTimeFormat('en', { dateStyle: 'long', timeStyle: 'short' }).format(
+      new Date(benchmarkReport.createdAt),
+    )
+  : 'Pending'
+const scenarios = benchmarkReport.scenarios
+---
+
+<BaseLayout
+  title="Embedded CEF vs Playwright benchmarks · SuiteCut"
+  description="Reproducible SuiteCut recording benchmarks comparing native embedded CEF and Playwright across CPU, memory, frame cadence, startup, finalization, and output size."
+  current="benchmarks"
+>
+  <div class="benchmark-page">
+    <header class="benchmark-hero">
+      <p class="eyebrow">Measured locally · raw runs retained</p>
+      <h1>Embedded CEF vs Playwright</h1>
+      <p class="benchmark-intro">
+        End-to-end recording measurements across static, animated, DOM, multi-page, and 4K
+        workloads. Every value is the median of isolated process-tree runs on the same machine.
+      </p>
+      <div class="benchmark-meta">
+        <div><span>Measured</span><strong>{created}</strong></div>
+        <div><span>Revision</span><strong>{benchmarkReport.revision}</strong></div>
+        <div><span>Trials</span><strong>{benchmarkReport.trials} per backend</strong></div>
+        <div>
+          <span>Host</span><strong
+            >{benchmarkReport.host.arch} · {benchmarkReport.host.logicalCpus} logical CPUs</strong
+          >
+        </div>
+      </div>
+      <p class="benchmark-actions">
+        <a href={sitePath('/benchmarks/data.json')}>Download raw benchmark data</a>
+        <a href="https://github.com/skyaara/suitecut/blob/main/scripts/benchmark-suite.mjs"
+          >View the harness ↗</a
+        >
+      </p>
+    </header>
+
+    {
+      scenarios.length === 0 ? (
+        <section class="benchmark-empty">
+          <h2>Benchmark run pending</h2>
+          <p>The page is wired to the reproducible suite, but no report has been published yet.</p>
+        </section>
+      ) : (
+        <div class="scenario-list">
+          {scenarios.map((scenario) => {
+            const native = scenario.summary.native
+            const playwright = scenario.summary.playwright
+            const backends: { label: string; row: BackendSummary }[] = [
+              { label: 'Embedded CEF', row: native },
+              { label: 'Playwright', row: playwright },
+            ]
+            return (
+              <section class="scenario" id={scenario.id}>
+                <div class="scenario-heading">
+                  <div>
+                    <p class="scenario-index">
+                      {scenario.width}×{scenario.height} · {scenario.fps} FPS
+                    </p>
+                    <h2>{scenario.name}</h2>
+                    <p>{scenario.description}</p>
+                  </div>
+                  <div class="delta-pills" aria-label="Native difference from Playwright">
+                    <span>RAM {percent(scenario.deltaPercent.peakProcessTreeRssMiB)}</span>
+                    <span>CPU {percent(scenario.deltaPercent.sampledProcessTreeCpuPercent)}</span>
+                  </div>
+                </div>
+                <div class="table-scroll">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Backend</th>
+                        <th>Distinct FPS</th>
+                        <th>Repeated</th>
+                        <th>Peak RSS</th>
+                        <th>Sampled CPU</th>
+                        <th>Startup</th>
+                        <th>Finalize</th>
+                        <th>Output</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {backends.map(({ label, row }) => (
+                        <tr>
+                          <th>{label}</th>
+                          <td>{format(row.uniqueFps)}</td>
+                          <td>
+                            {row.repeatedFramePercent === null
+                              ? 'n/a'
+                              : `${format(row.repeatedFramePercent)}%`}
+                          </td>
+                          <td>{format(row.peakProcessTreeRssMiB, 0)} MiB</td>
+                          <td>{format(row.sampledProcessTreeCpuPercent, 0)}%</td>
+                          <td>{format(row.startupMs, 0)} ms</td>
+                          <td>{format(row.finalizationMs, 0)} ms</td>
+                          <td>{format(row.fileMiB, 2)} MiB</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+            )
+          })}
+        </div>
+      )
+    }
+
+    <section class="benchmark-method">
+      <p class="eyebrow">How to read this</p>
+      <h2>Method and limits</h2>
+      <div class="method-grid">
+        {
+          Object.entries(benchmarkReport.methodology)
+            .filter(([, value]) => value)
+            .map(([key, value]) => (
+              <article>
+                <h3>{key.replace(/([A-Z])/gu, ' $1')}</h3>
+                <p>{value}</p>
+              </article>
+            ))
+        }
+      </div>
+      <p class="benchmark-note">
+        Lower RAM, CPU, startup, finalization, and output size are better. Higher distinct FPS is
+        better. Static and multi-page scenarios intentionally omit pixel cadence because their
+        frames cannot be scored with one continuous source marker. GPU memory is not included.
+      </p>
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  .benchmark-page {
+    width: min(calc(100% - 3rem), 76rem);
+    margin: 0 auto;
+  }
+  .benchmark-hero {
+    padding: clamp(4rem, 9vw, 8rem) 0 4rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .benchmark-hero h1 {
+    max-width: 14ch;
+    margin: 0 0 1.5rem;
+    font-size: clamp(2.7rem, 7vw, 5.8rem);
+    font-weight: 600;
+    letter-spacing: -0.065em;
+    line-height: 0.98;
+  }
+  .benchmark-intro {
+    max-width: 48rem;
+    color: #c7c7c7;
+    font-size: 1rem;
+    line-height: 1.8;
+  }
+  .benchmark-meta {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    margin-top: 3rem;
+    border-block: 1px solid var(--border);
+  }
+  .benchmark-meta div {
+    padding: 1.2rem;
+    border-right: 1px solid var(--border);
+  }
+  .benchmark-meta div:last-child {
+    border-right: 0;
+  }
+  .benchmark-meta span {
+    display: block;
+    margin-bottom: 0.45rem;
+    color: var(--muted);
+    font-size: 0.62rem;
+    text-transform: uppercase;
+  }
+  .benchmark-meta strong {
+    font-size: 0.75rem;
+    font-weight: 550;
+  }
+  .benchmark-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.25rem;
+    margin: 1.5rem 0 0;
+    font-size: 0.72rem;
+  }
+  .scenario-list {
+    padding: 2rem 0;
+  }
+  .scenario {
+    padding: 3.5rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .scenario-heading {
+    display: flex;
+    align-items: start;
+    justify-content: space-between;
+    gap: 2rem;
+    margin-bottom: 1.75rem;
+  }
+  .scenario-index {
+    margin: 0 0 0.6rem;
+    color: var(--muted);
+    font: 0.65rem/1.4 var(--mono);
+    text-transform: uppercase;
+  }
+  .scenario h2,
+  .benchmark-method h2,
+  .benchmark-empty h2 {
+    margin: 0 0 0.75rem;
+    font-size: clamp(1.5rem, 3vw, 2.4rem);
+    font-weight: 600;
+    letter-spacing: -0.04em;
+  }
+  .scenario-heading p:last-child {
+    max-width: 42rem;
+    margin: 0;
+    color: #bdbdbd;
+    font-size: 0.82rem;
+    line-height: 1.7;
+  }
+  .delta-pills {
+    display: flex;
+    flex: none;
+    gap: 0.45rem;
+  }
+  .delta-pills span {
+    padding: 0.45rem 0.6rem;
+    border: 1px solid var(--border);
+    font: 0.62rem/1 var(--mono);
+  }
+  .table-scroll {
+    overflow-x: auto;
+    border: 1px solid var(--border);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 54rem;
+  }
+  th,
+  td {
+    padding: 0.85rem 0.9rem;
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    font-size: 0.7rem;
+    text-align: right;
+    white-space: nowrap;
+  }
+  thead th {
+    color: var(--muted);
+    font-weight: 500;
+    background: var(--surface);
+  }
+  tbody th {
+    text-align: left;
+    font-weight: 600;
+  }
+  tr:last-child th,
+  tr:last-child td {
+    border-bottom: 0;
+  }
+  th:last-child,
+  td:last-child {
+    border-right: 0;
+  }
+  .benchmark-method {
+    padding: 5rem 0;
+  }
+  .method-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1px;
+    margin-top: 2rem;
+    padding: 1px;
+    background: var(--border);
+  }
+  .method-grid article {
+    padding: 1.5rem;
+    background: var(--background);
+  }
+  .method-grid h3 {
+    margin: 0 0 0.7rem;
+    font-size: 0.72rem;
+    text-transform: capitalize;
+  }
+  .method-grid p,
+  .benchmark-note,
+  .benchmark-empty p {
+    margin: 0;
+    color: #bdbdbd;
+    font-size: 0.78rem;
+    line-height: 1.75;
+  }
+  .benchmark-note {
+    margin-top: 2rem;
+    padding-left: 1rem;
+    border-left: 1px solid var(--border);
+  }
+  .benchmark-empty {
+    padding: 5rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+  @media (max-width: 52rem) {
+    .benchmark-meta {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .benchmark-meta div:nth-child(2) {
+      border-right: 0;
+    }
+    .benchmark-meta div:nth-child(-n + 2) {
+      border-bottom: 1px solid var(--border);
+    }
+    .scenario-heading {
+      display: block;
+    }
+    .delta-pills {
+      margin-top: 1.2rem;
+    }
+    .method-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  @media (max-width: 38rem) {
+    .benchmark-page {
+      width: min(calc(100% - 2rem), 76rem);
+    }
+    .benchmark-meta {
+      grid-template-columns: 1fr;
+    }
+    .benchmark-meta div {
+      border-right: 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .benchmark-meta div:last-child {
+      border-bottom: 0;
+    }
+  }
+</style>

@@ -24,13 +24,13 @@ export type {
   SuiteCutTypeOptions,
 } from './schemas.js'
 
-/** Controls the recording timeline from a Playwright page. */
-export interface SuiteCutFixture {
+/** Controls the recording timeline through the selected browser backend. */
+export interface SuiteCutFixture<P = Page, L = Locator> {
   /**
    * Makes a page the source for later narration and visual events.
    * @param page - The main page, popup, or secondary page to record.
    */
-  selectPage(page: Page): void
+  selectPage(page: P): void
   /**
    * Adds synthesized speech and an optional caption at the current test time.
    * @param text - The text sent to the selected narration provider.
@@ -53,21 +53,21 @@ export interface SuiteCutFixture {
    * @param locator - The element whose current geometry should be captured.
    * @param options - Highlight appearance and timing settings.
    */
-  highlight(locator: Locator, options?: SuiteCutHighlightOptions): Promise<void>
+  highlight(locator: L, options?: SuiteCutHighlightOptions): Promise<void>
   /**
    * Frames a locator more closely in the rendered video.
    * @param locator - The element whose current geometry should be captured.
    * @param options - Zoom scale, padding, animation, and hold settings.
    */
-  zoom(locator: Locator, options?: SuiteCutZoomOptions): Promise<void>
-  /** Moves the recorded cursor and performs a real Playwright hover. */
-  hover(locator: Locator, options?: SuiteCutPointerActionOptions): Promise<void>
-  /** Moves the recorded cursor and performs a real Playwright click. */
-  click(locator: Locator, options?: SuiteCutPointerActionOptions): Promise<void>
+  zoom(locator: L, options?: SuiteCutZoomOptions): Promise<void>
+  /** Moves the recorded cursor and performs a browser hover. */
+  hover(locator: L, options?: SuiteCutPointerActionOptions): Promise<void>
+  /** Moves the recorded cursor and performs a browser click. */
+  click(locator: L, options?: SuiteCutPointerActionOptions): Promise<void>
   /** Types text one character at a time so the input change is visible in the recording. */
-  type(locator: Locator, text: string, options?: SuiteCutTypeOptions): Promise<void>
+  type(locator: L, text: string, options?: SuiteCutTypeOptions): Promise<void>
   /** Uses the browser's native scrolling to bring a locator into view. */
-  scrollTo(locator: Locator, options?: SuiteCutScrollOptions): Promise<void>
+  scrollTo(locator: L, options?: SuiteCutScrollOptions): Promise<void>
   /** Uses the browser's native scrolling to return the active page to its top edge. */
   scrollTop(options?: SuiteCutScrollOptions): Promise<void>
 }

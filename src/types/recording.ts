@@ -82,7 +82,7 @@ export interface SuiteCutEventAttachment {
   videos: SuiteCutCapturedVideo[]
 }
 
-export interface SuiteCutRecordingSession {
+export interface SuiteCutRecordingSession<P = Page> {
   readonly playLiveZoom?: (
     event: SuiteCutZoomEvent,
     playback?: () => Promise<void>,
@@ -99,9 +99,9 @@ export interface SuiteCutRecordingSession {
   readonly videos: SuiteCutCapturedVideo[]
 
   now(): Milliseconds
-  pageFor(pageId: SuiteCutPageId): Page
-  pageIdFor(page: Page): SuiteCutPageId
-  selectPage(page: Page): SuiteCutPageId
+  pageFor(pageId: SuiteCutPageId): P
+  pageIdFor(page: P): SuiteCutPageId
+  selectPage(page: P): SuiteCutPageId
   nextEventId(): SuiteCutEventId
   record(event: SuiteCutEvent): void
   captureCheckpoint(event: SuiteCutCheckpointEvent): Promise<void>

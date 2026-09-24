@@ -1,5 +1,4 @@
-import { type Locator, type Page } from 'playwright'
-
+import { type PresentationLocator, type PresentationPage } from './browser-control.js'
 import { type SuiteCutScrollOptions } from './schemas.js'
 
 interface ResolvedScrollOptions {
@@ -87,7 +86,7 @@ async function scrollWindowToTop(options: ResolvedScrollOptions): Promise<void> 
 }
 
 export async function scrollLocator(
-  locator: Locator,
+  locator: PresentationLocator,
   options: SuiteCutScrollOptions,
 ): Promise<void> {
   await locator.evaluate(scrollElement, resolveScrollOptions(options))
@@ -95,7 +94,10 @@ export async function scrollLocator(
   if (settleMs > 0) await locator.page().waitForTimeout(settleMs)
 }
 
-export async function scrollPageTop(page: Page, options: SuiteCutScrollOptions): Promise<void> {
+export async function scrollPageTop(
+  page: PresentationPage,
+  options: SuiteCutScrollOptions,
+): Promise<void> {
   await page.evaluate(scrollWindowToTop, resolveScrollOptions(options))
   const settleMs = options.settleMs ?? 120
   if (settleMs > 0) await page.waitForTimeout(settleMs)

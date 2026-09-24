@@ -50,6 +50,79 @@ describe('live stream publishing', () => {
     vi.clearAllMocks()
   })
 
+  it('encodes raw native BGRA with explicit dimensions and rejects partial frames', async () => {
+    const stream = createLiveStream(
+      'ffmpeg',
+      { url: 'rtmp://localhost/live/key' },
+      30,
+      { width: 2, height: 2 },
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      { width: 2, height: 2 },
+      'bgra',
+    )
+    const args = vi.mocked(spawn).mock.calls[0]?.[1]
+    expect(args).toEqual(
+      expect.arrayContaining(['rawvideo', '-pixel_format', 'bgra', '-video_size', '2x2']),
+    )
+    expect(args).not.toContain('mjpeg')
+    expect(() => stream.update(Buffer.alloc(15))).toThrow('frame length')
+    stream.update(Buffer.alloc(16, 42), performance.now())
+    await vi.advanceTimersByTimeAsync(100)
+    expect(frames.length).toBeGreaterThan(0)
+    expect(frames.every((frame) => frame.equals(Buffer.alloc(16, 42)))).toBe(true)
+    await stream.stop()
+  })
+
+  it('rejects a raw stream without dimensions before spawning FFmpeg', () => {
+    expect(() =>
+      createLiveStream(
+        'ffmpeg',
+        { url: 'rtmp://localhost/live/key' },
+        30,
+        { width: 2, height: 2 },
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        'bgra',
+      ),
+    ).toThrow('explicit input dimensions')
+    expect(spawn).not.toHaveBeenCalled()
+  })
+
+  it('declares the native I420 layout and color matrix to FFmpeg', async () => {
+    const stream = createLiveStream(
+      'ffmpeg',
+      { url: 'rtmp://localhost/live/key' },
+      60,
+      { width: 2, height: 2 },
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      { width: 2, height: 2 },
+      'i420',
+    )
+    expect(vi.mocked(spawn).mock.calls[0]?.[1]).toEqual(
+      expect.arrayContaining(['rawvideo', 'yuv420p', '-colorspace', 'bt709', '-color_range', 'tv']),
+    )
+    expect(() => stream.update(Buffer.alloc(16))).toThrow('frame length')
+    stream.update(Buffer.alloc(6))
+    await vi.advanceTimersByTimeAsync(100)
+    expect(frames.every((frame) => frame.length === 6)).toBe(true)
+    await stream.stop()
+  })
+
   it('repeats idle frames, replaces the latest image, and stops its timer', async () => {
     const stream = createLiveStream('ffmpeg', { url: 'rtmp://localhost/live/key' }, 30, {
       width: 640,
@@ -119,6 +192,24 @@ describe('live stream publishing', () => {
         size: { width: 1280, height: 720 },
         bitrateKbps: 4500,
       }).success,
+    ).toBe(true)
+    expect(
+      SuiteCutStreamOptionsSchema.parse({
+        url: 'rtmp://localhost/live/key',
+        audio: true,
+      }).audio,
+    ).toBe(true)
+    expect(
+      SuiteCutStreamOptionsSchema.parse({
+        url: 'rtmp://localhost/live/key',
+        audio: false,
+      }).audio,
+    ).toBe(false)
+    expect(
+      SuiteCutStreamOptionsSchema.parse({
+        url: 'rtmp://localhost/live/key',
+        audio: 'tab',
+      }).audio,
     ).toBe(true)
     expect(
       SuiteCutStreamOptionsSchema.safeParse({

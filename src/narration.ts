@@ -53,7 +53,7 @@ export interface SuiteCutNarrationClip {
 
 export function createNarrationPipeline(
   output: SuiteCutArtifactSink,
-  session: SuiteCutRecordingSession,
+  session: Pick<SuiteCutRecordingSession, 'attemptId' | 'retainArtifacts' | 'artifacts' | 'now'>,
   audioPlugins: readonly SuiteCutAudioPluginReference[] = [],
   signal?: AbortSignal,
 ): SuiteCutNarrationPipeline {

@@ -5,6 +5,17 @@ normal Node script, or add the optional Playwright Test integration when the rec
 test. Capture, timing, manifests, overlays, captions, and rendering live in this package. It does not
 use `playwright-recast`, hosted model APIs, or cloud speech services.
 
+An optional, experimental [`suitecut/native` backend](native/browser/README.md) captures
+CEF-rendered BGRA/I420 frames and PCM audio directly. It supports streaming and native
+recording with narration, captions, presentation actions, checkpoints, and the existing
+video renderer. Native recording and streaming audio are opt-in with an `audio: true`
+flag. It requires a separately built native executable. The default Playwright
+backend is unchanged; see the [API guide](native/browser/README.md#recording-narration-and-presentations)
+and [audit and platform status](native/browser/AUDIT.md).
+
+Try the [native-default beta and A/B benchmark](native/browser/BETA.md) with
+`suitecut/beta`; `pnpm pack:beta` builds a local prerelease whose root import defaults to native.
+
 ## Requirements
 
 - Node.js 22 or newer
@@ -432,7 +443,7 @@ capture: {
     url,
     size: { width: 1920, height: 1080 },
     bitrateKbps: 6000,
-    audio: 'tab',
+    audio: true,
   },
 }
 ```
@@ -485,14 +496,17 @@ await record(
 `stream.url` is required. `stream.bitrateKbps` defaults to 4500 and
 `stream.size` defaults to the capture size. The encoder keeps a fixed output size,
 letterboxing pages as needed. It sends H.264 video and stereo AAC at 48 kHz.
-Audio defaults to silence. Set `stream.audio: 'tab'` to capture the selected tab
+Audio defaults to silence. Set `stream.audio: true` to capture the selected tab
 through the `suitecut/playwright` recorder:
 
 ```ts
 capture: {
-  stream: { url, audio: 'tab', bitrateKbps: 4500 },
+  stream: { url, audio: true, bitrateKbps: 4500 },
 }
 ```
+
+The public option is boolean. Existing saved configuration that uses `tab` or
+`silent` is normalized at runtime for migration compatibility.
 
 Tab audio launches an isolated persistent profile with a bundled capture extension.
 It requires current Playwright Chromium with `Extensions.triggerAction` support
@@ -623,7 +637,7 @@ pnpm build
 node --experimental-strip-types examples/playwright/livestream.ts
 ```
 
-Set `SUITECUT_STREAM_AUDIO=tab` to include website sound. Press Ctrl+C to stop.
+Set `SUITECUT_STREAM_AUDIO=true` to include website sound. Press Ctrl+C to stop.
 Streaming with silent audio also works under `suitecutCapture` in Playwright Test. RTMP is an ingest output, not a browser player URL; embedded web
 playback requires a media server or livestream service.
 
@@ -883,6 +897,10 @@ All `suitecut render` flags are listed below. `--manifest` and `--output` are re
   `SUITECUT_FFMPEG_PATH`.
 - `--no-narration`: render without narration audio. Browser-recorded captions remain visible.
 
+The programmatic render config also accepts `sourceAudioEnabled` (default `true`
+when a source-video artifact has audio), `sourceAudioVolume` (default `1`), and
+`narrationVolume` (default `2`). Volume values range from `0` through `4`.
+
 SuiteCut infers MP4, WebM, MOV, or Matroska from the output extension. MP4, MOV, and Matroska
 default to H.264 and AAC. WebM defaults to VP9 and Opus. You can select any encoder exposed by the
 installed FFmpeg build. FFmpeg still decides whether the chosen container can store that codec and
@@ -1025,7 +1043,8 @@ The renderer reads only this saved manifest and its referenced files. It does no
 - The quantized Kokoro model uses one WASM thread in the current Node worker. Multi-worker inference needs memory and throughput measurements before it becomes a default.
 - Pointer geometry covers the main frame. Cross-origin iframe coordinate translation still needs browser-specific work.
 - Chromium, Firefox, and WebKit have focused end-to-end capture, interaction, checkpoint, manifest, and media evidence.
-- Offline rendering mixes narration only. Chromium tab audio is available for live streaming.
+- Offline rendering mixes narration and audio present in source-video artifacts. Playwright
+  recordings remain video-only; native CEF recording audio is opt-in with `capture.audio: true`.
 
 ## Contributing and security
 

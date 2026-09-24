@@ -1,5 +1,4 @@
-import { type Page } from 'playwright'
-
+import { type PresentationPage } from './browser-control.js'
 import {
   type SuiteCutHighlightOptions,
   type SuiteCutPoint,
@@ -385,12 +384,12 @@ export async function waitForSuiteCutPageAnimations(timeoutMs: number): Promise<
   ])
 }
 
-async function ensurePresentation(page: Page): Promise<void> {
+async function ensurePresentation(page: PresentationPage): Promise<void> {
   await page.evaluate(installSuiteCutPresentation)
 }
 
 export async function movePresentationCursor(
-  page: Page,
+  page: PresentationPage,
   point: SuiteCutPoint,
   durationMs: number,
 ): Promise<void> {
@@ -398,13 +397,16 @@ export async function movePresentationCursor(
   await page.evaluate(moveSuiteCutCursor, { point, durationMs })
 }
 
-export async function pulsePresentationCursor(page: Page, durationMs: number): Promise<void> {
+export async function pulsePresentationCursor(
+  page: PresentationPage,
+  durationMs: number,
+): Promise<void> {
   await ensurePresentation(page)
   await page.evaluate(pulseSuiteCutCursor, durationMs)
 }
 
 export async function showPresentationHighlight(
-  page: Page,
+  page: PresentationPage,
   rect: SuiteCutRect,
   options: SuiteCutHighlightOptions,
   durationMs: number,
@@ -414,7 +416,7 @@ export async function showPresentationHighlight(
 }
 
 export async function showPresentationCaption(
-  page: Page,
+  page: PresentationPage,
   text: string,
   durationMs: number,
   words?: SuiteCutWordTiming[],
@@ -427,7 +429,10 @@ export async function showPresentationCaption(
   })
 }
 
-export async function waitForPresentationAnimations(page: Page, timeoutMs: number): Promise<void> {
+export async function waitForPresentationAnimations(
+  page: PresentationPage,
+  timeoutMs: number,
+): Promise<void> {
   try {
     await page.evaluate(waitForSuiteCutPageAnimations, timeoutMs)
   } catch (error) {
