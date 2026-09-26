@@ -3,6 +3,7 @@ import { PassThrough } from 'node:stream'
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { LiveAudioBuffer } from '../src/live-audio.js'
 import {
   createLiveStreamAttempt as createLiveStream,
   createLiveStream as createReconnectingStream,
@@ -143,6 +144,64 @@ describe('live stream publishing', () => {
     expect(frames).toHaveLength(count)
     await stream.stop()
     expect(input.writableEnded).toBe(true)
+  })
+
+  it('resynchronizes audio time when backpressure evicts its matching raw video', async () => {
+    let now = 1000
+    const clock = vi.spyOn(performance, 'now').mockImplementation(() => now)
+    let release = (): void => undefined
+    const blocked = new Promise<void>((resolve) => {
+      release = resolve
+    })
+    const mediaTimes: number[] = []
+    const raw = Buffer.alloc(1920 * 1080 * 1.5)
+    const stream = createLiveStream(
+      'ffmpeg',
+      { url: 'rtmp://localhost/live/key' },
+      60,
+      { width: 1920, height: 1080 },
+      undefined,
+      async (frame) => {
+        await blocked
+        return frame
+      },
+      {
+        url: '',
+        buffer: new LiveAudioBuffer(),
+        activate: async () => undefined,
+        createInput: () => {
+          throw new Error('Persistent output owns the audio encoder')
+        },
+        close: async () => undefined,
+      },
+      undefined,
+      undefined,
+      {
+        frame: (_index, at) => mediaTimes.push(at),
+        data: async () => undefined,
+        health: () => ({
+          outputLagMs: 0,
+          progressAgeMs: 0,
+          networkBlockedMs: 0,
+          networkQueuedBytes: 0,
+        }),
+      },
+      { width: 1920, height: 1080 },
+      'i420',
+    )
+    try {
+      stream.update(raw, 850)
+      now = 1400
+      for (let index = 0; index < 25; index++) stream.update(raw, 1000 + index * (1000 / 60))
+      release()
+      await vi.advanceTimersByTimeAsync(1)
+      expect(mediaTimes[0]).toBe(850)
+      expect(mediaTimes[1]).toBeCloseTo(1250)
+    } finally {
+      release()
+      await stream.stop()
+      clock.mockRestore()
+    }
   })
 
   it('does not report ready before FFmpeg publishes a frame', async () => {

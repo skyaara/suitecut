@@ -320,7 +320,9 @@ export function createLiveStreamAttempt(
     const lag = Math.max(0, performance.now() - scheduledAt)
     // If a byte cap evicted required video, skip its corresponding audio too.
     const missingVideo =
-      audio !== undefined && frames.length > 0 && (frames[0]?.at ?? 0) > scheduledAt + 250
+      audio !== undefined &&
+      frames.length > 0 &&
+      (frames[0]?.at ?? 0) > scheduledAt - LIVE_AUDIO_DELAY_MS + 1000 / framesPerSecond
     congestion.measure({
       ...networkPressure?.(),
       outputLagMs: health().outputLagMs,
