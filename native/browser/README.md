@@ -119,8 +119,9 @@ track and does not subscribe to CEF audio packets.
   microphone capture. Silence is supplied by the publisher when no audio arrives.
 - Timestamps are mapped into Node's `performance.now()` clock at the startup
   handshake. Video timestamps describe capture callbacks. Audio PTS is anchored
-  at its first callback and subsequent PTS deltas are preserved; discontinuities
-  over 250 ms re-anchor it. CEF builds have used different audio clock origins.
+  at its first callback and subsequent PTS deltas are preserved, including delayed
+  callbacks under CPU pressure. A backward PTS or a jump more than 250 ms into the
+  future re-anchors it. CEF builds have used different audio clock origins.
   This is not a hardware clock or a
   guarantee of zero latency. Clock and A/V drift need measurement in long runs.
 - `failure` rejects for unexpected exit, renderer termination, audio error,
