@@ -21,9 +21,18 @@ Keep SDKs and outputs outside source control (for example under `.suitecut/`).
 The tested ARM64 archive URL, byte length, and SHA-256 checksum are pinned in
 [`cef-build.json`](cef-build.json); verify the archive against that checksum before
 extracting it. Builds do not silently fetch or update Chromium.
-Also extract the pinned [libyuv source archive](libyuv-build.json) to
-`.suitecut/libyuv`, verifying its SHA-256 checksum. libyuv supplies SIMD color
-conversion for the I420 streaming path and is linked statically.
+Fetch the exact [libyuv Git commit](libyuv-build.json) into `.suitecut/libyuv`.
+Gitiles-generated source archives vary in metadata between requests, so their
+compressed SHA-256 is not a stable pin. Git verifies the fetched objects; check
+that `rev-parse HEAD` matches the pinned commit. libyuv supplies SIMD color
+conversion for I420 and is linked statically.
+
+```sh
+git init .suitecut/libyuv
+git -C .suitecut/libyuv fetch --depth=1 https://chromium.googlesource.com/libyuv/libyuv 7c85a3a0820fab29abb502c207d8b9a394e352cc
+git -C .suitecut/libyuv checkout --detach FETCH_HEAD
+git -C .suitecut/libyuv rev-parse HEAD
+```
 
 On macOS ARM64:
 
