@@ -1,9 +1,9 @@
-import type {
-  defineSuiteCut,
-  SuiteCutNativeRecordOptions,
-  SuiteCutPlaywrightRecordOptions,
+import {
+  type defineSuiteCut,
+  type SuiteCutNativeRecordOptions,
+  type SuiteCutPlaywrightRecordOptions,
 } from './native-default.js'
-import type { NativeRecordingContext } from './native-recording.js'
+import { type NativeRecordingContext } from './native-recording.js'
 
 export type { LiveStreamDiagnostic } from './live-congestion.js'
 export {
