@@ -33,9 +33,10 @@ const repositoryUrl = 'https://github.com/skyaara/suitecut/blob/main/'
       <h2 id="playwright-script">Playwright script</h2>
       <p>
         <a href={`${repositoryUrl}examples/playwright.ts`}><code>examples/playwright.ts</code></a>
-        is the primary SuiteCut path. It uses <code>defineSuiteCut()</code> without Playwright Test, a
-        reporter, fixtures, or a Playwright configuration file. It records a local page, uses SuiteCut's
-        cursor and highlight, captures a checkpoint, and prints the manifest path.
+        uses the explicit Playwright backend. The 2.0 native default is covered in the getting-started
+        guide. It uses <code>defineSuiteCut()</code> without Playwright Test, a reporter, fixtures, or
+        a Playwright configuration file. It records a local page, uses SuiteCut's cursor and highlight,
+        captures a checkpoint, and prints the manifest path.
       </p>
       <CodeBlock code={plainPlaywrightExample} />
       <CodeBlock

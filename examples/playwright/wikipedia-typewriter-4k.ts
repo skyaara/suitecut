@@ -1,6 +1,6 @@
 import { mkdir } from 'node:fs/promises'
 
-import { defineSuiteCut } from 'suitecut'
+import { defineSuiteCut } from 'suitecut/playwright'
 import { renderSuiteCut } from 'suitecut/render'
 
 const manifestPath = '.suitecut/wikipedia-typewriter-4k.json'

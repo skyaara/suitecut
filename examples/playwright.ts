@@ -1,4 +1,4 @@
-import { defineSuiteCut } from 'suitecut'
+import { defineSuiteCut } from 'suitecut/playwright'
 
 const record = defineSuiteCut({
   browserName: 'chromium',

@@ -1,4 +1,4 @@
-import { record } from 'suitecut'
+import { record } from 'suitecut/playwright'
 
 const streamUrl = process.env.SUITECUT_STREAM_URL
 const audioValue = process.env.SUITECUT_STREAM_AUDIO ?? 'false'

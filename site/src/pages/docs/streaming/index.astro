@@ -2,7 +2,26 @@
 import CodeBlock from '../../../components/CodeBlock.astro'
 import DocsLayout from '../../../layouts/DocsLayout.astro'
 
-const example = `import { record } from 'suitecut'
+const nativeExample = `import { launchBrowser, createBroadcast } from 'suitecut'
+
+const url = process.env.SUITECUT_STREAM_URL
+if (!url) throw new Error('Set SUITECUT_STREAM_URL')
+const source = await launchBrowser({ width: 1920, height: 1080, framesPerSecond: 60 })
+let broadcast
+try {
+  await source.navigate('https://example.com')
+  broadcast = await createBroadcast({ source, stream: { url, audio: true } })
+  await broadcast.ready()
+  await Promise.race([
+    source.failure, broadcast.failure,
+    new Promise(resolve => setTimeout(resolve, 30_000)),
+  ])
+} finally {
+  await broadcast?.stop()
+  await source.close()
+}`
+
+const example = `import { record } from 'suitecut/playwright'
 
 const url = process.env.SUITECUT_STREAM_URL
 if (!url) throw new Error('Set SUITECUT_STREAM_URL')
@@ -38,12 +57,24 @@ await record('live website tour', async ({ page, suitecut }) => {
 >
   <h1>Live streaming</h1>
   <p>
-    Publish the selected browser page to an RTMP or RTMPS ingest endpoint. Setting
-    <code>capture.stream</code> selects streaming-only operation. SuiteCut saves no source videos or checkpoint
-    clips in this mode.
+    Publish an embedded CEF browser to RTMP or RTMPS with SuiteCut 2.0. Native broadcasts use
+    <code>launchBrowser</code> and <code>createBroadcast</code> from the root package. Existing Playwright
+    streams use <code>capture.stream</code> through <code>suitecut/playwright</code>.
   </p>
 
   <h2 id="publish-a-page">Publish a page</h2>
+  <p>
+    Build the pinned CEF browser and set <code>SUITECUT_NATIVE_EXECUTABLE</code> as described in
+    <a href="../docs#install">Getting started</a>. Native support is verified on macOS Apple
+    Silicon. Set <code>SUITECUT_STREAM_URL</code> to your ingest URL, including its stream key.
+  </p>
+  <CodeBlock code={nativeExample} lang="typescript" />
+  <p>
+    The broadcast owns the publisher; the caller owns the source. Always stop and close both.
+    Observe both failure promises. <code>stream.audio: true</code> sends CEF page audio directly. Native
+    streaming does not mix synthesized narration or apply the final renderer's zoom transforms.
+  </p>
+  <h3>Existing Playwright streams</h3>
   <p>
     Run <code>npx playwright install chromium</code>, <code>npx suitecut install</code>, and
     <code>npx suitecut doctor</code> to prepare the browser and media tools. Set <code

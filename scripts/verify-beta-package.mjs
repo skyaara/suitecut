@@ -8,11 +8,19 @@ import { promisify } from 'node:util'
 
 import * as z from 'zod'
 
+const release = process.argv.includes('--release')
 const packed = z
   .object({ version: z.string(), tarball: z.string() })
-  .parse(JSON.parse(await readFile('.suitecut/beta-packages/latest.json', 'utf8')))
+  .parse(
+    JSON.parse(
+      await readFile(
+        release ? '.suitecut/release/latest.json' : '.suitecut/beta-packages/latest.json',
+        'utf8',
+      ),
+    ),
+  )
 if (!process.env.SUITECUT_NATIVE_EXECUTABLE)
-  throw new Error('Set SUITECUT_NATIVE_EXECUTABLE to verify the installed beta')
+  throw new Error('Set SUITECUT_NATIVE_EXECUTABLE to verify the installed package')
 const consumer = await mkdtemp(join(tmpdir(), 'suitecut-beta-consumer-'))
 try {
   await writeFile(join(consumer, 'package.json'), JSON.stringify({ private: true, type: 'module' }))
@@ -36,10 +44,10 @@ assert.equal(record, betaRecord)
 assert.equal(stableRecord, playwrightRecord)
 assert.notEqual(record, stableRecord)
 assert.equal(metadata.version, ${JSON.stringify(packed.version)})
-assert.equal(metadata.publishConfig.tag, 'beta')
+assert.equal(metadata.publishConfig.tag ?? 'latest', ${JSON.stringify(release ? 'latest' : 'beta')})
 assert.equal(typeof renderSuiteCut, 'function')
 let owned
-const result = await record('Installed native beta', async ({ source, suitecut }) => {
+const result = await record('Installed native release', async ({ source, suitecut }) => {
   owned = source
   await suitecut.hold(200)
 }, { native: { width: 640, height: 360, framesPerSecond: 30 }, capture: { audio: true } })

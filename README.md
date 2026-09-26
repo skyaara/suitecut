@@ -1,22 +1,60 @@
-# SuiteCut
+# SuiteCut 2.0
 
-SuiteCut records Playwright browser flows, then renders narrated MP4 or WebM videos. Use it from a
-normal Node script, or add the optional Playwright Test integration when the recording is also a
-test. Capture, timing, manifests, overlays, captions, and rendering live in this package. It does not
-use `playwright-recast`, hosted model APIs, or cloud speech services.
+Record and stream browser flows with an embedded Chromium browser powered by CEF.
+SuiteCut 2.0 promotes the native beta to the default `suitecut` API, with narration,
+captions, presentation actions, page audio, checkpoints, and the existing renderer.
 
-An optional, experimental [`suitecut/native` backend](native/browser/README.md) captures
-CEF-rendered BGRA/I420 frames and PCM audio directly. It supports streaming and native
-recording with narration, captions, presentation actions, checkpoints, and the existing
-video renderer. Native recording and streaming audio are opt-in with an `audio: true`
-flag. It requires a separately built native executable. The default Playwright
-backend is unchanged; see the [API guide](native/browser/README.md#recording-narration-and-presentations)
-and [audit and platform status](native/browser/AUDIT.md).
+```ts
+import { record, renderSuiteCut } from 'suitecut'
 
-Try the [native-default beta and A/B benchmark](native/browser/BETA.md) with
-`suitecut/beta`; `pnpm pack:beta` builds a local prerelease whose root import defaults to native.
+const result = await record('Product tour', async ({ page, suitecut }) => {
+  await page.goto('https://example.com')
+  await suitecut.highlight(page.locator('h1'))
+  await suitecut.narrate('Welcome to the embedded browser.')
+  await suitecut.checkpoint('Opening screen')
+}, {
+  native: { width: 1920, height: 1080, framesPerSecond: 60 },
+  capture: { audio: true },
+})
 
-## Requirements
+await renderSuiteCut({
+  manifestPath: result.manifestPath,
+  outputPath: '.suitecut/tour.mp4',
+})
+```
+
+Install with `npm install suitecut@2`. Run `npx suitecut install` for FFmpeg/FFprobe,
+then [build the pinned CEF browser](native/browser/README.md#build) and set
+`SUITECUT_NATIVE_EXECUTABLE` to its executable. The npm package includes native source
+and build pins; it does **not** bundle a compiled CEF browser or download one during
+installation. macOS Apple Silicon is the verified native platform. Linux is unverified;
+Windows native packaging is not implemented.
+
+Native defaults are 1920 × 1080, 60 FPS, and I420. Audio defaults to off; use
+`capture.audio: true` for recordings or `stream.audio: true` for broadcasts.
+[Native setup and API](native/browser/README.md) · [Migration and streaming](native/browser/BETA.md)
+
+## Migrating from 1.x or the beta
+
+- Native beta scripts can change `suitecut/beta` imports to `suitecut`.
+  The beta entry point remains an alias.
+- Existing Playwright scripts should import `record` and `defineSuiteCut` from
+  `suitecut/playwright`. `suitecut/stable` retains the beta's legacy Playwright alias.
+  Alternatively use root `record(..., { backend: 'playwright', ...options })`.
+- Native dimensions, device scale, and FPS belong in `native`, rather than `capture`.
+  Native `capture` accepts `size`, `narrationTailMs`, and boolean `audio`.
+- Native locators support strict main-document CSS selectors. Role/text locators,
+  iframe traversal, popup flows, and custom Playwright setup stay on `suitecut/playwright`.
+- `suitecut/test`, manifests, rendering, and audio plugin APIs retain their behavior.
+  Root recording types now describe the native default; import Playwright recording
+  types from `suitecut/playwright`.
+- Audio options are boolean in 2.0: replace `stream.audio: 'tab'` with `true` and
+  `'silent'` with `false`.
+
+The following guide covers the **explicit Playwright backend**. See the native guide
+above for the 2.0 default.
+
+## Playwright requirements
 
 - Node.js 22 or newer
 - `playwright` or `@playwright/test` 1.59 or newer
@@ -84,7 +122,7 @@ during the build. It runs as the unprivileged `node` user; the default command c
 FFmpeg and FFprobe. Docker builds for the host architecture unless you specify
 `--platform`. Use headless Chromium for browser flows in this image.
 
-To run a local JavaScript flow that imports `suitecut`, mount the file into `/app`:
+To run a local JavaScript flow that imports `suitecut/playwright`, mount the file into `/app`:
 
 ```sh
 docker run --rm --init --shm-size=1g \
@@ -108,11 +146,11 @@ memory samples. These tests use a local receiver and do not publish to Twitch.
 
 ## Record a browser flow
 
-Import `record` or `defineSuiteCut` from `suitecut`. SuiteCut launches and closes the browser, so the
+Import `record` or `defineSuiteCut` from `suitecut/playwright`. SuiteCut launches and closes the browser, so the
 script does not need a test runner, reporter, fixture, or Playwright configuration file.
 
 ```ts
-import { defineSuiteCut } from 'suitecut'
+import { defineSuiteCut } from 'suitecut/playwright'
 
 const record = defineSuiteCut({
   browserName: 'chromium',
@@ -471,7 +509,7 @@ no recording toggle; specifying a stream destination always selects streaming-on
 Use the complete publish URL, including the stream key, from your livestream service.
 
 ```ts
-import { record } from 'suitecut'
+import { record } from 'suitecut/playwright'
 
 const url = process.env.SUITECUT_STREAM_URL
 if (!url) throw new Error('Set SUITECUT_STREAM_URL')
@@ -767,7 +805,7 @@ test('records Piper narration', async ({ page, suitecut }) => {
 The primary recorder accepts the same entries through `record()` or `defineSuiteCut()`:
 
 ```ts
-import { record } from 'suitecut'
+import { record } from 'suitecut/playwright'
 
 await record(
   'Piper report',

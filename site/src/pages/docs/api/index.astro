@@ -17,6 +17,17 @@ test('opens the account', async ({ page, suitecut }) => {
 })`
 
 const rootExports = `import {
+  DEFAULT_BACKEND,
+  launchBrowser,
+  createBroadcast,
+  createNativePage,
+  type SuiteCutBrowserOptions,
+  type SuiteCutNativeRecordOptions,
+  type SuiteCutPlaywrightRecordOptions,
+  type SuiteCutRecordingResult,
+  type NativePage,
+  type NativeLocator,
+  type NativeRecordingContext,
   defineSuiteCut,
   record,
   decodeWordTimingArtifact,
@@ -265,14 +276,44 @@ const renderExample = `const report = await renderSuiteCut({
     invalid values. Playwright launch and browser-context options pass through to Playwright.
   </p>
 
+  <h2 id="native-api">Native API in 2.0</h2>
+  <p>
+    The root <code>record</code> and <code>defineSuiteCut</code> now use CEF. Configure dimensions, device
+    scale, FPS, and executable path in <code>native</code>. Native <code>capture</code> accepts <code
+      >size</code
+    >, <code>narrationTailMs</code>, and boolean
+    <code>audio</code>. The callback receives <code>source</code>, <code>page</code>,
+    <code>suitecut</code>, <code>signal</code>, and <code>addSource</code>. Locators are strict
+    main-document CSS selectors. See <a href={sitePath('/docs')}>native setup and migration</a>.
+  </p>
+  <CodeBlock
+    code={`import { record, launchBrowser, createBroadcast } from 'suitecut'
+
+await record('Native tour', async ({ page, suitecut }) => {
+  await page.goto('https://example.com')
+  await suitecut.highlight(page.locator('h1'))
+}, {
+  native: { width: 1920, height: 1080, framesPerSecond: 60 },
+  capture: { audio: true },
+})`}
+  />
+  <p>
+    <code>launchBrowser(options)</code> returns a caller-owned native source.
+    <code>createBroadcast(&#123; source, stream &#125;)</code> publishes it; stop the broadcast and close
+    the source separately. <code>createNativePage(source)</code> exposes page controls outside a recording.
+    Root recording types describe native callbacks and results. Import Playwright recording types from
+    <code>suitecut/playwright</code>. The detailed Playwright capture and setup options below apply
+    to that explicit backend and the test integration.
+  </p>
+
   <h2 id="public-exports">Public exports</h2>
   <p>
-    These are every package entry point and export in the current build. Files below
+    These are the main package entry points and public exports. Files below
     <code>suitecut/src</code> are internal and are not public imports.
   </p>
 
   <h3><code>suitecut</code></h3>
-  <p>The runner-free recorder, renderer, and their public option and result types.</p>
+  <p>The native CEF recorder, browser launcher, broadcaster, renderer, and their public types.</p>
   <CodeBlock code={rootExports} />
 
   <h3><code>suitecut/test</code></h3>
@@ -280,9 +321,7 @@ const renderExample = `const report = await renderSuiteCut({
   <CodeBlock code={testExports} />
 
   <h3><code>suitecut/playwright</code></h3>
-  <p>
-    A compatibility alias for the runner-free exports from <code>suitecut</code>.
-  </p>
+  <p>The explicit Playwright recorder, preserving the 1.x launch, context, and setup APIs.</p>
   <CodeBlock code={playwrightExports} />
 
   <h3><code>suitecut/audio-plugin</code></h3>
@@ -588,9 +627,9 @@ await suitecut.click(publishButton, { zoom: { scale: 1.25, paddingPx: 32 } })`}
 
   <h2 id="recording-options">Recording options</h2>
   <p>
-    Import <code>record</code> or <code>defineSuiteCut</code> from <code>suitecut</code>. Each call
-    owns one browser, context, main page, and recording. It writes one manifest attempt with no test
-    steps.
+    Import <code>record</code> or <code>defineSuiteCut</code> from <code>suitecut/playwright</code>.
+    Each call owns one browser, context, main page, and recording. It writes one manifest attempt
+    with no test steps.
   </p>
   <CodeBlock code={plainPlaywrightSignatures} />
   <ul>
@@ -673,7 +712,7 @@ await suitecut.click(publishButton, { zoom: { scale: 1.25, paddingPx: 32 } })`}
     <code>SuiteCutStreamOptions</code> configures <code>capture.stream</code>. Supply an RTMP or
     RTMPS
     <code>url</code>, optional <code>size</code>, and <code>bitrateKbps</code> from 100 to 50,000. Audio
-    defaults to <code>silent</code>; <code>tab</code> requires the standalone Chromium recorder.
+    defaults to <code>false</code>; <code>true</code> requires the standalone Chromium recorder.
     <code>adaptiveBitrate</code> defaults to enabled. <code>reconnect</code> accepts <code
       >false</code
     >
