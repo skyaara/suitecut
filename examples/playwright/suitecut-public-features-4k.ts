@@ -2,7 +2,7 @@ import { mkdir } from 'node:fs/promises'
 
 import { type Locator } from 'playwright'
 
-import { defineSuiteCut } from 'suitecut'
+import { defineSuiteCut } from 'suitecut/playwright'
 import { renderSuiteCut } from 'suitecut/render'
 
 const manifestPath = '.suitecut/suitecut-public-features-4k.json'

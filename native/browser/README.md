@@ -1,16 +1,16 @@
-# SuiteCut native browser (experimental)
+# SuiteCut 2.0 embedded browser
 
-An optional Chromium Embedded Framework (CEF) capture backend. Each source is a
+The default Chromium Embedded Framework (CEF) capture backend for SuiteCut 2.0. Each source is a
 separate sandboxed CEF browser process. Video comes from `CefRenderHandler::OnPaint`;
 audio comes from `CefAudioHandler::OnAudioStreamPacket`. No Playwright screenshot
 loop, browser extension, or exposed remote-debugging port participates in capture.
 
-This is an experimental API, not a replacement for the default Playwright backend.
+The root `suitecut` API uses this backend. `suitecut/playwright` retains the explicit Playwright backend.
 The implementation transfers CPU BGRA or I420 buffers. It does **not** implement GPU
 texture sharing, hardware encoding, a desktop UI, or the complete Playwright API.
 
-For a native-default entry point, installable local prerelease, and a repeatable
-comparison with Playwright, see [the beta guide](BETA.md).
+For the root API, migration from the beta, and a repeatable comparison with Playwright,
+see [the native-default guide](BETA.md).
 
 ## Build
 
@@ -132,7 +132,7 @@ track and does not subscribe to CEF audio packets.
   require even physical dimensions. Use a replacement source to change layouts.
 
 The existing `suitecut/playwright` and `suitecut/test` APIs keep their existing
-backend. This prototype does not claim Playwright `Page` compatibility with CEF.
+backend. This API does not claim Playwright `Page` compatibility with CEF.
 
 ## Recording, narration, and presentations
 

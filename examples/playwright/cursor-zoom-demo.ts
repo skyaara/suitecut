@@ -1,4 +1,4 @@
-import { defineSuiteCut } from 'suitecut'
+import { defineSuiteCut } from 'suitecut/playwright'
 import { renderSuiteCut } from 'suitecut/render'
 
 const record = defineSuiteCut({

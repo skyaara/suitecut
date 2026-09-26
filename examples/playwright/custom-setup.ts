@@ -1,6 +1,6 @@
 import { createServer } from 'node:http'
 
-import { defineSuiteCut } from 'suitecut'
+import { defineSuiteCut } from 'suitecut/playwright'
 
 const record = defineSuiteCut({
   browserName: 'chromium',

@@ -2,7 +2,24 @@
 
 SuiteCut follows [Semantic Versioning](https://semver.org/). This file records user-visible changes.
 
-## Unreleased
+## 2.0.0 - 2026-09-26
+
+- Promote the embedded CEF beta to the default `suitecut` API. Export native
+  `record`, `defineSuiteCut`, `launchBrowser`, `createBroadcast`, and `createNativePage`.
+- Preserve explicit Playwright recording through `suitecut/playwright`,
+  `suitecut/stable`, or `record(..., { backend: 'playwright' })`. Keep `suitecut/beta`
+  as a compatibility alias of the native API.
+- Native recording defaults to 1920×1080 at 60 FPS with I420 capture. Each recording
+  owns and closes its primary browser, including after errors.
+- Breaking: native callbacks use strict CSS locators; Playwright-only options and
+  selectors require the explicit Playwright backend. Move native viewport, scale,
+  and FPS options into `native`. Root recording types describe the native API.
+- Document CEF setup, platform support, and 1.x migration on the website. Native
+  source and checksum pins ship in npm; compiled CEF must be built separately.
+  macOS ARM64 is the verified native target; Linux is unverified and Windows native
+  packaging is not implemented.
+- Update audio packages to 2.0.0 with SuiteCut 2.x peer compatibility.
+
 
 - Add opt-in CEF page audio to native recordings and use boolean `capture.audio`
   and `stream.audio` flags throughout the recording and streaming APIs. Both

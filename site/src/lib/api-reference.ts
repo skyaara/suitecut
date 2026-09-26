@@ -58,7 +58,7 @@ test('records an account flow', async ({ page, suitecut }) => {
   await suitecut.checkpoint('Billing page')
 })`
 
-export const plainPlaywrightConfig = `import { defineSuiteCut } from 'suitecut'
+export const plainPlaywrightConfig = `import { defineSuiteCut } from 'suitecut/playwright'
 import { audioPluginReference } from 'suitecut/audio-plugin'
 
 export const record = defineSuiteCut({
@@ -178,6 +178,17 @@ export default defineSuiteCutAudioPlugin({
 })`
 
 export const rootExports = `import {
+  DEFAULT_BACKEND,
+  launchBrowser,
+  createBroadcast,
+  createNativePage,
+  type SuiteCutBrowserOptions,
+  type SuiteCutNativeRecordOptions,
+  type SuiteCutPlaywrightRecordOptions,
+  type SuiteCutRecordingResult,
+  type NativePage,
+  type NativeLocator,
+  type NativeRecordingContext,
   defineSuiteCut,
   record,
   renderSuiteCut,

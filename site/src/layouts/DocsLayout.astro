@@ -100,7 +100,7 @@ const headings = [...content.matchAll(/<h2[^>]*id="([^"]+)"[^>]*>([\s\S]*?)<\/h2
       <span>Documentation</span><span aria-hidden="true">☰</span>
     </button>
     <nav class="docs-nav" id="documentation-navigation" aria-label="Documentation sections">
-      <div class="docs-nav-heading">Documentation <span>v1.1</span></div>
+      <div class="docs-nav-heading">Documentation <span>v2.0</span></div>
       {
         orderedCategories.map((category) => (
           <details class="docs-nav-category" open={section === category.key}>
@@ -133,7 +133,7 @@ const headings = [...content.matchAll(/<h2[^>]*id="([^"]+)"[^>]*>([\s\S]*?)<\/h2
       <Fragment set:html={content} />
       <div class="docs-page-bottom">
         <a href="https://github.com/skyaara/suitecut/issues">Report an issue ↗</a><span
-          >MIT licensed · Built with Playwright</span
+          >MIT licensed · CEF + Playwright</span
         >
       </div>
     </article>

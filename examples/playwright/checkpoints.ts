@@ -1,4 +1,4 @@
-import { record } from 'suitecut'
+import { record } from 'suitecut/playwright'
 
 const result = await record(
   'video checkpoints',

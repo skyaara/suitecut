@@ -13,7 +13,7 @@ import PlayerIcon from '../components/PlayerIcon.astro'
 import BaseLayout from '../layouts/BaseLayout.astro'
 import { sitePath } from '../lib/paths.js'
 
-const example = `import { record } from 'suitecut'
+const example = `import { record } from 'suitecut/playwright'
 
 await record('product tour', async ({
   page,
@@ -102,35 +102,42 @@ const demoCues = [
 const configuration = `import { defineSuiteCut } from 'suitecut'
 
 export const record = defineSuiteCut({
-  browserName: 'chromium',
-  capture: {
-    viewport: { width: 1920, height: 1080 },
-    size: { width: 1920, height: 1080 },
-    framesPerSecond: 60,
-  },
+  native: { width: 1920, height: 1080, framesPerSecond: 60 },
+  capture: { audio: true },
   output: { directory: '.suitecut/recordings' },
+})
+
+await record('embedded browser tour', async ({ page, suitecut }) => {
+  await page.goto('https://example.com')
+  await suitecut.highlight(page.locator('h1'))
+  await suitecut.checkpoint('Opening screen')
 })`
 
-const streaming = `import { record } from 'suitecut'
+const streaming = `import { launchBrowser, createBroadcast } from 'suitecut'
 
 const url = process.env.SUITECUT_STREAM_URL
 if (!url) throw new Error('Set SUITECUT_STREAM_URL')
-
-await record('live tour', async ({ page, suitecut }) => {
-  await page.goto('https://suitecut.aakashreddy.com')
-  await suitecut.hold(30_000)
-}, {
-  capture: {
-    stream: { url, bitrateKbps: 4500 },
-  },
-})`
+const source = await launchBrowser()
+let broadcast
+try {
+  await source.navigate('https://example.com')
+  broadcast = await createBroadcast({ source, stream: { url, audio: true } })
+  await broadcast.ready()
+  await Promise.race([
+    source.failure, broadcast.failure,
+    new Promise(resolve => setTimeout(resolve, 30_000)),
+  ])
+} finally {
+  await broadcast?.stop()
+  await source.close()
+}`
 
 const apiGroups = [
   {
     name: 'Browser actions',
     methods: 'hover · click · type · scrollTo · scrollTop',
     description:
-      'Move the recorded cursor, click elements, type character by character, and scroll the page using Playwright locators.',
+      'Move the recorded cursor, click elements, type character by character, and scroll the page using native CSS locators or the explicit Playwright backend.',
     anchor: 'fixture-methods',
   },
   {
@@ -144,7 +151,7 @@ const apiGroups = [
     name: 'Pages and setup',
     methods: 'selectPage · defineSuiteCut',
     description:
-      'Select a page or popup for later events. Reuse browser, capture, output, and setup options across recordings.',
+      'Select registered native sources for later events. Reuse browser, capture, and output options across recordings.',
     anchor: 'recording-options',
   },
   {
@@ -172,13 +179,13 @@ const apiGroups = [
 ---
 
 <BaseLayout
-  title="SuiteCut · Product videos from Playwright"
-  description="Record Playwright flows, add narration and visual effects, render videos, or stream a browser page over RTMP and RTMPS."
+  title="SuiteCut 2.0 · Embedded browser recording"
+  description="Record and stream with embedded CEF in SuiteCut 2.0. Add narration, page audio, and visual effects, with explicit Playwright support."
   current="home"
 >
   <section class="home-reference" aria-label="SuiteCut walkthrough demo">
     <div class="home-reference-code" data-demo-cues={JSON.stringify(demoCues)}>
-      <h2 class="walkthrough-heading">A simple SuiteCut script</h2>
+      <h2 class="walkthrough-heading">A Playwright walkthrough</h2>
       <div class="code-barrel" aria-label="Code synchronized with the walkthrough">
         {
           demoCues.map((cue, index) => (
@@ -246,8 +253,9 @@ const apiGroups = [
       </figure>
     </div>
     <p class="home-note">
-      Record your browser flow with narration, then render the saved manifest into a walkthrough.
-      <a href={sitePath('/docs')}>Installation and setup</a>
+      SuiteCut 2.0 · Embedded CEF is now the default. Record, narrate, and stream with a native
+      browser.
+      <a href={sitePath('/docs')}>Set up 2.0</a>
     </p>
   </section>
 
@@ -271,9 +279,12 @@ const apiGroups = [
   <section class="home-api" aria-labelledby="configuration-title">
     <h2 id="configuration-title">Reuse your capture settings.</h2>
     <p>
-      <code>defineSuiteCut()</code> returns a configured recorder. Choose Chromium, Firefox, or WebKit
-      and set capture dimensions and a target frame rate of 30 or 60 fps. Actual frame delivery depends
-      on the browser and workload.
+      <code>defineSuiteCut()</code> now uses embedded CEF. Set native dimensions and a target frame rate,
+      then record with narration and optional page audio. Build the CEF executable and set <code
+        >SUITECUT_NATIVE_EXECUTABLE</code
+      > first. Native support is verified on macOS Apple Silicon. Existing Playwright flows use <code
+        >suitecut/playwright</code
+      >, including the walkthrough above.
     </p>
     <Code code={configuration} lang="typescript" theme="github-dark" />
   </section>
@@ -281,16 +292,14 @@ const apiGroups = [
   <section class="home-api" aria-labelledby="streaming-title">
     <h2 id="streaming-title">Stream a browser page live.</h2>
     <p>
-      Set <code>capture.stream</code> to publish H.264 video and AAC audio to an RTMP or RTMPS ingest
-      URL. Publishing stops when the callback finishes. Use <code>signal</code> to abort a session and
-      <code>stream.reconnect</code> to configure reconnect attempts.
+      Launch an embedded browser and use <code>createBroadcast()</code> to publish H.264 video and AAC
+      audio to an RTMP or RTMPS ingest URL. Stop the broadcast and close the source when done.
     </p>
     <Code code={streaming} lang="typescript" theme="github-dark" />
     <p>
       Streaming saves no source video for later rendering. Audio defaults to silence.
-      <code>stream.audio: true</code> captures tab sound with the standalone recorder and supported Playwright
-      Chromium. It is unavailable in Firefox, WebKit, and the Playwright Test fixture. Microphone input
-      and synthesized narration are not mixed into the stream.
+      <code>stream.audio: true</code> captures page sound directly from CEF. Microphone input and synthesized
+      narration are not mixed into the stream.
     </p>
   </section>
 </BaseLayout>

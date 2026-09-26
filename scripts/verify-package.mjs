@@ -113,7 +113,15 @@ async function packAudioPackage(audioPackage, destination) {
     throw new Error(`npm pack did not return a result for ${audioPackage.name}`)
   }
   const paths = new Set(packagePackResult.files.map((file) => file.path))
-  for (const requiredPath of ['README.md', 'dist/index.d.ts', 'dist/index.js', 'package.json']) {
+  for (const requiredPath of [
+    'README.md',
+    'dist/index.d.ts',
+    'dist/index.js',
+    'dist/native-default.js',
+    'dist/native-default.d.ts',
+    'native/browser/cef-build.json',
+    'package.json',
+  ]) {
     assert(paths.has(requiredPath), `${audioPackage.name} is missing ${requiredPath}`)
   }
   assert(
@@ -185,6 +193,9 @@ try {
     'dist/media-tool-paths.js',
     'dist/index.d.ts',
     'dist/index.js',
+    'dist/native-default.js',
+    'dist/native-default.d.ts',
+    'native/browser/cef-build.json',
     'dist/playwright.d.ts',
     'dist/playwright.js',
     'dist/render.d.ts',
@@ -275,7 +286,7 @@ import { expect, test } from 'suitecut/test'
 import { SUITECUT_EVENT_ATTACHMENT, SUITECUT_MANIFEST_SCHEMA_VERSION } from 'suitecut/types'
 import vitsPlugin from '@suitecut/audio-vits'
 
-if (DEFAULT_BACKEND !== 'native' || typeof betaRecord !== 'function' || betaRecord === record) throw new Error('suitecut beta default is incorrect')
+if (DEFAULT_BACKEND !== 'native' || typeof betaRecord !== 'function' || betaRecord !== record) throw new Error('suitecut beta default is incorrect')
 if (typeof test !== 'function') throw new Error('suitecut test export is unavailable')
 if (typeof expect !== 'function') throw new Error('suitecut expect export is unavailable')
 if (typeof launchNativeBrowser !== 'function' || typeof createNativeBroadcast !== 'function' || typeof recordNative !== 'function' || typeof createNativePage !== 'function') {
@@ -288,8 +299,8 @@ if (typeof Reporter !== 'function') throw new Error('suitecut reporter export is
 if (typeof defineSuiteCut !== 'function' || typeof record !== 'function') {
   throw new Error('suitecut recorder export is unavailable')
 }
-if (defineSuiteCut !== defineFromAlias || record !== recordFromAlias) {
-  throw new Error('suitecut/playwright is not a compatibility alias')
+if (defineSuiteCut === defineFromAlias || record === recordFromAlias) {
+  throw new Error('suitecut/playwright must retain its explicit backend')
 }
 if (typeof defineSuiteCutAudioPlugin !== 'function' || typeof encodePcm16Wav !== 'function') {
   throw new Error('suitecut audio plugin export is unavailable')

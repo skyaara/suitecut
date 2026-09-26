@@ -1,18 +1,18 @@
-# Native-default beta
+# SuiteCut 2.0: native by default
 
-The beta uses native CEF capture by default. It requires the separately built
+SuiteCut 2.0 promotes the beta to the default native CEF backend. It requires the separately built
 native executable described in [README.md](README.md). macOS ARM64 is the verified
-platform. A missing executable is an error; the beta never silently substitutes
+platform. A missing executable is an error; SuiteCut never silently substitutes
 Playwright and reports it as native.
 
-## Try the beta locally
+## Record with the embedded browser
 
-The checkout's stable root export stays unchanged. Opt into the beta with:
+Import from `suitecut`. Existing `suitecut/beta` imports remain compatible:
 
 ```ts
-import { record, renderSuiteCut } from 'suitecut/beta'
+import { record, renderSuiteCut } from 'suitecut'
 
-const result = await record('Native beta tour', async ({ page, suitecut }) => {
+const result = await record('Native tour', async ({ page, suitecut }) => {
   await page.goto('https://example.com')
   await suitecut.highlight(page.locator('h1'))
   await suitecut.checkpoint('Opening screen')
@@ -20,7 +20,7 @@ const result = await record('Native beta tour', async ({ page, suitecut }) => {
 
 await renderSuiteCut({
   manifestPath: result.manifestPath,
-  outputPath: '.suitecut/beta-tour.mp4',
+  outputPath: '.suitecut/native-tour.mp4',
 })
 ```
 
@@ -50,12 +50,12 @@ Strict main-document CSS locators and the existing authored presentation actions
 are supported. Full Playwright selectors, fixtures, popup handling, setup
 extensions, and popup capture are not native equivalents.
 Use `suitecut/playwright` or the explicit backend above for those existing flows.
-There is no global environment switch that changes the meaning of stable APIs.
+The root API changed in 2.0; `suitecut/playwright` and `suitecut/test` keep their existing backends.
 
 ## Native-default streaming
 
 ```ts
-import { launchBrowser, createBroadcast } from 'suitecut/beta'
+import { launchBrowser, createBroadcast } from 'suitecut'
 
 const source = await launchBrowser()
 let broadcast
@@ -85,16 +85,16 @@ CEF page audio when `stream.audio` is `true`.
 pnpm pack:beta
 ```
 
-This produces `.suitecut/beta-packages/suitecut-1.2.0-beta.0.tgz`. Its **root import
-`from 'suitecut'` resolves to the native-default beta API**. It also retains
-`suitecut/beta`, `suitecut/native`, `suitecut/playwright`, and the original root
+This produces `.suitecut/beta-packages/suitecut-2.1.0-beta.0.tgz`. Its **root import
+`from 'suitecut'` resolves to the native-default API**. It also retains
+`suitecut/beta`, `suitecut/native`, `suitecut/playwright`, and the legacy Playwright
 API as `suitecut/stable`. Install the tarball in a test project:
 
 ```sh
-npm install /absolute/path/to/suitecut-1.2.0-beta.0.tgz
+npm install /absolute/path/to/suitecut-2.1.0-beta.0.tgz
 ```
 
-Packaging stages a prerelease manifest without changing the checkout's stable
+Packaging stages a prerelease manifest without changing the checkout's release
 version or exports. The beta package's publish tag is `beta`. This command only
 builds a local tarball; **it does not publish to npm**, install Chromium, or switch
 an existing production stream. CEF SDKs and compiled native binaries are excluded.

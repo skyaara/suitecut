@@ -1,14 +1,17 @@
 import { expect, test } from '../../dist/test.js'
 
 test.describe('SuiteCut documentation site', () => {
-  test('opens with the standalone recorder and keeps the v1.1 API copyable', async ({ page }) => {
+  test('presents native 2.0 and keeps the explicit Playwright walkthrough copyable', async ({
+    page,
+  }) => {
     await page.goto('./')
 
-    await expect(page).toHaveTitle('SuiteCut · Product videos from Playwright')
+    await expect(page).toHaveTitle('SuiteCut 2.0 · Embedded browser recording')
     await expect(page.locator('.home-reference h1')).toHaveCount(0)
+    await expect(page.locator('.home-note')).toContainText('Embedded CEF is now the default')
     await expect(page.getByLabel('SuiteCut demo recording')).toBeVisible()
     await expect(page.locator('.home-reference-code')).toContainText(
-      "import { record } from 'suitecut'",
+      "import { record } from 'suitecut/playwright'",
     )
     await expect(page.locator('.home-reference-code')).not.toContainText('suitecut/test')
     const syntaxColors = await page
@@ -110,7 +113,7 @@ test.describe('SuiteCut documentation site', () => {
     await expect(page.getByRole('navigation', { name: 'Example sections' })).toBeVisible()
     await expect(page.getByRole('link', { name: 'examples/playwright.ts' })).toBeVisible()
     await expect(
-      page.getByText("import { defineSuiteCut } from 'suitecut'", { exact: false }),
+      page.getByText("import { defineSuiteCut } from 'suitecut/playwright'", { exact: false }),
     ).toBeVisible()
     await expect(
       page.getByText('examples/playwright/openai-status-livestream.ts', { exact: true }),

@@ -4,7 +4,14 @@ Date: 2026-09-24. Scope: the optional native backend, its public Node/IPC APIs,
 native packaging, and changes to the shared live publisher. This is an internal
 implementation review with executable tests, not an independent security audit.
 
-## Release disposition
+## SuiteCut 2.0 promotion
+
+The 2.0 root API now defaults to native CEF; `suitecut/playwright` retains the
+legacy backend. This promotion does not extend native platform support or include
+signed CEF binaries in npm. The evidence below is the historical September 24 audit;
+release checks must be rerun for the 2.0 artifact.
+
+## Historical release disposition (September 24)
 
 Suitable for open-source review as an **experimental, opt-in backend**. The
 Playwright backend remains the default. No npm package, native binary, website,

@@ -21,11 +21,13 @@ Only maintainers with npm and GitHub release access should use this checklist.
    pnpm test:kokoro
    SUITECUT_SHERPA_VITS_MODEL_DIR=/path/to/vits-model pnpm test:sherpa
    pnpm test:package
+   SUITECUT_NATIVE_EXECUTABLE=/path/to/suitecut-browser pnpm test:native
    pnpm audit
    ```
 
 5. Inspect `npm pack --dry-run --json`. The SuiteCut tarball should contain only `dist`, the README,
-   changelog, licenses, package metadata, and the pinned Kokoro assets. Also inspect the shared
+   changelog, licenses, package metadata, cursor/Kokoro assets, and native browser source/build pins.
+   Compiled CEF binaries and SDKs must stay out of the npm tarball. Also inspect the shared
    Sherpa runtime and each family package:
 
    ```sh
@@ -76,3 +78,17 @@ Pushing `main` also deploys GitHub Pages through `.github/workflows/pages.yml`. 
 `SUITECUT_SITE_URL=https://skyaara.github.io` and `SUITECUT_SITE_BASE=/suitecut`. Cloudflare builds
 use the default `https://suitecut.aakashreddy.com` origin and `/` base. Verify `/docs/streaming`
 on both deployments after publishing.
+
+## 2.0 release artifact check
+
+After building, pack the exact release tarball into `.suitecut/release/` and write
+`latest.json` containing its `version` and absolute `tarball` path. Run:
+
+```sh
+SUITECUT_NATIVE_EXECUTABLE=/path/to/suitecut-browser node scripts/verify-beta-package.mjs --release
+```
+
+This installs the actual tarball in a temporary consumer, verifies root/native and
+legacy Playwright exports, records with CEF page audio, and checks browser cleanup.
+Publish this verified tarball. The native executable is built separately; do not
+label the npm artifact as containing a signed or notarized CEF binary.

@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { DEFAULT_BACKEND, defineSuiteCut, launchBrowser, record } from '../src/beta.js'
+import { record as betaRecord } from '../src/beta.js'
+import { DEFAULT_BACKEND, defineSuiteCut, launchBrowser, record } from '../src/index.js'
 import { launchNativeBrowser, type NativeBrowser } from '../src/native-browser.js'
 import { recordNative } from '../src/native-recording.js'
 import { record as recordPlaywright, type SuiteCutRecordResult } from '../src/playwright.js'
@@ -9,7 +10,7 @@ vi.mock('../src/native-browser.js', () => ({ launchNativeBrowser: vi.fn() }))
 vi.mock('../src/native-recording.js', () => ({ recordNative: vi.fn() }))
 vi.mock('../src/playwright.js', () => ({ record: vi.fn() }))
 
-describe('native-default beta', () => {
+describe('native-default public API', () => {
   let source: NativeBrowser
   const result = {
     attemptId: 'attempt',
@@ -33,6 +34,7 @@ describe('native-default beta', () => {
     const callback = vi.fn()
     const recorded = await record('beta', callback)
     expect(DEFAULT_BACKEND).toBe('native')
+    expect(record).toBe(betaRecord)
     expect(launchNativeBrowser).toHaveBeenCalledWith({
       executablePath: '/native/browser',
       pixelFormat: 'i420',
