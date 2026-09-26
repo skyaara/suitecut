@@ -53,13 +53,13 @@ await renderSuiteCut({
   <h2 id="install">Install</h2>
   <CodeBlock
     label="Terminal"
-    code={`npm install suitecut@2
+    code={`npm install https://github.com/skyaara/suitecut/releases/download/v2.0.0/suitecut-2.0.0.tgz
 npx suitecut install
 npx suitecut doctor`}
   />
   <p>
-    The npm package contains the native browser source and checksum pins, but no compiled CEF
-    browser. Follow the <a
+    Install the 2.0 package from the GitHub release asset above. The package contains the native
+    browser source and checksum pins, but no compiled CEF browser. Follow the <a
       href="https://github.com/skyaara/suitecut/blob/main/native/browser/README.md#build"
       >CEF build instructions</a
     > to obtain and verify the pinned dependencies and compile the complete browser bundle. Then set its

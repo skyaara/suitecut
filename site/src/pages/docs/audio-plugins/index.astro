@@ -80,9 +80,14 @@ export default defineSuiteCutAudioPlugin({
   </p>
 
   <h2 id="install-a-family">Install one model family</h2>
-  <CodeBlock label="Terminal" code="npm install --save-dev @suitecut/audio-vits" />
+  <CodeBlock
+    label="Terminal"
+    code="npm install --save-dev https://github.com/skyaara/suitecut/releases/download/v2.0.0/suitecut-audio-sherpa-core-2.0.0.tgz https://github.com/skyaara/suitecut/releases/download/v2.0.0/suitecut-audio-vits-2.0.0.tgz"
+  />
   <p>
-    Use <code>@suitecut/audio-vits</code> for VITS and Piper. Other packages are
+    Install the matching 2.0 shared runtime and family package from the GitHub release assets. Use <code
+      >@suitecut/audio-vits</code
+    > for VITS and Piper. Other packages are
     <code>@suitecut/audio-matcha</code>, <code>@suitecut/audio-kokoro-sherpa</code>,
     <code>@suitecut/audio-kitten</code>, <code>@suitecut/audio-zipvoice</code>,
     <code>@suitecut/audio-pocket</code>, and <code>@suitecut/audio-supertonic</code>.
