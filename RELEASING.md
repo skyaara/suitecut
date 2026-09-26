@@ -92,3 +92,8 @@ This installs the actual tarball in a temporary consumer, verifies root/native a
 legacy Playwright exports, records with CEF page audio, and checks browser cleanup.
 Publish this verified tarball. The native executable is built separately; do not
 label the npm artifact as containing a signed or notarized CEF binary.
+
+If registry authentication is unavailable, the verified tarballs can be published as
+GitHub release assets first. Use those explicit asset URLs in installation docs,
+including the matching shared runtime for audio families. Report registry publication
+as pending and leave the npm dist-tag unchanged until authentication is restored.

@@ -4,7 +4,7 @@ Install this adapter for Sherpa-compatible Kokoro model files. SuiteCut's bundle
 provider does not need this package.
 
 ```sh
-npm install --save-dev @suitecut/audio-kokoro-sherpa
+npm install --save-dev https://github.com/skyaara/suitecut/releases/download/v2.0.0/suitecut-audio-sherpa-core-2.0.0.tgz https://github.com/skyaara/suitecut/releases/download/v2.0.0/suitecut-audio-kokoro-sherpa-2.0.0.tgz
 ```
 
 Configure a provider ID other than the reserved built-in `kokoro` ID.
