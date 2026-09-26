@@ -168,17 +168,17 @@ describe('live stream publishing', () => {
       {
         url: '',
         buffer: new LiveAudioBuffer(),
-        activate: async () => undefined,
+        activate: () => Promise.resolve(),
         createInput: () => {
           throw new Error('Persistent output owns the audio encoder')
         },
-        close: async () => undefined,
+        close: () => Promise.resolve(),
       },
       undefined,
       undefined,
       {
         frame: (_index, at) => mediaTimes.push(at),
-        data: async () => undefined,
+        data: () => Promise.resolve(),
         health: () => ({
           outputLagMs: 0,
           progressAgeMs: 0,
