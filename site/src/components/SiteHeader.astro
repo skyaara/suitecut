@@ -12,7 +12,13 @@ const { current } = Astro.props
 <header class="site-header">
   <a class="wordmark" href={sitePath('/')} aria-label="SuiteCut home"><Logo /></a>
   <nav aria-label="Primary navigation">
-    {current !== 'home' && <a href={sitePath('/')}>Home</a>}
+    {
+      current !== 'home' && (
+        <a class="home-nav-link" href={sitePath('/')}>
+          Home
+        </a>
+      )
+    }
     <a href={sitePath('/docs')} aria-current={current === 'docs' ? 'page' : undefined}>Docs</a>
     <a href={sitePath('/examples')} aria-current={current === 'examples' ? 'page' : undefined}
       >Examples</a
@@ -85,6 +91,9 @@ const { current } = Astro.props
     }
   }
   @media (max-width: 420px) {
+    .home-nav-link {
+      display: none;
+    }
     nav {
       gap: 0.8rem;
     }
