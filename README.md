@@ -23,7 +23,13 @@ await renderSuiteCut({
 })
 ```
 
-Install with `npm install suitecut@2`. Run `npx suitecut install` for FFmpeg/FFprobe,
+Install the [2.0 release package](https://github.com/skyaara/suitecut/releases/tag/v2.0.0):
+
+```sh
+npm install https://github.com/skyaara/suitecut/releases/download/v2.0.0/suitecut-2.0.0.tgz
+```
+
+Run `npx suitecut install` for FFmpeg/FFprobe,
 then [build the pinned CEF browser](native/browser/README.md#build) and set
 `SUITECUT_NATIVE_EXECUTABLE` to its executable. The npm package includes native source
 and build pins; it does **not** bundle a compiled CEF browser or download one during
@@ -64,10 +70,10 @@ above for the 2.0 default.
 
 ## Install
 
-Install SuiteCut and Playwright in the project that owns the browser flow:
+After installing SuiteCut 2.0 above, add Playwright in the project that owns the browser flow:
 
 ```sh
-npm install suitecut playwright
+npm install playwright
 npx playwright install chromium
 npx suitecut install
 npx suitecut doctor
@@ -76,7 +82,7 @@ npx suitecut doctor
 If the flow is already a Playwright Test, install the test package too:
 
 ```sh
-npm install --save-dev suitecut playwright @playwright/test
+npm install --save-dev playwright @playwright/test
 npx playwright install chromium
 npx suitecut install
 npx suitecut doctor
@@ -770,7 +776,7 @@ Sherpa adapters are split by model family. Install only the family used by the r
 - `@suitecut/audio-supertonic` for Supertonic
 
 ```sh
-npm install --save-dev @suitecut/audio-vits
+npm install --save-dev https://github.com/skyaara/suitecut/releases/download/v2.0.0/suitecut-audio-sherpa-core-2.0.0.tgz https://github.com/skyaara/suitecut/releases/download/v2.0.0/suitecut-audio-vits-2.0.0.tgz
 ```
 
 Configure the plugin once for Playwright Test, then use its provider ID in `narrate()`:
@@ -833,7 +839,7 @@ await record(
 ```
 
 Each family package accepts only that family's options. The packages share
-`@suitecut/audio-sherpa-core`, so npm installs one Sherpa runtime when a project uses several
+`@suitecut/audio-sherpa-core`, so install its matching 2.0 release asset alongside the family package. npm uses one Sherpa runtime when a project uses several
 families. Sherpa's current Node WASM file contains the family backends, which means one adapter still
 installs that shared runtime.
 
