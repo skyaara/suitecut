@@ -56,7 +56,6 @@ jobs:
           if (process.platform !== 'darwin' || process.arch !== 'arm64') throw new Error('Expected macOS ARM64')
           for (const [manifest, directory, strip] of [
             ['cef-build.json', '.suitecut/cef-sdk', '1'],
-            ['libyuv-build.json', '.suitecut/libyuv', '0'],
           ]) {
             const pin = JSON.parse(await readFile(`native/browser/${manifest}`, 'utf8'))
             await mkdir(directory, { recursive: true })
@@ -64,6 +63,12 @@ jobs:
             await downloadMediaArchive(pin.url, pin.sha256, archive)
             execFileSync('tar', ['-xf', archive, '-C', directory, '--strip-components', strip])
           }
+          const libyuv = JSON.parse(await readFile('native/browser/libyuv-build.json', 'utf8'))
+          execFileSync('git', ['init', '.suitecut/libyuv'])
+          execFileSync('git', ['-C', '.suitecut/libyuv', 'fetch', '--depth=1', libyuv.repository, libyuv.commit])
+          execFileSync('git', ['-C', '.suitecut/libyuv', 'checkout', '--detach', 'FETCH_HEAD'])
+          const actual = execFileSync('git', ['-C', '.suitecut/libyuv', 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim()
+          if (actual !== libyuv.commit) throw new Error('libyuv commit mismatch')
           JS
       - name: Compile and test native code
         run: |

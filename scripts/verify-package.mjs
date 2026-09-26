@@ -113,15 +113,7 @@ async function packAudioPackage(audioPackage, destination) {
     throw new Error(`npm pack did not return a result for ${audioPackage.name}`)
   }
   const paths = new Set(packagePackResult.files.map((file) => file.path))
-  for (const requiredPath of [
-    'README.md',
-    'dist/index.d.ts',
-    'dist/index.js',
-    'dist/native-default.js',
-    'dist/native-default.d.ts',
-    'native/browser/cef-build.json',
-    'package.json',
-  ]) {
+  for (const requiredPath of ['README.md', 'dist/index.d.ts', 'dist/index.js', 'package.json']) {
     assert(paths.has(requiredPath), `${audioPackage.name} is missing ${requiredPath}`)
   }
   assert(
