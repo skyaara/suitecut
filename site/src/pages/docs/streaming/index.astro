@@ -1,6 +1,7 @@
 ---
 import CodeBlock from '../../../components/CodeBlock.astro'
 import DocsLayout from '../../../layouts/DocsLayout.astro'
+import { sitePath } from '../../../lib/paths.js'
 
 const nativeExample = `import { launchBrowser, createBroadcast } from 'suitecut'
 
@@ -65,8 +66,8 @@ await record('live website tour', async ({ page, suitecut }) => {
   <h2 id="publish-a-page">Publish a page</h2>
   <p>
     Build the pinned CEF browser and set <code>SUITECUT_NATIVE_EXECUTABLE</code> as described in
-    <a href="../docs#install">Getting started</a>. Native support is verified on macOS Apple
-    Silicon. Set <code>SUITECUT_STREAM_URL</code> to your ingest URL, including its stream key.
+    <a href={sitePath('/docs#install')}>Getting started</a>. Native support is verified on macOS
+    Apple Silicon. Set <code>SUITECUT_STREAM_URL</code> to your ingest URL, including its stream key.
   </p>
   <CodeBlock code={nativeExample} lang="typescript" />
   <p>
@@ -90,6 +91,11 @@ await record('live website tour', async ({ page, suitecut }) => {
   </p>
 
   <h2 id="stream-options">Stream options</h2>
+  <p>
+    Pass shared publisher options in <code>stream</code> for native broadcasts or
+    <code>capture.stream</code> for Playwright. Native browser dimensions and frame rate belong in
+    <code>launchBrowser()</code>; the <code>capture.*</code> fields below are Playwright options.
+  </p>
   <ul>
     <li><code>url</code>: required RTMP or RTMPS publish URL.</li>
     <li><code>bitrateKbps</code>: 100 through 50,000, default 4500.</li>
@@ -124,10 +130,16 @@ await record('live website tour', async ({ page, suitecut }) => {
 
   <h2 id="tab-audio">Capture tab audio</h2>
   <p>
-    <code>audio: true</code> captures the selected page through an isolated Chromium profile and bundled
-    extension. Use the standalone <code>record()</code> API with current Playwright Chromium. Headed and
-    headless modes work. Firefox, WebKit, custom executables, blocked service workers, and the Playwright
-    Test fixture reject tab audio. Separate popup windows are unsupported; popups opened as tabs work.
+    Native broadcasts capture CEF page audio directly with <code>stream.audio: true</code>. Switch
+    native sources with <code>broadcast.selectSource()</code>; queued audio from the old source is
+    discarded. No browser extension is required.
+  </p>
+  <p>
+    For Playwright, <code>audio: true</code> captures the selected page through an isolated Chromium profile
+    and bundled extension. Use the standalone <code>record()</code> API with current Playwright Chromium.
+    Headed and headless modes work. Firefox, WebKit, custom executables, blocked service workers, and
+    the Playwright Test fixture reject tab audio. Separate popup windows are unsupported; popups opened
+    as tabs work.
   </p>
   <p>
     Audio follows page selection and navigation. Switching pages discards queued sound from the old
@@ -165,13 +177,15 @@ await record('live website tour', async ({ page, suitecut }) => {
     30 seconds resets the budget. Set <code>reconnect: false</code> to disable retries.
   </p>
   <p>
-    The callback waits for the first successful publish. After that, the browser script keeps
-    running during reconnection. Only the latest frame is retained, so missed frames are discarded.
+    For native broadcasts, await <code>broadcast.ready()</code>, observe
+    <code>broadcast.failure</code>, and call <code>broadcast.stop()</code> before closing the source.
+    For Playwright, the callback waits for the first successful publish. After that, the browser script
+    keeps running during reconnection. Only the latest frame is retained, so missed frames are discarded.
     Pass an <code>AbortSignal</code> to stop startup waits or a running session. Exhausting the retry
     budget rejects <code>record()</code> and fails Playwright Test fixture teardown.
   </p>
 
-  <h2 id="live-effects">Live effects</h2>
+  <h2 id="live-effects">Playwright live effects</h2>
   <p>
     The stream follows <code>suitecut.selectPage()</code>, popup selection, and page closure. Idle
     pages repeat their latest frame. Capture pauses freeze the image while the broadcast clock
@@ -186,6 +200,12 @@ await record('live website tour', async ({ page, suitecut }) => {
   </p>
 
   <h2 id="verify-locally">Verify locally</h2>
+  <p>
+    After building CEF and setting <code>SUITECUT_NATIVE_EXECUTABLE</code>, verify native capture,
+    streaming, and recording:
+  </p>
+  <CodeBlock code="pnpm test:native" label="Terminal" lang="bash" />
+  <p>Verify the explicit Playwright backend separately:</p>
   <CodeBlock
     code={`pnpm install --frozen-lockfile
 pnpm exec playwright install chromium
