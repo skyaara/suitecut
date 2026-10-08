@@ -1044,6 +1044,16 @@ npm run check
 The gate runs type-aware ESLint, Prettier checks, strict TypeScript, unit tests, and a clean package
 build.
 
+Run the built-in performance benchmarks with:
+
+```sh
+pnpm benchmark:flv
+pnpm benchmark:media
+```
+
+See [benchmark setup and methodology](benchmarks/README.md) for repeated trials, saved reports,
+and the native-versus-Playwright capture suite. Generated results belong under `.suitecut/`.
+
 Run the real browser recording matrix with:
 
 ```sh

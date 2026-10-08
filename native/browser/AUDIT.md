@@ -106,9 +106,8 @@ Artifacts live under `.suitecut/native-verification/`,
   consumer smoke test passed for SuiteCut and all eight split audio packages,
   including both native entry points, Playwright Test, standalone Playwright,
   and a VITS-only installation.
-- A macOS ARM64 GitHub Actions workflow builds against checksum-verified pinned
-  CEF/libyuv archives and runs the native checks. The workflow has been reviewed
-  locally; no hosted CI run is claimed.
+- Native build instructions and CEF/libyuv pins are available in
+  [`README.md`](README.md). Run the native checks locally on a supported platform.
 
 ## Security and resource boundaries
 
@@ -207,7 +206,7 @@ preserves the final held duration.
 
 The final packed-package consumer checks also passed with audio-enabled
 `recordNative` and `createNativePage` imported from the installed tarball. Build, typecheck, focused
-ESLint, formatting, and whitespace checks passed. Hosted native CI has not run.
+ESLint, formatting, and whitespace checks passed.
 
 ## Native-default beta and benchmark
 
@@ -251,5 +250,5 @@ limits, benchmark commands, methodology, and remaining release gates.
 After the idle-pump correction, native recording/presentation/narration integration
 and the stable package-consumer suite passed again. Interrupting the benchmark
 was exercised with live child processes; sampled worker/browser/encoder processes
-all exited. Native CI includes beta packaging/consumer verification but has not
-been executed on hosted runners in this session.
+all exited. Beta packaging/consumer verification is available through
+`pnpm test:beta:package`.
