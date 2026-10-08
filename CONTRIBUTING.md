@@ -84,7 +84,7 @@ imports every public entry, and runs the installed CLI help command.
 ## Open a pull request
 
 Explain the observed problem, the chosen fix, and the commands you ran. Include a small reproduction
-for bugs. Keep unrelated cleanup out of the same pull request. A pull request must pass CI before it
-is ready to merge.
+for bugs. Keep unrelated cleanup out of the same pull request. Run the relevant checks listed above
+and include their results before the pull request is ready to merge.
 
 By submitting a contribution, you agree that the project may distribute it under the MIT license.
