@@ -15,7 +15,7 @@ import {
 import { formattedJson, writeTextFileAtomic } from './atomic-file.js'
 import { SUITECUT_EVENT_ATTACHMENT, SUITECUT_MANIFEST_SCHEMA_VERSION } from './constants.js'
 import { decodeEventAttachment, decodeManifest } from './manifest.js'
-import { probeMedia } from './media.js'
+import { probeMediaBatch } from './media.js'
 import { type SuiteCutReporterOptions, SuiteCutReporterOptionsSchema } from './schemas.js'
 import { filterExecutionSteps, normalizeExecutionSteps } from './steps.js'
 import {
@@ -26,7 +26,6 @@ import {
   type SuiteCutError,
   type SuiteCutEventAttachment,
   type SuiteCutManifest,
-  type SuiteCutMedia,
   type SuiteCutTest,
 } from './types.js'
 import { toError } from './untrusted.js'
@@ -40,7 +39,9 @@ function normalizeError(error: TestError): SuiteCutError {
   const output: SuiteCutError = {
     message: error.message ?? error.value ?? 'Playwright test failed',
   }
+
   if (error.stack !== undefined) output.stack = error.stack
+
   if (error.location !== undefined) {
     output.location = {
       file: error.location.file,
@@ -48,22 +49,27 @@ function normalizeError(error: TestError): SuiteCutError {
       column: error.location.column,
     }
   }
+
   return output
 }
 
 async function readAttachment(attachment: PlaywrightAttachment): Promise<Buffer> {
   if (attachment.body !== undefined) return attachment.body
+
   if (attachment.path !== undefined) return readFile(attachment.path)
   throw new Error(`Attachment ${attachment.name} has no body or path`)
 }
 
 function projectName(test: TestCase): string {
   let current: Suite | undefined = test.parent
+
   while (current !== undefined) {
     const project = current.project()
+
     if (project !== undefined) return project.name
     current = current.parent
   }
+
   return ''
 }
 
@@ -84,6 +90,7 @@ export default class SuiteCutReporter implements Reporter {
     const publicOptions = Object.fromEntries(
       Object.entries(options).filter(([key]) => key !== 'configDir' && !key.startsWith('_')),
     )
+
     this.options = SuiteCutReporterOptionsSchema.parse(publicOptions)
   }
 
@@ -91,8 +98,10 @@ export default class SuiteCutReporter implements Reporter {
   onBegin(config: FullConfig, suite: Suite): void {
     this.#config = config
     this.#startedAt = new Date()
+
     const configuredOutput =
       process.env.SUITECUT_MANIFEST_PATH ?? this.options.outputFile ?? '.suitecut/latest-run.json'
+
     this.#outputFile = isAbsolute(configuredOutput)
       ? configuredOutput
       : resolve(process.cwd(), configuredOutput)
@@ -102,24 +111,30 @@ export default class SuiteCutReporter implements Reporter {
   /** Queues one completed Playwright attempt for collection. */
   onTestEnd(test: TestCase, result: TestResult): void {
     const previous = this.#pendingByTest.get(test.id) ?? Promise.resolve()
+
     const pending = previous
       .then(() => this.#recordTest(test, result))
       .catch((error: UntrustedInput) => {
         this.#errors.push(toError(error))
       })
+
     this.#pendingByTest.set(test.id, pending)
     this.#pending.push(pending)
   }
 
   async #recordTest(test: TestCase, result: TestResult): Promise<void> {
     if (this.#config === undefined) throw new Error('SuiteCut reporter did not receive onBegin')
+
     const eventAttachment = result.attachments.find(
       (attachment) => attachment.name === SUITECUT_EVENT_ATTACHMENT,
     )
+
     let captured: SuiteCutEventAttachment | undefined
     const diagnostics: SuiteCutDiagnostic[] = []
+
     if (eventAttachment !== undefined) {
       const body = await readAttachment(eventAttachment)
+      // SAFETY: Attachment JSON is immediately parsed by the event-attachment schema.
       captured = decodeEventAttachment(JSON.parse(body.toString('utf8')) as UntrustedInput)
     } else {
       diagnostics.push({
@@ -134,9 +149,11 @@ export default class SuiteCutReporter implements Reporter {
       originMonotonicMs: 0,
       startedAt: result.startTime.toISOString(),
     }
+
     const artifacts: SuiteCutArtifact[] = []
-    const mediaJobs: Promise<SuiteCutMedia>[] = []
+    const mediaInputs: { artifact: SuiteCutArtifact; path: string }[] = []
     const usedAttachmentNames = new Set<string>([SUITECUT_EVENT_ATTACHMENT])
+
     const attachmentsByName = new Map(
       result.attachments.map((attachment) => [attachment.name, attachment]),
     )
@@ -144,11 +161,14 @@ export default class SuiteCutReporter implements Reporter {
     if (captured !== undefined) {
       for (const item of captured.artifacts) {
         const attachment = attachmentsByName.get(item.attachmentName)
+
         if (attachment?.path === undefined) {
           throw new Error(`SuiteCut could not resolve attachment ${item.attachmentName}`)
         }
+
         usedAttachmentNames.add(item.attachmentName)
         const details = await stat(attachment.path)
+
         const artifact: SuiteCutArtifact = {
           id: item.id,
           name: item.attachmentName,
@@ -158,30 +178,37 @@ export default class SuiteCutReporter implements Reporter {
           pathKind: this.options.pathKind ?? 'absolute',
           sizeBytes: details.size,
         }
+
         if (item.role === 'checkpoint') {
           artifact.pageId = item.pageId
           artifact.createdAtMs = item.capturedAtMs
         } else {
           artifact.createdAtMs = item.createdAtMs
           artifact.sourceEventId = item.sourceEventId
+
           if (item.role === 'narration-audio') {
             artifact.provider = item.provider
             artifact.voice = item.voice
           }
         }
+
         artifacts.push(artifact)
+
         if (item.role === 'narration-audio' || item.role === 'checkpoint') {
-          mediaJobs.push(probeMedia(artifact, attachment.path))
+          mediaInputs.push({ artifact, path: attachment.path })
         }
       }
 
       for (const video of captured.videos) {
         const attachment = attachmentsByName.get(video.attachmentName)
+
         if (attachment?.path === undefined) {
           throw new Error(`SuiteCut could not resolve source video ${video.attachmentName}`)
         }
+
         usedAttachmentNames.add(video.attachmentName)
         const details = await stat(attachment.path)
+
         const artifact: SuiteCutArtifact = {
           id: video.artifactId,
           name: video.attachmentName,
@@ -193,8 +220,9 @@ export default class SuiteCutReporter implements Reporter {
           pageId: video.pageId,
           createdAtMs: video.sourceStartedAtMs,
         }
+
         artifacts.push(artifact)
-        mediaJobs.push(probeMedia(artifact, attachment.path))
+        mediaInputs.push({ artifact, path: attachment.path })
       }
     }
 
@@ -215,13 +243,16 @@ export default class SuiteCutReporter implements Reporter {
       })
     }
 
-    const media = await Promise.all(mediaJobs)
+    const media = await probeMediaBatch(mediaInputs)
     const mediaByArtifactId = new Map(media.map((item) => [item.artifactId, item]))
+
     const videoTiming =
       captured?.videos.map((video) => {
         const probed = mediaByArtifactId.get(video.artifactId)
+
         if (probed === undefined)
           throw new Error(`SuiteCut did not probe video ${video.artifactId}`)
+
         return {
           pageId: video.pageId,
           mediaId: probed.id,
@@ -250,6 +281,7 @@ export default class SuiteCutReporter implements Reporter {
     }
 
     const existing = this.#tests.get(test.id)
+
     if (existing === undefined) {
       this.#tests.set(test.id, {
         id: test.id,
@@ -274,12 +306,14 @@ export default class SuiteCutReporter implements Reporter {
   async onEnd(result: FullResult): Promise<void> {
     if (this.#config === undefined) throw new Error('SuiteCut reporter did not receive onBegin')
     await Promise.all(this.#pending)
+
     if (this.#errors.length > 0) {
       throw new AggregateError(
         this.#errors,
         'SuiteCut reporter failed to collect one or more tests',
       )
     }
+
     const manifest: SuiteCutManifest = {
       schemaVersion: SUITECUT_MANIFEST_SCHEMA_VERSION,
       startedAt: this.#startedAt.toISOString(),
@@ -288,12 +322,14 @@ export default class SuiteCutReporter implements Reporter {
       rootDirectory: this.#config.rootDir,
       tests: [...this.#tests.values()].sort((left, right) => left.order - right.order),
     }
+
     const decoded = decodeManifest(manifest)
     await writeTextFileAtomic(this.#outputFile, formattedJson(decoded))
   }
 
   #manifestPath(absolutePath: string): string {
     if ((this.options.pathKind ?? 'absolute') === 'absolute') return absolutePath
+
     return relative(dirname(this.#outputFile), absolutePath)
   }
 }

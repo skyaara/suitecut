@@ -2,13 +2,12 @@ import { stat } from 'node:fs/promises'
 import { dirname, relative, resolve } from 'node:path'
 
 import { type SuiteCutArtifactSink } from './artifact-sink.js'
-import { probeMedia } from './media.js'
+import { probeMediaBatch } from './media.js'
 import {
   type SuiteCutArtifact,
   type SuiteCutAttempt,
   type SuiteCutError,
   type SuiteCutEventAttachment,
-  type SuiteCutMedia,
   type SuiteCutPathKind,
 } from './types.js'
 
@@ -30,11 +29,14 @@ function manifestPath(
 }
 
 function normalizeError(error: Error): SuiteCutError {
-  return {
+  const normalized: SuiteCutError = {
     message: error.message,
     name: error.name,
-    ...(error.stack === undefined ? {} : { stack: error.stack }),
   }
+
+  if (error.stack !== undefined) normalized.stack = error.stack
+
+  return normalized
 }
 
 export async function createAttempt(
@@ -45,11 +47,12 @@ export async function createAttempt(
   errors: readonly Error[],
 ): Promise<SuiteCutAttempt> {
   const artifacts: SuiteCutArtifact[] = []
-  const mediaJobs: Promise<SuiteCutMedia>[] = []
+  const mediaInputs: { artifact: SuiteCutArtifact; path: string }[] = []
 
   for (const item of captured.artifacts) {
     const absolutePath = resolve(outputDirectory, item.attachmentName)
     const details = await stat(absolutePath)
+
     const artifact: SuiteCutArtifact = {
       id: item.id,
       name: item.attachmentName,
@@ -59,26 +62,31 @@ export async function createAttempt(
       pathKind,
       sizeBytes: details.size,
     }
+
     if (item.role === 'checkpoint') {
       artifact.pageId = item.pageId
       artifact.createdAtMs = item.capturedAtMs
     } else {
       artifact.createdAtMs = item.createdAtMs
       artifact.sourceEventId = item.sourceEventId
+
       if (item.role === 'narration-audio') {
         artifact.provider = item.provider
         artifact.voice = item.voice
       }
     }
+
     artifacts.push(artifact)
+
     if (item.role === 'narration-audio' || item.role === 'checkpoint') {
-      mediaJobs.push(probeMedia(artifact, absolutePath))
+      mediaInputs.push({ artifact, path: absolutePath })
     }
   }
 
   for (const video of captured.videos) {
     const absolutePath = resolve(outputDirectory, video.attachmentName)
     const details = await stat(absolutePath)
+
     const artifact: SuiteCutArtifact = {
       id: video.artifactId,
       name: video.attachmentName,
@@ -90,15 +98,19 @@ export async function createAttempt(
       pageId: video.pageId,
       createdAtMs: video.sourceStartedAtMs,
     }
+
     artifacts.push(artifact)
-    mediaJobs.push(probeMedia(artifact, absolutePath))
+    mediaInputs.push({ artifact, path: absolutePath })
   }
 
-  const media = await Promise.all(mediaJobs)
+  const media = await probeMediaBatch(mediaInputs)
   const mediaByArtifactId = new Map(media.map((item) => [item.artifactId, item]))
+
   const videoTiming = captured.videos.map((video) => {
     const probed = mediaByArtifactId.get(video.artifactId)
+
     if (probed === undefined) throw new Error(`SuiteCut did not probe video ${video.artifactId}`)
+
     return {
       pageId: video.pageId,
       mediaId: probed.id,
