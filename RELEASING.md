@@ -74,10 +74,8 @@ SUITECUT_SITE_PORT=4388 pnpm site:test
 wrangler pages deploy site/dist --project-name suitecut --branch main --profile aakash
 ```
 
-Pushing `main` also deploys GitHub Pages through `.github/workflows/pages.yml`. That workflow sets
-`SUITECUT_SITE_URL=https://skyaara.github.io` and `SUITECUT_SITE_BASE=/suitecut`. Cloudflare builds
-use the default `https://suitecut.aakashreddy.com` origin and `/` base. Verify `/docs/streaming`
-on both deployments after publishing.
+Cloudflare builds use the default `https://suitecut.aakashreddy.com` origin and `/` base.
+Verify `/docs/streaming` after publishing.
 
 ## 2.0 release artifact check
 

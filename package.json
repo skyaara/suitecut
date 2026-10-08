@@ -147,7 +147,9 @@
     "benchmark:beta": "pnpm build && node scripts/benchmark-beta.mjs",
     "benchmark:suite": "pnpm build && node scripts/benchmark-suite.mjs",
     "pack:beta": "pnpm build && node scripts/pack-beta.mjs",
-    "test:beta:package": "node scripts/verify-beta-package.mjs"
+    "test:beta:package": "node scripts/verify-beta-package.mjs",
+    "benchmark:flv": "pnpm build && node scripts/benchmark-flv.mjs",
+    "benchmark:media": "pnpm build && node scripts/benchmark-media.mjs"
   },
   "peerDependencies": {
     "@playwright/test": ">=1.59.0 <2",

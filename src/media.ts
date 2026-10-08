@@ -9,15 +9,19 @@ import { type UntrustedInput } from './untrusted.js'
 const FiniteProbeNumberSchema = z
   .union([z.number(), z.string().trim().min(1)])
   .transform((value, context) => {
-    const parsed = typeof value === 'number' ? value : Number(value)
+    const parsed = Number(value)
+
     if (!Number.isFinite(parsed)) {
       context.addIssue({ code: 'custom', message: 'must be a finite number' })
+
       return z.NEVER
     }
+
     return parsed
   })
 
 const NonNegativeProbeNumberSchema = FiniteProbeNumberSchema.pipe(z.number().nonnegative())
+
 const PositiveProbeNumberSchema = FiniteProbeNumberSchema.pipe(z.number().positive())
 
 const FrameRateSchema = z
@@ -27,10 +31,13 @@ const FrameRateSchema = z
     const [numeratorText, denominatorText] = value.split('/')
     const numerator = Number(numeratorText)
     const denominator = Number(denominatorText)
+
     if (!Number.isFinite(numerator) || !Number.isFinite(denominator) || denominator <= 0) {
       context.addIssue({ code: 'custom', message: 'must have a positive denominator' })
+
       return z.NEVER
     }
+
     return numerator / denominator
   })
 
@@ -40,6 +47,7 @@ const ProbeFormatSchema = z.object({
 })
 
 const JsonValueSchema = z.json()
+
 type JsonValue = z.infer<typeof JsonValueSchema>
 
 const ProbeDocumentSchema = z.object({
@@ -76,12 +84,15 @@ const ProbeAudioStreamSchema = z.object({
 
 function knownProbeValue(value: string | undefined): string | undefined {
   if (value === undefined || value === 'unknown' || value === 'unspecified') return undefined
+
   return value
 }
 
 function probeColorRange(value: string | undefined): 'full' | 'limited' | undefined {
   if (value === 'pc' || value === 'jpeg' || value === 'full') return 'full'
+
   if (value === 'tv' || value === 'mpeg' || value === 'limited') return 'limited'
+
   return undefined
 }
 
@@ -95,24 +106,35 @@ function parseStream(
     const colorSpace = knownProbeValue(parsed.color_space)
     const colorTransfer = knownProbeValue(parsed.color_transfer)
     const colorPrimaries = knownProbeValue(parsed.color_primaries)
-    return {
+
+    const video: SuiteCutMediaStream = {
       kind: 'video',
       codec: parsed.codec_name,
-      ...(parsed.pix_fmt === undefined ? {} : { pixelFormat: parsed.pix_fmt }),
-      ...(colorRange === undefined ? {} : { colorRange }),
-      ...(colorSpace === undefined ? {} : { colorSpace }),
-      ...(colorTransfer === undefined ? {} : { colorTransfer }),
-      ...(colorPrimaries === undefined ? {} : { colorPrimaries }),
       width: parsed.width,
       height: parsed.height,
       durationMs: (parsed.duration ?? formatDurationMs / 1_000) * 1_000,
       frameRate: parsed.avg_frame_rate,
-      ...(parsed.time_base === undefined ? {} : { timeBase: parsed.time_base }),
       hasVariableFrameRate: parsed.avg_frame_rate !== parsed.r_frame_rate,
     }
+
+    if (parsed.pix_fmt !== undefined) video.pixelFormat = parsed.pix_fmt
+
+    if (colorRange !== undefined) video.colorRange = colorRange
+
+    if (colorSpace !== undefined) video.colorSpace = colorSpace
+
+    if (colorTransfer !== undefined) video.colorTransfer = colorTransfer
+
+    if (colorPrimaries !== undefined) video.colorPrimaries = colorPrimaries
+
+    if (parsed.time_base !== undefined) video.timeBase = parsed.time_base
+
+    return video
   }
+
   if (stream.codec_type === 'audio') {
     const parsed = ProbeAudioStreamSchema.parse(stream)
+
     return {
       kind: 'audio',
       codec: parsed.codec_name,
@@ -121,6 +143,7 @@ function parseStream(
       durationMs: (parsed.duration ?? formatDurationMs / 1_000) * 1_000,
     }
   }
+
   return undefined
 }
 
@@ -134,16 +157,19 @@ async function readProbeDocument(
   ffmpegPath?: string,
 ): Promise<z.infer<typeof ProbeDocumentSchema>> {
   const executable = await resolveFfprobe(ffmpegPath)
+
   const result = await runProcess(
     executable,
     ['-v', 'error', '-show_format', '-show_streams', '-of', 'json', absolutePath],
     { timeoutMs: 30_000 },
   )
+
   if (result.exitCode !== 0) {
     throw new Error(`FFprobe failed for ${absolutePath}: ${result.stderr.trim()}`)
   }
 
   try {
+    // SAFETY: FFprobe JSON is decoded by the schema before any fields are consumed.
     return decodeProbeDocument(JSON.parse(result.stdout) as UntrustedInput)
   } catch (error) {
     throw new Error(`FFprobe returned invalid metadata for ${absolutePath}`, { cause: error })
@@ -166,9 +192,11 @@ export async function probeMedia(
   const document = await readProbeDocument(absolutePath, ffmpegPath)
 
   const durationMs = document.format.duration * 1_000
+
   const streams = document.streams
     .map((stream) => parseStream(stream, durationMs))
     .filter((stream): stream is SuiteCutMediaStream => stream !== undefined)
+
   if (streams.length === 0) throw new Error(`FFprobe found no supported streams in ${absolutePath}`)
 
   return {
@@ -178,4 +206,25 @@ export async function probeMedia(
     durationMs,
     streams,
   }
+}
+
+/** Probes an attempt's artifacts in order with at most four FFprobe processes at once. */
+export async function probeMediaBatch(
+  inputs: readonly { artifact: SuiteCutArtifact; path: string }[],
+): Promise<SuiteCutMedia[]> {
+  const media: SuiteCutMedia[] = []
+
+  for (let offset = 0; offset < inputs.length; offset += 4) {
+    const batch = await Promise.allSettled(
+      inputs.slice(offset, offset + 4).map((input) => probeMedia(input.artifact, input.path)),
+    )
+
+    // All children in this batch finish before rejection, so callers can clean up their files.
+    for (const probed of batch) {
+      if (probed.status === 'rejected') throw probed.reason
+      media.push(probed.value)
+    }
+  }
+
+  return media
 }
