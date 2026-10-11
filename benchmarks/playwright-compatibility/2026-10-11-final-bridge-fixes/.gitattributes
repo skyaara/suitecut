@@ -1,0 +1,10 @@
+# Preserve hashed raw evidence byte-for-byte and omit generated snapshot diffs.
+logs/** binary
+results/** binary
+tested-sources/** binary
+standalone-cef/*.log binary
+cases.csv binary
+memory/*.json binary
+memory/*.jsonl binary
+memory/*.svg binary
+*.tar.gz binary

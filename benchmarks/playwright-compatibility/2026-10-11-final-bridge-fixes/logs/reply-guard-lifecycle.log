@@ -1,0 +1,36 @@
+{
+  "status": "passed",
+  "cycles": 140,
+  "snapshots": [
+    {
+      "label": "after-20",
+      "processes": 9,
+      "pss": 556090368,
+      "uss": 375889920
+    },
+    {
+      "label": "after-60",
+      "processes": 9,
+      "pss": 573903872,
+      "uss": 393605120
+    },
+    {
+      "label": "after-100",
+      "processes": 9,
+      "pss": 578615296,
+      "uss": 398315520
+    },
+    {
+      "label": "after-140",
+      "processes": 9,
+      "pss": 580646912,
+      "uss": 400343040
+    },
+    {
+      "label": "after-engine-close",
+      "processes": 1,
+      "pss": 168545280,
+      "uss": 168013824
+    }
+  ]
+}

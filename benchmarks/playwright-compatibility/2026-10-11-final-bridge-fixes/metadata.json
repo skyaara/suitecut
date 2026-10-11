@@ -1,0 +1,71 @@
+{
+  "preparedAt": "2026-10-11T18:34:24.645Z",
+  "baseCommit": "25ff9b246f4502f96f8434f8cb690be1980aa043",
+  "fallbackCommit": "80759aeb30cc4f6bd4ab488554569c62851985d2",
+  "branch": "suitecut-2.1-compatibility-fixes",
+  "suitecutVersion": "2.1.0",
+  "cefPin": {
+    "cefVersion": "152.0.6+g708dc14+chromium-152.0.7977.83",
+    "platform": "linux64",
+    "url": "https://github.com/tobagin/karere/releases/download/cef-152.0.6-proprietary-codecs/cef_binary_152.0.6%2Bg708dc14%2Bchromium-152.0.7977.83_linux64_minimal.zip",
+    "sha256": "3d64f6fac8911a368ffa415e3ee53d002cbd792866f08ed6578dae1e252cbac8",
+    "size": 183510343,
+    "proprietaryCodecs": true,
+    "buildFlags": {
+      "proprietary_codecs": true,
+      "ffmpeg_branding": "Chrome"
+    },
+    "upstreamRelease": "https://github.com/tobagin/karere/releases/tag/cef-152.0.6-proprietary-codecs",
+    "buildRecipe": "https://github.com/tobagin/karere/blob/eb5bfb5fb3c2463a2a71d7201a73122bf1942962/.github/workflows/build-cef-codecs.yml",
+    "source": "third-party CEF distribution; verified release digest and progressive MP4/MSE H.264+AAC native capture regressions",
+    "runtimeLibrarySha256": "d3e896252f190a21cd04b956da638c90315c8d5067cb03f325913841d5c59fc8"
+  },
+  "playwrightVersion": "1.62.1",
+  "stockChromiumVersion": "151.0.7922.34",
+  "cpuAffinity": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "cpuQuota": "400000 100000",
+  "memoryCgroupBytes": 17179869184,
+  "enforcedEightGiBLimit": false,
+  "performanceBenchmark": false,
+  "helper": {
+    "path": "/tmp/suitecut-cef-full-regression-build/suitecut-browser",
+    "sha256": "821eb9bc4b5ac317d35caf3d5fde9e0edd0130092c4adeb39d4f25479592d372",
+    "buildType": "Release",
+    "sanitizers": false
+  },
+  "sourceHashes": {
+    "native/browser/browser.cc": "83e0bf681fe100ac5ad177a9020fd5c80f3b24fcd4c8b4fcfc6d078b17a21362",
+    "native/browser/ENGINE.md": "73b9d392cdf1cf8932cedc09ce15691cc4f695ca9adc394b3ac9703d5149acef",
+    "native/browser/BROWSER_SUPPORT.md": "0c58646cfeefb9c9c5ec25ab08e55c4c3c5e71e745e27c6502fac59cd831385e",
+    "native/browser/cef-build-linux-codecs.json": "91c129bc8c08f0be0b830ae36f1c46d027f36041e9d4594ec76174e1d99335f1",
+    "benchmarks/playwright-compatibility/compatibility.spec.ts": "0ffcc1da97a3084457ca041895b43eafff139f37be2ce8d2afb7f83dbae08d69",
+    "benchmarks/playwright-compatibility/playwright.config.ts": "5bce3a2e89dd405cdf009ffd7f86796708f27d6f88ec6b3ba4ecd49043199187",
+    "benchmarks/native-engine/engine.e2e.spec.ts": "b409017170e31ca5a5f7097f0308edfce8ab34b1890e9b3e691dbdd09d7efdc8",
+    "benchmarks/native-engine/playwright.config.ts": "1d0854fa67c821b0b8dcaf0510c989ad52f11af8a73eac4a65e0015ad6a39300",
+    "benchmarks/native-memory/runtime.py": "08013a55e8d43468f937b8a99c3e100a90f3f4a4449de10cc28f521a54476d46",
+    "benchmarks/publication/sample.py": "9fffce9c4e9dbd900a065fe4c20809913eebee81c5ebdee302de6879d3cee5b1",
+    "patches/playwright-core@1.62.1.patch": "f213239626cd82fd3c783c66db01167df999b54c5fc08e3330be4dda2cd72e50",
+    "patches/README.md": "7dec0d303fdc070dd958447f996b7b550937fe99a555b554da29bc3add514d61",
+    "src/native-browser.ts": "0564b3ee7b3b347e966f07312cb01c13acd13dd188ff492b8fe2ca619120c131",
+    "src/engine.ts": "4a96cdefa38209a9536c36ffd7e467a51f18d5690f9103650668a463f7ff499d",
+    "src/engine-test.ts": "aa9dcc9bcb4cd70148cf306fe7dc004385aa7c452f5758f44ea3bc6bf71f8fab"
+  },
+  "excludedUpstreamTitlePatterns": [
+    "should isolate cookies between launches",
+    "should work for webgl",
+    "should throw if screenshot size is too large"
+  ],
+  "unresolved": [
+    "early popup initialization",
+    "initial blank-origin srcdoc crash",
+    "storageAccess override",
+    "wakeLockScreen override"
+  ],
+  "fullUpstreamSuitePassing": false,
+  "wholeCefLeakFreedomProven": false
+}

@@ -477,3 +477,34 @@ in the October 10 trial; server addresses can change. The local policy
 regression verifies default UDP candidates and suppression under the explicit
 policy across root, isolated and proxied contexts. The policy deliberately
 changes candidate availability; use default on ordinary networks.
+
+
+## Cookie and screenshot capture limits
+
+Browser-context cookie operations use Chromium's page-scoped `Network` domain,
+including CHIPS partition keys. A context without pages temporarily owns a tiny
+private control page; it is retired once a user page can service the requests.
+It is never exposed in the SDK's page/target lists or captured. Control requests
+are limited to 64 pending commands and 16 MiB of wire data per agent, with a
+10-second timeout. Closing a context cancels its pending requests and closes its
+control page before native shutdown completes.
+
+Screenshot capture temporarily resizes the offscreen surface while preserving
+the emulated CSS viewport. The native bridge serializes captures per source,
+including independent CDP sessions, with up to eight queued requests (4 KiB of
+arguments each). Captures allow at most 8,294,400 physical pixels and 16,384
+pixels per axis. For example, a 500×10,000 screenshot fits; a 32,767-pixel-tall
+full-page image is outside this policy. Recording and streaming dimensions keep
+their existing 3840×2160 bound. Temporary screenshot paint is excluded from native
+media output, which holds its preceding video frame until normal paint resumes.
+Browser surfaces use Chromium’s default white background, including JPEG
+capture. PNG and WebP still honor explicit transparent background overrides.
+Encoded CEF DevTools replies are limited to 16 MiB. Exceeding this limit fails
+the source explicitly and closes its process, instead of leaving a capture or
+command pending indefinitely. Use smaller captures or compressed formats when
+an encoded screenshot would exceed this limit.
+
+These verified workflows do not establish full upstream Playwright compatibility.
+Early popup initialization, initial blank-origin srcdoc frames and some permission
+overrides remain unresolved. See the [final compatibility investigation](../../benchmarks/playwright-compatibility/2026-10-11-final-bridge-fixes/report.md)
+for raw results, reproductions and memory-profile limits.

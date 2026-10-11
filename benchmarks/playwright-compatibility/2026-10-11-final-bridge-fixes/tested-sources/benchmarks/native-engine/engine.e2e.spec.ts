@@ -1,0 +1,625 @@
+import { spawn, execFileSync } from 'node:child_process'
+import { once } from 'node:events'
+import { readFile, writeFile } from 'node:fs/promises'
+import { createServer } from 'node:http'
+import { createServer as socketServer } from 'node:net'
+import { resolve } from 'node:path'
+import { setTimeout as delay } from 'node:timers/promises'
+
+import { test, expect } from '../../src/engine-test.js'
+import { launchEngine } from '../../src/engine.js'
+import { launchNativeBrowser } from '../../src/native-browser.js'
+
+let server: ReturnType<typeof createServer>, url: string
+const artifactDirectory = resolve(
+  process.env.SUITECUT_ENGINE_E2E_DIRECTORY ?? 'benchmarks/native-engine/2026-10-09',
+)
+const html = `<!doctype html><style>body{margin:0;height:2000px}canvas{position:fixed;left:0;top:120px}</style>
+<button onclick="document.querySelector('output').textContent='clicked'">Click</button><input placeholder="Name"><output></output>
+<select aria-label="Choice"><option value="a">Alpha</option><option value="b">Beta</option></select><input type="file" aria-label="Upload">
+<a href="/download" download>Download</a><button onclick="window.open('/popup')">Popup</button><button onclick="alert('native dialog')">Dialog</button>
+<iframe title="Inner" srcdoc="<button>Inner button</button>"></iframe><canvas width="640" height="180"></canvas>
+<script>const c=document.querySelector('canvas').getContext('2d');let n=0;function frame(){c.fillStyle='rgb('+(n++%200)+',50,90)';c.fillRect(0,0,640,180);requestAnimationFrame(frame)}frame();const a=new AudioContext();const o=a.createOscillator();const g=a.createGain();g.gain.value=.15;o.connect(g).connect(a.destination);o.start()</script>`
+test.beforeAll(async () => {
+  server = createServer((req, res) => {
+    if (req.url === '/silent') {
+      res.setHeader('content-type', 'text/html')
+      res.end(
+        `<h1>Delayed audio</h1><button onclick="const a=new AudioContext({sampleRate:48000});const o=a.createOscillator();const g=a.createGain();g.gain.value=.08;o.connect(g).connect(a.destination);o.start();a.resume();window.audio=a">Start audio</button>`,
+      )
+      return
+    }
+    if (req.url === '/download') {
+      res.setHeader('content-disposition', 'attachment; filename="native.txt"')
+      res.end('native download')
+      return
+    }
+    if (req.url === '/data') {
+      res.setHeader('content-type', 'application/json')
+      res.end('{"value":"server"}')
+      return
+    }
+    res.setHeader('content-type', 'text/html')
+    res.end(html)
+  })
+  await new Promise<void>((r) => server.listen(0, '127.0.0.1', r))
+  const address = server.address()
+  if (!address || typeof address === 'string') throw new Error('Missing address')
+  url = `http://127.0.0.1:${address.port}`
+})
+test.afterAll(async () => {
+  server.closeAllConnections()
+  await new Promise<void>((r) => server.close(() => r()))
+})
+test('real Playwright locators, auto-wait, input, scrolling, iframe and screenshot', async ({
+  page,
+}) => {
+  await page.goto(url)
+  await page.getByRole('button', { name: 'Click', exact: true }).click()
+  await expect(page.locator('output')).toHaveText('clicked')
+  await page.getByPlaceholder('Name').fill('CEF + Playwright')
+  await expect(page.getByPlaceholder('Name')).toHaveValue('CEF + Playwright')
+  await page.getByRole('combobox', { name: 'Choice' }).selectOption('b')
+  await expect(page.getByRole('combobox')).toHaveValue('b')
+  await page.frameLocator('iframe').getByRole('button').click()
+  await page.mouse.move(600, 300)
+  await page.mouse.wheel(0, 500)
+  await expect.poll(() => page.evaluate(() => scrollY)).toBeGreaterThan(100)
+  await page.screenshot({ path: resolve(artifactDirectory, 'playwright.png') })
+})
+test('windowless browser bounds resize the selected page and report unsupported states', async ({
+  browser,
+}) => {
+  const context = await browser.newContext({ viewport: null })
+  try {
+    const first = await context.newPage(),
+      second = await context.newPage()
+    await first.goto(url)
+    await second.goto(url)
+    const a = await context.newCDPSession(first),
+      b = await context.newCDPSession(second)
+    const firstWindow = await a.send('Browser.getWindowForTarget')
+    const secondWindow = await b.send('Browser.getWindowForTarget')
+    expect(firstWindow.windowId).not.toBe(secondWindow.windowId)
+    await a.send('Browser.setWindowBounds', {
+      windowId: firstWindow.windowId,
+      bounds: { width: 800, height: 450 },
+    })
+    await expect
+      .poll(() => first.evaluate(() => ({ width: innerWidth, height: innerHeight })))
+      .toEqual({ width: 800, height: 450 })
+    expect(await second.evaluate(() => ({ width: innerWidth, height: innerHeight }))).toEqual({
+      width: 640,
+      height: 360,
+    })
+    expect(
+      (await a.send('Browser.getWindowBounds', { windowId: firstWindow.windowId })).bounds,
+    ).toMatchObject({ width: 800, height: 450, windowState: 'normal' })
+    expect((await first.screenshot()).readUInt32BE(16)).toBe(800)
+    await expect(
+      a.send('Browser.setWindowBounds', {
+        windowId: firstWindow.windowId,
+        bounds: { windowState: 'maximized' },
+      }),
+    ).rejects.toThrow('Windowless CEF')
+    await expect(
+      a.send('Browser.setWindowBounds', {
+        windowId: firstWindow.windowId,
+        bounds: { width: 99999 },
+      }),
+    ).rejects.toThrow('capture dimensions')
+    await expect(
+      a.send('Browser.getWindowForTarget', { targetId: 'missing-target' }),
+    ).rejects.toThrow('Unknown CEF window')
+  } finally {
+    await context.close()
+  }
+})
+test('native engine records silent startup and accepts later sound', async ({
+  page,
+  suitecutEngine,
+}) => {
+  await page.goto(`${url}/silent`)
+  const output = await suitecutEngine.record(page, {
+    destination: resolve(artifactDirectory, 'audio-readiness.mkv'),
+    audioCodec: 'pcm_s16le',
+  })
+  expect((await output.status()).ready).toBe(true)
+  await delay(250)
+  await page.getByRole('button', { name: 'Start audio' }).click()
+  await delay(250)
+  const final = await output.stop()
+  expect(final.error).toBe('')
+  expect(final.audioSamples).toBeGreaterThan(24000)
+})
+test('streaming initializes silent audio and accepts later browser sound', async ({
+  page,
+  suitecutEngine,
+}) => {
+  await page.goto(`${url}/silent`)
+  const probe = socketServer()
+  await new Promise<void>((ready) => probe.listen(0, '127.0.0.1', ready))
+  const address = probe.address()
+  if (!address || typeof address === 'string') throw new Error('Missing RTMP port')
+  await new Promise<void>((ready) => probe.close(() => ready()))
+  const destination = `rtmp://127.0.0.1:${address.port}/live/readiness`
+  const receiver = spawn(
+    'ffmpeg',
+    [
+      '-v',
+      'error',
+      '-y',
+      '-listen',
+      '1',
+      '-i',
+      destination,
+      '-c',
+      'copy',
+      resolve(artifactDirectory, 'delayed-stream.flv'),
+    ],
+    { stdio: ['ignore', 'ignore', 'pipe'] },
+  )
+  let stderr = ''
+  receiver.stderr.on('data', (chunk: Buffer) => {
+    stderr += chunk.toString()
+  })
+  const closed = once(receiver, 'close')
+  void closed.catch(() => undefined)
+  try {
+    const portHex = address.port.toString(16).toUpperCase().padStart(4, '0')
+    await expect
+      .poll(async () => {
+        const sockets = await readFile('/proc/net/tcp', 'utf8')
+        return sockets.split('\n').some((line) => {
+          const fields = line.trim().split(/\s+/)
+          return fields[1]?.endsWith(`:${portHex}`) && fields[3] === '0A'
+        })
+      })
+      .toBe(true)
+    const output = await suitecutEngine.stream(page, { destination })
+    await delay(250)
+    await page.getByRole('button', { name: 'Start audio' }).click()
+    try {
+      expect((await output.status()).ready).toBe(true)
+      await delay(500)
+    } finally {
+      expect((await output.stop()).audioSamples).toBeGreaterThan(0)
+    }
+  } finally {
+    receiver.kill('SIGINT')
+    await Promise.race([closed, delay(2000)])
+    if (receiver.exitCode === null && receiver.signalCode === null) {
+      receiver.kill('SIGKILL')
+      await closed
+    }
+    await writeFile(resolve(artifactDirectory, 'delayed-stream-receiver.log'), stderr)
+  }
+})
+test('silent pages record a valid audio track with mandatory engine readiness', async ({
+  page,
+  suitecutEngine,
+}) => {
+  await page.goto(`${url}/silent`)
+  const output = await suitecutEngine.record(page, {
+    destination: resolve(artifactDirectory, 'silent-audio.mkv'),
+    audioStartupTimeoutMs: 150,
+    audioCodec: 'pcm_s16le',
+  })
+  await delay(200)
+  const final = await output.stop()
+  expect(final.ready).toBe(true)
+  expect(final.error).toBe('')
+  expect(final.audioSamples).toBeGreaterThan(0)
+  const videoOnly = await suitecutEngine.record(page, {
+    destination: resolve(artifactDirectory, 'silent-video-only.mkv'),
+    audio: false,
+  })
+  await delay(100)
+  expect((await videoOnly.stop()).error).toBe('')
+})
+test('native protocol rejects bypasses and requires audio readiness when audio is omitted', async ({
+  page,
+  suitecutEngine,
+}) => {
+  await page.goto(`${url}/silent`)
+  const source = suitecutEngine.source
+  if (!source.command) throw new Error('Native command adapter is unavailable')
+  const command = source.command.bind(source)
+  const config = {
+    destination: resolve(artifactDirectory, 'protocol-silent.mkv'),
+    width: 640,
+    height: 360,
+    fps: 30,
+    streaming: false,
+    audioStartupTimeoutMs: 150,
+  }
+  for (const audioStartup of ['immediate', 'wait-for-packet', 'wait-for-signal']) {
+    await expect(command('media.start', { ...config, audioStartup })).rejects.toThrow(
+      'Audio startup policies were removed',
+    )
+  }
+  const started = (await command('media.start', config)) as {
+    outputId: number
+    audioReadinessRequired: boolean
+    audioReadiness: string
+  }
+  expect(started.audioReadinessRequired).toBe(true)
+  expect(started.audioReadiness).toBe('engine')
+  try {
+    await expect
+      .poll(async () => {
+        const value = (await command('media.status', { outputId: started.outputId })) as {
+          ready: boolean
+        }
+        return value.ready
+      })
+      .toBe(true)
+    await delay(200)
+  } finally {
+    const final = (await command('media.stop', { outputId: started.outputId })) as {
+      error: string
+      audioSamples: number
+    }
+    expect(final.error).toBe('')
+    expect(final.audioSamples).toBeGreaterThan(0)
+  }
+})
+test('network interception, init scripts and storage isolation', async ({ browser }) => {
+  const a = await browser.newContext(),
+    b = await browser.newContext()
+  try {
+    await a.addInitScript(() => {
+      localStorage.setItem('engine', 'a')
+    })
+    await a.addCookies([{ name: 'before-page', value: 'isolated', url }])
+    expect((await a.cookies(url)).map((c) => c.name)).toContain('before-page')
+    expect(await b.cookies(url)).toEqual([])
+    const pa = await a.newPage(),
+      pb = await b.newPage()
+    await pa.route('**/data', (route) => route.fulfill({ json: { value: 'intercepted' } }))
+    await pa.goto(url)
+    await pb.goto(url)
+    expect(await pa.evaluate(() => fetch('/data').then((r) => r.json()))).toEqual({
+      value: 'intercepted',
+    })
+    expect(await pb.evaluate(() => localStorage.getItem('engine'))).toBeNull()
+    await a.addCookies([{ name: 'engine', value: 'a', url }])
+    expect((await a.cookies(url)).map((c) => c.value)).toContain('a')
+    expect(await b.cookies(url)).toEqual([])
+    await a.clearCookies()
+    expect(await a.cookies(url)).toEqual([])
+  } finally {
+    await a.close()
+    await b.close()
+  }
+})
+test('popup, dialog, file upload, download and public CDP sessions', async ({ page, context }) => {
+  await page.goto(url)
+  const popup = context.waitForEvent('page')
+  await page.getByRole('button', { name: 'Popup' }).click()
+  const child = await popup
+  await child.waitForLoadState()
+  expect(child.url()).toContain('/popup')
+  await child.close()
+  page.once('dialog', async (dialog) => {
+    expect(dialog.message()).toBe('native dialog')
+    await dialog.accept()
+  })
+  await page.getByRole('button', { name: 'Dialog' }).click()
+  await page.getByLabel('Upload').setInputFiles({
+    name: 'input.txt',
+    mimeType: 'text/plain',
+    buffer: Buffer.from('native upload'),
+  })
+  expect(
+    await page.getByLabel('Upload').evaluate((input: HTMLInputElement) => input.files?.[0]?.name),
+  ).toBe('input.txt')
+  const download = page.waitForEvent('download')
+  await page.getByRole('link', { name: 'Download' }).click()
+  const file = await download
+  const path = await file.path()
+  expect(file.suggestedFilename()).toBe('native.txt')
+  if (!path) throw new Error('Missing download path')
+  expect(await readFile(path, 'utf8')).toBe('native download')
+  const session = await context.newCDPSession(page)
+  expect(
+    (await session.send('Runtime.evaluate', { expression: '6*7', returnByValue: true })).result
+      .value,
+  ).toBe(42)
+  await session.detach()
+  await expect(session.send('Runtime.evaluate', { expression: '1' })).rejects.toThrow()
+})
+test('explicit CDP sessions receive page events and tracing completion', async ({
+  page,
+  context,
+}) => {
+  await page.goto(url)
+  const session = await context.newCDPSession(page)
+  const messages: string[] = []
+  session.on('Runtime.consoleAPICalled', (event) => {
+    messages.push(...event.args.map((arg) => String(arg.value)))
+  })
+  await session.send('Runtime.enable')
+  await page.evaluate(() => console.log('explicit-session-event'))
+  await expect.poll(() => messages.includes('explicit-session-event')).toBe(true)
+  const other = await context.newPage()
+  await other.goto(url)
+  await other.evaluate(() => console.log('other-page-event'))
+  await page.evaluate(() => console.log('session-barrier'))
+  await expect.poll(() => messages.includes('session-barrier')).toBe(true)
+  expect(messages).not.toContain('other-page-event')
+  await other.close()
+  const completed = new Promise<void>((resolve) => {
+    session.once('Tracing.tracingComplete', () => resolve())
+  })
+  await session.send('Tracing.start', { categories: 'audio', transferMode: 'ReportEvents' })
+  await page.waitForTimeout(250)
+  await session.send('Tracing.end')
+  await completed
+  await session.detach()
+  await expect(session.send('Runtime.evaluate', { expression: '1' })).rejects.toThrow()
+  // The primary Playwright session continues to work after the alias detaches.
+  expect(await page.evaluate(() => 6 * 7)).toBe(42)
+})
+test('native recording survives blocked Node, pause and page switching', async ({
+  suitecutEngine,
+  page,
+  context,
+}) => {
+  await page.goto(url)
+  await page.waitForTimeout(1000)
+  const output = await suitecutEngine.record(page, {
+    destination: resolve(artifactDirectory, 'playwright-recording.mp4'),
+    width: 640,
+    height: 360,
+    fps: 30,
+  })
+  try {
+    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 4000)
+    const captured = await output.status()
+    expect(captured.videoFrames).toBeGreaterThan(100)
+    expect(captured.droppedAudioSamples).toBe(0)
+    await output.pause(true)
+    const before = await output.status()
+    await page.waitForTimeout(500)
+    const paused = await output.status()
+    expect(paused.videoFrames).toBe(before.videoFrames)
+    await output.pause(false)
+    const next = await context.newPage()
+    await next.goto(url)
+    await suitecutEngine.select(output, next)
+    await next.waitForTimeout(500)
+    await suitecutEngine.select(output, page)
+    await next.close()
+  } finally {
+    const final = await output.stop()
+    expect(final.queuedVideoBytes).toBe(0)
+    expect(final.queuedAudioBytes).toBe(0)
+    expect(await output.stop()).toEqual(final)
+  }
+})
+test('pause drains pending media and resume captures a prepared static page', async ({
+  page,
+  suitecutEngine,
+}) => {
+  await page.goto(`${url}/silent`)
+  await page.evaluate(() => {
+    document.body.style.backgroundColor = 'red'
+  })
+  await delay(200)
+  const output = await suitecutEngine.record(page, {
+    destination: resolve(artifactDirectory, 'paused-static.mkv'),
+    audioCodec: 'pcm_s16le',
+  })
+  await delay(250)
+  await output.pause(true)
+  await page.evaluate(() => {
+    document.body.style.backgroundColor = 'blue'
+  })
+  await delay(200)
+  await output.pause(false)
+  await delay(250)
+  expect((await output.stop()).error).toBe('')
+})
+test('repeated context/page shutdown keeps the engine usable', async ({ browser, page }) => {
+  for (let i = 0; i < 10; i++) {
+    const context = await browser.newContext()
+    const other = await context.newPage()
+    await other.goto(url)
+    await context.close()
+  }
+  await page.goto(url)
+  await expect(page.getByRole('button', { name: 'Click', exact: true })).toBeVisible()
+})
+
+test('permission and geolocation setup before page creation', async ({ browser }) => {
+  const context = await browser.newContext({
+    geolocation: { latitude: 12.34, longitude: 56.78 },
+    permissions: ['geolocation'],
+  })
+  try {
+    const page = await context.newPage()
+    await page.goto(url)
+    expect(
+      await page.evaluate(
+        async () => (await navigator.permissions.query({ name: 'geolocation' })).state,
+      ),
+    ).toBe('granted')
+    const location = await page.evaluate(
+      () =>
+        new Promise<{ latitude: number; longitude: number }>((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(
+            (position) =>
+              resolve({ latitude: position.coords.latitude, longitude: position.coords.longitude }),
+            (error) => reject(new Error(error.message)),
+            { timeout: 5000 },
+          )
+        }),
+    )
+    expect(location).toEqual({ latitude: 12.34, longitude: 56.78 })
+    await context.clearPermissions()
+    expect(
+      await page.evaluate(
+        async () => (await navigator.permissions.query({ name: 'geolocation' })).state,
+      ),
+    ).toBe('prompt')
+  } finally {
+    await context.close()
+  }
+})
+
+test('explicit session retention is bounded and capacity returns after detach', async ({
+  browser,
+  page,
+  context,
+}) => {
+  const pageSession = await context.newCDPSession(page)
+  const { targetInfo } = await pageSession.send('Target.getTargetInfo')
+  await pageSession.detach()
+  const rootSession = await browser.newBrowserCDPSession()
+  const sessions: string[] = []
+  try {
+    for (let i = 0; i < 256; ++i) {
+      const { sessionId } = await rootSession.send('Target.attachToTarget', {
+        targetId: targetInfo.targetId,
+        flatten: true,
+      })
+      sessions.push(sessionId)
+    }
+    await expect(
+      rootSession.send('Target.attachToTarget', { targetId: targetInfo.targetId, flatten: true }),
+    ).rejects.toThrow('CEF session limit exceeded')
+  } finally {
+    for (const sessionId of sessions)
+      await rootSession.send('Target.detachFromTarget', { sessionId })
+  }
+  const { sessionId } = await rootSession.send('Target.attachToTarget', {
+    targetId: targetInfo.targetId,
+    flatten: true,
+  })
+  await rootSession.send('Target.detachFromTarget', { sessionId })
+  await rootSession.detach()
+  await expect(page.locator('body')).toBeVisible()
+})
+
+test('rapid popup and opener closure leaves the engine usable', async ({ browser, page }) => {
+  for (let i = 0; i < 20; ++i) {
+    const context = await browser.newContext()
+    const opener = await context.newPage()
+    await opener.goto(url)
+    await opener.evaluate(() => {
+      window.open('about:blank')
+      window.open('about:blank')
+    })
+    await context.close()
+  }
+  await page.goto(url)
+  await expect(page.getByRole('button', { name: 'Click', exact: true })).toBeVisible()
+})
+
+test('native shutdown joins a pending pause and releases active outputs', async () => {
+  const engine = await launchEngine({
+    executablePath: process.env.SUITECUT_NATIVE_EXECUTABLE ?? '',
+    width: 640,
+    height: 360,
+    framesPerSecond: 30,
+  })
+  try {
+    const page = engine.browser.contexts()[0]?.pages()[0]
+    if (!page) throw new Error('Missing primary CEF page')
+    await page.goto(url)
+    const output = await engine.record(page, {
+      destination: resolve(artifactDirectory, 'pending-pause-close.mp4'),
+    })
+    const pending = output.pause(true)
+    void pending.catch(() => undefined)
+    const began = performance.now()
+    await engine.close()
+    await Promise.allSettled([pending])
+    expect(performance.now() - began).toBeLessThan(5000)
+    expect(engine.source.state).toBe('closed')
+  } finally {
+    await engine.close()
+  }
+})
+
+test('oversized CEF replies fail explicitly and release the native process', async () => {
+  const source = await launchNativeBrowser({
+    executablePath: process.env.SUITECUT_NATIVE_EXECUTABLE ?? '',
+    width: 640,
+    height: 360,
+    framesPerSecond: 30,
+  })
+  try {
+    await expect(
+      source.sendDevToolsCommand('Runtime.evaluate', {
+        expression: '"x".repeat(17 * 1024 * 1024)',
+        returnByValue: true,
+      }),
+    ).rejects.toThrow('CEF DevTools reply exceeds the 16 MiB limit')
+    await source.closed
+    expect(source.state).toBe('failed')
+  } finally {
+    await source.close()
+  }
+})
+
+test('temporary screenshot surfaces never enter the recorded video', async ({
+  page,
+  suitecutEngine,
+}) => {
+  await page.goto(url)
+  await page.setContent(
+    '<style>body{margin:0;background:red}::-webkit-scrollbar{display:none}</style><div style="position:absolute;left:800px;width:1000px;height:600px;background:blue"></div>',
+  )
+  await delay(300)
+  const destination = resolve(artifactDirectory, 'screenshot-surface-isolation.mp4')
+  const output = await suitecutEngine.record(page, {
+    destination,
+    width: 640,
+    height: 360,
+    fps: 30,
+    audio: false,
+  })
+  const session = await page.context().newCDPSession(page)
+  try {
+    await delay(300)
+    for (let i = 0; i < 3; i++) {
+      const screenshot = await session.send('Page.captureScreenshot', {
+        format: 'png',
+        captureBeyondViewport: true,
+        clip: { x: 800, y: 0, width: 1000, height: 600, scale: 1 },
+      })
+      const { default: sharp } = await import('sharp')
+      const pixels = await sharp(Buffer.from(screenshot.data, 'base64'))
+        .resize(1, 1)
+        .removeAlpha()
+        .raw()
+        .toBuffer()
+      expect([...pixels]).toEqual([0, 0, 255])
+    }
+    await delay(300)
+  } finally {
+    await session.detach()
+    await output.stop()
+  }
+  const frames = execFileSync(
+    'ffmpeg',
+    [
+      '-v',
+      'error',
+      '-i',
+      destination,
+      '-vf',
+      'scale=16:16',
+      '-f',
+      'rawvideo',
+      '-pix_fmt',
+      'rgb24',
+      'pipe:1',
+    ],
+    { timeout: 15000 },
+  )
+  expect(frames.length).toBeGreaterThan(10 * 16 * 16 * 3)
+  expect(frames.every((value, index) => (index % 3 === 0 ? value > 200 : value < 40))).toBe(true)
+})

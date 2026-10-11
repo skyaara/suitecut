@@ -1,0 +1,481 @@
+{
+  "config": {
+    "argv": [
+      "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+      "/workspace/suitecut/node_modules/playwright/cli.js",
+      "test",
+      "--config",
+      "/tmp/suitecut-playwright-upstream/playwright-1.62.1/suitecut.config.ts",
+      "library/popup.spec.ts:20",
+      "library/popup.spec.ts:177",
+      "library/permissions.spec.ts:222",
+      "library/permissions.spec.ts:317",
+      "page/page-aria-snapshot-ai.spec.ts:70",
+      "--global-timeout=60000",
+      "--timeout=10000"
+    ],
+    "configFile": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/suitecut.config.ts",
+    "rootDir": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 60000,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 100,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/tmp/suitecut-suite-pass/reply-guard-known-issues/artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests",
+        "testIgnore": [
+          "**/firefox/**",
+          "**/webkit/**",
+          "**/inspector/**"
+        ],
+        "testMatch": [
+          "library/**/*.spec.ts",
+          "page/**/*.spec.ts"
+        ],
+        "timeout": 10000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "/tmp/suitecut-suite-pass/reply-guard-known-issues/results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.62.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "library/permissions.spec.ts",
+      "file": "library/permissions.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "storage access",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [
+                {
+                  "type": "issue",
+                  "description": "https://github.com/microsoft/playwright/issues/31227",
+                  "location": {
+                    "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/permissions.spec.ts",
+                    "line": 222,
+                    "column": 3
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 167,
+                  "error": {
+                    "message": "Error: browserContext.grantPermissions: Protocol error (Browser.grantPermissions): Unsupported native permission: storageAccess",
+                    "stack": "Error: browserContext.grantPermissions: Protocol error (Browser.grantPermissions): Unsupported native permission: storageAccess\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/permissions.spec.ts:227:17",
+                    "location": {
+                      "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/permissions.spec.ts",
+                      "column": 17,
+                      "line": 227
+                    },
+                    "snippet": "  225 |   it.skip(browserName !== 'chromium', 'chromium-only api');\n  226 |\n> 227 |   await context.grantPermissions(['storage-access']);\n      |                 ^\n  228 |   expect(await getPermission(page, 'storage-access')).toBe('granted');\n  229 |   server.setRoute('/set-cookie.html', (req, res) => {\n  230 |     res.setHeader('Set-Cookie', 'name=value; Path=/; SameSite=Strict; Secure');"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/permissions.spec.ts",
+                        "column": 17,
+                        "line": 227
+                      },
+                      "message": "Error: browserContext.grantPermissions: Protocol error (Browser.grantPermissions): Unsupported native permission: storageAccess\n\n  225 |   it.skip(browserName !== 'chromium', 'chromium-only api');\n  226 |\n> 227 |   await context.grantPermissions(['storage-access']);\n      |                 ^\n  228 |   expect(await getPermission(page, 'storage-access')).toBe('granted');\n  229 |   server.setRoute('/set-cookie.html', (req, res) => {\n  230 |     res.setHeader('Set-Cookie', 'name=value; Path=/; SameSite=Strict; Secure');\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/permissions.spec.ts:227:17"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T18:35:34.300Z",
+                  "annotations": [
+                    {
+                      "type": "issue",
+                      "description": "https://github.com/microsoft/playwright/issues/31227",
+                      "location": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/permissions.spec.ts",
+                        "line": 222,
+                        "column": 3
+                      }
+                    }
+                  ],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/tmp/suitecut-suite-pass/reply-guard-known-issues/artifacts/library-permissions-storage-access/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/permissions.spec.ts",
+                    "column": 17,
+                    "line": 227
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "02ad7176e10854ab0100-8687deba520bdcb6c425",
+          "file": "library/permissions.spec.ts",
+          "line": 222,
+          "column": 3
+        },
+        {
+          "title": "can request screen-wake-lock",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [
+                {
+                  "type": "issue",
+                  "description": "https://github.com/microsoft/playwright/issues/39115",
+                  "location": {
+                    "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/permissions.spec.ts",
+                    "line": 317,
+                    "column": 3
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 145,
+                  "error": {
+                    "message": "Error: browserContext.grantPermissions: Protocol error (Browser.grantPermissions): Unsupported native permission: wakeLockScreen",
+                    "stack": "Error: browserContext.grantPermissions: Protocol error (Browser.grantPermissions): Unsupported native permission: wakeLockScreen\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/permissions.spec.ts:320:17",
+                    "location": {
+                      "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/permissions.spec.ts",
+                      "column": 17,
+                      "line": 320
+                    },
+                    "snippet": "  318 |   annotation: { type: 'issue', description: 'https://github.com/microsoft/playwright/issues/39115' }\n  319 | }, async ({ page, context }) => {\n> 320 |   await context.grantPermissions(['screen-wake-lock']);\n      |                 ^\n  321 |   await page.route('**/*', route => route.fulfill({ status: 200, body: '<div>Hello there!</div>', contentType: 'text/html' }));\n  322 |   await page.goto('https://example.com');\n  323 |   await page.evaluate(() => navigator.wakeLock.request('screen'));"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/permissions.spec.ts",
+                        "column": 17,
+                        "line": 320
+                      },
+                      "message": "Error: browserContext.grantPermissions: Protocol error (Browser.grantPermissions): Unsupported native permission: wakeLockScreen\n\n  318 |   annotation: { type: 'issue', description: 'https://github.com/microsoft/playwright/issues/39115' }\n  319 | }, async ({ page, context }) => {\n> 320 |   await context.grantPermissions(['screen-wake-lock']);\n      |                 ^\n  321 |   await page.route('**/*', route => route.fulfill({ status: 200, body: '<div>Hello there!</div>', contentType: 'text/html' }));\n  322 |   await page.goto('https://example.com');\n  323 |   await page.evaluate(() => navigator.wakeLock.request('screen'));\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/permissions.spec.ts:320:17"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T18:35:35.701Z",
+                  "annotations": [
+                    {
+                      "type": "issue",
+                      "description": "https://github.com/microsoft/playwright/issues/39115",
+                      "location": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/permissions.spec.ts",
+                        "line": 317,
+                        "column": 3
+                      }
+                    }
+                  ],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/tmp/suitecut-suite-pass/reply-guard-known-issues/artifacts/library-permissions-can-request-screen-wake-lock/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/permissions.spec.ts",
+                    "column": 17,
+                    "line": 320
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "02ad7176e10854ab0100-5f04a79fdd99697c0f2d",
+          "file": "library/permissions.spec.ts",
+          "line": 317,
+          "column": 3
+        }
+      ]
+    },
+    {
+      "title": "library/popup.spec.ts",
+      "file": "library/popup.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "should inherit user agent from browser context @smoke",
+          "ok": false,
+          "tags": [
+            "smoke"
+          ],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 355,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"hey\"\u001b[39m\nReceived: \u001b[31m\"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36\"\u001b[39m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"hey\"\u001b[39m\nReceived: \u001b[31m\"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36\"\u001b[39m\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/popup.spec.ts:39:41",
+                    "location": {
+                      "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/popup.spec.ts",
+                      "column": 41,
+                      "line": 39
+                    },
+                    "snippet": "  37 |   await context.close();\n  38 |   expect(userAgent).toBe('hey');\n> 39 |   expect(request.headers['user-agent']).toBe('hey');\n     |                                         ^\n  40 | });\n  41 |\n  42 | it('should respect routes from browser context', async function({ browser, server }) {"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/popup.spec.ts",
+                        "column": 41,
+                        "line": 39
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"hey\"\u001b[39m\nReceived: \u001b[31m\"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36\"\u001b[39m\n\n  37 |   await context.close();\n  38 |   expect(userAgent).toBe('hey');\n> 39 |   expect(request.headers['user-agent']).toBe('hey');\n     |                                         ^\n  40 | });\n  41 |\n  42 | it('should respect routes from browser context', async function({ browser, server }) {\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/popup.spec.ts:39:41"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T18:35:36.969Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/tmp/suitecut-suite-pass/reply-guard-known-issues/artifacts/library-popup-should-inher-c70db--from-browser-context-smoke/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/popup.spec.ts",
+                    "column": 41,
+                    "line": 39
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "461aa874134cee9040cc-2c580cdeb45e3f22b543",
+          "file": "library/popup.spec.ts",
+          "line": 20,
+          "column": 3
+        },
+        {
+          "title": "BrowserContext.addInitScript should apply to an in-process popup",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 194,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m123\u001b[39m\nReceived: \u001b[31mundefined\u001b[39m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m123\u001b[39m\nReceived: \u001b[31mundefined\u001b[39m\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/popup.spec.ts:187:20",
+                    "location": {
+                      "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/popup.spec.ts",
+                      "column": 20,
+                      "line": 187
+                    },
+                    "snippet": "  185 |   });\n  186 |   await context.close();\n> 187 |   expect(injected).toBe(123);\n      |                    ^\n  188 | });\n  189 |\n  190 | it('BrowserContext.addInitScript should apply to a cross-process popup', async function({ browser, server }) {"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/popup.spec.ts",
+                        "column": 20,
+                        "line": 187
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m123\u001b[39m\nReceived: \u001b[31mundefined\u001b[39m\n\n  185 |   });\n  186 |   await context.close();\n> 187 |   expect(injected).toBe(123);\n      |                    ^\n  188 | });\n  189 |\n  190 | it('BrowserContext.addInitScript should apply to a cross-process popup', async function({ browser, server }) {\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/popup.spec.ts:187:20"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T18:35:38.537Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/tmp/suitecut-suite-pass/reply-guard-known-issues/artifacts/library-popup-BrowserConte-c6143-pply-to-an-in-process-popup/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/popup.spec.ts",
+                    "column": 20,
+                    "line": 187
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "461aa874134cee9040cc-208a4e9aed2d7dd60e10",
+          "file": "library/popup.spec.ts",
+          "line": 177,
+          "column": 3
+        }
+      ]
+    },
+    {
+      "title": "page/page-aria-snapshot-ai.spec.ts",
+      "file": "page/page-aria-snapshot-ai.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "should snapshot a locator inside an iframe",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 4,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 136,
+                  "error": {
+                    "message": "Error: page.setContent: Target page, context or browser has been closed\nCall log:\n\u001b[2m  - setting frame content, waiting until \"load\"\u001b[22m\n",
+                    "stack": "Error: page.setContent: Target page, context or browser has been closed\nCall log:\n\u001b[2m  - setting frame content, waiting until \"load\"\u001b[22m\n\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/page/page-aria-snapshot-ai.spec.ts:71:14",
+                    "location": {
+                      "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/page/page-aria-snapshot-ai.spec.ts",
+                      "column": 14,
+                      "line": 71
+                    },
+                    "snippet": "  69 |\n  70 | it('should snapshot a locator inside an iframe', async ({ page }) => {\n> 71 |   await page.setContent(`\n     |              ^\n  72 |     <h1>Main Page</h1>\n  73 |     <iframe srcdoc=\"<ul><li>Item 1</li><li>Item 2</li></ul>\"></iframe>\n  74 |   `);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/page/page-aria-snapshot-ai.spec.ts",
+                        "column": 14,
+                        "line": 71
+                      },
+                      "message": "Error: page.setContent: Target page, context or browser has been closed\nCall log:\n\u001b[2m  - setting frame content, waiting until \"load\"\u001b[22m\n\n\n  69 |\n  70 | it('should snapshot a locator inside an iframe', async ({ page }) => {\n> 71 |   await page.setContent(`\n     |              ^\n  72 |     <h1>Main Page</h1>\n  73 |     <iframe srcdoc=\"<ul><li>Item 1</li><li>Item 2</li></ul>\"></iframe>\n  74 |   `);\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/page/page-aria-snapshot-ai.spec.ts:71:14"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [
+                    {
+                      "text": "SuiteCut native failure: Native browser: Browser renderer terminated (status 2, exit 5)\n"
+                    }
+                  ],
+                  "retry": 0,
+                  "startTime": "2026-10-11T18:35:39.905Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/tmp/suitecut-suite-pass/reply-guard-known-issues/artifacts/page-page-aria-snapshot-ai-73de9--a-locator-inside-an-iframe/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/page/page-aria-snapshot-ai.spec.ts",
+                    "column": 14,
+                    "line": 71
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "fd99641461e92c3d2715-2ce30e921e5f74dfbfbe",
+          "file": "page/page-aria-snapshot-ai.spec.ts",
+          "line": 70,
+          "column": 3
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-11T18:35:33.505Z",
+    "duration": 7076.23,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 5,
+    "flaky": 0
+  }
+}

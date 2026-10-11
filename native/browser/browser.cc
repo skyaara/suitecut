@@ -260,31 +260,80 @@ class Task : public CefTask {
   IMPLEMENT_REFCOUNTING(Task);
 };
 
-class CookieVisitor : public CefCookieVisitor {
+// Cookie commands use a page-scoped Network agent to preserve CHIPS and context
+// isolation. A context without user pages gets a tiny private page, retired
+// once a user page is available. This page is never exposed or captured.
+class ContextAgent : public CefClient, public CefLifeSpanHandler,
+                     public CefRenderHandler, public CefDevToolsMessageObserver {
  public:
-  explicit CookieVisitor(std::function<void(CefRefPtr<CefListValue>)> result):result_(std::move(result)),cookies_(CefListValue::Create()) {}
-  ~CookieVisitor() override {result_(cookies_);}
-  bool Visit(const CefCookie& cookie,int,int,bool&) override {
-    auto value=CefDictionaryValue::Create();value->SetString("name",CefString(&cookie.name));value->SetString("value",CefString(&cookie.value));value->SetString("domain",CefString(&cookie.domain));value->SetString("path",CefString(&cookie.path));
-    value->SetBool("secure",cookie.secure);value->SetBool("httpOnly",cookie.httponly);value->SetBool("session",!cookie.has_expires);
-    value->SetDouble("expires",cookie.has_expires ? (cookie.expires.val-11644473600000000LL)/1000000.0 : -1);
-    value->SetString("sameSite",cookie.same_site==CEF_COOKIE_SAME_SITE_STRICT_MODE ? "Strict" : cookie.same_site==CEF_COOKIE_SAME_SITE_NO_RESTRICTION ? "None" : "Lax");
-    value->SetInt("size",CefString(&cookie.name).length()+CefString(&cookie.value).length());value->SetString("priority","Medium");value->SetBool("sameParty",false);value->SetString("sourceScheme",cookie.secure ? "Secure" : "NonSecure");value->SetInt("sourcePort",-1);
-    cookies_->SetDictionary(cookies_->GetSize(),value);return true;
+  using Reply=std::function<void(Dict)>;
+  explicit ContextAgent(std::function<void()> closed):closed_(std::move(closed)) {}
+  bool Busy() const {return !pending_.empty();}
+  CefRefPtr<CefLifeSpanHandler> GetLifeSpanHandler() override {return this;}
+  CefRefPtr<CefRenderHandler> GetRenderHandler() override {return this;}
+  void GetViewRect(CefRefPtr<CefBrowser>,CefRect& rect) override {rect=CefRect(0,0,2,2);}
+  void OnPaint(CefRefPtr<CefBrowser>,PaintElementType,const RectList&,const void*,int,int) override {}
+  void OnAfterCreated(CefRefPtr<CefBrowser> browser) override {
+    browser_=browser;observer_=browser->GetHost()->AddDevToolsMessageObserver(this);
+  }
+  void Send(const std::string& method,Dict params,Reply reply) {
+    if(!browser_ || closing_ || pending_.size()>=64) {reply(Error("CEF context agent unavailable or at capacity"));return;}
+    do {index_=suitecut::NextCommandID(index_);}while(pending_.contains(index_));
+    const int id=index_;
+    auto command=CefDictionaryValue::Create();command->SetInt("id",id);command->SetString("method",method);command->SetDictionary("params",params);
+    const auto wire=Json(command);
+    if(wire.size()+pending_bytes_>16777216) {reply(Error("CEF cookie command byte capacity exceeded"));return;}
+    pending_bytes_+=wire.size();pending_[id]={std::move(reply),wire.size(),Now()+10000};
+    CefPostTask(TID_UI,new Task([self=CefRefPtr<ContextAgent>(this),id,wire] {
+      if(!self->pending_.contains(id))return;
+      if(!self->browser_ || !self->browser_->GetHost()->SendDevToolsMessage(wire.data(),wire.size()))self->Complete(id,Error("CEF context command dispatch failed"));
+    }));
+    ScheduleTimeout();
+  }
+  bool OnDevToolsMessage(CefRefPtr<CefBrowser>,const void* data,size_t size) override {
+    if(size>16777216) {Close();return true;}
+    auto value=CefParseJSON(static_cast<const char*>(data),size,JSON_PARSER_RFC);
+    auto message=value ? value->GetDictionary() : nullptr;
+    if(message && message->HasKey("id")) {
+      const int id=message->GetInt("id");
+      Complete(id,message);
+    }
+    return true;
+  }
+  void OnBeforeClose(CefRefPtr<CefBrowser>) override {observer_=nullptr;browser_=nullptr;FailPending();NotifyClosed();}
+  void Close() {
+    if(closing_)return;
+    closing_=true;FailPending();
+    if(!browser_) {NotifyClosed();return;}
+    CefPostTask(TID_UI,new Task([self=CefRefPtr<ContextAgent>(this)] {if(self->browser_)self->browser_->GetHost()->CloseBrowser(true);}));
   }
  private:
-  std::function<void(CefRefPtr<CefListValue>)> result_;CefRefPtr<CefListValue> cookies_;
-  IMPLEMENT_REFCOUNTING(CookieVisitor);
-};
-class CookieSetCallback : public CefSetCookieCallback {
- public: explicit CookieSetCallback(std::function<void(bool)> result):result_(std::move(result)) {}
-  void OnComplete(bool success) override {result_(success);}
- private: std::function<void(bool)> result_;IMPLEMENT_REFCOUNTING(CookieSetCallback);
-};
-class CookieDeleteCallback : public CefDeleteCookiesCallback {
- public: explicit CookieDeleteCallback(std::function<void()> result):result_(std::move(result)) {}
-  void OnComplete(int) override {result_();}
- private: std::function<void()> result_;IMPLEMENT_REFCOUNTING(CookieDeleteCallback);
+  static Dict Error(const char* text) {auto message=CefDictionaryValue::Create();auto error=CefDictionaryValue::Create();error->SetInt("code",-32000);error->SetString("message",text);message->SetDictionary("error",error);return message;}
+  void Complete(int id,Dict message) {
+    auto found=pending_.find(id);if(found==pending_.end())return;
+    auto reply=std::move(found->second.reply);pending_bytes_-=found->second.bytes;pending_.erase(found);reply(message);
+  }
+  void FailPending() {auto pending=std::move(pending_);pending_.clear();pending_bytes_=0;for(auto& [id,item]:pending)item.reply(Error("CEF context closed"));}
+  void NotifyClosed() {if(closed_) {auto closed=std::move(closed_);closed();}}
+  void ScheduleTimeout() {
+    if(timeout_scheduled_ || pending_.empty() || closing_)return;
+    timeout_scheduled_=true;
+    CefPostDelayedTask(TID_UI,new Task([self=CefRefPtr<ContextAgent>(this)] {
+      self->timeout_scheduled_=false;
+      std::vector<int> expired;for(const auto& [id,item]:self->pending_)if(item.deadline<=Now())expired.push_back(id);
+      for(int id:expired)self->Complete(id,Error("CEF context command timed out"));
+      self->ScheduleTimeout();
+    }),1000);
+  }
+  struct Pending {Reply reply;size_t bytes;double deadline;};
+  int index_=0;
+  size_t pending_bytes_=0;
+  bool closing_=false,timeout_scheduled_=false;
+  std::map<int,Pending> pending_;
+  std::function<void()> closed_;
+  CefRefPtr<CefBrowser> browser_;
+  CefRefPtr<CefRegistration> observer_;
+  IMPLEMENT_REFCOUNTING(ContextAgent);
 };
 
 class Source : public CefClient, public CefLifeSpanHandler, public CefRenderHandler,
@@ -294,7 +343,7 @@ class Source : public CefClient, public CefLifeSpanHandler, public CefRenderHand
  public:
   Source(Writer& writer, int width, int height, double scale, bool i420, bool subscriptions, Source* root = nullptr, std::string context = "default", std::string opener = "")
       : root_owner_(root), root_(root ? root : this), context_id_(std::move(context)), opener_id_(std::move(opener)),
-        writer_(writer), width_(width), height_(height), scale_(scale), i420_(i420), frame_subscriptions_(subscriptions) {if(root) {emit_frames_=false;emit_audio_=false;}}
+        writer_(writer), width_(width), height_(height), scale_(scale), i420_(i420), frame_subscriptions_(subscriptions) {emulated_scale_=scale_;if(root) {emit_frames_=false;emit_audio_=false;}}
   CefRefPtr<CefLifeSpanHandler> GetLifeSpanHandler() override { return this; }
   CefRefPtr<CefPermissionHandler> GetPermissionHandler() override {return this;}
   static uint32_t PermissionBit(const std::string& name) {
@@ -436,10 +485,10 @@ class Source : public CefClient, public CefLifeSpanHandler, public CefRenderHand
                            CefRefPtr<CefContextMenuParams>, CefRefPtr<CefMenuModel> model) override {
     model->Clear();
   }
-  void GetViewRect(CefRefPtr<CefBrowser>, CefRect& rect) override { rect = CefRect(0, 0, width_, height_); }
+  void GetViewRect(CefRefPtr<CefBrowser>, CefRect& rect) override { rect = CefRect(0, 0, screenshot_width_ ? screenshot_width_ : width_, screenshot_height_ ? screenshot_height_ : height_); }
   bool GetScreenInfo(CefRefPtr<CefBrowser>, CefScreenInfo& info) override {
     info.device_scale_factor = static_cast<float>(scale_);
-    info.rect = info.available_rect = CefRect(0, 0, width_, height_);
+    info.rect = info.available_rect = CefRect(0, 0, screenshot_width_ ? screenshot_width_ : width_, screenshot_height_ ? screenshot_height_ : height_);
     return true;
   }
   void OnAfterCreated(CefRefPtr<CefBrowser> browser) override {
@@ -449,6 +498,7 @@ class Source : public CefClient, public CefLifeSpanHandler, public CefRenderHand
     observer_ = browser->GetHost()->AddDevToolsMessageObserver(this);
     { std::lock_guard lock(audio_mutex_); target_id_ = "page-"+std::to_string(browser->GetIdentifier()); }
     root_->targets_[target_id_] = this;
+    root_->RetireContextAgent(context_id_);
     DispatchCDP(-1,"Target.getTargetInfo",CefDictionaryValue::Create(),"",true);
   }
   void OnBeforeClose(CefRefPtr<CefBrowser>) override {
@@ -472,6 +522,7 @@ class Source : public CefClient, public CefLifeSpanHandler, public CefRenderHand
       params->SetDouble("totalBytes",0);params->SetDouble("receivedBytes",0);root_->Event("Browser.downloadProgress",params);
     }
     for(const auto& [key,callback]:callbacks) callback->Cancel();
+    screenshot_jobs_.clear();
     observer_ = nullptr;
     browser_ = nullptr;
     for(auto found=root_->worker_debuggers_.begin();found!=root_->worker_debuggers_.end();) {
@@ -506,14 +557,14 @@ class Source : public CefClient, public CefLifeSpanHandler, public CefRenderHand
     view_.clear();view_.shrink_to_fit();popup_.clear();popup_.shrink_to_fit();
     if(this!=root_) std::erase_if(root_->children_,[this](const auto& child) {return child.get()==this;});
     if (root_->auto_attach_) {auto params=CefDictionaryValue::Create();params->SetString("sessionId",Session());params->SetString("targetId",target_id_);root_->Event("Target.detachedFromTarget",params);}
-    if (root_->targets_.empty()) CefQuitMessageLoop();
+    if (root_->targets_.empty() && !root_->context_agent_count_) CefQuitMessageLoop();
   }
   bool OnBeforePopup(CefRefPtr<CefBrowser>, CefRefPtr<CefFrame>, int popup_id, const CefString&,
                      const CefString&, CefLifeSpanHandler::WindowOpenDisposition, bool, const CefPopupFeatures&,
                      CefWindowInfo& window, CefRefPtr<CefClient>& client, CefBrowserSettings& settings,
                      CefRefPtr<CefDictionaryValue>&, bool*) override {
     if(root_->children_.size()>=64) return true;
-    window.SetAsWindowless(0);settings.windowless_frame_rate=browser_->GetHost()->GetWindowlessFrameRate();
+    window.SetAsWindowless(0);settings.windowless_frame_rate=browser_->GetHost()->GetWindowlessFrameRate();settings.background_color=CefColorSetARGB(255,255,255,255);
     CefRefPtr<Source> child=new Source(writer_,width_,height_,scale_,i420_,true,root_,context_id_,target_id_);
     root_->children_.push_back(child);root_->pending_popups_[{this,popup_id}]=child;client=child;return false;
   }
@@ -525,6 +576,9 @@ class Source : public CefClient, public CefLifeSpanHandler, public CefRenderHand
   }
   void OnPaint(CefRefPtr<CefBrowser>, PaintElementType type, const RectList&,
                const void* buffer, int width, int height) override {
+    // CDP temporarily changes the capture surface/offset. Keep those pixels
+    // out of the synchronized media stream; its normal last-frame hold applies.
+    if(screenshot_command_)return;
     const double captured = Now();
     writer_.Captured(true, captured);
     if (!buffer || width <= 0 || height <= 0 || width > 3840 || height > 2160) return;
@@ -661,7 +715,12 @@ class Source : public CefClient, public CefLifeSpanHandler, public CefRenderHand
     writer_.Error(("Browser renderer terminated (status "+std::to_string(int(status))+", exit "+std::to_string(code)+")").c_str());
   }
   bool OnDevToolsMessage(CefRefPtr<CefBrowser>, const void* data, size_t size) override {
-    if(size>16777216) return false;
+    if(size>16777216) {
+      // Do not leave a screenshot resize or command pending indefinitely when
+      // its encoded reply exceeds the bounded private IPC protocol.
+      writer_.Error("CEF DevTools reply exceeds the 16 MiB limit");
+      return true;
+    }
     auto value=CefParseJSON(static_cast<const char*>(data),size,JSON_PARSER_RFC);
     const bool opaque=!value;
     const std::string raw=opaque ? std::string(static_cast<const char*>(data),size) : std::string();
@@ -672,6 +731,7 @@ class Source : public CefClient, public CefLifeSpanHandler, public CefRenderHand
       auto found=devtools_pending_.find(message->GetInt("id"));
       if(found==devtools_pending_.end()) return false;
       const auto pending=found->second;devtools_pending_.erase(found);
+      if(screenshot_command_==message->GetInt("id")) FinishScreenshot();
       TraceCDP(message->HasKey("error") ? "agent-error" : "agent-reply",pending.id,pending.session,pending.method,target_id_);
       if(!pending.native && pending.method=="Target.attachToTarget" && !message->HasKey("error")) {
         auto result=message->GetDictionary("result");
@@ -836,6 +896,10 @@ class Source : public CefClient, public CefLifeSpanHandler, public CefRenderHand
     return true;
   }
  private:
+  void RetireContextAgent(const std::string& key) {
+    auto found=context_agents_.find(key);if(found==context_agents_.end() || found->second->Busy())return;
+    for(const auto& [target,source]:targets_)if(source->context_id_==key && !source->closing_) {found->second->Close();context_agents_.erase(found);return;}
+  }
   void CloseTargets(const std::string& context="") {
     std::vector<std::string> pending_debuggers;
     for(const auto& [target,debuggers]:worker_debuggers_)if(context.empty() || (!debuggers.empty() && debuggers.front().source->context_id_==context))pending_debuggers.push_back(target);
@@ -845,6 +909,9 @@ class Source : public CefClient, public CefLifeSpanHandler, public CefRenderHand
       workers.emplace_back(nested.source,nested.session);
     }
     for(const auto& [source,session]:workers) {auto detach=CefDictionaryValue::Create();detach->SetString("sessionId",session);source->DispatchCDP(-2,"Target.detachFromTarget",detach,"",true);}
+    std::vector<CefRefPtr<ContextAgent>> agents;
+    for(const auto& [key,agent]:context_agents_)if(context.empty() || key==context)agents.push_back(agent);
+    for(const auto& agent:agents)agent->Close();
     std::vector<CefRefPtr<CefBrowser>> browsers;
     for(auto& [key,source]:targets_) if(context.empty() || source->context_id_==context) {source->closing_=true;browsers.push_back(source->browser_);}
     for(auto& browser:browsers) browser->GetHost()->CloseBrowser(true);
@@ -896,40 +963,6 @@ class Source : public CefClient, public CefLifeSpanHandler, public CefRenderHand
     auto params=CefDictionaryValue::Create();params->SetString("sessionId",key);message->SetDictionary("params",params);CDPMessage(message);
   }
   void Attach() {auto params=CefDictionaryValue::Create();params->SetString("sessionId",Session());params->SetDictionary("targetInfo",TargetInfo());params->SetBool("waitingForDebugger",false);root_->Event("Target.attachedToTarget",params);}
-  void CookieCommand(int id,const std::string& session,const std::string& method,Dict params,CefRefPtr<CefRequestContext> context) {
-    auto reply=[self=CefRefPtr<Source>(this),id,session](Dict result,std::string error="") {
-      auto message=CefDictionaryValue::Create();message->SetInt("id",id);if(!session.empty())message->SetString("sessionId",session);
-      if(error.empty()) message->SetDictionary("result",result ? result : CefDictionaryValue::Create());
-      else {auto detail=CefDictionaryValue::Create();detail->SetInt("code",-32000);detail->SetString("message",error);message->SetDictionary("error",detail);}self->CDPMessage(message);
-    };
-    auto manager=context->GetCookieManager(nullptr);
-    if(!manager) {reply(nullptr,"CEF cookie manager unavailable");return;}
-    if(method=="Storage.getCookies") {
-      manager->VisitAllCookies(new CookieVisitor([reply](CefRefPtr<CefListValue> cookies) {auto result=CefDictionaryValue::Create();result->SetList("cookies",cookies);reply(result);}));return;
-    }
-    if(method=="Storage.clearCookies") {if(!manager->DeleteCookies("","",new CookieDeleteCallback([reply] {reply(nullptr);})))reply(nullptr,"CEF could not clear cookies");return;}
-    auto cookies=params->GetList("cookies");if(!cookies || cookies->GetSize()>500) {reply(nullptr,"Invalid cookie batch");return;}
-    struct Batch {size_t pending;bool success=true;};auto batch=std::make_shared<Batch>();batch->pending=cookies->GetSize();
-    if(!batch->pending) {reply(nullptr);return;}
-    auto complete=[batch,reply](bool success) {batch->success &= success;if(--batch->pending==0)reply(nullptr,batch->success ? "" : "CEF rejected a cookie");};
-    for(size_t i=0;i<cookies->GetSize();++i) {
-      auto item=cookies->GetDictionary(i);if(!item || item->HasKey("partitionKey")) {complete(false);continue;}
-      CefCookie cookie;CefString(&cookie.name)=item->GetString("name");CefString(&cookie.value)=item->GetString("value");CefString(&cookie.path)=item->HasKey("path") ? item->GetString("path") : "/";
-      // CDP distinguishes host cookies (plain domain / URL) from domain
-      // cookies (leading dot). CEF treats any nonempty domain as a domain
-      // cookie, so pass an empty CEF domain for host-only cookies.
-      const auto domain=item->GetString("domain").ToString();
-      if(domain.starts_with("."))CefString(&cookie.domain)=domain;
-      cookie.secure=item->GetBool("secure");cookie.httponly=item->GetBool("httpOnly");cookie.priority=CEF_COOKIE_PRIORITY_MEDIUM;
-      const auto site=item->GetString("sameSite").ToString();cookie.same_site=site=="Strict" ? CEF_COOKIE_SAME_SITE_STRICT_MODE : site=="None" ? CEF_COOKIE_SAME_SITE_NO_RESTRICTION : CEF_COOKIE_SAME_SITE_LAX_MODE;
-      // Chromium ignores insecure SameSite=None cookies while the CDP batch
-      // succeeds. Do not create that cookie or fail unrelated valid entries.
-      if(site=="None" && !cookie.secure) {complete(true);continue;}
-      if(item->HasKey("expires") && Number(item,"expires")>=0) {cookie.has_expires=true;cookie.expires.val=static_cast<int64_t>(Number(item,"expires")*1000000)+11644473600000000LL;}
-      auto url=item->GetString("url").ToString();if(url.empty()) {auto domain=item->GetString("domain").ToString();if(domain.starts_with("."))domain.erase(0,1);url=std::string(cookie.secure ? "https://" : "http://")+domain+item->GetString("path").ToString();}
-      if(!manager->SetCookie(url,cookie,new CookieSetCallback(complete))) complete(false);
-    }
-  }
   void CDP(Dict message,const std::string& raw_params="") {
     if(!message || message->GetInt("id")<1 || message->GetString("method").empty()) {writer_.Error("Invalid CEF protocol command");return;}
     const int id=message->GetInt("id");const auto method=message->GetString("method").ToString();
@@ -1043,13 +1076,13 @@ class Source : public CefClient, public CefLifeSpanHandler, public CefRenderHand
         if(children_.size()>=64) {reply(nullptr,"CEF target limit exceeded");return;}
         const auto key=params->GetString("browserContextId").ToString();auto context=contexts_.find(key);
         if(!key.empty() && context==contexts_.end()) {reply(nullptr,"Unknown browser context");return;}
-        CefWindowInfo window;window.SetAsWindowless(0);CefBrowserSettings settings;settings.windowless_frame_rate=browser_->GetHost()->GetWindowlessFrameRate();
+        CefWindowInfo window;window.SetAsWindowless(0);CefBrowserSettings settings;settings.windowless_frame_rate=browser_->GetHost()->GetWindowlessFrameRate();settings.background_color=CefColorSetARGB(255,255,255,255);
         CefRefPtr<Source> child=new Source(writer_,width_,height_,scale_,i420_,true,this,key.empty() ? "default" : key);
         child->create_reply_=id;children_.push_back(child);
         auto created=CefBrowserHost::CreateBrowserSync(window,child,params->GetString("url"),settings,nullptr,context==contexts_.end() ? browser_->GetHost()->GetRequestContext() : context->second);
         if(!created) {child->create_reply_=0;std::erase_if(children_,[&](const auto& item){return item==child;});reply(nullptr,"CEF could not create target");return;}return;
       }
-      if(method=="Target.disposeBrowserContext") {const auto key=params->GetString("browserContextId").ToString();CloseTargets(key);contexts_.erase(key);std::erase_if(pending_worker_targets_,[&key](const auto& item){return item.second->GetString("browserContextId")==key;});pending_permissions_.erase(key);download_paths_.erase(key);reply(result);return;}
+      if(method=="Target.disposeBrowserContext") {const auto key=params->GetString("browserContextId").ToString();CloseTargets(key);contexts_.erase(key);context_agents_.erase(key);std::erase_if(pending_worker_targets_,[&key](const auto& item){return item.second->GetString("browserContextId")==key;});pending_permissions_.erase(key);download_paths_.erase(key);reply(result);return;}
       if(method=="Target.closeTarget") {auto found=targets_.find(params->GetString("targetId").ToString());const bool exists=found!=targets_.end();if(exists) {found->second->closing_=true;found->second->browser_->GetHost()->CloseBrowser(true);}result->SetBool("success",exists);reply(result);return;}
       if(method=="Browser.setDownloadBehavior") {
         const auto key=params->GetString("browserContextId").ToString();const auto behavior=params->GetString("behavior").ToString();
@@ -1072,8 +1105,24 @@ class Source : public CefClient, public CefLifeSpanHandler, public CefRenderHand
       }
       if(method=="Browser.close") {reply(nullptr);CloseTargets();return;}
       if(method=="Storage.getCookies" || method=="Storage.setCookies" || method=="Storage.clearCookies") {
-        const auto key=params->GetString("browserContextId").ToString();auto found=contexts_.find(key);auto context=key.empty() || key=="default" ? browser_->GetHost()->GetRequestContext() : found==contexts_.end() ? nullptr : found->second;
-        if(!context) {reply(nullptr,"Unknown browser context");return;}CookieCommand(id,session,method,params,context);return;
+        const auto supplied=params->GetString("browserContextId").ToString();const auto key=supplied.empty() ? "default" : supplied;
+        if(key!="default" && !contexts_.contains(key)) {reply(nullptr,"Unknown browser context");return;}
+        if(method=="Storage.setCookies") {auto cookies=params->GetList("cookies");if(!cookies || cookies->GetSize()>500) {reply(nullptr,"Invalid cookie batch");return;}}
+        auto forwarded=params->Copy(false);forwarded->Remove("browserContextId");
+        const std::string network=method=="Storage.getCookies" ? "Network.getAllCookies" : method=="Storage.setCookies" ? "Network.setCookies" : "Network.clearBrowserCookies";
+        for(const auto& [target,source]:targets_) if(source->context_id_==key && !source->closing_) {source->DispatchCDP(id,network,forwarded,session,false);return;}
+        if(!context_agents_.contains(key)) {
+          CefWindowInfo window;window.SetAsWindowless(0);CefBrowserSettings settings;settings.windowless_frame_rate=1;
+          ++context_agent_count_;
+          CefRefPtr<ContextAgent> agent=new ContextAgent([self=CefRefPtr<Source>(this)] {
+            --self->context_agent_count_;if(self->targets_.empty() && !self->context_agent_count_)CefQuitMessageLoop();
+          });context_agents_[key]=agent;
+          if(!CefBrowserHost::CreateBrowserSync(window,agent,"about:blank",settings,nullptr,contexts_.at(key))) {agent->Close();context_agents_.erase(key);reply(nullptr,"CEF cookie agent initialization failed");return;}
+        }
+        context_agents_.at(key)->Send(network,forwarded,[self=CefRefPtr<Source>(this),id,session,key](Dict response) {
+          response->SetInt("id",id);if(!session.empty())response->SetString("sessionId",session);self->CDPMessage(response);self->RetireContextAgent(key);
+        });
+        return;
       }
       if(method=="Browser.grantPermissions" || method=="Browser.resetPermissions") {
         const auto supplied=params->GetString("browserContextId").ToString();const auto key=supplied.empty() ? "default" : supplied;
@@ -1137,15 +1186,54 @@ class Source : public CefClient, public CefLifeSpanHandler, public CefRenderHand
       for(const auto& [target,nested]:nested_targets_)if(nested.source==selected && nested.session==nested_session) {ReleaseWorkerDebuggers(target);break;}
     }
   }
+  struct ScreenshotJob {int id;std::string method;Dict params;std::string session;bool native;std::string raw_params;};
+  void CDPError(int id,const std::string& session,bool native,const char* text) {
+    if(native) {writer_.Reply(id,false,text);return;}
+    auto response=CefDictionaryValue::Create();response->SetInt("id",id);if(!session.empty())response->SetString("sessionId",session);
+    auto error=CefDictionaryValue::Create();error->SetInt("code",-32000);error->SetString("message",text);response->SetDictionary("error",error);root_->CDPMessage(response);
+  }
+  void FinishScreenshot() {
+    const bool resized=screenshot_width_ || screenshot_height_;
+    screenshot_command_=0;screenshot_width_=screenshot_height_=0;
+    if(resized && browser_)browser_->GetHost()->WasResized();
+    if(screenshot_jobs_.empty())return;
+    auto job=std::move(screenshot_jobs_.front());screenshot_jobs_.pop_front();screenshot_draining_=true;
+    CefPostTask(TID_UI,new Task([self=CefRefPtr<Source>(this),job=std::move(job)] {
+      self->screenshot_draining_=false;
+      if(self->closing_ || self->stopped_) {self->CDPError(job.id,job.session,job.native,"CEF target closed");return;}
+      self->DispatchCDP(job.id,job.method,job.params,job.session,job.native,job.raw_params);
+    }));
+  }
   void DispatchCDP(int id,const std::string& method,Dict params,const std::string& session,bool native,const std::string& raw_params="") {
-    if(devtools_pending_.size()>=256) {if(native) writer_.Reply(id,false,"CEF command capacity exceeded");else {auto response=CefDictionaryValue::Create();response->SetInt("id",id);if(!session.empty())response->SetString("sessionId",session);auto error=CefDictionaryValue::Create();error->SetInt("code",-32000);error->SetString("message","CEF command capacity exceeded");response->SetDictionary("error",error);root_->CDPMessage(response);}return;}
+    if(method=="Page.captureScreenshot") {
+      if(Json(params).size()>4096 || raw_params.size()>4096) {CDPError(id,session,native,"CEF screenshot argument limit exceeded");return;}
+      if(screenshot_command_ || screenshot_draining_) {
+        if(screenshot_jobs_.size()>=8) {CDPError(id,session,native,"CEF screenshot queue capacity exceeded");return;}
+        screenshot_jobs_.push_back({id,method,params->Copy(false),session,native,raw_params});return;
+      }
+    }
+    if(devtools_pending_.size()>=256) {CDPError(id,session,native,"CEF command capacity exceeded");return;}
     do {devtools_index_=suitecut::NextCommandID(devtools_index_);} while(devtools_pending_.contains(devtools_index_));
-    const int internal=devtools_index_;devtools_pending_[internal]={id,native,session,params->GetString("targetId").ToString(),method};
+    const int internal=devtools_index_;
+    if(method=="Emulation.setDeviceMetricsOverride") {const auto factor=Number(params,"deviceScaleFactor");emulated_scale_=factor>0 ? factor : scale_;}
+    if(method=="Emulation.clearDeviceMetricsOverride")emulated_scale_=scale_;
+    if(method=="Page.captureScreenshot") {
+      screenshot_command_=internal;
+      auto clip=params->GetDictionary("clip");
+      if(clip) {
+        const double factor=Number(clip,"scale")*emulated_scale_/scale_;
+        const double width=std::ceil(Number(clip,"width")*factor),height=std::ceil(Number(clip,"height")*factor);
+        if(std::isfinite(width) && std::isfinite(height) && width>0 && height>0 && width*scale_<=16384 && height*scale_<=16384 && width*height*scale_*scale_<=3840.0*2160) {
+          screenshot_width_=int(width);screenshot_height_=int(height);browser_->GetHost()->WasResized();
+        } else if(width>0 && height>0) {FinishScreenshot();CDPError(id,session,native,"CEF screenshot exceeds the 8,294,400-pixel or 16,384-axis limit");return;}
+      }
+    }
+    devtools_pending_[internal]={id,native,session,params->GetString("targetId").ToString(),method};
     TraceCDP("agent-send",id,session,method,target_id_,params);
     auto message=CefDictionaryValue::Create();message->SetInt("id",internal);message->SetString("method",method);message->SetDictionary("params",params);
     const auto separator=session.find("::");if(separator!=std::string::npos) message->SetString("sessionId",session.substr(separator+2));
     auto data=Json(message);if(!raw_params.empty())data=suitecut::CDPReplaceField(std::move(data),"params",raw_params);
-    if(!browser_->GetHost()->SendDevToolsMessage(data.data(),data.size())) {devtools_pending_.erase(internal);writer_.Reply(id,false,"CEF DevTools dispatch failed");}
+    if(!browser_->GetHost()->SendDevToolsMessage(data.data(),data.size())) {devtools_pending_.erase(internal);if(screenshot_command_==internal)FinishScreenshot();CDPError(id,session,native,"CEF DevTools dispatch failed");}
   }
   void DeferCDP(int id,const std::string& method,Dict params,const std::string& session,bool native) {
     // Never issue another DevTools command inside CEF's observer callback.
@@ -1485,6 +1573,8 @@ class Source : public CefClient, public CefLifeSpanHandler, public CefRenderHand
   std::set<std::string> discover_sessions_;
   std::set<std::string> auth_only_agents_,client_fetch_agents_;
   std::map<std::string,CefRefPtr<CefRequestContext>> contexts_;
+  std::map<std::string,CefRefPtr<ContextAgent>> context_agents_;
+  size_t context_agent_count_=0;
   std::vector<CefRefPtr<Source>> children_;
   std::map<std::pair<Source*,int>,CefRefPtr<Source>> pending_popups_;
   std::map<int,PendingDevTools> devtools_pending_;
@@ -1507,6 +1597,10 @@ class Source : public CefClient, public CefLifeSpanHandler, public CefRenderHand
   int frame_width_ = 0, frame_height_ = 0, popup_width_ = 0, popup_height_ = 0, navigation_ = 0;
   bool show_popup_ = false, ready_ = false, emit_frames_ = true;
   bool screencast_active_=false,screencast_pulse_pending_=false;
+  std::deque<ScreenshotJob> screenshot_jobs_;
+  bool screenshot_draining_=false;
+  int screenshot_command_=0,screenshot_width_=0,screenshot_height_=0;
+  double emulated_scale_=1;
   CefRect popup_rect_;
   std::vector<uint8_t> view_, popup_;
   std::atomic<bool> stopped_{false}, audio_valid_{false}, closing_{false};
@@ -1577,7 +1671,7 @@ class App : public CefApp, public CefBrowserProcessHandler {
     window.SetAsWindowless(0);
     CefBrowserSettings settings;
     settings.windowless_frame_rate = fps;
-    settings.background_color = CefColorSetARGB(255, 0, 0, 0);
+    settings.background_color = CefColorSetARGB(255, 255, 255, 255);
     source_ = new Source(writer_, width, height, scale, pixel_format == "i420",
                          command->HasSwitch("suitecut-frame-subscriptions"));
     if (!CefBrowserHost::CreateBrowser(window, source_, "about:blank", settings, nullptr, nullptr)) CefQuitMessageLoop();

@@ -1,4 +1,4 @@
-import { spawn } from 'node:child_process'
+import { spawn, execFileSync } from 'node:child_process'
 import { once } from 'node:events'
 import { readFile, writeFile } from 'node:fs/promises'
 import { createServer } from 'node:http'
@@ -8,6 +8,7 @@ import { setTimeout as delay } from 'node:timers/promises'
 
 import { test, expect } from '../../src/engine-test.js'
 import { launchEngine } from '../../src/engine.js'
+import { launchNativeBrowser } from '../../src/native-browser.js'
 
 let server: ReturnType<typeof createServer>, url: string
 const artifactDirectory = resolve(
@@ -540,4 +541,85 @@ test('native shutdown joins a pending pause and releases active outputs', async 
   } finally {
     await engine.close()
   }
+})
+
+test('oversized CEF replies fail explicitly and release the native process', async () => {
+  const source = await launchNativeBrowser({
+    executablePath: process.env.SUITECUT_NATIVE_EXECUTABLE ?? '',
+    width: 640,
+    height: 360,
+    framesPerSecond: 30,
+  })
+  try {
+    await expect(
+      source.sendDevToolsCommand('Runtime.evaluate', {
+        expression: '"x".repeat(17 * 1024 * 1024)',
+        returnByValue: true,
+      }),
+    ).rejects.toThrow('CEF DevTools reply exceeds the 16 MiB limit')
+    await source.closed
+    expect(source.state).toBe('failed')
+  } finally {
+    await source.close()
+  }
+})
+
+test('temporary screenshot surfaces never enter the recorded video', async ({
+  page,
+  suitecutEngine,
+}) => {
+  await page.goto(url)
+  await page.setContent(
+    '<style>body{margin:0;background:red}::-webkit-scrollbar{display:none}</style><div style="position:absolute;left:800px;width:1000px;height:600px;background:blue"></div>',
+  )
+  await delay(300)
+  const destination = resolve(artifactDirectory, 'screenshot-surface-isolation.mp4')
+  const output = await suitecutEngine.record(page, {
+    destination,
+    width: 640,
+    height: 360,
+    fps: 30,
+    audio: false,
+  })
+  const session = await page.context().newCDPSession(page)
+  try {
+    await delay(300)
+    for (let i = 0; i < 3; i++) {
+      const screenshot = await session.send('Page.captureScreenshot', {
+        format: 'png',
+        captureBeyondViewport: true,
+        clip: { x: 800, y: 0, width: 1000, height: 600, scale: 1 },
+      })
+      const { default: sharp } = await import('sharp')
+      const pixels = await sharp(Buffer.from(screenshot.data, 'base64'))
+        .resize(1, 1)
+        .removeAlpha()
+        .raw()
+        .toBuffer()
+      expect([...pixels]).toEqual([0, 0, 255])
+    }
+    await delay(300)
+  } finally {
+    await session.detach()
+    await output.stop()
+  }
+  const frames = execFileSync(
+    'ffmpeg',
+    [
+      '-v',
+      'error',
+      '-i',
+      destination,
+      '-vf',
+      'scale=16:16',
+      '-f',
+      'rawvideo',
+      '-pix_fmt',
+      'rgb24',
+      'pipe:1',
+    ],
+    { timeout: 15000 },
+  )
+  expect(frames.length).toBeGreaterThan(10 * 16 * 16 * 3)
+  expect(frames.every((value, index) => (index % 3 === 0 ? value > 200 : value < 40))).toBe(true)
 })

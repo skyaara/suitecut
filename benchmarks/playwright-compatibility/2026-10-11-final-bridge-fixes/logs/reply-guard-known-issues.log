@@ -1,0 +1,112 @@
+[WARN] Your node_modules are out of sync with your lockfile. The value of the patchedDependencies setting has changed
+
+Running 5 tests using 1 worker
+
+(node:1216554) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/permissions.spec.ts:222:3 › storage access (167ms)
+(node:1216680) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  2 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/permissions.spec.ts:317:3 › can request screen-wake-lock (145ms)
+(node:1216807) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  3 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/popup.spec.ts:20:3 › should inherit user agent from browser context @smoke (355ms)
+(node:1216961) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  4 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/popup.spec.ts:177:3 › BrowserContext.addInitScript should apply to an in-process popup (194ms)
+(node:1217088) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+SuiteCut native failure: Native browser: Browser renderer terminated (status 2, exit 5)
+  ✘  5 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/page/page-aria-snapshot-ai.spec.ts:70:3 › should snapshot a locator inside an iframe (136ms)
+
+
+  1) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/permissions.spec.ts:222:3 › storage access 
+
+    Error: browserContext.grantPermissions: Protocol error (Browser.grantPermissions): Unsupported native permission: storageAccess
+
+      225 |   it.skip(browserName !== 'chromium', 'chromium-only api');
+      226 |
+    > 227 |   await context.grantPermissions(['storage-access']);
+          |                 ^
+      228 |   expect(await getPermission(page, 'storage-access')).toBe('granted');
+      229 |   server.setRoute('/set-cookie.html', (req, res) => {
+      230 |     res.setHeader('Set-Cookie', 'name=value; Path=/; SameSite=Strict; Secure');
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/permissions.spec.ts:227:17
+
+    Error Context: ../../tmp/suitecut-suite-pass/reply-guard-known-issues/artifacts/library-permissions-storage-access/error-context.md
+
+  2) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/permissions.spec.ts:317:3 › can request screen-wake-lock 
+
+    Error: browserContext.grantPermissions: Protocol error (Browser.grantPermissions): Unsupported native permission: wakeLockScreen
+
+      318 |   annotation: { type: 'issue', description: 'https://github.com/microsoft/playwright/issues/39115' }
+      319 | }, async ({ page, context }) => {
+    > 320 |   await context.grantPermissions(['screen-wake-lock']);
+          |                 ^
+      321 |   await page.route('**/*', route => route.fulfill({ status: 200, body: '<div>Hello there!</div>', contentType: 'text/html' }));
+      322 |   await page.goto('https://example.com');
+      323 |   await page.evaluate(() => navigator.wakeLock.request('screen'));
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/permissions.spec.ts:320:17
+
+    Error Context: ../../tmp/suitecut-suite-pass/reply-guard-known-issues/artifacts/library-permissions-can-request-screen-wake-lock/error-context.md
+
+  3) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/popup.spec.ts:20:3 › should inherit user agent from browser context @smoke 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: "hey"
+    Received: "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36"
+
+      37 |   await context.close();
+      38 |   expect(userAgent).toBe('hey');
+    > 39 |   expect(request.headers['user-agent']).toBe('hey');
+         |                                         ^
+      40 | });
+      41 |
+      42 | it('should respect routes from browser context', async function({ browser, server }) {
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/popup.spec.ts:39:41
+
+    Error Context: ../../tmp/suitecut-suite-pass/reply-guard-known-issues/artifacts/library-popup-should-inher-c70db--from-browser-context-smoke/error-context.md
+
+  4) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/popup.spec.ts:177:3 › BrowserContext.addInitScript should apply to an in-process popup 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 123
+    Received: undefined
+
+      185 |   });
+      186 |   await context.close();
+    > 187 |   expect(injected).toBe(123);
+          |                    ^
+      188 | });
+      189 |
+      190 | it('BrowserContext.addInitScript should apply to a cross-process popup', async function({ browser, server }) {
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/popup.spec.ts:187:20
+
+    Error Context: ../../tmp/suitecut-suite-pass/reply-guard-known-issues/artifacts/library-popup-BrowserConte-c6143-pply-to-an-in-process-popup/error-context.md
+
+  5) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/page/page-aria-snapshot-ai.spec.ts:70:3 › should snapshot a locator inside an iframe 
+
+    Error: page.setContent: Target page, context or browser has been closed
+    Call log:
+      - setting frame content, waiting until "load"
+
+
+      69 |
+      70 | it('should snapshot a locator inside an iframe', async ({ page }) => {
+    > 71 |   await page.setContent(`
+         |              ^
+      72 |     <h1>Main Page</h1>
+      73 |     <iframe srcdoc="<ul><li>Item 1</li><li>Item 2</li></ul>"></iframe>
+      74 |   `);
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/page/page-aria-snapshot-ai.spec.ts:71:14
+
+    Error Context: ../../tmp/suitecut-suite-pass/reply-guard-known-issues/artifacts/page-page-aria-snapshot-ai-73de9--a-locator-inside-an-iframe/error-context.md
+
+  5 failed
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/permissions.spec.ts:222:3 › storage access 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/permissions.spec.ts:317:3 › can request screen-wake-lock 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/popup.spec.ts:20:3 › should inherit user agent from browser context @smoke 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/popup.spec.ts:177:3 › BrowserContext.addInitScript should apply to an in-process popup 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/page/page-aria-snapshot-ai.spec.ts:70:3 › should snapshot a locator inside an iframe 

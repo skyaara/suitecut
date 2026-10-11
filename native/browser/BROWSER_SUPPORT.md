@@ -41,6 +41,7 @@ style is an architectural change, not a codec switch.
 | Popup pages, JavaScript dialogs, file upload/download | Actual `launchEngine` Playwright integration passed                                                                                             |
 | Network routing, init scripts and isolated storage    | Actual Playwright integration passed                                                                                                            |
 | Permissions/geolocation                               | Grant/reset and geolocation setup passed; other permission/device combinations have narrower coverage                                           |
+| Partitioned cookies (CHIPS)                           | Chromium Network cookie commands preserve partition keys; context isolation, filtered clearing, state round trips and cross-site delivery verified, including contexts with no pages |
 | Windowless page resize                                | Per-target window IDs, applied bounds, physical screenshot width and sibling isolation passed                                                   |
 | Native recording/streaming lifecycle                  | Readiness, silent pages, pause, selection and shutdown regression checks passed                                                                 |
 
@@ -92,15 +93,11 @@ these functional checks do not establish GPU performance or a leak-free browser.
   upstream tests now establish specific workflows, with confirmed failures;
   the full upstream compatibility suite has not been completed. See the
   [October 11 report](../../benchmarks/playwright-compatibility/2026-10-11/report.md).
-- **Partitioned-cookie management:** `browserContext.addCookies` rejects
-  `partitionKey`; the CEF cookie-manager adapter does not implement this field.
-  This does not establish that Chromium itself cannot process partitioned
-  cookies received from websites.
 - **Authentication-state breadth:** cookie/localStorage/IndexedDB file export
   and restoration pass, including binary values, dates, indexes, third-party
   localStorage, lone UTF-16 values and fresh-context isolation. Automation uses
   Playwright's origin-based storage semantics with third-party storage
-  partitioning disabled. Persistent profiles, partitioned cookies and state
+  partitioning disabled. Persistent profiles and state
   exceeding native protocol limits remain unsupported or incomplete.
 - **Worker/frame automation and networking:** basic service-worker automation
   and cross-origin process frame interaction/routing pass. Advanced worker
@@ -108,7 +105,8 @@ these functional checks do not establish GPU performance or a leak-free browser.
   HTTP/HTTPS proxy and origin-auth cases pass individually; distinct proxy and
   origin credentials pass with the explicitly configured Playwright 1.62.1
   [driver patch](../../patches/README.md); unpatched drivers retain the overwrite.
-  Extra CDP sessions still share underlying domain state.
+  Explicit page CDP sessions now own independent debugger sessions. Raw worker
+  aliases still need domain-isolation verification.
 - **Playwright video/HAR breadth:** decoded WebM recordings, HAR JSON/ZIP
   capture/replay and redirected HAR history pass. Windowless repaint/visibility
   and dialog-event fixes help individual cases; yielding between CDP messages
@@ -121,6 +119,12 @@ these functional checks do not establish GPU performance or a leak-free browser.
   agent. The explicit Playwright [driver patch](../../patches/README.md) preserves
   windowless dimensions, including 3840×2160. The SDK bounds concurrent CDP IPC
   submissions so parallel page creation does not exhaust native command slots.
+- **Blank-origin srcdoc frames:** creating a srcdoc iframe in an initial
+  about:blank document crashes the renderer in a minimal CEF client, without
+  SuiteCut media or DevTools code. HTTP-origin srcdoc frames work.
+- **Permission breadth:** storage-access and screen-wake-lock overrides remain
+  unsupported; CEF contexts are not registered with Chromium’s browser CDP
+  context manager. Existing permission grants retain their verified scope.
 - **Early popup events:** javascript-URL console events and prompts during popup
   initialization still fail selected upstream cases; see the
   [latest report](../../benchmarks/playwright-compatibility/2026-10-11-remaining-fixes/report.md).

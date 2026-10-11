@@ -1,0 +1,59 @@
+{
+  "seed": 99539473,
+  "cycles": 140,
+  "status": "passed",
+  "startedAt": "2026-10-11T18:33:58.519Z",
+  "finishedAt": "2026-10-11T18:34:24.645Z",
+  "snapshots": [
+    {
+      "label": "after-20",
+      "nativeProcesses": 8,
+      "nativePssMiB": 389.904296875,
+      "nativeUssMiB": 218.25390625,
+      "nativeRssSumMiB": 834.40625,
+      "nativeFds": 290,
+      "nativeThreads": 83,
+      "nodeHeapMiB": 50.24729919433594
+    },
+    {
+      "label": "after-60",
+      "nativeProcesses": 8,
+      "nativePssMiB": 392.443359375,
+      "nativeUssMiB": 220.69921875,
+      "nativeRssSumMiB": 837.1953125,
+      "nativeFds": 290,
+      "nativeThreads": 83,
+      "nodeHeapMiB": 50.53300476074219
+    },
+    {
+      "label": "after-100",
+      "nativeProcesses": 8,
+      "nativePssMiB": 392.8701171875,
+      "nativeUssMiB": 221.125,
+      "nativeRssSumMiB": 837.6171875,
+      "nativeFds": 290,
+      "nativeThreads": 83,
+      "nodeHeapMiB": 50.605995178222656
+    },
+    {
+      "label": "after-140",
+      "nativeProcesses": 8,
+      "nativePssMiB": 393.4287109375,
+      "nativeUssMiB": 221.6796875,
+      "nativeRssSumMiB": 838.1796875,
+      "nativeFds": 290,
+      "nativeThreads": 83,
+      "nodeHeapMiB": 50.57890319824219
+    },
+    {
+      "label": "after-engine-close",
+      "nativeProcesses": 0,
+      "nativePssMiB": 0.0,
+      "nativeUssMiB": 0.0,
+      "nativeRssSumMiB": 0.0,
+      "nativeFds": 0,
+      "nativeThreads": 0,
+      "nodeHeapMiB": 50.63348388671875
+    }
+  ]
+}

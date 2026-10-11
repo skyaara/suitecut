@@ -1,0 +1,13 @@
+[WARN] Your node_modules are out of sync with your lockfile. The value of the patchedDependencies setting has changed
+
+Running 5 tests using 1 worker
+
+(node:1217254) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/permissions.spec.ts:222:3 › storage access (241ms)
+  ✓  2 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/permissions.spec.ts:317:3 › can request screen-wake-lock (94ms)
+  ✓  3 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/popup.spec.ts:20:3 › should inherit user agent from browser context @smoke (157ms)
+  ✓  4 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/popup.spec.ts:177:3 › BrowserContext.addInitScript should apply to an in-process popup (73ms)
+  ✓  5 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/page/page-aria-snapshot-ai.spec.ts:70:3 › should snapshot a locator inside an iframe (91ms)
+
+  5 passed (1.8s)

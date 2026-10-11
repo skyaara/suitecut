@@ -99,6 +99,11 @@ function handle(req: IncomingMessage, res: ServerResponse) {
     res.write(Buffer.alloc(1024, 7))
     return
   }
+  if (path === '/cookie-echo') {
+    res.setHeader('Content-Type', 'text/plain')
+    res.end(req.headers.cookie ?? '')
+    return
+  }
   if (path === '/initial-language') {
     res.writeHead(200, { 'Content-Type': 'text/html' })
     res.end('<script>window.initialLanguage = navigator.language</script>')
@@ -1020,4 +1025,230 @@ test('cdp: explicit page sessions keep debugger domains independent', async ({ p
   } finally {
     await session.detach()
   }
+})
+
+for (const pagesFirst of [false, true]) {
+  test(`cookies: partitioned cookies stay isolated with pagesFirst=${pagesFirst}`, async ({
+    browser,
+  }) => {
+    const context = await browser.newContext({ ignoreHTTPSErrors: true })
+    const other = await browser.newContext({ ignoreHTTPSErrors: true })
+    try {
+      if (pagesFirst) await context.newPage()
+      await context.addCookies([
+        {
+          name: 'chip',
+          value: 'one',
+          domain: '127.0.0.1',
+          path: '/',
+          secure: true,
+          sameSite: 'None',
+          partitionKey: 'https://localhost',
+        },
+        {
+          name: 'chip',
+          value: 'two',
+          domain: '127.0.0.1',
+          path: '/',
+          secure: true,
+          sameSite: 'None',
+          partitionKey: 'https://example.com',
+        },
+        { name: 'plain', value: 'three', url: tlsOrigin },
+      ])
+      expect((await context.cookies()).filter((cookie) => cookie.name === 'chip')).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ value: 'one', partitionKey: 'https://localhost' }),
+          expect.objectContaining({ value: 'two', partitionKey: 'https://example.com' }),
+        ]),
+      )
+      expect(await other.cookies()).toEqual([])
+      expect(context.pages()).toHaveLength(pagesFirst ? 1 : 0)
+      const state = await context.storageState()
+      await other.addCookies(state.cookies)
+      expect(await other.cookies()).toEqual(await context.cookies())
+      await context.clearCookies({ name: 'chip' })
+      expect(await context.cookies()).toEqual([expect.objectContaining({ name: 'plain' })])
+      expect(await other.cookies()).toHaveLength(3)
+      await context.clearCookies()
+      expect(await context.cookies()).toEqual([])
+    } finally {
+      await context.close()
+      await other.close()
+    }
+  })
+}
+
+for (const deviceScaleFactor of [1, 2]) {
+  test(`screenshots: oversized elements preserve pixels and viewport at DPR ${deviceScaleFactor}`, async ({
+    browser,
+  }, info) => {
+    const context = await browser.newContext({
+      viewport: { width: 500, height: 500 },
+      deviceScaleFactor,
+    })
+    try {
+      const page = await context.newPage()
+      await page.setContent(
+        '<style>::-webkit-scrollbar{display:none}.box{border:1px solid blue;width:600px;height:600px;margin-left:50px}</style><div class="box"></div><div class="box"></div>',
+      )
+      const images = await Promise.all(
+        (await page.$$('.box')).map((element) => element.screenshot()),
+      )
+      const { default: sharp } = await import('sharp')
+      for (const [index, image] of images.entries()) {
+        const { data, info: pixels } = await sharp(image)
+          .ensureAlpha()
+          .raw()
+          .toBuffer({ resolveWithObject: true })
+        expect(pixels.width).toBe(602 * deviceScaleFactor)
+        expect(pixels.height).toBe(602 * deviceScaleFactor)
+        for (let x = 0; x < pixels.width; x++) {
+          expect([...data.subarray(x * 4, x * 4 + 4)]).toEqual([0, 0, 255, 255])
+          const bottom = ((pixels.height - 1) * pixels.width + x) * 4
+          expect([...data.subarray(bottom, bottom + 4)]).toEqual([0, 0, 255, 255])
+        }
+        await writeFile(info.outputPath(`oversized-${index}.png`), image)
+      }
+      expect(await page.evaluate(() => [innerWidth, innerHeight, devicePixelRatio])).toEqual([
+        500,
+        500,
+        deviceScaleFactor,
+      ])
+    } finally {
+      await context.close()
+    }
+  })
+}
+
+for (const concurrent of [false, true]) {
+  test(`screenshots: independent sessions preserve the viewport with concurrent=${concurrent}`, async ({
+    page,
+    engine,
+  }, info) => {
+    test.skip(
+      concurrent && !engine,
+      'Native screenshot serialization guarantee; stock Chromium races independent capture sessions',
+    )
+    await page.setViewportSize({ width: 500, height: 500 })
+    await page.setContent(
+      '<style>body{margin:0}::-webkit-scrollbar{display:none}</style><div style="width:100%;height:10000px;background:blue"></div>',
+    )
+    const sessions = await Promise.all([
+      page.context().newCDPSession(page),
+      page.context().newCDPSession(page),
+    ])
+    try {
+      const capture = (index: number) =>
+        required(sessions[index]).send('Page.captureScreenshot', {
+          format: 'png',
+          captureBeyondViewport: true,
+          clip: { x: 0, y: 0, width: 500, height: index ? 10000 : 602, scale: 1 },
+        })
+      const captures = concurrent
+        ? await Promise.all([capture(0), capture(1)])
+        : [await capture(0), await capture(1)]
+      const { default: sharp } = await import('sharp')
+      for (const [index, result] of captures.entries()) {
+        const image = Buffer.from(result.data, 'base64')
+        const metadata = await sharp(image).metadata()
+        expect(metadata.width).toBe(500)
+        expect(metadata.height).toBe(index ? 10000 : 602)
+        await writeFile(info.outputPath(`parallel-${index}.png`), image)
+      }
+      expect(await page.evaluate(() => [innerWidth, innerHeight])).toEqual([500, 500])
+    } finally {
+      await Promise.all(sessions.map((session) => session.detach()))
+    }
+  })
+}
+
+test('native: screenshot bounds reject excessive pixel allocation', async ({ page, engine }) => {
+  test.skip(!engine, 'Native bounded capture policy')
+  const session = await page.context().newCDPSession(page)
+  try {
+    await expect(
+      session.send('Page.captureScreenshot', {
+        clip: { x: 0, y: 0, width: 16384, height: 16384, scale: 1 },
+      }),
+    ).rejects.toThrow('pixel')
+    expect(await page.evaluate(() => 21 * 2)).toBe(42)
+    expect(await page.evaluate(() => [innerWidth, innerHeight])).toEqual([640, 360])
+  } finally {
+    await session.detach()
+  }
+})
+
+test('cookies: partition keys determine which cookie reaches a cross-site frame', async ({
+  browser,
+}) => {
+  const context = await browser.newContext({ ignoreHTTPSErrors: true })
+  try {
+    await context.addCookies([
+      {
+        name: 'chip',
+        value: 'one',
+        domain: '127.0.0.1',
+        path: '/',
+        secure: true,
+        sameSite: 'None',
+        partitionKey: 'https://localhost',
+      },
+      {
+        name: 'chip',
+        value: 'two',
+        domain: '127.0.0.1',
+        path: '/',
+        secure: true,
+        sameSite: 'None',
+        partitionKey: 'https://example.com',
+      },
+    ])
+    const page = await context.newPage()
+    await page.goto(tlsOrigin.replace('127.0.0.1', 'localhost'))
+    await page.setContent(`<iframe src="${tlsOrigin}/cookie-echo"></iframe>`)
+    await expect(page.frameLocator('iframe').locator('body')).toHaveText('chip=one')
+  } finally {
+    await context.close()
+  }
+})
+
+test('native: repeated empty cookie contexts reclaim private control targets', async ({
+  browser,
+  engine,
+}) => {
+  test.skip(!engine, 'Native context-agent lifecycle')
+  test.setTimeout(60000)
+  const session = await browser.newBrowserCDPSession()
+  try {
+    const before = (await session.send('Target.getTargets')).targetInfos
+      .map((target) => target.targetId)
+      .sort()
+    for (let i = 0; i < 70; i++) {
+      const context = await browser.newContext()
+      await context.addCookies([{ name: 'cycle', value: String(i), url: origin }])
+      expect(context.pages()).toEqual([])
+      expect(await context.cookies()).toEqual([
+        expect.objectContaining({ name: 'cycle', value: String(i) }),
+      ])
+      await context.close()
+    }
+    expect(
+      (await session.send('Target.getTargets')).targetInfos.map((target) => target.targetId).sort(),
+    ).toEqual(before)
+  } finally {
+    await session.detach()
+  }
+})
+
+test('screenshots: JPEG uses a white matte and preserves PNG transparency', async ({ page }) => {
+  await page.goto(origin)
+  await page.setContent('<body></body>')
+  const jpeg = await page.screenshot({ type: 'jpeg', omitBackground: true })
+  const { default: sharp } = await import('sharp')
+  const matte = await sharp(jpeg).removeAlpha().raw().toBuffer()
+  expect(matte.every((value) => value === 255)).toBe(true)
+  const png = await page.screenshot({ omitBackground: true })
+  const alpha = await sharp(png).ensureAlpha().raw().toBuffer()
+  expect(alpha.every((value, index) => index % 4 !== 3 || value === 0)).toBe(true)
 })
