@@ -384,3 +384,12 @@ third-party notices. SDK binaries are not committed or included in the npm packa
 libyuv retains its BSD-3-Clause license. Keep `CEF-LICENSE.txt`, `CEF-CREDITS.html`,
 and `libyuv-LICENSE.txt` in any native binary distribution.
 See [AUDIT.md](AUDIT.md) for validation evidence and release limitations.
+
+### Context language and windowless capability
+
+The native CDP bridge returns Chromium's real `Browser.getVersion` metadata plus
+`suitecutWindowless: true`. Clients should use that capability to avoid native
+window decorations. `Target.createBrowserContext` accepts the optional
+`suitecutLocale` language tag (1–128 ASCII letters, digits or hyphens), which is
+installed in CEF before page creation. SDKs forwarding CDP should bound outgoing
+IPC concurrency and yield between incoming packets; see [transport details](ENGINE.md#playwright-transport-and-context-initialization).

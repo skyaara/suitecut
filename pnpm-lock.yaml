@@ -5,7 +5,7 @@ settings:
   excludeLinksFromLockfile: false
 
 patchedDependencies:
-  playwright-core@1.62.1: e4bd13aaf5ccd3b894e560c77129e061e53d53b1e639b3f3d3930eec7ae63059
+  playwright-core@1.62.1: f213239626cd82fd3c783c66db01167df999b54c5fc08e3330be4dda2cd72e50
 
 importers:
 
@@ -4559,11 +4559,11 @@ snapshots:
 
   platform@1.3.6: {}
 
-  playwright-core@1.62.1(patch_hash=e4bd13aaf5ccd3b894e560c77129e061e53d53b1e639b3f3d3930eec7ae63059): {}
+  playwright-core@1.62.1(patch_hash=f213239626cd82fd3c783c66db01167df999b54c5fc08e3330be4dda2cd72e50): {}
 
   playwright@1.62.1:
     dependencies:
-      playwright-core: 1.62.1(patch_hash=e4bd13aaf5ccd3b894e560c77129e061e53d53b1e639b3f3d3930eec7ae63059)
+      playwright-core: 1.62.1(patch_hash=f213239626cd82fd3c783c66db01167df999b54c5fc08e3330be4dda2cd72e50)
     optionalDependencies:
       fsevents: 2.3.2
 

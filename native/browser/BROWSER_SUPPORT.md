@@ -116,10 +116,14 @@ these functional checks do not establish GPU performance or a leak-free browser.
   passed ten repetitions each; independent launcher cases remain outside the harness. SuiteCut's synchronized native
   media output remains a separate API. Full upstream compatibility is not
   established by this subset.
-- **Early popup events and locale:** javascript-URL console events, early popup
-  dialogs and inherited popup locale still fail selected upstream cases. Default
-  `context.request` user-agent headers also differ from the page; see the
-  [follow-up report](../../benchmarks/playwright-compatibility/2026-10-11-followup/report.md).
+- **Locale, headers and command bursts:** context language is configured before
+  popup scripts execute; default API request headers use Chromium's real user
+  agent. The explicit Playwright [driver patch](../../patches/README.md) preserves
+  windowless dimensions, including 3840×2160. The SDK bounds concurrent CDP IPC
+  submissions so parallel page creation does not exhaust native command slots.
+- **Early popup events:** javascript-URL console events and prompts during popup
+  initialization still fail selected upstream cases; see the
+  [latest report](../../benchmarks/playwright-compatibility/2026-10-11-remaining-fixes/report.md).
 - **Graphics coverage:** WebGL 1/2 are verified with explicit software rendering.
   Chromium's default graphics selection and a Mesa/ANGLE OpenGL trial could not
   create a WebGL context on this CPU-only Xvfb host. Hardware GPU rendering,

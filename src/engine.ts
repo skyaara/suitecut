@@ -5,6 +5,7 @@ import { setTimeout as delay } from 'node:timers/promises'
 import { type Browser, type Page, type ConnectOverCDPTransport } from 'playwright'
 import * as z from 'zod'
 
+import { CDPCommandQueue } from './cdp-command-queue.js'
 import { CDPDelivery } from './cdp-delivery.js'
 import { MediaSchema } from './manifest.js'
 import {
@@ -110,21 +111,25 @@ export async function connectCEF(source: NativeBrowser): Promise<Browser> {
   const transport: ConnectOverCDPTransport = {
     send(message) {
       if (disconnected) return
-      void source
-        .command?.('cdp', { message: message as Record<string, UntrustedInput> })
-        .catch((error: Error) => {
-          delivery.close(error.message)
-        })
+      commands.enqueue(message, Buffer.byteLength(JSON.stringify(message)))
     },
     close() {
       delivery.close('CEF transport closed')
     },
   }
+  const command = source.command.bind(source)
+  const commands = new CDPCommandQueue(
+    async (message) => {
+      await command('cdp', { message: message as Record<string, UntrustedInput> })
+    },
+    (reason) => delivery.close(reason),
+  )
   const delivery = new CDPDelivery(
     (message) => transport.onmessage?.(message),
     (reason) => {
       if (disconnected) return
       disconnected = true
+      commands.close()
       unsubscribe()
       transport.onclose?.(reason)
     },
