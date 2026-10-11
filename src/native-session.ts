@@ -2,13 +2,11 @@ import { randomUUID } from 'node:crypto'
 import { mkdir } from 'node:fs/promises'
 import { dirname } from 'node:path'
 
-import { raceWithAbort } from './abort.js'
 import { type SuiteCutArtifactSink } from './artifact-sink.js'
-import { type NativeAudioPacket, type NativeBrowser } from './native-browser.js'
+import { type NativeBrowser } from './native-browser.js'
 import { createNativePage, type NativePage } from './native-page.js'
 import { createNativeVideoRecorder } from './native-recorder.js'
 import { removeSuiteCutPresentation } from './presentation.js'
-import { runProcess } from './process.js'
 import { type SuiteCutCaptureOptions } from './schemas.js'
 import {
   type SuiteCutCheckpointEvent,
@@ -50,10 +48,10 @@ export async function createNativeRecordingSession(options: {
       recorder: ReturnType<typeof createNativeVideoRecorder>
       unsubscribeFrame(): void
       unsubscribeAudio(): void
-      latest?: Buffer
+      unsubscribeFailure(): void
+      unsubscribeClose(): void
       startedAtMs: number
       startedAtMonotonicMs: number
-      lastReceivedAtMs: number
       firstFrameEpochMs?: number
     }
   >()
@@ -77,7 +75,6 @@ export async function createNativeRecordingSession(options: {
     signal?.throwIfAborted()
     if (!active) throw new Error('Native recording has ended')
   }
-  const frameTime = (timestampMs: number) => Math.max(0, timestampMs - originMonotonicMs - excluded)
   const beginSource = async (source: NativeBrowser): Promise<NativePage> => {
     assertActive()
     const page = createNativePage(source, signal)
@@ -106,9 +103,10 @@ export async function createNativeRecordingSession(options: {
       recorder,
       startedAtMs: now(),
       startedAtMonotonicMs: performance.now(),
-      lastReceivedAtMs: performance.now(),
       unsubscribeFrame: () => undefined,
       unsubscribeAudio: () => undefined,
+      unsubscribeFailure: () => undefined,
+      unsubscribeClose: () => undefined,
     }
     entries.set(page, entry)
     pages.set(pageId, {
@@ -118,40 +116,22 @@ export async function createNativeRecordingSession(options: {
       createdAtMs: now(),
     })
     selected ||= pageId
-    let received = () => undefined as void
-    const first = new Promise<void>((resolve) => {
-      received = resolve
-    })
-    entry.unsubscribeFrame = source.onFrame((frame) => {
-      if (!active || pauseDepth) return
-      entry.firstFrameEpochMs ??= Math.max(
-        originEpochMs,
-        originEpochMs + Math.max(entry.startedAtMonotonicMs, frame.timestampMs) - originMonotonicMs,
-      )
-      entry.lastReceivedAtMs = performance.now()
-      entry.latest = frame.data
-      recorder.push(frame.data, Math.max(entry.startedAtMs, frameTime(frame.timestampMs)))
-      received()
-    })
-    if (capture.audio) {
-      entry.unsubscribeAudio = source.onAudio((packet: NativeAudioPacket) => {
-        if (!active || pauseDepth) return
-        recorder.pushAudio(packet.data, Math.max(entry.startedAtMs, frameTime(packet.timestampMs)))
-      })
-    }
+    await recorder.ready
+    entry.firstFrameEpochMs = Date.now()
+    recorder.start(entry.startedAtMs)
     void recorder.failure.catch((error: Error) => {
       if (active) rejectFailure(error)
     })
-    void source.failure.catch((error: Error) => {
+    const onSourceFailure = (error: Error) => {
       if (active) rejectFailure(error)
-    })
-    void source.closed.then(() => {
+    }
+    const onSourceClose = () => {
       if (active) rejectFailure(new Error('Native source closed during recording'))
-    })
-    await raceWithAbort(
-      Promise.race([first, failure]),
-      AbortSignal.any([AbortSignal.timeout(30_000), ...(signal ? [signal] : [])]),
-    )
+    }
+    if (source.onFailure) entry.unsubscribeFailure = source.onFailure(onSourceFailure)
+    else void source.failure.catch(onSourceFailure)
+    if (source.onClose) entry.unsubscribeClose = source.onClose(onSourceClose)
+    else void source.closed.then(onSourceClose)
     return page
   }
   const addSource = (source: NativeBrowser): Promise<NativePage> => {
@@ -163,22 +143,17 @@ export async function createNativeRecordingSession(options: {
     sources.set(source, pending)
     return pending
   }
-  const timer = setInterval(() => {
-    if (!active || pauseDepth) return
-    for (const entry of entries.values())
-      if (entry.latest && performance.now() - entry.lastReceivedAtMs > 100)
-        entry.recorder.push(entry.latest, now())
-  }, 100)
   const endRecording = (): Promise<void> =>
     (ending ??= (async () => {
       endedAtMs = now()
       active = false
-      clearInterval(timer)
       await Promise.allSettled(sources.values())
       const results = await Promise.allSettled(
         [...entries.entries()].map(async ([page, entry]) => {
           entry.unsubscribeFrame()
           entry.unsubscribeAudio()
+          entry.unsubscribeFailure()
+          entry.unsubscribeClose()
           await entry.recorder.stop(endedAtMs)
           const firstAtMs = entry.recorder.firstAtMs
           if (firstAtMs === undefined)
@@ -253,8 +228,7 @@ export async function createNativeRecordingSession(options: {
       assertActive()
       if (++pauseDepth === 1) {
         pausedAt = performance.now()
-        for (const entry of entries.values())
-          if (entry.latest) entry.recorder.push(entry.latest, now())
+        await Promise.all([...entries.values()].map((entry) => entry.recorder.pause(true)))
       }
       try {
         return await operation()
@@ -262,6 +236,7 @@ export async function createNativeRecordingSession(options: {
         if (--pauseDepth === 0 && pausedAt !== undefined) {
           excluded += performance.now() - pausedAt
           pausedAt = undefined
+          await Promise.all([...entries.values()].map((entry) => entry.recorder.pause(false)))
         }
       }
     },
@@ -275,32 +250,20 @@ export async function createNativeRecordingSession(options: {
         if (!source || !video) throw new Error('Native checkpoint has no source video')
         const attachmentName = `suitecut-checkpoint-${attemptId}-${event.artifactId}.webm`
         const path = output.pathFor(attachmentName)
-        const duration = (event.durationMs / 1000).toFixed(6)
-        const result = await runProcess(
-          options.ffmpegPath,
-          [
-            '-loglevel',
-            'error',
-            '-ss',
-            (Math.max(0, event.atMs - video.sourceStartedAtMs) / 1000).toFixed(6),
-            '-i',
-            source.outputPath,
-            '-an',
-            '-vf',
-            `setpts=PTS-STARTPTS,tpad=stop_mode=clone:stop_duration=${duration},trim=duration=${duration}`,
-            '-c:v',
-            'libvpx-vp9',
-            '-deadline',
-            'realtime',
-            '-cpu-used',
-            '5',
-            '-y',
-            path,
-          ],
-          { timeoutMs: 60_000 },
-        )
-        if (result.exitCode !== 0)
-          throw new Error(`Native checkpoint encoding failed: ${result.stderr}`)
+        if (!options.source.command || !options.source.nativeMedia)
+          throw new Error('Native checkpoint processing is unavailable')
+        const probe = (await options.source.command('media.probe', {
+          input: source.outputPath,
+        })) as { width: number; height: number }
+        await options.source.command('media.cut', {
+          input: source.outputPath,
+          destination: path,
+          startMs: Math.max(0, event.atMs - video.sourceStartedAtMs),
+          durationMs: event.durationMs,
+          width: probe.width,
+          height: probe.height,
+          fps: options.source.framesPerSecond,
+        })
         await output.attach(attachmentName, path, 'video/webm')
         artifacts.push({
           id: event.artifactId,

@@ -15,7 +15,13 @@ export {
 } from './native-default.js'
 export { createNativePage } from './native-page.js'
 export type { NativePage, NativeLocator } from './native-page.js'
-export type { NativeBrowser, NativeVideoFrame, NativeAudioPacket } from './native-browser.js'
+export type {
+  NativeBrowser,
+  NativeVideoFrame,
+  NativeAudioPacket,
+  NativeGraphicsMode,
+  NativeWebRTCPolicy,
+} from './native-browser.js'
 export type { NativeRecordingCaptureOptions, NativeRecordingContext } from './native-recording.js'
 export type { NativeBroadcast, NativeBroadcastOptions, NativeStreamOptions } from './native.js'
 export type {
@@ -39,7 +45,7 @@ export type {
   SuiteCutAudioSynthesisRequest,
   SuiteCutJsonValue,
 } from './audio-plugin.js'
-export { renderSuiteCut } from './render.js'
+export { renderSuiteCut } from './native-default.js'
 export type {
   SuiteCutColorRange,
   SuiteCutOutputContainer,
@@ -89,3 +95,18 @@ export type SuiteCutRecorder = ReturnType<typeof defineSuiteCut>
 export type { NativeRecordingCaptureOptions as SuiteCutCaptureOptions } from './native-recording.js'
 export type { NativeRecordingContext as SuiteCutNativeRecordingContext } from './native-recording.js'
 export type SuiteCutFixture = NativeRecordingContext['suitecut']
+
+export { launchEngine } from './engine.js'
+export type {
+  SuiteCutEngine,
+  NativeOutput,
+  NativeOutputOptions,
+  NativeOutputStatus,
+  NativeVideoCodec,
+  NativeAudioCodec,
+  NativeOutputContainer,
+  NativeEncoderInfo,
+} from './engine.js'
+
+export { connectBrowser } from './browser-connection.js'
+export type { BrowserConnectionOptions } from './browser-connection.js'

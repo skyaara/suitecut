@@ -19,7 +19,9 @@ import { renderSuiteCut } from '../dist/render.js'
 
 const executablePath = process.env.SUITECUT_NATIVE_EXECUTABLE
 if (!executablePath) throw new Error('Set SUITECUT_NATIVE_EXECUTABLE to the built CEF executable')
-const directory = resolve('.suitecut/native-recording-verification')
+const directory = resolve(
+  process.env.SUITECUT_VERIFICATION_DIRECTORY ?? '.suitecut/native-recording-verification',
+)
 await mkdir(directory, { recursive: true })
 const plugin = resolve(directory, 'delayed-tone.mjs')
 await writeFile(
@@ -133,6 +135,7 @@ try {
   const outputPath = resolve(directory, 'native-presentation.mp4')
   await renderSuiteCut({
     manifestPath: result.manifestPath,
+    nativeSource: source,
     outputPath,
     config: { output: { width: 960, height: 540, framesPerSecond: 60 }, resultHoldMs: 0 },
   })
@@ -226,6 +229,41 @@ try {
     '-y',
     resolve(directory, 'caption.png'),
   ])
+  // Check the visual page selection independently of audio and encoded cadence.
+  const pixelAt = async (atMs) => {
+    const { stdout } = await execute(
+      ffmpeg,
+      [
+        '-v',
+        'error',
+        '-threads',
+        '1',
+        '-ss',
+        String(atMs / 1000),
+        '-i',
+        outputPath,
+        '-frames:v',
+        '1',
+        '-vf',
+        'crop=2:2:10:10,format=rgb24',
+        '-f',
+        'rawvideo',
+        'pipe:1',
+      ],
+      { encoding: 'buffer' },
+    )
+    assert(stdout.length >= 3, 'Missing rendered pixel')
+    return [...stdout.subarray(0, 3)]
+  }
+  const narrationPixel = await pixelAt(narration.atMs + 300)
+  const selectedPixel = await pixelAt(selections[0].atMs + 150)
+  const returnedPixel = await pixelAt(selections[1].atMs + 100)
+  assert(
+    narrationPixel[2] > narrationPixel[1],
+    'Video must show the main blue page during narration',
+  )
+  assert(selectedPixel[1] > selectedPixel[2] * 1.4, 'Video must switch to the green second page')
+  assert(returnedPixel[2] > returnedPixel[1], 'Video must return to the main blue page')
   const defaultAudioResult = await recordNative(
     'Default page audio disabled',
     async ({ suitecut }) => suitecut.hold(250),
@@ -292,6 +330,8 @@ try {
     outputFps: 60,
     audibleSamples: audible,
     pageAudioSelection: 'passed',
+    visualPageSelection: 'passed',
+    visualPixels: { narration: narrationPixel, selected: selectedPixel, returned: returnedPixel },
     narrationMix: 'passed',
     defaultAudioDisabled: 'passed',
     excludedPreparationMs: Math.round(callbackWallMs - attempt.durationMs),

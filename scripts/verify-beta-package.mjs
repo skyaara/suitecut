@@ -34,7 +34,7 @@ try {
     join(consumer, 'smoke.mjs'),
     `
 import assert from 'node:assert/strict'
-import { DEFAULT_BACKEND, record, renderSuiteCut } from 'suitecut'
+import { DEFAULT_BACKEND, record, renderSuiteCut, launchEngine } from 'suitecut'
 import { record as betaRecord } from 'suitecut/beta'
 import { record as stableRecord } from 'suitecut/stable'
 import { record as playwrightRecord } from 'suitecut/playwright'
@@ -59,6 +59,32 @@ const sourceArtifact = attempt.artifacts.find((artifact) => artifact.role === 's
 assert(sourceArtifact)
 assert(attempt.media.find((media) => media.artifactId === sourceArtifact.id).streams.some((stream) => stream.kind === 'audio'))
 assert.equal(owned.state, 'closed')
+const engine = await launchEngine({
+  executablePath: process.env.SUITECUT_NATIVE_EXECUTABLE,
+  width: 640, height: 360, framesPerSecond: 30,
+})
+try {
+  const context = await engine.browser.newContext()
+  const page = await context.newPage()
+  await page.setContent('<label>Name<input></label><button onclick="this.textContent=String.fromCharCode(83,97,118,101,100)">Save</button>')
+  await page.getByLabel('Name').fill('Installed SuiteCut 2.1')
+  await page.getByRole('button', { name: 'Save', exact: true }).click()
+  assert.equal(await page.getByRole('button').textContent(), 'Saved')
+  const encoders = await engine.encoders()
+  assert(encoders.some((item) => item.name === 'libx264' && item.linked))
+  const output = await engine.record(page, { destination: 'installed-engine.mp4', audio: true })
+  try {
+    assert.equal((await output.status()).ready, true)
+    await page.waitForTimeout(250)
+  } finally {
+    await output.stop()
+  }
+  assert.equal((await output.status()).stopped, true)
+  await context.close()
+} finally {
+  await engine.close()
+}
+assert.equal(engine.source.state, 'closed')
 `,
   )
   await execute(process.execPath, ['smoke.mjs'], {
@@ -67,7 +93,7 @@ assert.equal(owned.state, 'closed')
     maxBuffer: 8 * 1024 * 1024,
   })
   console.log(
-    `Verified installed ${packed.version}: native root default, explicit stable fallback, CEF recording audio, and owned browser cleanup.`,
+    `Verified installed ${packed.version}: native root default, explicit stable fallback, CEF recording audio, installed Playwright engine interaction/encoding, and owned browser cleanup.`,
   )
 } finally {
   await rm(consumer, { recursive: true, force: true })

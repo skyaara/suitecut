@@ -34,11 +34,17 @@ and Chromium binaries retain their upstream licenses and third-party notices.
 The native CMake build copies the SDK LICENSE.txt and CREDITS.html into the output
 as CEF-LICENSE.txt and CEF-CREDITS.html. Preserve both when redistributing native
 artifacts. The tested SDK version and archive checksum are recorded in
-native/browser/cef-build.json. No CEF binaries are included in the npm tarball.
+native/browser/cef-build.json (macOS) and native/browser/cef-build-linux-codecs.json
+(Linux x64). No CEF binaries are included in the npm tarball.
 
 - CEF project and license: https://github.com/chromiumembedded/cef
 - CEF binary SDKs: https://cef-builds.spotifycdn.com/index.html
+- Linux codec-enabled distribution and build recipe: https://github.com/tobagin/karere/releases/tag/cef-152.0.6-proprietary-codecs
 - Native build and API documentation: native/browser/README.md
+
+The Linux playback distribution enables Chromium's proprietary H.264/AAC codecs.
+Its original notices are retained in the SDK and native output. Playback support
+does not replace the license obligations of the separately linked output encoders.
 
 The native I420 path statically links libyuv (BSD-3-Clause). Its revision and
 archive SHA-256 are pinned in native/browser/libyuv-build.json. The native build

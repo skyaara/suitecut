@@ -79,7 +79,7 @@ importers:
   plugins/kitten:
     dependencies:
       '@suitecut/audio-sherpa-core':
-        specifier: ^2.0.0
+        specifier: ^2.1.0
         version: link:../sherpa-core
       suitecut:
         specifier: '>=1.0.0 <3'
@@ -91,7 +91,7 @@ importers:
   plugins/kokoro-sherpa:
     dependencies:
       '@suitecut/audio-sherpa-core':
-        specifier: ^2.0.0
+        specifier: ^2.1.0
         version: link:../sherpa-core
       suitecut:
         specifier: '>=1.0.0 <3'
@@ -103,7 +103,7 @@ importers:
   plugins/matcha:
     dependencies:
       '@suitecut/audio-sherpa-core':
-        specifier: ^2.0.0
+        specifier: ^2.1.0
         version: link:../sherpa-core
       suitecut:
         specifier: '>=1.0.0 <3'
@@ -115,7 +115,7 @@ importers:
   plugins/pocket:
     dependencies:
       '@suitecut/audio-sherpa-core':
-        specifier: ^2.0.0
+        specifier: ^2.1.0
         version: link:../sherpa-core
       suitecut:
         specifier: '>=1.0.0 <3'
@@ -139,7 +139,7 @@ importers:
   plugins/supertonic:
     dependencies:
       '@suitecut/audio-sherpa-core':
-        specifier: ^2.0.0
+        specifier: ^2.1.0
         version: link:../sherpa-core
       suitecut:
         specifier: '>=1.0.0 <3'
@@ -151,7 +151,7 @@ importers:
   plugins/vits:
     dependencies:
       '@suitecut/audio-sherpa-core':
-        specifier: ^2.0.0
+        specifier: ^2.1.0
         version: link:../sherpa-core
       suitecut:
         specifier: '>=1.0.0 <3'
@@ -163,7 +163,7 @@ importers:
   plugins/zipvoice:
     dependencies:
       '@suitecut/audio-sherpa-core':
-        specifier: ^2.0.0
+        specifier: ^2.1.0
         version: link:../sherpa-core
       suitecut:
         specifier: '>=1.0.0 <3'

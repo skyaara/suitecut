@@ -12,6 +12,14 @@ export default tseslint.config(
       '.suitecut/**',
       'test-results/**',
       'playwright-report/**',
+      // Dated benchmark evidence is immutable, rather than live SDK source.
+      'benchmarks/**/20*-*/**',
+      'benchmarks/**/tested-sources*/**',
+      'benchmarks/**/tested-sdk/**',
+      'benchmarks/**/baseline-source/**',
+      'benchmarks/**/suitecut-source/**',
+      // Standalone benchmark collectors are outside the typed SDK project.
+      'benchmarks/**/*.mjs',
       'site/.astro/**',
       'site/dist/**',
       'eslint.config.js',

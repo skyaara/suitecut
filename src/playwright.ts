@@ -459,3 +459,6 @@ export function defineSuiteCut<Extensions extends object = object>(
 
 /** Records one browser flow with SuiteCut's default lifecycle. */
 export const record = defineSuiteCut()
+
+export { connectBrowser } from './browser-connection.js'
+export type { BrowserConnectionOptions } from './browser-connection.js'

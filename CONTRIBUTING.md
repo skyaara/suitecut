@@ -81,6 +81,11 @@ pnpm test:package
 tarball, installs the core and two representative audio packages in a temporary consumer project,
 imports every public entry, and runs the installed CLI help command.
 
+For stable release preparation, follow [RELEASE.md](RELEASE.md).
+`pnpm prepublishOnly` runs the release gates; `pnpm pack:release` creates unpublished
+matching SDK/plugin tarballs and checksums. Native installed-package verification
+also requires the separately built browser and a working display/audio service.
+
 ## Open a pull request
 
 Explain the observed problem, the chosen fix, and the commands you ran. Include a small reproduction

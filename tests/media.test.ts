@@ -1,8 +1,45 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
-import { decodeProbeDocument } from '../src/media.js'
+import { decodeProbeDocument, probeMedia } from '../src/media.js'
+
+const { runProcess } = vi.hoisted(() => ({ runProcess: vi.fn() }))
+vi.mock('../src/process.js', () => ({
+  resolveFfprobe: () => Promise.resolve('ffprobe'),
+  runProcess,
+}))
 
 describe('FFprobe metadata decoder', () => {
+  it('accepts an unknown average rate for sparse variable-rate video', async () => {
+    runProcess.mockResolvedValue({
+      exitCode: 0,
+      stdout: JSON.stringify({
+        streams: [
+          {
+            codec_type: 'video',
+            codec_name: 'vp9',
+            width: 960,
+            height: 540,
+            avg_frame_rate: '0/0',
+            r_frame_rate: '10/1',
+          },
+        ],
+        format: { format_name: 'matroska,webm', duration: '0.3' },
+      }),
+    })
+    const media = await probeMedia(
+      {
+        id: 'test',
+        name: 'Sparse clip',
+        role: 'checkpoint',
+        contentType: 'video/webm',
+        path: 'test.webm',
+        pathKind: 'manifest-relative',
+      },
+      '/test.webm',
+    )
+    expect(media.streams[0]).toMatchObject({ frameRate: 10, hasVariableFrameRate: true })
+  })
+
   it('accepts finite numeric strings and structured streams', () => {
     const document = decodeProbeDocument({
       streams: [

@@ -252,3 +252,51 @@ and the stable package-consumer suite passed again. Interrupting the benchmark
 was exercised with live child processes; sampled worker/browser/encoder processes
 all exited. Beta packaging/consumer verification is available through
 `pnpm test:beta:package`.
+
+## October 10 memory hardening follow-up
+
+The native follow-up reproduces and fixes a codec-pointer data race and a scaler
+replacement double-free, then adds checked media boundaries and lifecycle
+ownership protections. Seven native checks pass in release, address/undefined/leak
+and thread-sanitized builds; all 15 real-CEF integration checks pass. The saved
+30-minute simultaneous recording/streaming workload stopped cleanly with empty
+queues. These results do not establish universal memory safety: stock CEF 154
+still aborts at AddressSanitizer initialization in a minimal CEF-only reproduction,
+and the prior audio-generation stalls remain open.
+
+Full methodology, failed/passing logs, source and binary snapshots, fuzz corpora,
+recordings and private/PSS measurements are saved in
+`benchmarks/native-memory/2026-10-10/report.md`. See `MEMORY_SAFETY.md` for
+reproduction instructions and instrumentation limits.
+
+## October 10 browser playback codec follow-up
+
+Linux x64 now pins codec-enabled CEF 152.0.6 / Chromium 152.0.7977.83 because
+stock CEF 154 cannot decode H.264/AAC web media. The third-party SDK's archive
+and runtime library digests are verified; its recipe and exact artifact are
+saved. This is a version downgrade, not an independently rebuilt Chromium
+distribution. macOS playback and packaging remain unverified.
+
+Actual progressive MP4 and MSE H.264/AAC playback, captured AAC audio and decoded
+native recordings pass, along with seven native and 15 real browser checks. The
+Linux subprocess dispatcher also follows CEF's no-stack-protector entry pattern
+while browser/media stack guards and the sandbox stay enabled. A final two-minute
+native GOFNS recording has no stack-protector errors and decodes successfully.
+It still counts 0.541 seconds of uncovered audio samples and 3.94% repeated
+frames; no zero-gap, universal memory-safety or OBS performance claim follows.
+Full results, version/provenance limits, both recordings and reproduction commands
+are in `benchmarks/native-playback/2026-10-10/report.md`.
+
+## October 10 core web-platform and browser-adapter follow-up
+
+The Linux codec-enabled CEF audit now includes functional WebSockets, WASM,
+IndexedDB across reloads, worker/service-worker/cache flows, local RTC data/video
+loopbacks, and WebGL 1/2 shaders through screenshots/native recordings. Explicit
+SwiftShader is available through a thin graphics SDK option with Chromium's
+reduced-protection opt-in; normal graphics defaults remain unchanged. A real
+per-target window-bounds/resize adapter defect was fixed and tested against the
+old executable. Final coverage: 17 feature checks, 16 Playwright integration
+checks, 7 native tests and 29 focused SDK tests passed; WebGPU unavailable.
+See [the saved report](../../benchmarks/native-browser-support/2026-10-10/report.md)
+and [support limits](BROWSER_SUPPORT.md). This is not a complete browser audit,
+long-run memory-safety guarantee or an audio-continuity fix.

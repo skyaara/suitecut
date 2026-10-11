@@ -8,6 +8,7 @@ import { raceWithAbort } from './abort.js'
 import { formattedJson, writeTextFileAtomic } from './atomic-file.js'
 import { resolveAudioPluginReferences } from './audio-plugin-loader.js'
 import { SUITECUT_MANIFEST_SCHEMA_VERSION } from './constants.js'
+import { probeNativeMedia } from './engine.js'
 import { type SuiteCutFixture } from './fixtures.js'
 import { decodeManifest } from './manifest.js'
 import { createNarrationPipeline } from './narration.js'
@@ -15,7 +16,6 @@ import { type NativeBrowser } from './native-browser.js'
 import { type NativeLocator, type NativePage } from './native-page.js'
 import { createNativeRecordingSession } from './native-session.js'
 import { type SuiteCutRecordResult } from './playwright.js'
-import { resolveFfmpeg } from './process.js'
 import { createAttempt, rawArtifactSink } from './recording-output.js'
 import {
   type SuiteCutAudioPluginReference,
@@ -71,7 +71,8 @@ export async function recordNative(
   const plugins = [...resolveAudioPluginReferences(options.audioPlugins ?? []).values()]
   options.signal?.throwIfAborted()
   if (options.source.state !== 'running') throw new Error('Native source is not running')
-  const ffmpegPath = await resolveFfmpeg(options.ffmpegPath)
+  if (!options.source.nativeMedia) throw new Error('Native recording requires the C++ media engine')
+  const ffmpegPath = 'native-libav'
   const directory = resolve(output.directory ?? `.suitecut/recordings/native-${randomUUID()}`)
   const manifestPath = resolve(output.manifestPath ?? '.suitecut/latest-run.json')
   await Promise.all([
@@ -128,6 +129,12 @@ export async function recordNative(
     manifestPath,
     output.pathKind ?? 'absolute',
     errors,
+    options.source.nativeMedia
+      ? async (inputs) =>
+          Promise.all(
+            inputs.map(({ artifact, path }) => probeNativeMedia(options.source, artifact, path)),
+          )
+      : undefined,
   )
   const manifest = decodeManifest({
     schemaVersion: SUITECUT_MANIFEST_SCHEMA_VERSION,

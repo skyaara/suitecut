@@ -20,6 +20,8 @@ function source() {
   const close = vi.fn(() => Promise.resolve())
   const unsubscribe = vi.fn()
   const unsubscribeAudio = vi.fn()
+  const unsubscribeFailure = vi.fn()
+  const unsubscribeClose = vi.fn()
   const browser: NativeBrowser = {
     state: 'running',
     width: 2,
@@ -29,6 +31,8 @@ function source() {
     cefVersion: 'test',
     failure: new Promise<never>(() => undefined),
     closed: new Promise<void>(() => undefined),
+    onFailure: () => unsubscribeFailure,
+    onClose: () => unsubscribeClose,
     close,
     navigate: () => Promise.resolve(),
     sendDevToolsCommand: () => Promise.resolve({ result: { value: 'http://fixture/' } }),
@@ -54,6 +58,8 @@ function source() {
     close,
     unsubscribe,
     unsubscribeAudio,
+    unsubscribeFailure,
+    unsubscribeClose,
     emit: () =>
       deliver?.({
         data: Buffer.alloc(16),
@@ -78,14 +84,15 @@ describe('native recording clock and ownership', () => {
     vi.restoreAllMocks()
   })
 
-  it('only repeats idle frames and does not steal cadence from active native capture', async () => {
+  it('keeps raw media and idle-frame timers out of the SDK', async () => {
     vi.useFakeTimers()
     const directory = await mkdtemp(join(tmpdir(), 'suitecut-idle-test-'))
     const push = vi.fn()
     vi.mocked(createNativeVideoRecorder).mockReturnValue({
       failure: new Promise<never>(() => undefined),
-      push,
-      pushAudio: vi.fn(),
+      start: push,
+      ready: Promise.resolve(),
+      pause: vi.fn(() => Promise.resolve()),
       firstAtMs: 0,
       stop: () => Promise.resolve(),
     })
@@ -101,9 +108,9 @@ describe('native recording clock and ownership', () => {
         await vi.advanceTimersByTimeAsync(16)
         live.emit()
       }
-      expect(push).toHaveBeenCalledTimes(11)
+      expect(push).toHaveBeenCalledTimes(1)
       await vi.advanceTimersByTimeAsync(200)
-      expect(push).toHaveBeenCalledTimes(12)
+      expect(push).toHaveBeenCalledTimes(1)
     } finally {
       await session.endRecording()
       await rm(directory, { recursive: true, force: true })
@@ -117,10 +124,11 @@ describe('native recording clock and ownership', () => {
       let firstAtMs: number | undefined
       return {
         failure: new Promise<never>(() => undefined),
-        push(_data, atMs) {
+        ready: Promise.resolve(),
+        pause: vi.fn(() => Promise.resolve()),
+        start(atMs) {
           firstAtMs ??= atMs
         },
-        pushAudio: vi.fn(),
         get firstAtMs() {
           return firstAtMs
         },
@@ -157,10 +165,14 @@ describe('native recording clock and ownership', () => {
       expect(late?.firstFrameEpochMs).toBe(session.clock.originEpochMs + 3000)
       expect(first.close).not.toHaveBeenCalled()
       expect(second.close).not.toHaveBeenCalled()
-      expect(first.unsubscribe).toHaveBeenCalledTimes(1)
-      expect(second.unsubscribe).toHaveBeenCalledTimes(1)
-      expect(first.unsubscribeAudio).toHaveBeenCalledTimes(1)
-      expect(second.unsubscribeAudio).toHaveBeenCalledTimes(1)
+      expect(first.unsubscribe).not.toHaveBeenCalled()
+      expect(second.unsubscribe).not.toHaveBeenCalled()
+      expect(first.unsubscribeAudio).not.toHaveBeenCalled()
+      expect(second.unsubscribeAudio).not.toHaveBeenCalled()
+      expect(first.unsubscribeFailure).toHaveBeenCalledTimes(1)
+      expect(first.unsubscribeClose).toHaveBeenCalledTimes(1)
+      expect(second.unsubscribeFailure).toHaveBeenCalledTimes(1)
+      expect(second.unsubscribeClose).toHaveBeenCalledTimes(1)
       expect(() => session.selectPage(page)).toThrow('ended')
     } finally {
       await session.endRecording()
@@ -168,14 +180,15 @@ describe('native recording clock and ownership', () => {
     }
   })
 
-  it('uses the pause-adjusted recording clock for native page audio', async () => {
+  it('pauses the native timeline while excluding preparation from the manifest clock', async () => {
     vi.useFakeTimers()
     const directory = await mkdtemp(join(tmpdir(), 'suitecut-audio-clock-test-'))
-    const pushAudio = vi.fn<(data: Buffer, atMs: number) => void>()
+    const pushAudio = vi.fn<(paused: boolean) => Promise<void>>(() => Promise.resolve())
     vi.mocked(createNativeVideoRecorder).mockReturnValue({
       failure: new Promise<never>(() => undefined),
-      push: vi.fn(),
-      pushAudio,
+      start: vi.fn(),
+      ready: Promise.resolve(),
+      pause: pushAudio,
       firstAtMs: 0,
       stop: () => Promise.resolve(),
     })
@@ -196,7 +209,8 @@ describe('native recording clock and ownership', () => {
       await vi.advanceTimersByTimeAsync(250)
       live.emitAudio()
       expect(pushAudio).toHaveBeenCalledTimes(2)
-      expect(pushAudio.mock.calls.map((call) => call[1])).toEqual([500, 750])
+      expect(pushAudio.mock.calls.map((call) => call[0])).toEqual([true, false])
+      expect(session.now()).toBe(750)
     } finally {
       await session.endRecording()
       await rm(directory, { recursive: true, force: true })
@@ -208,8 +222,9 @@ describe('native recording clock and ownership', () => {
     const live = source()
     vi.mocked(createNativeVideoRecorder).mockReturnValue({
       failure: new Promise<never>(() => undefined),
-      push: vi.fn(),
-      pushAudio: vi.fn(),
+      start: vi.fn(),
+      ready: Promise.resolve(),
+      pause: vi.fn(() => Promise.resolve()),
       firstAtMs: 0,
       stop: () => Promise.resolve(),
     })

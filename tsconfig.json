@@ -36,5 +36,11 @@
     "scripts/**/*.mjs",
     "playwright.config.ts",
     "vitest.config.ts"
+  ],
+  "exclude": [
+    "benchmarks/**/20*-*/**",
+    "benchmarks/**/tested-sources*/**",
+    "benchmarks/**/suitecut-source/**",
+    "benchmarks/**/tested-sdk/**"
   ]
 }

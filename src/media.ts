@@ -24,7 +24,7 @@ const NonNegativeProbeNumberSchema = FiniteProbeNumberSchema.pipe(z.number().non
 
 const PositiveProbeNumberSchema = FiniteProbeNumberSchema.pipe(z.number().positive())
 
-const FrameRateSchema = z
+const KnownFrameRateSchema = z
   .string()
   .regex(/^\d+(?:\.\d+)?\/\d+(?:\.\d+)?$/u)
   .transform((value, context) => {
@@ -40,6 +40,10 @@ const FrameRateSchema = z
 
     return numerator / denominator
   })
+  .pipe(z.number().positive())
+
+// FFprobe reports 0/0 when a sparse variable-rate stream has no average rate.
+const FrameRateSchema = z.union([KnownFrameRateSchema, z.literal('0/0').transform(() => undefined)])
 
 const ProbeFormatSchema = z.object({
   format_name: z.string().trim().min(1),
@@ -106,6 +110,8 @@ function parseStream(
     const colorSpace = knownProbeValue(parsed.color_space)
     const colorTransfer = knownProbeValue(parsed.color_transfer)
     const colorPrimaries = knownProbeValue(parsed.color_primaries)
+    const frameRate = parsed.avg_frame_rate ?? parsed.r_frame_rate
+    if (frameRate === undefined) throw new Error('FFprobe reported no usable video frame rate')
 
     const video: SuiteCutMediaStream = {
       kind: 'video',
@@ -113,8 +119,9 @@ function parseStream(
       width: parsed.width,
       height: parsed.height,
       durationMs: (parsed.duration ?? formatDurationMs / 1_000) * 1_000,
-      frameRate: parsed.avg_frame_rate,
-      hasVariableFrameRate: parsed.avg_frame_rate !== parsed.r_frame_rate,
+      frameRate,
+      hasVariableFrameRate:
+        parsed.avg_frame_rate === undefined || parsed.avg_frame_rate !== parsed.r_frame_rate,
     }
 
     if (parsed.pix_fmt !== undefined) video.pixelFormat = parsed.pix_fmt

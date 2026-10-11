@@ -19,12 +19,27 @@ import {
   type SuiteCutRecordingCallback,
   type SuiteCutRecordResult,
 } from './playwright.js'
-import { resolveFfmpeg } from './process.js'
+import { renderSuiteCut as renderPresentation, type SuiteCutRenderRequest } from './render.js'
 
-export { renderSuiteCut } from './render.js'
+/** Renders through the C++ libavfilter/codec backend. */
+export async function renderSuiteCut(request: SuiteCutRenderRequest) {
+  if (request.nativeSource) return renderPresentation(request)
+  const source = await launchBrowser({ width: 2, height: 2, framesPerSecond: 30 })
+  try {
+    return await renderPresentation({ ...request, nativeSource: source })
+  } finally {
+    await source.close()
+  }
+}
 export { createNativePage } from './native-page.js'
 export type { NativePage, NativeLocator } from './native-page.js'
-export type { NativeBrowser, NativeVideoFrame, NativeAudioPacket } from './native-browser.js'
+export type {
+  NativeBrowser,
+  NativeVideoFrame,
+  NativeAudioPacket,
+  NativeGraphicsMode,
+  NativeWebRTCPolicy,
+} from './native-browser.js'
 export type { NativeRecordingCaptureOptions, NativeRecordingContext } from './native-recording.js'
 export type { NativeBroadcast, NativeBroadcastOptions, NativeStreamOptions } from './native.js'
 export type { SuiteCutStreamOptions } from './schemas.js'
@@ -52,7 +67,7 @@ export function launchBrowser(options: SuiteCutBrowserOptions = {}): Promise<Nat
   const executablePath = options.executablePath ?? process.env.SUITECUT_NATIVE_EXECUTABLE
   if (!executablePath)
     throw new Error(
-      'SuiteCut 2.0 requires a native executable. Set SUITECUT_NATIVE_EXECUTABLE or native.executablePath; choose backend: "playwright" explicitly for fallback.',
+      'SuiteCut 2.x requires a native executable. Set SUITECUT_NATIVE_EXECUTABLE or native.executablePath; choose backend: "playwright" explicitly for fallback.',
     )
   return launchNativeBrowser({ pixelFormat: 'i420', ...options, executablePath })
 }
@@ -124,5 +139,23 @@ export function defineSuiteCut(defaults: SuiteCutNativeRecordOptions = {}) {
 export async function createBroadcast(
   options: Omit<NativeBroadcastOptions, 'ffmpegPath'> & { ffmpegPath?: string },
 ): Promise<NativeBroadcast> {
-  return createNativeBroadcast({ ...options, ffmpegPath: await resolveFfmpeg(options.ffmpegPath) })
+  return createNativeBroadcast({
+    ...options,
+    ffmpegPath: 'native',
+  })
 }
+
+export { launchEngine } from './engine.js'
+export type {
+  SuiteCutEngine,
+  NativeOutput,
+  NativeOutputOptions,
+  NativeOutputStatus,
+  NativeVideoCodec,
+  NativeAudioCodec,
+  NativeOutputContainer,
+  NativeEncoderInfo,
+} from './engine.js'
+
+export { connectBrowser } from './browser-connection.js'
+export type { BrowserConnectionOptions } from './browser-connection.js'

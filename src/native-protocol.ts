@@ -15,6 +15,9 @@ export const NativePacketSchema = z.discriminatedUnion('type', [
     type: z.literal('ready'),
     timestampMs: timestamp,
     cefVersion: z.string().max(128),
+    frameSubscriptions: z.boolean().optional(),
+    audioSubscriptions: z.boolean().optional(),
+    nativeMedia: z.boolean().optional(),
   }),
   z.strictObject({
     ...base,
@@ -38,6 +41,7 @@ export const NativePacketSchema = z.discriminatedUnion('type', [
     ok: z.boolean(),
     error: z.string().max(4096).optional(),
   }),
+  z.strictObject({ ...base, type: z.literal('event'), topic: z.literal('cdp') }),
   z.strictObject({ ...base, type: z.literal('error'), error: z.string().max(4096) }),
 ])
 export type NativePacket = z.infer<typeof NativePacketSchema>
@@ -79,8 +83,8 @@ export class NativePacketDecoder {
           throw new Error('Invalid native PCM packet length')
         if ((header.type === 'ready' || header.type === 'error') && header.bytes !== 0)
           throw new Error('Unexpected native control payload')
-        if (header.type === 'response' && header.bytes > 1_048_576)
-          throw new Error('Native response exceeds 1 MiB')
+        if ((header.type === 'response' || header.type === 'event') && header.bytes > 16_777_216)
+          throw new Error('Native response exceeds 16 MiB')
         if (header.bytes === 0) {
           this.reset()
           this.receive(header, Buffer.alloc(0))
@@ -100,7 +104,12 @@ export class NativePacketDecoder {
   }
 
   end(): void {
-    if (this.phase !== 'length' || this.offset !== 0) throw new Error('Truncated native packet')
+    const truncated = this.phase !== 'length' || this.offset !== 0
+    // Closed handles may remain in application history. Do not retain a
+    // partially allocated multi-megabyte frame after EOF or cancellation.
+    this.reset()
+    this.offset = 0
+    if (truncated) throw new Error('Truncated native packet')
   }
 
   private reset(): void {

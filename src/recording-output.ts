@@ -9,6 +9,7 @@ import {
   type SuiteCutError,
   type SuiteCutEventAttachment,
   type SuiteCutPathKind,
+  type SuiteCutMedia,
 } from './types.js'
 
 export function rawArtifactSink(outputDirectory: string): SuiteCutArtifactSink {
@@ -45,6 +46,9 @@ export async function createAttempt(
   outputFile: string,
   pathKind: SuiteCutPathKind,
   errors: readonly Error[],
+  probe: (
+    inputs: readonly { artifact: SuiteCutArtifact; path: string }[],
+  ) => Promise<SuiteCutMedia[]> = probeMediaBatch,
 ): Promise<SuiteCutAttempt> {
   const artifacts: SuiteCutArtifact[] = []
   const mediaInputs: { artifact: SuiteCutArtifact; path: string }[] = []
@@ -103,7 +107,7 @@ export async function createAttempt(
     mediaInputs.push({ artifact, path: absolutePath })
   }
 
-  const media = await probeMediaBatch(mediaInputs)
+  const media = await probe(mediaInputs)
   const mediaByArtifactId = new Map(media.map((item) => [item.artifactId, item]))
 
   const videoTiming = captured.videos.map((video) => {

@@ -65,6 +65,42 @@ describe('native browser lifecycle', () => {
     expect(() => browser.onFrame(() => undefined)).toThrow('not running')
   })
 
+  it('passes an explicit software graphics choice and rejects unknown modes before spawning', async () => {
+    await expect(
+      launchNativeBrowser({ executablePath: path, graphics: 'unknown' as never }),
+    ).rejects.toThrow()
+    expect(spawn).not.toHaveBeenCalled()
+    const pending = launchNativeBrowser({
+      executablePath: path,
+      width: 2,
+      height: 2,
+      graphics: 'swiftshader',
+    })
+    await vi.waitFor(() => expect(spawn).toHaveBeenCalled())
+    expect(vi.mocked(spawn).mock.calls[0]?.[1]).toContain('--suitecut-graphics=swiftshader')
+    emit({ type: 'ready', timestampMs: 1, cefVersion: 'test' })
+    await (await pending).close()
+  })
+
+  it('validates and forwards the explicit WebRTC proxy policy', async () => {
+    await expect(
+      launchNativeBrowser({ executablePath: path, webrtcPolicy: 'unknown' as never }),
+    ).rejects.toThrow()
+    expect(spawn).not.toHaveBeenCalled()
+    const pending = launchNativeBrowser({
+      executablePath: path,
+      width: 2,
+      height: 2,
+      webrtcPolicy: 'disable-non-proxied-udp',
+    })
+    await vi.waitFor(() => expect(spawn).toHaveBeenCalled())
+    expect(vi.mocked(spawn).mock.calls[0]?.[1]).toContain(
+      '--suitecut-webrtc-policy=disable-non-proxied-udp',
+    )
+    emit({ type: 'ready', timestampMs: 1, cefVersion: 'test' })
+    await (await pending).close()
+  })
+
   it('correlates concurrent commands by ID and rejects unsupported navigation', async () => {
     const browser = await launch()
     const first = browser.sendDevToolsCommand('Runtime.evaluate', { expression: '1+1' })
@@ -118,8 +154,8 @@ describe('native browser lifecycle', () => {
   it('bounds command count and size', async () => {
     const browser = await launch()
     await expect(
-      browser.sendDevToolsCommand('Runtime.evaluate', { expression: 'x'.repeat(65536) }),
-    ).rejects.toThrow('64 KiB')
+      browser.sendDevToolsCommand('Runtime.evaluate', { expression: 'x'.repeat(4_194_304) }),
+    ).rejects.toThrow('4 MiB')
     const pending = Array.from({ length: 64 }, () =>
       browser.sendDevToolsCommand('Runtime.evaluate').catch(() => undefined),
     )
@@ -136,5 +172,68 @@ describe('native browser lifecycle', () => {
       launchNativeBrowser({ executablePath: path, signal: AbortSignal.abort() }),
     ).rejects.toThrow()
     expect(spawn).not.toHaveBeenCalled()
+  })
+
+  it('refines delayed handshake clock bounds without shifting late captures forward', async () => {
+    let now = 100
+    vi.spyOn(performance, 'now').mockImplementation(() => now)
+    const browser = await launch()
+    const video = vi.fn(),
+      audio = vi.fn()
+    browser.onFrame(video)
+    browser.onAudio(audio)
+    now = 101
+    emit({ type: 'frame', timestampMs: 50, width: 2, height: 2, dropped: 0 }, Buffer.alloc(16))
+    expect(video).toHaveBeenNthCalledWith(1, expect.objectContaining({ timestampMs: 101 }))
+    now = 102
+    emit({ type: 'audio', timestampMs: 75, frames: 1 }, Buffer.alloc(4))
+    expect(audio).toHaveBeenNthCalledWith(1, expect.objectContaining({ timestampMs: 126 }))
+    now = 160
+    emit({ type: 'frame', timestampMs: 51, width: 2, height: 2, dropped: 0 }, Buffer.alloc(16))
+    expect(video).toHaveBeenNthCalledWith(2, expect.objectContaining({ timestampMs: 102 }))
+    await browser.close()
+  })
+
+  it('removes lifecycle observers when reusable-source consumers finish', async () => {
+    const browser = await launch()
+    const removedFailure = vi.fn()
+    const removedClose = vi.fn()
+    browser.onFailure?.(removedFailure)()
+    browser.onClose?.(removedClose)()
+    const failure = vi.fn()
+    const closed = vi.fn()
+    browser.onFailure?.(failure)
+    browser.onClose?.(closed)
+    emit({ type: 'error', error: 'Renderer failed' })
+    await browser.closed
+    expect(failure).toHaveBeenCalledOnce()
+    expect(closed).toHaveBeenCalledOnce()
+    expect(removedFailure).not.toHaveBeenCalled()
+    expect(removedClose).not.toHaveBeenCalled()
+  })
+
+  it('suspends frame IPC between subscriptions and tolerates unsubscribe immediately before close', async () => {
+    const commands: { id: number; command: string; enabled?: boolean }[] = []
+    input.on('data', (bytes: Buffer) => {
+      const command = JSON.parse(bytes.toString()) as (typeof commands)[number]
+      commands.push(command)
+      if (command.enabled !== false)
+        queueMicrotask(() => emit({ type: 'response', id: command.id, ok: true }))
+      else if (commands.length === 1)
+        queueMicrotask(() => emit({ type: 'response', id: command.id, ok: true }))
+    })
+    const launched = launchNativeBrowser({ executablePath: path, width: 2, height: 2 })
+    await vi.waitFor(() => expect(spawn).toHaveBeenCalled())
+    emit({ type: 'ready', timestampMs: 1, cefVersion: 'test', frameSubscriptions: true })
+    const browser = await launched
+    const listener = vi.fn()
+    const unsubscribe = browser.onFrame(listener)
+    await Promise.resolve()
+    emit({ type: 'frame', timestampMs: 2, width: 2, height: 2, dropped: 0 }, Buffer.alloc(16))
+    expect(listener).toHaveBeenCalledOnce()
+    unsubscribe()
+    await browser.close()
+    expect(browser.state).toBe('closed')
+    expect(commands.map((command) => command.enabled)).toEqual([false, true, false])
   })
 })
