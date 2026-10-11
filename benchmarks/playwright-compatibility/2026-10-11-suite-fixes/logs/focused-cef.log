@@ -1,0 +1,126 @@
+[WARN] Your node_modules are out of sync with your lockfile. The value of the patchedDependencies setting has changed
+
+Running 43 tests using 1 worker
+
+(node:1137523) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 benchmarks/playwright-compatibility/compatibility.spec.ts:242:1 › worker: dedicated Worker evaluation and messaging (190ms)
+  ✓   2 benchmarks/playwright-compatibility/compatibility.spec.ts:261:1 › worker: service worker website control and fetch (157ms)
+  ✓   3 benchmarks/playwright-compatibility/compatibility.spec.ts:265:1 › worker: context serviceworker event, enumeration and evaluation (230ms)
+  ✓   4 benchmarks/playwright-compatibility/compatibility.spec.ts:276:1 › worker: service worker console and close event on context disposal (165ms)
+  ✓   5 benchmarks/playwright-compatibility/compatibility.spec.ts:293:1 › worker: multiple pages expose one service worker identity (438ms)
+  ✓   6 benchmarks/playwright-compatibility/compatibility.spec.ts:306:1 › worker: worker remains automatable after its first page closes (281ms)
+  ✓   7 benchmarks/playwright-compatibility/compatibility.spec.ts:327:1 › worker: repeated worker contexts release browser target registrations (15.8s)
+  ✓   8 benchmarks/playwright-compatibility/compatibility.spec.ts:359:1 › native: worker CDP aliases detach when their context closes (14.3s)
+  ✓   9 benchmarks/playwright-compatibility/compatibility.spec.ts:392:1 › worker: serviceWorkers block prevents registration (126ms)
+  ✘  10 benchmarks/playwright-compatibility/compatibility.spec.ts:405:1 › oopif: cross-site frame is a separate CDP target and remains interactive (5.4s)
+(node:1141051) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  11 benchmarks/playwright-compatibility/compatibility.spec.ts:432:1 › oopif: cross-site navigation, detach and network routing (640ms)
+  ✓  12 benchmarks/playwright-compatibility/compatibility.spec.ts:456:1 › viewport: odd and tiny browser dimensions support screenshots and Playwright video (659ms)
+  ✓  13 benchmarks/playwright-compatibility/compatibility.spec.ts:483:1 › locale: popups inherit context language before their first script without cross-context leakage (447ms)
+  ✘  14 benchmarks/playwright-compatibility/compatibility.spec.ts:514:1 › viewport: real browser version metadata preserves 4K windowless dimensions (139ms)
+(node:1141307) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  15 benchmarks/playwright-compatibility/compatibility.spec.ts:541:1 › state: IndexedDB auth export to file and restore into a fresh context (653ms)
+  ✓  16 benchmarks/playwright-compatibility/compatibility.spec.ts:618:1 › state: lone UTF-16 values survive arguments, console, state export and import (335ms)
+  ✓  17 benchmarks/playwright-compatibility/compatibility.spec.ts:649:1 › state: empty IndexedDB export and restore (313ms)
+  ✓  18 benchmarks/playwright-compatibility/compatibility.spec.ts:671:3 › auth: http origin HTTP credentials (145ms)
+  ✓  19 benchmarks/playwright-compatibility/compatibility.spec.ts:686:3 › proxy: http through local proxy plus origin auth (168ms)
+  ✓  20 benchmarks/playwright-compatibility/compatibility.spec.ts:702:3 › proxy: http authenticated proxy plus origin auth (168ms)
+  ✓  21 benchmarks/playwright-compatibility/compatibility.spec.ts:718:3 › proxy: http separate credentials respect a matching origin (113ms)
+  ✓  22 benchmarks/playwright-compatibility/compatibility.spec.ts:736:5 › proxy: http does not send proxy credentials to the website (112ms)
+  ✓  23 benchmarks/playwright-compatibility/compatibility.spec.ts:736:5 › proxy: http does not send out-of-origin credentials to the website (132ms)
+  ✓  24 benchmarks/playwright-compatibility/compatibility.spec.ts:772:3 › proxy: http incorrect proxy credentials are denied without reaching the website (118ms)
+  ✓  25 benchmarks/playwright-compatibility/compatibility.spec.ts:671:3 › auth: https origin HTTP credentials (160ms)
+  ✓  26 benchmarks/playwright-compatibility/compatibility.spec.ts:686:3 › proxy: https through local proxy plus origin auth (162ms)
+  ✓  27 benchmarks/playwright-compatibility/compatibility.spec.ts:702:3 › proxy: https authenticated proxy plus origin auth (155ms)
+  ✓  28 benchmarks/playwright-compatibility/compatibility.spec.ts:718:3 › proxy: https separate credentials respect a matching origin (162ms)
+  ✓  29 benchmarks/playwright-compatibility/compatibility.spec.ts:736:5 › proxy: https does not send proxy credentials to the website (118ms)
+  ✓  30 benchmarks/playwright-compatibility/compatibility.spec.ts:736:5 › proxy: https does not send out-of-origin credentials to the website (132ms)
+  ✓  31 benchmarks/playwright-compatibility/compatibility.spec.ts:772:3 › proxy: https incorrect proxy credentials are denied without reaching the website (107ms)
+  ✓  32 benchmarks/playwright-compatibility/compatibility.spec.ts:805:1 › auth: wrong credentials fail and a fresh context does not inherit them (271ms)
+  ✓  33 benchmarks/playwright-compatibility/compatibility.spec.ts:826:1 › proxy: bypass uses the real origin without contacting the proxy (107ms)
+  ✓  34 benchmarks/playwright-compatibility/compatibility.spec.ts:838:3 › proxy: http authenticated proxy without origin auth (163ms)
+  ✓  35 benchmarks/playwright-compatibility/compatibility.spec.ts:838:3 › proxy: https authenticated proxy without origin auth (162ms)
+  ✓  36 benchmarks/playwright-compatibility/compatibility.spec.ts:854:3 › har: har captures and replays bodies, POST and redirects (366ms)
+  ✓  37 benchmarks/playwright-compatibility/compatibility.spec.ts:854:3 › har: har.zip captures and replays bodies, POST and redirects (345ms)
+
+  ✓  38 benchmarks/playwright-compatibility/compatibility.spec.ts:900:1 › video: Playwright recordVideo creates a decodable WebM after context close (1.5s)
+  ✓  39 benchmarks/playwright-compatibility/compatibility.spec.ts:935:1 › downloads: repeated cancellation releases requests and capacity (8.3s)
+  ✘  40 benchmarks/playwright-compatibility/compatibility.spec.ts:949:1 › downloads: denied download reports failure and creates no saved file (5.2s)
+(node:1142129) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  41 benchmarks/playwright-compatibility/compatibility.spec.ts:968:1 › cdp: session close event precedes detach completion (211ms)
+  ✓  42 benchmarks/playwright-compatibility/compatibility.spec.ts:978:1 › permissions: local network grant resets and stays within its context (671ms)
+  ✓  43 benchmarks/playwright-compatibility/compatibility.spec.ts:1007:1 › cdp: explicit page sessions keep debugger domains independent (279ms)
+
+
+  1) benchmarks/playwright-compatibility/compatibility.spec.ts:405:1 › oopif: cross-site frame is a separate CDP target and remains interactive
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: true
+    Received: false
+
+    Call Log:
+    - Timeout 5000ms exceeded while waiting on the predicate
+
+      424 |   await page.frameLocator('iframe').getByRole('button').click()
+      425 |   await expect(page.frameLocator('iframe').getByRole('button')).toHaveText('clicked')
+    > 426 |   await expect.poll(() => attachments.some((e) => e.targetInfo.type === 'iframe')).toBe(true)
+          |                                                                                    ^
+      427 |   await expect.poll(() => page.frames().map((f) => f.url())).toContain(cross + '/')
+      428 |   const frame = required(page.frames().find((f) => f.url().startsWith(cross)))
+      429 |   expect(await frame.evaluate(() => location.origin)).toBe(cross)
+        at /workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts:426:84
+
+    Error Context: ../../tmp/suitecut-suite-pass/focused-cef/artifacts/compatibility-oopif-cross--ff357-get-and-remains-interactive/error-context.md
+
+    Error Context: ../../tmp/suitecut-suite-pass/focused-cef/artifacts/compatibility-oopif-cross--ff357-get-and-remains-interactive/error-context.md
+
+  2) benchmarks/playwright-compatibility/compatibility.spec.ts:514:1 › viewport: real browser version metadata preserves 4K windowless dimensions
+
+    Error: cdpSession.send: Protocol error (Browser.getWindowForTarget): Unknown CEF window target
+
+      528 |       expect(version.userAgent).toBe(await page.evaluate(() => navigator.userAgent))
+      529 |       expect(version.jsVersion).not.toBe('')
+    > 530 |       const { bounds } = await cdp.send('Browser.getWindowForTarget')
+          |                                    ^
+      531 |       expect(bounds.width).toBe(3840)
+      532 |       expect(bounds.height).toBe(2160)
+      533 |     } finally {
+        at /workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts:530:36
+
+    Error Context: ../../tmp/suitecut-suite-pass/focused-cef/artifacts/compatibility-viewport-rea-b5055-es-4K-windowless-dimensions/error-context.md
+
+    Error Context: ../../tmp/suitecut-suite-pass/focused-cef/artifacts/compatibility-viewport-rea-b5055-es-4K-windowless-dimensions/error-context.md
+
+  3) benchmarks/playwright-compatibility/compatibility.spec.ts:949:1 › downloads: denied download reports failure and creates no saved file
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 0
+    Received: 1
+
+    Call Log:
+    - Timeout 5000ms exceeded while waiting on the predicate
+
+      960 |     await expect(download.saveAs(destination)).rejects.toThrow('acceptDownloads')
+      961 |     await expect(stat(destination)).rejects.toMatchObject({ code: 'ENOENT' })
+    > 962 |     await expect.poll(() => pendingDownloads.size).toBe(0)
+          |                                                    ^
+      963 |   } finally {
+      964 |     await context.close()
+      965 |   }
+        at /workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts:962:52
+
+    Error Context: ../../tmp/suitecut-suite-pass/focused-cef/artifacts/compatibility-downloads-de-a10ae-e-and-creates-no-saved-file/error-context.md
+
+    Error Context: ../../tmp/suitecut-suite-pass/focused-cef/artifacts/compatibility-downloads-de-a10ae-e-and-creates-no-saved-file/error-context.md
+
+  3 failed
+    benchmarks/playwright-compatibility/compatibility.spec.ts:405:1 › oopif: cross-site frame is a separate CDP target and remains interactive
+    benchmarks/playwright-compatibility/compatibility.spec.ts:514:1 › viewport: real browser version metadata preserves 4K windowless dimensions
+    benchmarks/playwright-compatibility/compatibility.spec.ts:949:1 › downloads: denied download reports failure and creates no saved file
+  40 passed (1.1m)

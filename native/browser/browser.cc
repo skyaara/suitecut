@@ -304,6 +304,12 @@ class Source : public CefClient, public CefLifeSpanHandler, public CefRenderHand
       {"midiSysex",CEF_PERMISSION_TYPE_MIDI_SYSEX},{"clipboardReadWrite",CEF_PERMISSION_TYPE_CLIPBOARD},
       {"clipboardSanitizedWrite",CEF_PERMISSION_TYPE_CLIPBOARD},{"sensors",CEF_PERMISSION_TYPE_SENSORS},
       {"idleDetection",CEF_PERMISSION_TYPE_IDLE_DETECTION},{"windowManagement",CEF_PERMISSION_TYPE_WINDOW_MANAGEMENT},
+#if CEF_API_ADDED(15000)
+      {"localNetworkAccess",CEF_PERMISSION_TYPE_LOCAL_NETWORK_ACCESS_DEPRECATED},
+#else
+      {"localNetworkAccess",CEF_PERMISSION_TYPE_LOCAL_NETWORK_ACCESS},
+#endif
+      {"localNetwork",CEF_PERMISSION_TYPE_LOCAL_NETWORK},{"loopbackNetwork",CEF_PERMISSION_TYPE_LOOPBACK_NETWORK},
       {"localFonts",CEF_PERMISSION_TYPE_LOCAL_FONTS},{"cameraPanTiltZoom",CEF_PERMISSION_TYPE_CAMERA_PAN_TILT_ZOOM}
     };
     const auto found=bits.find(name);return found==bits.end() ? 0 : found->second;
@@ -334,6 +340,13 @@ class Source : public CefClient, public CefLifeSpanHandler, public CefRenderHand
       {CEF_PERMISSION_TYPE_SENSORS,CEF_CONTENT_SETTING_TYPE_SENSORS},
       {CEF_PERMISSION_TYPE_IDLE_DETECTION,CEF_CONTENT_SETTING_TYPE_IDLE_DETECTION},
       {CEF_PERMISSION_TYPE_WINDOW_MANAGEMENT,CEF_CONTENT_SETTING_TYPE_WINDOW_MANAGEMENT},
+#if CEF_API_ADDED(15000)
+      {CEF_PERMISSION_TYPE_LOCAL_NETWORK_ACCESS_DEPRECATED,CEF_CONTENT_SETTING_TYPE_LOCAL_NETWORK_ACCESS},
+#else
+      {CEF_PERMISSION_TYPE_LOCAL_NETWORK_ACCESS,CEF_CONTENT_SETTING_TYPE_LOCAL_NETWORK_ACCESS},
+#endif
+      {CEF_PERMISSION_TYPE_LOCAL_NETWORK,CEF_CONTENT_SETTING_TYPE_LOCAL_NETWORK},
+      {CEF_PERMISSION_TYPE_LOOPBACK_NETWORK,CEF_CONTENT_SETTING_TYPE_LOOPBACK_NETWORK},
       {CEF_PERMISSION_TYPE_LOCAL_FONTS,CEF_CONTENT_SETTING_TYPE_LOCAL_FONTS},
       {CEF_PERMISSION_TYPE_CAMERA_PAN_TILT_ZOOM,CEF_CONTENT_SETTING_TYPE_CAMERA_PAN_TILT_ZOOM}
     };
@@ -368,20 +381,41 @@ class Source : public CefClient, public CefLifeSpanHandler, public CefRenderHand
   CefRefPtr<CefJSDialogHandler> GetJSDialogHandler() override { return this; }
   CefRefPtr<CefDownloadHandler> GetDownloadHandler() override { return this; }
   CefRefPtr<CefContextMenuHandler> GetContextMenuHandler() override { return this; }
-  bool CanDownload(CefRefPtr<CefBrowser>, const CefString&, const CefString&) override {return root_->download_paths_.contains(context_id_);}
+  bool CanDownload(CefRefPtr<CefBrowser>, const CefString&, const CefString&) override {
+    return download_ids_.size()<64 && download_callbacks_.size()<64 && (root_->auto_attach_ || root_->download_paths_.contains(context_id_));
+  }
   bool OnBeforeDownload(CefRefPtr<CefBrowser>, CefRefPtr<CefDownloadItem> item,const CefString& name,CefRefPtr<CefBeforeDownloadCallback> callback) override {
-    auto found=root_->download_paths_.find(context_id_);if(found==root_->download_paths_.end()) return false;
+    if(download_ids_.size()>=64) return true;  // Dropping the callback cancels.
     const auto guid="cef-"+target_id_+"-"+std::to_string(item->GetId());download_ids_[item->GetId()]=guid;
     auto params=CefDictionaryValue::Create();params->SetString("guid",guid);params->SetString("frameId",target_id_);params->SetString("url",item->GetURL());params->SetString("suggestedFilename",name);
-    root_->Event("Browser.downloadWillBegin",params);callback->Continue(found->second+"/"+guid,false);return true;
+    root_->Event("Browser.downloadWillBegin",params);
+    auto found=root_->download_paths_.find(context_id_);
+    // Even denied downloads must be observable. Returning handled without
+    // retaining the callback cancels in CEF before a destination file is made.
+    if(found!=root_->download_paths_.end()) callback->Continue(found->second+"/"+guid,false);
+    else if(auto active=download_callbacks_.find(item->GetId());active!=download_callbacks_.end()) active->second->Cancel();
+    else cancel_downloads_.insert(item->GetId());
+    return true;
   }
-  void OnDownloadUpdated(CefRefPtr<CefBrowser>,CefRefPtr<CefDownloadItem> item,CefRefPtr<CefDownloadItemCallback>) override {
-    auto found=download_ids_.find(item->GetId());if(found==download_ids_.end()) return;
+  void OnDownloadUpdated(CefRefPtr<CefBrowser>,CefRefPtr<CefDownloadItem> item,CefRefPtr<CefDownloadItemCallback> callback) override {
+    const auto key=item->GetId();auto found=download_ids_.find(key);
+    const bool terminal=item->IsComplete() || item->IsCanceled();
+    // CEF can report progress before asking for the download destination.
+    // Keep that cancellation handle so denied, stalled responses also stop.
+    if(found==download_ids_.end()) {
+      if(terminal) {download_callbacks_.erase(key);cancel_downloads_.erase(key);}
+      else if(download_callbacks_.size()<64) download_callbacks_[key]=callback;
+      else callback->Cancel();
+      return;
+    }
+    const bool cancel=!terminal && cancel_downloads_.erase(key);
+    if(!terminal) download_callbacks_[key]=callback;
     auto params=CefDictionaryValue::Create();params->SetString("guid",found->second);params->SetDouble("totalBytes",item->GetTotalBytes());params->SetDouble("receivedBytes",item->GetReceivedBytes());
     params->SetString("state",item->IsComplete() ? "completed" : item->IsCanceled() ? "canceled" : "inProgress");
     if(item->IsComplete()) params->SetString("filePath",item->GetFullPath());
     root_->Event("Browser.downloadProgress",params);
-    if(item->IsComplete() || item->IsCanceled()) download_ids_.erase(found);
+    if(terminal) {download_ids_.erase(key);download_callbacks_.erase(key);cancel_downloads_.erase(key);}
+    if(cancel) callback->Cancel();
   }
   bool OnJSDialog(CefRefPtr<CefBrowser>, const CefString& origin, JSDialogType type, const CefString& text,
                   const CefString& prompt, CefRefPtr<CefJSDialogCallback> callback, bool& suppress) override {
@@ -393,7 +427,7 @@ class Source : public CefClient, public CefLifeSpanHandler, public CefRenderHand
   bool OnBeforeUnloadDialog(CefRefPtr<CefBrowser>, const CefString&, bool,
                             CefRefPtr<CefJSDialogCallback> callback) override {
     if(root_->auto_attach_) {
-      dialog_=callback;auto params=CefDictionaryValue::Create();params->SetString("type","beforeunload");params->SetString("message","Leave this page?");params->SetString("url",browser_->GetMainFrame()->GetURL());params->SetBool("hasBrowserHandler",true);
+      dialog_=callback;auto params=CefDictionaryValue::Create();params->SetString("type","beforeunload");params->SetString("message","");params->SetString("url",browser_->GetMainFrame()->GetURL());params->SetBool("hasBrowserHandler",true);
       PageEvent("Page.javascriptDialogOpening",params);
     } else callback->Continue(true,CefString());
     return true;
@@ -430,6 +464,14 @@ class Source : public CefClient, public CefLifeSpanHandler, public CefRenderHand
     for (auto& [key,output] : outputs) output->Stop();
     for (auto& worker : media_workers_) if (worker.first.joinable()) worker.first.join();
 #endif
+    const auto downloads=std::move(download_ids_);
+    const auto callbacks=std::move(download_callbacks_);
+    download_ids_.clear();download_callbacks_.clear();cancel_downloads_.clear();
+    for(const auto& [key,guid]:downloads) {
+      auto params=CefDictionaryValue::Create();params->SetString("guid",guid);params->SetString("state","canceled");
+      params->SetDouble("totalBytes",0);params->SetDouble("receivedBytes",0);root_->Event("Browser.downloadProgress",params);
+    }
+    for(const auto& [key,callback]:callbacks) callback->Cancel();
     observer_ = nullptr;
     browser_ = nullptr;
     for(auto found=root_->worker_debuggers_.begin();found!=root_->worker_debuggers_.end();) {
@@ -459,7 +501,7 @@ class Source : public CefClient, public CefLifeSpanHandler, public CefRenderHand
     }
     {auto destroyed=CefDictionaryValue::Create();destroyed->SetString("targetId",target_id_);root_->DiscoveryEvent("Target.targetDestroyed",destroyed);}
     for(auto found=root_->sessions_.begin();found!=root_->sessions_.end();) {
-      if(found->second==this) {const auto alias=root_->nested_aliases_.find(found->first);root_->DetachEvent(found->first+(alias==root_->nested_aliases_.end() ? "" : "::"+alias->second),root_->session_parents_[found->first]);root_->nested_aliases_.erase(found->first);root_->session_parents_.erase(found->first);found=root_->sessions_.erase(found);} else ++found;
+      if(found->second==this) {const auto alias=root_->nested_aliases_.find(found->first);root_->DetachEvent(found->first+(alias==root_->nested_aliases_.end() ? "" : "::"+alias->second),root_->session_parents_[found->first]);root_->raw_aliases_.erase(found->first);root_->nested_aliases_.erase(found->first);root_->session_parents_.erase(found->first);found=root_->sessions_.erase(found);} else ++found;
     }
     view_.clear();view_.shrink_to_fit();popup_.clear();popup_.shrink_to_fit();
     if(this!=root_) std::erase_if(root_->children_,[this](const auto& child) {return child.get()==this;});
@@ -615,8 +657,8 @@ class Source : public CefClient, public CefLifeSpanHandler, public CefRenderHand
       navigation_ = 0;
     }
   }
-  void OnRenderProcessTerminated(CefRefPtr<CefBrowser>, TerminationStatus, int, const CefString&) override {
-    writer_.Error("Browser renderer terminated");
+  void OnRenderProcessTerminated(CefRefPtr<CefBrowser>, TerminationStatus status, int code, const CefString&) override {
+    writer_.Error(("Browser renderer terminated (status "+std::to_string(int(status))+", exit "+std::to_string(code)+")").c_str());
   }
   bool OnDevToolsMessage(CefRefPtr<CefBrowser>, const void* data, size_t size) override {
     if(size>16777216) return false;
@@ -631,6 +673,17 @@ class Source : public CefClient, public CefLifeSpanHandler, public CefRenderHand
       if(found==devtools_pending_.end()) return false;
       const auto pending=found->second;devtools_pending_.erase(found);
       TraceCDP(message->HasKey("error") ? "agent-error" : "agent-reply",pending.id,pending.session,pending.method,target_id_);
+      if(!pending.native && pending.method=="Target.attachToTarget" && !message->HasKey("error")) {
+        auto result=message->GetDictionary("result");
+        const auto nested=result ? result->GetString("sessionId").ToString() : "";
+        if(!nested.empty()) {
+          const auto alias="extra-"+std::to_string(++root_->context_index_);
+          root_->sessions_[alias]=this;root_->session_parents_[alias]=pending.session;
+          root_->nested_aliases_[alias]=nested;root_->raw_aliases_.insert(alias);
+          result->SetString("sessionId",alias+"::"+nested);
+          DeferCDP(-4,"Runtime.runIfWaitingForDebugger",CefDictionaryValue::Create(),alias+"::"+nested,true);
+        }
+      }
       if(pending.method=="Browser.getVersion") {
         if(auto result=message->GetDictionary("result")) result->SetBool("suitecutWindowless",true);
       }
@@ -664,8 +717,22 @@ class Source : public CefClient, public CefLifeSpanHandler, public CefRenderHand
       // The CEF JS-dialog callback owns acceptance and emits this event once.
       // Also forwarding Chromium's notification races two Dialog objects and
       // makes the second dismissal fail after the first has closed the dialog.
-      if(method=="Page.javascriptDialogOpening")return true;
       const auto agent=message->GetString("sessionId").ToString();
+      if(!agent.empty()) for(const auto& alias:root_->raw_aliases_) {
+        if(root_->sessions_.at(alias)==this && root_->nested_aliases_.at(alias)==agent) {
+          if(opaque) root_->CDPRawMessage(RawCDPSession(raw,alias+"::"+agent));
+          else {message->SetString("sessionId",alias+"::"+agent);root_->CDPMessage(message);}
+          return true;
+        }
+      }
+      if(method=="Page.javascriptDialogOpening")return true;
+      if(params && method=="Target.detachedFromTarget") {
+        const auto nested=params->GetString("sessionId").ToString();
+        for(const auto& alias:root_->raw_aliases_) if(root_->sessions_.at(alias)==this && root_->nested_aliases_.at(alias)==nested) {
+          const auto key=alias;root_->DetachEvent(key+"::"+nested,root_->session_parents_[key]);
+          root_->raw_aliases_.erase(key);root_->sessions_.erase(key);root_->nested_aliases_.erase(key);root_->session_parents_.erase(key);return true;
+        }
+      }
       if(params && auth_only_agents_.contains(agent)) {
         if(method=="Fetch.requestPaused" || method=="Fetch.authRequired") {
           auto continued=CefDictionaryValue::Create();continued->SetString("requestId",params->GetString("requestId"));
@@ -679,6 +746,11 @@ class Source : public CefClient, public CefLifeSpanHandler, public CefRenderHand
         if(info) {
           const auto target=info->GetString("targetId").ToString(),nested=params->GetString("sessionId").ToString();
           const bool worker=info->GetString("type")=="service_worker";
+          for(const auto& alias:root_->raw_aliases_) if(root_->sessions_.at(alias)==this && root_->nested_aliases_.at(alias)==nested) return true;
+          // Explicit page sessions own independent Chromium domain state.
+          // Their attach notification belongs to the requested raw session,
+          // not to Playwright's automatically managed page tree.
+          if(std::any_of(devtools_pending_.begin(),devtools_pending_.end(),[&](const auto& entry) {return !entry.second.native && entry.second.method=="Target.attachToTarget" && entry.second.target==target;})) return true;
           auto pending_worker=root_->pending_worker_targets_.find(target);
           if(worker && this!=root_) {
             // Use the long-lived engine agent for worker commands so closing
@@ -748,7 +820,7 @@ class Source : public CefClient, public CefLifeSpanHandler, public CefRenderHand
       // worker session IDs. Otherwise raw sessions can never observe console,
       // network, or tracing completion events despite successful commands.
       std::vector<std::string> recipients{Session()};
-      for(const auto& [alias,source]:root_->sessions_) if(source==this) recipients.push_back(alias);
+      for(const auto& [alias,source]:root_->sessions_) if(source==this && !root_->raw_aliases_.contains(alias)) recipients.push_back(alias);
       for(const auto& recipient:recipients) {
         auto event=message->Copy(false);
         if(event->HasKey("sessionId")) event->SetString("sessionId",recipient+"::"+event->GetString("sessionId").ToString());
@@ -875,7 +947,7 @@ class Source : public CefClient, public CefLifeSpanHandler, public CefRenderHand
       if(method=="Browser.getWindowForTarget") {
         const auto target=params->GetString("targetId").ToString();
         if(!target.empty()) {auto found=targets_.find(target);if(found!=targets_.end()) selected=found->second;}
-        else if(sessions_.contains(session)) selected=sessions_[session];
+        else if(sessions_.contains(session.substr(0,session.find("::")))) selected=sessions_.at(session.substr(0,session.find("::")));
         else if(session.empty() || browser_sessions_.contains(session)) selected=this;
         else for(auto& [key,source]:targets_) if(source->Session()==session) {selected=source;break;}
       } else for(auto& [key,source]:targets_) if(source->browser_ && source->browser_->GetIdentifier()==params->GetInt("windowId")) {selected=source;break;}
@@ -928,21 +1000,28 @@ class Source : public CefClient, public CefLifeSpanHandler, public CefRenderHand
       if(method=="Target.getTargets") {auto list=CefListValue::Create();for(auto& [key,source]:targets_) list->SetDictionary(list->GetSize(),source->TargetInfo());for(auto& [key,nested]:nested_targets_)list->SetDictionary(list->GetSize(),nested.info->Copy(false));result->SetList("targetInfos",list);reply(result);return;}
       if(method=="Target.attachToBrowserTarget") {if(browser_sessions_.size()>=256){reply(nullptr,"CEF session limit exceeded");return;}const auto key="browser-"+std::to_string(++context_index_);browser_sessions_.insert(key);result->SetString("sessionId",key);reply(result);return;}
       if(method=="Target.attachToTarget") {
-        if(sessions_.size()>=256) {reply(nullptr,"CEF session limit exceeded");return;}
+        size_t reserved=sessions_.size();
+        for(const auto& [target,source]:targets_) for(const auto& [command,pending]:source->devtools_pending_)
+          if(!pending.native && pending.method=="Target.attachToTarget") ++reserved;
+        if(reserved>=256) {reply(nullptr,"CEF session limit exceeded");return;}
         if(auto found=nested_targets_.find(params->GetString("targetId").ToString());found!=nested_targets_.end()) {
           const auto alias="extra-"+std::to_string(++context_index_);sessions_[alias]=found->second.source;session_parents_[alias]=session;nested_aliases_[alias]=found->second.session;result->SetString("sessionId",alias+"::"+found->second.session);reply(result);return;
         }
         auto found=targets_.find(params->GetString("targetId").ToString());if(found==targets_.end()){reply(nullptr,"Unknown CEF target");return;}
-        const auto alias="extra-"+std::to_string(++context_index_);sessions_[alias]=found->second;session_parents_[alias]=session;result->SetString("sessionId",alias);reply(result);return;
+        found->second->DispatchCDP(id,method,params,session,false);return;
       }
       if(method=="Target.detachFromTarget") {
         const auto key=params->GetString("sessionId").ToString();const auto separator=key.find("::");const auto main=key.substr(0,separator);
+        if(raw_aliases_.contains(main)) {
+          auto detach=params->Copy(false);detach->SetString("sessionId",nested_aliases_.at(main));
+          sessions_.at(main)->DispatchCDP(id,method,detach,session,false);return;
+        }
         if(separator!=std::string::npos && !sessions_.contains(main)) {
           for(const auto& [target,nested]:nested_targets_) if(key==nested.source->Session()+"::"+nested.session) {
             auto detach=params->Copy(false);detach->SetString("sessionId",nested.session);nested.source->DispatchCDP(id,method,detach,session,false);return;
           }
         }
-        sessions_.erase(main);nested_aliases_.erase(main);browser_sessions_.erase(key);discover_sessions_.erase(key);session_parents_.erase(main);reply(result);DetachEvent(key,session);return;
+        sessions_.erase(main);nested_aliases_.erase(main);browser_sessions_.erase(key);discover_sessions_.erase(key);session_parents_.erase(main);DetachEvent(key,session);reply(result);return;
       }
       if(method=="Target.createBrowserContext") {
         if(contexts_.size()>=64) {reply(nullptr,"CEF context limit exceeded");return;}
@@ -977,6 +1056,19 @@ class Source : public CefClient, public CefLifeSpanHandler, public CefRenderHand
         if(behavior=="deny") download_paths_.erase(key.empty() ? "default" : key);
         else if(behavior=="allowAndName" && params->GetString("downloadPath").ToString().starts_with("/")) download_paths_[key.empty() ? "default" : key]=params->GetString("downloadPath").ToString();
         else {reply(nullptr,"Unsupported CEF download behavior");return;}reply(nullptr);return;
+      }
+      if(method=="Browser.cancelDownload") {
+        const auto guid=params->GetString("guid").ToString();
+        const auto supplied=params->GetString("browserContextId").ToString();const auto context=supplied.empty() ? "default" : supplied;
+        for(const auto& [target,source]:targets_) if(source->context_id_==context) {
+          for(const auto& [key,value]:source->download_ids_) if(value==guid) {
+            if(auto found=source->download_callbacks_.find(key);found!=source->download_callbacks_.end()) found->second->Cancel();
+            else source->cancel_downloads_.insert(key);
+            reply(result);return;
+          }
+        }
+        // Chromium treats cancel after completion as a successful no-op.
+        reply(result);return;
       }
       if(method=="Browser.close") {reply(nullptr);CloseTargets();return;}
       if(method=="Storage.getCookies" || method=="Storage.setCookies" || method=="Storage.clearCookies") {
@@ -1371,6 +1463,8 @@ class Source : public CefClient, public CefLifeSpanHandler, public CefRenderHand
   std::map<std::string,std::string> download_paths_;
   std::map<std::string,std::vector<Dict>> pending_permissions_;
   std::map<uint32_t,std::string> download_ids_;
+  std::map<uint32_t,CefRefPtr<CefDownloadItemCallback>> download_callbacks_;
+  std::set<uint32_t> cancel_downloads_;
   // Child CEF callbacks may outlive the opener's OnBeforeClose. Hold the
   // protocol owner until this client's last callback/reference is released.
   // children_/pending_popups_ remove their child references on close/abort.
@@ -1386,6 +1480,7 @@ class Source : public CefClient, public CefLifeSpanHandler, public CefRenderHand
   std::map<std::string,std::vector<WorkerDebugger>> worker_debuggers_;
   std::map<std::string,std::string> nested_aliases_;
   std::map<std::string,std::string> session_parents_;
+  std::set<std::string> raw_aliases_;
   std::set<std::string> browser_sessions_;
   std::set<std::string> discover_sessions_;
   std::set<std::string> auth_only_agents_,client_fetch_agents_;
@@ -1437,6 +1532,7 @@ class App : public CefApp, public CefBrowserProcessHandler {
     // Each source uses a fresh profile. Chrome's first-run UI can block
     // initialization before the windowless browser is created on Linux.
     command->AppendSwitch("no-first-run");
+    command->AppendSwitch("enable-automation");
     command->AppendSwitchWithValue("autoplay-policy", "no-user-gesture-required");
     command->AppendSwitch("disable-background-timer-throttling");
     command->AppendSwitch("disable-renderer-backgrounding");
@@ -1446,6 +1542,9 @@ class App : public CefApp, public CefBrowserProcessHandler {
     command->AppendSwitch("disable-back-forward-cache");
     command->AppendSwitch("disable-backgrounding-occluded-windows");
     command->AppendSwitch("allow-pre-commit-input");
+    // A windowless surface has no platform pointing device. Match Chromium's
+    // headless desktop defaults; CDP touch emulation still overrides them.
+    command->AppendSwitchWithValue("blink-settings", "primaryHoverType=2,availableHoverTypes=2,primaryPointerType=4,availablePointerTypes=4");
     command->AppendSwitchWithValue("disable-features", "ThirdPartyStoragePartitioning,PaintHolding,BlockOriginHeaderModificationOnRedirect,BoundaryEventDispatchTracksNodeRemoval,AvoidUnnecessaryBeforeUnloadCheckSync");
     if (command->GetSwitchValue("suitecut-graphics") == "swiftshader") {
       // Explicit operator opt-in: modern Chromium blocks automatic software

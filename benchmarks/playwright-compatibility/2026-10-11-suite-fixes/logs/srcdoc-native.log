@@ -1,0 +1,2 @@
+navigation { result: { type: 'string', value: 'Item 1\nItem 2' } }
+document-write { result: { type: 'string', value: 'Item 1\nItem 2' } }

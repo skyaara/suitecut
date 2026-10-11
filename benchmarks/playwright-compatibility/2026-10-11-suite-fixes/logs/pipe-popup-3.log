@@ -1,0 +1,69 @@
+{
+  "nativeBytes": 1728830,
+  "messages": [
+    {
+      "id": 1,
+      "result": {
+        "protocolVersion": "1.3",
+        "product": "Chrome/152.0.7977.83",
+        "revision": "@79460ebecaa5625e57a5fb679a735659e73dc687",
+        "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36",
+        "jsVersion": "15.2.124.21"
+      }
+    },
+    {
+      "method": "Target.attachedToTarget",
+      "params": {
+        "sessionId": "49C739ED75068D3CAEEF0C3302A84B14",
+        "targetInfo": {
+          "targetId": "308AB024DF042C4741B75B689A930178",
+          "type": "page",
+          "title": "about:blank",
+          "url": "about:blank",
+          "attached": true,
+          "canAccessOpener": false,
+          "browserContextId": "B4AA04C04CE3C99292A6F72F087EF47F"
+        },
+        "waitingForDebugger": false
+      }
+    },
+    {
+      "id": 2,
+      "result": {}
+    },
+    {
+      "id": 4,
+      "result": {},
+      "sessionId": "49C739ED75068D3CAEEF0C3302A84B14"
+    },
+    {
+      "id": 5,
+      "result": {
+        "targetInfos": [
+          {
+            "targetId": "1EF3BF1399B5BC05714BF70AA25EB381",
+            "type": "page",
+            "title": "",
+            "url": "",
+            "attached": true,
+            "openerId": "308AB024DF042C4741B75B689A930178",
+            "canAccessOpener": true,
+            "openerFrameId": "308AB024DF042C4741B75B689A930178",
+            "browserContextId": "B4AA04C04CE3C99292A6F72F087EF47F"
+          },
+          {
+            "targetId": "308AB024DF042C4741B75B689A930178",
+            "type": "page",
+            "title": "about:blank",
+            "url": "about:blank",
+            "attached": true,
+            "canAccessOpener": false,
+            "browserContextId": "B4AA04C04CE3C99292A6F72F087EF47F"
+          }
+        ]
+      }
+    }
+  ],
+  "stderr": "",
+  "exitCode": null
+}

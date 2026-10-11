@@ -1,0 +1,8 @@
+file:///tmp/suitecut-suite-pass/pipe-evaluate.mjs:14
+const root=messages.find(m=>m.method==='Target.attachedToTarget').params.sessionId;
+                                                                 ^
+
+TypeError: Cannot read properties of undefined (reading 'params')
+    at file:///tmp/suitecut-suite-pass/pipe-evaluate.mjs:14:66
+
+Node.js v24.19.0

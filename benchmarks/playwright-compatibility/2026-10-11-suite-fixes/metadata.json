@@ -1,0 +1,39 @@
+{
+  "date": "2026-10-11",
+  "baseCommit": "7ae8bb76a9b1c0a27220183841e4f10e1ba3525f",
+  "fallbackCommit": "80759aeb30cc4f6bd4ab488554569c62851985d2",
+  "branch": "suitecut-2.1-compatibility-fixes",
+  "suitecut": "2.1.0",
+  "playwright": "1.62.1",
+  "CEF": "152.0.6+g708dc14+chromium-152.0.7977.83",
+  "stockChromium": "151.0.7922.34",
+  "cpuAffinity": "0-3",
+  "memoryMaxBytes": 17179869184,
+  "cpuMax": "400000 100000",
+  "performanceBenchmark": false,
+  "sourceSha256": {
+    "native/browser/browser.cc": "133ad18a00bcbbfafe83d36240bedfc02022c4c6807b098fca4ad09f0e078d0e",
+    "benchmarks/playwright-compatibility/compatibility.spec.ts": "19e96977b0c9672b54305c4fe03abe16d5579cad32ed680c6dfb74f46289347c",
+    "benchmarks/playwright-compatibility/playwright.config.ts": "5bce3a2e89dd405cdf009ffd7f86796708f27d6f88ec6b3ba4ecd49043199187",
+    "patches/playwright-core@1.62.1.patch": "f213239626cd82fd3c783c66db01167df999b54c5fc08e3330be4dda2cd72e50",
+    "src/engine.ts": "4a96cdefa38209a9536c36ffd7e467a51f18d5690f9103650668a463f7ff499d",
+    "src/cdp-command-queue.ts": "79c8bfaccf8bb87087973babfed27595c09e08cb69b2040b3cd6a76ffc59a4ec",
+    "src/cdp-delivery.ts": "4a15b41e9acd8090d405c0be8743881d28161492a19a02175f37d549644508ac"
+  },
+  "binarySha256": "4df2960edd9ec0f9b258b2eed83a54552cb3beb2ce0a0e70c3eb82c2afa2b95e",
+  "driverSha256": "a416350964f149d5943a8036b814af42ff77b9fcba78c61a86ff76336f62fbb9",
+  "inventoryLimits": {
+    "library": "60 failures",
+    "pages": "600 seconds; helper rebuilt during inventory; exploratory only"
+  },
+  "upstreamFinalExclusions": [
+    "storage access",
+    "can request screen-wake-lock",
+    "should close browser with beforeunload page",
+    "should delete downloads on browser gone",
+    "should save downloads to artifactsDir",
+    "should throw if browser dies",
+    "should report new window downloads",
+    "should be able to download a inline PDF file via navigation"
+  ]
+}

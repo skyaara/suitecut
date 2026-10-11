@@ -1,0 +1,23 @@
+Test project /tmp/suitecut-cef-full-regression-build
+    Start 1: native-cdp-json
+1/9 Test #1: native-cdp-json ..................   Passed    0.00 sec
+    Start 2: native-media
+2/9 Test #2: native-media .....................   Passed    2.88 sec
+    Start 3: native-audio-startup
+3/9 Test #3: native-audio-startup .............   Passed    1.19 sec
+    Start 4: native-codecs
+4/9 Test #4: native-codecs ....................   Passed    2.02 sec
+    Start 5: native-memory-lifecycle
+5/9 Test #5: native-memory-lifecycle ..........   Passed    2.02 sec
+    Start 6: native-shared-clock
+6/9 Test #6: native-shared-clock ..............   Passed    1.66 sec
+    Start 7: native-scaler-failure
+7/9 Test #7: native-scaler-failure ............   Passed    0.09 sec
+    Start 8: native-audio-clock
+8/9 Test #8: native-audio-clock ...............   Passed    0.00 sec
+    Start 9: native-pixel-conversion
+9/9 Test #9: native-pixel-conversion ..........   Passed    0.00 sec
+
+100% tests passed out of 9
+
+Total Test time (real) =   9.87 sec

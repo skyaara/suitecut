@@ -83,10 +83,22 @@ let proxyRequests: { url: string; authenticated: boolean }[] = []
 let originAuthHeaders: (string | undefined)[] = []
 const basic = 'Basic ' + Buffer.from('user:password').toString('base64')
 const proxyBasic = 'Basic ' + Buffer.from('proxy:secret').toString('base64')
+const pendingDownloads = new Set<ServerResponse>()
 const html = `<!doctype html><button onclick="this.textContent='clicked'">Click</button><input aria-label="Name"><canvas width="640" height="250"></canvas><script>let n=0;function draw(){const c=document.querySelector('canvas').getContext('2d');c.fillStyle=n++%2?'red':'blue';c.fillRect(0,0,640,250);requestAnimationFrame(draw)}draw()</script>`
 const sw = `self.addEventListener('install',e=>e.waitUntil(self.skipWaiting()));self.addEventListener('activate',e=>e.waitUntil(self.clients.claim()));self.addEventListener('fetch',e=>{if(new URL(e.request.url).pathname==='/sw-data')e.respondWith(new Response('from-worker'))});self.marker=42;`
 function handle(req: IncomingMessage, res: ServerResponse) {
   const path = new URL(req.url ?? '/', 'http://localhost').pathname
+  if (path === '/slow-download') {
+    res.writeHead(200, {
+      'Content-Type': 'application/octet-stream',
+      'Content-Disposition': 'attachment; filename="slow.bin"',
+      'Content-Length': String(1024 * 1024),
+    })
+    pendingDownloads.add(res)
+    res.on('close', () => pendingDownloads.delete(res))
+    res.write(Buffer.alloc(1024, 7))
+    return
+  }
   if (path === '/initial-language') {
     res.writeHead(200, { 'Content-Type': 'text/html' })
     res.end('<script>window.initialLanguage = navigator.language</script>')
@@ -398,12 +410,11 @@ test('oopif: cross-site frame is a separate CDP target and remains interactive',
   const session = await context.newCDPSession(page)
   const attachments: { targetInfo: { type: string } }[] = []
   session.on('Target.attachedToTarget', (e) => attachments.push(e))
-  if (process.env.COMPAT_BACKEND === 'chromium')
-    await session.send('Target.setAutoAttach', {
-      autoAttach: true,
-      waitForDebuggerOnStart: false,
-      flatten: true,
-    })
+  await session.send('Target.setAutoAttach', {
+    autoAttach: true,
+    waitForDebuggerOnStart: false,
+    flatten: true,
+  })
   await page.evaluate((url) => {
     const f = document.createElement('iframe')
     f.src = url
@@ -918,4 +929,95 @@ test('video: Playwright recordVideo creates a decodable WebM after context close
   expect(Number(data.format.duration)).toBeGreaterThan(0.5)
   execFileSync('ffmpeg', ['-v', 'error', '-i', path, '-f', 'null', '-'], { timeout: 15000 })
   await writeFile(info.outputPath('ffprobe.json'), JSON.stringify(data, null, 2))
+})
+
+test('downloads: repeated cancellation releases requests and capacity', async ({ page }) => {
+  test.setTimeout(60000)
+  await page.goto(origin)
+  await page.setContent(`<a href="${origin}/slow-download">download</a>`)
+  // Exceed the native concurrent-download cap over time. Finished entries
+  // must be reclaimed, and cancellation must close the server connection.
+  for (let i = 0; i < 70; i++) {
+    const [download] = await Promise.all([page.waitForEvent('download'), page.click('a')])
+    await download.cancel()
+    expect(await download.failure()).toBe('canceled')
+    await expect.poll(() => pendingDownloads.size).toBe(0)
+  }
+})
+
+test('downloads: denied download reports failure and creates no saved file', async ({
+  browser,
+}, info) => {
+  const context = await browser.newContext({ acceptDownloads: false })
+  try {
+    const page = await context.newPage()
+    await page.goto(origin)
+    await page.setContent(`<a href="${origin}/slow-download">download</a>`)
+    const [download] = await Promise.all([page.waitForEvent('download'), page.click('a')])
+    expect(await download.failure()).toContain('acceptDownloads')
+    const destination = info.outputPath('denied.bin')
+    await expect(download.saveAs(destination)).rejects.toThrow('acceptDownloads')
+    await expect(stat(destination)).rejects.toMatchObject({ code: 'ENOENT' })
+    await expect.poll(() => pendingDownloads.size).toBe(0)
+  } finally {
+    await context.close()
+  }
+})
+
+test('cdp: session close event precedes detach completion', async ({ page }) => {
+  const session = await page.context().newCDPSession(page)
+  const events: string[] = []
+  session.on('close', () => events.push('closed'))
+  await session.detach()
+  events.push('detached')
+  expect(events).toEqual(['closed', 'detached'])
+  await expect(session.send('Runtime.evaluate', { expression: '1 + 1' })).rejects.toThrow()
+})
+
+test('permissions: local network grant resets and stays within its context', async ({
+  browser,
+}) => {
+  const allowed = await browser.newContext()
+  const isolated = await browser.newContext()
+  try {
+    const page = await allowed.newPage()
+    const other = await isolated.newPage()
+    await page.goto(origin)
+    await other.goto(origin)
+    const state = (p: Page) =>
+      p.evaluate(
+        async () =>
+          (await navigator.permissions.query({ name: 'loopback-network' as PermissionName })).state,
+      )
+    expect(await state(page)).toBe('prompt')
+    await allowed.grantPermissions(['local-network-access'], { origin })
+    expect(await state(page)).toBe('granted')
+    expect(await state(other)).toBe('prompt')
+    await allowed.clearPermissions()
+    expect(await state(page)).toBe('prompt')
+    await allowed.grantPermissions([], { origin })
+    expect(await state(page)).toBe('denied')
+  } finally {
+    await allowed.close()
+    await isolated.close()
+  }
+})
+
+test('cdp: explicit page sessions keep debugger domains independent', async ({ page }) => {
+  const session = await page.context().newCDPSession(page)
+  try {
+    await session.send('Debugger.enable')
+    await page.coverage.startJSCoverage()
+    await page.coverage.stopJSCoverage()
+    const parsed = new Promise<void>((resolve) => {
+      session.on('Debugger.scriptParsed', (event) => {
+        if (event.url === 'suitecut-independent.js') resolve()
+      })
+    })
+    await Promise.all([parsed, page.evaluate('void 0;\n//# sourceURL=suitecut-independent.js')])
+    const result = await session.send('Runtime.evaluate', { expression: '21 * 2' })
+    expect(result.result.value).toBe(42)
+  } finally {
+    await session.detach()
+  }
 })

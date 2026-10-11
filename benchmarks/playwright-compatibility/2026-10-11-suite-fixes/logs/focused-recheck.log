@@ -1,0 +1,17 @@
+[WARN] Your node_modules are out of sync with your lockfile. The value of the patchedDependencies setting has changed
+
+Running 9 tests using 1 worker
+
+(node:1142985) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 benchmarks/playwright-compatibility/compatibility.spec.ts:405:1 › oopif: cross-site frame is a separate CDP target and remains interactive (479ms)
+  ✓  2 benchmarks/playwright-compatibility/compatibility.spec.ts:431:1 › oopif: cross-site navigation, detach and network routing (545ms)
+  ✓  3 benchmarks/playwright-compatibility/compatibility.spec.ts:455:1 › viewport: odd and tiny browser dimensions support screenshots and Playwright video (666ms)
+  ✓  4 benchmarks/playwright-compatibility/compatibility.spec.ts:513:1 › viewport: real browser version metadata preserves 4K windowless dimensions (264ms)
+  ✓  5 benchmarks/playwright-compatibility/compatibility.spec.ts:934:1 › downloads: repeated cancellation releases requests and capacity (9.2s)
+  ✓  6 benchmarks/playwright-compatibility/compatibility.spec.ts:948:1 › downloads: denied download reports failure and creates no saved file (246ms)
+  ✓  7 benchmarks/playwright-compatibility/compatibility.spec.ts:967:1 › cdp: session close event precedes detach completion (93ms)
+  ✓  8 benchmarks/playwright-compatibility/compatibility.spec.ts:977:1 › permissions: local network grant resets and stays within its context (309ms)
+  ✓  9 benchmarks/playwright-compatibility/compatibility.spec.ts:1006:1 › cdp: explicit page sessions keep debugger domains independent (100ms)
+
+  9 passed (14.5s)

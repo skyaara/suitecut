@@ -1,0 +1,200 @@
+[
+  {
+    "run": "broad",
+    "startTime": "2026-10-11T16:24:31.031Z",
+    "duration": 458601.594,
+    "expected": 814,
+    "skipped": 3347,
+    "unexpected": 60,
+    "flaky": 0
+  },
+  {
+    "run": "downloads-fixed",
+    "startTime": "2026-10-11T16:37:09.689Z",
+    "duration": 51193.723,
+    "expected": 44,
+    "skipped": 0,
+    "unexpected": 6,
+    "flaky": 0
+  },
+  {
+    "run": "early-page",
+    "startTime": "2026-10-11T16:24:07.563Z",
+    "duration": 2264.255,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 2,
+    "flaky": 0
+  },
+  {
+    "run": "final-cef",
+    "startTime": "2026-10-11T17:05:54.600Z",
+    "duration": 48419.816,
+    "expected": 43,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  {
+    "run": "final-chromium",
+    "startTime": "2026-10-11T17:07:14.668Z",
+    "duration": 20744.327,
+    "expected": 42,
+    "skipped": 1,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  {
+    "run": "final-engine",
+    "startTime": "2026-10-11T17:07:38.738Z",
+    "duration": 23915.102,
+    "expected": 16,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  {
+    "run": "final-upstream",
+    "startTime": "2026-10-11T17:06:46.500Z",
+    "duration": 24849.594,
+    "expected": 104,
+    "skipped": 4,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  {
+    "run": "focused-cef",
+    "startTime": "2026-10-11T16:54:42.318Z",
+    "duration": 67320.481,
+    "expected": 40,
+    "skipped": 0,
+    "unexpected": 3,
+    "flaky": 0
+  },
+  {
+    "run": "focused-recheck",
+    "startTime": "2026-10-11T16:57:38.485Z",
+    "duration": 14456.607999999998,
+    "expected": 9,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  {
+    "run": "iframe-auth-pattern",
+    "startTime": "2026-10-11T17:01:01.227Z",
+    "duration": 3432.951,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 2,
+    "flaky": 0
+  },
+  {
+    "run": "iframe-debug",
+    "startTime": "2026-10-11T16:55:54.006Z",
+    "duration": 8473.025,
+    "expected": 2,
+    "skipped": 0,
+    "unexpected": 3,
+    "flaky": 0
+  },
+  {
+    "run": "iframe-diagnostic",
+    "startTime": "2026-10-11T16:57:56.320Z",
+    "duration": 4820.9400000000005,
+    "expected": 1,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  },
+  {
+    "run": "iframe-no-fetch",
+    "startTime": "2026-10-11T17:01:49.543Z",
+    "duration": 3252.042,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 2,
+    "flaky": 0
+  },
+  {
+    "run": "pages",
+    "startTime": "2026-10-11T16:44:21.255Z",
+    "duration": 600008.447,
+    "expected": 1419,
+    "skipped": 1062,
+    "unexpected": 24,
+    "flaky": 0
+  },
+  {
+    "run": "permission-debug",
+    "startTime": "2026-10-11T16:39:39.163Z",
+    "duration": 1951.9599999999998,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  },
+  {
+    "run": "permission-debug-3",
+    "startTime": "2026-10-11T16:40:17.218Z",
+    "duration": 1966.169,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  },
+  {
+    "run": "permissions-4",
+    "startTime": "2026-10-11T16:41:25.955Z",
+    "duration": 12785.182,
+    "expected": 16,
+    "skipped": 4,
+    "unexpected": 2,
+    "flaky": 0
+  },
+  {
+    "run": "permissions-fixed",
+    "startTime": "2026-10-11T16:38:43.183Z",
+    "duration": 22180.869000000002,
+    "expected": 0,
+    "skipped": 4,
+    "unexpected": 18,
+    "flaky": 0
+  },
+  {
+    "run": "popup-trace",
+    "startTime": "2026-10-11T16:21:54.824Z",
+    "duration": 46097.864,
+    "expected": 1,
+    "skipped": 0,
+    "unexpected": 3,
+    "flaky": 0
+  },
+  {
+    "run": "raw-sessions",
+    "startTime": "2026-10-11T16:54:25.045Z",
+    "duration": 4068.92,
+    "expected": 15,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  {
+    "run": "renderer-log",
+    "startTime": "2026-10-11T16:58:44.049Z",
+    "duration": 1928.308,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  },
+  {
+    "run": "retained-upstream",
+    "startTime": "2026-10-11T16:43:54.515Z",
+    "duration": 23309.948,
+    "expected": 74,
+    "skipped": 4,
+    "unexpected": 0,
+    "flaky": 0
+  }
+]

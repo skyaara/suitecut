@@ -1,0 +1,53 @@
+{
+  "nativeBytes": 1037364,
+  "messages": [
+    {
+      "id": 1,
+      "result": {
+        "protocolVersion": "1.3",
+        "product": "Chrome/152.0.7977.83",
+        "revision": "@79460ebecaa5625e57a5fb679a735659e73dc687",
+        "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36",
+        "jsVersion": "15.2.124.21"
+      }
+    },
+    {
+      "method": "Target.attachedToTarget",
+      "params": {
+        "sessionId": "AFED84ED7D0874E6915D3F87A6E6A409",
+        "targetInfo": {
+          "targetId": "1B3210145828F437EA3905CDFD3343EC",
+          "type": "page",
+          "title": "about:blank",
+          "url": "about:blank",
+          "attached": true,
+          "canAccessOpener": false,
+          "browserContextId": "CBA9909B02D96B1322A8B7F9A8DC5E60"
+        },
+        "waitingForDebugger": false
+      }
+    },
+    {
+      "id": 2,
+      "result": {}
+    },
+    {
+      "id": 3,
+      "result": {
+        "targetInfos": [
+          {
+            "targetId": "1B3210145828F437EA3905CDFD3343EC",
+            "type": "page",
+            "title": "about:blank",
+            "url": "about:blank",
+            "attached": true,
+            "canAccessOpener": false,
+            "browserContextId": "CBA9909B02D96B1322A8B7F9A8DC5E60"
+          }
+        ]
+      }
+    }
+  ],
+  "stderr": "",
+  "exitCode": null
+}

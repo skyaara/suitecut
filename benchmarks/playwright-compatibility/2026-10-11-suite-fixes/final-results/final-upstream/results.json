@@ -1,0 +1,4195 @@
+{
+  "config": {
+    "argv": [
+      "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+      "/workspace/suitecut/node_modules/playwright/cli.js",
+      "test",
+      "--config",
+      "/tmp/suitecut-playwright-upstream/playwright-1.62.1/suitecut.config.ts",
+      "library/download.spec.ts",
+      "library/beforeunload.spec.ts",
+      "library/permissions.spec.ts",
+      "library/chromium/session.spec.ts",
+      "library/browsercontext-viewport-mobile.spec.ts",
+      "page/page-emulate-media.spec.ts",
+      "page/page-basic.spec.ts:185",
+      "--grep-invert",
+      "storage access|can request screen-wake-lock|should close browser with beforeunload page|should delete downloads on browser gone|should save downloads to artifactsDir|should throw if browser dies|should report new window downloads|should be able to download a inline PDF file via navigation",
+      "--timeout=10000"
+    ],
+    "configFile": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/suitecut.config.ts",
+    "rootDir": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 2400000,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 100,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/tmp/suitecut-suite-pass/final-upstream/artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests",
+        "testIgnore": [
+          "**/firefox/**",
+          "**/webkit/**",
+          "**/inspector/**"
+        ],
+        "testMatch": [
+          "library/**/*.spec.ts",
+          "page/**/*.spec.ts"
+        ],
+        "timeout": 10000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "/tmp/suitecut-suite-pass/final-upstream/results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.62.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "library/beforeunload.spec.ts",
+      "file": "library/beforeunload.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "should close browsercontext with beforeunload page",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 236,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T17:06:48.061Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "5131bad977ee07a68d34-030dbcda794af70ac274",
+          "file": "library/beforeunload.spec.ts",
+          "line": 30,
+          "column": 3
+        },
+        {
+          "title": "should be able to navigate away from page with beforeunload",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 271,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T17:06:48.912Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "5131bad977ee07a68d34-0007eb0b9db9c6efbe82",
+          "file": "library/beforeunload.spec.ts",
+          "line": 38,
+          "column": 3
+        },
+        {
+          "title": "should close page with beforeunload listener",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 198,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T17:06:49.202Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "5131bad977ee07a68d34-378b443301d9e970ce0a",
+          "file": "library/beforeunload.spec.ts",
+          "line": 46,
+          "column": 3
+        },
+        {
+          "title": "should run beforeunload if asked for @smoke",
+          "ok": true,
+          "tags": [
+            "smoke"
+          ],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 256,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T17:06:49.412Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "5131bad977ee07a68d34-97b322994d35ef3c1e09",
+          "file": "library/beforeunload.spec.ts",
+          "line": 55,
+          "column": 3
+        },
+        {
+          "title": "should access page after beforeunload",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 208,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T17:06:49.683Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "5131bad977ee07a68d34-575c0a893e694466f72c",
+          "file": "library/beforeunload.spec.ts",
+          "line": 79,
+          "column": 3
+        },
+        {
+          "title": "should not stall on evaluate when dismissing beforeunload",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [
+                {
+                  "type": "issue",
+                  "description": "https://github.com/microsoft/playwright/issues/23141"
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 216,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T17:06:49.904Z",
+                  "annotations": [
+                    {
+                      "type": "issue",
+                      "description": "https://github.com/microsoft/playwright/issues/23141"
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "5131bad977ee07a68d34-ad2525025794cd98fe28",
+          "file": "library/beforeunload.spec.ts",
+          "line": 92,
+          "column": 3
+        },
+        {
+          "title": "should not stall on click when dismissing beforeunload",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [
+                {
+                  "type": "issue",
+                  "description": "https://github.com/microsoft/playwright/issues/33806"
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 460,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T17:06:50.139Z",
+                  "annotations": [
+                    {
+                      "type": "issue",
+                      "description": "https://github.com/microsoft/playwright/issues/33806"
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "5131bad977ee07a68d34-1991b8a784792d145d45",
+          "file": "library/beforeunload.spec.ts",
+          "line": 107,
+          "column": 3
+        },
+        {
+          "title": "should support dismissing the dialog multiple times",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 186,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T17:06:50.618Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "5131bad977ee07a68d34-81e7a06587bef341580e",
+          "file": "library/beforeunload.spec.ts",
+          "line": 130,
+          "column": 3
+        },
+        {
+          "title": "should support closing the page after a previous dismiss",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 227,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T17:06:50.818Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "5131bad977ee07a68d34-894c347c9fce67cd6a9b",
+          "file": "library/beforeunload.spec.ts",
+          "line": 152,
+          "column": 3
+        },
+        {
+          "title": "should support closing the page via a subsequent onbeforeunload dialog",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 199,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T17:06:51.062Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "5131bad977ee07a68d34-9918788990a91e88142b",
+          "file": "library/beforeunload.spec.ts",
+          "line": 170,
+          "column": 3
+        },
+        {
+          "title": "does not get stalled by beforeUnload",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [
+                {
+                  "type": "issue",
+                  "description": "https://github.com/microsoft/playwright/issues/38731",
+                  "location": {
+                    "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/beforeunload.spec.ts",
+                    "line": 188,
+                    "column": 3
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 245,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T17:06:51.272Z",
+                  "annotations": [
+                    {
+                      "type": "issue",
+                      "description": "https://github.com/microsoft/playwright/issues/38731",
+                      "location": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/beforeunload.spec.ts",
+                        "line": 188,
+                        "column": 3
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "5131bad977ee07a68d34-2588b294335c33f97657",
+          "file": "library/beforeunload.spec.ts",
+          "line": 188,
+          "column": 3
+        }
+      ]
+    },
+    {
+      "title": "library/browsercontext-viewport-mobile.spec.ts",
+      "file": "library/browsercontext-viewport-mobile.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "mobile viewport",
+          "file": "library/browsercontext-viewport-mobile.spec.ts",
+          "line": 20,
+          "column": 4,
+          "specs": [
+            {
+              "title": "should support mobile emulation",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 10000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 158,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T17:06:51.536Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "bd0db0c9081fd6010553-523f69371acede20d99d",
+              "file": "library/browsercontext-viewport-mobile.spec.ts",
+              "line": 23,
+              "column": 5
+            },
+            {
+              "title": "should support touch emulation",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 10000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 116,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T17:06:51.730Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "bd0db0c9081fd6010553-5c01ecb4e7dad3825b99",
+              "file": "library/browsercontext-viewport-mobile.spec.ts",
+              "line": 34,
+              "column": 5
+            },
+            {
+              "title": "should be detectable",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 10000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 77,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T17:06:51.859Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "bd0db0c9081fd6010553-e433e30b3e9d5de75b9c",
+              "file": "library/browsercontext-viewport-mobile.spec.ts",
+              "line": 57,
+              "column": 5
+            },
+            {
+              "title": "should detect touch when applying viewport with touches",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 10000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 151,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T17:06:51.944Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "bd0db0c9081fd6010553-ec450277d75819ffa010",
+              "file": "library/browsercontext-viewport-mobile.spec.ts",
+              "line": 65,
+              "column": 5
+            },
+            {
+              "title": "should support landscape emulation",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 10000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 223,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T17:06:52.104Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "bd0db0c9081fd6010553-cd30a41bc1880944d183",
+              "file": "library/browsercontext-viewport-mobile.spec.ts",
+              "line": 73,
+              "column": 5
+            },
+            {
+              "title": "should support window.orientation emulation",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 10000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 112,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T17:06:52.336Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "bd0db0c9081fd6010553-6a64b80611fcd55cae09",
+              "file": "library/browsercontext-viewport-mobile.spec.ts",
+              "line": 87,
+              "column": 5
+            },
+            {
+              "title": "should preserve window.orientation override after navigation",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 10000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 162,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T17:06:52.456Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "bd0db0c9081fd6010553-100a9224a2ed59bb4b8b",
+              "file": "library/browsercontext-viewport-mobile.spec.ts",
+              "line": 97,
+              "column": 5
+            },
+            {
+              "title": "should preserve screen.orientation.type override after navigation",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 10000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 163,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T17:06:52.631Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "bd0db0c9081fd6010553-0b3c27eaf2ffd36c80e1",
+              "file": "library/browsercontext-viewport-mobile.spec.ts",
+              "line": 109,
+              "column": 5
+            },
+            {
+              "title": "should fire orientationchange event",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 10000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 104,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T17:06:52.803Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "bd0db0c9081fd6010553-53023599399a169a96d5",
+              "file": "library/browsercontext-viewport-mobile.spec.ts",
+              "line": 121,
+              "column": 5
+            },
+            {
+              "title": "default mobile viewports to 980 width",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 10000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 112,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T17:06:52.921Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "bd0db0c9081fd6010553-fd321ace83f0688bf1fc",
+              "file": "library/browsercontext-viewport-mobile.spec.ts",
+              "line": 140,
+              "column": 5
+            },
+            {
+              "title": "respect meta viewport tag",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 10000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 97,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T17:06:53.043Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "bd0db0c9081fd6010553-92d93aa30c2f5278354a",
+              "file": "library/browsercontext-viewport-mobile.spec.ts",
+              "line": 148,
+              "column": 5
+            },
+            {
+              "title": "should emulate the hover media feature",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 10000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 209,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T17:06:53.154Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "bd0db0c9081fd6010553-97979518f7f06d381cac",
+              "file": "library/browsercontext-viewport-mobile.spec.ts",
+              "line": 156,
+              "column": 5
+            },
+            {
+              "title": "mouse should work with mobile viewports and cross process navigations",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 10000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 153,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T17:06:53.372Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "bd0db0c9081fd6010553-bae4cb28553f465fc82a",
+              "file": "library/browsercontext-viewport-mobile.spec.ts",
+              "line": 181,
+              "column": 5
+            },
+            {
+              "title": "should scroll when emulating a mobile viewport",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 10000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 196,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T17:06:53.534Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "bd0db0c9081fd6010553-89804b32cfc1ae4c7bc1",
+              "file": "library/browsercontext-viewport-mobile.spec.ts",
+              "line": 199,
+              "column": 5
+            },
+            {
+              "title": "should scroll mobile page with background-attachment: fixed",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 10000,
+                  "annotations": [
+                    {
+                      "type": "issue",
+                      "description": "https://github.com/microsoft/playwright/issues/31551",
+                      "location": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-viewport-mobile.spec.ts",
+                        "line": 215,
+                        "column": 5
+                      }
+                    },
+                    {
+                      "type": "issue",
+                      "description": "https://github.com/microsoft/playwright/issues/23573",
+                      "location": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-viewport-mobile.spec.ts",
+                        "line": 215,
+                        "column": 5
+                      }
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 218,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T17:06:53.740Z",
+                      "annotations": [
+                        {
+                          "type": "issue",
+                          "description": "https://github.com/microsoft/playwright/issues/31551",
+                          "location": {
+                            "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-viewport-mobile.spec.ts",
+                            "line": 215,
+                            "column": 5
+                          }
+                        },
+                        {
+                          "type": "issue",
+                          "description": "https://github.com/microsoft/playwright/issues/23573",
+                          "location": {
+                            "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-viewport-mobile.spec.ts",
+                            "line": 215,
+                            "column": 5
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "bd0db0c9081fd6010553-b0fe46d760bcda3e6a8b",
+              "file": "library/browsercontext-viewport-mobile.spec.ts",
+              "line": 215,
+              "column": 5
+            },
+            {
+              "title": "view scale should reset after navigation",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 10000,
+                  "annotations": [
+                    {
+                      "type": "issue",
+                      "description": "https://github.com/microsoft/playwright/issues/26876"
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 239,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T17:06:53.970Z",
+                      "annotations": [
+                        {
+                          "type": "issue",
+                          "description": "https://github.com/microsoft/playwright/issues/26876"
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "bd0db0c9081fd6010553-2ade13de9b160ef6bf98",
+              "file": "library/browsercontext-viewport-mobile.spec.ts",
+              "line": 230,
+              "column": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "library/chromium/session.spec.ts",
+      "file": "library/chromium/session.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "should work",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 78,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T17:06:54.224Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "c9a94cd4495ce711d0cf-0e3bfa509d049b9d5b86",
+          "file": "library/chromium/session.spec.ts",
+          "line": 21,
+          "column": 3
+        },
+        {
+          "title": "should send events",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 95,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T17:06:54.316Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "c9a94cd4495ce711d0cf-1177efe21ca05c589e4e",
+          "file": "library/chromium/session.spec.ts",
+          "line": 32,
+          "column": 3
+        },
+        {
+          "title": "should only accept a page or frame",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 85,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T17:06:54.426Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "c9a94cd4495ce711d0cf-81a765c99e6a0c325883",
+          "file": "library/chromium/session.spec.ts",
+          "line": 41,
+          "column": 3
+        },
+        {
+          "title": "should enable and disable domains independently",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 81,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T17:06:54.523Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "c9a94cd4495ce711d0cf-2ab983ae094cbba7e4ac",
+          "file": "library/chromium/session.spec.ts",
+          "line": 52,
+          "column": 3
+        },
+        {
+          "title": "should be able to detach session",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 78,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T17:06:54.618Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "c9a94cd4495ce711d0cf-776954fbf1843dce951f",
+          "file": "library/chromium/session.spec.ts",
+          "line": 69,
+          "column": 3
+        },
+        {
+          "title": "should throw nice errors",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 75,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T17:06:54.706Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "c9a94cd4495ce711d0cf-074c60958a7dbb4d3ae8",
+          "file": "library/chromium/session.spec.ts",
+          "line": 84,
+          "column": 3
+        },
+        {
+          "title": "should work with main frame",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 80,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T17:06:54.793Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "c9a94cd4495ce711d0cf-f4a83f4837ce345f1b59",
+          "file": "library/chromium/session.spec.ts",
+          "line": 96,
+          "column": 3
+        },
+        {
+          "title": "should throw if target is part of main",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 147,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T17:06:54.885Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "c9a94cd4495ce711d0cf-84ffee05bdb1a38aea58",
+          "file": "library/chromium/session.spec.ts",
+          "line": 107,
+          "column": 3
+        },
+        {
+          "title": "should not break page.close()",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 87,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T17:06:55.042Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "c9a94cd4495ce711d0cf-2366c100a68331273a8e",
+          "file": "library/chromium/session.spec.ts",
+          "line": 116,
+          "column": 12
+        },
+        {
+          "title": "should detach when page closes",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 75,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T17:06:55.136Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "c9a94cd4495ce711d0cf-4b76b949a1e804f38242",
+          "file": "library/chromium/session.spec.ts",
+          "line": 125,
+          "column": 12
+        },
+        {
+          "title": "should reject protocol calls when page closes",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 69,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T17:06:55.220Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "c9a94cd4495ce711d0cf-72bf7610984867f93b64",
+          "file": "library/chromium/session.spec.ts",
+          "line": 136,
+          "column": 12
+        },
+        {
+          "title": "should emit event for each CDP event",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 98,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T17:06:55.296Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "c9a94cd4495ce711d0cf-27ea0cf87d48495ae34d",
+          "file": "library/chromium/session.spec.ts",
+          "line": 149,
+          "column": 3
+        },
+        {
+          "title": "should emit close event when session is detached",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 66,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T17:06:55.409Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "c9a94cd4495ce711d0cf-e5015670d1f50f0768aa",
+          "file": "library/chromium/session.spec.ts",
+          "line": 161,
+          "column": 3
+        },
+        {
+          "title": "should emit close event when page closes",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 78,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T17:06:55.489Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "c9a94cd4495ce711d0cf-70238de2792e2e3b190c",
+          "file": "library/chromium/session.spec.ts",
+          "line": 169,
+          "column": 12
+        },
+        {
+          "title": "should work with newBrowserCDPSession",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 98,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T17:06:55.582Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "c9a94cd4495ce711d0cf-dd8aee823f6bd1ef30a4",
+          "file": "library/chromium/session.spec.ts",
+          "line": 180,
+          "column": 12
+        }
+      ]
+    },
+    {
+      "title": "library/download.spec.ts",
+      "file": "library/download.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "should be able to download a PDF file",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 635,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T17:07:04.940Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2e47aab5a946969adcdb-058c20084f887f659d69",
+          "file": "library/download.spec.ts",
+          "line": 606,
+          "column": 3
+        },
+        {
+          "title": "should be able to download a inline PDF file via response interception",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 686,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T17:07:05.586Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2e47aab5a946969adcdb-511684c79bf1e7e5e888",
+          "file": "library/download.spec.ts",
+          "line": 620,
+          "column": 3
+        },
+        {
+          "title": "should save to user-specified path",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 216,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T17:07:06.289Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2e47aab5a946969adcdb-6f24a214977c966b8e5d",
+          "file": "library/download.spec.ts",
+          "line": 662,
+          "column": 3
+        },
+        {
+          "title": "should download even if there is no \"attachment\" value",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [
+                {
+                  "type": "issue",
+                  "description": "https://github.com/microsoft/playwright/issues/19939"
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 190,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T17:07:06.527Z",
+                  "annotations": [
+                    {
+                      "type": "issue",
+                      "description": "https://github.com/microsoft/playwright/issues/19939"
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2e47aab5a946969adcdb-62146031b47c14a47de6",
+          "file": "library/download.spec.ts",
+          "line": 682,
+          "column": 3
+        },
+        {
+          "title": "should convert navigation to a resource with unsupported mime type into download",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [
+                {
+                  "type": "issue",
+                  "description": "https://github.com/microsoft/playwright/issues/19939"
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 100,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T17:07:06.732Z",
+                  "annotations": [
+                    {
+                      "type": "issue",
+                      "description": "https://github.com/microsoft/playwright/issues/19939"
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2e47aab5a946969adcdb-561bc45f7cad6ce160b0",
+          "file": "library/download.spec.ts",
+          "line": 700,
+          "column": 3
+        },
+        {
+          "title": "should download links with data url",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [
+                {
+                  "type": "issue",
+                  "description": "https://github.com/microsoft/playwright/issues/21892"
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 194,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T17:07:06.841Z",
+                  "annotations": [
+                    {
+                      "type": "issue",
+                      "description": "https://github.com/microsoft/playwright/issues/21892"
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2e47aab5a946969adcdb-a5f69892a7221faff48a",
+          "file": "library/download.spec.ts",
+          "line": 714,
+          "column": 3
+        },
+        {
+          "title": "should download successfully when routing",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 309,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T17:07:07.049Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2e47aab5a946969adcdb-866f3fab6fa9996286bf",
+          "file": "library/download.spec.ts",
+          "line": 723,
+          "column": 3
+        }
+      ],
+      "suites": [
+        {
+          "title": "download event",
+          "file": "library/download.spec.ts",
+          "line": 24,
+          "column": 4,
+          "specs": [
+            {
+              "title": "should report download when navigation turns into download @smoke",
+              "ok": true,
+              "tags": [
+                "smoke"
+              ],
+              "tests": [
+                {
+                  "timeout": 10000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 325,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T17:06:55.707Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2e47aab5a946969adcdb-88d4acf2232b2651bba8",
+              "file": "library/download.spec.ts",
+              "line": 54,
+              "column": 5
+            },
+            {
+              "title": "should work with Cross-Origin-Opener-Policy",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 10000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 236,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T17:06:56.054Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2e47aab5a946969adcdb-af8f3fbf1d4bcd49f98d",
+              "file": "library/download.spec.ts",
+              "line": 75,
+              "column": 5
+            },
+            {
+              "title": "should report downloads with acceptDownloads: false",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 10000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 212,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T17:06:56.302Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2e47aab5a946969adcdb-bc6cf6c7f134ea62af7b",
+              "file": "library/download.spec.ts",
+              "line": 94,
+              "column": 5
+            },
+            {
+              "title": "should report downloads with acceptDownloads: true",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 10000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 288,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T17:06:56.525Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2e47aab5a946969adcdb-e9b59f04a8453a216660",
+              "file": "library/download.spec.ts",
+              "line": 111,
+              "column": 5
+            },
+            {
+              "title": "should report proper download url when download is from download attribute",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 10000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 217,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T17:06:56.823Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2e47aab5a946969adcdb-0f446d5316facd7a7b56",
+              "file": "library/download.spec.ts",
+              "line": 124,
+              "column": 5
+            },
+            {
+              "title": "should report downloads for download attribute",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 10000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 460,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T17:06:57.052Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2e47aab5a946969adcdb-abe6e859fe3ba069a8d0",
+              "file": "library/download.spec.ts",
+              "line": 136,
+              "column": 5
+            },
+            {
+              "title": "should save to user-specified path without updating original path",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 10000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 396,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T17:06:57.529Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2e47aab5a946969adcdb-55d2a468013ada331626",
+              "file": "library/download.spec.ts",
+              "line": 150,
+              "column": 5
+            },
+            {
+              "title": "should save to two different paths with multiple saveAs calls",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 10000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 364,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T17:06:57.936Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2e47aab5a946969adcdb-212e3806a74a0355e9f4",
+              "file": "library/download.spec.ts",
+              "line": 168,
+              "column": 5
+            },
+            {
+              "title": "should save to overwritten filepath",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 10000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 327,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T17:06:58.315Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2e47aab5a946969adcdb-a2ced1b19867af29a536",
+              "file": "library/download.spec.ts",
+              "line": 187,
+              "column": 5
+            },
+            {
+              "title": "should create subdirectories when saving to non-existent user-specified path",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 10000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 371,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T17:06:58.651Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2e47aab5a946969adcdb-76e4e8ed69e6ac326807",
+              "file": "library/download.spec.ts",
+              "line": 205,
+              "column": 5
+            },
+            {
+              "title": "should error when saving with downloads disabled",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 10000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 194,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T17:06:59.035Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2e47aab5a946969adcdb-66ce46a2920801684037",
+              "file": "library/download.spec.ts",
+              "line": 219,
+              "column": 5
+            },
+            {
+              "title": "should error when saving after deletion",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 10000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 399,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T17:06:59.242Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2e47aab5a946969adcdb-55c3473bd4d62c0f52b1",
+              "file": "library/download.spec.ts",
+              "line": 232,
+              "column": 5
+            },
+            {
+              "title": "should report non-navigation downloads",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 10000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 311,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T17:06:59.657Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2e47aab5a946969adcdb-56d51aa5a1a976a1108d",
+              "file": "library/download.spec.ts",
+              "line": 246,
+              "column": 5
+            },
+            {
+              "title": "should report download path within page.on('download', …) handler for Files",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 10000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 233,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T17:06:59.979Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2e47aab5a946969adcdb-397d30f7c5dc403599da",
+              "file": "library/download.spec.ts",
+              "line": 267,
+              "column": 5
+            },
+            {
+              "title": "should report download path within page.on('download', …) handler for Blobs",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 10000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 296,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T17:07:00.226Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2e47aab5a946969adcdb-fecbb02d66969d778cbc",
+              "file": "library/download.spec.ts",
+              "line": 281,
+              "column": 5
+            },
+            {
+              "title": "should report alt-click downloads",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 10000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 810,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T17:07:00.535Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2e47aab5a946969adcdb-465b74313c875e0d9b80",
+              "file": "library/download.spec.ts",
+              "line": 295,
+              "column": 5
+            },
+            {
+              "title": "should delete file",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 10000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 283,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T17:07:01.356Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2e47aab5a946969adcdb-da37f65382063dd0bfaa",
+              "file": "library/download.spec.ts",
+              "line": 328,
+              "column": 5
+            },
+            {
+              "title": "should expose stream",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 10000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 297,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T17:07:01.652Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2e47aab5a946969adcdb-d2a1d806a39af2cbf248",
+              "file": "library/download.spec.ts",
+              "line": 342,
+              "column": 5
+            },
+            {
+              "title": "should delete downloads on context destruction",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 10000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 343,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T17:07:01.962Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2e47aab5a946969adcdb-8aa0afe553876154422a",
+              "file": "library/download.spec.ts",
+              "line": 357,
+              "column": 5
+            },
+            {
+              "title": "should close the context without awaiting the failed download",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 10000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 746,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T17:07:02.316Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2e47aab5a946969adcdb-835295a6f886e1983371",
+              "file": "library/download.spec.ts",
+              "line": 417,
+              "column": 5
+            },
+            {
+              "title": "should close the context without awaiting the download",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 10000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 232,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T17:07:03.076Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2e47aab5a946969adcdb-d88852bc4d540c2ff732",
+              "file": "library/download.spec.ts",
+              "line": 441,
+              "column": 5
+            },
+            {
+              "title": "should download large binary.zip",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 10000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 334,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T17:07:03.319Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2e47aab5a946969adcdb-570ca5642f5a96dcf876",
+              "file": "library/download.spec.ts",
+              "line": 503,
+              "column": 5
+            },
+            {
+              "title": "should be able to cancel pending downloads",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 10000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 195,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T17:07:03.665Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2e47aab5a946969adcdb-7e330d208eeb62ae5852",
+              "file": "library/download.spec.ts",
+              "line": 533,
+              "column": 5
+            },
+            {
+              "title": "should not fail explicitly to cancel a download even if that is already finished",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 10000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 281,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T17:07:03.876Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2e47aab5a946969adcdb-a2be793c121b4ee9753d",
+              "file": "library/download.spec.ts",
+              "line": 546,
+              "column": 5
+            },
+            {
+              "title": "should report downloads with interception",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 10000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 330,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T17:07:04.166Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2e47aab5a946969adcdb-762f705c6259e14ac1e3",
+              "file": "library/download.spec.ts",
+              "line": 562,
+              "column": 5
+            },
+            {
+              "title": "should emit download event from nested iframes",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 10000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 421,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T17:07:04.505Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2e47aab5a946969adcdb-334be51d4f957eee2344",
+              "file": "library/download.spec.ts",
+              "line": 576,
+              "column": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "library/permissions.spec.ts",
+      "file": "library/permissions.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "should support clipboard read",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [
+                {
+                  "type": "issue",
+                  "description": "https://github.com/microsoft/playwright/issues/27475"
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 139,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T17:07:09.135Z",
+                  "annotations": [
+                    {
+                      "type": "issue",
+                      "description": "https://github.com/microsoft/playwright/issues/27475"
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "02ad7176e10854ab0100-c51d920180f2275018e8",
+          "file": "library/permissions.spec.ts",
+          "line": 195,
+          "column": 3
+        },
+        {
+          "title": "local network request is allowed from public origin",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [
+                {
+                  "type": "issue",
+                  "description": "https://github.com/microsoft/playwright/issues/37861",
+                  "location": {
+                    "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/permissions.spec.ts",
+                    "line": 267,
+                    "column": 3
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 175,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T17:07:09.430Z",
+                  "annotations": [
+                    {
+                      "type": "issue",
+                      "description": "https://github.com/microsoft/playwright/issues/37861",
+                      "location": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/permissions.spec.ts",
+                        "line": 267,
+                        "column": 3
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "02ad7176e10854ab0100-ea94671b65707e7099b3",
+          "file": "library/permissions.spec.ts",
+          "line": 267,
+          "column": 3
+        }
+      ],
+      "suites": [
+        {
+          "title": "permissions",
+          "file": "library/permissions.spec.ts",
+          "line": 24,
+          "column": 4,
+          "specs": [
+            {
+              "title": "should be prompt by default",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 10000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 105,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T17:07:07.372Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "02ad7176e10854ab0100-f4f18c75a7705ccbd11f",
+              "file": "library/permissions.spec.ts",
+              "line": 27,
+              "column": 5
+            },
+            {
+              "title": "should deny permission when not listed",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 10000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 121,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T17:07:07.497Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "02ad7176e10854ab0100-1c1f3ad47ecf233663ab",
+              "file": "library/permissions.spec.ts",
+              "line": 32,
+              "column": 5
+            },
+            {
+              "title": "should fail when bad permission is given",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 10000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 103,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T17:07:07.629Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "02ad7176e10854ab0100-7d7868e413ffc483de34",
+              "file": "library/permissions.spec.ts",
+              "line": 50,
+              "column": 5
+            },
+            {
+              "title": "should grant geolocation permission when origin is listed",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 10000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 107,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T17:07:07.742Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "02ad7176e10854ab0100-66eba61a99153bc98ad6",
+              "file": "library/permissions.spec.ts",
+              "line": 60,
+              "column": 5
+            },
+            {
+              "title": "should prompt for geolocation permission when origin is not listed",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 10000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 141,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T17:07:07.859Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "02ad7176e10854ab0100-4446397318d98f24bfc4",
+              "file": "library/permissions.spec.ts",
+              "line": 66,
+              "column": 5
+            },
+            {
+              "title": "should grant notifications permission when listed",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 10000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 120,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T17:07:08.010Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "02ad7176e10854ab0100-459eb8fa302fe980debd",
+              "file": "library/permissions.spec.ts",
+              "line": 73,
+              "column": 5
+            },
+            {
+              "title": "should accumulate when adding",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 10000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 115,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T17:07:08.143Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "02ad7176e10854ab0100-d44199ce0f7b34c12f3c",
+              "file": "library/permissions.spec.ts",
+              "line": 79,
+              "column": 5
+            },
+            {
+              "title": "should clear permissions",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 10000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 113,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T17:07:08.270Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "02ad7176e10854ab0100-bbdce2e234e24117522e",
+              "file": "library/permissions.spec.ts",
+              "line": 87,
+              "column": 5
+            },
+            {
+              "title": "should grant permission when listed for all domains",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 10000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 105,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T17:07:08.395Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "02ad7176e10854ab0100-4e02700e8c5e35041733",
+              "file": "library/permissions.spec.ts",
+              "line": 96,
+              "column": 5
+            },
+            {
+              "title": "should grant permission when creating context",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 10000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 104,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T17:07:08.511Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "02ad7176e10854ab0100-d97ab52f06da0f305943",
+              "file": "library/permissions.spec.ts",
+              "line": 102,
+              "column": 5
+            },
+            {
+              "title": "should reset permissions",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 10000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 106,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T17:07:08.624Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "02ad7176e10854ab0100-7d7c910551ab64e51deb",
+              "file": "library/permissions.spec.ts",
+              "line": 110,
+              "column": 5
+            },
+            {
+              "title": "should trigger permission onchange",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 10000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 119,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T17:07:08.741Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "02ad7176e10854ab0100-7c3e003e8bb84c2387f6",
+              "file": "library/permissions.spec.ts",
+              "line": 118,
+              "column": 5
+            },
+            {
+              "title": "should isolate permissions between browser contexts",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 10000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 251,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T17:07:08.874Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "02ad7176e10854ab0100-9ded10fc3464d3ea6a69",
+              "file": "library/permissions.spec.ts",
+              "line": 145,
+              "column": 5
+            }
+          ]
+        },
+        {
+          "title": "",
+          "file": "library/permissions.spec.ts",
+          "line": 249,
+          "column": 4,
+          "specs": [
+            {
+              "title": "should be able to use the local-fonts API",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 10000,
+                  "annotations": [
+                    {
+                      "type": "issue",
+                      "description": "https://github.com/microsoft/playwright/issues/36113"
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 127,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T17:07:09.288Z",
+                      "annotations": [
+                        {
+                          "type": "issue",
+                          "description": "https://github.com/microsoft/playwright/issues/36113"
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "02ad7176e10854ab0100-14c395701b9adc2c842f",
+              "file": "library/permissions.spec.ts",
+              "line": 253,
+              "column": 5
+            }
+          ]
+        },
+        {
+          "title": "camera and microphone",
+          "file": "library/permissions.spec.ts",
+          "line": 326,
+          "column": 4,
+          "specs": [
+            {
+              "title": "should capture when camera and microphone are granted",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 10000,
+                  "annotations": [
+                    {
+                      "type": "issue",
+                      "description": "https://github.com/microsoft/playwright/issues/2973",
+                      "location": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/permissions.spec.ts",
+                        "line": 349,
+                        "column": 5
+                      }
+                    },
+                    {
+                      "type": "skip",
+                      "description": "WebKit mock-capture-device based test",
+                      "location": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/permissions.spec.ts",
+                        "line": 330,
+                        "column": 6
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T17:07:09.616Z",
+                      "annotations": [
+                        {
+                          "type": "issue",
+                          "description": "https://github.com/microsoft/playwright/issues/2973",
+                          "location": {
+                            "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/permissions.spec.ts",
+                            "line": 349,
+                            "column": 5
+                          }
+                        },
+                        {
+                          "type": "skip",
+                          "description": "WebKit mock-capture-device based test",
+                          "location": {
+                            "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/permissions.spec.ts",
+                            "line": 330,
+                            "column": 6
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "02ad7176e10854ab0100-8b763d87d71ba37b0d5f",
+              "file": "library/permissions.spec.ts",
+              "line": 349,
+              "column": 5
+            },
+            {
+              "title": "should reject when no permission is granted",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 10000,
+                  "annotations": [
+                    {
+                      "type": "issue",
+                      "description": "https://github.com/microsoft/playwright/issues/2973",
+                      "location": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/permissions.spec.ts",
+                        "line": 364,
+                        "column": 5
+                      }
+                    },
+                    {
+                      "type": "skip",
+                      "description": "WebKit mock-capture-device based test",
+                      "location": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/permissions.spec.ts",
+                        "line": 330,
+                        "column": 6
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T17:07:09.627Z",
+                      "annotations": [
+                        {
+                          "type": "issue",
+                          "description": "https://github.com/microsoft/playwright/issues/2973",
+                          "location": {
+                            "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/permissions.spec.ts",
+                            "line": 364,
+                            "column": 5
+                          }
+                        },
+                        {
+                          "type": "skip",
+                          "description": "WebKit mock-capture-device based test",
+                          "location": {
+                            "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/permissions.spec.ts",
+                            "line": 330,
+                            "column": 6
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "02ad7176e10854ab0100-6d9310d8ca9823af7509",
+              "file": "library/permissions.spec.ts",
+              "line": 364,
+              "column": 5
+            },
+            {
+              "title": "should gate audio and video independently",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 10000,
+                  "annotations": [
+                    {
+                      "type": "issue",
+                      "description": "https://github.com/microsoft/playwright/issues/2973",
+                      "location": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/permissions.spec.ts",
+                        "line": 373,
+                        "column": 5
+                      }
+                    },
+                    {
+                      "type": "skip",
+                      "description": "WebKit mock-capture-device based test",
+                      "location": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/permissions.spec.ts",
+                        "line": 330,
+                        "column": 6
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T17:07:09.627Z",
+                      "annotations": [
+                        {
+                          "type": "issue",
+                          "description": "https://github.com/microsoft/playwright/issues/2973",
+                          "location": {
+                            "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/permissions.spec.ts",
+                            "line": 373,
+                            "column": 5
+                          }
+                        },
+                        {
+                          "type": "skip",
+                          "description": "WebKit mock-capture-device based test",
+                          "location": {
+                            "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/permissions.spec.ts",
+                            "line": 330,
+                            "column": 6
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "02ad7176e10854ab0100-0d0862bce55be4d7aeee",
+              "file": "library/permissions.spec.ts",
+              "line": 373,
+              "column": 5
+            },
+            {
+              "title": "should stop capturing after permissions are cleared",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 10000,
+                  "annotations": [
+                    {
+                      "type": "issue",
+                      "description": "https://github.com/microsoft/playwright/issues/2973",
+                      "location": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/permissions.spec.ts",
+                        "line": 386,
+                        "column": 5
+                      }
+                    },
+                    {
+                      "type": "skip",
+                      "description": "WebKit mock-capture-device based test",
+                      "location": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/permissions.spec.ts",
+                        "line": 330,
+                        "column": 6
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T17:07:09.627Z",
+                      "annotations": [
+                        {
+                          "type": "issue",
+                          "description": "https://github.com/microsoft/playwright/issues/2973",
+                          "location": {
+                            "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/permissions.spec.ts",
+                            "line": 386,
+                            "column": 5
+                          }
+                        },
+                        {
+                          "type": "skip",
+                          "description": "WebKit mock-capture-device based test",
+                          "location": {
+                            "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/permissions.spec.ts",
+                            "line": 330,
+                            "column": 6
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "02ad7176e10854ab0100-4d9398481ec020644a79",
+              "file": "library/permissions.spec.ts",
+              "line": 386,
+              "column": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "page/page-basic.spec.ts",
+      "file": "page/page-basic.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "has navigator.webdriver set to true",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 111,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T17:07:09.652Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "6671006fe4035491d654-55ef3337e077dc15d5f4",
+          "file": "page/page-basic.spec.ts",
+          "line": 185,
+          "column": 3
+        }
+      ]
+    },
+    {
+      "title": "page/page-emulate-media.spec.ts",
+      "file": "page/page-emulate-media.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "should emulate type @smoke",
+          "ok": true,
+          "tags": [
+            "smoke"
+          ],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 103,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T17:07:09.795Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9eec127870920dd22d8f-e828768623b2649df7d6",
+          "file": "page/page-emulate-media.spec.ts",
+          "line": 37,
+          "column": 3
+        },
+        {
+          "title": "should throw in case of bad media argument",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 77,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T17:07:09.909Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9eec127870920dd22d8f-d6e5352491152e145c91",
+          "file": "page/page-emulate-media.spec.ts",
+          "line": 51,
+          "column": 3
+        },
+        {
+          "title": "should emulate colorScheme should work @smoke",
+          "ok": true,
+          "tags": [
+            "smoke"
+          ],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 117,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T17:07:09.997Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9eec127870920dd22d8f-57091799caeba785c823",
+          "file": "page/page-emulate-media.spec.ts",
+          "line": 58,
+          "column": 3
+        },
+        {
+          "title": "should default to light",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 90,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T17:07:10.124Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9eec127870920dd22d8f-98c0c34c8be47ae9e264",
+          "file": "page/page-emulate-media.spec.ts",
+          "line": 67,
+          "column": 3
+        },
+        {
+          "title": "should throw in case of bad colorScheme argument",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 73,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T17:07:10.223Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9eec127870920dd22d8f-65272c13cb8d8f84df04",
+          "file": "page/page-emulate-media.spec.ts",
+          "line": 80,
+          "column": 3
+        },
+        {
+          "title": "should work during navigation",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 151,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T17:07:10.309Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9eec127870920dd22d8f-253d04f0e5b6e7f22fc8",
+          "file": "page/page-emulate-media.spec.ts",
+          "line": 87,
+          "column": 3
+        },
+        {
+          "title": "should change the actual colors in css",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 164,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T17:07:10.469Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9eec127870920dd22d8f-b10e33616a1d269955d8",
+          "file": "page/page-emulate-media.spec.ts",
+          "line": 100,
+          "column": 3
+        },
+        {
+          "title": "should emulate reduced motion",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 110,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T17:07:10.643Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9eec127870920dd22d8f-dd62706db45ca10db283",
+          "file": "page/page-emulate-media.spec.ts",
+          "line": 133,
+          "column": 3
+        },
+        {
+          "title": "should keep reduced motion and color emulation after reload",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [
+                {
+                  "type": "issue",
+                  "description": "https://github.com/microsoft/playwright/issues/31328"
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 150,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T17:07:10.764Z",
+                  "annotations": [
+                    {
+                      "type": "issue",
+                      "description": "https://github.com/microsoft/playwright/issues/31328"
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9eec127870920dd22d8f-16b59bca83a1e0dd5a5e",
+          "file": "page/page-emulate-media.spec.ts",
+          "line": 144,
+          "column": 3
+        },
+        {
+          "title": "should emulate forcedColors ",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 97,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T17:07:10.925Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9eec127870920dd22d8f-42d6adf30855c7d9785c",
+          "file": "page/page-emulate-media.spec.ts",
+          "line": 172,
+          "column": 3
+        },
+        {
+          "title": "should emulate contrast ",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 113,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T17:07:11.032Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9eec127870920dd22d8f-b6bc0fa5c283724fac05",
+          "file": "page/page-emulate-media.spec.ts",
+          "line": 184,
+          "column": 3
+        },
+        {
+          "title": "should report hover and fine pointer for desktop",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 76,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T17:07:11.156Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9eec127870920dd22d8f-093158b080475ef21252",
+          "file": "page/page-emulate-media.spec.ts",
+          "line": 196,
+          "column": 3
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-11T17:06:46.500Z",
+    "duration": 24849.594,
+    "expected": 104,
+    "skipped": 4,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}
