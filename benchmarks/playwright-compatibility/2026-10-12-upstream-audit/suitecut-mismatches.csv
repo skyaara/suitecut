@@ -1,0 +1,311 @@
+id,file,line,column,title,fullTitle,feature,scope,disposition,nativeExecutionStatus,nativeOutcome,nativeExpectedStatus,nativeDurationMs,stockExecutionStatus,stockOutcome,stockExpectedStatus,stockDurationMs,nativeError,stockError,nativeAnnotations,stockAnnotations,isolatedExecutionStatus,isolatedOutcome,isolatedError
+b3341f7bfcb285ad03a7-a8938bd08a3eb60b9c7d,library/browsercontext-events.spec.ts,55,5,console event should work in popup 2,library/browsercontext-events.spec.ts > console event should work in popup 2,"Popup creation, first-script behavior and events",adapted browser API suite,SuiteCut-path mismatch; stock passed,timedOut,unexpected,passed,30171,passed,expected,passed,112,"Test timeout of 30000ms exceeded.
+Error: browserContext.waitForEvent: Test timeout of 30000ms exceeded.",,[],[],,,
+b3341f7bfcb285ad03a7-1a5ee418f655aae19000,library/browsercontext-events.spec.ts,72,5,console event should work in immediately closed popup,library/browsercontext-events.spec.ts > console event should work in immediately closed popup,"Popup creation, first-script behavior and events",adapted browser API suite,SuiteCut-path mismatch; stock passed,timedOut,unexpected,passed,30138,passed,expected,passed,125,"Test timeout of 30000ms exceeded.
+Error: browserContext.waitForEvent: Test timeout of 30000ms exceeded.",,[],[],,,
+b3341f7bfcb285ad03a7-e349764be357546f6227,library/browsercontext-events.spec.ts,103,5,dialog event should work in popup,library/browsercontext-events.spec.ts > dialog event should work in popup,"Popup creation, first-script behavior and events",adapted browser API suite,SuiteCut-path mismatch; stock passed,timedOut,unexpected,passed,35064,passed,expected,passed,131,"Test timeout of 30000ms exceeded.
+Error: page.waitForEvent: Test timeout of 30000ms exceeded.
+=========================== logs ===========================
+waiting for event ""popup""
+============================================================
+Error: page.evaluate: Test timeout of 30000ms exceeded.",,[],[],,,
+b3341f7bfcb285ad03a7-8849fc1e031c12a0aed1,library/browsercontext-events.spec.ts,120,5,dialog event should work in popup 2,library/browsercontext-events.spec.ts > dialog event should work in popup 2,"Popup creation, first-script behavior and events",adapted browser API suite,SuiteCut-path mismatch; stock passed,timedOut,unexpected,passed,35191,passed,expected,passed,117,"Test timeout of 30000ms exceeded.
+Error: browserContext.waitForEvent: Test timeout of 30000ms exceeded.",,[],[],,,
+b3341f7bfcb285ad03a7-56343d906d2512567895,library/browsercontext-events.spec.ts,135,5,dialog event should work in immediately closed popup,library/browsercontext-events.spec.ts > dialog event should work in immediately closed popup,"Popup creation, first-script behavior and events",adapted browser API suite,SuiteCut-path mismatch; stock passed,timedOut,unexpected,passed,35214,passed,expected,passed,114,"Test timeout of 30000ms exceeded.
+Error: page.waitForEvent: Test timeout of 30000ms exceeded.
+=========================== logs ===========================
+waiting for event ""popup""
+============================================================
+Error: page.evaluate: Test timeout of 30000ms exceeded.",,[],[],,,
+717a429e85e63b556dd4-3e1633b9917f3d7a5fdd,library/browsercontext-network-event.spec.ts,21,3,BrowserContext.Events.Request,library/browsercontext-network-event.spec.ts > BrowserContext.Events.Request,"Requests, routing, HTTP, WebSocket and HAR",adapted browser API suite,SuiteCut-path mismatch; stock passed,failed,unexpected,passed,514,passed,expected,passed,438,"Error: expect(received).toEqual(expected) // deep equality
+
+- Expected  - 2
++ Received  + 0
+
+  Array [
+    ""http://localhost:8991/empty.html"",
+-   ""http://localhost:8991/one-style.html"",
+-   ""http://localhost:8991/one-style.css"",
+  ]",,[],[],,,
+717a429e85e63b556dd4-44a3cfd734417264b921,library/browsercontext-network-event.spec.ts,40,3,BrowserContext.Events.Response,library/browsercontext-network-event.spec.ts > BrowserContext.Events.Response,"Requests, routing, HTTP, WebSocket and HAR",adapted browser API suite,SuiteCut-path mismatch; stock passed,failed,unexpected,passed,564,passed,expected,passed,460,"Error: expect(received).toEqual(expected) // deep equality
+
+- Expected  - 2
++ Received  + 0
+
+  Array [
+    ""http://localhost:8995/empty.html"",
+-   ""http://localhost:8995/one-style.html"",
+-   ""http://localhost:8995/one-style.css"",
+  ]",,[],[],,,
+2cc306972c560b111cbb-60548516695aad93eca6,library/browsercontext-page-event.spec.ts,129,3,should have an opener,library/browsercontext-page-event.spec.ts > should have an opener,"Popup creation, first-script behavior and events",adapted browser API suite,SuiteCut-path mismatch; stock passed,timedOut,unexpected,passed,30003,passed,expected,passed,211,Test timeout of 30000ms exceeded.,,[],[],,,
+2cc306972c560b111cbb-3f4949432a2065a721a2,library/browsercontext-page-event.spec.ts,160,3,should work with Shift-clicking,library/browsercontext-page-event.spec.ts > should work with Shift-clicking,"Popup creation, first-script behavior and events",adapted browser API suite,SuiteCut-path mismatch; stock passed,timedOut,unexpected,passed,30007,passed,expected,passed,340,Test timeout of 30000ms exceeded.,,[],[],,,
+2cc306972c560b111cbb-82ba99e45ff24fca06d7,library/browsercontext-page-event.spec.ts,173,3,should work with Ctrl-clicking,library/browsercontext-page-event.spec.ts > should work with Ctrl-clicking,"Popup creation, first-script behavior and events",adapted browser API suite,SuiteCut-path mismatch; stock passed,timedOut,unexpected,passed,30023,passed,expected,passed,366,Test timeout of 30000ms exceeded.,,[],[],,,
+9c9f46bf5d77ef1f00a1-f346fff64b6125853afc,library/browsercontext-route.spec.ts,419,3,should fulfill popup main request using alias,library/browsercontext-route.spec.ts > should fulfill popup main request using alias,"Requests, routing, HTTP, WebSocket and HAR",adapted browser API suite,SuiteCut-path mismatch; stock passed,failed,unexpected,passed,10359,passed,expected,passed,350,"Error: expect(locator).toHaveText(expected) failed
+
+Locator:  locator('body')
+Expected: ""hello""
+Received: """"
+Timeout:  10000ms
+
+Call log:
+  - Expect ""toHaveText"" with timeout 10000ms
+  - waiting for locator('body')
+    23 × locator resolved to <body></body>
+       - unexpected value """"
+",,[],[],,,
+a52370504edb4421d0b0-a44baa93f06f59a30ed0,library/chromium/oopif.spec.ts,353,3,should not throw on exposeFunction when oopif detaches,library/chromium/oopif.spec.ts > should not throw on exposeFunction when oopif detaches,Other APIs / internal fixtures,adapted browser API suite,SuiteCut-path mismatch; stock passed,failed,unexpected,passed,395,passed,expected,passed,236,Error: page.exposeFunction: Protocol error (Page.addScriptToEvaluateOnNewDocument): Session with given id not found.,,[],[],,,
+2e47aab5a946969adcdb-811ea36f6c29e7f58f2f,library/download.spec.ts,316,5,should report new window downloads,library/download.spec.ts > download event > should report new window downloads,Downloads and file input,adapted browser API suite,SuiteCut-path mismatch; stock passed,timedOut,unexpected,passed,30007,passed,expected,passed,160,"Test timeout of 30000ms exceeded.
+Error: page.waitForEvent: Target page, context or browser has been closed
+=========================== logs ===========================
+waiting for event ""download""
+============================================================",,[],[],,,
+637484fd3f0505bb1e82-23f48f4df654cd1d8a33,library/har.spec.ts,588,3,should have popup requests,library/har.spec.ts > should have popup requests,"Requests, routing, HTTP, WebSocket and HAR",adapted browser API suite,SuiteCut-path mismatch; stock passed,failed,unexpected,passed,273,passed,expected,passed,225,"Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: 2
+Received: 0",,[],[],,,
+59a09581d04794d4842b-ff2e60875c318072550c,library/hit-target.spec.ts,366,3,should detect overlaid element in a transformed iframe,library/hit-target.spec.ts > should detect overlaid element in a transformed iframe,Frames and cross-origin targets,adapted browser API suite,SuiteCut-path mismatch; stock passed,failed,unexpected,passed,164,passed,expected,passed,5124,"Error: page.setContent: Target page, context or browser has been closed
+Call log:
+  - setting frame content, waiting until ""load""
+",,[],[],,,
+59a09581d04794d4842b-95040a1ca6fb0ea24732,library/hit-target.spec.ts,398,3,should click in iframe with padding,library/hit-target.spec.ts > should click in iframe with padding,Frames and cross-origin targets,adapted browser API suite,SuiteCut-path mismatch; stock passed,failed,unexpected,passed,201,passed,expected,passed,270,"Error: page.setContent: Target page, context or browser has been closed
+Call log:
+  - setting frame content, waiting until ""load""
+",,[],[],,,
+59a09581d04794d4842b-fa95b8c3cf09d2e229c2,library/hit-target.spec.ts,422,3,should click in iframe with padding 2,library/hit-target.spec.ts > should click in iframe with padding 2,Frames and cross-origin targets,adapted browser API suite,SuiteCut-path mismatch; stock passed,failed,unexpected,passed,150,passed,expected,passed,208,"Error: page.setContent: Target page, context or browser has been closed
+Call log:
+  - setting frame content, waiting until ""load""
+",,[],[],,,
+0a011697234db5ebb5e5-192d7efced939e0a6e4c,library/inspector/cli-codegen-2.spec.ts,339,7,should record open in a new tab with url,library/inspector/cli-codegen-2.spec.ts > cli codegen > should record open in a new tab with url,Inspector and codegen / internal product fixtures,product/launcher/internal-heavy; passes do not establish a CEF browser workflow,SuiteCut-path mismatch; stock passed,failed,unexpected,passed,28969,passed,expected,passed,1176,"Error: expect(received).toContain(expected) // indexOf
+
+Expected substring: ""page1""
+Received string:    ""const { chromium } = require('playwright');·
+(async () => {
+  const browser = await chromium.launch({
+    headless: false
+  });
+  const context = await browser.newContext();
+  const page = await context.newPage();
+  await page.goto('about:blank');
+  await page.getByRole('link', { name: 'link' }).click({
+    modifiers: ['ControlOrMeta']
+  });·
+  // ---------------------
+  await context.close();
+  await browser.close();
+})();""
+
+Call Log:
+- Test timeout of 30000ms exceeded",,[],[],,,
+32bed0a1c83ee6a64459-ce8a0e2506ba5996e4d0,library/inspector/pause.spec.ts,207,5,"should highlight pointer, only in main frame","library/inspector/pause.spec.ts > pause > should highlight pointer, only in main frame",Inspector and codegen / internal product fixtures,product/launcher/internal-heavy; passes do not establish a CEF browser workflow,SuiteCut-path mismatch; stock passed,failed,unexpected,passed,270,passed,expected,passed,204,"Error: page.setContent: Target page, context or browser has been closed
+Call log:
+  - setting frame content, waiting until ""load""
+",,[],[],,,
+396575d0c681b50b892b-78875b98526afaf03bc7,library/page-clock.spec.ts,343,3,should not run time before popup on pause,library/page-clock.spec.ts > popup > should not run time before popup on pause,Clock and scheduling,adapted browser API suite,SuiteCut-path mismatch; stock passed,failed,unexpected,passed,2359,passed,expected,passed,2215,"Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: 1000
+Received: 1791745687689",,[],[],,,
+9e5da775316c2462fc38-81b3d691adab2a3be296,library/page-event-crash.spec.ts,42,1,should emit crash event when page crashes,library/page-event-crash.spec.ts > should emit crash event when page crashes,"Navigation, page lifecycle and crash handling",adapted browser API suite,SuiteCut-path mismatch; stock passed,timedOut,unexpected,passed,30008,passed,expected,passed,265,Test timeout of 30000ms exceeded.,,[],[],,,
+9e5da775316c2462fc38-926c0320a5d5803447a8,library/page-event-crash.spec.ts,49,1,should throw on any action after page crashes,library/page-event-crash.spec.ts > should throw on any action after page crashes,"Navigation, page lifecycle and crash handling",adapted browser API suite,SuiteCut-path mismatch; stock passed,failed,unexpected,passed,167,passed,expected,passed,192,"Error: page.waitForEvent: Target page, context or browser has been closed
+=========================== logs ===========================
+waiting for event ""crash""
+============================================================
+Error: browserContext.close: Target page, context or browser has been closed",,[],[],,,
+9e5da775316c2462fc38-3b300a33222c3e86a225,library/page-event-crash.spec.ts,74,1,should cancel waitForEvent when page crashes,library/page-event-crash.spec.ts > should cancel waitForEvent when page crashes,"Navigation, page lifecycle and crash handling",adapted browser API suite,SuiteCut-path mismatch; stock passed,failed,unexpected,passed,2,passed,expected,passed,136,"Error: browser.newContext: Target page, context or browser has been closed",,[],[],,,
+9e5da775316c2462fc38-d054322e629baf2238ea,library/page-event-crash.spec.ts,82,1,should cancel navigation when page crashes,library/page-event-crash.spec.ts > should cancel navigation when page crashes,"Navigation, page lifecycle and crash handling",adapted browser API suite,SuiteCut-path mismatch; stock passed,failed,unexpected,passed,220,passed,expected,passed,198,"Error: expect(received).toContain(expected) // indexOf
+
+Expected substring: ""page.goto: Page crashed""
+Received string:    ""page.goto: Target page, context or browser has been closed
+Call log:
+  - navigating to \""http://localhost:10647/one-style.html\"", waiting until \""load\""
+""",,[],[],,,
+9e5da775316c2462fc38-31c387844d7c9c847a08,library/page-event-crash.spec.ts,92,1,should be able to close context when page crashes,library/page-event-crash.spec.ts > should be able to close context when page crashes,"Navigation, page lifecycle and crash handling",adapted browser API suite,SuiteCut-path mismatch; stock passed,failed,unexpected,passed,160,passed,expected,passed,130,"Error: page.waitForEvent: Target page, context or browser has been closed
+=========================== logs ===========================
+waiting for event ""crash""
+============================================================
+Error: browserContext.close: Target page, context or browser has been closed",,[],[],,,
+9e5da775316c2462fc38-bca03dceadc423bc7251,library/page-event-crash.spec.ts,101,1,should be able to close page after crash,library/page-event-crash.spec.ts > should be able to close page after crash,"Navigation, page lifecycle and crash handling",adapted browser API suite,SuiteCut-path mismatch; stock passed,failed,unexpected,passed,166,passed,expected,passed,134,"Error: page.waitForEvent: Target page, context or browser has been closed
+=========================== logs ===========================
+waiting for event ""crash""
+============================================================
+Error: browserContext.close: Target page, context or browser has been closed",,[],[],,,
+02ad7176e10854ab0100-8687deba520bdcb6c425,library/permissions.spec.ts,222,3,storage access,library/permissions.spec.ts > storage access,Permission and geolocation overrides,adapted browser API suite,SuiteCut-path mismatch; stock passed,failed,unexpected,passed,287,passed,expected,passed,248,Error: browserContext.grantPermissions: Protocol error (Browser.grantPermissions): Unsupported native permission: storageAccess,,"[{""type"": ""issue"", ""description"": ""https://github.com/microsoft/playwright/issues/31227"", ""location"": {""file"": ""/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/permissions.spec.ts"", ""line"": 222, ""column"": 3}}]","[{""type"": ""issue"", ""description"": ""https://github.com/microsoft/playwright/issues/31227"", ""location"": {""file"": ""/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/permissions.spec.ts"", ""line"": 222, ""column"": 3}}]",,,
+02ad7176e10854ab0100-5f04a79fdd99697c0f2d,library/permissions.spec.ts,317,3,can request screen-wake-lock,library/permissions.spec.ts > can request screen-wake-lock,Permission and geolocation overrides,adapted browser API suite,SuiteCut-path mismatch; stock passed,failed,unexpected,passed,292,passed,expected,passed,161,Error: browserContext.grantPermissions: Protocol error (Browser.grantPermissions): Unsupported native permission: wakeLockScreen,,"[{""type"": ""issue"", ""description"": ""https://github.com/microsoft/playwright/issues/39115"", ""location"": {""file"": ""/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/permissions.spec.ts"", ""line"": 317, ""column"": 3}}]","[{""type"": ""issue"", ""description"": ""https://github.com/microsoft/playwright/issues/39115"", ""location"": {""file"": ""/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/permissions.spec.ts"", ""line"": 317, ""column"": 3}}]",,,
+461aa874134cee9040cc-2c580cdeb45e3f22b543,library/popup.spec.ts,20,3,should inherit user agent from browser context @smoke,library/popup.spec.ts > should inherit user agent from browser context @smoke,"Popup creation, first-script behavior and events",adapted browser API suite,SuiteCut-path mismatch; stock passed,failed,unexpected,passed,544,passed,expected,passed,386,"Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: ""hey""
+Received: ""Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36""",,[],[],,,
+461aa874134cee9040cc-bb4148cf801c06c31c59,library/popup.spec.ts,42,3,should respect routes from browser context,library/popup.spec.ts > should respect routes from browser context,"Popup creation, first-script behavior and events",adapted browser API suite,SuiteCut-path mismatch; stock passed,failed,unexpected,passed,596,passed,expected,passed,268,"Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: true
+Received: false",,[],[],,,
+461aa874134cee9040cc-e0a941eb4458a322b33b,library/popup.spec.ts,86,3,should inherit http credentials from browser context,library/popup.spec.ts > should inherit http credentials from browser context,"Popup creation, first-script behavior and events",adapted browser API suite,SuiteCut-path mismatch; stock passed,failed,unexpected,passed,617,passed,expected,passed,352,"Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: ""Woof-Woof""
+Received: """"",,[],[],,,
+461aa874134cee9040cc-96027f9ac336448528c1,library/popup.spec.ts,102,3,should inherit touch support from browser context,library/popup.spec.ts > should inherit touch support from browser context,"Popup creation, first-script behavior and events",adapted browser API suite,SuiteCut-path mismatch; stock passed,failed,unexpected,passed,297,passed,expected,passed,203,"Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: true
+Received: false",,[],[],,,
+461aa874134cee9040cc-ae06753ee54b9c593d39,library/popup.spec.ts,117,3,should inherit viewport size from browser context,library/popup.spec.ts > should inherit viewport size from browser context,"Popup creation, first-script behavior and events",adapted browser API suite,SuiteCut-path mismatch; stock passed,failed,unexpected,passed,246,passed,expected,passed,188,"Error: expect(received).toEqual(expected) // deep equality
+
+- Expected  - 2
++ Received  + 2
+
+  Object {
+-   ""height"": 500,
+-   ""width"": 400,
++   ""height"": 0,
++   ""width"": 0,
+  }",,[],[],,,
+461aa874134cee9040cc-05b32f2d420d8dea3172,library/popup.spec.ts,160,3,should respect routes from browser context when using window.open,library/popup.spec.ts > should respect routes from browser context when using window.open,"Popup creation, first-script behavior and events",adapted browser API suite,SuiteCut-path mismatch; stock passed,failed,unexpected,passed,272,passed,expected,passed,264,"Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: true
+Received: false",,[],[],,,
+461aa874134cee9040cc-208a4e9aed2d7dd60e10,library/popup.spec.ts,177,3,BrowserContext.addInitScript should apply to an in-process popup,library/popup.spec.ts > BrowserContext.addInitScript should apply to an in-process popup,"Popup creation, first-script behavior and events",adapted browser API suite,SuiteCut-path mismatch; stock passed,failed,unexpected,passed,368,passed,expected,passed,164,"Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: 123
+Received: undefined",,[],[],,,
+461aa874134cee9040cc-572fe9faa6f73c9bb5bc,library/popup.spec.ts,205,3,should expose function from browser context,library/popup.spec.ts > should expose function from browser context,"Popup creation, first-script behavior and events",adapted browser API suite,SuiteCut-path mismatch; stock passed,failed,unexpected,passed,267,passed,expected,passed,240,"Error: page.evaluate: TypeError: win.add is not a function
+    at eval (eval at evaluate (:311:30), <anonymous>:3:22)
+    at UtilityScript.evaluate (<anonymous>:313:16)
+    at UtilityScript.<anonymous> (<anonymous>:1:44)",,[],[],,,
+461aa874134cee9040cc-f3f299089006571b0c8f,library/popup.spec.ts,224,3,should not dispatch binding on a closed page,library/popup.spec.ts > should not dispatch binding on a closed page,"Popup creation, first-script behavior and events",adapted browser API suite,SuiteCut-path mismatch; stock passed,failed,unexpected,passed,329,passed,expected,passed,1170,"Error: page.evaluate: TypeError: win.add is not a function
+    at eval (eval at evaluate (:311:30), <anonymous>:3:15)
+    at UtilityScript.evaluate (<anonymous>:313:16)
+    at UtilityScript.<anonymous> (<anonymous>:1:44)",,[],[],,,
+f8dcd7ef7e79af6e5959-09bc2f5a9215d3e53542,library/trace-viewer.spec.ts,2435,1,should replace meta content attr that specifies charset,library/trace-viewer.spec.ts > should replace meta content attr that specifies charset,"Playwright video, screencast and tracing workflows",product/launcher/internal-heavy; passes do not establish a CEF browser workflow,SuiteCut-path mismatch; stock passed,failed,unexpected,passed,11459,passed,expected,passed,2460,"Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: ""<meta http-equiv=\""content-type\"" content=\""text/html; charset=utf-8\"">""
+Received: ""<meta content=\""text/html; charset=utf-8\"" http-equiv=\""content-type\"">""
+
+Call Log:
+- Timeout 10000ms exceeded while waiting on the predicate",,"[{""type"": ""slow"", ""location"": {""file"": ""/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/trace-viewer.spec.ts"", ""line"": 36, ""column"": 6}}]","[{""type"": ""slow"", ""location"": {""file"": ""/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/trace-viewer.spec.ts"", ""line"": 36, ""column"": 6}}]",,,
+787d054269600fc37b52-c13fe405af8a57fa0ab4,library/tracing.spec.ts,716,5,should not flush console events,library/tracing.spec.ts > should not flush console events,"Playwright video, screencast and tracing workflows",adapted browser API suite,SuiteCut-path mismatch; stock passed,failed,unexpected,passed,29108,passed,expected,passed,162,"Error: The ""path"" argument must be of type string. Received undefined
+
+Call Log:
+- Test timeout of 30000ms exceeded",,[],[],,,
+12f0019f4319c8201ff6-3fa19a9f547782979bdd,page/expect-boolean.spec.ts,379,7,with frameLocator,page/expect-boolean.spec.ts > toBeVisible > with frameLocator,Other APIs / internal fixtures,adapted browser API suite,SuiteCut-path mismatch; stock passed,failed,unexpected,passed,1165,passed,expected,passed,1503,"Error: expect(locator).toBeVisible() failed
+
+Locator: locator('iframe').contentFrame().locator('input')
+Expected: visible
+Error: element(s) not found
+
+Call log:
+  - Expect ""toBeVisible"" with timeout 10000ms
+  - waiting for locator('iframe').contentFrame().locator('input')
+  - Target page, context or browser has been closed
+
+Error: page.setContent: Target page, context or browser has been closed
+Call log:
+  - setting frame content, waiting until ""load""
+",,[],[],,,
+12f0019f4319c8201ff6-033ac4f19098b8f1996d,page/expect-boolean.spec.ts,391,7,with frameLocator 2,page/expect-boolean.spec.ts > toBeVisible > with frameLocator 2,Other APIs / internal fixtures,adapted browser API suite,SuiteCut-path mismatch; stock passed,failed,unexpected,passed,1172,passed,expected,passed,1559,"Error: expect(locator).toBeVisible() failed
+
+Locator: locator('iframe').contentFrame().locator('input')
+Expected: visible
+Error: element(s) not found
+
+Call log:
+  - Expect ""toBeVisible"" with timeout 10000ms
+  - waiting for locator('iframe').contentFrame().locator('input')
+  - Target page, context or browser has been closed
+
+Error: page.setContent: Target page, context or browser has been closed
+Call log:
+  - setting frame content, waiting until ""load""
+",,[],[],,,
+12f0019f4319c8201ff6-43dd399f6bdd9bab5a4c,page/expect-boolean.spec.ts,680,7,with frameLocator,page/expect-boolean.spec.ts > toBeAttached > with frameLocator,Other APIs / internal fixtures,adapted browser API suite,SuiteCut-path mismatch; stock passed,failed,unexpected,passed,1149,passed,expected,passed,1525,"Error: expect(locator).toBeAttached() failed
+
+Locator: locator('iframe').contentFrame().locator('input')
+Expected: attached
+Error: element(s) not found
+
+Call log:
+  - Expect ""toBeAttached"" with timeout 10000ms
+  - waiting for locator('iframe').contentFrame().locator('input')
+  - Target page, context or browser has been closed
+
+Error: page.setContent: Target page, context or browser has been closed
+Call log:
+  - setting frame content, waiting until ""load""
+",,[],[],,,
+31fbc0677f0a61e346e1-7b577fcec5811852ff7c,page/locator-misc-2.spec.ts,171,3,Locator.locator() and FrameLocator.locator() should accept locator,page/locator-misc-2.spec.ts > Locator.locator() and FrameLocator.locator() should accept locator,Other APIs / internal fixtures,adapted browser API suite,SuiteCut-path mismatch; stock passed,failed,unexpected,passed,195,passed,expected,passed,297,"Error: page.setContent: Target page, context or browser has been closed
+Call log:
+  - setting frame content, waiting until ""load""
+",,[],[],,,
+d3f97e44f67851be4214-96b9e1c0ba80d63070c3,page/locator-query.spec.ts,243,3,"should allow some, but not all nested frameLocators","page/locator-query.spec.ts > should allow some, but not all nested frameLocators",Other APIs / internal fixtures,adapted browser API suite,SuiteCut-path mismatch; stock passed,failed,unexpected,passed,112,passed,expected,passed,365,"Error: page.setContent: Target page, context or browser has been closed
+Call log:
+  - setting frame content, waiting until ""load""
+",,[],[],,,
+fd99641461e92c3d2715-2ce30e921e5f74dfbfbe,page/page-aria-snapshot-ai.spec.ts,70,3,should snapshot a locator inside an iframe,page/page-aria-snapshot-ai.spec.ts > should snapshot a locator inside an iframe,Frames and cross-origin targets,adapted browser API suite,SuiteCut-path mismatch; stock passed,failed,unexpected,passed,137,passed,expected,passed,200,"Error: page.setContent: Target page, context or browser has been closed
+Call log:
+  - setting frame content, waiting until ""load""
+",,[],[],,,
+fd99641461e92c3d2715-da349a89fda0c73deb34,page/page-aria-snapshot-ai.spec.ts,85,3,should limit depth across iframe boundary,page/page-aria-snapshot-ai.spec.ts > should limit depth across iframe boundary,Frames and cross-origin targets,adapted browser API suite,SuiteCut-path mismatch; stock passed,failed,unexpected,passed,171,passed,expected,passed,200,"Error: page.setContent: Target page, context or browser has been closed
+Call log:
+  - setting frame content, waiting until ""load""
+",,[],[],,,
+fd99641461e92c3d2715-f9f296caba3e58454922,page/page-aria-snapshot-ai.spec.ts,175,3,should persist iframe references,page/page-aria-snapshot-ai.spec.ts > should persist iframe references,Frames and cross-origin targets,adapted browser API suite,SuiteCut-path mismatch; stock passed,failed,unexpected,passed,302,passed,expected,passed,398,"Error: page.setContent: Target page, context or browser has been closed
+Call log:
+  - setting frame content, waiting until ""load""
+",,[],[],,,
+5acbfae379103dc80478-550c8d2e8ffeeef6a5ba,page/page-aria-snapshot.spec.ts,699,3,auto-waits the locator and does not include iframes,page/page-aria-snapshot.spec.ts > auto-waits the locator and does not include iframes,Frames and cross-origin targets,adapted browser API suite,SuiteCut-path mismatch; stock passed,failed,unexpected,passed,2154,passed,expected,passed,2452,"Error: locator.ariaSnapshot: Target page, context or browser has been closed
+Call log:
+  - waiting for locator('#target')
+
+Error: page.setContent: Target page, context or browser has been closed
+Call log:
+  - setting frame content, waiting until ""load""
+",,[],[],,,
+5acbfae379103dc80478-1ce05cf8619fe11d33a7,page/page-aria-snapshot.spec.ts,737,3,should snapshot a locator inside an iframe,page/page-aria-snapshot.spec.ts > should snapshot a locator inside an iframe,Frames and cross-origin targets,adapted browser API suite,SuiteCut-path mismatch; stock passed,failed,unexpected,passed,123,passed,expected,passed,146,"Error: page.setContent: Target page, context or browser has been closed
+Call log:
+  - setting frame content, waiting until ""load""
+",,[],[],,,
+6316cd83e4cec5cfa611-f0676c266a2cb309f73a,page/page-click.spec.ts,986,3,should click in an iframe with border,page/page-click.spec.ts > should click in an iframe with border,Frames and cross-origin targets,adapted browser API suite,SuiteCut-path mismatch; stock passed,failed,unexpected,passed,206,passed,expected,passed,211,"Error: page.setContent: Target page, context or browser has been closed
+Call log:
+  - setting frame content, waiting until ""load""
+",,[],[],,,
+6316cd83e4cec5cfa611-c88fcd5ab8c24143b339,page/page-click.spec.ts,1008,3,should click in an iframe with border 2,page/page-click.spec.ts > should click in an iframe with border 2,Frames and cross-origin targets,adapted browser API suite,SuiteCut-path mismatch; stock passed,failed,unexpected,passed,251,passed,expected,passed,240,"Error: page.setContent: Target page, context or browser has been closed
+Call log:
+  - setting frame content, waiting until ""load""
+",,[],[],,,
+6316cd83e4cec5cfa611-ec717fd534ed7780e3c8,page/page-click.spec.ts,1030,3,should click in a transformed iframe,page/page-click.spec.ts > should click in a transformed iframe,Frames and cross-origin targets,adapted browser API suite,SuiteCut-path mismatch; stock passed,failed,unexpected,passed,235,passed,expected,passed,163,"Error: page.setContent: Target page, context or browser has been closed
+Call log:
+  - setting frame content, waiting until ""load""
+",,[],[],,,
+6316cd83e4cec5cfa611-20ce9fe9a4f8b1cd11cb,page/page-click.spec.ts,1090,3,should click in a transformed iframe with force,page/page-click.spec.ts > should click in a transformed iframe with force,Frames and cross-origin targets,adapted browser API suite,SuiteCut-path mismatch; stock passed,failed,unexpected,passed,284,passed,expected,passed,141,"Error: page.setContent: Target page, context or browser has been closed
+Call log:
+  - setting frame content, waiting until ""load""
+",,[],[],,,
+6316cd83e4cec5cfa611-b20e3347b4e8925d5ecb,page/page-click.spec.ts,1112,3,should click in a nested transformed iframe,page/page-click.spec.ts > should click in a nested transformed iframe,Frames and cross-origin targets,adapted browser API suite,SuiteCut-path mismatch; stock passed,failed,unexpected,passed,253,passed,expected,passed,250,"Error: page.setContent: Target page, context or browser has been closed
+Call log:
+  - setting frame content, waiting until ""load""
+",,[],[],,,
+2f3bc8508ca88017c5c7-062cff2f90c97c8c30b0,page/page-evaluate.spec.ts,894,3,promise collected,page/page-evaluate.spec.ts > promise collected,"JavaScript evaluation, handles, bindings and console",adapted browser API suite,SuiteCut-path mismatch; stock passed,timedOut,unexpected,passed,30068,passed,expected,passed,210,"Test timeout of 30000ms exceeded.
+Error: expect(received).toContain(expected) // indexOf
+
+Expected substring: ""Resulting promise was garbage collected""
+Received string:    ""page.evaluate: Test timeout of 30000ms exceeded.""",,[],[],,,
+3ec13979e5efca095468-de1e0ecfa4d0b9cebdaf,page/page-event-popup.spec.ts,61,3,should be able to capture alert,page/page-event-popup.spec.ts > should be able to capture alert,"Popup creation, first-script behavior and events",adapted browser API suite,SuiteCut-path mismatch; stock passed,timedOut,unexpected,passed,35054,passed,expected,passed,57,"Test timeout of 30000ms exceeded.
+Error: page.waitForEvent: Test timeout of 30000ms exceeded.
+=========================== logs ===========================
+waiting for event ""popup""
+============================================================
+Error: page.evaluate: Test timeout of 30000ms exceeded.",,[],[],,,
+9f2dd1ac0b6f290aa829-8596ecbf8a60db5e563d,page/page-event-request.spec.ts,198,3,should fire requestfailed when intercepting race,page/page-event-request.spec.ts > should fire requestfailed when intercepting race,"Requests, routing, HTTP, WebSocket and HAR",adapted browser API suite,SuiteCut-path mismatch; stock passed,failed,unexpected,passed,202,passed,expected,passed,183,"Error: page.setContent: Target page, context or browser has been closed
+Call log:
+  - setting frame content, waiting until ""load""
+",,[],[],,,
+a8fbec8eeea5bc1c4efe-d036226ffe42d13f651e,page/page-mouse.spec.ts,341,3,should track hover across iframe boundaries,page/page-mouse.spec.ts > should track hover across iframe boundaries,Frames and cross-origin targets,adapted browser API suite,SuiteCut-path mismatch; stock passed,failed,unexpected,passed,249,passed,expected,passed,409,"Error: page.setContent: Target page, context or browser has been closed
+Call log:
+  - setting frame content, waiting until ""load""
+",,[],[],,,
+18902144ed16ac4555d6-f80aa047239f2c0d03d7,page/page-network-idle.spec.ts,142,3,should wait for networkidle from the popup,page/page-network-idle.spec.ts > should wait for networkidle from the popup,"Requests, routing, HTTP, WebSocket and HAR",adapted browser API suite,SuiteCut-path mismatch; stock passed,timedOut,unexpected,passed,30271,passed,expected,passed,3240,"Test timeout of 30000ms exceeded.
+Error: page.waitForLoadState: Test timeout of 30000ms exceeded.",,[],[],,,
+4f4be1cf6409bbcbb114-012f83d910ca676025fb,page/page-network-request.spec.ts,478,3,should not allow to access frame on popup main request,page/page-network-request.spec.ts > should not allow to access frame on popup main request,"Requests, routing, HTTP, WebSocket and HAR",adapted browser API suite,SuiteCut-path mismatch; stock passed,timedOut,unexpected,passed,30220,passed,expected,passed,288,"Test timeout of 30000ms exceeded.
+Error: browserContext.waitForEvent: Test timeout of 30000ms exceeded.",,[],[],,,
+43d31320fe47b29b2c94-f632d605f4c119b7d2bd,page/page-request-continue.spec.ts,590,3,continue should drop content-length on redirects,page/page-request-continue.spec.ts > continue should drop content-length on redirects,"Requests, routing, HTTP, WebSocket and HAR",adapted browser API suite,SuiteCut-path mismatch; stock passed,failed,unexpected,passed,220,passed,expected,passed,176,"Error: expect(received).toBeUndefined()
+
+Received: ""text/plain;charset=UTF-8""",,"[{""type"": ""issue"", ""description"": ""https://github.com/microsoft/playwright/issues/36029"", ""location"": {""file"": ""/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/page/page-request-continue.spec.ts"", ""line"": 590, ""column"": 3}}]","[{""type"": ""issue"", ""description"": ""https://github.com/microsoft/playwright/issues/36029"", ""location"": {""file"": ""/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/page/page-request-continue.spec.ts"", ""line"": 590, ""column"": 3}}]",,,
+fb79d713cb4e3e3f3ad0-f474766b69666103fbb6,page/page-set-input-files.spec.ts,38,5,should upload a folder,page/page-set-input-files.spec.ts > should upload a folder,Downloads and file input,adapted browser API suite,SuiteCut-path mismatch; stock passed,timedOut,unexpected,passed,30034,passed,expected,passed,257,"Test timeout of 30000ms exceeded.
+Error: page.evaluate: Target page, context or browser has been closed",,[],[],,,

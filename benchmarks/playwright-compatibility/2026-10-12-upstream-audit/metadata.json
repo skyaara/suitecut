@@ -1,0 +1,57 @@
+{
+  "dateInAsiaKolkata": "2026-10-12",
+  "scope": "Playwright 1.62.1 Chromium library + page projects, including Inspector/codegen. Not Firefox/WebKit, Android, Electron, test-runner, component, installation or language-SDK suites.",
+  "commit": "1f9d8c2d65f472f6db2abd7c09b12a7531908521",
+  "sourceArchiveSha256": "f6b38805b0b021423bb908cd7682a455283c22742bf7d95c190927f3fb11172c",
+  "nativeHelperSha256": "821eb9bc4b5ac317d35caf3d5fde9e0edd0130092c4adeb39d4f25479592d372",
+  "cefPin": {
+    "cefVersion": "152.0.6+g708dc14+chromium-152.0.7977.83",
+    "platform": "linux64",
+    "url": "https://github.com/tobagin/karere/releases/download/cef-152.0.6-proprietary-codecs/cef_binary_152.0.6%2Bg708dc14%2Bchromium-152.0.7977.83_linux64_minimal.zip",
+    "sha256": "3d64f6fac8911a368ffa415e3ee53d002cbd792866f08ed6578dae1e252cbac8",
+    "size": 183510343,
+    "proprietaryCodecs": true,
+    "buildFlags": {
+      "proprietary_codecs": true,
+      "ffmpeg_branding": "Chrome"
+    },
+    "upstreamRelease": "https://github.com/tobagin/karere/releases/tag/cef-152.0.6-proprietary-codecs",
+    "buildRecipe": "https://github.com/tobagin/karere/blob/eb5bfb5fb3c2463a2a71d7201a73122bf1942962/.github/workflows/build-cef-codecs.yml",
+    "source": "third-party CEF distribution; verified release digest and progressive MP4/MSE H.264+AAC native capture regressions",
+    "runtimeLibrarySha256": "d3e896252f190a21cd04b956da638c90315c8d5067cb03f325913841d5c59fc8"
+  },
+  "stockChromiumVersion": "151.0.7922.34",
+  "playwrightVersion": "1.62.1",
+  "testCount": 4945,
+  "fileCount": 284,
+  "browserWorkersPerBackend": 2,
+  "totalConcurrentWorkers": 4,
+  "cpuAffinity": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "cpuCgroup": "400000 100000",
+  "memoryCgroupBytes": 17179869184,
+  "performanceBenchmark": false,
+  "retries": 0,
+  "testTimeoutMs": 30000,
+  "expectTimeoutMs": 10000,
+  "maxFailures": 0,
+  "globalTimeoutMs": 0,
+  "snapshotUpdates": false,
+  "testIgnore": [
+    "**/firefox/**",
+    "**/webkit/**",
+    "**/suitecut-diagnostic.spec.ts"
+  ],
+  "specFilesModified": false,
+  "fixtureChanges": [
+    "Existing upstream fixture supplies launchEngine browser for CEF; blocks independent browser launch/connect fixtures explicitly. Stock uses real Chromium.",
+    "isHeadlessShell reports false for CEF and true for stock headless-shell; tests with product-specific branches may differ."
+  ],
+  "nativeAndStockShareHostDuringInventory": true,
+  "wholeUpstreamRepositorySuite": false,
+  "externalWorkerWatchdog": "After an initial >500-second event-loop stall, workers with >200 seconds of sustained CPU activity are externally sampled with GDB and terminated. Watchdog outcomes are explicit, not passes or ordinary test timeouts."
+}

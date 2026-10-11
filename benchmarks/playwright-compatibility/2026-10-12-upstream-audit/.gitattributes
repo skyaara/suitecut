@@ -1,0 +1,6 @@
+# Preserve raw checksummed evidence and avoid generated snapshot diffs.
+*.csv binary
+*.json binary
+results/** binary
+reproduction/** binary
+*.tar.gz binary

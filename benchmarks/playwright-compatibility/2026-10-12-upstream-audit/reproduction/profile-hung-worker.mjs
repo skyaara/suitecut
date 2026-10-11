@@ -1,0 +1,18 @@
+import WebSocket from '/workspace/suitecut/node_modules/ws/index.js';
+import {readFile,writeFile} from 'node:fs/promises';
+const base='/tmp/suitecut-upstream-full-2026-10-12';
+const info=JSON.parse(await readFile(`${base}/hung-worker-inspector.json`,'utf8'))[0];
+const socket=new WebSocket(info.webSocketDebuggerUrl);
+let id=0;const pending=new Map();let pausedResolve;
+const paused=new Promise(r=>pausedResolve=r);
+socket.on('message',data=>{const msg=JSON.parse(data);if(msg.id){pending.get(msg.id)?.(msg);pending.delete(msg.id)}else if(msg.method==='Debugger.paused')pausedResolve(msg.params)});
+const send=(method,params={})=>new Promise((resolve,reject)=>{const n=++id;pending.set(n,resolve);socket.send(JSON.stringify({id:n,method,params}));setTimeout(()=>{if(pending.delete(n))reject(Error(`${method} timed out`))},8000).unref()});
+await new Promise(r=>socket.once('open',r));
+await send('Debugger.enable');await send('Debugger.pause');
+const state=await paused;
+const result={pid:1218852,reason:state.reason,frames:state.callFrames.map(f=>({functionName:f.functionName,url:f.url,location:f.location,callFrameId:f.callFrameId}))};
+const expression="(()=>{const i=process.mainModule.require('/workspace/suitecut/node_modules/@playwright/test').test.info();return {title:i.title,titlePath:i.titlePath,file:i.file,line:i.line,timeout:i.timeout}})()";
+result.test=await send('Debugger.evaluateOnCallFrame',{callFrameId:state.callFrames[0].callFrameId,expression,returnByValue:true});
+await writeFile(`${base}/hung-worker-stack.json`,JSON.stringify(result,null,2));
+console.log(JSON.stringify(result,null,2));
+await send('Debugger.resume');socket.close();

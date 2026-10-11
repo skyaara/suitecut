@@ -1,0 +1,187 @@
+{
+  "total": 4945,
+  "nativeReported": 4945,
+  "stockReported": 4945,
+  "nativeExecutionStatuses": {
+    "failed": 411,
+    "passed": 4412,
+    "skipped": 96,
+    "timedOut": 26
+  },
+  "nativeOutcomes": {
+    "unexpected": 431,
+    "expected": 4418,
+    "skipped": 96
+  },
+  "stockExecutionStatuses": {
+    "passed": 4843,
+    "skipped": 87,
+    "failed": 14,
+    "timedOut": 1
+  },
+  "stockOutcomes": {
+    "expected": 4849,
+    "skipped": 87,
+    "unexpected": 9
+  },
+  "dispositions": {
+    "Blocked: independent launch/connect fixture": 343,
+    "Expected outcome": 4412,
+    "Blocked: proxy fixture identity assertion / worker watchdog": 1,
+    "Different bootstrap-context semantics": 4,
+    "Upstream annotation skip": 89,
+    "Full-Chrome vs headless-shell unauthorized-navigation expectation": 5,
+    "SuiteCut-path mismatch; stock passed": 62,
+    "Both backends failed; shared cause not established": 5,
+    "Default graphics path fails; explicit SwiftShader is a separate supported mode": 3,
+    "Configured autoplay policy differs from upstream default": 1,
+    "Bootstrap/connection dispatcher-tree expectation": 2,
+    "Bootstrap object-count expectation / Playwright heap fixture": 1,
+    "Skipped without skip annotation / possible serial or setup block": 7,
+    "Documented native resource limit": 4,
+    "Expected upstream failure": 6
+  },
+  "features": {
+    "Navigation, page lifecycle and crash handling": {
+      "Blocked: independent launch/connect fixture": 1,
+      "Expected outcome": 156,
+      "SuiteCut-path mismatch; stock passed": 6,
+      "Upstream annotation skip": 1,
+      "Expected upstream failure": 1
+    },
+    "Launch, persistent profiles, remote connections and extensions": {
+      "Blocked: independent launch/connect fixture": 257,
+      "Expected outcome": 7,
+      "Upstream annotation skip": 18,
+      "Both backends failed; shared cause not established": 1
+    },
+    "Browser/context lifecycle and bootstrap semantics": {
+      "Blocked: proxy fixture identity assertion / worker watchdog": 1,
+      "Different bootstrap-context semantics": 4,
+      "Expected outcome": 30,
+      "Blocked: independent launch/connect fixture": 1
+    },
+    "Cookies and authentication state": {
+      "Expected outcome": 74,
+      "Blocked: independent launch/connect fixture": 2,
+      "Upstream annotation skip": 1
+    },
+    "JavaScript evaluation, handles, bindings and console": {
+      "Expected outcome": 334,
+      "Upstream annotation skip": 1,
+      "Documented native resource limit": 1,
+      "SuiteCut-path mismatch; stock passed": 1
+    },
+    "Other APIs / internal fixtures": {
+      "Expected outcome": 1263,
+      "Blocked: independent launch/connect fixture": 30,
+      "Bootstrap/connection dispatcher-tree expectation": 2,
+      "Upstream annotation skip": 23,
+      "SuiteCut-path mismatch; stock passed": 6,
+      "Bootstrap object-count expectation / Playwright heap fixture": 1,
+      "Skipped without skip annotation / possible serial or setup block": 7,
+      "Both backends failed; shared cause not established": 1,
+      "Expected upstream failure": 1
+    },
+    "Proxy, HTTP authentication and client certificates": {
+      "Full-Chrome vs headless-shell unauthorized-navigation expectation": 5,
+      "Expected outcome": 70,
+      "Blocked: independent launch/connect fixture": 28,
+      "Both backends failed; shared cause not established": 2,
+      "Upstream annotation skip": 1
+    },
+    "Frames and cross-origin targets": {
+      "Expected outcome": 146,
+      "Blocked: independent launch/connect fixture": 2,
+      "SuiteCut-path mismatch; stock passed": 14,
+      "Upstream annotation skip": 3
+    },
+    "Popup creation, first-script behavior and events": {
+      "Expected outcome": 39,
+      "SuiteCut-path mismatch; stock passed": 18
+    },
+    "Requests, routing, HTTP, WebSocket and HAR": {
+      "Expected outcome": 579,
+      "Blocked: independent launch/connect fixture": 2,
+      "SuiteCut-path mismatch; stock passed": 8,
+      "Upstream annotation skip": 9,
+      "Expected upstream failure": 4
+    },
+    "Emulation, browser policies and graphics capabilities": {
+      "Expected outcome": 101,
+      "Upstream annotation skip": 2,
+      "Default graphics path fails; explicit SwiftShader is a separate supported mode": 2,
+      "Configured autoplay policy differs from upstream default": 1,
+      "Blocked: independent launch/connect fixture": 1
+    },
+    "Worker automation and worker network events": {
+      "Expected outcome": 27,
+      "Upstream annotation skip": 1
+    },
+    "Playwright video, screencast and tracing workflows": {
+      "Expected outcome": 201,
+      "Blocked: independent launch/connect fixture": 10,
+      "SuiteCut-path mismatch; stock passed": 2,
+      "Both backends failed; shared cause not established": 1,
+      "Upstream annotation skip": 7
+    },
+    "Downloads and file input": {
+      "Expected outcome": 74,
+      "Upstream annotation skip": 1,
+      "SuiteCut-path mismatch; stock passed": 2,
+      "Blocked: independent launch/connect fixture": 9
+    },
+    "Input, focus, actionability and hit testing": {
+      "Expected outcome": 652,
+      "Upstream annotation skip": 7
+    },
+    "Permission and geolocation overrides": {
+      "Expected outcome": 25,
+      "SuiteCut-path mismatch; stock passed": 2,
+      "Upstream annotation skip": 4
+    },
+    "Inspector and codegen / internal product fixtures": {
+      "Expected outcome": 206,
+      "SuiteCut-path mismatch; stock passed": 2,
+      "Upstream annotation skip": 7
+    },
+    "Clock and scheduling": {
+      "Upstream annotation skip": 2,
+      "Expected outcome": 210,
+      "SuiteCut-path mismatch; stock passed": 1
+    },
+    "Screenshots and pixel comparisons": {
+      "Expected outcome": 108,
+      "Documented native resource limit": 3,
+      "Upstream annotation skip": 1,
+      "Default graphics path fails; explicit SwiftShader is a separate supported mode": 1
+    },
+    "Accessibility and ARIA snapshots": {
+      "Expected outcome": 110
+    }
+  },
+  "missingCases": 431,
+  "complete": true,
+  "isolatedSerialCases": 7,
+  "isolatedExecutionStatuses": {
+    "failed": 4,
+    "passed": 3
+  },
+  "generatedUtc": "2026-10-11T19:38:52.108891+00:00",
+  "nativeReporterStats": {
+    "startTime": "2026-10-11T18:44:39.036Z",
+    "duration": 2591379.267,
+    "expected": 4418,
+    "skipped": 96,
+    "unexpected": 431,
+    "flaky": 0
+  },
+  "stockReporterStats": {
+    "startTime": "2026-10-11T18:48:25.371Z",
+    "duration": 1485179.754,
+    "expected": 4849,
+    "skipped": 87,
+    "unexpected": 9,
+    "flaky": 0
+  }
+}

@@ -1,0 +1,7 @@
+821eb9bc4b5ac317d35caf3d5fde9e0edd0130092c4adeb39d4f25479592d372  /tmp/suitecut-cef-full-regression-build/suitecut-browser-upstream-audit
+83e0bf681fe100ac5ad177a9020fd5c80f3b24fcd4c8b4fcfc6d078b17a21362  native/browser/browser.cc
+4a96cdefa38209a9536c36ffd7e467a51f18d5690f9103650668a463f7ff499d  src/engine.ts
+0564b3ee7b3b347e966f07312cb01c13acd13dd188ff492b8fe2ca619120c131  src/native-browser.ts
+f213239626cd82fd3c783c66db01167df999b54c5fc08e3330be4dda2cd72e50  patches/playwright-core@1.62.1.patch
+9ac503bd36c8c0a69a5ef18b1a7da8d53b48c6c35dcf070cd07f5c266cc93620  /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts
+0ce1b0280f1f829d8f7da9b5c0d634bd143eb1bef23ef5a5b72d108125cbfcf7  /tmp/suitecut-playwright-upstream/playwright-1.62.1/suitecut-audit.config.ts
