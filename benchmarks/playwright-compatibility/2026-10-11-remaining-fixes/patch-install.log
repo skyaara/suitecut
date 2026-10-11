@@ -1,0 +1,12 @@
+Progress: resolved 1, reused 0, downloaded 0, added 0
+Packages: +1
++
+Packages are copied from the content-addressable store to the virtual store.
+  Content-addressable store is at: /tmp/.pnpm-store/v11
+  Virtual store is at:             node_modules/.pnpm
+Progress: resolved 1, reused 1, downloaded 0, added 1, done
+
+dependencies:
++ playwright-core 1.62.1 (1.64.0 is available)
+
+Done in 936ms using pnpm v11.19.0

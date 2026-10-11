@@ -4,8 +4,9 @@ These are functional tests against the actual SuiteCut native browser, with a
 stock Playwright Chromium control. They do not measure recording performance or
 prove complete upstream compatibility.
 
-The [follow-up report](2026-10-11-followup/report.md) records the latest fixes and
-remaining failures. The [fallback report](2026-10-11/report.md) preserves the
+The [remaining-fixes report](2026-10-11-remaining-fixes/report.md) records the latest
+locale, request-header and concurrent-page corrections. The preceding
+[follow-up report](2026-10-11-followup/report.md) preserves its earlier results. The [fallback report](2026-10-11/report.md) preserves the
 preceding baseline, harness limits and exact versions. Raw JSON reports, logs,
 videos, HARs, exported state and failure artifacts remain in each attempt's
 directory. `summary.json` and `cases.csv` include earlier failures as well as

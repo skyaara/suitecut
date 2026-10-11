@@ -631,6 +631,9 @@ class Source : public CefClient, public CefLifeSpanHandler, public CefRenderHand
       if(found==devtools_pending_.end()) return false;
       const auto pending=found->second;devtools_pending_.erase(found);
       TraceCDP(message->HasKey("error") ? "agent-error" : "agent-reply",pending.id,pending.session,pending.method,target_id_);
+      if(pending.method=="Browser.getVersion") {
+        if(auto result=message->GetDictionary("result")) result->SetBool("suitecutWindowless",true);
+      }
       if(pending.method=="Page.getFrameTree") {
         auto result=message->GetDictionary("result");auto tree=result ? result->GetDictionary("frameTree") : nullptr;
         auto frame=tree ? tree->GetDictionary("frame") : nullptr;
@@ -906,11 +909,9 @@ class Source : public CefClient, public CefLifeSpanHandler, public CefRenderHand
     }
     if(session.empty() || browser_sessions_.contains(session)) {
       if(method=="Browser.getVersion") {
-        result->SetString("protocolVersion","1.3");result->SetString("product","Chrome/"+std::to_string(CHROME_VERSION_MAJOR)+"."+std::to_string(CHROME_VERSION_MINOR)+"."+std::to_string(CHROME_VERSION_BUILD)+"."+std::to_string(CHROME_VERSION_PATCH));
-        // Playwright uses this private metadata to detect headful Chrome UI
-        // insets. Our windowless surface has no toolbar/borders. This does not
-        // change the user agent used by web pages or HTTP requests.
-        result->SetString("revision",CEF_VERSION);result->SetString("userAgent","Mozilla/5.0 HeadlessChrome/"+std::to_string(CHROME_VERSION_MAJOR)+"."+std::to_string(CHROME_VERSION_MINOR)+"."+std::to_string(CHROME_VERSION_BUILD)+"."+std::to_string(CHROME_VERSION_PATCH));result->SetString("jsVersion","");reply(result);return;
+        // Forward Chromium's real UA/version. The explicit capability keeps
+        // clients from inferring native window decorations from UA text.
+        DispatchCDP(id,method,params,session,false);return;
       }
       if(method=="Target.setAutoAttach") {auto_attach_=params->GetBool("autoAttach");reply(result);if(auto_attach_) for(auto& [key,source]:targets_) source->Attach();return;}
       if(method=="Target.setDiscoverTargets") {
@@ -946,6 +947,14 @@ class Source : public CefClient, public CefLifeSpanHandler, public CefRenderHand
       if(method=="Target.createBrowserContext") {
         if(contexts_.size()>=64) {reply(nullptr,"CEF context limit exceeded");return;}
         const auto key="context-"+std::to_string(++context_index_);CefRequestContextSettings settings;
+        // Context language must exist before a popup's first renderer script.
+        // This bridge extension avoids changing sibling pages through CDP's
+        // otherwise target-scoped Emulation.setUserAgentOverride command.
+        if(params->HasKey("suitecutLocale")) {
+          const auto locale=params->GetString("suitecutLocale").ToString();
+          if(locale.empty() || locale.size()>128 || !std::all_of(locale.begin(),locale.end(),[](unsigned char c){return (c>='a' && c<='z') || (c>='A' && c<='Z') || (c>='0' && c<='9') || c=='-';})) {reply(nullptr,"Invalid SuiteCut context locale");return;}
+          CefString(&settings.accept_language_list)=locale;
+        }
         contexts_[key]=CefRequestContext::CreateContext(settings,nullptr);
         if(params->HasKey("proxyServer")) {auto proxy=CefDictionaryValue::Create();proxy->SetString("mode","fixed_servers");proxy->SetString("server",params->GetString("proxyServer"));proxy->SetString("bypass_list",params->GetString("proxyBypassList"));auto value=CefValue::Create();value->SetDictionary(proxy);CefString error;if(!contexts_[key]->SetPreference("proxy",value,error)) {contexts_.erase(key);reply(nullptr,"CEF proxy configuration failed: "+error.ToString());return;}}
         std::string rtc_error; if(!ConfigureWebRTC(contexts_[key],rtc_error)) {contexts_.erase(key);reply(nullptr,rtc_error);return;}

@@ -1,0 +1,37 @@
+[WARN] Your node_modules are out of sync with your lockfile. The value of the patchedDependencies setting has changed
+
+Running 3 tests using 1 worker
+
+(node:1061593) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts:118:3 › should be isolated between contexts (30.0s)
+(node:1062949) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  2 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts:118:3 › should be isolated between contexts (30.0s)
+(node:1063155) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  3 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts:118:3 › should be isolated between contexts (30.0s)
+
+
+  1) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts:118:3 › should be isolated between contexts 
+
+    Test timeout of 30000ms exceeded.
+
+    Error Context: ../../tmp/suitecut-remaining-fixes/locale-isolation/artifacts/library-browsercontext-loc-d4912-e-isolated-between-contexts/error-context.md
+
+  2) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts:118:3 › should be isolated between contexts 
+
+    Test timeout of 30000ms exceeded.
+
+    Error Context: ../../tmp/suitecut-remaining-fixes/locale-isolation/artifacts/library-browsercontext-loc-d4912-e-isolated-between-contexts-repeat1/error-context.md
+
+  3) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts:118:3 › should be isolated between contexts 
+
+    Test timeout of 30000ms exceeded.
+
+    Error Context: ../../tmp/suitecut-remaining-fixes/locale-isolation/artifacts/library-browsercontext-loc-d4912-e-isolated-between-contexts-repeat2/error-context.md
+
+  3 failed
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts:118:3 › should be isolated between contexts 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts:118:3 › should be isolated between contexts 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts:118:3 › should be isolated between contexts 

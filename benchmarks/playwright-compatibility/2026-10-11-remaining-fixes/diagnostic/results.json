@@ -1,0 +1,135 @@
+{
+  "config": {
+    "argv": [
+      "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+      "/workspace/suitecut/node_modules/playwright/cli.js",
+      "test",
+      "--config",
+      "/tmp/suitecut-playwright-upstream/playwright-1.62.1/suitecut.config.ts",
+      "library/suitecut-diagnostic.spec.ts",
+      "--timeout=10000"
+    ],
+    "configFile": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/suitecut.config.ts",
+    "rootDir": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 2400000,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 100,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/tmp/suitecut-remaining-fixes/diagnostic/artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests",
+        "testIgnore": [
+          "**/firefox/**",
+          "**/webkit/**",
+          "**/inspector/**"
+        ],
+        "testMatch": [
+          "library/**/*.spec.ts",
+          "page/**/*.spec.ts"
+        ],
+        "timeout": 10000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "/tmp/suitecut-remaining-fixes/diagnostic/results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.62.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "library/suitecut-diagnostic.spec.ts",
+      "file": "library/suitecut-diagnostic.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "native browser session capability",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "Target.attachToBrowserTarget Error: Not allowed\n"
+                    },
+                    {
+                      "text": "Target.getTargets {\n  targetInfos: [\n    {\n      attached: \u001b[33mtrue\u001b[39m,\n      browserContextId: \u001b[32m'D56AB7E91CBD0C8B27D1C20B7F641AF8'\u001b[39m,\n      canAccessOpener: \u001b[33mfalse\u001b[39m,\n      targetId: \u001b[32m'8E1FD7DBC9B6AB5D4F29CAB50B8A36F8'\u001b[39m,\n      title: \u001b[32m'about:blank'\u001b[39m,\n      type: \u001b[32m'page'\u001b[39m,\n      url: \u001b[32m'about:blank'\u001b[39m\n    }\n  ]\n}\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T16:01:31.157Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1baa900a1925fadcf341-a33bbf2c7057460ca279",
+          "file": "library/suitecut-diagnostic.spec.ts",
+          "line": 2,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-11T16:01:30.270Z",
+    "duration": 1513.4270000000001,
+    "expected": 1,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

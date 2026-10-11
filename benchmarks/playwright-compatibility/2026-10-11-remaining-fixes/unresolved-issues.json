@@ -1,0 +1,100 @@
+{
+  "confirmedCases": [
+    {
+      "file": "library/browsercontext-events.spec.ts",
+      "line": 55,
+      "title": "console event should work in popup 2",
+      "status": "timedOut",
+      "durationMs": 10084,
+      "error": "Test timeout of 10000ms exceeded.\nError: browserContext.waitForEvent: Test timeout of 10000ms exceeded.\n\n  62 |       win.close();\n  63 |     }),\n> 64 |     page.context().waitForEvent('console', msg => msg.type() === 'log'),\n     |                    ^\n  65 |     page.context().waitForEvent('page'),\n  66 |   ]);\n  67 |\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:64:20\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:58:30",
+      "launcherOutsideHarness": false,
+      "annotations": [],
+      "attachments": [
+        {
+          "name": "error-context",
+          "contentType": "text/markdown",
+          "path": "/tmp/suitecut-remaining-fixes/popup-events-final/artifacts/library-browsercontext-eve-9c38a-vent-should-work-in-popup-2/error-context.md"
+        }
+      ],
+      "evidenceRun": "popup-events-final"
+    },
+    {
+      "file": "library/browsercontext-events.spec.ts",
+      "line": 103,
+      "title": "dialog event should work in popup",
+      "status": "timedOut",
+      "durationMs": 15035,
+      "error": "Test timeout of 10000ms exceeded.\nError: page.waitForEvent: Test timeout of 10000ms exceeded.\n=========================== logs ===========================\nwaiting for event \"popup\"\n============================================================\n\n  109 |   const [dialog, popup] = await Promise.all([\n  110 |     page.context().waitForEvent('dialog'),\n> 111 |     page.waitForEvent('popup'),\n      |          ^\n  112 |   ]);\n  113 |\n  114 |   expect(dialog.message()).toBe('hey?');\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:111:10\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:109:27\nError: page.evaluate: Test timeout of 10000ms exceeded.\n\n  102 |\n  103 | test('dialog event should work in popup', async ({ page }) => {\n> 104 |   const promise = page.evaluate(() => {\n      |                        ^\n  105 |     const win = window.open('');\n  106 |     return (win as any).prompt('hey?');\n  107 |   });\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:104:24",
+      "launcherOutsideHarness": false,
+      "annotations": [],
+      "attachments": [
+        {
+          "name": "error-context",
+          "contentType": "text/markdown",
+          "path": "/tmp/suitecut-remaining-fixes/popup-events-final/artifacts/library-browsercontext-eve-31625--event-should-work-in-popup/error-context.md"
+        }
+      ],
+      "evidenceRun": "popup-events-final"
+    },
+    {
+      "file": "library/browsercontext-events.spec.ts",
+      "line": 120,
+      "title": "dialog event should work in popup 2",
+      "status": "timedOut",
+      "durationMs": 15031,
+      "error": "Test timeout of 10000ms exceeded.\nError: browserContext.waitForEvent: Test timeout of 10000ms exceeded.\n\n  125 |   });\n  126 |\n> 127 |   const dialog = await page.context().waitForEvent('dialog');\n      |                                       ^\n  128 |\n  129 |   expect(dialog.message()).toBe('hey?');\n  130 |   expect(dialog.page()).toBe(null);\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:127:39\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:127:18",
+      "launcherOutsideHarness": false,
+      "annotations": [],
+      "attachments": [
+        {
+          "name": "error-context",
+          "contentType": "text/markdown",
+          "path": "/tmp/suitecut-remaining-fixes/popup-events-final/artifacts/library-browsercontext-eve-7baea-vent-should-work-in-popup-2/error-context.md"
+        }
+      ],
+      "evidenceRun": "popup-events-final"
+    },
+    {
+      "file": "library/browsercontext-events.spec.ts",
+      "line": 135,
+      "title": "dialog event should work in immediately closed popup",
+      "status": "timedOut",
+      "durationMs": 15033,
+      "error": "Test timeout of 10000ms exceeded.\nError: page.waitForEvent: Test timeout of 10000ms exceeded.\n=========================== logs ===========================\nwaiting for event \"popup\"\n============================================================\n\n  143 |   const [dialog, popup] = await Promise.all([\n  144 |     page.context().waitForEvent('dialog'),\n> 145 |     page.waitForEvent('popup'),\n      |          ^\n  146 |   ]);\n  147 |\n  148 |   expect(dialog.message()).toBe('hey?');\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:145:10\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:143:27\nError: page.evaluate: Test timeout of 10000ms exceeded.\n\n  134 |\n  135 | test('dialog event should work in immediately closed popup', async ({ page }) => {\n> 136 |   const promise = page.evaluate(async () => {\n      |                        ^\n  137 |     const win = window.open()!;\n  138 |     const result = (win as any).prompt('hey?');\n  139 |     win.close();\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:136:24",
+      "launcherOutsideHarness": false,
+      "annotations": [],
+      "attachments": [
+        {
+          "name": "error-context",
+          "contentType": "text/markdown",
+          "path": "/tmp/suitecut-remaining-fixes/popup-events-final/artifacts/library-browsercontext-eve-42600-in-immediately-closed-popup/error-context.md"
+        }
+      ],
+      "evidenceRun": "popup-events-final"
+    },
+    {
+      "file": "library/browsercontext-events.spec.ts",
+      "line": 154,
+      "title": "dialog event should work with inline script tag",
+      "status": "timedOut",
+      "durationMs": 10113,
+      "error": "Test timeout of 10000ms exceeded.\nError: browserContext.waitForEvent: Test timeout of 10000ms exceeded.\n\n  163 |   const promise = page.click('a');\n  164 |   const [dialog, popup] = await Promise.all([\n> 165 |     page.context().waitForEvent('dialog'),\n      |                    ^\n  166 |     page.context().waitForEvent('page'),\n  167 |   ]);\n  168 |\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:165:20\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:164:27",
+      "launcherOutsideHarness": false,
+      "annotations": [],
+      "attachments": [
+        {
+          "name": "error-context",
+          "contentType": "text/markdown",
+          "path": "/tmp/suitecut-remaining-fixes/inline-popup-repeated/artifacts/library-browsercontext-eve-70e56-work-with-inline-script-tag-repeat7/error-context.md"
+        }
+      ],
+      "evidenceRun": "inline-popup-repeated"
+    }
+  ],
+  "additionalBoundaries": [
+    "Partitioned cookies and persistent profiles remain unsupported.",
+    "Independent browser launch/server cases remain outside the harness.",
+    "Complete upstream compatibility is not established.",
+    "Whole-CEF sanitizer coverage, leak freedom, GPU encoding and long-run audio continuity are not established by these functional tests."
+  ]
+}

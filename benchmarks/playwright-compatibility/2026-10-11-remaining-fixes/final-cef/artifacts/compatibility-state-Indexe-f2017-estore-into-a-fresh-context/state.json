@@ -1,0 +1,82 @@
+{
+  "cookies": [
+    {
+      "name": "auth",
+      "value": "cookie-token",
+      "domain": "127.0.0.1",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    }
+  ],
+  "origins": [
+    {
+      "origin": "http://127.0.0.1:45439",
+      "localStorage": [
+        {
+          "name": "session",
+          "value": "local-token"
+        }
+      ],
+      "indexedDB": [
+        {
+          "name": "auth-db",
+          "version": 3,
+          "stores": [
+            {
+              "name": "tokens",
+              "autoIncrement": false,
+              "keyPath": "id",
+              "records": [
+                {
+                  "valueEncoded": {
+                    "o": [
+                      {
+                        "k": "id",
+                        "v": "user"
+                      },
+                      {
+                        "k": "scope",
+                        "v": "login"
+                      },
+                      {
+                        "k": "token",
+                        "v": "idb-token"
+                      },
+                      {
+                        "k": "bytes",
+                        "v": {
+                          "ta": {
+                            "b": "AAH+/w==",
+                            "k": "ui8"
+                          }
+                        }
+                      },
+                      {
+                        "k": "created",
+                        "v": {
+                          "d": "2026-01-01T00:00:00.000Z"
+                        }
+                      }
+                    ],
+                    "id": 1
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "name": "byScope",
+                  "keyPath": "scope",
+                  "multiEntry": false,
+                  "unique": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

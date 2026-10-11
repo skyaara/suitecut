@@ -1,0 +1,170 @@
+{
+  "config": {
+    "argv": [
+      "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+      "/workspace/suitecut/node_modules/playwright/cli.js",
+      "test",
+      "--config",
+      "/tmp/suitecut-playwright-upstream/playwright-1.62.1/suitecut.config.ts",
+      "library/browsercontext-locale.spec.ts:118",
+      "--timeout=10000"
+    ],
+    "configFile": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/suitecut.config.ts",
+    "rootDir": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 2400000,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 100,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/tmp/suitecut-remaining-fixes/command-capacity-diagnostic/artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests",
+        "testIgnore": [
+          "**/firefox/**",
+          "**/webkit/**",
+          "**/inspector/**"
+        ],
+        "testMatch": [
+          "library/**/*.spec.ts",
+          "page/**/*.spec.ts"
+        ],
+        "timeout": 10000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "/tmp/suitecut-remaining-fixes/command-capacity-diagnostic/results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.62.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "library/browsercontext-locale.spec.ts",
+      "file": "library/browsercontext-locale.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "should be isolated between contexts",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "slow",
+                  "location": {
+                    "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts",
+                    "line": 119,
+                    "column": 6
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "timedOut",
+                  "duration": 30007,
+                  "error": {
+                    "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m",
+                    "stack": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                  },
+                  "errors": [
+                    {
+                      "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [
+                    {
+                      "text": "CEF transport send failed: Too many pending native commands\n"
+                    },
+                    {
+                      "text": "CEF transport send failed: Too many pending native commands\n"
+                    },
+                    {
+                      "text": "CEF transport send failed: Too many pending native commands\n"
+                    }
+                  ],
+                  "retry": 0,
+                  "startTime": "2026-10-11T16:08:10.472Z",
+                  "annotations": [
+                    {
+                      "type": "slow",
+                      "location": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts",
+                        "line": 119,
+                        "column": 6
+                      }
+                    }
+                  ],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/tmp/suitecut-remaining-fixes/command-capacity-diagnostic/artifacts/library-browsercontext-loc-d4912-e-isolated-between-contexts/error-context.md"
+                    }
+                  ]
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "fc3b0a16dcf26b8cfe93-e8db4d765aca1643e6ef",
+          "file": "library/browsercontext-locale.spec.ts",
+          "line": 118,
+          "column": 3
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-11T16:08:09.533Z",
+    "duration": 31714.969,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

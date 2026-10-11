@@ -1,0 +1,501 @@
+{
+  "config": {
+    "argv": [
+      "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+      "/workspace/suitecut/node_modules/playwright/cli.js",
+      "test",
+      "--config",
+      "/tmp/suitecut-playwright-upstream/playwright-1.62.1/suitecut.config.ts",
+      "library/browsercontext-events.spec.ts:154",
+      "--repeat-each=10",
+      "--timeout=10000"
+    ],
+    "configFile": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/suitecut.config.ts",
+    "rootDir": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 2400000,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 100,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/tmp/suitecut-remaining-fixes/inline-popup-repeated/artifacts",
+        "repeatEach": 10,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests",
+        "testIgnore": [
+          "**/firefox/**",
+          "**/webkit/**",
+          "**/inspector/**"
+        ],
+        "testMatch": [
+          "library/**/*.spec.ts",
+          "page/**/*.spec.ts"
+        ],
+        "timeout": 10000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "/tmp/suitecut-remaining-fixes/inline-popup-repeated/results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.62.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "library/browsercontext-events.spec.ts",
+      "file": "library/browsercontext-events.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "dialog event should work with inline script tag",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "timedOut",
+                  "duration": 10095,
+                  "error": {
+                    "message": "\u001b[31mTest timeout of 10000ms exceeded.\u001b[39m",
+                    "stack": "\u001b[31mTest timeout of 10000ms exceeded.\u001b[39m"
+                  },
+                  "errors": [
+                    {
+                      "message": "\u001b[31mTest timeout of 10000ms exceeded.\u001b[39m"
+                    },
+                    {
+                      "location": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts",
+                        "column": 20,
+                        "line": 165
+                      },
+                      "message": "Error: browserContext.waitForEvent: Test timeout of 10000ms exceeded.\n\n  163 |   const promise = page.click('a');\n  164 |   const [dialog, popup] = await Promise.all([\n> 165 |     page.context().waitForEvent('dialog'),\n      |                    ^\n  166 |     page.context().waitForEvent('page'),\n  167 |   ]);\n  168 |\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:165:20\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:164:27"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T16:14:10.006Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/tmp/suitecut-remaining-fixes/inline-popup-repeated/artifacts/library-browsercontext-eve-70e56-work-with-inline-script-tag/error-context.md"
+                    }
+                  ]
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "b3341f7bfcb285ad03a7-c821ef853bf2241d06a8",
+          "file": "library/browsercontext-events.spec.ts",
+          "line": 154,
+          "column": 5
+        },
+        {
+          "title": "dialog event should work with inline script tag",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "timedOut",
+                  "duration": 10133,
+                  "error": {
+                    "message": "\u001b[31mTest timeout of 10000ms exceeded.\u001b[39m",
+                    "stack": "\u001b[31mTest timeout of 10000ms exceeded.\u001b[39m"
+                  },
+                  "errors": [
+                    {
+                      "message": "\u001b[31mTest timeout of 10000ms exceeded.\u001b[39m"
+                    },
+                    {
+                      "location": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts",
+                        "column": 20,
+                        "line": 165
+                      },
+                      "message": "Error: browserContext.waitForEvent: Test timeout of 10000ms exceeded.\n\n  163 |   const promise = page.click('a');\n  164 |   const [dialog, popup] = await Promise.all([\n> 165 |     page.context().waitForEvent('dialog'),\n      |                    ^\n  166 |     page.context().waitForEvent('page'),\n  167 |   ]);\n  168 |\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:165:20\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:164:27"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T16:14:21.629Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/tmp/suitecut-remaining-fixes/inline-popup-repeated/artifacts/library-browsercontext-eve-70e56-work-with-inline-script-tag-repeat1/error-context.md"
+                    }
+                  ]
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "b3341f7bfcb285ad03a7-df7777cf4c7f645de258",
+          "file": "library/browsercontext-events.spec.ts",
+          "line": 154,
+          "column": 5
+        },
+        {
+          "title": "dialog event should work with inline script tag",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 424,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T16:14:32.990Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b3341f7bfcb285ad03a7-8ccd40951486876f2cc8",
+          "file": "library/browsercontext-events.spec.ts",
+          "line": 154,
+          "column": 5
+        },
+        {
+          "title": "dialog event should work with inline script tag",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 374,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T16:14:34.585Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b3341f7bfcb285ad03a7-22c7be57d12a2ae32108",
+          "file": "library/browsercontext-events.spec.ts",
+          "line": 154,
+          "column": 5
+        },
+        {
+          "title": "dialog event should work with inline script tag",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 4,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 379,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T16:14:36.182Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b3341f7bfcb285ad03a7-5418b612aafb50166863",
+          "file": "library/browsercontext-events.spec.ts",
+          "line": 154,
+          "column": 5
+        },
+        {
+          "title": "dialog event should work with inline script tag",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 5,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 320,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T16:14:37.729Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b3341f7bfcb285ad03a7-5b93ecb77405b311d797",
+          "file": "library/browsercontext-events.spec.ts",
+          "line": 154,
+          "column": 5
+        },
+        {
+          "title": "dialog event should work with inline script tag",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 6,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 310,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T16:14:39.259Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b3341f7bfcb285ad03a7-f982d1b7f067eb0d92db",
+          "file": "library/browsercontext-events.spec.ts",
+          "line": 154,
+          "column": 5
+        },
+        {
+          "title": "dialog event should work with inline script tag",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 7,
+                  "parallelIndex": 0,
+                  "status": "timedOut",
+                  "duration": 10113,
+                  "error": {
+                    "message": "\u001b[31mTest timeout of 10000ms exceeded.\u001b[39m",
+                    "stack": "\u001b[31mTest timeout of 10000ms exceeded.\u001b[39m"
+                  },
+                  "errors": [
+                    {
+                      "message": "\u001b[31mTest timeout of 10000ms exceeded.\u001b[39m"
+                    },
+                    {
+                      "location": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts",
+                        "column": 20,
+                        "line": 165
+                      },
+                      "message": "Error: browserContext.waitForEvent: Test timeout of 10000ms exceeded.\n\n  163 |   const promise = page.click('a');\n  164 |   const [dialog, popup] = await Promise.all([\n> 165 |     page.context().waitForEvent('dialog'),\n      |                    ^\n  166 |     page.context().waitForEvent('page'),\n  167 |   ]);\n  168 |\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:165:20\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:164:27"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T16:14:40.776Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/tmp/suitecut-remaining-fixes/inline-popup-repeated/artifacts/library-browsercontext-eve-70e56-work-with-inline-script-tag-repeat7/error-context.md"
+                    }
+                  ]
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "b3341f7bfcb285ad03a7-303489d7b4eb58fb1920",
+          "file": "library/browsercontext-events.spec.ts",
+          "line": 154,
+          "column": 5
+        },
+        {
+          "title": "dialog event should work with inline script tag",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 8,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 370,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T16:14:52.760Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b3341f7bfcb285ad03a7-31bde85e1f3b98c7ddba",
+          "file": "library/browsercontext-events.spec.ts",
+          "line": 154,
+          "column": 5
+        },
+        {
+          "title": "dialog event should work with inline script tag",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 9,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 318,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T16:14:54.543Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b3341f7bfcb285ad03a7-dcf6886e3d4a3ac2ee4e",
+          "file": "library/browsercontext-events.spec.ts",
+          "line": 154,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-11T16:14:08.301Z",
+    "duration": 47310.007,
+    "expected": 7,
+    "skipped": 0,
+    "unexpected": 3,
+    "flaky": 0
+  }
+}

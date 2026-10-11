@@ -1,4 +1,4 @@
-# Playwright 1.62.1 authentication compatibility patch
+# Playwright 1.62.1 SuiteCut compatibility patch
 
 `playwright-core@1.62.1.patch` separates Chromium proxy credentials from website
 HTTP credentials. Unpatched Playwright replaces website credentials with proxy
@@ -10,12 +10,21 @@ releases tracked entries. Chromium pages, process frames, dedicated workers and
 service-worker network managers use the corrected configuration; Firefox and
 WebKit authentication implementations are unchanged and are not certified here.
 
+The patch also recognizes `Browser.getVersion.suitecutWindowless === true`,
+SuiteCut's explicit bridge capability. The native backend now returns Chromium's
+real version and user agent, so `context.request` and page requests agree. The
+capability keeps Playwright from adding toolbar/window-border pixels to an
+offscreen viewport. Only this capability enables the `suitecutLocale` extension
+to `Target.createBrowserContext`; the backend installs the context language
+before a popup's first script can run. Ordinary Chromium connections send no
+SuiteCut context extension and retain their usual headful detection.
+
 The SuiteCut repository configures the patch through `pnpm-workspace.yaml` and
 records it in `pnpm-lock.yaml`. A fresh `pnpm install --frozen-lockfile` applies it.
 The SDK package includes the patch for downstream projects, but importing
 SuiteCut **does not modify your Playwright installation**.
 
-To use both credential sets in another pnpm project, pin `playwright` and, if
+To use these fixes in another pnpm project, pin `playwright` and, if
 used, `@playwright/test` to `1.62.1`, copy this patch into that project's `patches/`
 directory, and merge this entry into its `pnpm-workspace.yaml`:
 

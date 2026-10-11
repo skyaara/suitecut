@@ -1,0 +1,4 @@
+[WARN] Your node_modules are out of sync with your lockfile. The value of the patchedDependencies setting has changed
+src/cdp-command-queue.ts 74ms
+tests/cdp-command-queue.test.ts 72ms
+src/engine.ts 208ms (unchanged)

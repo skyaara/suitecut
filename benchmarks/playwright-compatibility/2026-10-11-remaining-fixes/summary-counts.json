@@ -1,0 +1,106 @@
+{
+  "attempt-1": {
+    "counts": {
+      "passed": 6,
+      "timedOut": 5,
+      "failed": 1
+    },
+    "launcherOutsideHarness": 0
+  },
+  "baseline": {
+    "counts": {
+      "timedOut": 1,
+      "passed": 1
+    },
+    "launcherOutsideHarness": 0
+  },
+  "command-capacity-diagnostic": {
+    "counts": {
+      "timedOut": 1
+    },
+    "launcherOutsideHarness": 0
+  },
+  "diagnostic": {
+    "counts": {
+      "passed": 1
+    },
+    "launcherOutsideHarness": 0
+  },
+  "early-dialog-buffer": {
+    "counts": {
+      "passed": 5,
+      "timedOut": 5
+    },
+    "launcherOutsideHarness": 0
+  },
+  "final-cef": {
+    "counts": {
+      "passed": 38
+    },
+    "launcherOutsideHarness": 0
+  },
+  "final-cef-verified": {
+    "counts": {
+      "passed": 38
+    },
+    "launcherOutsideHarness": 0
+  },
+  "final-chromium": {
+    "counts": {
+      "passed": 37,
+      "skipped": 1
+    },
+    "launcherOutsideHarness": 0
+  },
+  "focused-cef": {
+    "counts": {
+      "passed": 38
+    },
+    "launcherOutsideHarness": 0
+  },
+  "inline-popup-repeated": {
+    "counts": {
+      "timedOut": 3,
+      "passed": 7
+    },
+    "launcherOutsideHarness": 0
+  },
+  "locale-headers": {
+    "counts": {
+      "passed": 15,
+      "timedOut": 1
+    },
+    "launcherOutsideHarness": 0
+  },
+  "locale-headers-fixed": {
+    "counts": {
+      "passed": 16
+    },
+    "launcherOutsideHarness": 0
+  },
+  "locale-isolation": {
+    "counts": {
+      "timedOut": 3
+    },
+    "launcherOutsideHarness": 0
+  },
+  "locale-repeated": {
+    "counts": {
+      "passed": 10
+    },
+    "launcherOutsideHarness": 0
+  },
+  "native-final": {
+    "counts": {
+      "passed": 16
+    },
+    "launcherOutsideHarness": 0
+  },
+  "popup-events-final": {
+    "counts": {
+      "passed": 14,
+      "timedOut": 4
+    },
+    "launcherOutsideHarness": 0
+  }
+}

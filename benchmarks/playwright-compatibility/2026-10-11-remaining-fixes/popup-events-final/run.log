@@ -1,0 +1,140 @@
+[WARN] Your node_modules are out of sync with your lockfile. The value of the patchedDependencies setting has changed
+
+Running 18 tests using 1 worker
+
+(node:1074180) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:20:5 › console event should work @smoke (123ms)
+  ✓   2 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:30:5 › console event should work with element handles (245ms)
+  ✓   3 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:41:5 › console event should work in popup (92ms)
+  ✘   4 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:55:5 › console event should work in popup 2 (10.1s)
+(node:1074377) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   5 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:72:5 › console event should work in immediately closed popup (137ms)
+  ✓   6 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:89:5 › dialog event should work @smoke (85ms)
+  ✘   7 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:103:5 › dialog event should work in popup (15.0s)
+(node:1074628) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   8 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:120:5 › dialog event should work in popup 2 (15.0s)
+(node:1074776) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   9 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:135:5 › dialog event should work in immediately closed popup (15.0s)
+(node:1074982) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  10 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:154:5 › dialog event should work with inline script tag (297ms)
+  ✓  11 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:176:5 › weberror event should work (142ms)
+  ✓  12 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:185:5 › weberror event should include location (322ms)
+  ✓  13 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:212:5 › pageload event should work @smoke (168ms)
+  ✓  14 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:220:5 › framenavigated event should work @smoke (387ms)
+  ✓  15 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:229:5 › pageclose event should work @smoke (243ms)
+  ✓  16 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:238:5 › frameattached event should work @smoke (150ms)
+  ✓  17 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:251:5 › framedetached event should work @smoke (217ms)
+  ✓  18 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:267:5 › download event should work @smoke (240ms)
+
+
+  1) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:55:5 › console event should work in popup 2 
+
+    Test timeout of 10000ms exceeded.
+
+    Error: browserContext.waitForEvent: Test timeout of 10000ms exceeded.
+
+      62 |       win.close();
+      63 |     }),
+    > 64 |     page.context().waitForEvent('console', msg => msg.type() === 'log'),
+         |                    ^
+      65 |     page.context().waitForEvent('page'),
+      66 |   ]);
+      67 |
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:64:20
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:58:30
+
+    Error Context: ../../tmp/suitecut-remaining-fixes/popup-events-final/artifacts/library-browsercontext-eve-9c38a-vent-should-work-in-popup-2/error-context.md
+
+  2) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:103:5 › dialog event should work in popup 
+
+    Test timeout of 10000ms exceeded.
+
+    Error: page.waitForEvent: Test timeout of 10000ms exceeded.
+    =========================== logs ===========================
+    waiting for event "popup"
+    ============================================================
+
+      109 |   const [dialog, popup] = await Promise.all([
+      110 |     page.context().waitForEvent('dialog'),
+    > 111 |     page.waitForEvent('popup'),
+          |          ^
+      112 |   ]);
+      113 |
+      114 |   expect(dialog.message()).toBe('hey?');
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:111:10
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:109:27
+
+    Error: page.evaluate: Test timeout of 10000ms exceeded.
+
+      102 |
+      103 | test('dialog event should work in popup', async ({ page }) => {
+    > 104 |   const promise = page.evaluate(() => {
+          |                        ^
+      105 |     const win = window.open('');
+      106 |     return (win as any).prompt('hey?');
+      107 |   });
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:104:24
+
+    Error Context: ../../tmp/suitecut-remaining-fixes/popup-events-final/artifacts/library-browsercontext-eve-31625--event-should-work-in-popup/error-context.md
+
+  3) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:120:5 › dialog event should work in popup 2 
+
+    Test timeout of 10000ms exceeded.
+
+    Error: browserContext.waitForEvent: Test timeout of 10000ms exceeded.
+
+      125 |   });
+      126 |
+    > 127 |   const dialog = await page.context().waitForEvent('dialog');
+          |                                       ^
+      128 |
+      129 |   expect(dialog.message()).toBe('hey?');
+      130 |   expect(dialog.page()).toBe(null);
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:127:39
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:127:18
+
+    Error Context: ../../tmp/suitecut-remaining-fixes/popup-events-final/artifacts/library-browsercontext-eve-7baea-vent-should-work-in-popup-2/error-context.md
+
+  4) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:135:5 › dialog event should work in immediately closed popup 
+
+    Test timeout of 10000ms exceeded.
+
+    Error: page.waitForEvent: Test timeout of 10000ms exceeded.
+    =========================== logs ===========================
+    waiting for event "popup"
+    ============================================================
+
+      143 |   const [dialog, popup] = await Promise.all([
+      144 |     page.context().waitForEvent('dialog'),
+    > 145 |     page.waitForEvent('popup'),
+          |          ^
+      146 |   ]);
+      147 |
+      148 |   expect(dialog.message()).toBe('hey?');
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:145:10
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:143:27
+
+    Error: page.evaluate: Test timeout of 10000ms exceeded.
+
+      134 |
+      135 | test('dialog event should work in immediately closed popup', async ({ page }) => {
+    > 136 |   const promise = page.evaluate(async () => {
+          |                        ^
+      137 |     const win = window.open()!;
+      138 |     const result = (win as any).prompt('hey?');
+      139 |     win.close();
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:136:24
+
+    Error Context: ../../tmp/suitecut-remaining-fixes/popup-events-final/artifacts/library-browsercontext-eve-42600-in-immediately-closed-popup/error-context.md
+
+  4 failed
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:55:5 › console event should work in popup 2 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:103:5 › dialog event should work in popup 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:120:5 › dialog event should work in popup 2 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:135:5 › dialog event should work in immediately closed popup 
+  14 passed (1.1m)

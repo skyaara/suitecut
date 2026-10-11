@@ -1,0 +1,95 @@
+[WARN] Your node_modules are out of sync with your lockfile. The value of the patchedDependencies setting has changed
+
+Running 10 tests using 1 worker
+
+(node:1079734) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   1 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:154:5 › dialog event should work with inline script tag (10.1s)
+(node:1079871) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   2 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:154:5 › dialog event should work with inline script tag (10.1s)
+(node:1080011) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   3 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:154:5 › dialog event should work with inline script tag (424ms)
+(node:1080147) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   4 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:154:5 › dialog event should work with inline script tag (374ms)
+(node:1080283) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   5 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:154:5 › dialog event should work with inline script tag (379ms)
+(node:1080419) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   6 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:154:5 › dialog event should work with inline script tag (320ms)
+(node:1080554) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   7 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:154:5 › dialog event should work with inline script tag (310ms)
+(node:1080691) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   8 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:154:5 › dialog event should work with inline script tag (10.1s)
+(node:1080846) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   9 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:154:5 › dialog event should work with inline script tag (370ms)
+(node:1080997) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  10 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:154:5 › dialog event should work with inline script tag (318ms)
+
+
+  1) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:154:5 › dialog event should work with inline script tag 
+
+    Test timeout of 10000ms exceeded.
+
+    Error: browserContext.waitForEvent: Test timeout of 10000ms exceeded.
+
+      163 |   const promise = page.click('a');
+      164 |   const [dialog, popup] = await Promise.all([
+    > 165 |     page.context().waitForEvent('dialog'),
+          |                    ^
+      166 |     page.context().waitForEvent('page'),
+      167 |   ]);
+      168 |
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:165:20
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:164:27
+
+    Error Context: ../../tmp/suitecut-remaining-fixes/inline-popup-repeated/artifacts/library-browsercontext-eve-70e56-work-with-inline-script-tag/error-context.md
+
+  2) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:154:5 › dialog event should work with inline script tag 
+
+    Test timeout of 10000ms exceeded.
+
+    Error: browserContext.waitForEvent: Test timeout of 10000ms exceeded.
+
+      163 |   const promise = page.click('a');
+      164 |   const [dialog, popup] = await Promise.all([
+    > 165 |     page.context().waitForEvent('dialog'),
+          |                    ^
+      166 |     page.context().waitForEvent('page'),
+      167 |   ]);
+      168 |
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:165:20
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:164:27
+
+    Error Context: ../../tmp/suitecut-remaining-fixes/inline-popup-repeated/artifacts/library-browsercontext-eve-70e56-work-with-inline-script-tag-repeat1/error-context.md
+
+  3) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:154:5 › dialog event should work with inline script tag 
+
+    Test timeout of 10000ms exceeded.
+
+    Error: browserContext.waitForEvent: Test timeout of 10000ms exceeded.
+
+      163 |   const promise = page.click('a');
+      164 |   const [dialog, popup] = await Promise.all([
+    > 165 |     page.context().waitForEvent('dialog'),
+          |                    ^
+      166 |     page.context().waitForEvent('page'),
+      167 |   ]);
+      168 |
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:165:20
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:164:27
+
+    Error Context: ../../tmp/suitecut-remaining-fixes/inline-popup-repeated/artifacts/library-browsercontext-eve-70e56-work-with-inline-script-tag-repeat7/error-context.md
+
+  3 failed
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:154:5 › dialog event should work with inline script tag 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:154:5 › dialog event should work with inline script tag 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:154:5 › dialog event should work with inline script tag 
+  7 passed (47.3s)

@@ -1,0 +1,26 @@
+[WARN] Your node_modules are out of sync with your lockfile. The value of the patchedDependencies setting has changed
+
+Running 10 tests using 1 worker
+
+(node:1064433) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts:89:3 › should affect navigator.language in popups (344ms)
+  ✓   2 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts:118:3 › should be isolated between contexts (535ms)
+(node:1064682) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   3 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts:89:3 › should affect navigator.language in popups (323ms)
+  ✓   4 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts:118:3 › should be isolated between contexts (782ms)
+(node:1064932) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   5 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts:89:3 › should affect navigator.language in popups (698ms)
+  ✓   6 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts:118:3 › should be isolated between contexts (798ms)
+(node:1065158) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   7 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts:89:3 › should affect navigator.language in popups (209ms)
+  ✓   8 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts:118:3 › should be isolated between contexts (560ms)
+(node:1065412) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   9 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts:89:3 › should affect navigator.language in popups (410ms)
+  ✓  10 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts:118:3 › should be isolated between contexts (1.1s)
+
+  10 passed (14.5s)

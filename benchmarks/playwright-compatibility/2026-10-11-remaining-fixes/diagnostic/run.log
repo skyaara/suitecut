@@ -1,0 +1,23 @@
+[WARN] Your node_modules are out of sync with your lockfile. The value of the patchedDependencies setting has changed
+
+Running 1 test using 1 worker
+
+(node:1056085) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Target.attachToBrowserTarget Error: Not allowed
+Target.getTargets {
+  targetInfos: [
+    {
+      attached: true,
+      browserContextId: 'D56AB7E91CBD0C8B27D1C20B7F641AF8',
+      canAccessOpener: false,
+      targetId: '8E1FD7DBC9B6AB5D4F29CAB50B8A36F8',
+      title: 'about:blank',
+      type: 'page',
+      url: 'about:blank'
+    }
+  ]
+}
+  ✓  1 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/suitecut-diagnostic.spec.ts:2:5 › native browser session capability (4ms)
+
+  1 passed (1.5s)

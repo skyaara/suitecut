@@ -1,0 +1,55 @@
+--- a/lib/coreBundle.js
++++ b/lib/coreBundle.js
+@@ -37327,7 +37327,7 @@
+           eventsHelper.addEventListener(this._client, "Page.frameDetached", (event) => this._onFrameDetached(event.frameId, event.reason)),
+           eventsHelper.addEventListener(this._client, "Page.frameNavigated", (event) => this._onFrameNavigated(event.frame, false)),
+           eventsHelper.addEventListener(this._client, "Page.frameRequestedNavigation", (event) => this._onFrameRequestedNavigation(event)),
+-          eventsHelper.addEventListener(this._client, "Page.javascriptDialogOpening", (event) => this._onDialog(event)),
++          ...this._earlySuiteCutDialogListener ? [] : [eventsHelper.addEventListener(this._client, "Page.javascriptDialogOpening", (event) => this._onDialog(event))],
+           eventsHelper.addEventListener(this._client, "Page.navigatedWithinDocument", (event) => this._onFrameNavigatedWithinDocument(event.frameId, event.url)),
+           eventsHelper.addEventListener(this._client, "Runtime.bindingCalled", (event) => this._onBindingCalled(event)),
+           eventsHelper.addEventListener(this._client, "Runtime.consoleAPICalled", (event) => this._onConsoleAPI(event)),
+@@ -37347,6 +37347,10 @@
+         ]);
+       }
+       async _initialize(hasUIWindow) {
++        if (this._isMainFrame() && this._crPage._browserContext._browser._suitecutWindowless) {
++          this._earlySuiteCutDialogListener = true;
++          this._eventListeners.push(eventsHelper.addEventListener(this._client, "Page.javascriptDialogOpening", (event) => this._onDialog(event)));
++        }
+         if (!this._page.isStorageStatePage && hasUIWindow && !this._crPage._browserContext._browser.isClank() && !this._crPage._browserContext._options.noDefaultViewport) {
+           try {
+             const { windowId } = await this._client.send("Browser.getWindowForTarget");
+@@ -37367,6 +37371,11 @@
+             if (this._isMainFrame()) {
+               this._handleFrameTree(frameTree);
+               this._addRendererListeners();
++              if (this._pendingSuiteCutDialog) {
++                const dialog = this._pendingSuiteCutDialog;
++                this._pendingSuiteCutDialog = void 0;
++                this._onDialog(dialog);
++              }
+             }
+             const attachedToTargetEvents = this._bufferedAttachedToTargetEvents || [];
+             this._bufferedAttachedToTargetEvents = void 0;
+@@ -37443,6 +37452,7 @@
+         await Promise.all(promises2);
+       }
+       dispose() {
++        this._pendingSuiteCutDialog = void 0;
+         this._firstNonInitialNavigationCommittedReject(new TargetClosedError(this._page.closeReason()));
+         for (const childSession of this._childSessions)
+           childSession.dispose();
+@@ -37651,8 +37661,11 @@
+         }
+       }
+       _onDialog(event) {
+-        if (!this._page.frameManager.frame(this._targetId))
++        if (!this._page.frameManager.frame(this._targetId)) {
++          if (this._earlySuiteCutDialogListener)
++            this._pendingSuiteCutDialog = event;
+           return;
++        }
+         this._page.browserContext.dialogManager.dialogDidOpen(new Dialog(
+           this._page,
+           event.type,

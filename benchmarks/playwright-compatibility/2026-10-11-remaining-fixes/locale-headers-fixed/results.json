@@ -1,0 +1,719 @@
+{
+  "config": {
+    "argv": [
+      "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+      "/workspace/suitecut/node_modules/playwright/cli.js",
+      "test",
+      "--config",
+      "/tmp/suitecut-playwright-upstream/playwright-1.62.1/suitecut.config.ts",
+      "library/browsercontext-locale.spec.ts",
+      "library/browsercontext-fetch.spec.ts",
+      "--grep",
+      "locale|default headers",
+      "--timeout=10000"
+    ],
+    "configFile": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/suitecut.config.ts",
+    "rootDir": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 2400000,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 100,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/tmp/suitecut-remaining-fixes/locale-headers-fixed/artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests",
+        "testIgnore": [
+          "**/firefox/**",
+          "**/webkit/**",
+          "**/inspector/**"
+        ],
+        "testMatch": [
+          "library/**/*.spec.ts",
+          "page/**/*.spec.ts"
+        ],
+        "timeout": 10000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "/tmp/suitecut-remaining-fixes/locale-headers-fixed/results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.62.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "library/browsercontext-fetch.spec.ts",
+      "file": "library/browsercontext-fetch.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "should add default headers",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 147,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T16:08:59.507Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "521ad5beff3edaa3cff6-dfd91b668bac512254bc",
+          "file": "library/browsercontext-fetch.spec.ts",
+          "line": 693,
+          "column": 3
+        },
+        {
+          "title": "should add default headers to redirects",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 126,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T16:09:00.573Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "521ad5beff3edaa3cff6-d704078139809b60e81d",
+          "file": "library/browsercontext-fetch.spec.ts",
+          "line": 718,
+          "column": 3
+        },
+        {
+          "title": "should allow to override default headers",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 106,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T16:09:00.718Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "521ad5beff3edaa3cff6-1e6d5d44109d6caab626",
+          "file": "library/browsercontext-fetch.spec.ts",
+          "line": 730,
+          "column": 3
+        }
+      ]
+    },
+    {
+      "title": "library/browsercontext-locale.spec.ts",
+      "file": "library/browsercontext-locale.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "should affect accept-language header @smoke",
+          "ok": true,
+          "tags": [
+            "smoke"
+          ],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 152,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T16:09:00.873Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "fc3b0a16dcf26b8cfe93-8cb17ee6b2e36babda1d",
+          "file": "library/browsercontext-locale.spec.ts",
+          "line": 20,
+          "column": 3
+        },
+        {
+          "title": "should affect navigator.language",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 117,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T16:09:01.043Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "fc3b0a16dcf26b8cfe93-8532bc3fcf1d026f1e47",
+          "file": "library/browsercontext-locale.spec.ts",
+          "line": 31,
+          "column": 3
+        },
+        {
+          "title": "should format number",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 325,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T16:09:01.175Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "fc3b0a16dcf26b8cfe93-8fe0937270c55eb500f7",
+          "file": "library/browsercontext-locale.spec.ts",
+          "line": 38,
+          "column": 3
+        },
+        {
+          "title": "should format date",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 521,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T16:09:01.513Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "fc3b0a16dcf26b8cfe93-4a47352337b29da74762",
+          "file": "library/browsercontext-locale.spec.ts",
+          "line": 55,
+          "column": 3
+        },
+        {
+          "title": "should format number in popups",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 299,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T16:09:02.058Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "fc3b0a16dcf26b8cfe93-fa7f5a412c7bd4f432ff",
+          "file": "library/browsercontext-locale.spec.ts",
+          "line": 74,
+          "column": 3
+        },
+        {
+          "title": "should affect navigator.language in popups",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 204,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T16:09:02.368Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "fc3b0a16dcf26b8cfe93-cb0c4cb13cb9b7de7ebf",
+          "file": "library/browsercontext-locale.spec.ts",
+          "line": 89,
+          "column": 3
+        },
+        {
+          "title": "should work for multiple pages sharing same process",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 301,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T16:09:02.592Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "fc3b0a16dcf26b8cfe93-dcd533e4540811799694",
+          "file": "library/browsercontext-locale.spec.ts",
+          "line": 103,
+          "column": 3
+        },
+        {
+          "title": "should be isolated between contexts",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "slow",
+                  "location": {
+                    "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts",
+                    "line": 119,
+                    "column": 6
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 759,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T16:09:02.918Z",
+                  "annotations": [
+                    {
+                      "type": "slow",
+                      "location": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts",
+                        "line": 119,
+                        "column": 6
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "fc3b0a16dcf26b8cfe93-e8db4d765aca1643e6ef",
+          "file": "library/browsercontext-locale.spec.ts",
+          "line": 118,
+          "column": 3
+        },
+        {
+          "title": "should not change default locale in another context",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 354,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T16:09:03.696Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "fc3b0a16dcf26b8cfe93-7ab7ba3e0735e92589b0",
+          "file": "library/browsercontext-locale.spec.ts",
+          "line": 143,
+          "column": 3
+        },
+        {
+          "title": "should propagate locale to workers",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 191,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T16:09:04.061Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "fc3b0a16dcf26b8cfe93-46697a6dcea0e3571c05",
+          "file": "library/browsercontext-locale.spec.ts",
+          "line": 168,
+          "column": 3
+        },
+        {
+          "title": "should affect Intl.DateTimeFormat().resolvedOptions().locale",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [
+                {
+                  "type": "issue",
+                  "description": "https://github.com/microsoft/playwright/issues/27802"
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 118,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T16:09:04.263Z",
+                  "annotations": [
+                    {
+                      "type": "issue",
+                      "description": "https://github.com/microsoft/playwright/issues/27802"
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "fc3b0a16dcf26b8cfe93-47e5a6bea77168412870",
+          "file": "library/browsercontext-locale.spec.ts",
+          "line": 183,
+          "column": 3
+        },
+        {
+          "title": "should send user Accept-Language header",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [
+                {
+                  "type": "issue",
+                  "description": "https://github.com/microsoft/playwright/issues/23732",
+                  "location": {
+                    "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts",
+                    "line": 192,
+                    "column": 3
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 139,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T16:09:04.391Z",
+                  "annotations": [
+                    {
+                      "type": "issue",
+                      "description": "https://github.com/microsoft/playwright/issues/23732",
+                      "location": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts",
+                        "line": 192,
+                        "column": 3
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "fc3b0a16dcf26b8cfe93-5933ef46402c7e3c6065",
+          "file": "library/browsercontext-locale.spec.ts",
+          "line": 192,
+          "column": 3
+        },
+        {
+          "title": "should send Accept-Language header on WebSocket handshake",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [
+                {
+                  "type": "issue",
+                  "description": "https://github.com/microsoft/playwright/issues/23732",
+                  "location": {
+                    "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts",
+                    "line": 226,
+                    "column": 3
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 129,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T16:09:04.543Z",
+                  "annotations": [
+                    {
+                      "type": "issue",
+                      "description": "https://github.com/microsoft/playwright/issues/23732",
+                      "location": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts",
+                        "line": 226,
+                        "column": 3
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "fc3b0a16dcf26b8cfe93-d2bfe612e8dfbfe67da4",
+          "file": "library/browsercontext-locale.spec.ts",
+          "line": 226,
+          "column": 3
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-11T16:08:58.110Z",
+    "duration": 6707.7390000000005,
+    "expected": 16,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

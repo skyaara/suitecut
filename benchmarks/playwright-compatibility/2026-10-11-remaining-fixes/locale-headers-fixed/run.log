@@ -1,0 +1,24 @@
+[WARN] Your node_modules are out of sync with your lockfile. The value of the patchedDependencies setting has changed
+
+Running 16 tests using 1 worker
+
+(node:1063819) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:693:3 › should add default headers (147ms)
+  ✓   2 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:718:3 › should add default headers to redirects (126ms)
+  ✓   3 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:730:3 › should allow to override default headers (106ms)
+  ✓   4 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts:20:3 › should affect accept-language header @smoke (152ms)
+  ✓   5 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts:31:3 › should affect navigator.language (117ms)
+  ✓   6 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts:38:3 › should format number (325ms)
+  ✓   7 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts:55:3 › should format date (521ms)
+  ✓   8 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts:74:3 › should format number in popups (299ms)
+  ✓   9 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts:89:3 › should affect navigator.language in popups (204ms)
+  ✓  10 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts:103:3 › should work for multiple pages sharing same process (301ms)
+  ✓  11 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts:118:3 › should be isolated between contexts (759ms)
+  ✓  12 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts:143:3 › should not change default locale in another context (354ms)
+  ✓  13 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts:168:3 › should propagate locale to workers (191ms)
+  ✓  14 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts:183:3 › should affect Intl.DateTimeFormat().resolvedOptions().locale (118ms)
+  ✓  15 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts:192:3 › should send user Accept-Language header (139ms)
+  ✓  16 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts:226:3 › should send Accept-Language header on WebSocket handshake (129ms)
+
+  16 passed (6.7s)

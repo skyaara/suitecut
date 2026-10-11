@@ -1,0 +1,25 @@
+{
+  "date": "2026-10-11",
+  "baseCommit": "416e15263af2810f79c2c4cb8c574665b98d19ea",
+  "fallbackCommit": "80759aeb30cc4f6bd4ab488554569c62851985d2",
+  "branch": "suitecut-2.1-compatibility-fixes",
+  "suitecut": "2.1.0",
+  "playwright": "1.62.1",
+  "CEF": "152.0.6+g708dc14+chromium-152.0.7977.83",
+  "stockChromium": "151.0.7922.34",
+  "cpuAffinity": "0-3",
+  "memoryMaxBytes": 17179869184,
+  "cpuMax": "400000 100000",
+  "performanceBenchmark": false,
+  "sourceSha256": {
+    "native/browser/browser.cc": "5c52a7d388d0ad2d595b8a1e4e528bf3de5acb3a966ce500f8cc48c0f9e991a5",
+    "src/engine.ts": "4a96cdefa38209a9536c36ffd7e467a51f18d5690f9103650668a463f7ff499d",
+    "src/cdp-delivery.ts": "4a15b41e9acd8090d405c0be8743881d28161492a19a02175f37d549644508ac",
+    "src/cdp-command-queue.ts": "79c8bfaccf8bb87087973babfed27595c09e08cb69b2040b3cd6a76ffc59a4ec",
+    "tests/cdp-command-queue.test.ts": "a6d3c4da9cca2fffe7f446f30a80f016d882030666406ac71c0ec14a764bed0c",
+    "benchmarks/playwright-compatibility/compatibility.spec.ts": "754489cc451554450f2e4869e80ec28fb4ccc999209d3959dec975faab1796fe",
+    "patches/playwright-core@1.62.1.patch": "f213239626cd82fd3c783c66db01167df999b54c5fc08e3330be4dda2cd72e50",
+    "pnpm-lock.yaml": "64fdfac1e980a702dda1a84ce974c7ae9a3e37d13b20dc8db4b0b8125b458f2e"
+  },
+  "binarySha256": "b23a46d5426f01bf2c773a8ebad5e8539f5e288316669996f6253b030d73a5a0"
+}

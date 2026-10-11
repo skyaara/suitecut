@@ -1,0 +1,3625 @@
+{
+  "schemaVersion": 1,
+  "runs": {
+    "attempt-1": {
+      "resultsSha256": "951072164551eb491b45be8eca311949c06d060a8c478e64eee664ee101d87fc",
+      "rawStats": {
+        "startTime": "2026-10-11T16:00:11.394Z",
+        "duration": 61331.508,
+        "expected": 6,
+        "skipped": 0,
+        "unexpected": 6,
+        "flaky": 0
+      },
+      "counts": {
+        "passed": 6,
+        "timedOut": 5,
+        "failed": 1
+      },
+      "perFile": {
+        "library/browsercontext-events.spec.ts": {
+          "passed": 1,
+          "timedOut": 5,
+          "failed": 1
+        },
+        "library/browsercontext-fetch.spec.ts": {
+          "passed": 3
+        },
+        "library/browsercontext-locale.spec.ts": {
+          "passed": 2
+        }
+      },
+      "launcherOutsideHarness": 0,
+      "cases": [
+        {
+          "file": "library/browsercontext-events.spec.ts",
+          "line": 41,
+          "title": "console event should work in popup",
+          "status": "passed",
+          "durationMs": 200,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "library/browsercontext-events.spec.ts",
+          "line": 55,
+          "title": "console event should work in popup 2",
+          "status": "timedOut",
+          "durationMs": 10077,
+          "error": "Test timeout of 10000ms exceeded.\nError: browserContext.waitForEvent: Test timeout of 10000ms exceeded.\n\n  62 |       win.close();\n  63 |     }),\n> 64 |     page.context().waitForEvent('console', msg => msg.type() === 'log'),\n     |                    ^\n  65 |     page.context().waitForEvent('page'),\n  66 |   ]);\n  67 |\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:64:20\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:58:30",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": [
+            {
+              "name": "error-context",
+              "contentType": "text/markdown",
+              "path": "/tmp/suitecut-remaining-fixes/attempt-1/artifacts/library-browsercontext-eve-9c38a-vent-should-work-in-popup-2/error-context.md"
+            }
+          ]
+        },
+        {
+          "file": "library/browsercontext-events.spec.ts",
+          "line": 72,
+          "title": "console event should work in immediately closed popup",
+          "status": "timedOut",
+          "durationMs": 10073,
+          "error": "Test timeout of 10000ms exceeded.\nError: browserContext.waitForEvent: Test timeout of 10000ms exceeded.\n\n  79 |       win.close();\n  80 |     }),\n> 81 |     page.context().waitForEvent('console'),\n     |                    ^\n  82 |     page.waitForEvent('popup'),\n  83 |   ]);\n  84 |\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:81:20\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:75:30",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": [
+            {
+              "name": "error-context",
+              "contentType": "text/markdown",
+              "path": "/tmp/suitecut-remaining-fixes/attempt-1/artifacts/library-browsercontext-eve-ac9a7-in-immediately-closed-popup/error-context.md"
+            }
+          ]
+        },
+        {
+          "file": "library/browsercontext-events.spec.ts",
+          "line": 103,
+          "title": "dialog event should work in popup",
+          "status": "timedOut",
+          "durationMs": 10072,
+          "error": "Test timeout of 10000ms exceeded.\nError: browserContext.waitForEvent: Test timeout of 10000ms exceeded.\n\n  108 |\n  109 |   const [dialog, popup] = await Promise.all([\n> 110 |     page.context().waitForEvent('dialog'),\n      |                    ^\n  111 |     page.waitForEvent('popup'),\n  112 |   ]);\n  113 |\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:110:20\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:109:27",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": [
+            {
+              "name": "error-context",
+              "contentType": "text/markdown",
+              "path": "/tmp/suitecut-remaining-fixes/attempt-1/artifacts/library-browsercontext-eve-31625--event-should-work-in-popup/error-context.md"
+            }
+          ]
+        },
+        {
+          "file": "library/browsercontext-events.spec.ts",
+          "line": 120,
+          "title": "dialog event should work in popup 2",
+          "status": "timedOut",
+          "durationMs": 10060,
+          "error": "Test timeout of 10000ms exceeded.\nError: browserContext.waitForEvent: Test timeout of 10000ms exceeded.\n\n  125 |   });\n  126 |\n> 127 |   const dialog = await page.context().waitForEvent('dialog');\n      |                                       ^\n  128 |\n  129 |   expect(dialog.message()).toBe('hey?');\n  130 |   expect(dialog.page()).toBe(null);\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:127:39\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:127:18",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": [
+            {
+              "name": "error-context",
+              "contentType": "text/markdown",
+              "path": "/tmp/suitecut-remaining-fixes/attempt-1/artifacts/library-browsercontext-eve-7baea-vent-should-work-in-popup-2/error-context.md"
+            }
+          ]
+        },
+        {
+          "file": "library/browsercontext-events.spec.ts",
+          "line": 135,
+          "title": "dialog event should work in immediately closed popup",
+          "status": "timedOut",
+          "durationMs": 10086,
+          "error": "Test timeout of 10000ms exceeded.\nError: browserContext.waitForEvent: Test timeout of 10000ms exceeded.\n\n  142 |\n  143 |   const [dialog, popup] = await Promise.all([\n> 144 |     page.context().waitForEvent('dialog'),\n      |                    ^\n  145 |     page.waitForEvent('popup'),\n  146 |   ]);\n  147 |\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:144:20\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:143:27",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": [
+            {
+              "name": "error-context",
+              "contentType": "text/markdown",
+              "path": "/tmp/suitecut-remaining-fixes/attempt-1/artifacts/library-browsercontext-eve-42600-in-immediately-closed-popup/error-context.md"
+            }
+          ]
+        },
+        {
+          "file": "library/browsercontext-events.spec.ts",
+          "line": 154,
+          "title": "dialog event should work with inline script tag",
+          "status": "failed",
+          "durationMs": 356,
+          "error": "Error: dialog.accept: Protocol error (Page.handleJavaScriptDialog): No dialog is showing\n\n  169 |   expect(dialog.message()).toBe('hey?');\n  170 |   expect(dialog.page()).toBe(popup);\n> 171 |   await dialog.accept('hello');\n      |                ^\n  172 |   await promise;\n  173 |   await expect.poll(() => popup.evaluate('window.result')).toBe('hello');\n  174 | });\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:171:16",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": [
+            {
+              "name": "error-context",
+              "contentType": "text/markdown",
+              "path": "/tmp/suitecut-remaining-fixes/attempt-1/artifacts/library-browsercontext-eve-70e56-work-with-inline-script-tag/error-context.md"
+            }
+          ]
+        },
+        {
+          "file": "library/browsercontext-fetch.spec.ts",
+          "line": 693,
+          "title": "should add default headers",
+          "status": "passed",
+          "durationMs": 137,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "library/browsercontext-fetch.spec.ts",
+          "line": 718,
+          "title": "should add default headers to redirects",
+          "status": "passed",
+          "durationMs": 102,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "library/browsercontext-fetch.spec.ts",
+          "line": 730,
+          "title": "should allow to override default headers",
+          "status": "passed",
+          "durationMs": 89,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "library/browsercontext-locale.spec.ts",
+          "line": 74,
+          "title": "should format number in popups",
+          "status": "passed",
+          "durationMs": 186,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "library/browsercontext-locale.spec.ts",
+          "line": 89,
+          "title": "should affect navigator.language in popups",
+          "status": "passed",
+          "durationMs": 191,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        }
+      ]
+    },
+    "baseline": {
+      "resultsSha256": "5aa46553d8b6e4d5580c0f0c1f04c20977d35324e5d3cfdad50b3e95e038925d",
+      "rawStats": {
+        "startTime": "2026-10-11T15:58:22.493Z",
+        "duration": 18172.847,
+        "expected": 1,
+        "skipped": 0,
+        "unexpected": 1,
+        "flaky": 0
+      },
+      "counts": {
+        "timedOut": 1,
+        "passed": 1
+      },
+      "perFile": {
+        "library/browsercontext-events.spec.ts": {
+          "timedOut": 1,
+          "passed": 1
+        }
+      },
+      "launcherOutsideHarness": 0,
+      "cases": [
+        {
+          "file": "library/browsercontext-events.spec.ts",
+          "line": 103,
+          "title": "dialog event should work in popup",
+          "status": "timedOut",
+          "durationMs": 15053,
+          "error": "Test timeout of 10000ms exceeded.\nError: page.waitForEvent: Test timeout of 10000ms exceeded.\n=========================== logs ===========================\nwaiting for event \"popup\"\n============================================================\n\n  109 |   const [dialog, popup] = await Promise.all([\n  110 |     page.context().waitForEvent('dialog'),\n> 111 |     page.waitForEvent('popup'),\n      |          ^\n  112 |   ]);\n  113 |\n  114 |   expect(dialog.message()).toBe('hey?');\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:111:10\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:109:27\nError: page.evaluate: Test timeout of 10000ms exceeded.\n\n  102 |\n  103 | test('dialog event should work in popup', async ({ page }) => {\n> 104 |   const promise = page.evaluate(() => {\n      |                        ^\n  105 |     const win = window.open('');\n  106 |     return (win as any).prompt('hey?');\n  107 |   });\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:104:24",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": [
+            {
+              "name": "error-context",
+              "contentType": "text/markdown",
+              "path": "/tmp/suitecut-remaining-fixes/baseline/artifacts/library-browsercontext-eve-31625--event-should-work-in-popup/error-context.md"
+            }
+          ]
+        },
+        {
+          "file": "library/browsercontext-events.spec.ts",
+          "line": 154,
+          "title": "dialog event should work with inline script tag",
+          "status": "passed",
+          "durationMs": 353,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        }
+      ]
+    },
+    "command-capacity-diagnostic": {
+      "resultsSha256": "f66d84ad449cb67eb682cea96851f18d50b5ba152c7dc1bec1b554bd162a1dfd",
+      "rawStats": {
+        "startTime": "2026-10-11T16:08:09.533Z",
+        "duration": 31714.969,
+        "expected": 0,
+        "skipped": 0,
+        "unexpected": 1,
+        "flaky": 0
+      },
+      "counts": {
+        "timedOut": 1
+      },
+      "perFile": {
+        "library/browsercontext-locale.spec.ts": {
+          "timedOut": 1
+        }
+      },
+      "launcherOutsideHarness": 0,
+      "cases": [
+        {
+          "file": "library/browsercontext-locale.spec.ts",
+          "line": 118,
+          "title": "should be isolated between contexts",
+          "status": "timedOut",
+          "durationMs": 30007,
+          "error": "Test timeout of 30000ms exceeded.",
+          "launcherOutsideHarness": false,
+          "annotations": [
+            {
+              "type": "slow",
+              "location": {
+                "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts",
+                "line": 119,
+                "column": 6
+              }
+            }
+          ],
+          "attachments": [
+            {
+              "name": "error-context",
+              "contentType": "text/markdown",
+              "path": "/tmp/suitecut-remaining-fixes/command-capacity-diagnostic/artifacts/library-browsercontext-loc-d4912-e-isolated-between-contexts/error-context.md"
+            }
+          ]
+        }
+      ]
+    },
+    "diagnostic": {
+      "resultsSha256": "f1d3fde061fc5feadd9e784608614ee2c6f2ce6eb7a1c7a2bfd8ae583f9b3171",
+      "rawStats": {
+        "startTime": "2026-10-11T16:01:30.270Z",
+        "duration": 1513.4270000000001,
+        "expected": 1,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "counts": {
+        "passed": 1
+      },
+      "perFile": {
+        "library/suitecut-diagnostic.spec.ts": {
+          "passed": 1
+        }
+      },
+      "launcherOutsideHarness": 0,
+      "cases": [
+        {
+          "file": "library/suitecut-diagnostic.spec.ts",
+          "line": 2,
+          "title": "native browser session capability",
+          "status": "passed",
+          "durationMs": 4,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        }
+      ]
+    },
+    "early-dialog-buffer": {
+      "resultsSha256": "3380888d0637b94a5574dabaadd70d21bd9fff05ba621d8f1a197aee41801264",
+      "rawStats": {
+        "startTime": "2026-10-11T16:16:22.910Z",
+        "duration": 66502.503,
+        "expected": 5,
+        "skipped": 0,
+        "unexpected": 5,
+        "flaky": 0
+      },
+      "counts": {
+        "passed": 5,
+        "timedOut": 5
+      },
+      "perFile": {
+        "library/browsercontext-events.spec.ts": {
+          "passed": 5,
+          "timedOut": 5
+        }
+      },
+      "launcherOutsideHarness": 0,
+      "cases": [
+        {
+          "file": "library/browsercontext-events.spec.ts",
+          "line": 154,
+          "title": "dialog event should work with inline script tag",
+          "status": "passed",
+          "durationMs": 348,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "library/browsercontext-events.spec.ts",
+          "line": 154,
+          "title": "dialog event should work with inline script tag",
+          "status": "timedOut",
+          "durationMs": 10075,
+          "error": "Test timeout of 10000ms exceeded.\nError: browserContext.waitForEvent: Test timeout of 10000ms exceeded.\n\n  163 |   const promise = page.click('a');\n  164 |   const [dialog, popup] = await Promise.all([\n> 165 |     page.context().waitForEvent('dialog'),\n      |                    ^\n  166 |     page.context().waitForEvent('page'),\n  167 |   ]);\n  168 |\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:165:20\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:164:27",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": [
+            {
+              "name": "error-context",
+              "contentType": "text/markdown",
+              "path": "/tmp/suitecut-remaining-fixes/early-dialog-buffer/artifacts/library-browsercontext-eve-70e56-work-with-inline-script-tag-repeat1/error-context.md"
+            }
+          ]
+        },
+        {
+          "file": "library/browsercontext-events.spec.ts",
+          "line": 154,
+          "title": "dialog event should work with inline script tag",
+          "status": "timedOut",
+          "durationMs": 10092,
+          "error": "Test timeout of 10000ms exceeded.\nError: browserContext.waitForEvent: Test timeout of 10000ms exceeded.\n\n  163 |   const promise = page.click('a');\n  164 |   const [dialog, popup] = await Promise.all([\n> 165 |     page.context().waitForEvent('dialog'),\n      |                    ^\n  166 |     page.context().waitForEvent('page'),\n  167 |   ]);\n  168 |\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:165:20\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:164:27",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": [
+            {
+              "name": "error-context",
+              "contentType": "text/markdown",
+              "path": "/tmp/suitecut-remaining-fixes/early-dialog-buffer/artifacts/library-browsercontext-eve-70e56-work-with-inline-script-tag-repeat2/error-context.md"
+            }
+          ]
+        },
+        {
+          "file": "library/browsercontext-events.spec.ts",
+          "line": 154,
+          "title": "dialog event should work with inline script tag",
+          "status": "passed",
+          "durationMs": 327,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "library/browsercontext-events.spec.ts",
+          "line": 154,
+          "title": "dialog event should work with inline script tag",
+          "status": "passed",
+          "durationMs": 366,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "library/browsercontext-events.spec.ts",
+          "line": 154,
+          "title": "dialog event should work with inline script tag",
+          "status": "timedOut",
+          "durationMs": 10092,
+          "error": "Test timeout of 10000ms exceeded.\nError: browserContext.waitForEvent: Test timeout of 10000ms exceeded.\n\n  163 |   const promise = page.click('a');\n  164 |   const [dialog, popup] = await Promise.all([\n> 165 |     page.context().waitForEvent('dialog'),\n      |                    ^\n  166 |     page.context().waitForEvent('page'),\n  167 |   ]);\n  168 |\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:165:20\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:164:27",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": [
+            {
+              "name": "error-context",
+              "contentType": "text/markdown",
+              "path": "/tmp/suitecut-remaining-fixes/early-dialog-buffer/artifacts/library-browsercontext-eve-70e56-work-with-inline-script-tag-repeat5/error-context.md"
+            }
+          ]
+        },
+        {
+          "file": "library/browsercontext-events.spec.ts",
+          "line": 154,
+          "title": "dialog event should work with inline script tag",
+          "status": "timedOut",
+          "durationMs": 10154,
+          "error": "Test timeout of 10000ms exceeded.\nError: browserContext.waitForEvent: Test timeout of 10000ms exceeded.\n\n  163 |   const promise = page.click('a');\n  164 |   const [dialog, popup] = await Promise.all([\n> 165 |     page.context().waitForEvent('dialog'),\n      |                    ^\n  166 |     page.context().waitForEvent('page'),\n  167 |   ]);\n  168 |\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:165:20\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:164:27",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": [
+            {
+              "name": "error-context",
+              "contentType": "text/markdown",
+              "path": "/tmp/suitecut-remaining-fixes/early-dialog-buffer/artifacts/library-browsercontext-eve-70e56-work-with-inline-script-tag-repeat6/error-context.md"
+            }
+          ]
+        },
+        {
+          "file": "library/browsercontext-events.spec.ts",
+          "line": 154,
+          "title": "dialog event should work with inline script tag",
+          "status": "passed",
+          "durationMs": 583,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "library/browsercontext-events.spec.ts",
+          "line": 154,
+          "title": "dialog event should work with inline script tag",
+          "status": "passed",
+          "durationMs": 336,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "library/browsercontext-events.spec.ts",
+          "line": 154,
+          "title": "dialog event should work with inline script tag",
+          "status": "timedOut",
+          "durationMs": 10111,
+          "error": "Test timeout of 10000ms exceeded.\nError: browserContext.waitForEvent: Test timeout of 10000ms exceeded.\n\n  163 |   const promise = page.click('a');\n  164 |   const [dialog, popup] = await Promise.all([\n> 165 |     page.context().waitForEvent('dialog'),\n      |                    ^\n  166 |     page.context().waitForEvent('page'),\n  167 |   ]);\n  168 |\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:165:20\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:164:27",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": [
+            {
+              "name": "error-context",
+              "contentType": "text/markdown",
+              "path": "/tmp/suitecut-remaining-fixes/early-dialog-buffer/artifacts/library-browsercontext-eve-70e56-work-with-inline-script-tag-repeat9/error-context.md"
+            }
+          ]
+        }
+      ]
+    },
+    "final-cef": {
+      "resultsSha256": "1b6f545c865da462c47112a6c6977e23a5d69feeac40b675ab68fa1067cd5610",
+      "rawStats": {
+        "startTime": "2026-10-11T16:10:08.705Z",
+        "duration": 38966.759,
+        "expected": 38,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "counts": {
+        "passed": 38
+      },
+      "perFile": {
+        "compatibility.spec.ts": {
+          "passed": 38
+        }
+      },
+      "launcherOutsideHarness": 0,
+      "cases": [
+        {
+          "file": "compatibility.spec.ts",
+          "line": 230,
+          "title": "worker: dedicated Worker evaluation and messaging",
+          "status": "passed",
+          "durationMs": 402,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 249,
+          "title": "worker: service worker website control and fetch",
+          "status": "passed",
+          "durationMs": 177,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 253,
+          "title": "worker: context serviceworker event, enumeration and evaluation",
+          "status": "passed",
+          "durationMs": 164,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 264,
+          "title": "worker: service worker console and close event on context disposal",
+          "status": "passed",
+          "durationMs": 168,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 281,
+          "title": "worker: multiple pages expose one service worker identity",
+          "status": "passed",
+          "durationMs": 488,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 294,
+          "title": "worker: worker remains automatable after its first page closes",
+          "status": "passed",
+          "durationMs": 258,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 315,
+          "title": "worker: repeated worker contexts release browser target registrations",
+          "status": "passed",
+          "durationMs": 13460,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 347,
+          "title": "native: worker CDP aliases detach when their context closes",
+          "status": "passed",
+          "durationMs": 12273,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 380,
+          "title": "worker: serviceWorkers block prevents registration",
+          "status": "passed",
+          "durationMs": 141,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 393,
+          "title": "oopif: cross-site frame is a separate CDP target and remains interactive",
+          "status": "passed",
+          "durationMs": 743,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 420,
+          "title": "oopif: cross-site navigation, detach and network routing",
+          "status": "passed",
+          "durationMs": 576,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 444,
+          "title": "viewport: odd and tiny browser dimensions support screenshots and Playwright video",
+          "status": "passed",
+          "durationMs": 492,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 471,
+          "title": "locale: popups inherit context language before their first script without cross-context leakage",
+          "status": "passed",
+          "durationMs": 442,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 502,
+          "title": "viewport: real browser version metadata preserves 4K windowless dimensions",
+          "status": "passed",
+          "durationMs": 141,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 529,
+          "title": "state: IndexedDB auth export to file and restore into a fresh context",
+          "status": "passed",
+          "durationMs": 549,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 606,
+          "title": "state: lone UTF-16 values survive arguments, console, state export and import",
+          "status": "passed",
+          "durationMs": 343,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 637,
+          "title": "state: empty IndexedDB export and restore",
+          "status": "passed",
+          "durationMs": 335,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 659,
+          "title": "auth: http origin HTTP credentials",
+          "status": "passed",
+          "durationMs": 183,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 674,
+          "title": "proxy: http through local proxy plus origin auth",
+          "status": "passed",
+          "durationMs": 150,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 690,
+          "title": "proxy: http authenticated proxy plus origin auth",
+          "status": "passed",
+          "durationMs": 166,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 706,
+          "title": "proxy: http separate credentials respect a matching origin",
+          "status": "passed",
+          "durationMs": 179,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 724,
+          "title": "proxy: http does not send proxy credentials to the website",
+          "status": "passed",
+          "durationMs": 125,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 724,
+          "title": "proxy: http does not send out-of-origin credentials to the website",
+          "status": "passed",
+          "durationMs": 114,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 760,
+          "title": "proxy: http incorrect proxy credentials are denied without reaching the website",
+          "status": "passed",
+          "durationMs": 120,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 659,
+          "title": "auth: https origin HTTP credentials",
+          "status": "passed",
+          "durationMs": 161,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 674,
+          "title": "proxy: https through local proxy plus origin auth",
+          "status": "passed",
+          "durationMs": 147,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 690,
+          "title": "proxy: https authenticated proxy plus origin auth",
+          "status": "passed",
+          "durationMs": 164,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 706,
+          "title": "proxy: https separate credentials respect a matching origin",
+          "status": "passed",
+          "durationMs": 138,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 724,
+          "title": "proxy: https does not send proxy credentials to the website",
+          "status": "passed",
+          "durationMs": 130,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 724,
+          "title": "proxy: https does not send out-of-origin credentials to the website",
+          "status": "passed",
+          "durationMs": 125,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 760,
+          "title": "proxy: https incorrect proxy credentials are denied without reaching the website",
+          "status": "passed",
+          "durationMs": 96,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 793,
+          "title": "auth: wrong credentials fail and a fresh context does not inherit them",
+          "status": "passed",
+          "durationMs": 286,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 814,
+          "title": "proxy: bypass uses the real origin without contacting the proxy",
+          "status": "passed",
+          "durationMs": 130,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 826,
+          "title": "proxy: http authenticated proxy without origin auth",
+          "status": "passed",
+          "durationMs": 158,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 826,
+          "title": "proxy: https authenticated proxy without origin auth",
+          "status": "passed",
+          "durationMs": 181,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 842,
+          "title": "har: har captures and replays bodies, POST and redirects",
+          "status": "passed",
+          "durationMs": 333,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 842,
+          "title": "har: har.zip captures and replays bodies, POST and redirects",
+          "status": "passed",
+          "durationMs": 353,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 888,
+          "title": "video: Playwright recordVideo creates a decodable WebM after context close",
+          "status": "passed",
+          "durationMs": 1468,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        }
+      ]
+    },
+    "final-cef-verified": {
+      "resultsSha256": "67a5b680034eedd8d8b822b2eb26afbd2d2f920d833dae51a0a1440fa98dad4b",
+      "rawStats": {
+        "startTime": "2026-10-11T16:13:28.385Z",
+        "duration": 36372.328,
+        "expected": 38,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "counts": {
+        "passed": 38
+      },
+      "perFile": {
+        "compatibility.spec.ts": {
+          "passed": 38
+        }
+      },
+      "launcherOutsideHarness": 0,
+      "cases": [
+        {
+          "file": "compatibility.spec.ts",
+          "line": 230,
+          "title": "worker: dedicated Worker evaluation and messaging",
+          "status": "passed",
+          "durationMs": 190,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 249,
+          "title": "worker: service worker website control and fetch",
+          "status": "passed",
+          "durationMs": 158,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 253,
+          "title": "worker: context serviceworker event, enumeration and evaluation",
+          "status": "passed",
+          "durationMs": 160,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 264,
+          "title": "worker: service worker console and close event on context disposal",
+          "status": "passed",
+          "durationMs": 149,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 281,
+          "title": "worker: multiple pages expose one service worker identity",
+          "status": "passed",
+          "durationMs": 434,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 294,
+          "title": "worker: worker remains automatable after its first page closes",
+          "status": "passed",
+          "durationMs": 249,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 315,
+          "title": "worker: repeated worker contexts release browser target registrations",
+          "status": "passed",
+          "durationMs": 12588,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 347,
+          "title": "native: worker CDP aliases detach when their context closes",
+          "status": "passed",
+          "durationMs": 11763,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 380,
+          "title": "worker: serviceWorkers block prevents registration",
+          "status": "passed",
+          "durationMs": 114,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 393,
+          "title": "oopif: cross-site frame is a separate CDP target and remains interactive",
+          "status": "passed",
+          "durationMs": 411,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 420,
+          "title": "oopif: cross-site navigation, detach and network routing",
+          "status": "passed",
+          "durationMs": 511,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 444,
+          "title": "viewport: odd and tiny browser dimensions support screenshots and Playwright video",
+          "status": "passed",
+          "durationMs": 435,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 471,
+          "title": "locale: popups inherit context language before their first script without cross-context leakage",
+          "status": "passed",
+          "durationMs": 483,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 502,
+          "title": "viewport: real browser version metadata preserves 4K windowless dimensions",
+          "status": "passed",
+          "durationMs": 189,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 529,
+          "title": "state: IndexedDB auth export to file and restore into a fresh context",
+          "status": "passed",
+          "durationMs": 484,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 606,
+          "title": "state: lone UTF-16 values survive arguments, console, state export and import",
+          "status": "passed",
+          "durationMs": 339,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 637,
+          "title": "state: empty IndexedDB export and restore",
+          "status": "passed",
+          "durationMs": 320,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 659,
+          "title": "auth: http origin HTTP credentials",
+          "status": "passed",
+          "durationMs": 150,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 674,
+          "title": "proxy: http through local proxy plus origin auth",
+          "status": "passed",
+          "durationMs": 168,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 690,
+          "title": "proxy: http authenticated proxy plus origin auth",
+          "status": "passed",
+          "durationMs": 149,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 706,
+          "title": "proxy: http separate credentials respect a matching origin",
+          "status": "passed",
+          "durationMs": 121,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 724,
+          "title": "proxy: http does not send proxy credentials to the website",
+          "status": "passed",
+          "durationMs": 124,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 724,
+          "title": "proxy: http does not send out-of-origin credentials to the website",
+          "status": "passed",
+          "durationMs": 123,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 760,
+          "title": "proxy: http incorrect proxy credentials are denied without reaching the website",
+          "status": "passed",
+          "durationMs": 115,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 659,
+          "title": "auth: https origin HTTP credentials",
+          "status": "passed",
+          "durationMs": 165,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 674,
+          "title": "proxy: https through local proxy plus origin auth",
+          "status": "passed",
+          "durationMs": 182,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 690,
+          "title": "proxy: https authenticated proxy plus origin auth",
+          "status": "passed",
+          "durationMs": 155,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 706,
+          "title": "proxy: https separate credentials respect a matching origin",
+          "status": "passed",
+          "durationMs": 116,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 724,
+          "title": "proxy: https does not send proxy credentials to the website",
+          "status": "passed",
+          "durationMs": 134,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 724,
+          "title": "proxy: https does not send out-of-origin credentials to the website",
+          "status": "passed",
+          "durationMs": 118,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 760,
+          "title": "proxy: https incorrect proxy credentials are denied without reaching the website",
+          "status": "passed",
+          "durationMs": 111,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 793,
+          "title": "auth: wrong credentials fail and a fresh context does not inherit them",
+          "status": "passed",
+          "durationMs": 268,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 814,
+          "title": "proxy: bypass uses the real origin without contacting the proxy",
+          "status": "passed",
+          "durationMs": 118,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 826,
+          "title": "proxy: http authenticated proxy without origin auth",
+          "status": "passed",
+          "durationMs": 152,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 826,
+          "title": "proxy: https authenticated proxy without origin auth",
+          "status": "passed",
+          "durationMs": 175,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 842,
+          "title": "har: har captures and replays bodies, POST and redirects",
+          "status": "passed",
+          "durationMs": 301,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 842,
+          "title": "har: har.zip captures and replays bodies, POST and redirects",
+          "status": "passed",
+          "durationMs": 309,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 888,
+          "title": "video: Playwright recordVideo creates a decodable WebM after context close",
+          "status": "passed",
+          "durationMs": 1596,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        }
+      ]
+    },
+    "final-chromium": {
+      "resultsSha256": "81dcd3c4a74e5d80f0caa659ded0d9c72c43a6d0b280a2e840d03cd5bbf205a8",
+      "rawStats": {
+        "startTime": "2026-10-11T16:10:51.359Z",
+        "duration": 20144.311999999998,
+        "expected": 37,
+        "skipped": 1,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "counts": {
+        "passed": 37,
+        "skipped": 1
+      },
+      "perFile": {
+        "compatibility.spec.ts": {
+          "passed": 37,
+          "skipped": 1
+        }
+      },
+      "launcherOutsideHarness": 0,
+      "cases": [
+        {
+          "file": "compatibility.spec.ts",
+          "line": 230,
+          "title": "worker: dedicated Worker evaluation and messaging",
+          "status": "passed",
+          "durationMs": 268,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 249,
+          "title": "worker: service worker website control and fetch",
+          "status": "passed",
+          "durationMs": 119,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 253,
+          "title": "worker: context serviceworker event, enumeration and evaluation",
+          "status": "passed",
+          "durationMs": 113,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 264,
+          "title": "worker: service worker console and close event on context disposal",
+          "status": "passed",
+          "durationMs": 140,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 281,
+          "title": "worker: multiple pages expose one service worker identity",
+          "status": "passed",
+          "durationMs": 378,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 294,
+          "title": "worker: worker remains automatable after its first page closes",
+          "status": "passed",
+          "durationMs": 177,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 315,
+          "title": "worker: repeated worker contexts release browser target registrations",
+          "status": "passed",
+          "durationMs": 10437,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 347,
+          "title": "native: worker CDP aliases detach when their context closes",
+          "status": "skipped",
+          "durationMs": 2,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [
+            {
+              "type": "skip",
+              "description": "This checks the native shim alias lifecycle",
+              "location": {
+                "file": "/workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts",
+                "line": 348,
+                "column": 8
+              }
+            }
+          ],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 380,
+          "title": "worker: serviceWorkers block prevents registration",
+          "status": "passed",
+          "durationMs": 110,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 393,
+          "title": "oopif: cross-site frame is a separate CDP target and remains interactive",
+          "status": "passed",
+          "durationMs": 324,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 420,
+          "title": "oopif: cross-site navigation, detach and network routing",
+          "status": "passed",
+          "durationMs": 519,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 444,
+          "title": "viewport: odd and tiny browser dimensions support screenshots and Playwright video",
+          "status": "passed",
+          "durationMs": 356,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 471,
+          "title": "locale: popups inherit context language before their first script without cross-context leakage",
+          "status": "passed",
+          "durationMs": 361,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 502,
+          "title": "viewport: real browser version metadata preserves 4K windowless dimensions",
+          "status": "passed",
+          "durationMs": 106,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 529,
+          "title": "state: IndexedDB auth export to file and restore into a fresh context",
+          "status": "passed",
+          "durationMs": 350,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 606,
+          "title": "state: lone UTF-16 values survive arguments, console, state export and import",
+          "status": "passed",
+          "durationMs": 236,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 637,
+          "title": "state: empty IndexedDB export and restore",
+          "status": "passed",
+          "durationMs": 233,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 659,
+          "title": "auth: http origin HTTP credentials",
+          "status": "passed",
+          "durationMs": 109,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 674,
+          "title": "proxy: http through local proxy plus origin auth",
+          "status": "passed",
+          "durationMs": 108,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 690,
+          "title": "proxy: http authenticated proxy plus origin auth",
+          "status": "passed",
+          "durationMs": 112,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 706,
+          "title": "proxy: http separate credentials respect a matching origin",
+          "status": "passed",
+          "durationMs": 69,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 724,
+          "title": "proxy: http does not send proxy credentials to the website",
+          "status": "passed",
+          "durationMs": 131,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 724,
+          "title": "proxy: http does not send out-of-origin credentials to the website",
+          "status": "passed",
+          "durationMs": 70,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 760,
+          "title": "proxy: http incorrect proxy credentials are denied without reaching the website",
+          "status": "passed",
+          "durationMs": 62,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 659,
+          "title": "auth: https origin HTTP credentials",
+          "status": "passed",
+          "durationMs": 117,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 674,
+          "title": "proxy: https through local proxy plus origin auth",
+          "status": "passed",
+          "durationMs": 99,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 690,
+          "title": "proxy: https authenticated proxy plus origin auth",
+          "status": "passed",
+          "durationMs": 128,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 706,
+          "title": "proxy: https separate credentials respect a matching origin",
+          "status": "passed",
+          "durationMs": 81,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 724,
+          "title": "proxy: https does not send proxy credentials to the website",
+          "status": "passed",
+          "durationMs": 92,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 724,
+          "title": "proxy: https does not send out-of-origin credentials to the website",
+          "status": "passed",
+          "durationMs": 88,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 760,
+          "title": "proxy: https incorrect proxy credentials are denied without reaching the website",
+          "status": "passed",
+          "durationMs": 79,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 793,
+          "title": "auth: wrong credentials fail and a fresh context does not inherit them",
+          "status": "passed",
+          "durationMs": 240,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 814,
+          "title": "proxy: bypass uses the real origin without contacting the proxy",
+          "status": "passed",
+          "durationMs": 98,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 826,
+          "title": "proxy: http authenticated proxy without origin auth",
+          "status": "passed",
+          "durationMs": 130,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 826,
+          "title": "proxy: https authenticated proxy without origin auth",
+          "status": "passed",
+          "durationMs": 173,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 842,
+          "title": "har: har captures and replays bodies, POST and redirects",
+          "status": "passed",
+          "durationMs": 298,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 842,
+          "title": "har: har.zip captures and replays bodies, POST and redirects",
+          "status": "passed",
+          "durationMs": 272,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 888,
+          "title": "video: Playwright recordVideo creates a decodable WebM after context close",
+          "status": "passed",
+          "durationMs": 1534,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        }
+      ]
+    },
+    "focused-cef": {
+      "resultsSha256": "238d585ec9ef84294e9327ac185a08da9a4f1f0219fda3e108d58210b44962f6",
+      "rawStats": {
+        "startTime": "2026-10-11T16:04:30.074Z",
+        "duration": 43849.119,
+        "expected": 38,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "counts": {
+        "passed": 38
+      },
+      "perFile": {
+        "compatibility.spec.ts": {
+          "passed": 38
+        }
+      },
+      "launcherOutsideHarness": 0,
+      "cases": [
+        {
+          "file": "compatibility.spec.ts",
+          "line": 230,
+          "title": "worker: dedicated Worker evaluation and messaging",
+          "status": "passed",
+          "durationMs": 407,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 249,
+          "title": "worker: service worker website control and fetch",
+          "status": "passed",
+          "durationMs": 250,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 253,
+          "title": "worker: context serviceworker event, enumeration and evaluation",
+          "status": "passed",
+          "durationMs": 209,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 264,
+          "title": "worker: service worker console and close event on context disposal",
+          "status": "passed",
+          "durationMs": 299,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 281,
+          "title": "worker: multiple pages expose one service worker identity",
+          "status": "passed",
+          "durationMs": 647,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 294,
+          "title": "worker: worker remains automatable after its first page closes",
+          "status": "passed",
+          "durationMs": 403,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 315,
+          "title": "worker: repeated worker contexts release browser target registrations",
+          "status": "passed",
+          "durationMs": 17749,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 347,
+          "title": "native: worker CDP aliases detach when their context closes",
+          "status": "passed",
+          "durationMs": 12860,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 380,
+          "title": "worker: serviceWorkers block prevents registration",
+          "status": "passed",
+          "durationMs": 108,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 393,
+          "title": "oopif: cross-site frame is a separate CDP target and remains interactive",
+          "status": "passed",
+          "durationMs": 328,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 420,
+          "title": "oopif: cross-site navigation, detach and network routing",
+          "status": "passed",
+          "durationMs": 516,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 444,
+          "title": "viewport: odd and tiny browser dimensions support screenshots and Playwright video",
+          "status": "passed",
+          "durationMs": 479,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 471,
+          "title": "locale: popups inherit context language before their first script without cross-context leakage",
+          "status": "passed",
+          "durationMs": 491,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 502,
+          "title": "viewport: real browser version metadata preserves 4K windowless dimensions",
+          "status": "passed",
+          "durationMs": 130,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 529,
+          "title": "state: IndexedDB auth export to file and restore into a fresh context",
+          "status": "passed",
+          "durationMs": 470,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 606,
+          "title": "state: lone UTF-16 values survive arguments, console, state export and import",
+          "status": "passed",
+          "durationMs": 317,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 637,
+          "title": "state: empty IndexedDB export and restore",
+          "status": "passed",
+          "durationMs": 319,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 659,
+          "title": "auth: http origin HTTP credentials",
+          "status": "passed",
+          "durationMs": 144,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 674,
+          "title": "proxy: http through local proxy plus origin auth",
+          "status": "passed",
+          "durationMs": 151,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 690,
+          "title": "proxy: http authenticated proxy plus origin auth",
+          "status": "passed",
+          "durationMs": 133,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 706,
+          "title": "proxy: http separate credentials respect a matching origin",
+          "status": "passed",
+          "durationMs": 112,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 724,
+          "title": "proxy: http does not send proxy credentials to the website",
+          "status": "passed",
+          "durationMs": 111,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 724,
+          "title": "proxy: http does not send out-of-origin credentials to the website",
+          "status": "passed",
+          "durationMs": 101,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 760,
+          "title": "proxy: http incorrect proxy credentials are denied without reaching the website",
+          "status": "passed",
+          "durationMs": 107,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 659,
+          "title": "auth: https origin HTTP credentials",
+          "status": "passed",
+          "durationMs": 141,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 674,
+          "title": "proxy: https through local proxy plus origin auth",
+          "status": "passed",
+          "durationMs": 139,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 690,
+          "title": "proxy: https authenticated proxy plus origin auth",
+          "status": "passed",
+          "durationMs": 150,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 706,
+          "title": "proxy: https separate credentials respect a matching origin",
+          "status": "passed",
+          "durationMs": 119,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 724,
+          "title": "proxy: https does not send proxy credentials to the website",
+          "status": "passed",
+          "durationMs": 127,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 724,
+          "title": "proxy: https does not send out-of-origin credentials to the website",
+          "status": "passed",
+          "durationMs": 117,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 760,
+          "title": "proxy: https incorrect proxy credentials are denied without reaching the website",
+          "status": "passed",
+          "durationMs": 98,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 793,
+          "title": "auth: wrong credentials fail and a fresh context does not inherit them",
+          "status": "passed",
+          "durationMs": 256,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 814,
+          "title": "proxy: bypass uses the real origin without contacting the proxy",
+          "status": "passed",
+          "durationMs": 102,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 826,
+          "title": "proxy: http authenticated proxy without origin auth",
+          "status": "passed",
+          "durationMs": 148,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 826,
+          "title": "proxy: https authenticated proxy without origin auth",
+          "status": "passed",
+          "durationMs": 151,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 842,
+          "title": "har: har captures and replays bodies, POST and redirects",
+          "status": "passed",
+          "durationMs": 295,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 842,
+          "title": "har: har.zip captures and replays bodies, POST and redirects",
+          "status": "passed",
+          "durationMs": 310,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "compatibility.spec.ts",
+          "line": 888,
+          "title": "video: Playwright recordVideo creates a decodable WebM after context close",
+          "status": "passed",
+          "durationMs": 1579,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        }
+      ]
+    },
+    "inline-popup-repeated": {
+      "resultsSha256": "d349901e6d7885c780df5e6e1131a31556cf4ba27025690a2899d4c6cdf4cb6f",
+      "rawStats": {
+        "startTime": "2026-10-11T16:14:08.301Z",
+        "duration": 47310.007,
+        "expected": 7,
+        "skipped": 0,
+        "unexpected": 3,
+        "flaky": 0
+      },
+      "counts": {
+        "timedOut": 3,
+        "passed": 7
+      },
+      "perFile": {
+        "library/browsercontext-events.spec.ts": {
+          "timedOut": 3,
+          "passed": 7
+        }
+      },
+      "launcherOutsideHarness": 0,
+      "cases": [
+        {
+          "file": "library/browsercontext-events.spec.ts",
+          "line": 154,
+          "title": "dialog event should work with inline script tag",
+          "status": "timedOut",
+          "durationMs": 10095,
+          "error": "Test timeout of 10000ms exceeded.\nError: browserContext.waitForEvent: Test timeout of 10000ms exceeded.\n\n  163 |   const promise = page.click('a');\n  164 |   const [dialog, popup] = await Promise.all([\n> 165 |     page.context().waitForEvent('dialog'),\n      |                    ^\n  166 |     page.context().waitForEvent('page'),\n  167 |   ]);\n  168 |\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:165:20\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:164:27",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": [
+            {
+              "name": "error-context",
+              "contentType": "text/markdown",
+              "path": "/tmp/suitecut-remaining-fixes/inline-popup-repeated/artifacts/library-browsercontext-eve-70e56-work-with-inline-script-tag/error-context.md"
+            }
+          ]
+        },
+        {
+          "file": "library/browsercontext-events.spec.ts",
+          "line": 154,
+          "title": "dialog event should work with inline script tag",
+          "status": "timedOut",
+          "durationMs": 10133,
+          "error": "Test timeout of 10000ms exceeded.\nError: browserContext.waitForEvent: Test timeout of 10000ms exceeded.\n\n  163 |   const promise = page.click('a');\n  164 |   const [dialog, popup] = await Promise.all([\n> 165 |     page.context().waitForEvent('dialog'),\n      |                    ^\n  166 |     page.context().waitForEvent('page'),\n  167 |   ]);\n  168 |\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:165:20\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:164:27",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": [
+            {
+              "name": "error-context",
+              "contentType": "text/markdown",
+              "path": "/tmp/suitecut-remaining-fixes/inline-popup-repeated/artifacts/library-browsercontext-eve-70e56-work-with-inline-script-tag-repeat1/error-context.md"
+            }
+          ]
+        },
+        {
+          "file": "library/browsercontext-events.spec.ts",
+          "line": 154,
+          "title": "dialog event should work with inline script tag",
+          "status": "passed",
+          "durationMs": 424,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "library/browsercontext-events.spec.ts",
+          "line": 154,
+          "title": "dialog event should work with inline script tag",
+          "status": "passed",
+          "durationMs": 374,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "library/browsercontext-events.spec.ts",
+          "line": 154,
+          "title": "dialog event should work with inline script tag",
+          "status": "passed",
+          "durationMs": 379,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "library/browsercontext-events.spec.ts",
+          "line": 154,
+          "title": "dialog event should work with inline script tag",
+          "status": "passed",
+          "durationMs": 320,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "library/browsercontext-events.spec.ts",
+          "line": 154,
+          "title": "dialog event should work with inline script tag",
+          "status": "passed",
+          "durationMs": 310,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "library/browsercontext-events.spec.ts",
+          "line": 154,
+          "title": "dialog event should work with inline script tag",
+          "status": "timedOut",
+          "durationMs": 10113,
+          "error": "Test timeout of 10000ms exceeded.\nError: browserContext.waitForEvent: Test timeout of 10000ms exceeded.\n\n  163 |   const promise = page.click('a');\n  164 |   const [dialog, popup] = await Promise.all([\n> 165 |     page.context().waitForEvent('dialog'),\n      |                    ^\n  166 |     page.context().waitForEvent('page'),\n  167 |   ]);\n  168 |\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:165:20\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:164:27",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": [
+            {
+              "name": "error-context",
+              "contentType": "text/markdown",
+              "path": "/tmp/suitecut-remaining-fixes/inline-popup-repeated/artifacts/library-browsercontext-eve-70e56-work-with-inline-script-tag-repeat7/error-context.md"
+            }
+          ]
+        },
+        {
+          "file": "library/browsercontext-events.spec.ts",
+          "line": 154,
+          "title": "dialog event should work with inline script tag",
+          "status": "passed",
+          "durationMs": 370,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "library/browsercontext-events.spec.ts",
+          "line": 154,
+          "title": "dialog event should work with inline script tag",
+          "status": "passed",
+          "durationMs": 318,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        }
+      ]
+    },
+    "locale-headers": {
+      "resultsSha256": "d393dd0545d747faadb1ea782d9e518bbfb4d073a22c25be805350be6d8da78c",
+      "rawStats": {
+        "startTime": "2026-10-11T16:03:30.438Z",
+        "duration": 35914.26,
+        "expected": 15,
+        "skipped": 0,
+        "unexpected": 1,
+        "flaky": 0
+      },
+      "counts": {
+        "passed": 15,
+        "timedOut": 1
+      },
+      "perFile": {
+        "library/browsercontext-fetch.spec.ts": {
+          "passed": 3
+        },
+        "library/browsercontext-locale.spec.ts": {
+          "passed": 12,
+          "timedOut": 1
+        }
+      },
+      "launcherOutsideHarness": 0,
+      "cases": [
+        {
+          "file": "library/browsercontext-fetch.spec.ts",
+          "line": 693,
+          "title": "should add default headers",
+          "status": "passed",
+          "durationMs": 136,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "library/browsercontext-fetch.spec.ts",
+          "line": 718,
+          "title": "should add default headers to redirects",
+          "status": "passed",
+          "durationMs": 132,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "library/browsercontext-fetch.spec.ts",
+          "line": 730,
+          "title": "should allow to override default headers",
+          "status": "passed",
+          "durationMs": 85,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "library/browsercontext-locale.spec.ts",
+          "line": 20,
+          "title": "should affect accept-language header @smoke",
+          "status": "passed",
+          "durationMs": 112,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "library/browsercontext-locale.spec.ts",
+          "line": 31,
+          "title": "should affect navigator.language",
+          "status": "passed",
+          "durationMs": 89,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "library/browsercontext-locale.spec.ts",
+          "line": 38,
+          "title": "should format number",
+          "status": "passed",
+          "durationMs": 342,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "library/browsercontext-locale.spec.ts",
+          "line": 55,
+          "title": "should format date",
+          "status": "passed",
+          "durationMs": 244,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "library/browsercontext-locale.spec.ts",
+          "line": 74,
+          "title": "should format number in popups",
+          "status": "passed",
+          "durationMs": 195,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "library/browsercontext-locale.spec.ts",
+          "line": 89,
+          "title": "should affect navigator.language in popups",
+          "status": "passed",
+          "durationMs": 222,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "library/browsercontext-locale.spec.ts",
+          "line": 103,
+          "title": "should work for multiple pages sharing same process",
+          "status": "passed",
+          "durationMs": 191,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "library/browsercontext-locale.spec.ts",
+          "line": 118,
+          "title": "should be isolated between contexts",
+          "status": "timedOut",
+          "durationMs": 30002,
+          "error": "Test timeout of 30000ms exceeded.",
+          "launcherOutsideHarness": false,
+          "annotations": [
+            {
+              "type": "slow",
+              "location": {
+                "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts",
+                "line": 119,
+                "column": 6
+              }
+            }
+          ],
+          "attachments": [
+            {
+              "name": "error-context",
+              "contentType": "text/markdown",
+              "path": "/tmp/suitecut-remaining-fixes/locale-headers/artifacts/library-browsercontext-loc-d4912-e-isolated-between-contexts/error-context.md"
+            }
+          ]
+        },
+        {
+          "file": "library/browsercontext-locale.spec.ts",
+          "line": 143,
+          "title": "should not change default locale in another context",
+          "status": "passed",
+          "durationMs": 298,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "library/browsercontext-locale.spec.ts",
+          "line": 168,
+          "title": "should propagate locale to workers",
+          "status": "passed",
+          "durationMs": 151,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "library/browsercontext-locale.spec.ts",
+          "line": 183,
+          "title": "should affect Intl.DateTimeFormat().resolvedOptions().locale",
+          "status": "passed",
+          "durationMs": 107,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [
+            {
+              "type": "issue",
+              "description": "https://github.com/microsoft/playwright/issues/27802"
+            }
+          ],
+          "attachments": []
+        },
+        {
+          "file": "library/browsercontext-locale.spec.ts",
+          "line": 192,
+          "title": "should send user Accept-Language header",
+          "status": "passed",
+          "durationMs": 128,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [
+            {
+              "type": "issue",
+              "description": "https://github.com/microsoft/playwright/issues/23732",
+              "location": {
+                "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts",
+                "line": 192,
+                "column": 3
+              }
+            }
+          ],
+          "attachments": []
+        },
+        {
+          "file": "library/browsercontext-locale.spec.ts",
+          "line": 226,
+          "title": "should send Accept-Language header on WebSocket handshake",
+          "status": "passed",
+          "durationMs": 110,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [
+            {
+              "type": "issue",
+              "description": "https://github.com/microsoft/playwright/issues/23732",
+              "location": {
+                "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts",
+                "line": 226,
+                "column": 3
+              }
+            }
+          ],
+          "attachments": []
+        }
+      ]
+    },
+    "locale-headers-fixed": {
+      "resultsSha256": "cfe564f6aae7458538314d7570e7944aba07f87a6b5c6918093b6b72f827f801",
+      "rawStats": {
+        "startTime": "2026-10-11T16:08:58.110Z",
+        "duration": 6707.7390000000005,
+        "expected": 16,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "counts": {
+        "passed": 16
+      },
+      "perFile": {
+        "library/browsercontext-fetch.spec.ts": {
+          "passed": 3
+        },
+        "library/browsercontext-locale.spec.ts": {
+          "passed": 13
+        }
+      },
+      "launcherOutsideHarness": 0,
+      "cases": [
+        {
+          "file": "library/browsercontext-fetch.spec.ts",
+          "line": 693,
+          "title": "should add default headers",
+          "status": "passed",
+          "durationMs": 147,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "library/browsercontext-fetch.spec.ts",
+          "line": 718,
+          "title": "should add default headers to redirects",
+          "status": "passed",
+          "durationMs": 126,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "library/browsercontext-fetch.spec.ts",
+          "line": 730,
+          "title": "should allow to override default headers",
+          "status": "passed",
+          "durationMs": 106,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "library/browsercontext-locale.spec.ts",
+          "line": 20,
+          "title": "should affect accept-language header @smoke",
+          "status": "passed",
+          "durationMs": 152,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "library/browsercontext-locale.spec.ts",
+          "line": 31,
+          "title": "should affect navigator.language",
+          "status": "passed",
+          "durationMs": 117,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "library/browsercontext-locale.spec.ts",
+          "line": 38,
+          "title": "should format number",
+          "status": "passed",
+          "durationMs": 325,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "library/browsercontext-locale.spec.ts",
+          "line": 55,
+          "title": "should format date",
+          "status": "passed",
+          "durationMs": 521,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "library/browsercontext-locale.spec.ts",
+          "line": 74,
+          "title": "should format number in popups",
+          "status": "passed",
+          "durationMs": 299,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "library/browsercontext-locale.spec.ts",
+          "line": 89,
+          "title": "should affect navigator.language in popups",
+          "status": "passed",
+          "durationMs": 204,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "library/browsercontext-locale.spec.ts",
+          "line": 103,
+          "title": "should work for multiple pages sharing same process",
+          "status": "passed",
+          "durationMs": 301,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "library/browsercontext-locale.spec.ts",
+          "line": 118,
+          "title": "should be isolated between contexts",
+          "status": "passed",
+          "durationMs": 759,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [
+            {
+              "type": "slow",
+              "location": {
+                "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts",
+                "line": 119,
+                "column": 6
+              }
+            }
+          ],
+          "attachments": []
+        },
+        {
+          "file": "library/browsercontext-locale.spec.ts",
+          "line": 143,
+          "title": "should not change default locale in another context",
+          "status": "passed",
+          "durationMs": 354,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "library/browsercontext-locale.spec.ts",
+          "line": 168,
+          "title": "should propagate locale to workers",
+          "status": "passed",
+          "durationMs": 191,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "library/browsercontext-locale.spec.ts",
+          "line": 183,
+          "title": "should affect Intl.DateTimeFormat().resolvedOptions().locale",
+          "status": "passed",
+          "durationMs": 118,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [
+            {
+              "type": "issue",
+              "description": "https://github.com/microsoft/playwright/issues/27802"
+            }
+          ],
+          "attachments": []
+        },
+        {
+          "file": "library/browsercontext-locale.spec.ts",
+          "line": 192,
+          "title": "should send user Accept-Language header",
+          "status": "passed",
+          "durationMs": 139,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [
+            {
+              "type": "issue",
+              "description": "https://github.com/microsoft/playwright/issues/23732",
+              "location": {
+                "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts",
+                "line": 192,
+                "column": 3
+              }
+            }
+          ],
+          "attachments": []
+        },
+        {
+          "file": "library/browsercontext-locale.spec.ts",
+          "line": 226,
+          "title": "should send Accept-Language header on WebSocket handshake",
+          "status": "passed",
+          "durationMs": 129,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [
+            {
+              "type": "issue",
+              "description": "https://github.com/microsoft/playwright/issues/23732",
+              "location": {
+                "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts",
+                "line": 226,
+                "column": 3
+              }
+            }
+          ],
+          "attachments": []
+        }
+      ]
+    },
+    "locale-isolation": {
+      "resultsSha256": "be8af0b3637791287eebd98bea754427764fb2a77f084681b37b45c5126ff165",
+      "rawStats": {
+        "startTime": "2026-10-11T16:05:47.509Z",
+        "duration": 96602.13,
+        "expected": 0,
+        "skipped": 0,
+        "unexpected": 3,
+        "flaky": 0
+      },
+      "counts": {
+        "timedOut": 3
+      },
+      "perFile": {
+        "library/browsercontext-locale.spec.ts": {
+          "timedOut": 3
+        }
+      },
+      "launcherOutsideHarness": 0,
+      "cases": [
+        {
+          "file": "library/browsercontext-locale.spec.ts",
+          "line": 118,
+          "title": "should be isolated between contexts",
+          "status": "timedOut",
+          "durationMs": 30009,
+          "error": "Test timeout of 30000ms exceeded.",
+          "launcherOutsideHarness": false,
+          "annotations": [
+            {
+              "type": "slow",
+              "location": {
+                "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts",
+                "line": 119,
+                "column": 6
+              }
+            }
+          ],
+          "attachments": [
+            {
+              "name": "error-context",
+              "contentType": "text/markdown",
+              "path": "/tmp/suitecut-remaining-fixes/locale-isolation/artifacts/library-browsercontext-loc-d4912-e-isolated-between-contexts/error-context.md"
+            }
+          ]
+        },
+        {
+          "file": "library/browsercontext-locale.spec.ts",
+          "line": 118,
+          "title": "should be isolated between contexts",
+          "status": "timedOut",
+          "durationMs": 30001,
+          "error": "Test timeout of 30000ms exceeded.",
+          "launcherOutsideHarness": false,
+          "annotations": [
+            {
+              "type": "slow",
+              "location": {
+                "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts",
+                "line": 119,
+                "column": 6
+              }
+            }
+          ],
+          "attachments": [
+            {
+              "name": "error-context",
+              "contentType": "text/markdown",
+              "path": "/tmp/suitecut-remaining-fixes/locale-isolation/artifacts/library-browsercontext-loc-d4912-e-isolated-between-contexts-repeat1/error-context.md"
+            }
+          ]
+        },
+        {
+          "file": "library/browsercontext-locale.spec.ts",
+          "line": 118,
+          "title": "should be isolated between contexts",
+          "status": "timedOut",
+          "durationMs": 30001,
+          "error": "Test timeout of 30000ms exceeded.",
+          "launcherOutsideHarness": false,
+          "annotations": [
+            {
+              "type": "slow",
+              "location": {
+                "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts",
+                "line": 119,
+                "column": 6
+              }
+            }
+          ],
+          "attachments": [
+            {
+              "name": "error-context",
+              "contentType": "text/markdown",
+              "path": "/tmp/suitecut-remaining-fixes/locale-isolation/artifacts/library-browsercontext-loc-d4912-e-isolated-between-contexts-repeat2/error-context.md"
+            }
+          ]
+        }
+      ]
+    },
+    "locale-repeated": {
+      "resultsSha256": "136c11781719916af552b275af42faac65ef160ad23437cf85a93bef9f1baccd",
+      "rawStats": {
+        "startTime": "2026-10-11T16:09:08.405Z",
+        "duration": 14548.07,
+        "expected": 10,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "counts": {
+        "passed": 10
+      },
+      "perFile": {
+        "library/browsercontext-locale.spec.ts": {
+          "passed": 10
+        }
+      },
+      "launcherOutsideHarness": 0,
+      "cases": [
+        {
+          "file": "library/browsercontext-locale.spec.ts",
+          "line": 89,
+          "title": "should affect navigator.language in popups",
+          "status": "passed",
+          "durationMs": 344,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "library/browsercontext-locale.spec.ts",
+          "line": 118,
+          "title": "should be isolated between contexts",
+          "status": "passed",
+          "durationMs": 535,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [
+            {
+              "type": "slow",
+              "location": {
+                "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts",
+                "line": 119,
+                "column": 6
+              }
+            }
+          ],
+          "attachments": []
+        },
+        {
+          "file": "library/browsercontext-locale.spec.ts",
+          "line": 89,
+          "title": "should affect navigator.language in popups",
+          "status": "passed",
+          "durationMs": 323,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "library/browsercontext-locale.spec.ts",
+          "line": 118,
+          "title": "should be isolated between contexts",
+          "status": "passed",
+          "durationMs": 782,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [
+            {
+              "type": "slow",
+              "location": {
+                "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts",
+                "line": 119,
+                "column": 6
+              }
+            }
+          ],
+          "attachments": []
+        },
+        {
+          "file": "library/browsercontext-locale.spec.ts",
+          "line": 89,
+          "title": "should affect navigator.language in popups",
+          "status": "passed",
+          "durationMs": 698,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "library/browsercontext-locale.spec.ts",
+          "line": 118,
+          "title": "should be isolated between contexts",
+          "status": "passed",
+          "durationMs": 798,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [
+            {
+              "type": "slow",
+              "location": {
+                "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts",
+                "line": 119,
+                "column": 6
+              }
+            }
+          ],
+          "attachments": []
+        },
+        {
+          "file": "library/browsercontext-locale.spec.ts",
+          "line": 89,
+          "title": "should affect navigator.language in popups",
+          "status": "passed",
+          "durationMs": 209,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "library/browsercontext-locale.spec.ts",
+          "line": 118,
+          "title": "should be isolated between contexts",
+          "status": "passed",
+          "durationMs": 560,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [
+            {
+              "type": "slow",
+              "location": {
+                "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts",
+                "line": 119,
+                "column": 6
+              }
+            }
+          ],
+          "attachments": []
+        },
+        {
+          "file": "library/browsercontext-locale.spec.ts",
+          "line": 89,
+          "title": "should affect navigator.language in popups",
+          "status": "passed",
+          "durationMs": 410,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "library/browsercontext-locale.spec.ts",
+          "line": 118,
+          "title": "should be isolated between contexts",
+          "status": "passed",
+          "durationMs": 1089,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [
+            {
+              "type": "slow",
+              "location": {
+                "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts",
+                "line": 119,
+                "column": 6
+              }
+            }
+          ],
+          "attachments": []
+        }
+      ]
+    },
+    "native-final": {
+      "resultsSha256": "0dd5c4df1123730803443fefa670e16ed67f6405117fb63fe7726ac076fd1010",
+      "rawStats": {
+        "startTime": "2026-10-11T16:11:14.939Z",
+        "duration": 26214.072,
+        "expected": 16,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "counts": {
+        "passed": 16
+      },
+      "perFile": {
+        "engine.e2e.spec.ts": {
+          "passed": 16
+        }
+      },
+      "launcherOutsideHarness": 0,
+      "cases": [
+        {
+          "file": "engine.e2e.spec.ts",
+          "line": 53,
+          "title": "real Playwright locators, auto-wait, input, scrolling, iframe and screenshot",
+          "status": "passed",
+          "durationMs": 887,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "engine.e2e.spec.ts",
+          "line": 69,
+          "title": "windowless browser bounds resize the selected page and report unsupported states",
+          "status": "passed",
+          "durationMs": 399,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "engine.e2e.spec.ts",
+          "line": 117,
+          "title": "native engine records silent startup and accepts later sound",
+          "status": "passed",
+          "durationMs": 787,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "engine.e2e.spec.ts",
+          "line": 134,
+          "title": "streaming initializes silent audio and accepts later browser sound",
+          "status": "passed",
+          "durationMs": 1443,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "engine.e2e.spec.ts",
+          "line": 197,
+          "title": "silent pages record a valid audio track with mandatory engine readiness",
+          "status": "passed",
+          "durationMs": 507,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "engine.e2e.spec.ts",
+          "line": 219,
+          "title": "native protocol rejects bypasses and requires audio readiness when audio is omitted",
+          "status": "passed",
+          "durationMs": 330,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "engine.e2e.spec.ts",
+          "line": 266,
+          "title": "network interception, init scripts and storage isolation",
+          "status": "passed",
+          "durationMs": 365,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "engine.e2e.spec.ts",
+          "line": 295,
+          "title": "popup, dialog, file upload, download and public CDP sessions",
+          "status": "passed",
+          "durationMs": 1029,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "engine.e2e.spec.ts",
+          "line": 331,
+          "title": "explicit CDP sessions receive page events and tracing completion",
+          "status": "passed",
+          "durationMs": 548,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "engine.e2e.spec.ts",
+          "line": 363,
+          "title": "native recording survives blocked Node, pause and page switching",
+          "status": "passed",
+          "durationMs": 6689,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "engine.e2e.spec.ts",
+          "line": 400,
+          "title": "pause drains pending media and resume captures a prepared static page",
+          "status": "passed",
+          "durationMs": 1344,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "engine.e2e.spec.ts",
+          "line": 423,
+          "title": "repeated context/page shutdown keeps the engine usable",
+          "status": "passed",
+          "durationMs": 3860,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "engine.e2e.spec.ts",
+          "line": 434,
+          "title": "permission and geolocation setup before page creation",
+          "status": "passed",
+          "durationMs": 188,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "engine.e2e.spec.ts",
+          "line": 470,
+          "title": "explicit session retention is bounded and capacity returns after detach",
+          "status": "passed",
+          "durationMs": 930,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "engine.e2e.spec.ts",
+          "line": 504,
+          "title": "rapid popup and opener closure leaves the engine usable",
+          "status": "passed",
+          "durationMs": 3778,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "engine.e2e.spec.ts",
+          "line": 519,
+          "title": "native shutdown joins a pending pause and releases active outputs",
+          "status": "passed",
+          "durationMs": 1253,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        }
+      ]
+    },
+    "popup-events-final": {
+      "resultsSha256": "a4e79d7196d577a8c82494451f979d97264fd83000c27cbf24f3baa558786c81",
+      "rawStats": {
+        "startTime": "2026-10-11T16:11:44.453Z",
+        "duration": 65403.464,
+        "expected": 14,
+        "skipped": 0,
+        "unexpected": 4,
+        "flaky": 0
+      },
+      "counts": {
+        "passed": 14,
+        "timedOut": 4
+      },
+      "perFile": {
+        "library/browsercontext-events.spec.ts": {
+          "passed": 14,
+          "timedOut": 4
+        }
+      },
+      "launcherOutsideHarness": 0,
+      "cases": [
+        {
+          "file": "library/browsercontext-events.spec.ts",
+          "line": 20,
+          "title": "console event should work @smoke",
+          "status": "passed",
+          "durationMs": 123,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "library/browsercontext-events.spec.ts",
+          "line": 30,
+          "title": "console event should work with element handles",
+          "status": "passed",
+          "durationMs": 245,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "library/browsercontext-events.spec.ts",
+          "line": 41,
+          "title": "console event should work in popup",
+          "status": "passed",
+          "durationMs": 92,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "library/browsercontext-events.spec.ts",
+          "line": 55,
+          "title": "console event should work in popup 2",
+          "status": "timedOut",
+          "durationMs": 10084,
+          "error": "Test timeout of 10000ms exceeded.\nError: browserContext.waitForEvent: Test timeout of 10000ms exceeded.\n\n  62 |       win.close();\n  63 |     }),\n> 64 |     page.context().waitForEvent('console', msg => msg.type() === 'log'),\n     |                    ^\n  65 |     page.context().waitForEvent('page'),\n  66 |   ]);\n  67 |\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:64:20\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:58:30",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": [
+            {
+              "name": "error-context",
+              "contentType": "text/markdown",
+              "path": "/tmp/suitecut-remaining-fixes/popup-events-final/artifacts/library-browsercontext-eve-9c38a-vent-should-work-in-popup-2/error-context.md"
+            }
+          ]
+        },
+        {
+          "file": "library/browsercontext-events.spec.ts",
+          "line": 72,
+          "title": "console event should work in immediately closed popup",
+          "status": "passed",
+          "durationMs": 137,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "library/browsercontext-events.spec.ts",
+          "line": 89,
+          "title": "dialog event should work @smoke",
+          "status": "passed",
+          "durationMs": 85,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "library/browsercontext-events.spec.ts",
+          "line": 103,
+          "title": "dialog event should work in popup",
+          "status": "timedOut",
+          "durationMs": 15035,
+          "error": "Test timeout of 10000ms exceeded.\nError: page.waitForEvent: Test timeout of 10000ms exceeded.\n=========================== logs ===========================\nwaiting for event \"popup\"\n============================================================\n\n  109 |   const [dialog, popup] = await Promise.all([\n  110 |     page.context().waitForEvent('dialog'),\n> 111 |     page.waitForEvent('popup'),\n      |          ^\n  112 |   ]);\n  113 |\n  114 |   expect(dialog.message()).toBe('hey?');\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:111:10\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:109:27\nError: page.evaluate: Test timeout of 10000ms exceeded.\n\n  102 |\n  103 | test('dialog event should work in popup', async ({ page }) => {\n> 104 |   const promise = page.evaluate(() => {\n      |                        ^\n  105 |     const win = window.open('');\n  106 |     return (win as any).prompt('hey?');\n  107 |   });\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:104:24",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": [
+            {
+              "name": "error-context",
+              "contentType": "text/markdown",
+              "path": "/tmp/suitecut-remaining-fixes/popup-events-final/artifacts/library-browsercontext-eve-31625--event-should-work-in-popup/error-context.md"
+            }
+          ]
+        },
+        {
+          "file": "library/browsercontext-events.spec.ts",
+          "line": 120,
+          "title": "dialog event should work in popup 2",
+          "status": "timedOut",
+          "durationMs": 15031,
+          "error": "Test timeout of 10000ms exceeded.\nError: browserContext.waitForEvent: Test timeout of 10000ms exceeded.\n\n  125 |   });\n  126 |\n> 127 |   const dialog = await page.context().waitForEvent('dialog');\n      |                                       ^\n  128 |\n  129 |   expect(dialog.message()).toBe('hey?');\n  130 |   expect(dialog.page()).toBe(null);\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:127:39\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:127:18",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": [
+            {
+              "name": "error-context",
+              "contentType": "text/markdown",
+              "path": "/tmp/suitecut-remaining-fixes/popup-events-final/artifacts/library-browsercontext-eve-7baea-vent-should-work-in-popup-2/error-context.md"
+            }
+          ]
+        },
+        {
+          "file": "library/browsercontext-events.spec.ts",
+          "line": 135,
+          "title": "dialog event should work in immediately closed popup",
+          "status": "timedOut",
+          "durationMs": 15033,
+          "error": "Test timeout of 10000ms exceeded.\nError: page.waitForEvent: Test timeout of 10000ms exceeded.\n=========================== logs ===========================\nwaiting for event \"popup\"\n============================================================\n\n  143 |   const [dialog, popup] = await Promise.all([\n  144 |     page.context().waitForEvent('dialog'),\n> 145 |     page.waitForEvent('popup'),\n      |          ^\n  146 |   ]);\n  147 |\n  148 |   expect(dialog.message()).toBe('hey?');\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:145:10\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:143:27\nError: page.evaluate: Test timeout of 10000ms exceeded.\n\n  134 |\n  135 | test('dialog event should work in immediately closed popup', async ({ page }) => {\n> 136 |   const promise = page.evaluate(async () => {\n      |                        ^\n  137 |     const win = window.open()!;\n  138 |     const result = (win as any).prompt('hey?');\n  139 |     win.close();\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:136:24",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": [
+            {
+              "name": "error-context",
+              "contentType": "text/markdown",
+              "path": "/tmp/suitecut-remaining-fixes/popup-events-final/artifacts/library-browsercontext-eve-42600-in-immediately-closed-popup/error-context.md"
+            }
+          ]
+        },
+        {
+          "file": "library/browsercontext-events.spec.ts",
+          "line": 154,
+          "title": "dialog event should work with inline script tag",
+          "status": "passed",
+          "durationMs": 297,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "library/browsercontext-events.spec.ts",
+          "line": 176,
+          "title": "weberror event should work",
+          "status": "passed",
+          "durationMs": 142,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "library/browsercontext-events.spec.ts",
+          "line": 185,
+          "title": "weberror event should include location",
+          "status": "passed",
+          "durationMs": 322,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "library/browsercontext-events.spec.ts",
+          "line": 212,
+          "title": "pageload event should work @smoke",
+          "status": "passed",
+          "durationMs": 168,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "library/browsercontext-events.spec.ts",
+          "line": 220,
+          "title": "framenavigated event should work @smoke",
+          "status": "passed",
+          "durationMs": 387,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "library/browsercontext-events.spec.ts",
+          "line": 229,
+          "title": "pageclose event should work @smoke",
+          "status": "passed",
+          "durationMs": 243,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "library/browsercontext-events.spec.ts",
+          "line": 238,
+          "title": "frameattached event should work @smoke",
+          "status": "passed",
+          "durationMs": 150,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "library/browsercontext-events.spec.ts",
+          "line": 251,
+          "title": "framedetached event should work @smoke",
+          "status": "passed",
+          "durationMs": 217,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        },
+        {
+          "file": "library/browsercontext-events.spec.ts",
+          "line": 267,
+          "title": "download event should work @smoke",
+          "status": "passed",
+          "durationMs": 240,
+          "error": "",
+          "launcherOutsideHarness": false,
+          "annotations": [],
+          "attachments": []
+        }
+      ]
+    }
+  }
+}

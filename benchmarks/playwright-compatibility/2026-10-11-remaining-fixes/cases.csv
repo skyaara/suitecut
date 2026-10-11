@@ -1,0 +1,514 @@
+run,file,line,title,status,durationMs,launcherOutsideHarness,error
+attempt-1,library/browsercontext-events.spec.ts,41,console event should work in popup,passed,200,False,
+attempt-1,library/browsercontext-events.spec.ts,55,console event should work in popup 2,timedOut,10077,False,"Test timeout of 10000ms exceeded.
+Error: browserContext.waitForEvent: Test timeout of 10000ms exceeded.
+
+  62 |       win.close();
+  63 |     }),
+> 64 |     page.context().waitForEvent('console', msg => msg.type() === 'log'),
+     |                    ^
+  65 |     page.context().waitForEvent('page'),
+  66 |   ]);
+  67 |
+    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:64:20
+    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:58:30"
+attempt-1,library/browsercontext-events.spec.ts,72,console event should work in immediately closed popup,timedOut,10073,False,"Test timeout of 10000ms exceeded.
+Error: browserContext.waitForEvent: Test timeout of 10000ms exceeded.
+
+  79 |       win.close();
+  80 |     }),
+> 81 |     page.context().waitForEvent('console'),
+     |                    ^
+  82 |     page.waitForEvent('popup'),
+  83 |   ]);
+  84 |
+    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:81:20
+    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:75:30"
+attempt-1,library/browsercontext-events.spec.ts,103,dialog event should work in popup,timedOut,10072,False,"Test timeout of 10000ms exceeded.
+Error: browserContext.waitForEvent: Test timeout of 10000ms exceeded.
+
+  108 |
+  109 |   const [dialog, popup] = await Promise.all([
+> 110 |     page.context().waitForEvent('dialog'),
+      |                    ^
+  111 |     page.waitForEvent('popup'),
+  112 |   ]);
+  113 |
+    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:110:20
+    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:109:27"
+attempt-1,library/browsercontext-events.spec.ts,120,dialog event should work in popup 2,timedOut,10060,False,"Test timeout of 10000ms exceeded.
+Error: browserContext.waitForEvent: Test timeout of 10000ms exceeded.
+
+  125 |   });
+  126 |
+> 127 |   const dialog = await page.context().waitForEvent('dialog');
+      |                                       ^
+  128 |
+  129 |   expect(dialog.message()).toBe('hey?');
+  130 |   expect(dialog.page()).toBe(null);
+    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:127:39
+    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:127:18"
+attempt-1,library/browsercontext-events.spec.ts,135,dialog event should work in immediately closed popup,timedOut,10086,False,"Test timeout of 10000ms exceeded.
+Error: browserContext.waitForEvent: Test timeout of 10000ms exceeded.
+
+  142 |
+  143 |   const [dialog, popup] = await Promise.all([
+> 144 |     page.context().waitForEvent('dialog'),
+      |                    ^
+  145 |     page.waitForEvent('popup'),
+  146 |   ]);
+  147 |
+    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:144:20
+    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:143:27"
+attempt-1,library/browsercontext-events.spec.ts,154,dialog event should work with inline script tag,failed,356,False,"Error: dialog.accept: Protocol error (Page.handleJavaScriptDialog): No dialog is showing
+
+  169 |   expect(dialog.message()).toBe('hey?');
+  170 |   expect(dialog.page()).toBe(popup);
+> 171 |   await dialog.accept('hello');
+      |                ^
+  172 |   await promise;
+  173 |   await expect.poll(() => popup.evaluate('window.result')).toBe('hello');
+  174 | });
+    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:171:16"
+attempt-1,library/browsercontext-fetch.spec.ts,693,should add default headers,passed,137,False,
+attempt-1,library/browsercontext-fetch.spec.ts,718,should add default headers to redirects,passed,102,False,
+attempt-1,library/browsercontext-fetch.spec.ts,730,should allow to override default headers,passed,89,False,
+attempt-1,library/browsercontext-locale.spec.ts,74,should format number in popups,passed,186,False,
+attempt-1,library/browsercontext-locale.spec.ts,89,should affect navigator.language in popups,passed,191,False,
+baseline,library/browsercontext-events.spec.ts,103,dialog event should work in popup,timedOut,15053,False,"Test timeout of 10000ms exceeded.
+Error: page.waitForEvent: Test timeout of 10000ms exceeded.
+=========================== logs ===========================
+waiting for event ""popup""
+============================================================
+
+  109 |   const [dialog, popup] = await Promise.all([
+  110 |     page.context().waitForEvent('dialog'),
+> 111 |     page.waitForEvent('popup'),
+      |          ^
+  112 |   ]);
+  113 |
+  114 |   expect(dialog.message()).toBe('hey?');
+    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:111:10
+    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:109:27
+Error: page.evaluate: Test timeout of 10000ms exceeded.
+
+  102 |
+  103 | test('dialog event should work in popup', async ({ page }) => {
+> 104 |   const promise = page.evaluate(() => {
+      |                        ^
+  105 |     const win = window.open('');
+  106 |     return (win as any).prompt('hey?');
+  107 |   });
+    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:104:24"
+baseline,library/browsercontext-events.spec.ts,154,dialog event should work with inline script tag,passed,353,False,
+command-capacity-diagnostic,library/browsercontext-locale.spec.ts,118,should be isolated between contexts,timedOut,30007,False,Test timeout of 30000ms exceeded.
+diagnostic,library/suitecut-diagnostic.spec.ts,2,native browser session capability,passed,4,False,
+early-dialog-buffer,library/browsercontext-events.spec.ts,154,dialog event should work with inline script tag,passed,348,False,
+early-dialog-buffer,library/browsercontext-events.spec.ts,154,dialog event should work with inline script tag,timedOut,10075,False,"Test timeout of 10000ms exceeded.
+Error: browserContext.waitForEvent: Test timeout of 10000ms exceeded.
+
+  163 |   const promise = page.click('a');
+  164 |   const [dialog, popup] = await Promise.all([
+> 165 |     page.context().waitForEvent('dialog'),
+      |                    ^
+  166 |     page.context().waitForEvent('page'),
+  167 |   ]);
+  168 |
+    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:165:20
+    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:164:27"
+early-dialog-buffer,library/browsercontext-events.spec.ts,154,dialog event should work with inline script tag,timedOut,10092,False,"Test timeout of 10000ms exceeded.
+Error: browserContext.waitForEvent: Test timeout of 10000ms exceeded.
+
+  163 |   const promise = page.click('a');
+  164 |   const [dialog, popup] = await Promise.all([
+> 165 |     page.context().waitForEvent('dialog'),
+      |                    ^
+  166 |     page.context().waitForEvent('page'),
+  167 |   ]);
+  168 |
+    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:165:20
+    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:164:27"
+early-dialog-buffer,library/browsercontext-events.spec.ts,154,dialog event should work with inline script tag,passed,327,False,
+early-dialog-buffer,library/browsercontext-events.spec.ts,154,dialog event should work with inline script tag,passed,366,False,
+early-dialog-buffer,library/browsercontext-events.spec.ts,154,dialog event should work with inline script tag,timedOut,10092,False,"Test timeout of 10000ms exceeded.
+Error: browserContext.waitForEvent: Test timeout of 10000ms exceeded.
+
+  163 |   const promise = page.click('a');
+  164 |   const [dialog, popup] = await Promise.all([
+> 165 |     page.context().waitForEvent('dialog'),
+      |                    ^
+  166 |     page.context().waitForEvent('page'),
+  167 |   ]);
+  168 |
+    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:165:20
+    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:164:27"
+early-dialog-buffer,library/browsercontext-events.spec.ts,154,dialog event should work with inline script tag,timedOut,10154,False,"Test timeout of 10000ms exceeded.
+Error: browserContext.waitForEvent: Test timeout of 10000ms exceeded.
+
+  163 |   const promise = page.click('a');
+  164 |   const [dialog, popup] = await Promise.all([
+> 165 |     page.context().waitForEvent('dialog'),
+      |                    ^
+  166 |     page.context().waitForEvent('page'),
+  167 |   ]);
+  168 |
+    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:165:20
+    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:164:27"
+early-dialog-buffer,library/browsercontext-events.spec.ts,154,dialog event should work with inline script tag,passed,583,False,
+early-dialog-buffer,library/browsercontext-events.spec.ts,154,dialog event should work with inline script tag,passed,336,False,
+early-dialog-buffer,library/browsercontext-events.spec.ts,154,dialog event should work with inline script tag,timedOut,10111,False,"Test timeout of 10000ms exceeded.
+Error: browserContext.waitForEvent: Test timeout of 10000ms exceeded.
+
+  163 |   const promise = page.click('a');
+  164 |   const [dialog, popup] = await Promise.all([
+> 165 |     page.context().waitForEvent('dialog'),
+      |                    ^
+  166 |     page.context().waitForEvent('page'),
+  167 |   ]);
+  168 |
+    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:165:20
+    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:164:27"
+final-cef,compatibility.spec.ts,230,worker: dedicated Worker evaluation and messaging,passed,402,False,
+final-cef,compatibility.spec.ts,249,worker: service worker website control and fetch,passed,177,False,
+final-cef,compatibility.spec.ts,253,"worker: context serviceworker event, enumeration and evaluation",passed,164,False,
+final-cef,compatibility.spec.ts,264,worker: service worker console and close event on context disposal,passed,168,False,
+final-cef,compatibility.spec.ts,281,worker: multiple pages expose one service worker identity,passed,488,False,
+final-cef,compatibility.spec.ts,294,worker: worker remains automatable after its first page closes,passed,258,False,
+final-cef,compatibility.spec.ts,315,worker: repeated worker contexts release browser target registrations,passed,13460,False,
+final-cef,compatibility.spec.ts,347,native: worker CDP aliases detach when their context closes,passed,12273,False,
+final-cef,compatibility.spec.ts,380,worker: serviceWorkers block prevents registration,passed,141,False,
+final-cef,compatibility.spec.ts,393,oopif: cross-site frame is a separate CDP target and remains interactive,passed,743,False,
+final-cef,compatibility.spec.ts,420,"oopif: cross-site navigation, detach and network routing",passed,576,False,
+final-cef,compatibility.spec.ts,444,viewport: odd and tiny browser dimensions support screenshots and Playwright video,passed,492,False,
+final-cef,compatibility.spec.ts,471,locale: popups inherit context language before their first script without cross-context leakage,passed,442,False,
+final-cef,compatibility.spec.ts,502,viewport: real browser version metadata preserves 4K windowless dimensions,passed,141,False,
+final-cef,compatibility.spec.ts,529,state: IndexedDB auth export to file and restore into a fresh context,passed,549,False,
+final-cef,compatibility.spec.ts,606,"state: lone UTF-16 values survive arguments, console, state export and import",passed,343,False,
+final-cef,compatibility.spec.ts,637,state: empty IndexedDB export and restore,passed,335,False,
+final-cef,compatibility.spec.ts,659,auth: http origin HTTP credentials,passed,183,False,
+final-cef,compatibility.spec.ts,674,proxy: http through local proxy plus origin auth,passed,150,False,
+final-cef,compatibility.spec.ts,690,proxy: http authenticated proxy plus origin auth,passed,166,False,
+final-cef,compatibility.spec.ts,706,proxy: http separate credentials respect a matching origin,passed,179,False,
+final-cef,compatibility.spec.ts,724,proxy: http does not send proxy credentials to the website,passed,125,False,
+final-cef,compatibility.spec.ts,724,proxy: http does not send out-of-origin credentials to the website,passed,114,False,
+final-cef,compatibility.spec.ts,760,proxy: http incorrect proxy credentials are denied without reaching the website,passed,120,False,
+final-cef,compatibility.spec.ts,659,auth: https origin HTTP credentials,passed,161,False,
+final-cef,compatibility.spec.ts,674,proxy: https through local proxy plus origin auth,passed,147,False,
+final-cef,compatibility.spec.ts,690,proxy: https authenticated proxy plus origin auth,passed,164,False,
+final-cef,compatibility.spec.ts,706,proxy: https separate credentials respect a matching origin,passed,138,False,
+final-cef,compatibility.spec.ts,724,proxy: https does not send proxy credentials to the website,passed,130,False,
+final-cef,compatibility.spec.ts,724,proxy: https does not send out-of-origin credentials to the website,passed,125,False,
+final-cef,compatibility.spec.ts,760,proxy: https incorrect proxy credentials are denied without reaching the website,passed,96,False,
+final-cef,compatibility.spec.ts,793,auth: wrong credentials fail and a fresh context does not inherit them,passed,286,False,
+final-cef,compatibility.spec.ts,814,proxy: bypass uses the real origin without contacting the proxy,passed,130,False,
+final-cef,compatibility.spec.ts,826,proxy: http authenticated proxy without origin auth,passed,158,False,
+final-cef,compatibility.spec.ts,826,proxy: https authenticated proxy without origin auth,passed,181,False,
+final-cef,compatibility.spec.ts,842,"har: har captures and replays bodies, POST and redirects",passed,333,False,
+final-cef,compatibility.spec.ts,842,"har: har.zip captures and replays bodies, POST and redirects",passed,353,False,
+final-cef,compatibility.spec.ts,888,video: Playwright recordVideo creates a decodable WebM after context close,passed,1468,False,
+final-cef-verified,compatibility.spec.ts,230,worker: dedicated Worker evaluation and messaging,passed,190,False,
+final-cef-verified,compatibility.spec.ts,249,worker: service worker website control and fetch,passed,158,False,
+final-cef-verified,compatibility.spec.ts,253,"worker: context serviceworker event, enumeration and evaluation",passed,160,False,
+final-cef-verified,compatibility.spec.ts,264,worker: service worker console and close event on context disposal,passed,149,False,
+final-cef-verified,compatibility.spec.ts,281,worker: multiple pages expose one service worker identity,passed,434,False,
+final-cef-verified,compatibility.spec.ts,294,worker: worker remains automatable after its first page closes,passed,249,False,
+final-cef-verified,compatibility.spec.ts,315,worker: repeated worker contexts release browser target registrations,passed,12588,False,
+final-cef-verified,compatibility.spec.ts,347,native: worker CDP aliases detach when their context closes,passed,11763,False,
+final-cef-verified,compatibility.spec.ts,380,worker: serviceWorkers block prevents registration,passed,114,False,
+final-cef-verified,compatibility.spec.ts,393,oopif: cross-site frame is a separate CDP target and remains interactive,passed,411,False,
+final-cef-verified,compatibility.spec.ts,420,"oopif: cross-site navigation, detach and network routing",passed,511,False,
+final-cef-verified,compatibility.spec.ts,444,viewport: odd and tiny browser dimensions support screenshots and Playwright video,passed,435,False,
+final-cef-verified,compatibility.spec.ts,471,locale: popups inherit context language before their first script without cross-context leakage,passed,483,False,
+final-cef-verified,compatibility.spec.ts,502,viewport: real browser version metadata preserves 4K windowless dimensions,passed,189,False,
+final-cef-verified,compatibility.spec.ts,529,state: IndexedDB auth export to file and restore into a fresh context,passed,484,False,
+final-cef-verified,compatibility.spec.ts,606,"state: lone UTF-16 values survive arguments, console, state export and import",passed,339,False,
+final-cef-verified,compatibility.spec.ts,637,state: empty IndexedDB export and restore,passed,320,False,
+final-cef-verified,compatibility.spec.ts,659,auth: http origin HTTP credentials,passed,150,False,
+final-cef-verified,compatibility.spec.ts,674,proxy: http through local proxy plus origin auth,passed,168,False,
+final-cef-verified,compatibility.spec.ts,690,proxy: http authenticated proxy plus origin auth,passed,149,False,
+final-cef-verified,compatibility.spec.ts,706,proxy: http separate credentials respect a matching origin,passed,121,False,
+final-cef-verified,compatibility.spec.ts,724,proxy: http does not send proxy credentials to the website,passed,124,False,
+final-cef-verified,compatibility.spec.ts,724,proxy: http does not send out-of-origin credentials to the website,passed,123,False,
+final-cef-verified,compatibility.spec.ts,760,proxy: http incorrect proxy credentials are denied without reaching the website,passed,115,False,
+final-cef-verified,compatibility.spec.ts,659,auth: https origin HTTP credentials,passed,165,False,
+final-cef-verified,compatibility.spec.ts,674,proxy: https through local proxy plus origin auth,passed,182,False,
+final-cef-verified,compatibility.spec.ts,690,proxy: https authenticated proxy plus origin auth,passed,155,False,
+final-cef-verified,compatibility.spec.ts,706,proxy: https separate credentials respect a matching origin,passed,116,False,
+final-cef-verified,compatibility.spec.ts,724,proxy: https does not send proxy credentials to the website,passed,134,False,
+final-cef-verified,compatibility.spec.ts,724,proxy: https does not send out-of-origin credentials to the website,passed,118,False,
+final-cef-verified,compatibility.spec.ts,760,proxy: https incorrect proxy credentials are denied without reaching the website,passed,111,False,
+final-cef-verified,compatibility.spec.ts,793,auth: wrong credentials fail and a fresh context does not inherit them,passed,268,False,
+final-cef-verified,compatibility.spec.ts,814,proxy: bypass uses the real origin without contacting the proxy,passed,118,False,
+final-cef-verified,compatibility.spec.ts,826,proxy: http authenticated proxy without origin auth,passed,152,False,
+final-cef-verified,compatibility.spec.ts,826,proxy: https authenticated proxy without origin auth,passed,175,False,
+final-cef-verified,compatibility.spec.ts,842,"har: har captures and replays bodies, POST and redirects",passed,301,False,
+final-cef-verified,compatibility.spec.ts,842,"har: har.zip captures and replays bodies, POST and redirects",passed,309,False,
+final-cef-verified,compatibility.spec.ts,888,video: Playwright recordVideo creates a decodable WebM after context close,passed,1596,False,
+final-chromium,compatibility.spec.ts,230,worker: dedicated Worker evaluation and messaging,passed,268,False,
+final-chromium,compatibility.spec.ts,249,worker: service worker website control and fetch,passed,119,False,
+final-chromium,compatibility.spec.ts,253,"worker: context serviceworker event, enumeration and evaluation",passed,113,False,
+final-chromium,compatibility.spec.ts,264,worker: service worker console and close event on context disposal,passed,140,False,
+final-chromium,compatibility.spec.ts,281,worker: multiple pages expose one service worker identity,passed,378,False,
+final-chromium,compatibility.spec.ts,294,worker: worker remains automatable after its first page closes,passed,177,False,
+final-chromium,compatibility.spec.ts,315,worker: repeated worker contexts release browser target registrations,passed,10437,False,
+final-chromium,compatibility.spec.ts,347,native: worker CDP aliases detach when their context closes,skipped,2,False,
+final-chromium,compatibility.spec.ts,380,worker: serviceWorkers block prevents registration,passed,110,False,
+final-chromium,compatibility.spec.ts,393,oopif: cross-site frame is a separate CDP target and remains interactive,passed,324,False,
+final-chromium,compatibility.spec.ts,420,"oopif: cross-site navigation, detach and network routing",passed,519,False,
+final-chromium,compatibility.spec.ts,444,viewport: odd and tiny browser dimensions support screenshots and Playwright video,passed,356,False,
+final-chromium,compatibility.spec.ts,471,locale: popups inherit context language before their first script without cross-context leakage,passed,361,False,
+final-chromium,compatibility.spec.ts,502,viewport: real browser version metadata preserves 4K windowless dimensions,passed,106,False,
+final-chromium,compatibility.spec.ts,529,state: IndexedDB auth export to file and restore into a fresh context,passed,350,False,
+final-chromium,compatibility.spec.ts,606,"state: lone UTF-16 values survive arguments, console, state export and import",passed,236,False,
+final-chromium,compatibility.spec.ts,637,state: empty IndexedDB export and restore,passed,233,False,
+final-chromium,compatibility.spec.ts,659,auth: http origin HTTP credentials,passed,109,False,
+final-chromium,compatibility.spec.ts,674,proxy: http through local proxy plus origin auth,passed,108,False,
+final-chromium,compatibility.spec.ts,690,proxy: http authenticated proxy plus origin auth,passed,112,False,
+final-chromium,compatibility.spec.ts,706,proxy: http separate credentials respect a matching origin,passed,69,False,
+final-chromium,compatibility.spec.ts,724,proxy: http does not send proxy credentials to the website,passed,131,False,
+final-chromium,compatibility.spec.ts,724,proxy: http does not send out-of-origin credentials to the website,passed,70,False,
+final-chromium,compatibility.spec.ts,760,proxy: http incorrect proxy credentials are denied without reaching the website,passed,62,False,
+final-chromium,compatibility.spec.ts,659,auth: https origin HTTP credentials,passed,117,False,
+final-chromium,compatibility.spec.ts,674,proxy: https through local proxy plus origin auth,passed,99,False,
+final-chromium,compatibility.spec.ts,690,proxy: https authenticated proxy plus origin auth,passed,128,False,
+final-chromium,compatibility.spec.ts,706,proxy: https separate credentials respect a matching origin,passed,81,False,
+final-chromium,compatibility.spec.ts,724,proxy: https does not send proxy credentials to the website,passed,92,False,
+final-chromium,compatibility.spec.ts,724,proxy: https does not send out-of-origin credentials to the website,passed,88,False,
+final-chromium,compatibility.spec.ts,760,proxy: https incorrect proxy credentials are denied without reaching the website,passed,79,False,
+final-chromium,compatibility.spec.ts,793,auth: wrong credentials fail and a fresh context does not inherit them,passed,240,False,
+final-chromium,compatibility.spec.ts,814,proxy: bypass uses the real origin without contacting the proxy,passed,98,False,
+final-chromium,compatibility.spec.ts,826,proxy: http authenticated proxy without origin auth,passed,130,False,
+final-chromium,compatibility.spec.ts,826,proxy: https authenticated proxy without origin auth,passed,173,False,
+final-chromium,compatibility.spec.ts,842,"har: har captures and replays bodies, POST and redirects",passed,298,False,
+final-chromium,compatibility.spec.ts,842,"har: har.zip captures and replays bodies, POST and redirects",passed,272,False,
+final-chromium,compatibility.spec.ts,888,video: Playwright recordVideo creates a decodable WebM after context close,passed,1534,False,
+focused-cef,compatibility.spec.ts,230,worker: dedicated Worker evaluation and messaging,passed,407,False,
+focused-cef,compatibility.spec.ts,249,worker: service worker website control and fetch,passed,250,False,
+focused-cef,compatibility.spec.ts,253,"worker: context serviceworker event, enumeration and evaluation",passed,209,False,
+focused-cef,compatibility.spec.ts,264,worker: service worker console and close event on context disposal,passed,299,False,
+focused-cef,compatibility.spec.ts,281,worker: multiple pages expose one service worker identity,passed,647,False,
+focused-cef,compatibility.spec.ts,294,worker: worker remains automatable after its first page closes,passed,403,False,
+focused-cef,compatibility.spec.ts,315,worker: repeated worker contexts release browser target registrations,passed,17749,False,
+focused-cef,compatibility.spec.ts,347,native: worker CDP aliases detach when their context closes,passed,12860,False,
+focused-cef,compatibility.spec.ts,380,worker: serviceWorkers block prevents registration,passed,108,False,
+focused-cef,compatibility.spec.ts,393,oopif: cross-site frame is a separate CDP target and remains interactive,passed,328,False,
+focused-cef,compatibility.spec.ts,420,"oopif: cross-site navigation, detach and network routing",passed,516,False,
+focused-cef,compatibility.spec.ts,444,viewport: odd and tiny browser dimensions support screenshots and Playwright video,passed,479,False,
+focused-cef,compatibility.spec.ts,471,locale: popups inherit context language before their first script without cross-context leakage,passed,491,False,
+focused-cef,compatibility.spec.ts,502,viewport: real browser version metadata preserves 4K windowless dimensions,passed,130,False,
+focused-cef,compatibility.spec.ts,529,state: IndexedDB auth export to file and restore into a fresh context,passed,470,False,
+focused-cef,compatibility.spec.ts,606,"state: lone UTF-16 values survive arguments, console, state export and import",passed,317,False,
+focused-cef,compatibility.spec.ts,637,state: empty IndexedDB export and restore,passed,319,False,
+focused-cef,compatibility.spec.ts,659,auth: http origin HTTP credentials,passed,144,False,
+focused-cef,compatibility.spec.ts,674,proxy: http through local proxy plus origin auth,passed,151,False,
+focused-cef,compatibility.spec.ts,690,proxy: http authenticated proxy plus origin auth,passed,133,False,
+focused-cef,compatibility.spec.ts,706,proxy: http separate credentials respect a matching origin,passed,112,False,
+focused-cef,compatibility.spec.ts,724,proxy: http does not send proxy credentials to the website,passed,111,False,
+focused-cef,compatibility.spec.ts,724,proxy: http does not send out-of-origin credentials to the website,passed,101,False,
+focused-cef,compatibility.spec.ts,760,proxy: http incorrect proxy credentials are denied without reaching the website,passed,107,False,
+focused-cef,compatibility.spec.ts,659,auth: https origin HTTP credentials,passed,141,False,
+focused-cef,compatibility.spec.ts,674,proxy: https through local proxy plus origin auth,passed,139,False,
+focused-cef,compatibility.spec.ts,690,proxy: https authenticated proxy plus origin auth,passed,150,False,
+focused-cef,compatibility.spec.ts,706,proxy: https separate credentials respect a matching origin,passed,119,False,
+focused-cef,compatibility.spec.ts,724,proxy: https does not send proxy credentials to the website,passed,127,False,
+focused-cef,compatibility.spec.ts,724,proxy: https does not send out-of-origin credentials to the website,passed,117,False,
+focused-cef,compatibility.spec.ts,760,proxy: https incorrect proxy credentials are denied without reaching the website,passed,98,False,
+focused-cef,compatibility.spec.ts,793,auth: wrong credentials fail and a fresh context does not inherit them,passed,256,False,
+focused-cef,compatibility.spec.ts,814,proxy: bypass uses the real origin without contacting the proxy,passed,102,False,
+focused-cef,compatibility.spec.ts,826,proxy: http authenticated proxy without origin auth,passed,148,False,
+focused-cef,compatibility.spec.ts,826,proxy: https authenticated proxy without origin auth,passed,151,False,
+focused-cef,compatibility.spec.ts,842,"har: har captures and replays bodies, POST and redirects",passed,295,False,
+focused-cef,compatibility.spec.ts,842,"har: har.zip captures and replays bodies, POST and redirects",passed,310,False,
+focused-cef,compatibility.spec.ts,888,video: Playwright recordVideo creates a decodable WebM after context close,passed,1579,False,
+inline-popup-repeated,library/browsercontext-events.spec.ts,154,dialog event should work with inline script tag,timedOut,10095,False,"Test timeout of 10000ms exceeded.
+Error: browserContext.waitForEvent: Test timeout of 10000ms exceeded.
+
+  163 |   const promise = page.click('a');
+  164 |   const [dialog, popup] = await Promise.all([
+> 165 |     page.context().waitForEvent('dialog'),
+      |                    ^
+  166 |     page.context().waitForEvent('page'),
+  167 |   ]);
+  168 |
+    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:165:20
+    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:164:27"
+inline-popup-repeated,library/browsercontext-events.spec.ts,154,dialog event should work with inline script tag,timedOut,10133,False,"Test timeout of 10000ms exceeded.
+Error: browserContext.waitForEvent: Test timeout of 10000ms exceeded.
+
+  163 |   const promise = page.click('a');
+  164 |   const [dialog, popup] = await Promise.all([
+> 165 |     page.context().waitForEvent('dialog'),
+      |                    ^
+  166 |     page.context().waitForEvent('page'),
+  167 |   ]);
+  168 |
+    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:165:20
+    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:164:27"
+inline-popup-repeated,library/browsercontext-events.spec.ts,154,dialog event should work with inline script tag,passed,424,False,
+inline-popup-repeated,library/browsercontext-events.spec.ts,154,dialog event should work with inline script tag,passed,374,False,
+inline-popup-repeated,library/browsercontext-events.spec.ts,154,dialog event should work with inline script tag,passed,379,False,
+inline-popup-repeated,library/browsercontext-events.spec.ts,154,dialog event should work with inline script tag,passed,320,False,
+inline-popup-repeated,library/browsercontext-events.spec.ts,154,dialog event should work with inline script tag,passed,310,False,
+inline-popup-repeated,library/browsercontext-events.spec.ts,154,dialog event should work with inline script tag,timedOut,10113,False,"Test timeout of 10000ms exceeded.
+Error: browserContext.waitForEvent: Test timeout of 10000ms exceeded.
+
+  163 |   const promise = page.click('a');
+  164 |   const [dialog, popup] = await Promise.all([
+> 165 |     page.context().waitForEvent('dialog'),
+      |                    ^
+  166 |     page.context().waitForEvent('page'),
+  167 |   ]);
+  168 |
+    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:165:20
+    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:164:27"
+inline-popup-repeated,library/browsercontext-events.spec.ts,154,dialog event should work with inline script tag,passed,370,False,
+inline-popup-repeated,library/browsercontext-events.spec.ts,154,dialog event should work with inline script tag,passed,318,False,
+locale-headers,library/browsercontext-fetch.spec.ts,693,should add default headers,passed,136,False,
+locale-headers,library/browsercontext-fetch.spec.ts,718,should add default headers to redirects,passed,132,False,
+locale-headers,library/browsercontext-fetch.spec.ts,730,should allow to override default headers,passed,85,False,
+locale-headers,library/browsercontext-locale.spec.ts,20,should affect accept-language header @smoke,passed,112,False,
+locale-headers,library/browsercontext-locale.spec.ts,31,should affect navigator.language,passed,89,False,
+locale-headers,library/browsercontext-locale.spec.ts,38,should format number,passed,342,False,
+locale-headers,library/browsercontext-locale.spec.ts,55,should format date,passed,244,False,
+locale-headers,library/browsercontext-locale.spec.ts,74,should format number in popups,passed,195,False,
+locale-headers,library/browsercontext-locale.spec.ts,89,should affect navigator.language in popups,passed,222,False,
+locale-headers,library/browsercontext-locale.spec.ts,103,should work for multiple pages sharing same process,passed,191,False,
+locale-headers,library/browsercontext-locale.spec.ts,118,should be isolated between contexts,timedOut,30002,False,Test timeout of 30000ms exceeded.
+locale-headers,library/browsercontext-locale.spec.ts,143,should not change default locale in another context,passed,298,False,
+locale-headers,library/browsercontext-locale.spec.ts,168,should propagate locale to workers,passed,151,False,
+locale-headers,library/browsercontext-locale.spec.ts,183,should affect Intl.DateTimeFormat().resolvedOptions().locale,passed,107,False,
+locale-headers,library/browsercontext-locale.spec.ts,192,should send user Accept-Language header,passed,128,False,
+locale-headers,library/browsercontext-locale.spec.ts,226,should send Accept-Language header on WebSocket handshake,passed,110,False,
+locale-headers-fixed,library/browsercontext-fetch.spec.ts,693,should add default headers,passed,147,False,
+locale-headers-fixed,library/browsercontext-fetch.spec.ts,718,should add default headers to redirects,passed,126,False,
+locale-headers-fixed,library/browsercontext-fetch.spec.ts,730,should allow to override default headers,passed,106,False,
+locale-headers-fixed,library/browsercontext-locale.spec.ts,20,should affect accept-language header @smoke,passed,152,False,
+locale-headers-fixed,library/browsercontext-locale.spec.ts,31,should affect navigator.language,passed,117,False,
+locale-headers-fixed,library/browsercontext-locale.spec.ts,38,should format number,passed,325,False,
+locale-headers-fixed,library/browsercontext-locale.spec.ts,55,should format date,passed,521,False,
+locale-headers-fixed,library/browsercontext-locale.spec.ts,74,should format number in popups,passed,299,False,
+locale-headers-fixed,library/browsercontext-locale.spec.ts,89,should affect navigator.language in popups,passed,204,False,
+locale-headers-fixed,library/browsercontext-locale.spec.ts,103,should work for multiple pages sharing same process,passed,301,False,
+locale-headers-fixed,library/browsercontext-locale.spec.ts,118,should be isolated between contexts,passed,759,False,
+locale-headers-fixed,library/browsercontext-locale.spec.ts,143,should not change default locale in another context,passed,354,False,
+locale-headers-fixed,library/browsercontext-locale.spec.ts,168,should propagate locale to workers,passed,191,False,
+locale-headers-fixed,library/browsercontext-locale.spec.ts,183,should affect Intl.DateTimeFormat().resolvedOptions().locale,passed,118,False,
+locale-headers-fixed,library/browsercontext-locale.spec.ts,192,should send user Accept-Language header,passed,139,False,
+locale-headers-fixed,library/browsercontext-locale.spec.ts,226,should send Accept-Language header on WebSocket handshake,passed,129,False,
+locale-isolation,library/browsercontext-locale.spec.ts,118,should be isolated between contexts,timedOut,30009,False,Test timeout of 30000ms exceeded.
+locale-isolation,library/browsercontext-locale.spec.ts,118,should be isolated between contexts,timedOut,30001,False,Test timeout of 30000ms exceeded.
+locale-isolation,library/browsercontext-locale.spec.ts,118,should be isolated between contexts,timedOut,30001,False,Test timeout of 30000ms exceeded.
+locale-repeated,library/browsercontext-locale.spec.ts,89,should affect navigator.language in popups,passed,344,False,
+locale-repeated,library/browsercontext-locale.spec.ts,118,should be isolated between contexts,passed,535,False,
+locale-repeated,library/browsercontext-locale.spec.ts,89,should affect navigator.language in popups,passed,323,False,
+locale-repeated,library/browsercontext-locale.spec.ts,118,should be isolated between contexts,passed,782,False,
+locale-repeated,library/browsercontext-locale.spec.ts,89,should affect navigator.language in popups,passed,698,False,
+locale-repeated,library/browsercontext-locale.spec.ts,118,should be isolated between contexts,passed,798,False,
+locale-repeated,library/browsercontext-locale.spec.ts,89,should affect navigator.language in popups,passed,209,False,
+locale-repeated,library/browsercontext-locale.spec.ts,118,should be isolated between contexts,passed,560,False,
+locale-repeated,library/browsercontext-locale.spec.ts,89,should affect navigator.language in popups,passed,410,False,
+locale-repeated,library/browsercontext-locale.spec.ts,118,should be isolated between contexts,passed,1089,False,
+native-final,engine.e2e.spec.ts,53,"real Playwright locators, auto-wait, input, scrolling, iframe and screenshot",passed,887,False,
+native-final,engine.e2e.spec.ts,69,windowless browser bounds resize the selected page and report unsupported states,passed,399,False,
+native-final,engine.e2e.spec.ts,117,native engine records silent startup and accepts later sound,passed,787,False,
+native-final,engine.e2e.spec.ts,134,streaming initializes silent audio and accepts later browser sound,passed,1443,False,
+native-final,engine.e2e.spec.ts,197,silent pages record a valid audio track with mandatory engine readiness,passed,507,False,
+native-final,engine.e2e.spec.ts,219,native protocol rejects bypasses and requires audio readiness when audio is omitted,passed,330,False,
+native-final,engine.e2e.spec.ts,266,"network interception, init scripts and storage isolation",passed,365,False,
+native-final,engine.e2e.spec.ts,295,"popup, dialog, file upload, download and public CDP sessions",passed,1029,False,
+native-final,engine.e2e.spec.ts,331,explicit CDP sessions receive page events and tracing completion,passed,548,False,
+native-final,engine.e2e.spec.ts,363,"native recording survives blocked Node, pause and page switching",passed,6689,False,
+native-final,engine.e2e.spec.ts,400,pause drains pending media and resume captures a prepared static page,passed,1344,False,
+native-final,engine.e2e.spec.ts,423,repeated context/page shutdown keeps the engine usable,passed,3860,False,
+native-final,engine.e2e.spec.ts,434,permission and geolocation setup before page creation,passed,188,False,
+native-final,engine.e2e.spec.ts,470,explicit session retention is bounded and capacity returns after detach,passed,930,False,
+native-final,engine.e2e.spec.ts,504,rapid popup and opener closure leaves the engine usable,passed,3778,False,
+native-final,engine.e2e.spec.ts,519,native shutdown joins a pending pause and releases active outputs,passed,1253,False,
+popup-events-final,library/browsercontext-events.spec.ts,20,console event should work @smoke,passed,123,False,
+popup-events-final,library/browsercontext-events.spec.ts,30,console event should work with element handles,passed,245,False,
+popup-events-final,library/browsercontext-events.spec.ts,41,console event should work in popup,passed,92,False,
+popup-events-final,library/browsercontext-events.spec.ts,55,console event should work in popup 2,timedOut,10084,False,"Test timeout of 10000ms exceeded.
+Error: browserContext.waitForEvent: Test timeout of 10000ms exceeded.
+
+  62 |       win.close();
+  63 |     }),
+> 64 |     page.context().waitForEvent('console', msg => msg.type() === 'log'),
+     |                    ^
+  65 |     page.context().waitForEvent('page'),
+  66 |   ]);
+  67 |
+    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:64:20
+    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:58:30"
+popup-events-final,library/browsercontext-events.spec.ts,72,console event should work in immediately closed popup,passed,137,False,
+popup-events-final,library/browsercontext-events.spec.ts,89,dialog event should work @smoke,passed,85,False,
+popup-events-final,library/browsercontext-events.spec.ts,103,dialog event should work in popup,timedOut,15035,False,"Test timeout of 10000ms exceeded.
+Error: page.waitForEvent: Test timeout of 10000ms exceeded.
+=========================== logs ===========================
+waiting for event ""popup""
+============================================================
+
+  109 |   const [dialog, popup] = await Promise.all([
+  110 |     page.context().waitForEvent('dialog'),
+> 111 |     page.waitForEvent('popup'),
+      |          ^
+  112 |   ]);
+  113 |
+  114 |   expect(dialog.message()).toBe('hey?');
+    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:111:10
+    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:109:27
+Error: page.evaluate: Test timeout of 10000ms exceeded.
+
+  102 |
+  103 | test('dialog event should work in popup', async ({ page }) => {
+> 104 |   const promise = page.evaluate(() => {
+      |                        ^
+  105 |     const win = window.open('');
+  106 |     return (win as any).prompt('hey?');
+  107 |   });
+    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:104:24"
+popup-events-final,library/browsercontext-events.spec.ts,120,dialog event should work in popup 2,timedOut,15031,False,"Test timeout of 10000ms exceeded.
+Error: browserContext.waitForEvent: Test timeout of 10000ms exceeded.
+
+  125 |   });
+  126 |
+> 127 |   const dialog = await page.context().waitForEvent('dialog');
+      |                                       ^
+  128 |
+  129 |   expect(dialog.message()).toBe('hey?');
+  130 |   expect(dialog.page()).toBe(null);
+    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:127:39
+    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:127:18"
+popup-events-final,library/browsercontext-events.spec.ts,135,dialog event should work in immediately closed popup,timedOut,15033,False,"Test timeout of 10000ms exceeded.
+Error: page.waitForEvent: Test timeout of 10000ms exceeded.
+=========================== logs ===========================
+waiting for event ""popup""
+============================================================
+
+  143 |   const [dialog, popup] = await Promise.all([
+  144 |     page.context().waitForEvent('dialog'),
+> 145 |     page.waitForEvent('popup'),
+      |          ^
+  146 |   ]);
+  147 |
+  148 |   expect(dialog.message()).toBe('hey?');
+    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:145:10
+    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:143:27
+Error: page.evaluate: Test timeout of 10000ms exceeded.
+
+  134 |
+  135 | test('dialog event should work in immediately closed popup', async ({ page }) => {
+> 136 |   const promise = page.evaluate(async () => {
+      |                        ^
+  137 |     const win = window.open()!;
+  138 |     const result = (win as any).prompt('hey?');
+  139 |     win.close();
+    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:136:24"
+popup-events-final,library/browsercontext-events.spec.ts,154,dialog event should work with inline script tag,passed,297,False,
+popup-events-final,library/browsercontext-events.spec.ts,176,weberror event should work,passed,142,False,
+popup-events-final,library/browsercontext-events.spec.ts,185,weberror event should include location,passed,322,False,
+popup-events-final,library/browsercontext-events.spec.ts,212,pageload event should work @smoke,passed,168,False,
+popup-events-final,library/browsercontext-events.spec.ts,220,framenavigated event should work @smoke,passed,387,False,
+popup-events-final,library/browsercontext-events.spec.ts,229,pageclose event should work @smoke,passed,243,False,
+popup-events-final,library/browsercontext-events.spec.ts,238,frameattached event should work @smoke,passed,150,False,
+popup-events-final,library/browsercontext-events.spec.ts,251,framedetached event should work @smoke,passed,217,False,
+popup-events-final,library/browsercontext-events.spec.ts,267,download event should work @smoke,passed,240,False,

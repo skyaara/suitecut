@@ -1,0 +1,17 @@
+[WARN] Your node_modules are out of sync with your lockfile. The value of the patchedDependencies setting has changed
+
+/workspace/suitecut/src/cdp-command-queue.ts
+   9:57  error  Don't use `unknown` as a type. Use UntrustedInput at runtime boundaries and validate it before use  @typescript-eslint/no-restricted-types
+  46:20  error  Forbidden non-null assertion                                                                        @typescript-eslint/no-non-null-assertion
+  61:19  error  Don't use `unknown` as a type. Use UntrustedInput at runtime boundaries and validate it before use  @typescript-eslint/no-restricted-types
+
+/workspace/suitecut/src/engine.ts
+  9:1  error  `./cdp-command-queue.js` import should occur before import of `./cdp-delivery.js`  import-x/order
+
+/workspace/suitecut/tests/cdp-command-queue.test.ts
+   1:1   error  There should be at least one empty line between import groups  import-x/order
+  85:23  error  Async arrow function has no 'await' expression                 @typescript-eslint/require-await
+
+✖ 6 problems (6 errors, 0 warnings)
+  2 errors and 0 warnings potentially fixable with the `--fix` option.
+

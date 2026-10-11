@@ -1,0 +1,9 @@
+[WARN] Your node_modules are out of sync with your lockfile. The value of the patchedDependencies setting has changed
+tests/cdp-command-queue.test.ts(16,7): error TS2345: Argument of type '(message: object) => Promise<void>' is not assignable to parameter of type '(message: object) => Promise<UntrustedInput>'.
+  Type 'Promise<void>' is not assignable to type 'Promise<UntrustedInput>'.
+    Type 'void' is not assignable to type 'UntrustedInput'.
+tests/cdp-command-queue.test.ts(42,15): error TS2322: Type 'Promise<void>' is not assignable to type 'Promise<UntrustedInput>'.
+  Type 'void' is not assignable to type 'UntrustedInput'.
+tests/cdp-command-queue.test.ts(65,7): error TS2345: Argument of type '(message: object) => Promise<void>' is not assignable to parameter of type '(message: object) => Promise<UntrustedInput>'.
+  Type 'Promise<void>' is not assignable to type 'Promise<UntrustedInput>'.
+    Type 'void' is not assignable to type 'UntrustedInput'.

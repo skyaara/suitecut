@@ -87,6 +87,11 @@ const html = `<!doctype html><button onclick="this.textContent='clicked'">Click<
 const sw = `self.addEventListener('install',e=>e.waitUntil(self.skipWaiting()));self.addEventListener('activate',e=>e.waitUntil(self.clients.claim()));self.addEventListener('fetch',e=>{if(new URL(e.request.url).pathname==='/sw-data')e.respondWith(new Response('from-worker'))});self.marker=42;`
 function handle(req: IncomingMessage, res: ServerResponse) {
   const path = new URL(req.url ?? '/', 'http://localhost').pathname
+  if (path === '/initial-language') {
+    res.writeHead(200, { 'Content-Type': 'text/html' })
+    res.end('<script>window.initialLanguage = navigator.language</script>')
+    return
+  }
   if (path === '/auth') originAuthHeaders.push(req.headers.authorization)
   if (path === '/auth' && req.headers.authorization !== basic) {
     res.writeHead(401, { 'WWW-Authenticate': 'Basic realm="suitecut-local"' })
@@ -463,6 +468,64 @@ test('viewport: odd and tiny browser dimensions support screenshots and Playwrig
     await c.close()
   }
 })
+test('locale: popups inherit context language before their first script without cross-context leakage', async ({
+  browser,
+}) => {
+  const french = await browser.newContext({ locale: 'fr-FR' })
+  const german = await browser.newContext({ locale: 'de-DE' })
+  try {
+    for (const [context, expected] of [
+      [french, 'fr-FR'],
+      [german, 'de-DE'],
+      [french, 'fr-FR'],
+    ] as const) {
+      const page = await context.newPage()
+      await page.goto(origin + '/initial-language')
+      expect(await page.evaluate('window.initialLanguage')).toBe(expected)
+      const [popup] = await Promise.all([
+        page.waitForEvent('popup'),
+        page.evaluate((url) => {
+          window.open(url)
+        }, origin + '/initial-language'),
+      ])
+      await popup.waitForLoadState('domcontentloaded')
+      expect(await popup.evaluate('window.initialLanguage')).toBe(expected)
+      await page.close()
+      await popup.close()
+    }
+  } finally {
+    await french.close()
+    await german.close()
+  }
+})
+
+test('viewport: real browser version metadata preserves 4K windowless dimensions', async ({
+  browser,
+}) => {
+  const context = await browser.newContext({ viewport: { width: 3840, height: 2160 } })
+  try {
+    const page = await context.newPage()
+    await page.goto(origin)
+    expect(await page.evaluate(() => ({ width: innerWidth, height: innerHeight }))).toEqual({
+      width: 3840,
+      height: 2160,
+    })
+    const cdp = await context.newCDPSession(page)
+    try {
+      const version = await cdp.send('Browser.getVersion')
+      expect(version.userAgent).toBe(await page.evaluate(() => navigator.userAgent))
+      expect(version.jsVersion).not.toBe('')
+      const { bounds } = await cdp.send('Browser.getWindowForTarget')
+      expect(bounds.width).toBe(3840)
+      expect(bounds.height).toBe(2160)
+    } finally {
+      await cdp.detach()
+    }
+  } finally {
+    await context.close()
+  }
+})
+
 test('state: IndexedDB auth export to file and restore into a fresh context', async ({
   page,
   context,

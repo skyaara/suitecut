@@ -1,0 +1,10 @@
+[WARN] Your node_modules are out of sync with your lockfile. The value of the patchedDependencies setting has changed
+
+ RUN  v4.1.11 /workspace/suitecut
+
+
+ Test Files  3 passed (3)
+      Tests  24 passed (24)
+   Start at  16:08:33
+   Duration  1.03s (transform 205ms, setup 0ms, import 347ms, tests 783ms, environment 0ms)
+

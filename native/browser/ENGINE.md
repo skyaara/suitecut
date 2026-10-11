@@ -285,6 +285,25 @@ For Playwright Test, import `{test, expect}` from `suitecut/engine/test`.
 Set the worker option `suitecutNativeOptions` (or `SUITECUT_NATIVE_EXECUTABLE`).
 The adapter replaces the runner's browser fixture with the CEF connection.
 
+### Playwright transport and context initialization
+
+Use the explicitly installed [Playwright 1.62.1 patch](../../patches/README.md)
+with the current native helper. `Browser.getVersion` forwards Chromium's real
+version and user agent and adds `suitecutWindowless: true`. The patched driver
+uses this capability to avoid toolbar/border insets and sends a context's locale
+as `Target.createBrowserContext.suitecutLocale`. Native clients can use the same
+extension: a nonempty language tag of at most 128 ASCII letters, digits and
+hyphens. CEF receives the language in its request-context settings before any
+page or popup is created. Target-scoped CDP emulation keeps its own scope.
+
+The thin SDK submits at most 16 CDP IPC commands concurrently, leaving room
+within the native client's 64-command limit. Its FIFO is bounded to 1,024
+queued/in-flight commands and 64 MiB of serialized CDP payload; overflow closes
+the transport. Native acknowledgement frees a slot; it does not wait for the
+renderer response, which could depend on another command. Disconnect/failure
+clears queued commands. Incoming packets continue to yield between deliveries
+so frame registration promise continuations run before execution-context events.
+
 ## Build
 
 Install FFmpeg **7.1+** development headers/libraries for libavcodec, libavformat,

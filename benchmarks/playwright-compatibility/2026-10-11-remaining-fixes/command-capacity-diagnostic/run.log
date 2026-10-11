@@ -1,0 +1,20 @@
+[WARN] Your node_modules are out of sync with your lockfile. The value of the patchedDependencies setting has changed
+
+Running 1 test using 1 worker
+
+(node:1063441) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+CEF transport send failed: Too many pending native commands
+CEF transport send failed: Too many pending native commands
+CEF transport send failed: Too many pending native commands
+  ✘  1 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts:118:3 › should be isolated between contexts (30.0s)
+
+
+  1) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts:118:3 › should be isolated between contexts 
+
+    Test timeout of 30000ms exceeded.
+
+    Error Context: ../../tmp/suitecut-remaining-fixes/command-capacity-diagnostic/artifacts/library-browsercontext-loc-d4912-e-isolated-between-contexts/error-context.md
+
+  1 failed
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts:118:3 › should be isolated between contexts 

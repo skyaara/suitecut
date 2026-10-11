@@ -1,0 +1,662 @@
+{
+  "config": {
+    "argv": [
+      "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+      "/workspace/suitecut/node_modules/playwright/cli.js",
+      "test",
+      "--config",
+      "/tmp/suitecut-playwright-upstream/playwright-1.62.1/suitecut.config.ts",
+      "library/browsercontext-events.spec.ts",
+      "library/browsercontext-locale.spec.ts",
+      "library/browsercontext-fetch.spec.ts",
+      "--grep",
+      "popup|inline script tag|default headers",
+      "--timeout=10000"
+    ],
+    "configFile": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/suitecut.config.ts",
+    "rootDir": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 2400000,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 100,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/tmp/suitecut-remaining-fixes/attempt-1/artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests",
+        "testIgnore": [
+          "**/firefox/**",
+          "**/webkit/**",
+          "**/inspector/**"
+        ],
+        "testMatch": [
+          "library/**/*.spec.ts",
+          "page/**/*.spec.ts"
+        ],
+        "timeout": 10000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "/tmp/suitecut-remaining-fixes/attempt-1/results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.62.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "library/browsercontext-events.spec.ts",
+      "file": "library/browsercontext-events.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "console event should work in popup",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 200,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T16:00:12.352Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b3341f7bfcb285ad03a7-edb04be535dc4b357d2a",
+          "file": "library/browsercontext-events.spec.ts",
+          "line": 41,
+          "column": 5
+        },
+        {
+          "title": "console event should work in popup 2",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "timedOut",
+                  "duration": 10077,
+                  "error": {
+                    "message": "\u001b[31mTest timeout of 10000ms exceeded.\u001b[39m",
+                    "stack": "\u001b[31mTest timeout of 10000ms exceeded.\u001b[39m"
+                  },
+                  "errors": [
+                    {
+                      "message": "\u001b[31mTest timeout of 10000ms exceeded.\u001b[39m"
+                    },
+                    {
+                      "location": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts",
+                        "column": 20,
+                        "line": 64
+                      },
+                      "message": "Error: browserContext.waitForEvent: Test timeout of 10000ms exceeded.\n\n  62 |       win.close();\n  63 |     }),\n> 64 |     page.context().waitForEvent('console', msg => msg.type() === 'log'),\n     |                    ^\n  65 |     page.context().waitForEvent('page'),\n  66 |   ]);\n  67 |\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:64:20\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:58:30"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T16:00:13.297Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/tmp/suitecut-remaining-fixes/attempt-1/artifacts/library-browsercontext-eve-9c38a-vent-should-work-in-popup-2/error-context.md"
+                    }
+                  ]
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "b3341f7bfcb285ad03a7-a8938bd08a3eb60b9c7d",
+          "file": "library/browsercontext-events.spec.ts",
+          "line": 55,
+          "column": 5
+        },
+        {
+          "title": "console event should work in immediately closed popup",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "timedOut",
+                  "duration": 10073,
+                  "error": {
+                    "message": "\u001b[31mTest timeout of 10000ms exceeded.\u001b[39m",
+                    "stack": "\u001b[31mTest timeout of 10000ms exceeded.\u001b[39m"
+                  },
+                  "errors": [
+                    {
+                      "message": "\u001b[31mTest timeout of 10000ms exceeded.\u001b[39m"
+                    },
+                    {
+                      "location": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts",
+                        "column": 20,
+                        "line": 81
+                      },
+                      "message": "Error: browserContext.waitForEvent: Test timeout of 10000ms exceeded.\n\n  79 |       win.close();\n  80 |     }),\n> 81 |     page.context().waitForEvent('console'),\n     |                    ^\n  82 |     page.waitForEvent('popup'),\n  83 |   ]);\n  84 |\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:81:20\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:75:30"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T16:00:24.237Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/tmp/suitecut-remaining-fixes/attempt-1/artifacts/library-browsercontext-eve-ac9a7-in-immediately-closed-popup/error-context.md"
+                    }
+                  ]
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "b3341f7bfcb285ad03a7-1a5ee418f655aae19000",
+          "file": "library/browsercontext-events.spec.ts",
+          "line": 72,
+          "column": 5
+        },
+        {
+          "title": "dialog event should work in popup",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "timedOut",
+                  "duration": 10072,
+                  "error": {
+                    "message": "\u001b[31mTest timeout of 10000ms exceeded.\u001b[39m",
+                    "stack": "\u001b[31mTest timeout of 10000ms exceeded.\u001b[39m"
+                  },
+                  "errors": [
+                    {
+                      "message": "\u001b[31mTest timeout of 10000ms exceeded.\u001b[39m"
+                    },
+                    {
+                      "location": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts",
+                        "column": 20,
+                        "line": 110
+                      },
+                      "message": "Error: browserContext.waitForEvent: Test timeout of 10000ms exceeded.\n\n  108 |\n  109 |   const [dialog, popup] = await Promise.all([\n> 110 |     page.context().waitForEvent('dialog'),\n      |                    ^\n  111 |     page.waitForEvent('popup'),\n  112 |   ]);\n  113 |\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:110:20\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:109:27"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T16:00:35.634Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/tmp/suitecut-remaining-fixes/attempt-1/artifacts/library-browsercontext-eve-31625--event-should-work-in-popup/error-context.md"
+                    }
+                  ]
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "b3341f7bfcb285ad03a7-e349764be357546f6227",
+          "file": "library/browsercontext-events.spec.ts",
+          "line": 103,
+          "column": 5
+        },
+        {
+          "title": "dialog event should work in popup 2",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "timedOut",
+                  "duration": 10060,
+                  "error": {
+                    "message": "\u001b[31mTest timeout of 10000ms exceeded.\u001b[39m",
+                    "stack": "\u001b[31mTest timeout of 10000ms exceeded.\u001b[39m"
+                  },
+                  "errors": [
+                    {
+                      "message": "\u001b[31mTest timeout of 10000ms exceeded.\u001b[39m"
+                    },
+                    {
+                      "location": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts",
+                        "column": 39,
+                        "line": 127
+                      },
+                      "message": "Error: browserContext.waitForEvent: Test timeout of 10000ms exceeded.\n\n  125 |   });\n  126 |\n> 127 |   const dialog = await page.context().waitForEvent('dialog');\n      |                                       ^\n  128 |\n  129 |   expect(dialog.message()).toBe('hey?');\n  130 |   expect(dialog.page()).toBe(null);\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:127:39\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:127:18"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T16:00:46.943Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/tmp/suitecut-remaining-fixes/attempt-1/artifacts/library-browsercontext-eve-7baea-vent-should-work-in-popup-2/error-context.md"
+                    }
+                  ]
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "b3341f7bfcb285ad03a7-8849fc1e031c12a0aed1",
+          "file": "library/browsercontext-events.spec.ts",
+          "line": 120,
+          "column": 5
+        },
+        {
+          "title": "dialog event should work in immediately closed popup",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 4,
+                  "parallelIndex": 0,
+                  "status": "timedOut",
+                  "duration": 10086,
+                  "error": {
+                    "message": "\u001b[31mTest timeout of 10000ms exceeded.\u001b[39m",
+                    "stack": "\u001b[31mTest timeout of 10000ms exceeded.\u001b[39m"
+                  },
+                  "errors": [
+                    {
+                      "message": "\u001b[31mTest timeout of 10000ms exceeded.\u001b[39m"
+                    },
+                    {
+                      "location": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts",
+                        "column": 20,
+                        "line": 144
+                      },
+                      "message": "Error: browserContext.waitForEvent: Test timeout of 10000ms exceeded.\n\n  142 |\n  143 |   const [dialog, popup] = await Promise.all([\n> 144 |     page.context().waitForEvent('dialog'),\n      |                    ^\n  145 |     page.waitForEvent('popup'),\n  146 |   ]);\n  147 |\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:144:20\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:143:27"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T16:00:58.353Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/tmp/suitecut-remaining-fixes/attempt-1/artifacts/library-browsercontext-eve-42600-in-immediately-closed-popup/error-context.md"
+                    }
+                  ]
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "b3341f7bfcb285ad03a7-56343d906d2512567895",
+          "file": "library/browsercontext-events.spec.ts",
+          "line": 135,
+          "column": 5
+        },
+        {
+          "title": "dialog event should work with inline script tag",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 5,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 356,
+                  "error": {
+                    "message": "Error: dialog.accept: Protocol error (Page.handleJavaScriptDialog): No dialog is showing",
+                    "stack": "Error: dialog.accept: Protocol error (Page.handleJavaScriptDialog): No dialog is showing\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:171:16",
+                    "location": {
+                      "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts",
+                      "column": 16,
+                      "line": 171
+                    },
+                    "snippet": "  169 |   expect(dialog.message()).toBe('hey?');\n  170 |   expect(dialog.page()).toBe(popup);\n> 171 |   await dialog.accept('hello');\n      |                ^\n  172 |   await promise;\n  173 |   await expect.poll(() => popup.evaluate('window.result')).toBe('hello');\n  174 | });"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts",
+                        "column": 16,
+                        "line": 171
+                      },
+                      "message": "Error: dialog.accept: Protocol error (Page.handleJavaScriptDialog): No dialog is showing\n\n  169 |   expect(dialog.message()).toBe('hey?');\n  170 |   expect(dialog.page()).toBe(popup);\n> 171 |   await dialog.accept('hello');\n      |                ^\n  172 |   await promise;\n  173 |   await expect.poll(() => popup.evaluate('window.result')).toBe('hello');\n  174 | });\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:171:16"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T16:01:09.727Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/tmp/suitecut-remaining-fixes/attempt-1/artifacts/library-browsercontext-eve-70e56-work-with-inline-script-tag/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts",
+                    "column": 16,
+                    "line": 171
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "b3341f7bfcb285ad03a7-c821ef853bf2241d06a8",
+          "file": "library/browsercontext-events.spec.ts",
+          "line": 154,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "library/browsercontext-fetch.spec.ts",
+      "file": "library/browsercontext-fetch.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "should add default headers",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 6,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 137,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T16:01:11.328Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "521ad5beff3edaa3cff6-dfd91b668bac512254bc",
+          "file": "library/browsercontext-fetch.spec.ts",
+          "line": 693,
+          "column": 3
+        },
+        {
+          "title": "should add default headers to redirects",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 6,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 102,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T16:01:12.003Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "521ad5beff3edaa3cff6-d704078139809b60e81d",
+          "file": "library/browsercontext-fetch.spec.ts",
+          "line": 718,
+          "column": 3
+        },
+        {
+          "title": "should allow to override default headers",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 6,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 89,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T16:01:12.123Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "521ad5beff3edaa3cff6-1e6d5d44109d6caab626",
+          "file": "library/browsercontext-fetch.spec.ts",
+          "line": 730,
+          "column": 3
+        }
+      ]
+    },
+    {
+      "title": "library/browsercontext-locale.spec.ts",
+      "file": "library/browsercontext-locale.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "should format number in popups",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 6,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 186,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T16:01:12.230Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "fc3b0a16dcf26b8cfe93-fa7f5a412c7bd4f432ff",
+          "file": "library/browsercontext-locale.spec.ts",
+          "line": 74,
+          "column": 3
+        },
+        {
+          "title": "should affect navigator.language in popups",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 6,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 191,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T16:01:12.429Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "fc3b0a16dcf26b8cfe93-cb0c4cb13cb9b7de7ebf",
+          "file": "library/browsercontext-locale.spec.ts",
+          "line": 89,
+          "column": 3
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-11T16:00:11.394Z",
+    "duration": 61331.508,
+    "expected": 6,
+    "skipped": 0,
+    "unexpected": 6,
+    "flaky": 0
+  }
+}

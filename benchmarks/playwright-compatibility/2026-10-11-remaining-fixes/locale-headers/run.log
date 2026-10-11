@@ -1,0 +1,35 @@
+[WARN] Your node_modules are out of sync with your lockfile. The value of the patchedDependencies setting has changed
+
+Running 16 tests using 1 worker
+
+(node:1056316) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:693:3 › should add default headers (136ms)
+  ✓   2 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:718:3 › should add default headers to redirects (132ms)
+  ✓   3 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:730:3 › should allow to override default headers (85ms)
+  ✓   4 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts:20:3 › should affect accept-language header @smoke (112ms)
+  ✓   5 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts:31:3 › should affect navigator.language (89ms)
+  ✓   6 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts:38:3 › should format number (342ms)
+  ✓   7 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts:55:3 › should format date (244ms)
+  ✓   8 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts:74:3 › should format number in popups (195ms)
+  ✓   9 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts:89:3 › should affect navigator.language in popups (222ms)
+  ✓  10 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts:103:3 › should work for multiple pages sharing same process (191ms)
+  ✘  11 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts:118:3 › should be isolated between contexts (30.0s)
+(node:1056727) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  12 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts:143:3 › should not change default locale in another context (298ms)
+  ✓  13 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts:168:3 › should propagate locale to workers (151ms)
+  ✓  14 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts:183:3 › should affect Intl.DateTimeFormat().resolvedOptions().locale (107ms)
+  ✓  15 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts:192:3 › should send user Accept-Language header (128ms)
+  ✓  16 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts:226:3 › should send Accept-Language header on WebSocket handshake (110ms)
+
+
+  1) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts:118:3 › should be isolated between contexts 
+
+    Test timeout of 30000ms exceeded.
+
+    Error Context: ../../tmp/suitecut-remaining-fixes/locale-headers/artifacts/library-browsercontext-loc-d4912-e-isolated-between-contexts/error-context.md
+
+  1 failed
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts:118:3 › should be isolated between contexts 
+  15 passed (35.9s)
