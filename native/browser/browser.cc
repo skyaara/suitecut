@@ -5,6 +5,7 @@
 #include <cmath>
 #include <condition_variable>
 #include <cstdio>
+#include <cstdlib>
 #include <csignal>
 #include <cstring>
 #include <deque>
@@ -61,6 +62,30 @@ std::string Json(Dict dict) {
   auto value = CefValue::Create();
   value->SetDictionary(dict);
   return CefWriteJSON(value, JSON_WRITER_DEFAULT).ToString();
+}
+// Opt-in diagnostic metadata only: never log credentials, script arguments,
+// response bodies, URLs or encoded video frames. The trace has a fixed cap.
+void TraceCDP(const char* stage,int id,const std::string& session,
+              const std::string& method,const std::string& target,Dict params=nullptr) {
+  static const bool enabled=std::getenv("SUITECUT_CDP_TRACE")!=nullptr;
+  static size_t count=0;
+  if(!enabled || count>=100000)return;
+  const bool relevant=method.starts_with("Target.") || method.starts_with("Page.") ||
+    method.starts_with("Inspector.") || method=="Runtime.evaluate" ||
+    method=="Runtime.runIfWaitingForDebugger" || method=="Runtime.executionContextCreated";
+  if(!relevant)return;
+  ++count;auto entry=CefDictionaryValue::Create();
+  entry->SetDouble("atMs",Now());entry->SetString("stage",stage);entry->SetInt("id",id);
+  entry->SetString("session",session);entry->SetString("method",method);entry->SetString("target",target);
+  if(params) {
+    for(const char* key:{"sessionId","frameId","targetId","browserContextId"})
+      if(params->GetType(key)==VTYPE_STRING)entry->SetString(key,params->GetString(key));
+    if(auto info=params->GetDictionary("targetInfo")) {
+      entry->SetString("targetType",info->GetString("type"));entry->SetString("targetId",info->GetString("targetId"));
+    }
+    if(method=="Page.screencastFrame")entry->SetInt("frameAckId",params->GetInt("sessionId"));
+  }
+  std::fprintf(stderr,"suitecut-cdp %s\n",Json(entry).c_str());
 }
 struct Packet { std::string header; std::vector<uint8_t> data; bool video = false, audio = false; double queued = 0; };
 
@@ -605,6 +630,12 @@ class Source : public CefClient, public CefLifeSpanHandler, public CefRenderHand
       auto found=devtools_pending_.find(message->GetInt("id"));
       if(found==devtools_pending_.end()) return false;
       const auto pending=found->second;devtools_pending_.erase(found);
+      TraceCDP(message->HasKey("error") ? "agent-error" : "agent-reply",pending.id,pending.session,pending.method,target_id_);
+      if(pending.method=="Page.getFrameTree") {
+        auto result=message->GetDictionary("result");auto tree=result ? result->GetDictionary("frameTree") : nullptr;
+        auto frame=tree ? tree->GetDictionary("frame") : nullptr;
+        if(frame) {auto state=CefDictionaryValue::Create();state->SetString("frameId",frame->GetString("id"));state->SetString("targetId",frame->GetString("url").empty() ? "empty-url" : frame->GetString("url")=="about:blank" ? "blank-url" : frame->GetString("url")==":" ? "initial-url" : "other-url");TraceCDP("frame-tree",pending.id,pending.session,pending.method,target_id_,state);}
+      }
       if(pending.id==-1) {
         auto result=message->GetDictionary("result");auto info=result ? result->GetDictionary("targetInfo") : nullptr;
         if(!info) {writer_.Error("CEF target discovery failed");return true;}
@@ -743,7 +774,7 @@ class Source : public CefClient, public CefLifeSpanHandler, public CefRenderHand
     for(auto& [key,source]:targets_) if(context.empty() || source->context_id_==context) {source->closing_=true;browsers.push_back(source->browser_);}
     for(auto& browser:browsers) browser->GetHost()->CloseBrowser(true);
   }
-  struct PendingDevTools {int id;bool native;std::string session;std::string target;};
+  struct PendingDevTools {int id;bool native;std::string session;std::string target;std::string method;};
   void ReleaseWorkerDebuggers(const std::string& target) {
     auto found=worker_debuggers_.find(target);if(found==worker_debuggers_.end())return;
     auto debuggers=std::move(found->second);worker_debuggers_.erase(found);
@@ -770,7 +801,7 @@ class Source : public CefClient, public CefLifeSpanHandler, public CefRenderHand
     if(!opener_id_.empty()) result->SetString("openerId",opener_id_);
     return result;
   }
-  void CDPMessage(Dict message) {auto header=Header("event");header->SetString("topic","cdp");writer_.Send(header,Bytes(Json(message)));}
+  void CDPMessage(Dict message) {TraceCDP("client-event",message->GetInt("id"),message->GetString("sessionId"),message->GetString("method"),target_id_,message->GetDictionary("params"));auto header=Header("event");header->SetString("topic","cdp");writer_.Send(header,Bytes(Json(message)));}
   void PageEvent(const char* method,Dict params) {
     std::vector<std::string> recipients{Session()};
     for(const auto& [alias,source]:root_->sessions_)if(source==this && !root_->nested_aliases_.contains(alias))recipients.push_back(alias);
@@ -808,9 +839,17 @@ class Source : public CefClient, public CefLifeSpanHandler, public CefRenderHand
     auto complete=[batch,reply](bool success) {batch->success &= success;if(--batch->pending==0)reply(nullptr,batch->success ? "" : "CEF rejected a cookie");};
     for(size_t i=0;i<cookies->GetSize();++i) {
       auto item=cookies->GetDictionary(i);if(!item || item->HasKey("partitionKey")) {complete(false);continue;}
-      CefCookie cookie;CefString(&cookie.name)=item->GetString("name");CefString(&cookie.value)=item->GetString("value");CefString(&cookie.domain)=item->GetString("domain");CefString(&cookie.path)=item->HasKey("path") ? item->GetString("path") : "/";
+      CefCookie cookie;CefString(&cookie.name)=item->GetString("name");CefString(&cookie.value)=item->GetString("value");CefString(&cookie.path)=item->HasKey("path") ? item->GetString("path") : "/";
+      // CDP distinguishes host cookies (plain domain / URL) from domain
+      // cookies (leading dot). CEF treats any nonempty domain as a domain
+      // cookie, so pass an empty CEF domain for host-only cookies.
+      const auto domain=item->GetString("domain").ToString();
+      if(domain.starts_with("."))CefString(&cookie.domain)=domain;
       cookie.secure=item->GetBool("secure");cookie.httponly=item->GetBool("httpOnly");cookie.priority=CEF_COOKIE_PRIORITY_MEDIUM;
       const auto site=item->GetString("sameSite").ToString();cookie.same_site=site=="Strict" ? CEF_COOKIE_SAME_SITE_STRICT_MODE : site=="None" ? CEF_COOKIE_SAME_SITE_NO_RESTRICTION : CEF_COOKIE_SAME_SITE_LAX_MODE;
+      // Chromium ignores insecure SameSite=None cookies while the CDP batch
+      // succeeds. Do not create that cookie or fail unrelated valid entries.
+      if(site=="None" && !cookie.secure) {complete(true);continue;}
       if(item->HasKey("expires") && Number(item,"expires")>=0) {cookie.has_expires=true;cookie.expires.val=static_cast<int64_t>(Number(item,"expires")*1000000)+11644473600000000LL;}
       auto url=item->GetString("url").ToString();if(url.empty()) {auto domain=item->GetString("domain").ToString();if(domain.starts_with("."))domain.erase(0,1);url=std::string(cookie.secure ? "https://" : "http://")+domain+item->GetString("path").ToString();}
       if(!manager->SetCookie(url,cookie,new CookieSetCallback(complete))) complete(false);
@@ -1000,7 +1039,8 @@ class Source : public CefClient, public CefLifeSpanHandler, public CefRenderHand
   void DispatchCDP(int id,const std::string& method,Dict params,const std::string& session,bool native,const std::string& raw_params="") {
     if(devtools_pending_.size()>=256) {if(native) writer_.Reply(id,false,"CEF command capacity exceeded");else {auto response=CefDictionaryValue::Create();response->SetInt("id",id);if(!session.empty())response->SetString("sessionId",session);auto error=CefDictionaryValue::Create();error->SetInt("code",-32000);error->SetString("message","CEF command capacity exceeded");response->SetDictionary("error",error);root_->CDPMessage(response);}return;}
     do {devtools_index_=suitecut::NextCommandID(devtools_index_);} while(devtools_pending_.contains(devtools_index_));
-    const int internal=devtools_index_;devtools_pending_[internal]={id,native,session,params->GetString("targetId").ToString()};
+    const int internal=devtools_index_;devtools_pending_[internal]={id,native,session,params->GetString("targetId").ToString(),method};
+    TraceCDP("agent-send",id,session,method,target_id_,params);
     auto message=CefDictionaryValue::Create();message->SetInt("id",internal);message->SetString("method",method);message->SetDictionary("params",params);
     const auto separator=session.find("::");if(separator!=std::string::npos) message->SetString("sessionId",session.substr(separator+2));
     auto data=Json(message);if(!raw_params.empty())data=suitecut::CDPReplaceField(std::move(data),"params",raw_params);

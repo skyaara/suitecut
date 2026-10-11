@@ -50,3 +50,10 @@ The native I420 path statically links libyuv (BSD-3-Clause). Its revision and
 archive SHA-256 are pinned in native/browser/libyuv-build.json. The native build
 copies its LICENSE into the bundle as libyuv-LICENSE.txt; retain it in releases.
 Upstream: https://chromium.googlesource.com/libyuv/libyuv/
+
+# Playwright authentication patch
+
+The optional pinned Playwright 1.62.1 driver patch in `patches/` is derived from
+Microsoft Playwright, licensed under Apache-2.0. The upstream license is retained
+in `patches/LICENSE.playwright-core`. SuiteCut imports do not modify downstream
+Playwright installations; patch setup and scope are documented in `patches/README.md`.

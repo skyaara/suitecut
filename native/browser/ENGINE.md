@@ -39,6 +39,23 @@ Playwright. The C++ bridge supplies CEF targets, request contexts and private CD
 message routing. It opens no debugging TCP listener. The adapter uses the public
 custom transport in Playwright 1.62.1; the package now requires Playwright 1.62.1 or later. Only 1.62.1 is verified here.
 
+The IPC transport delivers each CDP message in a separate Node task, preserving
+packet order while allowing promise continuations to run between packets.
+Delivering a decoded batch synchronously can lose execution contexts during page
+initialization. The SDK bounds queued delivery to 1,024 messages / 64 MiB of wire
+payload, closes on overflow, and drains final events before native disconnection.
+This scheduling belongs to the thin automation adapter; recording, mixing,
+encoding and synchronization remain in C++.
+
+Independent proxy and website credentials require the pinned Playwright 1.62.1
+[authentication patch](../../patches/README.md). The repository applies it with
+pnpm; downstream SDK users must explicitly configure their browser driver too.
+Importing SuiteCut does not modify another project's installed Playwright.
+
+Set `SUITECUT_CDP_TRACE=1` for bounded native CDP diagnostic metadata on stderr.
+The trace omits credentials, URLs, script arguments, bodies and video payloads;
+normal operation leaves it disabled.
+
 ## External browser automation
 
 `connectBrowser()` is exported from `suitecut`, `suitecut/engine`, and
@@ -389,10 +406,13 @@ and upstream checks. Worker main-script routing/HAR attribution, third-party
 localStorage restoration, lone UTF-16 values, redirected HAR history and offset
 iframe input now pass after adapter/configuration fixes. Windowless video
 repaint/visibility and duplicate-dialog handling have dedicated regressions.
-Distinct proxy/origin credentials still fail in the stock Playwright control as
-well as SuiteCut. See the saved
+The unpatched Playwright credential overwrite is corrected by the explicitly
+configured pinned dependency patch described above. CDP task delivery corrects
+the reproduced video initialization race. See the saved
+[follow-up report](../../benchmarks/playwright-compatibility/2026-10-11-followup/report.md)
+for exact results and remaining boundaries, and the preceding
 [compatibility report](../../benchmarks/playwright-compatibility/2026-10-11/report.md)
-for exact support boundaries and raw results. Independent domain enable/disable
+for baseline failures. Independent domain enable/disable
 and the complete upstream suite remain unverified. Native RTMP reconnect/adaptive
 bitrate, hardware encoding and signed binary distribution remain unimplemented
 or unverified. Switching between

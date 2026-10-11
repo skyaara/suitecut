@@ -106,14 +106,20 @@ these functional checks do not establish GPU performance or a leak-free browser.
   and cross-origin process frame interaction/routing pass. Advanced worker
   main-script routing/HAR attribution and offset iframe input now pass.
   HTTP/HTTPS proxy and origin-auth cases pass individually; distinct proxy and
-  origin credentials fail in both SuiteCut and the stock Playwright control.
+  origin credentials pass with the explicitly configured Playwright 1.62.1
+  [driver patch](../../patches/README.md); unpatched drivers retain the overwrite.
   Extra CDP sessions still share underlying domain state.
 - **Playwright video/HAR breadth:** decoded WebM recordings, HAR JSON/ZIP
   capture/replay and redirected HAR history pass. Windowless repaint/visibility
-  and dialog-event fixes address reproduced lifecycle failures; the report
-  records final coverage and remaining failures. SuiteCut's synchronized native
+  and dialog-event fixes help individual cases; yielding between CDP messages
+  corrects the reproduced initialization race. Deletion and blank-popup checks
+  passed ten repetitions each; independent launcher cases remain outside the harness. SuiteCut's synchronized native
   media output remains a separate API. Full upstream compatibility is not
   established by this subset.
+- **Early popup events and locale:** javascript-URL console events, early popup
+  dialogs and inherited popup locale still fail selected upstream cases. Default
+  `context.request` user-agent headers also differ from the page; see the
+  [follow-up report](../../benchmarks/playwright-compatibility/2026-10-11-followup/report.md).
 - **Graphics coverage:** WebGL 1/2 are verified with explicit software rendering.
   Chromium's default graphics selection and a Mesa/ANGLE OpenGL trial could not
   create a WebGL context on this CPU-only Xvfb host. Hardware GPU rendering,
