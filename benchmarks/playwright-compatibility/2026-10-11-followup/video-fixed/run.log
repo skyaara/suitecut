@@ -1,0 +1,187 @@
+[WARN] Your node_modules are out of sync with your lockfile. The value of the patchedDependencies setting has changed
+
+Running 29 tests using 1 worker
+
+(node:1025989) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:105:5 › screencast › should not have video by default (105ms)
+  ✓   2 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:109:5 › screencast › should not throw without recordVideo.dir (8ms)
+  ✓   3 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:113:5 › screencast › should capture static page (7.4s)
+  ✓   4 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:133:5 › screencast › should pad a short frame to the video size (7.0s)
+  ✓   5 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:152:5 › screencast › should continue recording main page after popup closes (7.4s)
+  ✓   6 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:182:5 › screencast › should expose video path (140ms)
+  ✓   7 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:200:5 › screencast › should delete video (7.0s)
+  ✓   8 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:221:5 › screencast › should expose video path blank page (120ms)
+  ✓   9 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:238:5 › screencast › should work with weird screen resolution (372ms)
+  ✓  10 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:256:5 › screencast › should work with relative path for recordVideo.dir (115ms)
+  ✓  11 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:273:5 › screencast › should expose video path blank popup (183ms)
+  ✓  12 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:294:5 › screencast › should capture navigation (17.2s)
+  ✓  13 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:326:5 › screencast › should capture css transformation (7.3s)
+  ✓  14 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:356:5 › screencast › should work for popups (8.2s)
+  ✓  15 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:390:5 › screencast › should scale frames down to the requested size  (16.1s)
+  ✓  16 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:439:5 › screencast › should use viewport scaled down to fit into 800x800 as default size (8.3s)
+  ✓  17 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:458:5 › screencast › should be 800x450 by default (7.9s)
+  ✓  18 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:475:5 › screencast › should be 800x600 with null viewport (8.3s)
+  ✘  19 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:495:5 › screencast › should capture static page in persistent context @smoke (19ms)
+(node:1027138) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  20 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:524:5 › screencast › should emulate an iphone (7.6s)
+  ✘  21 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:543:5 › screencast › should throw on browser close (2ms)
+(node:1027294) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  22 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:563:5 › screencast › should throw if browser dies (8ms)
+(node:1027306) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  23 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:584:5 › screencast › should wait for video to finish if page was closed (1ms)
+(node:1027318) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  24 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:610:5 › screencast › should close ffmpeg even if there were no frames (4ms)
+(node:1027330) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  25 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:638:5 › screencast › should not create video for internal pages (7.8s)
+  ✘  26 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:664:5 › screencast › should capture full viewport (3ms)
+(node:1027463) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  27 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:699:5 › screencast › should capture full viewport on hidpi (3ms)
+(node:1027475) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  28 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:736:5 › screencast › should work with video+trace (7.6s)
+  ✓  29 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:780:3 › should saveAs video (7.0s)
+
+
+  1) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:495:5 › screencast › should capture static page in persistent context @smoke 
+
+    Error: SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness
+
+       at config/browserTest.ts:222
+
+      220 |     if(process.env.COMPAT_BACKEND==='chromium') return use(original);
+      221 |     await use(new Proxy(original, { get(target, name) {
+    > 222 |       if (['launch', 'launchPersistentContext', 'launchServer', 'connect', 'connectOverCDP'].includes(String(name))) return async () => { throw new Error('SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness'); };
+          |                                                                                                                                                 ^
+      223 |       const value = Reflect.get(target, name); return typeof value === 'function' ? value.bind(target) : value;
+      224 |     }}));
+      225 |   }, { scope: 'worker' }],
+        at Proxy.launchPersistentContext (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts:222:145)
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts:159:45
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:498:31
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11-followup/video-fixed/artifacts/library-video-screencast-s-6cedd-in-persistent-context-smoke/error-context.md
+
+  2) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:543:5 › screencast › should throw on browser close 
+
+    Error: SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness
+
+       at config/browserTest.ts:222
+
+      220 |     if(process.env.COMPAT_BACKEND==='chromium') return use(original);
+      221 |     await use(new Proxy(original, { get(target, name) {
+    > 222 |       if (['launch', 'launchPersistentContext', 'launchServer', 'connect', 'connectOverCDP'].includes(String(name))) return async () => { throw new Error('SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness'); };
+          |                                                                                                                                                 ^
+      223 |       const value = Reflect.get(target, name); return typeof value === 'function' ? value.bind(target) : value;
+      224 |     }}));
+      225 |   }, { scope: 'worker' }],
+        at Proxy.launch (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts:222:145)
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:545:39
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11-followup/video-fixed/artifacts/library-video-screencast-should-throw-on-browser-close/error-context.md
+
+  3) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:563:5 › screencast › should throw if browser dies 
+
+    Error: SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness
+
+       at config/browserTest.ts:222
+
+      220 |     if(process.env.COMPAT_BACKEND==='chromium') return use(original);
+      221 |     await use(new Proxy(original, { get(target, name) {
+    > 222 |       if (['launch', 'launchPersistentContext', 'launchServer', 'connect', 'connectOverCDP'].includes(String(name))) return async () => { throw new Error('SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness'); };
+          |                                                                                                                                                 ^
+      223 |       const value = Reflect.get(target, name); return typeof value === 'function' ? value.bind(target) : value;
+      224 |     }}));
+      225 |   }, { scope: 'worker' }],
+        at Proxy.launch (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts:222:145)
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:565:39
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11-followup/video-fixed/artifacts/library-video-screencast-should-throw-if-browser-dies/error-context.md
+
+  4) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:584:5 › screencast › should wait for video to finish if page was closed 
+
+    Error: SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness
+
+       at config/browserTest.ts:222
+
+      220 |     if(process.env.COMPAT_BACKEND==='chromium') return use(original);
+      221 |     await use(new Proxy(original, { get(target, name) {
+    > 222 |       if (['launch', 'launchPersistentContext', 'launchServer', 'connect', 'connectOverCDP'].includes(String(name))) return async () => { throw new Error('SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness'); };
+          |                                                                                                                                                 ^
+      223 |       const value = Reflect.get(target, name); return typeof value === 'function' ? value.bind(target) : value;
+      224 |     }}));
+      225 |   }, { scope: 'worker' }],
+        at Proxy.launch (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts:222:145)
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:586:39
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11-followup/video-fixed/artifacts/library-video-screencast-s-51b4b-o-finish-if-page-was-closed/error-context.md
+
+  5) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:610:5 › screencast › should close ffmpeg even if there were no frames 
+
+    Error: SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness
+
+       at config/browserTest.ts:222
+
+      220 |     if(process.env.COMPAT_BACKEND==='chromium') return use(original);
+      221 |     await use(new Proxy(original, { get(target, name) {
+    > 222 |       if (['launch', 'launchPersistentContext', 'launchServer', 'connect', 'connectOverCDP'].includes(String(name))) return async () => { throw new Error('SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness'); };
+          |                                                                                                                                                 ^
+      223 |       const value = Reflect.get(target, name); return typeof value === 'function' ? value.bind(target) : value;
+      224 |     }}));
+      225 |   }, { scope: 'worker' }],
+        at Proxy.launch (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts:222:145)
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:614:39
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11-followup/video-fixed/artifacts/library-video-screencast-s-376e9-ven-if-there-were-no-frames/error-context.md
+
+  6) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:664:5 › screencast › should capture full viewport 
+
+    Error: SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness
+
+       at config/browserTest.ts:222
+
+      220 |     if(process.env.COMPAT_BACKEND==='chromium') return use(original);
+      221 |     await use(new Proxy(original, { get(target, name) {
+    > 222 |       if (['launch', 'launchPersistentContext', 'launchServer', 'connect', 'connectOverCDP'].includes(String(name))) return async () => { throw new Error('SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness'); };
+          |                                                                                                                                                 ^
+      223 |       const value = Reflect.get(target, name); return typeof value === 'function' ? value.bind(target) : value;
+      224 |     }}));
+      225 |   }, { scope: 'worker' }],
+        at Proxy.launch (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts:222:145)
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:669:39
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11-followup/video-fixed/artifacts/library-video-screencast-should-capture-full-viewport/error-context.md
+
+  7) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:699:5 › screencast › should capture full viewport on hidpi 
+
+    Error: SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness
+
+       at config/browserTest.ts:222
+
+      220 |     if(process.env.COMPAT_BACKEND==='chromium') return use(original);
+      221 |     await use(new Proxy(original, { get(target, name) {
+    > 222 |       if (['launch', 'launchPersistentContext', 'launchServer', 'connect', 'connectOverCDP'].includes(String(name))) return async () => { throw new Error('SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness'); };
+          |                                                                                                                                                 ^
+      223 |       const value = Reflect.get(target, name); return typeof value === 'function' ? value.bind(target) : value;
+      224 |     }}));
+      225 |   }, { scope: 'worker' }],
+        at Proxy.launch (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts:222:145)
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:705:39
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11-followup/video-fixed/artifacts/library-video-screencast-s-6c7af-ture-full-viewport-on-hidpi/error-context.md
+
+  7 failed
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:495:5 › screencast › should capture static page in persistent context @smoke 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:543:5 › screencast › should throw on browser close 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:563:5 › screencast › should throw if browser dies 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:584:5 › screencast › should wait for video to finish if page was closed 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:610:5 › screencast › should close ffmpeg even if there were no frames 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:664:5 › screencast › should capture full viewport 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:699:5 › screencast › should capture full viewport on hidpi 
+  22 passed (2.4m)

@@ -1,0 +1,19 @@
+[WARN] Your node_modules are out of sync with your lockfile. The value of the patchedDependencies setting has changed
+
+Running 11 tests using 1 worker
+
+(node:1021631) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 benchmarks/playwright-compatibility/compatibility.spec.ts:466:1 › state: IndexedDB auth export to file and restore into a fresh context (1.2s)
+  ✓   2 benchmarks/playwright-compatibility/compatibility.spec.ts:596:3 › auth: http origin HTTP credentials (458ms)
+  ✓   3 benchmarks/playwright-compatibility/compatibility.spec.ts:611:3 › proxy: http through local proxy plus origin auth (320ms)
+  ✓   4 benchmarks/playwright-compatibility/compatibility.spec.ts:627:3 › proxy: http authenticated proxy plus origin auth (396ms)
+  ✓   5 benchmarks/playwright-compatibility/compatibility.spec.ts:596:3 › auth: https origin HTTP credentials (490ms)
+  ✓   6 benchmarks/playwright-compatibility/compatibility.spec.ts:611:3 › proxy: https through local proxy plus origin auth (326ms)
+  ✓   7 benchmarks/playwright-compatibility/compatibility.spec.ts:627:3 › proxy: https authenticated proxy plus origin auth (388ms)
+  ✓   8 benchmarks/playwright-compatibility/compatibility.spec.ts:644:1 › auth: wrong credentials fail and a fresh context does not inherit them (860ms)
+  ✓   9 benchmarks/playwright-compatibility/compatibility.spec.ts:665:1 › proxy: bypass uses the real origin without contacting the proxy (229ms)
+  ✓  10 benchmarks/playwright-compatibility/compatibility.spec.ts:677:3 › proxy: http authenticated proxy without origin auth (344ms)
+  ✓  11 benchmarks/playwright-compatibility/compatibility.spec.ts:677:3 › proxy: https authenticated proxy without origin auth (360ms)
+
+  11 passed (8.6s)

@@ -1,0 +1,88 @@
+[WARN] Your node_modules are out of sync with your lockfile. The value of the patchedDependencies setting has changed
+
+Running 19 tests using 1 worker
+
+(node:1022734) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 benchmarks/playwright-compatibility/compatibility.spec.ts:468:1 › state: IndexedDB auth export to file and restore into a fresh context (485ms)
+  ✓   2 benchmarks/playwright-compatibility/compatibility.spec.ts:598:3 › auth: http origin HTTP credentials (123ms)
+  ✓   3 benchmarks/playwright-compatibility/compatibility.spec.ts:613:3 › proxy: http through local proxy plus origin auth (95ms)
+  ✓   4 benchmarks/playwright-compatibility/compatibility.spec.ts:629:3 › proxy: http authenticated proxy plus origin auth (99ms)
+  ✓   5 benchmarks/playwright-compatibility/compatibility.spec.ts:645:3 › proxy: http separate credentials respect a matching origin (68ms)
+  ✓   6 benchmarks/playwright-compatibility/compatibility.spec.ts:663:5 › proxy: http does not send proxy credentials to the website (85ms)
+  ✓   7 benchmarks/playwright-compatibility/compatibility.spec.ts:663:5 › proxy: http does not send out-of-origin credentials to the website (82ms)
+  ✘   8 benchmarks/playwright-compatibility/compatibility.spec.ts:691:3 › proxy: http incorrect proxy credentials stop without reaching the website (69ms)
+(node:1022971) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   9 benchmarks/playwright-compatibility/compatibility.spec.ts:598:3 › auth: https origin HTTP credentials (185ms)
+  ✓  10 benchmarks/playwright-compatibility/compatibility.spec.ts:613:3 › proxy: https through local proxy plus origin auth (106ms)
+  ✓  11 benchmarks/playwright-compatibility/compatibility.spec.ts:629:3 › proxy: https authenticated proxy plus origin auth (123ms)
+  ✓  12 benchmarks/playwright-compatibility/compatibility.spec.ts:645:3 › proxy: https separate credentials respect a matching origin (70ms)
+  ✓  13 benchmarks/playwright-compatibility/compatibility.spec.ts:663:5 › proxy: https does not send proxy credentials to the website (74ms)
+  ✓  14 benchmarks/playwright-compatibility/compatibility.spec.ts:663:5 › proxy: https does not send out-of-origin credentials to the website (75ms)
+  ✘  15 benchmarks/playwright-compatibility/compatibility.spec.ts:691:3 › proxy: https incorrect proxy credentials stop without reaching the website (5.1s)
+(node:1023145) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  16 benchmarks/playwright-compatibility/compatibility.spec.ts:710:1 › auth: wrong credentials fail and a fresh context does not inherit them (238ms)
+  ✓  17 benchmarks/playwright-compatibility/compatibility.spec.ts:731:1 › proxy: bypass uses the real origin without contacting the proxy (66ms)
+  ✓  18 benchmarks/playwright-compatibility/compatibility.spec.ts:743:3 › proxy: http authenticated proxy without origin auth (176ms)
+  ✓  19 benchmarks/playwright-compatibility/compatibility.spec.ts:743:3 › proxy: https authenticated proxy without origin auth (117ms)
+
+
+  1) benchmarks/playwright-compatibility/compatibility.spec.ts:691:3 › proxy: http incorrect proxy credentials stop without reaching the website 
+
+    Error: expect(received).rejects.toThrow()
+
+    Received promise resolved instead of rejected
+    Resolved to value: {"_guid": "response@de0ee7ec3a4d8376937120f07377e35d", "_type": "Response"}
+
+      699 |     try {
+      700 |       const p = await c.newPage()
+    > 701 |       await expect(p.goto(`${scheme}://auth-proxy.test/auth`, { timeout: 5000 })).rejects.toThrow(/ERR_/)
+          |                                                                                           ^
+      702 |       expect(proxyRequests.length).toBeGreaterThan(0)
+      703 |       expect(proxyRequests.length).toBeLessThan(12)
+      704 |       expect(originAuthHeaders).toEqual([])
+        at /workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts:701:91
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11-followup/auth-negative-chromium/artifacts/compatibility-proxy-http-i-dfd73-ithout-reaching-the-website/error-context.md
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11-followup/auth-negative-chromium/artifacts/compatibility-proxy-http-i-dfd73-ithout-reaching-the-website/error-context.md
+
+  2) benchmarks/playwright-compatibility/compatibility.spec.ts:691:3 › proxy: https incorrect proxy credentials stop without reaching the website 
+
+    Error: expect(received).rejects.toThrow(expected)
+
+    Expected pattern: /ERR_/
+    Received message: "page.goto: Timeout 5000ms exceeded.
+    Call log:
+      - navigating to \"https://auth-proxy.test/auth\", waiting until \"load\"
+    "
+
+          699 |     try {
+          700 |       const p = await c.newPage()
+        > 701 |       await expect(p.goto(`${scheme}://auth-proxy.test/auth`, { timeout: 5000 })).rejects.toThrow(/ERR_/)
+              |                      ^
+          702 |       expect(proxyRequests.length).toBeGreaterThan(0)
+          703 |       expect(proxyRequests.length).toBeLessThan(12)
+          704 |       expect(originAuthHeaders).toEqual([])
+
+          at benchmarks/playwright-compatibility/compatibility.spec.ts:701:22
+
+      699 |     try {
+      700 |       const p = await c.newPage()
+    > 701 |       await expect(p.goto(`${scheme}://auth-proxy.test/auth`, { timeout: 5000 })).rejects.toThrow(/ERR_/)
+          |                                                                                           ^
+      702 |       expect(proxyRequests.length).toBeGreaterThan(0)
+      703 |       expect(proxyRequests.length).toBeLessThan(12)
+      704 |       expect(originAuthHeaders).toEqual([])
+        at /workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts:701:91
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11-followup/auth-negative-chromium/artifacts/compatibility-proxy-https--4e135-ithout-reaching-the-website/error-context.md
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11-followup/auth-negative-chromium/artifacts/compatibility-proxy-https--4e135-ithout-reaching-the-website/error-context.md
+
+  2 failed
+    benchmarks/playwright-compatibility/compatibility.spec.ts:691:3 › proxy: http incorrect proxy credentials stop without reaching the website 
+    benchmarks/playwright-compatibility/compatibility.spec.ts:691:3 › proxy: https incorrect proxy credentials stop without reaching the website 
+  17 passed (10.9s)

@@ -1,0 +1,10 @@
+packages:
+  - 'site'
+  - 'plugins/*'
+allowBuilds:
+  esbuild: true
+  protobufjs: true
+  unrs-resolver: true
+linkWorkspacePackages: true
+patchedDependencies:
+  playwright-core@1.62.1: patches/playwright-core@1.62.1.patch

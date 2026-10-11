@@ -1,0 +1,18 @@
+[WARN] Your node_modules are out of sync with your lockfile. The value of the patchedDependencies setting has changed
+
+Running 6 tests using 1 worker
+
+(node:1052916) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:200:5 › screencast › should delete video (7.0s)
+  ✓  2 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:273:5 › screencast › should expose video path blank popup (204ms)
+(node:1053079) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  3 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:200:5 › screencast › should delete video (6.9s)
+  ✓  4 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:273:5 › screencast › should expose video path blank popup (495ms)
+(node:1053243) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  5 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:200:5 › screencast › should delete video (7.0s)
+  ✓  6 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:273:5 › screencast › should expose video path blank popup (199ms)
+
+  6 passed (26.4s)

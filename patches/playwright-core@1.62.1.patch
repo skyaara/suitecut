@@ -1,0 +1,89 @@
+diff --git a/lib/coreBundle.js b/lib/coreBundle.js
+index d9041dd0f009072511a7d808dec83121ff29e127..13258426fc95b2ef2f88cdcd533b68fd74de46ce 100644
+--- a/lib/coreBundle.js
++++ b/lib/coreBundle.js
+@@ -35779,7 +35779,8 @@ var init_crNetworkManager = __esm({
+         this._requestIdToRequest = /* @__PURE__ */ new Map();
+         this._requestIdToRequestWillBeSentEvent = /* @__PURE__ */ new Map();
+         this._credentials = null;
+-        this._attemptedAuthentications = /* @__PURE__ */ new Set();
++        this._proxyCredentials = null;
++        this._attemptedAuthentications = /* @__PURE__ */ new Map();
+         this._userRequestInterceptionEnabled = false;
+         this._protocolRequestInterceptionEnabled = false;
+         this._offline = false;
+@@ -35858,8 +35859,9 @@ var init_crNetworkManager = __esm({
+           });
+         }));
+       }
+-      async authenticate(credentials) {
++      async authenticate(credentials, proxyCredentials = null) {
+         this._credentials = credentials;
++        this._proxyCredentials = proxyCredentials;
+         await this._updateProtocolRequestInterception();
+       }
+       async setOffline(offline) {
+@@ -35886,7 +35888,7 @@ var init_crNetworkManager = __esm({
+         await this._updateProtocolRequestInterception();
+       }
+       async _updateProtocolRequestInterception() {
+-        const enabled = this._userRequestInterceptionEnabled || !!this._credentials;
++        const enabled = this._userRequestInterceptionEnabled || !!this._credentials || !!this._proxyCredentials;
+         if (enabled === this._protocolRequestInterceptionEnabled)
+           return;
+         this._protocolRequestInterceptionEnabled = enabled;
+@@ -35951,15 +35953,23 @@ var init_crNetworkManager = __esm({
+         this._responseExtraInfoTracker.requestWillBeSentExtraInfo(event);
+       }
+       _onAuthRequired(sessionInfo, event) {
++        const isProxy = event.authChallenge.source === "Proxy";
++        const credentials = isProxy ? this._proxyCredentials : this._credentials;
++        const shouldProvideCredentials = !!credentials && (isProxy || this._shouldProvideCredentials(event.request.url));
++        const key = JSON.stringify([event.authChallenge.source, event.authChallenge.origin, event.authChallenge.scheme, event.authChallenge.realm]);
++        let attempts = this._attemptedAuthentications.get(event.requestId);
+         let response2 = "Default";
+-        const shouldProvideCredentials = this._shouldProvideCredentials(event.request.url);
+-        if (this._attemptedAuthentications.has(event.requestId)) {
++        if (attempts?.has(key) || (attempts && attempts.size >= 8) || (!attempts && this._attemptedAuthentications.size >= 4096)) {
+           response2 = "CancelAuth";
+         } else if (shouldProvideCredentials) {
+           response2 = "ProvideCredentials";
+-          this._attemptedAuthentications.add(event.requestId);
++          if (!attempts) {
++            attempts = new Set();
++            this._attemptedAuthentications.set(event.requestId, attempts);
++          }
++          attempts.add(key);
+         }
+-        const { username, password } = shouldProvideCredentials && this._credentials ? this._credentials : { username: void 0, password: void 0 };
++        const { username, password } = response2 === "ProvideCredentials" ? credentials : { username: void 0, password: void 0 };
+         sessionInfo.session._sendMayFail("Fetch.continueWithAuth", {
+           requestId: event.requestId,
+           authChallengeResponse: { response: response2, username, password }
+@@ -37121,7 +37131,7 @@ var init_crPage = __esm({
+         await this._networkManager.setOffline(!!this._browserContext._options.offline);
+       }
+       async updateHttpCredentials() {
+-        await this._networkManager.authenticate(this._browserContext._options.httpCredentials || null);
++        await this._networkManager.authenticate(this._browserContext._options.httpCredentials || null, this._browserContext._proxyCredentials || null);
+       }
+       async updateEmulatedViewportSize(preserveWindowBoundaries) {
+         await this._mainFrameSession._updateViewport(preserveWindowBoundaries);
+@@ -37993,7 +38003,7 @@ var init_crServiceWorker = __esm({
+       async updateHttpCredentials() {
+         if (!this._isNetworkInspectionEnabled())
+           return;
+-        await this._networkManager?.authenticate(this.browserContext._options.httpCredentials || null).catch(() => {
++        await this._networkManager?.authenticate(this.browserContext._options.httpCredentials || null, this.browserContext._proxyCredentials || null).catch(() => {
+         });
+       }
+       async updateExtraHTTPHeaders() {
+@@ -51541,7 +51551,7 @@ if (navigator.serviceWorker) navigator.serviceWorker.register = async () => { co
+           return;
+         const { username, password } = proxy;
+         if (username)
+-          this._options.httpCredentials = { username, password: password || "" };
++          this._proxyCredentials = { username, password: password || "" };
+       }
+       async addInitScript(progress2, source12) {
+         return await progress2.race(this._internalAddInitScript(source12));

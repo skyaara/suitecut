@@ -1,0 +1,30 @@
+{
+  "fallbackCommit": "80759aeb30cc4f6bd4ab488554569c62851985d2",
+  "branch": "suitecut-2.1-compatibility-fixes",
+  "suitecutVersion": "2.1.0",
+  "playwrightVersion": "1.62.1",
+  "cefVersion": "152.0.6+g708dc14+chromium-152.0.7977.83",
+  "stockChromiumVersion": "151.0.7922.34",
+  "sourceSha256": {
+    "src/engine.ts": "8aaad077b396e283f9387804947278067dbe487952a99a0b31b236b5df7026a1",
+    "src/native-browser.ts": "0564b3ee7b3b347e966f07312cb01c13acd13dd188ff492b8fe2ca619120c131",
+    "src/cdp-delivery.ts": "4a15b41e9acd8090d405c0be8743881d28161492a19a02175f37d549644508ac",
+    "tests/cdp-delivery.test.ts": "ede0f348bfea5fcf374abda9076b109fe12f12c568f828615d455c27313e8a80",
+    "native/browser/browser.cc": "3924f3dbce2b93cb140d11023468465f3ed6869dde5b32074a7976de68211a34",
+    "native/browser/CMakeLists.txt": "f4daa7269c1c3a0988f44917eda22d39d20be9ed797972817e629160d911749b",
+    "patches/playwright-core@1.62.1.patch": "e4bd13aaf5ccd3b894e560c77129e061e53d53b1e639b3f3d3930eec7ae63059",
+    "pnpm-lock.yaml": "b8db0c329d2c58f4e9c80071829e2ae9c887c2f0919ff5a0fe32549f70054a9f",
+    "pnpm-workspace.yaml": "9bdde8dcb9e47e054a214b488ac8c59e2b402dd39929c7d71f6ac128f7faee40",
+    "package.json": "1cdc8a6b08d1fb2982b3cf5304743167f466c50ec59d5215b59ab14797045310",
+    "benchmarks/playwright-compatibility/compatibility.spec.ts": "f1469a55d878623724dae98128576076e875709a8ea705374bc1118e6cd1aa52",
+    "benchmarks/playwright-compatibility/fixtures/cert.pem": "9c5776071c4c1fdfcacc9b5bf0180e286f37909bb6d6676a08293916a8e78088",
+    "benchmarks/playwright-compatibility/fixtures/key.pem": "f61fad657e42eeca0d813fec896d6933aa53f7870a32c0e11a4be8b9b722510e"
+  },
+  "binarySha256": "d0f3f0449f4a8f31d39003692cae223cd5c21319ff0cb474869516bc9321ad89",
+  "cpuAffinity": "0-3",
+  "cpuQuota": "400000 100000",
+  "memoryMaxBytes": 17179869184,
+  "benchmark": false,
+  "note": "Functional compatibility tests, not the 4 CPU / 8 GB performance benchmark. SDK task-ordering patch and explicitly configured Playwright driver patch are both required.",
+  "videoProvenance": "video-fixed and video-repeated used the same delivery SDK with the prior trace-only C++ build; subsequent C++ changes only corrected cookies. video-final-binary verifies the retained helper. video-api-trace is diagnostic only and was run while the native helper was rebuilt; do not use it as final provenance."
+}

@@ -1,0 +1,8 @@
+[WARN] Your node_modules are out of sync with your lockfile. The value of the patchedDependencies setting has changed
+
+/workspace/suitecut/src/engine.ts
+  9:1  error  `./cdp-delivery.js` import should occur before import of `./manifest.js`  import-x/order
+
+✖ 1 problem (1 error, 0 warnings)
+  1 error and 0 warnings potentially fixable with the `--fix` option.
+

@@ -1,0 +1,836 @@
+run,file,line,title,status,durationMs,launcherOutsideHarness,error
+auth-cef,compatibility.spec.ts,466,state: IndexedDB auth export to file and restore into a fresh context,passed,1152,False,
+auth-cef,compatibility.spec.ts,596,auth: http origin HTTP credentials,passed,458,False,
+auth-cef,compatibility.spec.ts,611,proxy: http through local proxy plus origin auth,passed,320,False,
+auth-cef,compatibility.spec.ts,627,proxy: http authenticated proxy plus origin auth,passed,396,False,
+auth-cef,compatibility.spec.ts,596,auth: https origin HTTP credentials,passed,490,False,
+auth-cef,compatibility.spec.ts,611,proxy: https through local proxy plus origin auth,passed,326,False,
+auth-cef,compatibility.spec.ts,627,proxy: https authenticated proxy plus origin auth,passed,388,False,
+auth-cef,compatibility.spec.ts,644,auth: wrong credentials fail and a fresh context does not inherit them,passed,860,False,
+auth-cef,compatibility.spec.ts,665,proxy: bypass uses the real origin without contacting the proxy,passed,229,False,
+auth-cef,compatibility.spec.ts,677,proxy: http authenticated proxy without origin auth,passed,344,False,
+auth-cef,compatibility.spec.ts,677,proxy: https authenticated proxy without origin auth,passed,360,False,
+auth-negative-cef,compatibility.spec.ts,468,state: IndexedDB auth export to file and restore into a fresh context,passed,535,False,
+auth-negative-cef,compatibility.spec.ts,598,auth: http origin HTTP credentials,passed,159,False,
+auth-negative-cef,compatibility.spec.ts,613,proxy: http through local proxy plus origin auth,passed,145,False,
+auth-negative-cef,compatibility.spec.ts,629,proxy: http authenticated proxy plus origin auth,passed,164,False,
+auth-negative-cef,compatibility.spec.ts,645,proxy: http separate credentials respect a matching origin,passed,126,False,
+auth-negative-cef,compatibility.spec.ts,663,proxy: http does not send proxy credentials to the website,passed,132,False,
+auth-negative-cef,compatibility.spec.ts,663,proxy: http does not send out-of-origin credentials to the website,passed,132,False,
+auth-negative-cef,compatibility.spec.ts,691,proxy: http incorrect proxy credentials stop without reaching the website,passed,124,False,
+auth-negative-cef,compatibility.spec.ts,598,auth: https origin HTTP credentials,passed,172,False,
+auth-negative-cef,compatibility.spec.ts,613,proxy: https through local proxy plus origin auth,passed,156,False,
+auth-negative-cef,compatibility.spec.ts,629,proxy: https authenticated proxy plus origin auth,passed,159,False,
+auth-negative-cef,compatibility.spec.ts,645,proxy: https separate credentials respect a matching origin,passed,158,False,
+auth-negative-cef,compatibility.spec.ts,663,proxy: https does not send proxy credentials to the website,passed,175,False,
+auth-negative-cef,compatibility.spec.ts,663,proxy: https does not send out-of-origin credentials to the website,passed,155,False,
+auth-negative-cef,compatibility.spec.ts,691,proxy: https incorrect proxy credentials stop without reaching the website,passed,142,False,
+auth-negative-cef,compatibility.spec.ts,710,auth: wrong credentials fail and a fresh context does not inherit them,passed,819,False,
+auth-negative-cef,compatibility.spec.ts,731,proxy: bypass uses the real origin without contacting the proxy,passed,274,False,
+auth-negative-cef,compatibility.spec.ts,743,proxy: http authenticated proxy without origin auth,passed,209,False,
+auth-negative-cef,compatibility.spec.ts,743,proxy: https authenticated proxy without origin auth,passed,187,False,
+auth-negative-chromium,compatibility.spec.ts,468,state: IndexedDB auth export to file and restore into a fresh context,passed,485,False,
+auth-negative-chromium,compatibility.spec.ts,598,auth: http origin HTTP credentials,passed,123,False,
+auth-negative-chromium,compatibility.spec.ts,613,proxy: http through local proxy plus origin auth,passed,95,False,
+auth-negative-chromium,compatibility.spec.ts,629,proxy: http authenticated proxy plus origin auth,passed,99,False,
+auth-negative-chromium,compatibility.spec.ts,645,proxy: http separate credentials respect a matching origin,passed,68,False,
+auth-negative-chromium,compatibility.spec.ts,663,proxy: http does not send proxy credentials to the website,passed,85,False,
+auth-negative-chromium,compatibility.spec.ts,663,proxy: http does not send out-of-origin credentials to the website,passed,82,False,
+auth-negative-chromium,compatibility.spec.ts,691,proxy: http incorrect proxy credentials stop without reaching the website,failed,69,False,"Error: expect(received).rejects.toThrow()
+
+Received promise resolved instead of rejected
+Resolved to value: {""_guid"": ""response@de0ee7ec3a4d8376937120f07377e35d"", ""_type"": ""Response""}
+
+  699 |     try {
+  700 |       const p = await c.newPage()
+> 701 |       await expect(p.goto(`${scheme}://auth-proxy.test/auth`, { timeout: 5000 })).rejects.toThrow(/ERR_/)
+      |                                                                                           ^
+  702 |       expect(proxyRequests.length).toBeGreaterThan(0)
+  703 |       expect(proxyRequests.length).toBeLessThan(12)
+  704 |       expect(originAuthHeaders).toEqual([])
+    at /workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts:701:91"
+auth-negative-chromium,compatibility.spec.ts,598,auth: https origin HTTP credentials,passed,185,False,
+auth-negative-chromium,compatibility.spec.ts,613,proxy: https through local proxy plus origin auth,passed,106,False,
+auth-negative-chromium,compatibility.spec.ts,629,proxy: https authenticated proxy plus origin auth,passed,123,False,
+auth-negative-chromium,compatibility.spec.ts,645,proxy: https separate credentials respect a matching origin,passed,70,False,
+auth-negative-chromium,compatibility.spec.ts,663,proxy: https does not send proxy credentials to the website,passed,74,False,
+auth-negative-chromium,compatibility.spec.ts,663,proxy: https does not send out-of-origin credentials to the website,passed,75,False,
+auth-negative-chromium,compatibility.spec.ts,691,proxy: https incorrect proxy credentials stop without reaching the website,failed,5056,False,"Error: expect(received).rejects.toThrow(expected)
+
+Expected pattern: /ERR_/
+Received message: ""page.goto: Timeout 5000ms exceeded.
+Call log:
+  - navigating to \""https://auth-proxy.test/auth\"", waiting until \""load\""
+""
+
+      699 |     try {
+      700 |       const p = await c.newPage()
+    > 701 |       await expect(p.goto(`${scheme}://auth-proxy.test/auth`, { timeout: 5000 })).rejects.toThrow(/ERR_/)
+          |                      ^
+      702 |       expect(proxyRequests.length).toBeGreaterThan(0)
+      703 |       expect(proxyRequests.length).toBeLessThan(12)
+      704 |       expect(originAuthHeaders).toEqual([])
+
+      at benchmarks/playwright-compatibility/compatibility.spec.ts:701:22
+
+  699 |     try {
+  700 |       const p = await c.newPage()
+> 701 |       await expect(p.goto(`${scheme}://auth-proxy.test/auth`, { timeout: 5000 })).rejects.toThrow(/ERR_/)
+      |                                                                                           ^
+  702 |       expect(proxyRequests.length).toBeGreaterThan(0)
+  703 |       expect(proxyRequests.length).toBeLessThan(12)
+  704 |       expect(originAuthHeaders).toEqual([])
+    at /workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts:701:91"
+auth-negative-chromium,compatibility.spec.ts,710,auth: wrong credentials fail and a fresh context does not inherit them,passed,238,False,
+auth-negative-chromium,compatibility.spec.ts,731,proxy: bypass uses the real origin without contacting the proxy,passed,66,False,
+auth-negative-chromium,compatibility.spec.ts,743,proxy: http authenticated proxy without origin auth,passed,176,False,
+auth-negative-chromium,compatibility.spec.ts,743,proxy: https authenticated proxy without origin auth,passed,117,False,
+auth-wrong-proxy-diagnostic,compatibility.spec.ts,699,proxy: https incorrect proxy credentials stop without reaching the website,failed,5158,False,"Error: expect(received).toMatch(expected)
+
+Expected pattern: /ERR_/
+Received string:  ""TimeoutError: page.goto: Timeout 5000ms exceeded.
+Call log:
+  - navigating to \""https://auth-proxy.test/auth\"", waiting until \""load\""
+""
+
+  712 |         (response) => required(response).status(),
+  713 |         (error) => {
+> 714 |           expect(String(error)).toMatch(/ERR_/)
+      |                                 ^
+  715 |           return 407
+  716 |         },
+  717 |       )
+    at /workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts:714:33
+    at /workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts:711:22"
+cookies-cef,library/browsercontext-add-cookies.spec.ts,22,should work @smoke,passed,180,False,
+cookies-cef,library/browsercontext-add-cookies.spec.ts,32,should work with expires=-1,passed,158,False,
+cookies-cef,library/browsercontext-add-cookies.spec.ts,50,should add cookies with empty value,passed,161,False,
+cookies-cef,library/browsercontext-add-cookies.spec.ts,68,should set cookies with SameSite attribute and no secure attribute,passed,17,False,
+cookies-cef,library/browsercontext-add-cookies.spec.ts,134,should roundtrip cookie,passed,169,False,
+cookies-cef,library/browsercontext-add-cookies.spec.ts,153,should send cookie header,passed,107,False,
+cookies-cef,library/browsercontext-add-cookies.spec.ts,165,should isolate cookies in browser contexts,passed,31,False,
+cookies-cef,library/browsercontext-add-cookies.spec.ts,181,should isolate session cookies,passed,315,False,
+cookies-cef,library/browsercontext-add-cookies.spec.ts,207,should isolate persistent cookies,passed,343,False,
+cookies-cef,library/browsercontext-add-cookies.spec.ts,227,should isolate send cookie header,passed,215,False,
+cookies-cef,library/browsercontext-add-cookies.spec.ts,248,should isolate cookies between launches,failed,2,True,"Error: SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness
+
+   at config/browserTest.ts:222
+
+  220 |     if(process.env.COMPAT_BACKEND==='chromium') return use(original);
+  221 |     await use(new Proxy(original, { get(target, name) {
+> 222 |       if (['launch', 'launchPersistentContext', 'launchServer', 'connect', 'connectOverCDP'].includes(String(name))) return async () => { throw new Error('SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness'); };
+      |                                                                                                                                                 ^
+  223 |       const value = Reflect.get(target, name); return typeof value === 'function' ? value.bind(target) : value;
+  224 |     }}));
+  225 |   }, { scope: 'worker' }],
+    at Proxy.launch (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts:222:145)
+    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-cookies.spec.ts:251:38"
+cookies-cef,library/browsercontext-add-cookies.spec.ts,263,should set multiple cookies,passed,142,False,
+cookies-cef,library/browsercontext-add-cookies.spec.ts,283,should have |expires| set to |-1| for session cookies,passed,16,False,
+cookies-cef,library/browsercontext-add-cookies.spec.ts,293,should set cookie with reasonable defaults,passed,17,False,
+cookies-cef,library/browsercontext-add-cookies.spec.ts,312,should set a cookie with a path,passed,270,False,
+cookies-cef,library/browsercontext-add-cookies.spec.ts,338,should not set a cookie with blank page URL,passed,17,False,
+cookies-cef,library/browsercontext-add-cookies.spec.ts,353,should not set a cookie on a data URL page,passed,28,False,
+cookies-cef,library/browsercontext-add-cookies.spec.ts,363,should default to setting secure cookie for HTTPS websites,passed,137,False,
+cookies-cef,library/browsercontext-add-cookies.spec.ts,375,should be able to set unsecure cookie for HTTP website,passed,135,False,
+cookies-cef,library/browsercontext-add-cookies.spec.ts,387,should set a cookie on a different domain,passed,109,False,
+cookies-cef,library/browsercontext-add-cookies.spec.ts,408,should set cookies for a frame,passed,182,False,
+cookies-cef,library/browsercontext-add-cookies.spec.ts,426,should allow unnamed cookies,passed,156,False,
+cookies-cef,library/browsercontext-add-cookies.spec.ts,455,should set secure cookies on secure WebSocket,passed,141,False,
+cookies-cef,library/browsercontext-cookies.spec.ts,20,should return no cookies in pristine browser context,passed,70,False,
+cookies-cef,library/browsercontext-cookies.spec.ts,24,should get a cookie @smoke,passed,104,False,
+cookies-cef,library/browsercontext-cookies.spec.ts,43,should get a non-session cookie,passed,112,False,
+cookies-cef,library/browsercontext-cookies.spec.ts,75,should allow adding cookies with >400 days expiration,passed,31,False,
+cookies-cef,library/browsercontext-cookies.spec.ts,107,should properly report httpOnly cookie,passed,117,False,
+cookies-cef,library/browsercontext-cookies.spec.ts,118,"should properly report ""Strict"" sameSite cookie",passed,115,False,
+cookies-cef,library/browsercontext-cookies.spec.ts,131,"should properly report ""Lax"" sameSite cookie",passed,92,False,
+cookies-cef,library/browsercontext-cookies.spec.ts,144,should get multiple cookies,passed,109,False,
+cookies-cef,library/browsercontext-cookies.spec.ts,177,should get cookies from multiple urls,passed,14,False,
+cookies-cef,library/browsercontext-cookies.spec.ts,216,should work with subdomain cookie,passed,15,False,
+cookies-cef,library/browsercontext-cookies.spec.ts,247,should return cookies with empty value,passed,119,False,
+cookies-cef,library/browsercontext-cookies.spec.ts,262,should return secure cookies based on HTTP(S) protocol,passed,15,False,
+cookies-cef,library/browsercontext-cookies.spec.ts,308,should add cookies with an expiration,passed,32,False,
+cookies-cef,library/browsercontext-cookies.spec.ts,356,should support requestStorageAccess,skipped,81,False,
+cookies-cef,library/browsercontext-cookies.spec.ts,410,should parse cookie with large Max-Age correctly,passed,151,False,
+cookies-cef,library/browsercontext-cookies.spec.ts,436,iframe should inherit cookies from parent,passed,232,False,
+focused-cef,compatibility.spec.ts,227,worker: dedicated Worker evaluation and messaging,passed,203,False,
+focused-cef,compatibility.spec.ts,246,worker: service worker website control and fetch,passed,183,False,
+focused-cef,compatibility.spec.ts,250,"worker: context serviceworker event, enumeration and evaluation",passed,156,False,
+focused-cef,compatibility.spec.ts,261,worker: service worker console and close event on context disposal,passed,165,False,
+focused-cef,compatibility.spec.ts,278,worker: multiple pages expose one service worker identity,passed,462,False,
+focused-cef,compatibility.spec.ts,291,worker: worker remains automatable after its first page closes,passed,411,False,
+focused-cef,compatibility.spec.ts,312,worker: repeated worker contexts release browser target registrations,passed,11979,False,
+focused-cef,compatibility.spec.ts,344,native: worker CDP aliases detach when their context closes,passed,11670,False,
+focused-cef,compatibility.spec.ts,377,worker: serviceWorkers block prevents registration,passed,139,False,
+focused-cef,compatibility.spec.ts,390,oopif: cross-site frame is a separate CDP target and remains interactive,passed,360,False,
+focused-cef,compatibility.spec.ts,417,"oopif: cross-site navigation, detach and network routing",passed,553,False,
+focused-cef,compatibility.spec.ts,441,viewport: odd and tiny browser dimensions support screenshots and Playwright video,passed,468,False,
+focused-cef,compatibility.spec.ts,468,state: IndexedDB auth export to file and restore into a fresh context,passed,472,False,
+focused-cef,compatibility.spec.ts,545,"state: lone UTF-16 values survive arguments, console, state export and import",passed,329,False,
+focused-cef,compatibility.spec.ts,576,state: empty IndexedDB export and restore,passed,371,False,
+focused-cef,compatibility.spec.ts,598,auth: http origin HTTP credentials,passed,143,False,
+focused-cef,compatibility.spec.ts,613,proxy: http through local proxy plus origin auth,passed,178,False,
+focused-cef,compatibility.spec.ts,629,proxy: http authenticated proxy plus origin auth,passed,154,False,
+focused-cef,compatibility.spec.ts,645,proxy: http separate credentials respect a matching origin,passed,124,False,
+focused-cef,compatibility.spec.ts,663,proxy: http does not send proxy credentials to the website,passed,131,False,
+focused-cef,compatibility.spec.ts,663,proxy: http does not send out-of-origin credentials to the website,passed,109,False,
+focused-cef,compatibility.spec.ts,699,proxy: http incorrect proxy credentials are denied without reaching the website,passed,172,False,
+focused-cef,compatibility.spec.ts,598,auth: https origin HTTP credentials,passed,136,False,
+focused-cef,compatibility.spec.ts,613,proxy: https through local proxy plus origin auth,passed,146,False,
+focused-cef,compatibility.spec.ts,629,proxy: https authenticated proxy plus origin auth,passed,158,False,
+focused-cef,compatibility.spec.ts,645,proxy: https separate credentials respect a matching origin,passed,117,False,
+focused-cef,compatibility.spec.ts,663,proxy: https does not send proxy credentials to the website,passed,144,False,
+focused-cef,compatibility.spec.ts,663,proxy: https does not send out-of-origin credentials to the website,passed,110,False,
+focused-cef,compatibility.spec.ts,699,proxy: https incorrect proxy credentials are denied without reaching the website,passed,115,False,
+focused-cef,compatibility.spec.ts,732,auth: wrong credentials fail and a fresh context does not inherit them,passed,273,False,
+focused-cef,compatibility.spec.ts,753,proxy: bypass uses the real origin without contacting the proxy,passed,124,False,
+focused-cef,compatibility.spec.ts,765,proxy: http authenticated proxy without origin auth,passed,141,False,
+focused-cef,compatibility.spec.ts,765,proxy: https authenticated proxy without origin auth,passed,159,False,
+focused-cef,compatibility.spec.ts,781,"har: har captures and replays bodies, POST and redirects",passed,292,False,
+focused-cef,compatibility.spec.ts,781,"har: har.zip captures and replays bodies, POST and redirects",passed,361,False,
+focused-cef,compatibility.spec.ts,827,video: Playwright recordVideo creates a decodable WebM after context close,passed,1604,False,
+focused-cef-final,compatibility.spec.ts,225,worker: dedicated Worker evaluation and messaging,passed,286,False,
+focused-cef-final,compatibility.spec.ts,244,worker: service worker website control and fetch,passed,279,False,
+focused-cef-final,compatibility.spec.ts,248,"worker: context serviceworker event, enumeration and evaluation",passed,237,False,
+focused-cef-final,compatibility.spec.ts,259,worker: service worker console and close event on context disposal,passed,268,False,
+focused-cef-final,compatibility.spec.ts,276,worker: multiple pages expose one service worker identity,passed,768,False,
+focused-cef-final,compatibility.spec.ts,289,worker: worker remains automatable after its first page closes,passed,570,False,
+focused-cef-final,compatibility.spec.ts,310,worker: repeated worker contexts release browser target registrations,passed,15245,False,
+focused-cef-final,compatibility.spec.ts,342,native: worker CDP aliases detach when their context closes,passed,12197,False,
+focused-cef-final,compatibility.spec.ts,375,worker: serviceWorkers block prevents registration,passed,125,False,
+focused-cef-final,compatibility.spec.ts,388,oopif: cross-site frame is a separate CDP target and remains interactive,passed,381,False,
+focused-cef-final,compatibility.spec.ts,415,"oopif: cross-site navigation, detach and network routing",passed,574,False,
+focused-cef-final,compatibility.spec.ts,439,viewport: odd and tiny browser dimensions support screenshots and Playwright video,passed,554,False,
+focused-cef-final,compatibility.spec.ts,466,state: IndexedDB auth export to file and restore into a fresh context,passed,489,False,
+focused-cef-final,compatibility.spec.ts,543,"state: lone UTF-16 values survive arguments, console, state export and import",passed,363,False,
+focused-cef-final,compatibility.spec.ts,574,state: empty IndexedDB export and restore,passed,360,False,
+focused-cef-final,compatibility.spec.ts,596,auth: http origin HTTP credentials,passed,152,False,
+focused-cef-final,compatibility.spec.ts,611,proxy: http through local proxy plus origin auth,passed,271,False,
+focused-cef-final,compatibility.spec.ts,627,proxy: http authenticated proxy plus origin auth,passed,181,False,
+focused-cef-final,compatibility.spec.ts,643,proxy: http separate credentials respect a matching origin,passed,113,False,
+focused-cef-final,compatibility.spec.ts,661,proxy: http does not send proxy credentials to the website,passed,112,False,
+focused-cef-final,compatibility.spec.ts,661,proxy: http does not send out-of-origin credentials to the website,passed,114,False,
+focused-cef-final,compatibility.spec.ts,697,proxy: http incorrect proxy credentials are denied without reaching the website,passed,118,False,
+focused-cef-final,compatibility.spec.ts,596,auth: https origin HTTP credentials,passed,170,False,
+focused-cef-final,compatibility.spec.ts,611,proxy: https through local proxy plus origin auth,passed,143,False,
+focused-cef-final,compatibility.spec.ts,627,proxy: https authenticated proxy plus origin auth,passed,151,False,
+focused-cef-final,compatibility.spec.ts,643,proxy: https separate credentials respect a matching origin,passed,119,False,
+focused-cef-final,compatibility.spec.ts,661,proxy: https does not send proxy credentials to the website,passed,124,False,
+focused-cef-final,compatibility.spec.ts,661,proxy: https does not send out-of-origin credentials to the website,passed,129,False,
+focused-cef-final,compatibility.spec.ts,697,proxy: https incorrect proxy credentials are denied without reaching the website,passed,129,False,
+focused-cef-final,compatibility.spec.ts,730,auth: wrong credentials fail and a fresh context does not inherit them,passed,267,False,
+focused-cef-final,compatibility.spec.ts,751,proxy: bypass uses the real origin without contacting the proxy,passed,118,False,
+focused-cef-final,compatibility.spec.ts,763,proxy: http authenticated proxy without origin auth,passed,140,False,
+focused-cef-final,compatibility.spec.ts,763,proxy: https authenticated proxy without origin auth,passed,157,False,
+focused-cef-final,compatibility.spec.ts,779,"har: har captures and replays bodies, POST and redirects",passed,323,False,
+focused-cef-final,compatibility.spec.ts,779,"har: har.zip captures and replays bodies, POST and redirects",passed,340,False,
+focused-cef-final,compatibility.spec.ts,825,video: Playwright recordVideo creates a decodable WebM after context close,passed,1492,False,
+focused-chromium,compatibility.spec.ts,227,worker: dedicated Worker evaluation and messaging,passed,234,False,
+focused-chromium,compatibility.spec.ts,246,worker: service worker website control and fetch,passed,116,False,
+focused-chromium,compatibility.spec.ts,250,"worker: context serviceworker event, enumeration and evaluation",passed,83,False,
+focused-chromium,compatibility.spec.ts,261,worker: service worker console and close event on context disposal,passed,89,False,
+focused-chromium,compatibility.spec.ts,278,worker: multiple pages expose one service worker identity,passed,411,False,
+focused-chromium,compatibility.spec.ts,291,worker: worker remains automatable after its first page closes,passed,138,False,
+focused-chromium,compatibility.spec.ts,312,worker: repeated worker contexts release browser target registrations,passed,6406,False,
+focused-chromium,compatibility.spec.ts,344,native: worker CDP aliases detach when their context closes,skipped,0,False,
+focused-chromium,compatibility.spec.ts,377,worker: serviceWorkers block prevents registration,passed,56,False,
+focused-chromium,compatibility.spec.ts,390,oopif: cross-site frame is a separate CDP target and remains interactive,passed,243,False,
+focused-chromium,compatibility.spec.ts,417,"oopif: cross-site navigation, detach and network routing",passed,370,False,
+focused-chromium,compatibility.spec.ts,441,viewport: odd and tiny browser dimensions support screenshots and Playwright video,passed,258,False,
+focused-chromium,compatibility.spec.ts,468,state: IndexedDB auth export to file and restore into a fresh context,passed,265,False,
+focused-chromium,compatibility.spec.ts,545,"state: lone UTF-16 values survive arguments, console, state export and import",passed,178,False,
+focused-chromium,compatibility.spec.ts,576,state: empty IndexedDB export and restore,passed,172,False,
+focused-chromium,compatibility.spec.ts,598,auth: http origin HTTP credentials,passed,79,False,
+focused-chromium,compatibility.spec.ts,613,proxy: http through local proxy plus origin auth,passed,124,False,
+focused-chromium,compatibility.spec.ts,629,proxy: http authenticated proxy plus origin auth,passed,78,False,
+focused-chromium,compatibility.spec.ts,645,proxy: http separate credentials respect a matching origin,passed,66,False,
+focused-chromium,compatibility.spec.ts,663,proxy: http does not send proxy credentials to the website,passed,64,False,
+focused-chromium,compatibility.spec.ts,663,proxy: http does not send out-of-origin credentials to the website,passed,55,False,
+focused-chromium,compatibility.spec.ts,699,proxy: http incorrect proxy credentials are denied without reaching the website,passed,55,False,
+focused-chromium,compatibility.spec.ts,598,auth: https origin HTTP credentials,passed,104,False,
+focused-chromium,compatibility.spec.ts,613,proxy: https through local proxy plus origin auth,passed,88,False,
+focused-chromium,compatibility.spec.ts,629,proxy: https authenticated proxy plus origin auth,passed,99,False,
+focused-chromium,compatibility.spec.ts,645,proxy: https separate credentials respect a matching origin,passed,74,False,
+focused-chromium,compatibility.spec.ts,663,proxy: https does not send proxy credentials to the website,passed,68,False,
+focused-chromium,compatibility.spec.ts,663,proxy: https does not send out-of-origin credentials to the website,passed,67,False,
+focused-chromium,compatibility.spec.ts,699,proxy: https incorrect proxy credentials are denied without reaching the website,passed,62,False,
+focused-chromium,compatibility.spec.ts,732,auth: wrong credentials fail and a fresh context does not inherit them,passed,156,False,
+focused-chromium,compatibility.spec.ts,753,proxy: bypass uses the real origin without contacting the proxy,passed,56,False,
+focused-chromium,compatibility.spec.ts,765,proxy: http authenticated proxy without origin auth,passed,80,False,
+focused-chromium,compatibility.spec.ts,765,proxy: https authenticated proxy without origin auth,passed,87,False,
+focused-chromium,compatibility.spec.ts,781,"har: har captures and replays bodies, POST and redirects",passed,197,False,
+focused-chromium,compatibility.spec.ts,781,"har: har.zip captures and replays bodies, POST and redirects",passed,177,False,
+focused-chromium,compatibility.spec.ts,827,video: Playwright recordVideo creates a decodable WebM after context close,passed,1503,False,
+focused-chromium-final,compatibility.spec.ts,225,worker: dedicated Worker evaluation and messaging,passed,237,False,
+focused-chromium-final,compatibility.spec.ts,244,worker: service worker website control and fetch,passed,106,False,
+focused-chromium-final,compatibility.spec.ts,248,"worker: context serviceworker event, enumeration and evaluation",passed,103,False,
+focused-chromium-final,compatibility.spec.ts,259,worker: service worker console and close event on context disposal,passed,89,False,
+focused-chromium-final,compatibility.spec.ts,276,worker: multiple pages expose one service worker identity,passed,354,False,
+focused-chromium-final,compatibility.spec.ts,289,worker: worker remains automatable after its first page closes,passed,183,False,
+focused-chromium-final,compatibility.spec.ts,310,worker: repeated worker contexts release browser target registrations,passed,6632,False,
+focused-chromium-final,compatibility.spec.ts,342,native: worker CDP aliases detach when their context closes,skipped,1,False,
+focused-chromium-final,compatibility.spec.ts,375,worker: serviceWorkers block prevents registration,passed,63,False,
+focused-chromium-final,compatibility.spec.ts,388,oopif: cross-site frame is a separate CDP target and remains interactive,passed,222,False,
+focused-chromium-final,compatibility.spec.ts,415,"oopif: cross-site navigation, detach and network routing",passed,367,False,
+focused-chromium-final,compatibility.spec.ts,439,viewport: odd and tiny browser dimensions support screenshots and Playwright video,passed,226,False,
+focused-chromium-final,compatibility.spec.ts,466,state: IndexedDB auth export to file and restore into a fresh context,passed,285,False,
+focused-chromium-final,compatibility.spec.ts,543,"state: lone UTF-16 values survive arguments, console, state export and import",passed,180,False,
+focused-chromium-final,compatibility.spec.ts,574,state: empty IndexedDB export and restore,passed,203,False,
+focused-chromium-final,compatibility.spec.ts,596,auth: http origin HTTP credentials,passed,86,False,
+focused-chromium-final,compatibility.spec.ts,611,proxy: http through local proxy plus origin auth,passed,91,False,
+focused-chromium-final,compatibility.spec.ts,627,proxy: http authenticated proxy plus origin auth,passed,85,False,
+focused-chromium-final,compatibility.spec.ts,643,proxy: http separate credentials respect a matching origin,passed,58,False,
+focused-chromium-final,compatibility.spec.ts,661,proxy: http does not send proxy credentials to the website,passed,62,False,
+focused-chromium-final,compatibility.spec.ts,661,proxy: http does not send out-of-origin credentials to the website,passed,62,False,
+focused-chromium-final,compatibility.spec.ts,697,proxy: http incorrect proxy credentials are denied without reaching the website,passed,59,False,
+focused-chromium-final,compatibility.spec.ts,596,auth: https origin HTTP credentials,passed,94,False,
+focused-chromium-final,compatibility.spec.ts,611,proxy: https through local proxy plus origin auth,passed,104,False,
+focused-chromium-final,compatibility.spec.ts,627,proxy: https authenticated proxy plus origin auth,passed,88,False,
+focused-chromium-final,compatibility.spec.ts,643,proxy: https separate credentials respect a matching origin,passed,67,False,
+focused-chromium-final,compatibility.spec.ts,661,proxy: https does not send proxy credentials to the website,passed,64,False,
+focused-chromium-final,compatibility.spec.ts,661,proxy: https does not send out-of-origin credentials to the website,passed,74,False,
+focused-chromium-final,compatibility.spec.ts,697,proxy: https incorrect proxy credentials are denied without reaching the website,passed,51,False,
+focused-chromium-final,compatibility.spec.ts,730,auth: wrong credentials fail and a fresh context does not inherit them,passed,153,False,
+focused-chromium-final,compatibility.spec.ts,751,proxy: bypass uses the real origin without contacting the proxy,passed,56,False,
+focused-chromium-final,compatibility.spec.ts,763,proxy: http authenticated proxy without origin auth,passed,86,False,
+focused-chromium-final,compatibility.spec.ts,763,proxy: https authenticated proxy without origin auth,passed,98,False,
+focused-chromium-final,compatibility.spec.ts,779,"har: har captures and replays bodies, POST and redirects",passed,196,False,
+focused-chromium-final,compatibility.spec.ts,779,"har: har.zip captures and replays bodies, POST and redirects",passed,196,False,
+focused-chromium-final,compatibility.spec.ts,825,video: Playwright recordVideo creates a decodable WebM after context close,passed,1427,False,
+frame-trace,library/video.spec.ts,200,should delete video,passed,6984,False,
+frame-trace,library/video.spec.ts,273,should expose video path blank popup,passed,227,False,
+frame-trace,library/video.spec.ts,200,should delete video,passed,7028,False,
+frame-trace,library/video.spec.ts,273,should expose video path blank popup,passed,254,False,
+frame-trace,library/video.spec.ts,200,should delete video,passed,6928,False,
+frame-trace,library/video.spec.ts,273,should expose video path blank popup,passed,321,False,
+native-final,engine.e2e.spec.ts,53,"real Playwright locators, auto-wait, input, scrolling, iframe and screenshot",passed,864,False,
+native-final,engine.e2e.spec.ts,69,windowless browser bounds resize the selected page and report unsupported states,passed,503,False,
+native-final,engine.e2e.spec.ts,117,native engine records silent startup and accepts later sound,passed,796,False,
+native-final,engine.e2e.spec.ts,134,streaming initializes silent audio and accepts later browser sound,passed,1416,False,
+native-final,engine.e2e.spec.ts,197,silent pages record a valid audio track with mandatory engine readiness,passed,543,False,
+native-final,engine.e2e.spec.ts,219,native protocol rejects bypasses and requires audio readiness when audio is omitted,passed,323,False,
+native-final,engine.e2e.spec.ts,266,"network interception, init scripts and storage isolation",passed,343,False,
+native-final,engine.e2e.spec.ts,295,"popup, dialog, file upload, download and public CDP sessions",passed,1005,False,
+native-final,engine.e2e.spec.ts,331,explicit CDP sessions receive page events and tracing completion,passed,546,False,
+native-final,engine.e2e.spec.ts,363,"native recording survives blocked Node, pause and page switching",passed,6622,False,
+native-final,engine.e2e.spec.ts,400,pause drains pending media and resume captures a prepared static page,passed,1246,False,
+native-final,engine.e2e.spec.ts,423,repeated context/page shutdown keeps the engine usable,passed,1548,False,
+native-final,engine.e2e.spec.ts,434,permission and geolocation setup before page creation,passed,138,False,
+native-final,engine.e2e.spec.ts,470,explicit session retention is bounded and capacity returns after detach,passed,617,False,
+native-final,engine.e2e.spec.ts,504,rapid popup and opener closure leaves the engine usable,passed,3434,False,
+native-final,engine.e2e.spec.ts,519,native shutdown joins a pending pause and releases active outputs,passed,675,False,
+previous-failures,library/beforeunload.spec.ts,38,should be able to navigate away from page with beforeunload,passed,273,False,
+previous-failures,library/beforeunload.spec.ts,46,should close page with beforeunload listener,passed,230,False,
+previous-failures,library/beforeunload.spec.ts,92,should not stall on evaluate when dismissing beforeunload,passed,213,False,
+previous-failures,library/beforeunload.spec.ts,107,should not stall on click when dismissing beforeunload,passed,388,False,
+previous-failures,library/beforeunload.spec.ts,130,should support dismissing the dialog multiple times,passed,238,False,
+previous-failures,library/beforeunload.spec.ts,152,should support closing the page after a previous dismiss,passed,202,False,
+previous-failures,library/beforeunload.spec.ts,188,does not get stalled by beforeUnload,passed,239,False,
+previous-failures,library/browsercontext-add-init-script.spec.ts,112,should expose functions in popups,passed,153,False,
+previous-failures,library/browsercontext-add-init-script.spec.ts,137,init script should run only once in popup,passed,136,False,
+previous-failures,library/browsercontext-events.spec.ts,55,console event should work in popup 2,timedOut,10063,False,"Test timeout of 10000ms exceeded.
+Error: browserContext.waitForEvent: Test timeout of 10000ms exceeded.
+
+  62 |       win.close();
+  63 |     }),
+> 64 |     page.context().waitForEvent('console', msg => msg.type() === 'log'),
+     |                    ^
+  65 |     page.context().waitForEvent('page'),
+  66 |   ]);
+  67 |
+    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:64:20
+    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:58:30"
+previous-failures,library/browsercontext-events.spec.ts,103,dialog event should work in popup,timedOut,15044,False,"Test timeout of 10000ms exceeded.
+Error: page.waitForEvent: Test timeout of 10000ms exceeded.
+=========================== logs ===========================
+waiting for event ""popup""
+============================================================
+
+  109 |   const [dialog, popup] = await Promise.all([
+  110 |     page.context().waitForEvent('dialog'),
+> 111 |     page.waitForEvent('popup'),
+      |          ^
+  112 |   ]);
+  113 |
+  114 |   expect(dialog.message()).toBe('hey?');
+    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:111:10
+    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:109:27
+Error: page.evaluate: Test timeout of 10000ms exceeded.
+
+  102 |
+  103 | test('dialog event should work in popup', async ({ page }) => {
+> 104 |   const promise = page.evaluate(() => {
+      |                        ^
+  105 |     const win = window.open('');
+  106 |     return (win as any).prompt('hey?');
+  107 |   });
+    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:104:24"
+previous-failures,library/browsercontext-events.spec.ts,120,dialog event should work in popup 2,timedOut,15086,False,"Test timeout of 10000ms exceeded.
+Error: browserContext.waitForEvent: Test timeout of 10000ms exceeded.
+
+  125 |   });
+  126 |
+> 127 |   const dialog = await page.context().waitForEvent('dialog');
+      |                                       ^
+  128 |
+  129 |   expect(dialog.message()).toBe('hey?');
+  130 |   expect(dialog.page()).toBe(null);
+    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:127:39
+    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:127:18"
+previous-failures,library/browsercontext-events.spec.ts,135,dialog event should work in immediately closed popup,timedOut,15060,False,"Test timeout of 10000ms exceeded.
+Error: page.waitForEvent: Test timeout of 10000ms exceeded.
+=========================== logs ===========================
+waiting for event ""popup""
+============================================================
+
+  143 |   const [dialog, popup] = await Promise.all([
+  144 |     page.context().waitForEvent('dialog'),
+> 145 |     page.waitForEvent('popup'),
+      |          ^
+  146 |   ]);
+  147 |
+  148 |   expect(dialog.message()).toBe('hey?');
+    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:145:10
+    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:143:27
+Error: page.evaluate: Test timeout of 10000ms exceeded.
+
+  134 |
+  135 | test('dialog event should work in immediately closed popup', async ({ page }) => {
+> 136 |   const promise = page.evaluate(async () => {
+      |                        ^
+  137 |     const win = window.open()!;
+  138 |     const result = (win as any).prompt('hey?');
+  139 |     win.close();
+    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:136:24"
+previous-failures,library/browsercontext-events.spec.ts,154,dialog event should work with inline script tag,timedOut,10083,False,"Test timeout of 10000ms exceeded.
+Error: browserContext.waitForEvent: Test timeout of 10000ms exceeded.
+
+  163 |   const promise = page.click('a');
+  164 |   const [dialog, popup] = await Promise.all([
+> 165 |     page.context().waitForEvent('dialog'),
+      |                    ^
+  166 |     page.context().waitForEvent('page'),
+  167 |   ]);
+  168 |
+    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:165:20
+    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:164:27"
+previous-failures,library/browsercontext-expose-function.spec.ts,47,should dispose,passed,125,False,
+previous-failures,library/browsercontext-expose-function.spec.ts,77,should be callable from-inside addInitScript,passed,131,False,
+previous-failures,library/browsercontext-fetch.spec.ts,174,should filter cookies by domain,passed,37,False,
+previous-failures,library/browsercontext-fetch.spec.ts,693,should add default headers,failed,141,False,"Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: ""Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36""
+Received: ""Mozilla/5.0 HeadlessChrome/152.0.7977.83""
+
+  698 |   expect(request.headers['accept']).toBe('*/*');
+  699 |   const userAgent = await page.evaluate(() => navigator.userAgent);
+> 700 |   expect(request.headers['user-agent']).toBe(userAgent);
+      |                                         ^
+  701 |   expect(request.headers['accept-encoding']).toBe('gzip,deflate,br');
+  702 | });
+  703 |
+    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:700:41"
+previous-failures,library/browsercontext-fetch.spec.ts,718,should add default headers to redirects,failed,163,False,"Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: ""Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36""
+Received: ""Mozilla/5.0 HeadlessChrome/152.0.7977.83""
+
+  724 |   expect(request.headers['accept']).toBe('*/*');
+  725 |   const userAgent = await page.evaluate(() => navigator.userAgent);
+> 726 |   expect(request.headers['user-agent']).toBe(userAgent);
+      |                                         ^
+  727 |   expect(request.headers['accept-encoding']).toBe('gzip,deflate,br');
+  728 | });
+  729 |
+    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:726:41"
+previous-failures,library/browsercontext-locale.spec.ts,89,should affect navigator.language in popups,failed,200,False,"Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: ""fr-FR""
+Received: ""en-US""
+
+   97 |   await popup.waitForLoadState('domcontentloaded');
+   98 |   const result = await popup.evaluate('window.initialNavigatorLanguage');
+>  99 |   expect(result).toBe('fr-FR');
+      |                  ^
+  100 |   await context.close();
+  101 | });
+  102 |
+    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts:99:18"
+upstream-api,library/browsercontext-credentials.spec.ts,26,should fail without credentials,passed,133,False,
+upstream-api,library/browsercontext-credentials.spec.ts,37,should work with setHTTPCredentials,passed,171,False,
+upstream-api,library/browsercontext-credentials.spec.ts,54,should work with correct credentials @smoke,passed,114,False,
+upstream-api,library/browsercontext-credentials.spec.ts,65,should fail with wrong credentials,passed,127,False,
+upstream-api,library/browsercontext-credentials.spec.ts,76,should return resource body,passed,117,False,
+upstream-api,library/browsercontext-credentials.spec.ts,89,should work with correct credentials and matching origin,passed,104,False,
+upstream-api,library/browsercontext-credentials.spec.ts,100,should work with correct credentials and matching origin case insensitive,passed,110,False,
+upstream-api,library/browsercontext-credentials.spec.ts,111,should fail with correct credentials and mismatching scheme,passed,102,False,
+upstream-api,library/browsercontext-credentials.spec.ts,125,should fail with correct credentials and mismatching hostname,passed,111,False,
+upstream-api,library/browsercontext-credentials.spec.ts,141,should fail with correct credentials and mismatching port,passed,102,False,
+upstream-api,library/browsercontext-har.spec.ts,22,"should context.routeFromHAR, matching the method and following redirects",passed,234,False,
+upstream-api,library/browsercontext-har.spec.ts,33,"should page.routeFromHAR, matching the method and following redirects",passed,161,False,
+upstream-api,library/browsercontext-har.spec.ts,44,fallback:continue should continue when not found in har,passed,160,False,
+upstream-api,library/browsercontext-har.spec.ts,52,by default should abort requests not found in har,passed,126,False,
+upstream-api,library/browsercontext-har.spec.ts,60,fallback:continue should continue requests on bad har,passed,147,False,
+upstream-api,library/browsercontext-har.spec.ts,69,should only handle requests matching url filter,passed,209,False,
+upstream-api,library/browsercontext-har.spec.ts,87,should only context.routeFromHAR requests matching url filter,passed,147,False,
+upstream-api,library/browsercontext-har.spec.ts,105,should only page.routeFromHAR requests matching url filter,passed,155,False,
+upstream-api,library/browsercontext-har.spec.ts,123,should apply overrides before routing from har,passed,124,False,
+upstream-api,library/browsercontext-har.spec.ts,145,should support regex filter,passed,142,False,
+upstream-api,library/browsercontext-har.spec.ts,154,"newPage should fulfill from har, matching the method and following redirects",passed,212,False,
+upstream-api,library/browsercontext-har.spec.ts,166,should change document URL after redirected navigation,passed,219,False,
+upstream-api,library/browsercontext-har.spec.ts,180,should change document URL after redirected navigation on click,passed,330,False,
+upstream-api,library/browsercontext-har.spec.ts,195,should goBack to redirected navigation,passed,262,False,
+upstream-api,library/browsercontext-har.spec.ts,208,should goForward to redirected navigation,passed,387,False,
+upstream-api,library/browsercontext-har.spec.ts,224,should reload redirected navigation,passed,216,False,
+upstream-api,library/browsercontext-har.spec.ts,236,should fulfill from har with content in a file,passed,128,False,
+upstream-api,library/browsercontext-har.spec.ts,244,should round-trip har.zip,passed,282,False,
+upstream-api,library/browsercontext-har.spec.ts,259,should produce extracted zip,passed,263,False,
+upstream-api,library/browsercontext-har.spec.ts,278,should round-trip extracted har.zip,passed,270,False,
+upstream-api,library/browsercontext-har.spec.ts,296,should round-trip har with postData,passed,330,False,
+upstream-api,library/browsercontext-har.spec.ts,327,should record overridden requests to har,passed,356,False,
+upstream-api,library/browsercontext-har.spec.ts,361,should disambiguate by header,passed,291,False,
+upstream-api,library/browsercontext-har.spec.ts,399,should update har.zip for context,passed,283,False,
+upstream-api,library/browsercontext-har.spec.ts,415,should ignore boundary when matching multipart/form-data body,passed,552,False,
+upstream-api,library/browsercontext-har.spec.ts,455,should record single set-cookie headers,passed,237,False,
+upstream-api,library/browsercontext-har.spec.ts,481,should record multiple set-cookie headers,passed,218,False,
+upstream-api,library/browsercontext-har.spec.ts,508,should update har.zip for page,passed,270,False,
+upstream-api,library/browsercontext-har.spec.ts,524,should update har.zip for page with different options,passed,255,False,
+upstream-api,library/browsercontext-har.spec.ts,540,should update extracted har.zip for page,passed,275,False,
+upstream-api,library/browsercontext-har.spec.ts,556,page.unrouteAll should stop page.routeFromHAR,passed,180,False,
+upstream-api,library/browsercontext-har.spec.ts,569,context.unrouteAll should stop context.routeFromHAR,passed,191,False,
+upstream-api,library/browsercontext-har.spec.ts,582,should ignore aborted requests,passed,1328,False,
+upstream-api,library/browsercontext-proxy.spec.ts,25,should work when passing the proxy only on the context level,failed,1,False,"TypeError: Cannot read properties of undefined (reading 'close')
+
+  39 |     expect(await page.title()).toBe('Served by the proxy');
+  40 |   } finally {
+> 41 |     await browser.close();
+     |                   ^
+  42 |   }
+  43 | });
+  44 |
+    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-proxy.spec.ts:41:19"
+upstream-api,library/browsercontext-proxy.spec.ts,45,should throw for bad server value,passed,10,False,
+upstream-api,library/browsercontext-proxy.spec.ts,53,should use proxy,passed,3209,False,
+upstream-api,library/browsercontext-proxy.spec.ts,65,should send secure cookies to subdomain.localhost,passed,230,False,
+upstream-api,library/browsercontext-proxy.spec.ts,101,should set cookie for top-level domain,passed,1646,False,
+upstream-api,library/browsercontext-proxy.spec.ts,173,should use ipv6 proxy,passed,3113,False,
+upstream-api,library/browsercontext-proxy.spec.ts,187,should use proxy twice,passed,1903,False,
+upstream-api,library/browsercontext-proxy.spec.ts,201,should use proxy for second page,passed,1310,False,
+upstream-api,library/browsercontext-proxy.spec.ts,221,should use proxy for https urls,passed,180,False,
+upstream-api,library/browsercontext-proxy.spec.ts,237,should work with IP:PORT notion,passed,1160,False,
+upstream-api,library/browsercontext-proxy.spec.ts,249,should throw for socks5 authentication,passed,3,False,
+upstream-api,library/browsercontext-proxy.spec.ts,256,should throw for socks4 authentication,passed,2,False,
+upstream-api,library/browsercontext-proxy.spec.ts,263,should authenticate,passed,1173,False,
+upstream-api,library/browsercontext-proxy.spec.ts,281,should authenticate with empty password,passed,1146,False,
+upstream-api,library/browsercontext-proxy.spec.ts,298,should isolate proxy credentials between contexts,passed,2287,False,
+upstream-api,library/browsercontext-proxy.spec.ts,328,should exclude patterns,passed,592,False,
+upstream-api,library/browsercontext-proxy.spec.ts,390,should use socks proxy,passed,146,False,
+upstream-api,library/browsercontext-proxy.spec.ts,400,should use socks proxy in second page,passed,204,False,
+upstream-api,library/browsercontext-proxy.spec.ts,416,does launch without a port,passed,10,False,
+upstream-api,library/browsercontext-proxy.spec.ts,423,should isolate proxy credentials between contexts on navigation,passed,405,False,
+upstream-api,library/browsercontext-proxy.spec.ts,140,localhost,passed,170,False,
+upstream-api,library/browsercontext-proxy.spec.ts,140,loopback address,passed,235,False,
+upstream-api,library/browsercontext-proxy.spec.ts,140,link-local,passed,184,False,
+upstream-api,library/browsercontext-proxy.spec.ts,140,localhost,passed,222,False,
+upstream-api,library/browsercontext-proxy.spec.ts,140,loopback address,passed,228,False,
+upstream-api,library/browsercontext-proxy.spec.ts,140,link-local,passed,240,False,
+upstream-api,library/browsercontext-service-worker-policy.spec.ts,18,should allow service workers by default,passed,142,False,
+upstream-api,library/browsercontext-service-worker-policy.spec.ts,26,blocks service worker registration,passed,110,False,
+upstream-api,library/browsercontext-service-worker-policy.spec.ts,33,should not throw error on about:blank,passed,85,False,
+upstream-api,library/browsercontext-storage-state.spec.ts,24,should capture local storage,passed,275,False,
+upstream-api,library/browsercontext-storage-state.spec.ts,54,should set local storage,passed,349,False,
+upstream-api,library/browsercontext-storage-state.spec.ts,100,should report good error if the url is not valid,passed,71,False,
+upstream-api,library/browsercontext-storage-state.spec.ts,119,should round-trip through the file,passed,590,False,
+upstream-api,library/browsercontext-storage-state.spec.ts,203,should capture cookies,passed,237,False,
+upstream-api,library/browsercontext-storage-state.spec.ts,241,should not emit events about internal page,passed,256,False,
+upstream-api,library/browsercontext-storage-state.spec.ts,262,should not restore localStorage twice,passed,210,False,
+upstream-api,library/browsercontext-storage-state.spec.ts,294,should handle missing file,passed,2,False,
+upstream-api,library/browsercontext-storage-state.spec.ts,302,should handle malformed file,passed,2,False,
+upstream-api,library/browsercontext-storage-state.spec.ts,314,should serialize storageState with lone surrogates,passed,116,False,
+upstream-api,library/browsercontext-storage-state.spec.ts,322,should work when service worker is intefering,passed,124,False,
+upstream-api,library/browsercontext-storage-state.spec.ts,375,should set local storage in third-party context,passed,326,False,
+upstream-api,library/browsercontext-storage-state.spec.ts,399,should roundtrip local storage in third-party context,passed,573,False,
+upstream-api,library/browsercontext-storage-state.spec.ts,415,should support IndexedDB,passed,726,False,
+upstream-api,library/browsercontext-storage-state.spec.ts,521,should support empty indexedDB,passed,339,False,
+upstream-api,library/browsercontext-storage-state.spec.ts,543,should round-trip WebAuthn credentials with storageState,passed,31,False,
+upstream-api,library/browsercontext-storage-state.spec.ts,559,setStorageState should replace credentials,passed,47,False,
+upstream-api,library/browsercontext-storage-state.spec.ts,584,setStorageState should handle missing file,passed,10,False,
+upstream-api,library/chromium/chromium.spec.ts,21,should create a worker from a service worker,passed,135,False,
+upstream-api,library/chromium/chromium.spec.ts,29,should create a worker from service worker with noop routing,passed,140,False,
+upstream-api,library/chromium/chromium.spec.ts,38,should emit new service worker on update,passed,247,False,
+upstream-api,library/chromium/chromium.spec.ts,102,serviceWorkers() should return current workers,passed,180,False,
+upstream-api,library/chromium/chromium.spec.ts,121,should not create a worker from a shared worker,passed,124,False,
+upstream-api,library/chromium/chromium.spec.ts,131,Page.route should work with intervention headers,passed,130,False,
+upstream-api,library/chromium/chromium.spec.ts,151,should close service worker together with the context,failed,1,True,"Error: SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness
+
+   at config/browserTest.ts:222
+
+  220 |     if(process.env.COMPAT_BACKEND==='chromium') return use(original);
+  221 |     await use(new Proxy(original, { get(target, name) {
+> 222 |       if (['launch', 'launchPersistentContext', 'launchServer', 'connect', 'connectOverCDP'].includes(String(name))) return async () => { throw new Error('SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness'); };
+      |                                                                                                                                                 ^
+  223 |       const value = Reflect.get(target, name); return typeof value === 'function' ? value.bind(target) : value;
+  224 |     }}));
+  225 |   }, { scope: 'worker' }],
+    at Proxy.launch (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts:222:145)
+    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/chromium.spec.ts:152:37"
+upstream-api,library/chromium/chromium.spec.ts,167,should pass args with spaces,failed,6,True,"Error: SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness
+
+   at config/browserTest.ts:222
+
+  220 |     if(process.env.COMPAT_BACKEND==='chromium') return use(original);
+  221 |     await use(new Proxy(original, { get(target, name) {
+> 222 |       if (['launch', 'launchPersistentContext', 'launchServer', 'connect', 'connectOverCDP'].includes(String(name))) return async () => { throw new Error('SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness'); };
+      |                                                                                                                                                 ^
+  223 |       const value = Reflect.get(target, name); return typeof value === 'function' ? value.bind(target) : value;
+  224 |     }}));
+  225 |   }, { scope: 'worker' }],
+    at Proxy.launchPersistentContext (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts:222:145)
+    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/chromium.spec.ts:168:37"
+upstream-api,library/chromium/chromium.spec.ts,177,"serviceWorker(), and fromServiceWorker() work",passed,267,False,
+upstream-api,library/chromium/chromium.spec.ts,211,should intercept service worker requests (main and within),passed,168,False,
+upstream-api,library/chromium/chromium.spec.ts,241,should report failure (due to content-type) of main service worker request,passed,129,False,
+upstream-api,library/chromium/chromium.spec.ts,257,should report failure (due to redirect) of main service worker request,passed,128,False,
+upstream-api,library/chromium/chromium.spec.ts,270,should intercept service worker importScripts,passed,164,False,
+upstream-api,library/chromium/chromium.spec.ts,299,should report intercepted service worker requests in HAR,passed,174,False,
+upstream-api,library/chromium/chromium.spec.ts,347,"should intercept only serviceworker request, not page",passed,213,False,
+upstream-api,library/chromium/chromium.spec.ts,371,"should produce network events, routing, and annotations for Service Worker",passed,165,False,
+upstream-api,library/chromium/chromium.spec.ts,434,"should produce network events, routing, and annotations for Service Worker (advanced)",passed,323,False,
+upstream-api,library/chromium/chromium.spec.ts,537,should intercept service worker update requests,skipped,77,False,
+upstream-api,library/chromium/chromium.spec.ts,599,setOffline,passed,159,False,
+upstream-api,library/chromium/chromium.spec.ts,614,setExtraHTTPHeaders,passed,271,False,
+upstream-api,library/chromium/chromium.spec.ts,628,should throw when connecting twice to an already running persistent context (--remote-debugging-port),skipped,1,False,
+upstream-api,library/chromium/chromium.spec.ts,646,should throw when connecting twice to an already running persistent context (--remote-debugging-pipe),skipped,0,False,
+upstream-api,library/chromium/chromium.spec.ts,660,PLAYWRIGHT_DISABLE_SERVICE_WORKER_NETWORK,passed,146,False,
+upstream-api,library/chromium/chromium.spec.ts,690,should emit console messages from service worker,passed,210,False,
+upstream-api,library/chromium/chromium.spec.ts,733,should capture console.log from ServiceWorker start,passed,215,False,
+upstream-api,library/chromium/chromium.spec.ts,89,httpCredentials,passed,155,False,
+upstream-api,library/chromium/oopif.spec.ts,26,should report oopif frames,passed,723,False,
+upstream-api,library/chromium/oopif.spec.ts,33,should handle oopif detach,passed,238,False,
+upstream-api,library/chromium/oopif.spec.ts,46,should handle remote -> local -> remote transitions,passed,395,False,
+upstream-api,library/chromium/oopif.spec.ts,65,should get the proper viewport,skipped,0,False,
+upstream-api,library/chromium/oopif.spec.ts,84,should expose function,passed,218,False,
+upstream-api,library/chromium/oopif.spec.ts,96,should emulate media,passed,280,False,
+upstream-api,library/chromium/oopif.spec.ts,106,should emulate offline,passed,243,False,
+upstream-api,library/chromium/oopif.spec.ts,116,should support context options,passed,251,False,
+upstream-api,library/chromium/oopif.spec.ts,138,should respect route,passed,220,False,
+upstream-api,library/chromium/oopif.spec.ts,150,should take screenshot,passed,380,False,
+upstream-api,library/chromium/oopif.spec.ts,158,should load oopif iframes with subresources and route,passed,228,False,
+upstream-api,library/chromium/oopif.spec.ts,164,should report main requests,passed,243,False,
+upstream-api,library/chromium/oopif.spec.ts,202,should support exposeFunction,passed,300,False,
+upstream-api,library/chromium/oopif.spec.ts,214,should support addInitScript,passed,225,False,
+upstream-api,library/chromium/oopif.spec.ts,226,should click a button when it overlays oopif,passed,348,False,
+upstream-api,library/chromium/oopif.spec.ts,233,should report google.com frame with headed,failed,1,True,"Error: SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness
+
+   at config/browserTest.ts:222
+
+  220 |     if(process.env.COMPAT_BACKEND==='chromium') return use(original);
+  221 |     await use(new Proxy(original, { get(target, name) {
+> 222 |       if (['launch', 'launchPersistentContext', 'launchServer', 'connect', 'connectOverCDP'].includes(String(name))) return async () => { throw new Error('SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness'); };
+      |                                                                                                                                                 ^
+  223 |       const value = Reflect.get(target, name); return typeof value === 'function' ? value.bind(target) : value;
+  224 |     }}));
+  225 |   }, { scope: 'worker' }],
+    at Proxy.launch (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts:222:145)
+    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:237:37"
+upstream-api,library/chromium/oopif.spec.ts,259,ElementHandle.boundingBox() should work,passed,699,False,
+upstream-api,library/chromium/oopif.spec.ts,282,should click,passed,2251,False,
+upstream-api,library/chromium/oopif.spec.ts,299,contentFrame should work,passed,608,False,
+upstream-api,library/chromium/oopif.spec.ts,309,should allow cdp sessions on oopifs,passed,248,False,
+upstream-api,library/chromium/oopif.spec.ts,324,should emit filechooser event for iframe,passed,887,False,
+upstream-api,library/chromium/oopif.spec.ts,339,should be able to click in iframe,passed,1096,False,
+upstream-api,library/chromium/oopif.spec.ts,353,should not throw on exposeFunction when oopif detaches,passed,240,False,
+upstream-api,library/chromium/oopif.spec.ts,363,should intercept response body from oopif,passed,495,False,
+upstream-api,library/chromium/oopif.spec.ts,372,should allow to re-connect to OOPIFs with CDP when iframes were there already,failed,2,True,"Error: SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness
+
+   at config/browserTest.ts:222
+
+  220 |     if(process.env.COMPAT_BACKEND==='chromium') return use(original);
+  221 |     await use(new Proxy(original, { get(target, name) {
+> 222 |       if (['launch', 'launchPersistentContext', 'launchServer', 'connect', 'connectOverCDP'].includes(String(name))) return async () => { throw new Error('SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness'); };
+      |                                                                                                                                                 ^
+  223 |       const value = Reflect.get(target, name); return typeof value === 'function' ? value.bind(target) : value;
+  224 |     }}));
+  225 |   }, { scope: 'worker' }],
+    at Proxy.launch (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts:222:145)
+    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:378:41"
+upstream-api,page/workers.spec.ts,25,Page.workers @smoke,passed,172,False,
+upstream-api,page/workers.spec.ts,40,should emit created and destroyed events,passed,104,False,
+upstream-api,page/workers.spec.ts,53,should report console logs,passed,112,False,
+upstream-api,page/workers.spec.ts,63,should have timestamp on worker console messages,passed,110,False,
+upstream-api,page/workers.spec.ts,78,should not report console logs from workers twice,passed,93,False,
+upstream-api,page/workers.spec.ts,91,should have JSHandles for console logs,passed,102,False,
+upstream-api,page/workers.spec.ts,103,should evaluate,passed,145,False,
+upstream-api,page/workers.spec.ts,112,should report console event on the worker,passed,108,False,
+upstream-api,page/workers.spec.ts,134,should report console event on the worker when not listening on page or context,passed,97,False,
+upstream-api,page/workers.spec.ts,152,should report errors,passed,102,False,
+upstream-api,page/workers.spec.ts,165,should clear upon navigation,passed,157,False,
+upstream-api,page/workers.spec.ts,178,should clear upon cross-process navigation,passed,148,False,
+upstream-api,page/workers.spec.ts,191,should attribute network activity for worker inside iframe to the iframe,passed,205,False,
+upstream-api,page/workers.spec.ts,209,should report network activity,passed,157,False,
+upstream-api,page/workers.spec.ts,229,should report network activity on worker creation,passed,134,False,
+upstream-api,page/workers.spec.ts,245,should report worker script as network request,passed,129,False,
+upstream-api,page/workers.spec.ts,264,should report worker script as network request after redirect,skipped,66,False,
+upstream-api,page/workers.spec.ts,289,should dispatch console messages when page has workers,passed,139,False,
+upstream-api,page/workers.spec.ts,303,should report and intercept network from nested worker,passed,337,False,
+upstream-api,page/workers.spec.ts,334,should support extra http headers,passed,134,False,
+upstream-api,page/workers.spec.ts,353,should support offline,passed,187,False,
+upstream-api,page/workers.spec.ts,369,should resolve worker script allHeaders in main frame,passed,131,False,
+upstream-api,page/workers.spec.ts,383,should resolve worker script allHeaders in iframe,passed,155,False,
+upstream-api,page/workers.spec.ts,399,should resolve worker script allHeaders in nested worker inside iframe,passed,163,False,
+video-api-trace,library/video.spec.ts,200,should delete video,passed,6977,False,
+video-api-trace,library/video.spec.ts,273,should expose video path blank popup,passed,195,False,
+video-api-trace,library/video.spec.ts,200,should delete video,timedOut,30012,False,Test timeout of 30000ms exceeded.
+video-api-trace,library/video.spec.ts,273,should expose video path blank popup,passed,243,False,
+video-api-trace,library/video.spec.ts,200,should delete video,passed,6913,False,
+video-api-trace,library/video.spec.ts,273,should expose video path blank popup,passed,243,False,
+video-api-trace,library/video.spec.ts,200,should delete video,passed,6872,False,
+video-api-trace,library/video.spec.ts,273,should expose video path blank popup,passed,293,False,
+video-api-trace,library/video.spec.ts,200,should delete video,timedOut,30014,False,Test timeout of 30000ms exceeded.
+video-api-trace,library/video.spec.ts,273,should expose video path blank popup,not-run,,False,
+video-final-binary,library/video.spec.ts,200,should delete video,passed,7006,False,
+video-final-binary,library/video.spec.ts,273,should expose video path blank popup,passed,204,False,
+video-final-binary,library/video.spec.ts,200,should delete video,passed,6854,False,
+video-final-binary,library/video.spec.ts,273,should expose video path blank popup,passed,495,False,
+video-final-binary,library/video.spec.ts,200,should delete video,passed,6966,False,
+video-final-binary,library/video.spec.ts,273,should expose video path blank popup,passed,199,False,
+video-fixed,library/video.spec.ts,780,should saveAs video,passed,6985,False,
+video-fixed,library/video.spec.ts,105,should not have video by default,passed,105,False,
+video-fixed,library/video.spec.ts,109,should not throw without recordVideo.dir,passed,8,False,
+video-fixed,library/video.spec.ts,113,should capture static page,passed,7404,False,
+video-fixed,library/video.spec.ts,133,should pad a short frame to the video size,passed,7021,False,
+video-fixed,library/video.spec.ts,152,should continue recording main page after popup closes,passed,7379,False,
+video-fixed,library/video.spec.ts,182,should expose video path,passed,140,False,
+video-fixed,library/video.spec.ts,200,should delete video,passed,6957,False,
+video-fixed,library/video.spec.ts,221,should expose video path blank page,passed,120,False,
+video-fixed,library/video.spec.ts,238,should work with weird screen resolution,passed,372,False,
+video-fixed,library/video.spec.ts,256,should work with relative path for recordVideo.dir,passed,115,False,
+video-fixed,library/video.spec.ts,273,should expose video path blank popup,passed,183,False,
+video-fixed,library/video.spec.ts,294,should capture navigation,passed,17233,False,
+video-fixed,library/video.spec.ts,326,should capture css transformation,passed,7329,False,
+video-fixed,library/video.spec.ts,356,should work for popups,passed,8220,False,
+video-fixed,library/video.spec.ts,390,should scale frames down to the requested size ,passed,16050,False,
+video-fixed,library/video.spec.ts,439,should use viewport scaled down to fit into 800x800 as default size,passed,8287,False,
+video-fixed,library/video.spec.ts,458,should be 800x450 by default,passed,7945,False,
+video-fixed,library/video.spec.ts,475,should be 800x600 with null viewport,passed,8260,False,
+video-fixed,library/video.spec.ts,495,should capture static page in persistent context @smoke,failed,19,True,"Error: SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness
+
+   at config/browserTest.ts:222
+
+  220 |     if(process.env.COMPAT_BACKEND==='chromium') return use(original);
+  221 |     await use(new Proxy(original, { get(target, name) {
+> 222 |       if (['launch', 'launchPersistentContext', 'launchServer', 'connect', 'connectOverCDP'].includes(String(name))) return async () => { throw new Error('SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness'); };
+      |                                                                                                                                                 ^
+  223 |       const value = Reflect.get(target, name); return typeof value === 'function' ? value.bind(target) : value;
+  224 |     }}));
+  225 |   }, { scope: 'worker' }],
+    at Proxy.launchPersistentContext (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts:222:145)
+    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts:159:45
+    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:498:31"
+video-fixed,library/video.spec.ts,524,should emulate an iphone,passed,7610,False,
+video-fixed,library/video.spec.ts,543,should throw on browser close,failed,2,True,"Error: SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness
+
+   at config/browserTest.ts:222
+
+  220 |     if(process.env.COMPAT_BACKEND==='chromium') return use(original);
+  221 |     await use(new Proxy(original, { get(target, name) {
+> 222 |       if (['launch', 'launchPersistentContext', 'launchServer', 'connect', 'connectOverCDP'].includes(String(name))) return async () => { throw new Error('SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness'); };
+      |                                                                                                                                                 ^
+  223 |       const value = Reflect.get(target, name); return typeof value === 'function' ? value.bind(target) : value;
+  224 |     }}));
+  225 |   }, { scope: 'worker' }],
+    at Proxy.launch (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts:222:145)
+    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:545:39"
+video-fixed,library/video.spec.ts,563,should throw if browser dies,failed,8,True,"Error: SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness
+
+   at config/browserTest.ts:222
+
+  220 |     if(process.env.COMPAT_BACKEND==='chromium') return use(original);
+  221 |     await use(new Proxy(original, { get(target, name) {
+> 222 |       if (['launch', 'launchPersistentContext', 'launchServer', 'connect', 'connectOverCDP'].includes(String(name))) return async () => { throw new Error('SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness'); };
+      |                                                                                                                                                 ^
+  223 |       const value = Reflect.get(target, name); return typeof value === 'function' ? value.bind(target) : value;
+  224 |     }}));
+  225 |   }, { scope: 'worker' }],
+    at Proxy.launch (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts:222:145)
+    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:565:39"
+video-fixed,library/video.spec.ts,584,should wait for video to finish if page was closed,failed,1,True,"Error: SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness
+
+   at config/browserTest.ts:222
+
+  220 |     if(process.env.COMPAT_BACKEND==='chromium') return use(original);
+  221 |     await use(new Proxy(original, { get(target, name) {
+> 222 |       if (['launch', 'launchPersistentContext', 'launchServer', 'connect', 'connectOverCDP'].includes(String(name))) return async () => { throw new Error('SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness'); };
+      |                                                                                                                                                 ^
+  223 |       const value = Reflect.get(target, name); return typeof value === 'function' ? value.bind(target) : value;
+  224 |     }}));
+  225 |   }, { scope: 'worker' }],
+    at Proxy.launch (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts:222:145)
+    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:586:39"
+video-fixed,library/video.spec.ts,610,should close ffmpeg even if there were no frames,failed,4,True,"Error: SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness
+
+   at config/browserTest.ts:222
+
+  220 |     if(process.env.COMPAT_BACKEND==='chromium') return use(original);
+  221 |     await use(new Proxy(original, { get(target, name) {
+> 222 |       if (['launch', 'launchPersistentContext', 'launchServer', 'connect', 'connectOverCDP'].includes(String(name))) return async () => { throw new Error('SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness'); };
+      |                                                                                                                                                 ^
+  223 |       const value = Reflect.get(target, name); return typeof value === 'function' ? value.bind(target) : value;
+  224 |     }}));
+  225 |   }, { scope: 'worker' }],
+    at Proxy.launch (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts:222:145)
+    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:614:39"
+video-fixed,library/video.spec.ts,638,should not create video for internal pages,passed,7769,False,
+video-fixed,library/video.spec.ts,664,should capture full viewport,failed,3,True,"Error: SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness
+
+   at config/browserTest.ts:222
+
+  220 |     if(process.env.COMPAT_BACKEND==='chromium') return use(original);
+  221 |     await use(new Proxy(original, { get(target, name) {
+> 222 |       if (['launch', 'launchPersistentContext', 'launchServer', 'connect', 'connectOverCDP'].includes(String(name))) return async () => { throw new Error('SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness'); };
+      |                                                                                                                                                 ^
+  223 |       const value = Reflect.get(target, name); return typeof value === 'function' ? value.bind(target) : value;
+  224 |     }}));
+  225 |   }, { scope: 'worker' }],
+    at Proxy.launch (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts:222:145)
+    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:669:39"
+video-fixed,library/video.spec.ts,699,should capture full viewport on hidpi,failed,3,True,"Error: SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness
+
+   at config/browserTest.ts:222
+
+  220 |     if(process.env.COMPAT_BACKEND==='chromium') return use(original);
+  221 |     await use(new Proxy(original, { get(target, name) {
+> 222 |       if (['launch', 'launchPersistentContext', 'launchServer', 'connect', 'connectOverCDP'].includes(String(name))) return async () => { throw new Error('SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness'); };
+      |                                                                                                                                                 ^
+  223 |       const value = Reflect.get(target, name); return typeof value === 'function' ? value.bind(target) : value;
+  224 |     }}));
+  225 |   }, { scope: 'worker' }],
+    at Proxy.launch (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts:222:145)
+    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:705:39"
+video-fixed,library/video.spec.ts,736,should work with video+trace,passed,7567,False,
+video-repeated,library/video.spec.ts,200,should delete video,passed,7025,False,
+video-repeated,library/video.spec.ts,273,should expose video path blank popup,passed,236,False,
+video-repeated,library/video.spec.ts,200,should delete video,passed,6947,False,
+video-repeated,library/video.spec.ts,273,should expose video path blank popup,passed,212,False,
+video-repeated,library/video.spec.ts,200,should delete video,passed,6999,False,
+video-repeated,library/video.spec.ts,273,should expose video path blank popup,passed,195,False,
+video-repeated,library/video.spec.ts,200,should delete video,passed,6992,False,
+video-repeated,library/video.spec.ts,273,should expose video path blank popup,passed,296,False,
+video-repeated,library/video.spec.ts,200,should delete video,passed,7014,False,
+video-repeated,library/video.spec.ts,273,should expose video path blank popup,passed,328,False,
+video-repeated,library/video.spec.ts,200,should delete video,passed,6859,False,
+video-repeated,library/video.spec.ts,273,should expose video path blank popup,passed,241,False,
+video-repeated,library/video.spec.ts,200,should delete video,passed,6866,False,
+video-repeated,library/video.spec.ts,273,should expose video path blank popup,passed,297,False,
+video-repeated,library/video.spec.ts,200,should delete video,passed,6974,False,
+video-repeated,library/video.spec.ts,273,should expose video path blank popup,passed,242,False,
+video-repeated,library/video.spec.ts,200,should delete video,passed,7197,False,
+video-repeated,library/video.spec.ts,273,should expose video path blank popup,passed,185,False,
+video-repeated,library/video.spec.ts,200,should delete video,passed,6875,False,
+video-repeated,library/video.spec.ts,273,should expose video path blank popup,passed,223,False,
+video-trace,library/video.spec.ts,200,should delete video,timedOut,30005,False,Test timeout of 30000ms exceeded.
+video-trace,library/video.spec.ts,273,should expose video path blank popup,passed,294,False,
+video-trace,library/video.spec.ts,200,should delete video,passed,6897,False,
+video-trace,library/video.spec.ts,273,should expose video path blank popup,passed,283,False,
+video-trace,library/video.spec.ts,200,should delete video,passed,6998,False,
+video-trace,library/video.spec.ts,273,should expose video path blank popup,passed,425,False,

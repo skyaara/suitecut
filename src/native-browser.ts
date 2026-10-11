@@ -85,7 +85,7 @@ export interface NativeBrowser {
   readonly cefVersion: string
   readonly nativeMedia?: boolean
   command?(command: string, fields?: Record<string, UntrustedInput>): Promise<UntrustedInput>
-  onProtocolEvent?(listener: (message: UntrustedInput) => void): () => void
+  onProtocolEvent?(listener: (message: UntrustedInput, bytes?: number) => void): () => void
   /** Rejects on runtime, renderer, audio, protocol, or subscriber failure. */
   readonly failure: Promise<never>
   /** Settles only after the native process and its stdio have closed. */
@@ -161,7 +161,7 @@ export async function launchNativeBrowser(options: NativeBrowserOptions): Promis
   let frameSubscriptions = false
   let audioSubscriptions = false
   let nativeMedia = false
-  const protocolEvents = new Set<(message: UntrustedInput) => void>()
+  const protocolEvents = new Set<(message: UntrustedInput, bytes?: number) => void>()
   let rejectFailure: (error: Error) => void = () => undefined
   let resolveReady: () => void = () => undefined
   let resolveClosed: () => void = () => undefined
@@ -209,7 +209,7 @@ export async function launchNativeBrowser(options: NativeBrowserOptions): Promis
     if (clockOffset === undefined) throw new Error('Native packet before handshake')
     if (header.type === 'event') {
       const message = JSON.parse(payload.toString('utf8')) as UntrustedInput
-      for (const listener of protocolEvents) listener(message)
+      for (const listener of protocolEvents) listener(message, payload.length)
       return
     }
     if (header.type === 'error') {

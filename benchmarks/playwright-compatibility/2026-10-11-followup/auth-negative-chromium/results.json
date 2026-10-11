@@ -1,0 +1,807 @@
+{
+  "config": {
+    "argv": [
+      "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+      "/workspace/suitecut/node_modules/playwright/cli.js",
+      "test",
+      "--config",
+      "benchmarks/playwright-compatibility/playwright.config.ts",
+      "--grep",
+      "auth|proxy"
+    ],
+    "configFile": "/workspace/suitecut/benchmarks/playwright-compatibility/playwright.config.ts",
+    "rootDir": "/workspace/suitecut/benchmarks/playwright-compatibility",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/workspace/suitecut/benchmarks/playwright-compatibility/2026-10-11-followup/auth-negative-chromium/artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "/workspace/suitecut/benchmarks/playwright-compatibility",
+        "testIgnore": [
+          "**/2026-*/**"
+        ],
+        "testMatch": [
+          "compatibility.spec.ts"
+        ],
+        "timeout": 20000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "/workspace/suitecut/benchmarks/playwright-compatibility/2026-10-11-followup/auth-negative-chromium/results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.62.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "compatibility.spec.ts",
+      "file": "compatibility.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "state: IndexedDB auth export to file and restore into a fresh context",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 20000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 485,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T15:06:39.224Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b0b409d468a60194358f-337f129e799a945067e9",
+          "file": "compatibility.spec.ts",
+          "line": 468,
+          "column": 1
+        },
+        {
+          "title": "auth: http origin HTTP credentials",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 20000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 123,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T15:06:40.030Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b0b409d468a60194358f-32903fd7fb9c744cceb4",
+          "file": "compatibility.spec.ts",
+          "line": 598,
+          "column": 3
+        },
+        {
+          "title": "proxy: http through local proxy plus origin auth",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 20000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 95,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T15:06:40.161Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b0b409d468a60194358f-490ffa9b6db83903f0aa",
+          "file": "compatibility.spec.ts",
+          "line": 613,
+          "column": 3
+        },
+        {
+          "title": "proxy: http authenticated proxy plus origin auth",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 20000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 99,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T15:06:40.264Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b0b409d468a60194358f-2f081a623c2153c5559b",
+          "file": "compatibility.spec.ts",
+          "line": 629,
+          "column": 3
+        },
+        {
+          "title": "proxy: http separate credentials respect a matching origin",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 20000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 68,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T15:06:40.377Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b0b409d468a60194358f-97d39698de8fd41a6210",
+          "file": "compatibility.spec.ts",
+          "line": 645,
+          "column": 3
+        },
+        {
+          "title": "proxy: http does not send proxy credentials to the website",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 20000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 85,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T15:06:40.459Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b0b409d468a60194358f-ec445ee50c837080e379",
+          "file": "compatibility.spec.ts",
+          "line": 663,
+          "column": 5
+        },
+        {
+          "title": "proxy: http does not send out-of-origin credentials to the website",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 20000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 82,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T15:06:40.554Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b0b409d468a60194358f-13cd88dc81ead52c0a70",
+          "file": "compatibility.spec.ts",
+          "line": 663,
+          "column": 5
+        },
+        {
+          "title": "proxy: http incorrect proxy credentials stop without reaching the website",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 20000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 69,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mrejects\u001b[2m.\u001b[22mtoThrow\u001b[2m()\u001b[22m\n\nReceived promise resolved instead of rejected\nResolved to value: \u001b[31m{\"_guid\": \"response@de0ee7ec3a4d8376937120f07377e35d\", \"_type\": \"Response\"}\u001b[39m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mrejects\u001b[2m.\u001b[22mtoThrow\u001b[2m()\u001b[22m\n\nReceived promise resolved instead of rejected\nResolved to value: \u001b[31m{\"_guid\": \"response@de0ee7ec3a4d8376937120f07377e35d\", \"_type\": \"Response\"}\u001b[39m\n    at /workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts:701:91",
+                    "location": {
+                      "file": "/workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts",
+                      "column": 91,
+                      "line": 701
+                    },
+                    "snippet": "  699 |     try {\n  700 |       const p = await c.newPage()\n> 701 |       await expect(p.goto(`${scheme}://auth-proxy.test/auth`, { timeout: 5000 })).rejects.toThrow(/ERR_/)\n      |                                                                                           ^\n  702 |       expect(proxyRequests.length).toBeGreaterThan(0)\n  703 |       expect(proxyRequests.length).toBeLessThan(12)\n  704 |       expect(originAuthHeaders).toEqual([])"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts",
+                        "column": 91,
+                        "line": 701
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mrejects\u001b[2m.\u001b[22mtoThrow\u001b[2m()\u001b[22m\n\nReceived promise resolved instead of rejected\nResolved to value: \u001b[31m{\"_guid\": \"response@de0ee7ec3a4d8376937120f07377e35d\", \"_type\": \"Response\"}\u001b[39m\n\n  699 |     try {\n  700 |       const p = await c.newPage()\n> 701 |       await expect(p.goto(`${scheme}://auth-proxy.test/auth`, { timeout: 5000 })).rejects.toThrow(/ERR_/)\n      |                                                                                           ^\n  702 |       expect(proxyRequests.length).toBeGreaterThan(0)\n  703 |       expect(proxyRequests.length).toBeLessThan(12)\n  704 |       expect(originAuthHeaders).toEqual([])\n    at /workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts:701:91"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T15:06:40.646Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/workspace/suitecut/benchmarks/playwright-compatibility/2026-10-11-followup/auth-negative-chromium/artifacts/compatibility-proxy-http-i-dfd73-ithout-reaching-the-website/error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/workspace/suitecut/benchmarks/playwright-compatibility/2026-10-11-followup/auth-negative-chromium/artifacts/compatibility-proxy-http-i-dfd73-ithout-reaching-the-website/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts",
+                    "column": 91,
+                    "line": 701
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "b0b409d468a60194358f-5d61e9845ab082ebb5cd",
+          "file": "compatibility.spec.ts",
+          "line": 691,
+          "column": 3
+        },
+        {
+          "title": "auth: https origin HTTP credentials",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 20000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 185,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T15:06:41.482Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b0b409d468a60194358f-b97a329061717b42d1a4",
+          "file": "compatibility.spec.ts",
+          "line": 598,
+          "column": 3
+        },
+        {
+          "title": "proxy: https through local proxy plus origin auth",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 20000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 106,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T15:06:41.906Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b0b409d468a60194358f-560a2867e9881480d980",
+          "file": "compatibility.spec.ts",
+          "line": 613,
+          "column": 3
+        },
+        {
+          "title": "proxy: https authenticated proxy plus origin auth",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 20000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 123,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T15:06:42.025Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b0b409d468a60194358f-7540ff9fe2ac094e5a3b",
+          "file": "compatibility.spec.ts",
+          "line": 629,
+          "column": 3
+        },
+        {
+          "title": "proxy: https separate credentials respect a matching origin",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 20000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 70,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T15:06:42.157Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b0b409d468a60194358f-fa90234fa8f69f9604f2",
+          "file": "compatibility.spec.ts",
+          "line": 645,
+          "column": 3
+        },
+        {
+          "title": "proxy: https does not send proxy credentials to the website",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 20000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 74,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T15:06:42.236Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b0b409d468a60194358f-bf5852f71b48fa964c50",
+          "file": "compatibility.spec.ts",
+          "line": 663,
+          "column": 5
+        },
+        {
+          "title": "proxy: https does not send out-of-origin credentials to the website",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 20000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 75,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T15:06:42.322Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b0b409d468a60194358f-e7e5f3411649f163a1aa",
+          "file": "compatibility.spec.ts",
+          "line": 663,
+          "column": 5
+        },
+        {
+          "title": "proxy: https incorrect proxy credentials stop without reaching the website",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 20000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 5056,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mrejects\u001b[2m.\u001b[22mtoThrow\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected pattern: \u001b[32m/ERR_/\u001b[39m\nReceived message: \u001b[31m\"page.goto: Timeout 5000ms exceeded.\u001b[39m\n\u001b[31mCall log:\u001b[39m\n\u001b[31m\u001b[2m  - navigating to \\\"https://auth-proxy.test/auth\\\", waiting until \\\"load\\\"\u001b[22m\u001b[39m\n\u001b[31m\"\u001b[39m\n\n      699 |     try {\n      700 |       const p = await c.newPage()\n    > 701 |       await expect(p.goto(`${scheme}://auth-proxy.test/auth`, { timeout: 5000 })).rejects.toThrow(/ERR_/)\n          |                      ^\n      702 |       expect(proxyRequests.length).toBeGreaterThan(0)\n      703 |       expect(proxyRequests.length).toBeLessThan(12)\n      704 |       expect(originAuthHeaders).toEqual([])\n\n      \u001b[2mat \u001b[22mbenchmarks/playwright-compatibility/compatibility.spec.ts\u001b[2m:701:22\u001b[22m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mrejects\u001b[2m.\u001b[22mtoThrow\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected pattern: \u001b[32m/ERR_/\u001b[39m\nReceived message: \u001b[31m\"page.goto: Timeout 5000ms exceeded.\u001b[39m\n\u001b[31mCall log:\u001b[39m\n\u001b[31m\u001b[2m  - navigating to \\\"https://auth-proxy.test/auth\\\", waiting until \\\"load\\\"\u001b[22m\u001b[39m\n\u001b[31m\"\u001b[39m\n\n      699 |     try {\n      700 |       const p = await c.newPage()\n    > 701 |       await expect(p.goto(`${scheme}://auth-proxy.test/auth`, { timeout: 5000 })).rejects.toThrow(/ERR_/)\n          |                      ^\n      702 |       expect(proxyRequests.length).toBeGreaterThan(0)\n      703 |       expect(proxyRequests.length).toBeLessThan(12)\n      704 |       expect(originAuthHeaders).toEqual([])\n\n      \u001b[2mat \u001b[22mbenchmarks/playwright-compatibility/compatibility.spec.ts\u001b[2m:701:22\u001b[22m\n    at /workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts:701:91",
+                    "location": {
+                      "file": "/workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts",
+                      "column": 91,
+                      "line": 701
+                    },
+                    "snippet": "  699 |     try {\n  700 |       const p = await c.newPage()\n> 701 |       await expect(p.goto(`${scheme}://auth-proxy.test/auth`, { timeout: 5000 })).rejects.toThrow(/ERR_/)\n      |                                                                                           ^\n  702 |       expect(proxyRequests.length).toBeGreaterThan(0)\n  703 |       expect(proxyRequests.length).toBeLessThan(12)\n  704 |       expect(originAuthHeaders).toEqual([])"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts",
+                        "column": 91,
+                        "line": 701
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mrejects\u001b[2m.\u001b[22mtoThrow\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected pattern: \u001b[32m/ERR_/\u001b[39m\nReceived message: \u001b[31m\"page.goto: Timeout 5000ms exceeded.\u001b[39m\n\u001b[31mCall log:\u001b[39m\n\u001b[31m\u001b[2m  - navigating to \\\"https://auth-proxy.test/auth\\\", waiting until \\\"load\\\"\u001b[22m\u001b[39m\n\u001b[31m\"\u001b[39m\n\n      699 |     try {\n      700 |       const p = await c.newPage()\n    > 701 |       await expect(p.goto(`${scheme}://auth-proxy.test/auth`, { timeout: 5000 })).rejects.toThrow(/ERR_/)\n          |                      ^\n      702 |       expect(proxyRequests.length).toBeGreaterThan(0)\n      703 |       expect(proxyRequests.length).toBeLessThan(12)\n      704 |       expect(originAuthHeaders).toEqual([])\n\n      \u001b[2mat \u001b[22mbenchmarks/playwright-compatibility/compatibility.spec.ts\u001b[2m:701:22\u001b[22m\n\n  699 |     try {\n  700 |       const p = await c.newPage()\n> 701 |       await expect(p.goto(`${scheme}://auth-proxy.test/auth`, { timeout: 5000 })).rejects.toThrow(/ERR_/)\n      |                                                                                           ^\n  702 |       expect(proxyRequests.length).toBeGreaterThan(0)\n  703 |       expect(proxyRequests.length).toBeLessThan(12)\n  704 |       expect(originAuthHeaders).toEqual([])\n    at /workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts:701:91"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T15:06:42.408Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/workspace/suitecut/benchmarks/playwright-compatibility/2026-10-11-followup/auth-negative-chromium/artifacts/compatibility-proxy-https--4e135-ithout-reaching-the-website/error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/workspace/suitecut/benchmarks/playwright-compatibility/2026-10-11-followup/auth-negative-chromium/artifacts/compatibility-proxy-https--4e135-ithout-reaching-the-website/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts",
+                    "column": 91,
+                    "line": 701
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "b0b409d468a60194358f-846aeb5a38509b5ea58f",
+          "file": "compatibility.spec.ts",
+          "line": 691,
+          "column": 3
+        },
+        {
+          "title": "auth: wrong credentials fail and a fresh context does not inherit them",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 20000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 238,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T15:06:48.209Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b0b409d468a60194358f-9b0be4b6379a062a4fd1",
+          "file": "compatibility.spec.ts",
+          "line": 710,
+          "column": 1
+        },
+        {
+          "title": "proxy: bypass uses the real origin without contacting the proxy",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 20000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 66,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T15:06:48.641Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b0b409d468a60194358f-b7b2c9389d04f56121b8",
+          "file": "compatibility.spec.ts",
+          "line": 731,
+          "column": 1
+        },
+        {
+          "title": "proxy: http authenticated proxy without origin auth",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 20000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 176,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T15:06:48.721Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b0b409d468a60194358f-f4dd8869dc9586f50c91",
+          "file": "compatibility.spec.ts",
+          "line": 743,
+          "column": 3
+        },
+        {
+          "title": "proxy: https authenticated proxy without origin auth",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 20000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 117,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T15:06:48.908Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b0b409d468a60194358f-25b05c47b3a2abd6a138",
+          "file": "compatibility.spec.ts",
+          "line": 743,
+          "column": 3
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-11T15:06:38.168Z",
+    "duration": 10930.723,
+    "expected": 17,
+    "skipped": 0,
+    "unexpected": 2,
+    "flaky": 0
+  }
+}

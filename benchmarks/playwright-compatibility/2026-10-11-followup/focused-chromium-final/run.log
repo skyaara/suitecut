@@ -1,0 +1,46 @@
+[WARN] Your node_modules are out of sync with your lockfile. The value of the patchedDependencies setting has changed
+
+Running 36 tests using 1 worker
+
+(node:1049341) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 benchmarks/playwright-compatibility/compatibility.spec.ts:225:1 › worker: dedicated Worker evaluation and messaging (237ms)
+  ✓   2 benchmarks/playwright-compatibility/compatibility.spec.ts:244:1 › worker: service worker website control and fetch (106ms)
+  ✓   3 benchmarks/playwright-compatibility/compatibility.spec.ts:248:1 › worker: context serviceworker event, enumeration and evaluation (103ms)
+  ✓   4 benchmarks/playwright-compatibility/compatibility.spec.ts:259:1 › worker: service worker console and close event on context disposal (89ms)
+  ✓   5 benchmarks/playwright-compatibility/compatibility.spec.ts:276:1 › worker: multiple pages expose one service worker identity (354ms)
+  ✓   6 benchmarks/playwright-compatibility/compatibility.spec.ts:289:1 › worker: worker remains automatable after its first page closes (183ms)
+  ✓   7 benchmarks/playwright-compatibility/compatibility.spec.ts:310:1 › worker: repeated worker contexts release browser target registrations (6.6s)
+  -   8 benchmarks/playwright-compatibility/compatibility.spec.ts:342:1 › native: worker CDP aliases detach when their context closes
+  ✓   9 benchmarks/playwright-compatibility/compatibility.spec.ts:375:1 › worker: serviceWorkers block prevents registration (63ms)
+  ✓  10 benchmarks/playwright-compatibility/compatibility.spec.ts:388:1 › oopif: cross-site frame is a separate CDP target and remains interactive (222ms)
+  ✓  11 benchmarks/playwright-compatibility/compatibility.spec.ts:415:1 › oopif: cross-site navigation, detach and network routing (367ms)
+  ✓  12 benchmarks/playwright-compatibility/compatibility.spec.ts:439:1 › viewport: odd and tiny browser dimensions support screenshots and Playwright video (226ms)
+  ✓  13 benchmarks/playwright-compatibility/compatibility.spec.ts:466:1 › state: IndexedDB auth export to file and restore into a fresh context (285ms)
+  ✓  14 benchmarks/playwright-compatibility/compatibility.spec.ts:543:1 › state: lone UTF-16 values survive arguments, console, state export and import (180ms)
+  ✓  15 benchmarks/playwright-compatibility/compatibility.spec.ts:574:1 › state: empty IndexedDB export and restore (203ms)
+  ✓  16 benchmarks/playwright-compatibility/compatibility.spec.ts:596:3 › auth: http origin HTTP credentials (86ms)
+  ✓  17 benchmarks/playwright-compatibility/compatibility.spec.ts:611:3 › proxy: http through local proxy plus origin auth (91ms)
+  ✓  18 benchmarks/playwright-compatibility/compatibility.spec.ts:627:3 › proxy: http authenticated proxy plus origin auth (85ms)
+  ✓  19 benchmarks/playwright-compatibility/compatibility.spec.ts:643:3 › proxy: http separate credentials respect a matching origin (58ms)
+  ✓  20 benchmarks/playwright-compatibility/compatibility.spec.ts:661:5 › proxy: http does not send proxy credentials to the website (62ms)
+  ✓  21 benchmarks/playwright-compatibility/compatibility.spec.ts:661:5 › proxy: http does not send out-of-origin credentials to the website (62ms)
+  ✓  22 benchmarks/playwright-compatibility/compatibility.spec.ts:697:3 › proxy: http incorrect proxy credentials are denied without reaching the website (59ms)
+  ✓  23 benchmarks/playwright-compatibility/compatibility.spec.ts:596:3 › auth: https origin HTTP credentials (94ms)
+  ✓  24 benchmarks/playwright-compatibility/compatibility.spec.ts:611:3 › proxy: https through local proxy plus origin auth (104ms)
+  ✓  25 benchmarks/playwright-compatibility/compatibility.spec.ts:627:3 › proxy: https authenticated proxy plus origin auth (88ms)
+  ✓  26 benchmarks/playwright-compatibility/compatibility.spec.ts:643:3 › proxy: https separate credentials respect a matching origin (67ms)
+  ✓  27 benchmarks/playwright-compatibility/compatibility.spec.ts:661:5 › proxy: https does not send proxy credentials to the website (64ms)
+  ✓  28 benchmarks/playwright-compatibility/compatibility.spec.ts:661:5 › proxy: https does not send out-of-origin credentials to the website (74ms)
+  ✓  29 benchmarks/playwright-compatibility/compatibility.spec.ts:697:3 › proxy: https incorrect proxy credentials are denied without reaching the website (51ms)
+  ✓  30 benchmarks/playwright-compatibility/compatibility.spec.ts:730:1 › auth: wrong credentials fail and a fresh context does not inherit them (153ms)
+  ✓  31 benchmarks/playwright-compatibility/compatibility.spec.ts:751:1 › proxy: bypass uses the real origin without contacting the proxy (56ms)
+  ✓  32 benchmarks/playwright-compatibility/compatibility.spec.ts:763:3 › proxy: http authenticated proxy without origin auth (86ms)
+  ✓  33 benchmarks/playwright-compatibility/compatibility.spec.ts:763:3 › proxy: https authenticated proxy without origin auth (98ms)
+  ✓  34 benchmarks/playwright-compatibility/compatibility.spec.ts:779:3 › har: har captures and replays bodies, POST and redirects (196ms)
+  ✓  35 benchmarks/playwright-compatibility/compatibility.spec.ts:779:3 › har: har.zip captures and replays bodies, POST and redirects (196ms)
+
+  ✓  36 benchmarks/playwright-compatibility/compatibility.spec.ts:825:1 › video: Playwright recordVideo creates a decodable WebM after context close (1.4s)
+
+  1 skipped
+  35 passed (14.4s)

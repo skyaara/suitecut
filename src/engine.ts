@@ -5,6 +5,7 @@ import { setTimeout as delay } from 'node:timers/promises'
 import { type Browser, type Page, type ConnectOverCDPTransport } from 'playwright'
 import * as z from 'zod'
 
+import { CDPDelivery } from './cdp-delivery.js'
 import { MediaSchema } from './manifest.js'
 import {
   launchNativeBrowser,
@@ -108,29 +109,40 @@ export async function connectCEF(source: NativeBrowser): Promise<Browser> {
   let disconnected = false
   const transport: ConnectOverCDPTransport = {
     send(message) {
+      if (disconnected) return
       void source
         .command?.('cdp', { message: message as Record<string, UntrustedInput> })
         .catch((error: Error) => {
-          transport.onclose?.(error.message)
+          delivery.close(error.message)
         })
     },
     close() {
+      delivery.close('CEF transport closed')
+    },
+  }
+  const delivery = new CDPDelivery(
+    (message) => transport.onmessage?.(message),
+    (reason) => {
       if (disconnected) return
       disconnected = true
       unsubscribe()
-      transport.onclose?.('CEF transport closed')
+      transport.onclose?.(reason)
     },
-  }
-  const unsubscribe = source.onProtocolEvent((message) => transport.onmessage?.(message as object))
-  const unsubscribeClose = source.onClose?.(() => transport.close())
+  )
+  const unsubscribe = source.onProtocolEvent((message, bytes) =>
+    delivery.enqueue(message as object, bytes ?? Buffer.byteLength(JSON.stringify(message))),
+  )
+  const unsubscribeClose = source.onClose?.(() => delivery.end('CEF transport closed'))
   try {
     const browser = await chromium.connectOverCDP(transport)
     browser.on('disconnected', () => {
+      delivery.close('CEF transport disconnected')
       unsubscribe()
       unsubscribeClose?.()
     })
     return browser
   } catch (error) {
+    delivery.close('CEF transport connection failed')
     unsubscribe()
     unsubscribeClose?.()
     throw error

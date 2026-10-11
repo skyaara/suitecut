@@ -1,0 +1,437 @@
+{
+  "config": {
+    "argv": [
+      "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+      "/workspace/suitecut/node_modules/playwright/cli.js",
+      "test",
+      "--config",
+      "benchmarks/playwright-compatibility/playwright.config.ts",
+      "--grep",
+      "https incorrect proxy credentials"
+    ],
+    "configFile": "/workspace/suitecut/benchmarks/playwright-compatibility/playwright.config.ts",
+    "rootDir": "/workspace/suitecut/benchmarks/playwright-compatibility",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/workspace/suitecut/benchmarks/playwright-compatibility/2026-10-11-followup/auth-wrong-proxy-diagnostic/artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "/workspace/suitecut/benchmarks/playwright-compatibility",
+        "testIgnore": [
+          "**/2026-*/**"
+        ],
+        "testMatch": [
+          "compatibility.spec.ts"
+        ],
+        "timeout": 20000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "/workspace/suitecut/benchmarks/playwright-compatibility/2026-10-11-followup/auth-wrong-proxy-diagnostic/results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.62.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "compatibility.spec.ts",
+      "file": "compatibility.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "proxy: https incorrect proxy credentials stop without reaching the website",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 20000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 5158,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoMatch\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected pattern: \u001b[32m/ERR_/\u001b[39m\nReceived string:  \u001b[31m\"TimeoutError: page.goto: Timeout 5000ms exceeded.\u001b[39m\n\u001b[31mCall log:\u001b[39m\n\u001b[31m\u001b[2m  - navigating to \\\"https://auth-proxy.test/auth\\\", waiting until \\\"load\\\"\u001b[22m\u001b[39m\n\u001b[31m\"\u001b[39m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoMatch\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected pattern: \u001b[32m/ERR_/\u001b[39m\nReceived string:  \u001b[31m\"TimeoutError: page.goto: Timeout 5000ms exceeded.\u001b[39m\n\u001b[31mCall log:\u001b[39m\n\u001b[31m\u001b[2m  - navigating to \\\"https://auth-proxy.test/auth\\\", waiting until \\\"load\\\"\u001b[22m\u001b[39m\n\u001b[31m\"\u001b[39m\n    at /workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts:714:33\n    at /workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts:711:22",
+                    "location": {
+                      "file": "/workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts",
+                      "column": 33,
+                      "line": 714
+                    },
+                    "snippet": "  712 |         (response) => required(response).status(),\n  713 |         (error) => {\n> 714 |           expect(String(error)).toMatch(/ERR_/)\n      |                                 ^\n  715 |           return 407\n  716 |         },\n  717 |       )"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts",
+                        "column": 33,
+                        "line": 714
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoMatch\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected pattern: \u001b[32m/ERR_/\u001b[39m\nReceived string:  \u001b[31m\"TimeoutError: page.goto: Timeout 5000ms exceeded.\u001b[39m\n\u001b[31mCall log:\u001b[39m\n\u001b[31m\u001b[2m  - navigating to \\\"https://auth-proxy.test/auth\\\", waiting until \\\"load\\\"\u001b[22m\u001b[39m\n\u001b[31m\"\u001b[39m\n\n  712 |         (response) => required(response).status(),\n  713 |         (error) => {\n> 714 |           expect(String(error)).toMatch(/ERR_/)\n      |                                 ^\n  715 |           return 407\n  716 |         },\n  717 |       )\n    at /workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts:714:33\n    at /workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts:711:22"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0mSEND ► {\"id\":1,\"method\":\"Browser.getVersion\"} \u001b[38;5;34m+0ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0m◀ RECV {\"id\":1,\"result\":{\"protocolVersion\":\"1.3\",\"product\":\"HeadlessChrome/151.0.7922.34\",\"revision\":\"@782af9cb30a53f54487e5d2e44738645a8ec457c\",\"userAgent\":\"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.7922.34 Safari/537.36\",\"jsVersion\":\"15.1.206.8\"}} \u001b[38;5;34m+191ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0mSEND ► {\"id\":2,\"method\":\"Target.setAutoAttach\",\"params\":{\"autoAttach\":true,\"waitForDebuggerOnStart\":true,\"flatten\":true}} \u001b[38;5;34m+1ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0m◀ RECV {\"id\":2,\"result\":{}} \u001b[38;5;34m+7ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0mSEND ► {\"id\":3,\"method\":\"Target.createBrowserContext\",\"params\":{\"disposeOnDetach\":true,\"proxyServer\":\"http://127.0.0.1:37725\",\"proxyBypassList\":\"<-loopback>\"}} \u001b[38;5;34m+10ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0m◀ RECV {\"id\":3,\"result\":{\"browserContextId\":\"9C214C5065542E14CD0A31173786EFC1\"}} \u001b[38;5;34m+2ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0mSEND ► {\"id\":4,\"method\":\"Browser.setDownloadBehavior\",\"params\":{\"behavior\":\"allowAndName\",\"browserContextId\":\"9C214C5065542E14CD0A31173786EFC1\",\"downloadPath\":\"/workspace/suitecut/benchmarks/playwright-compatibility/2026-10-11-followup/auth-wrong-proxy-diagnostic/artifacts/.playwright-artifacts-0\",\"eventsEnabled\":true}} \u001b[38;5;34m+3ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0m◀ RECV {\"id\":4,\"result\":{}} \u001b[38;5;34m+6ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0mSEND ► {\"id\":5,\"method\":\"Target.createTarget\",\"params\":{\"url\":\"about:blank\",\"browserContextId\":\"9C214C5065542E14CD0A31173786EFC1\"}} \u001b[38;5;34m+8ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0m◀ RECV {\"method\":\"Target.attachedToTarget\",\"params\":{\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\",\"targetInfo\":{\"targetId\":\"74930A388814F38B2F2D8321BFDDD8CF\",\"type\":\"page\",\"title\":\"\",\"url\":\"\",\"attached\":true,\"canAccessOpener\":false,\"browserContextId\":\"9C214C5065542E14CD0A31173786EFC1\"},\"waitingForDebugger\":true}} \u001b[38;5;34m+7ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0mSEND ► {\"id\":6,\"method\":\"Browser.getWindowForTarget\",\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\"} \u001b[38;5;34m+2ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0m◀ RECV {\"id\":5,\"result\":{\"targetId\":\"74930A388814F38B2F2D8321BFDDD8CF\"}} \u001b[38;5;34m+32ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0m◀ RECV {\"id\":6,\"result\":{\"windowId\":1,\"bounds\":{\"left\":0,\"top\":0,\"width\":800,\"height\":600,\"windowState\":\"normal\"}},\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\"} \u001b[38;5;34m+1ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0mSEND ► {\"id\":7,\"method\":\"Page.enable\",\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\"} \u001b[38;5;34m+1ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0mSEND ► {\"id\":8,\"method\":\"Page.getFrameTree\",\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\"} \u001b[38;5;34m+0ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0mSEND ► {\"id\":9,\"method\":\"Log.enable\",\"params\":{},\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\"} \u001b[38;5;34m+0ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0mSEND ► {\"id\":10,\"method\":\"Page.setLifecycleEventsEnabled\",\"params\":{\"enabled\":true},\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\"} \u001b[38;5;34m+0ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0mSEND ► {\"id\":11,\"method\":\"Runtime.enable\",\"params\":{},\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\"} \u001b[38;5;34m+0ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0mSEND ► {\"id\":12,\"method\":\"Page.addScriptToEvaluateOnNewDocument\",\"params\":{\"source\":\"\",\"worldName\":\"__playwright_utility_world_page@6e4308a2ed2abe5a03f66bae7a6e000f\"},\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\"} \u001b[38;5;34m+0ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0mSEND ► {\"id\":13,\"method\":\"Network.enable\",\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\"} \u001b[38;5;34m+0ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0mSEND ► {\"id\":14,\"method\":\"Network.setCacheDisabled\",\"params\":{\"cacheDisabled\":true},\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\"} \u001b[38;5;34m+1ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0mSEND ► {\"id\":15,\"method\":\"Fetch.enable\",\"params\":{\"handleAuthRequests\":true,\"patterns\":[{\"urlPattern\":\"*\",\"requestStage\":\"Request\"}]},\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\"} \u001b[38;5;34m+0ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0mSEND ► {\"id\":16,\"method\":\"Target.setAutoAttach\",\"params\":{\"autoAttach\":true,\"waitForDebuggerOnStart\":true,\"flatten\":true},\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\"} \u001b[38;5;34m+0ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0mSEND ► {\"id\":17,\"method\":\"Emulation.setFocusEmulationEnabled\",\"params\":{\"enabled\":true},\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\"} \u001b[38;5;34m+0ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0mSEND ► {\"id\":18,\"method\":\"Security.setIgnoreCertificateErrors\",\"params\":{\"ignore\":true},\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\"} \u001b[38;5;34m+0ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0mSEND ► {\"id\":19,\"method\":\"Browser.setWindowBounds\",\"params\":{\"windowId\":1,\"bounds\":{\"width\":640,\"height\":360}},\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\"} \u001b[38;5;34m+0ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0mSEND ► {\"id\":20,\"method\":\"Emulation.setDeviceMetricsOverride\",\"params\":{\"mobile\":false,\"width\":640,\"height\":360,\"screenWidth\":640,\"screenHeight\":360,\"deviceScaleFactor\":1,\"screenOrientation\":{\"angle\":0,\"type\":\"landscapePrimary\"}},\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\"} \u001b[38;5;34m+1ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0mSEND ► {\"id\":21,\"method\":\"Emulation.setUserAgentOverride\",\"params\":{\"userAgent\":\"\",\"acceptLanguage\":\"en-US\"},\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\"} \u001b[38;5;34m+0ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0mSEND ► {\"id\":22,\"method\":\"Emulation.setLocaleOverride\",\"params\":{\"locale\":\"en-US\"},\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\"} \u001b[38;5;34m+1ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0mSEND ► {\"id\":23,\"method\":\"Page.setFontFamilies\",\"params\":{\"fontFamilies\":{\"standard\":\"Times New Roman\",\"fixed\":\"Monospace\",\"serif\":\"Times New Roman\",\"sansSerif\":\"Arial\",\"cursive\":\"Comic Sans MS\",\"fantasy\":\"Impact\"}},\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\"} \u001b[38;5;34m+0ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0mSEND ► {\"id\":24,\"method\":\"Emulation.setEmulatedMedia\",\"params\":{\"media\":\"\",\"features\":[{\"name\":\"prefers-color-scheme\",\"value\":\"light\"},{\"name\":\"prefers-reduced-motion\",\"value\":\"no-preference\"},{\"name\":\"forced-colors\",\"value\":\"none\"},{\"name\":\"prefers-contrast\",\"value\":\"no-preference\"}]},\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\"} \u001b[38;5;34m+0ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0mSEND ► {\"id\":25,\"method\":\"Runtime.runIfWaitingForDebugger\",\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\"} \u001b[38;5;34m+0ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0m◀ RECV {\"id\":15,\"result\":{},\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\"} \u001b[38;5;34m+2ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0m◀ RECV {\"id\":18,\"result\":{},\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\"} \u001b[38;5;34m+0ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0m◀ RECV {\"id\":19,\"result\":{},\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\"} \u001b[38;5;34m+1ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0m◀ RECV {\"method\":\"Network.policyUpdated\",\"params\":{},\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\"} \u001b[38;5;34m+31ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0m◀ RECV {\"method\":\"Page.frameStoppedLoading\",\"params\":{\"frameId\":\"74930A388814F38B2F2D8321BFDDD8CF\"},\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\"} \u001b[38;5;34m+5ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0m◀ RECV {\"id\":16,\"result\":{},\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\"} \u001b[38;5;34m+1ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0m◀ RECV {\"id\":7,\"result\":{},\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\"} \u001b[38;5;34m+2ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0m◀ RECV {\"id\":8,\"result\":{\"frameTree\":{\"frame\":{\"id\":\"74930A388814F38B2F2D8321BFDDD8CF\",\"loaderId\":\"CB7662B3DFA5D7FA77461EBF25FCA297\",\"url\":\"about:blank\",\"domainAndRegistry\":\"\",\"securityOrigin\":\"://\",\"securityOriginDetails\":{\"isLocalhost\":false},\"mimeType\":\"text/html\",\"adFrameStatus\":{\"adFrameType\":\"none\"},\"secureContextType\":\"InsecureScheme\",\"crossOriginIsolatedContextType\":\"NotIsolated\",\"gatedAPIFeatures\":[]}}},\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\"} \u001b[38;5;34m+0ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0mSEND ► {\"id\":26,\"method\":\"Page.createIsolatedWorld\",\"params\":{\"frameId\":\"74930A388814F38B2F2D8321BFDDD8CF\",\"grantUniveralAccess\":true,\"worldName\":\"__playwright_utility_world_page@6e4308a2ed2abe5a03f66bae7a6e000f\"},\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\"} \u001b[38;5;34m+2ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0m◀ RECV {\"id\":9,\"result\":{},\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\"} \u001b[38;5;34m+0ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0m◀ RECV {\"method\":\"Page.lifecycleEvent\",\"params\":{\"frameId\":\"74930A388814F38B2F2D8321BFDDD8CF\",\"loaderId\":\"CB7662B3DFA5D7FA77461EBF25FCA297\",\"name\":\"commit\",\"timestamp\":241868.473392},\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\"} \u001b[38;5;34m+1ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0m◀ RECV {\"method\":\"Page.lifecycleEvent\",\"params\":{\"frameId\":\"74930A388814F38B2F2D8321BFDDD8CF\",\"loaderId\":\"CB7662B3DFA5D7FA77461EBF25FCA297\",\"name\":\"DOMContentLoaded\",\"timestamp\":241868.473514},\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\"} \u001b[38;5;34m+0ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0m◀ RECV {\"method\":\"Page.lifecycleEvent\",\"params\":{\"frameId\":\"74930A388814F38B2F2D8321BFDDD8CF\",\"loaderId\":\"CB7662B3DFA5D7FA77461EBF25FCA297\",\"name\":\"load\",\"timestamp\":241868.47672},\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\"} \u001b[38;5;34m+0ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0m◀ RECV {\"method\":\"Page.lifecycleEvent\",\"params\":{\"frameId\":\"74930A388814F38B2F2D8321BFDDD8CF\",\"loaderId\":\"CB7662B3DFA5D7FA77461EBF25FCA297\",\"name\":\"networkAlmostIdle\",\"timestamp\":241868.476638},\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\"} \u001b[38;5;34m+0ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0m◀ RECV {\"method\":\"Page.lifecycleEvent\",\"params\":{\"frameId\":\"74930A388814F38B2F2D8321BFDDD8CF\",\"loaderId\":\"CB7662B3DFA5D7FA77461EBF25FCA297\",\"name\":\"networkIdle\",\"timestamp\":241868.476638},\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\"} \u001b[38;5;34m+0ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0m◀ RECV {\"id\":10,\"result\":{},\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\"} \u001b[38;5;34m+0ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0m◀ RECV {\"method\":\"Runtime.executionContextCreated\",\"params\":{\"context\":{\"id\":1,\"origin\":\"://\",\"name\":\"\",\"uniqueId\":\"-1868006153773902673.3420983113201653467\",\"auxData\":{\"isDefault\":true,\"type\":\"default\",\"frameId\":\"74930A388814F38B2F2D8321BFDDD8CF\"}}},\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\"} \u001b[38;5;34m+2ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0m◀ RECV {\"id\":11,\"result\":{},\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\"} \u001b[38;5;34m+1ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0m◀ RECV {\"id\":12,\"result\":{\"identifier\":\"1\"},\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\"} \u001b[38;5;34m+0ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0m◀ RECV {\"id\":13,\"result\":{},\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\"} \u001b[38;5;34m+0ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0m◀ RECV {\"id\":14,\"result\":{},\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\"} \u001b[38;5;34m+0ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0m◀ RECV {\"id\":17,\"result\":{},\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\"} \u001b[38;5;34m+0ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0m◀ RECV {\"id\":20,\"result\":{},\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\"} \u001b[38;5;34m+0ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0m◀ RECV {\"id\":21,\"result\":{},\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\"} \u001b[38;5;34m+0ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0m◀ RECV {\"id\":22,\"result\":{},\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\"} \u001b[38;5;34m+1ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0m◀ RECV {\"id\":23,\"result\":{},\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\"} \u001b[38;5;34m+1ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0m◀ RECV {\"id\":24,\"result\":{},\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\"} \u001b[38;5;34m+0ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0m◀ RECV {\"id\":25,\"result\":{},\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\"} \u001b[38;5;34m+0ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0mSEND ► {\"id\":27,\"method\":\"Page.navigate\",\"params\":{\"url\":\"https://auth-proxy.test/auth\",\"frameId\":\"74930A388814F38B2F2D8321BFDDD8CF\",\"referrerPolicy\":\"unsafeUrl\"},\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\"} \u001b[38;5;34m+7ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0m◀ RECV {\"method\":\"Runtime.executionContextCreated\",\"params\":{\"context\":{\"id\":2,\"origin\":\"://\",\"name\":\"__playwright_utility_world_page@6e4308a2ed2abe5a03f66bae7a6e000f\",\"uniqueId\":\"-4314890324684859295.6684802126910172861\",\"auxData\":{\"isDefault\":false,\"type\":\"isolated\",\"frameId\":\"74930A388814F38B2F2D8321BFDDD8CF\"}}},\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\"} \u001b[38;5;34m+5ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0m◀ RECV {\"id\":26,\"result\":{\"executionContextId\":2},\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\"} \u001b[38;5;34m+0ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0m◀ RECV {\"method\":\"Page.frameStartedNavigating\",\"params\":{\"frameId\":\"74930A388814F38B2F2D8321BFDDD8CF\",\"url\":\"https://auth-proxy.test/auth\",\"loaderId\":\"83DD56C9F94DD56CE77060D3607DB115\",\"navigationType\":\"differentDocument\"},\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\"} \u001b[38;5;34m+0ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0m◀ RECV {\"method\":\"Page.frameStartedLoading\",\"params\":{\"frameId\":\"74930A388814F38B2F2D8321BFDDD8CF\"},\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\"} \u001b[38;5;34m+0ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0m◀ RECV {\"method\":\"Network.requestWillBeSent\",\"params\":{\"requestId\":\"83DD56C9F94DD56CE77060D3607DB115\",\"loaderId\":\"83DD56C9F94DD56CE77060D3607DB115\",\"documentURL\":\"https://auth-proxy.test/auth\",\"request\":{\"url\":\"https://auth-proxy.test/auth\",\"method\":\"GET\",\"headers\":{\"Accept-Language\":\"en-US\",\"Upgrade-Insecure-Requests\":\"1\",\"User-Agent\":\"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.7922.34 Safari/537.36\",\"sec-ch-ua\":\"\\\"Not=A?Brand\\\";v=\\\"99\\\", \\\"HeadlessChrome\\\";v=\\\"151\\\", \\\"Chromium\\\";v=\\\"151\\\"\",\"sec-ch-ua-mobile\":\"?0\",\"sec-ch-ua-platform\":\"\\\"Linux\\\"\"},\"mixedContentType\":\"none\",\"initialPriority\":\"VeryHigh\",\"referrerPolicy\":\"unsafe-url\",\"isSameSite\":true},\"timestamp\":241868.498285,\"wallTime\":1791732101.312217,\"initiator\":{\"type\":\"other\"},\"redirectHasExtraInfo\":false,\"type\":\"Document\",\"frameId\":\"74930A388814F38B2F2D8321BFDDD8CF\",\"hasUserGesture\":false},\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\"} \u001b[38;5;34m+0ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0m◀ RECV {\"method\":\"Fetch.requestPaused\",\"params\":{\"requestId\":\"interception-job-1.0\",\"request\":{\"url\":\"https://auth-proxy.test/auth\",\"method\":\"GET\",\"headers\":{\"Accept\":\"text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7\",\"Accept-Language\":\"en-US\",\"Upgrade-Insecure-Requests\":\"1\",\"User-Agent\":\"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.7922.34 Safari/537.36\",\"sec-ch-ua\":\"\\\"Not=A?Brand\\\";v=\\\"99\\\", \\\"HeadlessChrome\\\";v=\\\"151\\\", \\\"Chromium\\\";v=\\\"151\\\"\",\"sec-ch-ua-mobile\":\"?0\",\"sec-ch-ua-platform\":\"\\\"Linux\\\"\"},\"initialPriority\":\"VeryHigh\",\"referrerPolicy\":\"unsafe-url\"},\"frameId\":\"74930A388814F38B2F2D8321BFDDD8CF\",\"resourceType\":\"Document\",\"networkId\":\"83DD56C9F94DD56CE77060D3607DB115\"},\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\"} \u001b[38;5;34m+4ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0mSEND ► {\"id\":28,\"method\":\"Fetch.continueRequest\",\"params\":{\"requestId\":\"interception-job-1.0\"},\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\"} \u001b[38;5;34m+0ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0m◀ RECV {\"id\":28,\"result\":{},\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\"} \u001b[38;5;34m+3ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0m◀ RECV {\"method\":\"Fetch.authRequired\",\"params\":{\"requestId\":\"interception-job-1.0\",\"request\":{\"url\":\"https://auth-proxy.test/auth\",\"method\":\"GET\",\"headers\":{\"Accept\":\"text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7\",\"Accept-Language\":\"en-US\",\"Upgrade-Insecure-Requests\":\"1\",\"User-Agent\":\"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.7922.34 Safari/537.36\",\"sec-ch-ua\":\"\\\"Not=A?Brand\\\";v=\\\"99\\\", \\\"HeadlessChrome\\\";v=\\\"151\\\", \\\"Chromium\\\";v=\\\"151\\\"\",\"sec-ch-ua-mobile\":\"?0\",\"sec-ch-ua-platform\":\"\\\"Linux\\\"\"},\"initialPriority\":\"VeryHigh\",\"referrerPolicy\":\"unsafe-url\"},\"frameId\":\"74930A388814F38B2F2D8321BFDDD8CF\",\"resourceType\":\"Document\",\"authChallenge\":{\"source\":\"Proxy\",\"origin\":\"http://127.0.0.1:37725\",\"scheme\":\"basic\",\"realm\":\"local-proxy\"}},\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\"} \u001b[38;5;34m+7ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0mSEND ► {\"id\":29,\"method\":\"Fetch.continueWithAuth\",\"params\":{\"requestId\":\"interception-job-1.0\",\"authChallengeResponse\":{\"response\":\"ProvideCredentials\",\"username\":\"proxy\",\"password\":\"wrong\"}},\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\"} \u001b[38;5;34m+0ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0m◀ RECV {\"id\":29,\"result\":{},\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\"} \u001b[38;5;34m+0ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0m◀ RECV {\"method\":\"Fetch.authRequired\",\"params\":{\"requestId\":\"interception-job-1.0\",\"request\":{\"url\":\"https://auth-proxy.test/auth\",\"method\":\"GET\",\"headers\":{\"Accept\":\"text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7\",\"Accept-Language\":\"en-US\",\"Upgrade-Insecure-Requests\":\"1\",\"User-Agent\":\"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.7922.34 Safari/537.36\",\"sec-ch-ua\":\"\\\"Not=A?Brand\\\";v=\\\"99\\\", \\\"HeadlessChrome\\\";v=\\\"151\\\", \\\"Chromium\\\";v=\\\"151\\\"\",\"sec-ch-ua-mobile\":\"?0\",\"sec-ch-ua-platform\":\"\\\"Linux\\\"\"},\"initialPriority\":\"VeryHigh\",\"referrerPolicy\":\"unsafe-url\"},\"frameId\":\"74930A388814F38B2F2D8321BFDDD8CF\",\"resourceType\":\"Document\",\"authChallenge\":{\"source\":\"Proxy\",\"origin\":\"http://127.0.0.1:37725\",\"scheme\":\"basic\",\"realm\":\"local-proxy\"}},\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\"} \u001b[38;5;34m+2ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0mSEND ► {\"id\":30,\"method\":\"Fetch.continueWithAuth\",\"params\":{\"requestId\":\"interception-job-1.0\",\"authChallengeResponse\":{\"response\":\"CancelAuth\"}},\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\"} \u001b[38;5;34m+0ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0m◀ RECV {\"id\":30,\"result\":{},\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\"} \u001b[38;5;34m+1ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0m◀ RECV {\"method\":\"Network.responseReceived\",\"params\":{\"requestId\":\"83DD56C9F94DD56CE77060D3607DB115\",\"loaderId\":\"83DD56C9F94DD56CE77060D3607DB115\",\"timestamp\":241868.519576,\"type\":\"Document\",\"response\":{\"url\":\"https://auth-proxy.test/auth\",\"status\":407,\"statusText\":\"Proxy Authentication Required\",\"headers\":{\"Content-Length\":\"0\",\"Proxy-Authenticate\":\"Basic realm=\\\"local-proxy\\\"\"},\"mimeType\":\"text/plain\",\"charset\":\"\",\"connectionReused\":false,\"connectionId\":0,\"remoteIPAddress\":\"\",\"remotePort\":0,\"fromDiskCache\":true,\"fromServiceWorker\":false,\"fromPrefetchCache\":false,\"encodedDataLength\":0,\"protocol\":\"http/1.1\",\"alternateProtocolUsage\":\"unspecifiedReason\",\"securityState\":\"secure\"},\"hasExtraInfo\":false,\"frameId\":\"74930A388814F38B2F2D8321BFDDD8CF\"},\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\"} \u001b[38;5;34m+1ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0m◀ RECV {\"id\":27,\"result\":{\"frameId\":\"74930A388814F38B2F2D8321BFDDD8CF\",\"loaderId\":\"83DD56C9F94DD56CE77060D3607DB115\",\"isDownload\":false},\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\"} \u001b[38;5;34m+2ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0m◀ RECV {\"method\":\"Runtime.executionContextsCleared\",\"params\":{},\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\"} \u001b[38;5;34m+5ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0m◀ RECV {\"method\":\"Page.lifecycleEvent\",\"params\":{\"frameId\":\"74930A388814F38B2F2D8321BFDDD8CF\",\"loaderId\":\"83DD56C9F94DD56CE77060D3607DB115\",\"name\":\"init\",\"timestamp\":241868.524826},\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\"} \u001b[38;5;34m+1ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0m◀ RECV {\"method\":\"Runtime.executionContextsCleared\",\"params\":{},\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\"} \u001b[38;5;34m+0ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0m◀ RECV {\"method\":\"Page.frameNavigated\",\"params\":{\"frame\":{\"id\":\"74930A388814F38B2F2D8321BFDDD8CF\",\"loaderId\":\"83DD56C9F94DD56CE77060D3607DB115\",\"url\":\"https://auth-proxy.test/auth\",\"domainAndRegistry\":\"auth-proxy.test\",\"securityOrigin\":\"https://auth-proxy.test\",\"securityOriginDetails\":{\"isLocalhost\":false},\"mimeType\":\"text/plain\",\"adFrameStatus\":{\"adFrameType\":\"none\"},\"secureContextType\":\"Secure\",\"crossOriginIsolatedContextType\":\"NotIsolated\",\"gatedAPIFeatures\":[]},\"type\":\"Navigation\"},\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\"} \u001b[38;5;34m+0ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0m◀ RECV {\"method\":\"Log.entryAdded\",\"params\":{\"entry\":{\"source\":\"network\",\"level\":\"error\",\"text\":\"Failed to load resource: the server responded with a status of 407 (Proxy Authentication Required)\",\"timestamp\":1791732101341.616,\"url\":\"https://auth-proxy.test/auth\",\"networkRequestId\":\"83DD56C9F94DD56CE77060D3607DB115\"}},\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\"} \u001b[38;5;34m+5ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0m◀ RECV {\"method\":\"Network.policyUpdated\",\"params\":{},\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\"} \u001b[38;5;34m+1ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0m◀ RECV {\"method\":\"Runtime.executionContextCreated\",\"params\":{\"context\":{\"id\":3,\"origin\":\"https://auth-proxy.test\",\"name\":\"\",\"uniqueId\":\"4795051558390983811.-3578312356464482635\",\"auxData\":{\"isDefault\":true,\"type\":\"default\",\"frameId\":\"74930A388814F38B2F2D8321BFDDD8CF\"}}},\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\"} \u001b[38;5;34m+0ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0m◀ RECV {\"method\":\"Runtime.executionContextCreated\",\"params\":{\"context\":{\"id\":4,\"origin\":\"https://auth-proxy.test\",\"name\":\"__playwright_utility_world_page@6e4308a2ed2abe5a03f66bae7a6e000f\",\"uniqueId\":\"-5472345116477396573.7202541632167753717\",\"auxData\":{\"isDefault\":false,\"type\":\"isolated\",\"frameId\":\"74930A388814F38B2F2D8321BFDDD8CF\"}}},\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\"} \u001b[38;5;34m+0ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0m◀ RECV {\"method\":\"Network.loadingFailed\",\"params\":{\"requestId\":\"83DD56C9F94DD56CE77060D3607DB115\",\"timestamp\":241868.532473,\"type\":\"Document\",\"errorText\":\"net::ERR_TUNNEL_CONNECTION_FAILED\",\"canceled\":false},\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\"} \u001b[38;5;34m+0ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0m◀ RECV {\"method\":\"Log.entryAdded\",\"params\":{\"entry\":{\"source\":\"network\",\"level\":\"error\",\"text\":\"Failed to load resource: net::ERR_TUNNEL_CONNECTION_FAILED\",\"timestamp\":1791732101346.42,\"url\":\"https://auth-proxy.test/auth\",\"networkRequestId\":\"83DD56C9F94DD56CE77060D3607DB115\"}},\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\"} \u001b[38;5;34m+1ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0m◀ RECV {\"method\":\"Page.frameStoppedLoading\",\"params\":{\"frameId\":\"74930A388814F38B2F2D8321BFDDD8CF\"},\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\"} \u001b[38;5;34m+0ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0mSEND ► {\"id\":31,\"method\":\"Target.disposeBrowserContext\",\"params\":{\"browserContextId\":\"9C214C5065542E14CD0A31173786EFC1\"}} \u001b[38;5;34m+5s\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0m◀ RECV {\"method\":\"Target.detachedFromTarget\",\"params\":{\"sessionId\":\"CC9CEEF0216D6B2DFF083C0C72EEFBC1\",\"targetId\":\"74930A388814F38B2F2D8321BFDDD8CF\"}} \u001b[38;5;34m+2ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0m◀ RECV {\"id\":31,\"result\":{}} \u001b[38;5;34m+8ms\u001b[0m\n"
+                    },
+                    {
+                      "text": "  \u001b[38;5;34;1mpw:protocol \u001b[0m◀ RECV {\"id\":-9999,\"result\":{}} \u001b[38;5;34m+65ms\u001b[0m\n"
+                    }
+                  ],
+                  "retry": 0,
+                  "startTime": "2026-10-11T15:21:40.888Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/workspace/suitecut/benchmarks/playwright-compatibility/2026-10-11-followup/auth-wrong-proxy-diagnostic/artifacts/compatibility-proxy-https--4e135-ithout-reaching-the-website/error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/workspace/suitecut/benchmarks/playwright-compatibility/2026-10-11-followup/auth-wrong-proxy-diagnostic/artifacts/compatibility-proxy-https--4e135-ithout-reaching-the-website/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts",
+                    "column": 33,
+                    "line": 714
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "b0b409d468a60194358f-846aeb5a38509b5ea58f",
+          "file": "compatibility.spec.ts",
+          "line": 699,
+          "column": 3
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-11T15:21:39.380Z",
+    "duration": 7065.361000000001,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

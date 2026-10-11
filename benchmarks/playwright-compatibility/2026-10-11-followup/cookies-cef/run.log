@@ -1,0 +1,71 @@
+[WARN] Your node_modules are out of sync with your lockfile. The value of the patchedDependencies setting has changed
+
+Running 39 tests using 1 worker
+
+(node:1034035) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-cookies.spec.ts:22:3 › should work @smoke (180ms)
+  ✓   2 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-cookies.spec.ts:32:3 › should work with expires=-1 (158ms)
+  ✓   3 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-cookies.spec.ts:50:3 › should add cookies with empty value (161ms)
+  ✓   4 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-cookies.spec.ts:68:3 › should set cookies with SameSite attribute and no secure attribute (17ms)
+  ✓   5 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-cookies.spec.ts:134:3 › should roundtrip cookie (169ms)
+  ✓   6 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-cookies.spec.ts:153:3 › should send cookie header (107ms)
+  ✓   7 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-cookies.spec.ts:165:3 › should isolate cookies in browser contexts (31ms)
+  ✓   8 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-cookies.spec.ts:181:3 › should isolate session cookies (315ms)
+  ✓   9 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-cookies.spec.ts:207:3 › should isolate persistent cookies (343ms)
+  ✓  10 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-cookies.spec.ts:227:3 › should isolate send cookie header (215ms)
+  ✘  11 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-cookies.spec.ts:248:15 › should isolate cookies between launches (2ms)
+(node:1034375) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  12 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-cookies.spec.ts:263:3 › should set multiple cookies (142ms)
+  ✓  13 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-cookies.spec.ts:283:3 › should have |expires| set to |-1| for session cookies (16ms)
+  ✓  14 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-cookies.spec.ts:293:3 › should set cookie with reasonable defaults (17ms)
+  ✓  15 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-cookies.spec.ts:312:3 › should set a cookie with a path (270ms)
+  ✓  16 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-cookies.spec.ts:338:3 › should not set a cookie with blank page URL (17ms)
+  ✓  17 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-cookies.spec.ts:353:3 › should not set a cookie on a data URL page (28ms)
+  ✓  18 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-cookies.spec.ts:363:3 › should default to setting secure cookie for HTTPS websites (137ms)
+  ✓  19 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-cookies.spec.ts:375:3 › should be able to set unsecure cookie for HTTP website (135ms)
+  ✓  20 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-cookies.spec.ts:387:3 › should set a cookie on a different domain (109ms)
+  ✓  21 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-cookies.spec.ts:408:3 › should set cookies for a frame (182ms)
+  ✓  22 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-cookies.spec.ts:426:3 › should allow unnamed cookies (156ms)
+  ✓  23 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-cookies.spec.ts:455:3 › should set secure cookies on secure WebSocket (141ms)
+  ✓  24 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-cookies.spec.ts:20:3 › should return no cookies in pristine browser context (70ms)
+  ✓  25 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-cookies.spec.ts:24:3 › should get a cookie @smoke (104ms)
+  ✓  26 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-cookies.spec.ts:43:3 › should get a non-session cookie (112ms)
+  ✓  27 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-cookies.spec.ts:75:3 › should allow adding cookies with >400 days expiration (31ms)
+  ✓  28 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-cookies.spec.ts:107:3 › should properly report httpOnly cookie (117ms)
+  ✓  29 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-cookies.spec.ts:118:3 › should properly report "Strict" sameSite cookie (115ms)
+  ✓  30 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-cookies.spec.ts:131:3 › should properly report "Lax" sameSite cookie (92ms)
+  ✓  31 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-cookies.spec.ts:144:3 › should get multiple cookies (109ms)
+  ✓  32 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-cookies.spec.ts:177:3 › should get cookies from multiple urls (14ms)
+  ✓  33 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-cookies.spec.ts:216:3 › should work with subdomain cookie (15ms)
+  ✓  34 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-cookies.spec.ts:247:3 › should return cookies with empty value (119ms)
+  ✓  35 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-cookies.spec.ts:262:3 › should return secure cookies based on HTTP(S) protocol (15ms)
+  ✓  36 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-cookies.spec.ts:308:3 › should add cookies with an expiration (32ms)
+  -  37 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-cookies.spec.ts:356:3 › should support requestStorageAccess
+  ✓  38 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-cookies.spec.ts:410:3 › should parse cookie with large Max-Age correctly (151ms)
+  ✓  39 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-cookies.spec.ts:436:3 › iframe should inherit cookies from parent (232ms)
+
+
+  1) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-cookies.spec.ts:248:15 › should isolate cookies between launches 
+
+    Error: SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness
+
+       at config/browserTest.ts:222
+
+      220 |     if(process.env.COMPAT_BACKEND==='chromium') return use(original);
+      221 |     await use(new Proxy(original, { get(target, name) {
+    > 222 |       if (['launch', 'launchPersistentContext', 'launchServer', 'connect', 'connectOverCDP'].includes(String(name))) return async () => { throw new Error('SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness'); };
+          |                                                                                                                                                 ^
+      223 |       const value = Reflect.get(target, name); return typeof value === 'function' ? value.bind(target) : value;
+      224 |     }}));
+      225 |   }, { scope: 'worker' }],
+        at Proxy.launch (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts:222:145)
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-cookies.spec.ts:251:38
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11-followup/cookies-cef/artifacts/library-browsercontext-add-a1a59-te-cookies-between-launches/error-context.md
+
+  1 failed
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-cookies.spec.ts:248:15 › should isolate cookies between launches 
+  1 skipped
+  37 passed (10.0s)

@@ -1,0 +1,27 @@
+[WARN] Your node_modules are out of sync with your lockfile. The value of the patchedDependencies setting has changed
+
+Running 19 tests using 1 worker
+
+(node:1022071) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 benchmarks/playwright-compatibility/compatibility.spec.ts:468:1 › state: IndexedDB auth export to file and restore into a fresh context (535ms)
+  ✓   2 benchmarks/playwright-compatibility/compatibility.spec.ts:598:3 › auth: http origin HTTP credentials (159ms)
+  ✓   3 benchmarks/playwright-compatibility/compatibility.spec.ts:613:3 › proxy: http through local proxy plus origin auth (145ms)
+  ✓   4 benchmarks/playwright-compatibility/compatibility.spec.ts:629:3 › proxy: http authenticated proxy plus origin auth (164ms)
+  ✓   5 benchmarks/playwright-compatibility/compatibility.spec.ts:645:3 › proxy: http separate credentials respect a matching origin (126ms)
+  ✓   6 benchmarks/playwright-compatibility/compatibility.spec.ts:663:5 › proxy: http does not send proxy credentials to the website (132ms)
+  ✓   7 benchmarks/playwright-compatibility/compatibility.spec.ts:663:5 › proxy: http does not send out-of-origin credentials to the website (132ms)
+  ✓   8 benchmarks/playwright-compatibility/compatibility.spec.ts:691:3 › proxy: http incorrect proxy credentials stop without reaching the website (124ms)
+  ✓   9 benchmarks/playwright-compatibility/compatibility.spec.ts:598:3 › auth: https origin HTTP credentials (172ms)
+  ✓  10 benchmarks/playwright-compatibility/compatibility.spec.ts:613:3 › proxy: https through local proxy plus origin auth (156ms)
+  ✓  11 benchmarks/playwright-compatibility/compatibility.spec.ts:629:3 › proxy: https authenticated proxy plus origin auth (159ms)
+  ✓  12 benchmarks/playwright-compatibility/compatibility.spec.ts:645:3 › proxy: https separate credentials respect a matching origin (158ms)
+  ✓  13 benchmarks/playwright-compatibility/compatibility.spec.ts:663:5 › proxy: https does not send proxy credentials to the website (175ms)
+  ✓  14 benchmarks/playwright-compatibility/compatibility.spec.ts:663:5 › proxy: https does not send out-of-origin credentials to the website (155ms)
+  ✓  15 benchmarks/playwright-compatibility/compatibility.spec.ts:691:3 › proxy: https incorrect proxy credentials stop without reaching the website (142ms)
+  ✓  16 benchmarks/playwright-compatibility/compatibility.spec.ts:710:1 › auth: wrong credentials fail and a fresh context does not inherit them (819ms)
+  ✓  17 benchmarks/playwright-compatibility/compatibility.spec.ts:731:1 › proxy: bypass uses the real origin without contacting the proxy (274ms)
+  ✓  18 benchmarks/playwright-compatibility/compatibility.spec.ts:743:3 › proxy: http authenticated proxy without origin auth (209ms)
+  ✓  19 benchmarks/playwright-compatibility/compatibility.spec.ts:743:3 › proxy: https authenticated proxy without origin auth (187ms)
+
+  19 passed (6.2s)

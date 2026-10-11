@@ -4,8 +4,9 @@ These are functional tests against the actual SuiteCut native browser, with a
 stock Playwright Chromium control. They do not measure recording performance or
 prove complete upstream compatibility.
 
-The [October 11 report](2026-10-11/report.md) records verified workflows, native
-fixes, failing cases, harness limits and exact versions. Raw JSON reports, logs,
+The [follow-up report](2026-10-11-followup/report.md) records the latest fixes and
+remaining failures. The [fallback report](2026-10-11/report.md) preserves the
+preceding baseline, harness limits and exact versions. Raw JSON reports, logs,
 videos, HARs, exported state and failure artifacts remain in each attempt's
 directory. `summary.json` and `cases.csv` include earlier failures as well as
 later verification; they are not a single combined compatibility score.
@@ -27,8 +28,8 @@ pnpm_config_verify_deps_before_run=warn taskset -c 0-3 \
 
 Use a new evidence directory and `COMPAT_BACKEND=chromium` for the stock control.
 The native-only CDP alias cleanup test skips on stock Chromium. Authentication
-combination failures are deliberately asserted as failures, not converted to
-expected failures. All local proxy passwords and tokens are dummy fixture data.
+combination tests retain positive assertions. The pinned Playwright patch now
+resolves the earlier overwrite; see [patch setup](../../patches/README.md). All local proxy passwords and tokens are dummy fixture data.
 
 Without the workspace wrapper, set `DISPLAY`, working audio dependencies and
 `SUITECUT_NATIVE_EXECUTABLE`, then run the Playwright command directly.
@@ -68,3 +69,6 @@ python3 benchmarks/playwright-compatibility/summarize.py \
 The native helper accompanying the report is a replacement executable requiring
 the matching complete 2.1.0 runtime resources and libraries. The previously
 sealed release archives were not rebuilt or published by this investigation.
+
+TLS fixtures in `fixtures/` are the upstream Playwright dummy test certificate
+and key, copied from the pinned source archive; they are not production credentials.

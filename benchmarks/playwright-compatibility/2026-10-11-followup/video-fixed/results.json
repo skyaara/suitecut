@@ -1,0 +1,1887 @@
+{
+  "config": {
+    "argv": [
+      "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+      "/workspace/suitecut/node_modules/playwright/cli.js",
+      "test",
+      "--config",
+      "/tmp/suitecut-playwright-upstream/playwright-1.62.1/suitecut.config.ts",
+      "library/video.spec.ts",
+      "--timeout",
+      "10000",
+      "--global-timeout",
+      "240000",
+      "--max-failures",
+      "10"
+    ],
+    "configFile": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/suitecut.config.ts",
+    "rootDir": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 240000,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 10,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/workspace/suitecut/benchmarks/playwright-compatibility/2026-10-11-followup/video-fixed/artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests",
+        "testIgnore": [
+          "**/firefox/**",
+          "**/webkit/**",
+          "**/inspector/**"
+        ],
+        "testMatch": [
+          "library/**/*.spec.ts",
+          "page/**/*.spec.ts"
+        ],
+        "timeout": 10000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "/workspace/suitecut/benchmarks/playwright-compatibility/2026-10-11-followup/video-fixed/results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.62.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "library/video.spec.ts",
+      "file": "library/video.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "should saveAs video",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "slow",
+                  "location": {
+                    "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts",
+                    "line": 781,
+                    "column": 6
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 7,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6985,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T15:18:25.135Z",
+                  "annotations": [
+                    {
+                      "type": "slow",
+                      "location": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts",
+                        "line": 781,
+                        "column": 6
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b93fb214be38b5a2aa13-6590de96453767788d64",
+          "file": "library/video.spec.ts",
+          "line": 780,
+          "column": 3
+        }
+      ],
+      "suites": [
+        {
+          "title": "screencast",
+          "file": "library/video.spec.ts",
+          "line": 101,
+          "column": 4,
+          "specs": [
+            {
+              "title": "should not have video by default",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [
+                    {
+                      "type": "slow",
+                      "location": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts",
+                        "line": 102,
+                        "column": 6
+                      }
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 105,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T15:16:09.702Z",
+                      "annotations": [
+                        {
+                          "type": "slow",
+                          "location": {
+                            "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts",
+                            "line": 102,
+                            "column": 6
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "b93fb214be38b5a2aa13-f3fcc42883a360587a8d",
+              "file": "library/video.spec.ts",
+              "line": 105,
+              "column": 5
+            },
+            {
+              "title": "should not throw without recordVideo.dir",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [
+                    {
+                      "type": "slow",
+                      "location": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts",
+                        "line": 102,
+                        "column": 6
+                      }
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 8,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T15:16:10.509Z",
+                      "annotations": [
+                        {
+                          "type": "slow",
+                          "location": {
+                            "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts",
+                            "line": 102,
+                            "column": 6
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "b93fb214be38b5a2aa13-c358efbdae6daeb683a8",
+              "file": "library/video.spec.ts",
+              "line": 109,
+              "column": 5
+            },
+            {
+              "title": "should capture static page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [
+                    {
+                      "type": "slow",
+                      "location": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts",
+                        "line": 102,
+                        "column": 6
+                      }
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 7404,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T15:16:10.542Z",
+                      "annotations": [
+                        {
+                          "type": "slow",
+                          "location": {
+                            "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts",
+                            "line": 102,
+                            "column": 6
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "b93fb214be38b5a2aa13-4af64ae6ee1e2931c112",
+              "file": "library/video.spec.ts",
+              "line": 113,
+              "column": 5
+            },
+            {
+              "title": "should pad a short frame to the video size",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [
+                    {
+                      "type": "slow",
+                      "location": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts",
+                        "line": 102,
+                        "column": 6
+                      }
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 7021,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T15:16:17.957Z",
+                      "annotations": [
+                        {
+                          "type": "slow",
+                          "location": {
+                            "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts",
+                            "line": 102,
+                            "column": 6
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "b93fb214be38b5a2aa13-666a4d7feac51be7ab48",
+              "file": "library/video.spec.ts",
+              "line": 133,
+              "column": 5
+            },
+            {
+              "title": "should continue recording main page after popup closes",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [
+                    {
+                      "type": "slow",
+                      "location": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts",
+                        "line": 102,
+                        "column": 6
+                      }
+                    },
+                    {
+                      "type": "issue",
+                      "description": "https://github.com/microsoft/playwright/issues/30837"
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 7379,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T15:16:24.992Z",
+                      "annotations": [
+                        {
+                          "type": "slow",
+                          "location": {
+                            "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts",
+                            "line": 102,
+                            "column": 6
+                          }
+                        },
+                        {
+                          "type": "issue",
+                          "description": "https://github.com/microsoft/playwright/issues/30837"
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "b93fb214be38b5a2aa13-ab7c9b025a867f672c7c",
+              "file": "library/video.spec.ts",
+              "line": 152,
+              "column": 5
+            },
+            {
+              "title": "should expose video path",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [
+                    {
+                      "type": "slow",
+                      "location": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts",
+                        "line": 102,
+                        "column": 6
+                      }
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 140,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T15:16:32.386Z",
+                      "annotations": [
+                        {
+                          "type": "slow",
+                          "location": {
+                            "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts",
+                            "line": 102,
+                            "column": 6
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "b93fb214be38b5a2aa13-c6dfbd4b3217a3f546e4",
+              "file": "library/video.spec.ts",
+              "line": 182,
+              "column": 5
+            },
+            {
+              "title": "should delete video",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [
+                    {
+                      "type": "slow",
+                      "location": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts",
+                        "line": 102,
+                        "column": 6
+                      }
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 6957,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T15:16:32.539Z",
+                      "annotations": [
+                        {
+                          "type": "slow",
+                          "location": {
+                            "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts",
+                            "line": 102,
+                            "column": 6
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "b93fb214be38b5a2aa13-cba55ee849a999493318",
+              "file": "library/video.spec.ts",
+              "line": 200,
+              "column": 5
+            },
+            {
+              "title": "should expose video path blank page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [
+                    {
+                      "type": "slow",
+                      "location": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts",
+                        "line": 102,
+                        "column": 6
+                      }
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 120,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T15:16:39.508Z",
+                      "annotations": [
+                        {
+                          "type": "slow",
+                          "location": {
+                            "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts",
+                            "line": 102,
+                            "column": 6
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "b93fb214be38b5a2aa13-acb618c3dbccd10ec35c",
+              "file": "library/video.spec.ts",
+              "line": 221,
+              "column": 5
+            },
+            {
+              "title": "should work with weird screen resolution",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [
+                    {
+                      "type": "slow",
+                      "location": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts",
+                        "line": 102,
+                        "column": 6
+                      }
+                    },
+                    {
+                      "type": "issue",
+                      "description": "https://github.com/microsoft/playwright/issues/22069"
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 372,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T15:16:39.641Z",
+                      "annotations": [
+                        {
+                          "type": "slow",
+                          "location": {
+                            "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts",
+                            "line": 102,
+                            "column": 6
+                          }
+                        },
+                        {
+                          "type": "issue",
+                          "description": "https://github.com/microsoft/playwright/issues/22069"
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "b93fb214be38b5a2aa13-bde167a75fce5872011d",
+              "file": "library/video.spec.ts",
+              "line": 238,
+              "column": 5
+            },
+            {
+              "title": "should work with relative path for recordVideo.dir",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [
+                    {
+                      "type": "slow",
+                      "location": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts",
+                        "line": 102,
+                        "column": 6
+                      }
+                    },
+                    {
+                      "type": "issue",
+                      "description": "https://github.com/microsoft/playwright/issues/27086"
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 115,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T15:16:40.022Z",
+                      "annotations": [
+                        {
+                          "type": "slow",
+                          "location": {
+                            "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts",
+                            "line": 102,
+                            "column": 6
+                          }
+                        },
+                        {
+                          "type": "issue",
+                          "description": "https://github.com/microsoft/playwright/issues/27086"
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "b93fb214be38b5a2aa13-b489dc451be5e2b8cb2d",
+              "file": "library/video.spec.ts",
+              "line": 256,
+              "column": 5
+            },
+            {
+              "title": "should expose video path blank popup",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [
+                    {
+                      "type": "slow",
+                      "location": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts",
+                        "line": 102,
+                        "column": 6
+                      }
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 183,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T15:16:40.146Z",
+                      "annotations": [
+                        {
+                          "type": "slow",
+                          "location": {
+                            "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts",
+                            "line": 102,
+                            "column": 6
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "b93fb214be38b5a2aa13-28825604e172f9adb11c",
+              "file": "library/video.spec.ts",
+              "line": 273,
+              "column": 5
+            },
+            {
+              "title": "should capture navigation",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [
+                    {
+                      "type": "slow",
+                      "location": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts",
+                        "line": 102,
+                        "column": 6
+                      }
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 17233,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T15:16:40.339Z",
+                      "annotations": [
+                        {
+                          "type": "slow",
+                          "location": {
+                            "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts",
+                            "line": 102,
+                            "column": 6
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "b93fb214be38b5a2aa13-f92cdba60f637703afa3",
+              "file": "library/video.spec.ts",
+              "line": 294,
+              "column": 5
+            },
+            {
+              "title": "should capture css transformation",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [
+                    {
+                      "type": "slow",
+                      "location": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts",
+                        "line": 102,
+                        "column": 6
+                      }
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 7329,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T15:16:57.600Z",
+                      "annotations": [
+                        {
+                          "type": "slow",
+                          "location": {
+                            "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts",
+                            "line": 102,
+                            "column": 6
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "b93fb214be38b5a2aa13-633a9950ed5845187f4d",
+              "file": "library/video.spec.ts",
+              "line": 326,
+              "column": 5
+            },
+            {
+              "title": "should work for popups",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [
+                    {
+                      "type": "slow",
+                      "location": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts",
+                        "line": 102,
+                        "column": 6
+                      }
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 8220,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T15:17:04.962Z",
+                      "annotations": [
+                        {
+                          "type": "slow",
+                          "location": {
+                            "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts",
+                            "line": 102,
+                            "column": 6
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "b93fb214be38b5a2aa13-8ef55f0de011d9279e74",
+              "file": "library/video.spec.ts",
+              "line": 356,
+              "column": 5
+            },
+            {
+              "title": "should scale frames down to the requested size ",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [
+                    {
+                      "type": "slow",
+                      "location": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts",
+                        "line": 102,
+                        "column": 6
+                      }
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 16050,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T15:17:13.249Z",
+                      "annotations": [
+                        {
+                          "type": "slow",
+                          "location": {
+                            "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts",
+                            "line": 102,
+                            "column": 6
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "b93fb214be38b5a2aa13-4a02579f213e7895bfbb",
+              "file": "library/video.spec.ts",
+              "line": 390,
+              "column": 5
+            },
+            {
+              "title": "should use viewport scaled down to fit into 800x800 as default size",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [
+                    {
+                      "type": "slow",
+                      "location": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts",
+                        "line": 102,
+                        "column": 6
+                      }
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 8287,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T15:17:29.342Z",
+                      "annotations": [
+                        {
+                          "type": "slow",
+                          "location": {
+                            "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts",
+                            "line": 102,
+                            "column": 6
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "b93fb214be38b5a2aa13-3236d7061a33602db2aa",
+              "file": "library/video.spec.ts",
+              "line": 439,
+              "column": 5
+            },
+            {
+              "title": "should be 800x450 by default",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [
+                    {
+                      "type": "slow",
+                      "location": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts",
+                        "line": 102,
+                        "column": 6
+                      }
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 7945,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T15:17:37.655Z",
+                      "annotations": [
+                        {
+                          "type": "slow",
+                          "location": {
+                            "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts",
+                            "line": 102,
+                            "column": 6
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "b93fb214be38b5a2aa13-7b93cf1fe1aa17583028",
+              "file": "library/video.spec.ts",
+              "line": 458,
+              "column": 5
+            },
+            {
+              "title": "should be 800x600 with null viewport",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [
+                    {
+                      "type": "slow",
+                      "location": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts",
+                        "line": 102,
+                        "column": 6
+                      }
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 8260,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T15:17:45.616Z",
+                      "annotations": [
+                        {
+                          "type": "slow",
+                          "location": {
+                            "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts",
+                            "line": 102,
+                            "column": 6
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "b93fb214be38b5a2aa13-7316a0a6ba82b71faed4",
+              "file": "library/video.spec.ts",
+              "line": 475,
+              "column": 5
+            },
+            {
+              "title": "should capture static page in persistent context @smoke",
+              "ok": false,
+              "tags": [
+                "smoke"
+              ],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [
+                    {
+                      "type": "slow",
+                      "location": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts",
+                        "line": 102,
+                        "column": 6
+                      }
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 19,
+                      "error": {
+                        "message": "Error: SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness",
+                        "stack": "Error: SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness\n    at Proxy.launchPersistentContext (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts:222:145)\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts:159:45\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:498:31",
+                        "location": {
+                          "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts",
+                          "column": 145,
+                          "line": 222
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mconfig/browserTest.ts:222\n\n  220 |     if(process.env.COMPAT_BACKEND==='chromium') return use(original);\n  221 |     await use(new Proxy(original, { get(target, name) {\n> 222 |       if (['launch', 'launchPersistentContext', 'launchServer', 'connect', 'connectOverCDP'].includes(String(name))) return async () => { throw new Error('SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness'); };\n      |                                                                                                                                                 ^\n  223 |       const value = Reflect.get(target, name); return typeof value === 'function' ? value.bind(target) : value;\n  224 |     }}));\n  225 |   }, { scope: 'worker' }],"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts",
+                            "column": 145,
+                            "line": 222
+                          },
+                          "message": "Error: SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness\n\n   at config/browserTest.ts:222\n\n  220 |     if(process.env.COMPAT_BACKEND==='chromium') return use(original);\n  221 |     await use(new Proxy(original, { get(target, name) {\n> 222 |       if (['launch', 'launchPersistentContext', 'launchServer', 'connect', 'connectOverCDP'].includes(String(name))) return async () => { throw new Error('SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness'); };\n      |                                                                                                                                                 ^\n  223 |       const value = Reflect.get(target, name); return typeof value === 'function' ? value.bind(target) : value;\n  224 |     }}));\n  225 |   }, { scope: 'worker' }],\n    at Proxy.launchPersistentContext (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts:222:145)\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts:159:45\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:498:31"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T15:17:53.892Z",
+                      "annotations": [
+                        {
+                          "type": "slow",
+                          "location": {
+                            "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts",
+                            "line": 102,
+                            "column": 6
+                          }
+                        }
+                      ],
+                      "attachments": [
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/workspace/suitecut/benchmarks/playwright-compatibility/2026-10-11-followup/video-fixed/artifacts/library-video-screencast-s-6cedd-in-persistent-context-smoke/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts",
+                        "column": 145,
+                        "line": 222
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "b93fb214be38b5a2aa13-0b4d0cae9eb1de2130fe",
+              "file": "library/video.spec.ts",
+              "line": 495,
+              "column": 5
+            },
+            {
+              "title": "should emulate an iphone",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [
+                    {
+                      "type": "slow",
+                      "location": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts",
+                        "line": 102,
+                        "column": 6
+                      }
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 7610,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T15:17:54.982Z",
+                      "annotations": [
+                        {
+                          "type": "slow",
+                          "location": {
+                            "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts",
+                            "line": 102,
+                            "column": 6
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "b93fb214be38b5a2aa13-8611098308eb82a9cbf8",
+              "file": "library/video.spec.ts",
+              "line": 524,
+              "column": 5
+            },
+            {
+              "title": "should throw on browser close",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [
+                    {
+                      "type": "slow",
+                      "location": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts",
+                        "line": 102,
+                        "column": 6
+                      }
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 2,
+                      "error": {
+                        "message": "Error: SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness",
+                        "stack": "Error: SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness\n    at Proxy.launch (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts:222:145)\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:545:39",
+                        "location": {
+                          "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts",
+                          "column": 145,
+                          "line": 222
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mconfig/browserTest.ts:222\n\n  220 |     if(process.env.COMPAT_BACKEND==='chromium') return use(original);\n  221 |     await use(new Proxy(original, { get(target, name) {\n> 222 |       if (['launch', 'launchPersistentContext', 'launchServer', 'connect', 'connectOverCDP'].includes(String(name))) return async () => { throw new Error('SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness'); };\n      |                                                                                                                                                 ^\n  223 |       const value = Reflect.get(target, name); return typeof value === 'function' ? value.bind(target) : value;\n  224 |     }}));\n  225 |   }, { scope: 'worker' }],"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts",
+                            "column": 145,
+                            "line": 222
+                          },
+                          "message": "Error: SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness\n\n   at config/browserTest.ts:222\n\n  220 |     if(process.env.COMPAT_BACKEND==='chromium') return use(original);\n  221 |     await use(new Proxy(original, { get(target, name) {\n> 222 |       if (['launch', 'launchPersistentContext', 'launchServer', 'connect', 'connectOverCDP'].includes(String(name))) return async () => { throw new Error('SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness'); };\n      |                                                                                                                                                 ^\n  223 |       const value = Reflect.get(target, name); return typeof value === 'function' ? value.bind(target) : value;\n  224 |     }}));\n  225 |   }, { scope: 'worker' }],\n    at Proxy.launch (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts:222:145)\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:545:39"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T15:18:03.464Z",
+                      "annotations": [
+                        {
+                          "type": "slow",
+                          "location": {
+                            "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts",
+                            "line": 102,
+                            "column": 6
+                          }
+                        }
+                      ],
+                      "attachments": [
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/workspace/suitecut/benchmarks/playwright-compatibility/2026-10-11-followup/video-fixed/artifacts/library-video-screencast-should-throw-on-browser-close/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts",
+                        "column": 145,
+                        "line": 222
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "b93fb214be38b5a2aa13-491a07a9cbf61a086f0b",
+              "file": "library/video.spec.ts",
+              "line": 543,
+              "column": 5
+            },
+            {
+              "title": "should throw if browser dies",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [
+                    {
+                      "type": "slow",
+                      "location": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts",
+                        "line": 102,
+                        "column": 6
+                      }
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 8,
+                      "error": {
+                        "message": "Error: SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness",
+                        "stack": "Error: SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness\n    at Proxy.launch (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts:222:145)\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:565:39",
+                        "location": {
+                          "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts",
+                          "column": 145,
+                          "line": 222
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mconfig/browserTest.ts:222\n\n  220 |     if(process.env.COMPAT_BACKEND==='chromium') return use(original);\n  221 |     await use(new Proxy(original, { get(target, name) {\n> 222 |       if (['launch', 'launchPersistentContext', 'launchServer', 'connect', 'connectOverCDP'].includes(String(name))) return async () => { throw new Error('SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness'); };\n      |                                                                                                                                                 ^\n  223 |       const value = Reflect.get(target, name); return typeof value === 'function' ? value.bind(target) : value;\n  224 |     }}));\n  225 |   }, { scope: 'worker' }],"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts",
+                            "column": 145,
+                            "line": 222
+                          },
+                          "message": "Error: SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness\n\n   at config/browserTest.ts:222\n\n  220 |     if(process.env.COMPAT_BACKEND==='chromium') return use(original);\n  221 |     await use(new Proxy(original, { get(target, name) {\n> 222 |       if (['launch', 'launchPersistentContext', 'launchServer', 'connect', 'connectOverCDP'].includes(String(name))) return async () => { throw new Error('SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness'); };\n      |                                                                                                                                                 ^\n  223 |       const value = Reflect.get(target, name); return typeof value === 'function' ? value.bind(target) : value;\n  224 |     }}));\n  225 |   }, { scope: 'worker' }],\n    at Proxy.launch (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts:222:145)\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:565:39"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T15:18:04.328Z",
+                      "annotations": [
+                        {
+                          "type": "slow",
+                          "location": {
+                            "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts",
+                            "line": 102,
+                            "column": 6
+                          }
+                        }
+                      ],
+                      "attachments": [
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/workspace/suitecut/benchmarks/playwright-compatibility/2026-10-11-followup/video-fixed/artifacts/library-video-screencast-should-throw-if-browser-dies/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts",
+                        "column": 145,
+                        "line": 222
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "b93fb214be38b5a2aa13-41d8097d98df44aca121",
+              "file": "library/video.spec.ts",
+              "line": 563,
+              "column": 5
+            },
+            {
+              "title": "should wait for video to finish if page was closed",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [
+                    {
+                      "type": "slow",
+                      "location": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts",
+                        "line": 102,
+                        "column": 6
+                      }
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 1,
+                      "error": {
+                        "message": "Error: SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness",
+                        "stack": "Error: SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness\n    at Proxy.launch (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts:222:145)\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:586:39",
+                        "location": {
+                          "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts",
+                          "column": 145,
+                          "line": 222
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mconfig/browserTest.ts:222\n\n  220 |     if(process.env.COMPAT_BACKEND==='chromium') return use(original);\n  221 |     await use(new Proxy(original, { get(target, name) {\n> 222 |       if (['launch', 'launchPersistentContext', 'launchServer', 'connect', 'connectOverCDP'].includes(String(name))) return async () => { throw new Error('SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness'); };\n      |                                                                                                                                                 ^\n  223 |       const value = Reflect.get(target, name); return typeof value === 'function' ? value.bind(target) : value;\n  224 |     }}));\n  225 |   }, { scope: 'worker' }],"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts",
+                            "column": 145,
+                            "line": 222
+                          },
+                          "message": "Error: SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness\n\n   at config/browserTest.ts:222\n\n  220 |     if(process.env.COMPAT_BACKEND==='chromium') return use(original);\n  221 |     await use(new Proxy(original, { get(target, name) {\n> 222 |       if (['launch', 'launchPersistentContext', 'launchServer', 'connect', 'connectOverCDP'].includes(String(name))) return async () => { throw new Error('SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness'); };\n      |                                                                                                                                                 ^\n  223 |       const value = Reflect.get(target, name); return typeof value === 'function' ? value.bind(target) : value;\n  224 |     }}));\n  225 |   }, { scope: 'worker' }],\n    at Proxy.launch (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts:222:145)\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:586:39"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T15:18:05.002Z",
+                      "annotations": [
+                        {
+                          "type": "slow",
+                          "location": {
+                            "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts",
+                            "line": 102,
+                            "column": 6
+                          }
+                        }
+                      ],
+                      "attachments": [
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/workspace/suitecut/benchmarks/playwright-compatibility/2026-10-11-followup/video-fixed/artifacts/library-video-screencast-s-51b4b-o-finish-if-page-was-closed/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts",
+                        "column": 145,
+                        "line": 222
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "b93fb214be38b5a2aa13-1f4acdbaf9e0b56c6528",
+              "file": "library/video.spec.ts",
+              "line": 584,
+              "column": 5
+            },
+            {
+              "title": "should close ffmpeg even if there were no frames",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [
+                    {
+                      "type": "slow",
+                      "location": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts",
+                        "line": 102,
+                        "column": 6
+                      }
+                    },
+                    {
+                      "type": "issue",
+                      "description": "https://github.com/microsoft/playwright/issues/39872",
+                      "location": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts",
+                        "line": 610,
+                        "column": 5
+                      }
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 4,
+                      "error": {
+                        "message": "Error: SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness",
+                        "stack": "Error: SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness\n    at Proxy.launch (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts:222:145)\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:614:39",
+                        "location": {
+                          "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts",
+                          "column": 145,
+                          "line": 222
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mconfig/browserTest.ts:222\n\n  220 |     if(process.env.COMPAT_BACKEND==='chromium') return use(original);\n  221 |     await use(new Proxy(original, { get(target, name) {\n> 222 |       if (['launch', 'launchPersistentContext', 'launchServer', 'connect', 'connectOverCDP'].includes(String(name))) return async () => { throw new Error('SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness'); };\n      |                                                                                                                                                 ^\n  223 |       const value = Reflect.get(target, name); return typeof value === 'function' ? value.bind(target) : value;\n  224 |     }}));\n  225 |   }, { scope: 'worker' }],"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts",
+                            "column": 145,
+                            "line": 222
+                          },
+                          "message": "Error: SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness\n\n   at config/browserTest.ts:222\n\n  220 |     if(process.env.COMPAT_BACKEND==='chromium') return use(original);\n  221 |     await use(new Proxy(original, { get(target, name) {\n> 222 |       if (['launch', 'launchPersistentContext', 'launchServer', 'connect', 'connectOverCDP'].includes(String(name))) return async () => { throw new Error('SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness'); };\n      |                                                                                                                                                 ^\n  223 |       const value = Reflect.get(target, name); return typeof value === 'function' ? value.bind(target) : value;\n  224 |     }}));\n  225 |   }, { scope: 'worker' }],\n    at Proxy.launch (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts:222:145)\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:614:39"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T15:18:05.759Z",
+                      "annotations": [
+                        {
+                          "type": "slow",
+                          "location": {
+                            "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts",
+                            "line": 102,
+                            "column": 6
+                          }
+                        },
+                        {
+                          "type": "issue",
+                          "description": "https://github.com/microsoft/playwright/issues/39872",
+                          "location": {
+                            "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts",
+                            "line": 610,
+                            "column": 5
+                          }
+                        }
+                      ],
+                      "attachments": [
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/workspace/suitecut/benchmarks/playwright-compatibility/2026-10-11-followup/video-fixed/artifacts/library-video-screencast-s-376e9-ven-if-there-were-no-frames/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts",
+                        "column": 145,
+                        "line": 222
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "b93fb214be38b5a2aa13-54573b8eab1c669776a0",
+              "file": "library/video.spec.ts",
+              "line": 610,
+              "column": 5
+            },
+            {
+              "title": "should not create video for internal pages",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [
+                    {
+                      "type": "slow",
+                      "location": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts",
+                        "line": 102,
+                        "column": 6
+                      }
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 7769,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T15:18:06.490Z",
+                      "annotations": [
+                        {
+                          "type": "slow",
+                          "location": {
+                            "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts",
+                            "line": 102,
+                            "column": 6
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "b93fb214be38b5a2aa13-9487c239f07cffbc6a42",
+              "file": "library/video.spec.ts",
+              "line": 638,
+              "column": 5
+            },
+            {
+              "title": "should capture full viewport",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [
+                    {
+                      "type": "slow",
+                      "location": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts",
+                        "line": 102,
+                        "column": 6
+                      }
+                    },
+                    {
+                      "type": "issue",
+                      "description": "https://github.com/microsoft/playwright/issues/22411"
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 3,
+                      "error": {
+                        "message": "Error: SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness",
+                        "stack": "Error: SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness\n    at Proxy.launch (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts:222:145)\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:669:39",
+                        "location": {
+                          "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts",
+                          "column": 145,
+                          "line": 222
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mconfig/browserTest.ts:222\n\n  220 |     if(process.env.COMPAT_BACKEND==='chromium') return use(original);\n  221 |     await use(new Proxy(original, { get(target, name) {\n> 222 |       if (['launch', 'launchPersistentContext', 'launchServer', 'connect', 'connectOverCDP'].includes(String(name))) return async () => { throw new Error('SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness'); };\n      |                                                                                                                                                 ^\n  223 |       const value = Reflect.get(target, name); return typeof value === 'function' ? value.bind(target) : value;\n  224 |     }}));\n  225 |   }, { scope: 'worker' }],"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts",
+                            "column": 145,
+                            "line": 222
+                          },
+                          "message": "Error: SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness\n\n   at config/browserTest.ts:222\n\n  220 |     if(process.env.COMPAT_BACKEND==='chromium') return use(original);\n  221 |     await use(new Proxy(original, { get(target, name) {\n> 222 |       if (['launch', 'launchPersistentContext', 'launchServer', 'connect', 'connectOverCDP'].includes(String(name))) return async () => { throw new Error('SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness'); };\n      |                                                                                                                                                 ^\n  223 |       const value = Reflect.get(target, name); return typeof value === 'function' ? value.bind(target) : value;\n  224 |     }}));\n  225 |   }, { scope: 'worker' }],\n    at Proxy.launch (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts:222:145)\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:669:39"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T15:18:14.895Z",
+                      "annotations": [
+                        {
+                          "type": "slow",
+                          "location": {
+                            "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts",
+                            "line": 102,
+                            "column": 6
+                          }
+                        },
+                        {
+                          "type": "issue",
+                          "description": "https://github.com/microsoft/playwright/issues/22411"
+                        }
+                      ],
+                      "attachments": [
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/workspace/suitecut/benchmarks/playwright-compatibility/2026-10-11-followup/video-fixed/artifacts/library-video-screencast-should-capture-full-viewport/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts",
+                        "column": 145,
+                        "line": 222
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "b93fb214be38b5a2aa13-cd5ad481ccccf4785b68",
+              "file": "library/video.spec.ts",
+              "line": 664,
+              "column": 5
+            },
+            {
+              "title": "should capture full viewport on hidpi",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [
+                    {
+                      "type": "slow",
+                      "location": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts",
+                        "line": 102,
+                        "column": 6
+                      }
+                    },
+                    {
+                      "type": "issue",
+                      "description": "https://github.com/microsoft/playwright/issues/22411"
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 3,
+                      "error": {
+                        "message": "Error: SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness",
+                        "stack": "Error: SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness\n    at Proxy.launch (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts:222:145)\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:705:39",
+                        "location": {
+                          "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts",
+                          "column": 145,
+                          "line": 222
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mconfig/browserTest.ts:222\n\n  220 |     if(process.env.COMPAT_BACKEND==='chromium') return use(original);\n  221 |     await use(new Proxy(original, { get(target, name) {\n> 222 |       if (['launch', 'launchPersistentContext', 'launchServer', 'connect', 'connectOverCDP'].includes(String(name))) return async () => { throw new Error('SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness'); };\n      |                                                                                                                                                 ^\n  223 |       const value = Reflect.get(target, name); return typeof value === 'function' ? value.bind(target) : value;\n  224 |     }}));\n  225 |   }, { scope: 'worker' }],"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts",
+                            "column": 145,
+                            "line": 222
+                          },
+                          "message": "Error: SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness\n\n   at config/browserTest.ts:222\n\n  220 |     if(process.env.COMPAT_BACKEND==='chromium') return use(original);\n  221 |     await use(new Proxy(original, { get(target, name) {\n> 222 |       if (['launch', 'launchPersistentContext', 'launchServer', 'connect', 'connectOverCDP'].includes(String(name))) return async () => { throw new Error('SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness'); };\n      |                                                                                                                                                 ^\n  223 |       const value = Reflect.get(target, name); return typeof value === 'function' ? value.bind(target) : value;\n  224 |     }}));\n  225 |   }, { scope: 'worker' }],\n    at Proxy.launch (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts:222:145)\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:705:39"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T15:18:15.778Z",
+                      "annotations": [
+                        {
+                          "type": "slow",
+                          "location": {
+                            "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts",
+                            "line": 102,
+                            "column": 6
+                          }
+                        },
+                        {
+                          "type": "issue",
+                          "description": "https://github.com/microsoft/playwright/issues/22411"
+                        }
+                      ],
+                      "attachments": [
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/workspace/suitecut/benchmarks/playwright-compatibility/2026-10-11-followup/video-fixed/artifacts/library-video-screencast-s-6c7af-ture-full-viewport-on-hidpi/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts",
+                        "column": 145,
+                        "line": 222
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "b93fb214be38b5a2aa13-0d1b1e6d9a6269579d80",
+              "file": "library/video.spec.ts",
+              "line": 699,
+              "column": 5
+            },
+            {
+              "title": "should work with video+trace",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [
+                    {
+                      "type": "slow",
+                      "location": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts",
+                        "line": 102,
+                        "column": 6
+                      }
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 7,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 7567,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T15:18:16.973Z",
+                      "annotations": [
+                        {
+                          "type": "slow",
+                          "location": {
+                            "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts",
+                            "line": 102,
+                            "column": 6
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "b93fb214be38b5a2aa13-4b9eafba7fdc10bfca5c",
+              "file": "library/video.spec.ts",
+              "line": 736,
+              "column": 5
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-11T15:16:08.545Z",
+    "duration": 143696.704,
+    "expected": 22,
+    "skipped": 0,
+    "unexpected": 7,
+    "flaky": 0
+  }
+}

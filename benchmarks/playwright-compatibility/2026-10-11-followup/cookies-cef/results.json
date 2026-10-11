@@ -1,0 +1,1564 @@
+{
+  "config": {
+    "argv": [
+      "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+      "/workspace/suitecut/node_modules/playwright/cli.js",
+      "test",
+      "--config",
+      "/tmp/suitecut-playwright-upstream/playwright-1.62.1/suitecut.config.ts",
+      "library/browsercontext-add-cookies.spec.ts",
+      "library/browsercontext-cookies.spec.ts",
+      "--timeout",
+      "10000",
+      "--global-timeout",
+      "120000",
+      "--max-failures",
+      "10"
+    ],
+    "configFile": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/suitecut.config.ts",
+    "rootDir": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 120000,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 10,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/workspace/suitecut/benchmarks/playwright-compatibility/2026-10-11-followup/cookies-cef/artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests",
+        "testIgnore": [
+          "**/firefox/**",
+          "**/webkit/**",
+          "**/inspector/**"
+        ],
+        "testMatch": [
+          "library/**/*.spec.ts",
+          "page/**/*.spec.ts"
+        ],
+        "timeout": 10000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "/workspace/suitecut/benchmarks/playwright-compatibility/2026-10-11-followup/cookies-cef/results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.62.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "library/browsercontext-add-cookies.spec.ts",
+      "file": "library/browsercontext-add-cookies.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "should work @smoke",
+          "ok": true,
+          "tags": [
+            "smoke"
+          ],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 180,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T15:26:49.271Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "6e5c81b9027fba5469d9-27ee96e0720183f86142",
+          "file": "library/browsercontext-add-cookies.spec.ts",
+          "line": 22,
+          "column": 3
+        },
+        {
+          "title": "should work with expires=-1",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 158,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T15:26:50.111Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "6e5c81b9027fba5469d9-3abbe7231ca83002bed1",
+          "file": "library/browsercontext-add-cookies.spec.ts",
+          "line": 32,
+          "column": 3
+        },
+        {
+          "title": "should add cookies with empty value",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 161,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T15:26:50.293Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "6e5c81b9027fba5469d9-58817008ce7cdcecb8d3",
+          "file": "library/browsercontext-add-cookies.spec.ts",
+          "line": 50,
+          "column": 3
+        },
+        {
+          "title": "should set cookies with SameSite attribute and no secure attribute",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 17,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T15:26:50.469Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "6e5c81b9027fba5469d9-5e0d0ff51534b7ad1d2d",
+          "file": "library/browsercontext-add-cookies.spec.ts",
+          "line": 68,
+          "column": 3
+        },
+        {
+          "title": "should roundtrip cookie",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 169,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T15:26:50.499Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "6e5c81b9027fba5469d9-9eb01be678dbc04141aa",
+          "file": "library/browsercontext-add-cookies.spec.ts",
+          "line": 134,
+          "column": 3
+        },
+        {
+          "title": "should send cookie header",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 107,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T15:26:50.680Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "6e5c81b9027fba5469d9-a9d207fb4f5704fe0a9c",
+          "file": "library/browsercontext-add-cookies.spec.ts",
+          "line": 153,
+          "column": 3
+        },
+        {
+          "title": "should isolate cookies in browser contexts",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 31,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T15:26:50.800Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "6e5c81b9027fba5469d9-5ddaf6e8c5936931558c",
+          "file": "library/browsercontext-add-cookies.spec.ts",
+          "line": 165,
+          "column": 3
+        },
+        {
+          "title": "should isolate session cookies",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 315,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T15:26:50.857Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "6e5c81b9027fba5469d9-5a36ac65dbdfdb8e8562",
+          "file": "library/browsercontext-add-cookies.spec.ts",
+          "line": 181,
+          "column": 3
+        },
+        {
+          "title": "should isolate persistent cookies",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 343,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T15:26:51.188Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "6e5c81b9027fba5469d9-e2beda5ed4fb8f46096f",
+          "file": "library/browsercontext-add-cookies.spec.ts",
+          "line": 207,
+          "column": 3
+        },
+        {
+          "title": "should isolate send cookie header",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 215,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T15:26:51.542Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "6e5c81b9027fba5469d9-93bc4ccc394c4ffcef22",
+          "file": "library/browsercontext-add-cookies.spec.ts",
+          "line": 227,
+          "column": 3
+        },
+        {
+          "title": "should isolate cookies between launches",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "slow",
+                  "location": {
+                    "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-cookies.spec.ts",
+                    "line": 249,
+                    "column": 18
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 2,
+                  "error": {
+                    "message": "Error: SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness",
+                    "stack": "Error: SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness\n    at Proxy.launch (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts:222:145)\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-cookies.spec.ts:251:38",
+                    "location": {
+                      "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts",
+                      "column": 145,
+                      "line": 222
+                    },
+                    "snippet": "\u001b[90m   at \u001b[39mconfig/browserTest.ts:222\n\n  220 |     if(process.env.COMPAT_BACKEND==='chromium') return use(original);\n  221 |     await use(new Proxy(original, { get(target, name) {\n> 222 |       if (['launch', 'launchPersistentContext', 'launchServer', 'connect', 'connectOverCDP'].includes(String(name))) return async () => { throw new Error('SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness'); };\n      |                                                                                                                                                 ^\n  223 |       const value = Reflect.get(target, name); return typeof value === 'function' ? value.bind(target) : value;\n  224 |     }}));\n  225 |   }, { scope: 'worker' }],"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts",
+                        "column": 145,
+                        "line": 222
+                      },
+                      "message": "Error: SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness\n\n   at config/browserTest.ts:222\n\n  220 |     if(process.env.COMPAT_BACKEND==='chromium') return use(original);\n  221 |     await use(new Proxy(original, { get(target, name) {\n> 222 |       if (['launch', 'launchPersistentContext', 'launchServer', 'connect', 'connectOverCDP'].includes(String(name))) return async () => { throw new Error('SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness'); };\n      |                                                                                                                                                 ^\n  223 |       const value = Reflect.get(target, name); return typeof value === 'function' ? value.bind(target) : value;\n  224 |     }}));\n  225 |   }, { scope: 'worker' }],\n    at Proxy.launch (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts:222:145)\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-cookies.spec.ts:251:38"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T15:26:51.770Z",
+                  "annotations": [
+                    {
+                      "type": "slow",
+                      "location": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-cookies.spec.ts",
+                        "line": 249,
+                        "column": 18
+                      }
+                    }
+                  ],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/workspace/suitecut/benchmarks/playwright-compatibility/2026-10-11-followup/cookies-cef/artifacts/library-browsercontext-add-a1a59-te-cookies-between-launches/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts",
+                    "column": 145,
+                    "line": 222
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "6e5c81b9027fba5469d9-f5f5bc782feb349362bf",
+          "file": "library/browsercontext-add-cookies.spec.ts",
+          "line": 248,
+          "column": 15
+        },
+        {
+          "title": "should set multiple cookies",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 142,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T15:26:52.955Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "6e5c81b9027fba5469d9-b8fd2845f34fd45502d3",
+          "file": "library/browsercontext-add-cookies.spec.ts",
+          "line": 263,
+          "column": 3
+        },
+        {
+          "title": "should have |expires| set to |-1| for session cookies",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 16,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T15:26:53.704Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "6e5c81b9027fba5469d9-f74be8c0a29394aafde8",
+          "file": "library/browsercontext-add-cookies.spec.ts",
+          "line": 283,
+          "column": 3
+        },
+        {
+          "title": "should set cookie with reasonable defaults",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 17,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T15:26:53.742Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "6e5c81b9027fba5469d9-fab17c7ce30471a25cf3",
+          "file": "library/browsercontext-add-cookies.spec.ts",
+          "line": 293,
+          "column": 3
+        },
+        {
+          "title": "should set a cookie with a path",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 270,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T15:26:53.773Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "6e5c81b9027fba5469d9-2a800a45739d6900afdf",
+          "file": "library/browsercontext-add-cookies.spec.ts",
+          "line": 312,
+          "column": 3
+        },
+        {
+          "title": "should not set a cookie with blank page URL",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 17,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T15:26:54.068Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "6e5c81b9027fba5469d9-9308436dd9c5e4188d30",
+          "file": "library/browsercontext-add-cookies.spec.ts",
+          "line": 338,
+          "column": 3
+        },
+        {
+          "title": "should not set a cookie on a data URL page",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 28,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T15:26:54.100Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "6e5c81b9027fba5469d9-f0bdad4778e93f442f6b",
+          "file": "library/browsercontext-add-cookies.spec.ts",
+          "line": 353,
+          "column": 3
+        },
+        {
+          "title": "should default to setting secure cookie for HTTPS websites",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 137,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T15:26:54.141Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "6e5c81b9027fba5469d9-b78ebe787e99b45d8f84",
+          "file": "library/browsercontext-add-cookies.spec.ts",
+          "line": 363,
+          "column": 3
+        },
+        {
+          "title": "should be able to set unsecure cookie for HTTP website",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 135,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T15:26:54.292Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "6e5c81b9027fba5469d9-8d35fdd98201d3af256c",
+          "file": "library/browsercontext-add-cookies.spec.ts",
+          "line": 375,
+          "column": 3
+        },
+        {
+          "title": "should set a cookie on a different domain",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 109,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T15:26:54.439Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "6e5c81b9027fba5469d9-71250e8ae6a8bf6a497d",
+          "file": "library/browsercontext-add-cookies.spec.ts",
+          "line": 387,
+          "column": 3
+        },
+        {
+          "title": "should set cookies for a frame",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 182,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T15:26:54.562Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "6e5c81b9027fba5469d9-78df28926d6843d50d51",
+          "file": "library/browsercontext-add-cookies.spec.ts",
+          "line": 408,
+          "column": 3
+        },
+        {
+          "title": "should allow unnamed cookies",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 156,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T15:26:54.759Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "6e5c81b9027fba5469d9-39c9f890b35940b1b450",
+          "file": "library/browsercontext-add-cookies.spec.ts",
+          "line": 426,
+          "column": 3
+        },
+        {
+          "title": "should set secure cookies on secure WebSocket",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 141,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T15:26:54.929Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "6e5c81b9027fba5469d9-18baa2c8c46911aa1313",
+          "file": "library/browsercontext-add-cookies.spec.ts",
+          "line": 455,
+          "column": 3
+        }
+      ]
+    },
+    {
+      "title": "library/browsercontext-cookies.spec.ts",
+      "file": "library/browsercontext-cookies.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "should return no cookies in pristine browser context",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 70,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T15:26:55.103Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "97db57827b66f26f4524-17b817cf46d92a9e1838",
+          "file": "library/browsercontext-cookies.spec.ts",
+          "line": 20,
+          "column": 3
+        },
+        {
+          "title": "should get a cookie @smoke",
+          "ok": true,
+          "tags": [
+            "smoke"
+          ],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 104,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T15:26:55.189Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "97db57827b66f26f4524-8ee4b557d63f31e39ca0",
+          "file": "library/browsercontext-cookies.spec.ts",
+          "line": 24,
+          "column": 3
+        },
+        {
+          "title": "should get a non-session cookie",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 112,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T15:26:55.301Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "97db57827b66f26f4524-dcaebd651ea4e8e9a098",
+          "file": "library/browsercontext-cookies.spec.ts",
+          "line": 43,
+          "column": 3
+        },
+        {
+          "title": "should allow adding cookies with >400 days expiration",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [
+                {
+                  "type": "issue",
+                  "description": "https://github.com/microsoft/playwright/issues/37903",
+                  "location": {
+                    "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-cookies.spec.ts",
+                    "line": 75,
+                    "column": 3
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 31,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T15:26:55.424Z",
+                  "annotations": [
+                    {
+                      "type": "issue",
+                      "description": "https://github.com/microsoft/playwright/issues/37903",
+                      "location": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-cookies.spec.ts",
+                        "line": 75,
+                        "column": 3
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "97db57827b66f26f4524-ae8bb92b2cf09d9d0075",
+          "file": "library/browsercontext-cookies.spec.ts",
+          "line": 75,
+          "column": 3
+        },
+        {
+          "title": "should properly report httpOnly cookie",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 117,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T15:26:55.477Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "97db57827b66f26f4524-9bca945fb54253728bcb",
+          "file": "library/browsercontext-cookies.spec.ts",
+          "line": 107,
+          "column": 3
+        },
+        {
+          "title": "should properly report \"Strict\" sameSite cookie",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 115,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T15:26:55.616Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "97db57827b66f26f4524-0ab71e714ee9c9ddeab4",
+          "file": "library/browsercontext-cookies.spec.ts",
+          "line": 118,
+          "column": 3
+        },
+        {
+          "title": "should properly report \"Lax\" sameSite cookie",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 92,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T15:26:55.744Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "97db57827b66f26f4524-fb6cdba6f2cc09d88a95",
+          "file": "library/browsercontext-cookies.spec.ts",
+          "line": 131,
+          "column": 3
+        },
+        {
+          "title": "should get multiple cookies",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 109,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T15:26:55.848Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "97db57827b66f26f4524-c00b2d42fd103458471a",
+          "file": "library/browsercontext-cookies.spec.ts",
+          "line": 144,
+          "column": 3
+        },
+        {
+          "title": "should get cookies from multiple urls",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 14,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T15:26:55.967Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "97db57827b66f26f4524-a5bb79c071a68836c187",
+          "file": "library/browsercontext-cookies.spec.ts",
+          "line": 177,
+          "column": 3
+        },
+        {
+          "title": "should work with subdomain cookie",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 15,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T15:26:55.993Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "97db57827b66f26f4524-9c4120b29d30976f223c",
+          "file": "library/browsercontext-cookies.spec.ts",
+          "line": 216,
+          "column": 3
+        },
+        {
+          "title": "should return cookies with empty value",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 119,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T15:26:56.018Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "97db57827b66f26f4524-df4b3cbab547f42c31dd",
+          "file": "library/browsercontext-cookies.spec.ts",
+          "line": 247,
+          "column": 3
+        },
+        {
+          "title": "should return secure cookies based on HTTP(S) protocol",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 15,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T15:26:56.149Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "97db57827b66f26f4524-a25bcfb16e766cb967ff",
+          "file": "library/browsercontext-cookies.spec.ts",
+          "line": 262,
+          "column": 3
+        },
+        {
+          "title": "should add cookies with an expiration",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 32,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T15:26:56.172Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "97db57827b66f26f4524-65c14a2e6e91f3e66b91",
+          "file": "library/browsercontext-cookies.spec.ts",
+          "line": 308,
+          "column": 3
+        },
+        {
+          "title": "should support requestStorageAccess",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [
+                {
+                  "type": "issue",
+                  "description": "https://github.com/microsoft/playwright/issues/17285"
+                },
+                {
+                  "type": "skip",
+                  "description": "requestStorageAccess API is not available in Chromium",
+                  "location": {
+                    "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-cookies.spec.ts",
+                    "line": 358,
+                    "column": 6
+                  }
+                }
+              ],
+              "expectedStatus": "skipped",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "skipped",
+                  "duration": 81,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T15:26:56.216Z",
+                  "annotations": [
+                    {
+                      "type": "issue",
+                      "description": "https://github.com/microsoft/playwright/issues/17285"
+                    },
+                    {
+                      "type": "skip",
+                      "description": "requestStorageAccess API is not available in Chromium",
+                      "location": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-cookies.spec.ts",
+                        "line": 358,
+                        "column": 6
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "97db57827b66f26f4524-8868a1876343061f9fcf",
+          "file": "library/browsercontext-cookies.spec.ts",
+          "line": 356,
+          "column": 3
+        },
+        {
+          "title": "should parse cookie with large Max-Age correctly",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [
+                {
+                  "type": "issue",
+                  "description": "https://github.com/microsoft/playwright/issues/30305"
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 151,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T15:26:56.308Z",
+                  "annotations": [
+                    {
+                      "type": "issue",
+                      "description": "https://github.com/microsoft/playwright/issues/30305"
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "97db57827b66f26f4524-ac7695822445dbb1a53a",
+          "file": "library/browsercontext-cookies.spec.ts",
+          "line": 410,
+          "column": 3
+        },
+        {
+          "title": "iframe should inherit cookies from parent",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [
+                {
+                  "type": "issue",
+                  "description": "https://github.com/microsoft/playwright/issues/35439",
+                  "location": {
+                    "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-cookies.spec.ts",
+                    "line": 436,
+                    "column": 3
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 232,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T15:26:56.473Z",
+                  "annotations": [
+                    {
+                      "type": "issue",
+                      "description": "https://github.com/microsoft/playwright/issues/35439",
+                      "location": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-cookies.spec.ts",
+                        "line": 436,
+                        "column": 3
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "97db57827b66f26f4524-779accd8a0e0f2c0129e",
+          "file": "library/browsercontext-cookies.spec.ts",
+          "line": 436,
+          "column": 3
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-11T15:26:46.783Z",
+    "duration": 10024.172999999999,
+    "expected": 37,
+    "skipped": 1,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

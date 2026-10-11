@@ -1,0 +1,6 @@
+[WARN] Your node_modules are out of sync with your lockfile. The value of the patchedDependencies setting has changed
+src/cdp-delivery.ts 93ms
+src/engine.ts 104ms (unchanged)
+src/native-browser.ts 68ms (unchanged)
+tests/cdp-delivery.test.ts 19ms
+benchmarks/playwright-compatibility/compatibility.spec.ts 137ms

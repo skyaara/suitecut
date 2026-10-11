@@ -3,7 +3,6 @@ import { readFile, writeFile, stat } from 'node:fs/promises'
 import { createServer, type Server, type IncomingMessage, type ServerResponse } from 'node:http'
 import { createServer as createHttpsServer } from 'node:https'
 import { connect } from 'node:net'
-import { resolve } from 'node:path'
 import { setTimeout as delay } from 'node:timers/promises'
 
 import { test as base, expect, chromium, type Page } from '@playwright/test'
@@ -81,12 +80,14 @@ let server: Server,
   tlsOrigin: string,
   proxyUrl: string
 let proxyRequests: { url: string; authenticated: boolean }[] = []
+let originAuthHeaders: (string | undefined)[] = []
 const basic = 'Basic ' + Buffer.from('user:password').toString('base64')
 const proxyBasic = 'Basic ' + Buffer.from('proxy:secret').toString('base64')
 const html = `<!doctype html><button onclick="this.textContent='clicked'">Click</button><input aria-label="Name"><canvas width="640" height="250"></canvas><script>let n=0;function draw(){const c=document.querySelector('canvas').getContext('2d');c.fillStyle=n++%2?'red':'blue';c.fillRect(0,0,640,250);requestAnimationFrame(draw)}draw()</script>`
 const sw = `self.addEventListener('install',e=>e.waitUntil(self.skipWaiting()));self.addEventListener('activate',e=>e.waitUntil(self.clients.claim()));self.addEventListener('fetch',e=>{if(new URL(e.request.url).pathname==='/sw-data')e.respondWith(new Response('from-worker'))});self.marker=42;`
 function handle(req: IncomingMessage, res: ServerResponse) {
   const path = new URL(req.url ?? '/', 'http://localhost').pathname
+  if (path === '/auth') originAuthHeaders.push(req.headers.authorization)
   if (path === '/auth' && req.headers.authorization !== basic) {
     res.writeHead(401, { 'WWW-Authenticate': 'Basic realm="suitecut-local"' })
     res.end('unauthorized')
@@ -135,11 +136,10 @@ test.beforeAll(async () => {
   const port = await listen(server)
   origin = `http://127.0.0.1:${port}`
   cross = `http://localhost:${port}`
-  const certDir = '/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/testserver'
   secure = createHttpsServer(
     {
-      key: await readFile(resolve(certDir, 'key.pem')),
-      cert: await readFile(resolve(certDir, 'cert.pem')),
+      key: await readFile(new URL('./fixtures/key.pem', import.meta.url)),
+      cert: await readFile(new URL('./fixtures/cert.pem', import.meta.url)),
     },
     handle,
   )
@@ -636,6 +636,92 @@ for (const scheme of ['http', 'https']) {
       expect(required(await p.goto(`${scheme}://auth-proxy.test/auth`)).status()).toBe(200)
       await expect(p.getByRole('heading')).toHaveText('Authenticated')
       expect(proxyRequests.some((r) => r.authenticated)).toBe(true)
+    } finally {
+      await c.close()
+    }
+  })
+  test(`proxy: ${scheme} separate credentials respect a matching origin`, async ({ browser }) => {
+    originAuthHeaders = []
+    const target = `${scheme}://auth-proxy.test`
+    const c = await browser.newContext({
+      proxy: { server: proxyUrl, username: 'proxy', password: 'secret', bypass: '<-loopback>' },
+      httpCredentials: { username: 'user', password: 'password', origin: target },
+      ignoreHTTPSErrors: true,
+    })
+    try {
+      const p = await c.newPage()
+      expect(required(await p.goto(target + '/auth')).status()).toBe(200)
+      expect(originAuthHeaders).toContain(basic)
+      expect(originAuthHeaders).not.toContain(proxyBasic)
+    } finally {
+      await c.close()
+    }
+  })
+  for (const scoped of [false, true]) {
+    test(`proxy: ${scheme} does not send ${scoped ? 'out-of-origin' : 'proxy'} credentials to the website`, async ({
+      browser,
+    }) => {
+      originAuthHeaders = []
+      proxyRequests = []
+      const c = await browser.newContext({
+        proxy: { server: proxyUrl, username: 'proxy', password: 'secret', bypass: '<-loopback>' },
+        ...(scoped
+          ? {
+              httpCredentials: {
+                username: 'user',
+                password: 'password',
+                origin: 'https://unrelated.test',
+              },
+            }
+          : {}),
+        ignoreHTTPSErrors: true,
+      })
+      try {
+        const p = await c.newPage()
+        const status = await p.goto(`${scheme}://auth-proxy.test/auth`).then(
+          (r) => required(r).status(),
+          (error) => {
+            expect(String(error)).toContain('ERR_INVALID_AUTH_CREDENTIALS')
+            return 401
+          },
+        )
+        expect(status).toBe(401)
+        expect(proxyRequests.some((r) => r.authenticated)).toBe(true)
+        expect(originAuthHeaders.length).toBeGreaterThan(0)
+        expect(originAuthHeaders.every((header) => header === undefined)).toBe(true)
+      } finally {
+        await c.close()
+      }
+    })
+  }
+  test(`proxy: ${scheme} incorrect proxy credentials are denied without reaching the website`, async ({
+    browser,
+  }) => {
+    proxyRequests = []
+    originAuthHeaders = []
+    const c = await browser.newContext({
+      proxy: { server: proxyUrl, username: 'proxy', password: 'wrong', bypass: '<-loopback>' },
+      httpCredentials: { username: 'user', password: 'password' },
+      ignoreHTTPSErrors: true,
+    })
+    try {
+      const p = await c.newPage()
+      // A 407 can commit an error document without a load event in Chromium.
+      // This checks authentication denial; default-load navigation completion
+      // is a separate boundary preserved in the diagnostic run.
+      const status = await p
+        .goto(`${scheme}://auth-proxy.test/auth`, { timeout: 5000, waitUntil: 'commit' })
+        .then(
+          (response) => required(response).status(),
+          (error) => {
+            expect(String(error)).toMatch(/ERR_/)
+            return 407
+          },
+        )
+      expect(status).toBe(407)
+      expect(proxyRequests.length).toBeGreaterThan(0)
+      expect(proxyRequests.length).toBeLessThan(12)
+      expect(originAuthHeaders).toEqual([])
     } finally {
       await c.close()
     }

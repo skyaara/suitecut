@@ -334,7 +334,7 @@ evaluate, not a capability of this implementation.
 
 ## IPC protocol v1
 
-The executable reads newline-delimited UTF-8 JSON on stdin (64 KiB per command).
+The executable reads newline-delimited UTF-8 JSON on stdin (4 MiB per command).
 Every command has `version: 1`, a positive integer `id`, and `command`:
 
 ```json
@@ -368,6 +368,14 @@ Stderr is drained without forwarding page URLs or browser diagnostics into repor
 The launcher supplies `--suitecut-frame-subscriptions` to opt into the optional
 capability. Older launchers receive the original handshake; newer launchers
 fall back to continuous transfer with older binaries that do not advertise it.
+
+The higher-level engine emits `event` packets with `topic: "cdp"` and a JSON CDP
+payload. SDKs forwarding these to Playwright must yield in their runtime between
+individual messages; processing a whole batch synchronously can deliver an
+execution-context event before the preceding frame-tree promise has run. Preserve
+order, bound the queue and drain final events before reporting disconnection.
+The Node adapter does this with one task per packet and a 1,024-message / 64 MiB
+wire-payload limit. Native recording and streaming do not depend on that queue.
 
 ## Open-source distribution
 
