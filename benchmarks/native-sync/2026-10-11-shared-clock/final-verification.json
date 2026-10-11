@@ -1,0 +1,28 @@
+{
+  "startedAt": "2026-10-10T21:36:11.896240+00:00",
+  "phases": [
+    {
+      "name": "resolution-matrix",
+      "startedAt": "2026-10-10T21:36:11.896296+00:00",
+      "status": "completed",
+      "exitCode": 0,
+      "finishedAt": "2026-10-10T21:50:22.104734+00:00"
+    },
+    {
+      "name": "sanitizer-fuzz",
+      "startedAt": "2026-10-10T21:50:22.108064+00:00",
+      "status": "completed",
+      "exitCode": 0,
+      "finishedAt": "2026-10-10T22:10:25.259368+00:00"
+    },
+    {
+      "name": "memory-soak",
+      "startedAt": "2026-10-10T22:10:25.262444+00:00",
+      "status": "completed",
+      "exitCode": 0,
+      "finishedAt": "2026-10-10T22:40:40.761093+00:00"
+    }
+  ],
+  "serial": true,
+  "finishedAt": "2026-10-10T22:40:40.764518+00:00"
+}

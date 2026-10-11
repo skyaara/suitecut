@@ -1,0 +1,206 @@
+{
+  "generatedAt": "2026-10-10T16:28:49.735949+05:30",
+  "memorySafetyGuarantee": false,
+  "confirmedMemoryBugsFixed": [
+    "codec-pointer data race",
+    "scaler replacement failure double-free"
+  ],
+  "soak": {
+    "requestedMs": 1800000,
+    "status": "passed",
+    "startedAt": "2026-10-10T10:24:07.506Z",
+    "viewport": [
+      640,
+      360
+    ],
+    "fps": 30,
+    "audio": "continuous oscillator",
+    "contextCycles": 178,
+    "pauseCycles": 178,
+    "reloads": 29,
+    "shortRecordingCycles": 29,
+    "rawSubscribers": false,
+    "readyAt": "2026-10-10T10:24:10.581Z",
+    "elapsedMs": 1800160.552159,
+    "final": [
+      {
+        "ready": true,
+        "stopped": true,
+        "paused": false,
+        "videoFrames": 52036,
+        "audioSamples": 83257344,
+        "repeatedFrames": 1379,
+        "droppedAudioSamples": 0,
+        "missingAudioSamples": 611398,
+        "lateAudioSamples": 0,
+        "queuedVideoBytes": 0,
+        "queuedAudioBytes": 0,
+        "startedMs": 2333.952353,
+        "durationMs": 1734533.3333333333,
+        "maximumEncodeMs": 245.8061979999984,
+        "bufferedDelayMs": 385.5344933333108,
+        "error": ""
+      },
+      {
+        "ready": true,
+        "stopped": true,
+        "paused": false,
+        "videoFrames": 54007,
+        "audioSamples": 86410240,
+        "repeatedFrames": 1297,
+        "droppedAudioSamples": 0,
+        "missingAudioSamples": 619840,
+        "lateAudioSamples": 0,
+        "queuedVideoBytes": 0,
+        "queuedAudioBytes": 0,
+        "startedMs": 2618.64941,
+        "durationMs": 1800233.3333333333,
+        "maximumEncodeMs": 256.0223100000294,
+        "bufferedDelayMs": 353.60542433333467,
+        "error": ""
+      }
+    ],
+    "finishedAt": "2026-10-10T10:54:11.101Z"
+  },
+  "memory": {
+    "node": {
+      "samples": 67,
+      "firstMiB": 113.3828125,
+      "lastMiB": 115.97265625,
+      "maxMiB": 115.99609375,
+      "firstWindowMedianMiB": 113.697265625,
+      "lastWindowMedianMiB": 115.958984375,
+      "medianWindowChangeMiB": 2.26171875
+    },
+    "cef-renderer": {
+      "samples": 67,
+      "firstMiB": 48.8359375,
+      "lastMiB": 53.7578125,
+      "maxMiB": 55.8671875,
+      "firstWindowMedianMiB": 54.078125,
+      "lastWindowMedianMiB": 53.8671875,
+      "medianWindowChangeMiB": -0.2109375
+    },
+    "cef-gpu": {
+      "samples": 67,
+      "firstMiB": 29.89453125,
+      "lastMiB": 29.96875,
+      "maxMiB": 31.03125,
+      "firstWindowMedianMiB": 29.916015625,
+      "lastWindowMedianMiB": 29.96484375,
+      "medianWindowChangeMiB": 0.048828125
+    },
+    "cef-browser/utility": {
+      "samples": 67,
+      "firstMiB": 197.82421875,
+      "lastMiB": 198.421875,
+      "maxMiB": 198.69140625,
+      "firstWindowMedianMiB": 197.57421875,
+      "lastWindowMedianMiB": 198.673828125,
+      "medianWindowChangeMiB": 1.099609375
+    },
+    "totalPrivate": {
+      "samples": 67,
+      "firstMiB": 389.9375,
+      "lastMiB": 398.12109375,
+      "maxMiB": 400.4921875,
+      "firstWindowMedianMiB": 395.537109375,
+      "lastWindowMedianMiB": 398.4609375,
+      "medianWindowChangeMiB": 2.923828125
+    },
+    "totalPss": {
+      "samples": 67,
+      "firstMiB": 577.6943359375,
+      "lastMiB": 569.7587890625,
+      "maxMiB": 580.38671875,
+      "firstWindowMedianMiB": 566.9775390625,
+      "lastWindowMedianMiB": 571.30615234375,
+      "medianWindowChangeMiB": 4.32861328125
+    }
+  },
+  "fuzz": [
+    {
+      "completed": true,
+      "runs": 78924359,
+      "seconds": 181,
+      "log": "fuzz-bounds.log"
+    },
+    {
+      "completed": true,
+      "runs": 122774,
+      "seconds": 181,
+      "log": "fuzz-media.log"
+    },
+    {
+      "completed": true,
+      "runs": 123118,
+      "seconds": 181,
+      "log": "fuzz-media-final-static.log"
+    },
+    {
+      "completed": true,
+      "runs": 28375940,
+      "seconds": 61,
+      "log": "fuzz-bounds-final.log"
+    },
+    {
+      "completed": true,
+      "runs": 34723,
+      "seconds": 61,
+      "log": "fuzz-media-verified-final.log"
+    }
+  ],
+  "nativeTests": [
+    {
+      "passed": true,
+      "count": 7,
+      "log": "asan-verified-final-tests.log"
+    },
+    {
+      "passed": true,
+      "count": 7,
+      "log": "tsan-verified-final-tests.log"
+    },
+    {
+      "passed": true,
+      "count": 7,
+      "log": "release-verified-final-tests.log"
+    }
+  ],
+  "cefIntegration": {
+    "passed": true,
+    "count": 15,
+    "log": "cef-final-tests.log"
+  },
+  "mediaValidation": [
+    {
+      "file": "recording.mp4",
+      "bytes": 43295884,
+      "probeExit": 0,
+      "decodeExit": 0,
+      "allAudioVideoDecoded": true
+    },
+    {
+      "file": "receiver.flv",
+      "bytes": 49509230,
+      "probeExit": 0,
+      "decodeExit": 0,
+      "allAudioVideoDecoded": true
+    },
+    {
+      "file": "short.mkv",
+      "bytes": 27654,
+      "probeExit": 0,
+      "decodeExit": 0,
+      "allAudioVideoDecoded": true
+    }
+  ],
+  "privateSamples": 68,
+  "activePrivateSamples": 67,
+  "outputSamples": 1764,
+  "rssSamples": 1799,
+  "maxVideoQueuedBytes": 5184000,
+  "maxAudioQueuedBytes": 61440,
+  "privateSamplerMaxMs": 99.48632601299323,
+  "cefSanitizerCoverage": "Blocked: stock CEF 154 aborts during initialization; minimal C API reproduction has no SuiteCut Source or media code."
+}

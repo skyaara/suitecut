@@ -1,0 +1,38 @@
+{
+  "id": "4k30-canvas-native-2",
+  "backend": "native",
+  "case": {
+    "name": "4k30-canvas",
+    "width": 3840,
+    "height": 2160,
+    "fps": 30,
+    "workload": "canvas"
+  },
+  "trialNumber": 2,
+  "durationMs": 10000,
+  "status": "failed",
+  "startedAt": "2026-10-08T20:56:47.384Z",
+  "startupMs": 1358.4993519999553,
+  "browserVersion": "152.0.8+g1ce985c+chromium-152.0.7977.134",
+  "workload": {
+    "wallMs": 10151.388039999874,
+    "scrollCommands": 0,
+    "snapshot": {
+      "markerCount": 82,
+      "scrollY": 0,
+      "scrollEvents": 0,
+      "keyEvents": 0,
+      "clicks": 0,
+      "value": "",
+      "choice": "First",
+      "secondary": false
+    }
+  },
+  "nativeCapture": {
+    "frames": 158,
+    "fps": 15.564373992741386,
+    "nativeDrops": 7
+  },
+  "error": "AggregateError: Native recording \"4k30-canvas-native-2\" could not finish\n    at recordNative (file:///workspace/suitecut/dist/native-recording.js:94:15)\n    at async trial (file:///workspace/suitecut/benchmarks/obs-cef/run.mjs:122:22)\n    at async file:///workspace/suitecut/benchmarks/obs-cef/run.mjs:143:111",
+  "completedAt": "2026-10-08T20:58:07.658Z"
+}

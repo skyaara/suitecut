@@ -1,0 +1,88 @@
+Browser playback capabilities {"baseline":"probably","main":"probably","high":"probably","aac":"probably","vp9opus":"probably","av1":"probably","mse":true}
+PASSED {"mode":"progressive","before":0.34816,"after":{"time":2.232278,"width":640,"frames":72,"error":null},"packets":151,"audibleSamples":280808,"decodedAudio":{"samples":89737,"rms":2893.8656192105527},"output":{"ready":true,"stopped":true,"paused":false,"videoFrames":57,"audioSamples":89737,"repeatedFrames":2,"droppedAudioSamples":0,"missingAudioSamples":0,"lateAudioSamples":0,"queuedVideoBytes":0,"queuedAudioBytes":0,"startedMs":4099.052809,"durationMs":1900,"maximumEncodeMs":263.5727419999994,"bufferedDelayMs":150,"error":""}}
+PASSED {"mode":"mse","before":0.321682,"after":{"time":2.213143,"width":640,"frames":70,"error":null},"packets":164,"audibleSamples":284018,"decodedAudio":{"samples":90040,"rms":2894.085318449378},"output":{"ready":true,"stopped":true,"paused":false,"videoFrames":57,"audioSamples":90040,"repeatedFrames":3,"droppedAudioSamples":0,"missingAudioSamples":0,"lateAudioSamples":0,"queuedVideoBytes":0,"queuedAudioBytes":0,"startedMs":7515.772212,"durationMs":1900,"maximumEncodeMs":444.1083870000002,"bufferedDelayMs":150,"error":""}}
+{
+  "status": "passed",
+  "tests": [
+    {
+      "mode": "progressive",
+      "before": 0.34816,
+      "after": {
+        "time": 2.232278,
+        "width": 640,
+        "frames": 72,
+        "error": null
+      },
+      "packets": 151,
+      "audibleSamples": 280808,
+      "decodedAudio": {
+        "samples": 89737,
+        "rms": 2893.8656192105527
+      },
+      "output": {
+        "ready": true,
+        "stopped": true,
+        "paused": false,
+        "videoFrames": 57,
+        "audioSamples": 89737,
+        "repeatedFrames": 2,
+        "droppedAudioSamples": 0,
+        "missingAudioSamples": 0,
+        "lateAudioSamples": 0,
+        "queuedVideoBytes": 0,
+        "queuedAudioBytes": 0,
+        "startedMs": 4099.052809,
+        "durationMs": 1900,
+        "maximumEncodeMs": 263.5727419999994,
+        "bufferedDelayMs": 150,
+        "error": ""
+      }
+    },
+    {
+      "mode": "mse",
+      "before": 0.321682,
+      "after": {
+        "time": 2.213143,
+        "width": 640,
+        "frames": 70,
+        "error": null
+      },
+      "packets": 164,
+      "audibleSamples": 284018,
+      "decodedAudio": {
+        "samples": 90040,
+        "rms": 2894.085318449378
+      },
+      "output": {
+        "ready": true,
+        "stopped": true,
+        "paused": false,
+        "videoFrames": 57,
+        "audioSamples": 90040,
+        "repeatedFrames": 3,
+        "droppedAudioSamples": 0,
+        "missingAudioSamples": 0,
+        "lateAudioSamples": 0,
+        "queuedVideoBytes": 0,
+        "queuedAudioBytes": 0,
+        "startedMs": 7515.772212,
+        "durationMs": 1900,
+        "maximumEncodeMs": 444.1083870000002,
+        "bufferedDelayMs": 150,
+        "error": ""
+      }
+    }
+  ],
+  "startedAt": "2026-10-10T12:02:01.299Z",
+  "cefVersion": "152.0.6+g708dc14+chromium-152.0.7977.83",
+  "capabilities": {
+    "baseline": "probably",
+    "main": "probably",
+    "high": "probably",
+    "aac": "probably",
+    "vp9opus": "probably",
+    "av1": "probably",
+    "mse": true
+  },
+  "finishedAt": "2026-10-10T12:02:14.051Z"
+}

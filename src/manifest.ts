@@ -324,7 +324,7 @@ const AudioStreamSchema = z.strictObject({
   durationMs: NonNegativeNumberSchema,
 })
 
-const MediaSchema = z.strictObject({
+export const MediaSchema = z.strictObject({
   id: NonEmptyStringSchema,
   artifactId: NonEmptyStringSchema,
   formatName: NonEmptyStringSchema,

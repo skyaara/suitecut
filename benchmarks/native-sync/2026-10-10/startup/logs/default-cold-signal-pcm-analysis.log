@@ -1,0 +1,92 @@
+{
+  "sourcePackets": 277,
+  "sourceFrames": 265920,
+  "sourceSilentPackets": 2,
+  "sourceTimelineGaps": [
+    {
+      "fromMs": 2569.016133,
+      "toMs": 2609.016133,
+      "durationMs": 40.0,
+      "followingCallbackDelayMs": 22.929904999999962
+    }
+  ],
+  "maxCallbackDelayMs": 69.68887899999982,
+  "cases": [
+    {
+      "audioCodec": "pcm_s16le",
+      "originMs": 760.930768,
+      "finishMs": 6887.847434666667,
+      "missingInputMs": 626.9166666666666,
+      "eventuallyUncoveredInputMs": 608.0833333333334,
+      "estimatedMissingAtEncodeMs": 626.9166666666666,
+      "interiorMissingInputMs": 40.0,
+      "interiorEventuallyUncoveredMs": 40.0,
+      "interiorSourceCopyMismatchedFrames": 0,
+      "sourceGapsWithinOutput": [
+        {
+          "fromMs": 2569.016133,
+          "toMs": 2609.016133,
+          "durationMs": 40.0,
+          "followingCallbackDelayMs": 22.929904999999962,
+          "outputStartMs": 1808.0853650000001
+        }
+      ],
+      "decodedSilence10msWindows": [
+        {
+          "startMs": 0,
+          "endMs": 610,
+          "durationMs": 610
+        },
+        {
+          "startMs": 1810,
+          "endMs": 1840,
+          "durationMs": 30
+        },
+        {
+          "startMs": 1860,
+          "endMs": 1870,
+          "durationMs": 10
+        },
+        {
+          "startMs": 6110,
+          "endMs": 6120,
+          "durationMs": 10
+        }
+      ],
+      "final": {
+        "ready": true,
+        "stopped": true,
+        "paused": false,
+        "videoFrames": 184,
+        "audioSamples": 294092,
+        "repeatedFrames": 8,
+        "droppedAudioSamples": 0,
+        "missingAudioSamples": 30092,
+        "lateAudioSamples": 0,
+        "queuedVideoBytes": 0,
+        "queuedAudioBytes": 0,
+        "startedMs": 760.930768,
+        "durationMs": 6133.333333333333,
+        "maximumEncodeMs": 200.65277600000002,
+        "error": ""
+      },
+      "decodedSamples": 294092,
+      "decodeErrors": false,
+      "decodedPCMEqualsPreEncoderPCM": true,
+      "decodedPCMSha256": "ffa714a1a9d6a489f4f76783312a1ed2a8b1014760e0d07727d7fe21252ad0c4"
+    }
+  ],
+  "hostCPUQuota": "400000 100000",
+  "hostCPUStatDelta": {
+    "usage_usec": 4857670,
+    "user_usec": 4261223,
+    "system_usec": 596447,
+    "nice_usec": 0,
+    "nr_periods": 60,
+    "nr_throttled": 0,
+    "throttled_usec": 0,
+    "nr_bursts": 0,
+    "burst_usec": 0
+  },
+  "profileSamples": 7
+}

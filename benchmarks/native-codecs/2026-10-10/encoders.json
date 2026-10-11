@@ -1,0 +1,190 @@
+[
+  {
+    "name": "libx264",
+    "kind": "video",
+    "codec": "h264",
+    "linked": true,
+    "hardware": false,
+    "lossless": false,
+    "containers": [
+      "mp4",
+      "mkv",
+      "mov",
+      "flv"
+    ]
+  },
+  {
+    "name": "libx265",
+    "kind": "video",
+    "codec": "hevc",
+    "linked": true,
+    "hardware": false,
+    "lossless": false,
+    "containers": [
+      "mp4",
+      "mkv",
+      "mov"
+    ]
+  },
+  {
+    "name": "libvpx",
+    "kind": "video",
+    "codec": "vp8",
+    "linked": true,
+    "hardware": false,
+    "lossless": false,
+    "containers": [
+      "webm",
+      "mkv",
+      "mov"
+    ]
+  },
+  {
+    "name": "libvpx-vp9",
+    "kind": "video",
+    "codec": "vp9",
+    "linked": true,
+    "hardware": false,
+    "lossless": false,
+    "containers": [
+      "mp4",
+      "webm",
+      "mkv",
+      "mov"
+    ]
+  },
+  {
+    "name": "libsvtav1",
+    "kind": "video",
+    "codec": "av1",
+    "linked": true,
+    "hardware": false,
+    "lossless": false,
+    "containers": [
+      "mp4",
+      "webm",
+      "mkv",
+      "mov"
+    ]
+  },
+  {
+    "name": "libaom-av1",
+    "kind": "video",
+    "codec": "av1",
+    "linked": true,
+    "hardware": false,
+    "lossless": false,
+    "containers": [
+      "mp4",
+      "webm",
+      "mkv",
+      "mov"
+    ]
+  },
+  {
+    "name": "ffv1",
+    "kind": "video",
+    "codec": "ffv1",
+    "linked": true,
+    "hardware": false,
+    "lossless": true,
+    "containers": [
+      "mkv"
+    ]
+  },
+  {
+    "name": "h264_nvenc",
+    "kind": "video",
+    "codec": "h264",
+    "linked": true,
+    "hardware": true,
+    "lossless": false,
+    "containers": [
+      "mp4",
+      "mkv",
+      "mov",
+      "flv"
+    ]
+  },
+  {
+    "name": "hevc_nvenc",
+    "kind": "video",
+    "codec": "hevc",
+    "linked": true,
+    "hardware": true,
+    "lossless": false,
+    "containers": [
+      "mp4",
+      "mkv",
+      "mov"
+    ]
+  },
+  {
+    "name": "av1_nvenc",
+    "kind": "video",
+    "codec": "av1",
+    "linked": true,
+    "hardware": true,
+    "lossless": false,
+    "containers": [
+      "mp4",
+      "webm",
+      "mkv",
+      "mov"
+    ]
+  },
+  {
+    "name": "aac",
+    "kind": "audio",
+    "codec": "aac",
+    "linked": true,
+    "hardware": false,
+    "lossless": false,
+    "containers": [
+      "mp4",
+      "mkv",
+      "mov",
+      "flv"
+    ]
+  },
+  {
+    "name": "libopus",
+    "kind": "audio",
+    "codec": "opus",
+    "linked": true,
+    "hardware": false,
+    "lossless": false,
+    "containers": [
+      "mp4",
+      "webm",
+      "mkv",
+      "mov"
+    ]
+  },
+  {
+    "name": "flac",
+    "kind": "audio",
+    "codec": "flac",
+    "linked": true,
+    "hardware": false,
+    "lossless": true,
+    "containers": [
+      "mp4",
+      "mkv",
+      "mov"
+    ]
+  },
+  {
+    "name": "pcm_s16le",
+    "kind": "audio",
+    "codec": "pcm_s16le",
+    "linked": true,
+    "hardware": false,
+    "lossless": true,
+    "containers": [
+      "mp4",
+      "mkv",
+      "mov"
+    ]
+  }
+]

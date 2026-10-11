@@ -1,0 +1,8 @@
+
+/workspace/suitecut/tests/native-browser.test.ts
+  151:37  error  Unsafe member access .timestampMs on an `any` value  @typescript-eslint/no-unsafe-member-access
+  154:37  error  Unsafe member access .timestampMs on an `any` value  @typescript-eslint/no-unsafe-member-access
+  157:37  error  Unsafe member access .timestampMs on an `any` value  @typescript-eslint/no-unsafe-member-access
+
+✖ 3 problems (3 errors, 0 warnings)
+

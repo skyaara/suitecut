@@ -1,0 +1,73 @@
+[
+  {
+    "connectionState": "closed",
+    "iceConnectionState": "closed",
+    "signalingState": "closed",
+    "stats": []
+  },
+  {
+    "connectionState": "closed",
+    "iceConnectionState": "closed",
+    "signalingState": "closed",
+    "stats": []
+  },
+  {
+    "connectionState": "connecting",
+    "iceConnectionState": "checking",
+    "signalingState": "stable",
+    "stats": [
+      {
+        "id": "CPdcx8c6fc_R1K8nDoL",
+        "type": "candidate-pair",
+        "state": "in-progress",
+        "localCandidateId": "Idcx8c6fc",
+        "remoteCandidateId": "IR1K8nDoL",
+        "nominated": false,
+        "bytesSent": 0,
+        "bytesReceived": 0,
+        "packetsSent": 0,
+        "packetsReceived": 0
+      },
+      {
+        "id": "I7fbA2TgI",
+        "type": "local-candidate",
+        "candidateType": "host",
+        "protocol": "udp"
+      },
+      {
+        "id": "IDGKvMIJz",
+        "type": "local-candidate",
+        "candidateType": "host",
+        "protocol": "tcp"
+      },
+      {
+        "id": "IR1K8nDoL",
+        "type": "remote-candidate",
+        "candidateType": "srflx",
+        "protocol": "udp"
+      },
+      {
+        "id": "Idcx8c6fc",
+        "type": "local-candidate",
+        "candidateType": "host",
+        "protocol": "udp"
+      },
+      {
+        "id": "IilBDg2EY",
+        "type": "local-candidate",
+        "candidateType": "host",
+        "protocol": "tcp"
+      },
+      {
+        "id": "T01",
+        "type": "transport",
+        "bytesSent": 0,
+        "bytesReceived": 0,
+        "packetsSent": 0,
+        "packetsReceived": 0,
+        "dtlsState": "new",
+        "iceState": "checking"
+      }
+    ]
+  }
+]

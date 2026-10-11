@@ -1,0 +1,17 @@
+{
+  "before": {
+    "cycles": 25,
+    "firstArrayBuffers": 990975,
+    "lastArrayBuffers": 19981055,
+    "bytesPerCycle": 791253.3333333334
+  },
+  "after": {
+    "cycles": 25,
+    "firstArrayBuffers": 213375,
+    "lastArrayBuffers": 278911,
+    "lastTenArrayBufferRange": [
+      278911,
+      278911
+    ]
+  }
+}

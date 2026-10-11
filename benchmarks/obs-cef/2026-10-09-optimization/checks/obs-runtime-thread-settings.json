@@ -1,0 +1,147 @@
+{
+  "firstRuntime": {
+    "log": "benchmarks/obs-cef/2026-10-09-optimization/logs/reproduce-obs.log",
+    "sha256": "81aad2b85a3709bfc2a5fd53a7d36b71b41ee1d975f8e5afd14111615dba071c",
+    "encoderBlocks": 17,
+    "customThread4Blocks": 0,
+    "excerpts": [
+      {
+        "encoder": "advanced_video_recording",
+        "settings": "rate_control: CRF\n\tbitrate:      0\n\tbuffer size:  0\n\tcrf:          18\n\tfps_num:      60\n\tfps_den:      1\n\twidth:        1280\n\theight:       720\n\tkeyint:       120"
+      },
+      {
+        "encoder": "advanced_video_recording",
+        "settings": "rate_control: CRF\n\tbitrate:      0\n\tbuffer size:  0\n\tcrf:          18\n\tfps_num:      60\n\tfps_den:      1\n\twidth:        1280\n\theight:       720\n\tkeyint:       120"
+      },
+      {
+        "encoder": "advanced_video_recording",
+        "settings": "rate_control: CRF\n\tbitrate:      0\n\tbuffer size:  0\n\tcrf:          18\n\tfps_num:      60\n\tfps_den:      1\n\twidth:        1280\n\theight:       720\n\tkeyint:       120"
+      },
+      {
+        "encoder": "advanced_video_recording",
+        "settings": "rate_control: CRF\n\tbitrate:      0\n\tbuffer size:  0\n\tcrf:          18\n\tfps_num:      60\n\tfps_den:      1\n\twidth:        1920\n\theight:       1080\n\tkeyint:       120"
+      },
+      {
+        "encoder": "advanced_video_recording",
+        "settings": "rate_control: CRF\n\tbitrate:      0\n\tbuffer size:  0\n\tcrf:          18\n\tfps_num:      60\n\tfps_den:      1\n\twidth:        1920\n\theight:       1080\n\tkeyint:       120"
+      },
+      {
+        "encoder": "advanced_video_recording",
+        "settings": "rate_control: CRF\n\tbitrate:      0\n\tbuffer size:  0\n\tcrf:          18\n\tfps_num:      60\n\tfps_den:      1\n\twidth:        1920\n\theight:       1080\n\tkeyint:       120"
+      },
+      {
+        "encoder": "advanced_video_recording",
+        "settings": "rate_control: CRF\n\tbitrate:      0\n\tbuffer size:  0\n\tcrf:          18\n\tfps_num:      30\n\tfps_den:      1\n\twidth:        3840\n\theight:       2160\n\tkeyint:       60"
+      },
+      {
+        "encoder": "advanced_video_recording",
+        "settings": "rate_control: CRF\n\tbitrate:      0\n\tbuffer size:  0\n\tcrf:          18\n\tfps_num:      30\n\tfps_den:      1\n\twidth:        3840\n\theight:       2160\n\tkeyint:       60"
+      },
+      {
+        "encoder": "advanced_video_recording",
+        "settings": "rate_control: CRF\n\tbitrate:      0\n\tbuffer size:  0\n\tcrf:          18\n\tfps_num:      30\n\tfps_den:      1\n\twidth:        3840\n\theight:       2160\n\tkeyint:       60"
+      },
+      {
+        "encoder": "advanced_video_recording",
+        "settings": "rate_control: CRF\n\tbitrate:      0\n\tbuffer size:  0\n\tcrf:          18\n\tfps_num:      60\n\tfps_den:      1\n\twidth:        3840\n\theight:       2160\n\tkeyint:       120"
+      },
+      {
+        "encoder": "advanced_video_recording",
+        "settings": "rate_control: CRF\n\tbitrate:      0\n\tbuffer size:  0\n\tcrf:          18\n\tfps_num:      60\n\tfps_den:      1\n\twidth:        3840\n\theight:       2160\n\tkeyint:       120"
+      },
+      {
+        "encoder": "advanced_video_recording",
+        "settings": "rate_control: CRF\n\tbitrate:      0\n\tbuffer size:  0\n\tcrf:          18\n\tfps_num:      60\n\tfps_den:      1\n\twidth:        3840\n\theight:       2160\n\tkeyint:       120"
+      },
+      {
+        "encoder": "advanced_video_stream",
+        "settings": "rate_control: CBR\n\tbitrate:      4500\n\tbuffer size:  4500\n\tcrf:          23\n\tfps_num:      60\n\tfps_den:      1\n\twidth:        1920\n\theight:       1080\n\tkeyint:       120"
+      },
+      {
+        "encoder": "advanced_video_stream",
+        "settings": "rate_control: CBR\n\tbitrate:      4500\n\tbuffer size:  4500\n\tcrf:          23\n\tfps_num:      60\n\tfps_den:      1\n\twidth:        1920\n\theight:       1080\n\tkeyint:       120"
+      },
+      {
+        "encoder": "advanced_video_stream",
+        "settings": "rate_control: CBR\n\tbitrate:      4500\n\tbuffer size:  4500\n\tcrf:          23\n\tfps_num:      60\n\tfps_den:      1\n\twidth:        1920\n\theight:       1080\n\tkeyint:       120"
+      },
+      {
+        "encoder": "advanced_video_recording",
+        "settings": "rate_control: CRF\n\tbitrate:      0\n\tbuffer size:  0\n\tcrf:          18\n\tfps_num:      30\n\tfps_den:      1\n\twidth:        1280\n\theight:       720\n\tkeyint:       60"
+      },
+      {
+        "encoder": "advanced_video_recording",
+        "settings": "rate_control: CRF\n\tbitrate:      0\n\tbuffer size:  0\n\tcrf:          18\n\tfps_num:      30\n\tfps_den:      1\n\twidth:        1280\n\theight:       720\n\tkeyint:       60"
+      }
+    ]
+  },
+  "fourThreadRuntime": {
+    "log": "benchmarks/obs-cef/2026-10-09-optimization/logs/thread-limited-runtime/reproduce-obs.log",
+    "sha256": "72b2e02841ec46b38c0591ea70f1f0deb9c3bf93f7b1ab6328292022ae626127",
+    "encoderBlocks": 15,
+    "customThread4Blocks": 15,
+    "excerpts": [
+      {
+        "encoder": "advanced_video_recording",
+        "settings": "rate_control: CRF\n\tbitrate:      0\n\tbuffer size:  0\n\tcrf:          18\n\tfps_num:      60\n\tfps_den:      1\n\twidth:        1280\n\theight:       720\n\tkeyint:       120\n\ninfo: [x264 encoder: 'advanced_video_recording'] custom settings: \n\tthreads = 4"
+      },
+      {
+        "encoder": "advanced_video_recording",
+        "settings": "rate_control: CRF\n\tbitrate:      0\n\tbuffer size:  0\n\tcrf:          18\n\tfps_num:      60\n\tfps_den:      1\n\twidth:        1280\n\theight:       720\n\tkeyint:       120\n\ninfo: [x264 encoder: 'advanced_video_recording'] custom settings: \n\tthreads = 4"
+      },
+      {
+        "encoder": "advanced_video_recording",
+        "settings": "rate_control: CRF\n\tbitrate:      0\n\tbuffer size:  0\n\tcrf:          18\n\tfps_num:      60\n\tfps_den:      1\n\twidth:        1280\n\theight:       720\n\tkeyint:       120\n\ninfo: [x264 encoder: 'advanced_video_recording'] custom settings: \n\tthreads = 4"
+      },
+      {
+        "encoder": "advanced_video_recording",
+        "settings": "rate_control: CRF\n\tbitrate:      0\n\tbuffer size:  0\n\tcrf:          18\n\tfps_num:      60\n\tfps_den:      1\n\twidth:        1920\n\theight:       1080\n\tkeyint:       120\n\ninfo: [x264 encoder: 'advanced_video_recording'] custom settings: \n\tthreads = 4"
+      },
+      {
+        "encoder": "advanced_video_recording",
+        "settings": "rate_control: CRF\n\tbitrate:      0\n\tbuffer size:  0\n\tcrf:          18\n\tfps_num:      60\n\tfps_den:      1\n\twidth:        1920\n\theight:       1080\n\tkeyint:       120\n\ninfo: [x264 encoder: 'advanced_video_recording'] custom settings: \n\tthreads = 4"
+      },
+      {
+        "encoder": "advanced_video_recording",
+        "settings": "rate_control: CRF\n\tbitrate:      0\n\tbuffer size:  0\n\tcrf:          18\n\tfps_num:      60\n\tfps_den:      1\n\twidth:        1920\n\theight:       1080\n\tkeyint:       120\n\ninfo: [x264 encoder: 'advanced_video_recording'] custom settings: \n\tthreads = 4"
+      },
+      {
+        "encoder": "advanced_video_recording",
+        "settings": "rate_control: CRF\n\tbitrate:      0\n\tbuffer size:  0\n\tcrf:          18\n\tfps_num:      30\n\tfps_den:      1\n\twidth:        3840\n\theight:       2160\n\tkeyint:       60\n\ninfo: [x264 encoder: 'advanced_video_recording'] custom settings: \n\tthreads = 4"
+      },
+      {
+        "encoder": "advanced_video_recording",
+        "settings": "rate_control: CRF\n\tbitrate:      0\n\tbuffer size:  0\n\tcrf:          18\n\tfps_num:      30\n\tfps_den:      1\n\twidth:        3840\n\theight:       2160\n\tkeyint:       60\n\ninfo: [x264 encoder: 'advanced_video_recording'] custom settings: \n\tthreads = 4"
+      },
+      {
+        "encoder": "advanced_video_recording",
+        "settings": "rate_control: CRF\n\tbitrate:      0\n\tbuffer size:  0\n\tcrf:          18\n\tfps_num:      30\n\tfps_den:      1\n\twidth:        3840\n\theight:       2160\n\tkeyint:       60\n\ninfo: [x264 encoder: 'advanced_video_recording'] custom settings: \n\tthreads = 4"
+      },
+      {
+        "encoder": "advanced_video_recording",
+        "settings": "rate_control: CRF\n\tbitrate:      0\n\tbuffer size:  0\n\tcrf:          18\n\tfps_num:      60\n\tfps_den:      1\n\twidth:        3840\n\theight:       2160\n\tkeyint:       120\n\ninfo: [x264 encoder: 'advanced_video_recording'] custom settings: \n\tthreads = 4"
+      },
+      {
+        "encoder": "advanced_video_recording",
+        "settings": "rate_control: CRF\n\tbitrate:      0\n\tbuffer size:  0\n\tcrf:          18\n\tfps_num:      60\n\tfps_den:      1\n\twidth:        3840\n\theight:       2160\n\tkeyint:       120\n\ninfo: [x264 encoder: 'advanced_video_recording'] custom settings: \n\tthreads = 4"
+      },
+      {
+        "encoder": "advanced_video_recording",
+        "settings": "rate_control: CRF\n\tbitrate:      0\n\tbuffer size:  0\n\tcrf:          18\n\tfps_num:      60\n\tfps_den:      1\n\twidth:        3840\n\theight:       2160\n\tkeyint:       120\n\ninfo: [x264 encoder: 'advanced_video_recording'] custom settings: \n\tthreads = 4"
+      },
+      {
+        "encoder": "advanced_video_stream",
+        "settings": "rate_control: CBR\n\tbitrate:      4500\n\tbuffer size:  4500\n\tcrf:          23\n\tfps_num:      60\n\tfps_den:      1\n\twidth:        1920\n\theight:       1080\n\tkeyint:       120\n\ninfo: [x264 encoder: 'advanced_video_stream'] custom settings: \n\tthreads = 4"
+      },
+      {
+        "encoder": "advanced_video_stream",
+        "settings": "rate_control: CBR\n\tbitrate:      4500\n\tbuffer size:  4500\n\tcrf:          23\n\tfps_num:      60\n\tfps_den:      1\n\twidth:        1920\n\theight:       1080\n\tkeyint:       120\n\ninfo: [x264 encoder: 'advanced_video_stream'] custom settings: \n\tthreads = 4"
+      },
+      {
+        "encoder": "advanced_video_stream",
+        "settings": "rate_control: CBR\n\tbitrate:      4500\n\tbuffer size:  4500\n\tcrf:          23\n\tfps_num:      60\n\tfps_den:      1\n\twidth:        1920\n\theight:       1080\n\tkeyint:       120\n\ninfo: [x264 encoder: 'advanced_video_stream'] custom settings: \n\tthreads = 4"
+      }
+    ]
+  },
+  "interpretation": "First runtime has no custom thread option in active encoder logs; exclusive final control runtime explicitly logs threads=4. Collided diagnostic runtime is preserved separately and excluded from ranking."
+}

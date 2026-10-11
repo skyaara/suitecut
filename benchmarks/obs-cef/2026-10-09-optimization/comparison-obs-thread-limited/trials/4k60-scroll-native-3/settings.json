@@ -1,0 +1,15 @@
+{
+  "id": "4k60-scroll-native-3",
+  "backend": "native",
+  "case": {
+    "name": "4k60-scroll",
+    "width": 3840,
+    "height": 2160,
+    "fps": 60,
+    "workload": "scroll"
+  },
+  "trialNumber": 3,
+  "durationMs": 10000,
+  "status": "running",
+  "startedAt": "2026-10-09T03:47:44.018Z"
+}

@@ -1,0 +1,832 @@
+{
+  "config": {
+    "argv": [
+      "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+      "/workspace/suitecut/node_modules/playwright/cli.js",
+      "test",
+      "--config",
+      "/tmp/suitecut-playwright-upstream/playwright-1.62.1/suitecut.config.ts",
+      "browsercontext-credentials.spec.ts",
+      "video.spec.ts",
+      "--global-timeout",
+      "150000",
+      "--timeout",
+      "10000",
+      "--grep",
+      "credentials|should capture static page$|pad a short frame|should expose video path$|should delete video$|800x600 with null viewport|should saveAs video$"
+    ],
+    "configFile": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/suitecut.config.ts",
+    "rootDir": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 150000,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 100,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/workspace/suitecut/benchmarks/playwright-compatibility/2026-10-11/auth-screencast-check/artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests",
+        "testIgnore": [
+          "**/firefox/**",
+          "**/webkit/**",
+          "**/inspector/**"
+        ],
+        "testMatch": [
+          "library/**/*.spec.ts",
+          "page/**/*.spec.ts"
+        ],
+        "timeout": 10000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "/workspace/suitecut/benchmarks/playwright-compatibility/2026-10-11/auth-screencast-check/results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.62.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "library/browsercontext-credentials.spec.ts",
+      "file": "library/browsercontext-credentials.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "should fail without credentials",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 293,
+                  "error": {
+                    "message": "TypeError: responseOrError.status is not a function",
+                    "stack": "TypeError: responseOrError.status is not a function\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:34:28",
+                    "location": {
+                      "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts",
+                      "column": 28,
+                      "line": 34
+                    },
+                    "snippet": "  32 |     expect(responseOrError.message).toContain('net::ERR_INVALID_AUTH_CREDENTIALS');\n  33 |   else\n> 34 |     expect(responseOrError.status()).toBe(401);\n     |                            ^\n  35 | });\n  36 |\n  37 | it('should work with setHTTPCredentials', async ({ browser, server, failsOn401 }) => {"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts",
+                        "column": 28,
+                        "line": 34
+                      },
+                      "message": "TypeError: responseOrError.status is not a function\n\n  32 |     expect(responseOrError.message).toContain('net::ERR_INVALID_AUTH_CREDENTIALS');\n  33 |   else\n> 34 |     expect(responseOrError.status()).toBe(401);\n     |                            ^\n  35 | });\n  36 |\n  37 | it('should work with setHTTPCredentials', async ({ browser, server, failsOn401 }) => {\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:34:28"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T10:21:43.781Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/workspace/suitecut/benchmarks/playwright-compatibility/2026-10-11/auth-screencast-check/artifacts/library-browsercontext-cre-27f77-ld-fail-without-credentials/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts",
+                    "column": 28,
+                    "line": 34
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "a77da768f7b10734303d-758b96f1e736d1b9b1f8",
+          "file": "library/browsercontext-credentials.spec.ts",
+          "line": 26,
+          "column": 1
+        },
+        {
+          "title": "should work with setHTTPCredentials",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 116,
+                  "error": {
+                    "message": "TypeError: responseOrError.status is not a function",
+                    "stack": "TypeError: responseOrError.status is not a function\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:46:28",
+                    "location": {
+                      "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts",
+                      "column": 28,
+                      "line": 46
+                    },
+                    "snippet": "  44 |     expect(responseOrError.message).toContain('net::ERR_INVALID_AUTH_CREDENTIALS');\n  45 |   else\n> 46 |     expect(responseOrError.status()).toBe(401);\n     |                            ^\n  47 |\n  48 |   await context.setHTTPCredentials({ username: 'user', password: 'pass' });\n  49 |   responseOrError = await page.reload();"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts",
+                        "column": 28,
+                        "line": 46
+                      },
+                      "message": "TypeError: responseOrError.status is not a function\n\n  44 |     expect(responseOrError.message).toContain('net::ERR_INVALID_AUTH_CREDENTIALS');\n  45 |   else\n> 46 |     expect(responseOrError.status()).toBe(401);\n     |                            ^\n  47 |\n  48 |   await context.setHTTPCredentials({ username: 'user', password: 'pass' });\n  49 |   responseOrError = await page.reload();\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:46:28"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T10:21:45.966Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/workspace/suitecut/benchmarks/playwright-compatibility/2026-10-11/auth-screencast-check/artifacts/library-browsercontext-cre-00620-ork-with-setHTTPCredentials/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts",
+                    "column": 28,
+                    "line": 46
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "a77da768f7b10734303d-9422411a1076424dc472",
+          "file": "library/browsercontext-credentials.spec.ts",
+          "line": 37,
+          "column": 1
+        },
+        {
+          "title": "should work with correct credentials @smoke",
+          "ok": true,
+          "tags": [
+            "smoke"
+          ],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 132,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T10:21:47.329Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "a77da768f7b10734303d-7a34806773a12baa3788",
+          "file": "library/browsercontext-credentials.spec.ts",
+          "line": 54,
+          "column": 1
+        },
+        {
+          "title": "should fail with wrong credentials",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 122,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T10:21:47.928Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "a77da768f7b10734303d-49e5cba23e17002b2a8d",
+          "file": "library/browsercontext-credentials.spec.ts",
+          "line": 65,
+          "column": 1
+        },
+        {
+          "title": "should return resource body",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 186,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T10:21:48.071Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "a77da768f7b10734303d-943e0b7d0cebd9f29499",
+          "file": "library/browsercontext-credentials.spec.ts",
+          "line": 76,
+          "column": 1
+        },
+        {
+          "title": "should work with correct credentials and matching origin",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 185,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T10:21:48.293Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "a77da768f7b10734303d-0f41b830e96c8cf9eb54",
+          "file": "library/browsercontext-credentials.spec.ts",
+          "line": 89,
+          "column": 1
+        },
+        {
+          "title": "should work with correct credentials and matching origin case insensitive",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 191,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T10:21:48.498Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "a77da768f7b10734303d-4aca753e61a31ef9875b",
+          "file": "library/browsercontext-credentials.spec.ts",
+          "line": 100,
+          "column": 1
+        },
+        {
+          "title": "should fail with correct credentials and mismatching scheme",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 291,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T10:21:48.702Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "a77da768f7b10734303d-c7798dc605cec2aebda2",
+          "file": "library/browsercontext-credentials.spec.ts",
+          "line": 111,
+          "column": 1
+        },
+        {
+          "title": "should fail with correct credentials and mismatching hostname",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 244,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T10:21:49.043Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "a77da768f7b10734303d-5ff0b7002ecf229694dc",
+          "file": "library/browsercontext-credentials.spec.ts",
+          "line": 125,
+          "column": 1
+        },
+        {
+          "title": "should fail with correct credentials and mismatching port",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 136,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T10:21:49.334Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "a77da768f7b10734303d-935f695d871e5acaf196",
+          "file": "library/browsercontext-credentials.spec.ts",
+          "line": 141,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "library/video.spec.ts",
+      "file": "library/video.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "should saveAs video",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "slow",
+                  "location": {
+                    "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts",
+                    "line": 781,
+                    "column": 6
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 7032,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T10:22:20.022Z",
+                  "annotations": [
+                    {
+                      "type": "slow",
+                      "location": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts",
+                        "line": 781,
+                        "column": 6
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b93fb214be38b5a2aa13-6590de96453767788d64",
+          "file": "library/video.spec.ts",
+          "line": 780,
+          "column": 3
+        }
+      ],
+      "suites": [
+        {
+          "title": "screencast",
+          "file": "library/video.spec.ts",
+          "line": 101,
+          "column": 4,
+          "specs": [
+            {
+              "title": "should capture static page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [
+                    {
+                      "type": "slow",
+                      "location": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts",
+                        "line": 102,
+                        "column": 6
+                      }
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 6936,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T10:21:49.498Z",
+                      "annotations": [
+                        {
+                          "type": "slow",
+                          "location": {
+                            "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts",
+                            "line": 102,
+                            "column": 6
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "b93fb214be38b5a2aa13-4af64ae6ee1e2931c112",
+              "file": "library/video.spec.ts",
+              "line": 113,
+              "column": 5
+            },
+            {
+              "title": "should pad a short frame to the video size",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [
+                    {
+                      "type": "slow",
+                      "location": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts",
+                        "line": 102,
+                        "column": 6
+                      }
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 8357,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T10:21:56.472Z",
+                      "annotations": [
+                        {
+                          "type": "slow",
+                          "location": {
+                            "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts",
+                            "line": 102,
+                            "column": 6
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "b93fb214be38b5a2aa13-666a4d7feac51be7ab48",
+              "file": "library/video.spec.ts",
+              "line": 133,
+              "column": 5
+            },
+            {
+              "title": "should expose video path",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [
+                    {
+                      "type": "slow",
+                      "location": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts",
+                        "line": 102,
+                        "column": 6
+                      }
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 146,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T10:22:04.839Z",
+                      "annotations": [
+                        {
+                          "type": "slow",
+                          "location": {
+                            "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts",
+                            "line": 102,
+                            "column": 6
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "b93fb214be38b5a2aa13-c6dfbd4b3217a3f546e4",
+              "file": "library/video.spec.ts",
+              "line": 182,
+              "column": 5
+            },
+            {
+              "title": "should delete video",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [
+                    {
+                      "type": "slow",
+                      "location": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts",
+                        "line": 102,
+                        "column": 6
+                      }
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 6929,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T10:22:04.994Z",
+                      "annotations": [
+                        {
+                          "type": "slow",
+                          "location": {
+                            "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts",
+                            "line": 102,
+                            "column": 6
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "b93fb214be38b5a2aa13-cba55ee849a999493318",
+              "file": "library/video.spec.ts",
+              "line": 200,
+              "column": 5
+            },
+            {
+              "title": "should be 800x600 with null viewport",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [
+                    {
+                      "type": "slow",
+                      "location": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts",
+                        "line": 102,
+                        "column": 6
+                      }
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 8079,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T10:22:11.930Z",
+                      "annotations": [
+                        {
+                          "type": "slow",
+                          "location": {
+                            "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts",
+                            "line": 102,
+                            "column": 6
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "b93fb214be38b5a2aa13-7316a0a6ba82b71faed4",
+              "file": "library/video.spec.ts",
+              "line": 475,
+              "column": 5
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-11T10:21:42.784Z",
+    "duration": 44392.697,
+    "expected": 14,
+    "skipped": 0,
+    "unexpected": 2,
+    "flaky": 0
+  }
+}

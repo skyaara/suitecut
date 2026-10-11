@@ -1,0 +1,292 @@
+{
+  "version": "2.1.0",
+  "published": false,
+  "savedAt": "2026-10-11T07:50:40.515314+00:00",
+  "allSavedChecksPassed": true,
+  "fuzz": {
+    "startedAt": "2026-10-11T07:21:56.913837+00:00",
+    "secondsPerTarget": 600,
+    "targets": [
+      {
+        "name": "bounds",
+        "args": [
+          "/workspace/suitecut/.suitecut/shared-clock-asan/suitecut-fuzz-bounds",
+          "/workspace/suitecut/benchmarks/release/2026-10-11-suitecut-2.1/fuzz/bounds-corpus",
+          "-max_total_time=600",
+          "-max_len=512",
+          "-timeout=5",
+          "-rss_limit_mb=1024",
+          "-malloc_limit_mb=128",
+          "-detect_leaks=1",
+          "-print_final_stats=1",
+          "-artifact_prefix=/workspace/suitecut/benchmarks/release/2026-10-11-suitecut-2.1/fuzz/bounds-artifacts/"
+        ],
+        "sha256": "7744d42d5ebc683aa4fc9604081967008921022f86a6f828e1126c9ac8835669",
+        "exitCode": 0,
+        "wallSeconds": 601.5902790749969,
+        "corpusFiles": 46,
+        "artifacts": [],
+        "stats": {
+          "number_of_executed_units": 64096607,
+          "average_exec_per_sec": 106649,
+          "new_units_added": 0,
+          "slowest_unit_time_sec": 0,
+          "peak_rss_mb": 492
+        },
+        "seed": 2269896467,
+        "coverageCounters": {
+          "coverage": 55,
+          "features": 80
+        }
+      },
+      {
+        "name": "media",
+        "args": [
+          "/workspace/suitecut/.suitecut/shared-clock-asan/suitecut-fuzz-media",
+          "/workspace/suitecut/benchmarks/release/2026-10-11-suitecut-2.1/fuzz/media-corpus",
+          "-max_total_time=600",
+          "-max_len=512",
+          "-timeout=5",
+          "-rss_limit_mb=1024",
+          "-malloc_limit_mb=128",
+          "-detect_leaks=1",
+          "-print_final_stats=1",
+          "-artifact_prefix=/workspace/suitecut/benchmarks/release/2026-10-11-suitecut-2.1/fuzz/media-artifacts/"
+        ],
+        "sha256": "2e8815881c6456fbb993fb5ad04b97d0aa84d218359eecd540c2fb81bf4feaee",
+        "exitCode": 0,
+        "wallSeconds": 601.6750478190079,
+        "corpusFiles": 255,
+        "artifacts": [],
+        "stats": {
+          "number_of_executed_units": 18568,
+          "average_exec_per_sec": 30,
+          "new_units_added": 79,
+          "slowest_unit_time_sec": 0,
+          "peak_rss_mb": 233
+        },
+        "seed": 2643468442,
+        "coverageCounters": {
+          "coverage": 644,
+          "features": 1528
+        }
+      }
+    ],
+    "scope": "Native bounds/clock helpers and real FFmpeg output queue/lifecycle paths. Shared CEF/FFmpeg dependencies are not ASan-instrumented.",
+    "finishedAt": "2026-10-11T07:42:00.190075+00:00"
+  },
+  "checks": [
+    {
+      "name": "build-asan",
+      "args": [
+        "cmake",
+        "--build",
+        ".suitecut/shared-clock-asan",
+        "--parallel",
+        "2",
+        "--target",
+        "suitecut-media-test",
+        "suitecut-audio-startup-test",
+        "suitecut-codec-test",
+        "suitecut-audio-clock-test",
+        "suitecut-pixel-test",
+        "suitecut-memory-test",
+        "suitecut-sync-test",
+        "suitecut-scaler-failure-test",
+        "suitecut-fuzz-bounds",
+        "suitecut-fuzz-media"
+      ],
+      "exitCode": 0,
+      "wallSeconds": 0.6779766189865768
+    },
+    {
+      "name": "ctest-asan",
+      "args": [
+        "ctest",
+        "--test-dir",
+        ".suitecut/shared-clock-asan",
+        "--output-on-failure",
+        "-j",
+        "1"
+      ],
+      "exitCode": 0,
+      "wallSeconds": 12.419851616985397
+    },
+    {
+      "name": "build-release",
+      "args": [
+        "cmake",
+        "--build",
+        ".suitecut/native-build",
+        "--parallel",
+        "2",
+        "--target",
+        "suitecut-media-test",
+        "suitecut-audio-startup-test",
+        "suitecut-codec-test",
+        "suitecut-audio-clock-test",
+        "suitecut-pixel-test",
+        "suitecut-memory-test",
+        "suitecut-sync-test",
+        "suitecut-scaler-failure-test"
+      ],
+      "exitCode": 0,
+      "wallSeconds": 0.12691367001389153
+    },
+    {
+      "name": "ctest-release",
+      "args": [
+        "ctest",
+        "--test-dir",
+        ".suitecut/native-build",
+        "--output-on-failure",
+        "-j",
+        "1"
+      ],
+      "exitCode": 0,
+      "wallSeconds": 8.987670688977232
+    },
+    {
+      "name": "fuzz",
+      "args": [
+        "python3",
+        "benchmarks/native-sync/fuzz-shared-clock.py",
+        "/workspace/suitecut/benchmarks/release/2026-10-11-suitecut-2.1",
+        "600"
+      ],
+      "exitCode": 0,
+      "wallSeconds": 1203.3358867439965
+    },
+    {
+      "name": "configure-tsan",
+      "args": [
+        "cmake",
+        "-S",
+        "native/browser",
+        "-B",
+        "/tmp/suitecut-release-tsan",
+        "-DCEF_ROOT=/workspace/suitecut/.suitecut/cef-codecs-sdk",
+        "-DLIBYUV_ROOT=/workspace/suitecut/.suitecut/libyuv",
+        "-DSUITECUT_CEF_PIN_FILE=cef-build-linux-codecs.json",
+        "-DSUITECUT_FFMPEG_ROOT=/workspace/suitecut/.suitecut/memory-tools/ffmpeg-tsan",
+        "-DCMAKE_BUILD_TYPE=RelWithDebInfo",
+        "-DSUITECUT_SANITIZERS=thread",
+        "-DCMAKE_C_COMPILER=/workspace/suitecut/.suitecut/memory-tools/root/usr/bin/clang-19",
+        "-DCMAKE_CXX_COMPILER=/workspace/suitecut/.suitecut/memory-tools/root/usr/bin/clang++-19"
+      ],
+      "exitCode": 0,
+      "wallSeconds": 3.1369623100035824
+    },
+    {
+      "name": "build-tsan",
+      "args": [
+        "cmake",
+        "--build",
+        "/tmp/suitecut-release-tsan",
+        "--parallel",
+        "2",
+        "--target",
+        "suitecut-media-test",
+        "suitecut-audio-startup-test",
+        "suitecut-codec-test",
+        "suitecut-audio-clock-test",
+        "suitecut-pixel-test",
+        "suitecut-memory-test",
+        "suitecut-sync-test",
+        "suitecut-scaler-failure-test"
+      ],
+      "exitCode": 0,
+      "wallSeconds": 28.653855582000688
+    },
+    {
+      "name": "ctest-tsan",
+      "args": [
+        "ctest",
+        "--test-dir",
+        "/tmp/suitecut-release-tsan",
+        "--output-on-failure",
+        "-j",
+        "1"
+      ],
+      "exitCode": 0,
+      "wallSeconds": 15.836723947984865
+    },
+    {
+      "name": "frozen-lock",
+      "args": [
+        "pnpm",
+        "install",
+        "--lockfile-only",
+        "--ignore-scripts",
+        "--offline",
+        "--frozen-lockfile"
+      ],
+      "exitCode": 0,
+      "wallSeconds": 8.217073455016362
+    },
+    {
+      "name": "prepublish",
+      "args": [
+        "pnpm",
+        "prepublishOnly"
+      ],
+      "exitCode": 0,
+      "wallSeconds": 155.27827618501033,
+      "log": "logs/prepublish-attempt2.log",
+      "pnpmEnvironment": "verify_deps_before_run=warn; frozen lockfile separately passed; existing workspace symlinks retained"
+    },
+    {
+      "name": "pack-release",
+      "args": [
+        "pnpm",
+        "pack:release"
+      ],
+      "exitCode": 0,
+      "wallSeconds": 37.20309941499727,
+      "log": "logs/pack-release-attempt1.log",
+      "pnpmEnvironment": "verify_deps_before_run=warn; frozen lockfile separately passed; existing workspace symlinks retained"
+    },
+    {
+      "name": "installed-native",
+      "args": [
+        "python3",
+        "benchmarks/native-memory/runtime.py",
+        "scripts/verify-beta-package.mjs",
+        "--release"
+      ],
+      "exitCode": 0,
+      "wallSeconds": 11.474060965992976,
+      "log": "logs/installed-native-attempt1.log",
+      "pnpmEnvironment": "verify_deps_before_run=warn; frozen lockfile separately passed; existing workspace symlinks retained"
+    },
+    {
+      "name": "engine-e2e",
+      "args": [
+        "python3",
+        "benchmarks/native-memory/runtime.py",
+        "playwright"
+      ],
+      "exitCode": 0,
+      "wallSeconds": 26.636643120989902,
+      "log": "logs/engine-e2e-attempt1.log",
+      "pnpmEnvironment": "verify_deps_before_run=warn; frozen lockfile separately passed; existing workspace symlinks retained"
+    },
+    {
+      "name": "external-browser",
+      "args": [
+        "python3",
+        "benchmarks/native-memory/runtime.py",
+        "benchmarks/external-browser/connect.mjs"
+      ],
+      "exitCode": 0,
+      "wallSeconds": 9.62745933799306,
+      "log": "logs/external-browser-attempt1.log",
+      "pnpmEnvironment": "verify_deps_before_run=warn; frozen lockfile separately passed; existing workspace symlinks retained"
+    }
+  ],
+  "scopeLimits": [
+    "prebuilt Chromium not fully instrumented",
+    "bounded tests do not prove no leaks indefinitely",
+    "known source-audio quietness unresolved"
+  ]
+}

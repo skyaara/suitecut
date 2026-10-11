@@ -1,0 +1,7 @@
+cold-immediate-pcm: ready=78.6ms missing=794.563ms
+cold-packet-pcm: ready=379.7ms missing=0.000ms
+cold-signal-pcm: ready=220.9ms missing=46.000ms
+cold-signal-aac: ready=124.7ms missing=3.333ms
+cold-signal-aac-mp4: ready=1513.2ms missing=115.917ms
+quiet-signal-aac: ready=269.7ms missing=240.000ms
+stress-signal-aac: ready=155.4ms missing=300.917ms

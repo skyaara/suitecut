@@ -1,0 +1,15 @@
+{
+  "id": "4k30-canvas-obs-5",
+  "backend": "obs",
+  "case": {
+    "name": "4k30-canvas",
+    "width": 3840,
+    "height": 2160,
+    "fps": 30,
+    "workload": "canvas"
+  },
+  "trialNumber": 5,
+  "durationMs": 10000,
+  "status": "running",
+  "startedAt": "2026-10-08T21:01:05.818Z"
+}

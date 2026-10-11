@@ -1,0 +1,32 @@
+{
+  "channel": "GOFNS",
+  "url": "https://www.twitch.tv/gofns",
+  "requestedMs": 120000,
+  "status": "failed",
+  "backend": "SuiteCut Playwright with tab audio; native CEF Twitch playback failed",
+  "startedAt": "2026-10-10T11:05:45.148Z",
+  "cefCodecSupport": {
+    "h264aac": "",
+    "h264": "",
+    "aac": "",
+    "vp9opus": "probably",
+    "av1": "probably"
+  },
+  "cefVersion": "154.0.34+g14c5a08+chromium-154.0.8037.98",
+  "chromiumVersion": "151.0.7922.34",
+  "before": {
+    "title": "GOFNS - Twitch",
+    "time": 5.873794,
+    "readyState": 4,
+    "paused": false,
+    "muted": false,
+    "volume": 0.8,
+    "width": 1920,
+    "height": 1080,
+    "decodedFrames": 235,
+    "droppedFrames": 12,
+    "text": "Skip to...\nAlt\nP\n\nBrowse\n\n36\nLog In\nSign Up\nLive Channels\n\nMarvelRivals\n\nMarvel Rivals\n\nExclusive Drops - Marvel Rivals Ignite Stage 2 PAC [RC vs GEN] Playoffs Day 3\n\nLive\n\n7.2K\n\n7.2K viewers\n\nEmongg\n\nOverwatch\n\nLive\n\n3.3K\n\n3.3K viewers\n\nVALORANT\n\nVALORANT\n\nLive\n\n25.3K\n\n25.3K viewers\n\nESLCS\n\nCounter-Strike\n\nLive\n\n2.6K\n\n2.6K viewers\n\nGOFNS\n\nVALORANT\n\nLive\n\n31.4K\n\n31.4K viewers\n\nValkyrae\n\nCounter-Strike\n\nLive\n\n8.7K\n\n8.7K viewers\n\nvulture_ow\n\nOverwatch\n\nLive\n\n882\n\n882 viewers\n\nTheBurntPeanut_247\n\nAlways On\n\nLive\n\n5.4K\n\n5.4K viewers\n\nAlveusSanctuary\n\nAnimals, Aquariums, and Zoos\n\nLive\n\n1.2K\n\n1.2K viewers\n\nDansGaming\n\nResident Evil Village\n\nLive\n\n3.1K\n\n3.1K viewers\n\nGOFNS Viewers Also Watch\n\ns0mcs\n\n+1\n\ns0mcs and 1 guest\n\nVALORANT\n\nLive\n\n9.2K\n\n9.2K viewers\n\nshanks_ttv\n\n+1\n\nshanks_ttv and 1 guest\n\nVALORANT\n\nLive\n\n9.2K\n\n9.2K viewers\n\nThinkingMansValo\n\nVALORANT\n\nLive\n\n963\n\n963 viewers\n\nShow More\nLIVE\nGOFNS\nFollow\nGift a Sub\nSubscribe\n\nEG FNS | NRG vs LOUD - VCT Champions Playoffs #VCTWatchparty | !vote !inzone !noYT !pickems\n\nVALORANT\nEnglish\nDropsEnabled\n31,394\n\n31,394 viewers\n\n2:11:13\n\n2:11:13 since live stream started\n\nAbout GOFNS\n594K\nfollowers\n·\n\nProdigy SEG\n\nGamerrrrr\n\nPlus Goal\nOctober\nHelp me earn points to maintain Plus Level 2\n1190 / 300\n\nCoupon code must be entered in the promo code box at checkout before completion of order. Only redeemable on electronics.sony.com. Offer valid in US only.\n\nGOFNS\n\nEG FNS | NRG vs LOUD - VCT Champions Playoffs #VCTWatchparty | !vote !inzone !noYT !pickems\n\nPlaying VALORANT for 31,394 viewers\n\nLIVE\nVolume\n1080P60 (SOURCE)\nSign up to experience the best of GOFNS\n\nChat, follow or subscribe – Twitch is your oyster.\n\nSign Up"
+  },
+  "error": "AggregateError: Failed to initialize SuiteCut page recording\n    at createRecordingSession (file:///workspace/suitecut/dist/suitecut.js:956:15)\n    at async file:///workspace/suitecut/benchmarks/twitch-capture/capture.mjs:76:13",
+  "finishedAt": "2026-10-10T11:06:07.469Z"
+}

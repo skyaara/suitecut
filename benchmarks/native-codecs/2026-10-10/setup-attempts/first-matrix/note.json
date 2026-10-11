@@ -1,0 +1,4 @@
+{
+  "reason": "Harness expected hardware startup to return a handle, but SDK correctly rejected unavailable NVENC during startup. Initial H264/HEVC resource samples also overlapped an interrupted typecheck/unit run; the complete matrix is repeated without those jobs.",
+  "outputPathsMovedFrom": "../.."
+}

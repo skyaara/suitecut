@@ -1,0 +1,12 @@
+{
+  "id": "4k30-canvas-native-5",
+  "trialStatus": "failed",
+  "artifacts": [
+    {
+      "path": "/workspace/suitecut/.suitecut/obs-cef-evidence/2026-10-09/4k30-canvas-native-5/suitecut-source-c182b487-a9c1-453b-8af3-6384aa12603c-76a86b6d-b541-487a-9349-779586a298b2.webm",
+      "bytes": 0,
+      "probeExitCode": 1,
+      "probeError": "[matroska,webm @ 0x56211e34fec0] EBML header parsing failed\n.suitecut/obs-cef-evidence/2026-10-09/4k30-canvas-native-5/suitecut-source-c182b487-a9c1-453b-8af3-6384aa12603c-76a86b6d-b541-487a-9349-779586a298b2.webm: Invalid data found when processing input\n"
+    }
+  ]
+}

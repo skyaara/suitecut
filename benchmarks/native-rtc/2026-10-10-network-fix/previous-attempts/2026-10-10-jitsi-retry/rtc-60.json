@@ -1,0 +1,55 @@
+[
+  {
+    "connectionState": "closed",
+    "iceConnectionState": "closed",
+    "signalingState": "closed",
+    "stats": []
+  },
+  {
+    "connectionState": "closed",
+    "iceConnectionState": "closed",
+    "signalingState": "closed",
+    "stats": []
+  },
+  {
+    "connectionState": "failed",
+    "iceConnectionState": "disconnected",
+    "signalingState": "stable",
+    "stats": [
+      {
+        "id": "I7fbA2TgI",
+        "type": "local-candidate",
+        "candidateType": "host",
+        "protocol": "udp"
+      },
+      {
+        "id": "IDGKvMIJz",
+        "type": "local-candidate",
+        "candidateType": "host",
+        "protocol": "tcp"
+      },
+      {
+        "id": "Idcx8c6fc",
+        "type": "local-candidate",
+        "candidateType": "host",
+        "protocol": "udp"
+      },
+      {
+        "id": "IilBDg2EY",
+        "type": "local-candidate",
+        "candidateType": "host",
+        "protocol": "tcp"
+      },
+      {
+        "id": "T01",
+        "type": "transport",
+        "bytesSent": 0,
+        "bytesReceived": 0,
+        "packetsSent": 0,
+        "packetsReceived": 0,
+        "dtlsState": "new",
+        "iceState": "failed"
+      }
+    ]
+  }
+]

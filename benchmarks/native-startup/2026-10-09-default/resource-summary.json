@@ -1,0 +1,74 @@
+[
+  {
+    "label": "simultaneous",
+    "nativeMeanCPUCores": 1.8230694462671446,
+    "aggregateNativeRSSMiB": {
+      "first": 1190.32421875,
+      "last": 1254.9140625,
+      "max": 1256.23046875,
+      "mean": 1226.6256510416667
+    },
+    "samples": 54,
+    "nodeBefore": {
+      "rss": 133361664,
+      "heapTotal": 122941440,
+      "heapUsed": 56974616,
+      "external": 6691271,
+      "arrayBuffers": 2702806
+    },
+    "nodeAfterGc": {
+      "rss": 133885952,
+      "heapTotal": 58191872,
+      "heapUsed": 51464248,
+      "external": 4337252,
+      "arrayBuffers": 344463
+    },
+    "hostCPUStatDelta": {
+      "usage_usec": 133745490,
+      "user_usec": 120997023,
+      "system_usec": 12748467,
+      "nice_usec": 0,
+      "nr_periods": 634,
+      "nr_throttled": 151,
+      "throttled_usec": 28121178,
+      "nr_bursts": 0,
+      "burst_usec": 0
+    }
+  },
+  {
+    "label": "simultaneous-continuous",
+    "nativeMeanCPUCores": 1.0379750644341543,
+    "aggregateNativeRSSMiB": {
+      "first": 1192.96875,
+      "last": 1235.01171875,
+      "max": 1278.21484375,
+      "mean": 1213.547265625
+    },
+    "samples": 60,
+    "nodeBefore": {
+      "rss": 128630784,
+      "heapTotal": 119533568,
+      "heapUsed": 58030952,
+      "external": 6687930,
+      "arrayBuffers": 2699465
+    },
+    "nodeAfterGc": {
+      "rss": 130859008,
+      "heapTotal": 58978304,
+      "heapUsed": 51471096,
+      "external": 4337252,
+      "arrayBuffers": 344463
+    },
+    "hostCPUStatDelta": {
+      "usage_usec": 68068725,
+      "user_usec": 61391671,
+      "system_usec": 6677054,
+      "nice_usec": 0,
+      "nr_periods": 631,
+      "nr_throttled": 0,
+      "throttled_usec": 0,
+      "nr_bursts": 0,
+      "burst_usec": 0
+    }
+  }
+]

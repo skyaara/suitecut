@@ -1,0 +1,8 @@
+{
+  "command": "python3 benchmarks/publication/test_analyze.py",
+  "testsRun": 8,
+  "durationSeconds": 0.044,
+  "passed": true,
+  "source": "Observed stdout from this task, not a repeated run",
+  "outputExcerpt": "........\nRan 8 tests in 0.044s\nOK"
+}

@@ -1,0 +1,24 @@
+{
+  "cpus": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "cpuQuota": "400000 100000",
+  "hostMemoryLimitBytes": 17179869184,
+  "memoryGuardBytes": 8589934592,
+  "memoryGuardKind": "sampled summed-RSS guard, not kernel cap",
+  "displaySize": [
+    3840,
+    2160
+  ],
+  "infrastructurePids": [
+    807294,
+    807297
+  ],
+  "executable": "/workspace/suitecut/.suitecut/native-build/suitecut-browser",
+  "audioTrace": null,
+  "sanitizers": false,
+  "executableSha256": "0d901a6be8c86ec1b70b8ad5bdf7a5baa0c9938ed71ce08df63fe141becf58b1"
+}

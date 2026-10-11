@@ -1,0 +1,17 @@
+{
+  "recording": "passed",
+  "callbackFailure": "passed",
+  "cancellation": "passed",
+  "nativeInput": "passed",
+  "presentation": "passed",
+  "checkpoints": 2,
+  "sources": 2,
+  "outputFps": 60,
+  "audibleSamples": 153312,
+  "pageAudioSelection": "passed",
+  "narrationMix": "passed",
+  "defaultAudioDisabled": "passed",
+  "excludedPreparationMs": 2720,
+  "sourceOwnership": "passed",
+  "outputPath": "/workspace/suitecut/benchmarks/native-engine/2026-10-09/presentation-success/native-presentation.mp4"
+}

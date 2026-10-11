@@ -15,7 +15,7 @@ const record = defineSuiteCut({
 const result = await record('Embedded browser tour', async ({ page, suitecut }) => {
   await page.goto('https://example.com')
   await suitecut.highlight(page.locator('h1'))
-  await suitecut.narrate('Welcome to SuiteCut 2.0.')
+  await suitecut.narrate('Welcome to SuiteCut 2.1.')
   await suitecut.checkpoint('Opening screen')
 })
 
@@ -27,12 +27,12 @@ await renderSuiteCut({
 
 <DocsLayout
   title="Getting started"
-  description="Set up SuiteCut 2.0 with embedded CEF, record a native browser flow, and migrate from Playwright or the beta."
+  description="Set up SuiteCut 2.1 with embedded CEF, record a native browser flow, and migrate from Playwright or the beta."
   section="overview"
 >
   <h1>Getting started</h1>
   <p>
-    SuiteCut 2.0 records and streams with an embedded Chromium browser powered by CEF. The native
+    SuiteCut 2.1 records and streams with an embedded Chromium browser powered by CEF. The native
     beta is now the default <code>suitecut</code> API. Record a flow with narration, captions, page audio,
     and checkpoints, then render its saved manifest into a video.
   </p>
@@ -40,37 +40,40 @@ await renderSuiteCut({
   <h2 id="requirements">Requirements</h2>
   <ul>
     <li>Node.js 22 or newer.</li>
-    <li>macOS Apple Silicon for the verified native CEF build.</li>
+    <li>Linux x86-64 for the verified C++ media engine.</li>
     <li>CMake 3.21+, Ninja, a C++20 compiler, and the pinned CEF and libyuv SDKs.</li>
-    <li>FFmpeg and FFprobe, installed with <code>suitecut install</code> or available on PATH.</li>
+    <li>
+      FFmpeg 7.1+ development/runtime libraries, plus FFmpeg and FFprobe installed with <code
+        >suitecut install</code
+      > or available on PATH.
+    </li>
   </ul>
   <p>
-    Linux native builds are unverified. Windows native packaging is not implemented. Use <code
-      >suitecut/playwright</code
-    > for existing Chromium, Firefox, and WebKit flows on those platforms.
+    The new native media engine is unverified on macOS. Windows native packaging is not implemented.
+    Use <code>suitecut/playwright</code> for existing Chromium, Firefox, and WebKit flows on those platforms.
   </p>
 
   <h2 id="install">Install</h2>
   <CodeBlock
     label="Terminal"
-    code={`npm install https://github.com/skyaara/suitecut/releases/download/v2.0.0/suitecut-2.0.0.tgz
+    code={`npm install ./suitecut-2.1.0.tgz
 npx suitecut install
 npx suitecut doctor`}
   />
   <p>
-    Install the 2.0 package from the GitHub release asset above. The package contains the native
-    browser source and checksum pins, but no compiled CEF browser. Follow the <a
-      href="https://github.com/skyaara/suitecut/blob/main/native/browser/README.md#build"
+    Install the prepared 2.1 tarball locally; this release has not been published. The package
+    contains the native browser source and checksum pins, but no compiled CEF browser. Follow the <a
+      href="https://github.com/skyaara/suitecut/blob/main/native/browser/ENGINE.md#build"
       >CEF build instructions</a
     > to obtain and verify the pinned dependencies and compile the complete browser bundle. Then set its
     executable path:
   </p>
   <CodeBlock
     label="Terminal"
-    code={`export SUITECUT_NATIVE_EXECUTABLE="/absolute/path/to/suitecut-browser.app/Contents/MacOS/suitecut-browser"`}
+    code={`export SUITECUT_NATIVE_EXECUTABLE="/absolute/path/to/suitecut-browser"`}
   />
   <p>
-    Keep the complete <code>.app</code> bundle together. You can also pass
+    Keep the complete native browser bundle together. You can also pass
     <code>native.executablePath</code> per recording. A missing browser is an error; SuiteCut never silently
     switches backends. <code>suitecut install</code> installs checksum-pinned media tools, not CEF. Imports
     and recording calls do not download software.
@@ -87,8 +90,9 @@ npx suitecut doctor`}
   <CodeBlock code={nativeExample} />
   <p>
     Native locators use strict CSS selectors in the main document. Await application readiness
-    explicitly. Role/text locators, iframe traversal, popup flows, and custom Playwright setup
-    require the explicit Playwright backend.
+    explicitly. Role/text locators, iframe traversal, popup flows, and custom Playwright setup use
+    the real Playwright adapter from <code>suitecut/engine</code>, or the explicit Playwright
+    backend.
   </p>
 
   <h2 id="run-and-render">Run and render</h2>

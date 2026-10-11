@@ -1,0 +1,47 @@
+
+Running 12 tests using 1 worker
+
+(node:416626) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 benchmarks/native-engine/engine.e2e.spec.ts:52:1 › real Playwright locators, auto-wait, input, scrolling, iframe and screenshot (1.2s)
+  ✓   2 benchmarks/native-engine/engine.e2e.spec.ts:68:1 › native engine records silent startup and accepts later sound (768ms)
+  ✓   3 benchmarks/native-engine/engine.e2e.spec.ts:85:1 › streaming initializes silent audio and accepts later browser sound (1.4s)
+  ✓   4 benchmarks/native-engine/engine.e2e.spec.ts:148:1 › silent pages record a valid audio track with mandatory engine readiness (430ms)
+  ✓   5 benchmarks/native-engine/engine.e2e.spec.ts:170:1 › native protocol rejects bypasses and requires audio readiness when audio is omitted (309ms)
+  ✓   6 benchmarks/native-engine/engine.e2e.spec.ts:217:1 › network interception, init scripts and storage isolation (361ms)
+  ✓   7 benchmarks/native-engine/engine.e2e.spec.ts:246:1 › popup, dialog, file upload, download and public CDP sessions (1.1s)
+  ✓   8 benchmarks/native-engine/engine.e2e.spec.ts:282:1 › explicit CDP sessions receive page events and tracing completion (536ms)
+  ✘   9 benchmarks/native-engine/engine.e2e.spec.ts:311:1 › native recording survives blocked Node, pause and page switching (30.1s)
+(node:417122) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  10 benchmarks/native-engine/engine.e2e.spec.ts:348:1 › pause drains pending media and resume captures a prepared static page (1.3s)
+  ✓  11 benchmarks/native-engine/engine.e2e.spec.ts:371:1 › repeated context/page shutdown keeps the engine usable (1.4s)
+  ✓  12 benchmarks/native-engine/engine.e2e.spec.ts:382:1 › permission and geolocation setup before page creation (132ms)
+
+
+  1) benchmarks/native-engine/engine.e2e.spec.ts:311:1 › native recording survives blocked Node, pause and page switching 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: Unknown native output
+
+       at ../../src/native-browser.ts:219
+
+      217 |       clearTimeout(request.timer)
+      218 |       if (header.ok) request.resolve(result)
+    > 219 |       else request.reject(new Error(header.error ?? 'Native command failed'))
+          |                           ^
+      220 |       return
+      221 |     }
+      222 |     if (stopping) return
+        at NativePacketDecoder.receive (/workspace/suitecut/src/native-browser.ts:219:27)
+        at NativePacketDecoder.push (/workspace/suitecut/src/native-protocol.ts:90:16)
+        at Socket.<anonymous> (/workspace/suitecut/src/native-browser.ts:258:15)
+
+    Error Context: benchmarks/native-memory/2026-10-10/cef-release/playwright-artifacts/engine.e2e-native-recordin-5850c-de-pause-and-page-switching/error-context.md
+
+    Error Context: benchmarks/native-memory/2026-10-10/cef-release/playwright-artifacts/engine.e2e-native-recordin-5850c-de-pause-and-page-switching/error-context.md
+
+  1 failed
+    benchmarks/native-engine/engine.e2e.spec.ts:311:1 › native recording survives blocked Node, pause and page switching 
+  11 passed (42.2s)

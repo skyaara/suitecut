@@ -1,0 +1,81 @@
+{
+  "sampleCount": 121,
+  "sampledDurationSeconds": 120.1548145400011,
+  "peakProcessTreeRssMiB": 2468.93359375,
+  "medianProcessTreeRssMiB": 2325.00390625,
+  "processTreeCpuPercentMedian": 173.23596369697628,
+  "processTreeCpuPercentPeak": 292.52709762767296,
+  "observedCpuSeconds": 210.8,
+  "observedCpuSecondsByRole": {
+    "cef-gpu": 16.900000000000002,
+    "cef-renderer": 89.85000000000001,
+    "node": 1.8899999999999997,
+    "sampler": 4.47,
+    "suitecut-browser": 97.69000000000001
+  },
+  "missingAudioSeconds": 2.5692708333333334,
+  "repeatedFrameFraction": 0.06605606439078546,
+  "browserDroppedFrameDelta": 1270,
+  "browserTotalFrameDelta": 6796,
+  "peakVideoQueueBytes": 74649600,
+  "peakAudioQueueBytes": 280320,
+  "stackProtectorTerminations": 27,
+  "missingAudioCounterIncrements": [
+    {
+      "sampledAtMs": 9013.233021,
+      "newMissingSamples": 9600,
+      "newMissingMs": 200.0
+    },
+    {
+      "sampledAtMs": 15022.544847000001,
+      "newMissingSamples": 30653,
+      "newMissingMs": 638.6041666666666
+    },
+    {
+      "sampledAtMs": 16028.101287000001,
+      "newMissingSamples": 24835,
+      "newMissingMs": 517.3958333333334
+    },
+    {
+      "sampledAtMs": 62266.030441,
+      "newMissingSamples": 11520,
+      "newMissingMs": 240.0
+    },
+    {
+      "sampledAtMs": 78281.611955,
+      "newMissingSamples": 4800,
+      "newMissingMs": 100.0
+    },
+    {
+      "sampledAtMs": 80292.896675,
+      "newMissingSamples": 4800,
+      "newMissingMs": 100.0
+    },
+    {
+      "sampledAtMs": 89333.83412799999,
+      "newMissingSamples": 14400,
+      "newMissingMs": 300.0
+    },
+    {
+      "sampledAtMs": 106616.06165700001,
+      "newMissingSamples": 13440,
+      "newMissingMs": 280.0
+    },
+    {
+      "sampledAtMs": 118708.162874,
+      "newMissingSamples": 3840,
+      "newMissingMs": 80.0
+    },
+    {
+      "sampledAtMs": 119711.179218,
+      "newMissingSamples": 893,
+      "newMissingMs": 18.604166666666668
+    },
+    {
+      "sampledAtMs": 120000.44201,
+      "newMissingSamples": 3907,
+      "newMissingMs": 81.39583333333333
+    }
+  ],
+  "limits": "RSS sums double-count shared pages; sampled CPU excludes unobserved short-lived subprocesses. Missing audio counters are uncovered sample slots, not proof of an equivalent audible silence interval. Twitch content naturally contains silence."
+}

@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "issues": [
+    {
+      "area": "Playwright video lifecycle",
+      "status": "unfixed",
+      "evidence": "upstream-video-final/results.json",
+      "detail": "Deletion and blank-popup video path initialization timed out. 20 passed, 7 outside-harness failures, 2 timeouts."
+    },
+    {
+      "area": "Independent proxy and origin credentials",
+      "status": "unfixed shared upstream behavior",
+      "evidence": "validated-cef-final/results.json; release-verified-chromium/results.json",
+      "detail": "Two positive assertions fail in both browsers. Playwright 1.62.1 replaces distinct origin credentials with proxy credentials before CDP."
+    },
+    {
+      "area": "Full upstream compatibility",
+      "status": "incomplete",
+      "evidence": "upstream-core/results.json",
+      "detail": "Bounded broad attempt stopped with failures/timeouts; cookie, beforeunload, popup events, exposed function and locale issues were not all reverified. Independent launcher/server/persistent-profile flows are outside this harness."
+    },
+    {
+      "area": "Partitioned cookies and protocol/domain breadth",
+      "status": "unsupported or incomplete",
+      "detail": "PartitionKey management, persistent profiles and independent CDP domain state remain unsupported. State is bounded by 4 MiB command / 16 MiB event limits."
+    },
+    {
+      "area": "Whole-process memory, media and hardware certification",
+      "status": "not established by this investigation",
+      "detail": "Sanitizer fuzz covers JSON helper only. Full CEF leak freedom, long-running audio continuity and GPU encoding remain separate unresolved work."
+    }
+  ]
+}

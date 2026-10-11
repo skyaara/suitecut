@@ -1,0 +1,9 @@
+libx264 aac decoded; distinct fps 29.14
+libx265 aac decoded; distinct fps 29.63
+libvpx libopus decoded; distinct fps 27.91
+libvpx-vp9 libopus decoded; distinct fps 28.93
+libsvtav1 aac decoded; distinct fps 28.65
+libaom-av1 aac decoded; distinct fps 29.48
+ffv1 flac decoded; distinct fps 26.76
+ffv1 pcm_s16le decoded; distinct fps 27.34
+All capture, render, concurrent and lossless decode checks passed

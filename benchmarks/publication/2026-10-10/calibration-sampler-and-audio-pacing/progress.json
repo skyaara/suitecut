@@ -1,0 +1,14 @@
+{
+  "status": "running",
+  "run": {
+    "id": "stream-ts-cef-01",
+    "backend": "ts-cef",
+    "mode": "stream",
+    "profile": "performance",
+    "durationMs": 30000,
+    "trial": 1
+  },
+  "completedRuns": 5,
+  "plannedRuns": 55,
+  "startedAt": "2026-10-10T14:04:14.365067+00:00"
+}

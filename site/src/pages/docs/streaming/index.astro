@@ -58,7 +58,7 @@ await record('live website tour', async ({ page, suitecut }) => {
 >
   <h1>Live streaming</h1>
   <p>
-    Publish an embedded CEF browser to RTMP or RTMPS with SuiteCut 2.0. Native broadcasts use
+    Publish an embedded CEF browser to RTMP or RTMPS with SuiteCut 2.1. Native broadcasts use
     <code>launchBrowser</code> and <code>createBroadcast</code> from the root package. Existing Playwright
     streams use <code>capture.stream</code> through <code>suitecut/playwright</code>.
   </p>
@@ -66,8 +66,9 @@ await record('live website tour', async ({ page, suitecut }) => {
   <h2 id="publish-a-page">Publish a page</h2>
   <p>
     Build the pinned CEF browser and set <code>SUITECUT_NATIVE_EXECUTABLE</code> as described in
-    <a href={sitePath('/docs#install')}>Getting started</a>. Native support is verified on macOS
-    Apple Silicon. Set <code>SUITECUT_STREAM_URL</code> to your ingest URL, including its stream key.
+    <a href={sitePath('/docs#install')}>Getting started</a>. The new native media engine is verified
+    on Linux x86-64 with software graphics. Set <code>SUITECUT_STREAM_URL</code> to your ingest URL, including
+    its stream key.
   </p>
   <CodeBlock code={nativeExample} lang="typescript" />
   <p>

@@ -1,0 +1,22 @@
+[
+  {
+    "directory": "benchmarks/native-engine/2026-10-09",
+    "payloadFiles": 529,
+    "allPassed": true
+  },
+  {
+    "directory": "benchmarks/native-codecs/2026-10-10",
+    "payloadFiles": 710,
+    "allPassed": true
+  },
+  {
+    "directory": "benchmarks/native-audio/2026-10-10",
+    "payloadFiles": 428,
+    "allPassed": true
+  },
+  {
+    "directory": "benchmarks/native-startup/2026-10-10",
+    "payloadFiles": 1234,
+    "allPassed": true
+  }
+]

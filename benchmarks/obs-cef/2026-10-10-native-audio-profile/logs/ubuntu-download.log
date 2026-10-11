@@ -1,0 +1,45 @@
+Reading package lists...
+Building dependency tree...
+Reading state information...
+The following additional packages will be installed:
+  libavfilter9 libjxl0.7 libplacebo338 libpocketsphinx3 libpostproc57
+  libpython3.12-minimal libpython3.12-stdlib librav1e0 libssh-gcrypt-4
+  libsvtav1enc1d1 libx265-199
+Suggested packages:
+  libcuda1 libnvcuvid1 libnvidia-encode1
+The following NEW packages will be installed:
+  libavcodec60 libavdevice60 libavfilter9 libavformat60 libavutil58
+  libfdk-aac2 libjxl0.7 libmbedcrypto7t64 libmbedtls14t64 libmbedx509-1t64
+  libplacebo338 libpostproc57 libpython3.12-minimal libpython3.12-stdlib
+  libpython3.12t64 librav1e0 libssh-gcrypt-4 libsvtav1enc1d1 libswresample4
+  libswscale7 libx265-199
+The following packages will be upgraded:
+  libpocketsphinx3
+1 upgraded, 21 newly installed, 0 to remove and 41 not upgraded.
+Need to get 26.6 MB of archives.
+After this operation, 101 MB of additional disk space will be used.
+Get:1 https://archive.ubuntu.com/ubuntu noble-updates/main amd64 libpython3.12-minimal amd64 3.12.3-1ubuntu0.17 [839 kB]
+Get:2 https://archive.ubuntu.com/ubuntu noble-updates/main amd64 libpython3.12-stdlib amd64 3.12.3-1ubuntu0.17 [2071 kB]
+Get:3 https://archive.ubuntu.com/ubuntu noble/universe amd64 libavutil58 amd64 7:6.1.1-3ubuntu5 [401 kB]
+Get:4 https://archive.ubuntu.com/ubuntu noble-updates/universe amd64 libjxl0.7 amd64 0.7.0-10.2ubuntu6.1 [1001 kB]
+Get:5 https://archive.ubuntu.com/ubuntu noble/universe amd64 librav1e0 amd64 0.7.1-2 [1022 kB]
+Get:6 https://archive.ubuntu.com/ubuntu noble/universe amd64 libsvtav1enc1d1 amd64 1.7.0+dfsg-2build1 [2425 kB]
+Get:7 https://archive.ubuntu.com/ubuntu noble/universe amd64 libswresample4 amd64 7:6.1.1-3ubuntu5 [63.8 kB]
+Get:8 https://archive.ubuntu.com/ubuntu noble/universe amd64 libx265-199 amd64 3.5-2build1 [1226 kB]
+Get:9 https://archive.ubuntu.com/ubuntu noble/universe amd64 libavcodec60 amd64 7:6.1.1-3ubuntu5 [5851 kB]
+Get:10 https://archive.ubuntu.com/ubuntu noble-updates/main amd64 libssh-gcrypt-4 amd64 0.10.6-2ubuntu0.5 [226 kB]
+Get:11 https://archive.ubuntu.com/ubuntu noble/universe amd64 libavformat60 amd64 7:6.1.1-3ubuntu5 [1153 kB]
+Get:12 https://archive.ubuntu.com/ubuntu noble/universe amd64 libplacebo338 amd64 6.338.2-2build1 [2654 kB]
+Get:13 https://archive.ubuntu.com/ubuntu noble/universe amd64 libpocketsphinx3 amd64 0.8.0+real5prealpha+1-15ubuntu5 [133 kB]
+Get:14 https://archive.ubuntu.com/ubuntu noble/universe amd64 libpostproc57 amd64 7:6.1.1-3ubuntu5 [49.9 kB]
+Get:15 https://archive.ubuntu.com/ubuntu noble/universe amd64 libswscale7 amd64 7:6.1.1-3ubuntu5 [193 kB]
+Get:16 https://archive.ubuntu.com/ubuntu noble/universe amd64 libavfilter9 amd64 7:6.1.1-3ubuntu5 [4235 kB]
+Get:17 https://archive.ubuntu.com/ubuntu noble/universe amd64 libavdevice60 amd64 7:6.1.1-3ubuntu5 [82.3 kB]
+Get:18 https://archive.ubuntu.com/ubuntu noble/universe amd64 libfdk-aac2 amd64 2.0.2-3~ubuntu4 [332 kB]
+Get:19 https://archive.ubuntu.com/ubuntu noble/universe amd64 libmbedcrypto7t64 amd64 2.28.8-1 [209 kB]
+Get:20 https://archive.ubuntu.com/ubuntu noble/universe amd64 libmbedx509-1t64 amd64 2.28.8-1 [46.6 kB]
+Get:21 https://archive.ubuntu.com/ubuntu noble/universe amd64 libmbedtls14t64 amd64 2.28.8-1 [82.2 kB]
+Get:22 https://archive.ubuntu.com/ubuntu noble-updates/main amd64 libpython3.12t64 amd64 3.12.3-1ubuntu0.17 [2348 kB]
+Fetched 26.6 MB in 23s (1173 kB/s)
+Download complete and in download only mode
+W: Unable to read /etc/apt/-/ - DirectoryExists (2: No such file or directory)

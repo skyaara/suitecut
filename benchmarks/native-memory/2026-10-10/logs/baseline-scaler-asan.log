@@ -1,0 +1,33 @@
+=================================================================
+==427606==ERROR: AddressSanitizer: attempting double-free on 0x52f000000400 in thread T1:
+    #0 0x563a93f5843a in free (/workspace/suitecut/.suitecut/memory-tools/baseline-scaler-asan+0xdd43a) (BuildId: a77118fa5021db0239bf5900342db4a128a46b65)
+    #1 0x563a93fb8220 in suitecut::MediaOutput::Impl::Cleanup() /workspace/suitecut/benchmarks/native-memory/2026-10-10/tested-sources-before/media_engine.cc:173:5
+    #2 0x563a93fb27b3 in suitecut::MediaOutput::Impl::Run() /workspace/suitecut/benchmarks/native-memory/2026-10-10/tested-sources-before/media_engine.cc:453:5
+    #3 0x7f975a93c223  (/lib/x86_64-linux-gnu/libstdc++.so.6+0xe1223) (BuildId: 133b71e0013695cc7832680a74edb51008c4fc4c)
+    #4 0x563a93f5602a in asan_thread_start(void*) asan_interceptors.cpp.o
+    #5 0x7f975a5c8b7a  (/lib/x86_64-linux-gnu/libc.so.6+0x92b7a) (BuildId: c495b62edadd6c356265942ec1282d98058a7b41)
+    #6 0x7f975a6467f7  (/lib/x86_64-linux-gnu/libc.so.6+0x1107f7) (BuildId: c495b62edadd6c356265942ec1282d98058a7b41)
+
+0x52f000000400 is located 0 bytes inside of 53136-byte region [0x52f000000400,0x52f00000d390)
+freed by thread T1 here:
+    #0 0x563a93f5843a in free (/workspace/suitecut/.suitecut/memory-tools/baseline-scaler-asan+0xdd43a) (BuildId: a77118fa5021db0239bf5900342db4a128a46b65)
+    #1 0x563a93fc3b0f in __wrap_sws_getCachedContext /workspace/suitecut/native/browser/scaler_failure_test.cc:17:5
+    #2 0x563a93fbe76a in suitecut::MediaOutput::Impl::EncodeVideo(double) /workspace/suitecut/benchmarks/native-memory/2026-10-10/tested-sources-before/media_engine.cc:321:21
+    #3 0x563a93fb6363 in suitecut::MediaOutput::Impl::RunTrack(bool) /workspace/suitecut/benchmarks/native-memory/2026-10-10/tested-sources-before/media_engine.cc:414:64
+    #4 0x563a93fb25a7 in suitecut::MediaOutput::Impl::Run() /workspace/suitecut/benchmarks/native-memory/2026-10-10/tested-sources-before/media_engine.cc:440:7
+    #5 0x7f975a93c223  (/lib/x86_64-linux-gnu/libstdc++.so.6+0xe1223) (BuildId: 133b71e0013695cc7832680a74edb51008c4fc4c)
+
+previously allocated by thread T1 here:
+    #0 0x563a93f591db in posix_memalign (/workspace/suitecut/.suitecut/memory-tools/baseline-scaler-asan+0xde1db) (BuildId: a77118fa5021db0239bf5900342db4a128a46b65)
+    #1 0x7f975ac1c984 in av_malloc (/workspace/suitecut/.suitecut/native-media-deps/root/usr/lib/x86_64-linux-gnu/libavutil.so.59+0x62984) (BuildId: 4e5bcd19d6097fb5134ba56892dedd6306b9a059)
+
+Thread T1 created by T0 here:
+    #0 0x563a93f3dbe5 in pthread_create (/workspace/suitecut/.suitecut/memory-tools/baseline-scaler-asan+0xc2be5) (BuildId: a77118fa5021db0239bf5900342db4a128a46b65)
+    #1 0x7f975a93c2f8 in std::thread::_M_start_thread(std::unique_ptr<std::thread::_State, std::default_delete<std::thread::_State>>, void (*)()) (/lib/x86_64-linux-gnu/libstdc++.so.6+0xe12f8) (BuildId: 133b71e0013695cc7832680a74edb51008c4fc4c)
+    #2 0x563a93fad0f4 in suitecut::MediaOutput::Impl::Impl(suitecut::MediaOptions, std::function<double ()>) /workspace/suitecut/benchmarks/native-memory/2026-10-10/tested-sources-before/media_engine.cc:169:14
+    #3 0x563a93fa5cdc in std::__detail::_MakeUniq<suitecut::MediaOutput::Impl>::__single_object std::make_unique<suitecut::MediaOutput::Impl, suitecut::MediaOptions, std::function<double ()>>(suitecut::MediaOptions&&, std::function<double ()>&&) /usr/lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/unique_ptr.h:1077:34
+    #4 0x563a93fc414b in main /workspace/suitecut/native/browser/scaler_failure_test.cc:28:56
+    #5 0x7f975a55fca7  (/lib/x86_64-linux-gnu/libc.so.6+0x29ca7) (BuildId: c495b62edadd6c356265942ec1282d98058a7b41)
+
+SUMMARY: AddressSanitizer: double-free (/workspace/suitecut/.suitecut/memory-tools/baseline-scaler-asan+0xdd43a) (BuildId: a77118fa5021db0239bf5900342db4a128a46b65) in free
+==427606==ABORTING

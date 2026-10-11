@@ -22,6 +22,8 @@ const LaunchSchema = z
     deviceScaleFactor: z.union([z.literal(1), z.literal(2)]).default(1),
     framesPerSecond: z.union([z.literal(30), z.literal(60)]).default(60),
     pixelFormat: z.enum(['bgra', 'i420']).default('bgra'),
+    graphics: z.enum(['auto', 'swiftshader']).default('auto'),
+    webrtcPolicy: z.enum(['default', 'disable-non-proxied-udp']).default('default'),
     startupTimeoutMs: z.number().int().min(100).max(120_000).default(30_000),
     signal: z.instanceof(AbortSignal).optional(),
   })
@@ -32,6 +34,8 @@ const LaunchSchema = z
     'physical frame size must not exceed 3840x2160',
   )
 
+export type NativeWebRTCPolicy = 'default' | 'disable-non-proxied-udp'
+export type NativeGraphicsMode = 'auto' | 'swiftshader'
 export type NativePixelFormat = 'bgra' | 'i420'
 export type NativeBrowserState = 'running' | 'closing' | 'closed' | 'failed'
 
@@ -44,6 +48,10 @@ export interface NativeBrowserOptions {
   framesPerSecond?: 30 | 60
   /** BGRA8 for exact pixels; planar BT.709 limited-range I420 for lower-bandwidth streaming. */
   pixelFormat?: NativePixelFormat
+  /** Auto uses Chromium defaults; SwiftShader explicitly opts into software WebGL with reduced graphics security protections. */
+  graphics?: NativeGraphicsMode
+  /** Disable unproxied UDP for proxy-based RTC; usable TCP/TLS TURN and network access are still required. */
+  webrtcPolicy?: NativeWebRTCPolicy
   startupTimeoutMs?: number
   signal?: AbortSignal
 }
@@ -75,10 +83,16 @@ export interface NativeBrowser {
   readonly height: number
   readonly framesPerSecond: 30 | 60
   readonly cefVersion: string
+  readonly nativeMedia?: boolean
+  command?(command: string, fields?: Record<string, UntrustedInput>): Promise<UntrustedInput>
+  onProtocolEvent?(listener: (message: UntrustedInput) => void): () => void
   /** Rejects on runtime, renderer, audio, protocol, or subscriber failure. */
   readonly failure: Promise<never>
   /** Settles only after the native process and its stdio have closed. */
   readonly closed: Promise<void>
+  /** Removable lifecycle observation for reusable caller-owned sources. */
+  onFailure?(listener: (error: Error) => void): () => void
+  onClose?(listener: () => void): () => void
   /** Navigates an HTTP(S) page and waits for its main-frame load. */
   navigate(url: string): Promise<void>
   /** Executes a DevTools method through private process IPC, without opening a debugging port. */
@@ -109,7 +123,10 @@ export async function launchNativeBrowser(options: NativeBrowserOptions): Promis
         `--suitecut-scale=${config.deviceScaleFactor}`,
         `--suitecut-fps=${config.framesPerSecond}`,
         `--suitecut-pixel-format=${config.pixelFormat}`,
+        `--suitecut-graphics=${config.graphics}`,
+        `--suitecut-webrtc-policy=${config.webrtcPolicy}`,
         `--suitecut-profile=${profile}`,
+        '--suitecut-frame-subscriptions',
       ],
       { shell: false, stdio: ['pipe', 'pipe', 'pipe'] },
     )
@@ -122,6 +139,8 @@ export async function launchNativeBrowser(options: NativeBrowserOptions): Promis
   }
   const frames = new Set<(frame: NativeVideoFrame) => void>()
   const audio = new Set<(packet: NativeAudioPacket) => void>()
+  const failures = new Set<(error: Error) => void>()
+  const closes = new Set<() => void>()
   const pending = new Map<
     number,
     {
@@ -134,10 +153,15 @@ export async function launchNativeBrowser(options: NativeBrowserOptions): Promis
   let closing: Promise<void> | undefined
   let stopping = false
   let exited = false
+  let fullyClosed = false
   let terminal: Error | undefined
   let lastFrame: NativeVideoFrame | undefined
   let clockOffset: number | undefined
   let cefVersion = ''
+  let frameSubscriptions = false
+  let audioSubscriptions = false
+  let nativeMedia = false
+  const protocolEvents = new Set<(message: UntrustedInput) => void>()
   let rejectFailure: (error: Error) => void = () => undefined
   let resolveReady: () => void = () => undefined
   let resolveClosed: () => void = () => undefined
@@ -155,6 +179,14 @@ export async function launchNativeBrowser(options: NativeBrowserOptions): Promis
     if (terminal) return
     terminal = error
     rejectFailure(error)
+    for (const listener of failures) {
+      try {
+        listener(error)
+      } catch {
+        // Observers cannot prevent terminal process cleanup.
+      }
+    }
+    failures.clear()
     for (const request of pending.values()) {
       clearTimeout(request.timer)
       request.reject(error)
@@ -168,10 +200,18 @@ export async function launchNativeBrowser(options: NativeBrowserOptions): Promis
       if (clockOffset !== undefined) throw new Error('Duplicate native handshake')
       clockOffset = performance.now() - header.timestampMs
       cefVersion = header.cefVersion
+      frameSubscriptions = header.frameSubscriptions === true
+      audioSubscriptions = header.audioSubscriptions === true
+      nativeMedia = header.nativeMedia === true
       resolveReady()
       return
     }
     if (clockOffset === undefined) throw new Error('Native packet before handshake')
+    if (header.type === 'event') {
+      const message = JSON.parse(payload.toString('utf8')) as UntrustedInput
+      for (const listener of protocolEvents) listener(message)
+      return
+    }
     if (header.type === 'error') {
       fail(new Error(`Native browser: ${header.error}`))
       return
@@ -199,6 +239,11 @@ export async function launchNativeBrowser(options: NativeBrowserOptions): Promis
         fail(new Error('Native frame dimensions changed unexpectedly'))
         return
       }
+      if (frames.size === 0 && frameSubscriptions) return
+      // The ready packet's one-way transit time can overestimate the clock
+      // offset. A captured video frame cannot arrive from the future. Refine
+      // that upper bound without moving the clock forward on delayed packets.
+      clockOffset = Math.min(clockOffset ?? 0, performance.now() - header.timestampMs)
       lastFrame = {
         data: payload,
         pixelFormat: header.pixelFormat,
@@ -241,11 +286,25 @@ export async function launchNativeBrowser(options: NativeBrowserOptions): Promis
     if (!stopping) fail(new Error(`Native browser exited unexpectedly (${String(code)})`))
     frames.clear()
     audio.clear()
+    protocolEvents.clear()
     lastFrame = undefined
     config.signal?.removeEventListener('abort', abort)
-    void rm(profile, { recursive: true, force: true }).then(resolveClosed, () => {
-      fail(new Error('Could not remove the native browser temporary profile'))
+    const finish = () => {
+      fullyClosed = true
       resolveClosed()
+      for (const listener of closes) {
+        try {
+          listener()
+        } catch {
+          // Closing all subscriptions takes precedence over observer errors.
+        }
+      }
+      closes.clear()
+      failures.clear()
+    }
+    void rm(profile, { recursive: true, force: true }).then(finish, () => {
+      fail(new Error('Could not remove the native browser temporary profile'))
+      finish()
     })
   })
   const request = (
@@ -257,14 +316,17 @@ export async function launchNativeBrowser(options: NativeBrowserOptions): Promis
     if (pending.size >= 64) return Promise.reject(new Error('Too many pending native commands'))
     const id = ++nextId
     const message =
-      JSON.stringify({ version: NATIVE_PROTOCOL_VERSION, id, command, ...fields }) + '\n'
-    if (Buffer.byteLength(message) > 65_536)
-      return Promise.reject(new Error('Native command exceeds 64 KiB'))
+      JSON.stringify({ ...fields, version: NATIVE_PROTOCOL_VERSION, id, command }) + '\n'
+    if (Buffer.byteLength(message) > 4_194_304)
+      return Promise.reject(new Error('Native command exceeds 4 MiB'))
     return new Promise((resolve, reject) => {
-      const timer = setTimeout(() => {
-        pending.delete(id)
-        reject(new Error('Native browser command timed out'))
-      }, 30_000)
+      const timer = setTimeout(
+        () => {
+          pending.delete(id)
+          reject(new Error('Native browser command timed out'))
+        },
+        command === 'media.render' || command === 'media.cut' ? 3_600_000 : 30_000,
+      )
       pending.set(id, { resolve, reject, timer })
       child.stdin.write(message)
     })
@@ -279,7 +341,7 @@ export async function launchNativeBrowser(options: NativeBrowserOptions): Promis
       }
       pending.clear()
       if (!exited) child.stdin.end()
-      const timer = setTimeout(() => child.kill('SIGKILL'), 5000)
+      const timer = setTimeout(() => child.kill('SIGKILL'), 15000)
       try {
         await closed
       } finally {
@@ -299,6 +361,8 @@ export async function launchNativeBrowser(options: NativeBrowserOptions): Promis
       Promise.race([ready, failure]),
       AbortSignal.timeout(config.startupTimeoutMs),
     )
+    if (frameSubscriptions) await request('frames', { enabled: false })
+    if (audioSubscriptions) await request('audio', { enabled: false })
   } catch (error) {
     await close()
     throw error
@@ -312,8 +376,30 @@ export async function launchNativeBrowser(options: NativeBrowserOptions): Promis
     height: Math.round(config.height * config.deviceScaleFactor),
     framesPerSecond: config.framesPerSecond,
     cefVersion,
+    nativeMedia,
+    command: request,
+    onProtocolEvent: (listener) => {
+      protocolEvents.add(listener)
+      return () => {
+        protocolEvents.delete(listener)
+      }
+    },
     failure,
     closed,
+    onFailure: (listener) => {
+      if (terminal) listener(terminal)
+      else if (!fullyClosed) failures.add(listener)
+      return () => {
+        failures.delete(listener)
+      }
+    },
+    onClose: (listener) => {
+      if (fullyClosed) listener()
+      else closes.add(listener)
+      return () => {
+        closes.delete(listener)
+      }
+    },
     navigate: async (url) => {
       const parsed = new URL(url)
       if (!['http:', 'https:'].includes(parsed.protocol))
@@ -323,17 +409,37 @@ export async function launchNativeBrowser(options: NativeBrowserOptions): Promis
     sendDevToolsCommand: (method, params = {}) => request('devtools', { method, params }),
     onFrame: (listener) => {
       if (terminal || stopping || exited) throw new Error('Native browser is not running')
+      const first = frames.size === 0
       frames.add(listener)
+      if (first && frameSubscriptions)
+        void request('frames', { enabled: true }).catch((error: Error) => {
+          if (!stopping && !terminal) fail(error)
+        })
       if (lastFrame) listener(lastFrame)
       return () => {
         frames.delete(listener)
+        if (frames.size === 0 && frameSubscriptions && !stopping && !terminal) {
+          lastFrame = undefined
+          void request('frames', { enabled: false }).catch((error: Error) => {
+            if (!stopping && !terminal) fail(error)
+          })
+        }
       }
     },
     onAudio: (listener) => {
       if (terminal || stopping || exited) throw new Error('Native browser is not running')
+      const first = audio.size === 0
       audio.add(listener)
+      if (first && audioSubscriptions)
+        void request('audio', { enabled: true }).catch((error: Error) => {
+          if (!stopping) fail(error)
+        })
       return () => {
         audio.delete(listener)
+        if (audio.size === 0 && audioSubscriptions && !stopping)
+          void request('audio', { enabled: false }).catch((error: Error) => {
+            if (!stopping) fail(error)
+          })
       }
     },
     close,

@@ -1,0 +1,57 @@
+{
+  "id": "4k60-canvas-native-5",
+  "backend": "native",
+  "case": {
+    "name": "4k60-canvas",
+    "width": 3840,
+    "height": 2160,
+    "fps": 60,
+    "workload": "canvas"
+  },
+  "trialNumber": 5,
+  "durationMs": 10000,
+  "status": "failed",
+  "startedAt": "2026-10-08T21:12:00.913Z",
+  "startupMs": 1731.4108499999857,
+  "browserVersion": "152.0.8+g1ce985c+chromium-152.0.7977.134",
+  "workload": {
+    "wallMs": 10101.606146999984,
+    "scrollCommands": 0,
+    "snapshot": {
+      "markerCount": 216,
+      "scrollY": 0,
+      "scrollEvents": 0,
+      "keyEvents": 0,
+      "clicks": 0,
+      "value": "",
+      "choice": "First",
+      "secondary": false
+    }
+  },
+  "nativeCapture": {
+    "frames": 178,
+    "fps": 17.62096021263541,
+    "nativeDrops": 42
+  },
+  "error": "AggregateError: Native recording \"4k60-canvas-native-5\" could not finish\n    at recordNative (file:///workspace/suitecut/dist/native-recording.js:94:15)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async trial (file:///workspace/suitecut/benchmarks/obs-cef/run.mjs:123:22)\n    at async file:///workspace/suitecut/benchmarks/obs-cef/run.mjs:144:111",
+  "errorDetails": {
+    "name": "AggregateError",
+    "message": "Native recording \"4k60-canvas-native-5\" could not finish",
+    "stack": "AggregateError: Native recording \"4k60-canvas-native-5\" could not finish\n    at recordNative (file:///workspace/suitecut/dist/native-recording.js:94:15)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async trial (file:///workspace/suitecut/benchmarks/obs-cef/run.mjs:123:22)\n    at async file:///workspace/suitecut/benchmarks/obs-cef/run.mjs:144:111",
+    "errors": [
+      {
+        "name": "AggregateError",
+        "message": "Native recording could not finish",
+        "stack": "AggregateError: Native recording could not finish\n    at file:///workspace/suitecut/dist/native-session.js:170:19\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async Promise.allSettled (index 0)\n    at async recordNative (file:///workspace/suitecut/dist/native-recording.js:79:21)\n    at async trial (file:///workspace/suitecut/benchmarks/obs-cef/run.mjs:123:22)\n    at async file:///workspace/suitecut/benchmarks/obs-cef/run.mjs:144:111",
+        "errors": [
+          {
+            "name": "TimeoutError",
+            "message": "The operation was aborted due to timeout",
+            "stack": "TimeoutError: The operation was aborted due to timeout\n    at new DOMException (node:internal/per_context/domexception:76:18)\n    at Timeout._onTimeout (node:internal/abort_controller:210:9)\n    at listOnTimeout (node:internal/timers:635:17)\n    at process.processTimers (node:internal/timers:571:7)"
+          }
+        ]
+      }
+    ]
+  },
+  "completedAt": "2026-10-08T21:13:22.348Z"
+}

@@ -1,0 +1,26 @@
+[
+  {
+    "file": ".suitecut/native-media-deps/packages/libavcodec-dev_7%3a7.1.5-0+deb13u1_amd64.deb",
+    "sha256": "36f190f54441bd3bac0eddcfa4713e41c3b41da6476ac9bb868cc3c9f027fe02"
+  },
+  {
+    "file": ".suitecut/native-media-deps/packages/libavfilter-dev_7%3a7.1.5-0+deb13u1_amd64.deb",
+    "sha256": "499737081b46818f8ad9f918babb09df4549f1cd54cf52e83ede8e0caec6e932"
+  },
+  {
+    "file": ".suitecut/native-media-deps/packages/libavformat-dev_7%3a7.1.5-0+deb13u1_amd64.deb",
+    "sha256": "73edfc824646be309a8379b2e7dd2faa3b9806815ae815651b8ec15f1088da0e"
+  },
+  {
+    "file": ".suitecut/native-media-deps/packages/libavutil-dev_7%3a7.1.5-0+deb13u1_amd64.deb",
+    "sha256": "71aae526cbdb5fb55cb8269427769eca120308393f70590843ba4d1a1b6befdd"
+  },
+  {
+    "file": ".suitecut/native-media-deps/packages/libswresample-dev_7%3a7.1.5-0+deb13u1_amd64.deb",
+    "sha256": "f1dc861dcdbcf61d757a0b7e7f189cf1695433a0935c3ceabcaf58709af2b51b"
+  },
+  {
+    "file": ".suitecut/native-media-deps/packages/libswscale-dev_7%3a7.1.5-0+deb13u1_amd64.deb",
+    "sha256": "85cc0875936727d3ee12ebf1dad87ebef313e7cbc4287280fd4c362e539a3cd0"
+  }
+]

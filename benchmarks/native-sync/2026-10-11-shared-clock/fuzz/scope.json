@@ -1,0 +1,13 @@
+{
+  "sanitizers": [
+    "AddressSanitizer",
+    "UndefinedBehaviorSanitizer",
+    "LeakSanitizer"
+  ],
+  "plannedSecondsPerTarget": 600,
+  "scope": "Production native bounds/clock helpers and native FFmpeg output queue/lifecycle paths. CEF and shared FFmpeg libraries are not recompiled with ASan; full browser safety is not certified.",
+  "seeds": {
+    "bounds": 8,
+    "media": 32
+  }
+}

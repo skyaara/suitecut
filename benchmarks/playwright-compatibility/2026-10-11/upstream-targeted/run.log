@@ -1,0 +1,1127 @@
+[WARN] Your node_modules are out of sync with your lockfile. The workspace structure has changed since last install
+
+Running 170 tests using 1 worker
+
+(node:923682) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘    1 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:26:1 › should fail without credentials (96ms)
+(node:923822) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘    2 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:37:1 › should work with setHTTPCredentials (94ms)
+(node:923963) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓    3 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:54:1 › should work with correct credentials @smoke (126ms)
+  ✓    4 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:65:1 › should fail with wrong credentials (106ms)
+  ✓    5 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:76:1 › should return resource body (160ms)
+  ✓    6 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:89:1 › should work with correct credentials and matching origin (97ms)
+  ✓    7 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:100:1 › should work with correct credentials and matching origin case insensitive (90ms)
+  ✘    8 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:111:1 › should fail with correct credentials and mismatching scheme (72ms)
+(node:924194) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘    9 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:125:1 › should fail with correct credentials and mismatching hostname (107ms)
+(node:924333) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   10 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:141:1 › should fail with correct credentials and mismatching port (100ms)
+(node:924473) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   11 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:22:3 › should context.routeFromHAR, matching the method and following redirects (201ms)
+  ✓   12 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:33:3 › should page.routeFromHAR, matching the method and following redirects (161ms)
+  ✓   13 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:44:3 › fallback:continue should continue when not found in har (137ms)
+  ✓   14 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:52:3 › by default should abort requests not found in har (117ms)
+  ✓   15 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:60:3 › fallback:continue should continue requests on bad har (175ms)
+  ✓   16 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:69:3 › should only handle requests matching url filter (161ms)
+  ✓   17 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:87:3 › should only context.routeFromHAR requests matching url filter (140ms)
+  ✓   18 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:105:3 › should only page.routeFromHAR requests matching url filter (190ms)
+  ✓   19 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:123:3 › should apply overrides before routing from har (128ms)
+  ✓   20 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:145:3 › should support regex filter (167ms)
+  ✓   21 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:154:3 › newPage should fulfill from har, matching the method and following redirects (145ms)
+  ✓   22 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:166:3 › should change document URL after redirected navigation (182ms)
+  ✓   23 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:180:3 › should change document URL after redirected navigation on click (337ms)
+  ✘   24 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:195:3 › should goBack to redirected navigation (15.1s)
+(node:924876) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   25 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:208:3 › should goForward to redirected navigation (15.1s)
+(node:925012) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   26 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:224:3 › should reload redirected navigation (248ms)
+  ✓   27 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:236:3 › should fulfill from har with content in a file (145ms)
+  ✓   28 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:244:3 › should round-trip har.zip (328ms)
+  ✓   29 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:259:3 › should produce extracted zip (263ms)
+  ✓   30 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:278:3 › should round-trip extracted har.zip (254ms)
+  ✓   31 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:296:3 › should round-trip har with postData (301ms)
+  ✓   32 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:327:3 › should record overridden requests to har (261ms)
+  ✓   33 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:361:3 › should disambiguate by header (244ms)
+  ✓   34 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:399:3 › should update har.zip for context (234ms)
+  ✓   35 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:415:3 › should ignore boundary when matching multipart/form-data body (574ms)
+  ✓   36 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:455:3 › should record single set-cookie headers (215ms)
+  ✓   37 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:481:3 › should record multiple set-cookie headers (195ms)
+  ✓   38 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:508:3 › should update har.zip for page (255ms)
+  ✓   39 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:524:3 › should update har.zip for page with different options (245ms)
+  ✓   40 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:540:3 › should update extracted har.zip for page (242ms)
+  ✓   41 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:556:3 › page.unrouteAll should stop page.routeFromHAR (165ms)
+  ✓   42 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:569:3 › context.unrouteAll should stop context.routeFromHAR (146ms)
+  ✓   43 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:582:3 › should ignore aborted requests (1.2s)
+  ✘   44 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-proxy.spec.ts:25:3 › should work when passing the proxy only on the context level (1ms)
+(node:925758) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   45 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-proxy.spec.ts:45:3 › should throw for bad server value (9ms)
+  ✓   46 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-proxy.spec.ts:53:3 › should use proxy (3.2s)
+  ✓   47 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-proxy.spec.ts:65:3 › should send secure cookies to subdomain.localhost (175ms)
+  ✓   48 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-proxy.spec.ts:101:3 › should set cookie for top-level domain (1.8s)
+  ✓   49 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-proxy.spec.ts:140:11 › should proxy local network requests › by default › localhost (159ms)
+  ✓   50 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-proxy.spec.ts:140:11 › should proxy local network requests › by default › loopback address (134ms)
+  ✓   51 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-proxy.spec.ts:140:11 › should proxy local network requests › by default › link-local (133ms)
+  ✓   52 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-proxy.spec.ts:140:11 › should proxy local network requests › with other bypasses › localhost (150ms)
+  ✓   53 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-proxy.spec.ts:140:11 › should proxy local network requests › with other bypasses › loopback address (155ms)
+  ✓   54 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-proxy.spec.ts:140:11 › should proxy local network requests › with other bypasses › link-local (143ms)
+  ✓   55 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-proxy.spec.ts:173:3 › should use ipv6 proxy (3.1s)
+  ✓   56 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-proxy.spec.ts:187:3 › should use proxy twice (2.3s)
+  ✓   57 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-proxy.spec.ts:201:3 › should use proxy for second page (3.2s)
+  ✓   58 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-proxy.spec.ts:221:3 › should use proxy for https urls (103ms)
+  ✓   59 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-proxy.spec.ts:237:3 › should work with IP:PORT notion (759ms)
+  ✓   60 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-proxy.spec.ts:249:3 › should throw for socks5 authentication (3ms)
+  ✓   61 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-proxy.spec.ts:256:3 › should throw for socks4 authentication (2ms)
+  ✓   62 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-proxy.spec.ts:263:3 › should authenticate (1.1s)
+  ✓   63 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-proxy.spec.ts:281:3 › should authenticate with empty password (1.1s)
+  ✓   64 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-proxy.spec.ts:298:3 › should isolate proxy credentials between contexts (2.3s)
+  ✓   65 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-proxy.spec.ts:328:3 › should exclude patterns (1.1s)
+  ✓   66 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-proxy.spec.ts:390:3 › should use socks proxy (189ms)
+  ✓   67 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-proxy.spec.ts:400:3 › should use socks proxy in second page (280ms)
+  ✓   68 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-proxy.spec.ts:416:3 › does launch without a port (11ms)
+  ✓   69 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-proxy.spec.ts:423:3 › should isolate proxy credentials between contexts on navigation (344ms)
+  ✓   70 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-service-worker-policy.spec.ts:18:3 › should allow service workers by default (130ms)
+  ✓   71 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-service-worker-policy.spec.ts:26:5 › block › blocks service worker registration (110ms)
+  ✓   72 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-service-worker-policy.spec.ts:33:5 › block › should not throw error on about:blank (77ms)
+  ✓   73 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-storage-state.spec.ts:24:3 › should capture local storage (225ms)
+  ✓   74 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-storage-state.spec.ts:54:3 › should set local storage (293ms)
+  ✓   75 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-storage-state.spec.ts:100:3 › should report good error if the url is not valid (72ms)
+  ✓   76 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-storage-state.spec.ts:119:3 › should round-trip through the file (595ms)
+  ✓   77 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-storage-state.spec.ts:203:3 › should capture cookies (207ms)
+  ✓   78 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-storage-state.spec.ts:241:3 › should not emit events about internal page (215ms)
+  ✓   79 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-storage-state.spec.ts:262:3 › should not restore localStorage twice (197ms)
+  ✓   80 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-storage-state.spec.ts:294:3 › should handle missing file (2ms)
+  ✓   81 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-storage-state.spec.ts:302:3 › should handle malformed file (2ms)
+  ✘   82 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-storage-state.spec.ts:314:3 › should serialize storageState with lone surrogates (15.1s)
+(node:926783) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   83 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-storage-state.spec.ts:322:3 › should work when service worker is intefering (163ms)
+  ✘   84 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-storage-state.spec.ts:375:3 › should set local storage in third-party context (329ms)
+(node:926948) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   85 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-storage-state.spec.ts:399:3 › should roundtrip local storage in third-party context (557ms)
+(node:927118) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   86 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-storage-state.spec.ts:415:3 › should support IndexedDB (1.5s)
+  ✓   87 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-storage-state.spec.ts:521:3 › should support empty indexedDB (984ms)
+  ✓   88 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-storage-state.spec.ts:543:3 › should round-trip WebAuthn credentials with storageState (129ms)
+  ✓   89 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-storage-state.spec.ts:559:3 › setStorageState should replace credentials (472ms)
+  ✓   90 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-storage-state.spec.ts:584:3 › setStorageState should handle missing file (73ms)
+  ✓   91 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/connect-to-worker.spec.ts:19:5 › should connect, evaluate, receive console and disconnect (651ms)
+  ✓   92 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/connect-to-worker.spec.ts:37:5 › should receive close when node process exits (49ms)
+  ✓   93 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:105:5 › screencast › should not have video by default (221ms)
+  ✓   94 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:109:5 › screencast › should not throw without recordVideo.dir (8ms)
+  ✓   95 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:113:5 › screencast › should capture static page (7.2s)
+  ✓   96 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:133:5 › screencast › should pad a short frame to the video size (7.0s)
+  ✘   97 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:152:5 › screencast › should continue recording main page after popup closes (45.0s)
+(node:927548) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   98 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:182:5 › screencast › should expose video path (184ms)
+  ✓   99 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:200:5 › screencast › should delete video (7.2s)
+  ✓  100 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:221:5 › screencast › should expose video path blank page (128ms)
+  ✘  101 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:238:5 › screencast › should work with weird screen resolution (367ms)
+(node:927755) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  102 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:256:5 › screencast › should work with relative path for recordVideo.dir (140ms)
+  ✓  103 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:273:5 › screencast › should expose video path blank popup (192ms)
+  ✓  104 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:294:5 › screencast › should capture navigation (17.0s)
+  ✓  105 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:326:5 › screencast › should capture css transformation (7.3s)
+  ✓  106 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:356:5 › screencast › should work for popups (7.8s)
+  ✓  107 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:390:5 › screencast › should scale frames down to the requested size  (14.0s)
+  ✓  108 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:439:5 › screencast › should use viewport scaled down to fit into 800x800 as default size (8.1s)
+  ✘  109 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:458:5 › screencast › should be 800x450 by default (45.0s)
+(node:928450) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  110 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:475:5 › screencast › should be 800x600 with null viewport (8.2s)
+  ✘  111 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:495:5 › screencast › should capture static page in persistent context @smoke (3ms)
+(node:928614) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  112 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:524:5 › screencast › should emulate an iphone (172ms)
+(node:928748) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  113 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:543:5 › screencast › should throw on browser close (2ms)
+(node:928760) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  114 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:563:5 › screencast › should throw if browser dies (1ms)
+(node:928772) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  115 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:584:5 › screencast › should wait for video to finish if page was closed (1ms)
+(node:928785) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  116 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:610:5 › screencast › should close ffmpeg even if there were no frames (1ms)
+(node:928797) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  117 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:638:5 › screencast › should not create video for internal pages (7.4s)
+  ✘  118 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:664:5 › screencast › should capture full viewport (1ms)
+(node:928944) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  119 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:699:5 › screencast › should capture full viewport on hidpi (1ms)
+(node:928957) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  120 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:736:5 › screencast › should work with video+trace (7.5s)
+  ✓  121 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:780:3 › should saveAs video (6.9s)
+  ✓  122 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/page/workers.spec.ts:25:3 › Page.workers @smoke (162ms)
+  ✓  123 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/page/workers.spec.ts:40:3 › should emit created and destroyed events (196ms)
+  ✓  124 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/page/workers.spec.ts:53:3 › should report console logs (88ms)
+  ✓  125 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/page/workers.spec.ts:63:3 › should have timestamp on worker console messages (97ms)
+  ✓  126 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/page/workers.spec.ts:78:3 › should not report console logs from workers twice (87ms)
+  ✓  127 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/page/workers.spec.ts:91:3 › should have JSHandles for console logs (117ms)
+  ✓  128 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/page/workers.spec.ts:103:3 › should evaluate (82ms)
+  ✘  129 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/page/workers.spec.ts:112:3 › should report console event on the worker (5.1s)
+(node:929293) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  130 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/page/workers.spec.ts:134:3 › should report console event on the worker when not listening on page or context (112ms)
+  ✓  131 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/page/workers.spec.ts:152:3 › should report errors (93ms)
+  ✓  132 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/page/workers.spec.ts:165:3 › should clear upon navigation (152ms)
+  ✓  133 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/page/workers.spec.ts:178:3 › should clear upon cross-process navigation (157ms)
+  ✓  134 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/page/workers.spec.ts:191:3 › should attribute network activity for worker inside iframe to the iframe (283ms)
+  ✓  135 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/page/workers.spec.ts:209:3 › should report network activity (169ms)
+  ✓  136 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/page/workers.spec.ts:229:3 › should report network activity on worker creation (106ms)
+  ✓  137 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/page/workers.spec.ts:245:3 › should report worker script as network request (106ms)
+  -  138 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/page/workers.spec.ts:264:3 › should report worker script as network request after redirect
+  ✓  139 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/page/workers.spec.ts:289:3 › should dispatch console messages when page has workers (101ms)
+  ✓  140 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/page/workers.spec.ts:303:3 › should report and intercept network from nested worker (321ms)
+  ✓  141 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/page/workers.spec.ts:334:3 › should support extra http headers (131ms)
+  ✓  142 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/page/workers.spec.ts:353:3 › should support offline (117ms)
+  ✓  143 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/page/workers.spec.ts:369:3 › should resolve worker script allHeaders in main frame (125ms)
+  ✓  144 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/page/workers.spec.ts:383:3 › should resolve worker script allHeaders in iframe (140ms)
+  ✘  145 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/page/workers.spec.ts:399:3 › should resolve worker script allHeaders in nested worker inside iframe (5.1s)
+(node:929733) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  146 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:26:3 › should report oopif frames (316ms)
+(node:929872) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  147 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:33:3 › should handle oopif detach (366ms)
+(node:930010) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  148 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:46:3 › should handle remote -> local -> remote transitions (326ms)
+(node:930148) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  -  149 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:65:4 › should get the proper viewport
+  ✘  150 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:84:3 › should expose function (318ms)
+(node:930299) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  151 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:96:3 › should emulate media (313ms)
+(node:930435) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  152 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:106:3 › should emulate offline (318ms)
+(node:930573) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  153 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:116:3 › should support context options (62ms)
+(node:930693) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  154 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:138:3 › should respect route (323ms)
+(node:930831) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  155 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:150:3 › should take screenshot (310ms)
+(node:930969) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  156 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:158:3 › should load oopif iframes with subresources and route (380ms)
+(node:931104) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  157 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:164:3 › should report main requests (342ms)
+(node:931243) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  158 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:202:3 › should support exposeFunction (354ms)
+(node:931382) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  159 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:214:3 › should support addInitScript (325ms)
+(node:931526) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  160 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:226:3 › should click a button when it overlays oopif (329ms)
+(node:931666) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  161 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:233:3 › should report google.com frame with headed (3ms)
+(node:931678) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  162 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:259:3 › ElementHandle.boundingBox() should work (423ms)
+(node:931816) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  163 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:282:3 › should click (424ms)
+(node:931954) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  164 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:299:3 › contentFrame should work (337ms)
+(node:932092) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  165 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:309:3 › should allow cdp sessions on oopifs (367ms)
+(node:932230) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  166 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:324:3 › should emit filechooser event for iframe (338ms)
+(node:932369) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  167 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:339:3 › should be able to click in iframe (304ms)
+(node:932506) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  168 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:353:3 › should not throw on exposeFunction when oopif detaches (315ms)
+(node:932646) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  169 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:363:3 › should intercept response body from oopif (229ms)
+  ✘  170 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:372:3 › should allow to re-connect to OOPIFs with CDP when iframes were there already (1ms)
+
+
+  1) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:26:1 › should fail without credentials 
+
+    TypeError: responseOrError.status is not a function
+
+      32 |     expect(responseOrError.message).toContain('net::ERR_INVALID_AUTH_CREDENTIALS');
+      33 |   else
+    > 34 |     expect(responseOrError.status()).toBe(401);
+         |                            ^
+      35 | });
+      36 |
+      37 | it('should work with setHTTPCredentials', async ({ browser, server, failsOn401 }) => {
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:34:28
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-targeted/artifacts/library-browsercontext-cre-27f77-ld-fail-without-credentials/error-context.md
+
+  2) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:37:1 › should work with setHTTPCredentials 
+
+    TypeError: responseOrError.status is not a function
+
+      44 |     expect(responseOrError.message).toContain('net::ERR_INVALID_AUTH_CREDENTIALS');
+      45 |   else
+    > 46 |     expect(responseOrError.status()).toBe(401);
+         |                            ^
+      47 |
+      48 |   await context.setHTTPCredentials({ username: 'user', password: 'pass' });
+      49 |   responseOrError = await page.reload();
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:46:28
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-targeted/artifacts/library-browsercontext-cre-00620-ork-with-setHTTPCredentials/error-context.md
+
+  3) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:111:1 › should fail with correct credentials and mismatching scheme 
+
+    TypeError: responseOrError.status is not a function
+
+      119 |     expect(responseOrError.message).toContain('net::ERR_INVALID_AUTH_CREDENTIALS');
+      120 |   else
+    > 121 |     expect(responseOrError.status()).toBe(401);
+          |                            ^
+      122 |   await context.close();
+      123 | });
+      124 |
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:121:28
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-targeted/artifacts/library-browsercontext-cre-94bca-ials-and-mismatching-scheme/error-context.md
+
+  4) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:125:1 › should fail with correct credentials and mismatching hostname 
+
+    TypeError: responseOrError.status is not a function
+
+      135 |     expect(responseOrError.message).toContain('net::ERR_INVALID_AUTH_CREDENTIALS');
+      136 |   else
+    > 137 |     expect(responseOrError.status()).toBe(401);
+          |                            ^
+      138 |   await context.close();
+      139 | });
+      140 |
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:137:28
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-targeted/artifacts/library-browsercontext-cre-c4989-ls-and-mismatching-hostname/error-context.md
+
+  5) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:141:1 › should fail with correct credentials and mismatching port 
+
+    TypeError: responseOrError.status is not a function
+
+      150 |     expect(responseOrError.message).toContain('net::ERR_INVALID_AUTH_CREDENTIALS');
+      151 |   else
+    > 152 |     expect(responseOrError.status()).toBe(401);
+          |                            ^
+      153 |   await context.close();
+      154 | });
+      155 |
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:152:28
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-targeted/artifacts/library-browsercontext-cre-767d7-ntials-and-mismatching-port/error-context.md
+
+  6) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:195:3 › should goBack to redirected navigation 
+
+    Test timeout of 15000ms exceeded.
+
+    Error: page.goBack: Test timeout of 15000ms exceeded.
+    Call log:
+      - waiting for navigation until "load"
+        - navigated to "https://www.theverge.com/"
+
+
+      200 |   await page.goto(server.EMPTY_PAGE);
+      201 |   await expect(page).toHaveURL(server.EMPTY_PAGE);
+    > 202 |   const response = await page.goBack();
+          |                               ^
+      203 |   await expect(page).toHaveURL('https://www.theverge.com/');
+      204 |   expect(response!.request().url()).toBe('https://www.theverge.com/');
+      205 |   expect(await page.evaluate(() => location.href)).toBe('https://www.theverge.com/');
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:202:31
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-targeted/artifacts/library-browsercontext-har-4c7c5-ck-to-redirected-navigation/error-context.md
+
+  7) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:208:3 › should goForward to redirected navigation 
+
+    Test timeout of 15000ms exceeded.
+
+    Error: page.goBack: Test timeout of 15000ms exceeded.
+    Call log:
+      - waiting for navigation until "load"
+        - navigated to "http://localhost:8931/empty.html"
+
+
+      214 |   await page.goto('https://theverge.com/');
+      215 |   await expect(page).toHaveURL('https://www.theverge.com/');
+    > 216 |   await page.goBack();
+          |              ^
+      217 |   await expect(page).toHaveURL(server.EMPTY_PAGE);
+      218 |   const response = await page.goForward();
+      219 |   await expect(page).toHaveURL('https://www.theverge.com/');
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:216:14
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-targeted/artifacts/library-browsercontext-har-c32e4-rd-to-redirected-navigation/error-context.md
+
+  8) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-proxy.spec.ts:25:3 › should work when passing the proxy only on the context level 
+
+    TypeError: Cannot read properties of undefined (reading 'close')
+
+      39 |     expect(await page.title()).toBe('Served by the proxy');
+      40 |   } finally {
+    > 41 |     await browser.close();
+         |                   ^
+      42 |   }
+      43 | });
+      44 |
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-proxy.spec.ts:41:19
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-targeted/artifacts/library-browsercontext-pro-f1b45-y-only-on-the-context-level/error-context.md
+
+  9) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-storage-state.spec.ts:314:3 › should serialize storageState with lone surrogates 
+
+    Test timeout of 15000ms exceeded.
+
+    Error: browserContext.storageState: Protocol error (Target.createTarget): Unknown browser context
+
+      316 |   await page.goto(server.EMPTY_PAGE);
+      317 |   await page.evaluate(() => window.localStorage.setItem('foo', String.fromCharCode(55934)));
+    > 318 |   const storageState = await context.storageState();
+          |                                      ^
+      319 |   expect(storageState.origins[0].localStorage[0].value).toBe(String.fromCharCode(55934));
+      320 | });
+      321 |
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-storage-state.spec.ts:318:38
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-targeted/artifacts/library-browsercontext-sto-175db-eState-with-lone-surrogates/error-context.md
+
+  10) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-storage-state.spec.ts:375:3 › should set local storage in third-party context 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 3
+    + Received  + 1
+
+    - Object {
+    -   "name1": "value1",
+    - }
+    + Object {}
+
+      393 |
+      394 |   const localStorage = await frame.evaluate('window.localStorage');
+    > 395 |   expect(localStorage).toEqual({ name1: 'value1' });
+          |                        ^
+      396 |   await context.close();
+      397 | });
+      398 |
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-storage-state.spec.ts:395:24
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-targeted/artifacts/library-browsercontext-sto-c0da6-rage-in-third-party-context/error-context.md
+
+  11) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-storage-state.spec.ts:399:3 › should roundtrip local storage in third-party context 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 3
+    + Received  + 1
+
+    - Object {
+    -   "name1": "value1",
+    - }
+    + Object {}
+
+      409 |
+      410 |   const localStorage = await frame2.evaluate('window.localStorage');
+    > 411 |   expect(localStorage).toEqual({ name1: 'value1' });
+          |                        ^
+      412 |   await context2.close();
+      413 | });
+      414 |
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-storage-state.spec.ts:411:24
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-targeted/artifacts/library-browsercontext-sto-1ea2d-rage-in-third-party-context/error-context.md
+
+  12) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:26:3 › should report oopif frames 
+
+    Error: cdpSession.send: Protocol error (Target.setDiscoverTargets): Unsupported CEF browser command: Target.setDiscoverTargets
+
+      402 |       oopifs.push(targetInfo);
+      403 |   });
+    > 404 |   await browserSession.send('Target.setDiscoverTargets', { discover: true });
+          |                        ^
+      405 |   await browserSession.detach();
+      406 |   return oopifs.length;
+      407 | }
+        at countOOPIFs (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:404:24)
+        at assertOOPIFCount (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:394:10)
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:28:3
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-targeted/artifacts/library-chromium-oopif-should-report-oopif-frames/error-context.md
+
+  13) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:33:3 › should handle oopif detach 
+
+    Error: cdpSession.send: Protocol error (Target.setDiscoverTargets): Unsupported CEF browser command: Target.setDiscoverTargets
+
+      402 |       oopifs.push(targetInfo);
+      403 |   });
+    > 404 |   await browserSession.send('Target.setDiscoverTargets', { discover: true });
+          |                        ^
+      405 |   await browserSession.detach();
+      406 |   return oopifs.length;
+      407 | }
+        at countOOPIFs (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:404:24)
+        at assertOOPIFCount (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:394:10)
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:35:3
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-targeted/artifacts/library-chromium-oopif-should-handle-oopif-detach/error-context.md
+
+  14) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:46:3 › should handle remote -> local -> remote transitions 
+
+    Error: cdpSession.send: Protocol error (Target.setDiscoverTargets): Unsupported CEF browser command: Target.setDiscoverTargets
+
+      402 |       oopifs.push(targetInfo);
+      403 |   });
+    > 404 |   await browserSession.send('Target.setDiscoverTargets', { discover: true });
+          |                        ^
+      405 |   await browserSession.detach();
+      406 |   return oopifs.length;
+      407 | }
+        at countOOPIFs (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:404:24)
+        at assertOOPIFCount (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:394:10)
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:49:3
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-targeted/artifacts/library-chromium-oopif-sho-b2d2d--local---remote-transitions/error-context.md
+
+  15) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:84:3 › should expose function 
+
+    Error: cdpSession.send: Protocol error (Target.setDiscoverTargets): Unsupported CEF browser command: Target.setDiscoverTargets
+
+      402 |       oopifs.push(targetInfo);
+      403 |   });
+    > 404 |   await browserSession.send('Target.setDiscoverTargets', { discover: true });
+          |                        ^
+      405 |   await browserSession.detach();
+      406 |   return oopifs.length;
+      407 | }
+        at countOOPIFs (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:404:24)
+        at assertOOPIFCount (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:394:10)
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:87:3
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-targeted/artifacts/library-chromium-oopif-should-expose-function/error-context.md
+
+  16) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:96:3 › should emulate media 
+
+    Error: cdpSession.send: Protocol error (Target.setDiscoverTargets): Unsupported CEF browser command: Target.setDiscoverTargets
+
+      402 |       oopifs.push(targetInfo);
+      403 |   });
+    > 404 |   await browserSession.send('Target.setDiscoverTargets', { discover: true });
+          |                        ^
+      405 |   await browserSession.detach();
+      406 |   return oopifs.length;
+      407 | }
+        at countOOPIFs (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:404:24)
+        at assertOOPIFCount (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:394:10)
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:99:3
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-targeted/artifacts/library-chromium-oopif-should-emulate-media/error-context.md
+
+  17) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:106:3 › should emulate offline 
+
+    Error: cdpSession.send: Protocol error (Target.setDiscoverTargets): Unsupported CEF browser command: Target.setDiscoverTargets
+
+      402 |       oopifs.push(targetInfo);
+      403 |   });
+    > 404 |   await browserSession.send('Target.setDiscoverTargets', { discover: true });
+          |                        ^
+      405 |   await browserSession.detach();
+      406 |   return oopifs.length;
+      407 | }
+        at countOOPIFs (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:404:24)
+        at assertOOPIFCount (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:394:10)
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:109:3
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-targeted/artifacts/library-chromium-oopif-should-emulate-offline/error-context.md
+
+  18) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:116:3 › should support context options 
+
+    Error: browserContext.newPage: Protocol error (Browser.setWindowBounds): Window bounds exceed native capture dimensions
+
+      117 |   const iPhone = playwright.devices['iPhone 6'];
+      118 |   const context = await browser.newContext({ ...iPhone, timezoneId: 'America/Jamaica', locale: 'fr-CH', userAgent: 'UA' });
+    > 119 |   const page = await context.newPage();
+          |                              ^
+      120 |
+      121 |   const [request] = await Promise.all([
+      122 |     server.waitForRequest('/grid.html'),
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:119:30
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-targeted/artifacts/library-chromium-oopif-should-support-context-options/error-context.md
+
+  19) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:138:3 › should respect route 
+
+    Error: cdpSession.send: Protocol error (Target.setDiscoverTargets): Unsupported CEF browser command: Target.setDiscoverTargets
+
+      402 |       oopifs.push(targetInfo);
+      403 |   });
+    > 404 |   await browserSession.send('Target.setDiscoverTargets', { discover: true });
+          |                        ^
+      405 |   await browserSession.detach();
+      406 |   return oopifs.length;
+      407 | }
+        at countOOPIFs (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:404:24)
+        at assertOOPIFCount (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:394:10)
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:146:3
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-targeted/artifacts/library-chromium-oopif-should-respect-route/error-context.md
+
+  20) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:150:3 › should take screenshot 
+
+    Error: cdpSession.send: Protocol error (Target.setDiscoverTargets): Unsupported CEF browser command: Target.setDiscoverTargets
+
+      402 |       oopifs.push(targetInfo);
+      403 |   });
+    > 404 |   await browserSession.send('Target.setDiscoverTargets', { discover: true });
+          |                        ^
+      405 |   await browserSession.detach();
+      406 |   return oopifs.length;
+      407 | }
+        at countOOPIFs (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:404:24)
+        at assertOOPIFCount (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:394:10)
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:154:3
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-targeted/artifacts/library-chromium-oopif-should-take-screenshot/error-context.md
+
+  21) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:158:3 › should load oopif iframes with subresources and route 
+
+    Error: cdpSession.send: Protocol error (Target.setDiscoverTargets): Unsupported CEF browser command: Target.setDiscoverTargets
+
+      402 |       oopifs.push(targetInfo);
+      403 |   });
+    > 404 |   await browserSession.send('Target.setDiscoverTargets', { discover: true });
+          |                        ^
+      405 |   await browserSession.detach();
+      406 |   return oopifs.length;
+      407 | }
+        at countOOPIFs (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:404:24)
+        at assertOOPIFCount (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:394:10)
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:161:3
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-targeted/artifacts/library-chromium-oopif-sho-7aab3-with-subresources-and-route/error-context.md
+
+  22) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:164:3 › should report main requests 
+
+    Error: cdpSession.send: Protocol error (Target.setDiscoverTargets): Unsupported CEF browser command: Target.setDiscoverTargets
+
+      402 |       oopifs.push(targetInfo);
+      403 |   });
+    > 404 |   await browserSession.send('Target.setDiscoverTargets', { discover: true });
+          |                        ^
+      405 |   await browserSession.detach();
+      406 |   return oopifs.length;
+      407 | }
+        at countOOPIFs (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:404:24)
+        at assertOOPIFCount (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:394:10)
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:193:3
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-targeted/artifacts/library-chromium-oopif-should-report-main-requests/error-context.md
+
+  23) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:202:3 › should support exposeFunction 
+
+    Error: cdpSession.send: Protocol error (Target.setDiscoverTargets): Unsupported CEF browser command: Target.setDiscoverTargets
+
+      402 |       oopifs.push(targetInfo);
+      403 |   });
+    > 404 |   await browserSession.send('Target.setDiscoverTargets', { discover: true });
+          |                        ^
+      405 |   await browserSession.detach();
+      406 |   return oopifs.length;
+      407 | }
+        at countOOPIFs (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:404:24)
+        at assertOOPIFCount (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:394:10)
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:206:3
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-targeted/artifacts/library-chromium-oopif-should-support-exposeFunction/error-context.md
+
+  24) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:214:3 › should support addInitScript 
+
+    Error: cdpSession.send: Protocol error (Target.setDiscoverTargets): Unsupported CEF browser command: Target.setDiscoverTargets
+
+      402 |       oopifs.push(targetInfo);
+      403 |   });
+    > 404 |   await browserSession.send('Target.setDiscoverTargets', { discover: true });
+          |                        ^
+      405 |   await browserSession.detach();
+      406 |   return oopifs.length;
+      407 | }
+        at countOOPIFs (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:404:24)
+        at assertOOPIFCount (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:394:10)
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:218:3
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-targeted/artifacts/library-chromium-oopif-should-support-addInitScript/error-context.md
+
+  25) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:226:3 › should click a button when it overlays oopif 
+
+    Error: cdpSession.send: Protocol error (Target.setDiscoverTargets): Unsupported CEF browser command: Target.setDiscoverTargets
+
+      402 |       oopifs.push(targetInfo);
+      403 |   });
+    > 404 |   await browserSession.send('Target.setDiscoverTargets', { discover: true });
+          |                        ^
+      405 |   await browserSession.detach();
+      406 |   return oopifs.length;
+      407 | }
+        at countOOPIFs (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:404:24)
+        at assertOOPIFCount (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:394:10)
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:228:3
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-targeted/artifacts/library-chromium-oopif-sho-282ab-tton-when-it-overlays-oopif/error-context.md
+
+  26) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:233:3 › should report google.com frame with headed 
+
+    Error: SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness
+
+       at config/browserTest.ts:221
+
+      219 |     const original = playwright[browserName];
+      220 |     await use(new Proxy(original, { get(target, name) {
+    > 221 |       if (['launch', 'launchPersistentContext', 'launchServer', 'connect', 'connectOverCDP'].includes(String(name))) return async () => { throw new Error('SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness'); };
+          |                                                                                                                                                 ^
+      222 |       const value = Reflect.get(target, name); return typeof value === 'function' ? value.bind(target) : value;
+      223 |     }}));
+      224 |   }, { scope: 'worker' }],
+        at Proxy.launch (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts:221:145)
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:237:37
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-targeted/artifacts/library-chromium-oopif-sho-545ae-oogle-com-frame-with-headed/error-context.md
+
+  27) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:259:3 › ElementHandle.boundingBox() should work 
+
+    Error: cdpSession.send: Protocol error (Target.setDiscoverTargets): Unsupported CEF browser command: Target.setDiscoverTargets
+
+      402 |       oopifs.push(targetInfo);
+      403 |   });
+    > 404 |   await browserSession.send('Target.setDiscoverTargets', { discover: true });
+          |                        ^
+      405 |   await browserSession.detach();
+      406 |   return oopifs.length;
+      407 | }
+        at countOOPIFs (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:404:24)
+        at assertOOPIFCount (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:394:10)
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:269:3
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-targeted/artifacts/library-chromium-oopif-ElementHandle-boundingBox-should-work/error-context.md
+
+  28) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:282:3 › should click 
+
+    Error: cdpSession.send: Protocol error (Target.setDiscoverTargets): Unsupported CEF browser command: Target.setDiscoverTargets
+
+      402 |       oopifs.push(targetInfo);
+      403 |   });
+    > 404 |   await browserSession.send('Target.setDiscoverTargets', { discover: true });
+          |                        ^
+      405 |   await browserSession.detach();
+      406 |   return oopifs.length;
+      407 | }
+        at countOOPIFs (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:404:24)
+        at assertOOPIFCount (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:394:10)
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:292:3
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-targeted/artifacts/library-chromium-oopif-should-click/error-context.md
+
+  29) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:299:3 › contentFrame should work 
+
+    Error: cdpSession.send: Protocol error (Target.setDiscoverTargets): Unsupported CEF browser command: Target.setDiscoverTargets
+
+      402 |       oopifs.push(targetInfo);
+      403 |   });
+    > 404 |   await browserSession.send('Target.setDiscoverTargets', { discover: true });
+          |                        ^
+      405 |   await browserSession.detach();
+      406 |   return oopifs.length;
+      407 | }
+        at countOOPIFs (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:404:24)
+        at assertOOPIFCount (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:394:10)
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:302:3
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-targeted/artifacts/library-chromium-oopif-contentFrame-should-work/error-context.md
+
+  30) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:309:3 › should allow cdp sessions on oopifs 
+
+    Error: cdpSession.send: Protocol error (Target.setDiscoverTargets): Unsupported CEF browser command: Target.setDiscoverTargets
+
+      402 |       oopifs.push(targetInfo);
+      403 |   });
+    > 404 |   await browserSession.send('Target.setDiscoverTargets', { discover: true });
+          |                        ^
+      405 |   await browserSession.detach();
+      406 |   return oopifs.length;
+      407 | }
+        at countOOPIFs (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:404:24)
+        at assertOOPIFCount (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:394:10)
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:311:3
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-targeted/artifacts/library-chromium-oopif-should-allow-cdp-sessions-on-oopifs/error-context.md
+
+  31) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:324:3 › should emit filechooser event for iframe 
+
+    Error: cdpSession.send: Protocol error (Target.setDiscoverTargets): Unsupported CEF browser command: Target.setDiscoverTargets
+
+      402 |       oopifs.push(targetInfo);
+      403 |   });
+    > 404 |   await browserSession.send('Target.setDiscoverTargets', { discover: true });
+          |                        ^
+      405 |   await browserSession.detach();
+      406 |   return oopifs.length;
+      407 | }
+        at countOOPIFs (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:404:24)
+        at assertOOPIFCount (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:394:10)
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:328:3
+
+    Error: page.waitForEvent: Test ended.
+    =========================== logs ===========================
+    waiting for event "filechooser"
+    ============================================================
+
+      324 | it('should emit filechooser event for iframe', async ({ page, server, browser }) => {
+      325 |   // Add listener before OOPIF is created.
+    > 326 |   const chooserPromise = page.waitForEvent('filechooser');
+          |                               ^
+      327 |   await page.goto(server.PREFIX + '/dynamic-oopif.html');
+      328 |   await assertOOPIFCount(browser, 1);
+      329 |   expect(page.frames().length).toBe(2);
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:326:31
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-targeted/artifacts/library-chromium-oopif-sho-57149-ilechooser-event-for-iframe/error-context.md
+
+  32) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:339:3 › should be able to click in iframe 
+
+    Error: cdpSession.send: Protocol error (Target.setDiscoverTargets): Unsupported CEF browser command: Target.setDiscoverTargets
+
+      402 |       oopifs.push(targetInfo);
+      403 |   });
+    > 404 |   await browserSession.send('Target.setDiscoverTargets', { discover: true });
+          |                        ^
+      405 |   await browserSession.detach();
+      406 |   return oopifs.length;
+      407 | }
+        at countOOPIFs (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:404:24)
+        at assertOOPIFCount (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:394:10)
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:342:3
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-targeted/artifacts/library-chromium-oopif-should-be-able-to-click-in-iframe/error-context.md
+
+  33) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:353:3 › should not throw on exposeFunction when oopif detaches 
+
+    Error: cdpSession.send: Protocol error (Target.setDiscoverTargets): Unsupported CEF browser command: Target.setDiscoverTargets
+
+      402 |       oopifs.push(targetInfo);
+      403 |   });
+    > 404 |   await browserSession.send('Target.setDiscoverTargets', { discover: true });
+          |                        ^
+      405 |   await browserSession.detach();
+      406 |   return oopifs.length;
+      407 | }
+        at countOOPIFs (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:404:24)
+        at assertOOPIFCount (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:394:10)
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:355:3
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-targeted/artifacts/library-chromium-oopif-sho-230e8-unction-when-oopif-detaches/error-context.md
+
+  34) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:372:3 › should allow to re-connect to OOPIFs with CDP when iframes were there already 
+
+    Error: SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness
+
+       at config/browserTest.ts:221
+
+      219 |     const original = playwright[browserName];
+      220 |     await use(new Proxy(original, { get(target, name) {
+    > 221 |       if (['launch', 'launchPersistentContext', 'launchServer', 'connect', 'connectOverCDP'].includes(String(name))) return async () => { throw new Error('SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness'); };
+          |                                                                                                                                                 ^
+      222 |       const value = Reflect.get(target, name); return typeof value === 'function' ? value.bind(target) : value;
+      223 |     }}));
+      224 |   }, { scope: 'worker' }],
+        at Proxy.launch (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts:221:145)
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:378:41
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-targeted/artifacts/library-chromium-oopif-sho-ace58--iframes-were-there-already/error-context.md
+
+  35) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:152:5 › screencast › should continue recording main page after popup closes 
+
+    Test timeout of 45000ms exceeded.
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-targeted/artifacts/library-video-screencast-s-2dc53-ain-page-after-popup-closes/error-context.md
+
+  36) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:238:5 › screencast › should work with weird screen resolution 
+
+    Error: browserContext.newPage: Protocol error (Browser.setWindowBounds): Window bounds exceed native capture dimensions
+
+      247 |       viewport: size,
+      248 |     });
+    > 249 |     const page = await context.newPage();
+          |                                ^
+      250 |     const path = await page.video()!.path();
+      251 |     expect(path).toContain(videosPath);
+      252 |     await context.close();
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:249:32
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-targeted/artifacts/library-video-screencast-s-baa38-ith-weird-screen-resolution/error-context.md
+
+  37) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:458:5 › screencast › should be 800x450 by default 
+
+    Test timeout of 45000ms exceeded.
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-targeted/artifacts/library-video-screencast-should-be-800x450-by-default/error-context.md
+
+  38) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:495:5 › screencast › should capture static page in persistent context @smoke 
+
+    Error: SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness
+
+       at config/browserTest.ts:221
+
+      219 |     const original = playwright[browserName];
+      220 |     await use(new Proxy(original, { get(target, name) {
+    > 221 |       if (['launch', 'launchPersistentContext', 'launchServer', 'connect', 'connectOverCDP'].includes(String(name))) return async () => { throw new Error('SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness'); };
+          |                                                                                                                                                 ^
+      222 |       const value = Reflect.get(target, name); return typeof value === 'function' ? value.bind(target) : value;
+      223 |     }}));
+      224 |   }, { scope: 'worker' }],
+        at Proxy.launchPersistentContext (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts:221:145)
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts:159:45
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:498:31
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-targeted/artifacts/library-video-screencast-s-6cedd-in-persistent-context-smoke/error-context.md
+
+  39) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:524:5 › screencast › should emulate an iphone 
+
+    Error: browserContext.newPage: Protocol error (Browser.setWindowBounds): Window bounds exceed native capture dimensions
+
+      531 |     });
+      532 |
+    > 533 |     const page = await context.newPage();
+          |                                ^
+      534 |     await ensureSomeFrames(page);
+      535 |     await context.close();
+      536 |
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:533:32
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-targeted/artifacts/library-video-screencast-should-emulate-an-iphone/error-context.md
+
+  40) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:543:5 › screencast › should throw on browser close 
+
+    Error: SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness
+
+       at config/browserTest.ts:221
+
+      219 |     const original = playwright[browserName];
+      220 |     await use(new Proxy(original, { get(target, name) {
+    > 221 |       if (['launch', 'launchPersistentContext', 'launchServer', 'connect', 'connectOverCDP'].includes(String(name))) return async () => { throw new Error('SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness'); };
+          |                                                                                                                                                 ^
+      222 |       const value = Reflect.get(target, name); return typeof value === 'function' ? value.bind(target) : value;
+      223 |     }}));
+      224 |   }, { scope: 'worker' }],
+        at Proxy.launch (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts:221:145)
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:545:39
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-targeted/artifacts/library-video-screencast-should-throw-on-browser-close/error-context.md
+
+  41) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:563:5 › screencast › should throw if browser dies 
+
+    Error: SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness
+
+       at config/browserTest.ts:221
+
+      219 |     const original = playwright[browserName];
+      220 |     await use(new Proxy(original, { get(target, name) {
+    > 221 |       if (['launch', 'launchPersistentContext', 'launchServer', 'connect', 'connectOverCDP'].includes(String(name))) return async () => { throw new Error('SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness'); };
+          |                                                                                                                                                 ^
+      222 |       const value = Reflect.get(target, name); return typeof value === 'function' ? value.bind(target) : value;
+      223 |     }}));
+      224 |   }, { scope: 'worker' }],
+        at Proxy.launch (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts:221:145)
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:565:39
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-targeted/artifacts/library-video-screencast-should-throw-if-browser-dies/error-context.md
+
+  42) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:584:5 › screencast › should wait for video to finish if page was closed 
+
+    Error: SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness
+
+       at config/browserTest.ts:221
+
+      219 |     const original = playwright[browserName];
+      220 |     await use(new Proxy(original, { get(target, name) {
+    > 221 |       if (['launch', 'launchPersistentContext', 'launchServer', 'connect', 'connectOverCDP'].includes(String(name))) return async () => { throw new Error('SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness'); };
+          |                                                                                                                                                 ^
+      222 |       const value = Reflect.get(target, name); return typeof value === 'function' ? value.bind(target) : value;
+      223 |     }}));
+      224 |   }, { scope: 'worker' }],
+        at Proxy.launch (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts:221:145)
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:586:39
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-targeted/artifacts/library-video-screencast-s-51b4b-o-finish-if-page-was-closed/error-context.md
+
+  43) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:610:5 › screencast › should close ffmpeg even if there were no frames 
+
+    Error: SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness
+
+       at config/browserTest.ts:221
+
+      219 |     const original = playwright[browserName];
+      220 |     await use(new Proxy(original, { get(target, name) {
+    > 221 |       if (['launch', 'launchPersistentContext', 'launchServer', 'connect', 'connectOverCDP'].includes(String(name))) return async () => { throw new Error('SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness'); };
+          |                                                                                                                                                 ^
+      222 |       const value = Reflect.get(target, name); return typeof value === 'function' ? value.bind(target) : value;
+      223 |     }}));
+      224 |   }, { scope: 'worker' }],
+        at Proxy.launch (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts:221:145)
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:614:39
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-targeted/artifacts/library-video-screencast-s-376e9-ven-if-there-were-no-frames/error-context.md
+
+  44) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:664:5 › screencast › should capture full viewport 
+
+    Error: SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness
+
+       at config/browserTest.ts:221
+
+      219 |     const original = playwright[browserName];
+      220 |     await use(new Proxy(original, { get(target, name) {
+    > 221 |       if (['launch', 'launchPersistentContext', 'launchServer', 'connect', 'connectOverCDP'].includes(String(name))) return async () => { throw new Error('SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness'); };
+          |                                                                                                                                                 ^
+      222 |       const value = Reflect.get(target, name); return typeof value === 'function' ? value.bind(target) : value;
+      223 |     }}));
+      224 |   }, { scope: 'worker' }],
+        at Proxy.launch (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts:221:145)
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:669:39
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-targeted/artifacts/library-video-screencast-should-capture-full-viewport/error-context.md
+
+  45) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:699:5 › screencast › should capture full viewport on hidpi 
+
+    Error: SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness
+
+       at config/browserTest.ts:221
+
+      219 |     const original = playwright[browserName];
+      220 |     await use(new Proxy(original, { get(target, name) {
+    > 221 |       if (['launch', 'launchPersistentContext', 'launchServer', 'connect', 'connectOverCDP'].includes(String(name))) return async () => { throw new Error('SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness'); };
+          |                                                                                                                                                 ^
+      222 |       const value = Reflect.get(target, name); return typeof value === 'function' ? value.bind(target) : value;
+      223 |     }}));
+      224 |   }, { scope: 'worker' }],
+        at Proxy.launch (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts:221:145)
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:705:39
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-targeted/artifacts/library-video-screencast-s-6c7af-ture-full-viewport-on-hidpi/error-context.md
+
+  46) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/page/workers.spec.ts:112:3 › should report console event on the worker 
+
+    TimeoutError: page.waitForEvent: Timeout 5000ms exceeded while waiting for event "worker"
+    =========================== logs ===========================
+    waiting for event "worker"
+    ============================================================
+
+      114 |
+      115 |   const [worker] = await Promise.all([
+    > 116 |     page.waitForEvent('worker'),
+          |          ^
+      117 |     page.evaluate(() => {
+      118 |       (window as any).worker = new Worker(URL.createObjectURL(new Blob(['42'], { type: 'application/javascript' })));
+      119 |     }),
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/page/workers.spec.ts:116:10
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/page/workers.spec.ts:115:20
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-targeted/artifacts/page-workers-should-report-console-event-on-the-worker/error-context.md
+
+  47) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/page/workers.spec.ts:399:3 › should resolve worker script allHeaders in nested worker inside iframe 
+
+    TimeoutError: page.waitForEvent: Timeout 5000ms exceeded while waiting for event "worker"
+    =========================== logs ===========================
+    waiting for event "worker"
+    ============================================================
+
+      405 |   const url = server.PREFIX + '/worker/worker.js';
+      406 |   const [worker] = await Promise.all([
+    > 407 |     page.waitForEvent('worker'),
+          |          ^
+      408 |     page.waitForEvent('requestfinished', request => request.url() === url),
+      409 |     attachFrame(page, 'frame1', server.PREFIX + '/worker/worker.html'),
+      410 |   ]);
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/page/workers.spec.ts:407:10
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/page/workers.spec.ts:406:20
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-targeted/artifacts/page-workers-should-resolv-c9618-nested-worker-inside-iframe/error-context.md
+
+  47 failed
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:26:1 › should fail without credentials 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:37:1 › should work with setHTTPCredentials 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:111:1 › should fail with correct credentials and mismatching scheme 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:125:1 › should fail with correct credentials and mismatching hostname 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:141:1 › should fail with correct credentials and mismatching port 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:195:3 › should goBack to redirected navigation 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:208:3 › should goForward to redirected navigation 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-proxy.spec.ts:25:3 › should work when passing the proxy only on the context level 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-storage-state.spec.ts:314:3 › should serialize storageState with lone surrogates 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-storage-state.spec.ts:375:3 › should set local storage in third-party context 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-storage-state.spec.ts:399:3 › should roundtrip local storage in third-party context 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:26:3 › should report oopif frames 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:33:3 › should handle oopif detach 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:46:3 › should handle remote -> local -> remote transitions 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:84:3 › should expose function 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:96:3 › should emulate media 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:106:3 › should emulate offline 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:116:3 › should support context options 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:138:3 › should respect route 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:150:3 › should take screenshot 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:158:3 › should load oopif iframes with subresources and route 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:164:3 › should report main requests 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:202:3 › should support exposeFunction 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:214:3 › should support addInitScript 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:226:3 › should click a button when it overlays oopif 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:233:3 › should report google.com frame with headed 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:259:3 › ElementHandle.boundingBox() should work 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:282:3 › should click 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:299:3 › contentFrame should work 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:309:3 › should allow cdp sessions on oopifs 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:324:3 › should emit filechooser event for iframe 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:339:3 › should be able to click in iframe 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:353:3 › should not throw on exposeFunction when oopif detaches 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/oopif.spec.ts:372:3 › should allow to re-connect to OOPIFs with CDP when iframes were there already 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:152:5 › screencast › should continue recording main page after popup closes 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:238:5 › screencast › should work with weird screen resolution 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:458:5 › screencast › should be 800x450 by default 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:495:5 › screencast › should capture static page in persistent context @smoke 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:524:5 › screencast › should emulate an iphone 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:543:5 › screencast › should throw on browser close 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:563:5 › screencast › should throw if browser dies 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:584:5 › screencast › should wait for video to finish if page was closed 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:610:5 › screencast › should close ffmpeg even if there were no frames 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:664:5 › screencast › should capture full viewport 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:699:5 › screencast › should capture full viewport on hidpi 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/page/workers.spec.ts:112:3 › should report console event on the worker 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/page/workers.spec.ts:399:3 › should resolve worker script allHeaders in nested worker inside iframe 
+  2 skipped
+  121 passed (6.0m)

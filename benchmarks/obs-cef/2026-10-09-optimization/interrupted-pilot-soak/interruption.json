@@ -1,0 +1,7 @@
+{
+  "status": "interrupted",
+  "reason": "Deliberate source SIGTERM while preparing shared page lifetime fix; driver exited before final result/finalization was saved. This is not a completed soak.",
+  "lastObservedActiveMs": 80163.867049,
+  "sourcePid": 42046,
+  "preRestartNodePid": 42032
+}

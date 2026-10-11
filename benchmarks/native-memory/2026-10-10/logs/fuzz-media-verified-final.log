@@ -1,0 +1,41 @@
+INFO: Running with entropic power schedule (0xFF, 100).
+INFO: Seed: 20261010
+INFO: Loaded 1 modules   (2501 inline 8-bit counters): 2501 [0x55b2b2a64820, 0x55b2b2a651e5), 
+INFO: Loaded 1 PC tables (2501 PCs): 2501 [0x55b2b2a651e8,0x55b2b2a6ee38), 
+INFO:      165 files found in benchmarks/native-memory/2026-10-10/fuzz/final-media/corpus
+INFO: seed corpus: files: 165 min: 1b max: 128b total: 7484b rss: 56Mb
+#167	INITED cov: 555 ft: 1241 corp: 102/4008b exec/s: 0 rss: 181Mb
+#2048	pulse  cov: 555 ft: 1241 corp: 102/4008b lim: 128 exec/s: 682 rss: 226Mb
+#2543	REDUCE cov: 555 ft: 1241 corp: 102/4000b lim: 128 exec/s: 508 rss: 226Mb L: 10/121 MS: 1 EraseBytes-
+#3187	REDUCE cov: 555 ft: 1241 corp: 102/3990b lim: 128 exec/s: 455 rss: 226Mb L: 103/121 MS: 4 EraseBytes-CopyPart-CopyPart-CrossOver-
+	NEW_FUNC[1/1]: ==655919==WARNING: invalid path to external symbolizer!
+==655919==WARNING: Failed to use and restart external symbolizer!
+0x55b2b2a07de0  (/workspace/suitecut/.suitecut/memory-asan/suitecut-fuzz-media+0x18ade0) (BuildId: d39a7526520f9ca35e07ec06dee027da229f751e)
+#3640	NEW    cov: 564 ft: 1250 corp: 103/4008b lim: 128 exec/s: 455 rss: 226Mb L: 18/121 MS: 3 ShuffleBytes-ChangeBit-CrossOver-
+#4096	pulse  cov: 564 ft: 1250 corp: 103/4008b lim: 128 exec/s: 455 rss: 227Mb
+#4800	NEW    cov: 565 ft: 1251 corp: 104/4123b lim: 128 exec/s: 480 rss: 227Mb L: 115/121 MS: 5 ShuffleBytes-InsertRepeatedBytes-ChangeBinInt-EraseBytes-InsertRepeatedBytes-
+#8192	pulse  cov: 565 ft: 1251 corp: 104/4123b lim: 128 exec/s: 481 rss: 230Mb
+#8269	REDUCE cov: 565 ft: 1251 corp: 104/4121b lim: 128 exec/s: 486 rss: 230Mb L: 57/121 MS: 4 ChangeBit-InsertByte-ShuffleBytes-EraseBytes-
+#8985	REDUCE cov: 565 ft: 1251 corp: 104/4116b lim: 128 exec/s: 499 rss: 231Mb L: 98/121 MS: 1 EraseBytes-
+#10005	REDUCE cov: 567 ft: 1266 corp: 105/4244b lim: 128 exec/s: 500 rss: 232Mb L: 128/128 MS: 5 InsertByte-InsertRepeatedBytes-CrossOver-CopyPart-CopyPart-
+#10335	REDUCE cov: 567 ft: 1266 corp: 105/4240b lim: 128 exec/s: 492 rss: 232Mb L: 29/128 MS: 5 InsertByte-ChangeByte-InsertRepeatedBytes-EraseBytes-EraseBytes-
+#10578	NEW    cov: 567 ft: 1276 corp: 106/4273b lim: 128 exec/s: 503 rss: 232Mb L: 33/128 MS: 3 ShuffleBytes-ShuffleBytes-ChangeBit-
+#12864	REDUCE cov: 567 ft: 1276 corp: 106/4272b lim: 128 exec/s: 494 rss: 232Mb L: 89/128 MS: 1 CrossOver-
+#13630	REDUCE cov: 567 ft: 1276 corp: 106/4270b lim: 128 exec/s: 504 rss: 233Mb L: 96/128 MS: 1 EraseBytes-
+#15814	REDUCE cov: 567 ft: 1276 corp: 106/4266b lim: 128 exec/s: 510 rss: 235Mb L: 92/128 MS: 4 ChangeBit-InsertRepeatedBytes-ChangeByte-EraseBytes-
+#16384	pulse  cov: 567 ft: 1276 corp: 106/4266b lim: 128 exec/s: 512 rss: 235Mb
+#17617	REDUCE cov: 567 ft: 1276 corp: 106/4264b lim: 128 exec/s: 533 rss: 235Mb L: 39/128 MS: 2 CopyPart-EraseBytes-
+#17664	REDUCE cov: 567 ft: 1276 corp: 106/4263b lim: 128 exec/s: 535 rss: 235Mb L: 9/128 MS: 2 InsertByte-EraseBytes-
+#18321	NEW    cov: 575 ft: 1301 corp: 107/4304b lim: 128 exec/s: 538 rss: 235Mb L: 41/128 MS: 2 ShuffleBytes-ChangeASCIIInt-
+#20124	REDUCE cov: 575 ft: 1301 corp: 107/4293b lim: 128 exec/s: 543 rss: 235Mb L: 81/128 MS: 3 CMP-InsertByte-CrossOver- DE: "\001\000\000\000"-
+#20517	NEW    cov: 577 ft: 1306 corp: 108/4407b lim: 128 exec/s: 539 rss: 235Mb L: 114/128 MS: 3 ChangeBinInt-InsertByte-PersAutoDict- DE: "\001\000\000\000"-
+#23854	REDUCE cov: 577 ft: 1306 corp: 108/4406b lim: 128 exec/s: 554 rss: 237Mb L: 43/128 MS: 2 ShuffleBytes-EraseBytes-
+#24943	REDUCE cov: 577 ft: 1306 corp: 108/4398b lim: 128 exec/s: 554 rss: 238Mb L: 9/128 MS: 4 InsertByte-PersAutoDict-ChangeASCIIInt-EraseBytes- DE: "\001\000\000\000"-
+#26755	REDUCE cov: 577 ft: 1306 corp: 108/4397b lim: 128 exec/s: 569 rss: 238Mb L: 53/128 MS: 2 ShuffleBytes-EraseBytes-
+#31763	REDUCE cov: 577 ft: 1306 corp: 108/4395b lim: 128 exec/s: 577 rss: 241Mb L: 33/128 MS: 3 CrossOver-InsertByte-EraseBytes-
+#32768	pulse  cov: 577 ft: 1306 corp: 108/4395b lim: 128 exec/s: 574 rss: 241Mb
+#34723	DONE   cov: 577 ft: 1306 corp: 108/4395b lim: 128 exec/s: 569 rss: 243Mb
+###### Recommended dictionary. ######
+"\001\000\000\000" # Uses: 1295
+###### End of recommended dictionary. ######
+Done 34723 runs in 61 second(s)

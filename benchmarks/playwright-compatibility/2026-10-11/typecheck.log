@@ -1,0 +1,8 @@
+[WARN] Your node_modules are out of sync with your lockfile. The workspace structure has changed since last install
+benchmarks/playwright-compatibility/compatibility.spec.ts(151,23): error TS7030: Not all code paths return a value.
+benchmarks/playwright-compatibility/compatibility.spec.ts(400,10): error TS2532: Object is possibly 'undefined'.
+benchmarks/playwright-compatibility/compatibility.spec.ts(400,27): error TS2339: Property 'indexedDB' does not exist on type '{ origin: string; localStorage: { name: string; value: string; }[]; }'.
+benchmarks/playwright-compatibility/compatibility.spec.ts(515,40): error TS2379: Argument of type '{ httpCredentials: { username: string; password: string; } | undefined; }' is not assignable to parameter of type 'BrowserContextOptions' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+  Types of property 'httpCredentials' are incompatible.
+    Type '{ username: string; password: string; } | undefined' is not assignable to type 'HTTPCredentials'.
+      Type 'undefined' is not assignable to type 'HTTPCredentials'.

@@ -1,0 +1,17 @@
+file:///workspace/suitecut/benchmarks/obs-cef/obs-client.mjs:20
+          else handler.reject(new Error(JSON.stringify(d.requestStatus)))
+                              ^
+
+Error: {"code":601,"comment":"A source already exists by that input name.","result":false}
+    at WebSocket.<anonymous> (file:///workspace/suitecut/benchmarks/obs-cef/obs-client.mjs:20:31)
+    at WebSocket.emit (node:events:509:28)
+    at Receiver.receiverOnMessage (/workspace/suitecut/node_modules/.pnpm/ws@8.21.3/node_modules/ws/lib/websocket.js:1239:20)
+    at Receiver.emit (node:events:509:28)
+    at Receiver.dataMessage (/workspace/suitecut/node_modules/.pnpm/ws@8.21.3/node_modules/ws/lib/receiver.js:633:14)
+    at Receiver.getData (/workspace/suitecut/node_modules/.pnpm/ws@8.21.3/node_modules/ws/lib/receiver.js:532:10)
+    at Receiver.startLoop (/workspace/suitecut/node_modules/.pnpm/ws@8.21.3/node_modules/ws/lib/receiver.js:190:16)
+    at Receiver._write (/workspace/suitecut/node_modules/.pnpm/ws@8.21.3/node_modules/ws/lib/receiver.js:117:10)
+    at writeOrBuffer (node:internal/streams/writable:570:12)
+    at _write (node:internal/streams/writable:499:10)
+
+Node.js v24.19.0

@@ -8,6 +8,7 @@ import * as z from 'zod'
 import { raceWithAbort } from './abort.js'
 import { formattedJson, writeTextFileAtomic } from './atomic-file.js'
 import { decodeManifest } from './manifest.js'
+import { type NativeBrowser } from './native-browser.js'
 import { resolveFfmpeg, runProcess, type SuiteCutProcessResult } from './process.js'
 import { createSuiteCutReportRedactor } from './report-redaction.js'
 import { type SuiteCutEasing } from './schemas.js'
@@ -85,6 +86,17 @@ const RenderConfigSchema = z.strictObject({
 })
 
 const RenderRequestSchema = z.strictObject({
+  nativeSource: z
+    .custom<NativeBrowser>(
+      (value) =>
+        typeof value === 'object' &&
+        value !== null &&
+        'nativeMedia' in value &&
+        value.nativeMedia === true &&
+        'command' in value &&
+        typeof value.command === 'function',
+    )
+    .exactOptional(),
   manifestPath: z.string().min(1),
   outputPath: z.string().min(1),
   signal: z.instanceof(AbortSignal).exactOptional(),
@@ -233,11 +245,10 @@ function videoQualityArgs(videoCodec: string, quality: SuiteCutRenderQuality): s
       '-crf',
       String(profile.vpxCrf),
       '-b:v',
-      '0',
+      videoCodec === 'libvpx' ? '4500k' : '0',
       '-cpu-used',
       String(profile.vpxCpuUsed),
-      '-row-mt',
-      '1',
+      ...(videoCodec === 'libvpx-vp9' ? ['-row-mt', '1'] : []),
     ]
   }
   if (videoCodec === 'libsvtav1') {
@@ -248,6 +259,20 @@ function videoQualityArgs(videoCodec: string, quality: SuiteCutRenderQuality): s
       String(profile.av1Preset),
       '-svtav1-params',
       'fast-decode=1',
+    ]
+  }
+  if (videoCodec === 'libaom-av1') {
+    return [
+      '-crf',
+      String(profile.av1Crf),
+      '-b:v',
+      '0',
+      '-cpu-used',
+      quality === 'standard' ? '8' : quality === 'high' ? '6' : '4',
+      '-row-mt',
+      '1',
+      '-lag-in-frames',
+      '0',
     ]
   }
   if (videoCodec.startsWith('prores')) {
@@ -618,7 +643,7 @@ function sourceTrimFilter(
 ): string {
   const sourceAtMs = Math.max(0, item.executionStartMs - sourceStartedAtMs)
   if (item.kind === 'hold') {
-    return `trim=start=${seconds(sourceAtMs)}:duration=${seconds(1_000 / framesPerSecond)},setpts=PTS-STARTPTS,tpad=stop_mode=clone:stop_duration=${seconds(item.durationMs)},trim=duration=${seconds(item.durationMs)},fps=${framesPerSecond}`
+    return `trim=start=${seconds(sourceAtMs)},trim=end_frame=1,loop=loop=-1:size=1:start=0,setpts=N/(${framesPerSecond}*TB),trim=duration=${seconds(item.durationMs)},fps=${framesPerSecond}`
   }
 
   const leadingHoldMs = Math.min(
@@ -772,20 +797,22 @@ export async function renderSuiteCut(input: SuiteCutRenderRequest): Promise<Suit
       narrationArtifacts = availableNarrationArtifacts
     }
 
-    const executable = await raceWithAbort(
-      resolveFfmpeg(request.config?.ffmpegPath),
-      request.signal,
-    )
-    await raceWithAbort(
-      requireEncoder(executable, outputSettings.videoCodec, 'video'),
-      request.signal,
-    )
+    const executable = request.nativeSource
+      ? 'suitecut-native-libav'
+      : await raceWithAbort(resolveFfmpeg(request.config?.ffmpegPath), request.signal)
+    const checkEncoder = async (encoder: string, kind: 'video' | 'audio') => {
+      if (!request.nativeSource) return requireEncoder(executable, encoder, kind)
+      if (!request.nativeSource.nativeMedia || !request.nativeSource.command)
+        throw new Error('Native rendering requires the C++ media engine')
+      const result = z
+        .object({ available: z.boolean() })
+        .parse(await request.nativeSource.command('media.encoder', { name: encoder }))
+      if (!result.available) throw new Error(`Native FFmpeg lacks ${kind} encoder ${encoder}`)
+    }
+    await raceWithAbort(checkEncoder(outputSettings.videoCodec, 'video'), request.signal)
     if (narrationArtifacts.length > 0 || sourceAudioEnabled) {
       try {
-        await raceWithAbort(
-          requireEncoder(executable, outputSettings.audioCodec, 'audio'),
-          request.signal,
-        )
+        await raceWithAbort(checkEncoder(outputSettings.audioCodec, 'audio'), request.signal)
       } catch (error) {
         request.signal?.throwIfAborted()
         if (failureMode === 'strict') throw error
@@ -977,11 +1004,51 @@ export async function renderSuiteCut(input: SuiteCutRenderRequest): Promise<Suit
     args.push(temporaryOutputPath)
 
     await mkdir(dirname(outputPath), { recursive: true })
-    const processResult = await runProcess(
-      executable,
-      args,
-      request.signal === undefined ? {} : { signal: request.signal },
-    )
+    let processResult: SuiteCutProcessResult
+    if (request.nativeSource?.command) {
+      const source = request.nativeSource
+      const jobKey = randomUUID()
+      const cancel = () => {
+        void source.command?.('media.cancel', { jobKey }).catch(() => undefined)
+      }
+      request.signal?.addEventListener('abort', cancel, { once: true })
+      const videoOptions: Record<string, string> = {}
+      const qualityArgs = videoQualityArgs(outputSettings.videoCodec, quality)
+      for (let i = 0; i < qualityArgs.length; i += 2) {
+        const key = qualityArgs[i]?.replace(/^-/u, '').replace(/:v$/u, '')
+        const value = qualityArgs[i + 1]
+        if (key && key !== 'b' && value) videoOptions[key] = value
+      }
+      const audioArgs = audioQualityArgs(outputSettings.audioCodec, quality)
+      try {
+        request.signal?.throwIfAborted()
+        await source.command?.('media.render', {
+          jobKey,
+          inputs: mediaInputs.map((item) => item.path),
+          destination: temporaryOutputPath,
+          graph: filters.join(';'),
+          fps,
+          durationMs: presentationDurationMs,
+          audio: audioLabels.length > 0,
+          container: ffmpegMuxer(outputSettings.container),
+          videoCodec: outputSettings.videoCodec,
+          audioCodec: outputSettings.audioCodec,
+          pixelFormat: outputSettings.pixelFormat,
+          fullRange: outputSettings.colorRange === 'full',
+          videoOptions,
+          audioBitrate: parseInt(audioArgs[1] ?? '160', 10) * 1000,
+        })
+        request.signal?.throwIfAborted()
+        processResult = { executable, args, exitCode: 0, signal: null, stdout: '', stderr: '' }
+      } finally {
+        request.signal?.removeEventListener('abort', cancel)
+      }
+    } else
+      processResult = await runProcess(
+        executable,
+        args,
+        request.signal === undefined ? {} : { signal: request.signal },
+      )
     baseReport.ffmpeg = ffmpegReport(processResult, redactReportText)
     baseReport.presentationDurationMs = presentationDurationMs
     baseReport.edits = editMap

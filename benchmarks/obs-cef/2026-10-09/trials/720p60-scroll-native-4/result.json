@@ -1,0 +1,57 @@
+{
+  "id": "720p60-scroll-native-4",
+  "backend": "native",
+  "case": {
+    "name": "720p60-scroll",
+    "width": 1280,
+    "height": 720,
+    "fps": 60,
+    "workload": "scroll"
+  },
+  "trialNumber": 4,
+  "durationMs": 10000,
+  "status": "failed",
+  "startedAt": "2026-10-08T20:37:26.779Z",
+  "startupMs": 2216.5315740000224,
+  "browserVersion": "152.0.8+g1ce985c+chromium-152.0.7977.134",
+  "workload": {
+    "wallMs": 10145.253109000041,
+    "scrollCommands": 85,
+    "snapshot": {
+      "markerCount": 491,
+      "scrollY": 1800,
+      "scrollEvents": 85,
+      "keyEvents": 0,
+      "clicks": 0,
+      "value": "",
+      "choice": "First",
+      "secondary": false
+    }
+  },
+  "nativeCapture": {
+    "frames": 392,
+    "fps": 38.638759998234995,
+    "nativeDrops": 113
+  },
+  "finalizationMs": 44130.55179499998,
+  "mediaPath": "/workspace/suitecut/.suitecut/obs-cef-evidence/2026-10-09/720p60-scroll-native-4/suitecut-source-e561583d-4c61-4d05-8c0c-8c856c724868-4937e1f7-72e3-4de7-9a8a-f964bd6dc7ee.webm",
+  "decoded": {
+    "width": 1280,
+    "height": 720,
+    "codec": "vp9",
+    "containerFps": 60,
+    "durationSeconds": 10.917,
+    "bytes": 220163,
+    "decodedFrames": 655,
+    "markerTransitions": 3,
+    "markerRegressions": 0,
+    "activeFrames": 481,
+    "distinctActiveFrames": 2,
+    "distinctActiveFps": 0.24948024948024947,
+    "repeatFraction": 0.9958419958419958,
+    "longestActiveHoldMs": 8000,
+    "audioStreams": []
+  },
+  "error": "Error: Decoded output does not contain the active motion marker\n    at trial (file:///workspace/suitecut/benchmarks/obs-cef/run.mjs:131:68)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async file:///workspace/suitecut/benchmarks/obs-cef/run.mjs:143:111",
+  "completedAt": "2026-10-08T20:38:26.415Z"
+}

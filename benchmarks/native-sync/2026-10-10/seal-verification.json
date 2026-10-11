@@ -1,0 +1,13 @@
+{
+  "verifiedAtUTC": "2026-10-09T23:39:23.628122+00:00",
+  "verifiedPayloadFiles": 909,
+  "errors": [],
+  "manifestSHA256": "76fc8249b2db9657994f989e6b533627fb1cb0d2ad8f204a3feab37d7034d390",
+  "excludedFromManifest": [
+    "checksums.sha256",
+    "seal-verification.json"
+  ],
+  "result": "all payloads verified",
+  "longRunCompleted": false,
+  "longRunContinuityPassed": false
+}

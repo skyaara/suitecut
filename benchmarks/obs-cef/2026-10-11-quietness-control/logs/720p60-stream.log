@@ -1,0 +1,2 @@
+{"backend":"obs-cef","mode":"stream","status":"completed; media validation pending","directory":"/workspace/suitecut/benchmarks/obs-cef/2026-10-11-quietness-control/runs/720p60-stream"}
+{"case": "720p60-stream", "harnessValid": true, "qualityPassed": false, "issues": ["Silence in continuous source", "Video marker held beyond two frame intervals", "Source audio content differs from AudioContext marker beyond one video interval + 10 ms marker resolution"], "error": null}

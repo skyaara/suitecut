@@ -1,0 +1,4 @@
+{
+  "classification": "Excluded from CPU/memory comparisons",
+  "reason": "Resource sampler stopped on missing cpu.pressure metric. All captures retained; no resource results used."
+}

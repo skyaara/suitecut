@@ -1,0 +1,38 @@
+$ tsc --noEmit
+benchmarks/obs-cef/2026-10-09-optimization/baseline-source/live-publisher.ts(5,31): error TS2307: Cannot find module './abort.js' or its corresponding type declarations.
+benchmarks/obs-cef/2026-10-09-optimization/baseline-source/live-publisher.ts(6,62): error TS2307: Cannot find module './live-audio.js' or its corresponding type declarations.
+benchmarks/obs-cef/2026-10-09-optimization/baseline-source/live-publisher.ts(7,29): error TS2307: Cannot find module './live-bitrate.js' or its corresponding type declarations.
+benchmarks/obs-cef/2026-10-09-optimization/baseline-source/live-publisher.ts(8,43): error TS2307: Cannot find module './live-congestion.js' or its corresponding type declarations.
+benchmarks/obs-cef/2026-10-09-optimization/baseline-source/live-publisher.ts(9,72): error TS2307: Cannot find module './live-flv.js' or its corresponding type declarations.
+benchmarks/obs-cef/2026-10-09-optimization/baseline-source/live-publisher.ts(10,55): error TS2307: Cannot find module './live-network.js' or its corresponding type declarations.
+benchmarks/obs-cef/2026-10-09-optimization/baseline-source/live-publisher.ts(12,36): error TS2307: Cannot find module './process.js' or its corresponding type declarations.
+benchmarks/obs-cef/2026-10-09-optimization/baseline-source/live-publisher.ts(13,70): error TS2307: Cannot find module './schemas.js' or its corresponding type declarations.
+benchmarks/obs-cef/2026-10-09-optimization/baseline-source/live-publisher.ts(267,33): error TS7006: Parameter 'tag' implicitly has an 'any' type.
+benchmarks/obs-cef/2026-10-09-optimization/baseline-source/live-publisher.ts(317,43): error TS7006: Parameter 'tag' implicitly has an 'any' type.
+benchmarks/obs-cef/2026-10-09-optimization/baseline-source/live-stream.ts(5,31): error TS2307: Cannot find module './abort.js' or its corresponding type declarations.
+benchmarks/obs-cef/2026-10-09-optimization/baseline-source/live-stream.ts(6,42): error TS2307: Cannot find module './capture.js' or its corresponding type declarations.
+benchmarks/obs-cef/2026-10-09-optimization/baseline-source/live-stream.ts(7,62): error TS2307: Cannot find module './live-audio.js' or its corresponding type declarations.
+benchmarks/obs-cef/2026-10-09-optimization/baseline-source/live-stream.ts(13,8): error TS2307: Cannot find module './live-congestion.js' or its corresponding type declarations.
+benchmarks/obs-cef/2026-10-09-optimization/baseline-source/live-stream.ts(15,36): error TS2307: Cannot find module './process.js' or its corresponding type declarations.
+benchmarks/obs-cef/2026-10-09-optimization/baseline-source/live-stream.ts(20,8): error TS2307: Cannot find module './schemas.js' or its corresponding type declarations.
+benchmarks/obs-cef/2026-10-09-optimization/baseline-source/native-browser.ts(8,31): error TS2307: Cannot find module './abort.js' or its corresponding type declarations.
+benchmarks/obs-cef/2026-10-09-optimization/baseline-source/native-browser.ts(10,37): error TS2307: Cannot find module './untrusted.js' or its corresponding type declarations.
+benchmarks/obs-cef/2026-10-09-optimization/baseline-source/native-recorder.ts(7,31): error TS2307: Cannot find module './abort.js' or its corresponding type declarations.
+benchmarks/obs-cef/2026-10-09-optimization/baseline-source/native-recorder.ts(8,42): error TS2307: Cannot find module './capture.js' or its corresponding type declarations.
+benchmarks/obs-cef/2026-10-09-optimization/baseline-source/native-recorder.ts(10,48): error TS2307: Cannot find module './process.js' or its corresponding type declarations.
+benchmarks/obs-cef/2026-10-09-optimization/baseline-source/native-recorder.ts(11,42): error TS2307: Cannot find module './schemas.js' or its corresponding type declarations.
+benchmarks/obs-cef/2026-10-09-optimization/baseline-source/native-session.ts(5,31): error TS2307: Cannot find module './abort.js' or its corresponding type declarations.
+benchmarks/obs-cef/2026-10-09-optimization/baseline-source/native-session.ts(6,43): error TS2307: Cannot find module './artifact-sink.js' or its corresponding type declarations.
+benchmarks/obs-cef/2026-10-09-optimization/baseline-source/native-session.ts(8,51): error TS2307: Cannot find module './native-page.js' or its corresponding type declarations.
+benchmarks/obs-cef/2026-10-09-optimization/baseline-source/native-session.ts(10,44): error TS2307: Cannot find module './presentation.js' or its corresponding type declarations.
+benchmarks/obs-cef/2026-10-09-optimization/baseline-source/native-session.ts(11,28): error TS2307: Cannot find module './process.js' or its corresponding type declarations.
+benchmarks/obs-cef/2026-10-09-optimization/baseline-source/native-session.ts(12,45): error TS2307: Cannot find module './schemas.js' or its corresponding type declarations.
+benchmarks/obs-cef/2026-10-09-optimization/baseline-source/native-session.ts(17,8): error TS2307: Cannot find module './types.js' or its corresponding type declarations.
+benchmarks/obs-cef/2026-10-09-optimization/baseline-source/native-session.ts(216,13): error TS7006: Parameter 'id' implicitly has an 'any' type.
+benchmarks/obs-cef/2026-10-09-optimization/baseline-source/native-session.ts(220,15): error TS7006: Parameter 'page' implicitly has an 'any' type.
+benchmarks/obs-cef/2026-10-09-optimization/baseline-source/native-session.ts(225,16): error TS7006: Parameter 'page' implicitly has an 'any' type.
+benchmarks/obs-cef/2026-10-09-optimization/baseline-source/native-session.ts(242,12): error TS7006: Parameter 'event' implicitly has an 'any' type.
+benchmarks/obs-cef/2026-10-09-optimization/baseline-source/native-session.ts(246,29): error TS7006: Parameter 'event' implicitly has an 'any' type.
+benchmarks/obs-cef/2026-10-09-optimization/baseline-source/native-session.ts(252,29): error TS7006: Parameter 'operation' implicitly has an 'any' type.
+benchmarks/obs-cef/2026-10-09-optimization/baseline-source/native-session.ts(274,36): error TS7006: Parameter 'video' implicitly has an 'any' type.
+[ELIFECYCLE] Command failed with exit code 2.

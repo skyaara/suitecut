@@ -1,0 +1,82 @@
+[WARN] Your node_modules are out of sync with your lockfile. The workspace structure has changed since last install
+
+Running 25 tests using 1 worker
+
+(node:936488) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 benchmarks/playwright-compatibility/compatibility.spec.ts:71:1 › worker: dedicated Worker evaluation and messaging (192ms)
+  ✓   2 benchmarks/playwright-compatibility/compatibility.spec.ts:76:1 › worker: service worker website control and fetch (161ms)
+  ✓   3 benchmarks/playwright-compatibility/compatibility.spec.ts:77:1 › worker: context serviceworker event, enumeration and evaluation (141ms)
+  ✓   4 benchmarks/playwright-compatibility/compatibility.spec.ts:81:1 › worker: service worker console and close event on context disposal (134ms)
+  ✓   5 benchmarks/playwright-compatibility/compatibility.spec.ts:86:1 › worker: multiple pages expose one service worker identity (441ms)
+  ✓   6 benchmarks/playwright-compatibility/compatibility.spec.ts:91:1 › worker: worker remains automatable after its first page closes (233ms)
+  ✓   7 benchmarks/playwright-compatibility/compatibility.spec.ts:97:1 › worker: repeated worker contexts release browser target registrations (1.7s)
+  ✓   8 benchmarks/playwright-compatibility/compatibility.spec.ts:103:1 › worker: serviceWorkers block prevents registration (101ms)
+  ✓   9 benchmarks/playwright-compatibility/compatibility.spec.ts:106:1 › oopif: cross-site frame is a separate CDP target and remains interactive (328ms)
+  ✓  10 benchmarks/playwright-compatibility/compatibility.spec.ts:114:1 › oopif: cross-site navigation, detach and network routing (534ms)
+  ✓  11 benchmarks/playwright-compatibility/compatibility.spec.ts:122:1 › state: IndexedDB auth export to file and restore into a fresh context (423ms)
+  ✓  12 benchmarks/playwright-compatibility/compatibility.spec.ts:136:1 › state: empty IndexedDB export and restore (317ms)
+  ✓  13 benchmarks/playwright-compatibility/compatibility.spec.ts:141:3 › auth: http origin HTTP credentials (145ms)
+  ✓  14 benchmarks/playwright-compatibility/compatibility.spec.ts:142:3 › proxy: http through local proxy plus origin auth (169ms)
+  ✘  15 benchmarks/playwright-compatibility/compatibility.spec.ts:143:3 › proxy: http authenticated proxy plus origin auth (105ms)
+(node:937224) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  16 benchmarks/playwright-compatibility/compatibility.spec.ts:141:3 › auth: https origin HTTP credentials (215ms)
+  ✓  17 benchmarks/playwright-compatibility/compatibility.spec.ts:142:3 › proxy: https through local proxy plus origin auth (359ms)
+  ✘  18 benchmarks/playwright-compatibility/compatibility.spec.ts:143:3 › proxy: https authenticated proxy plus origin auth (254ms)
+(node:937389) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  19 benchmarks/playwright-compatibility/compatibility.spec.ts:145:1 › auth: wrong credentials fail and a fresh context does not inherit them (630ms)
+  ✓  20 benchmarks/playwright-compatibility/compatibility.spec.ts:146:1 › proxy: bypass uses the real origin without contacting the proxy (155ms)
+  ✓  21 benchmarks/playwright-compatibility/compatibility.spec.ts:147:38 › proxy: http authenticated proxy without origin auth (163ms)
+  ✓  22 benchmarks/playwright-compatibility/compatibility.spec.ts:147:38 › proxy: https authenticated proxy without origin auth (172ms)
+  ✓  23 benchmarks/playwright-compatibility/compatibility.spec.ts:148:42 › har: har captures and replays bodies, POST and redirects (646ms)
+  ✓  24 benchmarks/playwright-compatibility/compatibility.spec.ts:148:42 › har: har.zip captures and replays bodies, POST and redirects (3.7s)
+
+  ✓  25 benchmarks/playwright-compatibility/compatibility.spec.ts:154:1 › video: Playwright recordVideo creates a decodable WebM after context close (1.6s)
+
+
+  1) benchmarks/playwright-compatibility/compatibility.spec.ts:143:3 › proxy: http authenticated proxy plus origin auth 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 200
+    Received: 401
+
+      141 |   test(`auth: ${scheme} origin HTTP credentials`,async({browser})=>{const c=await browser.newContext({httpCredentials:{username:'user',password:'password'},ignoreHTTPSErrors:true});try{const p=await c.newPage();expect((await p.goto((scheme==='http'?origin:tlsOrigin)+'/auth'))!.status()).toBe(200);await expect(p.getByRole('heading')).toHaveText('Authenticated')}finally{await c.close()}})
+      142 |   test(`proxy: ${scheme} through local proxy plus origin auth`,async({browser})=>{proxyRequests=[];const c=await browser.newContext({proxy:{server:proxyUrl,bypass:'<-loopback>'},httpCredentials:{username:'user',password:'password'},ignoreHTTPSErrors:true});try{const p=await c.newPage();expect((await p.goto(`${scheme}://proxy.test/auth`))!.status()).toBe(200);await expect(p.getByRole('heading')).toHaveText('Authenticated');expect(proxyRequests.length).toBeGreaterThan(0)}finally{await c.close()}})
+    > 143 |   test(`proxy: ${scheme} authenticated proxy plus origin auth`,async({browser})=>{proxyRequests=[];const c=await browser.newContext({proxy:{server:proxyUrl,username:'proxy',password:'secret',bypass:'<-loopback>'},httpCredentials:{username:'user',password:'password'},ignoreHTTPSErrors:true});try{const p=await c.newPage();expect((await p.goto(`${scheme}://auth-proxy.test/auth`))!.status()).toBe(200);await expect(p.getByRole('heading')).toHaveText('Authenticated');expect(proxyRequests.some(r=>r.authenticated)).toBe(true)}finally{await c.close()}})
+          |                                                                                                                                                                                                                                                                                                                                                                                                        ^
+      144 | }
+      145 | test('auth: wrong credentials fail and a fresh context does not inherit them',async({browser})=>{for(const creds of [{username:'user',password:'wrong'},undefined]){const c=await browser.newContext({httpCredentials:creds});try{const p=await c.newPage();const outcome=await p.goto(origin+'/auth').then(r=>r!.status(),e=>{expect(String(e)).toContain('ERR_INVALID_AUTH_CREDENTIALS');return 401});expect(outcome).toBe(401);expect(await p.getByRole('heading',{name:'Authenticated'}).count()).toBe(0)}finally{await c.close()}}})
+      146 | test('proxy: bypass uses the real origin without contacting the proxy',async({browser})=>{proxyRequests=[];const c=await browser.newContext({proxy:{server:proxyUrl,bypass:'127.0.0.1'}});try{const p=await c.newPage();await p.goto(origin);expect(proxyRequests.filter(r=>r.url.includes(new URL(origin).host))).toHaveLength(0)}finally{await c.close()}})
+        at /workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts:143:392
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/final-cef/artifacts/compatibility-proxy-http-a-d59e1-ated-proxy-plus-origin-auth/error-context.md
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/final-cef/artifacts/compatibility-proxy-http-a-d59e1-ated-proxy-plus-origin-auth/error-context.md
+
+  2) benchmarks/playwright-compatibility/compatibility.spec.ts:143:3 › proxy: https authenticated proxy plus origin auth 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 200
+    Received: 401
+
+      141 |   test(`auth: ${scheme} origin HTTP credentials`,async({browser})=>{const c=await browser.newContext({httpCredentials:{username:'user',password:'password'},ignoreHTTPSErrors:true});try{const p=await c.newPage();expect((await p.goto((scheme==='http'?origin:tlsOrigin)+'/auth'))!.status()).toBe(200);await expect(p.getByRole('heading')).toHaveText('Authenticated')}finally{await c.close()}})
+      142 |   test(`proxy: ${scheme} through local proxy plus origin auth`,async({browser})=>{proxyRequests=[];const c=await browser.newContext({proxy:{server:proxyUrl,bypass:'<-loopback>'},httpCredentials:{username:'user',password:'password'},ignoreHTTPSErrors:true});try{const p=await c.newPage();expect((await p.goto(`${scheme}://proxy.test/auth`))!.status()).toBe(200);await expect(p.getByRole('heading')).toHaveText('Authenticated');expect(proxyRequests.length).toBeGreaterThan(0)}finally{await c.close()}})
+    > 143 |   test(`proxy: ${scheme} authenticated proxy plus origin auth`,async({browser})=>{proxyRequests=[];const c=await browser.newContext({proxy:{server:proxyUrl,username:'proxy',password:'secret',bypass:'<-loopback>'},httpCredentials:{username:'user',password:'password'},ignoreHTTPSErrors:true});try{const p=await c.newPage();expect((await p.goto(`${scheme}://auth-proxy.test/auth`))!.status()).toBe(200);await expect(p.getByRole('heading')).toHaveText('Authenticated');expect(proxyRequests.some(r=>r.authenticated)).toBe(true)}finally{await c.close()}})
+          |                                                                                                                                                                                                                                                                                                                                                                                                        ^
+      144 | }
+      145 | test('auth: wrong credentials fail and a fresh context does not inherit them',async({browser})=>{for(const creds of [{username:'user',password:'wrong'},undefined]){const c=await browser.newContext({httpCredentials:creds});try{const p=await c.newPage();const outcome=await p.goto(origin+'/auth').then(r=>r!.status(),e=>{expect(String(e)).toContain('ERR_INVALID_AUTH_CREDENTIALS');return 401});expect(outcome).toBe(401);expect(await p.getByRole('heading',{name:'Authenticated'}).count()).toBe(0)}finally{await c.close()}}})
+      146 | test('proxy: bypass uses the real origin without contacting the proxy',async({browser})=>{proxyRequests=[];const c=await browser.newContext({proxy:{server:proxyUrl,bypass:'127.0.0.1'}});try{const p=await c.newPage();await p.goto(origin);expect(proxyRequests.filter(r=>r.url.includes(new URL(origin).host))).toHaveLength(0)}finally{await c.close()}})
+        at /workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts:143:392
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/final-cef/artifacts/compatibility-proxy-https--00d57-ated-proxy-plus-origin-auth/error-context.md
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/final-cef/artifacts/compatibility-proxy-https--00d57-ated-proxy-plus-origin-auth/error-context.md
+
+  2 failed
+    benchmarks/playwright-compatibility/compatibility.spec.ts:143:3 › proxy: http authenticated proxy plus origin auth 
+    benchmarks/playwright-compatibility/compatibility.spec.ts:143:3 › proxy: https authenticated proxy plus origin auth 
+  23 passed (18.5s)

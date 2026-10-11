@@ -1,0 +1,94 @@
+[WARN] Your node_modules are out of sync with your lockfile. The workspace structure has changed since last install
+
+/workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts
+    7:1   error  There should be at least one empty line between import groups                                                                                                       import-x/order
+    8:1   error  There should be at least one empty line between import groups                                                                                                       import-x/order
+   13:12  error  Unexpected empty object pattern                                                                                                                                     no-empty-pattern
+   16:25  error  Forbidden non-null assertion                                                                                                                                        @typescript-eslint/no-non-null-assertion
+   59:24  error  Forbidden non-null assertion                                                                                                                                        @typescript-eslint/no-non-null-assertion
+  119:31  error  Forbidden non-null assertion                                                                                                                                        @typescript-eslint/no-non-null-assertion
+  125:28  error  Forbidden non-null assertion                                                                                                                                        @typescript-eslint/no-non-null-assertion
+  128:5   error  Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator  @typescript-eslint/no-floating-promises
+  140:25  error  Forbidden non-null assertion                                                                                                                                        @typescript-eslint/no-non-null-assertion
+  153:31  error  Forbidden non-null assertion                                                                                                                                        @typescript-eslint/no-non-null-assertion
+  184:31  error  `import()` type annotations are forbidden                                                                                                                           @typescript-eslint/consistent-type-imports
+  200:17  error  Unexpected any. Specify a different type                                                                                                                            @typescript-eslint/no-explicit-any
+  200:22  error  Unsafe member access .worker on an `any` value                                                                                                                      @typescript-eslint/no-unsafe-member-access
+  203:38  error  Unsafe return of a value of type `any`                                                                                                                              @typescript-eslint/no-unsafe-return
+  203:47  error  Unexpected any. Specify a different type                                                                                                                            @typescript-eslint/no-explicit-any
+  203:52  error  Unsafe member access .marker on an `any` value                                                                                                                      @typescript-eslint/no-unsafe-member-access
+  208:23  error  Unexpected any. Specify a different type                                                                                                                            @typescript-eslint/no-explicit-any
+  208:28  error  Unsafe member access .worker on an `any` value                                                                                                                      @typescript-eslint/no-unsafe-member-access
+  208:51  error  Unexpected any. Specify a different type                                                                                                                            @typescript-eslint/no-explicit-any
+  208:63  error  Unsafe member access .data on an `any` value                                                                                                                        @typescript-eslint/no-unsafe-member-access
+  209:12  error  Unsafe call of an `any` typed value                                                                                                                                 @typescript-eslint/no-unsafe-call
+  209:23  error  Unexpected any. Specify a different type                                                                                                                            @typescript-eslint/no-explicit-any
+  209:28  error  Unsafe member access .worker on an `any` value                                                                                                                      @typescript-eslint/no-unsafe-member-access
+  223:26  error  Unexpected empty arrow function                                                                                                                                     @typescript-eslint/no-empty-function
+  227:38  error  Unsafe return of a value of type `any`                                                                                                                              @typescript-eslint/no-unsafe-return
+  227:47  error  Unexpected any. Specify a different type                                                                                                                            @typescript-eslint/no-explicit-any
+  227:52  error  Unsafe member access .marker on an `any` value                                                                                                                      @typescript-eslint/no-unsafe-member-access
+  234:26  error  Unexpected empty arrow function                                                                                                                                     @typescript-eslint/no-empty-function
+  238:33  error  Unexpected empty arrow function                                                                                                                                     @typescript-eslint/no-empty-function
+  242:27  error  Unexpected empty arrow function                                                                                                                                     @typescript-eslint/no-empty-function
+  248:26  error  Unexpected empty arrow function                                                                                                                                     @typescript-eslint/no-empty-function
+  256:38  error  Unsafe return of a value of type `any`                                                                                                                              @typescript-eslint/no-unsafe-return
+  256:47  error  Unexpected any. Specify a different type                                                                                                                            @typescript-eslint/no-explicit-any
+  256:52  error  Unsafe member access .marker on an `any` value                                                                                                                      @typescript-eslint/no-unsafe-member-access
+  264:26  error  Unexpected empty arrow function                                                                                                                                     @typescript-eslint/no-empty-function
+  273:16  error  Forbidden non-null assertion                                                                                                                                        @typescript-eslint/no-non-null-assertion
+  273:60  error  Unsafe return of a value of type `any`                                                                                                                              @typescript-eslint/no-unsafe-return
+  273:69  error  Unexpected any. Specify a different type                                                                                                                            @typescript-eslint/no-explicit-any
+  273:74  error  Unsafe member access .marker on an `any` value                                                                                                                      @typescript-eslint/no-unsafe-member-access
+  290:32  error  Unexpected empty arrow function                                                                                                                                     @typescript-eslint/no-empty-function
+  292:51  error  Unsafe return of a value of type `any`                                                                                                                              @typescript-eslint/no-unsafe-return
+  292:60  error  Unexpected any. Specify a different type                                                                                                                            @typescript-eslint/no-explicit-any
+  292:65  error  Unsafe member access .marker on an `any` value                                                                                                                      @typescript-eslint/no-unsafe-member-access
+  293:24  error  Forbidden non-null assertion                                                                                                                                        @typescript-eslint/no-non-null-assertion
+  302:44  error  This assertion is unnecessary since it does not change the type of the expression                                                                                   @typescript-eslint/no-unnecessary-type-assertion
+  302:44  error  Forbidden non-null assertion                                                                                                                                        @typescript-eslint/no-non-null-assertion
+  335:22  error  Unexpected any. Specify a different type                                                                                                                            @typescript-eslint/no-explicit-any
+  350:53  error  Unsafe member access .targetInfo on an `any` value                                                                                                                  @typescript-eslint/no-unsafe-member-access
+  352:17  error  Forbidden non-null assertion                                                                                                                                        @typescript-eslint/no-non-null-assertion
+  367:13  error  Forbidden non-null assertion                                                                                                                                        @typescript-eslint/no-non-null-assertion
+  396:25  error  Expected the Promise rejection reason to be an Error                                                                                                                @typescript-eslint/prefer-promise-reject-errors
+  408:25  error  Expected the Promise rejection reason to be an Error                                                                                                                @typescript-eslint/prefer-promise-reject-errors
+  433:23  error  Unsafe assignment of an `any` value                                                                                                                                 @typescript-eslint/no-unsafe-assignment
+  434:21  error  Unsafe assignment of an `any` value                                                                                                                                 @typescript-eslint/no-unsafe-assignment
+  434:30  error  Unsafe member access .token on an `any` value                                                                                                                       @typescript-eslint/no-unsafe-member-access
+  434:55  error  Unsafe argument of type `any` assigned to a parameter of type `Iterable<unknown> | ArrayLike<unknown>`                                                              @typescript-eslint/no-unsafe-argument
+  434:57  error  Unsafe member access .bytes on an `any` value                                                                                                                       @typescript-eslint/no-unsafe-member-access
+  434:65  error  Unsafe assignment of an `any` value                                                                                                                                 @typescript-eslint/no-unsafe-assignment
+  434:74  error  Unsafe call of an `any` typed value                                                                                                                                 @typescript-eslint/no-unsafe-call
+  434:76  error  Unsafe member access .created on an `any` value                                                                                                                     @typescript-eslint/no-unsafe-member-access
+  437:35  error  Expected the Promise rejection reason to be an Error                                                                                                                @typescript-eslint/prefer-promise-reject-errors
+  467:27  error  Expected the Promise rejection reason to be an Error                                                                                                                @typescript-eslint/prefer-promise-reject-errors
+  486:14  error  Forbidden non-null assertion                                                                                                                                        @typescript-eslint/no-non-null-assertion
+  501:14  error  Forbidden non-null assertion                                                                                                                                        @typescript-eslint/no-non-null-assertion
+  517:14  error  Forbidden non-null assertion                                                                                                                                        @typescript-eslint/no-non-null-assertion
+  533:16  error  Forbidden non-null assertion                                                                                                                                        @typescript-eslint/no-non-null-assertion
+  598:13  error  Unsafe assignment of an `any` value                                                                                                                                 @typescript-eslint/no-unsafe-assignment
+  599:14  error  Unsafe call of an `any` typed value                                                                                                                                 @typescript-eslint/no-unsafe-call
+  599:19  error  Unsafe member access .log on an `any` value                                                                                                                         @typescript-eslint/no-unsafe-member-access
+  599:40  error  Unexpected any. Specify a different type                                                                                                                            @typescript-eslint/no-explicit-any
+  599:50  error  Unsafe member access .response on an `any` value                                                                                                                    @typescript-eslint/no-unsafe-member-access
+  600:14  error  Unsafe call of an `any` typed value                                                                                                                                 @typescript-eslint/no-unsafe-call
+  600:19  error  Unsafe member access .log on an `any` value                                                                                                                         @typescript-eslint/no-unsafe-member-access
+  600:40  error  Unexpected any. Specify a different type                                                                                                                            @typescript-eslint/no-explicit-any
+  600:48  error  Unsafe return of a value of type `any`                                                                                                                              @typescript-eslint/no-unsafe-return
+  600:48  error  Unsafe call of an `any` typed value                                                                                                                                 @typescript-eslint/no-unsafe-call
+  600:50  error  Unsafe member access .response on an `any` value                                                                                                                    @typescript-eslint/no-unsafe-member-access
+  627:25  error  `import()` type annotations are forbidden                                                                                                                           @typescript-eslint/consistent-type-imports
+  637:22  error  Forbidden non-null assertion                                                                                                                                        @typescript-eslint/no-non-null-assertion
+  638:9   error  Unsafe assignment of an `any` value                                                                                                                                 @typescript-eslint/no-unsafe-assignment
+  643:15  error  Unsafe member access .streams on an `any` value                                                                                                                     @typescript-eslint/no-unsafe-member-access
+  644:22  error  Unsafe member access .format on an `any` value                                                                                                                      @typescript-eslint/no-unsafe-member-access
+
+/workspace/suitecut/benchmarks/playwright-compatibility/playwright.config.ts
+   1:1   error  There should be at least one empty line between import groups  import-x/order
+  12:22  error  Forbidden non-null assertion                                   @typescript-eslint/no-non-null-assertion
+  15:36  error  Forbidden non-null assertion                                   @typescript-eslint/no-non-null-assertion
+
+✖ 85 problems (85 errors, 0 warnings)
+  4 errors and 0 warnings potentially fixable with the `--fix` option.
+

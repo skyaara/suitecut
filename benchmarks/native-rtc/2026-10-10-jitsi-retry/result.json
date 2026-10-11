@@ -1,0 +1,59 @@
+{
+  "requestedUrl": "https://meet.jit.si/ColourfulProsperitiesSignalTotally",
+  "startedAt": "2026-10-10T12:31:09.970Z",
+  "backend": "SuiteCut CEF via private Playwright adapter",
+  "status": "failed",
+  "actions": [
+    {
+      "type": "join",
+      "name": "SuiteCut RTC test",
+      "at": "2026-10-10T12:31:22.024Z"
+    },
+    {
+      "id": "dismiss-notice",
+      "type": "click",
+      "selector": "[aria-label=\"Don't show again\"]",
+      "at": "2026-10-10T12:32:09.230Z"
+    }
+  ],
+  "cefVersion": "152.0.6+g708dc14+chromium-152.0.7977.83",
+  "lastRequestFailure": {
+    "origin": "null",
+    "path": "/",
+    "error": "net::ERR_BLOCKED_BY_CLIENT"
+  },
+  "lastPeers": [
+    {
+      "connectionState": "closed",
+      "iceConnectionState": "closed",
+      "signalingState": "closed",
+      "stats": []
+    },
+    {
+      "connectionState": "closed",
+      "iceConnectionState": "closed",
+      "signalingState": "closed",
+      "stats": []
+    },
+    {
+      "connectionState": "closed",
+      "iceConnectionState": "closed",
+      "signalingState": "closed",
+      "stats": []
+    },
+    {
+      "connectionState": "closed",
+      "iceConnectionState": "closed",
+      "signalingState": "closed",
+      "stats": []
+    },
+    {
+      "connectionState": "closed",
+      "iceConnectionState": "closed",
+      "signalingState": "closed",
+      "stats": []
+    }
+  ],
+  "error": "page.evaluate: Execution context was destroyed, most likely because of a navigation",
+  "finishedAt": "2026-10-10T12:33:53.817Z"
+}

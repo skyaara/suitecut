@@ -1,0 +1,1 @@
+{"case": "4k30-record-before-nearest-video", "harnessValid": true, "qualityPassed": false, "issues": ["Silence in continuous source", "Video marker held beyond two frame intervals", "Video does not cover the requested active duration", "Source audio content differs from AudioContext marker beyond one video interval + 10 ms marker resolution"], "error": null}

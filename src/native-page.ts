@@ -20,6 +20,24 @@ const EvaluationResult = z.object({
     .optional(),
 })
 
+const sourceSignals = new WeakMap<NativeBrowser, AbortSignal>()
+
+function sourceSignal(source: NativeBrowser): AbortSignal {
+  const existing = sourceSignals.get(source)
+  if (existing) return existing
+  const runtime = new AbortController()
+  sourceSignals.set(source, runtime.signal)
+  // Every page wrapper shares one source lifetime. Pending promise observers
+  // must not accumulate each time a reusable source gets another page wrapper.
+  const fail = (error: Error) => runtime.abort(error)
+  const close = () => runtime.abort(new Error('Native source closed'))
+  if (source.onFailure) source.onFailure(fail)
+  else void source.failure.catch(fail)
+  if (source.onClose) source.onClose(close)
+  else void source.closed.then(close)
+  return runtime.signal
+}
+
 /** A deliberately small browser-control API; this is not a Playwright Page. */
 export class NativePage implements PresentationPage {
   private readonly signal: AbortSignal
@@ -27,10 +45,8 @@ export class NativePage implements PresentationPage {
     readonly source: NativeBrowser,
     signal?: AbortSignal,
   ) {
-    const runtime = new AbortController()
-    this.signal = signal ? AbortSignal.any([signal, runtime.signal]) : runtime.signal
-    void source.failure.catch((error: Error) => runtime.abort(error))
-    void source.closed.then(() => runtime.abort(new Error('Native source closed')))
+    const lifetime = sourceSignal(source)
+    this.signal = signal ? AbortSignal.any([signal, lifetime]) : lifetime
   }
 
   goto(url: string): Promise<void> {

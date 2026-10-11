@@ -1,0 +1,23 @@
+diff --git a/native/browser/browser.cc b/native/browser/browser.cc
+index 00dc785..2625b60 100644
+--- a/native/browser/browser.cc
++++ b/native/browser/browser.cc
+@@ -186,7 +186,7 @@ class Source : public CefClient, public CefLifeSpanHandler, public CefRenderHand
+     CefQuitMessageLoop();
+   }
+   bool OnBeforePopup(CefRefPtr<CefBrowser>, CefRefPtr<CefFrame>, int, const CefString&,
+-                     const CefString&, WindowOpenDisposition, bool, const CefPopupFeatures&,
++                     const CefString&, CefLifeSpanHandler::WindowOpenDisposition, bool, const CefPopupFeatures&,
+                      CefWindowInfo&, CefRefPtr<CefClient>&, CefBrowserSettings&,
+                      CefRefPtr<CefDictionaryValue>&, bool*) override { return true; }
+   void OnPaint(CefRefPtr<CefBrowser>, PaintElementType type, const RectList&,
+@@ -384,6 +384,9 @@ class App : public CefApp, public CefBrowserProcessHandler {
+   explicit App(Writer& writer) : writer_(writer) {}
+   CefRefPtr<CefBrowserProcessHandler> GetBrowserProcessHandler() override { return this; }
+   void OnBeforeCommandLineProcessing(const CefString&, CefRefPtr<CefCommandLine> command) override {
++    // Each source uses a fresh profile. Chrome's first-run UI can block
++    // initialization before the windowless browser is created on Linux.
++    command->AppendSwitch("no-first-run");
+     command->AppendSwitchWithValue("autoplay-policy", "no-user-gesture-required");
+     command->AppendSwitch("disable-background-timer-throttling");
+     command->AppendSwitch("disable-renderer-backgrounding");

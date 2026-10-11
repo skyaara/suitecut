@@ -1,0 +1,15 @@
+[0/1] Re-running CMake...
+-- Configuring done (0.0s)
+-- Generating done (0.0s)
+-- Build files have been written to: /workspace/suitecut/.suitecut/native-build
+[1/12] Building CXX object CMakeFiles/suitecut-media.dir/media_file.cc.o
+[2/12] Building CXX object CMakeFiles/suitecut-media-test.dir/media_engine_test.cc.o
+[3/12] Building CXX object CMakeFiles/suitecut-media.dir/media_engine.cc.o
+[4/12] Linking CXX static library libsuitecut-media.a
+[5/12] Building CXX object CMakeFiles/suitecut-audio-startup-test.dir/media_startup_test.cc.o
+[6/12] Building CXX object CMakeFiles/suitecut-codec-test.dir/media_codec_test.cc.o
+[7/12] Linking CXX executable suitecut-media-test
+[8/12] Linking CXX executable suitecut-audio-startup-test
+[9/12] Linking CXX executable suitecut-codec-test
+[10/12] Building CXX object CMakeFiles/suitecut-browser.dir/browser.cc.o
+[11/12] Linking CXX executable suitecut-browser

@@ -1,0 +1,15 @@
+{
+  "id": "1080p30-canvas-obs-5",
+  "backend": "obs",
+  "case": {
+    "name": "1080p30-canvas",
+    "width": 1920,
+    "height": 1080,
+    "fps": 30,
+    "workload": "canvas"
+  },
+  "trialNumber": 5,
+  "durationMs": 10000,
+  "status": "running",
+  "startedAt": "2026-10-08T20:42:14.662Z"
+}

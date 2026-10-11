@@ -1,0 +1,36 @@
+{
+  "series": [],
+  "privateMemory": [],
+  "nodeMemory": [
+    {
+      "atSeconds": 1.0163295430000003,
+      "heapMiB": 71.12535095214844,
+      "externalMiB": 14.961702346801758,
+      "arrayBuffersMiB": 11.141096115112305
+    },
+    {
+      "atSeconds": 2.019709076,
+      "heapMiB": 80.20783996582031,
+      "externalMiB": 22.775846481323242,
+      "arrayBuffersMiB": 18.95524024963379
+    },
+    {
+      "atSeconds": 3.0296023739999995,
+      "heapMiB": 65.49778747558594,
+      "externalMiB": 12.733880996704102,
+      "arrayBuffersMiB": 8.913274765014648
+    },
+    {
+      "atSeconds": 4.0454927089999995,
+      "heapMiB": 76.82806396484375,
+      "externalMiB": 22.49833869934082,
+      "arrayBuffersMiB": 18.677732467651367
+    },
+    {
+      "atSeconds": 5.053890956000001,
+      "heapMiB": 87.41918182373047,
+      "externalMiB": 31.615352630615234,
+      "arrayBuffersMiB": 27.79474639892578
+    }
+  ]
+}

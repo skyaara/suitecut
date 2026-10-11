@@ -1,0 +1,14 @@
+[1/2] Building CXX object CMakeFiles/suitecut-browser.dir/browser.cc.o
+FAILED: [code=1] CMakeFiles/suitecut-browser.dir/browser.cc.o 
+/usr/bin/c++ -DCEF_USE_SANDBOX -DNDEBUG -DSUITECUT_WITH_MEDIA=1 -D_FILE_OFFSET_BITS=64 -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -I/workspace/suitecut/.suitecut/cef-codecs-sdk -I/workspace/suitecut/.suitecut/libyuv/include -O3 -DNDEBUG -std=gnu++20 -fno-strict-aliasing -fPIC -fstack-protector -funwind-tables -fvisibility=hidden --param=ssp-buffer-size=4 -pipe -pthread -Wall -Werror -Wno-missing-field-initializers -Wno-unused-parameter -Wno-error=comment -Wno-comment -Wno-deprecated-declarations -m64 -march=x86-64 -fno-exceptions -fno-rtti -fno-threadsafe-statics -fvisibility-inlines-hidden -std=c++20 -Wsign-compare -Wno-undefined-var-template -Wno-literal-suffix -Wno-narrowing -Wno-attributes -Wno-array-bounds -Wno-stringop-overflow -O2 -fdata-sections -ffunction-sections -fno-ident -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2 -fexceptions -MD -MT CMakeFiles/suitecut-browser.dir/browser.cc.o -MF CMakeFiles/suitecut-browser.dir/browser.cc.o.d -o CMakeFiles/suitecut-browser.dir/browser.cc.o -c /workspace/suitecut/native/browser/browser.cc
+/workspace/suitecut/native/browser/browser.cc: In member function ‘void {anonymous}::Source::CDP({anonymous}::Dict)’:
+/workspace/suitecut/native/browser/browser.cc:780:11: error: this ‘for’ clause does not guard... [-Werror=misleading-indentation]
+  780 |           for(const auto& [target,source]:targets_)emit(source->TargetInfo());for(const auto& [target,nested]:nested_targets_)emit(nested.info->Copy(false));
+      |           ^~~
+/workspace/suitecut/native/browser/browser.cc:780:79: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘for’
+  780 |           for(const auto& [target,source]:targets_)emit(source->TargetInfo());for(const auto& [target,nested]:nested_targets_)emit(nested.info->Copy(false));
+      |                                                                               ^~~
+At global scope:
+cc1plus: note: unrecognized command-line option ‘-Wno-undefined-var-template’ may have been intended to silence earlier diagnostics
+cc1plus: all warnings being treated as errors
+ninja: build stopped: subcommand failed.

@@ -1,0 +1,1804 @@
+{
+  "version": "2.1.0",
+  "defaultBackend": "native",
+  "published": false,
+  "tarball": "/workspace/suitecut/.suitecut/release/suitecut-2.1.0.tgz",
+  "packages": [
+    {
+      "name": "suitecut",
+      "version": "2.1.0",
+      "filename": "suitecut-2.1.0.tgz",
+      "size": 62368603,
+      "unpackedSize": 94388389,
+      "integrity": "sha512-9V9G63w2jSOuv4zQydxL78QUq2mGkI8pyH6JbZTIFUIhnOrYAe1TEZ0xKCGNG2s+m18Qda3YyDceurHV80kZxw==",
+      "files": [
+        {
+          "path": "CHANGELOG.md",
+          "size": 7250
+        },
+        {
+          "path": "CODE_OF_CONDUCT.md",
+          "size": 927
+        },
+        {
+          "path": "CONTRIBUTING.md",
+          "size": 3279
+        },
+        {
+          "path": "LICENSE",
+          "size": 1064
+        },
+        {
+          "path": "README.md",
+          "size": 9044
+        },
+        {
+          "path": "RELEASE.md",
+          "size": 5195
+        },
+        {
+          "path": "SECURITY.md",
+          "size": 689
+        },
+        {
+          "path": "THIRD_PARTY_NOTICES.md",
+          "size": 2931
+        },
+        {
+          "path": "assets/cursors/hand2.svg",
+          "size": 4832
+        },
+        {
+          "path": "assets/cursors/left_ptr.svg",
+          "size": 1278
+        },
+        {
+          "path": "assets/cursors/LICENSE",
+          "size": 35103
+        },
+        {
+          "path": "assets/cursors/README.md",
+          "size": 766
+        },
+        {
+          "path": "assets/cursors/xterm.svg",
+          "size": 3689
+        },
+        {
+          "path": "assets/kokoro/af_heart.bin",
+          "size": 522240
+        },
+        {
+          "path": "assets/kokoro/LICENSE",
+          "size": 11357
+        },
+        {
+          "path": "assets/kokoro/model_quantized.onnx",
+          "size": 92361210
+        },
+        {
+          "path": "assets/kokoro/NOTICE.md",
+          "size": 1195
+        },
+        {
+          "path": "assets/kokoro/tokenizer.json",
+          "size": 3497
+        },
+        {
+          "path": "dist/abort.d.ts",
+          "size": 218
+        },
+        {
+          "path": "dist/abort.d.ts.map",
+          "size": 235
+        },
+        {
+          "path": "dist/abort.js",
+          "size": 1094
+        },
+        {
+          "path": "dist/abort.js.map",
+          "size": 1176
+        },
+        {
+          "path": "dist/artifact-sink.d.ts",
+          "size": 276
+        },
+        {
+          "path": "dist/artifact-sink.d.ts.map",
+          "size": 307
+        },
+        {
+          "path": "dist/artifact-sink.js",
+          "size": 52
+        },
+        {
+          "path": "dist/artifact-sink.js.map",
+          "size": 118
+        },
+        {
+          "path": "dist/atomic-file.d.ts",
+          "size": 546
+        },
+        {
+          "path": "dist/atomic-file.d.ts.map",
+          "size": 443
+        },
+        {
+          "path": "dist/atomic-file.js",
+          "size": 1084
+        },
+        {
+          "path": "dist/atomic-file.js.map",
+          "size": 1147
+        },
+        {
+          "path": "dist/audio-plugin-loader.d.ts",
+          "size": 637
+        },
+        {
+          "path": "dist/audio-plugin-loader.d.ts.map",
+          "size": 446
+        },
+        {
+          "path": "dist/audio-plugin-loader.js",
+          "size": 3102
+        },
+        {
+          "path": "dist/audio-plugin-loader.js.map",
+          "size": 2789
+        },
+        {
+          "path": "dist/audio-plugin.d.ts",
+          "size": 1363
+        },
+        {
+          "path": "dist/audio-plugin.d.ts.map",
+          "size": 833
+        },
+        {
+          "path": "dist/audio-plugin.js",
+          "size": 2069
+        },
+        {
+          "path": "dist/audio-plugin.js.map",
+          "size": 2369
+        },
+        {
+          "path": "dist/beta.d.ts",
+          "size": 462
+        },
+        {
+          "path": "dist/beta.d.ts.map",
+          "size": 294
+        },
+        {
+          "path": "dist/beta.js",
+          "size": 147
+        },
+        {
+          "path": "dist/beta.js.map",
+          "size": 134
+        },
+        {
+          "path": "dist/browser-connection.d.ts",
+          "size": 1300
+        },
+        {
+          "path": "dist/browser-connection.d.ts.map",
+          "size": 433
+        },
+        {
+          "path": "dist/browser-connection.js",
+          "size": 2086
+        },
+        {
+          "path": "dist/browser-connection.js.map",
+          "size": 2486
+        },
+        {
+          "path": "dist/browser-control.d.ts",
+          "size": 1087
+        },
+        {
+          "path": "dist/browser-control.d.ts.map",
+          "size": 1268
+        },
+        {
+          "path": "dist/browser-control.js",
+          "size": 81
+        },
+        {
+          "path": "dist/browser-control.js.map",
+          "size": 154
+        },
+        {
+          "path": "dist/captions.d.ts",
+          "size": 1050
+        },
+        {
+          "path": "dist/captions.d.ts.map",
+          "size": 441
+        },
+        {
+          "path": "dist/captions.js",
+          "size": 2836
+        },
+        {
+          "path": "dist/captions.js.map",
+          "size": 2982
+        },
+        {
+          "path": "dist/capture.d.ts",
+          "size": 1116
+        },
+        {
+          "path": "dist/capture.d.ts.map",
+          "size": 684
+        },
+        {
+          "path": "dist/capture.js",
+          "size": 2796
+        },
+        {
+          "path": "dist/capture.js.map",
+          "size": 2108
+        },
+        {
+          "path": "dist/cli.d.ts",
+          "size": 135
+        },
+        {
+          "path": "dist/cli.d.ts.map",
+          "size": 180
+        },
+        {
+          "path": "dist/cli.js",
+          "size": 10971
+        },
+        {
+          "path": "dist/cli.js.map",
+          "size": 8785
+        },
+        {
+          "path": "dist/constants.d.ts",
+          "size": 538
+        },
+        {
+          "path": "dist/constants.d.ts.map",
+          "size": 386
+        },
+        {
+          "path": "dist/constants.js",
+          "size": 474
+        },
+        {
+          "path": "dist/constants.js.map",
+          "size": 454
+        },
+        {
+          "path": "dist/device-scale-capture.d.ts",
+          "size": 591
+        },
+        {
+          "path": "dist/device-scale-capture.d.ts.map",
+          "size": 585
+        },
+        {
+          "path": "dist/device-scale-capture.js",
+          "size": 2385
+        },
+        {
+          "path": "dist/device-scale-capture.js.map",
+          "size": 2134
+        },
+        {
+          "path": "dist/engine-test.d.ts",
+          "size": 659
+        },
+        {
+          "path": "dist/engine-test.d.ts.map",
+          "size": 355
+        },
+        {
+          "path": "dist/engine-test.js",
+          "size": 1097
+        },
+        {
+          "path": "dist/engine-test.js.map",
+          "size": 1098
+        },
+        {
+          "path": "dist/engine.d.ts",
+          "size": 4367
+        },
+        {
+          "path": "dist/engine.d.ts.map",
+          "size": 2771
+        },
+        {
+          "path": "dist/engine.js",
+          "size": 10301
+        },
+        {
+          "path": "dist/engine.js.map",
+          "size": 10345
+        },
+        {
+          "path": "dist/ffmpeg-builds.d.ts",
+          "size": 256
+        },
+        {
+          "path": "dist/ffmpeg-builds.d.ts.map",
+          "size": 280
+        },
+        {
+          "path": "dist/ffmpeg-builds.js",
+          "size": 1896
+        },
+        {
+          "path": "dist/ffmpeg-builds.js.map",
+          "size": 705
+        },
+        {
+          "path": "dist/fixtures.d.ts",
+          "size": 3189
+        },
+        {
+          "path": "dist/fixtures.d.ts.map",
+          "size": 1653
+        },
+        {
+          "path": "dist/fixtures.js",
+          "size": 125
+        },
+        {
+          "path": "dist/fixtures.js.map",
+          "size": 201
+        },
+        {
+          "path": "dist/index.d.ts",
+          "size": 3437
+        },
+        {
+          "path": "dist/index.d.ts.map",
+          "size": 2264
+        },
+        {
+          "path": "dist/index.js",
+          "size": 490
+        },
+        {
+          "path": "dist/index.js.map",
+          "size": 468
+        },
+        {
+          "path": "dist/kokoro.d.ts",
+          "size": 1216
+        },
+        {
+          "path": "dist/kokoro.d.ts.map",
+          "size": 796
+        },
+        {
+          "path": "dist/kokoro.js",
+          "size": 17202
+        },
+        {
+          "path": "dist/kokoro.js.map",
+          "size": 18415
+        },
+        {
+          "path": "dist/live-audio.d.ts",
+          "size": 956
+        },
+        {
+          "path": "dist/live-audio.d.ts.map",
+          "size": 934
+        },
+        {
+          "path": "dist/live-audio.js",
+          "size": 7672
+        },
+        {
+          "path": "dist/live-audio.js.map",
+          "size": 7604
+        },
+        {
+          "path": "dist/live-bitrate.d.ts",
+          "size": 549
+        },
+        {
+          "path": "dist/live-bitrate.d.ts.map",
+          "size": 522
+        },
+        {
+          "path": "dist/live-bitrate.js",
+          "size": 2441
+        },
+        {
+          "path": "dist/live-bitrate.js.map",
+          "size": 2586
+        },
+        {
+          "path": "dist/live-congestion.d.ts",
+          "size": 1598
+        },
+        {
+          "path": "dist/live-congestion.d.ts.map",
+          "size": 1314
+        },
+        {
+          "path": "dist/live-congestion.js",
+          "size": 3558
+        },
+        {
+          "path": "dist/live-congestion.js.map",
+          "size": 3182
+        },
+        {
+          "path": "dist/live-flv.d.ts",
+          "size": 572
+        },
+        {
+          "path": "dist/live-flv.d.ts.map",
+          "size": 511
+        },
+        {
+          "path": "dist/live-flv.js",
+          "size": 2326
+        },
+        {
+          "path": "dist/live-flv.js.map",
+          "size": 2564
+        },
+        {
+          "path": "dist/live-network.d.ts",
+          "size": 484
+        },
+        {
+          "path": "dist/live-network.d.ts.map",
+          "size": 477
+        },
+        {
+          "path": "dist/live-network.js",
+          "size": 3606
+        },
+        {
+          "path": "dist/live-network.js.map",
+          "size": 3748
+        },
+        {
+          "path": "dist/live-publisher.d.ts",
+          "size": 769
+        },
+        {
+          "path": "dist/live-publisher.d.ts.map",
+          "size": 633
+        },
+        {
+          "path": "dist/live-publisher.js",
+          "size": 22417
+        },
+        {
+          "path": "dist/live-publisher.js.map",
+          "size": 17818
+        },
+        {
+          "path": "dist/live-stream.d.ts",
+          "size": 1879
+        },
+        {
+          "path": "dist/live-stream.d.ts.map",
+          "size": 1737
+        },
+        {
+          "path": "dist/live-stream.js",
+          "size": 21077
+        },
+        {
+          "path": "dist/live-stream.js.map",
+          "size": 18156
+        },
+        {
+          "path": "dist/live-zoom.d.ts",
+          "size": 420
+        },
+        {
+          "path": "dist/live-zoom.d.ts.map",
+          "size": 352
+        },
+        {
+          "path": "dist/live-zoom.js",
+          "size": 4198
+        },
+        {
+          "path": "dist/live-zoom.js.map",
+          "size": 4139
+        },
+        {
+          "path": "dist/manifest.d.ts",
+          "size": 1768
+        },
+        {
+          "path": "dist/manifest.d.ts.map",
+          "size": 605
+        },
+        {
+          "path": "dist/manifest.js",
+          "size": 27181
+        },
+        {
+          "path": "dist/manifest.js.map",
+          "size": 25750
+        },
+        {
+          "path": "dist/media-tool-paths.d.ts",
+          "size": 206
+        },
+        {
+          "path": "dist/media-tool-paths.d.ts.map",
+          "size": 260
+        },
+        {
+          "path": "dist/media-tool-paths.js",
+          "size": 960
+        },
+        {
+          "path": "dist/media-tool-paths.js.map",
+          "size": 1108
+        },
+        {
+          "path": "dist/media-tools.d.ts",
+          "size": 1248
+        },
+        {
+          "path": "dist/media-tools.d.ts.map",
+          "size": 924
+        },
+        {
+          "path": "dist/media-tools.js",
+          "size": 11556
+        },
+        {
+          "path": "dist/media-tools.js.map",
+          "size": 11171
+        },
+        {
+          "path": "dist/media.d.ts",
+          "size": 1277
+        },
+        {
+          "path": "dist/media.d.ts.map",
+          "size": 775
+        },
+        {
+          "path": "dist/media.js",
+          "size": 7451
+        },
+        {
+          "path": "dist/media.js.map",
+          "size": 7337
+        },
+        {
+          "path": "dist/narration-worker-client.d.ts",
+          "size": 483
+        },
+        {
+          "path": "dist/narration-worker-client.d.ts.map",
+          "size": 424
+        },
+        {
+          "path": "dist/narration-worker-client.js",
+          "size": 5674
+        },
+        {
+          "path": "dist/narration-worker-client.js.map",
+          "size": 5634
+        },
+        {
+          "path": "dist/narration-worker-protocol.d.ts",
+          "size": 4633
+        },
+        {
+          "path": "dist/narration-worker-protocol.d.ts.map",
+          "size": 1235
+        },
+        {
+          "path": "dist/narration-worker-protocol.js",
+          "size": 4099
+        },
+        {
+          "path": "dist/narration-worker-protocol.js.map",
+          "size": 3433
+        },
+        {
+          "path": "dist/narration-worker.d.ts",
+          "size": 57
+        },
+        {
+          "path": "dist/narration-worker.d.ts.map",
+          "size": 126
+        },
+        {
+          "path": "dist/narration-worker.js",
+          "size": 4340
+        },
+        {
+          "path": "dist/narration-worker.js.map",
+          "size": 4836
+        },
+        {
+          "path": "dist/narration.d.ts",
+          "size": 831
+        },
+        {
+          "path": "dist/narration.d.ts.map",
+          "size": 717
+        },
+        {
+          "path": "dist/narration.js",
+          "size": 7830
+        },
+        {
+          "path": "dist/narration.js.map",
+          "size": 6635
+        },
+        {
+          "path": "dist/native-audio.d.ts",
+          "size": 428
+        },
+        {
+          "path": "dist/native-audio.d.ts.map",
+          "size": 417
+        },
+        {
+          "path": "dist/native-audio.js",
+          "size": 927
+        },
+        {
+          "path": "dist/native-audio.js.map",
+          "size": 1167
+        },
+        {
+          "path": "dist/native-browser.d.ts",
+          "size": 3570
+        },
+        {
+          "path": "dist/native-browser.d.ts.map",
+          "size": 2437
+        },
+        {
+          "path": "dist/native-browser.js",
+          "size": 14580
+        },
+        {
+          "path": "dist/native-browser.js.map",
+          "size": 14201
+        },
+        {
+          "path": "dist/native-default.d.ts",
+          "size": 3517
+        },
+        {
+          "path": "dist/native-default.d.ts.map",
+          "size": 2365
+        },
+        {
+          "path": "dist/native-default.js",
+          "size": 3279
+        },
+        {
+          "path": "dist/native-default.js.map",
+          "size": 2835
+        },
+        {
+          "path": "dist/native-page.d.ts",
+          "size": 1941
+        },
+        {
+          "path": "dist/native-page.d.ts.map",
+          "size": 1883
+        },
+        {
+          "path": "dist/native-page.js",
+          "size": 9339
+        },
+        {
+          "path": "dist/native-page.js.map",
+          "size": 8766
+        },
+        {
+          "path": "dist/native-protocol.d.ts",
+          "size": 2047
+        },
+        {
+          "path": "dist/native-protocol.d.ts.map",
+          "size": 695
+        },
+        {
+          "path": "dist/native-protocol.js",
+          "size": 4864
+        },
+        {
+          "path": "dist/native-protocol.js.map",
+          "size": 5212
+        },
+        {
+          "path": "dist/native-recorder.d.ts",
+          "size": 821
+        },
+        {
+          "path": "dist/native-recorder.d.ts.map",
+          "size": 505
+        },
+        {
+          "path": "dist/native-recorder.js",
+          "size": 1426
+        },
+        {
+          "path": "dist/native-recorder.js.map",
+          "size": 1408
+        },
+        {
+          "path": "dist/native-recording.d.ts",
+          "size": 1748
+        },
+        {
+          "path": "dist/native-recording.d.ts.map",
+          "size": 1200
+        },
+        {
+          "path": "dist/native-recording.js",
+          "size": 5667
+        },
+        {
+          "path": "dist/native-recording.js.map",
+          "size": 5503
+        },
+        {
+          "path": "dist/native-session.d.ts",
+          "size": 738
+        },
+        {
+          "path": "dist/native-session.d.ts.map",
+          "size": 745
+        },
+        {
+          "path": "dist/native-session.js",
+          "size": 10419
+        },
+        {
+          "path": "dist/native-session.js.map",
+          "size": 9607
+        },
+        {
+          "path": "dist/native-video-container.d.ts",
+          "size": 451
+        },
+        {
+          "path": "dist/native-video-container.d.ts.map",
+          "size": 422
+        },
+        {
+          "path": "dist/native-video-container.js",
+          "size": 3974
+        },
+        {
+          "path": "dist/native-video-container.js.map",
+          "size": 4339
+        },
+        {
+          "path": "dist/native.d.ts",
+          "size": 2513
+        },
+        {
+          "path": "dist/native.d.ts.map",
+          "size": 1275
+        },
+        {
+          "path": "dist/native.js",
+          "size": 2110
+        },
+        {
+          "path": "dist/native.js.map",
+          "size": 2106
+        },
+        {
+          "path": "dist/playwright.d.ts",
+          "size": 2822
+        },
+        {
+          "path": "dist/playwright.d.ts.map",
+          "size": 2284
+        },
+        {
+          "path": "dist/playwright.js",
+          "size": 12880
+        },
+        {
+          "path": "dist/playwright.js.map",
+          "size": 11244
+        },
+        {
+          "path": "dist/presentation.d.ts",
+          "size": 2326
+        },
+        {
+          "path": "dist/presentation.d.ts.map",
+          "size": 1666
+        },
+        {
+          "path": "dist/presentation.js",
+          "size": 26234
+        },
+        {
+          "path": "dist/presentation.js.map",
+          "size": 13997
+        },
+        {
+          "path": "dist/process.d.ts",
+          "size": 1017
+        },
+        {
+          "path": "dist/process.d.ts.map",
+          "size": 1038
+        },
+        {
+          "path": "dist/process.js",
+          "size": 8778
+        },
+        {
+          "path": "dist/process.js.map",
+          "size": 8024
+        },
+        {
+          "path": "dist/recording-output.d.ts",
+          "size": 656
+        },
+        {
+          "path": "dist/recording-output.d.ts.map",
+          "size": 647
+        },
+        {
+          "path": "dist/recording-output.js",
+          "size": 3785
+        },
+        {
+          "path": "dist/recording-output.js.map",
+          "size": 3754
+        },
+        {
+          "path": "dist/render.d.ts",
+          "size": 7616
+        },
+        {
+          "path": "dist/render.d.ts.map",
+          "size": 2082
+        },
+        {
+          "path": "dist/render.js",
+          "size": 38445
+        },
+        {
+          "path": "dist/render.js.map",
+          "size": 37069
+        },
+        {
+          "path": "dist/report-redaction.d.ts",
+          "size": 339
+        },
+        {
+          "path": "dist/report-redaction.d.ts.map",
+          "size": 312
+        },
+        {
+          "path": "dist/report-redaction.js",
+          "size": 768
+        },
+        {
+          "path": "dist/report-redaction.js.map",
+          "size": 864
+        },
+        {
+          "path": "dist/reporter.d.ts",
+          "size": 978
+        },
+        {
+          "path": "dist/reporter.d.ts.map",
+          "size": 682
+        },
+        {
+          "path": "dist/reporter.js",
+          "size": 11226
+        },
+        {
+          "path": "dist/reporter.js.map",
+          "size": 10107
+        },
+        {
+          "path": "dist/schemas.d.ts",
+          "size": 19591
+        },
+        {
+          "path": "dist/schemas.d.ts.map",
+          "size": 4333
+        },
+        {
+          "path": "dist/schemas.js",
+          "size": 9382
+        },
+        {
+          "path": "dist/schemas.js.map",
+          "size": 9352
+        },
+        {
+          "path": "dist/scroll.d.ts",
+          "size": 409
+        },
+        {
+          "path": "dist/scroll.d.ts.map",
+          "size": 409
+        },
+        {
+          "path": "dist/scroll.js",
+          "size": 3208
+        },
+        {
+          "path": "dist/scroll.js.map",
+          "size": 3451
+        },
+        {
+          "path": "dist/steps.d.ts",
+          "size": 597
+        },
+        {
+          "path": "dist/steps.d.ts.map",
+          "size": 469
+        },
+        {
+          "path": "dist/steps.js",
+          "size": 3560
+        },
+        {
+          "path": "dist/steps.js.map",
+          "size": 3645
+        },
+        {
+          "path": "dist/suitecut.d.ts",
+          "size": 993
+        },
+        {
+          "path": "dist/suitecut.d.ts.map",
+          "size": 934
+        },
+        {
+          "path": "dist/suitecut.js",
+          "size": 58228
+        },
+        {
+          "path": "dist/suitecut.js.map",
+          "size": 50401
+        },
+        {
+          "path": "dist/tab-audio-extension.d.ts",
+          "size": 5641
+        },
+        {
+          "path": "dist/tab-audio-extension.d.ts.map",
+          "size": 248
+        },
+        {
+          "path": "dist/tab-audio-extension.js",
+          "size": 5503
+        },
+        {
+          "path": "dist/tab-audio-extension.js.map",
+          "size": 379
+        },
+        {
+          "path": "dist/tab-audio.d.ts",
+          "size": 689
+        },
+        {
+          "path": "dist/tab-audio.d.ts.map",
+          "size": 669
+        },
+        {
+          "path": "dist/tab-audio.js",
+          "size": 8378
+        },
+        {
+          "path": "dist/tab-audio.js.map",
+          "size": 7215
+        },
+        {
+          "path": "dist/test.d.ts",
+          "size": 719
+        },
+        {
+          "path": "dist/test.d.ts.map",
+          "size": 392
+        },
+        {
+          "path": "dist/test.js",
+          "size": 3676
+        },
+        {
+          "path": "dist/test.js.map",
+          "size": 3346
+        },
+        {
+          "path": "dist/timeline.d.ts",
+          "size": 494
+        },
+        {
+          "path": "dist/timeline.d.ts.map",
+          "size": 463
+        },
+        {
+          "path": "dist/timeline.js",
+          "size": 3572
+        },
+        {
+          "path": "dist/timeline.js.map",
+          "size": 3596
+        },
+        {
+          "path": "dist/timing.d.ts",
+          "size": 475
+        },
+        {
+          "path": "dist/timing.d.ts.map",
+          "size": 409
+        },
+        {
+          "path": "dist/timing.js",
+          "size": 757
+        },
+        {
+          "path": "dist/timing.js.map",
+          "size": 755
+        },
+        {
+          "path": "dist/types.d.ts",
+          "size": 364
+        },
+        {
+          "path": "dist/types.d.ts.map",
+          "size": 301
+        },
+        {
+          "path": "dist/types.js",
+          "size": 161
+        },
+        {
+          "path": "dist/types.js.map",
+          "size": 180
+        },
+        {
+          "path": "dist/types/artifacts.d.ts",
+          "size": 827
+        },
+        {
+          "path": "dist/types/artifacts.d.ts.map",
+          "size": 830
+        },
+        {
+          "path": "dist/types/artifacts.js",
+          "size": 103
+        },
+        {
+          "path": "dist/types/artifacts.js.map",
+          "size": 182
+        },
+        {
+          "path": "dist/types/captions.d.ts",
+          "size": 484
+        },
+        {
+          "path": "dist/types/captions.d.ts.map",
+          "size": 528
+        },
+        {
+          "path": "dist/types/captions.js",
+          "size": 70
+        },
+        {
+          "path": "dist/types/captions.js.map",
+          "size": 149
+        },
+        {
+          "path": "dist/types/clock.d.ts",
+          "size": 250
+        },
+        {
+          "path": "dist/types/clock.d.ts.map",
+          "size": 287
+        },
+        {
+          "path": "dist/types/clock.js",
+          "size": 67
+        },
+        {
+          "path": "dist/types/clock.js.map",
+          "size": 143
+        },
+        {
+          "path": "dist/types/diagnostics.d.ts",
+          "size": 766
+        },
+        {
+          "path": "dist/types/diagnostics.d.ts.map",
+          "size": 642
+        },
+        {
+          "path": "dist/types/diagnostics.js",
+          "size": 73
+        },
+        {
+          "path": "dist/types/diagnostics.js.map",
+          "size": 155
+        },
+        {
+          "path": "dist/types/errors.d.ts",
+          "size": 321
+        },
+        {
+          "path": "dist/types/errors.d.ts.map",
+          "size": 409
+        },
+        {
+          "path": "dist/types/errors.js",
+          "size": 68
+        },
+        {
+          "path": "dist/types/errors.js.map",
+          "size": 145
+        },
+        {
+          "path": "dist/types/events.d.ts",
+          "size": 3014
+        },
+        {
+          "path": "dist/types/events.d.ts.map",
+          "size": 2391
+        },
+        {
+          "path": "dist/types/events.js",
+          "size": 132
+        },
+        {
+          "path": "dist/types/events.js.map",
+          "size": 207
+        },
+        {
+          "path": "dist/types/geometry.d.ts",
+          "size": 136
+        },
+        {
+          "path": "dist/types/geometry.d.ts.map",
+          "size": 190
+        },
+        {
+          "path": "dist/types/geometry.js",
+          "size": 47
+        },
+        {
+          "path": "dist/types/geometry.js.map",
+          "size": 117
+        },
+        {
+          "path": "dist/types/index.d.ts",
+          "size": 429
+        },
+        {
+          "path": "dist/types/index.d.ts.map",
+          "size": 392
+        },
+        {
+          "path": "dist/types/index.js",
+          "size": 427
+        },
+        {
+          "path": "dist/types/index.js.map",
+          "size": 390
+        },
+        {
+          "path": "dist/types/manifest.d.ts",
+          "size": 1686
+        },
+        {
+          "path": "dist/types/manifest.d.ts.map",
+          "size": 1618
+        },
+        {
+          "path": "dist/types/manifest.js",
+          "size": 314
+        },
+        {
+          "path": "dist/types/manifest.js.map",
+          "size": 408
+        },
+        {
+          "path": "dist/types/media.d.ts",
+          "size": 1150
+        },
+        {
+          "path": "dist/types/media.d.ts.map",
+          "size": 1144
+        },
+        {
+          "path": "dist/types/media.js",
+          "size": 67
+        },
+        {
+          "path": "dist/types/media.js.map",
+          "size": 142
+        },
+        {
+          "path": "dist/types/pages.d.ts",
+          "size": 379
+        },
+        {
+          "path": "dist/types/pages.d.ts.map",
+          "size": 427
+        },
+        {
+          "path": "dist/types/pages.js",
+          "size": 67
+        },
+        {
+          "path": "dist/types/pages.js.map",
+          "size": 143
+        },
+        {
+          "path": "dist/types/primitives.d.ts",
+          "size": 479
+        },
+        {
+          "path": "dist/types/primitives.d.ts.map",
+          "size": 559
+        },
+        {
+          "path": "dist/types/primitives.js",
+          "size": 49
+        },
+        {
+          "path": "dist/types/primitives.js.map",
+          "size": 121
+        },
+        {
+          "path": "dist/types/recording.d.ts",
+          "size": 3267
+        },
+        {
+          "path": "dist/types/recording.d.ts.map",
+          "size": 3013
+        },
+        {
+          "path": "dist/types/recording.js",
+          "size": 188
+        },
+        {
+          "path": "dist/types/recording.js.map",
+          "size": 276
+        },
+        {
+          "path": "dist/types/steps.d.ts",
+          "size": 700
+        },
+        {
+          "path": "dist/types/steps.d.ts.map",
+          "size": 679
+        },
+        {
+          "path": "dist/types/steps.js",
+          "size": 129
+        },
+        {
+          "path": "dist/types/steps.js.map",
+          "size": 207
+        },
+        {
+          "path": "dist/untrusted.d.ts",
+          "size": 514
+        },
+        {
+          "path": "dist/untrusted.d.ts.map",
+          "size": 297
+        },
+        {
+          "path": "dist/untrusted.js",
+          "size": 682
+        },
+        {
+          "path": "dist/untrusted.js.map",
+          "size": 645
+        },
+        {
+          "path": "dist/validation.d.ts",
+          "size": 4673
+        },
+        {
+          "path": "dist/validation.d.ts.map",
+          "size": 1080
+        },
+        {
+          "path": "dist/validation.js",
+          "size": 1933
+        },
+        {
+          "path": "dist/validation.js.map",
+          "size": 1742
+        },
+        {
+          "path": "dist/zoom.d.ts",
+          "size": 2357
+        },
+        {
+          "path": "dist/zoom.d.ts.map",
+          "size": 1672
+        },
+        {
+          "path": "dist/zoom.js",
+          "size": 7636
+        },
+        {
+          "path": "dist/zoom.js.map",
+          "size": 8005
+        },
+        {
+          "path": "native/browser/audio_clock_test.cc",
+          "size": 2779
+        },
+        {
+          "path": "native/browser/audio_clock.h",
+          "size": 2461
+        },
+        {
+          "path": "native/browser/audio_trace.h",
+          "size": 1453
+        },
+        {
+          "path": "native/browser/AUDIT.md",
+          "size": 19113
+        },
+        {
+          "path": "native/browser/BETA.md",
+          "size": 6530
+        },
+        {
+          "path": "native/browser/BROWSER_SUPPORT.md",
+          "size": 13806
+        },
+        {
+          "path": "native/browser/browser.cc",
+          "size": 80622
+        },
+        {
+          "path": "native/browser/cef-build-linux-codecs.json",
+          "size": 939
+        },
+        {
+          "path": "native/browser/cef-build-linux.json",
+          "size": 377
+        },
+        {
+          "path": "native/browser/cef-build.json",
+          "size": 383
+        },
+        {
+          "path": "native/browser/cef-patches/0001-persistent-audio-capture-cef152.patch",
+          "size": 1018
+        },
+        {
+          "path": "native/browser/cef-patches/0001-persistent-audio-capture.patch",
+          "size": 1038
+        },
+        {
+          "path": "native/browser/cef-patches/README.md",
+          "size": 2141
+        },
+        {
+          "path": "native/browser/CMakeLists.txt",
+          "size": 9666
+        },
+        {
+          "path": "native/browser/ENGINE.md",
+          "size": 25847
+        },
+        {
+          "path": "native/browser/fuzz_bounds.cc",
+          "size": 1486
+        },
+        {
+          "path": "native/browser/fuzz_media.cc",
+          "size": 1485
+        },
+        {
+          "path": "native/browser/helper_mac.cc",
+          "size": 424
+        },
+        {
+          "path": "native/browser/Info.plist.in",
+          "size": 574
+        },
+        {
+          "path": "native/browser/libyuv-build.json",
+          "size": 155
+        },
+        {
+          "path": "native/browser/main_linux.cc",
+          "size": 576
+        },
+        {
+          "path": "native/browser/main_mac.mm",
+          "size": 836
+        },
+        {
+          "path": "native/browser/media_codec_test.cc",
+          "size": 8623
+        },
+        {
+          "path": "native/browser/media_engine_test.cc",
+          "size": 7408
+        },
+        {
+          "path": "native/browser/media_engine.cc",
+          "size": 36984
+        },
+        {
+          "path": "native/browser/media_engine.h",
+          "size": 2482
+        },
+        {
+          "path": "native/browser/media_file.cc",
+          "size": 7647
+        },
+        {
+          "path": "native/browser/media_file.h",
+          "size": 695
+        },
+        {
+          "path": "native/browser/media_render.cc",
+          "size": 19005
+        },
+        {
+          "path": "native/browser/media_render.h",
+          "size": 638
+        },
+        {
+          "path": "native/browser/media_startup_test.cc",
+          "size": 16078
+        },
+        {
+          "path": "native/browser/media_sync_test.cc",
+          "size": 4037
+        },
+        {
+          "path": "native/browser/memory_bounds.h",
+          "size": 2293
+        },
+        {
+          "path": "native/browser/MEMORY_SAFETY.md",
+          "size": 7170
+        },
+        {
+          "path": "native/browser/memory_test.cc",
+          "size": 6079
+        },
+        {
+          "path": "native/browser/pixel_test.cc",
+          "size": 1213
+        },
+        {
+          "path": "native/browser/README.md",
+          "size": 20882
+        },
+        {
+          "path": "native/browser/scaler_failure_test.cc",
+          "size": 2215
+        },
+        {
+          "path": "package.json",
+          "size": 12117
+        },
+        {
+          "path": "scripts/install-cef-codecs.py",
+          "size": 3502
+        }
+      ],
+      "tarball": "/workspace/suitecut/.suitecut/release/suitecut-2.1.0.tgz",
+      "sha256": "97ae12e28ba2c153eb20077b0def2c2645e534a4b9773ab37dafacd2f8579b9d"
+    },
+    {
+      "name": "@suitecut/audio-sherpa-core",
+      "version": "2.1.0",
+      "filename": "suitecut-audio-sherpa-core-2.1.0.tgz",
+      "size": 3563,
+      "unpackedSize": 10978,
+      "integrity": "sha512-ZS49L6c6HhqeWu5ymVZ71MOjS1TYyFClIgK+LjkrHbxtxIoSmW1JTkkxb25bW5zLQFz/pmOIBoOyPAYulnZHyg==",
+      "files": [
+        {
+          "path": "README.md",
+          "size": 248
+        },
+        {
+          "path": "dist/index.d.ts",
+          "size": 1446
+        },
+        {
+          "path": "dist/index.d.ts.map",
+          "size": 968
+        },
+        {
+          "path": "dist/index.js",
+          "size": 3436
+        },
+        {
+          "path": "dist/index.js.map",
+          "size": 3540
+        },
+        {
+          "path": "package.json",
+          "size": 1340
+        }
+      ],
+      "tarball": "/workspace/suitecut/.suitecut/release/suitecut-audio-sherpa-core-2.1.0.tgz",
+      "sha256": "5aef0d9cdd78611e3c8692a82f212fadba363d447fd52f72b49d35f26c0c6279"
+    },
+    {
+      "name": "@suitecut/audio-vits",
+      "version": "2.1.0",
+      "filename": "suitecut-audio-vits-2.1.0.tgz",
+      "size": 1764,
+      "unpackedSize": 4678,
+      "integrity": "sha512-F4+6qIFwYriYOCqW17vgwmln5fmFbPQvCuqDZvafQ+yRtGo/UK54IGGnjtJSYkhLmI4FJ6dWZt4/r0QL995MJQ==",
+      "files": [
+        {
+          "path": "README.md",
+          "size": 441
+        },
+        {
+          "path": "dist/index.d.ts",
+          "size": 145
+        },
+        {
+          "path": "dist/index.d.ts.map",
+          "size": 116
+        },
+        {
+          "path": "dist/index.js",
+          "size": 1306
+        },
+        {
+          "path": "dist/index.js.map",
+          "size": 1334
+        },
+        {
+          "path": "package.json",
+          "size": 1336
+        }
+      ],
+      "tarball": "/workspace/suitecut/.suitecut/release/suitecut-audio-vits-2.1.0.tgz",
+      "sha256": "6227b0bb90ec874eca11a7e4bc00b5bd80adf63352282d66da7311678ce2d451"
+    },
+    {
+      "name": "@suitecut/audio-matcha",
+      "version": "2.1.0",
+      "filename": "suitecut-audio-matcha-2.1.0.tgz",
+      "size": 1754,
+      "unpackedSize": 4551,
+      "integrity": "sha512-mbsZ3z3f2GIJVi5pqQNuNuy8NOGycdQdb6xwkpoGmhhQkajNAeHtiUvv1DfmgP3KN9fTjtbO/0UD5Qfd7MwfKw==",
+      "files": [
+        {
+          "path": "README.md",
+          "size": 481
+        },
+        {
+          "path": "dist/index.d.ts",
+          "size": 145
+        },
+        {
+          "path": "dist/index.d.ts.map",
+          "size": 116
+        },
+        {
+          "path": "dist/index.js",
+          "size": 1251
+        },
+        {
+          "path": "dist/index.js.map",
+          "size": 1235
+        },
+        {
+          "path": "package.json",
+          "size": 1323
+        }
+      ],
+      "tarball": "/workspace/suitecut/.suitecut/release/suitecut-audio-matcha-2.1.0.tgz",
+      "sha256": "5137713354215419d6cdce1f2cf2b18a8d82048021bdf1cf1b8dd925bb748580"
+    },
+    {
+      "name": "@suitecut/audio-kokoro-sherpa",
+      "version": "2.1.0",
+      "filename": "suitecut-audio-kokoro-sherpa-2.1.0.tgz",
+      "size": 1857,
+      "unpackedSize": 4761,
+      "integrity": "sha512-Aw/IBzBbVWoUkyQMRmcB6ETuQImNFx4PUVIEhA2g+itjb0lIbrz26wSNLm78FPEs5XnY/nDMGzFGsXcdV3VG1A==",
+      "files": [
+        {
+          "path": "README.md",
+          "size": 620
+        },
+        {
+          "path": "dist/index.d.ts",
+          "size": 145
+        },
+        {
+          "path": "dist/index.d.ts.map",
+          "size": 116
+        },
+        {
+          "path": "dist/index.js",
+          "size": 1211
+        },
+        {
+          "path": "dist/index.js.map",
+          "size": 1288
+        },
+        {
+          "path": "package.json",
+          "size": 1381
+        }
+      ],
+      "tarball": "/workspace/suitecut/.suitecut/release/suitecut-audio-kokoro-sherpa-2.1.0.tgz",
+      "sha256": "5595bff68df93f5d9b80dc32310bcdd9f79792f2cc36a6155fcfb6a067298dee"
+    },
+    {
+      "name": "@suitecut/audio-kitten",
+      "version": "2.1.0",
+      "filename": "suitecut-audio-kitten-2.1.0.tgz",
+      "size": 1684,
+      "unpackedSize": 3929,
+      "integrity": "sha512-iZM1fuuCS78hKliS7PGW3UX80JXlq727vT+I8TNNcvRfXkFtsQhtPqQOvmakEECICYCRTUPiYUvMP3FItsq+Uw==",
+      "files": [
+        {
+          "path": "README.md",
+          "size": 475
+        },
+        {
+          "path": "dist/index.d.ts",
+          "size": 145
+        },
+        {
+          "path": "dist/index.d.ts.map",
+          "size": 116
+        },
+        {
+          "path": "dist/index.js",
+          "size": 937
+        },
+        {
+          "path": "dist/index.js.map",
+          "size": 927
+        },
+        {
+          "path": "package.json",
+          "size": 1329
+        }
+      ],
+      "tarball": "/workspace/suitecut/.suitecut/release/suitecut-audio-kitten-2.1.0.tgz",
+      "sha256": "a07129eb612a554a776ad153acc0f1c190f7464520a19f87f6092f0a962421a3"
+    },
+    {
+      "name": "@suitecut/audio-zipvoice",
+      "version": "2.1.0",
+      "filename": "suitecut-audio-zipvoice-2.1.0.tgz",
+      "size": 1813,
+      "unpackedSize": 5277,
+      "integrity": "sha512-dfvEEFodEdTNFQWEyW2T6ytVKr1oldA5gaVmkBO7b99tjlklcw7O0k13fMN9679Gmn8UF8/PX7ICSLeXLEqzFw==",
+      "files": [
+        {
+          "path": "README.md",
+          "size": 487
+        },
+        {
+          "path": "dist/index.d.ts",
+          "size": 145
+        },
+        {
+          "path": "dist/index.d.ts.map",
+          "size": 117
+        },
+        {
+          "path": "dist/index.js",
+          "size": 1598
+        },
+        {
+          "path": "dist/index.js.map",
+          "size": 1597
+        },
+        {
+          "path": "package.json",
+          "size": 1333
+        }
+      ],
+      "tarball": "/workspace/suitecut/.suitecut/release/suitecut-audio-zipvoice-2.1.0.tgz",
+      "sha256": "b54d6cebcc4efb5b7c71735027de50c7af75c8d6a78d682e3f1375bcf2fe822c"
+    },
+    {
+      "name": "@suitecut/audio-pocket",
+      "version": "2.1.0",
+      "filename": "suitecut-audio-pocket-2.1.0.tgz",
+      "size": 1811,
+      "unpackedSize": 4491,
+      "integrity": "sha512-2HRZELxcUvOkazZwQiXpPp4yYy8ompfNVx9DyOtBSahQ209ARnK1ug5FSVbakgzWFJFoY8gzkBvgqY6/17vXKg==",
+      "files": [
+        {
+          "path": "README.md",
+          "size": 643
+        },
+        {
+          "path": "dist/index.d.ts",
+          "size": 145
+        },
+        {
+          "path": "dist/index.d.ts.map",
+          "size": 117
+        },
+        {
+          "path": "dist/index.js",
+          "size": 1225
+        },
+        {
+          "path": "dist/index.js.map",
+          "size": 1030
+        },
+        {
+          "path": "package.json",
+          "size": 1331
+        }
+      ],
+      "tarball": "/workspace/suitecut/.suitecut/release/suitecut-audio-pocket-2.1.0.tgz",
+      "sha256": "78112a2647d786a3e920aa0d932be26cc6ecaec3c048046a25d2a0576b9afac8"
+    },
+    {
+      "name": "@suitecut/audio-supertonic",
+      "version": "2.1.0",
+      "filename": "suitecut-audio-supertonic-2.1.0.tgz",
+      "size": 1698,
+      "unpackedSize": 4179,
+      "integrity": "sha512-fCzkKxZTNq/Oh27GZBr/qt8U5HAHJhdW7hB3K/VDv/k3ZY50cM623Gu11anVF11ruzmk4Zp3MSxE/qI1VLhGJg==",
+      "files": [
+        {
+          "path": "README.md",
+          "size": 720
+        },
+        {
+          "path": "dist/index.d.ts",
+          "size": 145
+        },
+        {
+          "path": "dist/index.d.ts.map",
+          "size": 116
+        },
+        {
+          "path": "dist/index.js",
+          "size": 1027
+        },
+        {
+          "path": "dist/index.js.map",
+          "size": 828
+        },
+        {
+          "path": "package.json",
+          "size": 1343
+        }
+      ],
+      "tarball": "/workspace/suitecut/.suitecut/release/suitecut-audio-supertonic-2.1.0.tgz",
+      "sha256": "f61a6f8d8f525d09ba5bc9eb7dac7e4d891a5c9250a3d16aa326b967c823d1d5"
+    }
+  ]
+}

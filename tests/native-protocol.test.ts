@@ -58,7 +58,7 @@ describe('native IPC boundary', () => {
     { type: 'audio', timestampMs: 1, frames: 960 },
     { type: 'frame', timestampMs: -1, width: 1, height: 1, dropped: 0 },
     { type: 'response', id: 0, ok: true },
-    { type: 'response', id: 1, ok: true, bytes: 2_000_000 },
+    { type: 'response', id: 1, ok: true, bytes: 17_000_000 },
   ])('rejects malformed metadata %j', (header) => {
     expect(() => new NativePacketDecoder(() => undefined).push(packet(header))).toThrow()
   })

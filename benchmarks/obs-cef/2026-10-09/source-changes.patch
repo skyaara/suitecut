@@ -1,0 +1,58 @@
+diff --git a/benchmarks/README.md b/benchmarks/README.md
+index 042c491..560046c 100644
+--- a/benchmarks/README.md
++++ b/benchmarks/README.md
+@@ -66,3 +66,13 @@ Generated recordings and reports go under ignored `.suitecut/` directories.
+ Avoid inferring a sustained 4K60 improvement from a removed memory copy alone.
+ Compare complete capture runs, including popup composition, before publishing a
+ native throughput claim.
++
++## CEF and OBS capture
++
++The [saved CEF / OBS comparison](obs-cef/README.md) includes Linux setup scripts,
++repeated recording trials, scrolling and browser controls, audio checks, local
++RTMP tests, and bounded streaming soaks. Its report retains failures, decoded
++motion measurements, resource samples, and partial media evidence. OBS captures
++external Chromium with XSHM because the installed package has no browser-source
++plugin. Recording codecs differ; compare the documented pipelines and settings
++before interpreting performance.
+diff --git a/native/browser/README.md b/native/browser/README.md
+index 34b6856..d01fda0 100644
+--- a/native/browser/README.md
++++ b/native/browser/README.md
+@@ -52,7 +52,11 @@ Chromium credits. Keep the complete `.app` together. Distribution builds need
+ platform signing/notarization; local compilation is not a signed release.
+ 
+ The Linux CMake branch needs a matching CEF SDK and Chromium's runtime/display
+-dependencies. It is not yet validated by this project's native integration test.
++dependencies. The native C++ checks and browser integration verifier passed on
++Debian 13 x86-64 with software graphics. See the saved
++[Linux CEF / OBS benchmark](../../benchmarks/obs-cef/README.md) for setup, exact
++versions, and recording/streaming evidence. That bounded cloud run does not
++establish hardware encoding support or sustained 4K recording throughput.
+ Windows configuration deliberately fails until its sandbox and packaging are
+ implemented. Do not work around platform problems by disabling the sandbox.
+ 
+diff --git a/native/browser/browser.cc b/native/browser/browser.cc
+index 00dc785..2625b60 100644
+--- a/native/browser/browser.cc
++++ b/native/browser/browser.cc
+@@ -186,7 +186,7 @@ class Source : public CefClient, public CefLifeSpanHandler, public CefRenderHand
+     CefQuitMessageLoop();
+   }
+   bool OnBeforePopup(CefRefPtr<CefBrowser>, CefRefPtr<CefFrame>, int, const CefString&,
+-                     const CefString&, WindowOpenDisposition, bool, const CefPopupFeatures&,
++                     const CefString&, CefLifeSpanHandler::WindowOpenDisposition, bool, const CefPopupFeatures&,
+                      CefWindowInfo&, CefRefPtr<CefClient>&, CefBrowserSettings&,
+                      CefRefPtr<CefDictionaryValue>&, bool*) override { return true; }
+   void OnPaint(CefRefPtr<CefBrowser>, PaintElementType type, const RectList&,
+@@ -384,6 +384,9 @@ class App : public CefApp, public CefBrowserProcessHandler {
+   explicit App(Writer& writer) : writer_(writer) {}
+   CefRefPtr<CefBrowserProcessHandler> GetBrowserProcessHandler() override { return this; }
+   void OnBeforeCommandLineProcessing(const CefString&, CefRefPtr<CefCommandLine> command) override {
++    // Each source uses a fresh profile. Chrome's first-run UI can block
++    // initialization before the windowless browser is created on Linux.
++    command->AppendSwitch("no-first-run");
+     command->AppendSwitchWithValue("autoplay-policy", "no-user-gesture-required");
+     command->AppendSwitch("disable-background-timer-throttling");
+     command->AppendSwitch("disable-renderer-backgrounding");

@@ -1,0 +1,10 @@
+$ vitest run
+
+ RUN  v4.1.11 /workspace/suitecut
+
+
+ Test Files  37 passed (37)
+      Tests  309 passed (309)
+   Start at  22:06:11
+   Duration  10.78s (transform 1.79s, setup 0ms, import 17.55s, tests 5.99s, environment 6ms)
+

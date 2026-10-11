@@ -1,0 +1,37 @@
+{
+  "backend": "obs-cef",
+  "mode": "stream",
+  "durationRequestedMs": 6000,
+  "width": 1920,
+  "height": 1080,
+  "fps": 30,
+  "status": "failed",
+  "startedAt": "2026-10-10T13:48:07.602Z",
+  "profile": "performance",
+  "encoding": {
+    "video": "H264",
+    "preset": "veryfast",
+    "crf": null,
+    "bitrateKbps": 4500,
+    "encoderThreads": 1,
+    "audio": "AAC 48kHz stereo 128kbps"
+  },
+  "recordingPath": "/workspace/suitecut/benchmarks/publication/2026-10-10/smoke/obs-cef-stream/recording.mkv",
+  "receiverPath": "/workspace/suitecut/benchmarks/publication/2026-10-10/smoke/obs-cef-stream/receiver.flv",
+  "phases": [],
+  "events": [],
+  "error": "Error: {\"code\":207,\"comment\":\"OBS is not ready to perform the request.\",\"result\":false}\n    at WebSocket.<anonymous> (file:///workspace/suitecut/benchmarks/obs-cef/obs-client.mjs:20:31)\n    at WebSocket.emit (node:events:509:28)\n    at Receiver.receiverOnMessage (/workspace/suitecut/node_modules/.pnpm/ws@8.21.3/node_modules/ws/lib/websocket.js:1239:20)\n    at Receiver.emit (node:events:509:28)\n    at Receiver.dataMessage (/workspace/suitecut/node_modules/.pnpm/ws@8.21.3/node_modules/ws/lib/receiver.js:633:14)\n    at Receiver.getData (/workspace/suitecut/node_modules/.pnpm/ws@8.21.3/node_modules/ws/lib/receiver.js:532:10)\n    at Receiver.startLoop (/workspace/suitecut/node_modules/.pnpm/ws@8.21.3/node_modules/ws/lib/receiver.js:190:16)\n    at Receiver._write (/workspace/suitecut/node_modules/.pnpm/ws@8.21.3/node_modules/ws/lib/receiver.js:117:10)\n    at writeOrBuffer (node:internal/streams/writable:570:12)\n    at _write (node:internal/streams/writable:499:10)",
+  "eventLoop": {
+    "meanMs": 20.70391466666667,
+    "p99Ms": 24.363007,
+    "maxMs": 24.363007
+  },
+  "nodeAfterCleanup": {
+    "rss": 136941568,
+    "heapTotal": 122077184,
+    "heapUsed": 70327528,
+    "external": 5051404,
+    "arrayBuffers": 1047296
+  },
+  "completedAt": "2026-10-10T13:48:08.136Z"
+}

@@ -1,0 +1,193 @@
+{
+  "savedAt": "2026-10-10T13:21:26.467Z",
+  "passed": true,
+  "scope": "Ordinary external browser automation; no native A/V capture or RTC claims",
+  "results": [
+    {
+      "name": "cdp-http: navigation",
+      "passed": true,
+      "durationMs": 73.04642000000013
+    },
+    {
+      "name": "cdp-http: typing and auto-waited click",
+      "passed": true,
+      "durationMs": 929.1921790000001
+    },
+    {
+      "name": "cdp-http: iframe",
+      "passed": true,
+      "durationMs": 120.91133999999965
+    },
+    {
+      "name": "cdp-http: popup and tab lifecycle",
+      "passed": true,
+      "durationMs": 133.450515
+    },
+    {
+      "name": "cdp-http: wheel and locator scroll",
+      "passed": true,
+      "durationMs": 77.89442700000018,
+      "details": {
+        "scrollY": 2372
+      }
+    },
+    {
+      "name": "cdp-http: JavaScript, storage and screenshot",
+      "passed": true,
+      "durationMs": 55.41408900000033
+    },
+    {
+      "name": "cdp-http: network interception",
+      "passed": true,
+      "durationMs": 22.943715999999768
+    },
+    {
+      "name": "cdp-http: existing host tab",
+      "passed": true,
+      "durationMs": 1413.014607
+    },
+    {
+      "name": "cdp-http: isolated context",
+      "passed": true,
+      "durationMs": 195.63999000000013
+    },
+    {
+      "name": "cdp: disconnect preserves host and existing tab state",
+      "passed": true,
+      "durationMs": 65.15062899999975
+    },
+    {
+      "name": "cdp-ws: navigation",
+      "passed": true,
+      "durationMs": 89.94159899999977
+    },
+    {
+      "name": "cdp-ws: typing and auto-waited click",
+      "passed": true,
+      "durationMs": 884.7973750000001
+    },
+    {
+      "name": "cdp-ws: iframe",
+      "passed": true,
+      "durationMs": 79.78835899999922
+    },
+    {
+      "name": "cdp-ws: popup and tab lifecycle",
+      "passed": true,
+      "durationMs": 131.16792199999963
+    },
+    {
+      "name": "cdp-ws: wheel and locator scroll",
+      "passed": true,
+      "durationMs": 81.98463999999967,
+      "details": {
+        "scrollY": 2372
+      }
+    },
+    {
+      "name": "cdp-ws: JavaScript, storage and screenshot",
+      "passed": true,
+      "durationMs": 58.033776000000216
+    },
+    {
+      "name": "cdp-ws: network interception",
+      "passed": true,
+      "durationMs": 24.013012999999773
+    },
+    {
+      "name": "cdp: 25 attach/disconnect cycles without accumulating tabs",
+      "passed": true,
+      "durationMs": 692.8935030000002,
+      "details": {
+        "cycles": 25,
+        "controllerMemory": [
+          {
+            "cycle": 1,
+            "rss": 165421056,
+            "heapTotal": 127758336,
+            "heapUsed": 56987096,
+            "external": 6874946,
+            "arrayBuffers": 406845
+          },
+          {
+            "cycle": 6,
+            "rss": 166207488,
+            "heapTotal": 128282624,
+            "heapUsed": 57926144,
+            "external": 4930577,
+            "arrayBuffers": 406845
+          },
+          {
+            "cycle": 11,
+            "rss": 166338560,
+            "heapTotal": 128544768,
+            "heapUsed": 57643424,
+            "external": 4934612,
+            "arrayBuffers": 406845
+          },
+          {
+            "cycle": 16,
+            "rss": 166862848,
+            "heapTotal": 128806912,
+            "heapUsed": 57635592,
+            "external": 4938658,
+            "arrayBuffers": 406845
+          },
+          {
+            "cycle": 21,
+            "rss": 166993920,
+            "heapTotal": 129069056,
+            "heapUsed": 57644872,
+            "external": 4942885,
+            "arrayBuffers": 406845
+          }
+        ],
+        "scope": "Lifecycle smoke test, not proof of no memory leaks"
+      }
+    },
+    {
+      "name": "playwright-ws: navigation",
+      "passed": true,
+      "durationMs": 62.57701400000042
+    },
+    {
+      "name": "playwright-ws: typing and auto-waited click",
+      "passed": true,
+      "durationMs": 910.5253229999998
+    },
+    {
+      "name": "playwright-ws: iframe",
+      "passed": true,
+      "durationMs": 79.36540799999966
+    },
+    {
+      "name": "playwright-ws: popup and tab lifecycle",
+      "passed": true,
+      "durationMs": 143.42483100000027
+    },
+    {
+      "name": "playwright-ws: wheel and locator scroll",
+      "passed": true,
+      "durationMs": 69.37255800000003,
+      "details": {
+        "scrollY": 2066
+      }
+    },
+    {
+      "name": "playwright-ws: JavaScript, storage and screenshot",
+      "passed": true,
+      "durationMs": 74.56138999999985
+    },
+    {
+      "name": "playwright-ws: network interception",
+      "passed": true,
+      "durationMs": 17.42844000000059
+    },
+    {
+      "name": "playwright: disconnect preserves server and reconnect works",
+      "passed": true,
+      "durationMs": 82.15006899999935
+    }
+  ],
+  "failure": null
+}

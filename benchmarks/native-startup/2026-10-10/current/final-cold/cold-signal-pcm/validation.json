@@ -1,0 +1,253 @@
+{
+  "version": "current",
+  "cefVersion": "152.0.8+g1ce985c+chromium-152.0.7977.134",
+  "label": "cold-signal-pcm",
+  "readyLatencyMs": 944.4859680000002,
+  "preEncoderFirstSignalMs": 0.0,
+  "decodedFirstSignalMs": 0.0,
+  "probe": {
+    "streams": [
+      {
+        "index": 0,
+        "codec_name": "h264",
+        "codec_long_name": "H.264 / AVC / MPEG-4 AVC / MPEG-4 part 10",
+        "profile": "High",
+        "codec_type": "video",
+        "codec_tag_string": "[0][0][0][0]",
+        "codec_tag": "0x0000",
+        "width": 1920,
+        "height": 1080,
+        "coded_width": 1920,
+        "coded_height": 1088,
+        "closed_captions": 0,
+        "film_grain": 0,
+        "has_b_frames": 0,
+        "pix_fmt": "yuv420p",
+        "level": 40,
+        "color_range": "tv",
+        "color_space": "bt709",
+        "color_transfer": "iec61966-2-1",
+        "color_primaries": "bt709",
+        "chroma_location": "left",
+        "field_order": "progressive",
+        "refs": 1,
+        "is_avc": "true",
+        "nal_length_size": "4",
+        "r_frame_rate": "30/1",
+        "avg_frame_rate": "30/1",
+        "time_base": "1/1000",
+        "start_pts": 0,
+        "start_time": "0.000000",
+        "bits_per_raw_sample": "8",
+        "nb_read_frames": "188",
+        "extradata_size": 49,
+        "disposition": {
+          "default": 0,
+          "dub": 0,
+          "original": 0,
+          "comment": 0,
+          "lyrics": 0,
+          "karaoke": 0,
+          "forced": 0,
+          "hearing_impaired": 0,
+          "visual_impaired": 0,
+          "clean_effects": 0,
+          "attached_pic": 0,
+          "timed_thumbnails": 0,
+          "non_diegetic": 0,
+          "captions": 0,
+          "descriptions": 0,
+          "metadata": 0,
+          "dependent": 0,
+          "still_image": 0,
+          "multilayer": 0
+        },
+        "tags": {
+          "DURATION": "00:00:06.266000000"
+        }
+      },
+      {
+        "index": 1,
+        "codec_name": "pcm_s16le",
+        "codec_long_name": "PCM signed 16-bit little-endian",
+        "codec_type": "audio",
+        "codec_tag_string": "[0][0][0][0]",
+        "codec_tag": "0x0000",
+        "sample_fmt": "s16",
+        "sample_rate": "48000",
+        "channels": 2,
+        "bits_per_sample": 16,
+        "initial_padding": 0,
+        "r_frame_rate": "0/0",
+        "avg_frame_rate": "0/0",
+        "time_base": "1/1000",
+        "start_pts": 0,
+        "start_time": "0.000000",
+        "bit_rate": "1536000",
+        "nb_read_frames": "314",
+        "disposition": {
+          "default": 0,
+          "dub": 0,
+          "original": 0,
+          "comment": 0,
+          "lyrics": 0,
+          "karaoke": 0,
+          "forced": 0,
+          "hearing_impaired": 0,
+          "visual_impaired": 0,
+          "clean_effects": 0,
+          "attached_pic": 0,
+          "timed_thumbnails": 0,
+          "non_diegetic": 0,
+          "captions": 0,
+          "descriptions": 0,
+          "metadata": 0,
+          "dependent": 0,
+          "still_image": 0,
+          "multilayer": 0
+        },
+        "tags": {
+          "DURATION": "00:00:06.261000000"
+        }
+      }
+    ],
+    "format": {
+      "filename": "/workspace/suitecut/benchmarks/native-startup/2026-10-10/current/final-cold/cold-signal-pcm/pcm_s16le.mkv",
+      "nb_streams": 2,
+      "nb_programs": 0,
+      "nb_stream_groups": 0,
+      "format_name": "matroska,webm",
+      "format_long_name": "Matroska / WebM",
+      "start_time": "0.000000",
+      "duration": "6.266000",
+      "size": "1372687",
+      "bit_rate": "1752552",
+      "probe_score": 100,
+      "tags": {
+        "ENCODER": "Lavf61.7.103"
+      }
+    }
+  },
+  "sourceAttribution": {
+    "sourcePackets": 312,
+    "sourceFrames": 299520,
+    "sourceSilentPackets": 2,
+    "sourceTimelineGaps": [
+      {
+        "fromMs": 1475.628607,
+        "toMs": 1515.628607,
+        "durationMs": 40.0,
+        "followingCallbackDelayMs": 0.0382169999998041
+      },
+      {
+        "fromMs": 1715.628607,
+        "toMs": 1795.628607,
+        "durationMs": 80.0,
+        "followingCallbackDelayMs": 0.07797699999991892
+      }
+    ],
+    "maxCallbackDelayMs": 84.097669,
+    "cases": [
+      {
+        "audioCodec": "pcm_s16le",
+        "originMs": 1468.83694,
+        "finishMs": 7730.170273333333,
+        "missingInputMs": 120.0,
+        "eventuallyUncoveredInputMs": 120.0,
+        "estimatedMissingAtEncodeMs": 120.0,
+        "interiorMissingInputMs": 86.79166666666667,
+        "interiorEventuallyUncoveredMs": 86.79166666666667,
+        "interiorSourceCopyMismatchedFrames": 0,
+        "sourceGapsWithinOutput": [
+          {
+            "fromMs": 1475.628607,
+            "toMs": 1515.628607,
+            "durationMs": 40.0,
+            "followingCallbackDelayMs": 0.0382169999998041,
+            "outputStartMs": 6.791667000000189
+          },
+          {
+            "fromMs": 1715.628607,
+            "toMs": 1795.628607,
+            "durationMs": 80.0,
+            "followingCallbackDelayMs": 0.07797699999991892,
+            "outputStartMs": 246.7916670000002
+          }
+        ],
+        "decodedSilence10msWindows": [
+          {
+            "startMs": 10,
+            "endMs": 40,
+            "durationMs": 30
+          },
+          {
+            "startMs": 50,
+            "endMs": 70,
+            "durationMs": 20
+          },
+          {
+            "startMs": 250,
+            "endMs": 320,
+            "durationMs": 70
+          },
+          {
+            "startMs": 330,
+            "endMs": 360,
+            "durationMs": 30
+          }
+        ],
+        "final": {
+          "ready": true,
+          "stopped": true,
+          "paused": false,
+          "videoFrames": 188,
+          "audioSamples": 300544,
+          "repeatedFrames": 5,
+          "droppedAudioSamples": 0,
+          "missingAudioSamples": 5760,
+          "lateAudioSamples": 0,
+          "queuedVideoBytes": 0,
+          "queuedAudioBytes": 0,
+          "startedMs": 1468.8369403382142,
+          "durationMs": 6266.666666666667,
+          "maximumEncodeMs": 127.25953099999992,
+          "error": ""
+        },
+        "decodedSamples": 300544,
+        "decodeErrors": false,
+        "decodedPCMEqualsPreEncoderPCM": true,
+        "decodedPCMSha256": "9bcd0eeb71e6206ef95b9a2daea55d95a1bb22cc384a17a032ef7d4173d2a3a4"
+      }
+    ],
+    "hostCPUQuota": "400000 100000",
+    "hostCPUStatDelta": {
+      "usage_usec": 4457200,
+      "user_usec": 3566553,
+      "system_usec": 890646,
+      "nice_usec": 0,
+      "nr_periods": 71,
+      "nr_throttled": 0,
+      "throttled_usec": 0,
+      "nr_bursts": 0,
+      "burst_usec": 0
+    },
+    "profileSamples": 8
+  },
+  "status": {
+    "ready": true,
+    "stopped": true,
+    "paused": false,
+    "videoFrames": 188,
+    "audioSamples": 300544,
+    "repeatedFrames": 5,
+    "droppedAudioSamples": 0,
+    "missingAudioSamples": 5760,
+    "lateAudioSamples": 0,
+    "queuedVideoBytes": 0,
+    "queuedAudioBytes": 0,
+    "startedMs": 1468.8369403382142,
+    "durationMs": 6266.666666666667,
+    "maximumEncodeMs": 127.25953099999992,
+    "error": ""
+  }
+}

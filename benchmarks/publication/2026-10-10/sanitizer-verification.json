@@ -1,0 +1,14 @@
+{
+  "verifiedAt": "2026-10-10T21:49:57.969085+05:30",
+  "testsPassed": 7,
+  "testsTotal": 7,
+  "sanitizers": [
+    "address",
+    "undefined"
+  ],
+  "leakDetection": true,
+  "assertionsEnabled": true,
+  "compilerFlags": "-O2 -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=all; no NDEBUG",
+  "cefHeaders": "152.0.6 common codec-enabled SDK",
+  "scope": "Instrumented SuiteCut media, audio clock/startup, codec, pixel conversion, memory lifecycle and scaler failure tests. Prebuilt CEF and FFmpeg libraries are not fully instrumented. These tests do not prove leak freedom in every browser flow."
+}

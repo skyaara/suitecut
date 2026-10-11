@@ -1,0 +1,9 @@
+{
+  "reason": "Host file-cache memory pressure and reclaim invalidated clean capture conditions; stopped only this matrix and its controller.",
+  "targets": [
+    {
+      "matrixPid": 811627,
+      "controllers": []
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+[
+  {
+    "directory": "benchmarks/native-engine/2026-10-09",
+    "verifiedFiles": 529,
+    "errors": []
+  },
+  {
+    "directory": "benchmarks/native-codecs/2026-10-10",
+    "verifiedFiles": 710,
+    "errors": []
+  },
+  {
+    "directory": "benchmarks/native-audio/2026-10-10",
+    "verifiedFiles": 428,
+    "errors": []
+  },
+  {
+    "directory": "benchmarks/native-startup/2026-10-10",
+    "verifiedFiles": 1234,
+    "errors": []
+  },
+  {
+    "directory": "benchmarks/native-startup/2026-10-09-default",
+    "verifiedFiles": 726,
+    "errors": []
+  },
+  {
+    "directory": "benchmarks/obs-cef/2026-10-10-audio-source-review",
+    "verifiedFiles": 26,
+    "errors": []
+  }
+]

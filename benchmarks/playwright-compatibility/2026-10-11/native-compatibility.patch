@@ -1,0 +1,652 @@
+--- a/native/browser/browser.cc
++++ b/native/browser/browser.cc
+@@ -37,6 +37,7 @@
+ #include "include/cef_version.h"
+ #include "audio_clock.h"
+ #include "audio_trace.h"
++#include "cdp_json.h"
+ #include "libyuv/convert_from_argb.h"
+ #include "libyuv/convert.h"
+ 
+@@ -362,13 +363,13 @@
+     if(!root_->auto_attach_) {suppress=true;return false;}
+     dialog_=callback;auto params=CefDictionaryValue::Create();params->SetString("url",origin);params->SetString("message",text);params->SetString("defaultPrompt",prompt);params->SetBool("hasBrowserHandler",true);
+     params->SetString("type",type==JSDIALOGTYPE_ALERT ? "alert" : type==JSDIALOGTYPE_CONFIRM ? "confirm" : "prompt");
+-    auto event=CefDictionaryValue::Create();event->SetString("method","Page.javascriptDialogOpening");event->SetString("sessionId",Session());event->SetDictionary("params",params);root_->CDPMessage(event);return true;
++    PageEvent("Page.javascriptDialogOpening",params);return true;
+   }
+   bool OnBeforeUnloadDialog(CefRefPtr<CefBrowser>, const CefString&, bool,
+                             CefRefPtr<CefJSDialogCallback> callback) override {
+     if(root_->auto_attach_) {
+       dialog_=callback;auto params=CefDictionaryValue::Create();params->SetString("type","beforeunload");params->SetString("message","Leave this page?");params->SetString("url",browser_->GetMainFrame()->GetURL());params->SetBool("hasBrowserHandler",true);
+-      auto event=CefDictionaryValue::Create();event->SetString("method","Page.javascriptDialogOpening");event->SetString("sessionId",Session());event->SetDictionary("params",params);root_->CDPMessage(event);
++      PageEvent("Page.javascriptDialogOpening",params);
+     } else callback->Continue(true,CefString());
+     return true;
+   }
+@@ -384,6 +385,7 @@
+   }
+   void OnAfterCreated(CefRefPtr<CefBrowser> browser) override {
+     browser_ = browser;
++    browser_->GetHost()->WasHidden(false);
+     std::erase_if(root_->pending_popups_,[this](const auto& entry){return entry.second.get()==this;});
+     observer_ = browser->GetHost()->AddDevToolsMessageObserver(this);
+     { std::lock_guard lock(audio_mutex_); target_id_ = "page-"+std::to_string(browser->GetIdentifier()); }
+@@ -405,6 +407,10 @@
+ #endif
+     observer_ = nullptr;
+     browser_ = nullptr;
++    for(auto found=root_->worker_debuggers_.begin();found!=root_->worker_debuggers_.end();) {
++      std::erase_if(found->second,[this](const auto& debugger){return debugger.source.get()==this;});
++      if(found->second.empty())found=root_->worker_debuggers_.erase(found);else ++found;
++    }
+     for(auto found=root_->pending_popups_.begin();found!=root_->pending_popups_.end();) {
+       if(found->first.first==this) {
+         auto pending=found->second;
+@@ -413,8 +419,22 @@
+       } else ++found;
+     }
+     root_->targets_.erase(target_id_);
++    if(auto opener=root_->targets_.find(opener_id_);opener!=root_->targets_.end() && opener->second->browser_ && !opener->second->closing_ && !opener->second->stopped_) {
++      opener->second->browser_->GetHost()->WasHidden(false);
++      opener->second->browser_->GetHost()->Invalidate(PET_VIEW);
++    }
++    for(auto found=root_->nested_targets_.begin();found!=root_->nested_targets_.end();) {
++      if(found->second.source==this) {
++        if(found->second.info->GetString("type")=="service_worker") {
++          auto params=CefDictionaryValue::Create();params->SetString("sessionId",Session()+"::"+found->second.session);params->SetString("targetId",found->first);root_->Event("Target.detachedFromTarget",params);
++        }
++        auto destroyed=CefDictionaryValue::Create();destroyed->SetString("targetId",found->first);root_->DiscoveryEvent("Target.targetDestroyed",destroyed);
++        found=root_->nested_targets_.erase(found);
++      } else ++found;
++    }
++    {auto destroyed=CefDictionaryValue::Create();destroyed->SetString("targetId",target_id_);root_->DiscoveryEvent("Target.targetDestroyed",destroyed);}
+     for(auto found=root_->sessions_.begin();found!=root_->sessions_.end();) {
+-      if(found->second==this) {root_->DetachEvent(found->first,root_->session_parents_[found->first]);root_->session_parents_.erase(found->first);found=root_->sessions_.erase(found);} else ++found;
++      if(found->second==this) {const auto alias=root_->nested_aliases_.find(found->first);root_->DetachEvent(found->first+(alias==root_->nested_aliases_.end() ? "" : "::"+alias->second),root_->session_parents_[found->first]);root_->nested_aliases_.erase(found->first);root_->session_parents_.erase(found->first);found=root_->sessions_.erase(found);} else ++found;
+     }
+     view_.clear();view_.shrink_to_fit();popup_.clear();popup_.shrink_to_fit();
+     if(this!=root_) std::erase_if(root_->children_,[this](const auto& child) {return child.get()==this;});
+@@ -576,6 +596,9 @@
+   bool OnDevToolsMessage(CefRefPtr<CefBrowser>, const void* data, size_t size) override {
+     if(size>16777216) return false;
+     auto value=CefParseJSON(static_cast<const char*>(data),size,JSON_PARSER_RFC);
++    const bool opaque=!value;
++    const std::string raw=opaque ? std::string(static_cast<const char*>(data),size) : std::string();
++    if(opaque)value=CefParseJSON(suitecut::CDPMetadataJSON(raw),JSON_PARSER_RFC);
+     auto message=value ? value->GetDictionary() : nullptr;
+     if(!message) return false;
+     if(message->HasKey("id")) {
+@@ -588,14 +611,103 @@
+         root_->targets_.erase(target_id_);
+         { std::lock_guard lock(audio_mutex_); target_id_=info->GetString("targetId").ToString(); }
+         root_->targets_[target_id_]=this;
++        {auto created=CefDictionaryValue::Create();created->SetDictionary("targetInfo",TargetInfo());root_->DiscoveryEvent("Target.targetCreated",created);}
+         if(root_->auto_attach_) Attach();
+         if(create_reply_) {auto response=CefDictionaryValue::Create();response->SetInt("id",create_reply_);auto value=CefDictionaryValue::Create();value->SetString("targetId",target_id_);response->SetDictionary("result",value);root_->CDPMessage(response);create_reply_=0;}
+       } else if(pending.id==-2) { if(auto error=message->GetDictionary("error")) writer_.Error(("CEF context policy failed: "+error->GetString("message").ToString()).c_str());
++      } else if(pending.id==-3) {
++        if(auto error=message->GetDictionary("error")) {root_->pending_worker_targets_.erase(pending.target);std::fprintf(stderr,"CEF service worker attachment failed: %s\n",error->GetString("message").ToString().c_str());}
++      } else if(pending.id==-4) { /* A disappearing target can invalidate best-effort debugger cleanup. */
+       } else if(pending.native) {
+         auto result=message->GetDictionary("result");auto error=message->GetDictionary("error");
+-        writer_.Reply(pending.id,!error,error ? error->GetString("message").ToString() : "",result ? Bytes(Json(result)) : std::vector<uint8_t>{});
++        writer_.Reply(pending.id,!error,error ? error->GetString("message").ToString() : "",result ? Bytes(opaque ? suitecut::CDPRawField(raw,"result") : Json(result)) : std::vector<uint8_t>{});
++      } else if(opaque) {
++        root_->CDPRawMessage(RawCDPSession(suitecut::CDPReplaceField(raw,"id",std::to_string(pending.id)),pending.session));
+       } else {message->SetInt("id",pending.id);message->SetString("sessionId",pending.session);root_->CDPMessage(message);}
+     } else {
++      const auto method=message->GetString("method").ToString();
++      auto params=message->GetDictionary("params");
++      // The CEF JS-dialog callback owns acceptance and emits this event once.
++      // Also forwarding Chromium's notification races two Dialog objects and
++      // makes the second dismissal fail after the first has closed the dialog.
++      if(method=="Page.javascriptDialogOpening")return true;
++      const auto agent=message->GetString("sessionId").ToString();
++      if(params && auth_only_agents_.contains(agent)) {
++        if(method=="Fetch.requestPaused" || method=="Fetch.authRequired") {
++          auto continued=CefDictionaryValue::Create();continued->SetString("requestId",params->GetString("requestId"));
++          if(method=="Fetch.authRequired") {auto answer=CefDictionaryValue::Create();answer->SetString("response","CancelAuth");continued->SetDictionary("authChallengeResponse",answer);}
++          DeferCDP(-4,method=="Fetch.authRequired" ? "Fetch.continueWithAuth" : "Fetch.continueRequest",continued,agent.empty() ? Session() : Session()+"::"+agent,true);
++          return true;
++        }
++      }
++      if(params && method=="Target.attachedToTarget") {
++        auto info=params->GetDictionary("targetInfo");
++        if(info) {
++          const auto target=info->GetString("targetId").ToString(),nested=params->GetString("sessionId").ToString();
++          const bool worker=info->GetString("type")=="service_worker";
++          auto pending_worker=root_->pending_worker_targets_.find(target);
++          if(worker && this!=root_) {
++            // Use the long-lived engine agent for worker commands so closing
++            // the page that first discovered a worker cannot orphan it.
++            if(!root_->nested_targets_.contains(target) && pending_worker==root_->pending_worker_targets_.end()) {
++              if(root_->nested_targets_.size()+root_->pending_worker_targets_.size()>=256) {writer_.Error("CEF nested target limit exceeded");return true;}
++              auto normalized=info->Copy(false);normalized->SetString("browserContextId",context_id_);root_->pending_worker_targets_[target]=normalized;
++              auto attach=CefDictionaryValue::Create();attach->SetString("targetId",target);attach->SetBool("flatten",true);root_->DeferCDP(-3,"Target.attachToTarget",attach,"",true);
++            }
++            if(!root_->nested_targets_.contains(target) || root_->worker_debuggers_.contains(target)) {
++              auto& debuggers=root_->worker_debuggers_[target];
++              if(debuggers.size()>=64) {writer_.Error("CEF worker debugger limit exceeded");return true;}
++              debuggers.push_back({this,nested});
++            } else {auto detach=CefDictionaryValue::Create();detach->SetString("sessionId",nested);DeferCDP(-4,"Target.detachFromTarget",detach,"",true);}
++            // Keep the original auto-attach pause until Playwright has enabled
++            // Network/Fetch on the stable engine session. Resuming here loses
++            // the main worker-script request before routing can observe it.
++            return true;
++          }
++          auto existing=root_->nested_targets_.find(target);
++          if(worker && existing!=root_->nested_targets_.end()) {
++            // Multiple page agents can discover the same service worker. Keep
++            // one browser-level identity and release the redundant debugger.
++            if(existing->second.source!=this || existing->second.session!=nested) {
++              DeferCDP(-4,"Runtime.runIfWaitingForDebugger",CefDictionaryValue::Create(),Session()+"::"+nested,true);
++              auto detach=CefDictionaryValue::Create();detach->SetString("sessionId",nested);DeferCDP(-4,"Target.detachFromTarget",detach,"",true);
++            }
++            return true;
++          }
++          if(root_->nested_targets_.size()>=256) {writer_.Error("CEF nested target limit exceeded");return true;}
++          auto normalized=info->Copy(false);normalized->SetString("browserContextId",pending_worker==root_->pending_worker_targets_.end() ? context_id_ : pending_worker->second->GetString("browserContextId").ToString());
++          if(pending_worker!=root_->pending_worker_targets_.end())root_->pending_worker_targets_.erase(pending_worker);
++          const auto context=normalized->GetString("browserContextId").ToString();
++          if(worker && context!="default" && !root_->contexts_.contains(context)) {
++            auto detach=CefDictionaryValue::Create();detach->SetString("sessionId",nested);DeferCDP(-4,"Target.detachFromTarget",detach,"",true);return true;
++          }
++          root_->nested_targets_[target]={this,nested,normalized};
++          {auto created=CefDictionaryValue::Create();created->SetDictionary("targetInfo",normalized->Copy(false));root_->DiscoveryEvent("Target.targetCreated",created);}
++          if(worker && root_->auto_attach_) {
++            // Playwright expects service workers on the browser session. CEF
++            // reports them underneath a page; forwarding there makes Playwright
++            // discard the target before its worker API can observe it.
++            auto promoted=params->Copy(false);promoted->SetString("sessionId",Session()+"::"+nested);promoted->SetDictionary("targetInfo",normalized->Copy(false));
++            root_->Event("Target.attachedToTarget",promoted);return true;
++          }
++        }
++      }
++      if(params && method=="Target.detachedFromTarget") {
++        auth_only_agents_.erase(params->GetString("sessionId").ToString());client_fetch_agents_.erase(params->GetString("sessionId").ToString());
++        auto found=root_->nested_targets_.find(params->GetString("targetId").ToString());
++        if(found!=root_->nested_targets_.end() && found->second.source==this && found->second.session==params->GetString("sessionId").ToString()) {
++          const bool worker=found->second.info->GetString("type")=="service_worker";root_->nested_targets_.erase(found);
++          const auto nested=params->GetString("sessionId").ToString();
++          for(auto alias=root_->sessions_.begin();alias!=root_->sessions_.end();) {
++            auto linked=root_->nested_aliases_.find(alias->first);
++            if(alias->second==this && linked!=root_->nested_aliases_.end() && linked->second==nested) {
++              root_->DetachEvent(alias->first+"::"+nested,root_->session_parents_[alias->first]);root_->session_parents_.erase(alias->first);root_->nested_aliases_.erase(linked);alias=root_->sessions_.erase(alias);
++            } else ++alias;
++          }
++          {auto destroyed=CefDictionaryValue::Create();destroyed->SetString("targetId",params->GetString("targetId"));root_->DiscoveryEvent("Target.targetDestroyed",destroyed);}
++          if(worker) {auto detached=params->Copy(false);detached->SetString("sessionId",Session()+"::"+params->GetString("sessionId").ToString());root_->Event("Target.detachedFromTarget",detached);return true;}
++        }
++      }
+       // CEF exposes one page agent. Explicit Playwright CDP sessions attach to
+       // that same agent; their commands already receive replies on their alias.
+       // Deliver agent notifications on those aliases too, including nested
+@@ -611,18 +723,45 @@
+         const auto method=event->GetString("method").ToString();
+         if(params && (method=="Target.attachedToTarget" || method=="Target.detachedFromTarget"))
+           params->SetString("sessionId",recipient+"::"+params->GetString("sessionId").ToString());
+-        root_->CDPMessage(event);
++        if(opaque)root_->CDPRawMessage(RawCDPSession(raw,event->GetString("sessionId").ToString()));
++        else root_->CDPMessage(event);
+       }
+     }
+     return true;
+   }
+  private:
+   void CloseTargets(const std::string& context="") {
++    std::vector<std::string> pending_debuggers;
++    for(const auto& [target,debuggers]:worker_debuggers_)if(context.empty() || (!debuggers.empty() && debuggers.front().source->context_id_==context))pending_debuggers.push_back(target);
++    for(const auto& target:pending_debuggers)ReleaseWorkerDebuggers(target);
++    std::vector<std::pair<CefRefPtr<Source>,std::string>> workers;
++    for(const auto& [target,nested]:nested_targets_) if(nested.info->GetString("type")=="service_worker" && (context.empty() || nested.info->GetString("browserContextId")==context)) {
++      workers.emplace_back(nested.source,nested.session);
++    }
++    for(const auto& [source,session]:workers) {auto detach=CefDictionaryValue::Create();detach->SetString("sessionId",session);source->DispatchCDP(-2,"Target.detachFromTarget",detach,"",true);}
+     std::vector<CefRefPtr<CefBrowser>> browsers;
+     for(auto& [key,source]:targets_) if(context.empty() || source->context_id_==context) {source->closing_=true;browsers.push_back(source->browser_);}
+     for(auto& browser:browsers) browser->GetHost()->CloseBrowser(true);
+   }
+-  struct PendingDevTools {int id;bool native;std::string session;};
++  struct PendingDevTools {int id;bool native;std::string session;std::string target;};
++  void ReleaseWorkerDebuggers(const std::string& target) {
++    auto found=worker_debuggers_.find(target);if(found==worker_debuggers_.end())return;
++    auto debuggers=std::move(found->second);worker_debuggers_.erase(found);
++    for(const auto& debugger:debuggers) {auto params=CefDictionaryValue::Create();params->SetString("sessionId",debugger.session);debugger.source->DeferCDP(-4,"Target.detachFromTarget",params,"",true);}
++  }
++  void ScreencastPulse() {
++    if(screencast_pulse_pending_ || !screencast_active_ || !browser_ || closing_ || stopped_)return;
++    screencast_pulse_pending_=true;
++    CefPostDelayedTask(TID_UI,new Task([self=CefRefPtr<Source>(this)] {
++      self->screencast_pulse_pending_=false;
++      if(!self->screencast_active_ || !self->browser_ || self->closing_ || self->stopped_)return;
++      // Static windowless surfaces still need compositor work for DevTools
++      // screencast frames and requestAnimationFrame to make progress.
++      self->browser_->GetHost()->WasHidden(false);
++      self->browser_->GetHost()->Invalidate(PET_VIEW);
++      self->ScreencastPulse();
++    }),33);
++  }
+   std::string Session() const {return "session-"+target_id_;}
+   Dict TargetInfo() {
+     auto result=CefDictionaryValue::Create();result->SetString("targetId",target_id_);result->SetString("type","page");
+@@ -632,7 +771,20 @@
+     return result;
+   }
+   void CDPMessage(Dict message) {auto header=Header("event");header->SetString("topic","cdp");writer_.Send(header,Bytes(Json(message)));}
++  void PageEvent(const char* method,Dict params) {
++    std::vector<std::string> recipients{Session()};
++    for(const auto& [alias,source]:root_->sessions_)if(source==this && !root_->nested_aliases_.contains(alias))recipients.push_back(alias);
++    for(const auto& session:recipients) {auto event=CefDictionaryValue::Create();event->SetString("method",method);event->SetString("sessionId",session);event->SetDictionary("params",params->Copy(false));root_->CDPMessage(event);}
++  }
++  void CDPRawMessage(const std::string& message) {auto header=Header("event");header->SetString("topic","cdp");writer_.Send(header,Bytes(message));}
++  static std::string RawCDPSession(std::string message,const std::string& session) {
++    auto encoded=CefDictionaryValue::Create();encoded->SetString("sessionId",session);
++    return suitecut::CDPReplaceField(std::move(message),"sessionId",suitecut::CDPRawField(Json(encoded),"sessionId"));
++  }
+   void Event(const char* method,Dict params) {auto message=CefDictionaryValue::Create();message->SetString("method",method);message->SetDictionary("params",params);CDPMessage(message);}
++  void DiscoveryEvent(const char* method,Dict params) {
++    for(const auto& session:discover_sessions_) {auto event=CefDictionaryValue::Create();event->SetString("method",method);if(!session.empty())event->SetString("sessionId",session);event->SetDictionary("params",params->Copy(false));CDPMessage(event);}
++  }
+   void DetachEvent(const std::string& key,const std::string& parent) {
+     auto message=CefDictionaryValue::Create();message->SetString("method","Target.detachedFromTarget");if(!parent.empty())message->SetString("sessionId",parent);
+     auto params=CefDictionaryValue::Create();params->SetString("sessionId",key);message->SetDictionary("params",params);CDPMessage(message);
+@@ -664,7 +816,7 @@
+       if(!manager->SetCookie(url,cookie,new CookieSetCallback(complete))) complete(false);
+     }
+   }
+-  void CDP(Dict message) {
++  void CDP(Dict message,const std::string& raw_params="") {
+     if(!message || message->GetInt("id")<1 || message->GetString("method").empty()) {writer_.Error("Invalid CEF protocol command");return;}
+     const int id=message->GetInt("id");const auto method=message->GetString("method").ToString();
+     auto params=message->GetDictionary("params");if(!params) params=CefDictionaryValue::Create();
+@@ -697,8 +849,10 @@
+         }
+         const int width=bounds->HasKey("width") ? bounds->GetInt("width") : selected->width_;
+         const int height=bounds->HasKey("height") ? bounds->GetInt("height") : selected->height_;
+-        if(width<2 || height<2 || width*selected->scale_>3840 || height*selected->scale_>2160 ||
+-           (selected->i420_ && (width%2 || height%2))) {reply(nullptr,"Window bounds exceed native capture dimensions");return;}
++        // Ordinary browser surfaces may be odd-sized. Encoded I420 input is
++        // padded in EmitFrame; fixed raw I420 subscribers retain their contract.
++        if(width<1 || height<1 || width>3840/selected->scale_ || height>2160/selected->scale_ ||
++           (selected->i420_ && selected->emit_frames_ && (width%2 || height%2))) {reply(nullptr,"Window bounds exceed native capture dimensions");return;}
+         if(selected->emit_frames_ && (width!=selected->width_ || height!=selected->height_)) {
+           reply(nullptr,"Cannot resize a source with fixed-size raw frame subscriptions");return;
+         }
+@@ -720,15 +874,36 @@
+         result->SetString("revision",CEF_VERSION);result->SetString("userAgent","Mozilla/5.0 HeadlessChrome/"+std::to_string(CHROME_VERSION_MAJOR)+"."+std::to_string(CHROME_VERSION_MINOR)+"."+std::to_string(CHROME_VERSION_BUILD)+"."+std::to_string(CHROME_VERSION_PATCH));result->SetString("jsVersion","");reply(result);return;
+       }
+       if(method=="Target.setAutoAttach") {auto_attach_=params->GetBool("autoAttach");reply(result);if(auto_attach_) for(auto& [key,source]:targets_) source->Attach();return;}
+-      if(method=="Target.getTargetInfo") {auto found=targets_.find(params->GetString("targetId").ToString());auto* source=found==targets_.end() ? this : found->second;result->SetDictionary("targetInfo",source->TargetInfo());reply(result);return;}
+-      if(method=="Target.getTargets") {auto list=CefListValue::Create();for(auto& [key,source]:targets_) list->SetDictionary(list->GetSize(),source->TargetInfo());result->SetList("targetInfos",list);reply(result);return;}
++      if(method=="Target.setDiscoverTargets") {
++        if(params->HasKey("filter")) {reply(nullptr,"CEF target discovery filters are not implemented");return;}
++        discover_sessions_.erase(session);const bool discover=params->GetBool("discover");if(discover)discover_sessions_.insert(session);reply(result);
++        if(discover) {
++          auto emit=[this,&session](Dict info) {auto event=CefDictionaryValue::Create();event->SetString("method","Target.targetCreated");if(!session.empty())event->SetString("sessionId",session);auto params=CefDictionaryValue::Create();params->SetDictionary("targetInfo",info);event->SetDictionary("params",params);CDPMessage(event);};
++          for(const auto& [target,source]:targets_) {emit(source->TargetInfo());}
++          for(const auto& [target,nested]:nested_targets_) {emit(nested.info->Copy(false));}
++        }
++        return;
++      }
++      if(method=="Target.getTargetInfo") {const auto key=params->GetString("targetId").ToString();if(auto nested=nested_targets_.find(key);nested!=nested_targets_.end())result->SetDictionary("targetInfo",nested->second.info->Copy(false));else {auto found=targets_.find(key);auto* source=found==targets_.end() ? this : found->second;result->SetDictionary("targetInfo",source->TargetInfo());}reply(result);return;}
++      if(method=="Target.getTargets") {auto list=CefListValue::Create();for(auto& [key,source]:targets_) list->SetDictionary(list->GetSize(),source->TargetInfo());for(auto& [key,nested]:nested_targets_)list->SetDictionary(list->GetSize(),nested.info->Copy(false));result->SetList("targetInfos",list);reply(result);return;}
+       if(method=="Target.attachToBrowserTarget") {if(browser_sessions_.size()>=256){reply(nullptr,"CEF session limit exceeded");return;}const auto key="browser-"+std::to_string(++context_index_);browser_sessions_.insert(key);result->SetString("sessionId",key);reply(result);return;}
+       if(method=="Target.attachToTarget") {
+         if(sessions_.size()>=256) {reply(nullptr,"CEF session limit exceeded");return;}
++        if(auto found=nested_targets_.find(params->GetString("targetId").ToString());found!=nested_targets_.end()) {
++          const auto alias="extra-"+std::to_string(++context_index_);sessions_[alias]=found->second.source;session_parents_[alias]=session;nested_aliases_[alias]=found->second.session;result->SetString("sessionId",alias+"::"+found->second.session);reply(result);return;
++        }
+         auto found=targets_.find(params->GetString("targetId").ToString());if(found==targets_.end()){reply(nullptr,"Unknown CEF target");return;}
+         const auto alias="extra-"+std::to_string(++context_index_);sessions_[alias]=found->second;session_parents_[alias]=session;result->SetString("sessionId",alias);reply(result);return;
+       }
+-      if(method=="Target.detachFromTarget") {const auto key=params->GetString("sessionId").ToString();sessions_.erase(key);browser_sessions_.erase(key);session_parents_.erase(key);reply(result);DetachEvent(key,session);return;}
++      if(method=="Target.detachFromTarget") {
++        const auto key=params->GetString("sessionId").ToString();const auto separator=key.find("::");const auto main=key.substr(0,separator);
++        if(separator!=std::string::npos && !sessions_.contains(main)) {
++          for(const auto& [target,nested]:nested_targets_) if(key==nested.source->Session()+"::"+nested.session) {
++            auto detach=params->Copy(false);detach->SetString("sessionId",nested.session);nested.source->DispatchCDP(id,method,detach,session,false);return;
++          }
++        }
++        sessions_.erase(main);nested_aliases_.erase(main);browser_sessions_.erase(key);discover_sessions_.erase(key);session_parents_.erase(main);reply(result);DetachEvent(key,session);return;
++      }
+       if(method=="Target.createBrowserContext") {
+         if(contexts_.size()>=64) {reply(nullptr,"CEF context limit exceeded");return;}
+         const auto key="context-"+std::to_string(++context_index_);CefRequestContextSettings settings;
+@@ -747,7 +922,7 @@
+         auto created=CefBrowserHost::CreateBrowserSync(window,child,params->GetString("url"),settings,nullptr,context==contexts_.end() ? browser_->GetHost()->GetRequestContext() : context->second);
+         if(!created) {child->create_reply_=0;std::erase_if(children_,[&](const auto& item){return item==child;});reply(nullptr,"CEF could not create target");return;}return;
+       }
+-      if(method=="Target.disposeBrowserContext") {const auto key=params->GetString("browserContextId").ToString();CloseTargets(key);contexts_.erase(key);pending_permissions_.erase(key);download_paths_.erase(key);reply(result);return;}
++      if(method=="Target.disposeBrowserContext") {const auto key=params->GetString("browserContextId").ToString();CloseTargets(key);contexts_.erase(key);std::erase_if(pending_worker_targets_,[&key](const auto& item){return item.second->GetString("browserContextId")==key;});pending_permissions_.erase(key);download_paths_.erase(key);reply(result);return;}
+       if(method=="Target.closeTarget") {auto found=targets_.find(params->GetString("targetId").ToString());const bool exists=found!=targets_.end();if(exists) {found->second->closing_=true;found->second->browser_->GetHost()->CloseBrowser(true);}result->SetBool("success",exists);reply(result);return;}
+       if(method=="Browser.setDownloadBehavior") {
+         const auto key=params->GetString("browserContextId").ToString();const auto behavior=params->GetString("behavior").ToString();
+@@ -777,19 +952,67 @@
+     const auto separator=session.find("::");const auto main=session.substr(0,separator);
+     Source* selected=sessions_.contains(main) ? sessions_[main] : nullptr;for(auto& [key,source]:targets_) if(source->Session()==main) {selected=source;break;}
+     if(!selected) {reply(nullptr,"Unknown CEF session");return;}
++    if(separator==std::string::npos && (method=="Page.startScreencast" || method=="Page.stopScreencast")) {
++      selected->screencast_active_=method=="Page.startScreencast";
++      selected->ScreencastPulse();
++    }
+     if(method=="Page.handleJavaScriptDialog" && selected->dialog_) {selected->dialog_->Continue(params->GetBool("accept"),params->GetString("promptText"));selected->dialog_=nullptr;reply(result);return;}
+-    if(method=="Target.getTargetInfo") {result->SetDictionary("targetInfo",selected->TargetInfo());reply(result);return;}
+-    if(method=="Emulation.setDeviceMetricsOverride") {const int width=params->GetInt("width"),height=params->GetInt("height");if(width>0 && height>0 && width<=3840 && height<=2160) {selected->width_=width;selected->height_=height;selected->browser_->GetHost()->WasResized();}}
+-    selected->DispatchCDP(id,method,params,session,false);
+-  }
+-  void DispatchCDP(int id,const std::string& method,Dict params,const std::string& session,bool native) {
++    if(method=="Target.getTargetInfo" && separator==std::string::npos) {result->SetDictionary("targetInfo",selected->TargetInfo());reply(result);return;}
++    if(method=="Target.detachFromTarget" && params->HasKey("sessionId")) {
++      params=params->Copy(false);const auto nested=params->GetString("sessionId").ToString();const auto split=nested.find("::");if(split!=std::string::npos)params->SetString("sessionId",nested.substr(split+2));
++    }
++    bool rewritten=false;
++    if(method=="Fetch.continueWithAuth") {
++      const auto challenge=params->GetDictionary("authChallengeResponse");
++      if(challenge && challenge->GetString("response")=="Default") {
++        // A windowless browser has no native credential prompt. Explicitly
++        // cancel the challenge so the real HTTP 401 response remains available
++        // instead of delegating to CEF's unavailable prompt implementation.
++        params=params->Copy(false);params->GetDictionary("authChallengeResponse")->SetString("response","CancelAuth");rewritten=true;
++      }
++    }
++    if(method=="Emulation.setDeviceMetricsOverride" && separator==std::string::npos) {const int width=params->GetInt("width"),height=params->GetInt("height");if(width>0 && height>0 && width<=3840 && height<=2160) {selected->width_=width;selected->height_=height;selected->browser_->GetHost()->WasResized();}}
++    auto auth_only=[] {
++      auto options=CefDictionaryValue::Create();options->SetBool("handleAuthRequests",true);
++      auto pattern=CefDictionaryValue::Create();pattern->SetString("urlPattern","*");pattern->SetString("requestStage","Request");auto patterns=CefListValue::Create();patterns->SetDictionary(0,pattern);options->SetList("patterns",patterns);return options;
++    };
++    const auto agent=separator==std::string::npos ? std::string() : session.substr(separator+2);
++    // Never retain arbitrary client-supplied nested session names. Registered
++    // targets are bounded, and their detach event releases these domain flags.
++    const bool known_agent=agent.empty() || std::any_of(nested_targets_.begin(),nested_targets_.end(),[&](const auto& item) {return item.second.source==selected && item.second.session==agent;});
++    if(method=="Fetch.enable" && known_agent) {selected->auth_only_agents_.erase(agent);selected->client_fetch_agents_.insert(agent);}
++    if(method=="Fetch.disable" && auto_attach_ && known_agent) {
++      // Disable request interception while keeping credential challenges under
++      // CDP control. CEF cannot present a windowless native auth prompt.
++      selected->client_fetch_agents_.erase(agent);selected->auth_only_agents_.insert(agent);
++      selected->DispatchCDP(id,"Fetch.enable",auth_only(),session,false);
++    } else {
++      selected->DispatchCDP(id,method,params,session,false,rewritten ? "" : raw_params);
++      if(method=="Network.enable" && auto_attach_ && known_agent && !selected->client_fetch_agents_.contains(agent)) {
++        selected->auth_only_agents_.insert(agent);selected->DispatchCDP(-4,"Fetch.enable",auth_only(),session,true);
++      }
++    }
++    if(method=="Runtime.runIfWaitingForDebugger" && separator!=std::string::npos) {
++      const auto nested_session=session.substr(separator+2);
++      for(const auto& [target,nested]:nested_targets_)if(nested.source==selected && nested.session==nested_session) {ReleaseWorkerDebuggers(target);break;}
++    }
++  }
++  void DispatchCDP(int id,const std::string& method,Dict params,const std::string& session,bool native,const std::string& raw_params="") {
+     if(devtools_pending_.size()>=256) {if(native) writer_.Reply(id,false,"CEF command capacity exceeded");else {auto response=CefDictionaryValue::Create();response->SetInt("id",id);if(!session.empty())response->SetString("sessionId",session);auto error=CefDictionaryValue::Create();error->SetInt("code",-32000);error->SetString("message","CEF command capacity exceeded");response->SetDictionary("error",error);root_->CDPMessage(response);}return;}
+     do {devtools_index_=suitecut::NextCommandID(devtools_index_);} while(devtools_pending_.contains(devtools_index_));
+-    const int internal=devtools_index_;devtools_pending_[internal]={id,native,session};
++    const int internal=devtools_index_;devtools_pending_[internal]={id,native,session,params->GetString("targetId").ToString()};
+     auto message=CefDictionaryValue::Create();message->SetInt("id",internal);message->SetString("method",method);message->SetDictionary("params",params);
+     const auto separator=session.find("::");if(separator!=std::string::npos) message->SetString("sessionId",session.substr(separator+2));
+-    const auto data=Json(message);
++    auto data=Json(message);if(!raw_params.empty())data=suitecut::CDPReplaceField(std::move(data),"params",raw_params);
+     if(!browser_->GetHost()->SendDevToolsMessage(data.data(),data.size())) {devtools_pending_.erase(internal);writer_.Reply(id,false,"CEF DevTools dispatch failed");}
++  }
++  void DeferCDP(int id,const std::string& method,Dict params,const std::string& session,bool native) {
++    // Never issue another DevTools command inside CEF's observer callback.
++    // Retain the client through the posted task and tolerate shutdown racing it.
++    CefPostTask(TID_UI,new Task([self=CefRefPtr<Source>(this),id,method,params=params->Copy(false),session,native] {
++      if(id==-3 && !self->pending_worker_targets_.contains(params->GetString("targetId").ToString()))return;
++      if(self->browser_ && !self->closing_ && !self->stopped_)self->DispatchCDP(id,method,params,session,native);
++    }));
+   }
+   static std::vector<uint8_t> Bytes(const std::string& text) {return {text.begin(),text.end()};}
+ #if SUITECUT_WITH_MEDIA
+@@ -874,6 +1097,8 @@
+     }
+ #endif
+     auto value = CefParseJSON(line, JSON_PARSER_RFC);
++    const bool opaque=!value;
++    if(opaque)value=CefParseJSON(suitecut::CDPMetadataJSON(line),JSON_PARSER_RFC);
+     auto message = value ? value->GetDictionary() : nullptr;
+     if (!message || message->GetInt("version") != 1 || message->GetInt("id") < 1) {
+       writer_.Error("Invalid native command");
+@@ -881,7 +1106,7 @@
+     }
+     const int id = message->GetInt("id");
+     const auto command = message->GetString("command").ToString();
+-    if (command == "cdp") {writer_.Reply(id,true);root_->CDP(message->GetDictionary("message"));return;}
++    if (command == "cdp") {writer_.Reply(id,true);root_->CDP(message->GetDictionary("message"),opaque ? suitecut::CDPRawField(suitecut::CDPRawField(line,"message"),"params") : "");return;}
+ #if !SUITECUT_WITH_MEDIA
+     if (command.starts_with("media.")) {
+       writer_.Reply(id,false,"Native media is unavailable in the CEF-only build");return;
+@@ -1062,7 +1287,7 @@
+       navigation_ = id;
+       browser_->GetMainFrame()->LoadURL(url);
+     } else if (command == "devtools") {
+-      DispatchCDP(id,message->GetString("method").ToString(),message->GetDictionary("params"),"",true);
++      DispatchCDP(id,message->GetString("method").ToString(),message->GetDictionary("params"),"",true,opaque ? suitecut::CDPRawField(line,"params") : "");
+     } else writer_.Reply(id, false, "Unknown native command");
+   }
+   void ReadCommands() {
+@@ -1105,8 +1330,16 @@
+   std::string context_id_,opener_id_,target_id_;
+   std::set<std::string> permission_origins_;
+   std::map<std::string,Source*> targets_, sessions_;
++  struct NestedTarget {Source* source;std::string session;Dict info;};
++  std::map<std::string,NestedTarget> nested_targets_;
++  std::map<std::string,Dict> pending_worker_targets_;
++  struct WorkerDebugger {CefRefPtr<Source> source;std::string session;};
++  std::map<std::string,std::vector<WorkerDebugger>> worker_debuggers_;
++  std::map<std::string,std::string> nested_aliases_;
+   std::map<std::string,std::string> session_parents_;
+   std::set<std::string> browser_sessions_;
++  std::set<std::string> discover_sessions_;
++  std::set<std::string> auth_only_agents_,client_fetch_agents_;
+   std::map<std::string,CefRefPtr<CefRequestContext>> contexts_;
+   std::vector<CefRefPtr<Source>> children_;
+   std::map<std::pair<Source*,int>,CefRefPtr<Source>> pending_popups_;
+@@ -1129,6 +1362,7 @@
+   bool frame_subscriptions_;
+   int frame_width_ = 0, frame_height_ = 0, popup_width_ = 0, popup_height_ = 0, navigation_ = 0;
+   bool show_popup_ = false, ready_ = false, emit_frames_ = true;
++  bool screencast_active_=false,screencast_pulse_pending_=false;
+   CefRect popup_rect_;
+   std::vector<uint8_t> view_, popup_;
+   std::atomic<bool> stopped_{false}, audio_valid_{false}, closing_{false};
+@@ -1157,6 +1391,13 @@
+     command->AppendSwitchWithValue("autoplay-policy", "no-user-gesture-required");
+     command->AppendSwitch("disable-background-timer-throttling");
+     command->AppendSwitch("disable-renderer-backgrounding");
++    // Match Playwright's automation semantics: origin-based storage-state
++    // restoration and navigation interception must not be bypassed by the
++    // browser's storage partitioning or back/forward cache.
++    command->AppendSwitch("disable-back-forward-cache");
++    command->AppendSwitch("disable-backgrounding-occluded-windows");
++    command->AppendSwitch("allow-pre-commit-input");
++    command->AppendSwitchWithValue("disable-features", "ThirdPartyStoragePartitioning,PaintHolding,BlockOriginHeaderModificationOnRedirect,BoundaryEventDispatchTracksNodeRemoval,AvoidUnnecessaryBeforeUnloadCheckSync");
+     if (command->GetSwitchValue("suitecut-graphics") == "swiftshader") {
+       // Explicit operator opt-in: modern Chromium blocks automatic software
+       // WebGL fallback for security reasons. Keep normal graphics defaults intact.
+--- a/native/browser/CMakeLists.txt
++++ b/native/browser/CMakeLists.txt
+@@ -56,6 +56,8 @@
+ add_subdirectory("${LIBYUV_ROOT}" libyuv EXCLUDE_FROM_ALL)
+ set(CMAKE_CXX_STANDARD 20)
+ enable_testing()
++add_executable(suitecut-cdp-json-test cdp_json_test.cc)
++add_test(NAME native-cdp-json COMMAND suitecut-cdp-json-test)
+ if(SUITECUT_WITH_MEDIA)
+ set(SUITECUT_FFMPEG_ROOT "" CACHE PATH "Optional FFmpeg development sysroot")
+ find_path(AV_INCLUDE libavcodec/avcodec.h HINTS "${SUITECUT_FFMPEG_ROOT}/usr/include/x86_64-linux-gnu" "${SUITECUT_FFMPEG_ROOT}/include" REQUIRED)
+@@ -98,7 +100,7 @@
+     message(FATAL_ERROR "Fuzzing requires Clang and -DSUITECUT_SANITIZERS=address,undefined")
+   endif()
+   target_compile_options(suitecut-media PRIVATE -fsanitize=fuzzer-no-link)
+-  foreach(target bounds media)
++  foreach(target bounds media cdp_json)
+     add_executable(suitecut-fuzz-${target} fuzz_${target}.cc)
+     target_compile_options(suitecut-fuzz-${target} PRIVATE -fsanitize=fuzzer)
+     target_link_options(suitecut-fuzz-${target} PRIVATE -fsanitize=fuzzer)
+--- a/scripts/pack-cef.py
++++ b/scripts/pack-cef.py
+@@ -12,7 +12,7 @@
+ SOURCES = [
+     'CMakeLists.txt', 'browser.cc', 'main_linux.cc', 'main_mac.mm', 'helper_mac.cc',
+     'Info.plist.in', 'audio_clock.h', 'audio_trace.h', 'memory_bounds.h',
+-    'audio_clock_test.cc', 'pixel_test.cc', 'cef-build.json',
++    'audio_clock_test.cc', 'pixel_test.cc', 'cdp_json.h', 'cdp_json_test.cc', 'cef-build.json',
+     'cef-build-linux.json', 'cef-build-linux-codecs.json', 'libyuv-build.json',
+ ]
+ DOCS = ['README.md', 'PROTOCOL.md', 'protocol.schema.json', 'manifest.json']
+--- a/scripts/pack-native.py
++++ b/scripts/pack-native.py
+@@ -13,7 +13,7 @@
+     'media_engine.cc', 'media_engine.h', 'media_file.cc', 'media_file.h',
+     'media_render.cc', 'media_render.h', 'media_engine_test.cc',
+     'media_startup_test.cc', 'media_codec_test.cc', 'media_sync_test.cc',
+-    'memory_test.cc', 'scaler_failure_test.cc', 'fuzz_bounds.cc', 'fuzz_media.cc',
++    'memory_test.cc', 'scaler_failure_test.cc', 'fuzz_bounds.cc', 'fuzz_media.cc', 'fuzz_cdp_json.cc',
+ ]
+ DOCS = ['README.md', 'PROTOCOL.md', 'BROWSER-PROTOCOL.md', 'protocol.schema.json', 'manifest.json']
+ 
+--- /dev/null
++++ b/native/browser/cdp_json.h
+@@ -0,0 +1,93 @@
++// SPDX-License-Identifier: MIT
++#pragma once
++
++#include <optional>
++#include <string>
++#include <string_view>
++#include <utility>
++
++namespace suitecut {
++
++// CEF's strict JSON parser rejects lone UTF-16 surrogates, although JavaScript
++// and CDP can serialize them. Mask them only in the metadata copy used for
++// routing. Forward original argument/result bytes to preserve their value.
++inline std::string CDPMetadataJSON(std::string_view input) {
++  std::string result(input);
++  auto unit=[&](size_t offset)->int {
++    if(offset+6>input.size() || input[offset]!='\\' || input[offset+1]!='u')return -1;
++    int value=0;
++    for(size_t i=offset+2;i<offset+6;++i) {
++      const char c=input[i];const int digit=c>='0' && c<='9' ? c-'0' : c>='a' && c<='f' ? c-'a'+10 : c>='A' && c<='F' ? c-'A'+10 : -1;
++      if(digit<0)return -1;
++      value=value*16+digit;
++    }
++    return value;
++  };
++  bool string=false;
++  for(size_t i=0;i<input.size();++i) {
++    if(input[i]=='"') {string=!string;continue;}
++    if(!string || input[i]!='\\')continue;
++    const int value=unit(i);
++    if(value>=0xd800 && value<=0xdbff) {
++      const int next=unit(i+6);
++      if(next>=0xdc00 && next<=0xdfff) {i+=11;continue;}
++      result.replace(i,6,"\\ufffd");i+=5;
++    } else if(value>=0xdc00 && value<=0xdfff) {result.replace(i,6,"\\ufffd");i+=5;}
++    else if(i+1<input.size()) ++i;
++  }
++  return result;
++}
++
++// Extract a top-level value span from JSON already validated by CEF through
++// CDPMetadataJSON. This is a lexical scanner, not a replacement JSON parser.
++// No argument/result object needs decoding or re-encoding across the shim.
++inline std::optional<std::pair<size_t,size_t>> CDPFieldSpan(std::string_view input,std::string_view key) {
++  auto whitespace=[&](size_t& i) {while(i<input.size() && (input[i]==' ' || input[i]=='\n' || input[i]=='\r' || input[i]=='\t'))++i;};
++  auto string_end=[&](size_t start)->size_t {
++    if(start>=input.size() || input[start]!='"')return std::string_view::npos;
++    for(size_t i=start+1;i<input.size();++i) {
++      if(input[i]=='\\') {if(i+1==input.size())return std::string_view::npos;++i;}
++      else if(input[i]=='"')return i+1;
++    }
++    return std::string_view::npos;
++  };
++  size_t i=0;whitespace(i);if(i==input.size() || input[i++]!='{')return std::nullopt;
++  std::optional<std::pair<size_t,size_t>> found;
++  while(i<input.size()) {
++    whitespace(i);if(i<input.size() && input[i]=='}')return found;
++    const auto name=i;const auto end=string_end(i);if(end==std::string_view::npos)return std::nullopt;
++    const bool match=input.substr(name+1,end-name-2)==key;i=end;whitespace(i);
++    if(i==input.size() || input[i++]!=':')return std::nullopt;
++    whitespace(i);
++    const auto begin=i;int depth=0;
++    for(;i<input.size();++i) {
++      const auto c=input[i];
++      if(c=='"') {const auto end=string_end(i);if(end==std::string_view::npos)return std::nullopt;i=end-1;}
++      else if(c=='{' || c=='[') {if(++depth>256)return std::nullopt;}
++      else if(c=='}' || c==']') {if(depth==0)break;--depth;}
++      else if(c==',' && depth==0)break;
++    }
++    if(i==input.size() || i==begin)return std::nullopt;
++    if(match)found=std::pair{begin,i};
++    if(input[i]=='}')return found;
++    if(input[i++]!=',')return std::nullopt;
++  }
++  return std::nullopt;
++}
++
++inline std::string CDPRawField(std::string_view input,std::string_view key) {
++  const auto span=CDPFieldSpan(input,key);
++  return span ? std::string(input.substr(span->first,span->second-span->first)) : std::string();
++}
++
++inline std::string CDPReplaceField(std::string input,std::string_view key,std::string_view encoded) {
++  if(const auto span=CDPFieldSpan(input,key))input.replace(span->first,span->second-span->first,encoded);
++  else if(const auto end=input.find_last_of('}');end!=std::string::npos) {
++    const auto begin=input.find_first_of('{');
++    bool empty=true;
++    for(size_t i=begin+1;i<end;++i)if(input[i]!=' ' && input[i]!='\n' && input[i]!='\r' && input[i]!='\t') {empty=false;break;}
++    input.insert(end,std::string(empty ? "" : ",")+'"'+std::string(key)+"\":"+std::string(encoded));
++  }
++  return input;
++}
++}
+--- /dev/null
++++ b/native/browser/cdp_json_test.cc
+@@ -0,0 +1,23 @@
++// SPDX-License-Identifier: MIT
++#include "cdp_json.h"
++#include <cstdlib>
++#include <iostream>
++
++void Check(bool value) {if(!value) {std::cerr<<"CDP JSON transport regression\n";std::abort();}}
++int main() {
++  using namespace suitecut;
++  const std::string raw=R"({"id":7,"result":{"value":"\udafe","literal":"\\udafe","pair":"\ud83d\ude00","nested":[{"id":999}]}})";
++  Check(CDPMetadataJSON(raw)==R"({"id":7,"result":{"value":"\ufffd","literal":"\\udafe","pair":"\ud83d\ude00","nested":[{"id":999}]}})");
++  const auto rewritten=CDPReplaceField(CDPReplaceField(raw,"id","42"),"sessionId",R"("page-1::worker-1")");
++  Check(CDPRawField(rewritten,"id")=="42");
++  Check(CDPRawField(rewritten,"result")==CDPRawField(raw,"result"));
++  Check(CDPRawField(rewritten,"sessionId")==R"("page-1::worker-1")");
++  Check(CDPMetadataJSON(R"({"v":"\udc00\uD800x\ud800\udfff"})")==R"({"v":"\ufffd\ufffdx\ud800\udfff"})");
++  Check(CDPRawField(R"({"params":{"a":["}","\\\"",1]},"id":2})","params")==R"({"a":["}","\\\"",1]})");
++  Check(CDPReplaceField("{}","id","1")==R"({"id":1})");
++  Check(CDPRawField(R"({"id":1,"id":2})","id")=="2");
++  for(const std::string bad : {"", "{", "{\"id\":", "{\"id\":\"\\", "[]"})Check(!CDPFieldSpan(bad,"id"));
++  std::string deep(300,'[');deep+="0";deep+=std::string(300,']');
++  Check(!CDPFieldSpan("{\"v\":"+deep+"}","v"));
++  std::cout<<"CDP JSON transport regressions passed\n";
++}
+--- /dev/null
++++ b/native/browser/fuzz_cdp_json.cc
+@@ -0,0 +1,20 @@
++// SPDX-License-Identifier: MIT
++#include "cdp_json.h"
++#include <cstdint>
++#include <cstdlib>
++
++extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data,size_t size) {
++  if(size>4194304)return 0;
++  const std::string_view input(reinterpret_cast<const char*>(data),size);
++  const auto masked=suitecut::CDPMetadataJSON(input);
++  if(masked.size()!=size)std::abort();
++  for(const std::string_view key : {"id","params","sessionId","result","message"}) {
++    if(const auto span=suitecut::CDPFieldSpan(input,key)) {
++      if(span->first>=span->second || span->second>size)std::abort();
++      const auto raw=suitecut::CDPRawField(input,key);
++      if(raw!=input.substr(span->first,span->second-span->first))std::abort();
++    }
++    (void)suitecut::CDPReplaceField(std::string(input),key,"null");
++  }
++  return 0;
++}

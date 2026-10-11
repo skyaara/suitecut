@@ -1,0 +1,51 @@
+
+/workspace/suitecut/.suitecut/native-build/suitecut-browser:     file format elf64-x86-64
+
+
+Disassembly of section .init:
+
+Disassembly of section .plt:
+
+Disassembly of section .plt.got:
+
+Disassembly of section .text:
+
+0000000000027b20 <main>:
+   27b20:	41 54                	push   %r12
+   27b22:	49 89 f4             	mov    %rsi,%r12
+   27b25:	be 01 00 00 00       	mov    $0x1,%esi
+   27b2a:	55                   	push   %rbp
+   27b2b:	89 fd                	mov    %edi,%ebp
+   27b2d:	bf 0d 00 00 00       	mov    $0xd,%edi
+   27b32:	53                   	push   %rbx
+   27b33:	48 83 ec 20          	sub    $0x20,%rsp
+   27b37:	e8 64 6e ff ff       	call   1e9a0 <signal@plt>
+   27b3c:	48 8d 74 24 08       	lea    0x8(%rsp),%rsi
+   27b41:	31 d2                	xor    %edx,%edx
+   27b43:	89 6c 24 10          	mov    %ebp,0x10(%rsp)
+   27b47:	48 8d 7c 24 10       	lea    0x10(%rsp),%rdi
+   27b4c:	4c 89 64 24 18       	mov    %r12,0x18(%rsp)
+   27b51:	48 c7 44 24 08 00 00 	movq   $0x0,0x8(%rsp)
+   27b58:	00 00 
+   27b5a:	e8 91 d0 03 00       	call   64bf0 <CefExecuteProcess(CefMainArgs const&, scoped_refptr<CefApp>, void*)>
+   27b5f:	48 8b 7c 24 08       	mov    0x8(%rsp),%rdi
+   27b64:	89 c3                	mov    %eax,%ebx
+   27b66:	48 85 ff             	test   %rdi,%rdi
+   27b69:	74 05                	je     27b70 <main+0x50>
+   27b6b:	e8 90 03 01 00       	call   37f00 <scoped_refptr<CefApp>::Release(CefApp*)>
+   27b70:	85 db                	test   %ebx,%ebx
+   27b72:	79 0c                	jns    27b80 <main+0x60>
+   27b74:	4c 89 e6             	mov    %r12,%rsi
+   27b77:	89 ef                	mov    %ebp,%edi
+   27b79:	e8 02 04 01 00       	call   37f80 <RunSuiteCutBrowser(int, char**)>
+   27b7e:	89 c3                	mov    %eax,%ebx
+   27b80:	48 83 c4 20          	add    $0x20,%rsp
+   27b84:	89 d8                	mov    %ebx,%eax
+   27b86:	5b                   	pop    %rbx
+   27b87:	5d                   	pop    %rbp
+   27b88:	41 5c                	pop    %r12
+   27b8a:	c3                   	ret
+   27b8b:	48 89 c3             	mov    %rax,%rbx
+   27b8e:	e9 f5 cb ff ff       	jmp    24788 <main.cold>
+
+Disassembly of section .fini:

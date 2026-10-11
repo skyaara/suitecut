@@ -1,0 +1,4 @@
+{
+  "reason": "Pre-fix captures used SVT low-delay prediction (later caught by ASAN at 320x180) and padded the final FLAC block. A complete matrix is rerun after the prediction and lossless tail fixes.",
+  "outputPathsMovedFrom": "../.."
+}

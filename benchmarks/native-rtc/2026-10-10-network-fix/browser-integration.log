@@ -1,0 +1,23 @@
+
+Running 16 tests using 1 worker
+
+(node:752811) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 benchmarks/native-engine/engine.e2e.spec.ts:53:1 › real Playwright locators, auto-wait, input, scrolling, iframe and screenshot (957ms)
+  ✓   2 benchmarks/native-engine/engine.e2e.spec.ts:69:1 › windowless browser bounds resize the selected page and report unsupported states (456ms)
+  ✓   3 benchmarks/native-engine/engine.e2e.spec.ts:117:1 › native engine records silent startup and accepts later sound (794ms)
+  ✓   4 benchmarks/native-engine/engine.e2e.spec.ts:134:1 › streaming initializes silent audio and accepts later browser sound (1.5s)
+  ✓   5 benchmarks/native-engine/engine.e2e.spec.ts:197:1 › silent pages record a valid audio track with mandatory engine readiness (435ms)
+  ✓   6 benchmarks/native-engine/engine.e2e.spec.ts:219:1 › native protocol rejects bypasses and requires audio readiness when audio is omitted (424ms)
+  ✓   7 benchmarks/native-engine/engine.e2e.spec.ts:266:1 › network interception, init scripts and storage isolation (353ms)
+  ✓   8 benchmarks/native-engine/engine.e2e.spec.ts:295:1 › popup, dialog, file upload, download and public CDP sessions (1.1s)
+  ✓   9 benchmarks/native-engine/engine.e2e.spec.ts:331:1 › explicit CDP sessions receive page events and tracing completion (549ms)
+  ✓  10 benchmarks/native-engine/engine.e2e.spec.ts:363:1 › native recording survives blocked Node, pause and page switching (6.6s)
+  ✓  11 benchmarks/native-engine/engine.e2e.spec.ts:400:1 › pause drains pending media and resume captures a prepared static page (1.2s)
+  ✓  12 benchmarks/native-engine/engine.e2e.spec.ts:423:1 › repeated context/page shutdown keeps the engine usable (1.4s)
+  ✓  13 benchmarks/native-engine/engine.e2e.spec.ts:434:1 › permission and geolocation setup before page creation (191ms)
+  ✓  14 benchmarks/native-engine/engine.e2e.spec.ts:470:1 › explicit session retention is bounded and capacity returns after detach (710ms)
+  ✓  15 benchmarks/native-engine/engine.e2e.spec.ts:504:1 › rapid popup and opener closure leaves the engine usable (3.1s)
+  ✓  16 benchmarks/native-engine/engine.e2e.spec.ts:519:1 › native shutdown joins a pending pause and releases active outputs (1.1s)
+
+  16 passed (22.7s)

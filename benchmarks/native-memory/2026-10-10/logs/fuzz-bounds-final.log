@@ -1,0 +1,14 @@
+INFO: Running with entropic power schedule (0xFF, 100).
+INFO: Seed: 20261010
+INFO: Loaded 1 modules   (97 inline 8-bit counters): 97 [0x5602bab41248, 0x5602bab412a9), 
+INFO: Loaded 1 PC tables (97 PCs): 97 [0x5602bab412b0,0x5602bab418c0), 
+INFO:       34 files found in benchmarks/native-memory/2026-10-10/fuzz/final-bounds/corpus
+INFO: seed corpus: files: 34 min: 1b max: 40b total: 1321b rss: 55Mb
+#35	INITED cov: 42 ft: 67 corp: 27/1041b exec/s: 0 rss: 56Mb
+#1048576	pulse  cov: 42 ft: 67 corp: 27/1041b lim: 256 exec/s: 349525 rss: 187Mb
+#2097152	pulse  cov: 42 ft: 67 corp: 27/1041b lim: 256 exec/s: 349525 rss: 318Mb
+#4194304	pulse  cov: 42 ft: 67 corp: 27/1041b lim: 256 exec/s: 322638 rss: 491Mb
+#8388608	pulse  cov: 42 ft: 67 corp: 27/1041b lim: 256 exec/s: 349525 rss: 492Mb
+#16777216	pulse  cov: 42 ft: 67 corp: 27/1041b lim: 256 exec/s: 430185 rss: 492Mb
+#28375940	DONE   cov: 42 ft: 67 corp: 27/1041b lim: 256 exec/s: 465179 rss: 492Mb
+Done 28375940 runs in 61 second(s)

@@ -1,0 +1,45 @@
+[WARN] Your node_modules are out of sync with your lockfile. The workspace structure has changed since last install
+
+Running 4730 tests using 1 worker
+
+(node:953560) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘     1 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/beforeunload.spec.ts:20:3 › should close browser with beforeunload page (5ms)
+(node:953572) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓     2 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/beforeunload.spec.ts:30:3 › should close browsercontext with beforeunload page (251ms)
+  ✘     3 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/beforeunload.spec.ts:38:3 › should be able to navigate away from page with beforeunload (5ms)
+(node:953696) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘     4 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/beforeunload.spec.ts:46:3 › should close page with beforeunload listener (240ms)
+(node:953824) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘     5 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/beforeunload.spec.ts:55:3 › should run beforeunload if asked for @smoke (243ms)
+(node:953951) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓     6 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/beforeunload.spec.ts:79:3 › should access page after beforeunload (264ms)
+  ✘     7 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/beforeunload.spec.ts:92:3 › should not stall on evaluate when dismissing beforeunload (7ms)
+(node:954078) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘     8 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/beforeunload.spec.ts:107:3 › should not stall on click when dismissing beforeunload (237ms)
+(node:954205) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘     9 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/beforeunload.spec.ts:130:3 › should support dismissing the dialog multiple times (257ms)
+(node:954326) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘    10 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/beforeunload.spec.ts:152:3 › should support closing the page after a previous dismiss (240ms)
+(node:954454) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓    11 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/beforeunload.spec.ts:170:3 › should support closing the page via a subsequent onbeforeunload dialog (249ms)
+  ✘    12 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/beforeunload.spec.ts:188:3 › does not get stalled by beforeUnload (269ms)
+(node:954601) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘    13 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browser-server.spec.ts:28:3 › should start and stop pipe server (10ms)
+(node:954711) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓    14 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browser-server.spec.ts:43:3 › should write descriptor on start and remove on stop (14ms)
+  ✘    15 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browser-server.spec.ts:66:3 › should start ws server with host/port and produce well-formed endpoint (12ms)
+(node:954819) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+undefined
+[ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL] Command was killed with SIGKILL (Forced termination): playwright test --config /tmp/suitecut-playwright-upstream/playwright-1.62.1/suitecut.config.ts '--global-timeout=600000' '--max-failures=100'

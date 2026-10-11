@@ -1,0 +1,464 @@
+{
+  "config": {
+    "argv": [
+      "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+      "/workspace/suitecut/node_modules/playwright/cli.js",
+      "test",
+      "--config",
+      "benchmarks/native-engine/playwright.config.ts"
+    ],
+    "configFile": "/workspace/suitecut/benchmarks/native-engine/playwright.config.ts",
+    "rootDir": "/workspace/suitecut/benchmarks/native-engine",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/workspace/suitecut/benchmarks/native-startup/2026-10-09-default/playwright/playwright-artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "/workspace/suitecut/benchmarks/native-engine",
+        "testIgnore": [
+          "**/tested-sources*/**"
+        ],
+        "testMatch": [
+          "engine.e2e.spec.ts"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "/workspace/suitecut/benchmarks/native-startup/2026-10-09-default/playwright/playwright-results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.62.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "engine.e2e.spec.ts",
+      "file": "engine.e2e.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "real Playwright locators, auto-wait, input, scrolling, iframe and screenshot",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1380,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-09T21:29:59.772Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1671f79a60a4bd98e4da-0dc5a03d0834ad6c0ef1",
+          "file": "engine.e2e.spec.ts",
+          "line": 52,
+          "column": 1
+        },
+        {
+          "title": "native audio readiness waits for delayed sound before returning a recording",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 907,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-09T21:30:02.187Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1671f79a60a4bd98e4da-3b750630998ee1813331",
+          "file": "engine.e2e.spec.ts",
+          "line": 68,
+          "column": 1
+        },
+        {
+          "title": "streaming waits for delayed native sound without a startup-policy option",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1395,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-09T21:30:03.110Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1671f79a60a4bd98e4da-ab141dd5220e0dee6e89",
+          "file": "engine.e2e.spec.ts",
+          "line": 96,
+          "column": 1
+        },
+        {
+          "title": "audio readiness times out without sound and leaves the engine usable",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 478,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-09T21:30:04.521Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1671f79a60a4bd98e4da-c9e78271427cb43bf8d7",
+          "file": "engine.e2e.spec.ts",
+          "line": 161,
+          "column": 1
+        },
+        {
+          "title": "native protocol rejects bypasses and requires audio readiness when audio is omitted",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 531,
+                  "error": {
+                    "message": "Error: Native audio readiness timed out (waiting for source sound)",
+                    "stack": "Error: Native audio readiness timed out (waiting for source sound)\n    at NativePacketDecoder.receive (/workspace/suitecut/src/native-browser.ts:219:27)\n    at NativePacketDecoder.push (/workspace/suitecut/src/native-protocol.ts:100:26)\n    at Socket.<anonymous> (/workspace/suitecut/src/native-browser.ts:258:15)",
+                    "location": {
+                      "file": "/workspace/suitecut/src/native-browser.ts",
+                      "column": 27,
+                      "line": 219
+                    },
+                    "snippet": "\u001b[90m   at \u001b[39m../../src/native-browser.ts:219\n\n  217 |       clearTimeout(request.timer)\n  218 |       if (header.ok) request.resolve(result)\n> 219 |       else request.reject(new Error(header.error ?? 'Native command failed'))\n      |                           ^\n  220 |       return\n  221 |     }\n  222 |     if (stopping) return"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/workspace/suitecut/src/native-browser.ts",
+                        "column": 27,
+                        "line": 219
+                      },
+                      "message": "Error: Native audio readiness timed out (waiting for source sound)\n\n   at ../../src/native-browser.ts:219\n\n  217 |       clearTimeout(request.timer)\n  218 |       if (header.ok) request.resolve(result)\n> 219 |       else request.reject(new Error(header.error ?? 'Native command failed'))\n      |                           ^\n  220 |       return\n  221 |     }\n  222 |     if (stopping) return\n    at NativePacketDecoder.receive (/workspace/suitecut/src/native-browser.ts:219:27)\n    at NativePacketDecoder.push (/workspace/suitecut/src/native-protocol.ts:100:26)\n    at Socket.<anonymous> (/workspace/suitecut/src/native-browser.ts:258:15)"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-09T21:30:05.014Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/workspace/suitecut/benchmarks/native-startup/2026-10-09-default/playwright/playwright-artifacts/engine.e2e-native-protocol-6abb9-iness-when-audio-is-omitted/error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/workspace/suitecut/benchmarks/native-startup/2026-10-09-default/playwright/playwright-artifacts/engine.e2e-native-protocol-6abb9-iness-when-audio-is-omitted/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/workspace/suitecut/src/native-browser.ts",
+                    "column": 27,
+                    "line": 219
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "1671f79a60a4bd98e4da-c54c48c7ca98517de7f6",
+          "file": "engine.e2e.spec.ts",
+          "line": 180,
+          "column": 1
+        },
+        {
+          "title": "network interception, init scripts and storage isolation",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 419,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-09T21:30:06.264Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1671f79a60a4bd98e4da-663e8387a9407445a601",
+          "file": "engine.e2e.spec.ts",
+          "line": 220,
+          "column": 1
+        },
+        {
+          "title": "popup, dialog, file upload, download and public CDP sessions",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1074,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-09T21:30:07.164Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1671f79a60a4bd98e4da-ec15ea415cc8c6e41c56",
+          "file": "engine.e2e.spec.ts",
+          "line": 249,
+          "column": 1
+        },
+        {
+          "title": "native recording survives blocked Node, pause and page switching",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6388,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-09T21:30:08.251Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1671f79a60a4bd98e4da-269a80c5141b7d753e12",
+          "file": "engine.e2e.spec.ts",
+          "line": 285,
+          "column": 1
+        },
+        {
+          "title": "repeated context/page shutdown keeps the engine usable",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1673,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-09T21:30:14.654Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1671f79a60a4bd98e4da-4fda2b2fb15942c20c57",
+          "file": "engine.e2e.spec.ts",
+          "line": 322,
+          "column": 1
+        },
+        {
+          "title": "permission and geolocation setup before page creation",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 183,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-09T21:30:16.357Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1671f79a60a4bd98e4da-84259a977fcef415d73e",
+          "file": "engine.e2e.spec.ts",
+          "line": 333,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-09T21:29:58.404Z",
+    "duration": 18266.673,
+    "expected": 9,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

@@ -1,0 +1,96 @@
+{
+  "reason": "Reuse the sealed resolution matrix and 30-minute memory profile only for the unchanged native implementation/binary. Documentation and release SDK metadata are updated separately.",
+  "baseline": "benchmarks/native-sync/2026-10-11-shared-clock",
+  "checks": {
+    "src/engine.ts": {
+      "sealedSha256": "556f0e645f2417fe08de334922c63531973bbd0e79c7800b5971be89dd1ae300",
+      "currentSha256": "556f0e645f2417fe08de334922c63531973bbd0e79c7800b5971be89dd1ae300",
+      "matches": true
+    },
+    "native/browser/fuzz_media.cc": {
+      "sealedSha256": "24504b543b84de669aa0e585b0609292ab2cb09f1286ab3f6ba667d122ea8a87",
+      "currentSha256": "24504b543b84de669aa0e585b0609292ab2cb09f1286ab3f6ba667d122ea8a87",
+      "matches": true
+    },
+    "native/browser/media_engine.h": {
+      "sealedSha256": "d90e9e00eb049e0fe57b4c534adcd51e61af9b41d164b6aebd87df0d84f77e97",
+      "currentSha256": "d90e9e00eb049e0fe57b4c534adcd51e61af9b41d164b6aebd87df0d84f77e97",
+      "matches": true
+    },
+    "native/browser/media_codec_test.cc": {
+      "sealedSha256": "b59bcb4a566f34180509ce464cd7da02c758ca6bfe9afb8d7118d2f726e5ca55",
+      "currentSha256": "b59bcb4a566f34180509ce464cd7da02c758ca6bfe9afb8d7118d2f726e5ca55",
+      "matches": true
+    },
+    "native/browser/audio_clock.h": {
+      "sealedSha256": "4161430985ba116506595a5f8410beef627be4e6b70053d4a6d3402521c05dc7",
+      "currentSha256": "4161430985ba116506595a5f8410beef627be4e6b70053d4a6d3402521c05dc7",
+      "matches": true
+    },
+    "native/browser/CMakeLists.txt": {
+      "sealedSha256": "83ebc133a0052e21ad78241b0ea938e16dfb7215d5bc5358f4ba87e1745e53b6",
+      "currentSha256": "83ebc133a0052e21ad78241b0ea938e16dfb7215d5bc5358f4ba87e1745e53b6",
+      "matches": true
+    },
+    "native/browser/memory_bounds.h": {
+      "sealedSha256": "7d3a30664b19e1b6cb42469adbd0e66200bef2f8398458fbc093d329276e94bf",
+      "currentSha256": "7d3a30664b19e1b6cb42469adbd0e66200bef2f8398458fbc093d329276e94bf",
+      "matches": true
+    },
+    "native/browser/fuzz_bounds.cc": {
+      "sealedSha256": "b892dcf7629167e2d6f9aaf10f8a4825b74bccda24e66d611449bafc6cd8a8f9",
+      "currentSha256": "b892dcf7629167e2d6f9aaf10f8a4825b74bccda24e66d611449bafc6cd8a8f9",
+      "matches": true
+    },
+    "native/browser/media_engine.cc": {
+      "sealedSha256": "ceea99ed4a1a378869abda35b494df033c1d46bc3183cb3c623902303dad4b47",
+      "currentSha256": "ceea99ed4a1a378869abda35b494df033c1d46bc3183cb3c623902303dad4b47",
+      "matches": true
+    },
+    "native/browser/media_sync_test.cc": {
+      "sealedSha256": "bb8614e4e03eff3e0531471173af28e55b189ec1afd9c309a6b0d8708297cef6",
+      "currentSha256": "bb8614e4e03eff3e0531471173af28e55b189ec1afd9c309a6b0d8708297cef6",
+      "matches": true
+    },
+    "native/browser/media_startup_test.cc": {
+      "sealedSha256": "d679c03999543ee0b808adbab5d6cc654032d096b83d4cd41839108cc3f0bae1",
+      "currentSha256": "d679c03999543ee0b808adbab5d6cc654032d096b83d4cd41839108cc3f0bae1",
+      "matches": true
+    },
+    "native/browser/browser.cc": {
+      "sealedSha256": "4273e219f7833c138ef60d5301ce30d8d31297cea2f0280d77eb9936d057dfe0",
+      "currentSha256": "4273e219f7833c138ef60d5301ce30d8d31297cea2f0280d77eb9936d057dfe0",
+      "matches": true
+    },
+    "native/browser/audio_clock_test.cc": {
+      "sealedSha256": "9405b48a5644d4c9360f336578944f518adfbb2a3412ab2ce6218d6b4ee404b1",
+      "currentSha256": "9405b48a5644d4c9360f336578944f518adfbb2a3412ab2ce6218d6b4ee404b1",
+      "matches": true
+    },
+    "native/browser/cef-build-linux-codecs.json": {
+      "sealedSha256": "91c129bc8c08f0be0b830ae36f1c46d027f36041e9d4594ec76174e1d99335f1",
+      "currentSha256": "91c129bc8c08f0be0b830ae36f1c46d027f36041e9d4594ec76174e1d99335f1",
+      "matches": true
+    },
+    ".suitecut/native-build/suitecut-browser": {
+      "sealedSha256": "757a03fa49ed82dcd119c2888bdc0ebe1c355b4b9d9964bda38b99427a38f0b3",
+      "currentSha256": "757a03fa49ed82dcd119c2888bdc0ebe1c355b4b9d9964bda38b99427a38f0b3",
+      "matches": true
+    },
+    ".suitecut/shared-clock-asan/suitecut-sync-test": {
+      "sealedSha256": "b1a41b9e356a4fe1aa3bbb857110dfdff7cda54a98203126cd407229d6173ba4",
+      "currentSha256": "b1a41b9e356a4fe1aa3bbb857110dfdff7cda54a98203126cd407229d6173ba4",
+      "matches": true
+    },
+    ".suitecut/shared-clock-asan/suitecut-fuzz-media": {
+      "sealedSha256": "2e8815881c6456fbb993fb5ad04b97d0aa84d218359eecd540c2fb81bf4feaee",
+      "currentSha256": "2e8815881c6456fbb993fb5ad04b97d0aa84d218359eecd540c2fb81bf4feaee",
+      "matches": true
+    },
+    ".suitecut/shared-clock-asan/suitecut-fuzz-bounds": {
+      "sealedSha256": "7744d42d5ebc683aa4fc9604081967008921022f86a6f828e1126c9ac8835669",
+      "currentSha256": "7744d42d5ebc683aa4fc9604081967008921022f86a6f828e1126c9ac8835669",
+      "matches": true
+    }
+  }
+}

@@ -2,6 +2,28 @@
 
 SuiteCut follows [Semantic Versioning](https://semver.org/). This file records user-visible changes.
 
+## 2.1.0 - 2026-10-11
+
+- Move native capture, audio/video synchronization, recording, RTMP publishing,
+  checkpoint decoding and rendering into the C++ FFmpeg-library engine.
+- Add the real Playwright CEF adapter and `suitecut/engine/test`; add
+  `connectBrowser()` for external CDP or Playwright-protocol automation.
+- Pin codec-enabled Linux CEF 152.0.6 / Chromium 152.0.7977.83 for H.264/AAC playback.
+  Verify native browser features including sockets, WASM, IndexedDB, workers,
+  local RTC and WebGL. Remote RTC transport remains environment-dependent.
+- Add software H.264, HEVC, VP8, VP9, AV1 and FFV1 encoders with validated
+  AAC/Opus/FLAC/PCM container combinations. GPU encoding remains unverified.
+- Require native output readiness; align tracks on a shared epoch and coordinate
+  worker progress with bounded adaptive buffering. Preserve PCM during tested
+  250 ms encoder stalls at 30 and 60 FPS.
+- Harden buffer validation, lifecycle ownership, concurrent pause/stop and scaler
+  failure cleanup. Save final address/undefined/leak sanitizer and fuzz evidence.
+- Prepare matching 2.1.0 SDK and eight audio-plugin packages with checksums and
+  installed-package verification. See [RELEASE.md](RELEASE.md) for limits and artifacts.
+- Known issue: the 30-minute stream still contains short quiet audio intervals;
+  OBS embedded CEF shows a comparable total on this host. Continuous AAC timestamps
+  do not establish continuous captured source content. No universal leak-free claim.
+
 ## 2.0.0 - 2026-09-26
 
 - Promote the embedded CEF beta to the default `suitecut` API. Export native

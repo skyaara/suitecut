@@ -1,0 +1,93 @@
+{
+  "backend": "ts-cef",
+  "mode": "record",
+  "durationRequestedMs": 6000,
+  "width": 1920,
+  "height": 1080,
+  "fps": 30,
+  "status": "completed; media validation pending",
+  "startedAt": "2026-10-10T13:38:06.233Z",
+  "profile": "performance",
+  "encoding": {
+    "video": "H264",
+    "preset": "veryfast",
+    "crf": 18,
+    "bitrateKbps": null,
+    "encoderThreads": 1,
+    "audio": "video only"
+  },
+  "recordingPath": "/workspace/suitecut/benchmarks/publication/2026-10-10/smoke/ts-cef-record/recording.mkv",
+  "receiverPath": "/workspace/suitecut/benchmarks/publication/2026-10-10/smoke/ts-cef-record/receiver.flv",
+  "phases": [
+    {
+      "name": "static",
+      "atMs": 0.003967999999986205,
+      "monotonic": 149256.151901728
+    }
+  ],
+  "events": [],
+  "cefVersion": "152.0.6+g708dc14+chromium-152.0.7977.83",
+  "browserReadySeconds": 0.6643585650017485,
+  "beforeCapture": {
+    "marker": 31,
+    "rendered": 27,
+    "mode": "canvas",
+    "scrollY": 0,
+    "scrollEvents": 0,
+    "keyEvents": 0,
+    "clicks": 0,
+    "value": "",
+    "choice": "First",
+    "actionMask": 0,
+    "width": 1920,
+    "height": 1080
+  },
+  "outputReadySeconds": 0.00941991398576647,
+  "activeStartMonotonic": 149256.133457634,
+  "nodeBefore": {
+    "rss": 207962112,
+    "heapTotal": 126369792,
+    "heapUsed": 53909120,
+    "external": 79551151,
+    "arrayBuffers": 75555459
+  },
+  "observedActiveMs": 5005.554235,
+  "scrollCommands": 0,
+  "activeEndMonotonic": 149262.166145533,
+  "activeMs": 6021.624162999999,
+  "afterCapture": {
+    "marker": 243,
+    "rendered": 239,
+    "mode": "static",
+    "scrollY": 0,
+    "scrollEvents": 0,
+    "keyEvents": 0,
+    "clicks": 0,
+    "value": "",
+    "choice": "First",
+    "actionMask": 0,
+    "width": 1920,
+    "height": 1080
+  },
+  "nodeAfter": {
+    "rss": 209797120,
+    "heapTotal": 126369792,
+    "heapUsed": 53470600,
+    "external": 47529004,
+    "arrayBuffers": 43533272
+  },
+  "finalizationSeconds": 0.08627705898834392,
+  "eventLoop": {
+    "meanMs": 20.73200324229075,
+    "p99Ms": 27.951103,
+    "maxMs": 57.376767
+  },
+  "nodeAfterCleanup": {
+    "rss": 209797120,
+    "heapTotal": 126369792,
+    "heapUsed": 54267224,
+    "external": 16533056,
+    "arrayBuffers": 12533248
+  },
+  "completedAt": "2026-10-10T13:38:15.686Z"
+}

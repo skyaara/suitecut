@@ -1,0 +1,48 @@
+{
+  "cases": [
+    {
+      "audioCodec": "aac",
+      "destination": "/workspace/suitecut/benchmarks/native-sync/2026-10-10/worklet-pulsed-60s/recording.mp4",
+      "final": {
+        "ready": true,
+        "stopped": true,
+        "paused": false,
+        "videoFrames": 1819,
+        "audioSamples": 2910208,
+        "repeatedFrames": 86,
+        "droppedAudioSamples": 0,
+        "missingAudioSamples": 43891,
+        "lateAudioSamples": 0,
+        "queuedVideoBytes": 0,
+        "queuedAudioBytes": 0,
+        "startedMs": 2726.506773,
+        "durationMs": 60633.333333333336,
+        "maximumEncodeMs": 477.3333249999996,
+        "bufferedDelayMs": 290.2127696666648,
+        "error": ""
+      }
+    },
+    {
+      "audioCodec": "aac",
+      "destination": "/workspace/suitecut/benchmarks/native-sync/2026-10-10/worklet-pulsed-60s/receiver.flv",
+      "final": {
+        "ready": true,
+        "stopped": true,
+        "paused": false,
+        "videoFrames": 1814,
+        "audioSamples": 2902016,
+        "repeatedFrames": 94,
+        "droppedAudioSamples": 0,
+        "missingAudioSamples": 43392,
+        "lateAudioSamples": 0,
+        "queuedVideoBytes": 0,
+        "queuedAudioBytes": 0,
+        "startedMs": 3056.84,
+        "durationMs": 60466.666666666664,
+        "maximumEncodeMs": 615.5787550000023,
+        "bufferedDelayMs": 575.722525000001,
+        "error": ""
+      }
+    }
+  ]
+}

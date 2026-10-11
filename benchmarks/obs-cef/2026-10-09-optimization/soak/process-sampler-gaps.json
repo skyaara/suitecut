@@ -1,0 +1,2334 @@
+{
+  "privateMemorySampling": false,
+  "gapsOver2Seconds": [
+    {
+      "fromSeconds": 56.02621842499866,
+      "toSeconds": 58.240542895000544,
+      "gapSeconds": 2.214324470001884,
+      "before": {
+        "monotonic": 22680.636154152,
+        "sampleDurationMs": 2207.1136320009828,
+        "privateMemoryEveryIterations": 0,
+        "processes": [
+          {
+            "pid": 52878,
+            "role": "node",
+            "cpuPercent": 57.60963955599845,
+            "rssBytes": 293060608,
+            "threads": 11,
+            "fdCount": 45
+          },
+          {
+            "pid": 52892,
+            "role": "receiver",
+            "cpuPercent": 23.40391606962383,
+            "rssBytes": 39321600,
+            "threads": 3,
+            "fdCount": 5
+          },
+          {
+            "pid": 52893,
+            "role": "sampler",
+            "cpuPercent": 129.62168900099346,
+            "rssBytes": 11632640,
+            "threads": 1,
+            "fdCount": 5
+          },
+          {
+            "pid": 52894,
+            "role": "cef-browser",
+            "cpuPercent": 100.81686922299535,
+            "rssBytes": 221937664,
+            "threads": 32,
+            "fdCount": 161
+          },
+          {
+            "pid": 52991,
+            "role": "encoder",
+            "cpuPercent": 313.2524150857347,
+            "rssBytes": 439242752,
+            "threads": 9,
+            "fdCount": 5
+          },
+          {
+            "pid": 53003,
+            "role": "publisher",
+            "cpuPercent": 14.402409888999271,
+            "rssBytes": 38019072,
+            "threads": 3,
+            "fdCount": 7
+          },
+          {
+            "pid": 53004,
+            "role": "audio-encoder",
+            "cpuPercent": 95.41596551462018,
+            "rssBytes": 34193408,
+            "threads": 11,
+            "fdCount": 5
+          },
+          {
+            "pid": 53005,
+            "role": "encoder",
+            "cpuPercent": 324.05422250248324,
+            "rssBytes": 202891264,
+            "threads": 14,
+            "fdCount": 7
+          },
+          {
+            "pid": 52898,
+            "role": "cef-browser",
+            "cpuPercent": 0,
+            "rssBytes": 65556480,
+            "threads": 1,
+            "fdCount": 13
+          },
+          {
+            "pid": 52899,
+            "role": "cef-browser",
+            "cpuPercent": 0,
+            "rssBytes": 65785856,
+            "threads": 1,
+            "fdCount": 13
+          },
+          {
+            "pid": 52924,
+            "role": "cef-browser",
+            "cpuPercent": 0,
+            "rssBytes": 97742848,
+            "threads": 10,
+            "fdCount": 34
+          },
+          {
+            "pid": 52992,
+            "role": "cef-browser",
+            "cpuPercent": 158.42650877899206,
+            "rssBytes": 78942208,
+            "threads": 10,
+            "fdCount": 26
+          },
+          {
+            "pid": 52901,
+            "role": "cef-browser",
+            "cpuPercent": 0,
+            "rssBytes": 18640896,
+            "threads": 1,
+            "fdCount": 14
+          },
+          {
+            "pid": 52925,
+            "role": "cef-browser",
+            "cpuPercent": 0,
+            "rssBytes": 47890432,
+            "threads": 8,
+            "fdCount": 28
+          },
+          {
+            "pid": 52940,
+            "role": "cef-renderer",
+            "cpuPercent": 0,
+            "rssBytes": 75538432,
+            "threads": 9,
+            "fdCount": 28
+          },
+          {
+            "pid": 52941,
+            "role": "cef-renderer",
+            "cpuPercent": 104.41747169524479,
+            "rssBytes": 169938944,
+            "threads": 13,
+            "fdCount": 37
+          },
+          {
+            "pid": 52921,
+            "role": "cef-gpu",
+            "cpuPercent": 84.61415809787056,
+            "rssBytes": 187068416,
+            "threads": 19,
+            "fdCount": 43
+          }
+        ]
+      },
+      "after": {
+        "monotonic": 22682.850478622,
+        "sampleDurationMs": 1290.8569639985217,
+        "privateMemoryEveryIterations": 0,
+        "processes": [
+          {
+            "pid": 52878,
+            "role": "node",
+            "cpuPercent": 37.9348199136905,
+            "rssBytes": 293072896,
+            "threads": 11,
+            "fdCount": 45
+          },
+          {
+            "pid": 52892,
+            "role": "receiver",
+            "cpuPercent": 0.9032099979450167,
+            "rssBytes": 39321600,
+            "threads": 3,
+            "fdCount": 5
+          },
+          {
+            "pid": 52893,
+            "role": "sampler",
+            "cpuPercent": 5.870864986642618,
+            "rssBytes": 11632640,
+            "threads": 1,
+            "fdCount": 5
+          },
+          {
+            "pid": 52894,
+            "role": "cef-browser",
+            "cpuPercent": 16.70938496198268,
+            "rssBytes": 228593664,
+            "threads": 32,
+            "fdCount": 161
+          },
+          {
+            "pid": 52991,
+            "role": "encoder",
+            "cpuPercent": 33.41876992396568,
+            "rssBytes": 439242752,
+            "threads": 9,
+            "fdCount": 5
+          },
+          {
+            "pid": 53003,
+            "role": "publisher",
+            "cpuPercent": 0.45160499897250833,
+            "rssBytes": 38019072,
+            "threads": 3,
+            "fdCount": 7
+          },
+          {
+            "pid": 53004,
+            "role": "audio-encoder",
+            "cpuPercent": 2.2580249948625517,
+            "rssBytes": 34193408,
+            "threads": 11,
+            "fdCount": 5
+          },
+          {
+            "pid": 53005,
+            "role": "encoder",
+            "cpuPercent": 17.16098996095574,
+            "rssBytes": 202891264,
+            "threads": 14,
+            "fdCount": 7
+          },
+          {
+            "pid": 52898,
+            "role": "cef-browser",
+            "cpuPercent": 0,
+            "rssBytes": 65556480,
+            "threads": 1,
+            "fdCount": 13
+          },
+          {
+            "pid": 52899,
+            "role": "cef-browser",
+            "cpuPercent": 0,
+            "rssBytes": 65785856,
+            "threads": 1,
+            "fdCount": 13
+          },
+          {
+            "pid": 52924,
+            "role": "cef-browser",
+            "cpuPercent": 0,
+            "rssBytes": 97742848,
+            "threads": 10,
+            "fdCount": 34
+          },
+          {
+            "pid": 52992,
+            "role": "cef-browser",
+            "cpuPercent": 4.967654988697602,
+            "rssBytes": 78954496,
+            "threads": 10,
+            "fdCount": 26
+          },
+          {
+            "pid": 52901,
+            "role": "cef-browser",
+            "cpuPercent": 0,
+            "rssBytes": 18640896,
+            "threads": 1,
+            "fdCount": 14
+          },
+          {
+            "pid": 52925,
+            "role": "cef-browser",
+            "cpuPercent": 0,
+            "rssBytes": 47890432,
+            "threads": 8,
+            "fdCount": 28
+          },
+          {
+            "pid": 52940,
+            "role": "cef-renderer",
+            "cpuPercent": 0,
+            "rssBytes": 75538432,
+            "threads": 9,
+            "fdCount": 28
+          },
+          {
+            "pid": 52941,
+            "role": "cef-renderer",
+            "cpuPercent": 2.70962999383507,
+            "rssBytes": 169951232,
+            "threads": 13,
+            "fdCount": 37
+          },
+          {
+            "pid": 52921,
+            "role": "cef-gpu",
+            "cpuPercent": 4.064444990752565,
+            "rssBytes": 187068416,
+            "threads": 19,
+            "fdCount": 43
+          }
+        ]
+      }
+    },
+    {
+      "fromSeconds": 61.757184811001935,
+      "toSeconds": 64.96007360400108,
+      "gapSeconds": 3.202888792999147,
+      "before": {
+        "monotonic": 22686.367120538,
+        "sampleDurationMs": 3202.239235997695,
+        "privateMemoryEveryIterations": 0,
+        "processes": [
+          {
+            "pid": 52878,
+            "role": "node",
+            "cpuPercent": 266.7213697585267,
+            "rssBytes": 293158912,
+            "threads": 11,
+            "fdCount": 45
+          },
+          {
+            "pid": 52892,
+            "role": "receiver",
+            "cpuPercent": 5.971373949817751,
+            "rssBytes": 39321600,
+            "threads": 3,
+            "fdCount": 5
+          },
+          {
+            "pid": 52893,
+            "role": "sampler",
+            "cpuPercent": 232.8835840428921,
+            "rssBytes": 11636736,
+            "threads": 1,
+            "fdCount": 5
+          },
+          {
+            "pid": 52894,
+            "role": "cef-browser",
+            "cpuPercent": 163.21755462835142,
+            "rssBytes": 222412800,
+            "threads": 32,
+            "fdCount": 161
+          },
+          {
+            "pid": 52991,
+            "role": "encoder",
+            "cpuPercent": 193.07442437744163,
+            "rssBytes": 439242752,
+            "threads": 9,
+            "fdCount": 5
+          },
+          {
+            "pid": 53003,
+            "role": "publisher",
+            "cpuPercent": 11.942747899635481,
+            "rssBytes": 38019072,
+            "threads": 3,
+            "fdCount": 7
+          },
+          {
+            "pid": 53004,
+            "role": "audio-encoder",
+            "cpuPercent": 71.65648739781292,
+            "rssBytes": 34328576,
+            "threads": 11,
+            "fdCount": 5
+          },
+          {
+            "pid": 53005,
+            "role": "encoder",
+            "cpuPercent": 402.07251262106223,
+            "rssBytes": 202891264,
+            "threads": 14,
+            "fdCount": 7
+          },
+          {
+            "pid": 52898,
+            "role": "cef-browser",
+            "cpuPercent": 0,
+            "rssBytes": 65556480,
+            "threads": 1,
+            "fdCount": 13
+          },
+          {
+            "pid": 52899,
+            "role": "cef-browser",
+            "cpuPercent": 0,
+            "rssBytes": 65785856,
+            "threads": 1,
+            "fdCount": 13
+          },
+          {
+            "pid": 52924,
+            "role": "cef-browser",
+            "cpuPercent": 9.952289916362908,
+            "rssBytes": 97742848,
+            "threads": 10,
+            "fdCount": 35
+          },
+          {
+            "pid": 52992,
+            "role": "cef-browser",
+            "cpuPercent": 121.41793697962748,
+            "rssBytes": 78966784,
+            "threads": 10,
+            "fdCount": 26
+          },
+          {
+            "pid": 52901,
+            "role": "cef-browser",
+            "cpuPercent": 0,
+            "rssBytes": 18640896,
+            "threads": 1,
+            "fdCount": 14
+          },
+          {
+            "pid": 52925,
+            "role": "cef-browser",
+            "cpuPercent": 0,
+            "rssBytes": 47968256,
+            "threads": 8,
+            "fdCount": 28
+          },
+          {
+            "pid": 52940,
+            "role": "cef-renderer",
+            "cpuPercent": 0,
+            "rssBytes": 75612160,
+            "threads": 9,
+            "fdCount": 28
+          },
+          {
+            "pid": 52941,
+            "role": "cef-renderer",
+            "cpuPercent": 157.2461806785342,
+            "rssBytes": 170024960,
+            "threads": 14,
+            "fdCount": 37
+          },
+          {
+            "pid": 52921,
+            "role": "cef-gpu",
+            "cpuPercent": 61.704197481449796,
+            "rssBytes": 187002880,
+            "threads": 19,
+            "fdCount": 43
+          }
+        ]
+      },
+      "after": {
+        "monotonic": 22689.570009331,
+        "sampleDurationMs": 2977.746226999443,
+        "privateMemoryEveryIterations": 0,
+        "processes": [
+          {
+            "pid": 52878,
+            "role": "node",
+            "cpuPercent": 31.846250866702125,
+            "rssBytes": 293171200,
+            "threads": 11,
+            "fdCount": 45
+          },
+          {
+            "pid": 52892,
+            "role": "receiver",
+            "cpuPercent": 2.8099633117678446,
+            "rssBytes": 39325696,
+            "threads": 3,
+            "fdCount": 5
+          },
+          {
+            "pid": 52893,
+            "role": "sampler",
+            "cpuPercent": 21.855270202638803,
+            "rssBytes": 11640832,
+            "threads": 1,
+            "fdCount": 5
+          },
+          {
+            "pid": 52894,
+            "role": "cef-browser",
+            "cpuPercent": 28.09963311767852,
+            "rssBytes": 223383552,
+            "threads": 32,
+            "fdCount": 160
+          },
+          {
+            "pid": 52991,
+            "role": "encoder",
+            "cpuPercent": 58.69701140137262,
+            "rssBytes": 439242752,
+            "threads": 9,
+            "fdCount": 5
+          },
+          {
+            "pid": 53003,
+            "role": "publisher",
+            "cpuPercent": 2.8099633117678446,
+            "rssBytes": 38019072,
+            "threads": 3,
+            "fdCount": 7
+          },
+          {
+            "pid": 53004,
+            "role": "audio-encoder",
+            "cpuPercent": 5.619926623535682,
+            "rssBytes": 34328576,
+            "threads": 11,
+            "fdCount": 5
+          },
+          {
+            "pid": 53005,
+            "role": "encoder",
+            "cpuPercent": 35.905086761477975,
+            "rssBytes": 190447616,
+            "threads": 14,
+            "fdCount": 7
+          },
+          {
+            "pid": 52898,
+            "role": "cef-browser",
+            "cpuPercent": 0,
+            "rssBytes": 65556480,
+            "threads": 1,
+            "fdCount": 13
+          },
+          {
+            "pid": 52899,
+            "role": "cef-browser",
+            "cpuPercent": 0,
+            "rssBytes": 65785856,
+            "threads": 1,
+            "fdCount": 13
+          },
+          {
+            "pid": 52924,
+            "role": "cef-browser",
+            "cpuPercent": 1.2488725830079324,
+            "rssBytes": 97751040,
+            "threads": 10,
+            "fdCount": 35
+          },
+          {
+            "pid": 52992,
+            "role": "cef-browser",
+            "cpuPercent": 43.39832225952562,
+            "rssBytes": 78966784,
+            "threads": 10,
+            "fdCount": 26
+          },
+          {
+            "pid": 52901,
+            "role": "cef-browser",
+            "cpuPercent": 0,
+            "rssBytes": 18640896,
+            "threads": 1,
+            "fdCount": 14
+          },
+          {
+            "pid": 52925,
+            "role": "cef-browser",
+            "cpuPercent": 0,
+            "rssBytes": 47968256,
+            "threads": 8,
+            "fdCount": 28
+          },
+          {
+            "pid": 52940,
+            "role": "cef-renderer",
+            "cpuPercent": 0,
+            "rssBytes": 75612160,
+            "threads": 9,
+            "fdCount": 28
+          },
+          {
+            "pid": 52941,
+            "role": "cef-renderer",
+            "cpuPercent": 24.35301536865464,
+            "rssBytes": 170651648,
+            "threads": 14,
+            "fdCount": 37
+          },
+          {
+            "pid": 52921,
+            "role": "cef-gpu",
+            "cpuPercent": 19.045306890871043,
+            "rssBytes": 187002880,
+            "threads": 19,
+            "fdCount": 43
+          }
+        ]
+      }
+    },
+    {
+      "fromSeconds": 64.96007360400108,
+      "toSeconds": 67.956727924,
+      "gapSeconds": 2.9966543199989246,
+      "before": {
+        "monotonic": 22689.570009331,
+        "sampleDurationMs": 2977.746226999443,
+        "privateMemoryEveryIterations": 0,
+        "processes": [
+          {
+            "pid": 52878,
+            "role": "node",
+            "cpuPercent": 31.846250866702125,
+            "rssBytes": 293171200,
+            "threads": 11,
+            "fdCount": 45
+          },
+          {
+            "pid": 52892,
+            "role": "receiver",
+            "cpuPercent": 2.8099633117678446,
+            "rssBytes": 39325696,
+            "threads": 3,
+            "fdCount": 5
+          },
+          {
+            "pid": 52893,
+            "role": "sampler",
+            "cpuPercent": 21.855270202638803,
+            "rssBytes": 11640832,
+            "threads": 1,
+            "fdCount": 5
+          },
+          {
+            "pid": 52894,
+            "role": "cef-browser",
+            "cpuPercent": 28.09963311767852,
+            "rssBytes": 223383552,
+            "threads": 32,
+            "fdCount": 160
+          },
+          {
+            "pid": 52991,
+            "role": "encoder",
+            "cpuPercent": 58.69701140137262,
+            "rssBytes": 439242752,
+            "threads": 9,
+            "fdCount": 5
+          },
+          {
+            "pid": 53003,
+            "role": "publisher",
+            "cpuPercent": 2.8099633117678446,
+            "rssBytes": 38019072,
+            "threads": 3,
+            "fdCount": 7
+          },
+          {
+            "pid": 53004,
+            "role": "audio-encoder",
+            "cpuPercent": 5.619926623535682,
+            "rssBytes": 34328576,
+            "threads": 11,
+            "fdCount": 5
+          },
+          {
+            "pid": 53005,
+            "role": "encoder",
+            "cpuPercent": 35.905086761477975,
+            "rssBytes": 190447616,
+            "threads": 14,
+            "fdCount": 7
+          },
+          {
+            "pid": 52898,
+            "role": "cef-browser",
+            "cpuPercent": 0,
+            "rssBytes": 65556480,
+            "threads": 1,
+            "fdCount": 13
+          },
+          {
+            "pid": 52899,
+            "role": "cef-browser",
+            "cpuPercent": 0,
+            "rssBytes": 65785856,
+            "threads": 1,
+            "fdCount": 13
+          },
+          {
+            "pid": 52924,
+            "role": "cef-browser",
+            "cpuPercent": 1.2488725830079324,
+            "rssBytes": 97751040,
+            "threads": 10,
+            "fdCount": 35
+          },
+          {
+            "pid": 52992,
+            "role": "cef-browser",
+            "cpuPercent": 43.39832225952562,
+            "rssBytes": 78966784,
+            "threads": 10,
+            "fdCount": 26
+          },
+          {
+            "pid": 52901,
+            "role": "cef-browser",
+            "cpuPercent": 0,
+            "rssBytes": 18640896,
+            "threads": 1,
+            "fdCount": 14
+          },
+          {
+            "pid": 52925,
+            "role": "cef-browser",
+            "cpuPercent": 0,
+            "rssBytes": 47968256,
+            "threads": 8,
+            "fdCount": 28
+          },
+          {
+            "pid": 52940,
+            "role": "cef-renderer",
+            "cpuPercent": 0,
+            "rssBytes": 75612160,
+            "threads": 9,
+            "fdCount": 28
+          },
+          {
+            "pid": 52941,
+            "role": "cef-renderer",
+            "cpuPercent": 24.35301536865464,
+            "rssBytes": 170651648,
+            "threads": 14,
+            "fdCount": 37
+          },
+          {
+            "pid": 52921,
+            "role": "cef-gpu",
+            "cpuPercent": 19.045306890871043,
+            "rssBytes": 187002880,
+            "threads": 19,
+            "fdCount": 43
+          }
+        ]
+      },
+      "after": {
+        "monotonic": 22692.566663651,
+        "sampleDurationMs": 90.92902799966396,
+        "privateMemoryEveryIterations": 0,
+        "processes": [
+          {
+            "pid": 52878,
+            "role": "node",
+            "cpuPercent": 1.6685274529770322,
+            "rssBytes": 293179392,
+            "threads": 11,
+            "fdCount": 45
+          },
+          {
+            "pid": 52892,
+            "role": "receiver",
+            "cpuPercent": 0,
+            "rssBytes": 39325696,
+            "threads": 3,
+            "fdCount": 5
+          },
+          {
+            "pid": 52893,
+            "role": "sampler",
+            "cpuPercent": 0.6674109811907714,
+            "rssBytes": 11640832,
+            "threads": 1,
+            "fdCount": 5
+          },
+          {
+            "pid": 52894,
+            "role": "cef-browser",
+            "cpuPercent": 0.3337054905953709,
+            "rssBytes": 223584256,
+            "threads": 32,
+            "fdCount": 160
+          },
+          {
+            "pid": 52991,
+            "role": "encoder",
+            "cpuPercent": 3.003349415358516,
+            "rssBytes": 439242752,
+            "threads": 9,
+            "fdCount": 5
+          },
+          {
+            "pid": 53003,
+            "role": "publisher",
+            "cpuPercent": 0,
+            "rssBytes": 38019072,
+            "threads": 3,
+            "fdCount": 7
+          },
+          {
+            "pid": 53004,
+            "role": "audio-encoder",
+            "cpuPercent": 0.3337054905953857,
+            "rssBytes": 34328576,
+            "threads": 11,
+            "fdCount": 5
+          },
+          {
+            "pid": 53005,
+            "role": "encoder",
+            "cpuPercent": 1.3348219623814837,
+            "rssBytes": 190447616,
+            "threads": 14,
+            "fdCount": 7
+          },
+          {
+            "pid": 52898,
+            "role": "cef-browser",
+            "cpuPercent": 0,
+            "rssBytes": 65556480,
+            "threads": 1,
+            "fdCount": 13
+          },
+          {
+            "pid": 52899,
+            "role": "cef-browser",
+            "cpuPercent": 0,
+            "rssBytes": 65785856,
+            "threads": 1,
+            "fdCount": 13
+          },
+          {
+            "pid": 52924,
+            "role": "cef-browser",
+            "cpuPercent": 0.3337054905953783,
+            "rssBytes": 97751040,
+            "threads": 10,
+            "fdCount": 36
+          },
+          {
+            "pid": 52992,
+            "role": "cef-browser",
+            "cpuPercent": 0,
+            "rssBytes": 78966784,
+            "threads": 10,
+            "fdCount": 26
+          },
+          {
+            "pid": 52901,
+            "role": "cef-browser",
+            "cpuPercent": 0,
+            "rssBytes": 18640896,
+            "threads": 1,
+            "fdCount": 14
+          },
+          {
+            "pid": 52925,
+            "role": "cef-browser",
+            "cpuPercent": 0,
+            "rssBytes": 47968256,
+            "threads": 8,
+            "fdCount": 28
+          },
+          {
+            "pid": 52940,
+            "role": "cef-renderer",
+            "cpuPercent": 0,
+            "rssBytes": 75612160,
+            "threads": 9,
+            "fdCount": 28
+          },
+          {
+            "pid": 52941,
+            "role": "cef-renderer",
+            "cpuPercent": 0,
+            "rssBytes": 170651648,
+            "threads": 14,
+            "fdCount": 37
+          },
+          {
+            "pid": 52921,
+            "role": "cef-gpu",
+            "cpuPercent": 0,
+            "rssBytes": 187002880,
+            "threads": 19,
+            "fdCount": 43
+          }
+        ]
+      }
+    },
+    {
+      "fromSeconds": 69.65750942600062,
+      "toSeconds": 73.95321584500198,
+      "gapSeconds": 4.2957064190013625,
+      "before": {
+        "monotonic": 22694.267445153,
+        "sampleDurationMs": 4193.743741001526,
+        "privateMemoryEveryIterations": 0,
+        "processes": [
+          {
+            "pid": 52878,
+            "role": "node",
+            "cpuPercent": 186.50238330060714,
+            "rssBytes": 293179392,
+            "threads": 11,
+            "fdCount": 45
+          },
+          {
+            "pid": 52892,
+            "role": "receiver",
+            "cpuPercent": 18.794813820991326,
+            "rssBytes": 39370752,
+            "threads": 3,
+            "fdCount": 5
+          },
+          {
+            "pid": 52893,
+            "role": "sampler",
+            "cpuPercent": 69.39623564673714,
+            "rssBytes": 11644928,
+            "threads": 1,
+            "fdCount": 5
+          },
+          {
+            "pid": 52894,
+            "role": "cef-browser",
+            "cpuPercent": 199.51417748436933,
+            "rssBytes": 225685504,
+            "threads": 32,
+            "fdCount": 162
+          },
+          {
+            "pid": 52991,
+            "role": "encoder",
+            "cpuPercent": 296.3797564079387,
+            "rssBytes": 439242752,
+            "threads": 9,
+            "fdCount": 5
+          },
+          {
+            "pid": 53003,
+            "role": "publisher",
+            "cpuPercent": 17.349058911684285,
+            "rssBytes": 38019072,
+            "threads": 3,
+            "fdCount": 7
+          },
+          {
+            "pid": 53004,
+            "role": "audio-encoder",
+            "cpuPercent": 11.566039274456275,
+            "rssBytes": 34328576,
+            "threads": 11,
+            "fdCount": 5
+          },
+          {
+            "pid": 53005,
+            "role": "encoder",
+            "cpuPercent": 289.150981861405,
+            "rssBytes": 190447616,
+            "threads": 14,
+            "fdCount": 7
+          },
+          {
+            "pid": 52898,
+            "role": "cef-browser",
+            "cpuPercent": 0,
+            "rssBytes": 65556480,
+            "threads": 1,
+            "fdCount": 13
+          },
+          {
+            "pid": 52899,
+            "role": "cef-browser",
+            "cpuPercent": 0,
+            "rssBytes": 65785856,
+            "threads": 1,
+            "fdCount": 13
+          },
+          {
+            "pid": 52924,
+            "role": "cef-browser",
+            "cpuPercent": 93.97406910495661,
+            "rssBytes": 97751040,
+            "threads": 10,
+            "fdCount": 36
+          },
+          {
+            "pid": 52992,
+            "role": "cef-browser",
+            "cpuPercent": 186.50238330060637,
+            "rssBytes": 78987264,
+            "threads": 10,
+            "fdCount": 26
+          },
+          {
+            "pid": 52901,
+            "role": "cef-browser",
+            "cpuPercent": 0,
+            "rssBytes": 18640896,
+            "threads": 1,
+            "fdCount": 14
+          },
+          {
+            "pid": 52925,
+            "role": "cef-browser",
+            "cpuPercent": 0,
+            "rssBytes": 47968256,
+            "threads": 8,
+            "fdCount": 28
+          },
+          {
+            "pid": 52940,
+            "role": "cef-renderer",
+            "cpuPercent": 0,
+            "rssBytes": 75612160,
+            "threads": 9,
+            "fdCount": 28
+          },
+          {
+            "pid": 52941,
+            "role": "cef-renderer",
+            "cpuPercent": 138.79247129347453,
+            "rssBytes": 170586112,
+            "threads": 14,
+            "fdCount": 37
+          },
+          {
+            "pid": 52921,
+            "role": "cef-gpu",
+            "cpuPercent": 169.1533243889222,
+            "rssBytes": 188510208,
+            "threads": 19,
+            "fdCount": 43
+          }
+        ]
+      },
+      "after": {
+        "monotonic": 22698.563151572,
+        "sampleDurationMs": 1907.9044469981454,
+        "privateMemoryEveryIterations": 0,
+        "processes": [
+          {
+            "pid": 52878,
+            "role": "node",
+            "cpuPercent": 32.5906815653723,
+            "rssBytes": 293179392,
+            "threads": 11,
+            "fdCount": 45
+          },
+          {
+            "pid": 52892,
+            "role": "receiver",
+            "cpuPercent": 0.23279058260980115,
+            "rssBytes": 39387136,
+            "threads": 3,
+            "fdCount": 5
+          },
+          {
+            "pid": 52893,
+            "role": "sampler",
+            "cpuPercent": 15.131387869637217,
+            "rssBytes": 11649024,
+            "threads": 1,
+            "fdCount": 5
+          },
+          {
+            "pid": 52894,
+            "role": "cef-browser",
+            "cpuPercent": 26.072545252298017,
+            "rssBytes": 223637504,
+            "threads": 32,
+            "fdCount": 162
+          },
+          {
+            "pid": 52991,
+            "role": "encoder",
+            "cpuPercent": 38.64323671322731,
+            "rssBytes": 439242752,
+            "threads": 9,
+            "fdCount": 5
+          },
+          {
+            "pid": 53003,
+            "role": "publisher",
+            "cpuPercent": 0.4655811652196075,
+            "rssBytes": 38019072,
+            "threads": 3,
+            "fdCount": 7
+          },
+          {
+            "pid": 53004,
+            "role": "audio-encoder",
+            "cpuPercent": 1.8623246608784196,
+            "rssBytes": 34344960,
+            "threads": 11,
+            "fdCount": 5
+          },
+          {
+            "pid": 53005,
+            "role": "encoder",
+            "cpuPercent": 14.89859728702744,
+            "rssBytes": 190451712,
+            "threads": 14,
+            "fdCount": 7
+          },
+          {
+            "pid": 52898,
+            "role": "cef-browser",
+            "cpuPercent": 0,
+            "rssBytes": 65556480,
+            "threads": 1,
+            "fdCount": 13
+          },
+          {
+            "pid": 52899,
+            "role": "cef-browser",
+            "cpuPercent": 0,
+            "rssBytes": 65785856,
+            "threads": 1,
+            "fdCount": 13
+          },
+          {
+            "pid": 52924,
+            "role": "cef-browser",
+            "cpuPercent": 0,
+            "rssBytes": 97751040,
+            "threads": 10,
+            "fdCount": 36
+          },
+          {
+            "pid": 52992,
+            "role": "cef-browser",
+            "cpuPercent": 8.380460973952914,
+            "rssBytes": 79003648,
+            "threads": 10,
+            "fdCount": 26
+          },
+          {
+            "pid": 52901,
+            "role": "cef-browser",
+            "cpuPercent": 0,
+            "rssBytes": 18640896,
+            "threads": 1,
+            "fdCount": 14
+          },
+          {
+            "pid": 52925,
+            "role": "cef-browser",
+            "cpuPercent": 0,
+            "rssBytes": 47968256,
+            "threads": 8,
+            "fdCount": 28
+          },
+          {
+            "pid": 52940,
+            "role": "cef-renderer",
+            "cpuPercent": 0,
+            "rssBytes": 75612160,
+            "threads": 9,
+            "fdCount": 28
+          },
+          {
+            "pid": 52941,
+            "role": "cef-renderer",
+            "cpuPercent": 9.311623304392109,
+            "rssBytes": 170594304,
+            "threads": 14,
+            "fdCount": 37
+          },
+          {
+            "pid": 52921,
+            "role": "cef-gpu",
+            "cpuPercent": 7.216508060903797,
+            "rssBytes": 188444672,
+            "threads": 19,
+            "fdCount": 43
+          }
+        ]
+      }
+    },
+    {
+      "fromSeconds": 197.1647626820013,
+      "toSeconds": 199.4683173070007,
+      "gapSeconds": 2.3035546249993786,
+      "before": {
+        "monotonic": 22821.774698409,
+        "sampleDurationMs": 95.04311999990023,
+        "privateMemoryEveryIterations": 0,
+        "processes": [
+          {
+            "pid": 52878,
+            "role": "node",
+            "cpuPercent": 105.47862044468961,
+            "rssBytes": 300933120,
+            "threads": 11,
+            "fdCount": 44
+          },
+          {
+            "pid": 52892,
+            "role": "receiver",
+            "cpuPercent": 0,
+            "rssBytes": 39485440,
+            "threads": 3,
+            "fdCount": 5
+          },
+          {
+            "pid": 52893,
+            "role": "sampler",
+            "cpuPercent": 7.960650599599382,
+            "rssBytes": 11665408,
+            "threads": 1,
+            "fdCount": 5
+          },
+          {
+            "pid": 52894,
+            "role": "cef-browser",
+            "cpuPercent": 19.90162649899828,
+            "rssBytes": 245342208,
+            "threads": 32,
+            "fdCount": 163
+          },
+          {
+            "pid": 52991,
+            "role": "encoder",
+            "cpuPercent": 61.69504214689424,
+            "rssBytes": 439357440,
+            "threads": 9,
+            "fdCount": 5
+          },
+          {
+            "pid": 53003,
+            "role": "publisher",
+            "cpuPercent": 0,
+            "rssBytes": 38105088,
+            "threads": 3,
+            "fdCount": 7
+          },
+          {
+            "pid": 53004,
+            "role": "audio-encoder",
+            "cpuPercent": 5.9704879496992715,
+            "rssBytes": 34418688,
+            "threads": 11,
+            "fdCount": 5
+          },
+          {
+            "pid": 53005,
+            "role": "encoder",
+            "cpuPercent": 75.62618069619148,
+            "rssBytes": 190550016,
+            "threads": 14,
+            "fdCount": 7
+          },
+          {
+            "pid": 52898,
+            "role": "cef-browser",
+            "cpuPercent": 0,
+            "rssBytes": 65556480,
+            "threads": 1,
+            "fdCount": 13
+          },
+          {
+            "pid": 52899,
+            "role": "cef-browser",
+            "cpuPercent": 0,
+            "rssBytes": 65785856,
+            "threads": 1,
+            "fdCount": 13
+          },
+          {
+            "pid": 52924,
+            "role": "cef-browser",
+            "cpuPercent": 0,
+            "rssBytes": 97992704,
+            "threads": 10,
+            "fdCount": 29
+          },
+          {
+            "pid": 52992,
+            "role": "cef-browser",
+            "cpuPercent": 5.9704879496992715,
+            "rssBytes": 79564800,
+            "threads": 10,
+            "fdCount": 26
+          },
+          {
+            "pid": 52901,
+            "role": "cef-browser",
+            "cpuPercent": 0,
+            "rssBytes": 18796544,
+            "threads": 1,
+            "fdCount": 14
+          },
+          {
+            "pid": 52925,
+            "role": "cef-browser",
+            "cpuPercent": 0,
+            "rssBytes": 47968256,
+            "threads": 8,
+            "fdCount": 28
+          },
+          {
+            "pid": 52940,
+            "role": "cef-renderer",
+            "cpuPercent": 0,
+            "rssBytes": 75612160,
+            "threads": 9,
+            "fdCount": 29
+          },
+          {
+            "pid": 52941,
+            "role": "cef-renderer",
+            "cpuPercent": 15.921301199198764,
+            "rssBytes": 195964928,
+            "threads": 14,
+            "fdCount": 38
+          },
+          {
+            "pid": 52921,
+            "role": "cef-gpu",
+            "cpuPercent": 29.852439748498128,
+            "rssBytes": 193642496,
+            "threads": 19,
+            "fdCount": 43
+          }
+        ]
+      },
+      "after": {
+        "monotonic": 22824.078253034,
+        "sampleDurationMs": 83.15204199971049,
+        "privateMemoryEveryIterations": 0,
+        "processes": [
+          {
+            "pid": 52878,
+            "role": "node",
+            "cpuPercent": 48.18639801086978,
+            "rssBytes": 300933120,
+            "threads": 11,
+            "fdCount": 44
+          },
+          {
+            "pid": 52892,
+            "role": "receiver",
+            "cpuPercent": 0.43411169379162995,
+            "rssBytes": 39485440,
+            "threads": 3,
+            "fdCount": 5
+          },
+          {
+            "pid": 52893,
+            "role": "sampler",
+            "cpuPercent": 3.4728935503329623,
+            "rssBytes": 11665408,
+            "threads": 1,
+            "fdCount": 5
+          },
+          {
+            "pid": 52894,
+            "role": "cef-browser",
+            "cpuPercent": 12.589239119956941,
+            "rssBytes": 245346304,
+            "threads": 32,
+            "fdCount": 163
+          },
+          {
+            "pid": 52991,
+            "role": "encoder",
+            "cpuPercent": 56.43452019291107,
+            "rssBytes": 439357440,
+            "threads": 9,
+            "fdCount": 5
+          },
+          {
+            "pid": 53003,
+            "role": "publisher",
+            "cpuPercent": 0.8682233875832406,
+            "rssBytes": 38105088,
+            "threads": 3,
+            "fdCount": 7
+          },
+          {
+            "pid": 53004,
+            "role": "audio-encoder",
+            "cpuPercent": 6.077563713082703,
+            "rssBytes": 34418688,
+            "threads": 11,
+            "fdCount": 5
+          },
+          {
+            "pid": 53005,
+            "role": "encoder",
+            "cpuPercent": 67.28731253770157,
+            "rssBytes": 190550016,
+            "threads": 14,
+            "fdCount": 7
+          },
+          {
+            "pid": 52898,
+            "role": "cef-browser",
+            "cpuPercent": 0,
+            "rssBytes": 65556480,
+            "threads": 1,
+            "fdCount": 13
+          },
+          {
+            "pid": 52899,
+            "role": "cef-browser",
+            "cpuPercent": 0,
+            "rssBytes": 65785856,
+            "threads": 1,
+            "fdCount": 13
+          },
+          {
+            "pid": 52924,
+            "role": "cef-browser",
+            "cpuPercent": 0,
+            "rssBytes": 97992704,
+            "threads": 10,
+            "fdCount": 29
+          },
+          {
+            "pid": 52992,
+            "role": "cef-browser",
+            "cpuPercent": 26.914925015080478,
+            "rssBytes": 79564800,
+            "threads": 10,
+            "fdCount": 26
+          },
+          {
+            "pid": 52901,
+            "role": "cef-browser",
+            "cpuPercent": 0,
+            "rssBytes": 18796544,
+            "threads": 1,
+            "fdCount": 14
+          },
+          {
+            "pid": 52925,
+            "role": "cef-browser",
+            "cpuPercent": 0,
+            "rssBytes": 47968256,
+            "threads": 8,
+            "fdCount": 28
+          },
+          {
+            "pid": 52940,
+            "role": "cef-renderer",
+            "cpuPercent": 0,
+            "rssBytes": 75612160,
+            "threads": 9,
+            "fdCount": 29
+          },
+          {
+            "pid": 52941,
+            "role": "cef-renderer",
+            "cpuPercent": 12.155127426165405,
+            "rssBytes": 195973120,
+            "threads": 14,
+            "fdCount": 38
+          },
+          {
+            "pid": 52921,
+            "role": "cef-gpu",
+            "cpuPercent": 10.852792344790188,
+            "rssBytes": 193642496,
+            "threads": 19,
+            "fdCount": 43
+          }
+        ]
+      }
+    },
+    {
+      "fromSeconds": 441.634121897001,
+      "toSeconds": 444.5414650089988,
+      "gapSeconds": 2.9073431119977613,
+      "before": {
+        "monotonic": 23066.244057624,
+        "sampleDurationMs": 2837.4184319982305,
+        "privateMemoryEveryIterations": 0,
+        "processes": [
+          {
+            "pid": 52878,
+            "role": "node",
+            "cpuPercent": 137.1760782766237,
+            "rssBytes": 299261952,
+            "threads": 11,
+            "fdCount": 45
+          },
+          {
+            "pid": 52892,
+            "role": "receiver",
+            "cpuPercent": 0,
+            "rssBytes": 39485440,
+            "threads": 3,
+            "fdCount": 5
+          },
+          {
+            "pid": 52893,
+            "role": "sampler",
+            "cpuPercent": 35.23789166739009,
+            "rssBytes": 11673600,
+            "threads": 1,
+            "fdCount": 5
+          },
+          {
+            "pid": 52894,
+            "role": "cef-browser",
+            "cpuPercent": 151.01953571738596,
+            "rssBytes": 253919232,
+            "threads": 32,
+            "fdCount": 164
+          },
+          {
+            "pid": 52991,
+            "role": "encoder",
+            "cpuPercent": 240.3727610168376,
+            "rssBytes": 430280704,
+            "threads": 9,
+            "fdCount": 5
+          },
+          {
+            "pid": 53003,
+            "role": "publisher",
+            "cpuPercent": 1.2584961309782015,
+            "rssBytes": 38182912,
+            "threads": 3,
+            "fdCount": 7
+          },
+          {
+            "pid": 53004,
+            "role": "audio-encoder",
+            "cpuPercent": 17.618945833695268,
+            "rssBytes": 34492416,
+            "threads": 11,
+            "fdCount": 5
+          },
+          {
+            "pid": 53005,
+            "role": "encoder",
+            "cpuPercent": 213.94434226629735,
+            "rssBytes": 212471808,
+            "threads": 14,
+            "fdCount": 7
+          },
+          {
+            "pid": 52898,
+            "role": "cef-browser",
+            "cpuPercent": 0,
+            "rssBytes": 65556480,
+            "threads": 1,
+            "fdCount": 13
+          },
+          {
+            "pid": 52899,
+            "role": "cef-browser",
+            "cpuPercent": 0,
+            "rssBytes": 65785856,
+            "threads": 1,
+            "fdCount": 13
+          },
+          {
+            "pid": 52924,
+            "role": "cef-browser",
+            "cpuPercent": 0,
+            "rssBytes": 97992704,
+            "threads": 10,
+            "fdCount": 30
+          },
+          {
+            "pid": 52992,
+            "role": "cef-browser",
+            "cpuPercent": 61.66631041793343,
+            "rssBytes": 79568896,
+            "threads": 10,
+            "fdCount": 26
+          },
+          {
+            "pid": 52901,
+            "role": "cef-browser",
+            "cpuPercent": 0,
+            "rssBytes": 18796544,
+            "threads": 1,
+            "fdCount": 14
+          },
+          {
+            "pid": 52925,
+            "role": "cef-browser",
+            "cpuPercent": 0,
+            "rssBytes": 47968256,
+            "threads": 8,
+            "fdCount": 28
+          },
+          {
+            "pid": 52940,
+            "role": "cef-renderer",
+            "cpuPercent": 0,
+            "rssBytes": 75612160,
+            "threads": 9,
+            "fdCount": 29
+          },
+          {
+            "pid": 52941,
+            "role": "cef-renderer",
+            "cpuPercent": 90.61172143043139,
+            "rssBytes": 188493824,
+            "threads": 14,
+            "fdCount": 38
+          },
+          {
+            "pid": 52921,
+            "role": "cef-gpu",
+            "cpuPercent": 115.7816440499972,
+            "rssBytes": 191479808,
+            "threads": 19,
+            "fdCount": 43
+          }
+        ]
+      },
+      "after": {
+        "monotonic": 23069.151400736,
+        "sampleDurationMs": 126.17829600276309,
+        "privateMemoryEveryIterations": 0,
+        "processes": [
+          {
+            "pid": 52878,
+            "role": "node",
+            "cpuPercent": 8.942872925011953,
+            "rssBytes": 299261952,
+            "threads": 11,
+            "fdCount": 44
+          },
+          {
+            "pid": 52892,
+            "role": "receiver",
+            "cpuPercent": 2.4076965567335398,
+            "rssBytes": 39485440,
+            "threads": 3,
+            "fdCount": 5
+          },
+          {
+            "pid": 52893,
+            "role": "sampler",
+            "cpuPercent": 2.063739905771566,
+            "rssBytes": 11673600,
+            "threads": 1,
+            "fdCount": 5
+          },
+          {
+            "pid": 52894,
+            "role": "cef-browser",
+            "cpuPercent": 12.038482783667531,
+            "rssBytes": 245547008,
+            "threads": 31,
+            "fdCount": 161
+          },
+          {
+            "pid": 52991,
+            "role": "encoder",
+            "cpuPercent": 16.509919246173506,
+            "rssBytes": 430280704,
+            "threads": 9,
+            "fdCount": 5
+          },
+          {
+            "pid": 53003,
+            "role": "publisher",
+            "cpuPercent": 3.7835231605812814,
+            "rssBytes": 38182912,
+            "threads": 3,
+            "fdCount": 7
+          },
+          {
+            "pid": 53004,
+            "role": "audio-encoder",
+            "cpuPercent": 5.159349764429099,
+            "rssBytes": 34492416,
+            "threads": 11,
+            "fdCount": 5
+          },
+          {
+            "pid": 53005,
+            "role": "encoder",
+            "cpuPercent": 12.726396085591754,
+            "rssBytes": 212471808,
+            "threads": 14,
+            "fdCount": 7
+          },
+          {
+            "pid": 52898,
+            "role": "cef-browser",
+            "cpuPercent": 0,
+            "rssBytes": 65556480,
+            "threads": 1,
+            "fdCount": 13
+          },
+          {
+            "pid": 52899,
+            "role": "cef-browser",
+            "cpuPercent": 0,
+            "rssBytes": 65785856,
+            "threads": 1,
+            "fdCount": 13
+          },
+          {
+            "pid": 52924,
+            "role": "cef-browser",
+            "cpuPercent": 0.34395665096193534,
+            "rssBytes": 97992704,
+            "threads": 10,
+            "fdCount": 30
+          },
+          {
+            "pid": 52992,
+            "role": "cef-browser",
+            "cpuPercent": 0.6879133019238555,
+            "rssBytes": 79560704,
+            "threads": 10,
+            "fdCount": 30
+          },
+          {
+            "pid": 52901,
+            "role": "cef-browser",
+            "cpuPercent": 0,
+            "rssBytes": 18796544,
+            "threads": 1,
+            "fdCount": 14
+          },
+          {
+            "pid": 52925,
+            "role": "cef-browser",
+            "cpuPercent": 0,
+            "rssBytes": 47968256,
+            "threads": 8,
+            "fdCount": 28
+          },
+          {
+            "pid": 52940,
+            "role": "cef-renderer",
+            "cpuPercent": 0,
+            "rssBytes": 75612160,
+            "threads": 9,
+            "fdCount": 29
+          },
+          {
+            "pid": 52941,
+            "role": "cef-renderer",
+            "cpuPercent": 0.6879133019239776,
+            "rssBytes": 188493824,
+            "threads": 14,
+            "fdCount": 38
+          },
+          {
+            "pid": 52921,
+            "role": "cef-gpu",
+            "cpuPercent": 1.7197832548100662,
+            "rssBytes": 191479808,
+            "threads": 19,
+            "fdCount": 43
+          }
+        ]
+      }
+    },
+    {
+      "fromSeconds": 568.3939632299989,
+      "toSeconds": 571.1622650390018,
+      "gapSeconds": 2.768301809002878,
+      "before": {
+        "monotonic": 23193.003898957,
+        "sampleDurationMs": 2767.8483890013013,
+        "privateMemoryEveryIterations": 0,
+        "processes": [
+          {
+            "pid": 52878,
+            "role": "node",
+            "cpuPercent": 61.98226330864303,
+            "rssBytes": 303874048,
+            "threads": 11,
+            "fdCount": 44
+          },
+          {
+            "pid": 52892,
+            "role": "receiver",
+            "cpuPercent": 38.24437523299023,
+            "rssBytes": 39485440,
+            "threads": 3,
+            "fdCount": 5
+          },
+          {
+            "pid": 52893,
+            "role": "sampler",
+            "cpuPercent": 27.694202754924113,
+            "rssBytes": 11673600,
+            "threads": 1,
+            "fdCount": 5
+          },
+          {
+            "pid": 52894,
+            "role": "cef-browser",
+            "cpuPercent": 80.44506514525534,
+            "rssBytes": 245628928,
+            "threads": 32,
+            "fdCount": 163
+          },
+          {
+            "pid": 52991,
+            "role": "encoder",
+            "cpuPercent": 284.854656907793,
+            "rssBytes": 439504896,
+            "threads": 9,
+            "fdCount": 5
+          },
+          {
+            "pid": 53003,
+            "role": "publisher",
+            "cpuPercent": 26.37543119516574,
+            "rssBytes": 38182912,
+            "threads": 3,
+            "fdCount": 7
+          },
+          {
+            "pid": 53004,
+            "role": "audio-encoder",
+            "cpuPercent": 38.244375232990166,
+            "rssBytes": 34529280,
+            "threads": 11,
+            "fdCount": 5
+          },
+          {
+            "pid": 53005,
+            "role": "encoder",
+            "cpuPercent": 200.45327708325703,
+            "rssBytes": 215646208,
+            "threads": 14,
+            "fdCount": 7
+          },
+          {
+            "pid": 52898,
+            "role": "cef-browser",
+            "cpuPercent": 0,
+            "rssBytes": 65556480,
+            "threads": 1,
+            "fdCount": 13
+          },
+          {
+            "pid": 52899,
+            "role": "cef-browser",
+            "cpuPercent": 0,
+            "rssBytes": 65785856,
+            "threads": 1,
+            "fdCount": 13
+          },
+          {
+            "pid": 52924,
+            "role": "cef-browser",
+            "cpuPercent": 0,
+            "rssBytes": 97992704,
+            "threads": 10,
+            "fdCount": 29
+          },
+          {
+            "pid": 52992,
+            "role": "cef-browser",
+            "cpuPercent": 59.344720189122754,
+            "rssBytes": 79577088,
+            "threads": 10,
+            "fdCount": 26
+          },
+          {
+            "pid": 52901,
+            "role": "cef-browser",
+            "cpuPercent": 0,
+            "rssBytes": 18796544,
+            "threads": 1,
+            "fdCount": 14
+          },
+          {
+            "pid": 52925,
+            "role": "cef-browser",
+            "cpuPercent": 0,
+            "rssBytes": 47968256,
+            "threads": 8,
+            "fdCount": 28
+          },
+          {
+            "pid": 52940,
+            "role": "cef-renderer",
+            "cpuPercent": 0,
+            "rssBytes": 75612160,
+            "threads": 9,
+            "fdCount": 29
+          },
+          {
+            "pid": 52941,
+            "role": "cef-renderer",
+            "cpuPercent": 123.96452661727855,
+            "rssBytes": 197992448,
+            "threads": 14,
+            "fdCount": 38
+          },
+          {
+            "pid": 52921,
+            "role": "cef-gpu",
+            "cpuPercent": 56.707177069607184,
+            "rssBytes": 194547712,
+            "threads": 19,
+            "fdCount": 43
+          }
+        ]
+      },
+      "after": {
+        "monotonic": 23195.772200766,
+        "sampleDurationMs": 69.69029500032775,
+        "privateMemoryEveryIterations": 0,
+        "processes": [
+          {
+            "pid": 52878,
+            "role": "node",
+            "cpuPercent": 11.198200968978234,
+            "rssBytes": 303874048,
+            "threads": 11,
+            "fdCount": 44
+          },
+          {
+            "pid": 52892,
+            "role": "receiver",
+            "cpuPercent": 0,
+            "rssBytes": 39485440,
+            "threads": 3,
+            "fdCount": 5
+          },
+          {
+            "pid": 52893,
+            "role": "sampler",
+            "cpuPercent": 5.779716629149891,
+            "rssBytes": 11673600,
+            "threads": 1,
+            "fdCount": 5
+          },
+          {
+            "pid": 52894,
+            "role": "cef-browser",
+            "cpuPercent": 0,
+            "rssBytes": 245628928,
+            "threads": 32,
+            "fdCount": 164
+          },
+          {
+            "pid": 52991,
+            "role": "encoder",
+            "cpuPercent": 3.2510906038980325,
+            "rssBytes": 439504896,
+            "threads": 9,
+            "fdCount": 5
+          },
+          {
+            "pid": 53003,
+            "role": "publisher",
+            "cpuPercent": 0,
+            "rssBytes": 38182912,
+            "threads": 3,
+            "fdCount": 7
+          },
+          {
+            "pid": 53004,
+            "role": "audio-encoder",
+            "cpuPercent": 0.36123228932193235,
+            "rssBytes": 34529280,
+            "threads": 11,
+            "fdCount": 5
+          },
+          {
+            "pid": 53005,
+            "role": "encoder",
+            "cpuPercent": 6.140948918470411,
+            "rssBytes": 215646208,
+            "threads": 14,
+            "fdCount": 7
+          },
+          {
+            "pid": 52898,
+            "role": "cef-browser",
+            "cpuPercent": 0,
+            "rssBytes": 65556480,
+            "threads": 1,
+            "fdCount": 13
+          },
+          {
+            "pid": 52899,
+            "role": "cef-browser",
+            "cpuPercent": 0,
+            "rssBytes": 65785856,
+            "threads": 1,
+            "fdCount": 13
+          },
+          {
+            "pid": 52924,
+            "role": "cef-browser",
+            "cpuPercent": 0,
+            "rssBytes": 97992704,
+            "threads": 10,
+            "fdCount": 29
+          },
+          {
+            "pid": 52992,
+            "role": "cef-browser",
+            "cpuPercent": 0.36123228932193235,
+            "rssBytes": 79577088,
+            "threads": 10,
+            "fdCount": 26
+          },
+          {
+            "pid": 52901,
+            "role": "cef-browser",
+            "cpuPercent": 0,
+            "rssBytes": 18796544,
+            "threads": 1,
+            "fdCount": 14
+          },
+          {
+            "pid": 52925,
+            "role": "cef-browser",
+            "cpuPercent": 0,
+            "rssBytes": 47968256,
+            "threads": 8,
+            "fdCount": 28
+          },
+          {
+            "pid": 52940,
+            "role": "cef-renderer",
+            "cpuPercent": 0,
+            "rssBytes": 75612160,
+            "threads": 9,
+            "fdCount": 29
+          },
+          {
+            "pid": 52941,
+            "role": "cef-renderer",
+            "cpuPercent": 0.36123228932180396,
+            "rssBytes": 197992448,
+            "threads": 14,
+            "fdCount": 38
+          },
+          {
+            "pid": 52921,
+            "role": "cef-gpu",
+            "cpuPercent": 0,
+            "rssBytes": 194547712,
+            "threads": 19,
+            "fdCount": 43
+          }
+        ]
+      }
+    },
+    {
+      "fromSeconds": 1114.7473109230014,
+      "toSeconds": 1124.3510074250007,
+      "gapSeconds": 9.603696501999366,
+      "before": {
+        "monotonic": 23739.35724665,
+        "sampleDurationMs": 9598.648203998891,
+        "privateMemoryEveryIterations": 0,
+        "processes": [
+          {
+            "pid": 52878,
+            "role": "node",
+            "cpuPercent": 38.855804456969885,
+            "rssBytes": 310403072,
+            "threads": 11,
+            "fdCount": 44
+          },
+          {
+            "pid": 52892,
+            "role": "receiver",
+            "cpuPercent": 5.180773927596736,
+            "rssBytes": 39510016,
+            "threads": 3,
+            "fdCount": 5
+          },
+          {
+            "pid": 52893,
+            "role": "sampler",
+            "cpuPercent": 113.97702640712896,
+            "rssBytes": 11677696,
+            "threads": 1,
+            "fdCount": 5
+          },
+          {
+            "pid": 52894,
+            "role": "cef-browser",
+            "cpuPercent": 90.663543732942,
+            "rssBytes": 247336960,
+            "threads": 32,
+            "fdCount": 163
+          },
+          {
+            "pid": 52991,
+            "role": "encoder",
+            "cpuPercent": 343.65800386393045,
+            "rssBytes": 439836672,
+            "threads": 9,
+            "fdCount": 5
+          },
+          {
+            "pid": 53003,
+            "role": "publisher",
+            "cpuPercent": 4.317311606330626,
+            "rssBytes": 38182912,
+            "threads": 3,
+            "fdCount": 7
+          },
+          {
+            "pid": 53004,
+            "role": "audio-encoder",
+            "cpuPercent": 4.3173116063310095,
+            "rssBytes": 34963456,
+            "threads": 11,
+            "fdCount": 5
+          },
+          {
+            "pid": 53005,
+            "role": "encoder",
+            "cpuPercent": 61.305824809888435,
+            "rssBytes": 212709376,
+            "threads": 14,
+            "fdCount": 7
+          },
+          {
+            "pid": 52898,
+            "role": "cef-browser",
+            "cpuPercent": 0,
+            "rssBytes": 65556480,
+            "threads": 1,
+            "fdCount": 13
+          },
+          {
+            "pid": 52899,
+            "role": "cef-browser",
+            "cpuPercent": 0,
+            "rssBytes": 65785856,
+            "threads": 1,
+            "fdCount": 13
+          },
+          {
+            "pid": 52924,
+            "role": "cef-browser",
+            "cpuPercent": 0,
+            "rssBytes": 98476032,
+            "threads": 11,
+            "fdCount": 28
+          },
+          {
+            "pid": 52992,
+            "role": "cef-browser",
+            "cpuPercent": 129.51934818991924,
+            "rssBytes": 80113664,
+            "threads": 11,
+            "fdCount": 26
+          },
+          {
+            "pid": 52901,
+            "role": "cef-browser",
+            "cpuPercent": 0,
+            "rssBytes": 18796544,
+            "threads": 1,
+            "fdCount": 14
+          },
+          {
+            "pid": 52925,
+            "role": "cef-browser",
+            "cpuPercent": 0,
+            "rssBytes": 48627712,
+            "threads": 9,
+            "fdCount": 28
+          },
+          {
+            "pid": 52940,
+            "role": "cef-renderer",
+            "cpuPercent": 0,
+            "rssBytes": 76087296,
+            "threads": 10,
+            "fdCount": 29
+          },
+          {
+            "pid": 52941,
+            "role": "cef-renderer",
+            "cpuPercent": 184.7809367509515,
+            "rssBytes": 189452288,
+            "threads": 14,
+            "fdCount": 39
+          },
+          {
+            "pid": 52921,
+            "role": "cef-gpu",
+            "cpuPercent": 164.92130336182777,
+            "rssBytes": 201076736,
+            "threads": 20,
+            "fdCount": 43
+          }
+        ]
+      },
+      "after": {
+        "monotonic": 23748.960943152,
+        "sampleDurationMs": 587.437972000771,
+        "privateMemoryEveryIterations": 0,
+        "processes": [
+          {
+            "pid": 52878,
+            "role": "node",
+            "cpuPercent": 8.74663208927057,
+            "rssBytes": 310403072,
+            "threads": 11,
+            "fdCount": 44
+          },
+          {
+            "pid": 52892,
+            "role": "receiver",
+            "cpuPercent": 5.1022020520743085,
+            "rssBytes": 39510016,
+            "threads": 3,
+            "fdCount": 5
+          },
+          {
+            "pid": 52893,
+            "role": "sampler",
+            "cpuPercent": 10.725036966605186,
+            "rssBytes": 11677696,
+            "threads": 1,
+            "fdCount": 5
+          },
+          {
+            "pid": 52894,
+            "role": "cef-browser",
+            "cpuPercent": 18.63865647594513,
+            "rssBytes": 255553536,
+            "threads": 31,
+            "fdCount": 162
+          },
+          {
+            "pid": 52991,
+            "role": "encoder",
+            "cpuPercent": 28.218301145144846,
+            "rssBytes": 439836672,
+            "threads": 9,
+            "fdCount": 5
+          },
+          {
+            "pid": 53003,
+            "role": "publisher",
+            "cpuPercent": 0.6247594349478701,
+            "rssBytes": 38182912,
+            "threads": 3,
+            "fdCount": 7
+          },
+          {
+            "pid": 53004,
+            "role": "audio-encoder",
+            "cpuPercent": 7.809492936848354,
+            "rssBytes": 34963456,
+            "threads": 11,
+            "fdCount": 5
+          },
+          {
+            "pid": 53005,
+            "role": "encoder",
+            "cpuPercent": 22.69959280310676,
+            "rssBytes": 212709376,
+            "threads": 14,
+            "fdCount": 7
+          },
+          {
+            "pid": 52898,
+            "role": "cef-browser",
+            "cpuPercent": 0,
+            "rssBytes": 65556480,
+            "threads": 1,
+            "fdCount": 13
+          },
+          {
+            "pid": 52899,
+            "role": "cef-browser",
+            "cpuPercent": 0,
+            "rssBytes": 65785856,
+            "threads": 1,
+            "fdCount": 13
+          },
+          {
+            "pid": 52924,
+            "role": "cef-browser",
+            "cpuPercent": 0.10412657249131245,
+            "rssBytes": 98476032,
+            "threads": 11,
+            "fdCount": 28
+          },
+          {
+            "pid": 52992,
+            "role": "cef-browser",
+            "cpuPercent": 11.558049546535667,
+            "rssBytes": 80097280,
+            "threads": 11,
+            "fdCount": 30
+          },
+          {
+            "pid": 52901,
+            "role": "cef-browser",
+            "cpuPercent": 0,
+            "rssBytes": 18796544,
+            "threads": 1,
+            "fdCount": 14
+          },
+          {
+            "pid": 52925,
+            "role": "cef-browser",
+            "cpuPercent": 0,
+            "rssBytes": 48627712,
+            "threads": 9,
+            "fdCount": 28
+          },
+          {
+            "pid": 52940,
+            "role": "cef-renderer",
+            "cpuPercent": 0,
+            "rssBytes": 76087296,
+            "threads": 10,
+            "fdCount": 29
+          },
+          {
+            "pid": 52941,
+            "role": "cef-renderer",
+            "cpuPercent": 6.872353784426728,
+            "rssBytes": 189468672,
+            "threads": 14,
+            "fdCount": 38
+          },
+          {
+            "pid": 52921,
+            "role": "cef-gpu",
+            "cpuPercent": 8.642505516779353,
+            "rssBytes": 201142272,
+            "threads": 20,
+            "fdCount": 43
+          }
+        ]
+      }
+    }
+  ],
+  "interpretation": "Independent sampler delay is a correlation; host, observer, IPC, or JavaScript causality is not isolated."
+}

@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/workspace/suitecut/benchmarks/publication/runtime.py", line 6, in <module>
+    lock=(root/'.suitecut/thread-control.lock').open('a');fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
+                                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+BlockingIOError: [Errno 11] Resource temporarily unavailable

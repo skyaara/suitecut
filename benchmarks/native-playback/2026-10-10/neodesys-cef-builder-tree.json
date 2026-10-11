@@ -1,0 +1,45 @@
+{
+  "sha": "8c897bd16f120958be7b7184c4ed0f0d9e8c7184",
+  "url": "https://api.github.com/repos/neodesys/cef-builder/git/trees/8c897bd16f120958be7b7184c4ed0f0d9e8c7184",
+  "tree": [
+    {
+      "path": ".github",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "6878b6da0079dd6fe08e0632be63018adf9ed15d",
+      "url": "https://api.github.com/repos/neodesys/cef-builder/git/trees/6878b6da0079dd6fe08e0632be63018adf9ed15d"
+    },
+    {
+      "path": ".github/workflows",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "bb2c4c7b5f571c30ee97337037a58ac1321d84f5",
+      "url": "https://api.github.com/repos/neodesys/cef-builder/git/trees/bb2c4c7b5f571c30ee97337037a58ac1321d84f5"
+    },
+    {
+      "path": ".github/workflows/build-cef.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5ba5ee03cfee6653718770a08c1e569e29e43b93",
+      "size": 1568,
+      "url": "https://api.github.com/repos/neodesys/cef-builder/git/blobs/5ba5ee03cfee6653718770a08c1e569e29e43b93"
+    },
+    {
+      "path": "Dockerfile",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ea83180989b874d2e178a6b47d4531d7ed867508",
+      "size": 100,
+      "url": "https://api.github.com/repos/neodesys/cef-builder/git/blobs/ea83180989b874d2e178a6b47d4531d7ed867508"
+    },
+    {
+      "path": "build-cef.sh",
+      "mode": "100755",
+      "type": "blob",
+      "sha": "41db04212bfa9718e79a97ecd7d333ea9250ea6e",
+      "size": 2251,
+      "url": "https://api.github.com/repos/neodesys/cef-builder/git/blobs/41db04212bfa9718e79a97ecd7d333ea9250ea6e"
+    }
+  ],
+  "truncated": false
+}

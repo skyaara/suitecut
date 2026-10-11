@@ -1,0 +1,74 @@
+{
+  "startedAt": "2026-10-09T01:07:08.194Z",
+  "requestedMs": 1800000,
+  "width": 1920,
+  "height": 1080,
+  "targetFps": 60,
+  "audio": true,
+  "mode": "simultaneous recording and RTMP streaming on one caller-owned CEF source",
+  "gcDuringRun": false,
+  "receiverPath": "/workspace/suitecut/.suitecut/obs-cef-optimization/soak-before-capture-stamp-fix/receiver.flv",
+  "readyAt": "2026-10-09T01:07:10.917Z",
+  "baseline": {
+    "rss": 226304000,
+    "heapTotal": 123387904,
+    "heapUsed": 53685016,
+    "external": 62085841,
+    "arrayBuffers": 58079685
+  },
+  "activeMs": 1800031.6541809998,
+  "snapshot": {
+    "markerCount": 88239,
+    "scrollY": 2700,
+    "scrollEvents": 345,
+    "keyEvents": 0,
+    "clicks": 0,
+    "value": "",
+    "choice": "First",
+    "secondary": false
+  },
+  "scrollCommands": 345,
+  "beforeStop": {
+    "rss": 321941504,
+    "heapTotal": 90357760,
+    "heapUsed": 51237952,
+    "external": 41753097,
+    "arrayBuffers": 37755317
+  },
+  "frames": 63990,
+  "audioPackets": 82990,
+  "audioOffsets": {
+    "count": 84942,
+    "minMs": -10592.193437000271,
+    "maxMs": 4.727902998449281,
+    "futureOver100": 0,
+    "futureOver500": 0,
+    "pastOver10000": 4
+  },
+  "recordingPath": "/workspace/suitecut/.suitecut/obs-cef-optimization/soak-before-capture-stamp-fix/suitecut-source-81375cba-7b8f-469d-8ccd-6012565a1012-8395c896-df9a-4431-902e-4bbf2653bf7e.webm",
+  "sourceStateAfterRecording": "running",
+  "status": "failed",
+  "error": "AssertionError [ERR_ASSERTION]: recording 900: A/V drift 217.49999999999994ms\n    at file:///workspace/suitecut/benchmarks/obs-cef/soak.mjs:63:86",
+  "afterCleanup": {
+    "rss": 322990080,
+    "heapTotal": 90095616,
+    "heapUsed": 52605992,
+    "external": 26212183,
+    "arrayBuffers": 22210327
+  },
+  "afterCleanupGc": {
+    "rss": 322990080,
+    "heapTotal": 90095616,
+    "heapUsed": 50764736,
+    "external": 4346389,
+    "arrayBuffers": 344533
+  },
+  "nodeCpuMs": 1189183.617,
+  "elapsedMs": 1842757.890947,
+  "eventLoopDelay": {
+    "meanMs": 25.2661021630946,
+    "p99Ms": 59.473919,
+    "maxMs": 8665.432063
+  },
+  "completedAt": "2026-10-09T01:37:50.954Z"
+}

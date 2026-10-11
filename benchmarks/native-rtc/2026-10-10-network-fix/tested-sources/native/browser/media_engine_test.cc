@@ -1,0 +1,106 @@
+// SPDX-License-Identifier: MIT
+#include "media_engine.h"
+#include "media_file.h"
+#include "media_render.h"
+#include "audio_clock.h"
+#include <chrono>
+#include <atomic>
+#include <cmath>
+#include <filesystem>
+#include <iostream>
+#include <stdexcept>
+#include <thread>
+#include <unistd.h>
+int main() {
+  using namespace std::chrono;
+  const auto start = steady_clock::now();
+  auto now = [&] { return duration<double,std::milli>(steady_clock::now()-start).count(); };
+  const auto path = "/tmp/suitecut-media-"+std::to_string(getpid())+".mp4";
+  try {
+    suitecut::MediaOptions config; config.destination=path;config.width=320;config.height=180;
+    suitecut::MediaOutput output(config,now);
+    for (int i=0;i<120;++i) {
+      auto pixels=std::make_shared<std::vector<uint8_t>>(320*180*3/2,128);
+      std::fill_n(pixels->begin(),320*180,static_cast<uint8_t>(16+i%200));
+      output.Video(pixels,320,180,now());
+      auto audio=std::make_shared<std::vector<int16_t>>(1600);
+      for (size_t j=0;j<audio->size()/2;++j) (*audio)[2*j]=(*audio)[2*j+1]=static_cast<int16_t>(12000*std::sin((i*800+j)*2*3.141592653589793*440/48000));
+      output.Audio(audio,now());
+      std::this_thread::sleep_for(milliseconds(17));
+    }
+    auto status=output.Stop();
+    if (!status.error.empty() || status.video_frames<55 || status.audio_frames<90000 || status.queued_audio_bytes || status.queued_video_bytes || std::filesystem::file_size(path)<10000)
+      throw std::runtime_error("Native media failed: "+status.error);
+    // Repeated stop must return the same counters and release queued ownership.
+    if (output.Stop().video_frames!=status.video_frames) throw std::runtime_error("Stop was not idempotent");
+    std::cout<<"Native output: "<<status.video_frames<<" video frames, "<<status.audio_frames<<" audio samples\n";
+    const auto probe=suitecut::ProbeMedia(path);
+    if(probe.width!=320 || probe.height!=180 || !probe.audio || probe.duration_ms<1900) throw std::runtime_error("Native probe is incorrect");
+    config.destination=path+".webm";config.video_codec="libvpx-vp9";
+    const auto clip=suitecut::CutVideo(path,config,500,1000);
+    if(clip.video_frames!=30 || clip.queued_video_bytes || suitecut::ProbeMedia(config.destination).audio) throw std::runtime_error("Native checkpoint is incorrect");
+    std::filesystem::remove(config.destination);
+    // The end of a checkpoint pads with the final decoded frame.
+    const auto tail=suitecut::CutVideo(path,config,1800,1000);
+    if(tail.video_frames!=30) throw std::runtime_error("Native checkpoint tail is incorrect");
+    std::filesystem::remove(config.destination);
+    suitecut::RenderOptions render;
+    render.inputs={path};render.destination=path+".render.mp4";render.duration_ms=1000;render.audio=true;render.video_options={{"preset","veryfast"},{"crf","22"}};
+    render.graph="[0:v]trim=start=0.2:duration=1,setpts=PTS-STARTPTS,fps=30,scale=320:180,format=yuv420p[video0];[0:a]atrim=start=0.2:duration=1,asetpts=PTS-STARTPTS,aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo[audioout]";
+    const auto rendered=suitecut::RenderMedia(render,[] {return false;});
+    if(rendered.video_frames!=30 || rendered.audio_samples<47000 || !suitecut::ProbeMedia(render.destination).audio) throw std::runtime_error("Native render is incorrect");
+    std::filesystem::remove(render.destination);
+    // Multiple timeline segments using the same input require a native split.
+    render.audio=false;render.graph="[0:v]trim=start=0.2:duration=0.5,setpts=PTS-STARTPTS[a];[0:v]trim=start=1:duration=0.5,setpts=PTS-STARTPTS[b];[a][b]concat=n=2:v=1:a=0,fps=30,format=yuv420p[video0]";
+    const auto joined=suitecut::RenderMedia(render,[] {return false;});
+    if(joined.video_frames!=30) throw std::runtime_error("Native render concat is incorrect");
+    std::filesystem::remove(render.destination);
+    // A held single frame must occupy its whole span before concatenated playback.
+    render.graph="[0:v]trim=start=0.22,trim=end_frame=1,loop=loop=-1:size=1:start=0,setpts=N/(30*TB),trim=duration=0.5,fps=30[a];[0:v]trim=start=0.6:duration=0.5,setpts=PTS-STARTPTS,fps=30[b];[a][b]concat=n=2:v=1:a=0,format=yuv420p[video0]";
+    const auto held=suitecut::RenderMedia(render,[] {return false;});
+    if(held.video_frames!=30) throw std::runtime_error("Native held segment lost its duration");
+    std::filesystem::remove(render.destination);
+    int cancellation_checks=0;
+    try {suitecut::RenderMedia(render,[&] {return ++cancellation_checks>=5;});throw std::runtime_error("Native render ignored cancellation");}
+    catch(const std::runtime_error& error) {if(std::string(error.what())!="Native render cancelled") throw;}
+    std::filesystem::remove(render.destination);
+    std::filesystem::remove(path);
+    config.destination="/nonexistent-suitecut-directory/failure.mp4";
+    suitecut::MediaOutput failed(config,now);auto error=failed.Stop();
+    if(error.error.empty() || !error.stopped) throw std::runtime_error("Failure lifecycle was not reported");
+    // A silent source block is covered input, while an absent block is an
+    // underrun. A late callback must be reported even without queue overflow.
+    std::atomic<double> timeline{0};
+    config.destination=path+".coverage.mkv";config.video_codec="libx264";
+    config.audio_codec="pcm_s16le";config.offline=true;
+    suitecut::MediaOutput coverage(config,[&] {return timeline.load();});
+    coverage.Audio(std::make_shared<std::vector<int16_t>>(960*2,0),0);
+    coverage.Audio(std::make_shared<std::vector<int16_t>>(7680*2,1234),40);
+    coverage.Video(std::make_shared<std::vector<uint8_t>>(320*180*3/2,128),320,180,0);
+    const auto deadline=steady_clock::now()+seconds(5);
+    while (coverage.Status().audio_frames<960 && steady_clock::now()<deadline) std::this_thread::sleep_for(milliseconds(1));
+    if(coverage.Status().audio_frames!=960) throw std::runtime_error("Coverage output failed to start");
+    coverage.Audio(std::make_shared<std::vector<int16_t>>(960*2,0),0);
+    timeline=200;const auto counted=coverage.Stop();
+    if(!counted.error.empty() || counted.audio_frames!=9600 || counted.audio_missing!=960 || counted.audio_late!=960 || counted.audio_dropped)
+      throw std::runtime_error("Native audio coverage counters are incorrect: "+counted.error);
+    std::filesystem::remove(config.destination);
+    // Continuous supplied PCM with one small PTS step must remain fully
+    // covered after the browser's bounded packet-clock normalization.
+    timeline=0;
+    config.destination=path+".jitter.mkv";
+    suitecut::MediaOutput jitter(config,[&] {return timeline.load();});
+    SuiteCutAudioClock packet_clock;
+    for(int i=0;i<10;++i) {
+      const double raw_at=i*20+(i ? 20 : 0);
+      jitter.Audio(std::make_shared<std::vector<int16_t>>(960*2,1234),
+                   packet_clock.NormalizePacket(raw_at,960));
+    }
+    jitter.Video(std::make_shared<std::vector<uint8_t>>(320*180*3/2,128),320,180,0);
+    timeline=200;
+    const auto smoothed=jitter.Stop();
+    if(!smoothed.error.empty() || smoothed.audio_frames!=9600 || smoothed.audio_missing || smoothed.audio_late || smoothed.audio_dropped)
+      throw std::runtime_error("Timestamp-only jitter inserted silence: "+smoothed.error);
+    std::filesystem::remove(config.destination);
+  } catch(const std::exception& error) {std::cerr<<error.what()<<'\n';std::filesystem::remove(path);return 1;}
+}

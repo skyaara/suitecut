@@ -1,0 +1,314 @@
+{
+  "recording": {
+    "maxPresentationGapSeconds": 11.330000000000155,
+    "minutePacketCounts": [
+      {
+        "startSecond": 0,
+        "videoPackets": 786
+      },
+      {
+        "startSecond": 60,
+        "videoPackets": 593
+      },
+      {
+        "startSecond": 120,
+        "videoPackets": 703
+      },
+      {
+        "startSecond": 180,
+        "videoPackets": 573
+      },
+      {
+        "startSecond": 240,
+        "videoPackets": 1102
+      },
+      {
+        "startSecond": 300,
+        "videoPackets": 817
+      },
+      {
+        "startSecond": 360,
+        "videoPackets": 740
+      },
+      {
+        "startSecond": 420,
+        "videoPackets": 682
+      },
+      {
+        "startSecond": 480,
+        "videoPackets": 673
+      },
+      {
+        "startSecond": 540,
+        "videoPackets": 627
+      },
+      {
+        "startSecond": 600,
+        "videoPackets": 842
+      },
+      {
+        "startSecond": 660,
+        "videoPackets": 767
+      },
+      {
+        "startSecond": 720,
+        "videoPackets": 773
+      },
+      {
+        "startSecond": 780,
+        "videoPackets": 1013
+      },
+      {
+        "startSecond": 840,
+        "videoPackets": 934
+      },
+      {
+        "startSecond": 900,
+        "videoPackets": 792
+      },
+      {
+        "startSecond": 960,
+        "videoPackets": 735
+      },
+      {
+        "startSecond": 1020,
+        "videoPackets": 699
+      },
+      {
+        "startSecond": 1080,
+        "videoPackets": 601
+      },
+      {
+        "startSecond": 1140,
+        "videoPackets": 955
+      },
+      {
+        "startSecond": 1200,
+        "videoPackets": 729
+      },
+      {
+        "startSecond": 1260,
+        "videoPackets": 757
+      },
+      {
+        "startSecond": 1320,
+        "videoPackets": 742
+      },
+      {
+        "startSecond": 1380,
+        "videoPackets": 744
+      },
+      {
+        "startSecond": 1440,
+        "videoPackets": 880
+      },
+      {
+        "startSecond": 1500,
+        "videoPackets": 682
+      },
+      {
+        "startSecond": 1560,
+        "videoPackets": 979
+      },
+      {
+        "startSecond": 1620,
+        "videoPackets": 748
+      },
+      {
+        "startSecond": 1680,
+        "videoPackets": 845
+      },
+      {
+        "startSecond": 1740,
+        "videoPackets": 806
+      },
+      {
+        "startSecond": 1800,
+        "videoPackets": 48
+      }
+    ],
+    "status": "passed",
+    "videoPackets": 23367,
+    "packetIntervalFps": 12.954310082917342,
+    "duplicatePresentationTimes": 0,
+    "nonIncreasingDecodeTimes": 0,
+    "presentationReorders": 0,
+    "windows": [
+      {
+        "offset": 5,
+        "decodedFrames": 255,
+        "markerTransitions": 219,
+        "firstMarker": 136,
+        "lastMarker": 453
+      },
+      {
+        "offset": 900,
+        "decodedFrames": 191,
+        "markerTransitions": 181,
+        "firstMarker": 22635,
+        "lastMarker": 23044
+      },
+      {
+        "offset": 1780,
+        "decodedFrames": 196,
+        "markerTransitions": 191,
+        "firstMarker": 45992,
+        "lastMarker": 46418
+      }
+    ]
+  },
+  "receiver": {
+    "maxPresentationGapSeconds": 11.400000000000091,
+    "minutePacketCounts": [
+      {
+        "startSecond": 0,
+        "videoPackets": 716
+      },
+      {
+        "startSecond": 60,
+        "videoPackets": 645
+      },
+      {
+        "startSecond": 120,
+        "videoPackets": 1291
+      },
+      {
+        "startSecond": 180,
+        "videoPackets": 1147
+      },
+      {
+        "startSecond": 240,
+        "videoPackets": 607
+      },
+      {
+        "startSecond": 300,
+        "videoPackets": 822
+      },
+      {
+        "startSecond": 360,
+        "videoPackets": 794
+      },
+      {
+        "startSecond": 420,
+        "videoPackets": 923
+      },
+      {
+        "startSecond": 480,
+        "videoPackets": 1178
+      },
+      {
+        "startSecond": 540,
+        "videoPackets": 1282
+      },
+      {
+        "startSecond": 600,
+        "videoPackets": 784
+      },
+      {
+        "startSecond": 660,
+        "videoPackets": 692
+      },
+      {
+        "startSecond": 720,
+        "videoPackets": 717
+      },
+      {
+        "startSecond": 780,
+        "videoPackets": 697
+      },
+      {
+        "startSecond": 840,
+        "videoPackets": 692
+      },
+      {
+        "startSecond": 900,
+        "videoPackets": 1056
+      },
+      {
+        "startSecond": 960,
+        "videoPackets": 823
+      },
+      {
+        "startSecond": 1020,
+        "videoPackets": 740
+      },
+      {
+        "startSecond": 1080,
+        "videoPackets": 528
+      },
+      {
+        "startSecond": 1140,
+        "videoPackets": 680
+      },
+      {
+        "startSecond": 1200,
+        "videoPackets": 757
+      },
+      {
+        "startSecond": 1260,
+        "videoPackets": 996
+      },
+      {
+        "startSecond": 1320,
+        "videoPackets": 934
+      },
+      {
+        "startSecond": 1380,
+        "videoPackets": 1073
+      },
+      {
+        "startSecond": 1440,
+        "videoPackets": 880
+      },
+      {
+        "startSecond": 1500,
+        "videoPackets": 1097
+      },
+      {
+        "startSecond": 1560,
+        "videoPackets": 918
+      },
+      {
+        "startSecond": 1620,
+        "videoPackets": 1151
+      },
+      {
+        "startSecond": 1680,
+        "videoPackets": 775
+      },
+      {
+        "startSecond": 1740,
+        "videoPackets": 917
+      }
+    ],
+    "status": "passed",
+    "videoPackets": 26312,
+    "packetIntervalFps": 14.629275119445632,
+    "duplicatePresentationTimes": 0,
+    "nonIncreasingDecodeTimes": 0,
+    "presentationReorders": 0,
+    "windows": [
+      {
+        "offset": 5,
+        "decodedFrames": 208,
+        "markerTransitions": 133,
+        "firstMarker": 142,
+        "lastMarker": 441
+      },
+      {
+        "offset": 900,
+        "decodedFrames": 203,
+        "markerTransitions": 165,
+        "firstMarker": 22636,
+        "lastMarker": 23045
+      },
+      {
+        "offset": 1780,
+        "decodedFrames": 308,
+        "markerTransitions": 250,
+        "firstMarker": 45993,
+        "lastMarker": 46422
+      }
+    ]
+  }
+}

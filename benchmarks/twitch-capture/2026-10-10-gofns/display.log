@@ -1,0 +1,42 @@
+RECORDING_STARTED 2026-10-10T11:10:47.920Z
+PROGRESS 30 seconds
+PROGRESS 60 seconds
+PROGRESS 90 seconds
+PROGRESS 120 seconds
+{
+  "status": "recorded",
+  "channel": "GOFNS",
+  "url": "https://www.twitch.tv/gofns",
+  "requestedSeconds": 120,
+  "backend": "Direct X11 + PulseAudio capture of Playwright Chrome; SuiteCut CEF and legacy adapter attempts failed",
+  "startedAt": "2026-10-10T11:10:36.441Z",
+  "browserVersion": "151.0.7922.34",
+  "before": {
+    "title": "GOFNS - Twitch",
+    "time": 5.761082,
+    "paused": false,
+    "readyState": 4,
+    "muted": false,
+    "volume": 0.8,
+    "width": 1280,
+    "height": 720,
+    "decodedFrames": 230,
+    "droppedFrames": 6
+  },
+  "recordingStartedAt": "2026-10-10T11:10:47.920Z",
+  "elapsedMs": 120384.21295199999,
+  "after": {
+    "title": "GOFNS - Twitch",
+    "time": 126.42173,
+    "paused": false,
+    "readyState": 4,
+    "muted": false,
+    "volume": 0.8,
+    "width": 1280,
+    "height": 720,
+    "decodedFrames": 7469,
+    "droppedFrames": 327
+  },
+  "file": "/workspace/suitecut/benchmarks/twitch-capture/2026-10-10-gofns/display/recorded.mp4",
+  "finishedAt": "2026-10-10T11:12:48.869Z"
+}

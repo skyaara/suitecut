@@ -1,0 +1,16 @@
+
+/workspace/suitecut/benchmarks/native-playback/2026-10-10/before-entry-fix/suitecut-browser:     file format elf64-x86-64
+
+
+Disassembly of section .init:
+
+Disassembly of section .plt:
+
+Disassembly of section .plt.got:
+
+Disassembly of section .text:
+
+0000000000027930 <main>:
+   27930:	e9 ab 06 01 00       	jmp    37fe0 <RunSuiteCutBrowser(int, char**)>
+
+Disassembly of section .fini:

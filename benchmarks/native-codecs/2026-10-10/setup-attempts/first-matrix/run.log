@@ -1,0 +1,27 @@
+libx264/aac: 613 captured; repeated=12; stop=81.0ms
+libx265/aac: 612 captured; repeated=2; stop=79.0ms
+libvpx/libopus: 612 captured; repeated=23; stop=78.5ms
+libvpx-vp9/libopus: 611 captured; repeated=3; stop=179.2ms
+libsvtav1/aac: 611 captured; repeated=3; stop=52.1ms
+libaom-av1/aac: 613 captured; repeated=20; stop=97.2ms
+ffv1/flac: 625 captured; repeated=54; stop=65.6ms
+ffv1/pcm_s16le: 610 captured; repeated=9; stop=91.0ms
+libx264/aac: presentation render 1596.9ms
+libx265/aac: presentation render 3278.4ms
+libvpx/libopus: presentation render 1328.3ms
+libvpx-vp9/libopus: presentation render 2405.4ms
+libsvtav1/aac: presentation render 1834.3ms
+libaom-av1/aac: presentation render 3404.9ms
+ffv1/flac: presentation render 1235.1ms
+ffv1/pcm_s16le: presentation render 1251.3ms
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+Error: Open native h264_nvenc encoder: Operation not permitted
+    at createNativeOutput (file:///workspace/suitecut/dist/engine.js:176:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async output (file:///workspace/suitecut/dist/engine.js:199:24)
+    at async file:///workspace/suitecut/benchmarks/native-codecs/matrix.mjs:125:20
+
+Node.js v24.19.0

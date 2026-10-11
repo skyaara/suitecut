@@ -1,0 +1,141 @@
+{
+  "requestedUrl": "https://meet.jit.si/ColourfulProsperitiesSignalTotally",
+  "startedAt": "2026-10-10T12:39:30.306Z",
+  "backend": "Standalone Chromium reference, explicit proxy and sandbox enabled; not SuiteCut",
+  "status": "loaded",
+  "actions": [
+    {
+      "type": "join",
+      "name": "SuiteCut RTC test",
+      "at": "2026-10-10T12:39:42.482Z"
+    }
+  ],
+  "webrtcPolicy": "disable-non-proxied-udp",
+  "browserVersion": "151.0.7922.34",
+  "lastRequestFailure": {
+    "origin": "null",
+    "path": "/",
+    "error": "net::ERR_FAILED"
+  },
+  "iceErrors": [
+    {
+      "code": 701,
+      "text": "Failed to establish connection",
+      "url": "turns:meet-jit-si-turnrelay.jitsi.net:443"
+    },
+    {
+      "code": 701,
+      "text": "Failed to establish connection",
+      "url": "turns:meet-jit-si-turnrelay.jitsi.net:443"
+    },
+    {
+      "code": 701,
+      "text": "Failed to establish connection",
+      "url": "turns:meet-jit-si-turnrelay.jitsi.net:443"
+    },
+    {
+      "code": 701,
+      "text": "Failed to establish connection",
+      "url": "turns:meet-jit-si-turnrelay.jitsi.net:443"
+    }
+  ],
+  "lastPeers": [
+    {
+      "connectionState": "new",
+      "iceConnectionState": "new",
+      "signalingState": "stable",
+      "iceTransportPolicy": "all",
+      "servers": [
+        {
+          "urls": [
+            "turns:meet-jit-si-turnrelay.jitsi.net:443?transport=tcp"
+          ]
+        }
+      ],
+      "stats": [
+        {
+          "id": "I+Qbzet+K",
+          "type": "local-candidate",
+          "candidateType": "host",
+          "protocol": "tcp"
+        },
+        {
+          "id": "IDnbP2Bvd",
+          "type": "local-candidate",
+          "candidateType": "host",
+          "protocol": "tcp"
+        },
+        {
+          "id": "IdZZptSm/",
+          "type": "local-candidate",
+          "candidateType": "host",
+          "protocol": "tcp"
+        },
+        {
+          "id": "IuFc9bXeD",
+          "type": "local-candidate",
+          "candidateType": "host",
+          "protocol": "tcp"
+        },
+        {
+          "id": "T01",
+          "type": "transport",
+          "bytesSent": 0,
+          "bytesReceived": 0,
+          "packetsSent": 0,
+          "packetsReceived": 0,
+          "dtlsState": "new",
+          "iceState": "new"
+        }
+      ]
+    },
+    {
+      "connectionState": "new",
+      "iceConnectionState": "new",
+      "signalingState": "stable",
+      "iceTransportPolicy": "all",
+      "servers": [
+        {
+          "urls": [
+            "turn:meet-jit-si-turnrelay.jitsi.net:443"
+          ]
+        },
+        {
+          "urls": [
+            "turns:meet-jit-si-turnrelay.jitsi.net:443?transport=tcp"
+          ]
+        },
+        {
+          "urls": [
+            "stun:meet-jit-si-turnrelay.jitsi.net:443"
+          ]
+        }
+      ],
+      "stats": [
+        {
+          "id": "INncEx93F",
+          "type": "local-candidate",
+          "candidateType": "host",
+          "protocol": "tcp"
+        },
+        {
+          "id": "IwGdyCwvC",
+          "type": "local-candidate",
+          "candidateType": "host",
+          "protocol": "tcp"
+        },
+        {
+          "id": "T01",
+          "type": "transport",
+          "bytesSent": 0,
+          "bytesReceived": 0,
+          "packetsSent": 0,
+          "packetsReceived": 0,
+          "dtlsState": "new",
+          "iceState": "new"
+        }
+      ]
+    }
+  ],
+  "finishedAt": "2026-10-10T12:40:37.960Z"
+}

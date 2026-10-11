@@ -1,0 +1,63 @@
+[WARN] Your node_modules are out of sync with your lockfile. The workspace structure has changed since last install
+
+Running 17 tests using 1 worker
+
+(node:973685) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   1 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:26:1 › should fail without credentials (125ms)
+(node:973825) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   2 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:37:1 › should work with setHTTPCredentials (110ms)
+(node:973964) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   3 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:54:1 › should work with correct credentials @smoke (158ms)
+  ✓   4 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:65:1 › should fail with wrong credentials (121ms)
+  ✓   5 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:76:1 › should return resource body (192ms)
+  ✓   6 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:89:1 › should work with correct credentials and matching origin (103ms)
+  ✓   7 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:100:1 › should work with correct credentials and matching origin case insensitive (106ms)
+  ✓   8 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:111:1 › should fail with correct credentials and mismatching scheme (118ms)
+  ✓   9 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:125:1 › should fail with correct credentials and mismatching hostname (107ms)
+  ✓  10 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:141:1 › should fail with correct credentials and mismatching port (132ms)
+  ✓  11 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-storage-state.spec.ts:314:3 › should serialize storageState with lone surrogates (148ms)
+  ✓  12 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-storage-state.spec.ts:543:3 › should round-trip WebAuthn credentials with storageState (74ms)
+  ✓  13 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-storage-state.spec.ts:559:3 › setStorageState should replace credentials (52ms)
+  ✓  14 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/chromium.spec.ts:89:7 › http credentials › httpCredentials (260ms)
+  ✓  15 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/chromium.spec.ts:177:5 › serviceWorker(), and fromServiceWorker() work (160ms)
+  ✓  16 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/chromium.spec.ts:211:5 › should intercept service worker requests (main and within) (175ms)
+  ✓  17 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/chromium.spec.ts:299:5 › should report intercepted service worker requests in HAR (159ms)
+
+
+  1) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:26:1 › should fail without credentials 
+
+    TypeError: responseOrError.status is not a function
+
+      32 |     expect(responseOrError.message).toContain('net::ERR_INVALID_AUTH_CREDENTIALS');
+      33 |   else
+    > 34 |     expect(responseOrError.status()).toBe(401);
+         |                            ^
+      35 | });
+      36 |
+      37 | it('should work with setHTTPCredentials', async ({ browser, server, failsOn401 }) => {
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:34:28
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/unicode-worker-auth-check/artifacts/library-browsercontext-cre-27f77-ld-fail-without-credentials/error-context.md
+
+  2) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:37:1 › should work with setHTTPCredentials 
+
+    TypeError: responseOrError.status is not a function
+
+      44 |     expect(responseOrError.message).toContain('net::ERR_INVALID_AUTH_CREDENTIALS');
+      45 |   else
+    > 46 |     expect(responseOrError.status()).toBe(401);
+         |                            ^
+      47 |
+      48 |   await context.setHTTPCredentials({ username: 'user', password: 'pass' });
+      49 |   responseOrError = await page.reload();
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:46:28
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/unicode-worker-auth-check/artifacts/library-browsercontext-cre-00620-ork-with-setHTTPCredentials/error-context.md
+
+  2 failed
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:26:1 › should fail without credentials 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:37:1 › should work with setHTTPCredentials 
+  15 passed (7.4s)

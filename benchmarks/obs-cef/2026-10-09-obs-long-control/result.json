@@ -1,0 +1,166 @@
+{
+  "backend": "obs",
+  "startedAt": "2026-10-09T05:12:44.195Z",
+  "requestedMs": 1800000,
+  "width": 1920,
+  "height": 1080,
+  "targetFps": 30,
+  "syncPulseMs": 250,
+  "wheelEveryMs": 5000,
+  "mode": "simultaneous independent OBS recording and RTMP streaming from one external browser display/audio source",
+  "status": "workload completed; media validation pending",
+  "privateMemorySampling": false,
+  "receiverPath": "/workspace/suitecut/.suitecut/obs-long-control/2026-10-09/media/receiver.flv",
+  "browserVersion": "151.0.7922.34",
+  "effectiveVideoSettings": {
+    "baseHeight": 1080,
+    "baseWidth": 1920,
+    "fpsDenominator": 1,
+    "fpsNumerator": 30,
+    "outputHeight": 1080,
+    "outputWidth": 1920
+  },
+  "obsBefore": {
+    "activeFps": 59.01639580327879,
+    "availableDiskSpace": 23904.20703125,
+    "averageFrameRenderTime": 8.951047,
+    "cpuUsage": 41.51111111111111,
+    "memoryUsage": 216.2734375,
+    "outputSkippedFrames": 0,
+    "outputTotalFrames": 0,
+    "renderSkippedFrames": 9,
+    "renderTotalFrames": 197,
+    "webSocketSessionIncomingMessages": 16,
+    "webSocketSessionOutgoingMessages": 17
+  },
+  "beforeStart": {
+    "rss": 121745408,
+    "heapTotal": 82046976,
+    "heapUsed": 47753896,
+    "external": 4242793,
+    "arrayBuffers": 251956
+  },
+  "baselineSnapshot": {
+    "markerCount": 34,
+    "scrollY": 0,
+    "scrollEvents": 0,
+    "keyEvents": 0,
+    "clicks": 0,
+    "value": "",
+    "choice": "First",
+    "secondary": false
+  },
+  "readyAt": "2026-10-09T05:12:46.359Z",
+  "baseline": {
+    "rss": 121745408,
+    "heapTotal": 82046976,
+    "heapUsed": 48329040,
+    "external": 4246904,
+    "arrayBuffers": 256027
+  },
+  "latestStatus": {
+    "atMs": 1800170.875524,
+    "stream": {
+      "outputActive": true,
+      "outputBytes": 1024988265,
+      "outputCongestion": 0,
+      "outputDuration": 1798866,
+      "outputReconnecting": false,
+      "outputSkippedFrames": 0,
+      "outputTimecode": "00:29:58.866",
+      "outputTotalFrames": 53966
+    },
+    "record": {
+      "outputActive": true,
+      "outputBytes": 40371638,
+      "outputDuration": 1799166,
+      "outputPaused": false,
+      "outputTimecode": "00:29:59.166"
+    },
+    "stats": {
+      "activeFps": 30.000000300000007,
+      "availableDiskSpace": 22878.81640625,
+      "averageFrameRenderTime": 22.63991,
+      "cpuUsage": 51.28712871287129,
+      "memoryUsage": 778.41796875,
+      "outputSkippedFrames": 70,
+      "outputTotalFrames": 54021,
+      "renderSkippedFrames": 2046,
+      "renderTotalFrames": 54223,
+      "webSocketSessionIncomingMessages": 5277,
+      "webSocketSessionOutgoingMessages": 5283
+    },
+    "nodeMemory": {
+      "rss": 107532288,
+      "heapTotal": 50065408,
+      "heapUsed": 48446384,
+      "external": 6847454,
+      "arrayBuffers": 2856577
+    }
+  },
+  "observedActiveMs": 1794857.040304,
+  "scrollCommands": 354,
+  "activeMs": 1800172.378061,
+  "snapshot": {
+    "markerCount": 106626,
+    "scrollY": 1080,
+    "scrollEvents": 354,
+    "keyEvents": 0,
+    "clicks": 0,
+    "value": "",
+    "choice": "First",
+    "secondary": false
+  },
+  "obsAfter": {
+    "activeFps": 30.000000300000007,
+    "availableDiskSpace": 22878.81640625,
+    "averageFrameRenderTime": 22.63991,
+    "cpuUsage": 60,
+    "memoryUsage": 778.41796875,
+    "outputSkippedFrames": 70,
+    "outputTotalFrames": 54022,
+    "renderSkippedFrames": 2046,
+    "renderTotalFrames": 54224,
+    "webSocketSessionIncomingMessages": 5278,
+    "webSocketSessionOutgoingMessages": 5284
+  },
+  "finalStreamStatus": {
+    "outputActive": true,
+    "outputBytes": 1025007463,
+    "outputCongestion": 0,
+    "outputDuration": 1798899,
+    "outputReconnecting": false,
+    "outputSkippedFrames": 0,
+    "outputTimecode": "00:29:58.899",
+    "outputTotalFrames": 53967
+  },
+  "finalRecordStatus": {
+    "outputActive": true,
+    "outputBytes": 40372450,
+    "outputDuration": 1799199,
+    "outputPaused": false,
+    "outputTimecode": "00:29:59.199"
+  },
+  "recordingPath": "/workspace/suitecut/.suitecut/obs-long-control/2026-10-09/media/2026-10-09 05-12-45.mkv",
+  "stopMs": 3567.669472000096,
+  "afterCleanup": {
+    "rss": 107925504,
+    "heapTotal": 50327552,
+    "heapUsed": 48875912,
+    "external": 6841042,
+    "arrayBuffers": 2846089
+  },
+  "afterCleanupGc": {
+    "rss": 107925504,
+    "heapTotal": 51376128,
+    "heapUsed": 46364616,
+    "external": 6841042,
+    "arrayBuffers": 876997
+  },
+  "eventLoopDelay": {
+    "meanMs": 20.77334065178335,
+    "p99Ms": 26.443775,
+    "maxMs": 301.727743
+  },
+  "completedAt": "2026-10-09T05:42:50.428Z"
+}

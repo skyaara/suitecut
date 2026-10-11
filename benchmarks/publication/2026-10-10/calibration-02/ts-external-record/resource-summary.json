@@ -1,0 +1,17 @@
+{
+  "activeSamples": 0,
+  "boundary": "Controller, capture/browser children and encoders; receiver, display and Pulse reported separately/excluded",
+  "cpuMeanCores": null,
+  "cpuP95Cores": null,
+  "rssPeakMiB": null,
+  "rssMeanMiB": null,
+  "rssSlopeMiBPerMinuteAfterWarmup": null,
+  "pssCompleteSamples": 0,
+  "pssPeakMiB": null,
+  "pssSlopeMiBPerMinuteAfterWarmup": null,
+  "nodeHeapSlopeMiBPerMinuteAfterWarmup": null,
+  "nodeExternalSlopeMiBPerMinuteAfterWarmup": null,
+  "cpuMeanByRole": {},
+  "samplerDurationP95Ms": null,
+  "memoryGuardExceeded": false
+}

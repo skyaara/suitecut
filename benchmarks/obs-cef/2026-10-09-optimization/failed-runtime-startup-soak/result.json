@@ -1,0 +1,35 @@
+{
+  "startedAt": "2026-10-09T00:21:10.850Z",
+  "requestedMs": 1800000,
+  "width": 1920,
+  "height": 1080,
+  "targetFps": 60,
+  "audio": true,
+  "mode": "simultaneous recording and RTMP streaming on one caller-owned CEF source",
+  "gcDuringRun": false,
+  "receiverPath": "/workspace/suitecut/.suitecut/obs-cef-optimization/soak/receiver.flv",
+  "status": "failed",
+  "error": "Error: Native browser exited unexpectedly (1)\n    at ChildProcess.<anonymous> (file:///workspace/suitecut/dist/native-browser.js:190:18)\n    at Object.onceWrapper (node:events:631:26)\n    at ChildProcess.emit (node:events:509:28)\n    at maybeClose (node:internal/child_process:1141:16)\n    at Socket.<anonymous> (node:internal/child_process:498:11)\n    at Socket.emit (node:events:509:28)\n    at Pipe.<anonymous> (node:net:355:12)",
+  "afterCleanup": {
+    "rss": 140058624,
+    "heapTotal": 116834304,
+    "heapUsed": 60876656,
+    "external": 4593562,
+    "arrayBuffers": 585378
+  },
+  "afterCleanupGc": {
+    "rss": 141762560,
+    "heapTotal": 121815040,
+    "heapUsed": 52432528,
+    "external": 4221852,
+    "arrayBuffers": 213628
+  },
+  "nodeCpuMs": 204.301,
+  "elapsedMs": 850.8372320000001,
+  "eventLoopDelay": {
+    "meanMs": 20.340224,
+    "p99Ms": 23.887871,
+    "maxMs": 23.887871
+  },
+  "completedAt": "2026-10-09T00:21:11.702Z"
+}

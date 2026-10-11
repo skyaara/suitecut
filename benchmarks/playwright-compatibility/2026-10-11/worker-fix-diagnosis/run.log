@@ -1,0 +1,34 @@
+[WARN] Your node_modules are out of sync with your lockfile. The workspace structure has changed since last install
+
+Running 1 test using 1 worker
+
+(node:934223) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Native failure: Native browser exited unexpectedly (null)
+  ✘  1 benchmarks/playwright-compatibility/compatibility.spec.ts:76:1 › worker: service worker website control and fetch (186ms)
+
+
+  1) benchmarks/playwright-compatibility/compatibility.spec.ts:76:1 › worker: service worker website control and fetch 
+
+    Error: page.evaluate: Target page, context or browser has been closed
+    Browser logs:
+
+    CEF transport closed
+
+
+      67 | async function register(page: import('@playwright/test').Page) {
+      68 |   await page.goto(origin)
+    > 69 |   await page.evaluate(async()=>{await navigator.serviceWorker.register('/sw.js');await navigator.serviceWorker.ready;if(!navigator.serviceWorker.controller)await new Promise<void>(r=>navigator.serviceWorker.addEventListener('controllerchange',()=>r(),{once:true}))})
+         |              ^
+      70 | }
+      71 | test('worker: dedicated Worker evaluation and messaging',async({page})=>{
+      72 |   await page.goto(origin);const event=page.waitForEvent('worker');await page.evaluate(()=>{const w=new Worker('/worker.js');(window as any).worker=w})
+        at register (/workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts:69:14)
+        at /workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts:76:73
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/worker-fix-diagnosis/artifacts/compatibility-worker-servi-6f06e-r-website-control-and-fetch/error-context.md
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/worker-fix-diagnosis/artifacts/compatibility-worker-servi-6f06e-r-website-control-and-fetch/error-context.md
+
+  1 failed
+    benchmarks/playwright-compatibility/compatibility.spec.ts:76:1 › worker: service worker website control and fetch 

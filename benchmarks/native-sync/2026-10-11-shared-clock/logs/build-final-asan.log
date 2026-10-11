@@ -1,0 +1,38 @@
+[  0%] Building CXX object CMakeFiles/suitecut-media.dir/media_engine.cc.o
+[  0%] Building CXX object CMakeFiles/suitecut-media.dir/media_file.cc.o
+[  0%] Linking CXX static library libsuitecut-media.a
+[ 50%] Built target suitecut-media
+[ 50%] Building CXX object CMakeFiles/suitecut-sync-test.dir/media_sync_test.cc.o
+[100%] Linking CXX executable suitecut-sync-test
+[100%] Built target suitecut-sync-test
+[ 50%] Built target suitecut-media
+[ 50%] Building CXX object CMakeFiles/suitecut-media-test.dir/media_engine_test.cc.o
+[100%] Linking CXX executable suitecut-media-test
+[100%] Built target suitecut-media-test
+[100%] Built target suitecut-media
+[100%] Building CXX object CMakeFiles/suitecut-audio-startup-test.dir/media_startup_test.cc.o
+[100%] Linking CXX executable suitecut-audio-startup-test
+[100%] Built target suitecut-audio-startup-test
+[100%] Built target suitecut-media
+[100%] Building CXX object CMakeFiles/suitecut-codec-test.dir/media_codec_test.cc.o
+[100%] Linking CXX executable suitecut-codec-test
+[100%] Built target suitecut-codec-test
+[100%] Built target suitecut-audio-clock-test
+[ 92%] Built target yuv_common_objects
+[ 92%] Built target yuv
+[100%] Built target suitecut-pixel-test
+[100%] Built target suitecut-media
+[100%] Building CXX object CMakeFiles/suitecut-memory-test.dir/memory_test.cc.o
+[100%] Linking CXX executable suitecut-memory-test
+[100%] Built target suitecut-memory-test
+[ 50%] Built target suitecut-media
+[100%] Building CXX object CMakeFiles/suitecut-scaler-failure-test.dir/scaler_failure_test.cc.o
+[100%] Linking CXX executable suitecut-scaler-failure-test
+[100%] Built target suitecut-scaler-failure-test
+[ 50%] Built target suitecut-media
+[ 50%] Linking CXX executable suitecut-fuzz-bounds
+[100%] Built target suitecut-fuzz-bounds
+[ 50%] Built target suitecut-media
+[ 50%] Building CXX object CMakeFiles/suitecut-fuzz-media.dir/fuzz_media.cc.o
+[100%] Linking CXX executable suitecut-fuzz-media
+[100%] Built target suitecut-fuzz-media

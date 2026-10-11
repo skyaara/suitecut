@@ -1,0 +1,2 @@
+[744089:15:1010/121005.805841:ERROR:third_party/webrtc/media/sctp/dcsctp_transport.cc:560] DcSctpTransport1->OnAborted(error=PEER_REPORTED, message=User-Initiated Abort, reason=Close called).
+[744053:744053:1010/121005.823373:ERROR:gpu/command_buffer/service/gl_utils.cc:427] [.WebGL-0x5624614679d0]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)

@@ -1,0 +1,22 @@
+Feature,OBS,SuiteCut native,Scope
+typing,passed,passed,
+click,passed,passed,
+in-page select control,passed,passed,
+wheel scrolling,passed,passed,
+scroll to element and back to top,passed,passed,
+navigation and return,passed,passed,
+source switching,passed,passed,
+encoded audio tones,passed,passed,
+encoded audio disabled,passed,passed,
+decoded source identity,passed,passed,
+recorded input and scrolling states,passed,passed,
+receiver media and timestamps,passed,passed,
+decoded receiver motion,passed,passed,
+receiver audible page tone,passed,passed,
+decoded audio and video sync,passed,passed,
+OBS embedded browser source,not tested / unavailable / excluded as described,not tested / unavailable / excluded as described,unavailable in installed OBS package; external Chromium/XSHM was measured
+hardware encoding and GPU texture sharing,not tested / unavailable / excluded as described,not tested / unavailable / excluded as described,hardware encoder unavailable in this host; SuiteCut GPU texture sharing is not implemented
+"zoom transforms, highlight overlays, cursor animation, and captions",not tested / unavailable / excluded as described,not tested / unavailable / excluded as described,not tested; separate fixtures would be required to compare these with OBS transforms/overlays
+real speech-model synthesis,not tested / unavailable / excluded as described,not tested / unavailable / excluded as described,outside OBS capture comparison; tone fixtures do not establish narration-model quality
+automatic RTMP reconnection and streaming source switches,not tested / unavailable / excluded as described,not tested / unavailable / excluded as described,not tested; recording source switches and normal RTMP start/stop were tested
+"SuiteCut runner checkpoints, retries, and test-report semantics",not tested / unavailable / excluded as described,not tested / unavailable / excluded as described,not a direct OBS operation; excluded from comparable timed workloads

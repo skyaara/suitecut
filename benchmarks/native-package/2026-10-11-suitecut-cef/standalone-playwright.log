@@ -1,0 +1,17 @@
+[WARN] Your node_modules are out of sync with your lockfile. The workspace structure has changed since last install
+
+Running 9 tests using 1 worker
+
+(node:913517) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 benchmarks/native-engine/engine.e2e.spec.ts:53:1 › real Playwright locators, auto-wait, input, scrolling, iframe and screenshot (883ms)
+  ✓  2 benchmarks/native-engine/engine.e2e.spec.ts:69:1 › windowless browser bounds resize the selected page and report unsupported states (398ms)
+  ✓  3 benchmarks/native-engine/engine.e2e.spec.ts:266:1 › network interception, init scripts and storage isolation (352ms)
+  ✓  4 benchmarks/native-engine/engine.e2e.spec.ts:295:1 › popup, dialog, file upload, download and public CDP sessions (1.0s)
+  ✓  5 benchmarks/native-engine/engine.e2e.spec.ts:331:1 › explicit CDP sessions receive page events and tracing completion (568ms)
+  ✓  6 benchmarks/native-engine/engine.e2e.spec.ts:423:1 › repeated context/page shutdown keeps the engine usable (1.5s)
+  ✓  7 benchmarks/native-engine/engine.e2e.spec.ts:434:1 › permission and geolocation setup before page creation (129ms)
+  ✓  8 benchmarks/native-engine/engine.e2e.spec.ts:470:1 › explicit session retention is bounded and capacity returns after detach (539ms)
+  ✓  9 benchmarks/native-engine/engine.e2e.spec.ts:504:1 › rapid popup and opener closure leaves the engine usable (3.2s)
+
+  9 passed (9.8s)

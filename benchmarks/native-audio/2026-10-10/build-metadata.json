@@ -1,0 +1,30 @@
+{
+  "savedAtUTC": "2026-10-09T20:33:45.034009+00:00",
+  "gitHead": "2d4158c95217b2b4099898a2508a40f3fa4f121a",
+  "cef": "152.0.8+g1ce985c+chromium-152.0.7977.134",
+  "cpuMax": "400000 100000",
+  "gpuDevicePaths": [],
+  "counterUnits": "48 kHz frames per channel",
+  "bufferMs": 150,
+  "audioTimelineChanged": false,
+  "completedCaptures": 8,
+  "sanitizers": "ASAN/UBSAN/leak detection, SuiteCut media core/test only",
+  "sourceFiles": 26,
+  "gapFree": false,
+  "workingTreeUncommitted": true,
+  "baselineExecutableRetained": false,
+  "verification": {
+    "ctest": 4,
+    "unitTests": 306,
+    "realCefPlaywright": 6,
+    "typecheck": "passed",
+    "changedFileLint": "passed",
+    "mediaSanitizers": "passed"
+  },
+  "sha256": {
+    "tested-binaries/media-asan": "3e82119e3b053c2190fbf79d43ea38fe90157556f1bc26a3bfc344845e756389",
+    "tested-binaries/suitecut-audio-clock-test": "0610a9cbeb7b98f6e52d6e5ea8905d67c311be309cb35b0fe630933a3c0b3696",
+    "tested-binaries/suitecut-media-test": "3f71ee806acd0c10f29c98e6a74e013aacfdb409798c84a5ba4db3a36d11ad38",
+    "tested-binaries/suitecut-browser": "012365d05355a8ff3428f0cff74c4f8e3380dca99f20fded5619b30fe322b760"
+  }
+}

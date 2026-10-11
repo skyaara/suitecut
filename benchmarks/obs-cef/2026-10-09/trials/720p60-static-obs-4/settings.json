@@ -1,0 +1,15 @@
+{
+  "id": "720p60-static-obs-4",
+  "backend": "obs",
+  "case": {
+    "name": "720p60-static",
+    "width": 1280,
+    "height": 720,
+    "fps": 60,
+    "workload": "static"
+  },
+  "trialNumber": 4,
+  "durationMs": 10000,
+  "status": "running",
+  "startedAt": "2026-10-08T20:29:43.582Z"
+}

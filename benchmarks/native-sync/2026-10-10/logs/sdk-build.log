@@ -1,0 +1,2 @@
+$ pnpm clean:dist && tsc -p tsconfig.build.json
+$ node scripts/clean-dist.mjs

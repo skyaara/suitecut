@@ -1,0 +1,1267 @@
+{
+  "method": "V8 shallow self sizes and object counts; dominator/retainer paths require deeper inspection",
+  "topGrowth": [
+    {
+      "type": "code",
+      "name": "",
+      "countBefore": 196,
+      "countAfter": 371,
+      "countDelta": 175,
+      "selfBytesBefore": 343728,
+      "selfBytesAfter": 541808,
+      "selfBytesDelta": 198080
+    },
+    {
+      "type": "code",
+      "name": "system / TrustedByteArray",
+      "countBefore": 4070,
+      "countAfter": 4544,
+      "countDelta": 474,
+      "selfBytesBefore": 386040,
+      "selfBytesAfter": 498384,
+      "selfBytesDelta": 112344
+    },
+    {
+      "type": "code",
+      "name": "system / ProtectedFixedArray",
+      "countBefore": 150,
+      "countAfter": 325,
+      "countDelta": 175,
+      "selfBytesBefore": 50736,
+      "selfBytesAfter": 118960,
+      "selfBytesDelta": 68224
+    },
+    {
+      "type": "hidden",
+      "name": "system / WeakArrayList",
+      "countBefore": 266,
+      "countAfter": 467,
+      "countDelta": 201,
+      "selfBytesBefore": 32264,
+      "selfBytesAfter": 62136,
+      "selfBytesDelta": 29872
+    },
+    {
+      "type": "code",
+      "name": "(script line ends)",
+      "countBefore": 0,
+      "countAfter": 2,
+      "countDelta": 2,
+      "selfBytesBefore": 0,
+      "selfBytesAfter": 16952,
+      "selfBytesDelta": 16952
+    },
+    {
+      "type": "code",
+      "name": "(code)",
+      "countBefore": 173,
+      "countAfter": 348,
+      "countDelta": 175,
+      "selfBytesBefore": 15224,
+      "selfBytesAfter": 30624,
+      "selfBytesDelta": 15400
+    },
+    {
+      "type": "number",
+      "name": "heap number",
+      "countBefore": 1459,
+      "countAfter": 2416,
+      "countDelta": 957,
+      "selfBytesBefore": 23200,
+      "selfBytesAfter": 38512,
+      "selfBytesDelta": 15312
+    },
+    {
+      "type": "code",
+      "name": "system / TrustedWeakFixedArray",
+      "countBefore": 150,
+      "countAfter": 325,
+      "countDelta": 175,
+      "selfBytesBefore": 9400,
+      "selfBytesAfter": 21712,
+      "selfBytesDelta": 12312
+    },
+    {
+      "type": "hidden",
+      "name": "system / PropertyArray",
+      "countBefore": 8341,
+      "countAfter": 8528,
+      "countDelta": 187,
+      "selfBytesBefore": 453328,
+      "selfBytesAfter": 465304,
+      "selfBytesDelta": 11976
+    },
+    {
+      "type": "object",
+      "name": "Object",
+      "countBefore": 30516,
+      "countAfter": 30712,
+      "countDelta": 196,
+      "selfBytesBefore": 1451496,
+      "selfBytesAfter": 1462480,
+      "selfBytesDelta": 10984
+    },
+    {
+      "type": "code",
+      "name": "(instruction stream for fromList)",
+      "countBefore": 0,
+      "countAfter": 1,
+      "countDelta": 1,
+      "selfBytesBefore": 0,
+      "selfBytesAfter": 5184,
+      "selfBytesDelta": 5184
+    },
+    {
+      "type": "code",
+      "name": "(BASELINE instruction stream)",
+      "countBefore": 269,
+      "countAfter": 271,
+      "countDelta": 2,
+      "selfBytesBefore": 382528,
+      "selfBytesAfter": 387456,
+      "selfBytesDelta": 4928
+    },
+    {
+      "type": "hidden",
+      "name": "system / ProtectedFixedArray",
+      "countBefore": 151,
+      "countAfter": 326,
+      "countDelta": 175,
+      "selfBytesBefore": 4072,
+      "selfBytesAfter": 8952,
+      "selfBytesDelta": 4880
+    },
+    {
+      "type": "code",
+      "name": "system / FeedbackVector",
+      "countBefore": 1101,
+      "countAfter": 1112,
+      "countDelta": 11,
+      "selfBytesBefore": 294256,
+      "selfBytesAfter": 297880,
+      "selfBytesDelta": 3624
+    },
+    {
+      "type": "code",
+      "name": "system / CodeWrapper",
+      "countBefore": 3653,
+      "countAfter": 3840,
+      "countDelta": 187,
+      "selfBytesBefore": 58448,
+      "selfBytesAfter": 61440,
+      "selfBytesDelta": 2992
+    },
+    {
+      "type": "hidden",
+      "name": "system / SharedFunctionInfoWrapper",
+      "countBefore": 150,
+      "countAfter": 325,
+      "countDelta": 175,
+      "selfBytesBefore": 2400,
+      "selfBytesAfter": 5200,
+      "selfBytesDelta": 2800
+    },
+    {
+      "type": "code",
+      "name": "system / WeakArrayList",
+      "countBefore": 41,
+      "countAfter": 82,
+      "countDelta": 41,
+      "selfBytesBefore": 2320,
+      "selfBytesAfter": 4656,
+      "selfBytesDelta": 2336
+    },
+    {
+      "type": "array",
+      "name": "",
+      "countBefore": 6935,
+      "countAfter": 6941,
+      "countDelta": 6,
+      "selfBytesBefore": 1432304,
+      "selfBytesAfter": 1434560,
+      "selfBytesDelta": 2256
+    },
+    {
+      "type": "code",
+      "name": "(instruction stream for parseStream)",
+      "countBefore": 0,
+      "countAfter": 1,
+      "countDelta": 1,
+      "selfBytesBefore": 0,
+      "selfBytesAfter": 2176,
+      "selfBytesDelta": 2176
+    },
+    {
+      "type": "code",
+      "name": "system / WeakFixedArray",
+      "countBefore": 1632,
+      "countAfter": 1668,
+      "countDelta": 36,
+      "selfBytesBefore": 295312,
+      "selfBytesAfter": 297088,
+      "selfBytesDelta": 1776
+    },
+    {
+      "type": "code",
+      "name": "system / BytecodeArray",
+      "countBefore": 1378,
+      "countAfter": 1385,
+      "countDelta": 7,
+      "selfBytesBefore": 311264,
+      "selfBytesAfter": 313016,
+      "selfBytesDelta": 1752
+    },
+    {
+      "type": "array",
+      "name": "(object elements)",
+      "countBefore": 5267,
+      "countAfter": 5266,
+      "countDelta": -1,
+      "selfBytesBefore": 751984,
+      "selfBytesAfter": 753536,
+      "selfBytesDelta": 1552
+    },
+    {
+      "type": "object shape",
+      "name": "system / Map",
+      "countBefore": 21445,
+      "countAfter": 21463,
+      "countDelta": 18,
+      "selfBytesBefore": 1544040,
+      "selfBytesAfter": 1545336,
+      "selfBytesDelta": 1296
+    },
+    {
+      "type": "object shape",
+      "name": "system / TransitionArray",
+      "countBefore": 317,
+      "countAfter": 319,
+      "countDelta": 2,
+      "selfBytesBefore": 53080,
+      "selfBytesAfter": 54152,
+      "selfBytesDelta": 1072
+    },
+    {
+      "type": "code",
+      "name": "(instruction stream for sourceSignal)",
+      "countBefore": 0,
+      "countAfter": 1,
+      "countDelta": 1,
+      "selfBytesBefore": 0,
+      "selfBytesAfter": 1024,
+      "selfBytesDelta": 1024
+    },
+    {
+      "type": "code",
+      "name": "(instruction stream for check._a.check)",
+      "countBefore": 0,
+      "countAfter": 1,
+      "countDelta": 1,
+      "selfBytesBefore": 0,
+      "selfBytesAfter": 960,
+      "selfBytesDelta": 960
+    },
+    {
+      "type": "code",
+      "name": "(instruction stream for emitReadable)",
+      "countBefore": 0,
+      "countAfter": 1,
+      "countDelta": 1,
+      "selfBytesBefore": 0,
+      "selfBytesAfter": 896,
+      "selfBytesDelta": 896
+    },
+    {
+      "type": "code",
+      "name": "system / LoadHandler",
+      "countBefore": 1339,
+      "countAfter": 1366,
+      "countDelta": 27,
+      "selfBytesBefore": 43440,
+      "selfBytesAfter": 44312,
+      "selfBytesDelta": 872
+    },
+    {
+      "type": "code",
+      "name": "system / ScopeInfo",
+      "countBefore": 4685,
+      "countAfter": 4695,
+      "countDelta": 10,
+      "selfBytesBefore": 621776,
+      "selfBytesAfter": 622576,
+      "selfBytesDelta": 800
+    },
+    {
+      "type": "object",
+      "name": "Timeout",
+      "countBefore": 12,
+      "countAfter": 18,
+      "countDelta": 6,
+      "selfBytesBefore": 1536,
+      "selfBytesAfter": 2304,
+      "selfBytesDelta": 768
+    },
+    {
+      "type": "code",
+      "name": "(instruction stream for createCaptureScaleFilter)",
+      "countBefore": 0,
+      "countAfter": 1,
+      "countDelta": 1,
+      "selfBytesBefore": 0,
+      "selfBytesAfter": 768,
+      "selfBytesDelta": 768
+    },
+    {
+      "type": "object shape",
+      "name": "system / DescriptorArray",
+      "countBefore": 5152,
+      "countAfter": 5158,
+      "countDelta": 6,
+      "selfBytesBefore": 975984,
+      "selfBytesAfter": 976728,
+      "selfBytesDelta": 744
+    },
+    {
+      "type": "code",
+      "name": "(instruction stream for startAudioWork)",
+      "countBefore": 0,
+      "countAfter": 1,
+      "countDelta": 1,
+      "selfBytesBefore": 0,
+      "selfBytesAfter": 704,
+      "selfBytesDelta": 704
+    },
+    {
+      "type": "code",
+      "name": "(instruction stream for value)",
+      "countBefore": 1,
+      "countAfter": 2,
+      "countDelta": 1,
+      "selfBytesBefore": 1792,
+      "selfBytesAfter": 2432,
+      "selfBytesDelta": 640
+    },
+    {
+      "type": "object",
+      "name": "AbortSignal",
+      "countBefore": 14,
+      "countAfter": 20,
+      "countDelta": 6,
+      "selfBytesBefore": 1376,
+      "selfBytesAfter": 2000,
+      "selfBytesDelta": 624
+    },
+    {
+      "type": "code",
+      "name": "(constant pool)",
+      "countBefore": 1397,
+      "countAfter": 1404,
+      "countDelta": 7,
+      "selfBytesBefore": 144536,
+      "selfBytesAfter": 145064,
+      "selfBytesDelta": 528
+    },
+    {
+      "type": "code",
+      "name": "system / AllocationSite",
+      "countBefore": 564,
+      "countAfter": 573,
+      "countDelta": 9,
+      "selfBytesBefore": 26072,
+      "selfBytesAfter": 26504,
+      "selfBytesDelta": 432
+    },
+    {
+      "type": "hidden",
+      "name": "system / WeakCell",
+      "countBefore": 82,
+      "countAfter": 88,
+      "countDelta": 6,
+      "selfBytesBefore": 5904,
+      "selfBytesAfter": 6336,
+      "selfBytesDelta": 432
+    },
+    {
+      "type": "code",
+      "name": "(instruction stream for recordNative.source.source)",
+      "countBefore": 0,
+      "countAfter": 1,
+      "countDelta": 1,
+      "selfBytesBefore": 0,
+      "selfBytesAfter": 384,
+      "selfBytesDelta": 384
+    },
+    {
+      "type": "object shape",
+      "name": "(enum cache)",
+      "countBefore": 1141,
+      "countAfter": 1149,
+      "countDelta": 8,
+      "selfBytesBefore": 49576,
+      "selfBytesAfter": 49944,
+      "selfBytesDelta": 368
+    },
+    {
+      "type": "code",
+      "name": "system / FeedbackMetadata",
+      "countBefore": 1311,
+      "countAfter": 1318,
+      "countDelta": 7,
+      "selfBytesBefore": 54136,
+      "selfBytesAfter": 54448,
+      "selfBytesDelta": 312
+    },
+    {
+      "type": "closure",
+      "name": "",
+      "countBefore": 71708,
+      "countAfter": 71713,
+      "countDelta": 5,
+      "selfBytesBefore": 4033536,
+      "selfBytesAfter": 4033816,
+      "selfBytesDelta": 280
+    },
+    {
+      "type": "code",
+      "name": "(instruction stream for hasTickScheduled)",
+      "countBefore": 0,
+      "countAfter": 1,
+      "countDelta": 1,
+      "selfBytesBefore": 0,
+      "selfBytesAfter": 256,
+      "selfBytesDelta": 256
+    },
+    {
+      "type": "object",
+      "name": "Set",
+      "countBefore": 4168,
+      "countAfter": 4174,
+      "countDelta": 6,
+      "selfBytesBefore": 133392,
+      "selfBytesAfter": 133584,
+      "selfBytesDelta": 192
+    },
+    {
+      "type": "object",
+      "name": "WeakRef",
+      "countBefore": 84,
+      "countAfter": 90,
+      "countDelta": 6,
+      "selfBytesBefore": 2704,
+      "selfBytesAfter": 2896,
+      "selfBytesDelta": 192
+    },
+    {
+      "type": "code",
+      "name": "(constant elements)",
+      "countBefore": 310,
+      "countAfter": 313,
+      "countDelta": 3,
+      "selfBytesBefore": 13176,
+      "selfBytesAfter": 13360,
+      "selfBytesDelta": 184
+    },
+    {
+      "type": "code",
+      "name": "(BASELINE code)",
+      "countBefore": 269,
+      "countAfter": 271,
+      "countDelta": 2,
+      "selfBytesBefore": 23672,
+      "selfBytesAfter": 23848,
+      "selfBytesDelta": 176
+    },
+    {
+      "type": "string",
+      "name": "/workspace/suitecut/benchmarks/obs-cef/2026-10-09-optimization/profiles/extended-reuse-after/heap-199.heapsnapshot",
+      "countBefore": 0,
+      "countAfter": 1,
+      "countDelta": 1,
+      "selfBytesBefore": 0,
+      "selfBytesAfter": 136,
+      "selfBytesDelta": 136
+    },
+    {
+      "type": "code",
+      "name": "system / BytecodeWrapper",
+      "countBefore": 1378,
+      "countAfter": 1385,
+      "countDelta": 7,
+      "selfBytesBefore": 22048,
+      "selfBytesAfter": 22160,
+      "selfBytesDelta": 112
+    },
+    {
+      "type": "object shape",
+      "name": "system / EnumCache",
+      "countBefore": 577,
+      "countAfter": 581,
+      "countDelta": 4,
+      "selfBytesBefore": 13824,
+      "selfBytesAfter": 13920,
+      "selfBytesDelta": 96
+    },
+    {
+      "type": "code",
+      "name": "(code for sourceSignal)",
+      "countBefore": 0,
+      "countAfter": 1,
+      "countDelta": 1,
+      "selfBytesBefore": 0,
+      "selfBytesAfter": 88,
+      "selfBytesDelta": 88
+    },
+    {
+      "type": "code",
+      "name": "(code for hasTickScheduled)",
+      "countBefore": 0,
+      "countAfter": 1,
+      "countDelta": 1,
+      "selfBytesBefore": 0,
+      "selfBytesAfter": 88,
+      "selfBytesDelta": 88
+    },
+    {
+      "type": "code",
+      "name": "(code for emitReadable)",
+      "countBefore": 0,
+      "countAfter": 1,
+      "countDelta": 1,
+      "selfBytesBefore": 0,
+      "selfBytesAfter": 88,
+      "selfBytesDelta": 88
+    },
+    {
+      "type": "code",
+      "name": "(code for check._a.check)",
+      "countBefore": 0,
+      "countAfter": 1,
+      "countDelta": 1,
+      "selfBytesBefore": 0,
+      "selfBytesAfter": 88,
+      "selfBytesDelta": 88
+    },
+    {
+      "type": "code",
+      "name": "(code for parseStream)",
+      "countBefore": 0,
+      "countAfter": 1,
+      "countDelta": 1,
+      "selfBytesBefore": 0,
+      "selfBytesAfter": 88,
+      "selfBytesDelta": 88
+    },
+    {
+      "type": "code",
+      "name": "system / StoreHandler",
+      "countBefore": 211,
+      "countAfter": 214,
+      "countDelta": 3,
+      "selfBytesBefore": 5496,
+      "selfBytesAfter": 5584,
+      "selfBytesDelta": 88
+    },
+    {
+      "type": "code",
+      "name": "(code for value)",
+      "countBefore": 1,
+      "countAfter": 2,
+      "countDelta": 1,
+      "selfBytesBefore": 88,
+      "selfBytesAfter": 176,
+      "selfBytesDelta": 88
+    },
+    {
+      "type": "code",
+      "name": "(code for startAudioWork)",
+      "countBefore": 0,
+      "countAfter": 1,
+      "countDelta": 1,
+      "selfBytesBefore": 0,
+      "selfBytesAfter": 88,
+      "selfBytesDelta": 88
+    },
+    {
+      "type": "code",
+      "name": "(code for fromList)",
+      "countBefore": 0,
+      "countAfter": 1,
+      "countDelta": 1,
+      "selfBytesBefore": 0,
+      "selfBytesAfter": 88,
+      "selfBytesDelta": 88
+    },
+    {
+      "type": "code",
+      "name": "(code for recordNative.source.source)",
+      "countBefore": 0,
+      "countAfter": 1,
+      "countDelta": 1,
+      "selfBytesBefore": 0,
+      "selfBytesAfter": 88,
+      "selfBytesDelta": 88
+    },
+    {
+      "type": "code",
+      "name": "(code for createCaptureScaleFilter)",
+      "countBefore": 0,
+      "countAfter": 1,
+      "countDelta": 1,
+      "selfBytesBefore": 0,
+      "selfBytesAfter": 88,
+      "selfBytesDelta": 88
+    },
+    {
+      "type": "object",
+      "name": "system / Context",
+      "countBefore": 47904,
+      "countAfter": 47906,
+      "countDelta": 2,
+      "selfBytesBefore": 2405752,
+      "selfBytesAfter": 2405832,
+      "selfBytesDelta": 80
+    },
+    {
+      "type": "string",
+      "name": "The operation was aborted due to timeout",
+      "countBefore": 0,
+      "countAfter": 1,
+      "countDelta": 1,
+      "selfBytesBefore": 0,
+      "selfBytesAfter": 56,
+      "selfBytesDelta": 56
+    },
+    {
+      "type": "object shape",
+      "name": "system / PrototypeInfo",
+      "countBefore": 520,
+      "countAfter": 521,
+      "countDelta": 1,
+      "selfBytesBefore": 29120,
+      "selfBytesAfter": 29176,
+      "selfBytesDelta": 56
+    },
+    {
+      "type": "string",
+      "name": "2026-10-09T00:34:35.250Z",
+      "countBefore": 0,
+      "countAfter": 1,
+      "countDelta": 1,
+      "selfBytesBefore": 0,
+      "selfBytesAfter": 40,
+      "selfBytesDelta": 40
+    },
+    {
+      "type": "string",
+      "name": "2026-10-09T00:34:37.075Z",
+      "countBefore": 0,
+      "countAfter": 1,
+      "countDelta": 1,
+      "selfBytesBefore": 0,
+      "selfBytesAfter": 40,
+      "selfBytesDelta": 40
+    },
+    {
+      "type": "string",
+      "name": "2026-10-09T00:31:45.691Z",
+      "countBefore": 0,
+      "countAfter": 1,
+      "countDelta": 1,
+      "selfBytesBefore": 0,
+      "selfBytesAfter": 40,
+      "selfBytesDelta": 40
+    },
+    {
+      "type": "string",
+      "name": "2026-10-09T00:32:16.363Z",
+      "countBefore": 0,
+      "countAfter": 1,
+      "countDelta": 1,
+      "selfBytesBefore": 0,
+      "selfBytesAfter": 40,
+      "selfBytesDelta": 40
+    },
+    {
+      "type": "string",
+      "name": "2026-10-09T00:31:21.649Z",
+      "countBefore": 0,
+      "countAfter": 1,
+      "countDelta": 1,
+      "selfBytesBefore": 0,
+      "selfBytesAfter": 40,
+      "selfBytesDelta": 40
+    },
+    {
+      "type": "string",
+      "name": "2026-10-09T00:31:39.950Z",
+      "countBefore": 0,
+      "countAfter": 1,
+      "countDelta": 1,
+      "selfBytesBefore": 0,
+      "selfBytesAfter": 40,
+      "selfBytesDelta": 40
+    },
+    {
+      "type": "string",
+      "name": "2026-10-09T00:31:09.500Z",
+      "countBefore": 0,
+      "countAfter": 1,
+      "countDelta": 1,
+      "selfBytesBefore": 0,
+      "selfBytesAfter": 40,
+      "selfBytesDelta": 40
+    },
+    {
+      "type": "string",
+      "name": "2026-10-09T00:30:59.319Z",
+      "countBefore": 0,
+      "countAfter": 1,
+      "countDelta": 1,
+      "selfBytesBefore": 0,
+      "selfBytesAfter": 40,
+      "selfBytesDelta": 40
+    },
+    {
+      "type": "string",
+      "name": "2026-10-09T00:35:09.173Z",
+      "countBefore": 0,
+      "countAfter": 1,
+      "countDelta": 1,
+      "selfBytesBefore": 0,
+      "selfBytesAfter": 40,
+      "selfBytesDelta": 40
+    },
+    {
+      "type": "string",
+      "name": "2026-10-09T00:32:19.325Z",
+      "countBefore": 0,
+      "countAfter": 1,
+      "countDelta": 1,
+      "selfBytesBefore": 0,
+      "selfBytesAfter": 40,
+      "selfBytesDelta": 40
+    },
+    {
+      "type": "string",
+      "name": "2026-10-09T00:34:17.115Z",
+      "countBefore": 0,
+      "countAfter": 1,
+      "countDelta": 1,
+      "selfBytesBefore": 0,
+      "selfBytesAfter": 40,
+      "selfBytesDelta": 40
+    },
+    {
+      "type": "string",
+      "name": "2026-10-09T00:31:47.262Z",
+      "countBefore": 0,
+      "countAfter": 1,
+      "countDelta": 1,
+      "selfBytesBefore": 0,
+      "selfBytesAfter": 40,
+      "selfBytesDelta": 40
+    },
+    {
+      "type": "string",
+      "name": "2026-10-09T00:32:08.288Z",
+      "countBefore": 0,
+      "countAfter": 1,
+      "countDelta": 1,
+      "selfBytesBefore": 0,
+      "selfBytesAfter": 40,
+      "selfBytesDelta": 40
+    },
+    {
+      "type": "string",
+      "name": "2026-10-09T00:34:15.757Z",
+      "countBefore": 0,
+      "countAfter": 1,
+      "countDelta": 1,
+      "selfBytesBefore": 0,
+      "selfBytesAfter": 40,
+      "selfBytesDelta": 40
+    },
+    {
+      "type": "string",
+      "name": "2026-10-09T00:34:10.699Z",
+      "countBefore": 0,
+      "countAfter": 1,
+      "countDelta": 1,
+      "selfBytesBefore": 0,
+      "selfBytesAfter": 40,
+      "selfBytesDelta": 40
+    },
+    {
+      "type": "string",
+      "name": "2026-10-09T00:32:39.492Z",
+      "countBefore": 0,
+      "countAfter": 1,
+      "countDelta": 1,
+      "selfBytesBefore": 0,
+      "selfBytesAfter": 40,
+      "selfBytesDelta": 40
+    }
+  ],
+  "selectedCounts": [
+    {
+      "type": "closure",
+      "name": "Buffer",
+      "countBefore": 1,
+      "countAfter": 1,
+      "countDelta": 0,
+      "selfBytesBefore": 64,
+      "selfBytesAfter": 64,
+      "selfBytesDelta": 0
+    },
+    {
+      "type": "code",
+      "name": "ChildProcess",
+      "countBefore": 1,
+      "countAfter": 1,
+      "countDelta": 0,
+      "selfBytesBefore": 72,
+      "selfBytesAfter": 72,
+      "selfBytesDelta": 0
+    },
+    {
+      "type": "string",
+      "name": "Readable",
+      "countBefore": 1,
+      "countAfter": 1,
+      "countDelta": 0,
+      "selfBytesBefore": 24,
+      "selfBytesAfter": 24,
+      "selfBytesDelta": 0
+    },
+    {
+      "type": "closure",
+      "name": "Map",
+      "countBefore": 1,
+      "countAfter": 1,
+      "countDelta": 0,
+      "selfBytesBefore": 64,
+      "selfBytesAfter": 64,
+      "selfBytesDelta": 0
+    },
+    {
+      "type": "string",
+      "name": "NativeVideoContainer",
+      "countBefore": 1,
+      "countAfter": 1,
+      "countDelta": 0,
+      "selfBytesBefore": 40,
+      "selfBytesAfter": 40,
+      "selfBytesDelta": 0
+    },
+    {
+      "type": "closure",
+      "name": "Set",
+      "countBefore": 1,
+      "countAfter": 1,
+      "countDelta": 0,
+      "selfBytesBefore": 64,
+      "selfBytesAfter": 64,
+      "selfBytesDelta": 0
+    },
+    {
+      "type": "object",
+      "name": "AbortController",
+      "countBefore": 2,
+      "countAfter": 2,
+      "countDelta": 0,
+      "selfBytesBefore": 56,
+      "selfBytesAfter": 56,
+      "selfBytesDelta": 0
+    },
+    {
+      "type": "closure",
+      "name": "WeakRef",
+      "countBefore": 1,
+      "countAfter": 1,
+      "countDelta": 0,
+      "selfBytesBefore": 64,
+      "selfBytesAfter": 64,
+      "selfBytesDelta": 0
+    },
+    {
+      "type": "string",
+      "name": "ChildProcess",
+      "countBefore": 1,
+      "countAfter": 1,
+      "countDelta": 0,
+      "selfBytesBefore": 32,
+      "selfBytesAfter": 32,
+      "selfBytesDelta": 0
+    },
+    {
+      "type": "string",
+      "name": "NativePage",
+      "countBefore": 1,
+      "countAfter": 1,
+      "countDelta": 0,
+      "selfBytesBefore": 32,
+      "selfBytesAfter": 32,
+      "selfBytesDelta": 0
+    },
+    {
+      "type": "object",
+      "name": "Writable",
+      "countBefore": 9,
+      "countAfter": 9,
+      "countDelta": 0,
+      "selfBytesBefore": 344,
+      "selfBytesAfter": 344,
+      "selfBytesDelta": 0
+    },
+    {
+      "type": "object",
+      "name": "AbortSignal",
+      "countBefore": 14,
+      "countAfter": 20,
+      "countDelta": 6,
+      "selfBytesBefore": 1376,
+      "selfBytesAfter": 2000,
+      "selfBytesDelta": 624
+    },
+    {
+      "type": "object",
+      "name": "Promise",
+      "countBefore": 241,
+      "countAfter": 241,
+      "countDelta": 0,
+      "selfBytesBefore": 11528,
+      "selfBytesAfter": 11528,
+      "selfBytesDelta": 0
+    },
+    {
+      "type": "code",
+      "name": "AbortController",
+      "countBefore": 2,
+      "countAfter": 2,
+      "countDelta": 0,
+      "selfBytesBefore": 144,
+      "selfBytesAfter": 144,
+      "selfBytesDelta": 0
+    },
+    {
+      "type": "code",
+      "name": "Writable",
+      "countBefore": 1,
+      "countAfter": 1,
+      "countDelta": 0,
+      "selfBytesBefore": 72,
+      "selfBytesAfter": 72,
+      "selfBytesDelta": 0
+    },
+    {
+      "type": "closure",
+      "name": "Readable",
+      "countBefore": 1,
+      "countAfter": 1,
+      "countDelta": 0,
+      "selfBytesBefore": 64,
+      "selfBytesAfter": 64,
+      "selfBytesDelta": 0
+    },
+    {
+      "type": "code",
+      "name": "AbortSignal",
+      "countBefore": 1,
+      "countAfter": 1,
+      "countDelta": 0,
+      "selfBytesBefore": 72,
+      "selfBytesAfter": 72,
+      "selfBytesDelta": 0
+    },
+    {
+      "type": "code",
+      "name": "Promise",
+      "countBefore": 1,
+      "countAfter": 1,
+      "countDelta": 0,
+      "selfBytesBefore": 0,
+      "selfBytesAfter": 0,
+      "selfBytesDelta": 0
+    },
+    {
+      "type": "closure",
+      "name": "NativePage",
+      "countBefore": 2,
+      "countAfter": 2,
+      "countDelta": 0,
+      "selfBytesBefore": 120,
+      "selfBytesAfter": 120,
+      "selfBytesDelta": 0
+    },
+    {
+      "type": "closure",
+      "name": "NativeVideoContainer",
+      "countBefore": 2,
+      "countAfter": 2,
+      "countDelta": 0,
+      "selfBytesBefore": 120,
+      "selfBytesAfter": 120,
+      "selfBytesDelta": 0
+    },
+    {
+      "type": "string",
+      "name": "AbortController",
+      "countBefore": 1,
+      "countAfter": 1,
+      "countDelta": 0,
+      "selfBytesBefore": 32,
+      "selfBytesAfter": 32,
+      "selfBytesDelta": 0
+    },
+    {
+      "type": "closure",
+      "name": "ChildProcess",
+      "countBefore": 1,
+      "countAfter": 1,
+      "countDelta": 0,
+      "selfBytesBefore": 64,
+      "selfBytesAfter": 64,
+      "selfBytesDelta": 0
+    },
+    {
+      "type": "string",
+      "name": "Writable",
+      "countBefore": 1,
+      "countAfter": 1,
+      "countDelta": 0,
+      "selfBytesBefore": 24,
+      "selfBytesAfter": 24,
+      "selfBytesDelta": 0
+    },
+    {
+      "type": "string",
+      "name": "AbortSignal",
+      "countBefore": 1,
+      "countAfter": 1,
+      "countDelta": 0,
+      "selfBytesBefore": 32,
+      "selfBytesAfter": 32,
+      "selfBytesDelta": 0
+    },
+    {
+      "type": "string",
+      "name": "Promise",
+      "countBefore": 1,
+      "countAfter": 1,
+      "countDelta": 0,
+      "selfBytesBefore": 0,
+      "selfBytesAfter": 0,
+      "selfBytesDelta": 0
+    },
+    {
+      "type": "object",
+      "name": "Buffer",
+      "countBefore": 60,
+      "countAfter": 60,
+      "countDelta": 0,
+      "selfBytesBefore": 6240,
+      "selfBytesAfter": 6240,
+      "selfBytesDelta": 0
+    },
+    {
+      "type": "object",
+      "name": "Map",
+      "countBefore": 149,
+      "countAfter": 149,
+      "countDelta": 0,
+      "selfBytesBefore": 4744,
+      "selfBytesAfter": 4744,
+      "selfBytesDelta": 0
+    },
+    {
+      "type": "object",
+      "name": "Set",
+      "countBefore": 4168,
+      "countAfter": 4174,
+      "countDelta": 6,
+      "selfBytesBefore": 133392,
+      "selfBytesAfter": 133584,
+      "selfBytesDelta": 192
+    },
+    {
+      "type": "object",
+      "name": "WeakRef",
+      "countBefore": 84,
+      "countAfter": 90,
+      "countDelta": 6,
+      "selfBytesBefore": 2704,
+      "selfBytesAfter": 2896,
+      "selfBytesDelta": 192
+    },
+    {
+      "type": "code",
+      "name": "Buffer",
+      "countBefore": 1,
+      "countAfter": 1,
+      "countDelta": 0,
+      "selfBytesBefore": 72,
+      "selfBytesAfter": 72,
+      "selfBytesDelta": 0
+    },
+    {
+      "type": "closure",
+      "name": "AbortController",
+      "countBefore": 2,
+      "countAfter": 2,
+      "countDelta": 0,
+      "selfBytesBefore": 120,
+      "selfBytesAfter": 120,
+      "selfBytesDelta": 0
+    },
+    {
+      "type": "closure",
+      "name": "Writable",
+      "countBefore": 1,
+      "countAfter": 1,
+      "countDelta": 0,
+      "selfBytesBefore": 64,
+      "selfBytesAfter": 64,
+      "selfBytesDelta": 0
+    },
+    {
+      "type": "code",
+      "name": "Map",
+      "countBefore": 1,
+      "countAfter": 1,
+      "countDelta": 0,
+      "selfBytesBefore": 0,
+      "selfBytesAfter": 0,
+      "selfBytesDelta": 0
+    },
+    {
+      "type": "closure",
+      "name": "AbortSignal",
+      "countBefore": 1,
+      "countAfter": 1,
+      "countDelta": 0,
+      "selfBytesBefore": 64,
+      "selfBytesAfter": 64,
+      "selfBytesDelta": 0
+    },
+    {
+      "type": "closure",
+      "name": "Promise",
+      "countBefore": 1,
+      "countAfter": 1,
+      "countDelta": 0,
+      "selfBytesBefore": 64,
+      "selfBytesAfter": 64,
+      "selfBytesDelta": 0
+    },
+    {
+      "type": "code",
+      "name": "Set",
+      "countBefore": 1,
+      "countAfter": 1,
+      "countDelta": 0,
+      "selfBytesBefore": 0,
+      "selfBytesAfter": 0,
+      "selfBytesDelta": 0
+    },
+    {
+      "type": "string",
+      "name": "Buffer",
+      "countBefore": 1,
+      "countAfter": 1,
+      "countDelta": 0,
+      "selfBytesBefore": 24,
+      "selfBytesAfter": 24,
+      "selfBytesDelta": 0
+    },
+    {
+      "type": "code",
+      "name": "WeakRef",
+      "countBefore": 1,
+      "countAfter": 1,
+      "countDelta": 0,
+      "selfBytesBefore": 0,
+      "selfBytesAfter": 0,
+      "selfBytesDelta": 0
+    },
+    {
+      "type": "object",
+      "name": "Readable",
+      "countBefore": 12,
+      "countAfter": 12,
+      "countDelta": 0,
+      "selfBytesBefore": 416,
+      "selfBytesAfter": 416,
+      "selfBytesDelta": 0
+    },
+    {
+      "type": "string",
+      "name": "Map",
+      "countBefore": 1,
+      "countAfter": 1,
+      "countDelta": 0,
+      "selfBytesBefore": 0,
+      "selfBytesAfter": 0,
+      "selfBytesDelta": 0
+    },
+    {
+      "type": "string",
+      "name": "Set",
+      "countBefore": 1,
+      "countAfter": 1,
+      "countDelta": 0,
+      "selfBytesBefore": 0,
+      "selfBytesAfter": 0,
+      "selfBytesDelta": 0
+    },
+    {
+      "type": "string",
+      "name": "WeakRef",
+      "countBefore": 1,
+      "countAfter": 1,
+      "countDelta": 0,
+      "selfBytesBefore": 0,
+      "selfBytesAfter": 0,
+      "selfBytesDelta": 0
+    },
+    {
+      "type": "object",
+      "name": "ChildProcess",
+      "countBefore": 1,
+      "countAfter": 1,
+      "countDelta": 0,
+      "selfBytesBefore": 168,
+      "selfBytesAfter": 168,
+      "selfBytesDelta": 0
+    },
+    {
+      "type": "code",
+      "name": "Readable",
+      "countBefore": 1,
+      "countAfter": 1,
+      "countDelta": 0,
+      "selfBytesBefore": 72,
+      "selfBytesAfter": 72,
+      "selfBytesDelta": 0
+    },
+    {
+      "type": "code",
+      "name": "NativePage",
+      "countBefore": 2,
+      "countAfter": 2,
+      "countDelta": 0,
+      "selfBytesBefore": 144,
+      "selfBytesAfter": 144,
+      "selfBytesDelta": 0
+    },
+    {
+      "type": "code",
+      "name": "NativeVideoContainer",
+      "countBefore": 2,
+      "countAfter": 2,
+      "countDelta": 0,
+      "selfBytesBefore": 144,
+      "selfBytesAfter": 144,
+      "selfBytesDelta": 0
+    }
+  ]
+}

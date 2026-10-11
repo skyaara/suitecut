@@ -1,0 +1,28 @@
+--- a/libcef/browser/alloy/alloy_browser_host_impl.cc
++++ b/libcef/browser/alloy/alloy_browser_host_impl.cc
+@@ -221,6 +221,12 @@
+   // CefBrowserViewDelegate::OnBrowserCreated().
+   browser->platform_delegate_->NotifyBrowserCreated();
+ 
++  // SuiteCut: initialize loopback capture before the first audible page sound.
++  // The lifespan callback may synchronously destroy the browser.
++  if (browser->web_contents() && browser->platform_delegate_) {
++    browser->StartAudioCapturer();
++  }
++
+   return browser;
+ }
+ 
+@@ -1170,6 +1176,12 @@
+ // -----------------------------------------------------------------------------
+ 
+ void AlloyBrowserHostImpl::OnAudioStateChanged(bool audible) {
++  // SuiteCut consumes continuous loopback PCM, including legitimate silence.
++  // Keep capture alive until browser destruction.
++  if (client_.get() && client_->GetAudioHandler().get()) {
++    StartAudioCapturer();
++    return;
++  }
+   if (audible) {
+     if (recently_audible_timer_) {
+       recently_audible_timer_->Stop();

@@ -168,6 +168,7 @@ try {
     'LICENSE',
     'README.md',
     'CHANGELOG.md',
+    'RELEASE.md',
     'CODE_OF_CONDUCT.md',
     'CONTRIBUTING.md',
     'SECURITY.md',
@@ -188,6 +189,16 @@ try {
     'dist/native-default.js',
     'dist/native-default.d.ts',
     'native/browser/cef-build.json',
+    'native/browser/cef-build-linux-codecs.json',
+    'native/browser/CMakeLists.txt',
+    'native/browser/ENGINE.md',
+    'native/browser/MEMORY_SAFETY.md',
+    'scripts/install-cef-codecs.py',
+    'dist/engine.js',
+    'dist/engine.d.ts',
+    'dist/engine-test.js',
+    'dist/engine-test.d.ts',
+    'dist/browser-connection.js',
     'dist/playwright.d.ts',
     'dist/playwright.js',
     'dist/render.d.ts',
@@ -267,7 +278,11 @@ try {
 
   await writeFile(
     join(consumerDirectory, 'smoke.mjs'),
-    `import { defineSuiteCut, record, renderSuiteCut } from 'suitecut'
+    `import { defineSuiteCut, record, renderSuiteCut, launchEngine, connectBrowser } from 'suitecut'
+import { launchEngine as engineLaunch, connectBrowser as engineConnect } from 'suitecut/engine'
+import { connectBrowser as playwrightConnect } from 'suitecut/playwright'
+import { test as engineTest, expect as engineExpect } from 'suitecut/engine/test'
+import metadata from 'suitecut/package.json' with { type: 'json' }
 import { defineSuiteCutAudioPlugin, encodePcm16Wav } from 'suitecut/audio-plugin'
 import Reporter from 'suitecut/reporter'
 import { defineSuiteCut as defineFromAlias, record as recordFromAlias } from 'suitecut/playwright'
@@ -284,9 +299,16 @@ if (typeof expect !== 'function') throw new Error('suitecut expect export is una
 if (typeof launchNativeBrowser !== 'function' || typeof createNativeBroadcast !== 'function' || typeof recordNative !== 'function' || typeof createNativePage !== 'function') {
   throw new Error('suitecut native exports are unavailable')
 }
-if (typeof renderSuiteCut !== 'function' || renderSuiteCut !== renderFromSubpath) {
-  throw new Error('suitecut render exports do not match')
+if (typeof renderSuiteCut !== 'function' || typeof renderFromSubpath !== 'function') {
+  throw new Error('suitecut render exports are unavailable')
 }
+if (launchEngine !== engineLaunch || connectBrowser !== engineConnect || connectBrowser !== playwrightConnect) {
+  throw new Error('native engine and external connection exports do not match')
+}
+if (typeof engineTest !== 'function' || typeof engineExpect !== 'function') {
+  throw new Error('native Playwright Test exports are unavailable')
+}
+if (metadata.version !== ${JSON.stringify(packageJson.version)}) throw new Error('installed release version mismatch')
 if (typeof Reporter !== 'function') throw new Error('suitecut reporter export is unavailable')
 if (typeof defineSuiteCut !== 'function' || typeof record !== 'function') {
   throw new Error('suitecut recorder export is unavailable')

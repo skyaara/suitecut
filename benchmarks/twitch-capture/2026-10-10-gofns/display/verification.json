@@ -1,0 +1,18 @@
+{
+  "file": "/workspace/shared/gofns-twitch-2-minutes.mp4",
+  "durationSeconds": 120.0,
+  "video": {
+    "codec": "h264",
+    "width": 1280,
+    "height": 720,
+    "fps": "30/1"
+  },
+  "audio": {
+    "codec": "aac",
+    "sampleRate": "48000",
+    "channels": 2,
+    "rmsDbfs": -29.946579407272317
+  },
+  "fullAudioVideoDecode": "passed",
+  "sha256": "ae2de579d5f3ba4f5db5dec1af4b74e1bfd632a787e29f5e085a257ad57e7e53"
+}

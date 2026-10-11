@@ -276,7 +276,49 @@ const renderExample = `const report = await renderSuiteCut({
     invalid values. Playwright launch and browser-context options pass through to Playwright.
   </p>
 
-  <h2 id="native-api">Native API in 2.0</h2>
+  <h2 id="cpp-engine">C++ engine and Playwright adapter</h2>
+  <p>
+    <code>suitecut/engine</code> supplies real Playwright browser, page, and locator objects connected
+    to embedded CEF. C++ captures and encodes the media. Output startup waits for initialized encoders,
+    the muxer, the first video frame, and the first PCM block when CEF has requested capture. Silent pages
+    start with timestamped zero PCM. This cannot recover sound emitted before stock CEF starts its audibility-triggered
+    capture.
+  </p>
+  <CodeBlock
+    code={`import { launchEngine } from 'suitecut/engine'
+
+const engine = await launchEngine({
+  executablePath: process.env.SUITECUT_NATIVE_EXECUTABLE!,
+  width: 1920, height: 1080, framesPerSecond: 30,
+})
+try {
+  const context = await engine.browser.newContext()
+  const page = await context.newPage()
+  await page.goto('https://example.com')
+  const output = await engine.record(page, { destination: '/tmp/flow.mp4' })
+  try {
+    await page.getByRole('link').first().click()
+  } finally {
+    await output.stop()
+  }
+  await context.close()
+} finally {
+  await engine.close()
+}`}
+  />
+  <p>
+    <code>engine.encoders()</code> lists linked codecs and compatible containers. Native RTMP output uses
+    H.264/AAC/FLV. <code>connectBrowser()</code> connects ordinary automation to an external CDP or Playwright
+    endpoint; external pages cannot be recorded by the embedded engine. For Playwright Test, import <code
+      >test</code
+    > and <code>expect</code> from
+    <code>suitecut/engine/test</code>. See the
+    <a href="https://github.com/skyaara/suitecut/blob/main/native/browser/ENGINE.md">engine guide</a
+    >
+    for codec options, ownership, and tested compatibility limits.
+  </p>
+
+  <h2 id="native-api">Native API in 2.1</h2>
   <p>
     The root <code>record</code> and <code>defineSuiteCut</code> now use CEF. Configure dimensions, device
     scale, FPS, and executable path in <code>native</code>. Native <code>capture</code> accepts <code

@@ -1,0 +1,13 @@
+{
+  "case": "1080p30-record-cache-pressure",
+  "width": 1920,
+  "height": 1080,
+  "fps": 30,
+  "mode": "record",
+  "durationRequestedMs": 120000,
+  "workloadStatus": "interrupted; environment pressure investigation",
+  "harnessValid": false,
+  "qualityPassed": false,
+  "issues": [],
+  "error": "AssertionError('Matrix interrupted after severe host file-cache pressure; finalization was not captured in the last running snapshot.')"
+}

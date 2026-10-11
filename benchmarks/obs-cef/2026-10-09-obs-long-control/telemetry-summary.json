@@ -1,0 +1,28 @@
+{
+  "statusSamples": 1752,
+  "processSamples": 3596,
+  "renderSkippedFrames": 2037,
+  "renderTotalFrames": 54027,
+  "renderSkippedFraction": 0.037703370536953745,
+  "outputSkippedFrames": 70,
+  "outputTotalFrames": 54022,
+  "finalStream": {
+    "outputActive": true,
+    "outputBytes": 1025007463,
+    "outputCongestion": 0,
+    "outputDuration": 1798899,
+    "outputReconnecting": false,
+    "outputSkippedFrames": 0,
+    "outputTimecode": "00:29:58.899",
+    "outputTotalFrames": 53967
+  },
+  "finalRecord": {
+    "outputActive": true,
+    "outputBytes": 40372450,
+    "outputDuration": 1799199,
+    "outputPaused": false,
+    "outputTimecode": "00:29:59.199"
+  },
+  "maxControllerLoopDelayMs": 301.727743,
+  "independentSamplerGapsOver2Seconds": []
+}

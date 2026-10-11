@@ -1,0 +1,29 @@
+[WARN] Your node_modules are out of sync with your lockfile. The workspace structure has changed since last install
+
+Running 6 tests using 1 worker
+
+(node:1009173) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:200:5 › screencast › should delete video (30.0s)
+(node:1009304) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  2 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:273:5 › screencast › should expose video path blank popup (271ms)
+(node:1009442) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  3 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:200:5 › screencast › should delete video (6.8s)
+  ✓  4 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:273:5 › screencast › should expose video path blank popup (229ms)
+(node:1009606) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  5 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:200:5 › screencast › should delete video (7.0s)
+  ✓  6 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:273:5 › screencast › should expose video path blank popup (180ms)
+
+
+  1) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:200:5 › screencast › should delete video 
+
+    Test timeout of 30000ms exceeded.
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/blank-popup-repeated/artifacts/library-video-screencast-should-delete-video/error-context.md
+
+  1 failed
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:200:5 › screencast › should delete video 
+  5 passed (50.8s)

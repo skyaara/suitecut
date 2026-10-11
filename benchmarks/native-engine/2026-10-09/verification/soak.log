@@ -1,0 +1,121 @@
+{
+  "startedAt": "2026-10-09T16:24:07.743Z",
+  "requestedMs": 1800000,
+  "width": 1920,
+  "height": 1080,
+  "targetFps": 30,
+  "audio": true,
+  "recordingPath": "/workspace/suitecut/benchmarks/native-engine/2026-10-09/soak/recording.mp4",
+  "receiverPath": "/workspace/suitecut/benchmarks/native-engine/2026-10-09/soak/receiver.flv",
+  "mode": "C++ libav simultaneous H264 recording + RTMP; Playwright automation over private IPC; no raw media subscribers",
+  "readyAt": "2026-10-09T16:24:11.054Z",
+  "baseline": {
+    "rss": 122335232,
+    "heapTotal": 117436416,
+    "heapUsed": 58020440,
+    "external": 4301463,
+    "arrayBuffers": 312998
+  },
+  "runStartMonotonicSeconds": 72818.24,
+  "injection": {
+    "atMs": 40233.284855,
+    "durationMs": 4000
+  },
+  "latest": {
+    "record": {
+      "ready": true,
+      "stopped": false,
+      "paused": false,
+      "videoFrames": 54013,
+      "audioSamples": 86421504,
+      "repeatedFrames": 4075,
+      "droppedAudioSamples": 0,
+      "queuedVideoBytes": 34214400,
+      "queuedAudioBytes": 34560,
+      "startedMs": 2766.85078,
+      "durationMs": 1800433.3333333333,
+      "maximumEncodeMs": 719.1391479999875,
+      "error": ""
+    },
+    "stream": {
+      "ready": true,
+      "stopped": false,
+      "paused": false,
+      "videoFrames": 54003,
+      "audioSamples": 86404096,
+      "repeatedFrames": 2730,
+      "droppedAudioSamples": 0,
+      "queuedVideoBytes": 34214400,
+      "queuedAudioBytes": 38400,
+      "startedMs": 3116.756579,
+      "durationMs": 1800100,
+      "maximumEncodeMs": 459.7572429999709,
+      "error": ""
+    }
+  },
+  "activeMs": 1800191.4461090001,
+  "scrollCommands": 348,
+  "snapshot": {
+    "markerCount": 51721,
+    "scrollY": 2160,
+    "scrollEvents": 348,
+    "keyEvents": 0,
+    "clicks": 0,
+    "value": "",
+    "choice": "First",
+    "secondary": false
+  },
+  "beforeStop": {
+    "rss": 111087616,
+    "heapTotal": 52424704,
+    "heapUsed": 50314936,
+    "external": 5522347,
+    "arrayBuffers": 1533842
+  },
+  "recordStatus": {
+    "ready": true,
+    "stopped": true,
+    "paused": false,
+    "videoFrames": 54020,
+    "audioSamples": 86431744,
+    "repeatedFrames": 4075,
+    "droppedAudioSamples": 0,
+    "queuedVideoBytes": 0,
+    "queuedAudioBytes": 0,
+    "startedMs": 2766.85078,
+    "durationMs": 1800666.6666666667,
+    "maximumEncodeMs": 719.1391479999875,
+    "error": ""
+  },
+  "streamStatus": {
+    "ready": true,
+    "stopped": true,
+    "paused": false,
+    "videoFrames": 54015,
+    "audioSamples": 86424576,
+    "repeatedFrames": 2730,
+    "droppedAudioSamples": 0,
+    "queuedVideoBytes": 0,
+    "queuedAudioBytes": 0,
+    "startedMs": 3116.756579,
+    "durationMs": 1800500,
+    "maximumEncodeMs": 459.7572429999709,
+    "error": ""
+  },
+  "status": "passed",
+  "afterCleanup": {
+    "rss": 111480832,
+    "heapTotal": 54521856,
+    "heapUsed": 50502560,
+    "external": 5517837,
+    "arrayBuffers": 1525256
+  },
+  "afterCleanupGc": {
+    "rss": 111480832,
+    "heapTotal": 53473280,
+    "heapUsed": 48836144,
+    "external": 4271716,
+    "arrayBuffers": 278927
+  },
+  "completedAt": "2026-10-09T16:54:11.936Z"
+}

@@ -1,0 +1,8 @@
+{
+  "browserStackProtectionBefore": true,
+  "browserStackProtectionAfter": true,
+  "mainDispatchesCefSubprocesses": true,
+  "onlyMainExemptedFromStackProtection": true,
+  "sandboxDisabled": false,
+  "chromiumStackGuardResetDisabled": false
+}

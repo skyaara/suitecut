@@ -1,8 +1,9 @@
-# SuiteCut 2.0: native by default
+# SuiteCut 2.1: native by default
 
-SuiteCut 2.0 promotes the beta to the default native CEF backend. It requires the separately built
-native executable described in [README.md](README.md). macOS ARM64 is the verified
-platform. A missing executable is an error; SuiteCut never silently substitutes
+SuiteCut 2.1 keeps the native CEF backend as the default and moves media processing
+into C++. It requires the separately built native executable described in
+[ENGINE.md](ENGINE.md). Linux x86-64 is the verified target for this engine;
+macOS integration remains unverified. A missing executable is an error; SuiteCut never silently substitutes
 Playwright and reports it as native.
 
 ## Record with the embedded browser
@@ -29,7 +30,13 @@ Set `SUITECUT_NATIVE_EXECUTABLE` to the absolute CEF executable path first, or p
 options. Defaults are **native, 1920x1080, 60 FPS, I420**. The recorder launches and
 closes its primary browser, including on callback failure. Secondary sources added
 with `addSource` remain caller-owned. Recording audio is disabled by default; set
-`capture: { audio: true }` to include page audio. Results include `backend`.
+`capture: { audio: true }` to include page audio. Audio-enabled recording and
+streaming wait for native encoders, muxer, and the first captured video frame.
+Silent pages can start with audio enabled; the engine emits zero PCM until page
+audio arrives. This readiness does not guarantee that stock CEF has started its
+audibility-triggered capture or preserved the beginning of the first sound. See
+[ENGINE.md](ENGINE.md) for mandatory readiness and timeout behavior.
+Results include `backend`.
 
 `defineSuiteCut({ native, capture, output, audioPlugins, signal })` creates a
 native-default recorder with reusable settings. Its returned function accepts
@@ -49,7 +56,8 @@ Native callbacks receive `NativePage`, not the complete Playwright `Page` API.
 Strict main-document CSS locators and the existing authored presentation actions
 are supported. Full Playwright selectors, fixtures, popup handling, setup
 extensions, and popup capture are not native equivalents.
-Use `suitecut/playwright` or the explicit backend above for those existing flows.
+Use the real Playwright adapter in `suitecut/engine` for CEF page/locator APIs,
+or `suitecut/playwright` for the legacy capture backend.
 The root API changed in 2.0; `suitecut/playwright` and `suitecut/test` keep their existing backends.
 
 ## Native-default streaming
@@ -74,30 +82,30 @@ try {
 ```
 
 `applicationStopSignal` is an application-owned promise. The broadcast does not
-own the browser. `createBroadcast` resolves FFmpeg through the usual SuiteCut
-configuration; `ffmpegPath` can override it. The lower-level APIs remain available
+own the browser. `createBroadcast` uses the native linked FFmpeg engine; its
+compatibility `ffmpegPath` option is not executed. The lower-level APIs remain available
 from `suitecut/native`. Stream audio is disabled by default and only subscribes to
 CEF page audio when `stream.audio` is `true`.
 
-## Build an installable prerelease
+## Build the 2.1 release packages
 
 ```sh
-pnpm pack:beta
+pnpm pack:release
 ```
 
-This produces `.suitecut/beta-packages/suitecut-2.1.0-beta.0.tgz`. Its **root import
-`from 'suitecut'` resolves to the native-default API**. It also retains
-`suitecut/beta`, `suitecut/native`, `suitecut/playwright`, and the legacy Playwright
-API as `suitecut/stable`. Install the tarball in a test project:
+This produces `.suitecut/release/suitecut-2.1.0.tgz`, eight matching audio packages,
+a complete package inventory and `SHA256SUMS`. Its root import resolves to the
+native-default API; `suitecut/beta` remains its compatibility alias and
+`suitecut/playwright` / `suitecut/stable` retain the legacy backend.
 
 ```sh
-npm install /absolute/path/to/suitecut-2.1.0-beta.0.tgz
+npm install /absolute/path/to/suitecut-2.1.0.tgz
 ```
 
-Packaging stages a prerelease manifest without changing the checkout's release
-version or exports. The beta package's publish tag is `beta`. This command only
-builds a local tarball; **it does not publish to npm**, install Chromium, or switch
-an existing production stream. CEF SDKs and compiled native binaries are excluded.
+This only creates local artifacts. It does not publish to npm or bundle a compiled
+CEF browser. See [the release guide](../../RELEASE.md) for verification and known
+quality limits. The separate `pnpm pack:beta` helper derives the next minor beta
+from the checkout version; from 2.1.0 it creates 2.2.0-beta.0.
 
 ## Compare recording performance
 

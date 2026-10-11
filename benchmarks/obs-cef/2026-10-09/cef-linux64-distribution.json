@@ -1,0 +1,36 @@
+{
+  "cef_version": "152.0.8+g1ce985c+chromium-152.0.7977.134",
+  "channel": "stable",
+  "chromium_version": "152.0.7977.134",
+  "files": [
+    {
+      "last_modified": "2026-09-20T03:41:46.845000Z",
+      "name": "cef_binary_152.0.8+g1ce985c+chromium-152.0.7977.134_linux64_tools.tar.bz2",
+      "sha1": "f6aef1bd47fbc3388899d2bdd113bf5757fc1a1b",
+      "size": 410239443,
+      "type": "tools"
+    },
+    {
+      "last_modified": "2026-09-20T03:41:21.708000Z",
+      "name": "cef_binary_152.0.8+g1ce985c+chromium-152.0.7977.134_linux64_client.tar.bz2",
+      "sha1": "6336b020c2b656ba2ca375f2e8f2e40a65a1ce44",
+      "size": 321615045,
+      "type": "client"
+    },
+    {
+      "last_modified": "2026-09-20T03:40:59.358000Z",
+      "name": "cef_binary_152.0.8+g1ce985c+chromium-152.0.7977.134_linux64_minimal.tar.bz2",
+      "sha1": "25798f5f87b9cc699311c9abae73f4ef0f56ea76",
+      "size": 321520830,
+      "type": "minimal"
+    },
+    {
+      "last_modified": "2026-09-20T03:40:31.781000Z",
+      "name": "cef_binary_152.0.8+g1ce985c+chromium-152.0.7977.134_linux64.tar.bz2",
+      "sha1": "add0a51f7333bc660e8e3bafd998e0122568f7d8",
+      "size": 674894043,
+      "type": "standard"
+    }
+  ],
+  "sandbox_compat": "1671cc913eeb4ecf"
+}

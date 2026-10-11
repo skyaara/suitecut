@@ -66,3 +66,63 @@ Generated recordings and reports go under ignored `.suitecut/` directories.
 Avoid inferring a sustained 4K60 improvement from a removed memory copy alone.
 Compare complete capture runs, including popup composition, before publishing a
 native throughput claim.
+
+## CEF and OBS capture
+
+The [saved CEF / OBS comparison](obs-cef/README.md) includes Linux setup scripts,
+repeated recording trials, scrolling and browser controls, audio checks, local
+RTMP tests, and bounded streaming soaks. Its report retains failures, decoded
+motion measurements, resource samples, and partial media evidence. OBS captures
+external Chromium with XSHM because the installed package has no browser-source
+plugin. Recording codecs differ; compare the documented pipelines and settings
+before interpreting performance.
+
+## CEF optimization evidence
+
+The follow-up profiling, recorder/lifetime fixes, repeated OBS comparison, and
+continuous recording/streaming memory evidence are saved separately in
+[2026-10-09 optimization](obs-cef/2026-10-09-optimization/report.md).
+The original CEF/OBS measurements remain the before-change evidence.
+
+The C++ media migration and its new evidence are documented in
+[native-engine/README.md](native-engine/README.md). Older OBS and dropout evidence
+remains unchanged.
+
+The [native audio gap investigation](native-audio/2026-10-10/report.md) saves
+source/encoder PCM traces, startup timing, missing-input counters, and scheduling
+controls. It distinguishes input continuity from queue-overflow drop counts.
+
+The [CEF version and startup comparison](native-startup/README.md) adds native
+audio-readiness gating and compares the original build with a newer patch and
+stable release under matched capture and Playwright checks.
+
+The [CEF 154 promotion and mandatory readiness evidence](native-startup/2026-10-09-default/report.md)
+removes selectable audio startup policies, verifies the default with actual
+recording/RTMP and Playwright flows, and saves both clean continuous capture
+and the unresolved intermittent-audio simultaneous failure.
+
+The [native synchronization fixes and detailed evidence](native-sync/2026-10-10/report.md)
+cover silent-page readiness, capture-clock mapping, independent encoding workers,
+adaptive buffering, pause/stop draining, encoder CPU limits, and fully decoded
+recording/RTMP controls. Source gaps and the unbuilt persistent-capture CEF patch
+remain explicit limitations; container selection alone cannot restore missing input.
+
+The [shared-clock verification report](native-sync/2026-10-11-shared-clock/report.md)
+and [portable visual report](native-sync/2026-10-11-shared-clock/report.html)
+save the subsequent one-block encoder coordination, bounded nearest-frame
+selection, 720p60/1080p30/4K30 recording and streaming, injected-delay regressions,
+sanitizer fuzzing, and sustained memory profile. Tuning failures and CEF source
+gaps remain in the evidence. The 4K preset/thread budget and host memory-limit
+enforcement are explicit; this is not a new matched OBS performance comparison.
+
+The [native browser playback codec fix](native-playback/2026-10-10/report.md)
+compares stock CEF 154 with codec-enabled CEF 152 on Linux x64, verifies actual
+progressive MP4 and MSE H.264/AAC playback and native audio capture, reruns all
+15 browser integration checks, and records GOFNS for two minutes through C++.
+It saves codec provenance, raw recordings, queue/resource samples and remaining
+audio timing failures; it does not establish performance superiority over OBS.
+
+The [browser capability audit](native-browser-support/2026-10-10/report.md)
+exercises core web APIs and records the distinction between windowless capture
+policies, missing browser-adapter methods and unavailable host graphics. It also
+includes a failing/passing window-resize regression and the support checklist.

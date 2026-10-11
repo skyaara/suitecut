@@ -1,0 +1,46 @@
+{
+  "cases": [
+    {
+      "audioCodec": "aac",
+      "destination": "/workspace/suitecut/benchmarks/native-sync/2026-10-10/continuous-60s/recording.mp4",
+      "final": {
+        "ready": true,
+        "stopped": true,
+        "paused": false,
+        "videoFrames": 1817,
+        "audioSamples": 2907136,
+        "repeatedFrames": 22,
+        "droppedAudioSamples": 0,
+        "missingAudioSamples": 14400,
+        "lateAudioSamples": 0,
+        "queuedVideoBytes": 0,
+        "queuedAudioBytes": 0,
+        "startedMs": 2727.956634,
+        "durationMs": 60566.666666666664,
+        "maximumEncodeMs": 122.61692699999548,
+        "error": ""
+      }
+    },
+    {
+      "audioCodec": "aac",
+      "destination": "/workspace/suitecut/benchmarks/native-sync/2026-10-10/continuous-60s/receiver.flv",
+      "final": {
+        "ready": true,
+        "stopped": true,
+        "paused": false,
+        "videoFrames": 1808,
+        "audioSamples": 2892800,
+        "repeatedFrames": 17,
+        "droppedAudioSamples": 0,
+        "missingAudioSamples": 14563,
+        "lateAudioSamples": 0,
+        "queuedVideoBytes": 0,
+        "queuedAudioBytes": 0,
+        "startedMs": 3063.700145,
+        "durationMs": 60266.666666666664,
+        "maximumEncodeMs": 61.444116999999096,
+        "error": ""
+      }
+    }
+  ]
+}

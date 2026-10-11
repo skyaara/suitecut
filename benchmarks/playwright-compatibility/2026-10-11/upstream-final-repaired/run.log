@@ -1,0 +1,235 @@
+[WARN] Your node_modules are out of sync with your lockfile. The workspace structure has changed since last install
+
+Running 194 tests using 1 worker
+
+(node:981271) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓    1 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:26:1 › should fail without credentials (118ms)
+  ✓    2 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:37:1 › should work with setHTTPCredentials (141ms)
+  ✓    3 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:54:1 › should work with correct credentials @smoke (117ms)
+  ✓    4 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:65:1 › should fail with wrong credentials (99ms)
+  ✓    5 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:76:1 › should return resource body (115ms)
+  ✓    6 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:89:1 › should work with correct credentials and matching origin (94ms)
+  ✓    7 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:100:1 › should work with correct credentials and matching origin case insensitive (111ms)
+  ✓    8 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:111:1 › should fail with correct credentials and mismatching scheme (102ms)
+  ✓    9 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:125:1 › should fail with correct credentials and mismatching hostname (91ms)
+  ✓   10 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:141:1 › should fail with correct credentials and mismatching port (123ms)
+  ✓   11 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:22:3 › should context.routeFromHAR, matching the method and following redirects (164ms)
+  ✓   12 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:33:3 › should page.routeFromHAR, matching the method and following redirects (155ms)
+  ✓   13 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:44:3 › fallback:continue should continue when not found in har (141ms)
+  ✓   14 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:52:3 › by default should abort requests not found in har (102ms)
+  ✓   15 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:60:3 › fallback:continue should continue requests on bad har (206ms)
+  ✓   16 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:69:3 › should only handle requests matching url filter (158ms)
+  ✓   17 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:87:3 › should only context.routeFromHAR requests matching url filter (140ms)
+  ✓   18 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:105:3 › should only page.routeFromHAR requests matching url filter (131ms)
+  ✓   19 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:123:3 › should apply overrides before routing from har (173ms)
+  ✓   20 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:145:3 › should support regex filter (147ms)
+  ✓   21 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:154:3 › newPage should fulfill from har, matching the method and following redirects (152ms)
+  ✓   22 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:166:3 › should change document URL after redirected navigation (208ms)
+  ✓   23 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:180:3 › should change document URL after redirected navigation on click (376ms)
+  ✓   24 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:195:3 › should goBack to redirected navigation (283ms)
+  ✓   25 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:208:3 › should goForward to redirected navigation (634ms)
+  ✓   26 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:224:3 › should reload redirected navigation (404ms)
+  ✓   27 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:236:3 › should fulfill from har with content in a file (165ms)
+  ✓   28 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:244:3 › should round-trip har.zip (374ms)
+  ✓   29 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:259:3 › should produce extracted zip (269ms)
+  ✓   30 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:278:3 › should round-trip extracted har.zip (442ms)
+  ✓   31 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:296:3 › should round-trip har with postData (535ms)
+  ✓   32 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:327:3 › should record overridden requests to har (413ms)
+  ✓   33 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:361:3 › should disambiguate by header (295ms)
+  ✓   34 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:399:3 › should update har.zip for context (336ms)
+  ✓   35 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:415:3 › should ignore boundary when matching multipart/form-data body (607ms)
+  ✓   36 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:455:3 › should record single set-cookie headers (312ms)
+  ✓   37 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:481:3 › should record multiple set-cookie headers (272ms)
+  ✓   38 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:508:3 › should update har.zip for page (459ms)
+  ✓   39 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:524:3 › should update har.zip for page with different options (446ms)
+  ✓   40 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:540:3 › should update extracted har.zip for page (385ms)
+  ✓   41 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:556:3 › page.unrouteAll should stop page.routeFromHAR (186ms)
+  ✓   42 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:569:3 › context.unrouteAll should stop context.routeFromHAR (235ms)
+  ✓   43 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:582:3 › should ignore aborted requests (1.2s)
+  ✘   44 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-proxy.spec.ts:25:3 › should work when passing the proxy only on the context level (2ms)
+(node:982550) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   45 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-proxy.spec.ts:45:3 › should throw for bad server value (9ms)
+  ✓   46 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-proxy.spec.ts:53:3 › should use proxy (3.2s)
+  ✓   47 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-proxy.spec.ts:65:3 › should send secure cookies to subdomain.localhost (219ms)
+  ✓   48 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-proxy.spec.ts:101:3 › should set cookie for top-level domain (1.7s)
+  ✓   49 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-proxy.spec.ts:140:11 › should proxy local network requests › by default › localhost (190ms)
+  ✓   50 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-proxy.spec.ts:140:11 › should proxy local network requests › by default › loopback address (194ms)
+  ✓   51 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-proxy.spec.ts:140:11 › should proxy local network requests › by default › link-local (179ms)
+  ✓   52 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-proxy.spec.ts:140:11 › should proxy local network requests › with other bypasses › localhost (170ms)
+  ✓   53 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-proxy.spec.ts:140:11 › should proxy local network requests › with other bypasses › loopback address (218ms)
+  ✓   54 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-proxy.spec.ts:140:11 › should proxy local network requests › with other bypasses › link-local (246ms)
+  ✓   55 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-proxy.spec.ts:173:3 › should use ipv6 proxy (2.7s)
+  ✓   56 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-proxy.spec.ts:187:3 › should use proxy twice (3.3s)
+  ✓   57 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-proxy.spec.ts:201:3 › should use proxy for second page (1.2s)
+  ✓   58 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-proxy.spec.ts:221:3 › should use proxy for https urls (122ms)
+  ✓   59 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-proxy.spec.ts:237:3 › should work with IP:PORT notion (3.1s)
+  ✓   60 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-proxy.spec.ts:249:3 › should throw for socks5 authentication (3ms)
+  ✓   61 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-proxy.spec.ts:256:3 › should throw for socks4 authentication (2ms)
+  ✓   62 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-proxy.spec.ts:263:3 › should authenticate (914ms)
+  ✓   63 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-proxy.spec.ts:281:3 › should authenticate with empty password (3.1s)
+  ✓   64 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-proxy.spec.ts:298:3 › should isolate proxy credentials between contexts (2.3s)
+  ✓   65 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-proxy.spec.ts:328:3 › should exclude patterns (879ms)
+  ✓   66 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-proxy.spec.ts:390:3 › should use socks proxy (118ms)
+  ✓   67 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-proxy.spec.ts:400:3 › should use socks proxy in second page (175ms)
+  ✓   68 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-proxy.spec.ts:416:3 › does launch without a port (10ms)
+  ✓   69 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-proxy.spec.ts:423:3 › should isolate proxy credentials between contexts on navigation (355ms)
+  ✓   70 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-service-worker-policy.spec.ts:18:3 › should allow service workers by default (120ms)
+  ✓   71 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-service-worker-policy.spec.ts:26:5 › block › blocks service worker registration (108ms)
+  ✓   72 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-service-worker-policy.spec.ts:33:5 › block › should not throw error on about:blank (79ms)
+  ✓   73 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-storage-state.spec.ts:24:3 › should capture local storage (243ms)
+  ✓   74 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-storage-state.spec.ts:54:3 › should set local storage (278ms)
+  ✓   75 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-storage-state.spec.ts:100:3 › should report good error if the url is not valid (72ms)
+  ✓   76 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-storage-state.spec.ts:119:3 › should round-trip through the file (547ms)
+  ✓   77 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-storage-state.spec.ts:203:3 › should capture cookies (222ms)
+  ✓   78 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-storage-state.spec.ts:241:3 › should not emit events about internal page (224ms)
+  ✓   79 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-storage-state.spec.ts:262:3 › should not restore localStorage twice (235ms)
+  ✓   80 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-storage-state.spec.ts:294:3 › should handle missing file (2ms)
+  ✓   81 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-storage-state.spec.ts:302:3 › should handle malformed file (2ms)
+  ✓   82 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-storage-state.spec.ts:314:3 › should serialize storageState with lone surrogates (103ms)
+  ✓   83 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-storage-state.spec.ts:322:3 › should work when service worker is intefering (127ms)
+  ✓   84 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-storage-state.spec.ts:375:3 › should set local storage in third-party context (275ms)
+  ✓   85 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-storage-state.spec.ts:399:3 › should roundtrip local storage in third-party context (526ms)
+  ✓   86 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-storage-state.spec.ts:415:3 › should support IndexedDB (660ms)
+  ✓   87 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-storage-state.spec.ts:521:3 › should support empty indexedDB (297ms)
+  ✓   88 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-storage-state.spec.ts:543:3 › should round-trip WebAuthn credentials with storageState (34ms)
+  ✓   89 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-storage-state.spec.ts:559:3 › setStorageState should replace credentials (44ms)
+  ✓   90 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-storage-state.spec.ts:584:3 › setStorageState should handle missing file (13ms)
+  ✓   91 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/chromium.spec.ts:21:5 › should create a worker from a service worker (122ms)
+  ✓   92 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/chromium.spec.ts:29:5 › should create a worker from service worker with noop routing (161ms)
+  ✓   93 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/chromium.spec.ts:38:5 › should emit new service worker on update (236ms)
+  ✓   94 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/chromium.spec.ts:89:7 › http credentials › httpCredentials (138ms)
+  ✓   95 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/chromium.spec.ts:102:5 › serviceWorkers() should return current workers (168ms)
+  ✓   96 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/chromium.spec.ts:121:5 › should not create a worker from a shared worker (94ms)
+  ✓   97 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/chromium.spec.ts:131:5 › Page.route should work with intervention headers (114ms)
+  ✘   98 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/chromium.spec.ts:151:15 › should close service worker together with the context (1ms)
+(node:983942) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   99 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/chromium.spec.ts:167:15 › should pass args with spaces (4ms)
+(node:983954) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  100 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/chromium.spec.ts:177:5 › serviceWorker(), and fromServiceWorker() work (230ms)
+  ✓  101 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/chromium.spec.ts:211:5 › should intercept service worker requests (main and within) (182ms)
+  ✓  102 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/chromium.spec.ts:241:5 › should report failure (due to content-type) of main service worker request (127ms)
+  ✓  103 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/chromium.spec.ts:257:5 › should report failure (due to redirect) of main service worker request (103ms)
+  ✓  104 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/chromium.spec.ts:270:5 › should intercept service worker importScripts (175ms)
+  ✓  105 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/chromium.spec.ts:299:5 › should report intercepted service worker requests in HAR (152ms)
+  ✓  106 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/chromium.spec.ts:347:5 › should intercept only serviceworker request, not page (178ms)
+  ✓  107 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/chromium.spec.ts:371:5 › should produce network events, routing, and annotations for Service Worker (256ms)
+  ✓  108 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/chromium.spec.ts:434:5 › should produce network events, routing, and annotations for Service Worker (advanced) (292ms)
+  -  109 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/chromium.spec.ts:537:5 › should intercept service worker update requests
+  ✓  110 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/chromium.spec.ts:599:5 › setOffline (160ms)
+  ✓  111 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/chromium.spec.ts:614:5 › setExtraHTTPHeaders (201ms)
+  -  112 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/chromium.spec.ts:628:5 › should throw when connecting twice to an already running persistent context (--remote-debugging-port)
+  -  113 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/chromium.spec.ts:646:5 › should throw when connecting twice to an already running persistent context (--remote-debugging-pipe)
+  ✓  114 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/chromium.spec.ts:660:5 › PLAYWRIGHT_DISABLE_SERVICE_WORKER_NETWORK (150ms)
+  ✓  115 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/chromium.spec.ts:690:5 › should emit console messages from service worker (207ms)
+  ✓  116 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/chromium.spec.ts:733:5 › should capture console.log from ServiceWorker start (140ms)
+  ✓  117 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:105:5 › screencast › should not have video by default (98ms)
+  ✓  118 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:109:5 › screencast › should not throw without recordVideo.dir (7ms)
+  ✓  119 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:113:5 › screencast › should capture static page (7.1s)
+  ✓  120 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:133:5 › screencast › should pad a short frame to the video size (7.0s)
+  ✘  121 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:152:5 › screencast › should continue recording main page after popup closes (1.5m)
+(node:984714) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  122 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:182:5 › screencast › should expose video path (169ms)
+  ✓  123 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:200:5 › screencast › should delete video (7.1s)
+  ✓  124 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:221:5 › screencast › should expose video path blank page (153ms)
+  ✓  125 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:238:5 › screencast › should work with weird screen resolution (541ms)
+  ✓  126 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:256:5 › screencast › should work with relative path for recordVideo.dir (132ms)
+  ✓  127 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:273:5 › screencast › should expose video path blank popup (168ms)
+  ✓  128 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:294:5 › screencast › should capture navigation (17.2s)
+  ✓  129 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:326:5 › screencast › should capture css transformation (7.7s)
+  ✓  130 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:356:5 › screencast › should work for popups (7.6s)
+  ✓  131 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:390:5 › screencast › should scale frames down to the requested size  (14.3s)
+  ✘  132 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:439:5 › screencast › should use viewport scaled down to fit into 800x800 as default size (1.5m)
+(node:985398) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  133 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:458:5 › screencast › should be 800x450 by default (1.5m)
+(node:985729) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Timed out waiting 480s for the test suite to run
+Timed out waiting 480s for the teardown for test suite to run
+
+
+  1) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-proxy.spec.ts:25:3 › should work when passing the proxy only on the context level 
+
+    TypeError: Cannot read properties of undefined (reading 'close')
+
+      39 |     expect(await page.title()).toBe('Served by the proxy');
+      40 |   } finally {
+    > 41 |     await browser.close();
+         |                   ^
+      42 |   }
+      43 | });
+      44 |
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-proxy.spec.ts:41:19
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-final-repaired/artifacts/library-browsercontext-pro-f1b45-y-only-on-the-context-level/error-context.md
+
+  2) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/chromium.spec.ts:151:15 › should close service worker together with the context 
+
+    Error: SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness
+
+       at config/browserTest.ts:222
+
+      220 |     if(process.env.COMPAT_BACKEND==='chromium') return use(original);
+      221 |     await use(new Proxy(original, { get(target, name) {
+    > 222 |       if (['launch', 'launchPersistentContext', 'launchServer', 'connect', 'connectOverCDP'].includes(String(name))) return async () => { throw new Error('SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness'); };
+          |                                                                                                                                                 ^
+      223 |       const value = Reflect.get(target, name); return typeof value === 'function' ? value.bind(target) : value;
+      224 |     }}));
+      225 |   }, { scope: 'worker' }],
+        at Proxy.launch (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts:222:145)
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/chromium.spec.ts:152:37
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-final-repaired/artifacts/library-chromium-chromium--7d989-r-together-with-the-context/error-context.md
+
+  3) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/chromium.spec.ts:167:15 › should pass args with spaces 
+
+    Error: SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness
+
+       at config/browserTest.ts:222
+
+      220 |     if(process.env.COMPAT_BACKEND==='chromium') return use(original);
+      221 |     await use(new Proxy(original, { get(target, name) {
+    > 222 |       if (['launch', 'launchPersistentContext', 'launchServer', 'connect', 'connectOverCDP'].includes(String(name))) return async () => { throw new Error('SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness'); };
+          |                                                                                                                                                 ^
+      223 |       const value = Reflect.get(target, name); return typeof value === 'function' ? value.bind(target) : value;
+      224 |     }}));
+      225 |   }, { scope: 'worker' }],
+        at Proxy.launchPersistentContext (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts:222:145)
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/chromium.spec.ts:168:37
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-final-repaired/artifacts/library-chromium-chromium-should-pass-args-with-spaces/error-context.md
+
+  4) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:152:5 › screencast › should continue recording main page after popup closes 
+
+    Test timeout of 90000ms exceeded.
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-final-repaired/artifacts/library-video-screencast-s-2dc53-ain-page-after-popup-closes/error-context.md
+
+  5) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:439:5 › screencast › should use viewport scaled down to fit into 800x800 as default size 
+
+    Test timeout of 90000ms exceeded.
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-final-repaired/artifacts/library-video-screencast-s-a83eb-nto-800x800-as-default-size/error-context.md
+
+  6) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:458:5 › screencast › should be 800x450 by default 
+
+    Test timeout of 90000ms exceeded.
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-final-repaired/artifacts/library-video-screencast-should-be-800x450-by-default/error-context.md
+
+  6 failed
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-proxy.spec.ts:25:3 › should work when passing the proxy only on the context level 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/chromium.spec.ts:151:15 › should close service worker together with the context 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/chromium/chromium.spec.ts:167:15 › should pass args with spaces 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:152:5 › screencast › should continue recording main page after popup closes 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:439:5 › screencast › should use viewport scaled down to fit into 800x800 as default size 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/video.spec.ts:458:5 › screencast › should be 800x450 by default 
+  3 skipped
+  61 did not run
+  124 passed (8.0m)
+  2 errors were not a part of any test, see above for details

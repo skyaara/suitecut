@@ -1,0 +1,24 @@
+{
+  "status": "passed",
+  "final": {
+    "ready": true,
+    "stopped": true,
+    "paused": false,
+    "videoFrames": 681,
+    "audioSamples": 544768,
+    "repeatedFrames": 23,
+    "droppedAudioSamples": 0,
+    "queuedVideoBytes": 0,
+    "queuedAudioBytes": 0,
+    "startedMs": 1815.098193,
+    "durationMs": 11350,
+    "maximumEncodeMs": 37.852977000000465,
+    "error": ""
+  },
+  "medianIntervalMs": 16.99999999999946,
+  "deliveredFps": 60.001764757787,
+  "framesDuringNodeBlock": 241,
+  "pageSwitching": "passed",
+  "disconnectFailure": "passed",
+  "receiverErrors": "[in#0/flv @ 0x56301e187f00] Error during demuxing: Input/output error\n"
+}

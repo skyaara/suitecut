@@ -1,0 +1,25 @@
+{
+  "nativeFinalStatusesAvailable": false,
+  "originalFilesUnmodified": true,
+  "notes": [
+    {
+      "file": "cef-DD5AAA3FF35F48FB216A7EAC44EB3D54.csv",
+      "originalBytes": 2920448,
+      "analysisBytes": 2920429,
+      "discardedIncompleteTrailingBytes": 19
+    },
+    {
+      "file": "recording.mp4.csv",
+      "originalBytes": 2965504,
+      "analysisBytes": 2965477,
+      "discardedIncompleteTrailingBytes": 27
+    },
+    {
+      "file": "native.csv",
+      "originalBytes": 2965504,
+      "analysisBytes": 2965440,
+      "discardedIncompleteTrailingBytes": 64
+    }
+  ],
+  "warning": "CSV was buffered when user aborted execution. Only complete rows are analyzed. PCM may extend past the last complete CSV row. Lifecycle trace was still buffered and is unavailable."
+}

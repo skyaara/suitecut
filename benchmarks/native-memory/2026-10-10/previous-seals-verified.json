@@ -1,0 +1,42 @@
+[
+  {
+    "seal": "benchmarks/native-engine/2026-10-09/checksums.sha256",
+    "payloads": 529,
+    "verified": true
+  },
+  {
+    "seal": "benchmarks/native-codecs/2026-10-10/checksums.sha256",
+    "payloads": 710,
+    "verified": true
+  },
+  {
+    "seal": "benchmarks/native-audio/2026-10-10/checksums.sha256",
+    "payloads": 428,
+    "verified": true
+  },
+  {
+    "seal": "benchmarks/native-startup/2026-10-09-default/checksums.sha256",
+    "payloads": 726,
+    "verified": true
+  },
+  {
+    "seal": "benchmarks/native-startup/2026-10-10/checksums.sha256",
+    "payloads": 1234,
+    "verified": true
+  },
+  {
+    "seal": "benchmarks/native-sync/2026-10-10/checksums.sha256",
+    "payloads": 909,
+    "verified": true
+  },
+  {
+    "seal": "benchmarks/obs-cef/2026-10-10-audio-source-review/checksums.sha256",
+    "payloads": 26,
+    "verified": true
+  },
+  {
+    "seal": "benchmarks/obs-cef/2026-10-10-native-audio-profile/checksums.sha256",
+    "payloads": 863,
+    "verified": true
+  }
+]

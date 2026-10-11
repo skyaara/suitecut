@@ -1,0 +1,33 @@
+{
+  "cefVersion": "154.0.34+g14c5a08+chromium-154.0.8037.98",
+  "platform": "Linux x64",
+  "macOSTested": false,
+  "cpuMax": "400000 100000",
+  "memoryMax": "17179869184",
+  "kernel": "Linux-6.18.44-x86_64-with-glibc2.41",
+  "gpuDevices": {
+    "dri": false,
+    "nvidia": false
+  },
+  "node": "v24.19.0",
+  "ffmpeg": "ffmpeg version 7.1.5-0+deb13u1 Copyright (c) 2000-2026 the FFmpeg developers",
+  "cmake": "cmake version 4.4.4",
+  "linuxPin": {
+    "cefVersion": "154.0.34+g14c5a08+chromium-154.0.8037.98",
+    "platform": "linux64",
+    "url": "https://cef-builds.spotifycdn.com/cef_binary_154.0.34%2Bg14c5a08%2Bchromium-154.0.8037.98_linux64_minimal.tar.bz2",
+    "sha256": "e87e2c76304372dd28b899ceb6efa4b353f52700594ddc358a8237ec07ec6492",
+    "upstreamSha1": "15c91ad767097217b2e82ba8b933fe30b134be69",
+    "size": 326489962
+  },
+  "macosPin": {
+    "cefVersion": "154.0.34+g14c5a08+chromium-154.0.8037.98",
+    "platform": "macosarm64",
+    "url": "https://cef-builds.spotifycdn.com/cef_binary_154.0.34%2Bg14c5a08%2Bchromium-154.0.8037.98_macosarm64_minimal.tar.bz2",
+    "sha256": "b7efb24bcce34b94e836a9f545005aea210e08abdf4ee1483ea03b8daf93f080",
+    "upstreamSha1": "b7081f6609e5edccf07be96b5d7977329fbe1bdf",
+    "size": 132210884
+  },
+  "sourceFiles": 162,
+  "runtimeDependencies": 193
+}

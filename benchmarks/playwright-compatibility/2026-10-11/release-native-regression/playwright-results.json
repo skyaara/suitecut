@@ -1,0 +1,660 @@
+{
+  "config": {
+    "argv": [
+      "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+      "/workspace/suitecut/node_modules/playwright/cli.js",
+      "test",
+      "--config",
+      "benchmarks/native-engine/playwright.config.ts"
+    ],
+    "configFile": "/workspace/suitecut/benchmarks/native-engine/playwright.config.ts",
+    "rootDir": "/workspace/suitecut/benchmarks/native-engine",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/workspace/suitecut/benchmarks/playwright-compatibility/2026-10-11/release-native-regression/playwright-artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "/workspace/suitecut/benchmarks/native-engine",
+        "testIgnore": [
+          "**/tested-sources*/**"
+        ],
+        "testMatch": [
+          "engine.e2e.spec.ts"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "/workspace/suitecut/benchmarks/playwright-compatibility/2026-10-11/release-native-regression/playwright-results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.62.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "engine.e2e.spec.ts",
+      "file": "engine.e2e.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "real Playwright locators, auto-wait, input, scrolling, iframe and screenshot",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 855,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T10:40:09.342Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1671f79a60a4bd98e4da-0dc5a03d0834ad6c0ef1",
+          "file": "engine.e2e.spec.ts",
+          "line": 53,
+          "column": 1
+        },
+        {
+          "title": "windowless browser bounds resize the selected page and report unsupported states",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 414,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T10:40:10.750Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1671f79a60a4bd98e4da-992f3caf23faf6184310",
+          "file": "engine.e2e.spec.ts",
+          "line": 69,
+          "column": 1
+        },
+        {
+          "title": "native engine records silent startup and accepts later sound",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 823,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T10:40:11.174Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1671f79a60a4bd98e4da-b242a1b6d524c52a26cb",
+          "file": "engine.e2e.spec.ts",
+          "line": 117,
+          "column": 1
+        },
+        {
+          "title": "streaming initializes silent audio and accepts later browser sound",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1441,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T10:40:12.010Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1671f79a60a4bd98e4da-5f25fe8e8dd40b0e719d",
+          "file": "engine.e2e.spec.ts",
+          "line": 134,
+          "column": 1
+        },
+        {
+          "title": "silent pages record a valid audio track with mandatory engine readiness",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 495,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T10:40:13.464Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1671f79a60a4bd98e4da-9e4a2748ecc36cb90065",
+          "file": "engine.e2e.spec.ts",
+          "line": 197,
+          "column": 1
+        },
+        {
+          "title": "native protocol rejects bypasses and requires audio readiness when audio is omitted",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 326,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T10:40:13.972Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1671f79a60a4bd98e4da-c54c48c7ca98517de7f6",
+          "file": "engine.e2e.spec.ts",
+          "line": 219,
+          "column": 1
+        },
+        {
+          "title": "network interception, init scripts and storage isolation",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 366,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T10:40:14.310Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1671f79a60a4bd98e4da-663e8387a9407445a601",
+          "file": "engine.e2e.spec.ts",
+          "line": 266,
+          "column": 1
+        },
+        {
+          "title": "popup, dialog, file upload, download and public CDP sessions",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 721,
+                  "error": {
+                    "message": "Error: Protocol error (Page.handleJavaScriptDialog): No dialog is showing",
+                    "stack": "Error: Protocol error (Page.handleJavaScriptDialog): No dialog is showing"
+                  },
+                  "errors": [
+                    {
+                      "message": "Error: Protocol error (Page.handleJavaScriptDialog): No dialog is showing"
+                    },
+                    {
+                      "location": {
+                        "file": "/workspace/suitecut/benchmarks/native-engine/engine.e2e.spec.ts",
+                        "column": 37,
+                        "line": 314
+                      },
+                      "message": "Error: locator.evaluate: Test ended.\nCall log:\n\u001b[2m  - waiting for getByLabel('Upload')\u001b[22m\n\n\n  312 |   })\n  313 |   expect(\n> 314 |     await page.getByLabel('Upload').evaluate((input: HTMLInputElement) => input.files?.[0]?.name),\n      |                                     ^\n  315 |   ).toBe('input.txt')\n  316 |   const download = page.waitForEvent('download')\n  317 |   await page.getByRole('link', { name: 'Download' }).click()\n    at /workspace/suitecut/benchmarks/native-engine/engine.e2e.spec.ts:314:37"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T10:40:14.697Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/workspace/suitecut/benchmarks/playwright-compatibility/2026-10-11/release-native-regression/playwright-artifacts/engine.e2e-popup-dialog-fi-b54b1-oad-and-public-CDP-sessions/error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/workspace/suitecut/benchmarks/playwright-compatibility/2026-10-11/release-native-regression/playwright-artifacts/engine.e2e-popup-dialog-fi-b54b1-oad-and-public-CDP-sessions/error-context.md"
+                    }
+                  ]
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "1671f79a60a4bd98e4da-ec15ea415cc8c6e41c56",
+          "file": "engine.e2e.spec.ts",
+          "line": 295,
+          "column": 1
+        },
+        {
+          "title": "explicit CDP sessions receive page events and tracing completion",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 678,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T10:40:16.140Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1671f79a60a4bd98e4da-6c26f34740c0821458c6",
+          "file": "engine.e2e.spec.ts",
+          "line": 331,
+          "column": 1
+        },
+        {
+          "title": "native recording survives blocked Node, pause and page switching",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6504,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T10:40:17.309Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1671f79a60a4bd98e4da-269a80c5141b7d753e12",
+          "file": "engine.e2e.spec.ts",
+          "line": 363,
+          "column": 1
+        },
+        {
+          "title": "pause drains pending media and resume captures a prepared static page",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1238,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T10:40:23.825Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1671f79a60a4bd98e4da-24fb9fec2f9f97ebd5bf",
+          "file": "engine.e2e.spec.ts",
+          "line": 400,
+          "column": 1
+        },
+        {
+          "title": "repeated context/page shutdown keeps the engine usable",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1504,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T10:40:25.078Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1671f79a60a4bd98e4da-4fda2b2fb15942c20c57",
+          "file": "engine.e2e.spec.ts",
+          "line": 423,
+          "column": 1
+        },
+        {
+          "title": "permission and geolocation setup before page creation",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 156,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T10:40:26.598Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1671f79a60a4bd98e4da-84259a977fcef415d73e",
+          "file": "engine.e2e.spec.ts",
+          "line": 434,
+          "column": 1
+        },
+        {
+          "title": "explicit session retention is bounded and capacity returns after detach",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 674,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T10:40:26.765Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1671f79a60a4bd98e4da-18b1c7e8848a918d6d18",
+          "file": "engine.e2e.spec.ts",
+          "line": 470,
+          "column": 1
+        },
+        {
+          "title": "rapid popup and opener closure leaves the engine usable",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3553,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T10:40:27.451Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1671f79a60a4bd98e4da-de118324a7a5366c80e8",
+          "file": "engine.e2e.spec.ts",
+          "line": 504,
+          "column": 1
+        },
+        {
+          "title": "native shutdown joins a pending pause and releases active outputs",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1169,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T10:40:31.016Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1671f79a60a4bd98e4da-76ee605421ae51d05d51",
+          "file": "engine.e2e.spec.ts",
+          "line": 519,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-11T10:40:08.648Z",
+    "duration": 23691.668999999998,
+    "expected": 15,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

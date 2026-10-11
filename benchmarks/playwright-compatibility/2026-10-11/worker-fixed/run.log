@@ -1,0 +1,171 @@
+[WARN] Your node_modules are out of sync with your lockfile. The workspace structure has changed since last install
+
+Running 10 tests using 1 worker
+
+(node:934464) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 benchmarks/playwright-compatibility/compatibility.spec.ts:71:1 › worker: dedicated Worker evaluation and messaging (196ms)
+Native failure: Native browser exited unexpectedly (null)
+  ✘   2 benchmarks/playwright-compatibility/compatibility.spec.ts:76:1 › worker: service worker website control and fetch (161ms)
+(node:934611) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Native failure: Native browser exited unexpectedly (null)
+  ✘   3 benchmarks/playwright-compatibility/compatibility.spec.ts:77:1 › worker: context serviceworker event, enumeration and evaluation (174ms)
+(node:934738) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Native failure: Native browser exited unexpectedly (null)
+  ✘   4 benchmarks/playwright-compatibility/compatibility.spec.ts:81:1 › worker: service worker console and close event on context disposal (187ms)
+(node:934865) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Native failure: Native browser exited unexpectedly (null)
+  ✘   5 benchmarks/playwright-compatibility/compatibility.spec.ts:86:1 › worker: multiple pages expose one service worker identity (185ms)
+(node:935005) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Native failure: Native browser exited unexpectedly (null)
+  ✘   6 benchmarks/playwright-compatibility/compatibility.spec.ts:91:1 › worker: worker remains automatable after its first page closes (157ms)
+(node:935131) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Native failure: Native browser exited unexpectedly (null)
+  ✘   7 benchmarks/playwright-compatibility/compatibility.spec.ts:97:1 › worker: repeated worker contexts release browser target registrations (157ms)
+(node:935258) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   8 benchmarks/playwright-compatibility/compatibility.spec.ts:103:1 › worker: serviceWorkers block prevents registration (192ms)
+  ✓   9 benchmarks/playwright-compatibility/compatibility.spec.ts:106:1 › oopif: cross-site frame is a separate CDP target and remains interactive (629ms)
+  ✓  10 benchmarks/playwright-compatibility/compatibility.spec.ts:114:1 › oopif: cross-site navigation, detach and network routing (567ms)
+
+
+  1) benchmarks/playwright-compatibility/compatibility.spec.ts:76:1 › worker: service worker website control and fetch 
+
+    Error: page.evaluate: Target page, context or browser has been closed
+    Browser logs:
+
+    Native browser exited unexpectedly (null)
+
+
+      67 | async function register(page: import('@playwright/test').Page) {
+      68 |   await page.goto(origin)
+    > 69 |   await page.evaluate(async()=>{await navigator.serviceWorker.register('/sw.js');await navigator.serviceWorker.ready;if(!navigator.serviceWorker.controller)await new Promise<void>(r=>navigator.serviceWorker.addEventListener('controllerchange',()=>r(),{once:true}))})
+         |              ^
+      70 | }
+      71 | test('worker: dedicated Worker evaluation and messaging',async({page})=>{
+      72 |   await page.goto(origin);const event=page.waitForEvent('worker');await page.evaluate(()=>{const w=new Worker('/worker.js');(window as any).worker=w})
+        at register (/workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts:69:14)
+        at /workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts:76:73
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/worker-fixed/artifacts/compatibility-worker-servi-6f06e-r-website-control-and-fetch/error-context.md
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/worker-fixed/artifacts/compatibility-worker-servi-6f06e-r-website-control-and-fetch/error-context.md
+
+  2) benchmarks/playwright-compatibility/compatibility.spec.ts:77:1 › worker: context serviceworker event, enumeration and evaluation 
+
+    Error: page.evaluate: Target page, context or browser has been closed
+    Browser logs:
+
+    Native browser exited unexpectedly (null)
+
+
+      67 | async function register(page: import('@playwright/test').Page) {
+      68 |   await page.goto(origin)
+    > 69 |   await page.evaluate(async()=>{await navigator.serviceWorker.register('/sw.js');await navigator.serviceWorker.ready;if(!navigator.serviceWorker.controller)await new Promise<void>(r=>navigator.serviceWorker.addEventListener('controllerchange',()=>r(),{once:true}))})
+         |              ^
+      70 | }
+      71 | test('worker: dedicated Worker evaluation and messaging',async({page})=>{
+      72 |   await page.goto(origin);const event=page.waitForEvent('worker');await page.evaluate(()=>{const w=new Worker('/worker.js');(window as any).worker=w})
+        at register (/workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts:69:14)
+        at /workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts:79:3
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/worker-fixed/artifacts/compatibility-worker-conte-0bd89--enumeration-and-evaluation/error-context.md
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/worker-fixed/artifacts/compatibility-worker-conte-0bd89--enumeration-and-evaluation/error-context.md
+
+  3) benchmarks/playwright-compatibility/compatibility.spec.ts:81:1 › worker: service worker console and close event on context disposal 
+
+    Error: page.evaluate: Target page, context or browser has been closed
+    Browser logs:
+
+    Native browser exited unexpectedly (null)
+
+
+      67 | async function register(page: import('@playwright/test').Page) {
+      68 |   await page.goto(origin)
+    > 69 |   await page.evaluate(async()=>{await navigator.serviceWorker.register('/sw.js');await navigator.serviceWorker.ready;if(!navigator.serviceWorker.controller)await new Promise<void>(r=>navigator.serviceWorker.addEventListener('controllerchange',()=>r(),{once:true}))})
+         |              ^
+      70 | }
+      71 | test('worker: dedicated Worker evaluation and messaging',async({page})=>{
+      72 |   await page.goto(origin);const event=page.waitForEvent('worker');await page.evaluate(()=>{const w=new Worker('/worker.js');(window as any).worker=w})
+        at register (/workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts:69:14)
+        at /workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts:82:93
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/worker-fixed/artifacts/compatibility-worker-servi-e2553-e-event-on-context-disposal/error-context.md
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/worker-fixed/artifacts/compatibility-worker-servi-e2553-e-event-on-context-disposal/error-context.md
+
+  4) benchmarks/playwright-compatibility/compatibility.spec.ts:86:1 › worker: multiple pages expose one service worker identity 
+
+    Error: page.evaluate: Target page, context or browser has been closed
+    Browser logs:
+
+    Native browser exited unexpectedly (null)
+
+
+      67 | async function register(page: import('@playwright/test').Page) {
+      68 |   await page.goto(origin)
+    > 69 |   await page.evaluate(async()=>{await navigator.serviceWorker.register('/sw.js');await navigator.serviceWorker.ready;if(!navigator.serviceWorker.controller)await new Promise<void>(r=>navigator.serviceWorker.addEventListener('controllerchange',()=>r(),{once:true}))})
+         |              ^
+      70 | }
+      71 | test('worker: dedicated Worker evaluation and messaging',async({page})=>{
+      72 |   await page.goto(origin);const event=page.waitForEvent('worker');await page.evaluate(()=>{const w=new Worker('/worker.js');(window as any).worker=w})
+        at register (/workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts:69:14)
+        at /workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts:87:93
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/worker-fixed/artifacts/compatibility-worker-multi-eae91-one-service-worker-identity/error-context.md
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/worker-fixed/artifacts/compatibility-worker-multi-eae91-one-service-worker-identity/error-context.md
+
+  5) benchmarks/playwright-compatibility/compatibility.spec.ts:91:1 › worker: worker remains automatable after its first page closes 
+
+    Error: page.evaluate: Target page, context or browser has been closed
+    Browser logs:
+
+    Native browser exited unexpectedly (null)
+
+
+      67 | async function register(page: import('@playwright/test').Page) {
+      68 |   await page.goto(origin)
+    > 69 |   await page.evaluate(async()=>{await navigator.serviceWorker.register('/sw.js');await navigator.serviceWorker.ready;if(!navigator.serviceWorker.controller)await new Promise<void>(r=>navigator.serviceWorker.addEventListener('controllerchange',()=>r(),{once:true}))})
+         |              ^
+      70 | }
+      71 | test('worker: dedicated Worker evaluation and messaging',async({page})=>{
+      72 |   await page.goto(origin);const event=page.waitForEvent('worker');await page.evaluate(()=>{const w=new Worker('/worker.js');(window as any).worker=w})
+        at register (/workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts:69:14)
+        at /workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts:92:93
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/worker-fixed/artifacts/compatibility-worker-worke-ea7be-after-its-first-page-closes/error-context.md
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/worker-fixed/artifacts/compatibility-worker-worke-ea7be-after-its-first-page-closes/error-context.md
+
+  6) benchmarks/playwright-compatibility/compatibility.spec.ts:97:1 › worker: repeated worker contexts release browser target registrations 
+
+    Error: cdpSession.detach: Target page, context or browser has been closed
+
+       99 |   try{for(let i=0;i<12;i++){const c=await browser.newContext();try{const p=await c.newPage();const event=c.waitForEvent('serviceworker',{timeout:5000});void event.catch(()=>{});await register(p);expect(await (await event).evaluate(()=> (self as any).marker)).toBe(42)}finally{await c.close()}}
+      100 |     await expect.poll(async()=> (await root.send('Target.getTargets')).targetInfos.filter(t=>t.type==='service_worker').length).toBe(0)
+    > 101 |   }finally{await root.detach()}
+          |                       ^
+      102 | })
+      103 | test('worker: serviceWorkers block prevents registration',async({browser})=>{
+      104 |   const c=await browser.newContext({serviceWorkers:'block'});try{const p=await c.newPage();await p.goto(origin);await p.evaluate(()=>navigator.serviceWorker.register('/sw.js').catch(()=>null));expect(await p.evaluate(()=>navigator.serviceWorker.getRegistrations().then(r=>r.length))).toBe(0)}finally{await c.close()}
+        at /workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts:101:23
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/worker-fixed/artifacts/compatibility-worker-repea-18d6b-rowser-target-registrations/error-context.md
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/worker-fixed/artifacts/compatibility-worker-repea-18d6b-rowser-target-registrations/error-context.md
+
+  6 failed
+    benchmarks/playwright-compatibility/compatibility.spec.ts:76:1 › worker: service worker website control and fetch 
+    benchmarks/playwright-compatibility/compatibility.spec.ts:77:1 › worker: context serviceworker event, enumeration and evaluation 
+    benchmarks/playwright-compatibility/compatibility.spec.ts:81:1 › worker: service worker console and close event on context disposal 
+    benchmarks/playwright-compatibility/compatibility.spec.ts:86:1 › worker: multiple pages expose one service worker identity 
+    benchmarks/playwright-compatibility/compatibility.spec.ts:91:1 › worker: worker remains automatable after its first page closes 
+    benchmarks/playwright-compatibility/compatibility.spec.ts:97:1 › worker: repeated worker contexts release browser target registrations 
+  4 passed (11.4s)

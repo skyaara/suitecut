@@ -1,0 +1,30 @@
+[WARN] Your node_modules are out of sync with your lockfile. The workspace structure has changed since last install
+
+Running 1 test using 1 worker
+
+(node:935690) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 benchmarks/playwright-compatibility/compatibility.spec.ts:76:1 › worker: service worker website control and fetch (1ms)
+
+
+  1) benchmarks/playwright-compatibility/compatibility.spec.ts:76:1 › worker: service worker website control and fetch 
+
+    Error: Native browser exited unexpectedly (null)
+
+       at ../../src/native-browser.ts:286
+
+      284 |       if (!stopping) fail(new Error('Native browser output was truncated'))
+      285 |     }
+    > 286 |     if (!stopping) fail(new Error(`Native browser exited unexpectedly (${String(code)})`))
+          |                         ^
+      287 |     frames.clear()
+      288 |     audio.clear()
+      289 |     protocolEvents.clear()
+        at ChildProcess.<anonymous> (/workspace/suitecut/src/native-browser.ts:286:25)
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/asan-diagnosis/artifacts/compatibility-worker-servi-6f06e-r-website-control-and-fetch/error-context.md
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/asan-diagnosis/artifacts/compatibility-worker-servi-6f06e-r-website-control-and-fetch/error-context.md
+
+  1 failed
+    benchmarks/playwright-compatibility/compatibility.spec.ts:76:1 › worker: service worker website control and fetch 

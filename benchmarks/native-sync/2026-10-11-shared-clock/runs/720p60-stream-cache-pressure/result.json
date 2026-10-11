@@ -1,0 +1,195 @@
+{
+  "backend": "cpp-cef",
+  "mode": "stream",
+  "profile": "performance",
+  "width": 1280,
+  "height": 720,
+  "fps": 60,
+  "durationRequestedMs": 120000,
+  "startedAt": "2026-10-10T21:02:38.435Z",
+  "status": "completed; media validation pending",
+  "recordingPath": "/workspace/suitecut/benchmarks/native-sync/2026-10-11-shared-clock/runs/720p60-stream/recording.mkv",
+  "receiverPath": "/workspace/suitecut/benchmarks/native-sync/2026-10-11-shared-clock/runs/720p60-stream/receiver.flv",
+  "phases": [
+    {
+      "name": "static",
+      "atMs": 0.8290790000000925,
+      "monotonic": 175928.466139433
+    },
+    {
+      "name": "canvas",
+      "atMs": 10004.091342,
+      "monotonic": 175938.470380704
+    },
+    {
+      "name": "scroll",
+      "atMs": 20043.209717,
+      "monotonic": 175948.516950481
+    },
+    {
+      "name": "static",
+      "atMs": 30014.363504000004,
+      "monotonic": 175958.4832511
+    },
+    {
+      "name": "canvas",
+      "atMs": 40014.540182,
+      "monotonic": 175968.481053734
+    },
+    {
+      "name": "scroll",
+      "atMs": 50011.667241999996,
+      "monotonic": 175978.484037068
+    },
+    {
+      "name": "static",
+      "atMs": 60012.181676,
+      "monotonic": 175988.482305964
+    },
+    {
+      "name": "canvas",
+      "atMs": 70018.943065,
+      "monotonic": 175998.483719049
+    },
+    {
+      "name": "scroll",
+      "atMs": 80023.532927,
+      "monotonic": 176008.490466693
+    },
+    {
+      "name": "static",
+      "atMs": 90011.779421,
+      "monotonic": 176018.476593503
+    },
+    {
+      "name": "canvas",
+      "atMs": 100014.83071899999,
+      "monotonic": 176028.479520646
+    },
+    {
+      "name": "scroll",
+      "atMs": 110020.760604,
+      "monotonic": 176038.490828872
+    }
+  ],
+  "encoding": {
+    "video": "H264 veryfast zerolatency, GOP 2 seconds; configured thread count in finalOutput",
+    "audio": "AAC 48kHz stereo 128kbps",
+    "recordCrf": 18,
+    "streamBitrateKbps": 3500
+  },
+  "cefVersion": "152.0.6+g708dc14+chromium-152.0.7977.83",
+  "browserVersion": "152.0.7977.83",
+  "audioStarted": {
+    "generator": "frame-coded interpolated hash noise",
+    "sampleRate": 48000,
+    "quantum": 24,
+    "amplitude": 0.15,
+    "firstFrame": 0,
+    "currentFrame": 1152
+  },
+  "captureAudioReadiness": {
+    "waitMs": 540.712814,
+    "active": true,
+    "lastPacketMs": 2084.52304,
+    "packets": 8,
+    "requested": true
+  },
+  "beforeCapture": {
+    "marker": 90,
+    "rendered": 83,
+    "mode": "static",
+    "scrollY": 0,
+    "scrollEvents": 0,
+    "keyEvents": 0,
+    "clicks": 0,
+    "value": "",
+    "choice": "First",
+    "actionMask": 0,
+    "width": 1280,
+    "height": 720,
+    "audio": {
+      "generator": "frame-coded interpolated hash noise",
+      "sampleRate": 48000,
+      "quantum": 24,
+      "amplitude": 0.15,
+      "firstFrame": 0,
+      "currentFrame": 12288
+    }
+  },
+  "activeBaseline": {
+    "marker": 110,
+    "rendered": 103,
+    "mode": "static",
+    "scrollY": 0,
+    "scrollEvents": 0,
+    "keyEvents": 0,
+    "clicks": 0,
+    "value": "",
+    "choice": "First",
+    "actionMask": 0,
+    "width": 1280,
+    "height": 720,
+    "audio": {
+      "generator": "frame-coded interpolated hash noise",
+      "sampleRate": 48000,
+      "quantum": 24,
+      "amplitude": 0.15,
+      "firstFrame": 0,
+      "currentFrame": 27904
+    }
+  },
+  "activeStartMonotonic": 175928.461917527,
+  "inputDwellMs": 200,
+  "activeEndMonotonic": 176048.489577526,
+  "activeMs": 120027.65999900294,
+  "afterCapture": {
+    "marker": 7313,
+    "rendered": 7295,
+    "mode": "scroll",
+    "scrollY": 720,
+    "scrollEvents": 76,
+    "keyEvents": 1,
+    "clicks": 1,
+    "value": "SuiteCut benchmark",
+    "choice": "Second",
+    "actionMask": 15,
+    "width": 1280,
+    "height": 720,
+    "audio": {
+      "generator": "frame-coded interpolated hash noise",
+      "sampleRate": 48000,
+      "quantum": 24,
+      "amplitude": 0.15,
+      "firstFrame": 0,
+      "currentFrame": 5782016
+    }
+  },
+  "scrollCommands": 76,
+  "finalOutput": {
+    "ready": true,
+    "stopped": true,
+    "paused": false,
+    "videoFrames": 7222,
+    "audioSamples": 5778432,
+    "repeatedFrames": 64,
+    "droppedAudioSamples": 0,
+    "missingAudioSamples": 4238,
+    "activeMissingAudioSamples": 4238,
+    "lateAudioSamples": 0,
+    "queuedVideoBytes": 0,
+    "queuedAudioBytes": 0,
+    "startedMs": 2108.98202,
+    "durationMs": 120366.66666666667,
+    "maximumEncodeMs": 65.98306500000035,
+    "bufferedDelayMs": 150,
+    "audioSyncWaits": 21161,
+    "videoSyncWaits": 10280,
+    "maximumTrackLeadMs": 21.333333333343035,
+    "videoEncoderThreads": 1,
+    "videoEncoderPreset": "veryfast",
+    "error": ""
+  },
+  "receiverExitCode": 0,
+  "finishedAt": "2026-10-10T21:04:41.589Z"
+}

@@ -7,18 +7,27 @@ SuiteCut saves browser video and a timeline of your actions, then renders them i
 
 ## What it does
 
-- **Recording:** embedded Chromium (CEF) capture, with an explicit Playwright backend for existing scripts and tests.
+- **Recording:** C++ CEF capture, native encoding and RTMP publishing, with thin TypeScript adapters.
+- **Automation:** real Playwright browser/page/locator objects connected to CEF over private IPC.
 - **Presentation:** narration, captions, highlights, zoom, pointer effects, and checkpoint clips.
 - **Audio:** local Kokoro narration, optional model plugins, and opt-in native page audio.
 - **Delivery:** offline rendering from saved manifests and live RTMP/RTMPS streaming.
 
 ## Installation
 
-Requires Node.js 22 or newer. Install the [2.0 release package](https://github.com/skyaara/suitecut/releases/tag/v2.0.0)
-and set up FFmpeg and FFprobe:
+Building an SDK in another language? The complete
+[SuiteCut native package](native/engine/README.md) exposes automation and ready
+encoded audio/video recordings and streams over a documented process protocol.
+C++ owns CEF, A/V synchronization, encoding and muxing; SDKs send commands.
+The optional [CEF-only component](native/cef/README.md) provides raw capture
+for applications that supply their own media pipeline. Packages are prepared locally.
+
+SuiteCut **2.1.0** is prepared as local release packages; it has not been published.
+See [the release guide](RELEASE.md) for the artifacts, verification, and known limits.
+Requires Node.js 22 or newer. Install the prepared tarball and set up media tools:
 
 ```sh
-npm install https://github.com/skyaara/suitecut/releases/download/v2.0.0/suitecut-2.0.0.tgz
+npm install ./suitecut-2.1.0.tgz
 npx suitecut install
 npx suitecut doctor
 ```
@@ -28,16 +37,22 @@ or set `SUITECUT_FFMPEG_PATH` and `SUITECUT_FFPROBE_PATH` explicitly.
 
 ### Native browser
 
-SuiteCut 2.0 uses CEF by default. The package includes its source and build pins;
-the browser executable must be built separately. Follow the [native build instructions](native/browser/README.md#build),
+SuiteCut 2.1 uses CEF by default. The package includes its source and build pins;
+the browser executable must be built separately. Follow the [C++ engine build instructions](native/browser/ENGINE.md#build),
 then set its path:
 
 ```sh
-export SUITECUT_NATIVE_EXECUTABLE="/absolute/path/to/suitecut-browser.app/Contents/MacOS/suitecut-browser"
+export SUITECUT_NATIVE_EXECUTABLE="/absolute/path/to/suitecut-browser"
 ```
 
-macOS Apple Silicon is the verified native platform. Linux native builds are unverified;
-Windows native packaging is not implemented. Native capture defaults to 1920 × 1080 at 60 FPS.
+The new media engine is verified on Linux x86-64. Its macOS integration is unverified,
+and Windows native packaging is not implemented. Native capture defaults to
+1920 × 1080 at 60 FPS. Recording/rendering link FFmpeg 7.1+ libraries directly.
+Linux x64 uses a checksum-pinned codec-enabled CEF build for H.264/AAC browser
+playback. Install it with `pnpm native:install:cef`; output encoder selection is
+separate from browser playback support. See the [playback tests and limitations](benchmarks/native-playback/2026-10-10/report.md).
+See the [browser support matrix](native/browser/BROWSER_SUPPORT.md) for verified
+web capabilities, capture policies and remaining compatibility work.
 
 ## Record and render
 
@@ -69,7 +84,72 @@ Page audio is off by default and enabled in this example. Narration is mixed dur
 
 ## Use with Playwright
 
-Choose `suitecut/playwright` for full Playwright locators, iframe traversal, popup recording,
+### Attach to an external browser
+
+SuiteCut 2.1 exports `connectBrowser()` for ordinary browser automation:
+
+```js
+import { connectBrowser } from 'suitecut'
+
+const browser = await connectBrowser({ endpoint: 'http://127.0.0.1:9222' })
+try {
+  const context = browser.contexts()[0]
+  const page = context.pages()[0] ?? await context.newPage()
+  await page.goto('https://example.com')
+  await page.mouse.wheel(0, 500)
+} finally {
+  await browser.close() // Disconnect; the independently launched browser stays running.
+}
+```
+
+The browser must already expose a reachable CDP endpoint. Chrome/Chromium needs
+remote debugging enabled with a separate user-data directory. For a Playwright
+`launchServer()` endpoint, use `{ protocol: 'playwright', endpoint: wsEndpoint,
+browserName: 'chromium' }`; Firefox and WebKit can also select their corresponding
+Playwright server protocol. See [connection options and lifecycle](native/browser/ENGINE.md#external-browser-automation).
+
+### Launch SuiteCut's capture engine
+
+Use `suitecut/engine` for Playwright automation with native C++ recording:
+
+```js
+import { launchEngine } from 'suitecut/engine'
+
+const engine = await launchEngine({
+  executablePath: process.env.SUITECUT_NATIVE_EXECUTABLE,
+  width: 1920, height: 1080, framesPerSecond: 30,
+})
+try {
+  const context = await engine.browser.newContext()
+  const page = await context.newPage()
+  const output = await engine.record(page, { destination: './flow.mp4' })
+  try {
+    await page.goto('https://example.com')
+    await page.getByRole('heading').waitFor()
+    await page.mouse.wheel(0, 500)
+  } finally {
+    await output.stop()
+  }
+  await context.close()
+} finally {
+  await engine.close()
+}
+```
+
+The browser and locators are real Playwright objects. Import `test`/`expect` from
+`suitecut/engine/test` to run ordinary Playwright tests against CEF. Playwright
+1.62.1 is tested; this is a Chromium adapter with
+[documented compatibility limits](native/browser/ENGINE.md). The checks cover a
+curated feature set. See the [saved native validation](benchmarks/native-engine/README.md).
+
+The native engine also exposes encoder discovery and selectable H.264, HEVC,
+VP8, VP9, AV1 and FFV1 recording/export, with AAC, Opus, FLAC or PCM audio.
+See [codec configuration](native/browser/ENGINE.md#codec-selection) and the
+[saved multi-codec tests](benchmarks/native-codecs/README.md). NVIDIA encoder
+entries require a suitable GPU and driver; this host's tests cover software encoding.
+
+The existing `suitecut/playwright` backend remains available for standalone browser
+capture and existing SuiteCut recording fixtures. Choose `suitecut/playwright` for full Playwright locators, iframe traversal, popup recording,
 or existing browser automation. Chromium, Firefox, and WebKit are supported.
 
 ```sh
@@ -100,7 +180,7 @@ keep their behavior by changing their recording imports:
 
 - **Backend selection:** root `record` also accepts `backend: 'playwright'`; `suitecut/stable` remains a Playwright alias.
 - **Capture settings:** native dimensions, device scale, and FPS belong in `native`. Native `capture` accepts output `size`, `narrationTailMs`, and boolean `audio`.
-- **Locators:** native recording supports strict main-document CSS selectors. Keep role/text selectors, iframe and popup flows, and custom Playwright setup on `suitecut/playwright`.
+- **Locators:** the existing native `record()` recipe facade uses main-document CSS selectors. The new `suitecut/engine` adapter exposes actual Playwright locators, frames and popups; see its tested scope.
 - **Audio:** replace `stream.audio: 'tab'` with `true` and `'silent'` with `false`. Native recording audio uses `capture.audio: true`.
 - **Types and output:** import Playwright recording types from `suitecut/playwright`. Manifests, rendering, and audio plugin APIs retain their behavior.
 

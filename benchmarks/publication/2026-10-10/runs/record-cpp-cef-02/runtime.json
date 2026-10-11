@@ -1,0 +1,23 @@
+{
+  "cpus": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "cpuQuota": "400000 100000",
+  "hostMemoryLimitBytes": 17179869184,
+  "memoryGuardBytes": 8589934592,
+  "memoryGuardKind": "sampled summed-RSS guard, NOT a kernel 8 GiB cgroup limit",
+  "display": ":0",
+  "displaySize": [
+    1920,
+    1167
+  ],
+  "infrastructurePids": [
+    772739,
+    772742
+  ],
+  "obsPid": null,
+  "instrumentation": "no preload, no audio trace, no sanitizer"
+}

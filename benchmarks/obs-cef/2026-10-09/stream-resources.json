@@ -1,0 +1,38 @@
+[
+  {
+    "id": "obs-stream-20000",
+    "samples": 40,
+    "meanCpuPercent": 362.51073442525336,
+    "peakRssMiB": 1955.9921875,
+    "firstRssMiB": 1701.3828125,
+    "lastRssMiB": 1955.9921875,
+    "rssTrendMiBPerMinute": 192.16081263172782
+  },
+  {
+    "id": "native-stream-20000",
+    "samples": 43,
+    "meanCpuPercent": 374.86150277782247,
+    "peakRssMiB": 1600.515625,
+    "firstRssMiB": 1265.52734375,
+    "lastRssMiB": 1556.12890625,
+    "rssTrendMiBPerMinute": 226.2639025616284
+  },
+  {
+    "id": "obs-stream-300000",
+    "samples": 548,
+    "meanCpuPercent": 370.66080514826007,
+    "peakRssMiB": 2076.18359375,
+    "firstRssMiB": 1800.59375,
+    "lastRssMiB": 2059.96484375,
+    "rssTrendMiBPerMinute": 1.305726404236931
+  },
+  {
+    "id": "native-stream-300000",
+    "samples": 550,
+    "meanCpuPercent": 377.8159020407026,
+    "peakRssMiB": 1694.1015625,
+    "firstRssMiB": 1321.55859375,
+    "lastRssMiB": 1634.36328125,
+    "rssTrendMiBPerMinute": 20.093841009460643
+  }
+]

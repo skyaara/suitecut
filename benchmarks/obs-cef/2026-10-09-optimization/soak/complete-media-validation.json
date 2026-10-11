@@ -1,0 +1,152 @@
+{
+  "originalStatus": "failed",
+  "originalError": "AssertionError [ERR_ASSERTION]: receiver 5: A/V drift 298.3333333333328ms\n    at file:///workspace/suitecut/benchmarks/obs-cef/soak.mjs:66:86",
+  "activeWorkloadCompleted": true,
+  "media": {
+    "recording": {
+      "durationSeconds": 1803.835,
+      "bytes": 52020733,
+      "windows": [
+        {
+          "offset": 5,
+          "matchedFlashes": 12,
+          "audioBursts": 34,
+          "medianAudioMinusVideoMs": -1.666666666666039,
+          "p95AbsoluteOffsetMs": 69.66666666666634,
+          "firstThirdMedianMs": 15.000000000000124,
+          "lastThirdMedianMs": -13.333333333332753,
+          "offsetsMs": [
+            -36.66666666666663,
+            16.666666666666607,
+            23.333333333333428,
+            13.333333333333641,
+            30.00000000000025,
+            -109.99999999999943,
+            6.666666666667709,
+            16.666666666667496,
+            -23.33333333333165,
+            -16.66666666666572,
+            -9.999999999999787,
+            -9.999999999999787
+          ],
+          "status": "passed"
+        },
+        {
+          "offset": 900,
+          "matchedFlashes": 12,
+          "audioBursts": 26,
+          "medianAudioMinusVideoMs": 18.333333333333535,
+          "p95AbsoluteOffsetMs": 79.00000000000009,
+          "firstThirdMedianMs": 44.99999999999993,
+          "lastThirdMedianMs": 6.666666666665932,
+          "offsetsMs": [
+            43.33333333333344,
+            46.666666666666416,
+            -26.666666666666394,
+            70.00000000000028,
+            -89.99999999999986,
+            16.666666666667496,
+            6.666666666667709,
+            26.666666666665506,
+            19.999999999999574,
+            66.66666666666643,
+            -43.333333333333,
+            -6.666666666667709
+          ],
+          "status": "passed"
+        },
+        {
+          "offset": 1780,
+          "matchedFlashes": 11,
+          "audioBursts": 36,
+          "medianAudioMinusVideoMs": -13.333333333333641,
+          "p95AbsoluteOffsetMs": 53.33333333333323,
+          "firstThirdMedianMs": -13.333333333333197,
+          "lastThirdMedianMs": -6.666666666665932,
+          "offsetsMs": [
+            -13.333333333333197,
+            -46.66666666666597,
+            49.99999999999982,
+            -13.333333333332753,
+            -36.66666666666618,
+            -56.66666666666664,
+            -46.666666666666856,
+            -46.66666666666508,
+            -13.333333333333641,
+            -6.666666666665932,
+            36.66666666666707
+          ],
+          "status": "passed"
+        }
+      ]
+    },
+    "receiver": {
+      "durationSeconds": 1801.77,
+      "bytes": 48410109,
+      "windows": [
+        {
+          "offset": 5,
+          "matchedFlashes": 8,
+          "audioBursts": 38,
+          "medianAudioMinusVideoMs": -9.999999999999787,
+          "p95AbsoluteOffsetMs": 298.3333333333328,
+          "firstThirdMedianMs": -34.99999999999992,
+          "lastThirdMedianMs": -4.999999999999893,
+          "offsetsMs": [
+            -60.00000000000006,
+            -9.999999999999787,
+            3.333333333332966,
+            -426.66666666666583,
+            -60.0000000000005,
+            33.333333333333215,
+            0.0,
+            -9.999999999999787
+          ],
+          "status": "failed"
+        },
+        {
+          "offset": 900,
+          "matchedFlashes": 8,
+          "audioBursts": 29,
+          "medianAudioMinusVideoMs": 76.66666666666711,
+          "p95AbsoluteOffsetMs": 112.99999999999994,
+          "firstThirdMedianMs": 18.333333333333538,
+          "lastThirdMedianMs": 66.66666666666643,
+          "offsetsMs": [
+            96.66666666666669,
+            -59.99999999999961,
+            120.00000000000011,
+            99.99999999999964,
+            76.666666666668,
+            50.00000000000071,
+            76.66666666666622,
+            56.66666666666664
+          ],
+          "status": "passed"
+        },
+        {
+          "offset": 1780,
+          "matchedFlashes": 9,
+          "audioBursts": 35,
+          "medianAudioMinusVideoMs": 20.000000000000462,
+          "p95AbsoluteOffsetMs": 76.66666666666656,
+          "firstThirdMedianMs": 23.333333333333428,
+          "lastThirdMedianMs": 26.666666666665506,
+          "offsetsMs": [
+            23.333333333333428,
+            20.000000000000462,
+            56.66666666666664,
+            19.999999999999574,
+            -23.333333333333428,
+            -56.66666666666664,
+            -53.33333333333279,
+            89.99999999999986,
+            26.666666666665506
+          ],
+          "status": "passed"
+        }
+      ]
+    }
+  },
+  "allSyncWindowsPassed": false
+}

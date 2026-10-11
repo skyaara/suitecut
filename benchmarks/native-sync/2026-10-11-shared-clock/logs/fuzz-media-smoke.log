@@ -1,0 +1,39 @@
+INFO: Running with entropic power schedule (0xFF, 100).
+INFO: Seed: 3876077467
+INFO: Loaded 1 modules   (2546 inline 8-bit counters): 2546 [0x55fbeeb1b940, 0x55fbeeb1c332), 
+INFO: Loaded 1 PC tables (2546 PCs): 2546 [0x55fbeeb1c338,0x55fbeeb26258), 
+INFO:       32 files found in benchmarks/native-sync/2026-10-11-shared-clock/fuzz/media-corpus
+INFO: -max_len is not provided; libFuzzer will not generate inputs larger than 4096 bytes
+INFO: seed corpus: files: 32 min: 33b max: 33b total: 1056b rss: 55Mb
+#34	INITED cov: 528 ft: 717 corp: 11/363b exec/s: 0 rss: 81Mb
+#35	NEW    cov: 528 ft: 741 corp: 12/391b lim: 33 exec/s: 0 rss: 82Mb L: 28/33 MS: 1 EraseBytes-
+	NEW_FUNC[1/7]: ==801610==WARNING: invalid path to external symbolizer!
+==801610==WARNING: Failed to use and restart external symbolizer!
+0x55fbeeaa72a0  (/workspace/suitecut/.suitecut/shared-clock-asan/suitecut-fuzz-media+0x1742a0) (BuildId: 12089958835e0b6753a6f5cca1b4807963ab16c3)
+	NEW_FUNC[2/7]: 0x55fbeeabeb40  (/workspace/suitecut/.suitecut/shared-clock-asan/suitecut-fuzz-media+0x18bb40) (BuildId: 12089958835e0b6753a6f5cca1b4807963ab16c3)
+#37	NEW    cov: 556 ft: 798 corp: 13/424b lim: 33 exec/s: 0 rss: 84Mb L: 33/33 MS: 2 ShuffleBytes-CrossOver-
+#39	NEW    cov: 556 ft: 810 corp: 14/452b lim: 33 exec/s: 0 rss: 85Mb L: 28/33 MS: 2 CMP-EraseBytes- DE: "\001\000"-
+#40	NEW    cov: 557 ft: 812 corp: 15/480b lim: 33 exec/s: 0 rss: 86Mb L: 28/33 MS: 1 CMP- DE: "fal"-
+#41	NEW    cov: 557 ft: 821 corp: 16/509b lim: 33 exec/s: 0 rss: 86Mb L: 29/33 MS: 1 InsertByte-
+#42	NEW    cov: 557 ft: 824 corp: 17/542b lim: 33 exec/s: 0 rss: 87Mb L: 33/33 MS: 1 ChangeBinInt-
+#43	NEW    cov: 557 ft: 828 corp: 18/575b lim: 33 exec/s: 0 rss: 88Mb L: 33/33 MS: 1 PersAutoDict- DE: "fal"-
+#49	NEW    cov: 557 ft: 855 corp: 19/594b lim: 33 exec/s: 0 rss: 92Mb L: 19/33 MS: 1 EraseBytes-
+#54	NEW    cov: 559 ft: 869 corp: 20/620b lim: 33 exec/s: 0 rss: 96Mb L: 26/33 MS: 5 ChangeBit-CopyPart-CMP-ChangeASCIIInt-EraseBytes- DE: "out"-
+#55	NEW    cov: 559 ft: 873 corp: 21/652b lim: 33 exec/s: 0 rss: 96Mb L: 32/33 MS: 1 CrossOver-
+	NEW_FUNC[1/1]: 0x55fbeeabedc0  (/workspace/suitecut/.suitecut/shared-clock-asan/suitecut-fuzz-media+0x18bdc0) (BuildId: 12089958835e0b6753a6f5cca1b4807963ab16c3)
+#58	NEW    cov: 576 ft: 934 corp: 22/679b lim: 33 exec/s: 0 rss: 99Mb L: 27/33 MS: 3 ChangeBit-CopyPart-EraseBytes-
+#59	NEW    cov: 577 ft: 935 corp: 23/712b lim: 33 exec/s: 0 rss: 99Mb L: 33/33 MS: 1 PersAutoDict- DE: "fal"-
+#62	NEW    cov: 578 ft: 936 corp: 24/744b lim: 33 exec/s: 0 rss: 101Mb L: 32/33 MS: 3 InsertRepeatedBytes-ChangeBit-CrossOver-
+#63	NEW    cov: 578 ft: 937 corp: 25/777b lim: 33 exec/s: 0 rss: 102Mb L: 33/33 MS: 1 PersAutoDict- DE: "out"-
+#66	NEW    cov: 578 ft: 945 corp: 26/810b lim: 33 exec/s: 0 rss: 104Mb L: 33/33 MS: 3 ShuffleBytes-ChangeByte-ChangeBinInt-
+#69	NEW    cov: 579 ft: 946 corp: 27/843b lim: 33 exec/s: 0 rss: 106Mb L: 33/33 MS: 3 CrossOver-ChangeBinInt-CopyPart-
+#71	NEW    cov: 580 ft: 947 corp: 28/847b lim: 33 exec/s: 0 rss: 107Mb L: 4/33 MS: 2 CrossOver-CrossOver-
+#77	NEW    cov: 581 ft: 950 corp: 29/876b lim: 33 exec/s: 0 rss: 111Mb L: 29/33 MS: 1 InsertByte-
+#85	NEW    cov: 581 ft: 952 corp: 30/893b lim: 33 exec/s: 0 rss: 116Mb L: 17/33 MS: 3 ChangeASCIIInt-CopyPart-EraseBytes-
+#111	DONE   cov: 581 ft: 952 corp: 30/893b lim: 33 exec/s: 111 rss: 135Mb
+###### Recommended dictionary. ######
+"\001\000" # Uses: 1
+"fal" # Uses: 3
+"out" # Uses: 2
+###### End of recommended dictionary. ######
+Done 111 runs in 1 second(s)

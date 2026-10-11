@@ -135,6 +135,12 @@ export function createLiveStreamAttempt(
         : createCaptureScaleFilter(inputSize, size),
       '-c:v',
       'libx264',
+      // Bound software encoder/filter workers. Autodetected host CPU counts
+      // can greatly exceed the container's actual CPU quota.
+      '-threads',
+      '4',
+      '-filter_threads',
+      '1',
       '-preset',
       'veryfast',
       '-tune',
@@ -181,6 +187,7 @@ export function createLiveStreamAttempt(
   )
 
   let latestFrame: Buffer | undefined
+  let latestTimestamp: number | undefined
   let timer: ReturnType<typeof setTimeout> | undefined
   let closing = false
   let failure: Error | undefined
@@ -333,10 +340,12 @@ export function createLiveStreamAttempt(
     const mediaAt =
       firstWriteAt + (writtenFrames * 1000) / framesPerSecond - (audio ? LIVE_AUDIO_DELAY_MS : 0)
     let selectedFrame = latestFrame
+    let selectedTimestamp = latestTimestamp ?? mediaAt
     if (audio) {
       while (frames.length > 1 && (frames[1]?.at ?? Infinity) <= mediaAt)
         frameBytes -= frames.shift()?.data.length ?? 0
       selectedFrame = frames[0]?.data ?? latestFrame
+      selectedTimestamp = frames[0]?.at ?? selectedTimestamp
     }
     pendingStage = 'processing'
     pendingAt = performance.now()
@@ -361,7 +370,9 @@ export function createLiveStreamAttempt(
       ioController.signal,
       AbortSignal.timeout(LIVE_NO_PROGRESS_MS),
     ])
-    encodedOutput?.frame(writtenFrames, mediaAt)
+    // Stamp the pixels actually selected, including frames retained through
+    // processing/backpressure, rather than their intended scheduling slot.
+    encodedOutput?.frame(writtenFrames, selectedTimestamp)
     videoPending = true
     audioPending = audioInput !== undefined
     pendingStage = 'writing'
@@ -433,6 +444,7 @@ export function createLiveStreamAttempt(
         throw new Error('Raw frame length does not match input dimensions')
       if (!Number.isFinite(timestampMs)) throw new Error('Invalid capture timestamp')
       latestFrame = frame
+      latestTimestamp = timestampMs
       if (audio) {
         const now = performance.now()
         frames.push({ at: timestampMs, data: frame })

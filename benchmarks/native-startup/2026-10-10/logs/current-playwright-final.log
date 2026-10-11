@@ -1,0 +1,15 @@
+
+Running 8 tests using 1 worker
+
+(node:140968) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 benchmarks/native-engine/engine.e2e.spec.ts:49:1 › real Playwright locators, auto-wait, input, scrolling, iframe and screenshot (927ms)
+  ✓  2 benchmarks/native-engine/engine.e2e.spec.ts:65:1 › native audio readiness waits for delayed sound before returning a recording (1.4s)
+  ✓  3 benchmarks/native-engine/engine.e2e.spec.ts:94:1 › audio readiness times out without sound and leaves the engine usable (602ms)
+  ✓  4 benchmarks/native-engine/engine.e2e.spec.ts:113:1 › network interception, init scripts and storage isolation (536ms)
+  ✓  5 benchmarks/native-engine/engine.e2e.spec.ts:142:1 › popup, dialog, file upload, download and public CDP sessions (1.4s)
+  ✓  6 benchmarks/native-engine/engine.e2e.spec.ts:178:1 › native recording survives blocked Node, pause and page switching (6.5s)
+  ✓  7 benchmarks/native-engine/engine.e2e.spec.ts:215:1 › repeated context/page shutdown keeps the engine usable (1.4s)
+  ✓  8 benchmarks/native-engine/engine.e2e.spec.ts:226:1 › permission and geolocation setup before page creation (131ms)
+
+  8 passed (15.6s)

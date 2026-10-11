@@ -1,0 +1,3955 @@
+{
+  "original": {
+    "recordingClockOffsetFromRunSeconds": 1.762397705078125,
+    "nodeGapsOver2Seconds": [
+      {
+        "runStartSeconds": 52.35600813400001,
+        "runEndSeconds": 55.346817681,
+        "recordingStartSeconds": 54.11840583907813,
+        "recordingEndSeconds": 57.10921538607812,
+        "durationSeconds": 2.990809546999997,
+        "framesReceived": 7,
+        "audioPacketsReceived": 25,
+        "nodeCpuSeconds": 0.486782,
+        "nodeCpuPercentOfOneCore": 16.275927716235838
+      },
+      {
+        "runStartSeconds": 62.13444535599999,
+        "runEndSeconds": 64.844494332,
+        "recordingStartSeconds": 63.896843061078116,
+        "recordingEndSeconds": 66.60689203707813,
+        "durationSeconds": 2.7100489760000057,
+        "framesReceived": 0,
+        "audioPacketsReceived": 0,
+        "nodeCpuSeconds": 0.963561,
+        "nodeCpuPercentOfOneCore": 35.555113894000634
+      },
+      {
+        "runStartSeconds": 65.85940782,
+        "runEndSeconds": 69.096183069,
+        "recordingStartSeconds": 67.62180552507813,
+        "recordingEndSeconds": 70.85858077407813,
+        "durationSeconds": 3.2367752489999986,
+        "framesReceived": 1,
+        "audioPacketsReceived": 13,
+        "nodeCpuSeconds": 1.344227,
+        "nodeCpuPercentOfOneCore": 41.52982201699976
+      },
+      {
+        "runStartSeconds": 194.051389936,
+        "runEndSeconds": 196.382194669,
+        "recordingStartSeconds": 195.8137876410781,
+        "recordingEndSeconds": 198.14459237407812,
+        "durationSeconds": 2.3308047329999972,
+        "framesReceived": 1,
+        "audioPacketsReceived": 3,
+        "nodeCpuSeconds": 1.205067,
+        "nodeCpuPercentOfOneCore": 51.70175703431616
+      },
+      {
+        "runStartSeconds": 437.69816991,
+        "runEndSeconds": 440.058497316,
+        "recordingStartSeconds": 439.4605676150781,
+        "recordingEndSeconds": 441.8208950210781,
+        "durationSeconds": 2.3603274059999966,
+        "framesReceived": 1,
+        "audioPacketsReceived": 17,
+        "nodeCpuSeconds": 0.714896,
+        "nodeCpuPercentOfOneCore": 30.288001494314766
+      },
+      {
+        "runStartSeconds": 564.683942741,
+        "runEndSeconds": 567.883871237,
+        "recordingStartSeconds": 566.4463404460781,
+        "recordingEndSeconds": 569.6462689420781,
+        "durationSeconds": 3.1999284960000076,
+        "framesReceived": 1,
+        "audioPacketsReceived": 9,
+        "nodeCpuSeconds": 0.576833,
+        "nodeCpuPercentOfOneCore": 18.02643405066882
+      },
+      {
+        "runStartSeconds": 1110.598139682,
+        "runEndSeconds": 1117.03694436,
+        "recordingStartSeconds": 1112.3605373870782,
+        "recordingEndSeconds": 1118.7993420650782,
+        "durationSeconds": 6.438804678000044,
+        "framesReceived": 0,
+        "audioPacketsReceived": 0,
+        "nodeCpuSeconds": 0.623078,
+        "nodeCpuPercentOfOneCore": 9.676920347171242
+      },
+      {
+        "runStartSeconds": 1118.169339886,
+        "runEndSeconds": 1121.68236544,
+        "recordingStartSeconds": 1119.9317375910782,
+        "recordingEndSeconds": 1123.4447631450782,
+        "durationSeconds": 3.5130255540001674,
+        "framesReceived": 0,
+        "audioPacketsReceived": 0,
+        "nodeCpuSeconds": 0.413163,
+        "nodeCpuPercentOfOneCore": 11.760887976734038
+      }
+    ],
+    "independentSamplerGapsOver2Seconds": [
+      {
+        "fromSamplerStartSeconds": 56.02621842499866,
+        "toSamplerStartSeconds": 58.240542895000544,
+        "gapSeconds": 2.214324470001884,
+        "scanDurationMs": 2207.1136320009828
+      },
+      {
+        "fromSamplerStartSeconds": 61.757184811001935,
+        "toSamplerStartSeconds": 64.96007360400108,
+        "gapSeconds": 3.202888792999147,
+        "scanDurationMs": 3202.239235997695
+      },
+      {
+        "fromSamplerStartSeconds": 64.96007360400108,
+        "toSamplerStartSeconds": 67.956727924,
+        "gapSeconds": 2.9966543199989246,
+        "scanDurationMs": 2977.746226999443
+      },
+      {
+        "fromSamplerStartSeconds": 69.65750942600062,
+        "toSamplerStartSeconds": 73.95321584500198,
+        "gapSeconds": 4.2957064190013625,
+        "scanDurationMs": 4193.743741001526
+      },
+      {
+        "fromSamplerStartSeconds": 197.1647626820013,
+        "toSamplerStartSeconds": 199.4683173070007,
+        "gapSeconds": 2.3035546249993786,
+        "scanDurationMs": 95.04311999990023
+      },
+      {
+        "fromSamplerStartSeconds": 441.634121897001,
+        "toSamplerStartSeconds": 444.5414650089988,
+        "gapSeconds": 2.9073431119977613,
+        "scanDurationMs": 2837.4184319982305
+      },
+      {
+        "fromSamplerStartSeconds": 568.3939632299989,
+        "toSamplerStartSeconds": 571.1622650390018,
+        "gapSeconds": 2.768301809002878,
+        "scanDurationMs": 2767.8483890013013
+      },
+      {
+        "fromSamplerStartSeconds": 1114.7473109230014,
+        "toSamplerStartSeconds": 1124.3510074250007,
+        "gapSeconds": 9.603696501999366,
+        "scanDurationMs": 9598.648203998891
+      }
+    ],
+    "independentSamplerClockCaveat": "Relative to sampler start, not exactly the recording origin; no original realtime/monotonic anchor was saved. Do not use its per-process CPU percentages during long scans: timestamps bracket different moments. Node process.cpuUsage deltas are directly usable.",
+    "videoHoldsWithMarkerAdvance": [
+      {
+        "startSeconds": 54.668,
+        "endSeconds": 60.119,
+        "durationSeconds": 5.4510000000000005,
+        "marker": 1264,
+        "encodedFrames": 2,
+        "resumedMarker": 1265,
+        "markerAdvance": 1
+      },
+      {
+        "startSeconds": 61.325,
+        "endSeconds": 66.638,
+        "durationSeconds": 5.313000000000002,
+        "marker": 1266,
+        "encodedFrames": 2,
+        "resumedMarker": 1268,
+        "markerAdvance": 2
+      },
+      {
+        "startSeconds": 66.638,
+        "endSeconds": 72.982,
+        "durationSeconds": 6.343999999999994,
+        "marker": 1268,
+        "encodedFrames": 4,
+        "resumedMarker": 1269,
+        "markerAdvance": 1
+      },
+      {
+        "startSeconds": 1112.118,
+        "endSeconds": 1123.519,
+        "durationSeconds": 11.401000000000067,
+        "marker": 28201,
+        "encodedFrames": 2,
+        "resumedMarker": 28205,
+        "markerAdvance": 4
+      }
+    ],
+    "media": {
+      "recording": {
+        "mediaPath": "/workspace/suitecut/.suitecut/obs-cef-optimization/soak/suitecut-source-413fde13-3160-40d4-a21e-fd6b260db204-1590cfb7-9026-40f2-afbb-1a540e06409f.webm",
+        "durationSeconds": 1803.835,
+        "bytes": 52020733,
+        "videoCodec": "vp9",
+        "audioCodec": "opus",
+        "audio": {
+          "status": "failed",
+          "decodedSeconds": 1803.82775,
+          "pcmPath": "benchmarks/obs-cef/2026-10-09-optimization/soak/recording-full-audio-8k.f32",
+          "longestSilentInterval": {
+            "startSeconds": 54.78,
+            "endSeconds": 67.96000000000001,
+            "durationSeconds": 13.18
+          },
+          "silentIntervalsOver2Seconds": [
+            {
+              "startSeconds": 54.78,
+              "endSeconds": 67.96000000000001,
+              "durationSeconds": 13.18
+            },
+            {
+              "startSeconds": 68.4,
+              "endSeconds": 74.78,
+              "durationSeconds": 6.38
+            },
+            {
+              "startSeconds": 196.06,
+              "endSeconds": 198.16,
+              "durationSeconds": 2.1
+            },
+            {
+              "startSeconds": 439.2,
+              "endSeconds": 443.68,
+              "durationSeconds": 4.48
+            },
+            {
+              "startSeconds": 567.36,
+              "endSeconds": 570.78,
+              "durationSeconds": 3.42
+            },
+            {
+              "startSeconds": 1113.6000000000001,
+              "endSeconds": 1123.88,
+              "durationSeconds": 10.28
+            }
+          ],
+          "silentIntervalsOver5Seconds": [
+            {
+              "startSeconds": 54.78,
+              "endSeconds": 67.96000000000001,
+              "durationSeconds": 13.18
+            },
+            {
+              "startSeconds": 68.4,
+              "endSeconds": 74.78,
+              "durationSeconds": 6.38
+            },
+            {
+              "startSeconds": 1113.6000000000001,
+              "endSeconds": 1123.88,
+              "durationSeconds": 10.28
+            }
+          ]
+        },
+        "video": {
+          "status": "failed",
+          "decodedFrames": 23367,
+          "activeFrames": 23240,
+          "distinctActiveFps": 11.969866071428571,
+          "repeatFraction": 0.07702237521514632,
+          "longestContentHold": {
+            "startSeconds": 1112.118,
+            "endSeconds": 1123.519,
+            "durationSeconds": 11.401000000000067,
+            "marker": 28201,
+            "encodedFrames": 2
+          },
+          "contentHoldsOver1Second": [
+            {
+              "startSeconds": 35.084,
+              "endSeconds": 36.304,
+              "durationSeconds": 1.2199999999999989,
+              "marker": 815,
+              "encodedFrames": 2
+            },
+            {
+              "startSeconds": 54.668,
+              "endSeconds": 60.119,
+              "durationSeconds": 5.4510000000000005,
+              "marker": 1264,
+              "encodedFrames": 2
+            },
+            {
+              "startSeconds": 60.119,
+              "endSeconds": 61.325,
+              "durationSeconds": 1.206000000000003,
+              "marker": 1265,
+              "encodedFrames": 2
+            },
+            {
+              "startSeconds": 61.325,
+              "endSeconds": 66.638,
+              "durationSeconds": 5.313000000000002,
+              "marker": 1266,
+              "encodedFrames": 2
+            },
+            {
+              "startSeconds": 66.638,
+              "endSeconds": 72.982,
+              "durationSeconds": 6.343999999999994,
+              "marker": 1268,
+              "encodedFrames": 4
+            },
+            {
+              "startSeconds": 72.982,
+              "endSeconds": 74.152,
+              "durationSeconds": 1.1700000000000017,
+              "marker": 1269,
+              "encodedFrames": 1
+            },
+            {
+              "startSeconds": 190.961,
+              "endSeconds": 192.114,
+              "durationSeconds": 1.1529999999999916,
+              "marker": 4315,
+              "encodedFrames": 1
+            },
+            {
+              "startSeconds": 195.802,
+              "endSeconds": 198.152,
+              "durationSeconds": 2.3499999999999943,
+              "marker": 4409,
+              "encodedFrames": 2
+            },
+            {
+              "startSeconds": 439.175,
+              "endSeconds": 441.819,
+              "durationSeconds": 2.6440000000000055,
+              "marker": 10752,
+              "encodedFrames": 3
+            },
+            {
+              "startSeconds": 441.819,
+              "endSeconds": 443.276,
+              "durationSeconds": 1.4569999999999936,
+              "marker": 10753,
+              "encodedFrames": 2
+            },
+            {
+              "startSeconds": 567.098,
+              "endSeconds": 569.91,
+              "durationSeconds": 2.812000000000012,
+              "marker": 14075,
+              "encodedFrames": 2
+            },
+            {
+              "startSeconds": 1112.118,
+              "endSeconds": 1123.519,
+              "durationSeconds": 11.401000000000067,
+              "marker": 28201,
+              "encodedFrames": 2
+            }
+          ],
+          "contentHoldsOver5Seconds": [
+            {
+              "startSeconds": 54.668,
+              "endSeconds": 60.119,
+              "durationSeconds": 5.4510000000000005,
+              "marker": 1264,
+              "encodedFrames": 2
+            },
+            {
+              "startSeconds": 61.325,
+              "endSeconds": 66.638,
+              "durationSeconds": 5.313000000000002,
+              "marker": 1266,
+              "encodedFrames": 2
+            },
+            {
+              "startSeconds": 66.638,
+              "endSeconds": 72.982,
+              "durationSeconds": 6.343999999999994,
+              "marker": 1268,
+              "encodedFrames": 4
+            },
+            {
+              "startSeconds": 1112.118,
+              "endSeconds": 1123.519,
+              "durationSeconds": 11.401000000000067,
+              "marker": 28201,
+              "encodedFrames": 2
+            }
+          ],
+          "maximumPresentationGapSeconds": 11.330000000000155,
+          "markerRange": [
+            0,
+            46637
+          ]
+        },
+        "syncWindows": [
+          {
+            "matchedFlashes": 12,
+            "audioBursts": 34,
+            "medianAudioMinusVideoMs": -1.666666666666039,
+            "p95AbsoluteOffsetMs": 69.66666666666634,
+            "firstThirdMedianMs": 15.000000000000124,
+            "lastThirdMedianMs": -13.333333333332753,
+            "offsetsMs": [
+              -36.66666666666663,
+              16.666666666666607,
+              23.333333333333428,
+              13.333333333333641,
+              30.00000000000025,
+              -109.99999999999943,
+              6.666666666667709,
+              16.666666666667496,
+              -23.33333333333165,
+              -16.66666666666572,
+              -9.999999999999787,
+              -9.999999999999787
+            ],
+            "offsetSeconds": 5,
+            "status": "passed"
+          },
+          {
+            "matchedFlashes": 12,
+            "audioBursts": 26,
+            "medianAudioMinusVideoMs": 18.333333333333535,
+            "p95AbsoluteOffsetMs": 79.00000000000009,
+            "firstThirdMedianMs": 44.99999999999993,
+            "lastThirdMedianMs": 6.666666666665932,
+            "offsetsMs": [
+              43.33333333333344,
+              46.666666666666416,
+              -26.666666666666394,
+              70.00000000000028,
+              -89.99999999999986,
+              16.666666666667496,
+              6.666666666667709,
+              26.666666666665506,
+              19.999999999999574,
+              66.66666666666643,
+              -43.333333333333,
+              -6.666666666667709
+            ],
+            "offsetSeconds": 900,
+            "status": "passed"
+          },
+          {
+            "matchedFlashes": 11,
+            "audioBursts": 36,
+            "medianAudioMinusVideoMs": -13.333333333333641,
+            "p95AbsoluteOffsetMs": 53.33333333333323,
+            "firstThirdMedianMs": -13.333333333333197,
+            "lastThirdMedianMs": -6.666666666665932,
+            "offsetsMs": [
+              -13.333333333333197,
+              -46.66666666666597,
+              49.99999999999982,
+              -13.333333333332753,
+              -36.66666666666618,
+              -56.66666666666664,
+              -46.666666666666856,
+              -46.66666666666508,
+              -13.333333333333641,
+              -6.666666666665932,
+              36.66666666666707
+            ],
+            "offsetSeconds": 1780,
+            "status": "passed"
+          }
+        ],
+        "continuityStatus": "failed",
+        "syncStatus": "passed",
+        "status": "failed"
+      },
+      "receiver": {
+        "mediaPath": "/workspace/suitecut/.suitecut/obs-cef-optimization/soak/receiver.flv",
+        "durationSeconds": 1801.77,
+        "bytes": 48410109,
+        "videoCodec": "h264",
+        "audioCodec": "aac",
+        "audio": {
+          "status": "failed",
+          "decodedSeconds": 1801.77075,
+          "pcmPath": "benchmarks/obs-cef/2026-10-09-optimization/soak/receiver-full-audio-8k.f32",
+          "longestSilentInterval": {
+            "startSeconds": 54.74,
+            "endSeconds": 67.92,
+            "durationSeconds": 13.18
+          },
+          "silentIntervalsOver2Seconds": [
+            {
+              "startSeconds": 54.74,
+              "endSeconds": 67.92,
+              "durationSeconds": 13.18
+            },
+            {
+              "startSeconds": 68.34,
+              "endSeconds": 74.72,
+              "durationSeconds": 6.38
+            },
+            {
+              "startSeconds": 196.02,
+              "endSeconds": 198.12,
+              "durationSeconds": 2.1
+            },
+            {
+              "startSeconds": 439.16,
+              "endSeconds": 443.62,
+              "durationSeconds": 4.46
+            },
+            {
+              "startSeconds": 567.32,
+              "endSeconds": 570.74,
+              "durationSeconds": 3.42
+            },
+            {
+              "startSeconds": 1113.56,
+              "endSeconds": 1123.84,
+              "durationSeconds": 10.28
+            }
+          ],
+          "silentIntervalsOver5Seconds": [
+            {
+              "startSeconds": 54.74,
+              "endSeconds": 67.92,
+              "durationSeconds": 13.18
+            },
+            {
+              "startSeconds": 68.34,
+              "endSeconds": 74.72,
+              "durationSeconds": 6.38
+            },
+            {
+              "startSeconds": 1113.56,
+              "endSeconds": 1123.84,
+              "durationSeconds": 10.28
+            }
+          ]
+        },
+        "video": {
+          "status": "failed",
+          "decodedFrames": 26312,
+          "activeFrames": 26220,
+          "distinctActiveFps": 10.90234375,
+          "repeatFraction": 0.254881769641495,
+          "longestContentHold": {
+            "startSeconds": 1112.052,
+            "endSeconds": 1123.452,
+            "durationSeconds": 11.400000000000091,
+            "marker": 28201,
+            "encodedFrames": 1
+          },
+          "contentHoldsOver1Second": [
+            {
+              "startSeconds": 6.86,
+              "endSeconds": 7.936,
+              "durationSeconds": 1.0759999999999996,
+              "marker": 175,
+              "encodedFrames": 5
+            },
+            {
+              "startSeconds": 35.017,
+              "endSeconds": 36.275,
+              "durationSeconds": 1.2579999999999956,
+              "marker": 815,
+              "encodedFrames": 5
+            },
+            {
+              "startSeconds": 54.243,
+              "endSeconds": 56.8,
+              "durationSeconds": 2.556999999999995,
+              "marker": 1264,
+              "encodedFrames": 2
+            },
+            {
+              "startSeconds": 56.8,
+              "endSeconds": 59.24,
+              "durationSeconds": 2.440000000000005,
+              "marker": 1265,
+              "encodedFrames": 1
+            },
+            {
+              "startSeconds": 59.24,
+              "endSeconds": 60.723,
+              "durationSeconds": 1.482999999999997,
+              "marker": 1266,
+              "encodedFrames": 2
+            },
+            {
+              "startSeconds": 60.723,
+              "endSeconds": 66.665,
+              "durationSeconds": 5.942000000000007,
+              "marker": 1267,
+              "encodedFrames": 4
+            },
+            {
+              "startSeconds": 67.578,
+              "endSeconds": 69.584,
+              "durationSeconds": 2.0060000000000002,
+              "marker": 1269,
+              "encodedFrames": 1
+            },
+            {
+              "startSeconds": 69.584,
+              "endSeconds": 72.963,
+              "durationSeconds": 3.3789999999999907,
+              "marker": 1270,
+              "encodedFrames": 4
+            },
+            {
+              "startSeconds": 72.963,
+              "endSeconds": 75.607,
+              "durationSeconds": 2.6440000000000055,
+              "marker": 1271,
+              "encodedFrames": 18
+            },
+            {
+              "startSeconds": 181.89,
+              "endSeconds": 183.215,
+              "durationSeconds": 1.325000000000017,
+              "marker": 4163,
+              "encodedFrames": 8
+            },
+            {
+              "startSeconds": 195.767,
+              "endSeconds": 198.085,
+              "durationSeconds": 2.318000000000012,
+              "marker": 4411,
+              "encodedFrames": 5
+            },
+            {
+              "startSeconds": 356.889,
+              "endSeconds": 357.975,
+              "durationSeconds": 1.0860000000000127,
+              "marker": 8645,
+              "encodedFrames": 2
+            },
+            {
+              "startSeconds": 381.98,
+              "endSeconds": 383.11,
+              "durationSeconds": 1.1299999999999955,
+              "marker": 9327,
+              "encodedFrames": 1
+            },
+            {
+              "startSeconds": 439.231,
+              "endSeconds": 441.765,
+              "durationSeconds": 2.533999999999992,
+              "marker": 10754,
+              "encodedFrames": 1
+            },
+            {
+              "startSeconds": 441.765,
+              "endSeconds": 443.21,
+              "durationSeconds": 1.4449999999999932,
+              "marker": 10755,
+              "encodedFrames": 4
+            },
+            {
+              "startSeconds": 443.21,
+              "endSeconds": 444.372,
+              "durationSeconds": 1.1620000000000346,
+              "marker": 10756,
+              "encodedFrames": 2
+            },
+            {
+              "startSeconds": 490.083,
+              "endSeconds": 491.104,
+              "durationSeconds": 1.0209999999999582,
+              "marker": 12015,
+              "encodedFrames": 5
+            },
+            {
+              "startSeconds": 567.1,
+              "endSeconds": 569.847,
+              "durationSeconds": 2.7469999999999573,
+              "marker": 14077,
+              "encodedFrames": 7
+            },
+            {
+              "startSeconds": 580.005,
+              "endSeconds": 581.08,
+              "durationSeconds": 1.0750000000000455,
+              "marker": 14357,
+              "encodedFrames": 2
+            },
+            {
+              "startSeconds": 607.34,
+              "endSeconds": 608.441,
+              "durationSeconds": 1.100999999999999,
+              "marker": 15015,
+              "encodedFrames": 2
+            },
+            {
+              "startSeconds": 612.177,
+              "endSeconds": 613.341,
+              "durationSeconds": 1.1639999999999873,
+              "marker": 15092,
+              "encodedFrames": 2
+            },
+            {
+              "startSeconds": 613.341,
+              "endSeconds": 614.373,
+              "durationSeconds": 1.032000000000039,
+              "marker": 15113,
+              "encodedFrames": 3
+            },
+            {
+              "startSeconds": 660.548,
+              "endSeconds": 661.56,
+              "durationSeconds": 1.0119999999999436,
+              "marker": 16402,
+              "encodedFrames": 4
+            },
+            {
+              "startSeconds": 663.199,
+              "endSeconds": 664.396,
+              "durationSeconds": 1.1970000000000027,
+              "marker": 16447,
+              "encodedFrames": 3
+            },
+            {
+              "startSeconds": 673.859,
+              "endSeconds": 674.907,
+              "durationSeconds": 1.0480000000000018,
+              "marker": 16721,
+              "encodedFrames": 1
+            },
+            {
+              "startSeconds": 689.241,
+              "endSeconds": 690.344,
+              "durationSeconds": 1.1030000000000655,
+              "marker": 17138,
+              "encodedFrames": 1
+            },
+            {
+              "startSeconds": 691.767,
+              "endSeconds": 692.797,
+              "durationSeconds": 1.0299999999999727,
+              "marker": 17182,
+              "encodedFrames": 1
+            },
+            {
+              "startSeconds": 694.661,
+              "endSeconds": 695.851,
+              "durationSeconds": 1.1900000000000546,
+              "marker": 17211,
+              "encodedFrames": 6
+            },
+            {
+              "startSeconds": 698.49,
+              "endSeconds": 700.004,
+              "durationSeconds": 1.51400000000001,
+              "marker": 17262,
+              "encodedFrames": 13
+            },
+            {
+              "startSeconds": 701.511,
+              "endSeconds": 702.547,
+              "durationSeconds": 1.0360000000000582,
+              "marker": 17302,
+              "encodedFrames": 2
+            },
+            {
+              "startSeconds": 703.776,
+              "endSeconds": 704.832,
+              "durationSeconds": 1.05600000000004,
+              "marker": 17335,
+              "encodedFrames": 1
+            },
+            {
+              "startSeconds": 705.983,
+              "endSeconds": 707.035,
+              "durationSeconds": 1.052000000000021,
+              "marker": 17378,
+              "encodedFrames": 1
+            },
+            {
+              "startSeconds": 715.511,
+              "endSeconds": 716.566,
+              "durationSeconds": 1.0550000000000637,
+              "marker": 17629,
+              "encodedFrames": 1
+            },
+            {
+              "startSeconds": 872.094,
+              "endSeconds": 873.184,
+              "durationSeconds": 1.0899999999999181,
+              "marker": 21927,
+              "encodedFrames": 1
+            },
+            {
+              "startSeconds": 874.78,
+              "endSeconds": 875.787,
+              "durationSeconds": 1.0070000000000618,
+              "marker": 21961,
+              "encodedFrames": 2
+            },
+            {
+              "startSeconds": 879.284,
+              "endSeconds": 880.339,
+              "durationSeconds": 1.0550000000000637,
+              "marker": 22055,
+              "encodedFrames": 2
+            },
+            {
+              "startSeconds": 1013.545,
+              "endSeconds": 1015.011,
+              "durationSeconds": 1.4660000000000082,
+              "marker": 25784,
+              "encodedFrames": 14
+            },
+            {
+              "startSeconds": 1016.861,
+              "endSeconds": 1017.973,
+              "durationSeconds": 1.1119999999999663,
+              "marker": 25844,
+              "encodedFrames": 1
+            },
+            {
+              "startSeconds": 1022.871,
+              "endSeconds": 1023.999,
+              "durationSeconds": 1.1280000000000427,
+              "marker": 25971,
+              "encodedFrames": 3
+            },
+            {
+              "startSeconds": 1026.632,
+              "endSeconds": 1027.744,
+              "durationSeconds": 1.1119999999998527,
+              "marker": 26039,
+              "encodedFrames": 7
+            },
+            {
+              "startSeconds": 1028.389,
+              "endSeconds": 1029.704,
+              "durationSeconds": 1.3150000000000546,
+              "marker": 26065,
+              "encodedFrames": 8
+            },
+            {
+              "startSeconds": 1069.104,
+              "endSeconds": 1070.26,
+              "durationSeconds": 1.155999999999949,
+              "marker": 27188,
+              "encodedFrames": 4
+            },
+            {
+              "startSeconds": 1072.039,
+              "endSeconds": 1073.089,
+              "durationSeconds": 1.0499999999999545,
+              "marker": 27229,
+              "encodedFrames": 1
+            },
+            {
+              "startSeconds": 1075.658,
+              "endSeconds": 1076.806,
+              "durationSeconds": 1.1480000000001382,
+              "marker": 27306,
+              "encodedFrames": 2
+            },
+            {
+              "startSeconds": 1077.074,
+              "endSeconds": 1078.199,
+              "durationSeconds": 1.125,
+              "marker": 27321,
+              "encodedFrames": 3
+            },
+            {
+              "startSeconds": 1079.839,
+              "endSeconds": 1080.845,
+              "durationSeconds": 1.0060000000000855,
+              "marker": 27389,
+              "encodedFrames": 1
+            },
+            {
+              "startSeconds": 1086.378,
+              "endSeconds": 1087.41,
+              "durationSeconds": 1.0320000000001528,
+              "marker": 27527,
+              "encodedFrames": 1
+            },
+            {
+              "startSeconds": 1112.052,
+              "endSeconds": 1123.452,
+              "durationSeconds": 11.400000000000091,
+              "marker": 28201,
+              "encodedFrames": 1
+            },
+            {
+              "startSeconds": 1136.205,
+              "endSeconds": 1137.303,
+              "durationSeconds": 1.0980000000001837,
+              "marker": 28532,
+              "encodedFrames": 2
+            },
+            {
+              "startSeconds": 1154.849,
+              "endSeconds": 1156.25,
+              "durationSeconds": 1.4010000000000673,
+              "marker": 29025,
+              "encodedFrames": 2
+            },
+            {
+              "startSeconds": 1156.267,
+              "endSeconds": 1157.6,
+              "durationSeconds": 1.3329999999998563,
+              "marker": 29042,
+              "encodedFrames": 1
+            },
+            {
+              "startSeconds": 1162.771,
+              "endSeconds": 1163.977,
+              "durationSeconds": 1.206000000000131,
+              "marker": 29197,
+              "encodedFrames": 2
+            },
+            {
+              "startSeconds": 1166.498,
+              "endSeconds": 1167.587,
+              "durationSeconds": 1.0889999999999418,
+              "marker": 29282,
+              "encodedFrames": 2
+            },
+            {
+              "startSeconds": 1167.864,
+              "endSeconds": 1168.876,
+              "durationSeconds": 1.0119999999999436,
+              "marker": 29311,
+              "encodedFrames": 2
+            },
+            {
+              "startSeconds": 1171.29,
+              "endSeconds": 1172.309,
+              "durationSeconds": 1.0190000000000055,
+              "marker": 29377,
+              "encodedFrames": 2
+            },
+            {
+              "startSeconds": 1172.865,
+              "endSeconds": 1174.131,
+              "durationSeconds": 1.2660000000000764,
+              "marker": 29415,
+              "encodedFrames": 7
+            },
+            {
+              "startSeconds": 1238.278,
+              "endSeconds": 1239.396,
+              "durationSeconds": 1.1179999999999382,
+              "marker": 31263,
+              "encodedFrames": 5
+            },
+            {
+              "startSeconds": 1356.997,
+              "endSeconds": 1358.018,
+              "durationSeconds": 1.0209999999999582,
+              "marker": 34620,
+              "encodedFrames": 1
+            },
+            {
+              "startSeconds": 1414.492,
+              "endSeconds": 1415.599,
+              "durationSeconds": 1.106999999999971,
+              "marker": 36183,
+              "encodedFrames": 5
+            },
+            {
+              "startSeconds": 1534.331,
+              "endSeconds": 1535.438,
+              "durationSeconds": 1.1070000000001983,
+              "marker": 39466,
+              "encodedFrames": 8
+            },
+            {
+              "startSeconds": 1542.691,
+              "endSeconds": 1543.809,
+              "durationSeconds": 1.1179999999999382,
+              "marker": 39627,
+              "encodedFrames": 2
+            },
+            {
+              "startSeconds": 1545.801,
+              "endSeconds": 1546.862,
+              "durationSeconds": 1.0610000000001492,
+              "marker": 39675,
+              "encodedFrames": 3
+            },
+            {
+              "startSeconds": 1548.979,
+              "endSeconds": 1550.106,
+              "durationSeconds": 1.1269999999999527,
+              "marker": 39734,
+              "encodedFrames": 4
+            },
+            {
+              "startSeconds": 1566.355,
+              "endSeconds": 1567.36,
+              "durationSeconds": 1.0049999999998818,
+              "marker": 40176,
+              "encodedFrames": 1
+            },
+            {
+              "startSeconds": 1600.436,
+              "endSeconds": 1601.535,
+              "durationSeconds": 1.09900000000016,
+              "marker": 41130,
+              "encodedFrames": 2
+            },
+            {
+              "startSeconds": 1756.147,
+              "endSeconds": 1757.355,
+              "durationSeconds": 1.2080000000000837,
+              "marker": 45382,
+              "encodedFrames": 4
+            },
+            {
+              "startSeconds": 1759.887,
+              "endSeconds": 1761.189,
+              "durationSeconds": 1.3020000000001346,
+              "marker": 45474,
+              "encodedFrames": 3
+            },
+            {
+              "startSeconds": 1762.7,
+              "endSeconds": 1763.753,
+              "durationSeconds": 1.0529999999998836,
+              "marker": 45537,
+              "encodedFrames": 1
+            },
+            {
+              "startSeconds": 1766.535,
+              "endSeconds": 1767.69,
+              "durationSeconds": 1.1549999999999727,
+              "marker": 45617,
+              "encodedFrames": 15
+            }
+          ],
+          "contentHoldsOver5Seconds": [
+            {
+              "startSeconds": 60.723,
+              "endSeconds": 66.665,
+              "durationSeconds": 5.942000000000007,
+              "marker": 1267,
+              "encodedFrames": 4
+            },
+            {
+              "startSeconds": 1112.052,
+              "endSeconds": 1123.452,
+              "durationSeconds": 11.400000000000091,
+              "marker": 28201,
+              "encodedFrames": 1
+            }
+          ],
+          "maximumPresentationGapSeconds": 11.400000000000091,
+          "markerRange": [
+            0,
+            46509
+          ]
+        },
+        "syncWindows": [
+          {
+            "matchedFlashes": 8,
+            "audioBursts": 38,
+            "medianAudioMinusVideoMs": -9.999999999999787,
+            "p95AbsoluteOffsetMs": 298.3333333333328,
+            "firstThirdMedianMs": -34.99999999999992,
+            "lastThirdMedianMs": -4.999999999999893,
+            "offsetsMs": [
+              -60.00000000000006,
+              -9.999999999999787,
+              3.333333333332966,
+              -426.66666666666583,
+              -60.0000000000005,
+              33.333333333333215,
+              0.0,
+              -9.999999999999787
+            ],
+            "offsetSeconds": 5,
+            "status": "failed"
+          },
+          {
+            "matchedFlashes": 8,
+            "audioBursts": 29,
+            "medianAudioMinusVideoMs": 76.66666666666711,
+            "p95AbsoluteOffsetMs": 112.99999999999994,
+            "firstThirdMedianMs": 18.333333333333538,
+            "lastThirdMedianMs": 66.66666666666643,
+            "offsetsMs": [
+              96.66666666666669,
+              -59.99999999999961,
+              120.00000000000011,
+              99.99999999999964,
+              76.666666666668,
+              50.00000000000071,
+              76.66666666666622,
+              56.66666666666664
+            ],
+            "offsetSeconds": 900,
+            "status": "passed"
+          },
+          {
+            "matchedFlashes": 9,
+            "audioBursts": 35,
+            "medianAudioMinusVideoMs": 20.000000000000462,
+            "p95AbsoluteOffsetMs": 76.66666666666656,
+            "firstThirdMedianMs": 23.333333333333428,
+            "lastThirdMedianMs": 26.666666666665506,
+            "offsetsMs": [
+              23.333333333333428,
+              20.000000000000462,
+              56.66666666666664,
+              19.999999999999574,
+              -23.333333333333428,
+              -56.66666666666664,
+              -53.33333333333279,
+              89.99999999999986,
+              26.666666666665506
+            ],
+            "offsetSeconds": 1780,
+            "status": "passed"
+          }
+        ],
+        "continuityStatus": "failed",
+        "syncStatus": "failed",
+        "status": "failed"
+      }
+    },
+    "eventLoopDelay": {
+      "meanMs": 25.129417305235716,
+      "p99Ms": 59.080703,
+      "maxMs": 7335.837695
+    },
+    "longestNoReceiptInterval": {
+      "recordingStartSeconds": 1112.3605373870782,
+      "recordingEndSeconds": 1123.4447631450782,
+      "durationSeconds": 11.084225758000045,
+      "nodeCpuSeconds": 1.259615,
+      "nodeCpuPercentOfOneCore": 11.364032342005233,
+      "sampleCount": 4
+    }
+  },
+  "runs": {
+    "clean-30-minute": {
+      "resultStatus": "passed",
+      "requestedMs": 1800000,
+      "activeMs": 1800110.986538,
+      "injection": null,
+      "pipelineTiming": {
+        "maxMarkerHoldMs": 1642.4798179999925,
+        "maxFrameReceiveGapMs": 1712.4258960000006,
+        "maxFrameCaptureGapMs": 1642.4798179999925,
+        "maxFrameTransitMs": 1018.1475980000105,
+        "nativeVideoReplaced": 3327,
+        "maxAudioReceiveGapMs": 1543.1031010000006,
+        "maxAudioCaptureGapMs": 700
+      },
+      "eventLoopDelay": {
+        "meanMs": 23.026745909631035,
+        "p99Ms": 53.313535,
+        "maxMs": 1382.023167
+      },
+      "intervalLoopMaxMs": 667.942911,
+      "nativeFinal": {
+        "hostMs": 1843654.803,
+        "paints": 52169,
+        "audioCallbacks": 88968,
+        "lastPaintMs": 1843640.386,
+        "lastAudioMs": 1843653.94,
+        "lastAudioPtsMs": 69780795.0,
+        "maxPaintGapMs": 1514.948,
+        "maxAudioGapMs": 1260.411,
+        "videoReplaced": 3328,
+        "audioDropped": 0,
+        "audioQueued": 0,
+        "audioQueuePeak": 30,
+        "videoWritten": 48841,
+        "audioWritten": 88968,
+        "writingVideo": false,
+        "writingAudio": false,
+        "currentWriteMs": 0.0,
+        "maxVideoWriteMs": 975.198,
+        "maxAudioWriteMs": 204.277,
+        "maxVideoQueueMs": 606.494,
+        "maxAudioQueueMs": 942.203
+      },
+      "nativeMonitorMaximumIntervalMs": 1670.7540000000008,
+      "independentSamplerMaximumIntervalSeconds": 1.7504903149965685,
+      "independentSamplerMaximumScanMs": 696.7743610002799,
+      "childWriteTiming": [
+        {
+          "pid": 82796,
+          "command": "ffmpeg",
+          "args": [
+            "-v",
+            "error",
+            "-y",
+            "-listen",
+            "1",
+            "-i",
+            "rtmp://127.0.0.1:42247/live/soak",
+            "-c",
+            "copy",
+            "/workspace/suitecut/.suitecut/dropout-investigation/clean-30-minute/receiver.flv"
+          ],
+          "writes": 0,
+          "drains": 0,
+          "maxDrainMs": 0,
+          "closed": true
+        },
+        {
+          "pid": 82797,
+          "command": "python3",
+          "args": [
+            "/workspace/suitecut/benchmarks/obs-cef/profile-pipeline.py",
+            "/workspace/suitecut/benchmarks/obs-cef/2026-10-09-dropout-investigation/clean-30-minute/processes.jsonl",
+            "82780"
+          ],
+          "writes": 0,
+          "drains": 0,
+          "maxDrainMs": 0,
+          "closed": true
+        },
+        {
+          "pid": 82798,
+          "command": "/workspace/suitecut/benchmarks/obs-cef/2026-10-09-dropout-investigation/clean-30-minute/native-wrapper.sh",
+          "args": [
+            "--suitecut-width=1920",
+            "--suitecut-height=1080",
+            "--suitecut-scale=1",
+            "--suitecut-fps=30",
+            "--suitecut-pixel-format=i420",
+            "--suitecut-profile=/tmp/suitecut-cef-12XxIz",
+            "--suitecut-frame-subscriptions"
+          ],
+          "writes": 356,
+          "drains": 0,
+          "maxDrainMs": 0,
+          "closed": true
+        },
+        {
+          "pid": 82894,
+          "command": "ffmpeg",
+          "args": [
+            "-version"
+          ],
+          "writes": 0,
+          "drains": 0,
+          "maxDrainMs": 0,
+          "closed": true
+        },
+        {
+          "pid": 82897,
+          "command": "ffmpeg",
+          "args": [
+            "-hide_banner",
+            "-loglevel",
+            "error",
+            "-f",
+            "matroska",
+            "-i",
+            "pipe:0",
+            "-an",
+            "-filter_threads",
+            "1",
+            "-fps_mode",
+            "vfr",
+            "-enc_time_base",
+            "1:1000",
+            "-vf",
+            "scale=1920:1080:flags=lanczos+accurate_rnd+full_chroma_int,setsar=1",
+            "-c:v",
+            "libvpx-vp9",
+            "-crf",
+            "18",
+            "-b:v",
+            "0",
+            "-deadline",
+            "realtime",
+            "-cpu-used",
+            "5",
+            "-row-mt",
+            "1",
+            "-threads",
+            "4",
+            "-pix_fmt",
+            "yuv420p",
+            "-colorspace",
+            "bt709",
+            "-color_primaries",
+            "bt709",
+            "-color_trc",
+            "iec61966-2-1",
+            "-color_range",
+            "tv",
+            "-y",
+            "/workspace/suitecut/.suitecut/dropout-investigation/clean-30-minute/suitecut-source-a8fb5145-a5b4-4883-a54a-033ad05f0ecc-fe5cd60c-ebdf-47fd-9fd6-fc20e9ab18db.webm.video.webm"
+          ],
+          "writes": 61329,
+          "drains": 30535,
+          "maxDrainMs": 1634.6862850000034,
+          "closed": true
+        },
+        {
+          "pid": 82913,
+          "command": "/usr/bin/ffmpeg",
+          "args": [
+            "-hide_banner",
+            "-loglevel",
+            "error",
+            "-stats_period",
+            "0.1",
+            "-progress",
+            "pipe:3",
+            "-f",
+            "flv",
+            "-probesize",
+            "1000000",
+            "-analyzeduration",
+            "1000000",
+            "-i",
+            "pipe:0",
+            "-map",
+            "0:v:0",
+            "-map",
+            "0:a:0",
+            "-c",
+            "copy",
+            "-max_interleave_delta",
+            "100000",
+            "-rw_timeout",
+            "20000000",
+            "-rtmp_tcurl",
+            "rtmp://127.0.0.1:42247/live",
+            "-f",
+            "flv",
+            "-flvflags",
+            "no_duration_filesize",
+            "rtmp://127.0.0.1:43931/live/soak"
+          ],
+          "writes": 114850,
+          "drains": 0,
+          "maxDrainMs": 0,
+          "closed": true
+        },
+        {
+          "pid": 82914,
+          "command": "/usr/bin/ffmpeg",
+          "args": [
+            "-hide_banner",
+            "-loglevel",
+            "error",
+            "-f",
+            "s16le",
+            "-ar",
+            "48000",
+            "-ac",
+            "2",
+            "-probesize",
+            "32",
+            "-analyzeduration",
+            "0",
+            "-i",
+            "pipe:0",
+            "-c:a",
+            "aac",
+            "-b:a",
+            "128k",
+            "-f",
+            "flv",
+            "-flvflags",
+            "no_duration_filesize",
+            "pipe:1"
+          ],
+          "writes": 90083,
+          "drains": 0,
+          "maxDrainMs": 0,
+          "closed": true
+        },
+        {
+          "pid": 82915,
+          "command": "/usr/bin/ffmpeg",
+          "args": [
+            "-hide_banner",
+            "-loglevel",
+            "error",
+            "-stats_period",
+            "0.1",
+            "-progress",
+            "pipe:3",
+            "-thread_queue_size",
+            "2",
+            "-f",
+            "rawvideo",
+            "-framerate",
+            "30",
+            "-pixel_format",
+            "yuv420p",
+            "-video_size",
+            "1920x1080",
+            "-probesize",
+            "32",
+            "-analyzeduration",
+            "0",
+            "-i",
+            "pipe:0",
+            "-map",
+            "0:v:0",
+            "-an",
+            "-vf",
+            "scale=1920:1080:flags=lanczos+accurate_rnd+full_chroma_int,setsar=1",
+            "-c:v",
+            "libx264",
+            "-threads",
+            "4",
+            "-filter_threads",
+            "1",
+            "-preset",
+            "veryfast",
+            "-tune",
+            "zerolatency",
+            "-pix_fmt",
+            "yuv420p",
+            "-colorspace",
+            "bt709",
+            "-color_primaries",
+            "bt709",
+            "-color_trc",
+            "iec61966-2-1",
+            "-color_range",
+            "tv",
+            "-r",
+            "30",
+            "-g",
+            "60",
+            "-keyint_min",
+            "60",
+            "-sc_threshold",
+            "0",
+            "-b:v",
+            "4500k",
+            "-maxrate",
+            "4500k",
+            "-bufsize",
+            "9000k",
+            "-rw_timeout",
+            "20000000",
+            "-f",
+            "flv",
+            "-flvflags",
+            "no_duration_filesize",
+            "pipe:1"
+          ],
+          "writes": 30417,
+          "drains": 30362,
+          "maxDrainMs": 1674.1148989999929,
+          "closed": true
+        },
+        {
+          "pid": 83327,
+          "command": "ffmpeg",
+          "args": [
+            "-hide_banner",
+            "-loglevel",
+            "error",
+            "-i",
+            "/workspace/suitecut/.suitecut/dropout-investigation/clean-30-minute/suitecut-source-a8fb5145-a5b4-4883-a54a-033ad05f0ecc-fe5cd60c-ebdf-47fd-9fd6-fc20e9ab18db.webm.video.webm",
+            "-f",
+            "s16le",
+            "-ar",
+            "48000",
+            "-ac",
+            "2",
+            "-i",
+            "/workspace/suitecut/.suitecut/dropout-investigation/clean-30-minute/suitecut-source-a8fb5145-a5b4-4883-a54a-033ad05f0ecc-fe5cd60c-ebdf-47fd-9fd6-fc20e9ab18db.webm.audio.pcm",
+            "-map",
+            "0:v:0",
+            "-map",
+            "1:a:0",
+            "-c:v",
+            "copy",
+            "-c:a",
+            "libopus",
+            "-b:a",
+            "160k",
+            "-t",
+            "1802.967121",
+            "-y",
+            "/workspace/suitecut/.suitecut/dropout-investigation/clean-30-minute/suitecut-source-a8fb5145-a5b4-4883-a54a-033ad05f0ecc-fe5cd60c-ebdf-47fd-9fd6-fc20e9ab18db.webm"
+          ],
+          "writes": 0,
+          "drains": 0,
+          "maxDrainMs": 0,
+          "closed": true
+        },
+        {
+          "pid": 83344,
+          "command": "ffprobe",
+          "args": [
+            "-version"
+          ],
+          "writes": 0,
+          "drains": 0,
+          "maxDrainMs": 0,
+          "closed": true
+        },
+        {
+          "pid": 83345,
+          "command": "ffprobe",
+          "args": [
+            "-v",
+            "error",
+            "-show_format",
+            "-show_streams",
+            "-of",
+            "json",
+            "/workspace/suitecut/.suitecut/dropout-investigation/clean-30-minute/suitecut-source-a8fb5145-a5b4-4883-a54a-033ad05f0ecc-fe5cd60c-ebdf-47fd-9fd6-fc20e9ab18db.webm"
+          ],
+          "writes": 0,
+          "drains": 0,
+          "maxDrainMs": 0,
+          "closed": true
+        }
+      ],
+      "nodeMemory": {
+        "rss": {
+          "minMiB": 203.828125,
+          "maxMiB": 298.859375,
+          "lateMedianMiB": 288.84375,
+          "warmMedianMiB": 280.53125
+        },
+        "heapUsed": {
+          "minMiB": 47.80811309814453,
+          "maxMiB": 50.067649841308594,
+          "lateMedianMiB": 49.278160095214844,
+          "warmMedianMiB": 49.19430923461914
+        },
+        "external": {
+          "minMiB": 13.30693531036377,
+          "maxMiB": 147.08958435058594,
+          "lateMedianMiB": 76.8162612915039,
+          "warmMedianMiB": 75.54069519042969
+        },
+        "arrayBuffers": {
+          "minMiB": 9.494355201721191,
+          "maxMiB": 143.27700424194336,
+          "lateMedianMiB": 71.98781299591064,
+          "warmMedianMiB": 71.67153215408325
+        }
+      },
+      "afterCleanupGc": {
+        "rss": 307019776,
+        "heapTotal": 90357760,
+        "heapUsed": 50890560,
+        "external": 4346389,
+        "arrayBuffers": 344533
+      },
+      "gcObservedMaxPauseMs": 402.9,
+      "gcObservedCount": 8160,
+      "gcTraceEnabled": true,
+      "scrollCommands": 347,
+      "scrollEvents": 347,
+      "nativeAtWorkloadEnd": {
+        "hostMs": 1802639.332,
+        "paints": 50941,
+        "audioCallbacks": 86922,
+        "lastPaintMs": 1802617.682,
+        "lastAudioMs": 1802633.69,
+        "lastAudioPtsMs": 69739775.0,
+        "maxPaintGapMs": 1514.948,
+        "maxAudioGapMs": 1260.411,
+        "videoReplaced": 3327,
+        "audioDropped": 0,
+        "audioQueued": 1,
+        "audioQueuePeak": 30,
+        "videoWritten": 47613,
+        "audioWritten": 86921,
+        "writingVideo": true,
+        "writingAudio": false,
+        "currentWriteMs": 13.525,
+        "maxVideoWriteMs": 975.198,
+        "maxAudioWriteMs": 204.277,
+        "maxVideoQueueMs": 606.494,
+        "maxAudioQueueMs": 942.203
+      },
+      "nativeEndSampleScope": "Nearest one-second native snapshot by delivered video count; full nativeFinal additionally includes startup/finalization and short post-workload sync decoding.",
+      "media": {
+        "requestedMs": 1800000,
+        "injection": null,
+        "thresholds": {
+          "audibleRms": 0.015,
+          "rmsBlockMs": 20,
+          "silenceFailureSeconds": 5,
+          "videoContentHoldFailureSeconds": 5,
+          "syncP95Ms": 200
+        },
+        "outputs": {
+          "recording": {
+            "mediaPath": "/workspace/suitecut/.suitecut/dropout-investigation/clean-30-minute/suitecut-source-a8fb5145-a5b4-4883-a54a-033ad05f0ecc-fe5cd60c-ebdf-47fd-9fd6-fc20e9ab18db.webm",
+            "durationSeconds": 1803.0,
+            "audio": {
+              "status": "passed",
+              "decodedSeconds": 1802.967125,
+              "pcmPath": "benchmarks/obs-cef/2026-10-09-dropout-investigation/clean-30-minute/analysis/recording/full-audio-8k.f32",
+              "longestSilentInterval": {
+                "startSeconds": 75.5,
+                "endSeconds": 77.60000000000001,
+                "durationSeconds": 2.1
+              },
+              "silentIntervalsOver2Seconds": [
+                {
+                  "startSeconds": 75.5,
+                  "endSeconds": 77.60000000000001,
+                  "durationSeconds": 2.1
+                }
+              ],
+              "silentIntervalsOver5Seconds": []
+            },
+            "video": {
+              "status": "passed",
+              "decodedFrames": 30664,
+              "activeFrames": 30479,
+              "distinctActiveFps": 16.791294642857142,
+              "repeatFraction": 0.012762885921454137,
+              "longestContentHold": {
+                "startSeconds": 75.594,
+                "endSeconds": 77.296,
+                "durationSeconds": 1.7020000000000124,
+                "marker": 2190,
+                "encodedFrames": 2
+              },
+              "contentHoldsOver1Second": [
+                {
+                  "startSeconds": 75.594,
+                  "endSeconds": 77.296,
+                  "durationSeconds": 1.7020000000000124,
+                  "marker": 2190,
+                  "encodedFrames": 2
+                },
+                {
+                  "startSeconds": 1132.557,
+                  "endSeconds": 1133.643,
+                  "durationSeconds": 1.0860000000000127,
+                  "marker": 32115,
+                  "encodedFrames": 4
+                },
+                {
+                  "startSeconds": 1577.511,
+                  "endSeconds": 1578.656,
+                  "durationSeconds": 1.1449999999999818,
+                  "marker": 44485,
+                  "encodedFrames": 4
+                }
+              ],
+              "contentHoldsOver5Seconds": [],
+              "maximumPresentationGapSeconds": 1.656000000000006,
+              "markerRange": [
+                0,
+                50958
+              ]
+            },
+            "syncWindows": [
+              {
+                "matchedFlashes": 12,
+                "audioBursts": 28,
+                "medianAudioMinusVideoMs": 10.000000000000675,
+                "p95AbsoluteOffsetMs": 41.49999999999938,
+                "firstThirdMedianMs": 23.333333333333208,
+                "lastThirdMedianMs": -13.333333333332753,
+                "offsetsMs": [
+                  23.333333333332984,
+                  13.333333333333641,
+                  23.333333333333428,
+                  30.00000000000025,
+                  3.333333333332966,
+                  43.333333333333,
+                  16.666666666667496,
+                  6.666666666665932,
+                  -6.666666666665932,
+                  -39.99999999999915,
+                  -19.999999999999574,
+                  6.666666666667709
+                ],
+                "offsetSeconds": 5,
+                "status": "passed"
+              },
+              {
+                "matchedFlashes": 12,
+                "audioBursts": 16,
+                "medianAudioMinusVideoMs": -19.999999999999574,
+                "p95AbsoluteOffsetMs": 81.4999999999995,
+                "firstThirdMedianMs": -8.333333333333304,
+                "lastThirdMedianMs": -13.333333333332753,
+                "offsetsMs": [
+                  0.0,
+                  0.0,
+                  -16.666666666666607,
+                  -69.9999999999994,
+                  -66.66666666666643,
+                  -83.33333333333215,
+                  -80.00000000000007,
+                  -19.999999999999574,
+                  63.333333333332575,
+                  -6.666666666665932,
+                  -56.66666666666664,
+                  -19.999999999999574
+                ],
+                "offsetSeconds": 900,
+                "status": "passed"
+              },
+              {
+                "matchedFlashes": 13,
+                "audioBursts": 19,
+                "medianAudioMinusVideoMs": -13.333333333333641,
+                "p95AbsoluteOffsetMs": 59.333333333333364,
+                "firstThirdMedianMs": -18.333333333333314,
+                "lastThirdMedianMs": 0.0,
+                "offsetsMs": [
+                  3.3333333333334103,
+                  -56.66666666666664,
+                  -40.000000000000036,
+                  43.333333333333,
+                  -63.333333333333464,
+                  -53.33333333333279,
+                  -6.666666666665932,
+                  -26.666666666665506,
+                  -13.333333333333641,
+                  -23.333333333333428,
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "offsetSeconds": 1780,
+                "status": "passed"
+              }
+            ],
+            "status": "passed"
+          },
+          "receiver": {
+            "mediaPath": "/workspace/suitecut/.suitecut/dropout-investigation/clean-30-minute/receiver.flv",
+            "durationSeconds": 1801.429,
+            "audio": {
+              "status": "passed",
+              "decodedSeconds": 1801.429375,
+              "pcmPath": "benchmarks/obs-cef/2026-10-09-dropout-investigation/clean-30-minute/analysis/receiver/full-audio-8k.f32",
+              "longestSilentInterval": {
+                "startSeconds": 1037.64,
+                "endSeconds": 1040.74,
+                "durationSeconds": 3.1
+              },
+              "silentIntervalsOver2Seconds": [
+                {
+                  "startSeconds": 75.5,
+                  "endSeconds": 77.62,
+                  "durationSeconds": 2.12
+                },
+                {
+                  "startSeconds": 460.82,
+                  "endSeconds": 463.44,
+                  "durationSeconds": 2.62
+                },
+                {
+                  "startSeconds": 633.54,
+                  "endSeconds": 635.66,
+                  "durationSeconds": 2.12
+                },
+                {
+                  "startSeconds": 880.74,
+                  "endSeconds": 882.78,
+                  "durationSeconds": 2.04
+                },
+                {
+                  "startSeconds": 984.98,
+                  "endSeconds": 987.4200000000001,
+                  "durationSeconds": 2.44
+                },
+                {
+                  "startSeconds": 1037.64,
+                  "endSeconds": 1040.74,
+                  "durationSeconds": 3.1
+                },
+                {
+                  "startSeconds": 1044.96,
+                  "endSeconds": 1047.04,
+                  "durationSeconds": 2.08
+                },
+                {
+                  "startSeconds": 1180.32,
+                  "endSeconds": 1182.84,
+                  "durationSeconds": 2.52
+                },
+                {
+                  "startSeconds": 1389.26,
+                  "endSeconds": 1391.8600000000001,
+                  "durationSeconds": 2.6
+                },
+                {
+                  "startSeconds": 1423.74,
+                  "endSeconds": 1426.1000000000001,
+                  "durationSeconds": 2.36
+                }
+              ],
+              "silentIntervalsOver5Seconds": []
+            },
+            "video": {
+              "status": "passed",
+              "decodedFrames": 30397,
+              "activeFrames": 30259,
+              "distinctActiveFps": 14.083147321428571,
+              "repeatFraction": 0.1659671502693414,
+              "longestContentHold": {
+                "startSeconds": 75.584,
+                "endSeconds": 77.227,
+                "durationSeconds": 1.6430000000000007,
+                "marker": 2190,
+                "encodedFrames": 3
+              },
+              "contentHoldsOver1Second": [
+                {
+                  "startSeconds": 61.105,
+                  "endSeconds": 62.195,
+                  "durationSeconds": 1.0900000000000034,
+                  "marker": 1772,
+                  "encodedFrames": 4
+                },
+                {
+                  "startSeconds": 62.462,
+                  "endSeconds": 63.606,
+                  "durationSeconds": 1.1439999999999984,
+                  "marker": 1809,
+                  "encodedFrames": 1
+                },
+                {
+                  "startSeconds": 75.584,
+                  "endSeconds": 77.227,
+                  "durationSeconds": 1.6430000000000007,
+                  "marker": 2190,
+                  "encodedFrames": 3
+                },
+                {
+                  "startSeconds": 138.361,
+                  "endSeconds": 139.399,
+                  "durationSeconds": 1.038000000000011,
+                  "marker": 3973,
+                  "encodedFrames": 1
+                },
+                {
+                  "startSeconds": 165.888,
+                  "endSeconds": 167.018,
+                  "durationSeconds": 1.1299999999999955,
+                  "marker": 4749,
+                  "encodedFrames": 1
+                },
+                {
+                  "startSeconds": 172.657,
+                  "endSeconds": 173.718,
+                  "durationSeconds": 1.0609999999999786,
+                  "marker": 4916,
+                  "encodedFrames": 1
+                },
+                {
+                  "startSeconds": 180.452,
+                  "endSeconds": 181.554,
+                  "durationSeconds": 1.1020000000000039,
+                  "marker": 5136,
+                  "encodedFrames": 1
+                },
+                {
+                  "startSeconds": 198.787,
+                  "endSeconds": 199.802,
+                  "durationSeconds": 1.0149999999999864,
+                  "marker": 5640,
+                  "encodedFrames": 1
+                },
+                {
+                  "startSeconds": 202.688,
+                  "endSeconds": 203.84,
+                  "durationSeconds": 1.1520000000000152,
+                  "marker": 5727,
+                  "encodedFrames": 1
+                },
+                {
+                  "startSeconds": 251.593,
+                  "endSeconds": 252.623,
+                  "durationSeconds": 1.0300000000000011,
+                  "marker": 7147,
+                  "encodedFrames": 1
+                },
+                {
+                  "startSeconds": 253.236,
+                  "endSeconds": 254.32,
+                  "durationSeconds": 1.0840000000000032,
+                  "marker": 7185,
+                  "encodedFrames": 1
+                },
+                {
+                  "startSeconds": 254.354,
+                  "endSeconds": 255.432,
+                  "durationSeconds": 1.0779999999999745,
+                  "marker": 7205,
+                  "encodedFrames": 9
+                },
+                {
+                  "startSeconds": 280.316,
+                  "endSeconds": 281.482,
+                  "durationSeconds": 1.1660000000000537,
+                  "marker": 7959,
+                  "encodedFrames": 2
+                },
+                {
+                  "startSeconds": 386.519,
+                  "endSeconds": 387.681,
+                  "durationSeconds": 1.1619999999999777,
+                  "marker": 10949,
+                  "encodedFrames": 1
+                },
+                {
+                  "startSeconds": 388.037,
+                  "endSeconds": 389.049,
+                  "durationSeconds": 1.0120000000000005,
+                  "marker": 10981,
+                  "encodedFrames": 2
+                },
+                {
+                  "startSeconds": 389.416,
+                  "endSeconds": 390.593,
+                  "durationSeconds": 1.177000000000021,
+                  "marker": 11011,
+                  "encodedFrames": 4
+                },
+                {
+                  "startSeconds": 400.014,
+                  "endSeconds": 401.087,
+                  "durationSeconds": 1.072999999999979,
+                  "marker": 11307,
+                  "encodedFrames": 1
+                },
+                {
+                  "startSeconds": 453.691,
+                  "endSeconds": 455.148,
+                  "durationSeconds": 1.4570000000000505,
+                  "marker": 12879,
+                  "encodedFrames": 15
+                },
+                {
+                  "startSeconds": 456.064,
+                  "endSeconds": 457.082,
+                  "durationSeconds": 1.0179999999999723,
+                  "marker": 12927,
+                  "encodedFrames": 2
+                },
+                {
+                  "startSeconds": 462.984,
+                  "endSeconds": 464.608,
+                  "durationSeconds": 1.6240000000000236,
+                  "marker": 13089,
+                  "encodedFrames": 19
+                },
+                {
+                  "startSeconds": 466.768,
+                  "endSeconds": 467.841,
+                  "durationSeconds": 1.073000000000036,
+                  "marker": 13163,
+                  "encodedFrames": 2
+                },
+                {
+                  "startSeconds": 585.383,
+                  "endSeconds": 586.393,
+                  "durationSeconds": 1.009999999999991,
+                  "marker": 16674,
+                  "encodedFrames": 1
+                },
+                {
+                  "startSeconds": 589.047,
+                  "endSeconds": 590.078,
+                  "durationSeconds": 1.030999999999949,
+                  "marker": 16759,
+                  "encodedFrames": 1
+                },
+                {
+                  "startSeconds": 590.263,
+                  "endSeconds": 591.45,
+                  "durationSeconds": 1.1870000000000118,
+                  "marker": 16785,
+                  "encodedFrames": 10
+                },
+                {
+                  "startSeconds": 635.09,
+                  "endSeconds": 636.212,
+                  "durationSeconds": 1.1219999999999573,
+                  "marker": 18079,
+                  "encodedFrames": 6
+                },
+                {
+                  "startSeconds": 654.881,
+                  "endSeconds": 655.948,
+                  "durationSeconds": 1.0670000000000073,
+                  "marker": 18628,
+                  "encodedFrames": 2
+                },
+                {
+                  "startSeconds": 672.488,
+                  "endSeconds": 673.52,
+                  "durationSeconds": 1.0319999999999254,
+                  "marker": 19132,
+                  "encodedFrames": 3
+                },
+                {
+                  "startSeconds": 680.284,
+                  "endSeconds": 681.304,
+                  "durationSeconds": 1.0199999999999818,
+                  "marker": 19318,
+                  "encodedFrames": 2
+                },
+                {
+                  "startSeconds": 703.25,
+                  "endSeconds": 704.262,
+                  "durationSeconds": 1.0119999999999436,
+                  "marker": 19980,
+                  "encodedFrames": 1
+                },
+                {
+                  "startSeconds": 743.881,
+                  "endSeconds": 744.944,
+                  "durationSeconds": 1.0629999999999882,
+                  "marker": 21159,
+                  "encodedFrames": 2
+                },
+                {
+                  "startSeconds": 760.591,
+                  "endSeconds": 761.651,
+                  "durationSeconds": 1.0599999999999454,
+                  "marker": 21603,
+                  "encodedFrames": 2
+                },
+                {
+                  "startSeconds": 764.777,
+                  "endSeconds": 765.891,
+                  "durationSeconds": 1.113999999999919,
+                  "marker": 21722,
+                  "encodedFrames": 1
+                },
+                {
+                  "startSeconds": 792.78,
+                  "endSeconds": 794.005,
+                  "durationSeconds": 1.2250000000000227,
+                  "marker": 22547,
+                  "encodedFrames": 2
+                },
+                {
+                  "startSeconds": 872.744,
+                  "endSeconds": 873.791,
+                  "durationSeconds": 1.0470000000000255,
+                  "marker": 24920,
+                  "encodedFrames": 1
+                },
+                {
+                  "startSeconds": 880.811,
+                  "endSeconds": 881.845,
+                  "durationSeconds": 1.0339999999999918,
+                  "marker": 25155,
+                  "encodedFrames": 4
+                },
+                {
+                  "startSeconds": 894.091,
+                  "endSeconds": 895.309,
+                  "durationSeconds": 1.217999999999961,
+                  "marker": 25473,
+                  "encodedFrames": 1
+                },
+                {
+                  "startSeconds": 953.776,
+                  "endSeconds": 954.808,
+                  "durationSeconds": 1.032000000000039,
+                  "marker": 27163,
+                  "encodedFrames": 9
+                },
+                {
+                  "startSeconds": 957.854,
+                  "endSeconds": 959.195,
+                  "durationSeconds": 1.3410000000000082,
+                  "marker": 27284,
+                  "encodedFrames": 1
+                },
+                {
+                  "startSeconds": 992.181,
+                  "endSeconds": 993.232,
+                  "durationSeconds": 1.0509999999999309,
+                  "marker": 28220,
+                  "encodedFrames": 2
+                },
+                {
+                  "startSeconds": 994.377,
+                  "endSeconds": 995.444,
+                  "durationSeconds": 1.0670000000000073,
+                  "marker": 28270,
+                  "encodedFrames": 1
+                },
+                {
+                  "startSeconds": 996.483,
+                  "endSeconds": 997.583,
+                  "durationSeconds": 1.1000000000000227,
+                  "marker": 28313,
+                  "encodedFrames": 2
+                },
+                {
+                  "startSeconds": 1000.128,
+                  "endSeconds": 1001.145,
+                  "durationSeconds": 1.016999999999939,
+                  "marker": 28414,
+                  "encodedFrames": 1
+                },
+                {
+                  "startSeconds": 1029.244,
+                  "endSeconds": 1030.315,
+                  "durationSeconds": 1.07100000000014,
+                  "marker": 29268,
+                  "encodedFrames": 1
+                },
+                {
+                  "startSeconds": 1041.314,
+                  "endSeconds": 1042.407,
+                  "durationSeconds": 1.0929999999998472,
+                  "marker": 29528,
+                  "encodedFrames": 1
+                },
+                {
+                  "startSeconds": 1045.214,
+                  "endSeconds": 1046.277,
+                  "durationSeconds": 1.0630000000001019,
+                  "marker": 29634,
+                  "encodedFrames": 1
+                },
+                {
+                  "startSeconds": 1061.675,
+                  "endSeconds": 1062.848,
+                  "durationSeconds": 1.1730000000000018,
+                  "marker": 30087,
+                  "encodedFrames": 12
+                },
+                {
+                  "startSeconds": 1084.209,
+                  "endSeconds": 1085.247,
+                  "durationSeconds": 1.038000000000011,
+                  "marker": 30744,
+                  "encodedFrames": 1
+                },
+                {
+                  "startSeconds": 1089.291,
+                  "endSeconds": 1090.357,
+                  "durationSeconds": 1.066000000000031,
+                  "marker": 30880,
+                  "encodedFrames": 2
+                },
+                {
+                  "startSeconds": 1132.699,
+                  "endSeconds": 1133.814,
+                  "durationSeconds": 1.115000000000009,
+                  "marker": 32116,
+                  "encodedFrames": 6
+                },
+                {
+                  "startSeconds": 1135.433,
+                  "endSeconds": 1136.595,
+                  "durationSeconds": 1.1620000000000346,
+                  "marker": 32153,
+                  "encodedFrames": 4
+                },
+                {
+                  "startSeconds": 1138.999,
+                  "endSeconds": 1140.037,
+                  "durationSeconds": 1.038000000000011,
+                  "marker": 32239,
+                  "encodedFrames": 2
+                },
+                {
+                  "startSeconds": 1140.949,
+                  "endSeconds": 1142.262,
+                  "durationSeconds": 1.3129999999998745,
+                  "marker": 32288,
+                  "encodedFrames": 10
+                },
+                {
+                  "startSeconds": 1142.441,
+                  "endSeconds": 1143.546,
+                  "durationSeconds": 1.1050000000000182,
+                  "marker": 32319,
+                  "encodedFrames": 2
+                },
+                {
+                  "startSeconds": 1180.392,
+                  "endSeconds": 1181.502,
+                  "durationSeconds": 1.1099999999999,
+                  "marker": 33405,
+                  "encodedFrames": 3
+                },
+                {
+                  "startSeconds": 1188.376,
+                  "endSeconds": 1189.62,
+                  "durationSeconds": 1.2439999999999145,
+                  "marker": 33587,
+                  "encodedFrames": 12
+                },
+                {
+                  "startSeconds": 1200.309,
+                  "endSeconds": 1201.317,
+                  "durationSeconds": 1.0080000000000382,
+                  "marker": 33891,
+                  "encodedFrames": 1
+                },
+                {
+                  "startSeconds": 1217.977,
+                  "endSeconds": 1218.986,
+                  "durationSeconds": 1.0090000000000146,
+                  "marker": 34397,
+                  "encodedFrames": 2
+                },
+                {
+                  "startSeconds": 1223.24,
+                  "endSeconds": 1224.255,
+                  "durationSeconds": 1.0150000000001,
+                  "marker": 34537,
+                  "encodedFrames": 1
+                },
+                {
+                  "startSeconds": 1224.72,
+                  "endSeconds": 1225.839,
+                  "durationSeconds": 1.1189999999999145,
+                  "marker": 34563,
+                  "encodedFrames": 2
+                },
+                {
+                  "startSeconds": 1234.046,
+                  "endSeconds": 1235.113,
+                  "durationSeconds": 1.0670000000000073,
+                  "marker": 34775,
+                  "encodedFrames": 3
+                },
+                {
+                  "startSeconds": 1243.874,
+                  "endSeconds": 1245.07,
+                  "durationSeconds": 1.1959999999999127,
+                  "marker": 35025,
+                  "encodedFrames": 4
+                },
+                {
+                  "startSeconds": 1282.613,
+                  "endSeconds": 1283.645,
+                  "durationSeconds": 1.0319999999999254,
+                  "marker": 36120,
+                  "encodedFrames": 1
+                },
+                {
+                  "startSeconds": 1363.409,
+                  "endSeconds": 1364.493,
+                  "durationSeconds": 1.0839999999998327,
+                  "marker": 38484,
+                  "encodedFrames": 1
+                },
+                {
+                  "startSeconds": 1365.463,
+                  "endSeconds": 1366.577,
+                  "durationSeconds": 1.1140000000000327,
+                  "marker": 38515,
+                  "encodedFrames": 3
+                },
+                {
+                  "startSeconds": 1385.507,
+                  "endSeconds": 1386.55,
+                  "durationSeconds": 1.0429999999998927,
+                  "marker": 39061,
+                  "encodedFrames": 1
+                },
+                {
+                  "startSeconds": 1387.046,
+                  "endSeconds": 1388.092,
+                  "durationSeconds": 1.0460000000000491,
+                  "marker": 39091,
+                  "encodedFrames": 2
+                },
+                {
+                  "startSeconds": 1392.748,
+                  "endSeconds": 1393.798,
+                  "durationSeconds": 1.0499999999999545,
+                  "marker": 39203,
+                  "encodedFrames": 2
+                },
+                {
+                  "startSeconds": 1398.163,
+                  "endSeconds": 1399.213,
+                  "durationSeconds": 1.0499999999999545,
+                  "marker": 39319,
+                  "encodedFrames": 2
+                },
+                {
+                  "startSeconds": 1425.289,
+                  "endSeconds": 1426.605,
+                  "durationSeconds": 1.316000000000031,
+                  "marker": 40061,
+                  "encodedFrames": 7
+                },
+                {
+                  "startSeconds": 1427.137,
+                  "endSeconds": 1428.175,
+                  "durationSeconds": 1.038000000000011,
+                  "marker": 40096,
+                  "encodedFrames": 1
+                },
+                {
+                  "startSeconds": 1428.352,
+                  "endSeconds": 1429.408,
+                  "durationSeconds": 1.0559999999998126,
+                  "marker": 40115,
+                  "encodedFrames": 12
+                },
+                {
+                  "startSeconds": 1550.941,
+                  "endSeconds": 1552.011,
+                  "durationSeconds": 1.0699999999999363,
+                  "marker": 43747,
+                  "encodedFrames": 1
+                },
+                {
+                  "startSeconds": 1577.714,
+                  "endSeconds": 1578.902,
+                  "durationSeconds": 1.1880000000001019,
+                  "marker": 44486,
+                  "encodedFrames": 4
+                },
+                {
+                  "startSeconds": 1579.778,
+                  "endSeconds": 1580.802,
+                  "durationSeconds": 1.0239999999998872,
+                  "marker": 44499,
+                  "encodedFrames": 1
+                },
+                {
+                  "startSeconds": 1695.955,
+                  "endSeconds": 1696.965,
+                  "durationSeconds": 1.009999999999991,
+                  "marker": 47951,
+                  "encodedFrames": 1
+                },
+                {
+                  "startSeconds": 1706.133,
+                  "endSeconds": 1707.267,
+                  "durationSeconds": 1.1340000000000146,
+                  "marker": 48201,
+                  "encodedFrames": 2
+                },
+                {
+                  "startSeconds": 1750.348,
+                  "endSeconds": 1751.368,
+                  "durationSeconds": 1.0199999999999818,
+                  "marker": 49444,
+                  "encodedFrames": 1
+                },
+                {
+                  "startSeconds": 1752.111,
+                  "endSeconds": 1753.207,
+                  "durationSeconds": 1.0960000000000036,
+                  "marker": 49490,
+                  "encodedFrames": 2
+                }
+              ],
+              "contentHoldsOver5Seconds": [],
+              "maximumPresentationGapSeconds": 1.6410000000000053,
+              "markerRange": [
+                0,
+                50874
+              ]
+            },
+            "syncWindows": [
+              {
+                "matchedFlashes": 8,
+                "audioBursts": 27,
+                "medianAudioMinusVideoMs": 5.000000000000782,
+                "p95AbsoluteOffsetMs": 174.66666666666552,
+                "firstThirdMedianMs": -3.3333333333331865,
+                "lastThirdMedianMs": -1.666666666666039,
+                "offsetsMs": [
+                  -53.33333333333323,
+                  46.666666666666856,
+                  19.999999999999574,
+                  43.333333333333,
+                  3.3333333333338544,
+                  -239.99999999999844,
+                  -9.999999999999787,
+                  6.666666666667709
+                ],
+                "offsetSeconds": 5,
+                "status": "passed"
+              },
+              {
+                "matchedFlashes": 7,
+                "audioBursts": 112,
+                "medianAudioMinusVideoMs": 23.333333333333428,
+                "p95AbsoluteOffsetMs": 64.66666666666707,
+                "firstThirdMedianMs": 56.66666666666687,
+                "lastThirdMedianMs": 16.666666666667496,
+                "offsetsMs": [
+                  36.66666666666663,
+                  76.66666666666711,
+                  20.000000000000462,
+                  23.333333333333428,
+                  -6.666666666665932,
+                  36.66666666666707,
+                  -3.333333333332078
+                ],
+                "offsetSeconds": 900,
+                "status": "passed"
+              },
+              {
+                "matchedFlashes": 8,
+                "audioBursts": 138,
+                "medianAudioMinusVideoMs": 9.999999999999787,
+                "p95AbsoluteOffsetMs": 26.666666666665506,
+                "firstThirdMedianMs": 9.999999999999787,
+                "lastThirdMedianMs": 26.666666666665506,
+                "offsetsMs": [
+                  0.0,
+                  19.999999999999574,
+                  -13.333333333333641,
+                  -6.666666666666821,
+                  -9.999999999999787,
+                  26.666666666665506,
+                  26.666666666665506,
+                  26.666666666665506
+                ],
+                "offsetSeconds": 1780,
+                "status": "passed"
+              }
+            ],
+            "status": "passed"
+          }
+        },
+        "status": "passed"
+      },
+      "longestHoldMarkerAdvance": {
+        "startSeconds": 75.594,
+        "endSeconds": 77.296,
+        "durationSeconds": 1.7020000000000124,
+        "marker": 2190,
+        "encodedFrames": 2,
+        "resumedMarker": 2196,
+        "markerAdvance": 6
+      },
+      "processCpuBudget": [
+        {
+          "pid": 82780,
+          "role": "node",
+          "observedSeconds": 1799.2942552369932,
+          "cpuSeconds": 1369.7,
+          "averageCpuPercentOfOneCore": 76.1242912888415,
+          "firstRssMiB": 204.31640625,
+          "lastRssMiB": 293.28125,
+          "maximumRssMiB": 302.0859375,
+          "firstFdCount": 46,
+          "lastFdCount": 44
+        },
+        {
+          "pid": 82796,
+          "role": "receiver",
+          "observedSeconds": 1799.294290024991,
+          "cpuSeconds": 12.91,
+          "averageCpuPercentOfOneCore": 0.7175035274424557,
+          "firstRssMiB": 45.75390625,
+          "lastRssMiB": 37.60546875,
+          "maximumRssMiB": 45.80078125,
+          "firstFdCount": 5,
+          "lastFdCount": 5
+        },
+        {
+          "pid": 82797,
+          "role": "sampler",
+          "observedSeconds": 1799.2903292950068,
+          "cpuSeconds": 62.97,
+          "averageCpuPercentOfOneCore": 3.499713135493411,
+          "firstRssMiB": 11.0546875,
+          "lastRssMiB": 11.73046875,
+          "maximumRssMiB": 11.73046875,
+          "firstFdCount": 5,
+          "lastFdCount": 5
+        },
+        {
+          "pid": 82798,
+          "role": "suitecut-browser",
+          "observedSeconds": 1799.276674326,
+          "cpuSeconds": 290.82,
+          "averageCpuPercentOfOneCore": 16.163161794388277,
+          "firstRssMiB": 232.99609375,
+          "lastRssMiB": 261.9921875,
+          "maximumRssMiB": 261.9921875,
+          "firstFdCount": 161,
+          "lastFdCount": 164
+        },
+        {
+          "pid": 82803,
+          "role": "suitecut-browser",
+          "observedSeconds": 1799.267600533989,
+          "cpuSeconds": 0.01999999999999999,
+          "averageCpuPercentOfOneCore": 0.001111563393575495,
+          "firstRssMiB": 61.671875,
+          "lastRssMiB": 61.671875,
+          "maximumRssMiB": 61.671875,
+          "firstFdCount": 13,
+          "lastFdCount": 13
+        },
+        {
+          "pid": 82804,
+          "role": "suitecut-browser",
+          "observedSeconds": 1799.2676356839947,
+          "cpuSeconds": 0.0,
+          "averageCpuPercentOfOneCore": 0.0,
+          "firstRssMiB": 61.90234375,
+          "lastRssMiB": 61.90234375,
+          "maximumRssMiB": 61.90234375,
+          "firstFdCount": 13,
+          "lastFdCount": 13
+        },
+        {
+          "pid": 82806,
+          "role": "suitecut-browser",
+          "observedSeconds": 1799.267785369011,
+          "cpuSeconds": 0.08,
+          "averageCpuPercentOfOneCore": 0.004446253117547638,
+          "firstRssMiB": 17.734375,
+          "lastRssMiB": 17.87890625,
+          "maximumRssMiB": 17.87890625,
+          "firstFdCount": 14,
+          "lastFdCount": 14
+        },
+        {
+          "pid": 82826,
+          "role": "cef-gpu",
+          "observedSeconds": 1799.2678192650055,
+          "cpuSeconds": 262.68,
+          "averageCpuPercentOfOneCore": 14.599271836435324,
+          "firstRssMiB": 115.05859375,
+          "lastRssMiB": 145.609375,
+          "maximumRssMiB": 145.609375,
+          "firstFdCount": 41,
+          "lastFdCount": 41
+        },
+        {
+          "pid": 82827,
+          "role": "suitecut-browser",
+          "observedSeconds": 1799.2677042169962,
+          "cpuSeconds": 0.48,
+          "averageCpuPercentOfOneCore": 0.026677519908516672,
+          "firstRssMiB": 93.921875,
+          "lastRssMiB": 94.80859375,
+          "maximumRssMiB": 94.80859375,
+          "firstFdCount": 34,
+          "lastFdCount": 28
+        },
+        {
+          "pid": 82830,
+          "role": "suitecut-browser",
+          "observedSeconds": 1799.2675600820075,
+          "cpuSeconds": 0.039999999999999994,
+          "averageCpuPercentOfOneCore": 0.0022231268371323753,
+          "firstRssMiB": 45.7578125,
+          "lastRssMiB": 46.46875,
+          "maximumRssMiB": 46.46875,
+          "firstFdCount": 28,
+          "lastFdCount": 28
+        },
+        {
+          "pid": 82867,
+          "role": "cef-renderer",
+          "observedSeconds": 1799.2676058850047,
+          "cpuSeconds": 0.19000000000000003,
+          "averageCpuPercentOfOneCore": 0.010559852207562245,
+          "firstRssMiB": 72.3984375,
+          "lastRssMiB": 72.8125,
+          "maximumRssMiB": 72.8125,
+          "firstFdCount": 28,
+          "lastFdCount": 29
+        },
+        {
+          "pid": 82872,
+          "role": "cef-renderer",
+          "observedSeconds": 1799.2676698900032,
+          "cpuSeconds": 232.58999999999997,
+          "averageCpuPercentOfOneCore": 12.92692598729455,
+          "firstRssMiB": 134.56640625,
+          "lastRssMiB": 193.50390625,
+          "maximumRssMiB": 193.98046875,
+          "firstFdCount": 37,
+          "lastFdCount": 38
+        },
+        {
+          "pid": 82897,
+          "role": "encoder",
+          "observedSeconds": 1799.2676872009906,
+          "cpuSeconds": 2340.36,
+          "averageCpuPercentOfOneCore": 130.07291892407366,
+          "firstRssMiB": 407.421875,
+          "lastRssMiB": 419.86328125,
+          "maximumRssMiB": 419.86328125,
+          "firstFdCount": 5,
+          "lastFdCount": 5
+        },
+        {
+          "pid": 82898,
+          "role": "suitecut-browser",
+          "observedSeconds": 1799.2675768259942,
+          "cpuSeconds": 44.72,
+          "averageCpuPercentOfOneCore": 2.4854557807843407,
+          "firstRssMiB": 75.12890625,
+          "lastRssMiB": 76.0078125,
+          "maximumRssMiB": 76.0078125,
+          "firstFdCount": 31,
+          "lastFdCount": 26
+        },
+        {
+          "pid": 82913,
+          "role": "encoder",
+          "observedSeconds": 1799.2676864649984,
+          "cpuSeconds": 15.17,
+          "averageCpuPercentOfOneCore": 0.8431207937605067,
+          "firstRssMiB": 35.921875,
+          "lastRssMiB": 36.4140625,
+          "maximumRssMiB": 36.4140625,
+          "firstFdCount": 7,
+          "lastFdCount": 7
+        },
+        {
+          "pid": 82914,
+          "role": "encoder",
+          "observedSeconds": 1799.2676518840017,
+          "cpuSeconds": 71.66,
+          "averageCpuPercentOfOneCore": 3.9827315255162437,
+          "firstRssMiB": 32.37890625,
+          "lastRssMiB": 33.4453125,
+          "maximumRssMiB": 33.4453125,
+          "firstFdCount": 5,
+          "lastFdCount": 5
+        },
+        {
+          "pid": 82915,
+          "role": "encoder",
+          "observedSeconds": 1799.2676564349968,
+          "cpuSeconds": 2188.2599999999998,
+          "averageCpuPercentOfOneCore": 121.61948180270956,
+          "firstRssMiB": 159.6171875,
+          "lastRssMiB": 197.2421875,
+          "maximumRssMiB": 206.12890625,
+          "firstFdCount": 7,
+          "lastFdCount": 7
+        }
+      ],
+      "cgroupCpuDelta": {
+        "usage_usec": 6911480427,
+        "user_usec": 6345257516,
+        "system_usec": 566222912,
+        "nice_usec": 0,
+        "nr_periods": 17993,
+        "nr_throttled": 11147,
+        "throttled_usec": 496791341,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "cgroupAverageUsedCores": 3.8411568319456197
+    },
+    "controlled-node-stall": {
+      "resultStatus": "passed",
+      "requestedMs": 90000,
+      "activeMs": 90199.84954699999,
+      "injection": {
+        "kind": "controlled Node event-loop blocking wait",
+        "atMs": 40221.474754,
+        "durationMs": 4000
+      },
+      "pipelineTiming": {
+        "maxMarkerHoldMs": 4178.991335999999,
+        "maxFrameReceiveGapMs": 4145.004908000003,
+        "maxFrameCaptureGapMs": 4178.991335999999,
+        "maxFrameTransitMs": 4182.876107000004,
+        "nativeVideoReplaced": 453,
+        "maxAudioReceiveGapMs": 4145.742675000001,
+        "maxAudioCaptureGapMs": 2180
+      },
+      "eventLoopDelay": {
+        "meanMs": 24.059288680175477,
+        "p99Ms": 55.934975,
+        "maxMs": 4037.017599
+      },
+      "intervalLoopMaxMs": 4037.017599,
+      "nativeFinal": {
+        "hostMs": 114271.614,
+        "paints": 3101,
+        "audioCallbacks": 5451,
+        "lastPaintMs": 114262.964,
+        "lastAudioMs": 114268.998,
+        "lastAudioPtsMs": 67859854.0,
+        "maxPaintGapMs": 458.382,
+        "maxAudioGapMs": 196.336,
+        "videoReplaced": 457,
+        "audioDropped": 108,
+        "audioQueued": 1,
+        "audioQueuePeak": 100,
+        "videoWritten": 2643,
+        "audioWritten": 5342,
+        "writingVideo": true,
+        "writingAudio": false,
+        "currentWriteMs": 4.923,
+        "maxVideoWriteMs": 4144.972,
+        "maxAudioWriteMs": 29.192,
+        "maxVideoQueueMs": 196.772,
+        "maxAudioQueueMs": 1985.109
+      },
+      "nativeMonitorMaximumIntervalMs": 1090.002,
+      "independentSamplerMaximumIntervalSeconds": 1.0897131429956062,
+      "independentSamplerMaximumScanMs": 428.27859400131274,
+      "childWriteTiming": [
+        {
+          "pid": 81584,
+          "command": "ffmpeg",
+          "args": [
+            "-v",
+            "error",
+            "-y",
+            "-listen",
+            "1",
+            "-i",
+            "rtmp://127.0.0.1:45967/live/soak",
+            "-c",
+            "copy",
+            "/workspace/suitecut/.suitecut/dropout-investigation/controlled-node-stall/receiver.flv"
+          ],
+          "writes": 0,
+          "drains": 0,
+          "maxDrainMs": 0,
+          "closed": true
+        },
+        {
+          "pid": 81585,
+          "command": "python3",
+          "args": [
+            "/workspace/suitecut/benchmarks/obs-cef/profile-pipeline.py",
+            "/workspace/suitecut/benchmarks/obs-cef/2026-10-09-dropout-investigation/controlled-node-stall/processes.jsonl",
+            "81570"
+          ],
+          "writes": 0,
+          "drains": 0,
+          "maxDrainMs": 0,
+          "closed": true
+        },
+        {
+          "pid": 81586,
+          "command": "/workspace/suitecut/benchmarks/obs-cef/2026-10-09-dropout-investigation/controlled-node-stall/native-wrapper.sh",
+          "args": [
+            "--suitecut-width=1920",
+            "--suitecut-height=1080",
+            "--suitecut-scale=1",
+            "--suitecut-fps=30",
+            "--suitecut-pixel-format=i420",
+            "--suitecut-profile=/tmp/suitecut-cef-g9vHBY",
+            "--suitecut-frame-subscriptions"
+          ],
+          "writes": 25,
+          "drains": 0,
+          "maxDrainMs": 0,
+          "closed": true
+        },
+        {
+          "pid": 81685,
+          "command": "ffmpeg",
+          "args": [
+            "-version"
+          ],
+          "writes": 0,
+          "drains": 0,
+          "maxDrainMs": 0,
+          "closed": true
+        },
+        {
+          "pid": 81686,
+          "command": "ffmpeg",
+          "args": [
+            "-hide_banner",
+            "-loglevel",
+            "error",
+            "-f",
+            "matroska",
+            "-i",
+            "pipe:0",
+            "-an",
+            "-filter_threads",
+            "1",
+            "-fps_mode",
+            "vfr",
+            "-enc_time_base",
+            "1:1000",
+            "-vf",
+            "scale=1920:1080:flags=lanczos+accurate_rnd+full_chroma_int,setsar=1",
+            "-c:v",
+            "libvpx-vp9",
+            "-crf",
+            "18",
+            "-b:v",
+            "0",
+            "-deadline",
+            "realtime",
+            "-cpu-used",
+            "5",
+            "-row-mt",
+            "1",
+            "-threads",
+            "4",
+            "-pix_fmt",
+            "yuv420p",
+            "-colorspace",
+            "bt709",
+            "-color_primaries",
+            "bt709",
+            "-color_trc",
+            "iec61966-2-1",
+            "-color_range",
+            "tv",
+            "-y",
+            "/workspace/suitecut/.suitecut/dropout-investigation/controlled-node-stall/suitecut-source-1740ac3a-d680-4850-8baa-1b6fbd5ea500-30d3148c-48e5-4f6c-acdc-4af9685cd9e8.webm.video.webm"
+          ],
+          "writes": 2905,
+          "drains": 1446,
+          "maxDrainMs": 640.0870920000016,
+          "closed": true
+        },
+        {
+          "pid": 81703,
+          "command": "/usr/bin/ffmpeg",
+          "args": [
+            "-hide_banner",
+            "-loglevel",
+            "error",
+            "-stats_period",
+            "0.1",
+            "-progress",
+            "pipe:3",
+            "-f",
+            "flv",
+            "-probesize",
+            "1000000",
+            "-analyzeduration",
+            "1000000",
+            "-i",
+            "pipe:0",
+            "-map",
+            "0:v:0",
+            "-map",
+            "0:a:0",
+            "-c",
+            "copy",
+            "-max_interleave_delta",
+            "100000",
+            "-rw_timeout",
+            "20000000",
+            "-rtmp_tcurl",
+            "rtmp://127.0.0.1:45967/live",
+            "-f",
+            "flv",
+            "-flvflags",
+            "no_duration_filesize",
+            "rtmp://127.0.0.1:33785/live/soak"
+          ],
+          "writes": 53,
+          "drains": 0,
+          "maxDrainMs": 0,
+          "closed": true
+        },
+        {
+          "pid": 81704,
+          "command": "/usr/bin/ffmpeg",
+          "args": [
+            "-hide_banner",
+            "-loglevel",
+            "error",
+            "-f",
+            "s16le",
+            "-ar",
+            "48000",
+            "-ac",
+            "2",
+            "-probesize",
+            "32",
+            "-analyzeduration",
+            "0",
+            "-i",
+            "pipe:0",
+            "-c:a",
+            "aac",
+            "-b:a",
+            "128k",
+            "-f",
+            "flv",
+            "-flvflags",
+            "no_duration_filesize",
+            "pipe:1"
+          ],
+          "writes": 57,
+          "drains": 0,
+          "maxDrainMs": 0,
+          "closed": true
+        },
+        {
+          "pid": 81705,
+          "command": "/usr/bin/ffmpeg",
+          "args": [
+            "-hide_banner",
+            "-loglevel",
+            "error",
+            "-stats_period",
+            "0.1",
+            "-progress",
+            "pipe:3",
+            "-thread_queue_size",
+            "2",
+            "-f",
+            "rawvideo",
+            "-framerate",
+            "30",
+            "-pixel_format",
+            "yuv420p",
+            "-video_size",
+            "1920x1080",
+            "-probesize",
+            "32",
+            "-analyzeduration",
+            "0",
+            "-i",
+            "pipe:0",
+            "-map",
+            "0:v:0",
+            "-an",
+            "-vf",
+            "scale=1920:1080:flags=lanczos+accurate_rnd+full_chroma_int,setsar=1",
+            "-c:v",
+            "libx264",
+            "-threads",
+            "4",
+            "-filter_threads",
+            "1",
+            "-preset",
+            "veryfast",
+            "-tune",
+            "zerolatency",
+            "-pix_fmt",
+            "yuv420p",
+            "-colorspace",
+            "bt709",
+            "-color_primaries",
+            "bt709",
+            "-color_trc",
+            "iec61966-2-1",
+            "-color_range",
+            "tv",
+            "-r",
+            "30",
+            "-g",
+            "60",
+            "-keyint_min",
+            "60",
+            "-sc_threshold",
+            "0",
+            "-b:v",
+            "4500k",
+            "-maxrate",
+            "4500k",
+            "-bufsize",
+            "9000k",
+            "-rw_timeout",
+            "20000000",
+            "-f",
+            "flv",
+            "-flvflags",
+            "no_duration_filesize",
+            "pipe:1"
+          ],
+          "writes": 3,
+          "drains": 2,
+          "maxDrainMs": 576.9875320000001,
+          "closed": true
+        },
+        {
+          "pid": 81733,
+          "command": "/usr/bin/ffmpeg",
+          "args": [
+            "-hide_banner",
+            "-loglevel",
+            "error",
+            "-stats_period",
+            "0.1",
+            "-progress",
+            "pipe:3",
+            "-f",
+            "flv",
+            "-probesize",
+            "1000000",
+            "-analyzeduration",
+            "1000000",
+            "-i",
+            "pipe:0",
+            "-map",
+            "0:v:0",
+            "-map",
+            "0:a:0",
+            "-c",
+            "copy",
+            "-max_interleave_delta",
+            "100000",
+            "-rw_timeout",
+            "20000000",
+            "-rtmp_tcurl",
+            "rtmp://127.0.0.1:45967/live",
+            "-f",
+            "flv",
+            "-flvflags",
+            "no_duration_filesize",
+            "rtmp://127.0.0.1:46507/live/soak"
+          ],
+          "writes": 53,
+          "drains": 0,
+          "maxDrainMs": 0,
+          "closed": true
+        },
+        {
+          "pid": 81734,
+          "command": "/usr/bin/ffmpeg",
+          "args": [
+            "-hide_banner",
+            "-loglevel",
+            "error",
+            "-f",
+            "s16le",
+            "-ar",
+            "48000",
+            "-ac",
+            "2",
+            "-probesize",
+            "32",
+            "-analyzeduration",
+            "0",
+            "-i",
+            "pipe:0",
+            "-c:a",
+            "aac",
+            "-b:a",
+            "128k",
+            "-f",
+            "flv",
+            "-flvflags",
+            "no_duration_filesize",
+            "pipe:1"
+          ],
+          "writes": 57,
+          "drains": 0,
+          "maxDrainMs": 0,
+          "closed": true
+        },
+        {
+          "pid": 81735,
+          "command": "/usr/bin/ffmpeg",
+          "args": [
+            "-hide_banner",
+            "-loglevel",
+            "error",
+            "-stats_period",
+            "0.1",
+            "-progress",
+            "pipe:3",
+            "-thread_queue_size",
+            "2",
+            "-f",
+            "rawvideo",
+            "-framerate",
+            "30",
+            "-pixel_format",
+            "yuv420p",
+            "-video_size",
+            "1920x1080",
+            "-probesize",
+            "32",
+            "-analyzeduration",
+            "0",
+            "-i",
+            "pipe:0",
+            "-map",
+            "0:v:0",
+            "-an",
+            "-vf",
+            "scale=1920:1080:flags=lanczos+accurate_rnd+full_chroma_int,setsar=1",
+            "-c:v",
+            "libx264",
+            "-threads",
+            "4",
+            "-filter_threads",
+            "1",
+            "-preset",
+            "veryfast",
+            "-tune",
+            "zerolatency",
+            "-pix_fmt",
+            "yuv420p",
+            "-colorspace",
+            "bt709",
+            "-color_primaries",
+            "bt709",
+            "-color_trc",
+            "iec61966-2-1",
+            "-color_range",
+            "tv",
+            "-r",
+            "30",
+            "-g",
+            "60",
+            "-keyint_min",
+            "60",
+            "-sc_threshold",
+            "0",
+            "-b:v",
+            "4500k",
+            "-maxrate",
+            "4500k",
+            "-bufsize",
+            "9000k",
+            "-rw_timeout",
+            "20000000",
+            "-f",
+            "flv",
+            "-flvflags",
+            "no_duration_filesize",
+            "pipe:1"
+          ],
+          "writes": 5,
+          "drains": 4,
+          "maxDrainMs": 762.0723370000005,
+          "closed": true
+        },
+        {
+          "pid": 81763,
+          "command": "/usr/bin/ffmpeg",
+          "args": [
+            "-hide_banner",
+            "-loglevel",
+            "error",
+            "-stats_period",
+            "0.1",
+            "-progress",
+            "pipe:3",
+            "-f",
+            "flv",
+            "-probesize",
+            "1000000",
+            "-analyzeduration",
+            "1000000",
+            "-i",
+            "pipe:0",
+            "-map",
+            "0:v:0",
+            "-map",
+            "0:a:0",
+            "-c",
+            "copy",
+            "-max_interleave_delta",
+            "100000",
+            "-rw_timeout",
+            "20000000",
+            "-rtmp_tcurl",
+            "rtmp://127.0.0.1:45967/live",
+            "-f",
+            "flv",
+            "-flvflags",
+            "no_duration_filesize",
+            "rtmp://127.0.0.1:39319/live/soak"
+          ],
+          "writes": 5600,
+          "drains": 0,
+          "maxDrainMs": 0,
+          "closed": true
+        },
+        {
+          "pid": 81764,
+          "command": "/usr/bin/ffmpeg",
+          "args": [
+            "-hide_banner",
+            "-loglevel",
+            "error",
+            "-f",
+            "s16le",
+            "-ar",
+            "48000",
+            "-ac",
+            "2",
+            "-probesize",
+            "32",
+            "-analyzeduration",
+            "0",
+            "-i",
+            "pipe:0",
+            "-c:a",
+            "aac",
+            "-b:a",
+            "128k",
+            "-f",
+            "flv",
+            "-flvflags",
+            "no_duration_filesize",
+            "pipe:1"
+          ],
+          "writes": 4590,
+          "drains": 0,
+          "maxDrainMs": 0,
+          "closed": true
+        },
+        {
+          "pid": 81765,
+          "command": "/usr/bin/ffmpeg",
+          "args": [
+            "-hide_banner",
+            "-loglevel",
+            "error",
+            "-stats_period",
+            "0.1",
+            "-progress",
+            "pipe:3",
+            "-thread_queue_size",
+            "2",
+            "-f",
+            "rawvideo",
+            "-framerate",
+            "30",
+            "-pixel_format",
+            "yuv420p",
+            "-video_size",
+            "1920x1080",
+            "-probesize",
+            "32",
+            "-analyzeduration",
+            "0",
+            "-i",
+            "pipe:0",
+            "-map",
+            "0:v:0",
+            "-an",
+            "-vf",
+            "scale=1920:1080:flags=lanczos+accurate_rnd+full_chroma_int,setsar=1",
+            "-c:v",
+            "libx264",
+            "-threads",
+            "4",
+            "-filter_threads",
+            "1",
+            "-preset",
+            "veryfast",
+            "-tune",
+            "zerolatency",
+            "-pix_fmt",
+            "yuv420p",
+            "-colorspace",
+            "bt709",
+            "-color_primaries",
+            "bt709",
+            "-color_trc",
+            "iec61966-2-1",
+            "-color_range",
+            "tv",
+            "-r",
+            "30",
+            "-g",
+            "60",
+            "-keyint_min",
+            "60",
+            "-sc_threshold",
+            "0",
+            "-b:v",
+            "4500k",
+            "-maxrate",
+            "4500k",
+            "-bufsize",
+            "9000k",
+            "-rw_timeout",
+            "20000000",
+            "-f",
+            "flv",
+            "-flvflags",
+            "no_duration_filesize",
+            "pipe:1"
+          ],
+          "writes": 1319,
+          "drains": 1318,
+          "maxDrainMs": 4067.6817059999958,
+          "closed": true
+        },
+        {
+          "pid": 81957,
+          "command": "ffmpeg",
+          "args": [
+            "-hide_banner",
+            "-loglevel",
+            "error",
+            "-i",
+            "/workspace/suitecut/.suitecut/dropout-investigation/controlled-node-stall/suitecut-source-1740ac3a-d680-4850-8baa-1b6fbd5ea500-30d3148c-48e5-4f6c-acdc-4af9685cd9e8.webm.video.webm",
+            "-f",
+            "s16le",
+            "-ar",
+            "48000",
+            "-ac",
+            "2",
+            "-i",
+            "/workspace/suitecut/.suitecut/dropout-investigation/controlled-node-stall/suitecut-source-1740ac3a-d680-4850-8baa-1b6fbd5ea500-30d3148c-48e5-4f6c-acdc-4af9685cd9e8.webm.audio.pcm",
+            "-map",
+            "0:v:0",
+            "-map",
+            "1:a:0",
+            "-c:v",
+            "copy",
+            "-c:a",
+            "libopus",
+            "-b:a",
+            "160k",
+            "-t",
+            "100.086106",
+            "-y",
+            "/workspace/suitecut/.suitecut/dropout-investigation/controlled-node-stall/suitecut-source-1740ac3a-d680-4850-8baa-1b6fbd5ea500-30d3148c-48e5-4f6c-acdc-4af9685cd9e8.webm"
+          ],
+          "writes": 0,
+          "drains": 0,
+          "maxDrainMs": 0,
+          "closed": true
+        },
+        {
+          "pid": 81970,
+          "command": "ffprobe",
+          "args": [
+            "-version"
+          ],
+          "writes": 0,
+          "drains": 0,
+          "maxDrainMs": 0,
+          "closed": true
+        },
+        {
+          "pid": 81971,
+          "command": "ffprobe",
+          "args": [
+            "-v",
+            "error",
+            "-show_format",
+            "-show_streams",
+            "-of",
+            "json",
+            "/workspace/suitecut/.suitecut/dropout-investigation/controlled-node-stall/suitecut-source-1740ac3a-d680-4850-8baa-1b6fbd5ea500-30d3148c-48e5-4f6c-acdc-4af9685cd9e8.webm"
+          ],
+          "writes": 0,
+          "drains": 0,
+          "maxDrainMs": 0,
+          "closed": true
+        }
+      ],
+      "nodeMemory": {
+        "rss": {
+          "minMiB": 193.984375,
+          "maxMiB": 275.56640625,
+          "lateMedianMiB": 245.91015625,
+          "warmMedianMiB": null
+        },
+        "heapUsed": {
+          "minMiB": 47.92131805419922,
+          "maxMiB": 49.59669494628906,
+          "lateMedianMiB": 48.94196319580078,
+          "warmMedianMiB": null
+        },
+        "external": {
+          "minMiB": 24.526484489440918,
+          "maxMiB": 118.81019878387451,
+          "lateMedianMiB": 71.3243465423584,
+          "warmMedianMiB": null
+        },
+        "arrayBuffers": {
+          "minMiB": 20.71390438079834,
+          "maxMiB": 114.99761867523193,
+          "lateMedianMiB": 67.51176643371582,
+          "warmMedianMiB": null
+        }
+      },
+      "afterCleanupGc": {
+        "rss": 286117888,
+        "heapTotal": 73580544,
+        "heapUsed": 50831856,
+        "external": 4346389,
+        "arrayBuffers": 344533
+      },
+      "gcObservedMaxPauseMs": null,
+      "gcObservedCount": 0,
+      "gcTraceEnabled": false,
+      "scrollCommands": 16,
+      "scrollEvents": 16,
+      "nativeAtWorkloadEnd": {
+        "hostMs": 100266.959,
+        "paints": 2683,
+        "audioCallbacks": 4754,
+        "lastPaintMs": 100246.555,
+        "lastAudioMs": 100249.041,
+        "lastAudioPtsMs": 67845834.0,
+        "maxPaintGapMs": 458.382,
+        "maxAudioGapMs": 196.336,
+        "videoReplaced": 454,
+        "audioDropped": 108,
+        "audioQueued": 0,
+        "audioQueuePeak": 100,
+        "videoWritten": 2228,
+        "audioWritten": 4646,
+        "writingVideo": true,
+        "writingAudio": false,
+        "currentWriteMs": 4.099,
+        "maxVideoWriteMs": 4144.972,
+        "maxAudioWriteMs": 29.192,
+        "maxVideoQueueMs": 196.772,
+        "maxAudioQueueMs": 1985.109
+      },
+      "nativeEndSampleScope": "Nearest one-second native snapshot by delivered video count; full nativeFinal additionally includes startup/finalization and short post-workload sync decoding.",
+      "media": {
+        "requestedMs": 90000,
+        "injection": {
+          "kind": "controlled Node event-loop blocking wait",
+          "atMs": 40221.474754,
+          "durationMs": 4000
+        },
+        "thresholds": {
+          "audibleRms": 0.015,
+          "rmsBlockMs": 20,
+          "silenceFailureSeconds": 5,
+          "videoContentHoldFailureSeconds": 5,
+          "syncP95Ms": 200
+        },
+        "outputs": {
+          "recording": {
+            "mediaPath": "/workspace/suitecut/.suitecut/dropout-investigation/controlled-node-stall/suitecut-source-1740ac3a-d680-4850-8baa-1b6fbd5ea500-30d3148c-48e5-4f6c-acdc-4af9685cd9e8.webm",
+            "durationSeconds": 100.119,
+            "audio": {
+              "status": "passed",
+              "decodedSeconds": 100.086125,
+              "pcmPath": "benchmarks/obs-cef/2026-10-09-dropout-investigation/controlled-node-stall/analysis/recording/full-audio-8k.f32",
+              "longestSilentInterval": {
+                "startSeconds": 47.82,
+                "endSeconds": 50.6,
+                "durationSeconds": 2.7800000000000002
+              },
+              "silentIntervalsOver2Seconds": [
+                {
+                  "startSeconds": 47.82,
+                  "endSeconds": 50.6,
+                  "durationSeconds": 2.7800000000000002
+                }
+              ],
+              "silentIntervalsOver5Seconds": []
+            },
+            "video": {
+              "status": "passed",
+              "decodedFrames": 1452,
+              "activeFrames": 1154,
+              "distinctActiveFps": 13.585365853658537,
+              "repeatFraction": 0.03466204506065862,
+              "longestContentHold": {
+                "startSeconds": 48.283,
+                "endSeconds": 52.574,
+                "durationSeconds": 4.290999999999997,
+                "marker": 1250,
+                "encodedFrames": 2
+              },
+              "contentHoldsOver1Second": [
+                {
+                  "startSeconds": 48.283,
+                  "endSeconds": 52.574,
+                  "durationSeconds": 4.290999999999997,
+                  "marker": 1250,
+                  "encodedFrames": 2
+                }
+              ],
+              "contentHoldsOver5Seconds": [],
+              "maximumPresentationGapSeconds": 4.238999999999997,
+              "markerRange": [
+                0,
+                2718
+              ]
+            },
+            "syncWindows": [
+              {
+                "matchedFlashes": 12,
+                "audioBursts": 23,
+                "medianAudioMinusVideoMs": -49.99999999999982,
+                "p95AbsoluteOffsetMs": 198.5,
+                "firstThirdMedianMs": -49.99999999999982,
+                "lastThirdMedianMs": -83.33333333333303,
+                "offsetsMs": [
+                  -49.99999999999982,
+                  36.66666666666663,
+                  -80.00000000000007,
+                  -49.99999999999982,
+                  -13.333333333332753,
+                  -140.00000000000057,
+                  -59.99999999999872,
+                  -29.99999999999936,
+                  -3.333333333332078,
+                  -269.99999999999955,
+                  -33.333333333333215,
+                  -133.33333333333286
+                ],
+                "offsetSeconds": 5,
+                "status": "passed"
+              },
+              {
+                "matchedFlashes": 7,
+                "audioBursts": 26,
+                "medianAudioMinusVideoMs": -19.999999999999574,
+                "p95AbsoluteOffsetMs": 37.99999999999936,
+                "firstThirdMedianMs": -5.0000000000001155,
+                "lastThirdMedianMs": -23.333333333333428,
+                "offsetsMs": [
+                  20.000000000000018,
+                  -30.00000000000025,
+                  39.99999999999915,
+                  -33.333333333333215,
+                  26.666666666667282,
+                  -19.999999999999574,
+                  -26.666666666667282
+                ],
+                "offsetSeconds": 45,
+                "status": "passed"
+              },
+              {
+                "matchedFlashes": 13,
+                "audioBursts": 14,
+                "medianAudioMinusVideoMs": -53.33333333333279,
+                "p95AbsoluteOffsetMs": 89.99999999999986,
+                "firstThirdMedianMs": -56.6666666666662,
+                "lastThirdMedianMs": -44.99999999999993,
+                "offsetsMs": [
+                  -3.3333333333334103,
+                  -59.99999999999961,
+                  -53.33333333333279,
+                  -83.33333333333393,
+                  -36.66666666666618,
+                  -26.666666666666394,
+                  -60.0000000000005,
+                  -29.99999999999936,
+                  -89.99999999999986,
+                  -60.0000000000005,
+                  -89.99999999999986,
+                  -23.333333333333428,
+                  -29.99999999999936
+                ],
+                "offsetSeconds": 70,
+                "status": "passed"
+              }
+            ],
+            "status": "passed"
+          },
+          "receiver": {
+            "mediaPath": "/workspace/suitecut/.suitecut/dropout-investigation/controlled-node-stall/receiver.flv",
+            "durationSeconds": 91.605,
+            "audio": {
+              "status": "passed",
+              "decodedSeconds": 91.605375,
+              "pcmPath": "benchmarks/obs-cef/2026-10-09-dropout-investigation/controlled-node-stall/analysis/receiver/full-audio-8k.f32",
+              "longestSilentInterval": {
+                "startSeconds": 41.26,
+                "endSeconds": 44.06,
+                "durationSeconds": 2.8000000000000003
+              },
+              "silentIntervalsOver2Seconds": [
+                {
+                  "startSeconds": 41.26,
+                  "endSeconds": 44.06,
+                  "durationSeconds": 2.8000000000000003
+                }
+              ],
+              "silentIntervalsOver5Seconds": []
+            },
+            "video": {
+              "status": "passed",
+              "decodedFrames": 1299,
+              "activeFrames": 1146,
+              "distinctActiveFps": 10.390243902439025,
+              "repeatFraction": 0.25654450261780104,
+              "longestContentHold": {
+                "startSeconds": 41.767,
+                "endSeconds": 45.946,
+                "durationSeconds": 4.178999999999995,
+                "marker": 1251,
+                "encodedFrames": 5
+              },
+              "contentHoldsOver1Second": [
+                {
+                  "startSeconds": 4.95,
+                  "endSeconds": 6.003,
+                  "durationSeconds": 1.053,
+                  "marker": 272,
+                  "encodedFrames": 1
+                },
+                {
+                  "startSeconds": 10.343,
+                  "endSeconds": 11.732,
+                  "durationSeconds": 1.3889999999999993,
+                  "marker": 413,
+                  "encodedFrames": 2
+                },
+                {
+                  "startSeconds": 14.578,
+                  "endSeconds": 16.512,
+                  "durationSeconds": 1.934000000000001,
+                  "marker": 516,
+                  "encodedFrames": 1
+                },
+                {
+                  "startSeconds": 16.578,
+                  "endSeconds": 17.658,
+                  "durationSeconds": 1.0800000000000018,
+                  "marker": 548,
+                  "encodedFrames": 9
+                },
+                {
+                  "startSeconds": 32.447,
+                  "endSeconds": 33.491,
+                  "durationSeconds": 1.043999999999997,
+                  "marker": 995,
+                  "encodedFrames": 1
+                },
+                {
+                  "startSeconds": 34.46,
+                  "endSeconds": 35.48,
+                  "durationSeconds": 1.019999999999996,
+                  "marker": 1042,
+                  "encodedFrames": 2
+                },
+                {
+                  "startSeconds": 41.767,
+                  "endSeconds": 45.946,
+                  "durationSeconds": 4.178999999999995,
+                  "marker": 1251,
+                  "encodedFrames": 5
+                },
+                {
+                  "startSeconds": 51.25,
+                  "endSeconds": 52.396,
+                  "durationSeconds": 1.1460000000000008,
+                  "marker": 1508,
+                  "encodedFrames": 3
+                }
+              ],
+              "contentHoldsOver5Seconds": [],
+              "maximumPresentationGapSeconds": 4.174999999999997,
+              "markerRange": [
+                143,
+                2617
+              ]
+            },
+            "syncWindows": [
+              {
+                "matchedFlashes": 8,
+                "audioBursts": 25,
+                "medianAudioMinusVideoMs": -23.333333333333872,
+                "p95AbsoluteOffsetMs": 113.49999999999982,
+                "firstThirdMedianMs": -26.666666666666618,
+                "lastThirdMedianMs": -66.66666666666643,
+                "offsetsMs": [
+                  -36.66666666666663,
+                  -16.666666666666607,
+                  36.66666666666618,
+                  -16.666666666666607,
+                  -76.66666666666711,
+                  -30.000000000001137,
+                  0.0,
+                  -133.33333333333286
+                ],
+                "offsetSeconds": 5,
+                "status": "passed"
+              },
+              {
+                "matchedFlashes": 7,
+                "audioBursts": 29,
+                "medianAudioMinusVideoMs": 19.999999999999574,
+                "p95AbsoluteOffsetMs": 75.66666666666612,
+                "firstThirdMedianMs": 36.6666666666664,
+                "lastThirdMedianMs": 28.33333333333332,
+                "offsetsMs": [
+                  23.333333333332984,
+                  49.99999999999982,
+                  -3.333333333332966,
+                  -86.666666666666,
+                  -9.999999999999787,
+                  36.66666666666707,
+                  19.999999999999574
+                ],
+                "offsetSeconds": 45,
+                "status": "passed"
+              },
+              {
+                "matchedFlashes": 11,
+                "audioBursts": 16,
+                "medianAudioMinusVideoMs": -16.666666666667496,
+                "p95AbsoluteOffsetMs": 138.33333333333366,
+                "firstThirdMedianMs": -26.66666666666684,
+                "lastThirdMedianMs": 9.999999999999787,
+                "offsetsMs": [
+                  -6.666666666666821,
+                  -26.66666666666684,
+                  -36.66666666666707,
+                  -33.333333333333215,
+                  -9.999999999999787,
+                  -16.666666666667496,
+                  -16.666666666667496,
+                  -240.00000000000023,
+                  13.333333333333641,
+                  -9.999999999999787,
+                  9.999999999999787
+                ],
+                "offsetSeconds": 70,
+                "status": "passed"
+              }
+            ],
+            "status": "passed"
+          }
+        },
+        "status": "passed"
+      },
+      "longestHoldMarkerAdvance": {
+        "startSeconds": 48.283,
+        "endSeconds": 52.574,
+        "durationSeconds": 4.290999999999997,
+        "marker": 1250,
+        "encodedFrames": 2,
+        "resumedMarker": 1378,
+        "markerAdvance": 128
+      },
+      "processCpuBudget": [
+        {
+          "pid": 81570,
+          "role": "node",
+          "observedSeconds": 89.37599874200532,
+          "cpuSeconds": 70.8,
+          "averageCpuPercentOfOneCore": 79.21589800005793,
+          "firstRssMiB": 209.02734375,
+          "lastRssMiB": 272.98828125,
+          "maximumRssMiB": 276.25390625,
+          "firstFdCount": 44,
+          "lastFdCount": 44
+        },
+        {
+          "pid": 81584,
+          "role": "receiver",
+          "observedSeconds": 89.37585463699361,
+          "cpuSeconds": 0.7200000000000002,
+          "averageCpuPercentOfOneCore": 0.8055867022747154,
+          "firstRssMiB": 45.734375,
+          "lastRssMiB": 37.57421875,
+          "maximumRssMiB": 45.8359375,
+          "firstFdCount": 4,
+          "lastFdCount": 5
+        },
+        {
+          "pid": 81585,
+          "role": "sampler",
+          "observedSeconds": 89.37944973599224,
+          "cpuSeconds": 3.3,
+          "averageCpuPercentOfOneCore": 3.692123871591841,
+          "firstRssMiB": 11.08984375,
+          "lastRssMiB": 11.1875,
+          "maximumRssMiB": 11.1875,
+          "firstFdCount": 5,
+          "lastFdCount": 5
+        },
+        {
+          "pid": 81586,
+          "role": "suitecut-browser",
+          "observedSeconds": 89.38260452999384,
+          "cpuSeconds": 18.440000000000005,
+          "averageCpuPercentOfOneCore": 20.630412480106408,
+          "firstRssMiB": 234.2734375,
+          "lastRssMiB": 236.62890625,
+          "maximumRssMiB": 241.14453125,
+          "firstFdCount": 146,
+          "lastFdCount": 152
+        },
+        {
+          "pid": 81591,
+          "role": "suitecut-browser",
+          "observedSeconds": 89.38191794599697,
+          "cpuSeconds": 0.0,
+          "averageCpuPercentOfOneCore": 0.0,
+          "firstRssMiB": 62.70703125,
+          "lastRssMiB": 62.70703125,
+          "maximumRssMiB": 62.70703125,
+          "firstFdCount": 13,
+          "lastFdCount": 13
+        },
+        {
+          "pid": 81592,
+          "role": "suitecut-browser",
+          "observedSeconds": 89.38184167300642,
+          "cpuSeconds": 0.0,
+          "averageCpuPercentOfOneCore": 0.0,
+          "firstRssMiB": 61.77734375,
+          "lastRssMiB": 61.77734375,
+          "maximumRssMiB": 61.77734375,
+          "firstFdCount": 13,
+          "lastFdCount": 13
+        },
+        {
+          "pid": 81594,
+          "role": "suitecut-browser",
+          "observedSeconds": 89.38124986000184,
+          "cpuSeconds": 0.020000000000000004,
+          "averageCpuPercentOfOneCore": 0.022376057653396068,
+          "firstRssMiB": 17.7734375,
+          "lastRssMiB": 17.90625,
+          "maximumRssMiB": 17.90625,
+          "firstFdCount": 14,
+          "lastFdCount": 14
+        },
+        {
+          "pid": 81615,
+          "role": "cef-gpu",
+          "observedSeconds": 89.3859560520068,
+          "cpuSeconds": 14.280000000000001,
+          "averageCpuPercentOfOneCore": 15.975663997699558,
+          "firstRssMiB": 117.0859375,
+          "lastRssMiB": 140.3359375,
+          "maximumRssMiB": 140.3359375,
+          "firstFdCount": 40,
+          "lastFdCount": 40
+        },
+        {
+          "pid": 81618,
+          "role": "suitecut-browser",
+          "observedSeconds": 89.38177880500734,
+          "cpuSeconds": 0.22999999999999998,
+          "averageCpuPercentOfOneCore": 0.25732314021380265,
+          "firstRssMiB": 93.0625,
+          "lastRssMiB": 93.2890625,
+          "maximumRssMiB": 93.2890625,
+          "firstFdCount": 30,
+          "lastFdCount": 27
+        },
+        {
+          "pid": 81620,
+          "role": "suitecut-browser",
+          "observedSeconds": 89.3821485570079,
+          "cpuSeconds": 0.0,
+          "averageCpuPercentOfOneCore": 0.0,
+          "firstRssMiB": 45.43359375,
+          "lastRssMiB": 45.62890625,
+          "maximumRssMiB": 45.62890625,
+          "firstFdCount": 28,
+          "lastFdCount": 28
+        },
+        {
+          "pid": 81648,
+          "role": "cef-renderer",
+          "observedSeconds": 89.38567960199725,
+          "cpuSeconds": 0.0,
+          "averageCpuPercentOfOneCore": 0.0,
+          "firstRssMiB": 71.41015625,
+          "lastRssMiB": 71.48046875,
+          "maximumRssMiB": 71.48046875,
+          "firstFdCount": 28,
+          "lastFdCount": 29
+        },
+        {
+          "pid": 81663,
+          "role": "cef-renderer",
+          "observedSeconds": 89.38593941200816,
+          "cpuSeconds": 12.39,
+          "averageCpuPercentOfOneCore": 13.861240460751393,
+          "firstRssMiB": 141.51953125,
+          "lastRssMiB": 181.99609375,
+          "maximumRssMiB": 182.2578125,
+          "firstFdCount": 40,
+          "lastFdCount": 41
+        },
+        {
+          "pid": 81686,
+          "role": "encoder",
+          "observedSeconds": 89.38241333299084,
+          "cpuSeconds": 110.28,
+          "averageCpuPercentOfOneCore": 123.37997586746286,
+          "firstRssMiB": 406.7578125,
+          "lastRssMiB": 418.9375,
+          "maximumRssMiB": 418.9375,
+          "firstFdCount": 5,
+          "lastFdCount": 5
+        },
+        {
+          "pid": 81692,
+          "role": "suitecut-browser",
+          "observedSeconds": 89.381338769992,
+          "cpuSeconds": 2.32,
+          "averageCpuPercentOfOneCore": 2.595620105859159,
+          "firstRssMiB": 76.26953125,
+          "lastRssMiB": 76.375,
+          "maximumRssMiB": 76.375,
+          "firstFdCount": 26,
+          "lastFdCount": 26
+        },
+        {
+          "pid": 81763,
+          "role": "encoder",
+          "observedSeconds": 89.38236420499743,
+          "cpuSeconds": 0.7199999999999999,
+          "averageCpuPercentOfOneCore": 0.8055280327433364,
+          "firstRssMiB": 35.88671875,
+          "lastRssMiB": 36.25390625,
+          "maximumRssMiB": 36.25390625,
+          "firstFdCount": 7,
+          "lastFdCount": 7
+        },
+        {
+          "pid": 81764,
+          "role": "encoder",
+          "observedSeconds": 89.38233564299298,
+          "cpuSeconds": 3.7500000000000004,
+          "averageCpuPercentOfOneCore": 4.195459844524635,
+          "firstRssMiB": 32.40234375,
+          "lastRssMiB": 32.625,
+          "maximumRssMiB": 32.625,
+          "firstFdCount": 5,
+          "lastFdCount": 5
+        },
+        {
+          "pid": 81765,
+          "role": "encoder",
+          "observedSeconds": 89.38207363900437,
+          "cpuSeconds": 99.99,
+          "averageCpuPercentOfOneCore": 111.86806921020745,
+          "firstRssMiB": 131.4296875,
+          "lastRssMiB": 175.73828125,
+          "maximumRssMiB": 178.69921875,
+          "firstFdCount": 7,
+          "lastFdCount": 7
+        },
+        {
+          "pid": 81819,
+          "role": "suitecut-browser",
+          "observedSeconds": 0.9582822299998952,
+          "cpuSeconds": 0.4200000000000001,
+          "averageCpuPercentOfOneCore": 43.828424116770485,
+          "firstRssMiB": 39.03515625,
+          "lastRssMiB": 40.703125,
+          "maximumRssMiB": 40.703125,
+          "firstFdCount": null,
+          "lastFdCount": null
+        }
+      ],
+      "cgroupCpuDelta": {
+        "usage_usec": 340107994,
+        "user_usec": 304685718,
+        "system_usec": 35422276,
+        "nice_usec": 0,
+        "nr_periods": 894,
+        "nr_throttled": 661,
+        "throttled_usec": 31748238,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "cgroupAverageUsedCores": 3.8048628881923254
+    }
+  }
+}

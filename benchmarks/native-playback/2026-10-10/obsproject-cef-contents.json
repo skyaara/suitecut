@@ -1,0 +1,418 @@
+[
+  {
+    "name": ".github",
+    "path": ".github",
+    "sha": "b4252093a13f14ad97bf1e244652818b4b4a9074",
+    "size": 0,
+    "url": "https://api.github.com/repos/obsproject/cef/contents/.github?ref=6533-fix-stutter-and-osr-extra-info",
+    "html_url": "https://github.com/obsproject/cef/tree/6533-fix-stutter-and-osr-extra-info/.github",
+    "git_url": "https://api.github.com/repos/obsproject/cef/git/trees/b4252093a13f14ad97bf1e244652818b4b4a9074",
+    "download_url": null,
+    "type": "dir",
+    "_links": {
+      "self": "https://api.github.com/repos/obsproject/cef/contents/.github?ref=6533-fix-stutter-and-osr-extra-info",
+      "git": "https://api.github.com/repos/obsproject/cef/git/trees/b4252093a13f14ad97bf1e244652818b4b4a9074",
+      "html": "https://github.com/obsproject/cef/tree/6533-fix-stutter-and-osr-extra-info/.github"
+    }
+  },
+  {
+    "name": ".gitignore",
+    "path": ".gitignore",
+    "sha": "469db9a11e6fca3e4d9085a780004e968823a25a",
+    "size": 601,
+    "url": "https://api.github.com/repos/obsproject/cef/contents/.gitignore?ref=6533-fix-stutter-and-osr-extra-info",
+    "html_url": "https://github.com/obsproject/cef/blob/6533-fix-stutter-and-osr-extra-info/.gitignore",
+    "git_url": "https://api.github.com/repos/obsproject/cef/git/blobs/469db9a11e6fca3e4d9085a780004e968823a25a",
+    "download_url": "https://raw.githubusercontent.com/obsproject/cef/6533-fix-stutter-and-osr-extra-info/.gitignore",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/obsproject/cef/contents/.gitignore?ref=6533-fix-stutter-and-osr-extra-info",
+      "git": "https://api.github.com/repos/obsproject/cef/git/blobs/469db9a11e6fca3e4d9085a780004e968823a25a",
+      "html": "https://github.com/obsproject/cef/blob/6533-fix-stutter-and-osr-extra-info/.gitignore"
+    }
+  },
+  {
+    "name": ".style.cfg",
+    "path": ".style.cfg",
+    "sha": "f39eb03754b53f046c12b122a7cba17fdee378fd",
+    "size": 337,
+    "url": "https://api.github.com/repos/obsproject/cef/contents/.style.cfg?ref=6533-fix-stutter-and-osr-extra-info",
+    "html_url": "https://github.com/obsproject/cef/blob/6533-fix-stutter-and-osr-extra-info/.style.cfg",
+    "git_url": "https://api.github.com/repos/obsproject/cef/git/blobs/f39eb03754b53f046c12b122a7cba17fdee378fd",
+    "download_url": "https://raw.githubusercontent.com/obsproject/cef/6533-fix-stutter-and-osr-extra-info/.style.cfg",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/obsproject/cef/contents/.style.cfg?ref=6533-fix-stutter-and-osr-extra-info",
+      "git": "https://api.github.com/repos/obsproject/cef/git/blobs/f39eb03754b53f046c12b122a7cba17fdee378fd",
+      "html": "https://github.com/obsproject/cef/blob/6533-fix-stutter-and-osr-extra-info/.style.cfg"
+    }
+  },
+  {
+    "name": ".style.yapf",
+    "path": ".style.yapf",
+    "sha": "de0c6a70f38b949fcc627cdb58bd20f8b8db4b2f",
+    "size": 34,
+    "url": "https://api.github.com/repos/obsproject/cef/contents/.style.yapf?ref=6533-fix-stutter-and-osr-extra-info",
+    "html_url": "https://github.com/obsproject/cef/blob/6533-fix-stutter-and-osr-extra-info/.style.yapf",
+    "git_url": "https://api.github.com/repos/obsproject/cef/git/blobs/de0c6a70f38b949fcc627cdb58bd20f8b8db4b2f",
+    "download_url": "https://raw.githubusercontent.com/obsproject/cef/6533-fix-stutter-and-osr-extra-info/.style.yapf",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/obsproject/cef/contents/.style.yapf?ref=6533-fix-stutter-and-osr-extra-info",
+      "git": "https://api.github.com/repos/obsproject/cef/git/blobs/de0c6a70f38b949fcc627cdb58bd20f8b8db4b2f",
+      "html": "https://github.com/obsproject/cef/blob/6533-fix-stutter-and-osr-extra-info/.style.yapf"
+    }
+  },
+  {
+    "name": "AUTHORS.txt",
+    "path": "AUTHORS.txt",
+    "sha": "a5dced5e10ca2b9f781ec1c06a2c6d75e824e4e1",
+    "size": 1414,
+    "url": "https://api.github.com/repos/obsproject/cef/contents/AUTHORS.txt?ref=6533-fix-stutter-and-osr-extra-info",
+    "html_url": "https://github.com/obsproject/cef/blob/6533-fix-stutter-and-osr-extra-info/AUTHORS.txt",
+    "git_url": "https://api.github.com/repos/obsproject/cef/git/blobs/a5dced5e10ca2b9f781ec1c06a2c6d75e824e4e1",
+    "download_url": "https://raw.githubusercontent.com/obsproject/cef/6533-fix-stutter-and-osr-extra-info/AUTHORS.txt",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/obsproject/cef/contents/AUTHORS.txt?ref=6533-fix-stutter-and-osr-extra-info",
+      "git": "https://api.github.com/repos/obsproject/cef/git/blobs/a5dced5e10ca2b9f781ec1c06a2c6d75e824e4e1",
+      "html": "https://github.com/obsproject/cef/blob/6533-fix-stutter-and-osr-extra-info/AUTHORS.txt"
+    }
+  },
+  {
+    "name": "BUILD.gn",
+    "path": "BUILD.gn",
+    "sha": "0d658050afcc6dd56871e66f0dafc135f1f4d2f9",
+    "size": 82369,
+    "url": "https://api.github.com/repos/obsproject/cef/contents/BUILD.gn?ref=6533-fix-stutter-and-osr-extra-info",
+    "html_url": "https://github.com/obsproject/cef/blob/6533-fix-stutter-and-osr-extra-info/BUILD.gn",
+    "git_url": "https://api.github.com/repos/obsproject/cef/git/blobs/0d658050afcc6dd56871e66f0dafc135f1f4d2f9",
+    "download_url": "https://raw.githubusercontent.com/obsproject/cef/6533-fix-stutter-and-osr-extra-info/BUILD.gn",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/obsproject/cef/contents/BUILD.gn?ref=6533-fix-stutter-and-osr-extra-info",
+      "git": "https://api.github.com/repos/obsproject/cef/git/blobs/0d658050afcc6dd56871e66f0dafc135f1f4d2f9",
+      "html": "https://github.com/obsproject/cef/blob/6533-fix-stutter-and-osr-extra-info/BUILD.gn"
+    }
+  },
+  {
+    "name": "CHROMIUM_BUILD_COMPATIBILITY.txt",
+    "path": "CHROMIUM_BUILD_COMPATIBILITY.txt",
+    "sha": "1c9b54a2f74e6e1b46c853a391c223c642ed4c4a",
+    "size": 520,
+    "url": "https://api.github.com/repos/obsproject/cef/contents/CHROMIUM_BUILD_COMPATIBILITY.txt?ref=6533-fix-stutter-and-osr-extra-info",
+    "html_url": "https://github.com/obsproject/cef/blob/6533-fix-stutter-and-osr-extra-info/CHROMIUM_BUILD_COMPATIBILITY.txt",
+    "git_url": "https://api.github.com/repos/obsproject/cef/git/blobs/1c9b54a2f74e6e1b46c853a391c223c642ed4c4a",
+    "download_url": "https://raw.githubusercontent.com/obsproject/cef/6533-fix-stutter-and-osr-extra-info/CHROMIUM_BUILD_COMPATIBILITY.txt",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/obsproject/cef/contents/CHROMIUM_BUILD_COMPATIBILITY.txt?ref=6533-fix-stutter-and-osr-extra-info",
+      "git": "https://api.github.com/repos/obsproject/cef/git/blobs/1c9b54a2f74e6e1b46c853a391c223c642ed4c4a",
+      "html": "https://github.com/obsproject/cef/blob/6533-fix-stutter-and-osr-extra-info/CHROMIUM_BUILD_COMPATIBILITY.txt"
+    }
+  },
+  {
+    "name": "CHROMIUM_UPDATE.txt",
+    "path": "CHROMIUM_UPDATE.txt",
+    "sha": "254ec0fcfab11c538a8b416e2fc46ea6de944915",
+    "size": 2891,
+    "url": "https://api.github.com/repos/obsproject/cef/contents/CHROMIUM_UPDATE.txt?ref=6533-fix-stutter-and-osr-extra-info",
+    "html_url": "https://github.com/obsproject/cef/blob/6533-fix-stutter-and-osr-extra-info/CHROMIUM_UPDATE.txt",
+    "git_url": "https://api.github.com/repos/obsproject/cef/git/blobs/254ec0fcfab11c538a8b416e2fc46ea6de944915",
+    "download_url": "https://raw.githubusercontent.com/obsproject/cef/6533-fix-stutter-and-osr-extra-info/CHROMIUM_UPDATE.txt",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/obsproject/cef/contents/CHROMIUM_UPDATE.txt?ref=6533-fix-stutter-and-osr-extra-info",
+      "git": "https://api.github.com/repos/obsproject/cef/git/blobs/254ec0fcfab11c538a8b416e2fc46ea6de944915",
+      "html": "https://github.com/obsproject/cef/blob/6533-fix-stutter-and-osr-extra-info/CHROMIUM_UPDATE.txt"
+    }
+  },
+  {
+    "name": "CMakeLists.txt.in",
+    "path": "CMakeLists.txt.in",
+    "sha": "27cc398108ede9706abc0651e9cfbab09ee72768",
+    "size": 9819,
+    "url": "https://api.github.com/repos/obsproject/cef/contents/CMakeLists.txt.in?ref=6533-fix-stutter-and-osr-extra-info",
+    "html_url": "https://github.com/obsproject/cef/blob/6533-fix-stutter-and-osr-extra-info/CMakeLists.txt.in",
+    "git_url": "https://api.github.com/repos/obsproject/cef/git/blobs/27cc398108ede9706abc0651e9cfbab09ee72768",
+    "download_url": "https://raw.githubusercontent.com/obsproject/cef/6533-fix-stutter-and-osr-extra-info/CMakeLists.txt.in",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/obsproject/cef/contents/CMakeLists.txt.in?ref=6533-fix-stutter-and-osr-extra-info",
+      "git": "https://api.github.com/repos/obsproject/cef/git/blobs/27cc398108ede9706abc0651e9cfbab09ee72768",
+      "html": "https://github.com/obsproject/cef/blob/6533-fix-stutter-and-osr-extra-info/CMakeLists.txt.in"
+    }
+  },
+  {
+    "name": "DEPS",
+    "path": "DEPS",
+    "sha": "0a7dc22e3e067524242172adbd5e3d26086fa00d",
+    "size": 176,
+    "url": "https://api.github.com/repos/obsproject/cef/contents/DEPS?ref=6533-fix-stutter-and-osr-extra-info",
+    "html_url": "https://github.com/obsproject/cef/blob/6533-fix-stutter-and-osr-extra-info/DEPS",
+    "git_url": "https://api.github.com/repos/obsproject/cef/git/blobs/0a7dc22e3e067524242172adbd5e3d26086fa00d",
+    "download_url": "https://raw.githubusercontent.com/obsproject/cef/6533-fix-stutter-and-osr-extra-info/DEPS",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/obsproject/cef/contents/DEPS?ref=6533-fix-stutter-and-osr-extra-info",
+      "git": "https://api.github.com/repos/obsproject/cef/git/blobs/0a7dc22e3e067524242172adbd5e3d26086fa00d",
+      "html": "https://github.com/obsproject/cef/blob/6533-fix-stutter-and-osr-extra-info/DEPS"
+    }
+  },
+  {
+    "name": "Doxyfile",
+    "path": "Doxyfile",
+    "sha": "affddfb2dde4ba7291e044f50ad52d683dd1b26b",
+    "size": 123531,
+    "url": "https://api.github.com/repos/obsproject/cef/contents/Doxyfile?ref=6533-fix-stutter-and-osr-extra-info",
+    "html_url": "https://github.com/obsproject/cef/blob/6533-fix-stutter-and-osr-extra-info/Doxyfile",
+    "git_url": "https://api.github.com/repos/obsproject/cef/git/blobs/affddfb2dde4ba7291e044f50ad52d683dd1b26b",
+    "download_url": "https://raw.githubusercontent.com/obsproject/cef/6533-fix-stutter-and-osr-extra-info/Doxyfile",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/obsproject/cef/contents/Doxyfile?ref=6533-fix-stutter-and-osr-extra-info",
+      "git": "https://api.github.com/repos/obsproject/cef/git/blobs/affddfb2dde4ba7291e044f50ad52d683dd1b26b",
+      "html": "https://github.com/obsproject/cef/blob/6533-fix-stutter-and-osr-extra-info/Doxyfile"
+    }
+  },
+  {
+    "name": "LICENSE.txt",
+    "path": "LICENSE.txt",
+    "sha": "b55d613db340595b60f2736c55abfae5c105bb11",
+    "size": 1662,
+    "url": "https://api.github.com/repos/obsproject/cef/contents/LICENSE.txt?ref=6533-fix-stutter-and-osr-extra-info",
+    "html_url": "https://github.com/obsproject/cef/blob/6533-fix-stutter-and-osr-extra-info/LICENSE.txt",
+    "git_url": "https://api.github.com/repos/obsproject/cef/git/blobs/b55d613db340595b60f2736c55abfae5c105bb11",
+    "download_url": "https://raw.githubusercontent.com/obsproject/cef/6533-fix-stutter-and-osr-extra-info/LICENSE.txt",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/obsproject/cef/contents/LICENSE.txt?ref=6533-fix-stutter-and-osr-extra-info",
+      "git": "https://api.github.com/repos/obsproject/cef/git/blobs/b55d613db340595b60f2736c55abfae5c105bb11",
+      "html": "https://github.com/obsproject/cef/blob/6533-fix-stutter-and-osr-extra-info/LICENSE.txt"
+    }
+  },
+  {
+    "name": "README.md",
+    "path": "README.md",
+    "sha": "ff44f17f49ba10e74d58a13c5264e3b117071039",
+    "size": 8248,
+    "url": "https://api.github.com/repos/obsproject/cef/contents/README.md?ref=6533-fix-stutter-and-osr-extra-info",
+    "html_url": "https://github.com/obsproject/cef/blob/6533-fix-stutter-and-osr-extra-info/README.md",
+    "git_url": "https://api.github.com/repos/obsproject/cef/git/blobs/ff44f17f49ba10e74d58a13c5264e3b117071039",
+    "download_url": "https://raw.githubusercontent.com/obsproject/cef/6533-fix-stutter-and-osr-extra-info/README.md",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/obsproject/cef/contents/README.md?ref=6533-fix-stutter-and-osr-extra-info",
+      "git": "https://api.github.com/repos/obsproject/cef/git/blobs/ff44f17f49ba10e74d58a13c5264e3b117071039",
+      "html": "https://github.com/obsproject/cef/blob/6533-fix-stutter-and-osr-extra-info/README.md"
+    }
+  },
+  {
+    "name": "VERSION.in",
+    "path": "VERSION.in",
+    "sha": "2ecb9806b5e95ca9a691e3a16d0d5107605a1d76",
+    "size": 12,
+    "url": "https://api.github.com/repos/obsproject/cef/contents/VERSION.in?ref=6533-fix-stutter-and-osr-extra-info",
+    "html_url": "https://github.com/obsproject/cef/blob/6533-fix-stutter-and-osr-extra-info/VERSION.in",
+    "git_url": "https://api.github.com/repos/obsproject/cef/git/blobs/2ecb9806b5e95ca9a691e3a16d0d5107605a1d76",
+    "download_url": "https://raw.githubusercontent.com/obsproject/cef/6533-fix-stutter-and-osr-extra-info/VERSION.in",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/obsproject/cef/contents/VERSION.in?ref=6533-fix-stutter-and-osr-extra-info",
+      "git": "https://api.github.com/repos/obsproject/cef/git/blobs/2ecb9806b5e95ca9a691e3a16d0d5107605a1d76",
+      "html": "https://github.com/obsproject/cef/blob/6533-fix-stutter-and-osr-extra-info/VERSION.in"
+    }
+  },
+  {
+    "name": "bazel",
+    "path": "bazel",
+    "sha": "6812a40d343b299062d2abbafed0f53222b2ed68",
+    "size": 0,
+    "url": "https://api.github.com/repos/obsproject/cef/contents/bazel?ref=6533-fix-stutter-and-osr-extra-info",
+    "html_url": "https://github.com/obsproject/cef/tree/6533-fix-stutter-and-osr-extra-info/bazel",
+    "git_url": "https://api.github.com/repos/obsproject/cef/git/trees/6812a40d343b299062d2abbafed0f53222b2ed68",
+    "download_url": null,
+    "type": "dir",
+    "_links": {
+      "self": "https://api.github.com/repos/obsproject/cef/contents/bazel?ref=6533-fix-stutter-and-osr-extra-info",
+      "git": "https://api.github.com/repos/obsproject/cef/git/trees/6812a40d343b299062d2abbafed0f53222b2ed68",
+      "html": "https://github.com/obsproject/cef/tree/6533-fix-stutter-and-osr-extra-info/bazel"
+    }
+  },
+  {
+    "name": "cef_create_projects.bat",
+    "path": "cef_create_projects.bat",
+    "sha": "bc1e48b5287073ebd6fe30e0eb1448559b7c0758",
+    "size": 46,
+    "url": "https://api.github.com/repos/obsproject/cef/contents/cef_create_projects.bat?ref=6533-fix-stutter-and-osr-extra-info",
+    "html_url": "https://github.com/obsproject/cef/blob/6533-fix-stutter-and-osr-extra-info/cef_create_projects.bat",
+    "git_url": "https://api.github.com/repos/obsproject/cef/git/blobs/bc1e48b5287073ebd6fe30e0eb1448559b7c0758",
+    "download_url": "https://raw.githubusercontent.com/obsproject/cef/6533-fix-stutter-and-osr-extra-info/cef_create_projects.bat",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/obsproject/cef/contents/cef_create_projects.bat?ref=6533-fix-stutter-and-osr-extra-info",
+      "git": "https://api.github.com/repos/obsproject/cef/git/blobs/bc1e48b5287073ebd6fe30e0eb1448559b7c0758",
+      "html": "https://github.com/obsproject/cef/blob/6533-fix-stutter-and-osr-extra-info/cef_create_projects.bat"
+    }
+  },
+  {
+    "name": "cef_create_projects.sh",
+    "path": "cef_create_projects.sh",
+    "sha": "d77c9a1a5632b9fa20b0333d7cf24cbdd645d254",
+    "size": 40,
+    "url": "https://api.github.com/repos/obsproject/cef/contents/cef_create_projects.sh?ref=6533-fix-stutter-and-osr-extra-info",
+    "html_url": "https://github.com/obsproject/cef/blob/6533-fix-stutter-and-osr-extra-info/cef_create_projects.sh",
+    "git_url": "https://api.github.com/repos/obsproject/cef/git/blobs/d77c9a1a5632b9fa20b0333d7cf24cbdd645d254",
+    "download_url": "https://raw.githubusercontent.com/obsproject/cef/6533-fix-stutter-and-osr-extra-info/cef_create_projects.sh",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/obsproject/cef/contents/cef_create_projects.sh?ref=6533-fix-stutter-and-osr-extra-info",
+      "git": "https://api.github.com/repos/obsproject/cef/git/blobs/d77c9a1a5632b9fa20b0333d7cf24cbdd645d254",
+      "html": "https://github.com/obsproject/cef/blob/6533-fix-stutter-and-osr-extra-info/cef_create_projects.sh"
+    }
+  },
+  {
+    "name": "cef_paths.gypi",
+    "path": "cef_paths.gypi",
+    "sha": "3304433115dcdf6e16d4bb10e45e68fe257677ee",
+    "size": 45592,
+    "url": "https://api.github.com/repos/obsproject/cef/contents/cef_paths.gypi?ref=6533-fix-stutter-and-osr-extra-info",
+    "html_url": "https://github.com/obsproject/cef/blob/6533-fix-stutter-and-osr-extra-info/cef_paths.gypi",
+    "git_url": "https://api.github.com/repos/obsproject/cef/git/blobs/3304433115dcdf6e16d4bb10e45e68fe257677ee",
+    "download_url": "https://raw.githubusercontent.com/obsproject/cef/6533-fix-stutter-and-osr-extra-info/cef_paths.gypi",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/obsproject/cef/contents/cef_paths.gypi?ref=6533-fix-stutter-and-osr-extra-info",
+      "git": "https://api.github.com/repos/obsproject/cef/git/blobs/3304433115dcdf6e16d4bb10e45e68fe257677ee",
+      "html": "https://github.com/obsproject/cef/blob/6533-fix-stutter-and-osr-extra-info/cef_paths.gypi"
+    }
+  },
+  {
+    "name": "cef_paths2.gypi",
+    "path": "cef_paths2.gypi",
+    "sha": "7a9ea002efca6f91c15520675b5a0b5085626090",
+    "size": 29874,
+    "url": "https://api.github.com/repos/obsproject/cef/contents/cef_paths2.gypi?ref=6533-fix-stutter-and-osr-extra-info",
+    "html_url": "https://github.com/obsproject/cef/blob/6533-fix-stutter-and-osr-extra-info/cef_paths2.gypi",
+    "git_url": "https://api.github.com/repos/obsproject/cef/git/blobs/7a9ea002efca6f91c15520675b5a0b5085626090",
+    "download_url": "https://raw.githubusercontent.com/obsproject/cef/6533-fix-stutter-and-osr-extra-info/cef_paths2.gypi",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/obsproject/cef/contents/cef_paths2.gypi?ref=6533-fix-stutter-and-osr-extra-info",
+      "git": "https://api.github.com/repos/obsproject/cef/git/blobs/7a9ea002efca6f91c15520675b5a0b5085626090",
+      "html": "https://github.com/obsproject/cef/blob/6533-fix-stutter-and-osr-extra-info/cef_paths2.gypi"
+    }
+  },
+  {
+    "name": "cmake",
+    "path": "cmake",
+    "sha": "9486daa073ec316a9001b1ec00c8ea44899303cd",
+    "size": 0,
+    "url": "https://api.github.com/repos/obsproject/cef/contents/cmake?ref=6533-fix-stutter-and-osr-extra-info",
+    "html_url": "https://github.com/obsproject/cef/tree/6533-fix-stutter-and-osr-extra-info/cmake",
+    "git_url": "https://api.github.com/repos/obsproject/cef/git/trees/9486daa073ec316a9001b1ec00c8ea44899303cd",
+    "download_url": null,
+    "type": "dir",
+    "_links": {
+      "self": "https://api.github.com/repos/obsproject/cef/contents/cmake?ref=6533-fix-stutter-and-osr-extra-info",
+      "git": "https://api.github.com/repos/obsproject/cef/git/trees/9486daa073ec316a9001b1ec00c8ea44899303cd",
+      "html": "https://github.com/obsproject/cef/tree/6533-fix-stutter-and-osr-extra-info/cmake"
+    }
+  },
+  {
+    "name": "include",
+    "path": "include",
+    "sha": "cc497f88246c092be929fdeddd2bad4bc6624260",
+    "size": 0,
+    "url": "https://api.github.com/repos/obsproject/cef/contents/include?ref=6533-fix-stutter-and-osr-extra-info",
+    "html_url": "https://github.com/obsproject/cef/tree/6533-fix-stutter-and-osr-extra-info/include",
+    "git_url": "https://api.github.com/repos/obsproject/cef/git/trees/cc497f88246c092be929fdeddd2bad4bc6624260",
+    "download_url": null,
+    "type": "dir",
+    "_links": {
+      "self": "https://api.github.com/repos/obsproject/cef/contents/include?ref=6533-fix-stutter-and-osr-extra-info",
+      "git": "https://api.github.com/repos/obsproject/cef/git/trees/cc497f88246c092be929fdeddd2bad4bc6624260",
+      "html": "https://github.com/obsproject/cef/tree/6533-fix-stutter-and-osr-extra-info/include"
+    }
+  },
+  {
+    "name": "libcef",
+    "path": "libcef",
+    "sha": "2492c72666756f04db4b20db0b76740723b539c3",
+    "size": 0,
+    "url": "https://api.github.com/repos/obsproject/cef/contents/libcef?ref=6533-fix-stutter-and-osr-extra-info",
+    "html_url": "https://github.com/obsproject/cef/tree/6533-fix-stutter-and-osr-extra-info/libcef",
+    "git_url": "https://api.github.com/repos/obsproject/cef/git/trees/2492c72666756f04db4b20db0b76740723b539c3",
+    "download_url": null,
+    "type": "dir",
+    "_links": {
+      "self": "https://api.github.com/repos/obsproject/cef/contents/libcef?ref=6533-fix-stutter-and-osr-extra-info",
+      "git": "https://api.github.com/repos/obsproject/cef/git/trees/2492c72666756f04db4b20db0b76740723b539c3",
+      "html": "https://github.com/obsproject/cef/tree/6533-fix-stutter-and-osr-extra-info/libcef"
+    }
+  },
+  {
+    "name": "libcef_dll",
+    "path": "libcef_dll",
+    "sha": "413d4b4e6ea4788561f44170eefe18c075d78914",
+    "size": 0,
+    "url": "https://api.github.com/repos/obsproject/cef/contents/libcef_dll?ref=6533-fix-stutter-and-osr-extra-info",
+    "html_url": "https://github.com/obsproject/cef/tree/6533-fix-stutter-and-osr-extra-info/libcef_dll",
+    "git_url": "https://api.github.com/repos/obsproject/cef/git/trees/413d4b4e6ea4788561f44170eefe18c075d78914",
+    "download_url": null,
+    "type": "dir",
+    "_links": {
+      "self": "https://api.github.com/repos/obsproject/cef/contents/libcef_dll?ref=6533-fix-stutter-and-osr-extra-info",
+      "git": "https://api.github.com/repos/obsproject/cef/git/trees/413d4b4e6ea4788561f44170eefe18c075d78914",
+      "html": "https://github.com/obsproject/cef/tree/6533-fix-stutter-and-osr-extra-info/libcef_dll"
+    }
+  },
+  {
+    "name": "patch",
+    "path": "patch",
+    "sha": "9c3a08388aeb1df404f3519b87cbd9632a61551d",
+    "size": 0,
+    "url": "https://api.github.com/repos/obsproject/cef/contents/patch?ref=6533-fix-stutter-and-osr-extra-info",
+    "html_url": "https://github.com/obsproject/cef/tree/6533-fix-stutter-and-osr-extra-info/patch",
+    "git_url": "https://api.github.com/repos/obsproject/cef/git/trees/9c3a08388aeb1df404f3519b87cbd9632a61551d",
+    "download_url": null,
+    "type": "dir",
+    "_links": {
+      "self": "https://api.github.com/repos/obsproject/cef/contents/patch?ref=6533-fix-stutter-and-osr-extra-info",
+      "git": "https://api.github.com/repos/obsproject/cef/git/trees/9c3a08388aeb1df404f3519b87cbd9632a61551d",
+      "html": "https://github.com/obsproject/cef/tree/6533-fix-stutter-and-osr-extra-info/patch"
+    }
+  },
+  {
+    "name": "tests",
+    "path": "tests",
+    "sha": "21805c6f3700f063bbdda3aeba918cdb90d86d01",
+    "size": 0,
+    "url": "https://api.github.com/repos/obsproject/cef/contents/tests?ref=6533-fix-stutter-and-osr-extra-info",
+    "html_url": "https://github.com/obsproject/cef/tree/6533-fix-stutter-and-osr-extra-info/tests",
+    "git_url": "https://api.github.com/repos/obsproject/cef/git/trees/21805c6f3700f063bbdda3aeba918cdb90d86d01",
+    "download_url": null,
+    "type": "dir",
+    "_links": {
+      "self": "https://api.github.com/repos/obsproject/cef/contents/tests?ref=6533-fix-stutter-and-osr-extra-info",
+      "git": "https://api.github.com/repos/obsproject/cef/git/trees/21805c6f3700f063bbdda3aeba918cdb90d86d01",
+      "html": "https://github.com/obsproject/cef/tree/6533-fix-stutter-and-osr-extra-info/tests"
+    }
+  },
+  {
+    "name": "tools",
+    "path": "tools",
+    "sha": "0652df8d554037e6495267caed22fa1a9a8da0dd",
+    "size": 0,
+    "url": "https://api.github.com/repos/obsproject/cef/contents/tools?ref=6533-fix-stutter-and-osr-extra-info",
+    "html_url": "https://github.com/obsproject/cef/tree/6533-fix-stutter-and-osr-extra-info/tools",
+    "git_url": "https://api.github.com/repos/obsproject/cef/git/trees/0652df8d554037e6495267caed22fa1a9a8da0dd",
+    "download_url": null,
+    "type": "dir",
+    "_links": {
+      "self": "https://api.github.com/repos/obsproject/cef/contents/tools?ref=6533-fix-stutter-and-osr-extra-info",
+      "git": "https://api.github.com/repos/obsproject/cef/git/trees/0652df8d554037e6495267caed22fa1a9a8da0dd",
+      "html": "https://github.com/obsproject/cef/tree/6533-fix-stutter-and-osr-extra-info/tools"
+    }
+  }
+]

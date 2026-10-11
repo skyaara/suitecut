@@ -1,0 +1,24 @@
+Reading package lists...
+Building dependency tree...
+Reading state information...
+The following additional packages will be installed:
+  libasound2-plugins libpulsedsp libspeexdsp1 polkitd rtkit sgml-base xml-core
+Suggested packages:
+  pavumeter pavucontrol paprefs avahi-daemon sgml-base-doc debhelper
+The following NEW packages will be installed:
+  libasound2-plugins libpulsedsp libspeexdsp1 polkitd pulseaudio
+  pulseaudio-utils rtkit sgml-base xml-core
+0 upgraded, 9 newly installed, 0 to remove and 73 not upgraded.
+Need to get 1560 kB/1603 kB of archives.
+After this operation, 8559 kB of additional disk space will be used.
+Get:1 https://deb.debian.org/debian trixie/main amd64 libasound2-plugins amd64 1.2.12-2+b1 [70.2 kB]
+Get:2 https://deb.debian.org/debian trixie/main amd64 libpulsedsp amd64 17.0+dfsg1-2+b1 [37.9 kB]
+Get:3 https://deb.debian.org/debian trixie/main amd64 sgml-base all 1.31+nmu1 [10.9 kB]
+Get:4 https://deb.debian.org/debian trixie/main amd64 xml-core all 0.19 [20.1 kB]
+Get:5 https://deb.debian.org/debian trixie/main amd64 polkitd amd64 126-2 [122 kB]
+Get:6 https://deb.debian.org/debian trixie/main amd64 pulseaudio-utils amd64 17.0+dfsg1-2+b1 [88.9 kB]
+Get:7 https://deb.debian.org/debian trixie/main amd64 pulseaudio amd64 17.0+dfsg1-2+b1 [1176 kB]
+Get:8 https://deb.debian.org/debian trixie/main amd64 rtkit amd64 0.13-5.1 [33.6 kB]
+Fetched 1560 kB in 1s (2567 kB/s)
+Download complete and in download only mode
+W: Unable to read /etc/apt/apt.conf.d/80-applied-apt-retries - open (13: Permission denied)

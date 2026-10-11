@@ -1,0 +1,150 @@
+[libx264 @ 0x51900000ff80] using cpu capabilities: MMX2 SSE2Fast SSSE3 SSE4.2 AVX FMA3 BMI2 AVX2 AVX512
+[libx264 @ 0x51900000ff80] profile High, level 1.3, 4:2:0, 8-bit
+[libx264 @ 0x51900000ff80] 264 - core 164 r3108 31e19f9 - H.264/MPEG-4 AVC codec - Copyleft 2003-2023 - http://www.videolan.org/x264.html - options: cabac=1 ref=1 deblock=1:0:0 analyse=0x3:0x113 me=hex subme=2 psy=1 psy_rd=1.00:0.00 mixed_ref=0 me_range=16 chroma_me=1 trellis=0 8x8dct=1 cqm=0 deadzone=21,11 fast_pskip=1 chroma_qp_offset=0 threads=2 lookahead_threads=2 sliced_threads=1 slices=2 nr=0 decimate=1 interlaced=0 bluray_compat=0 constrained_intra=0 bframes=0 weightp=1 keyint=60 keyint_min=6 scenecut=40 intra_refresh=0 rc=crf mbtree=0 crf=18.0 qcomp=0.60 qpmin=0 qpmax=69 qpstep=4 ip_ratio=1.40 aq=1:1.00
+[libx264 @ 0x51900000ff80] frame I:30    Avg QP: 0.97  size:   123
+[libx264 @ 0x51900000ff80] mb I  I16..4: 99.2%  0.0%  0.8%
+[libx264 @ 0x51900000ff80] 8x8 transform intra:0.0%
+[libx264 @ 0x51900000ff80] coded y,uvDC,uvAC intra: 0.2% 0.0% 0.0%
+[libx264 @ 0x51900000ff80] i16 v,h,dc,p: 84%  0% 16%  0%
+[libx264 @ 0x51900000ff80] i4 v,h,dc,ddl,ddr,vr,hd,vl,hu:  0%  0% 100%  0%  0%  0%  0%  0%  0%
+[libx264 @ 0x51900000ff80] i8c dc,h,v,p: 100%  0%  0%  0%
+[libx264 @ 0x51900000ff80] kb/s:29.54
+[aac @ 0x519000010980] Qavg: 342.132
+[libx264 @ 0x519000022b80] using SAR=1/1
+[libx264 @ 0x519000022b80] using cpu capabilities: MMX2 SSE2Fast SSSE3 SSE4.2 AVX FMA3 BMI2 AVX2 AVX512
+[libx264 @ 0x519000022b80] profile Constrained Baseline, level 1.3, 4:2:0, 8-bit
+[libx264 @ 0x519000022b80] 264 - core 164 r3108 31e19f9 - H.264/MPEG-4 AVC codec - Copyleft 2003-2023 - http://www.videolan.org/x264.html - options: cabac=0 ref=1 deblock=0:0:0 analyse=0:0 me=dia subme=0 psy=1 psy_rd=1.00:0.00 mixed_ref=0 me_range=16 chroma_me=1 trellis=0 8x8dct=0 cqm=0 deadzone=21,11 fast_pskip=1 chroma_qp_offset=0 threads=2 lookahead_threads=1 sliced_threads=0 nr=0 decimate=1 interlaced=0 bluray_compat=0 constrained_intra=0 bframes=0 weightp=0 keyint=250 keyint_min=25 scenecut=0 intra_refresh=0 rc=crf mbtree=0 crf=23.0 qcomp=0.60 qpmin=0 qpmax=69 qpstep=4 ip_ratio=1.40 aq=0
+[input-0:v @ 0x511000010bc0] Changing video frame properties on the fly is not supported by all filters.
+[input-0:v @ 0x511000010bc0] filter context - w: 320 h: 180 fmt: 0 csp: unknown range: unknown, incoming frame - w: 320 h: 180 fmt: 0 csp: bt709 range: tv pts_time: 0
+[mp4 @ 0x517000025000] Starting second pass: moving the moov atom to the beginning of the file
+[libx264 @ 0x519000022b80] frame I:1     Avg QP:20.00  size:   198
+[libx264 @ 0x519000022b80] frame P:14    Avg QP:14.79  size:   272
+[libx264 @ 0x519000022b80] mb I  I16..4: 100.0%  0.0%  0.0%
+[libx264 @ 0x519000022b80] mb P  I16..4: 92.5%  0.0%  0.0%  P16..4:  0.4%  0.0%  0.0%  0.0%  0.0%    skip: 7.1%
+[libx264 @ 0x519000022b80] coded y,uvDC,uvAC intra: 0.0% 0.0% 0.0% inter: 5.1% 0.0% 0.0%
+[libx264 @ 0x519000022b80] i16 v,h,dc,p: 92%  0%  8%  0%
+[libx264 @ 0x519000022b80] i8c dc,h,v,p: 100%  0%  0%  0%
+[libx264 @ 0x519000022b80] kb/s:64.08
+[aac @ 0x519000023580] Qavg: 2931.778
+[aac @ 0x51900003ac80] Qavg: 342.132
+[input-0:v @ 0x511000016340] Changing video frame properties on the fly is not supported by all filters.
+[input-0:v @ 0x511000016340] filter context - w: 320 h: 180 fmt: 0 csp: unknown range: unknown, incoming frame - w: 320 h: 180 fmt: 0 csp: bt709 range: tv pts_time: 0
+[mp4 @ 0x51700003b180] Starting second pass: moving the moov atom to the beginning of the file
+[aac @ 0x519000058780] Qavg: 2931.778
+[libvpx @ 0x519000090680] v1.15.0
+[libvpx @ 0x519000093880] v1.15.0
+[input-0:v @ 0x51100003f240] Changing video frame properties on the fly is not supported by all filters.
+[input-0:v @ 0x51100003f240] filter context - w: 320 h: 180 fmt: 0 csp: unknown range: unknown, incoming frame - w: 320 h: 180 fmt: 0 csp: bt470bg range: tv pts_time: 0
+[libvpx-vp9 @ 0x519000083980] v1.15.0
+[libvpx-vp9 @ 0x519000081b80] v1.15.0
+[libvpx-vp9 @ 0x519000081b80] Neither bitrate nor constrained quality specified, using default CRF of 32
+[input-0:v @ 0x51100000e500] Changing video frame properties on the fly is not supported by all filters.
+[input-0:v @ 0x51100000e500] filter context - w: 320 h: 180 fmt: 0 csp: unknown range: unknown, incoming frame - w: 320 h: 180 fmt: 0 csp: bt709 range: tv pts_time: 0
+Svt[info]: -------------------------------------------
+Svt[info]: SVT [version]:	SVT-AV1 Encoder Lib v2.3.0
+Svt[info]: SVT [build]  :	GCC 14.2.0	 64 bit
+Svt[info]: -------------------------------------------
+Svt[warn]: Preset M12 is mapped to M11.
+Svt[warn]: logical_processors will be deprecated in v3.0. Use level_of_parallelism instead. Input mapped to level_of_parallelism.
+Svt[info]: Level of Parallelism: 2
+Svt[info]: Number of PPCS 42
+Svt[info]: [asm level on system : up to avx512]
+Svt[info]: [asm level selected : up to avx512]
+Svt[info]: -------------------------------------------
+Svt[info]: SVT [config]: main profile	tier (auto)	level (auto)
+Svt[info]: SVT [config]: width / height / fps numerator / fps denominator 		: 320 / 184 / 30 / 1
+Svt[info]: SVT [config]: bit-depth / color format 					: 8 / YUV420
+Svt[info]: SVT [config]: preset / tune / pred struct 					: 11 / PSNR / random access
+Svt[info]: SVT [config]: gop size / mini-gop size / key-frame type 			: 60 / 16 / key frame
+Svt[info]: SVT [config]: BRC mode / rate factor 					: CRF / 32 
+Svt[info]: SVT [config]: AQ mode / variance boost 					: 2 / 0
+Svt[info]: -------------------------------------------
+PASS libx264/aac: 30 captured + 15 rendered frames; render audio=24000
+PASS libx265/aac: 30 captured + 15 rendered frames; render audio=24000
+PASS libvpx/libopus: 30 captured + 15 rendered frames; render audio=23976
+PASS libvpx-vp9/libopus: 30 captured + 15 rendered frames; render audio=23976
+[aac @ 0x51900039d080] Qavg: 342.132
+Svt[info]: -------------------------------------------
+Svt[info]: SVT [version]:	SVT-AV1 Encoder Lib v2.3.0
+Svt[info]: SVT [build]  :	GCC 14.2.0	 64 bit
+Svt[info]: -------------------------------------------
+Svt[warn]: Preset M12 is mapped to M11.
+Svt[warn]: logical_processors will be deprecated in v3.0. Use level_of_parallelism instead. Input mapped to level_of_parallelism.
+Svt[info]: Level of Parallelism: 2
+Svt[info]: Number of PPCS 42
+Svt[info]: [asm level on system : up to avx512]
+Svt[info]: [asm level selected : up to avx512]
+Svt[info]: -------------------------------------------
+Svt[info]: SVT [config]: main profile	tier (auto)	level (auto)
+Svt[info]: SVT [config]: width / height / fps numerator / fps denominator 		: 320 / 184 / 30 / 1
+Svt[info]: SVT [config]: bit-depth / color format 					: 8 / YUV420
+Svt[info]: SVT [config]: preset / tune / pred struct 					: 11 / PSNR / random access
+Svt[info]: SVT [config]: gop size / mini-gop size / key-frame type 			: 161 / 16 / key frame
+Svt[info]: SVT [config]: BRC mode / rate factor 					: CRF / 32 
+Svt[info]: SVT [config]: AQ mode / variance boost 					: 2 / 0
+Svt[info]: -------------------------------------------
+[input-0:v @ 0x511000044d80] Changing video frame properties on the fly is not supported by all filters.
+[input-0:v @ 0x511000044d80] filter context - w: 320 h: 180 fmt: 0 csp: unknown range: unknown, incoming frame - w: 320 h: 180 fmt: 0 csp: bt709 range: tv pts_time: 0
+[mp4 @ 0x51700007e080] Starting second pass: moving the moov atom to the beginning of the file
+[aac @ 0x5190004e0c80] Qavg: 2931.778
+[libaom-av1 @ 0x519000057d80] v3.12.1
+[aac @ 0x51900002c180] Qavg: 342.132
+[libaom-av1 @ 0x5190004e6680] v3.12.1
+[input-0:v @ 0x511000020980] Changing video frame properties on the fly is not supported by all filters.
+[input-0:v @ 0x511000020980] filter context - w: 320 h: 180 fmt: 0 csp: unknown range: unknown, incoming frame - w: 320 h: 180 fmt: 0 csp: bt709 range: tv pts_time: 0
+[mp4 @ 0x517000099980] Starting second pass: moving the moov atom to the beginning of the file
+[aac @ 0x5190004e7a80] Qavg: 2931.778
+[input-0:v @ 0x511000005400] Changing video frame properties on the fly is not supported by all filters.
+[input-0:v @ 0x511000005400] filter context - w: 320 h: 180 fmt: 0 csp: unknown range: unknown, incoming frame - w: 320 h: 180 fmt: 0 csp: bt709 range: tv pts_time: 0
+[input-0:v @ 0x511000003c40] Changing video frame properties on the fly is not supported by all filters.
+[input-0:v @ 0x511000003c40] filter context - w: 320 h: 180 fmt: 0 csp: unknown range: unknown, incoming frame - w: 320 h: 180 fmt: 0 csp: bt709 range: tv pts_time: 0
+[aac @ 0x519000357f80] Qavg: 342.132
+[input-0:v @ 0x5110000d8a80] Changing video frame properties on the fly is not supported by all filters.
+[input-0:v @ 0x5110000d8a80] filter context - w: 320 h: 180 fmt: 0 csp: unknown range: unknown, incoming frame - w: 320 h: 180 fmt: 0 csp: bt709 range: tv pts_time: 0
+[mov @ 0x51700005c580] Starting second pass: moving the moov atom to the beginning of the file
+[aac @ 0x519000342b80] Qavg: 340.079
+[libaom-av1 @ 0x519000328c80] v3.12.1
+[libaom-av1 @ 0x5190002e0e80] v3.12.1
+[input-0:v @ 0x51100000d740] Changing video frame properties on the fly is not supported by all filters.
+[input-0:v @ 0x51100000d740] filter context - w: 320 h: 180 fmt: 0 csp: unknown range: unknown, incoming frame - w: 320 h: 180 fmt: 0 csp: bt709 range: tv pts_time: 0
+[libvpx-vp9 @ 0x5190004e1680] v1.15.0
+[libvpx-vp9 @ 0x5190003a1180] v1.15.0
+[libvpx-vp9 @ 0x5190003a1180] Neither bitrate nor constrained quality specified, using default CRF of 32
+[input-0:v @ 0x51100001f440] Changing video frame properties on the fly is not supported by all filters.
+[input-0:v @ 0x51100001f440] filter context - w: 320 h: 180 fmt: 0 csp: unknown range: unknown, incoming frame - w: 320 h: 180 fmt: 0 csp: bt709 range: tv pts_time: 0
+[libx264 @ 0x5190002c3380] using cpu capabilities: MMX2 SSE2Fast SSSE3 SSE4.2 AVX FMA3 BMI2 AVX2 AVX512
+[libx264 @ 0x5190002c3380] profile High, level 1.3, 4:2:0, 8-bit
+[libx264 @ 0x5190002c3380] 264 - core 164 r3108 31e19f9 - H.264/MPEG-4 AVC codec - Copyleft 2003-2023 - http://www.videolan.org/x264.html - options: cabac=1 ref=1 deblock=1:0:0 analyse=0x3:0x113 me=hex subme=2 psy=1 psy_rd=1.00:0.00 mixed_ref=0 me_range=16 chroma_me=1 trellis=0 8x8dct=1 cqm=0 deadzone=21,11 fast_pskip=1 chroma_qp_offset=0 threads=2 lookahead_threads=2 sliced_threads=1 slices=2 nr=0 decimate=1 interlaced=0 bluray_compat=0 constrained_intra=0 bframes=0 weightp=1 keyint=60 keyint_min=6 scenecut=40 intra_refresh=0 rc=crf mbtree=0 crf=18.0 qcomp=0.60 qpmin=0 qpmax=69 qpstep=4 ip_ratio=1.40 aq=1:1.00
+[libx264 @ 0x5190002c3380] frame I:30    Avg QP: 0.97  size:   123
+[libx264 @ 0x5190002c3380] mb I  I16..4: 99.2%  0.0%  0.8%
+[libx264 @ 0x5190002c3380] 8x8 transform intra:0.0%
+[libx264 @ 0x5190002c3380] coded y,uvDC,uvAC intra: 0.2% 0.0% 0.0%
+[libx264 @ 0x5190002c3380] i16 v,h,dc,p: 84%  0% 16%  0%
+[libx264 @ 0x5190002c3380] i4 v,h,dc,ddl,ddr,vr,hd,vl,hu:  0%  0% 100%  0%  0%  0%  0%  0%  0%
+[libx264 @ 0x5190002c3380] i8c dc,h,v,p: 100%  0%  0%  0%
+[libx264 @ 0x5190002c3380] kb/s:29.54
+[libx264 @ 0x51900014e180] using SAR=1/1
+[libx264 @ 0x51900014e180] using cpu capabilities: MMX2 SSE2Fast SSSE3 SSE4.2 AVX FMA3 BMI2 AVX2 AVX512
+[libx264 @ 0x51900014e180] profile Constrained Baseline, level 1.3, 4:2:0, 8-bit
+[libx264 @ 0x51900014e180] 264 - core 164 r3108 31e19f9 - H.264/MPEG-4 AVC codec - Copyleft 2003-2023 - http://www.videolan.org/x264.html - options: cabac=0 ref=1 deblock=0:0:0 analyse=0:0 me=dia subme=0 psy=1 psy_rd=1.00:0.00 mixed_ref=0 me_range=16 chroma_me=1 trellis=0 8x8dct=0 cqm=0 deadzone=21,11 fast_pskip=1 chroma_qp_offset=0 threads=2 lookahead_threads=1 sliced_threads=0 nr=0 decimate=1 interlaced=0 bluray_compat=0 constrained_intra=0 bframes=0 weightp=0 keyint=250 keyint_min=25 scenecut=0 intra_refresh=0 rc=crf mbtree=0 crf=23.0 qcomp=0.60 qpmin=0 qpmax=69 qpstep=4 ip_ratio=1.40 aq=0
+[input-0:v @ 0x5110000d4700] Changing video frame properties on the fly is not supported by all filters.
+[input-0:v @ 0x5110000d4700] filter context - w: 320 h: 180 fmt: 0 csp: unknown range: unknown, incoming frame - w: 320 h: 180 fmt: 0 csp: bt709 range: tv pts_time: 0
+[mov @ 0x51700008ea80] Starting second pass: moving the moov atom to the beginning of the file
+[libx264 @ 0x51900014e180] frame I:1     Avg QP:20.00  size:   198
+[libx264 @ 0x51900014e180] frame P:14    Avg QP:15.00  size:   292
+[libx264 @ 0x51900014e180] mb I  I16..4: 100.0%  0.0%  0.0%
+[libx264 @ 0x51900014e180] mb P  I16..4: 99.6%  0.0%  0.0%  P16..4:  0.4%  0.0%  0.0%  0.0%  0.0%    skip: 0.0%
+[libx264 @ 0x51900014e180] coded y,uvDC,uvAC intra: 0.0% 0.0% 0.0% inter: 100.0% 0.0% 0.0%
+[libx264 @ 0x51900014e180] i16 v,h,dc,p: 92%  0%  8%  0%
+[libx264 @ 0x51900014e180] i8c dc,h,v,p: 100%  0%  0%  0%
+[libx264 @ 0x51900014e180] kb/s:68.58
+PASS libsvtav1/aac: 30 captured + 15 rendered frames; render audio=24000
+PASS libaom-av1/aac: 30 captured + 15 rendered frames; render audio=24000
+PASS ffv1/flac: 30 captured + 15 rendered frames; render audio=24000
+PASS ffv1/pcm_s16le: 30 captured + 15 rendered frames; render audio=24000
+PASS libx265/aac: 30 captured + 15 rendered frames; render audio=24000
+PASS libaom-av1/libopus: 30 captured + 15 rendered frames; render audio=23976
+PASS libvpx-vp9/flac: 30 captured + 15 rendered frames; render audio=24000
+PASS libx264/pcm_s16le: 30 captured + 15 rendered frames; render audio=24000
+ITERATION 1: VmRSS:	  414352 kB
+ITERATION 1: Threads:	1

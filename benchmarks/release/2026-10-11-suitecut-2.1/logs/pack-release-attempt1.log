@@ -1,0 +1,22 @@
+[WARN] Your node_modules are out of sync with your lockfile. The workspace structure has changed since last install
+$ pnpm build && pnpm audio-plugins:build && node scripts/pack-release.mjs
+$ pnpm clean:dist && tsc -p tsconfig.build.json
+$ node scripts/clean-dist.mjs
+$ pnpm --filter @suitecut/audio-sherpa-core build && pnpm --filter @suitecut/audio-vits build && pnpm --filter @suitecut/audio-matcha build && pnpm --filter @suitecut/audio-kokoro-sherpa build && pnpm --filter @suitecut/audio-kitten build && pnpm --filter @suitecut/audio-zipvoice build && pnpm --filter @suitecut/audio-pocket build && pnpm --filter @suitecut/audio-supertonic build
+$ pnpm clean:dist && tsc -p tsconfig.json
+$ node ../../scripts/clean-plugin-dist.mjs
+$ pnpm clean:dist && tsc -p tsconfig.json
+$ node ../../scripts/clean-plugin-dist.mjs
+$ pnpm clean:dist && tsc -p tsconfig.json
+$ node ../../scripts/clean-plugin-dist.mjs
+$ pnpm clean:dist && tsc -p tsconfig.json
+$ node ../../scripts/clean-plugin-dist.mjs
+$ pnpm clean:dist && tsc -p tsconfig.json
+$ node ../../scripts/clean-plugin-dist.mjs
+$ pnpm clean:dist && tsc -p tsconfig.json
+$ node ../../scripts/clean-plugin-dist.mjs
+$ pnpm clean:dist && tsc -p tsconfig.json
+$ node ../../scripts/clean-plugin-dist.mjs
+$ pnpm clean:dist && tsc -p tsconfig.json
+$ node ../../scripts/clean-plugin-dist.mjs
+Prepared 2.1.0: 9 unpublished packages in /workspace/suitecut/.suitecut/release

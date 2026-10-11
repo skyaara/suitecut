@@ -1,0 +1,15 @@
+{
+  "id": "720p60-canvas-native-2",
+  "backend": "native",
+  "case": {
+    "name": "720p60-canvas",
+    "width": 1280,
+    "height": 720,
+    "fps": 60,
+    "workload": "canvas"
+  },
+  "trialNumber": 2,
+  "durationMs": 10000,
+  "status": "running",
+  "startedAt": "2026-10-09T03:39:44.471Z"
+}

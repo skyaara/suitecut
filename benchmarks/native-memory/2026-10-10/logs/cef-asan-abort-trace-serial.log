@@ -1,0 +1,29 @@
+
+Running 1 test using 1 worker
+
+(node:421377) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 benchmarks/native-engine/engine.e2e.spec.ts:52:1 › real Playwright locators, auto-wait, input, scrolling, iframe and screenshot (3ms)
+
+
+  1) benchmarks/native-engine/engine.e2e.spec.ts:52:1 › real Playwright locators, auto-wait, input, scrolling, iframe and screenshot 
+
+    Error: Native browser exited unexpectedly (null)
+
+       at ../../src/native-browser.ts:276
+
+      274 |       if (!stopping) fail(new Error('Native browser output was truncated'))
+      275 |     }
+    > 276 |     if (!stopping) fail(new Error(`Native browser exited unexpectedly (${String(code)})`))
+          |                         ^
+      277 |     frames.clear()
+      278 |     audio.clear()
+      279 |     protocolEvents.clear()
+        at ChildProcess.<anonymous> (/workspace/suitecut/src/native-browser.ts:276:25)
+
+    Error Context: benchmarks/native-memory/2026-10-10/cef-asan-abort-trace-serial/playwright-artifacts/engine.e2e-real-Playwright-3958d-lling-iframe-and-screenshot/error-context.md
+
+    Error Context: benchmarks/native-memory/2026-10-10/cef-asan-abort-trace-serial/playwright-artifacts/engine.e2e-real-Playwright-3958d-lling-iframe-and-screenshot/error-context.md
+
+  1 failed
+    benchmarks/native-engine/engine.e2e.spec.ts:52:1 › real Playwright locators, auto-wait, input, scrolling, iframe and screenshot 

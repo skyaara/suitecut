@@ -1,0 +1,18 @@
+[libx264 @ 0x7f1378001100] using cpu capabilities: MMX2 SSE2Fast SSSE3 SSE4.2 AVX FMA3 BMI2 AVX2 AVX512
+[libx264 @ 0x7f1378001100] profile High, level 5.1, 4:2:0, 8-bit
+[libx264 @ 0x7f1378001100] 264 - core 164 r3108 31e19f9 - H.264/MPEG-4 AVC codec - Copyleft 2003-2023 - http://www.videolan.org/x264.html - options: cabac=1 ref=1 deblock=1:0:0 analyse=0x3:0x113 me=hex subme=2 psy=1 psy_rd=1.00:0.00 mixed_ref=0 me_range=16 chroma_me=1 trellis=0 8x8dct=1 cqm=0 deadzone=21,11 fast_pskip=1 chroma_qp_offset=0 threads=3 lookahead_threads=3 sliced_threads=1 slices=3 nr=0 decimate=1 interlaced=0 bluray_compat=0 constrained_intra=0 bframes=0 weightp=1 keyint=60 keyint_min=6 scenecut=40 intra_refresh=0 rc_lookahead=0 rc=cbr mbtree=0 bitrate=12000 ratetol=1.0 qcomp=0.60 qpmin=0 qpmax=69 qpstep=4 vbv_maxrate=12000 vbv_bufsize=24000 nal_hrd=none filler=0 ip_ratio=1.40 aq=1:1.00
+[flv @ 0x7f1378000900] Failed to update header with correct duration.
+[flv @ 0x7f1378000900] Failed to update header with correct filesize.
+[libx264 @ 0x7f1378001100] frame I:62    Avg QP: 0.33  size: 57691
+[libx264 @ 0x7f1378001100] frame P:3549  Avg QP: 4.12  size:   772
+[libx264 @ 0x7f1378001100] mb I  I16..4: 98.6%  0.0%  1.4%
+[libx264 @ 0x7f1378001100] mb P  I16..4:  0.6%  0.0%  0.0%  P16..4:  0.1%  0.0%  0.0%  0.0%  0.0%    skip:99.3%
+[libx264 @ 0x7f1378001100] 8x8 transform intra:0.0% inter:7.4%
+[libx264 @ 0x7f1378001100] coded y,uvDC,uvAC intra: 0.7% 1.0% 1.0% inter: 0.0% 0.0% 0.0%
+[libx264 @ 0x7f1378001100] i16 v,h,dc,p: 82% 16%  2%  0%
+[libx264 @ 0x7f1378001100] i8 v,h,dc,ddl,ddr,vr,hd,vl,hu:  4% 21% 53% 21%  0%  0%  0%  0%  1%
+[libx264 @ 0x7f1378001100] i4 v,h,dc,ddl,ddr,vr,hd,vl,hu: 37% 15% 29%  3%  4%  3%  4%  3%  2%
+[libx264 @ 0x7f1378001100] i8c dc,h,v,p: 82% 16%  1%  0%
+[libx264 @ 0x7f1378001100] Weighted P-Frames: Y:0.1% UV:0.1%
+[libx264 @ 0x7f1378001100] kb/s:419.91
+[aac @ 0x7f13781cab80] Qavg: 7485.392

@@ -1,0 +1,63 @@
+{
+  "id": "1080p60-scroll-native-5",
+  "backend": "native",
+  "case": {
+    "name": "1080p60-scroll",
+    "width": 1920,
+    "height": 1080,
+    "fps": 60,
+    "workload": "scroll"
+  },
+  "trialNumber": 5,
+  "durationMs": 10000,
+  "status": "passed",
+  "startedAt": "2026-10-08T20:54:21.323Z",
+  "startupMs": 1367.4834769999143,
+  "browserVersion": "152.0.8+g1ce985c+chromium-152.0.7977.134",
+  "workload": {
+    "wallMs": 10017.042238000082,
+    "scrollCommands": 102,
+    "snapshot": {
+      "markerCount": 560,
+      "scrollY": 240,
+      "scrollEvents": 102,
+      "keyEvents": 0,
+      "clicks": 0,
+      "value": "",
+      "choice": "First",
+      "secondary": false
+    }
+  },
+  "nativeCapture": {
+    "frames": 517,
+    "fps": 51.612041530456786,
+    "nativeDrops": 46
+  },
+  "finalizationMs": 32028.6381219998,
+  "mediaPath": "/workspace/suitecut/.suitecut/obs-cef-evidence/2026-10-09/1080p60-scroll-native-5/suitecut-source-0ef5a38e-e166-4444-9863-7a4dafaa0074-1a4832ea-5116-4a16-ac63-f9abda4a8e77.webm",
+  "decoded": {
+    "width": 1920,
+    "height": 1080,
+    "codec": "vp9",
+    "containerFps": 60,
+    "durationSeconds": 10.6,
+    "bytes": 342455,
+    "decodedFrames": 636,
+    "markerTransitions": 4,
+    "markerRegressions": 0,
+    "activeFrames": 576,
+    "distinctActiveFrames": 3,
+    "distinctActiveFps": 0.3125,
+    "repeatFraction": 0.9947916666666666,
+    "longestActiveHoldMs": 7600,
+    "audioStreams": []
+  },
+  "resources": {
+    "sampleCount": 82,
+    "meanCpuPercent": 372.499440235849,
+    "peakRssBytes": 1725251584,
+    "firstRssBytes": 1199366144,
+    "lastRssBytes": 1611124736
+  },
+  "completedAt": "2026-10-08T20:55:06.906Z"
+}

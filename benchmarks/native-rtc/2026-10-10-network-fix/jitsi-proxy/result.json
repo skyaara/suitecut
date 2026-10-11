@@ -1,0 +1,140 @@
+{
+  "requestedUrl": "https://meet.jit.si/ColourfulProsperitiesSignalTotally",
+  "startedAt": "2026-10-10T12:36:59.386Z",
+  "backend": "SuiteCut CEF via private Playwright adapter",
+  "status": "loaded",
+  "actions": [
+    {
+      "type": "join",
+      "name": "SuiteCut RTC test",
+      "at": "2026-10-10T12:37:12.910Z"
+    }
+  ],
+  "cefVersion": "152.0.6+g708dc14+chromium-152.0.7977.83",
+  "lastRequestFailure": {
+    "origin": "null",
+    "path": "/",
+    "error": "net::ERR_BLOCKED_BY_CLIENT"
+  },
+  "iceErrors": [
+    {
+      "code": 701,
+      "text": "Failed to establish connection",
+      "url": "turns:meet-jit-si-turnrelay.jitsi.net:443"
+    },
+    {
+      "code": 701,
+      "text": "Failed to establish connection",
+      "url": "turns:meet-jit-si-turnrelay.jitsi.net:443"
+    },
+    {
+      "code": 701,
+      "text": "Failed to establish connection",
+      "url": "turns:meet-jit-si-turnrelay.jitsi.net:443"
+    },
+    {
+      "code": 701,
+      "text": "Failed to establish connection",
+      "url": "turns:meet-jit-si-turnrelay.jitsi.net:443"
+    }
+  ],
+  "lastPeers": [
+    {
+      "connectionState": "new",
+      "iceConnectionState": "new",
+      "signalingState": "stable",
+      "iceTransportPolicy": "all",
+      "servers": [
+        {
+          "urls": [
+            "turns:meet-jit-si-turnrelay.jitsi.net:443?transport=tcp"
+          ]
+        }
+      ],
+      "stats": [
+        {
+          "id": "II9TMf0T0",
+          "type": "local-candidate",
+          "candidateType": "host",
+          "protocol": "tcp"
+        },
+        {
+          "id": "IPEHqZUAl",
+          "type": "local-candidate",
+          "candidateType": "host",
+          "protocol": "tcp"
+        },
+        {
+          "id": "IXZ98Qsig",
+          "type": "local-candidate",
+          "candidateType": "host",
+          "protocol": "tcp"
+        },
+        {
+          "id": "Ir4+E+pTa",
+          "type": "local-candidate",
+          "candidateType": "host",
+          "protocol": "tcp"
+        },
+        {
+          "id": "T01",
+          "type": "transport",
+          "bytesSent": 0,
+          "bytesReceived": 0,
+          "packetsSent": 0,
+          "packetsReceived": 0,
+          "dtlsState": "new",
+          "iceState": "new"
+        }
+      ]
+    },
+    {
+      "connectionState": "new",
+      "iceConnectionState": "new",
+      "signalingState": "stable",
+      "iceTransportPolicy": "all",
+      "servers": [
+        {
+          "urls": [
+            "turn:meet-jit-si-turnrelay.jitsi.net:443"
+          ]
+        },
+        {
+          "urls": [
+            "turns:meet-jit-si-turnrelay.jitsi.net:443?transport=tcp"
+          ]
+        },
+        {
+          "urls": [
+            "stun:meet-jit-si-turnrelay.jitsi.net:443"
+          ]
+        }
+      ],
+      "stats": [
+        {
+          "id": "Inn/AeGh3",
+          "type": "local-candidate",
+          "candidateType": "host",
+          "protocol": "tcp"
+        },
+        {
+          "id": "Iyb/2S1TJ",
+          "type": "local-candidate",
+          "candidateType": "host",
+          "protocol": "tcp"
+        },
+        {
+          "id": "T01",
+          "type": "transport",
+          "bytesSent": 0,
+          "bytesReceived": 0,
+          "packetsSent": 0,
+          "packetsReceived": 0,
+          "dtlsState": "new",
+          "iceState": "new"
+        }
+      ]
+    }
+  ],
+  "finishedAt": "2026-10-10T12:38:38.764Z"
+}

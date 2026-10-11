@@ -1,0 +1,208 @@
+{
+  "name": "suitecut",
+  "version": "2.0.0",
+  "description": "Record and stream narrated browser flows with embedded CEF, with an explicit Playwright backend.",
+  "keywords": [
+    "playwright",
+    "screen-recording",
+    "test-automation",
+    "video",
+    "narration",
+    "cef",
+    "embedded-browser"
+  ],
+  "homepage": "https://suitecut.aakashreddy.com",
+  "bugs": {
+    "url": "https://github.com/skyaara/suitecut/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/skyaara/suitecut.git"
+  },
+  "author": "skyaara",
+  "type": "module",
+  "license": "MIT",
+  "bin": {
+    "suitecut": "dist/cli.js"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./test": {
+      "types": "./dist/test.d.ts",
+      "default": "./dist/test.js"
+    },
+    "./audio-plugin": {
+      "types": "./dist/audio-plugin.d.ts",
+      "default": "./dist/audio-plugin.js"
+    },
+    "./reporter": {
+      "types": "./dist/reporter.d.ts",
+      "default": "./dist/reporter.js"
+    },
+    "./playwright": {
+      "types": "./dist/playwright.d.ts",
+      "default": "./dist/playwright.js"
+    },
+    "./render": {
+      "types": "./dist/render.d.ts",
+      "default": "./dist/render.js"
+    },
+    "./types": {
+      "types": "./dist/types.d.ts",
+      "default": "./dist/types.js"
+    },
+    "./package.json": "./package.json",
+    "./native": {
+      "types": "./dist/native.d.ts",
+      "default": "./dist/native.js"
+    },
+    "./beta": {
+      "types": "./dist/beta.d.ts",
+      "default": "./dist/beta.js"
+    },
+    "./stable": {
+      "types": "./dist/playwright.d.ts",
+      "default": "./dist/playwright.js"
+    },
+    "./engine": {
+      "types": "./dist/engine.d.ts",
+      "default": "./dist/engine.js"
+    },
+    "./engine/test": {
+      "types": "./dist/engine-test.d.ts",
+      "default": "./dist/engine-test.js"
+    }
+  },
+  "files": [
+    "assets/kokoro",
+    "assets/cursors",
+    "CHANGELOG.md",
+    "CODE_OF_CONDUCT.md",
+    "CONTRIBUTING.md",
+    "dist",
+    "LICENSE",
+    "README.md",
+    "SECURITY.md",
+    "THIRD_PARTY_NOTICES.md",
+    "native/browser"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "workspaces": [
+    "site",
+    "plugins/*"
+  ],
+  "scripts": {
+    "build": "pnpm clean:dist && tsc -p tsconfig.build.json",
+    "clean:dist": "node scripts/clean-dist.mjs",
+    "examples": "pnpm build && playwright test",
+    "test:browsers": "pnpm build && SUITECUT_MANIFEST_PATH=.suitecut/browser-support.json playwright test examples/browser-support.spec.ts && node scripts/verify-browser-manifest.mjs .suitecut/browser-support.json",
+    "test:browser-flows": "pnpm build && playwright test --project=chromium examples/browser-presentation.spec.ts examples/checkpoint.spec.ts examples/popup-tour.spec.ts",
+    "test:device-scale": "pnpm build && SUITECUT_MANIFEST_PATH=.suitecut/device-scale-run.json playwright test --project=chromium examples/device-scale.spec.ts && node scripts/verify-device-scale.mjs .suitecut/device-scale-run.json && node scripts/verify-device-scale-stream.mjs",
+    "test:retry-parallel": "node scripts/clean-retry-parallel-lib.mjs && tsc -p tsconfig.build.json --outDir .suitecut/retry-parallel-lib && playwright test --config tests/retry-parallel/playwright.config.ts && node scripts/verify-retry-parallel.mjs .suitecut/retry-parallel.json",
+    "verify:render-output": "node scripts/verify-render-output.mjs",
+    "example:record": "pnpm build && playwright test --project=chromium examples/product-tour.spec.ts",
+    "example:playwright": "pnpm build && node --experimental-strip-types examples/playwright.ts",
+    "example:playwright:checkpoints": "pnpm build && node --experimental-strip-types examples/playwright/checkpoints.ts",
+    "example:playwright:popup": "pnpm build && node --experimental-strip-types examples/playwright/popup-tour.ts",
+    "example:playwright:product": "pnpm build && node --experimental-strip-types examples/playwright/product-tour.ts",
+    "example:playwright:setup": "pnpm build && node --experimental-strip-types examples/playwright/custom-setup.ts",
+    "example:livestream:status": "pnpm build && node --experimental-strip-types examples/playwright/openai-status-livestream.ts",
+    "examples:playwright": "pnpm build && node --experimental-strip-types examples/playwright.ts && node --experimental-strip-types examples/playwright/checkpoints.ts && node --experimental-strip-types examples/playwright/popup-tour.ts && node --experimental-strip-types examples/playwright/custom-setup.ts && node --experimental-strip-types examples/playwright/product-tour.ts",
+    "example:render": "node dist/cli.js render --manifest .suitecut/latest-run.json --output .suitecut/videos/product-tour.mp4",
+    "demo:site": "pnpm build && SUITECUT_SITE_RECORD=1 playwright test --config site/playwright.config.ts site-demo.spec.ts && node dist/cli.js render --manifest .suitecut/site-demo-run.json --output .suitecut/videos/suitecut-site-demo.mp4 --width 3840 --height 2160 --fps 60 && cp .suitecut/videos/suitecut-site-demo.mp4 site/public/demo/suitecut-field-manual.mp4 && ffmpeg -hide_banner -loglevel error -y -ss 1 -i .suitecut/videos/suitecut-site-demo.mp4 -frames:v 1 site/public/demo/suitecut-field-manual-poster.png",
+    "demo:docs-features-4k": "pnpm build && SUITECUT_SITE_PORT=4332 SUITECUT_SITE_RECORD=1 SUITECUT_SITE_MANIFEST_PATH=.suitecut/docs-features-4k.json playwright test --config site/playwright.config.ts docs-feature-tour.spec.ts && node dist/cli.js render --manifest .suitecut/docs-features-4k.json --output .suitecut/videos/docs-features-4k.mp4 --width 3840 --height 2160 --fps 60 --quality master",
+    "demo:zoom-motion-4k": "pnpm build && SUITECUT_SITE_PORT=4333 SUITECUT_SITE_RECORD=1 SUITECUT_SITE_4K=1 SUITECUT_SITE_MANIFEST_PATH=.suitecut/zoom-motion-4k.json playwright test --config site/playwright.config.ts zoom-motion.spec.ts && node dist/cli.js render --manifest .suitecut/zoom-motion-4k.json --output .suitecut/videos/zoom-motion-4k.mp4 --width 3840 --height 2160 --fps 60 --quality high",
+    "demo:mdn-4k": "pnpm build && node --experimental-strip-types examples/playwright/mdn-interactions-4k.ts",
+    "demo:public-features-4k": "pnpm build && node --experimental-strip-types examples/playwright/suitecut-public-features-4k.ts",
+    "demo:wikipedia-4k": "pnpm build && node --experimental-strip-types examples/playwright/wikipedia-typewriter-4k.ts",
+    "lint": "eslint . --max-warnings 0",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write \"{src,tests,examples}/**/*.ts\" \"plugins/**/*.{ts,json,mjs}\" \"scripts/**/*.mjs\" \"site/**/*.{astro,css,ts,json,mjs}\" \".github/**/*.yml\" \"*.{js,json}\"",
+    "format:check": "prettier --check \"{src,tests,examples}/**/*.ts\" \"plugins/**/*.{ts,json,mjs}\" \"scripts/**/*.mjs\" \"site/**/*.{astro,css,ts,json,mjs}\" \".github/**/*.yml\" \"*.{js,json}\"",
+    "check": "pnpm site:sync && pnpm build && pnpm audio-plugins:check && pnpm test:audio-plugin:built && pnpm lint && pnpm format:check && pnpm typecheck && pnpm test -- --run",
+    "audio-plugins:build": "pnpm --filter @suitecut/audio-sherpa-core build && pnpm --filter @suitecut/audio-vits build && pnpm --filter @suitecut/audio-matcha build && pnpm --filter @suitecut/audio-kokoro-sherpa build && pnpm --filter @suitecut/audio-kitten build && pnpm --filter @suitecut/audio-zipvoice build && pnpm --filter @suitecut/audio-pocket build && pnpm --filter @suitecut/audio-supertonic build",
+    "audio-plugins:check": "pnpm audio-plugins:build && pnpm --filter @suitecut/audio-sherpa-core check && pnpm --filter @suitecut/audio-vits check && pnpm --filter @suitecut/audio-matcha check && pnpm --filter @suitecut/audio-kokoro-sherpa check && pnpm --filter @suitecut/audio-kitten check && pnpm --filter @suitecut/audio-zipvoice check && pnpm --filter @suitecut/audio-pocket check && pnpm --filter @suitecut/audio-supertonic check",
+    "typecheck": "tsc --noEmit",
+    "site:build": "pnpm --filter suitecut-docs build",
+    "site:check": "pnpm --filter suitecut-docs check",
+    "site:sync": "pnpm --filter suitecut-docs sync",
+    "site:test": "playwright test --config site/playwright.config.ts site.spec.ts",
+    "test": "vitest run",
+    "test:audio-plugin": "pnpm build && pnpm test:audio-plugin:built",
+    "test:audio-plugin:built": "node scripts/verify-audio-plugin.mjs",
+    "test:kokoro": "pnpm build && node scripts/verify-kokoro.mjs",
+    "test:sherpa": "pnpm audio-plugins:build && vitest run tests/sherpa-plugin.test.ts",
+    "test:package": "pnpm build && pnpm audio-plugins:build && pnpm test:package:built",
+    "test:package:built": "node scripts/verify-package.mjs",
+    "test:page-lifecycle": "pnpm build && node scripts/verify-page-lifecycle.mjs",
+    "test:stream:bitrate": "pnpm build && node scripts/verify-live-bitrate.mjs",
+    "test:stream:congestion": "pnpm build && node scripts/verify-live-congestion.mjs",
+    "test:stream": "pnpm build && node scripts/verify-live-stream.mjs",
+    "test:platform": "vitest run tests/atomic-file.test.ts tests/cli.test.ts tests/manifest.test.ts tests/process.test.ts tests/report-redaction.test.ts tests/timeline.test.ts",
+    "prepack": "pnpm build",
+    "prepublishOnly": "pnpm check && pnpm site:check && pnpm site:build && pnpm test:package:built",
+    "test:stream:audio": "pnpm build && node scripts/verify-live-stream.mjs --audio",
+    "test:native": "pnpm build && node scripts/verify-native-browser.mjs && node scripts/verify-native-stream.mjs && node scripts/verify-native-recording.mjs && node benchmarks/native-playback/playback.mjs",
+    "test:native:playback": "pnpm build && node benchmarks/native-playback/playback.mjs",
+    "native:install:cef": "python3 scripts/install-cef-codecs.py",
+    "test:native:stream": "pnpm build && node scripts/verify-native-stream.mjs",
+    "test:native:recording": "pnpm build && node scripts/verify-native-recording.mjs",
+    "benchmark:beta": "pnpm build && node scripts/benchmark-beta.mjs",
+    "benchmark:suite": "pnpm build && node scripts/benchmark-suite.mjs",
+    "pack:beta": "pnpm build && node scripts/pack-beta.mjs",
+    "test:beta:package": "node scripts/verify-beta-package.mjs",
+    "benchmark:flv": "pnpm build && node scripts/benchmark-flv.mjs",
+    "benchmark:media": "pnpm build && node scripts/benchmark-media.mjs",
+    "test:engine": "playwright test --config benchmarks/native-engine/playwright.config.ts"
+  },
+  "peerDependencies": {
+    "@playwright/test": ">=1.62.1 <2",
+    "playwright": ">=1.62.1 <2"
+  },
+  "peerDependenciesMeta": {
+    "@playwright/test": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.62.1",
+    "@types/node": "^24.0.0",
+    "@types/ws": "^8.18.1",
+    "@types/yauzl": "^3.4.0",
+    "eslint": "^10.9.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-import-resolver-typescript": "^4.4.5",
+    "eslint-plugin-import-x": "^4.17.1",
+    "eslint-plugin-jsdoc": "^63.3.3",
+    "playwright": "^1.62.1",
+    "prettier": "^3.9.6",
+    "prettier-plugin-astro": "^0.14.1",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.67.0",
+    "vitest": "^4.1.11"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "packageManager": "pnpm@11.21.0",
+  "dependencies": {
+    "onnxruntime-web": "^1.27.0",
+    "phonemizer": "^1.2.1",
+    "sharp": "^0.35.4",
+    "ws": "^8.21.3",
+    "yauzl": "3.4.0",
+    "zod": "^4.4.3"
+  },
+  "directories": {
+    "example": "examples",
+    "test": "tests"
+  }
+}

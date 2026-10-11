@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "/workspace/suitecut/benchmarks/native-memory/runtime.py", line 19, in <module>
+    fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+BlockingIOError: [Errno 11] Resource temporarily unavailable

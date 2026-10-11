@@ -1,0 +1,36 @@
+--- a/tests/config/browserTest.ts
++++ b/tests/config/browserTest.ts
+@@ -212,8 +212,30 @@
+   },
+ });
+ 
+-export const playwrightTest = test;
+-export const browserTest = test;
+-export const contextTest = test;
++
++import { launchEngine } from '/workspace/suitecut/src/engine';
++const suitecutTest = test.extend({
++  browserType: [async ({ playwright, browserName }, use) => {
++    const original = playwright[browserName];
++    if(process.env.COMPAT_BACKEND==='chromium') return use(original);
++    await use(new Proxy(original, { get(target, name) {
++      if (['launch', 'launchPersistentContext', 'launchServer', 'connect', 'connectOverCDP'].includes(String(name))) return async () => { throw new Error('SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness'); };
++      const value = Reflect.get(target, name); return typeof value === 'function' ? value.bind(target) : value;
++    }}));
++  }, { scope: 'worker' }],
++  suitecutEngine: [async ({}, use) => {
++    if(process.env.COMPAT_BACKEND==='chromium') return use(undefined);
++    const engine = await launchEngine({ executablePath: process.env.SUITECUT_NATIVE_EXECUTABLE!, width: 1280, height: 720, framesPerSecond: 30 });
++    try { await use(engine); } finally { await engine.close(); }
++  }, { scope: 'worker' }],
++  browser: [async ({ suitecutEngine, playwright }, use) => {
++    if(suitecutEngine) return use(suitecutEngine.browser);
++    const browser=await playwright.chromium.launch({headless:true,args:['--site-per-process']});try{await use(browser)}finally{await browser.close()}
++  }, { scope: 'worker' }],
++});
++
++export const playwrightTest = suitecutTest;
++export const browserTest = suitecutTest;
++export const contextTest = suitecutTest;
+ 
+ export { expect } from '@playwright/test';

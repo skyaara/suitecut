@@ -1,0 +1,48 @@
+{
+  "startedAt": "2026-10-10T21:50:22.148650+00:00",
+  "secondsPerTarget": 600,
+  "targets": [
+    {
+      "name": "bounds",
+      "args": [
+        "/workspace/suitecut/.suitecut/shared-clock-asan/suitecut-fuzz-bounds",
+        "/workspace/suitecut/benchmarks/native-sync/2026-10-11-shared-clock/fuzz/bounds-corpus",
+        "-max_total_time=600",
+        "-max_len=512",
+        "-timeout=5",
+        "-rss_limit_mb=1024",
+        "-malloc_limit_mb=128",
+        "-detect_leaks=1",
+        "-print_final_stats=1",
+        "-artifact_prefix=/workspace/suitecut/benchmarks/native-sync/2026-10-11-shared-clock/fuzz/bounds-artifacts/"
+      ],
+      "sha256": "7744d42d5ebc683aa4fc9604081967008921022f86a6f828e1126c9ac8835669",
+      "exitCode": 0,
+      "wallSeconds": 601.6851373210084,
+      "corpusFiles": 46,
+      "artifacts": []
+    },
+    {
+      "name": "media",
+      "args": [
+        "/workspace/suitecut/.suitecut/shared-clock-asan/suitecut-fuzz-media",
+        "/workspace/suitecut/benchmarks/native-sync/2026-10-11-shared-clock/fuzz/media-corpus",
+        "-max_total_time=600",
+        "-max_len=512",
+        "-timeout=5",
+        "-rss_limit_mb=1024",
+        "-malloc_limit_mb=128",
+        "-detect_leaks=1",
+        "-print_final_stats=1",
+        "-artifact_prefix=/workspace/suitecut/benchmarks/native-sync/2026-10-11-shared-clock/fuzz/media-artifacts/"
+      ],
+      "sha256": "2e8815881c6456fbb993fb5ad04b97d0aa84d218359eecd540c2fb81bf4feaee",
+      "exitCode": 0,
+      "wallSeconds": 601.3956689370098,
+      "corpusFiles": 186,
+      "artifacts": []
+    }
+  ],
+  "scope": "Native bounds/clock helpers and real FFmpeg output queue/lifecycle paths. Shared CEF/FFmpeg dependencies are not ASan-instrumented.",
+  "finishedAt": "2026-10-10T22:10:25.237351+00:00"
+}

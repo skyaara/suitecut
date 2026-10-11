@@ -1,0 +1,16 @@
+[
+  {
+    "output": "recording.mp4",
+    "exitCode": 0,
+    "decodeErrors": false,
+    "log": "logs/interrupted-mp4-full-decode.log",
+    "note": "Decoder exited zero; stderr must also be checked. Receiver has a truncated final H.264 packet from abrupt interruption."
+  },
+  {
+    "output": "receiver.flv",
+    "exitCode": 0,
+    "decodeErrors": true,
+    "log": "logs/interrupted-flv-full-decode.log",
+    "note": "Decoder exited zero; stderr must also be checked. Receiver has a truncated final H.264 packet from abrupt interruption."
+  }
+]

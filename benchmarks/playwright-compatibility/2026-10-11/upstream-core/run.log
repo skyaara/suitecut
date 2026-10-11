@@ -1,0 +1,1128 @@
+[WARN] Your node_modules are out of sync with your lockfile. The workspace structure has changed since last install
+
+Running 4220 tests using 1 worker
+
+(node:955531) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘     1 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/beforeunload.spec.ts:20:3 › should close browser with beforeunload page (6ms)
+(node:955545) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓     2 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/beforeunload.spec.ts:30:3 › should close browsercontext with beforeunload page (321ms)
+  ✘     3 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/beforeunload.spec.ts:38:3 › should be able to navigate away from page with beforeunload (341ms)
+(node:955691) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘     4 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/beforeunload.spec.ts:46:3 › should close page with beforeunload listener (347ms)
+(node:955818) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓     5 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/beforeunload.spec.ts:55:3 › should run beforeunload if asked for @smoke (347ms)
+  ✓     6 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/beforeunload.spec.ts:79:3 › should access page after beforeunload (290ms)
+  ✘     7 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/beforeunload.spec.ts:92:3 › should not stall on evaluate when dismissing beforeunload (4ms)
+(node:955965) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘     8 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/beforeunload.spec.ts:107:3 › should not stall on click when dismissing beforeunload (288ms)
+(node:956090) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘     9 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/beforeunload.spec.ts:130:3 › should support dismissing the dialog multiple times (287ms)
+(node:956219) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘    10 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/beforeunload.spec.ts:152:3 › should support closing the page after a previous dismiss (252ms)
+(node:956347) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓    11 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/beforeunload.spec.ts:170:3 › should support closing the page via a subsequent onbeforeunload dialog (249ms)
+  ✘    12 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/beforeunload.spec.ts:188:3 › does not get stalled by beforeUnload (242ms)
+(node:956495) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘    13 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browser-server.spec.ts:28:3 › should start and stop pipe server (11ms)
+(node:956604) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓    14 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browser-server.spec.ts:43:3 › should write descriptor on start and remove on stop (31ms)
+  ✘    15 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browser-server.spec.ts:66:3 › should start ws server with host/port and produce well-formed endpoint (17ms)
+(node:956711) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓    16 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-cookies.spec.ts:22:3 › should work @smoke (139ms)
+  ✓    17 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-cookies.spec.ts:32:3 › should work with expires=-1 (154ms)
+  ✓    18 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-cookies.spec.ts:50:3 › should add cookies with empty value (120ms)
+  ✘    19 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-cookies.spec.ts:68:3 › should set cookies with SameSite attribute and no secure attribute (15ms)
+(node:956874) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓    20 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-cookies.spec.ts:134:3 › should roundtrip cookie (164ms)
+  ✓    21 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-cookies.spec.ts:153:3 › should send cookie header (122ms)
+  ✓    22 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-cookies.spec.ts:165:3 › should isolate cookies in browser contexts (30ms)
+  ✓    23 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-cookies.spec.ts:181:3 › should isolate session cookies (282ms)
+  ✓    24 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-cookies.spec.ts:207:3 › should isolate persistent cookies (391ms)
+  ✓    25 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-cookies.spec.ts:227:3 › should isolate send cookie header (208ms)
+  ✘    26 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-cookies.spec.ts:248:15 › should isolate cookies between launches (2ms)
+(node:957167) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓    27 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-cookies.spec.ts:263:3 › should set multiple cookies (140ms)
+  ✓    28 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-cookies.spec.ts:283:3 › should have |expires| set to |-1| for session cookies (23ms)
+  ✓    29 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-cookies.spec.ts:293:3 › should set cookie with reasonable defaults (15ms)
+  ✓    30 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-cookies.spec.ts:312:3 › should set a cookie with a path (263ms)
+  ✓    31 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-cookies.spec.ts:338:3 › should not set a cookie with blank page URL (18ms)
+  ✓    32 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-cookies.spec.ts:353:3 › should not set a cookie on a data URL page (30ms)
+  ✓    33 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-cookies.spec.ts:363:3 › should default to setting secure cookie for HTTPS websites (108ms)
+  ✓    34 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-cookies.spec.ts:375:3 › should be able to set unsecure cookie for HTTP website (103ms)
+  ✘    35 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-cookies.spec.ts:387:3 › should set a cookie on a different domain (152ms)
+(node:957367) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓    36 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-cookies.spec.ts:408:3 › should set cookies for a frame (218ms)
+  ✓    37 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-cookies.spec.ts:426:3 › should allow unnamed cookies (168ms)
+  ✓    38 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-cookies.spec.ts:455:3 › should set secure cookies on secure WebSocket (127ms)
+  ✓    39 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-init-script.spec.ts:20:3 › should work with browser context scripts @smoke (115ms)
+  ✓    40 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-init-script.spec.ts:28:3 › should work without navigation, after all bindings (81ms)
+  ✓    41 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-init-script.spec.ts:45:3 › should work without navigation in popup (116ms)
+  ✓    42 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-init-script.spec.ts:55:3 › should work with browser context scripts with a path (99ms)
+  ✓    43 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-init-script.spec.ts:62:3 › should work with browser context scripts for already created pages (133ms)
+  ✓    44 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-init-script.spec.ts:70:3 › should remove context init script after dispose (134ms)
+  ✓    45 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-init-script.spec.ts:81:3 › should remove context init script and keep working in new pages (93ms)
+  ✓    46 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-init-script.spec.ts:89:3 › should expose functions passed as arguments (116ms)
+  ✓    47 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-init-script.spec.ts:99:3 › should expose functions that survive navigation (162ms)
+  ✘    48 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-init-script.spec.ts:112:3 › should expose functions in popups (30.1s)
+(node:957736) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓    49 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-init-script.spec.ts:125:3 › should remove exposed functions after dispose (203ms)
+  ✘    50 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-init-script.spec.ts:137:3 › init script should run only once in popup (30.0s)
+(node:957926) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓    51 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-clearcookies.spec.ts:20:3 › should clear cookies (170ms)
+  ✓    52 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-clearcookies.spec.ts:34:3 › should isolate cookies when clearing (52ms)
+  ✓    53 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-clearcookies.spec.ts:52:3 › should remove cookies by name (111ms)
+  ✓    54 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-clearcookies.spec.ts:72:3 › should remove cookies by name regex (107ms)
+  ✓    55 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-clearcookies.spec.ts:92:3 › should remove cookies by domain (324ms)
+  ✓    56 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-clearcookies.spec.ts:116:3 › should remove cookies by path (166ms)
+  ✓    57 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-clearcookies.spec.ts:146:3 › should remove cookies by name and domain (176ms)
+  ✓    58 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-clearcookies.spec.ts:168:3 › should not transiently delete non-matching cookies when filtering (124ms)
+  ✘    59 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-clearcookies.spec.ts:205:3 › should remove partitioned cookies by name (9ms)
+(node:958202) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓    60 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-cookies.spec.ts:20:3 › should return no cookies in pristine browser context (99ms)
+  ✓    61 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-cookies.spec.ts:24:3 › should get a cookie @smoke (127ms)
+  ✓    62 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-cookies.spec.ts:43:3 › should get a non-session cookie (104ms)
+  ✓    63 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-cookies.spec.ts:75:3 › should allow adding cookies with >400 days expiration (18ms)
+  ✓    64 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-cookies.spec.ts:107:3 › should properly report httpOnly cookie (96ms)
+  ✓    65 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-cookies.spec.ts:118:3 › should properly report "Strict" sameSite cookie (107ms)
+  ✓    66 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-cookies.spec.ts:131:3 › should properly report "Lax" sameSite cookie (95ms)
+  ✓    67 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-cookies.spec.ts:144:3 › should get multiple cookies (108ms)
+  ✘    68 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-cookies.spec.ts:177:3 › should get cookies from multiple urls (38ms)
+(node:958440) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓    69 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-cookies.spec.ts:216:3 › should work with subdomain cookie (38ms)
+  ✓    70 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-cookies.spec.ts:247:3 › should return cookies with empty value (108ms)
+  ✘    71 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-cookies.spec.ts:262:3 › should return secure cookies based on HTTP(S) protocol (19ms)
+(node:958568) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘    72 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-cookies.spec.ts:308:3 › should add cookies with an expiration (42ms)
+(node:958678) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  -    73 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-cookies.spec.ts:356:3 › should support requestStorageAccess
+  ✓    74 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-cookies.spec.ts:410:3 › should parse cookie with large Max-Age correctly (123ms)
+  ✓    75 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-cookies.spec.ts:436:3 › iframe should inherit cookies from parent (205ms)
+  ✘    76 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:26:1 › should fail without credentials (78ms)
+(node:958875) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘    77 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:37:1 › should work with setHTTPCredentials (99ms)
+(node:959020) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓    78 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:54:1 › should work with correct credentials @smoke (127ms)
+  ✓    79 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:65:1 › should fail with wrong credentials (98ms)
+  ✓    80 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:76:1 › should return resource body (130ms)
+  ✓    81 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:89:1 › should work with correct credentials and matching origin (97ms)
+  ✓    82 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:100:1 › should work with correct credentials and matching origin case insensitive (92ms)
+  ✘    83 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:111:1 › should fail with correct credentials and mismatching scheme (84ms)
+(node:959253) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘    84 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:125:1 › should fail with correct credentials and mismatching hostname (120ms)
+(node:959395) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘    85 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:141:1 › should fail with correct credentials and mismatching port (99ms)
+(node:959537) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓    86 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-csp.spec.ts:21:3 › should bypass CSP meta tag @smoke (348ms)
+  ✓    87 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-csp.spec.ts:45:3 › should bypass CSP header (279ms)
+  ✓    88 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-csp.spec.ts:74:3 › should bypass after cross-process navigation (238ms)
+  ✓    89 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-csp.spec.ts:89:3 › should bypass CSP in iframes as well (417ms)
+  ✓    90 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-device.spec.ts:23:5 › device › should work @smoke (113ms)
+  ✓    91 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-device.spec.ts:33:5 › device › should support clicking (242ms)
+  ✓    92 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-device.spec.ts:45:5 › device › should scroll to click (254ms)
+  ✓    93 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-device.spec.ts:62:5 › device › should scroll twice when emulated (91ms)
+  ✓    94 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-device.spec.ts:80:5 › device › should reset scroll top after a navigation (192ms)
+  ✓    95 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-device.spec.ts:94:5 › device › should scroll to a precise position with mobile scale (122ms)
+  ✓    96 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-device.spec.ts:107:5 › device › should emulate viewport and screen size (109ms)
+  ✓    97 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-device.spec.ts:126:5 › device › should emulate viewport without screen size (106ms)
+  ✓    98 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-dsf.spec.ts:19:3 › should fetch lodpi assets @smoke (107ms)
+  ✓    99 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-dsf.spec.ts:31:3 › should fetch hidpi assets (103ms)
+  ✓   100 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:20:5 › console event should work @smoke (76ms)
+  ✓   101 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:30:5 › console event should work with element handles (192ms)
+  ✓   102 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:41:5 › console event should work in popup (104ms)
+  ✘   103 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:55:5 › console event should work in popup 2 (30.1s)
+(node:960054) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   104 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:72:5 › console event should work in immediately closed popup (138ms)
+  ✓   105 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:89:5 › dialog event should work @smoke (119ms)
+  ✘   106 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:103:5 › dialog event should work in popup (35.0s)
+(node:960285) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   107 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:120:5 › dialog event should work in popup 2 (30.1s)
+(node:960505) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   108 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:135:5 › dialog event should work in immediately closed popup (35.1s)
+(node:960698) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   109 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:154:5 › dialog event should work with inline script tag (30.1s)
+(node:960843) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   110 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:176:5 › weberror event should work (118ms)
+  ✓   111 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:185:5 › weberror event should include location (107ms)
+  ✓   112 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:212:5 › pageload event should work @smoke (117ms)
+  ✓   113 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:220:5 › framenavigated event should work @smoke (98ms)
+  ✓   114 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:229:5 › pageclose event should work @smoke (68ms)
+  ✓   115 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:238:5 › frameattached event should work @smoke (125ms)
+  ✓   116 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:251:5 › framedetached event should work @smoke (181ms)
+  ✓   117 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:267:5 › download event should work @smoke (204ms)
+  ✓   118 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-expose-function.spec.ts:20:3 › expose binding should work (109ms)
+  ✓   119 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-expose-function.spec.ts:34:3 › should work (118ms)
+  ✘   120 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-expose-function.spec.ts:47:3 › should dispose (30.1s)
+(node:961161) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   121 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-expose-function.spec.ts:64:3 › should throw for duplicate registrations (133ms)
+  ✘   122 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-expose-function.spec.ts:77:3 › should be callable from-inside addInitScript (30.1s)
+(node:961341) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   123 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-expose-function.spec.ts:92:3 › should work with CSP (180ms)
+  ✓   124 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch-algorithms.spec.ts:43:9 › algorithms › gzip decompression › should support decompression (34ms)
+  ✓   125 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch-algorithms.spec.ts:53:9 › algorithms › gzip decompression › should not fail if response content-length header is missing (gzip) (18ms)
+  ✓   126 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch-algorithms.spec.ts:64:9 › algorithms › gzip decompression › should not fail with chunked responses (without Content-Length header) (16ms)
+  ✓   127 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch-algorithms.spec.ts:77:9 › algorithms › gzip decompression › should not fail with an empty response without content-length header (Z_BUF_ERROR) (20ms)
+  ✓   128 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch-algorithms.spec.ts:88:9 › algorithms › gzip decompression › should not fail with an empty response with content-length header (Z_BUF_ERROR) (19ms)
+  ✓   129 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch-algorithms.spec.ts:43:9 › algorithms › deflate decompression › should support decompression (33ms)
+  ✓   130 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch-algorithms.spec.ts:53:9 › algorithms › deflate decompression › should not fail if response content-length header is missing (deflate) (19ms)
+  ✓   131 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch-algorithms.spec.ts:64:9 › algorithms › deflate decompression › should not fail with chunked responses (without Content-Length header) (17ms)
+  ✓   132 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch-algorithms.spec.ts:77:9 › algorithms › deflate decompression › should not fail with an empty response without content-length header (Z_BUF_ERROR) (21ms)
+  ✓   133 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch-algorithms.spec.ts:88:9 › algorithms › deflate decompression › should not fail with an empty response with content-length header (Z_BUF_ERROR) (13ms)
+  ✓   134 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch-algorithms.spec.ts:43:9 › algorithms › br decompression › should support decompression (17ms)
+  ✓   135 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch-algorithms.spec.ts:53:9 › algorithms › br decompression › should not fail if response content-length header is missing (br) (14ms)
+  ✓   136 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch-algorithms.spec.ts:64:9 › algorithms › br decompression › should not fail with chunked responses (without Content-Length header) (31ms)
+  ✓   137 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch-algorithms.spec.ts:77:9 › algorithms › br decompression › should not fail with an empty response without content-length header (Z_BUF_ERROR) (13ms)
+  ✓   138 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch-algorithms.spec.ts:88:9 › algorithms › br decompression › should not fail with an empty response with content-length header (Z_BUF_ERROR) (13ms)
+  ✓   139 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch-happy-eyeballs.spec.ts:46:3 › get should work (341ms)
+  ✓   140 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch-happy-eyeballs.spec.ts:53:3 › get should work on request fixture (309ms)
+  ✓   141 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch-happy-eyeballs.spec.ts:60:3 › https post should work with ignoreHTTPSErrors option (343ms)
+  ✓   142 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch-happy-eyeballs.spec.ts:70:3 › should work with ip6 and port as the host (9ms)
+  ✓   143 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:39:3 › get should work @smoke (24ms)
+  ✓   144 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:50:3 › fetch should work (18ms)
+  ✓   145 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:61:3 › should return timing (19ms)
+  ✓   146 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:85:3 › should return timing for https (35ms)
+  ✓   147 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:108:3 › should throw on network error (20ms)
+  ✓   148 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:116:3 › should throw on network error after redirect (18ms)
+  ✓   149 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:125:3 › should throw on network error when sending body (17ms)
+  ✓   150 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:139:3 › should throw on network error when sending body after redirect (17ms)
+  ✓   151 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:154:3 › should add session cookies to request (19ms)
+  ✘   152 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:174:3 › should filter cookies by domain (24ms)
+(node:961476) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   153 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:206:5 › fetch should support params passed as object (103ms)
+  ✓   154 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:230:5 › fetch should support params passed as URLSearchParams (49ms)
+  ✓   155 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:251:5 › fetch should support params passed as string (26ms)
+  ✓   156 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:269:5 › fetch should support failOnStatusCode (26ms)
+  ✓   157 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:278:5 › fetchshould support ignoreHTTPSErrors option (30ms)
+  ✓   158 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:206:5 › delete should support params passed as object (32ms)
+  ✓   159 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:230:5 › delete should support params passed as URLSearchParams (23ms)
+  ✓   160 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:251:5 › delete should support params passed as string (23ms)
+  ✓   161 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:269:5 › delete should support failOnStatusCode (32ms)
+  ✓   162 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:278:5 › deleteshould support ignoreHTTPSErrors option (50ms)
+  ✓   163 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:206:5 › get should support params passed as object (50ms)
+  ✓   164 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:230:5 › get should support params passed as URLSearchParams (180ms)
+  ✓   165 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:251:5 › get should support params passed as string (19ms)
+  ✓   166 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:269:5 › get should support failOnStatusCode (67ms)
+  ✓   167 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:278:5 › getshould support ignoreHTTPSErrors option (20ms)
+  ✓   168 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:206:5 › head should support params passed as object (82ms)
+  ✓   169 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:230:5 › head should support params passed as URLSearchParams (17ms)
+  ✓   170 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:251:5 › head should support params passed as string (42ms)
+  ✓   171 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:269:5 › head should support failOnStatusCode (21ms)
+  ✓   172 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:278:5 › headshould support ignoreHTTPSErrors option (25ms)
+  ✓   173 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:206:5 › patch should support params passed as object (19ms)
+  ✓   174 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:230:5 › patch should support params passed as URLSearchParams (19ms)
+  ✓   175 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:251:5 › patch should support params passed as string (42ms)
+  ✓   176 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:269:5 › patch should support failOnStatusCode (33ms)
+  ✓   177 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:278:5 › patchshould support ignoreHTTPSErrors option (40ms)
+  ✓   178 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:206:5 › post should support params passed as object (25ms)
+  ✓   179 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:230:5 › post should support params passed as URLSearchParams (25ms)
+  ✓   180 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:251:5 › post should support params passed as string (16ms)
+  ✓   181 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:269:5 › post should support failOnStatusCode (31ms)
+  ✓   182 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:278:5 › postshould support ignoreHTTPSErrors option (19ms)
+  ✓   183 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:206:5 › put should support params passed as object (23ms)
+  ✓   184 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:230:5 › put should support params passed as URLSearchParams (17ms)
+  ✓   185 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:251:5 › put should support params passed as string (23ms)
+  ✓   186 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:269:5 › put should support failOnStatusCode (37ms)
+  ✓   187 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:278:5 › putshould support ignoreHTTPSErrors option (19ms)
+  ✓   188 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:284:3 › should not add context cookie if cookie header passed as a parameter (15ms)
+  ✓   189 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:307:3 › should follow redirects (19ms)
+  ✓   190 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:329:3 › should follow redirects correctly when Location header contains UTF-8 characters (18ms)
+  ✓   191 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:343:3 › should add cookies from Set-Cookie header (154ms)
+  ✓   192 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:364:3 › should preserve cookie order from Set-Cookie header (121ms)
+  ✓   193 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:390:3 › should support cookie with empty value (108ms)
+  ✓   194 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:407:3 › should not lose body while handling Set-Cookie header (19ms)
+  ✓   195 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:416:3 › should remove cookie with negative max-age (98ms)
+  ✓   196 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:435:3 › should remove cookie with expires far in the past (149ms)
+  ✓   197 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:453:3 › should handle cookies on redirects (51ms)
+  ✓   198 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:511:3 › should return raw headers (82ms)
+  ✓   199 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:534:3 › should work with http credentials (20ms)
+  ✓   200 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:549:3 › should work with setHTTPCredentials (19ms)
+  ✓   201 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:559:3 › should return error with wrong credentials (17ms)
+  ✓   202 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:566:3 › should support HTTPCredentials.send for newContext (20ms)
+  ✓   203 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:590:3 › should support HTTPCredentials.send for browser.newPage (84ms)
+  ✓   204 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:615:3 › delete should support post data (18ms)
+  ✓   205 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:628:3 › get should support post data (15ms)
+  ✓   206 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:641:3 › head should support post data (14ms)
+  ✓   207 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:654:3 › patch should support post data (15ms)
+  ✓   208 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:667:3 › post should support post data (17ms)
+  ✓   209 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:680:3 › put should support post data (22ms)
+  ✘   210 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:693:3 › should add default headers (136ms)
+(node:961730) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   211 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:704:3 › should send content-length (43ms)
+  ✘   212 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:718:3 › should add default headers to redirects (315ms)
+(node:961857) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   213 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:730:3 › should allow to override default headers (129ms)
+  ✓   214 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:746:3 › should propagate custom headers with redirects (60ms)
+  ✓   215 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:760:3 › should propagate extra http headers with redirects (23ms)
+  ✓   216 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:775:3 › should throw on invalid header value (16ms)
+  ✓   217 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:784:3 › should throw on non-http(s) protocol (21ms)
+  ✓   218 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:791:3 › should support https (44ms)
+  ✓   219 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:804:3 › should inherit ignoreHTTPSErrors from context (28ms)
+  ✓   220 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:810:3 › should resolve url relative to baseURL (17ms)
+  ✓   221 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:819:3 › should support gzip compression (26ms)
+  ✓   222 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:839:3 › should support case-insensitive content-encoding (22ms)
+  ✓   223 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:859:3 › should throw informative error on corrupted gzip body (17ms)
+  ✓   224 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:873:3 › should support brotli compression (20ms)
+  ✓   225 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:893:3 › should throw informative error on corrupted brotli body (15ms)
+  ✓   226 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:907:3 › should support deflate compression (22ms)
+  ✓   227 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:927:3 › should throw informative error on corrupted deflate body (17ms)
+  ✓   228 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:941:3 › should support timeout option (21ms)
+  ✓   229 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:953:3 › should support a timeout of 0 (93ms)
+  ✓   230 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:970:3 › should respect timeout after redirects (114ms)
+  ✓   231 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:984:3 › should not hang on a brotli encoded Range request (17ms)
+  ✓   232 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:1007:3 › should dispose (18ms)
+  ✓   233 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:1015:3 › should dispose when context closes (17ms)
+  ✓   234 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:1023:3 › should override request parameters (133ms)
+  ✓   235 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:1043:3 › should support application/x-www-form-urlencoded (86ms)
+  ✓   236 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:1064:3 › should support application/x-www-form-urlencoded with param lists (81ms)
+  ✓   237 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:1080:3 › should encode to application/json by default (77ms)
+  ✓   238 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:1099:3 › should support multipart/form-data (36ms)
+  ✓   239 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:1138:3 › should support multipart/form-data with ReadStream values (82ms)
+  ✓   240 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:1171:3 › should support multipart/form-data and keep the order (95ms)
+  ✓   241 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:1200:3 › should support repeating names in multipart/form-data (22ms)
+  ✓   242 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:1232:3 › should serialize data to json regardless of content-type (26ms)
+  ✓   243 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:1252:3 › should throw nice error on unsupported data type (13ms)
+  ✓   244 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:1262:3 › context request should export same storage state as context (92ms)
+  ✓   245 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:1276:3 › should send secure cookie over http for localhost (80ms)
+  ✓   246 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:1290:3 › should accept bool and numeric params and filter out undefined (80ms)
+  ✓   247 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:1318:3 › should abort requests when browser context closes (16ms)
+  ✘   248 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:1335:3 › should work with connectOverCDP (1ms)
+(node:962143) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   249 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:1353:3 › should support SameSite cookie attribute over https (188ms)
+  ✓   250 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:1375:3 › should set domain=localhost cookie (27ms)
+  ✓   251 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:1387:3 › fetch should not throw on long set-cookie value (20ms)
+  ✓   252 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:1398:3 › should support set-cookie with SameSite and without Secure attribute over HTTP (100ms)
+  ✓   253 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:1419:3 › should update host header on redirect (41ms)
+  ✓   254 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:1448:3 › should not work after dispose (24ms)
+  ✓   255 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:1454:3 › should not work after context dispose (17ms)
+  ✓   256 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:1459:3 › should retry on ECONNRESET (1.8s)
+  ✓   257 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:1477:3 › should retry ECONNRESET on compressed response (783ms)
+  ✓   258 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:1502:3 › should retry ECONNRESET mid-stream during gzip decompression (781ms)
+  ✓   259 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:22:3 › should context.routeFromHAR, matching the method and following redirects (219ms)
+  ✓   260 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:33:3 › should page.routeFromHAR, matching the method and following redirects (164ms)
+  ✓   261 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:44:3 › fallback:continue should continue when not found in har (172ms)
+  ✓   262 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:52:3 › by default should abort requests not found in har (100ms)
+  ✓   263 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:60:3 › fallback:continue should continue requests on bad har (146ms)
+  ✓   264 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:69:3 › should only handle requests matching url filter (222ms)
+  ✓   265 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:87:3 › should only context.routeFromHAR requests matching url filter (176ms)
+  ✓   266 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:105:3 › should only page.routeFromHAR requests matching url filter (162ms)
+  ✓   267 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:123:3 › should apply overrides before routing from har (140ms)
+  ✓   268 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:145:3 › should support regex filter (300ms)
+  ✓   269 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:154:3 › newPage should fulfill from har, matching the method and following redirects (202ms)
+  ✓   270 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:166:3 › should change document URL after redirected navigation (176ms)
+  ✓   271 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:180:3 › should change document URL after redirected navigation on click (447ms)
+  ✘   272 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:195:3 › should goBack to redirected navigation (30.1s)
+(node:962600) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   273 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:208:3 › should goForward to redirected navigation (30.1s)
+(node:962745) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   274 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:224:3 › should reload redirected navigation (280ms)
+  ✓   275 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:236:3 › should fulfill from har with content in a file (131ms)
+  ✓   276 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:244:3 › should round-trip har.zip (297ms)
+  ✓   277 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:259:3 › should produce extracted zip (282ms)
+  ✓   278 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:278:3 › should round-trip extracted har.zip (340ms)
+  ✓   279 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:296:3 › should round-trip har with postData (429ms)
+  ✓   280 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:327:3 › should record overridden requests to har (290ms)
+  ✓   281 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:361:3 › should disambiguate by header (296ms)
+  ✓   282 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:399:3 › should update har.zip for context (316ms)
+  ✓   283 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:415:3 › should ignore boundary when matching multipart/form-data body (690ms)
+  ✓   284 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:455:3 › should record single set-cookie headers (212ms)
+  ✓   285 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:481:3 › should record multiple set-cookie headers (227ms)
+  ✓   286 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:508:3 › should update har.zip for page (285ms)
+  ✓   287 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:524:3 › should update har.zip for page with different options (267ms)
+  ✓   288 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:540:3 › should update extracted har.zip for page (300ms)
+  ✓   289 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:556:3 › page.unrouteAll should stop page.routeFromHAR (203ms)
+  ✓   290 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:569:3 › context.unrouteAll should stop context.routeFromHAR (156ms)
+  ✓   291 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:582:3 › should ignore aborted requests (1.2s)
+  ✓   292 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts:20:3 › should affect accept-language header @smoke (106ms)
+  ✓   293 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts:31:3 › should affect navigator.language (77ms)
+  ✓   294 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts:38:3 › should format number (213ms)
+  ✓   295 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts:55:3 › should format date (296ms)
+  ✓   296 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts:74:3 › should format number in popups (233ms)
+  ✘   297 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts:89:3 › should affect navigator.language in popups (150ms)
+(node:963638) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   298 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts:103:3 › should work for multiple pages sharing same process (196ms)
+Timed out waiting 480s for the test suite to run
+Timed out waiting 480s for the teardown for test suite to run
+
+
+  1) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/beforeunload.spec.ts:20:3 › should close browser with beforeunload page 
+
+    Error: SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness
+
+       at config/browserTest.ts:222
+
+      220 |     if(process.env.COMPAT_BACKEND==='chromium') return use(original);
+      221 |     await use(new Proxy(original, { get(target, name) {
+    > 222 |       if (['launch', 'launchPersistentContext', 'launchServer', 'connect', 'connectOverCDP'].includes(String(name))) return async () => { throw new Error('SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness'); };
+          |                                                                                                                                                 ^
+      223 |       const value = Reflect.get(target, name); return typeof value === 'function' ? value.bind(target) : value;
+      224 |     }}));
+      225 |   }, { scope: 'worker' }],
+        at Proxy.launch (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts:222:145)
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/beforeunload.spec.ts:21:37
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-core/artifacts/library-beforeunload-shoul-75b2b-wser-with-beforeunload-page/error-context.md
+
+  2) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/beforeunload.spec.ts:38:3 › should be able to navigate away from page with beforeunload 
+
+    Error: Protocol error (Page.handleJavaScriptDialog): No dialog is showing
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-core/artifacts/library-beforeunload-shoul-6457c-from-page-with-beforeunload/error-context.md
+
+  3) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/beforeunload.spec.ts:46:3 › should close page with beforeunload listener 
+
+    Error: Protocol error (Page.handleJavaScriptDialog): No dialog is showing
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-core/artifacts/library-beforeunload-shoul-e5454--with-beforeunload-listener/error-context.md
+
+  4) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/beforeunload.spec.ts:92:3 › should not stall on evaluate when dismissing beforeunload 
+
+    Error: Protocol error (Page.handleJavaScriptDialog): No dialog is showing
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-core/artifacts/library-beforeunload-shoul-a7f0c-hen-dismissing-beforeunload/error-context.md
+
+  5) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/beforeunload.spec.ts:107:3 › should not stall on click when dismissing beforeunload 
+
+    Error: dialog.dismiss: Protocol error (Page.handleJavaScriptDialog): No dialog is showing
+
+      115 |   });
+      116 |   page.on('dialog', async dialog => {
+    > 117 |     await dialog.dismiss();
+          |                  ^
+      118 |   });
+      119 |
+      120 |   await page.getByRole('link').click({ noWaitAfter: true });
+        at _Page.<anonymous> (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/beforeunload.spec.ts:117:18)
+
+    Error: locator.click: Test ended.
+    Call log:
+      - waiting for getByRole('link')
+
+
+      124 |
+      125 |   // This line should not timeout.
+    > 126 |   await page.getByRole('link').click({ timeout: 5000 });
+          |                                ^
+      127 |   await expect(page).toHaveURL(server.PREFIX + '/frames/one-frame.html');
+      128 | });
+      129 |
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/beforeunload.spec.ts:126:32
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-core/artifacts/library-beforeunload-shoul-2e1bb-hen-dismissing-beforeunload/error-context.md
+
+  6) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/beforeunload.spec.ts:130:3 › should support dismissing the dialog multiple times 
+
+    Error: dialog.dismiss: Protocol error (Page.handleJavaScriptDialog): No dialog is showing
+
+      147 |   ]);
+      148 |
+    > 149 |   await dialog2.dismiss();
+          |                 ^
+      150 | });
+      151 |
+      152 | it('should support closing the page after a previous dismiss', async ({ page, server }) => {
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/beforeunload.spec.ts:149:17
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-core/artifacts/library-beforeunload-shoul-d331e-g-the-dialog-multiple-times/error-context.md
+
+  7) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/beforeunload.spec.ts:152:3 › should support closing the page after a previous dismiss 
+
+    Error: Protocol error (Page.handleJavaScriptDialog): No dialog is showing
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-core/artifacts/library-beforeunload-shoul-cfa45-ge-after-a-previous-dismiss/error-context.md
+
+  8) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/beforeunload.spec.ts:188:3 › does not get stalled by beforeUnload 
+
+    Error: dialog.dismiss: Protocol error (Page.handleJavaScriptDialog): No dialog is showing
+
+      196 |     });
+      197 |   });
+    > 198 |   page.on('dialog', dialog => dialog.dismiss());
+          |                                      ^
+      199 |
+      200 |   // We have to interact with a page so that 'beforeunload' handlers
+      201 |   // fire.
+        at _Page.<anonymous> (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/beforeunload.spec.ts:198:38)
+
+    Error: page.evaluate: Test ended.
+
+      207 |   await page.close({ runBeforeUnload: true });
+      208 |
+    > 209 |   await page.evaluate(async () => fetch(new URL('/api', window.location.href)));
+          |              ^
+      210 | });
+      211 |
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/beforeunload.spec.ts:209:14
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-core/artifacts/library-beforeunload-does-not-get-stalled-by-beforeUnload/error-context.md
+
+  9) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browser-server.spec.ts:28:3 › should start and stop pipe server 
+
+    Error: SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness
+
+       at config/browserTest.ts:222
+
+      220 |     if(process.env.COMPAT_BACKEND==='chromium') return use(original);
+      221 |     await use(new Proxy(original, { get(target, name) {
+    > 222 |       if (['launch', 'launchPersistentContext', 'launchServer', 'connect', 'connectOverCDP'].includes(String(name))) return async () => { throw new Error('SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness'); };
+          |                                                                                                                                                 ^
+      223 |       const value = Reflect.get(target, name); return typeof value === 'function' ? value.bind(target) : value;
+      224 |     }}));
+      225 |   }, { scope: 'worker' }],
+        at Proxy.connect (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts:222:145)
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browser-server.spec.ts:34:38
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-core/artifacts/library-browser-server-should-start-and-stop-pipe-server/error-context.md
+
+  10) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browser-server.spec.ts:66:3 › should start ws server with host/port and produce well-formed endpoint 
+
+    Error: SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness
+
+       at config/browserTest.ts:222
+
+      220 |     if(process.env.COMPAT_BACKEND==='chromium') return use(original);
+      221 |     await use(new Proxy(original, { get(target, name) {
+    > 222 |       if (['launch', 'launchPersistentContext', 'launchServer', 'connect', 'connectOverCDP'].includes(String(name))) return async () => { throw new Error('SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness'); };
+          |                                                                                                                                                 ^
+      223 |       const value = Reflect.get(target, name); return typeof value === 'function' ? value.bind(target) : value;
+      224 |     }}));
+      225 |   }, { scope: 'worker' }],
+        at Proxy.connect (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts:222:145)
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browser-server.spec.ts:70:38
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-core/artifacts/library-browser-server-sho-a4ef8-roduce-well-formed-endpoint/error-context.md
+
+  11) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-cookies.spec.ts:68:3 › should set cookies with SameSite attribute and no secure attribute 
+
+    Error: browserContext.addCookies: Protocol error (Storage.setCookies): CEF rejected a cookie
+
+      68 | it('should set cookies with SameSite attribute and no secure attribute', async ({ context, browserName, isWindows, isLinux, defaultSameSiteCookieValue, channel, isBidi }) => {
+      69 |   // Use domain instead of URL to ensure that the `secure` attribute is not set.
+    > 70 |   await context.addCookies([{
+         |                 ^
+      71 |     domain: 'foo.com',
+      72 |     path: '/',
+      73 |     name: 'same-site-unset',
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-cookies.spec.ts:70:17
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-core/artifacts/library-browsercontext-add-6b3a6-ute-and-no-secure-attribute/error-context.md
+
+  12) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-cookies.spec.ts:248:15 › should isolate cookies between launches 
+
+    Error: SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness
+
+       at config/browserTest.ts:222
+
+      220 |     if(process.env.COMPAT_BACKEND==='chromium') return use(original);
+      221 |     await use(new Proxy(original, { get(target, name) {
+    > 222 |       if (['launch', 'launchPersistentContext', 'launchServer', 'connect', 'connectOverCDP'].includes(String(name))) return async () => { throw new Error('SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness'); };
+          |                                                                                                                                                 ^
+      223 |       const value = Reflect.get(target, name); return typeof value === 'function' ? value.bind(target) : value;
+      224 |     }}));
+      225 |   }, { scope: 'worker' }],
+        at Proxy.launch (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts:222:145)
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-cookies.spec.ts:251:38
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-core/artifacts/library-browsercontext-add-a1a59-te-cookies-between-launches/error-context.md
+
+  13) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-cookies.spec.ts:387:3 › should set a cookie on a different domain 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+    @@ -1,8 +1,8 @@
+      Array [
+        Object {
+    -     "domain": "www.example.com",
+    +     "domain": ".www.example.com",
+          "expires": -1,
+          "httpOnly": false,
+          "name": "example-cookie",
+          "path": "/",
+          "sameSite": "Lax",
+
+      394 |   }]);
+      395 |   expect(await page.evaluate('document.cookie')).toBe('');
+    > 396 |   expect(await context.cookies('https://www.example.com')).toEqual([{
+          |                                                            ^
+      397 |     name: 'example-cookie',
+      398 |     value: 'best',
+      399 |     domain: 'www.example.com',
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-cookies.spec.ts:396:60
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-core/artifacts/library-browsercontext-add-b982f-ookie-on-a-different-domain/error-context.md
+
+  14) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-init-script.spec.ts:112:3 › should expose functions in popups 
+
+    Test timeout of 30000ms exceeded.
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-core/artifacts/library-browsercontext-add-c7bc5--expose-functions-in-popups/error-context.md
+
+  15) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-init-script.spec.ts:137:3 › init script should run only once in popup 
+
+    Test timeout of 30000ms exceeded.
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-core/artifacts/library-browsercontext-add-493f5-ould-run-only-once-in-popup/error-context.md
+
+  16) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-clearcookies.spec.ts:205:3 › should remove partitioned cookies by name 
+
+    Error: browserContext.addCookies: Protocol error (Storage.setCookies): CEF rejected a cookie
+
+      208 |   it.skip(browserName !== 'chromium', 'Partitioned cookies (CHIPS) are Chromium-specific');
+      209 |   const context = await browser.newContext({ ignoreHTTPSErrors: true });
+    > 210 |   await context.addCookies([
+          |                 ^
+      211 |     {
+      212 |       name: 'delete_me',
+      213 |       value: '1',
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-clearcookies.spec.ts:210:17
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-core/artifacts/library-browsercontext-cle-37a91-partitioned-cookies-by-name/error-context.md
+
+  17) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-cookies.spec.ts:177:3 › should get cookies from multiple urls 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 8
+    + Received  + 8
+
+      Set {
+        Object {
+    -     "domain": "baz.com",
+    +     "domain": ".foo.com",
+          "expires": -1,
+          "httpOnly": false,
+    -     "name": "birdo",
+    +     "name": "doggo",
+          "path": "/",
+    -     "sameSite": "Lax",
+    +     "sameSite": "None",
+          "secure": true,
+    -     "value": "tweets",
+    +     "value": "woofs",
+        },
+        Object {
+    -     "domain": "foo.com",
+    +     "domain": ".baz.com",
+          "expires": -1,
+          "httpOnly": false,
+    -     "name": "doggo",
+    +     "name": "birdo",
+          "path": "/",
+    -     "sameSite": "None",
+    +     "sameSite": "Lax",
+          "secure": true,
+    -     "value": "woofs",
+    +     "value": "tweets",
+        },
+      }
+
+      193 |   }]);
+      194 |   const cookies = new Set(await context.cookies(['https://foo.com', 'https://baz.com']));
+    > 195 |   expect(cookies).toEqual(new Set([{
+          |                   ^
+      196 |     name: 'birdo',
+      197 |     value: 'tweets',
+      198 |     domain: 'baz.com',
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-cookies.spec.ts:195:19
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-core/artifacts/library-browsercontext-coo-0c651--cookies-from-multiple-urls/error-context.md
+
+  18) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-cookies.spec.ts:262:3 › should return secure cookies based on HTTP(S) protocol 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 8
+    + Received  + 8
+
+      Set {
+        Object {
+    -     "domain": "foo.com",
+    +     "domain": ".foo.com",
+          "expires": -1,
+          "httpOnly": false,
+    -     "name": "catto",
+    +     "name": "doggo",
+          "path": "/",
+          "sameSite": "Lax",
+    -     "secure": false,
+    -     "value": "purrs",
+    +     "secure": true,
+    +     "value": "woofs",
+        },
+        Object {
+    -     "domain": "foo.com",
+    +     "domain": ".foo.com",
+          "expires": -1,
+          "httpOnly": false,
+    -     "name": "doggo",
+    +     "name": "catto",
+          "path": "/",
+          "sameSite": "Lax",
+    -     "secure": true,
+    -     "value": "woofs",
+    +     "secure": false,
+    +     "value": "purrs",
+        },
+      }
+
+      275 |   }]);
+      276 |   const cookies = new Set(await context.cookies('https://foo.com'));
+    > 277 |   expect(cookies).toEqual(new Set([{
+          |                   ^
+      278 |     name: 'catto',
+      279 |     value: 'purrs',
+      280 |     domain: 'foo.com',
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-cookies.spec.ts:277:19
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-core/artifacts/library-browsercontext-coo-465c4-es-based-on-HTTP-S-protocol/error-context.md
+
+  19) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-cookies.spec.ts:308:3 › should add cookies with an expiration 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+    @@ -1,8 +1,8 @@
+      Array [
+        Object {
+    -     "domain": "foo.com",
+    +     "domain": ".foo.com",
+          "expires": 1791716088,
+          "httpOnly": false,
+          "name": "doggo",
+          "path": "/",
+          "sameSite": "None",
+
+      317 |   const cookies = await context.cookies(['https://foo.com']);
+      318 |   expect(cookies.length).toBe(1);
+    > 319 |   expect(cookies).toEqual([{
+          |                   ^
+      320 |     name: 'doggo',
+      321 |     value: 'woofs',
+      322 |     domain: 'foo.com',
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-cookies.spec.ts:319:19
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-core/artifacts/library-browsercontext-coo-68502--cookies-with-an-expiration/error-context.md
+
+  20) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:26:1 › should fail without credentials 
+
+    TypeError: responseOrError.status is not a function
+
+      32 |     expect(responseOrError.message).toContain('net::ERR_INVALID_AUTH_CREDENTIALS');
+      33 |   else
+    > 34 |     expect(responseOrError.status()).toBe(401);
+         |                            ^
+      35 | });
+      36 |
+      37 | it('should work with setHTTPCredentials', async ({ browser, server, failsOn401 }) => {
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:34:28
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-core/artifacts/library-browsercontext-cre-27f77-ld-fail-without-credentials/error-context.md
+
+  21) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:37:1 › should work with setHTTPCredentials 
+
+    TypeError: responseOrError.status is not a function
+
+      44 |     expect(responseOrError.message).toContain('net::ERR_INVALID_AUTH_CREDENTIALS');
+      45 |   else
+    > 46 |     expect(responseOrError.status()).toBe(401);
+         |                            ^
+      47 |
+      48 |   await context.setHTTPCredentials({ username: 'user', password: 'pass' });
+      49 |   responseOrError = await page.reload();
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:46:28
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-core/artifacts/library-browsercontext-cre-00620-ork-with-setHTTPCredentials/error-context.md
+
+  22) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:111:1 › should fail with correct credentials and mismatching scheme 
+
+    TypeError: responseOrError.status is not a function
+
+      119 |     expect(responseOrError.message).toContain('net::ERR_INVALID_AUTH_CREDENTIALS');
+      120 |   else
+    > 121 |     expect(responseOrError.status()).toBe(401);
+          |                            ^
+      122 |   await context.close();
+      123 | });
+      124 |
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:121:28
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-core/artifacts/library-browsercontext-cre-94bca-ials-and-mismatching-scheme/error-context.md
+
+  23) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:125:1 › should fail with correct credentials and mismatching hostname 
+
+    TypeError: responseOrError.status is not a function
+
+      135 |     expect(responseOrError.message).toContain('net::ERR_INVALID_AUTH_CREDENTIALS');
+      136 |   else
+    > 137 |     expect(responseOrError.status()).toBe(401);
+          |                            ^
+      138 |   await context.close();
+      139 | });
+      140 |
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:137:28
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-core/artifacts/library-browsercontext-cre-c4989-ls-and-mismatching-hostname/error-context.md
+
+  24) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:141:1 › should fail with correct credentials and mismatching port 
+
+    TypeError: responseOrError.status is not a function
+
+      150 |     expect(responseOrError.message).toContain('net::ERR_INVALID_AUTH_CREDENTIALS');
+      151 |   else
+    > 152 |     expect(responseOrError.status()).toBe(401);
+          |                            ^
+      153 |   await context.close();
+      154 | });
+      155 |
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:152:28
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-core/artifacts/library-browsercontext-cre-767d7-ntials-and-mismatching-port/error-context.md
+
+  25) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:55:5 › console event should work in popup 2 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: browserContext.waitForEvent: Test timeout of 30000ms exceeded.
+
+      62 |       win.close();
+      63 |     }),
+    > 64 |     page.context().waitForEvent('console', msg => msg.type() === 'log'),
+         |                    ^
+      65 |     page.context().waitForEvent('page'),
+      66 |   ]);
+      67 |
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:64:20
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:58:30
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-core/artifacts/library-browsercontext-eve-9c38a-vent-should-work-in-popup-2/error-context.md
+
+  26) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:103:5 › dialog event should work in popup 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: page.waitForEvent: Test timeout of 30000ms exceeded.
+    =========================== logs ===========================
+    waiting for event "popup"
+    ============================================================
+
+      109 |   const [dialog, popup] = await Promise.all([
+      110 |     page.context().waitForEvent('dialog'),
+    > 111 |     page.waitForEvent('popup'),
+          |          ^
+      112 |   ]);
+      113 |
+      114 |   expect(dialog.message()).toBe('hey?');
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:111:10
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:109:27
+
+    Error: page.evaluate: Test timeout of 30000ms exceeded.
+
+      102 |
+      103 | test('dialog event should work in popup', async ({ page }) => {
+    > 104 |   const promise = page.evaluate(() => {
+          |                        ^
+      105 |     const win = window.open('');
+      106 |     return (win as any).prompt('hey?');
+      107 |   });
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:104:24
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-core/artifacts/library-browsercontext-eve-31625--event-should-work-in-popup/error-context.md
+
+  27) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:120:5 › dialog event should work in popup 2 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: browserContext.waitForEvent: Test timeout of 30000ms exceeded.
+
+      125 |   });
+      126 |
+    > 127 |   const dialog = await page.context().waitForEvent('dialog');
+          |                                       ^
+      128 |
+      129 |   expect(dialog.message()).toBe('hey?');
+      130 |   expect(dialog.page()).toBe(null);
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:127:39
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:127:18
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-core/artifacts/library-browsercontext-eve-7baea-vent-should-work-in-popup-2/error-context.md
+
+  28) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:135:5 › dialog event should work in immediately closed popup 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: page.waitForEvent: Test timeout of 30000ms exceeded.
+    =========================== logs ===========================
+    waiting for event "popup"
+    ============================================================
+
+      143 |   const [dialog, popup] = await Promise.all([
+      144 |     page.context().waitForEvent('dialog'),
+    > 145 |     page.waitForEvent('popup'),
+          |          ^
+      146 |   ]);
+      147 |
+      148 |   expect(dialog.message()).toBe('hey?');
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:145:10
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:143:27
+
+    Error: page.evaluate: Test timeout of 30000ms exceeded.
+
+      134 |
+      135 | test('dialog event should work in immediately closed popup', async ({ page }) => {
+    > 136 |   const promise = page.evaluate(async () => {
+          |                        ^
+      137 |     const win = window.open()!;
+      138 |     const result = (win as any).prompt('hey?');
+      139 |     win.close();
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:136:24
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-core/artifacts/library-browsercontext-eve-42600-in-immediately-closed-popup/error-context.md
+
+  29) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:154:5 › dialog event should work with inline script tag 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: browserContext.waitForEvent: Test timeout of 30000ms exceeded.
+
+      163 |   const promise = page.click('a');
+      164 |   const [dialog, popup] = await Promise.all([
+    > 165 |     page.context().waitForEvent('dialog'),
+          |                    ^
+      166 |     page.context().waitForEvent('page'),
+      167 |   ]);
+      168 |
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:165:20
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:164:27
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-core/artifacts/library-browsercontext-eve-70e56-work-with-inline-script-tag/error-context.md
+
+  30) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-expose-function.spec.ts:47:3 › should dispose 
+
+    Test timeout of 30000ms exceeded.
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-core/artifacts/library-browsercontext-expose-function-should-dispose/error-context.md
+
+  31) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-expose-function.spec.ts:77:3 › should be callable from-inside addInitScript 
+
+    Test timeout of 30000ms exceeded.
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-core/artifacts/library-browsercontext-exp-17fcf-e-from-inside-addInitScript/error-context.md
+
+  32) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:174:3 › should filter cookies by domain 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    Expected: "second=2"
+    Received: "first=1; second=2"
+
+      200 |     } as any),
+      201 |   ]);
+    > 202 |   expect(req.headers.cookie).toEqual('second=2');
+          |                              ^
+      203 | });
+      204 |
+      205 | for (const method of ['fetch', 'delete', 'get', 'head', 'patch', 'post', 'put'] as const) {
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:202:30
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-core/artifacts/library-browsercontext-fetch-should-filter-cookies-by-domain/error-context.md
+
+  33) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:693:3 › should add default headers 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36"
+    Received: "Mozilla/5.0 HeadlessChrome/152.0.7977.83"
+
+      698 |   expect(request.headers['accept']).toBe('*/*');
+      699 |   const userAgent = await page.evaluate(() => navigator.userAgent);
+    > 700 |   expect(request.headers['user-agent']).toBe(userAgent);
+          |                                         ^
+      701 |   expect(request.headers['accept-encoding']).toBe('gzip,deflate,br');
+      702 | });
+      703 |
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:700:41
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-core/artifacts/library-browsercontext-fetch-should-add-default-headers/error-context.md
+
+  34) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:718:3 › should add default headers to redirects 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36"
+    Received: "Mozilla/5.0 HeadlessChrome/152.0.7977.83"
+
+      724 |   expect(request.headers['accept']).toBe('*/*');
+      725 |   const userAgent = await page.evaluate(() => navigator.userAgent);
+    > 726 |   expect(request.headers['user-agent']).toBe(userAgent);
+          |                                         ^
+      727 |   expect(request.headers['accept-encoding']).toBe('gzip,deflate,br');
+      728 | });
+      729 |
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:726:41
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-core/artifacts/library-browsercontext-fet-3d9e6-efault-headers-to-redirects/error-context.md
+
+  35) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:1335:3 › should work with connectOverCDP 
+
+    Error: SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness
+
+       at config/browserTest.ts:222
+
+      220 |     if(process.env.COMPAT_BACKEND==='chromium') return use(original);
+      221 |     await use(new Proxy(original, { get(target, name) {
+    > 222 |       if (['launch', 'launchPersistentContext', 'launchServer', 'connect', 'connectOverCDP'].includes(String(name))) return async () => { throw new Error('SuiteCut CEF upstream adapter: independent browser launching/connecting is outside this harness'); };
+          |                                                                                                                                                 ^
+      223 |       const value = Reflect.get(target, name); return typeof value === 'function' ? value.bind(target) : value;
+      224 |     }}));
+      225 |   }, { scope: 'worker' }],
+        at Proxy.launch (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/config/browserTest.ts:222:145)
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:1338:43
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-core/artifacts/library-browsercontext-fetch-should-work-with-connectOverCDP/error-context.md
+
+  36) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:195:3 › should goBack to redirected navigation 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: page.goBack: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for navigation until "load"
+        - navigated to "https://www.theverge.com/"
+
+
+      200 |   await page.goto(server.EMPTY_PAGE);
+      201 |   await expect(page).toHaveURL(server.EMPTY_PAGE);
+    > 202 |   const response = await page.goBack();
+          |                               ^
+      203 |   await expect(page).toHaveURL('https://www.theverge.com/');
+      204 |   expect(response!.request().url()).toBe('https://www.theverge.com/');
+      205 |   expect(await page.evaluate(() => location.href)).toBe('https://www.theverge.com/');
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:202:31
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-core/artifacts/library-browsercontext-har-4c7c5-ck-to-redirected-navigation/error-context.md
+
+  37) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:208:3 › should goForward to redirected navigation 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: page.goBack: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for navigation until "load"
+        - navigated to "http://localhost:9051/empty.html"
+
+
+      214 |   await page.goto('https://theverge.com/');
+      215 |   await expect(page).toHaveURL('https://www.theverge.com/');
+    > 216 |   await page.goBack();
+          |              ^
+      217 |   await expect(page).toHaveURL(server.EMPTY_PAGE);
+      218 |   const response = await page.goForward();
+      219 |   await expect(page).toHaveURL('https://www.theverge.com/');
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:216:14
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-core/artifacts/library-browsercontext-har-c32e4-rd-to-redirected-navigation/error-context.md
+
+  38) ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts:89:3 › should affect navigator.language in popups 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: "fr-FR"
+    Received: "en-US"
+
+       97 |   await popup.waitForLoadState('domcontentloaded');
+       98 |   const result = await popup.evaluate('window.initialNavigatorLanguage');
+    >  99 |   expect(result).toBe('fr-FR');
+          |                  ^
+      100 |   await context.close();
+      101 | });
+      102 |
+        at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts:99:18
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/upstream-core/artifacts/library-browsercontext-loc-3df12-avigator-language-in-popups/error-context.md
+
+  38 failed
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/beforeunload.spec.ts:20:3 › should close browser with beforeunload page 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/beforeunload.spec.ts:38:3 › should be able to navigate away from page with beforeunload 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/beforeunload.spec.ts:46:3 › should close page with beforeunload listener 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/beforeunload.spec.ts:92:3 › should not stall on evaluate when dismissing beforeunload 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/beforeunload.spec.ts:107:3 › should not stall on click when dismissing beforeunload 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/beforeunload.spec.ts:130:3 › should support dismissing the dialog multiple times 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/beforeunload.spec.ts:152:3 › should support closing the page after a previous dismiss 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/beforeunload.spec.ts:188:3 › does not get stalled by beforeUnload 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browser-server.spec.ts:28:3 › should start and stop pipe server 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browser-server.spec.ts:66:3 › should start ws server with host/port and produce well-formed endpoint 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-cookies.spec.ts:68:3 › should set cookies with SameSite attribute and no secure attribute 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-cookies.spec.ts:248:15 › should isolate cookies between launches 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-cookies.spec.ts:387:3 › should set a cookie on a different domain 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-init-script.spec.ts:112:3 › should expose functions in popups 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-add-init-script.spec.ts:137:3 › init script should run only once in popup 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-clearcookies.spec.ts:205:3 › should remove partitioned cookies by name 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-cookies.spec.ts:177:3 › should get cookies from multiple urls 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-cookies.spec.ts:262:3 › should return secure cookies based on HTTP(S) protocol 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-cookies.spec.ts:308:3 › should add cookies with an expiration 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:26:1 › should fail without credentials 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:37:1 › should work with setHTTPCredentials 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:111:1 › should fail with correct credentials and mismatching scheme 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:125:1 › should fail with correct credentials and mismatching hostname 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:141:1 › should fail with correct credentials and mismatching port 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:55:5 › console event should work in popup 2 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:103:5 › dialog event should work in popup 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:120:5 › dialog event should work in popup 2 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:135:5 › dialog event should work in immediately closed popup 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-events.spec.ts:154:5 › dialog event should work with inline script tag 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-expose-function.spec.ts:47:3 › should dispose 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-expose-function.spec.ts:77:3 › should be callable from-inside addInitScript 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:174:3 › should filter cookies by domain 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:693:3 › should add default headers 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:718:3 › should add default headers to redirects 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:1335:3 › should work with connectOverCDP 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:195:3 › should goBack to redirected navigation 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:208:3 › should goForward to redirected navigation 
+    ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts:89:3 › should affect navigator.language in popups 
+  1 skipped
+  3922 did not run
+  259 passed (8.0m)
+  2 errors were not a part of any test, see above for details
+  ✘   299 ../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-locale.spec.ts:118:3 › should be isolated between contexts (45.4s)

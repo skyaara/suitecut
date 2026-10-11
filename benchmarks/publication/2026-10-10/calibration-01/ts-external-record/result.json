@@ -1,0 +1,108 @@
+{
+  "backend": "ts-external",
+  "mode": "record",
+  "durationRequestedMs": 6000,
+  "width": 1920,
+  "height": 1080,
+  "fps": 30,
+  "status": "failed",
+  "startedAt": "2026-10-10T13:41:24.052Z",
+  "profile": "performance",
+  "encoding": {
+    "video": "H264",
+    "preset": "veryfast",
+    "crf": 18,
+    "bitrateKbps": null,
+    "encoderThreads": 1,
+    "audio": "video only"
+  },
+  "recordingPath": "/workspace/suitecut/benchmarks/publication/2026-10-10/smoke/ts-external-record/recording.mkv",
+  "receiverPath": "/workspace/suitecut/benchmarks/publication/2026-10-10/smoke/ts-external-record/receiver.flv",
+  "phases": [
+    {
+      "name": "static",
+      "atMs": 0.0022049999997761915,
+      "monotonic": 149453.953033427
+    }
+  ],
+  "events": [],
+  "browserVersion": "151.0.7922.34",
+  "browserReadySeconds": 0.5160018549941014,
+  "beforeCapture": {
+    "marker": 30,
+    "rendered": 29,
+    "mode": "canvas",
+    "scrollY": 0,
+    "scrollEvents": 0,
+    "keyEvents": 0,
+    "clicks": 0,
+    "value": "",
+    "choice": "First",
+    "actionMask": 0,
+    "width": 1920,
+    "height": 1080
+  },
+  "outputReadySeconds": 0.09106991899898276,
+  "activeBaseline": {
+    "marker": 65,
+    "rendered": 64,
+    "mode": "canvas",
+    "scrollY": 0,
+    "scrollEvents": 0,
+    "keyEvents": 0,
+    "clicks": 0,
+    "value": "",
+    "choice": "First",
+    "actionMask": 0,
+    "width": 1920,
+    "height": 1080
+  },
+  "activeStartMonotonic": 149453.948547448,
+  "nodeBefore": {
+    "rss": 151810048,
+    "heapTotal": 123039744,
+    "heapUsed": 66841352,
+    "external": 8865222,
+    "arrayBuffers": 4859066
+  },
+  "observedActiveMs": 5008.0773199999985,
+  "scrollCommands": 0,
+  "activeEndMonotonic": 149459.989740749,
+  "activeMs": 6040.685267999999,
+  "afterCapture": {
+    "marker": 247,
+    "rendered": 226,
+    "mode": "static",
+    "scrollY": 0,
+    "scrollEvents": 0,
+    "keyEvents": 0,
+    "clicks": 0,
+    "value": "",
+    "choice": "First",
+    "actionMask": 0,
+    "width": 1920,
+    "height": 1080
+  },
+  "nodeAfter": {
+    "rss": 201355264,
+    "heapTotal": 130379776,
+    "heapUsed": 59704696,
+    "external": 5189463,
+    "arrayBuffers": 1183267
+  },
+  "error": "AssertionError [ERR_ASSERTION]: Old external recorder produced no source video\n    at stopOutput (file:///workspace/suitecut/benchmarks/publication/capture.mjs:182:80)\n    at async file:///workspace/suitecut/benchmarks/publication/capture.mjs:235:33",
+  "cleanupOutputError": "AssertionError [ERR_ASSERTION]: Old external recorder produced no source video",
+  "eventLoop": {
+    "meanMs": 22.169652027713628,
+    "p99Ms": 64.749567,
+    "maxMs": 175.505407
+  },
+  "nodeAfterCleanup": {
+    "rss": 201617408,
+    "heapTotal": 130379776,
+    "heapUsed": 61538912,
+    "external": 5605060,
+    "arrayBuffers": 1594788
+  },
+  "completedAt": "2026-10-10T13:41:33.694Z"
+}

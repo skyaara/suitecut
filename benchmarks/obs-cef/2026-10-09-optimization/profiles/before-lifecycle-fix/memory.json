@@ -1,0 +1,252 @@
+[
+  {
+    "cycle": 0,
+    "at": "2026-10-08T23:55:38.498Z",
+    "sourceState": "running",
+    "rss": 147779584,
+    "heapTotal": 122437632,
+    "heapUsed": 53143832,
+    "external": 4997073,
+    "arrayBuffers": 990975
+  },
+  {
+    "cycle": 1,
+    "at": "2026-10-08T23:55:39.582Z",
+    "sourceState": "running",
+    "rss": 148434944,
+    "heapTotal": 122961920,
+    "heapUsed": 53272264,
+    "external": 5840249,
+    "arrayBuffers": 1834111
+  },
+  {
+    "cycle": 2,
+    "at": "2026-10-08T23:55:41.038Z",
+    "sourceState": "running",
+    "rss": 148697088,
+    "heapTotal": 57950208,
+    "heapUsed": 53392936,
+    "external": 6617849,
+    "arrayBuffers": 2611711
+  },
+  {
+    "cycle": 3,
+    "at": "2026-10-08T23:55:42.717Z",
+    "sourceState": "running",
+    "rss": 148828160,
+    "heapTotal": 57950208,
+    "heapUsed": 53434712,
+    "external": 7395449,
+    "arrayBuffers": 3389311
+  },
+  {
+    "cycle": 4,
+    "at": "2026-10-08T23:55:44.396Z",
+    "sourceState": "running",
+    "rss": 151187456,
+    "heapTotal": 56901632,
+    "heapUsed": 53519304,
+    "external": 8173049,
+    "arrayBuffers": 4166911
+  },
+  {
+    "cycle": 5,
+    "at": "2026-10-08T23:55:45.771Z",
+    "sourceState": "running",
+    "rss": 152104960,
+    "heapTotal": 57163776,
+    "heapUsed": 53619792,
+    "external": 8950649,
+    "arrayBuffers": 4944511
+  },
+  {
+    "cycle": 6,
+    "at": "2026-10-08T23:55:46.508Z",
+    "sourceState": "running",
+    "rss": 152354816,
+    "heapTotal": 57425920,
+    "heapUsed": 50634672,
+    "external": 9722980,
+    "arrayBuffers": 5722111
+  },
+  {
+    "cycle": 7,
+    "at": "2026-10-08T23:55:49.042Z",
+    "sourceState": "running",
+    "rss": 153141248,
+    "heapTotal": 56377344,
+    "heapUsed": 50220112,
+    "external": 10563027,
+    "arrayBuffers": 6565247
+  },
+  {
+    "cycle": 8,
+    "at": "2026-10-08T23:55:50.460Z",
+    "sourceState": "running",
+    "rss": 154189824,
+    "heapTotal": 56639488,
+    "heapUsed": 50474176,
+    "external": 11340627,
+    "arrayBuffers": 7342847
+  },
+  {
+    "cycle": 9,
+    "at": "2026-10-08T23:55:51.134Z",
+    "sourceState": "running",
+    "rss": 154451968,
+    "heapTotal": 57688064,
+    "heapUsed": 50555200,
+    "external": 12118227,
+    "arrayBuffers": 8120447
+  },
+  {
+    "cycle": 10,
+    "at": "2026-10-08T23:55:51.868Z",
+    "sourceState": "running",
+    "rss": 156024832,
+    "heapTotal": 57688064,
+    "heapUsed": 50580192,
+    "external": 12895827,
+    "arrayBuffers": 8898047
+  },
+  {
+    "cycle": 11,
+    "at": "2026-10-08T23:55:52.550Z",
+    "sourceState": "running",
+    "rss": 156811264,
+    "heapTotal": 57688064,
+    "heapUsed": 50634144,
+    "external": 13673427,
+    "arrayBuffers": 9675647
+  },
+  {
+    "cycle": 12,
+    "at": "2026-10-08T23:55:53.251Z",
+    "sourceState": "running",
+    "rss": 157597696,
+    "heapTotal": 57950208,
+    "heapUsed": 50657192,
+    "external": 14516563,
+    "arrayBuffers": 10518783
+  },
+  {
+    "cycle": 13,
+    "at": "2026-10-08T23:55:53.926Z",
+    "sourceState": "running",
+    "rss": 158515200,
+    "heapTotal": 57950208,
+    "heapUsed": 50686408,
+    "external": 15294163,
+    "arrayBuffers": 11296383
+  },
+  {
+    "cycle": 14,
+    "at": "2026-10-08T23:55:54.622Z",
+    "sourceState": "running",
+    "rss": 159301632,
+    "heapTotal": 57950208,
+    "heapUsed": 50712640,
+    "external": 16071763,
+    "arrayBuffers": 12073983
+  },
+  {
+    "cycle": 15,
+    "at": "2026-10-08T23:55:55.339Z",
+    "sourceState": "running",
+    "rss": 160481280,
+    "heapTotal": 57950208,
+    "heapUsed": 50755848,
+    "external": 16849363,
+    "arrayBuffers": 12851583
+  },
+  {
+    "cycle": 16,
+    "at": "2026-10-08T23:55:55.993Z",
+    "sourceState": "running",
+    "rss": 161267712,
+    "heapTotal": 60047360,
+    "heapUsed": 50773248,
+    "external": 17626963,
+    "arrayBuffers": 13629183
+  },
+  {
+    "cycle": 17,
+    "at": "2026-10-08T23:55:56.665Z",
+    "sourceState": "running",
+    "rss": 162054144,
+    "heapTotal": 60047360,
+    "heapUsed": 50800928,
+    "external": 18470099,
+    "arrayBuffers": 14472319
+  },
+  {
+    "cycle": 18,
+    "at": "2026-10-08T23:55:57.365Z",
+    "sourceState": "running",
+    "rss": 162709504,
+    "heapTotal": 60047360,
+    "heapUsed": 50821304,
+    "external": 19247699,
+    "arrayBuffers": 15249919
+  },
+  {
+    "cycle": 19,
+    "at": "2026-10-08T23:55:58.031Z",
+    "sourceState": "running",
+    "rss": 163495936,
+    "heapTotal": 60047360,
+    "heapUsed": 50839736,
+    "external": 20025299,
+    "arrayBuffers": 16027519
+  },
+  {
+    "cycle": 20,
+    "at": "2026-10-08T23:55:58.711Z",
+    "sourceState": "running",
+    "rss": 163495936,
+    "heapTotal": 60309504,
+    "heapUsed": 50882000,
+    "external": 20802899,
+    "arrayBuffers": 16805119
+  },
+  {
+    "cycle": 21,
+    "at": "2026-10-08T23:55:59.422Z",
+    "sourceState": "running",
+    "rss": 163495936,
+    "heapTotal": 60309504,
+    "heapUsed": 50882448,
+    "external": 21646035,
+    "arrayBuffers": 17648255
+  },
+  {
+    "cycle": 22,
+    "at": "2026-10-08T23:56:00.099Z",
+    "sourceState": "running",
+    "rss": 163627008,
+    "heapTotal": 60309504,
+    "heapUsed": 50904472,
+    "external": 22423635,
+    "arrayBuffers": 18425855
+  },
+  {
+    "cycle": 23,
+    "at": "2026-10-08T23:56:00.879Z",
+    "sourceState": "running",
+    "rss": 165199872,
+    "heapTotal": 60309504,
+    "heapUsed": 50928184,
+    "external": 23201235,
+    "arrayBuffers": 19203455
+  },
+  {
+    "cycle": 24,
+    "at": "2026-10-08T23:56:01.848Z",
+    "sourceState": "running",
+    "rss": 165986304,
+    "heapTotal": 60309504,
+    "heapUsed": 50962272,
+    "external": 23978835,
+    "arrayBuffers": 19981055
+  }
+]

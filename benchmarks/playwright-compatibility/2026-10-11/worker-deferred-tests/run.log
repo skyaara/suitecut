@@ -1,0 +1,18 @@
+[WARN] Your node_modules are out of sync with your lockfile. The workspace structure has changed since last install
+
+Running 10 tests using 1 worker
+
+(node:935835) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 benchmarks/playwright-compatibility/compatibility.spec.ts:71:1 › worker: dedicated Worker evaluation and messaging (181ms)
+  ✓   2 benchmarks/playwright-compatibility/compatibility.spec.ts:76:1 › worker: service worker website control and fetch (165ms)
+  ✓   3 benchmarks/playwright-compatibility/compatibility.spec.ts:77:1 › worker: context serviceworker event, enumeration and evaluation (133ms)
+  ✓   4 benchmarks/playwright-compatibility/compatibility.spec.ts:81:1 › worker: service worker console and close event on context disposal (136ms)
+  ✓   5 benchmarks/playwright-compatibility/compatibility.spec.ts:86:1 › worker: multiple pages expose one service worker identity (431ms)
+  ✓   6 benchmarks/playwright-compatibility/compatibility.spec.ts:91:1 › worker: worker remains automatable after its first page closes (257ms)
+  ✓   7 benchmarks/playwright-compatibility/compatibility.spec.ts:97:1 › worker: repeated worker contexts release browser target registrations (1.8s)
+  ✓   8 benchmarks/playwright-compatibility/compatibility.spec.ts:103:1 › worker: serviceWorkers block prevents registration (111ms)
+  ✓   9 benchmarks/playwright-compatibility/compatibility.spec.ts:106:1 › oopif: cross-site frame is a separate CDP target and remains interactive (356ms)
+  ✓  10 benchmarks/playwright-compatibility/compatibility.spec.ts:114:1 › oopif: cross-site navigation, detach and network routing (570ms)
+
+  10 passed (5.9s)

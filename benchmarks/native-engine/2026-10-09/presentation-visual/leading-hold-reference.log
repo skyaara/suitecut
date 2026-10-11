@@ -1,0 +1,22 @@
+Input #0, matroska,webm, from '/workspace/suitecut/benchmarks/native-engine/2026-10-09/presentation-visual/suitecut-source-37f10c6e-4ad7-4c69-8823-7d227f36db94-a6b32657-979d-48f6-b709-c54ced422d09.webm':
+  Metadata:
+    ENCODER         : Lavf61.7.103
+  Duration: 00:00:05.91, start: -0.007000, bitrate: 405 kb/s
+  Stream #0:0: Video: vp9 (Profile 0), yuv420p(tv, bt709/bt709/iec61966-2-1), 960x540, SAR 1:1 DAR 16:9, 60 fps, 60 tbr, 1k tbn
+      Metadata:
+        DURATION        : 00:00:05.883000000
+  Stream #0:1: Audio: opus, 48000 Hz, stereo, fltp
+      Metadata:
+        DURATION        : 00:00:05.908000000
+Stream mapping:
+  Stream #0:0 -> #0:0 (vp9 (native) -> wrapped_avframe (native))
+Press [q] to stop, [?] for help
+Output #0, null, to 'pipe:':
+  Metadata:
+    encoder         : Lavf61.7.103
+  Stream #0:0: Video: wrapped_avframe, yuv420p(tv, bt709/bt709/iec61966-2-1, progressive), 960x540 [SAR 1:1 DAR 16:9], q=2-31, 200 kb/s, 60 fps, 60 tbn
+      Metadata:
+        DURATION        : 00:00:05.883000000
+        encoder         : Lavc61.19.101 wrapped_avframe
+[out#0/null @ 0x555b41951780] video:0KiB audio:0KiB subtitle:0KiB other streams:0KiB global headers:0KiB muxing overhead: unknown
+frame=    1 fps=0.0 q=-0.0 Lsize=N/A time=00:00:00.01 bitrate=N/A speed=0.27x    

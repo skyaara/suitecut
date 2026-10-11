@@ -1,0 +1,413 @@
+--- before/media_engine.h
++++ after/native/browser/media_engine.h
+@@ -32,6 +32,11 @@
+   // Frames per channel: input coverage missing at encode time; input arriving
+   // after its timeline was encoded. Source-provided silent PCM is covered.
+   uint64_t audio_missing = 0, audio_late = 0;
++  uint64_t active_audio_missing = 0;
++  uint64_t audio_sync_waits = 0, video_sync_waits = 0;
++  double maximum_track_lead_ms = 0;
++  int video_encoder_threads = 0;
++  std::string video_encoder_preset;
+   size_t queued_video_bytes = 0, queued_audio_bytes = 0;
+   double started_ms = 0, duration_ms = 0, maximum_encode_ms = 0, buffered_delay_ms = 150;
+   std::string error;
+--- before/engine.ts
++++ after/src/engine.ts
+@@ -24,6 +24,7 @@
+   repeatedFrames: z.number(),
+   droppedAudioSamples: z.number(),
+   missingAudioSamples: z.number(),
++  activeMissingAudioSamples: z.number().nonnegative().optional(),
+   lateAudioSamples: z.number(),
+   queuedVideoBytes: z.number(),
+   queuedAudioBytes: z.number(),
+@@ -31,6 +32,12 @@
+   durationMs: z.number(),
+   maximumEncodeMs: z.number(),
+   bufferedDelayMs: z.number().nonnegative().optional(),
++  audioSyncWaits: z.number().nonnegative().optional(),
++  videoSyncWaits: z.number().nonnegative().optional(),
++  /** Encoder progress difference, not a measurement of perceptual lip sync. */
++  maximumTrackLeadMs: z.number().nonnegative().optional(),
++  videoEncoderThreads: z.number().int().nonnegative().optional(),
++  videoEncoderPreset: z.string().optional(),
+   error: z.string(),
+ })
+ export type NativeOutputStatus = z.infer<typeof StatusSchema>
+--- before/media_engine.cc
++++ after/native/browser/media_engine.cc
+@@ -150,6 +150,7 @@
+   double audio_encoded_until = -1;
+   bool header_written = false;
+   SuiteCutAudioTrace audio_trace;
++  SuiteCutAudioTrace encode_trace;
+   double Now() const {
+     const double at=clock();
+     if (!MediaTimestamp(at)) throw std::runtime_error("Invalid native output clock");
+@@ -177,6 +178,8 @@
+       throw std::runtime_error("Invalid native audio startup timeout");
+     audio_trace.Open(std::filesystem::path(options.destination).filename().string(),
+                     "at_ms,encoded_ms,sample_index,frames,missing_frames,queued_chunks,oldest_ms,newest_ms", true);
++    encode_trace.Open(std::filesystem::path(options.destination).filename().string()+".encode",
++                      "track,target_ms,began_ms,ended_ms,elapsed_ms");
+     worker = std::thread([this] { Run(); });
+   }
+   ~Impl() { Stop(); Cleanup(); }
+@@ -193,8 +196,15 @@
+     auto* context = Require(avcodec_alloc_context3(codec), "Allocate native encoder");
+     // Store before any fallible configuration so failure cleanup always owns it.
+     (audio ? audio_codec : video_codec) = context;
+-    // Reserve CPU for CEF rendering and audio on simultaneous browser outputs.
+-    context->thread_count = audio ? 2 : 1;
++    // Reserve CPU for CEF/audio, but avoid a single-thread 4K H.264 bottleneck.
++    // Bounded slice workers stay within the four-core browser/output budget
++    // without adding frame-thread latency. Other codec policies remain bounded.
++    const int pixels = options.width*options.height;
++    context->thread_count = audio ? 2 : name != "libx264" || pixels<=1920*1080 ? 1 : pixels>=3840*2160 ? 3 : 2;
++    if (!audio) {
++      if (name == "libx264") context->thread_type = FF_THREAD_SLICE;
++      std::lock_guard lock(mutex); status.video_encoder_threads = context->thread_count;
++    }
+     if (format->oformat->flags & AVFMT_GLOBALHEADER) context->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
+     if (audio) {
+       context->sample_rate = 48000; context->time_base = {1, 48000}; context->bit_rate = options.audio_bitrate_kbps * 1000LL;
+@@ -210,7 +220,11 @@
+       context->color_primaries = AVCOL_PRI_BT709; context->color_trc = AVCOL_TRC_IEC61966_2_1;
+       if (options.streaming) { context->bit_rate = options.bitrate_kbps * 1000LL; context->rc_max_rate = context->bit_rate; context->rc_buffer_size = context->bit_rate * 2; }
+       if (name == "libx264") {
+-        Check(av_opt_set(context->priv_data, "preset", "veryfast", 0), "Set x264 preset");
++        // Software 4K needs a cheaper encoder to leave Chromium/audio CPU
++        // headroom. This increases bitrate at fixed CRF; expose the policy.
++        const char* preset = pixels>=3840*2160 ? "ultrafast" : "veryfast";
++        Check(av_opt_set(context->priv_data, "preset", preset, 0), "Set x264 preset");
++        {std::lock_guard lock(mutex);status.video_encoder_preset=preset;}
+         Check(av_opt_set(context->priv_data, "tune", "zerolatency", 0), "Set x264 latency");
+         if (!options.streaming) Check(av_opt_set_double(context->priv_data, "crf", options.crf < 0 ? 18 : options.crf, 0), "Set recording quality");
+       } else if (name == "libx265") {
+@@ -297,18 +311,29 @@
+   void Encode(AVCodecContext* codec, AVFrame* frame, AVStream* stream) {
+     // Each encoder owns its context, frame and packet. Only the muxer is shared.
+     AVPacket* packet = stream == video_stream ? video_packet : audio_packet;
++    const bool traced=encode_trace.Enabled(),audio=stream==audio_stream;
++    const double target=frame ? static_cast<double>(frame->pts)*codec->time_base.num*1000.0/codec->time_base.den : -1;
++    const double send_begin=traced?Now():0;
+     Check(avcodec_send_frame(codec, frame), "Send native media frame");
++    if(traced) {const double end=Now();encode_trace.Row("%s,%.6f,%.6f,%.6f,%.6f\n",audio?"audio_send":"video_send",target,send_begin,end,end-send_begin);}
+     for (;;) {
+       const int result = avcodec_receive_packet(codec, packet);
+       if (result == AVERROR(EAGAIN) || result == AVERROR_EOF) break;
+       Check(result, "Receive native media packet");
+       if(stream==video_stream && packet->duration<=0) packet->duration=1;
+       av_packet_rescale_ts(packet, codec->time_base, stream->time_base); packet->stream_index = stream->index;
++      const double mux_begin=traced?Now():0;double acquired=0,mux_end=0;
+       {
+         std::lock_guard lock(mux_mutex);
++        if(traced) acquired=Now();
+         io_deadline = Tick() + 5000;
+         const int written = av_interleaved_write_frame(format, packet); av_packet_unref(packet); io_deadline = 0;
+         Check(written, "Mux native media packet");
++        if(traced) mux_end=Now();
++      }
++      if(traced) {
++        encode_trace.Row("%s,%.6f,%.6f,%.6f,%.6f\n",audio?"audio_mux_wait":"video_mux_wait",target,mux_begin,acquired,acquired-mux_begin);
++        encode_trace.Row("%s,%.6f,%.6f,%.6f,%.6f\n",audio?"audio_mux_write":"video_mux_write",target,acquired,mux_end,mux_end-acquired);
+       }
+     }
+   }
+@@ -319,9 +344,20 @@
+       while (video_queue.size() > 1 && video_queue[1].at <= at) {
+         status.queued_video_bytes -= video_queue.front().pixels->size(); video_queue.pop_front();
+       }
++      // Captured frames and output ticks share a clock but not an exact phase.
++      // Choose the nearest buffered frame within half a video interval, rather
++      // than duplicating a past frame when its successor is only slightly late.
++      // Offline checkpoints retain their exact source ordering/timestamps.
++      const double tolerance = options.offline ? 0 : 500.0/options.fps;
++      if (video_queue.size()>1 && video_queue[1].at<=at+tolerance &&
++          std::abs(video_queue[1].at-at)<std::abs(video_queue.front().at-at)) {
++        status.queued_video_bytes-=video_queue.front().pixels->size();video_queue.pop_front();
++      }
+       cv.notify_all();
+       selected = video_queue.empty() ? latest : video_queue.front();
+-      if (selected.at>at && held_video.pixels) selected=held_video;
++      if (selected.at>at+tolerance && held_video.pixels) selected=held_video;
++      else if (selected.at>at && held_video.pixels &&
++               std::abs(held_video.at-at)<selected.at-at) selected=held_video;
+       if (selected.at == previous_video_at) ++status.repeated_frames;
+     }
+     if (!selected.pixels) return;
+@@ -335,7 +371,7 @@
+     Require(scale,"Create native scaler");
+     sws_scale(scale, planes, strides, 0, selected.height, video_frame->data, video_frame->linesize);
+     video_frame->pts = video_index++; Encode(video_codec, video_frame, video_stream); previous_video_at = selected.at; held_video=selected;
+-    std::lock_guard lock(mutex); status.video_frames = video_index; cv.notify_all();
++    std::lock_guard lock(mutex); status.video_frames = video_index; TrackProgress(); cv.notify_all();
+   }
+   void EncodeAudio(double at, int remaining = 0) {
+     const int capacity = audio_codec->frame_size ? audio_codec->frame_size : 960;
+@@ -352,7 +388,9 @@
+         if (!CopyAudioChunk(*chunk.samples,chunk.at,pcm,covered,at))
+           throw std::runtime_error("Invalid native audio buffer or timestamp");
+       }
+-      status.audio_missing += std::count(covered.begin(),covered.end(),false);
++      const auto missing = std::count(covered.begin(),covered.end(),false);
++      status.audio_missing += missing;
++      if (audio_active) status.active_audio_missing += missing;
+       audio_encoded_until = at + count/48.0;
+       audio_trace.Row("%.6f,%.6f,%lld,%d,%d,%zu,%.6f,%.6f\n", at, Now(),
+                       static_cast<long long>(audio_index), count, static_cast<int>(std::count(covered.begin(),covered.end(),false)),
+@@ -369,7 +407,13 @@
+     const int samples = swr_convert(resample, audio_frame->data, count, input, count); Check(samples, "Convert native PCM");
+     if (samples != count) throw std::runtime_error("Unexpected native PCM conversion delay");
+     audio_frame->pts = audio_index; audio_index += count; Encode(audio_codec, audio_frame, audio_stream);
+-    std::lock_guard lock(mutex); status.audio_frames = audio_index; cv.notify_all();
++    std::lock_guard lock(mutex); status.audio_frames = audio_index; TrackProgress(); cv.notify_all();
++  }
++  // Called with mutex held. This measures completed encoder timeline positions,
++  // not perceptual lip sync; source timestamps and content still need validation.
++  void TrackProgress() {
++    if (options.audio) status.maximum_track_lead_ms = std::max(status.maximum_track_lead_ms,
++        std::abs(status.video_frames*1000.0/options.fps-status.audio_frames/48.0));
+   }
+   void TrackFailure(const std::exception& error) {
+     std::lock_guard lock(mutex);
+@@ -377,9 +421,11 @@
+     failed = true; stopping = true; cv.notify_all();
+   }
+   void RunTrack(bool audio) {
+-    // Independent encoders share a sample-count timeline. Limit either track's
+-    // lead so FFmpeg's interleaver cannot accumulate an unbounded packet queue.
+-    constexpr double maximum_delay_ms = 1000, maximum_lead_ms = 500;
++    // Permit a track to encode its next block only when the other track has
++    // reached that block's start. A delayed worker holds output, never CEF
++    // capture. The unavoidable lead is bounded by one video/audio codec block,
++    // rather than allowing half a second of media to be committed ahead.
++    constexpr double maximum_delay_ms = 960;
+     for (;;) {
+       double target;
+       int final_audio_samples = 0;
+@@ -391,7 +437,10 @@
+         if (paused && !stopping && target>=pause_at) { cv.wait(lock); continue; }
+         if (stopping && target >= stop_at) break;
+         const double other = audio ? status.video_frames*1000.0/options.fps : status.audio_frames/48.0;
+-        if (options.audio && relative > other + maximum_lead_ms) { cv.wait(lock); continue; }
++        if (options.audio && relative > other + 1e-6) {
++          ++(audio ? status.audio_sync_waits : status.video_sync_waits);
++          cv.wait(lock); continue;
++        }
+         if (audio && (stopping || (paused && audio_codec->frame_size==0)))
+           final_audio_samples = static_cast<int>(std::min<double>(audio_codec->frame_size ? audio_codec->frame_size : 960,
+               std::max(0.0,std::ceil(((stopping ? stop_at : pause_at)-origin-excluded)*48-audio_index))));
+@@ -422,6 +471,7 @@
+       const double began = Now();
+       if (audio) EncodeAudio(target,final_audio_samples); else EncodeVideo(target);
+       const double elapsed = Now()-began;
++      encode_trace.Row("%s,%.6f,%.6f,%.6f,%.6f\n",audio?"audio":"video",target,began,began+elapsed,elapsed);
+       std::lock_guard lock(mutex);
+       status.maximum_encode_ms = std::max(status.maximum_encode_ms,elapsed);
+       status.duration_ms = status.video_frames*1000.0/options.fps;
+@@ -432,14 +482,18 @@
+       Open();
+       {
+         std::unique_lock lock(mutex);
+-        // Readiness means both native encoders and the muxer are initialized,
+-        // plus a captured video frame. Silent pages need no audio callback.
++        // Silent pages need no audio callback. An already-active audio stream
++        // must supply its first packet before choosing the common epoch; using
++        // wall-clock readiness instead can irreversibly encode startup zeros.
+         if (!cv.wait_for(lock,std::chrono::milliseconds(options.audio_startup_timeout_ms),
+-                         [this] { return stopping || latest.pixels; }))
+-          throw std::runtime_error("Native output readiness timed out (waiting for captured video)");
++                         [this] { return stopping || (latest.pixels &&
++                             (!options.audio || !audio_active || !audio_queue.empty())); }))
++          throw std::runtime_error("Native output readiness timed out (waiting for captured video/active audio)");
+         if (!latest.pixels)
+           throw std::runtime_error("Native output stopped before its first captured frame");
+-        origin = options.offline ? (video_queue.empty() ? latest.at : video_queue.front().at) : Now();
++        origin = options.offline ? (video_queue.empty() ? latest.at : video_queue.front().at) :
++            options.audio && audio_active && !audio_queue.empty() ?
++                std::max(video_queue.empty() ? latest.at : video_queue.front().at,audio_queue.front().at) : Now();
+         audio_frame_samples = audio_codec ? audio_codec->frame_size : 0;
+         held_video=latest;
+         status.started_ms = origin; status.ready = true; cv.notify_all();
+--- before/media_startup_test.cc
++++ after/native/browser/media_startup_test.cc
+@@ -69,6 +69,20 @@
+       CheckPCM(config.destination,sound_later?4800:6720,sound_later?1920:0);
+       std::filesystem::remove(config.destination);
+     }
++    // Requested capture must wait for its first PCM block, even if that block
++    // contains silence. Start both tracks at their common captured epoch.
++    {
++      std::atomic<double> clock{0};suitecut::MediaOptions config;
++      config.destination=base+"-requested.mkv";config.width=320;config.height=180;config.audio_codec="pcm_s16le";
++      suitecut::MediaOutput output(config,[&] {return clock.load();});output.AudioState(true);
++      output.Video(std::make_shared<std::vector<uint8_t>>(320*180*3/2,128),320,180,0);
++      std::this_thread::sleep_for(milliseconds(30));Require(!output.Status().ready,"Requested audio started without PCM");
++      clock=100;output.Audio(std::make_shared<std::vector<int16_t>>(960*2,0),100);
++      Wait([&] {return output.Status().ready;});Require(output.Status().started_ms==100,"Tracks did not use the common capture epoch");
++      clock=120;const auto stopped=output.Stop();
++      Require(stopped.error.empty() && stopped.audio_frames==960 && stopped.audio_missing==0,"Captured silent startup was discarded");
++      CheckPCM(config.destination,960,0);std::filesystem::remove(config.destination);
++    }
+     // An active source may deliver old timestamps late. Wait within the native
+     // budget instead of irreversibly writing silence and discarding that PCM.
+     {
+@@ -105,7 +119,7 @@
+       Wait([&] {return output.Status().ready;});clock=40;
+       suitecut::MediaStatus stopped;
+       std::jthread stop([&] {stopped=output.Stop();});
+-      Wait([&] {const auto s=output.Status();if(!s.error.empty()) throw std::runtime_error(s.error);return s.video_frames>=2;},"Stop drain video");
++      Wait([&] {const auto s=output.Status();if(!s.error.empty()) throw std::runtime_error(s.error);return s.video_frames>=1;},"Stop drain video");
+       output.Audio(std::make_shared<std::vector<int16_t>>(960*2,1234),20);
+       stop.join();
+       Require(stopped.error.empty() && stopped.audio_frames==1920 && stopped.audio_missing==0 && stopped.audio_late==0,"Stop discarded buffered final source audio");
+@@ -129,7 +143,33 @@
+       Require(stopped.error.empty() && stopped.audio_frames==before+1920 && stopped.audio_missing==0 && stopped.audio_late==0,"Resume included excluded source content or lost available PCM");
+       CheckPCM(config.destination,0,before+1920);std::filesystem::remove(config.destination);
+     }
+-    // Overflow may drop old source frames, but must not display a future frame
++    // Small capture jitter must not duplicate the previous frame at each tick.
++    // The nearest frame is permitted only within half an output interval.
++    {
++      std::atomic<double> clock{0};suitecut::MediaOptions config;
++      config.destination=base+"-video-jitter.mkv";config.width=16;config.height=16;
++      config.audio=false;config.fps=60;config.video_codec="ffv1";
++      suitecut::MediaOutput output(config,[&] {return clock.load();});
++      for(const auto [at,luma]:{std::pair<double,int>{0,16},{19,80},{36,160}}) {
++        auto pixels=std::make_shared<std::vector<uint8_t>>(16*16*3/2,128);std::fill_n(pixels->begin(),16*16,luma);
++        output.Video(pixels,16,16,at);
++      }
++      Wait([&] {return output.Status().ready;});clock=50;const auto status=output.Stop();
++      Require(status.error.empty() && status.video_frames==3 && status.repeated_frames==0,"Capture jitter duplicated a video frame");
++      AVFormatContext* format=nullptr;Require(avformat_open_input(&format,config.destination.c_str(),nullptr,nullptr)>=0,"Open jitter video");
++      Require(avformat_find_stream_info(format,nullptr)>=0,"Probe jitter video");
++      const int stream=av_find_best_stream(format,AVMEDIA_TYPE_VIDEO,-1,-1,nullptr,0);
++      auto* decoder=avcodec_alloc_context3(avcodec_find_decoder(AV_CODEC_ID_FFV1));
++      Require(decoder && avcodec_parameters_to_context(decoder,format->streams[stream]->codecpar)>=0 && avcodec_open2(decoder,decoder->codec,nullptr)>=0,"Open jitter decoder");
++      auto* packet=av_packet_alloc();auto* frame=av_frame_alloc();std::vector<int> luma;
++      while(av_read_frame(format,packet)>=0) {
++        if(packet->stream_index==stream) {Require(avcodec_send_packet(decoder,packet)>=0,"Decode jitter packet");while(avcodec_receive_frame(decoder,frame)>=0) {luma.push_back(frame->data[0][0]);av_frame_unref(frame);}}
++        av_packet_unref(packet);
++      }
++      av_frame_free(&frame);av_packet_free(&packet);avcodec_free_context(&decoder);avformat_close_input(&format);
++      Require(luma==std::vector<int>({16,80,160}),"Nearest-frame sampling changed image order/content");std::filesystem::remove(config.destination);
++    }
++    // Overflow may drop old source frames, but must not display a distant future frame
+     // early relative to the audio clock. Retain the last eligible captured view.
+     {
+       std::atomic<double> clock{0};suitecut::MediaOptions config;
+@@ -160,6 +200,12 @@
+     Wait([&] {return timed.Status().stopped;});
+     Require(!timed.Status().ready && timed.Stop().error.find("output readiness timed out")!=std::string::npos,"Missing video startup timeout was hidden");
+     std::filesystem::remove(config.destination);
++    config.destination=base+"-audio-timeout.mkv";
++    suitecut::MediaOutput audio_timed(config,[] {return 0;});audio_timed.AudioState(true);
++    audio_timed.Video(std::make_shared<std::vector<uint8_t>>(320*180*3/2,128),320,180,0);
++    Wait([&] {return audio_timed.Status().stopped;});
++    Require(!audio_timed.Status().ready && audio_timed.Stop().error.find("output readiness timed out")!=std::string::npos,"Missing requested audio startup timeout was hidden");
++    std::filesystem::remove(config.destination);
+     config.destination=base+"-cancel.mkv";config.audio_startup_timeout_ms=5000;
+     suitecut::MediaOutput cancelled(config,[] {return 0;});
+     const auto began=steady_clock::now();const auto stopped=cancelled.Stop();
+--- before/browser.cc
++++ after/native/browser/browser.cc
+@@ -455,9 +455,15 @@
+   }
+   void OnPopupSize(CefRefPtr<CefBrowser>, const CefRect& rect) override { popup_rect_ = rect; }
+   bool GetAudioParameters(CefRefPtr<CefBrowser>, CefAudioParameters& params) override {
++    audio_lifecycle_trace_.Open("audio-lifecycle-"+target_id_, "at_ms,event,frames_per_buffer,channels,sample_rate");
++    audio_lifecycle_trace_.Row("%.6f,parameters,%d,%d,%d\n",Now(),params.frames_per_buffer,2,params.sample_rate);
++    audio_requested_ = true;
++    {std::lock_guard lock(outputs_mutex_);for(auto& [key,output]:outputs_) output->AudioState(true);}
+     params.channel_layout = CEF_CHANNEL_LAYOUT_STEREO;
+     params.sample_rate = 48000;
+-    params.frames_per_buffer = 960;
++    // Match OBS Browser Source and Chromium's 128-sample WebAudio quantum.
++    // Buffer size is a capture block size, not end-to-end A/V latency.
++    params.frames_per_buffer = 1024;
+     return true;
+   }
+   void OnAudioStreamStarted(CefRefPtr<CefBrowser>, const CefAudioParameters& params, int channels) override {
+@@ -477,6 +483,7 @@
+     const double received = std::chrono::duration<double,std::milli>(tick-started).count();
+     const double steady = std::chrono::duration<double,std::milli>(tick.time_since_epoch()).count();
+     writer_.Captured(false, received, static_cast<double>(pts));
++    ++audio_packets_;last_audio_packet_ms_ = received;
+     const double raw_timestamp = audio_clock_.Map(static_cast<double>(pts), received, EpochNow(), steady);
+     const double timestamp = audio_clock_.NormalizePacket(raw_timestamp,frames);
+     std::vector<uint8_t> pcm(static_cast<size_t>(frames) * 4);
+@@ -507,14 +514,14 @@
+   }
+   void OnAudioStreamStopped(CefRefPtr<CefBrowser>) override {
+     std::lock_guard lock(audio_mutex_);
+-    audio_valid_ = false;
++    audio_valid_ = false;audio_requested_ = false;
+     {std::lock_guard lock(outputs_mutex_);for(auto& [key,output]:outputs_) output->AudioState(false);}
+     audio_lifecycle_trace_.Row("%.6f,stopped,0,0,0\n",Now());
+   }
+   void OnAudioStreamError(CefRefPtr<CefBrowser>, const CefString&) override {
+     std::lock_guard audio_lock(audio_mutex_);
+     audio_lifecycle_trace_.Row("%.6f,error,0,0,0\n",Now());
+-    audio_valid_=false;if(closing_ || stopped_) return;
++    audio_valid_=false;audio_requested_=false;if(closing_ || stopped_) return;
+     // A closing/inactive page must not terminate other browser contexts. Active
+     // outputs receive an explicit failure instead of silently filling with PCM.
+     std::lock_guard lock(outputs_mutex_);for(auto& [key,output]:outputs_) output->Fail("Native page audio capture failed");
+@@ -777,10 +784,15 @@
+     dict->SetDouble("videoFrames",status.video_frames);dict->SetDouble("audioSamples",status.audio_frames);
+     dict->SetDouble("repeatedFrames",status.repeated_frames);dict->SetDouble("droppedAudioSamples",status.audio_dropped);
+     dict->SetDouble("missingAudioSamples",status.audio_missing);dict->SetDouble("lateAudioSamples",status.audio_late);
++    dict->SetDouble("activeMissingAudioSamples",status.active_audio_missing);
+     dict->SetDouble("queuedVideoBytes",status.queued_video_bytes);dict->SetDouble("queuedAudioBytes",status.queued_audio_bytes);
+     dict->SetDouble("startedMs",status.started_ms);dict->SetDouble("durationMs",status.duration_ms);
+     dict->SetDouble("maximumEncodeMs",status.maximum_encode_ms);dict->SetString("error",status.error);
+     dict->SetDouble("bufferedDelayMs",status.buffered_delay_ms);
++    dict->SetDouble("audioSyncWaits",status.audio_sync_waits);dict->SetDouble("videoSyncWaits",status.video_sync_waits);
++    dict->SetDouble("maximumTrackLeadMs",status.maximum_track_lead_ms);
++    dict->SetInt("videoEncoderThreads",status.video_encoder_threads);
++    dict->SetString("videoEncoderPreset",status.video_encoder_preset);
+     return Json(dict);
+   }
+   void EmitFrame(double timestamp = Now()) {
+@@ -855,7 +867,7 @@
+         if(owner!=selected->second) {
+           std::scoped_lock lock(owner->outputs_mutex_,selected->second->outputs_mutex_);
+           if(owner->output_jobs_.contains(output_id)) {writer_.Reply(id,false,"Native output lifecycle operation is pending");return;}
+-          selected->second->outputs_[output_id]=owner->outputs_[output_id];owner->outputs_.erase(output_id);selected->second->outputs_[output_id]->AudioState(selected->second->audio_valid_);
++          selected->second->outputs_[output_id]=owner->outputs_[output_id];owner->outputs_.erase(output_id);selected->second->outputs_[output_id]->AudioState(selected->second->audio_requested_);
+         }
+         selected->second->EmitFrame();writer_.Reply(id,true);return;
+       }
+@@ -923,6 +935,11 @@
+         } catch(const std::exception& error) {writer_.Reply(id,false,error.what());}
+         *done=true;
+       }),done);return;
++    }
++    if (command == "audio.status") {
++      auto value=CefDictionaryValue::Create();value->SetBool("requested",audio_requested_);value->SetBool("active",audio_valid_);
++      value->SetDouble("packets",audio_packets_);value->SetDouble("lastPacketMs",last_audio_packet_ms_);
++      writer_.Reply(id,true,"",Bytes(Json(value)));return;
+     }
+     if (command == "media.start") {
+       try {
+@@ -955,7 +972,7 @@
+         if (message->HasKey("audioBitrateKbps")) config.audio_bitrate_kbps = message->GetInt("audioBitrateKbps");
+         {std::lock_guard lock(outputs_mutex_);if(outputs_.size()>=8) throw std::runtime_error("Native output limit exceeded");}
+         auto output = std::make_shared<suitecut::MediaOutput>(config, Now);
+-        output->AudioState(audio_valid_);
++        output->AudioState(audio_requested_);
+         { std::lock_guard lock(outputs_mutex_);
+           outputs_.emplace(id, output); }
+         auto started = CefDictionaryValue::Create();
+@@ -1077,6 +1094,9 @@
+   CefRect popup_rect_;
+   std::vector<uint8_t> view_, popup_;
+   std::atomic<bool> stopped_{false}, audio_valid_{false}, closing_{false};
++  std::atomic<bool> audio_requested_{false};
++  std::atomic<uint64_t> audio_packets_{0};
++  std::atomic<double> last_audio_packet_ms_{-1};
+   SuiteCutAudioClock audio_clock_;
+   std::mutex audio_mutex_;
+   SuiteCutAudioTrace audio_trace_, audio_lifecycle_trace_;

@@ -1,0 +1,9 @@
+{
+  "status": "interrupted by execution environment restart",
+  "interruptedAt": "2026-10-09T18:01:50Z",
+  "lastNodeSampleMs": 1726905.109177,
+  "completedAt": null,
+  "requestedMs": 1800000,
+  "finalizedMp4": false,
+  "reason": "Execution tools disappeared while environment was marked starting; after recovery benchmark/display/audio processes were no longer running. No successful teardown/result.json was written."
+}

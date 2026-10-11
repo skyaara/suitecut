@@ -1,0 +1,24 @@
+{
+  "sampleCount": 121,
+  "sampledDurationSeconds": 120.1548145400011,
+  "peakProcessTreeRssMiB": 2468.93359375,
+  "medianProcessTreeRssMiB": 2325.00390625,
+  "processTreeCpuPercentMedian": 173.23596369697628,
+  "processTreeCpuPercentPeak": 292.52709762767296,
+  "observedCpuSeconds": 210.8,
+  "observedCpuSecondsByRole": {
+    "cef-gpu": 16.900000000000002,
+    "cef-renderer": 89.85000000000001,
+    "node": 1.8899999999999997,
+    "sampler": 4.47,
+    "suitecut-browser": 97.69000000000001
+  },
+  "missingAudioSeconds": 2.5692708333333334,
+  "repeatedFrameFraction": 0.06605606439078546,
+  "browserDroppedFrameDelta": 1270,
+  "browserTotalFrameDelta": 6796,
+  "peakVideoQueueBytes": 74649600,
+  "peakAudioQueueBytes": 280320,
+  "stackProtectorTerminations": 27,
+  "limits": "RSS sums double-count shared pages; sampled CPU excludes unobserved short-lived subprocesses. Missing audio counters are uncovered sample slots, not proof of an equivalent audible silence interval. Twitch content naturally contains silence."
+}

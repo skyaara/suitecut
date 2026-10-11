@@ -1,0 +1,1035 @@
+{
+  "backend": "cpp-cef",
+  "mode": "stream",
+  "profile": "memory",
+  "width": 1920,
+  "height": 1080,
+  "fps": 30,
+  "durationRequestedMs": 1800000,
+  "startedAt": "2026-10-10T22:10:27.058Z",
+  "status": "completed; media validation pending",
+  "recordingPath": "/workspace/suitecut/benchmarks/native-sync/2026-10-11-shared-clock/runs/soak-1080p30-stream/recording.mkv",
+  "receiverPath": "/workspace/suitecut/benchmarks/native-sync/2026-10-11-shared-clock/runs/soak-1080p30-stream/receiver.flv",
+  "phases": [
+    {
+      "name": "static",
+      "atMs": 3.5276679999997214,
+      "monotonic": 179997.186037679
+    },
+    {
+      "name": "canvas",
+      "atMs": 10026.575995,
+      "monotonic": 180007.207589475
+    },
+    {
+      "name": "scroll",
+      "atMs": 20047.541465,
+      "monotonic": 180017.234349128
+    },
+    {
+      "name": "static",
+      "atMs": 30047.254848999997,
+      "monotonic": 180027.240693927
+    },
+    {
+      "name": "canvas",
+      "atMs": 40026.48932,
+      "monotonic": 180037.208443685
+    },
+    {
+      "name": "scroll",
+      "atMs": 50004.192464,
+      "monotonic": 180047.189289536
+    },
+    {
+      "name": "static",
+      "atMs": 60033.903314999996,
+      "monotonic": 180057.214681372
+    },
+    {
+      "name": "canvas",
+      "atMs": 70008.473039,
+      "monotonic": 180067.192953263
+    },
+    {
+      "name": "scroll",
+      "atMs": 80049.080219,
+      "monotonic": 180077.23034639
+    },
+    {
+      "name": "static",
+      "atMs": 90020.816175,
+      "monotonic": 180087.201174861
+    },
+    {
+      "name": "canvas",
+      "atMs": 100013.298726,
+      "monotonic": 180097.194251426
+    },
+    {
+      "name": "scroll",
+      "atMs": 110011.133794,
+      "monotonic": 180107.19755507
+    },
+    {
+      "name": "static",
+      "atMs": 120032.215974,
+      "monotonic": 180117.211310182
+    },
+    {
+      "name": "canvas",
+      "atMs": 130025.254864,
+      "monotonic": 180127.207311424
+    },
+    {
+      "name": "scroll",
+      "atMs": 140027.150759,
+      "monotonic": 180137.209020283
+    },
+    {
+      "name": "static",
+      "atMs": 150014.71488800002,
+      "monotonic": 180147.194089344
+    },
+    {
+      "name": "canvas",
+      "atMs": 160012.994477,
+      "monotonic": 180157.192340129
+    },
+    {
+      "name": "scroll",
+      "atMs": 170017.624431,
+      "monotonic": 180167.200412963
+    },
+    {
+      "name": "static",
+      "atMs": 180012.932826,
+      "monotonic": 180177.194771906
+    },
+    {
+      "name": "canvas",
+      "atMs": 190074.91481000002,
+      "monotonic": 180187.267186565
+    },
+    {
+      "name": "scroll",
+      "atMs": 200038.66114200003,
+      "monotonic": 180197.218722707
+    },
+    {
+      "name": "static",
+      "atMs": 210095.23204,
+      "monotonic": 180207.274172105
+    },
+    {
+      "name": "canvas",
+      "atMs": 220041.075859,
+      "monotonic": 180217.220660939
+    },
+    {
+      "name": "scroll",
+      "atMs": 230034.220669,
+      "monotonic": 180227.21586499
+    },
+    {
+      "name": "static",
+      "atMs": 240014.26066700002,
+      "monotonic": 180237.19360885
+    },
+    {
+      "name": "canvas",
+      "atMs": 250025.938005,
+      "monotonic": 180247.209828762
+    },
+    {
+      "name": "scroll",
+      "atMs": 260025.178424,
+      "monotonic": 180257.208697989
+    },
+    {
+      "name": "static",
+      "atMs": 270097.032149,
+      "monotonic": 180267.276248724
+    },
+    {
+      "name": "canvas",
+      "atMs": 280041.22209299996,
+      "monotonic": 180277.224981103
+    },
+    {
+      "name": "scroll",
+      "atMs": 290028.25751799997,
+      "monotonic": 180287.213686399
+    },
+    {
+      "name": "static",
+      "atMs": 300028.502973,
+      "monotonic": 180297.209304574
+    },
+    {
+      "name": "canvas",
+      "atMs": 310026.644784,
+      "monotonic": 180307.209863314
+    },
+    {
+      "name": "scroll",
+      "atMs": 320032.35215,
+      "monotonic": 180317.215888556
+    },
+    {
+      "name": "static",
+      "atMs": 330060.61947599996,
+      "monotonic": 180327.242145053
+    },
+    {
+      "name": "canvas",
+      "atMs": 340002.359234,
+      "monotonic": 180337.183064172
+    },
+    {
+      "name": "scroll",
+      "atMs": 350004.160865,
+      "monotonic": 180347.185843749
+    },
+    {
+      "name": "static",
+      "atMs": 360096.098915,
+      "monotonic": 180357.276506209
+    },
+    {
+      "name": "canvas",
+      "atMs": 370034.64806599997,
+      "monotonic": 180367.215609063
+    },
+    {
+      "name": "scroll",
+      "atMs": 380043.992545,
+      "monotonic": 180377.229756447
+    },
+    {
+      "name": "static",
+      "atMs": 390044.088644,
+      "monotonic": 180387.226141889
+    },
+    {
+      "name": "canvas",
+      "atMs": 400046.806305,
+      "monotonic": 180397.229953621
+    },
+    {
+      "name": "scroll",
+      "atMs": 410018.375456,
+      "monotonic": 180407.198182922
+    },
+    {
+      "name": "static",
+      "atMs": 420013.930766,
+      "monotonic": 180417.194043072
+    },
+    {
+      "name": "canvas",
+      "atMs": 430029.07893799996,
+      "monotonic": 180427.212164201
+    },
+    {
+      "name": "scroll",
+      "atMs": 440038.662885,
+      "monotonic": 180437.230886868
+    },
+    {
+      "name": "static",
+      "atMs": 450047.75101,
+      "monotonic": 180447.22747422
+    },
+    {
+      "name": "canvas",
+      "atMs": 460035.572575,
+      "monotonic": 180457.216502235
+    },
+    {
+      "name": "scroll",
+      "atMs": 470032.646378,
+      "monotonic": 180467.212237703
+    },
+    {
+      "name": "static",
+      "atMs": 480027.688013,
+      "monotonic": 180477.207258188
+    },
+    {
+      "name": "canvas",
+      "atMs": 490028.482745,
+      "monotonic": 180487.209016796
+    },
+    {
+      "name": "scroll",
+      "atMs": 500047.239619,
+      "monotonic": 180497.233421099
+    },
+    {
+      "name": "static",
+      "atMs": 510027.560437,
+      "monotonic": 180507.209212623
+    },
+    {
+      "name": "canvas",
+      "atMs": 520031.16453099996,
+      "monotonic": 180517.214791767
+    },
+    {
+      "name": "scroll",
+      "atMs": 530013.3730649999,
+      "monotonic": 180527.197238641
+    },
+    {
+      "name": "static",
+      "atMs": 540094.6912369999,
+      "monotonic": 180537.274374072
+    },
+    {
+      "name": "canvas",
+      "atMs": 550008.717449,
+      "monotonic": 180547.189847859
+    },
+    {
+      "name": "scroll",
+      "atMs": 560011.275733,
+      "monotonic": 180557.19635229
+    },
+    {
+      "name": "static",
+      "atMs": 570095.224156,
+      "monotonic": 180567.275195665
+    },
+    {
+      "name": "canvas",
+      "atMs": 580018.754427,
+      "monotonic": 180577.201413868
+    },
+    {
+      "name": "scroll",
+      "atMs": 590037.3008719999,
+      "monotonic": 180587.224392879
+    },
+    {
+      "name": "static",
+      "atMs": 600014.109073,
+      "monotonic": 180597.195315825
+    },
+    {
+      "name": "canvas",
+      "atMs": 610013.614431,
+      "monotonic": 180607.196475385
+    },
+    {
+      "name": "scroll",
+      "atMs": 620009.401893,
+      "monotonic": 180617.19127842
+    },
+    {
+      "name": "static",
+      "atMs": 630062.427337,
+      "monotonic": 180627.242944705
+    },
+    {
+      "name": "canvas",
+      "atMs": 640011.369123,
+      "monotonic": 180637.192888141
+    },
+    {
+      "name": "scroll",
+      "atMs": 650017.635542,
+      "monotonic": 180647.202601317
+    },
+    {
+      "name": "static",
+      "atMs": 660092.301686,
+      "monotonic": 180657.27216507
+    },
+    {
+      "name": "canvas",
+      "atMs": 670038.0495569999,
+      "monotonic": 180667.221409703
+    },
+    {
+      "name": "scroll",
+      "atMs": 680025.989465,
+      "monotonic": 180677.208143464
+    },
+    {
+      "name": "static",
+      "atMs": 690045.8033649999,
+      "monotonic": 180687.226435385
+    },
+    {
+      "name": "canvas",
+      "atMs": 700011.864001,
+      "monotonic": 180697.191008083
+    },
+    {
+      "name": "scroll",
+      "atMs": 710007.126094,
+      "monotonic": 180707.187678967
+    },
+    {
+      "name": "static",
+      "atMs": 720091.392976,
+      "monotonic": 180717.270374421
+    },
+    {
+      "name": "canvas",
+      "atMs": 730030.708148,
+      "monotonic": 180727.210654068
+    },
+    {
+      "name": "scroll",
+      "atMs": 740038.417106,
+      "monotonic": 180737.222498384
+    },
+    {
+      "name": "static",
+      "atMs": 750060.078201,
+      "monotonic": 180747.239345191
+    },
+    {
+      "name": "canvas",
+      "atMs": 760029.250852,
+      "monotonic": 180757.209445744
+    },
+    {
+      "name": "scroll",
+      "atMs": 770030.39605,
+      "monotonic": 180767.211958752
+    },
+    {
+      "name": "static",
+      "atMs": 780022.590383,
+      "monotonic": 180777.202160039
+    },
+    {
+      "name": "canvas",
+      "atMs": 790026.487702,
+      "monotonic": 180787.20851363
+    },
+    {
+      "name": "scroll",
+      "atMs": 800014.751128,
+      "monotonic": 180797.200665424
+    },
+    {
+      "name": "static",
+      "atMs": 810008.449863,
+      "monotonic": 180807.190007303
+    },
+    {
+      "name": "canvas",
+      "atMs": 820018.442081,
+      "monotonic": 180817.200260716
+    },
+    {
+      "name": "scroll",
+      "atMs": 830029.079127,
+      "monotonic": 180827.211655765
+    },
+    {
+      "name": "static",
+      "atMs": 840042.292681,
+      "monotonic": 180837.222419394
+    },
+    {
+      "name": "canvas",
+      "atMs": 850035.719362,
+      "monotonic": 180847.21954204
+    },
+    {
+      "name": "scroll",
+      "atMs": 860034.347344,
+      "monotonic": 180857.221023996
+    },
+    {
+      "name": "static",
+      "atMs": 870023.785716,
+      "monotonic": 180867.206929653
+    },
+    {
+      "name": "canvas",
+      "atMs": 880024.638366,
+      "monotonic": 180877.205932979
+    },
+    {
+      "name": "scroll",
+      "atMs": 890030.237122,
+      "monotonic": 180887.212306329
+    },
+    {
+      "name": "static",
+      "atMs": 900090.234742,
+      "monotonic": 180897.275765614
+    },
+    {
+      "name": "canvas",
+      "atMs": 910021.62595,
+      "monotonic": 180907.20282602
+    },
+    {
+      "name": "scroll",
+      "atMs": 920049.081605,
+      "monotonic": 180917.233025623
+    },
+    {
+      "name": "static",
+      "atMs": 930028.2485079999,
+      "monotonic": 180927.209034729
+    },
+    {
+      "name": "canvas",
+      "atMs": 940041.2816,
+      "monotonic": 180937.222143709
+    },
+    {
+      "name": "scroll",
+      "atMs": 950003.166529,
+      "monotonic": 180947.185272393
+    },
+    {
+      "name": "static",
+      "atMs": 960037.362132,
+      "monotonic": 180957.218516376
+    },
+    {
+      "name": "canvas",
+      "atMs": 970033.6908999999,
+      "monotonic": 180967.213007496
+    },
+    {
+      "name": "scroll",
+      "atMs": 980035.266589,
+      "monotonic": 180977.219420972
+    },
+    {
+      "name": "static",
+      "atMs": 990056.748846,
+      "monotonic": 180987.236952624
+    },
+    {
+      "name": "canvas",
+      "atMs": 1000031.24411,
+      "monotonic": 180997.213148923
+    },
+    {
+      "name": "scroll",
+      "atMs": 1010026.529828,
+      "monotonic": 181007.208138488
+    },
+    {
+      "name": "static",
+      "atMs": 1020086.661628,
+      "monotonic": 181017.266469995
+    },
+    {
+      "name": "canvas",
+      "atMs": 1030042.587241,
+      "monotonic": 181027.224255965
+    },
+    {
+      "name": "scroll",
+      "atMs": 1040009.891783,
+      "monotonic": 181037.192999041
+    },
+    {
+      "name": "static",
+      "atMs": 1050087.106321,
+      "monotonic": 181047.268490055
+    },
+    {
+      "name": "canvas",
+      "atMs": 1060029.3207420001,
+      "monotonic": 181057.214333031
+    },
+    {
+      "name": "scroll",
+      "atMs": 1070044.288052,
+      "monotonic": 181067.22835883
+    },
+    {
+      "name": "static",
+      "atMs": 1080036.61604,
+      "monotonic": 181077.218107562
+    },
+    {
+      "name": "canvas",
+      "atMs": 1090029.011436,
+      "monotonic": 181087.210617435
+    },
+    {
+      "name": "scroll",
+      "atMs": 1100034.3949610002,
+      "monotonic": 181097.220743218
+    },
+    {
+      "name": "static",
+      "atMs": 1110006.053187,
+      "monotonic": 181107.186091687
+    },
+    {
+      "name": "canvas",
+      "atMs": 1120002.7895290002,
+      "monotonic": 181117.18500736
+    },
+    {
+      "name": "scroll",
+      "atMs": 1130006.287125,
+      "monotonic": 181127.193502427
+    },
+    {
+      "name": "static",
+      "atMs": 1140089.059701,
+      "monotonic": 181137.269194912
+    },
+    {
+      "name": "canvas",
+      "atMs": 1150039.074882,
+      "monotonic": 181147.2190842
+    },
+    {
+      "name": "scroll",
+      "atMs": 1160042.6064330002,
+      "monotonic": 181157.223200829
+    },
+    {
+      "name": "static",
+      "atMs": 1170039.1754090001,
+      "monotonic": 181167.219007944
+    },
+    {
+      "name": "canvas",
+      "atMs": 1180036.696594,
+      "monotonic": 181177.215752082
+    },
+    {
+      "name": "scroll",
+      "atMs": 1190043.1762690002,
+      "monotonic": 181187.22464046
+    },
+    {
+      "name": "static",
+      "atMs": 1200043.9488360002,
+      "monotonic": 181197.223469312
+    },
+    {
+      "name": "canvas",
+      "atMs": 1210023.434784,
+      "monotonic": 181207.203125301
+    },
+    {
+      "name": "scroll",
+      "atMs": 1220039.8977700002,
+      "monotonic": 181217.221175446
+    },
+    {
+      "name": "static",
+      "atMs": 1230020.501438,
+      "monotonic": 181227.199265029
+    },
+    {
+      "name": "canvas",
+      "atMs": 1240025.6076270002,
+      "monotonic": 181237.207546104
+    },
+    {
+      "name": "scroll",
+      "atMs": 1250054.7103310002,
+      "monotonic": 181247.308476881
+    },
+    {
+      "name": "static",
+      "atMs": 1260004.0482970001,
+      "monotonic": 181257.183659542
+    },
+    {
+      "name": "canvas",
+      "atMs": 1270046.5731290001,
+      "monotonic": 181267.225518607
+    },
+    {
+      "name": "scroll",
+      "atMs": 1280048.045815,
+      "monotonic": 181277.233509149
+    },
+    {
+      "name": "static",
+      "atMs": 1290021.197726,
+      "monotonic": 181287.200530017
+    },
+    {
+      "name": "canvas",
+      "atMs": 1300025.725847,
+      "monotonic": 181297.20676791
+    },
+    {
+      "name": "scroll",
+      "atMs": 1310029.791166,
+      "monotonic": 181307.21604966
+    },
+    {
+      "name": "static",
+      "atMs": 1320003.129838,
+      "monotonic": 181317.184374275
+    },
+    {
+      "name": "canvas",
+      "atMs": 1330039.235212,
+      "monotonic": 181327.224455052
+    },
+    {
+      "name": "scroll",
+      "atMs": 1340007.3217510001,
+      "monotonic": 181337.196796849
+    },
+    {
+      "name": "static",
+      "atMs": 1350034.197837,
+      "monotonic": 181347.217263332
+    },
+    {
+      "name": "canvas",
+      "atMs": 1360034.417719,
+      "monotonic": 181357.216297303
+    },
+    {
+      "name": "scroll",
+      "atMs": 1370036.917146,
+      "monotonic": 181367.220190415
+    },
+    {
+      "name": "static",
+      "atMs": 1380021.0137840002,
+      "monotonic": 181377.201779867
+    },
+    {
+      "name": "canvas",
+      "atMs": 1390013.234319,
+      "monotonic": 181387.194450966
+    },
+    {
+      "name": "scroll",
+      "atMs": 1400018.8744720002,
+      "monotonic": 181397.200306224
+    },
+    {
+      "name": "static",
+      "atMs": 1410036.9099720002,
+      "monotonic": 181407.220657242
+    },
+    {
+      "name": "canvas",
+      "atMs": 1420032.860491,
+      "monotonic": 181417.213189111
+    },
+    {
+      "name": "scroll",
+      "atMs": 1430036.6837860001,
+      "monotonic": 181427.219688671
+    },
+    {
+      "name": "static",
+      "atMs": 1440019.1237050002,
+      "monotonic": 181437.198701001
+    },
+    {
+      "name": "canvas",
+      "atMs": 1450007.292727,
+      "monotonic": 181447.187240074
+    },
+    {
+      "name": "scroll",
+      "atMs": 1460011.49425,
+      "monotonic": 181457.194493111
+    },
+    {
+      "name": "static",
+      "atMs": 1470082.569848,
+      "monotonic": 181467.26166455
+    },
+    {
+      "name": "canvas",
+      "atMs": 1480042.124112,
+      "monotonic": 181477.22464789
+    },
+    {
+      "name": "scroll",
+      "atMs": 1490020.742509,
+      "monotonic": 181487.201364344
+    },
+    {
+      "name": "static",
+      "atMs": 1500037.619816,
+      "monotonic": 181497.217172475
+    },
+    {
+      "name": "canvas",
+      "atMs": 1510034.708304,
+      "monotonic": 181507.216708108
+    },
+    {
+      "name": "scroll",
+      "atMs": 1520034.606753,
+      "monotonic": 181517.218147873
+    },
+    {
+      "name": "static",
+      "atMs": 1530002.449766,
+      "monotonic": 181527.182635778
+    },
+    {
+      "name": "canvas",
+      "atMs": 1540046.8024290001,
+      "monotonic": 181537.227743219
+    },
+    {
+      "name": "scroll",
+      "atMs": 1550014.0643240002,
+      "monotonic": 181547.201679769
+    },
+    {
+      "name": "static",
+      "atMs": 1560081.115612,
+      "monotonic": 181557.260769208
+    },
+    {
+      "name": "canvas",
+      "atMs": 1570032.0328680002,
+      "monotonic": 181567.214016103
+    },
+    {
+      "name": "scroll",
+      "atMs": 1580034.104184,
+      "monotonic": 181577.216672491
+    },
+    {
+      "name": "static",
+      "atMs": 1590021.2427480002,
+      "monotonic": 181587.204598017
+    },
+    {
+      "name": "canvas",
+      "atMs": 1600035.13027,
+      "monotonic": 181597.21732464
+    },
+    {
+      "name": "scroll",
+      "atMs": 1610003.1351980001,
+      "monotonic": 181607.185267674
+    },
+    {
+      "name": "static",
+      "atMs": 1620017.418793,
+      "monotonic": 181617.1975308
+    },
+    {
+      "name": "canvas",
+      "atMs": 1630010.785499,
+      "monotonic": 181627.191427312
+    },
+    {
+      "name": "scroll",
+      "atMs": 1640014.1387540002,
+      "monotonic": 181637.195584765
+    },
+    {
+      "name": "static",
+      "atMs": 1650079.848802,
+      "monotonic": 181647.261266427
+    },
+    {
+      "name": "canvas",
+      "atMs": 1660024.5496740001,
+      "monotonic": 181657.205201109
+    },
+    {
+      "name": "scroll",
+      "atMs": 1670046.250866,
+      "monotonic": 181667.230727672
+    },
+    {
+      "name": "static",
+      "atMs": 1680037.266335,
+      "monotonic": 181677.216952159
+    },
+    {
+      "name": "canvas",
+      "atMs": 1690016.980462,
+      "monotonic": 181687.201103215
+    },
+    {
+      "name": "scroll",
+      "atMs": 1700011.4466360002,
+      "monotonic": 181697.190692253
+    },
+    {
+      "name": "static",
+      "atMs": 1710003.4923820002,
+      "monotonic": 181707.183267109
+    },
+    {
+      "name": "canvas",
+      "atMs": 1720039.811777,
+      "monotonic": 181717.220368783
+    },
+    {
+      "name": "scroll",
+      "atMs": 1730033.7314580001,
+      "monotonic": 181727.213383104
+    },
+    {
+      "name": "static",
+      "atMs": 1740082.111526,
+      "monotonic": 181737.261209526
+    },
+    {
+      "name": "canvas",
+      "atMs": 1750028.626267,
+      "monotonic": 181747.208881585
+    },
+    {
+      "name": "scroll",
+      "atMs": 1760022.3786010002,
+      "monotonic": 181757.201537423
+    },
+    {
+      "name": "static",
+      "atMs": 1770050.1661220002,
+      "monotonic": 181767.229551791
+    },
+    {
+      "name": "canvas",
+      "atMs": 1780002.628868,
+      "monotonic": 181777.185111257
+    },
+    {
+      "name": "scroll",
+      "atMs": 1790046.360475,
+      "monotonic": 181787.233788372
+    }
+  ],
+  "encoding": {
+    "video": "H264 veryfast zerolatency, GOP 2 seconds; configured thread count/preset in finalOutput",
+    "audio": "AAC 48kHz stereo 128kbps",
+    "recordCrf": 18,
+    "streamBitrateKbps": 4500
+  },
+  "cefVersion": "152.0.6+g708dc14+chromium-152.0.7977.83",
+  "browserVersion": "152.0.7977.83",
+  "audioStarted": {
+    "generator": "frame-coded interpolated hash noise",
+    "sampleRate": 48000,
+    "quantum": 24,
+    "amplitude": 0.15,
+    "firstFrame": 640,
+    "currentFrame": 768
+  },
+  "captureAudioReadiness": {
+    "waitMs": 490.34453699999995,
+    "active": true,
+    "lastPacketMs": 2132.512755,
+    "packets": 9,
+    "requested": true
+  },
+  "beforeCapture": {
+    "marker": 43,
+    "rendered": 41,
+    "mode": "static",
+    "scrollY": 0,
+    "scrollEvents": 0,
+    "keyEvents": 0,
+    "clicks": 0,
+    "value": "",
+    "choice": "First",
+    "actionMask": 0,
+    "width": 1920,
+    "height": 1080,
+    "audio": {
+      "generator": "frame-coded interpolated hash noise",
+      "sampleRate": 48000,
+      "quantum": 24,
+      "amplitude": 0.15,
+      "firstFrame": 640,
+      "currentFrame": 13440
+    }
+  },
+  "activeBaseline": {
+    "marker": 53,
+    "rendered": 51,
+    "mode": "static",
+    "scrollY": 0,
+    "scrollEvents": 0,
+    "keyEvents": 0,
+    "clicks": 0,
+    "value": "",
+    "choice": "First",
+    "actionMask": 0,
+    "width": 1920,
+    "height": 1080,
+    "audio": {
+      "generator": "frame-coded interpolated hash noise",
+      "sampleRate": 48000,
+      "quantum": 24,
+      "amplitude": 0.15,
+      "firstFrame": 640,
+      "currentFrame": 29696
+    }
+  },
+  "activeStartMonotonic": 179997.17695355,
+  "inputDwellMs": 200,
+  "activeEndMonotonic": 181797.191300178,
+  "activeMs": 1800014.3466280133,
+  "afterCapture": {
+    "marker": 54054,
+    "rendered": 53798,
+    "mode": "scroll",
+    "scrollY": 1620,
+    "scrollEvents": 1169,
+    "keyEvents": 1,
+    "clicks": 1,
+    "value": "SuiteCut benchmark",
+    "choice": "Second",
+    "actionMask": 15,
+    "width": 1920,
+    "height": 1080,
+    "audio": {
+      "generator": "frame-coded interpolated hash noise",
+      "sampleRate": 48000,
+      "quantum": 24,
+      "amplitude": 0.15,
+      "firstFrame": 640,
+      "currentFrame": 85977216
+    }
+  },
+  "scrollCommands": 1169,
+  "finalOutput": {
+    "ready": true,
+    "stopped": true,
+    "paused": false,
+    "videoFrames": 54011,
+    "audioSamples": 86418432,
+    "repeatedFrames": 534,
+    "droppedAudioSamples": 0,
+    "missingAudioSamples": 391001,
+    "activeMissingAudioSamples": 391001,
+    "lateAudioSamples": 0,
+    "queuedVideoBytes": 0,
+    "queuedAudioBytes": 0,
+    "startedMs": 2150.568411,
+    "durationMs": 1800366.6666666667,
+    "maximumEncodeMs": 281.90744700003415,
+    "bufferedDelayMs": 297.09353199996985,
+    "audioSyncWaits": 197127,
+    "videoSyncWaits": 116374,
+    "maximumTrackLeadMs": 33.333333333488554,
+    "videoEncoderThreads": 1,
+    "videoEncoderPreset": "veryfast",
+    "error": ""
+  },
+  "receiverExitCode": 0,
+  "finishedAt": "2026-10-10T22:40:30.655Z"
+}

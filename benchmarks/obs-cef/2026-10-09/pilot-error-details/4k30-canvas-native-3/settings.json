@@ -1,0 +1,15 @@
+{
+  "id": "4k30-canvas-native-3",
+  "backend": "native",
+  "case": {
+    "name": "4k30-canvas",
+    "width": 3840,
+    "height": 2160,
+    "fps": 30,
+    "workload": "canvas"
+  },
+  "trialNumber": 3,
+  "durationMs": 10000,
+  "status": "running",
+  "startedAt": "2026-10-08T20:58:52.055Z"
+}

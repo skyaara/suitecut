@@ -1,0 +1,5 @@
+[h264 @ 0x55bb39321780] Invalid NAL unit size (820 > 588).
+[h264 @ 0x55bb39321780] missing picture in access unit with size 592
+[h264 @ 0x55bb3924d200] Invalid NAL unit size (820 > 588).
+[h264 @ 0x55bb3924d200] Error splitting the input into NAL units.
+[vist#0:0/h264 @ 0x55bb391b1080] [dec:h264 @ 0x55bb391b5940] Decoding error: Invalid data found when processing input

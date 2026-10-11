@@ -1,0 +1,54 @@
+{
+  "outputs": [
+    {
+      "path": "/workspace/suitecut/benchmarks/native-sync/2026-10-10/continuous-60s/recording.mp4",
+      "fullyDecodedVideoFrames": 1817,
+      "nativeVideoFrames": 1817,
+      "distinctImageFPS": 29.636763896532745,
+      "maximumImageHoldMs": 166.66666666666666,
+      "decodedInteriorSilenceMs": 400,
+      "maximumInteriorSilenceMs": 110,
+      "decodedSilenceLongerThanExpectedPulseMs": [],
+      "preEncoderPulseOnsets": 11,
+      "visualPulseOnsets": 60,
+      "pulseVisualMinusNativeAudioMs": {
+        "samples": 0,
+        "median": null,
+        "p95Absolute": null,
+        "maximumAbsolute": null,
+        "unmatched": []
+      }
+    },
+    {
+      "path": "/workspace/suitecut/benchmarks/native-sync/2026-10-10/continuous-60s/receiver.flv",
+      "fullyDecodedVideoFrames": 1808,
+      "nativeVideoFrames": 1808,
+      "distinctImageFPS": 29.7179203539823,
+      "maximumImageHoldMs": 166.66666666666666,
+      "decodedInteriorSilenceMs": 410,
+      "maximumInteriorSilenceMs": 110,
+      "decodedSilenceLongerThanExpectedPulseMs": [],
+      "preEncoderPulseOnsets": 12,
+      "visualPulseOnsets": 59,
+      "pulseVisualMinusNativeAudioMs": {
+        "samples": 0,
+        "median": null,
+        "p95Absolute": null,
+        "maximumAbsolute": null,
+        "unmatched": []
+      }
+    }
+  ],
+  "resources": {
+    "captureSamples": 60,
+    "nativeMeanCPUCores": 1.1563835116485794,
+    "nativeAggregateRSSPeakMiB": 1194.296875,
+    "aggregateRSSFirstWindowMedianMiB": 1166.484375,
+    "aggregateRSSLastWindowMedianMiB": 1185.3125,
+    "rssWindowSeconds": 15.0450109715,
+    "rssIsSummedNotPrivateMemory": true,
+    "wholeCEFLeakFreedomProven": false
+  },
+  "sourceGapCount": 5,
+  "maxCallbackDelayMs": 127.27798299999995
+}

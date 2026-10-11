@@ -1,0 +1,22 @@
+INFO: Running with entropic power schedule (0xFF, 100).
+INFO: Seed: 2269896467
+INFO: Loaded 1 modules   (117 inline 8-bit counters): 117 [0x562ed76ae298, 0x562ed76ae30d), 
+INFO: Loaded 1 PC tables (117 PCs): 117 [0x562ed76ae310,0x562ed76aea60), 
+INFO:       46 files found in /workspace/suitecut/benchmarks/release/2026-10-11-suitecut-2.1/fuzz/bounds-corpus
+INFO: seed corpus: files: 46 min: 1b max: 40b total: 1603b rss: 55Mb
+#47	INITED cov: 55 ft: 80 corp: 29/1121b exec/s: 0 rss: 56Mb
+#262144	pulse  cov: 55 ft: 80 corp: 29/1121b lim: 512 exec/s: 131072 rss: 90Mb
+#524288	pulse  cov: 55 ft: 80 corp: 29/1121b lim: 512 exec/s: 131072 rss: 123Mb
+#1048576	pulse  cov: 55 ft: 80 corp: 29/1121b lim: 512 exec/s: 131072 rss: 190Mb
+#2097152	pulse  cov: 55 ft: 80 corp: 29/1121b lim: 512 exec/s: 123361 rss: 323Mb
+#4194304	pulse  cov: 55 ft: 80 corp: 29/1121b lim: 512 exec/s: 123361 rss: 490Mb
+#8388608	pulse  cov: 55 ft: 80 corp: 29/1121b lim: 512 exec/s: 121574 rss: 490Mb
+#16777216	pulse  cov: 55 ft: 80 corp: 29/1121b lim: 512 exec/s: 114130 rss: 491Mb
+#33554432	pulse  cov: 55 ft: 80 corp: 29/1121b lim: 512 exec/s: 100764 rss: 491Mb
+#64096607	DONE   cov: 55 ft: 80 corp: 29/1121b lim: 512 exec/s: 106649 rss: 492Mb
+Done 64096607 runs in 601 second(s)
+stat::number_of_executed_units: 64096607
+stat::average_exec_per_sec:     106649
+stat::new_units_added:          0
+stat::slowest_unit_time_sec:    0
+stat::peak_rss_mb:              492

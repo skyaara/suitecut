@@ -1,0 +1,305 @@
+{
+  "requestedMs": 90000,
+  "injection": {
+    "kind": "controlled Node event-loop blocking wait",
+    "atMs": 40221.474754,
+    "durationMs": 4000
+  },
+  "thresholds": {
+    "audibleRms": 0.015,
+    "rmsBlockMs": 20,
+    "silenceFailureSeconds": 5,
+    "videoContentHoldFailureSeconds": 5,
+    "syncP95Ms": 200
+  },
+  "outputs": {
+    "recording": {
+      "mediaPath": "/workspace/suitecut/.suitecut/dropout-investigation/controlled-node-stall/suitecut-source-1740ac3a-d680-4850-8baa-1b6fbd5ea500-30d3148c-48e5-4f6c-acdc-4af9685cd9e8.webm",
+      "durationSeconds": 100.119,
+      "audio": {
+        "status": "passed",
+        "decodedSeconds": 100.086125,
+        "pcmPath": "benchmarks/obs-cef/2026-10-09-dropout-investigation/controlled-node-stall/analysis/recording/full-audio-8k.f32",
+        "longestSilentInterval": {
+          "startSeconds": 47.82,
+          "endSeconds": 50.6,
+          "durationSeconds": 2.7800000000000002
+        },
+        "silentIntervalsOver2Seconds": [
+          {
+            "startSeconds": 47.82,
+            "endSeconds": 50.6,
+            "durationSeconds": 2.7800000000000002
+          }
+        ],
+        "silentIntervalsOver5Seconds": []
+      },
+      "video": {
+        "status": "passed",
+        "decodedFrames": 1452,
+        "activeFrames": 1154,
+        "distinctActiveFps": 13.585365853658537,
+        "repeatFraction": 0.03466204506065862,
+        "longestContentHold": {
+          "startSeconds": 48.283,
+          "endSeconds": 52.574,
+          "durationSeconds": 4.290999999999997,
+          "marker": 1250,
+          "encodedFrames": 2
+        },
+        "contentHoldsOver1Second": [
+          {
+            "startSeconds": 48.283,
+            "endSeconds": 52.574,
+            "durationSeconds": 4.290999999999997,
+            "marker": 1250,
+            "encodedFrames": 2
+          }
+        ],
+        "contentHoldsOver5Seconds": [],
+        "maximumPresentationGapSeconds": 4.238999999999997,
+        "markerRange": [
+          0,
+          2718
+        ]
+      },
+      "syncWindows": [
+        {
+          "matchedFlashes": 12,
+          "audioBursts": 23,
+          "medianAudioMinusVideoMs": -49.99999999999982,
+          "p95AbsoluteOffsetMs": 198.5,
+          "firstThirdMedianMs": -49.99999999999982,
+          "lastThirdMedianMs": -83.33333333333303,
+          "offsetsMs": [
+            -49.99999999999982,
+            36.66666666666663,
+            -80.00000000000007,
+            -49.99999999999982,
+            -13.333333333332753,
+            -140.00000000000057,
+            -59.99999999999872,
+            -29.99999999999936,
+            -3.333333333332078,
+            -269.99999999999955,
+            -33.333333333333215,
+            -133.33333333333286
+          ],
+          "offsetSeconds": 5,
+          "status": "passed"
+        },
+        {
+          "matchedFlashes": 7,
+          "audioBursts": 26,
+          "medianAudioMinusVideoMs": -19.999999999999574,
+          "p95AbsoluteOffsetMs": 37.99999999999936,
+          "firstThirdMedianMs": -5.0000000000001155,
+          "lastThirdMedianMs": -23.333333333333428,
+          "offsetsMs": [
+            20.000000000000018,
+            -30.00000000000025,
+            39.99999999999915,
+            -33.333333333333215,
+            26.666666666667282,
+            -19.999999999999574,
+            -26.666666666667282
+          ],
+          "offsetSeconds": 45,
+          "status": "passed"
+        },
+        {
+          "matchedFlashes": 13,
+          "audioBursts": 14,
+          "medianAudioMinusVideoMs": -53.33333333333279,
+          "p95AbsoluteOffsetMs": 89.99999999999986,
+          "firstThirdMedianMs": -56.6666666666662,
+          "lastThirdMedianMs": -44.99999999999993,
+          "offsetsMs": [
+            -3.3333333333334103,
+            -59.99999999999961,
+            -53.33333333333279,
+            -83.33333333333393,
+            -36.66666666666618,
+            -26.666666666666394,
+            -60.0000000000005,
+            -29.99999999999936,
+            -89.99999999999986,
+            -60.0000000000005,
+            -89.99999999999986,
+            -23.333333333333428,
+            -29.99999999999936
+          ],
+          "offsetSeconds": 70,
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    "receiver": {
+      "mediaPath": "/workspace/suitecut/.suitecut/dropout-investigation/controlled-node-stall/receiver.flv",
+      "durationSeconds": 91.605,
+      "audio": {
+        "status": "passed",
+        "decodedSeconds": 91.605375,
+        "pcmPath": "benchmarks/obs-cef/2026-10-09-dropout-investigation/controlled-node-stall/analysis/receiver/full-audio-8k.f32",
+        "longestSilentInterval": {
+          "startSeconds": 41.26,
+          "endSeconds": 44.06,
+          "durationSeconds": 2.8000000000000003
+        },
+        "silentIntervalsOver2Seconds": [
+          {
+            "startSeconds": 41.26,
+            "endSeconds": 44.06,
+            "durationSeconds": 2.8000000000000003
+          }
+        ],
+        "silentIntervalsOver5Seconds": []
+      },
+      "video": {
+        "status": "passed",
+        "decodedFrames": 1299,
+        "activeFrames": 1146,
+        "distinctActiveFps": 10.390243902439025,
+        "repeatFraction": 0.25654450261780104,
+        "longestContentHold": {
+          "startSeconds": 41.767,
+          "endSeconds": 45.946,
+          "durationSeconds": 4.178999999999995,
+          "marker": 1251,
+          "encodedFrames": 5
+        },
+        "contentHoldsOver1Second": [
+          {
+            "startSeconds": 4.95,
+            "endSeconds": 6.003,
+            "durationSeconds": 1.053,
+            "marker": 272,
+            "encodedFrames": 1
+          },
+          {
+            "startSeconds": 10.343,
+            "endSeconds": 11.732,
+            "durationSeconds": 1.3889999999999993,
+            "marker": 413,
+            "encodedFrames": 2
+          },
+          {
+            "startSeconds": 14.578,
+            "endSeconds": 16.512,
+            "durationSeconds": 1.934000000000001,
+            "marker": 516,
+            "encodedFrames": 1
+          },
+          {
+            "startSeconds": 16.578,
+            "endSeconds": 17.658,
+            "durationSeconds": 1.0800000000000018,
+            "marker": 548,
+            "encodedFrames": 9
+          },
+          {
+            "startSeconds": 32.447,
+            "endSeconds": 33.491,
+            "durationSeconds": 1.043999999999997,
+            "marker": 995,
+            "encodedFrames": 1
+          },
+          {
+            "startSeconds": 34.46,
+            "endSeconds": 35.48,
+            "durationSeconds": 1.019999999999996,
+            "marker": 1042,
+            "encodedFrames": 2
+          },
+          {
+            "startSeconds": 41.767,
+            "endSeconds": 45.946,
+            "durationSeconds": 4.178999999999995,
+            "marker": 1251,
+            "encodedFrames": 5
+          },
+          {
+            "startSeconds": 51.25,
+            "endSeconds": 52.396,
+            "durationSeconds": 1.1460000000000008,
+            "marker": 1508,
+            "encodedFrames": 3
+          }
+        ],
+        "contentHoldsOver5Seconds": [],
+        "maximumPresentationGapSeconds": 4.174999999999997,
+        "markerRange": [
+          143,
+          2617
+        ]
+      },
+      "syncWindows": [
+        {
+          "matchedFlashes": 8,
+          "audioBursts": 25,
+          "medianAudioMinusVideoMs": -23.333333333333872,
+          "p95AbsoluteOffsetMs": 113.49999999999982,
+          "firstThirdMedianMs": -26.666666666666618,
+          "lastThirdMedianMs": -66.66666666666643,
+          "offsetsMs": [
+            -36.66666666666663,
+            -16.666666666666607,
+            36.66666666666618,
+            -16.666666666666607,
+            -76.66666666666711,
+            -30.000000000001137,
+            0.0,
+            -133.33333333333286
+          ],
+          "offsetSeconds": 5,
+          "status": "passed"
+        },
+        {
+          "matchedFlashes": 7,
+          "audioBursts": 29,
+          "medianAudioMinusVideoMs": 19.999999999999574,
+          "p95AbsoluteOffsetMs": 75.66666666666612,
+          "firstThirdMedianMs": 36.6666666666664,
+          "lastThirdMedianMs": 28.33333333333332,
+          "offsetsMs": [
+            23.333333333332984,
+            49.99999999999982,
+            -3.333333333332966,
+            -86.666666666666,
+            -9.999999999999787,
+            36.66666666666707,
+            19.999999999999574
+          ],
+          "offsetSeconds": 45,
+          "status": "passed"
+        },
+        {
+          "matchedFlashes": 11,
+          "audioBursts": 16,
+          "medianAudioMinusVideoMs": -16.666666666667496,
+          "p95AbsoluteOffsetMs": 138.33333333333366,
+          "firstThirdMedianMs": -26.66666666666684,
+          "lastThirdMedianMs": 9.999999999999787,
+          "offsetsMs": [
+            -6.666666666666821,
+            -26.66666666666684,
+            -36.66666666666707,
+            -33.333333333333215,
+            -9.999999999999787,
+            -16.666666666667496,
+            -16.666666666667496,
+            -240.00000000000023,
+            13.333333333333641,
+            -9.999999999999787,
+            9.999999999999787
+          ],
+          "offsetSeconds": 70,
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    }
+  },
+  "status": "passed"
+}

@@ -1,0 +1,74 @@
+{
+  "controllerStallMs": 2000.314054999999,
+  "elapsedStartMs": 15036.567794,
+  "elapsedEndMs": 17036.9837,
+  "nativeSourceAudioCallbacksDuringStall": 94,
+  "encodedVideoFramesDuringStall": 60,
+  "encodedAudioFramesDuringStall": 96256,
+  "missingAudioFramesDuringStall": 0,
+  "before": {
+    "output": {
+      "ready": true,
+      "stopped": false,
+      "paused": false,
+      "videoFrames": 448,
+      "audioSamples": 716800,
+      "repeatedFrames": 3,
+      "droppedAudioSamples": 0,
+      "missingAudioSamples": 0,
+      "activeMissingAudioSamples": 0,
+      "lateAudioSamples": 0,
+      "queuedVideoBytes": 18662400,
+      "queuedAudioBytes": 28672,
+      "startedMs": 2368.012655,
+      "durationMs": 14933.333333333334,
+      "maximumEncodeMs": 36.93889399999989,
+      "bufferedDelayMs": 150,
+      "audioSyncWaits": 1717,
+      "videoSyncWaits": 862,
+      "maximumTrackLeadMs": 32.00000000000003,
+      "videoEncoderThreads": 1,
+      "videoEncoderPreset": "veryfast",
+      "error": ""
+    },
+    "audio": {
+      "active": true,
+      "lastPacketMs": 17432.623086,
+      "packets": 715,
+      "requested": true
+    }
+  },
+  "after": {
+    "output": {
+      "ready": true,
+      "stopped": false,
+      "paused": false,
+      "videoFrames": 508,
+      "audioSamples": 813056,
+      "repeatedFrames": 14,
+      "droppedAudioSamples": 0,
+      "missingAudioSamples": 0,
+      "activeMissingAudioSamples": 0,
+      "lateAudioSamples": 0,
+      "queuedVideoBytes": 15552000,
+      "queuedAudioBytes": 28672,
+      "startedMs": 2368.012655,
+      "durationMs": 16933.333333333332,
+      "maximumEncodeMs": 36.93889399999989,
+      "bufferedDelayMs": 150,
+      "audioSyncWaits": 1920,
+      "videoSyncWaits": 974,
+      "maximumTrackLeadMs": 32.00000000000003,
+      "videoEncoderThreads": 1,
+      "videoEncoderPreset": "veryfast",
+      "error": ""
+    },
+    "audio": {
+      "active": true,
+      "lastPacketMs": 19440.019661,
+      "packets": 809,
+      "requested": true
+    }
+  },
+  "originalSevereInterruptionNote": "The earlier untraced controller-stall case had a 2170 ms quiet interval at media time 4.630 s. Active video began at media time 0.800 s; the intentional controller stall began near active elapsed 15 s. Thus the severe interruption preceded the intentional stall; its root cause is not isolated."
+}

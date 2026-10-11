@@ -1,0 +1,65 @@
+INFO: Running with entropic power schedule (0xFF, 100).
+INFO: Seed: 20261010
+INFO: Loaded 1 modules   (97 inline 8-bit counters): 97 [0x558dff0fe248, 0x558dff0fe2a9), 
+INFO: Loaded 1 PC tables (97 PCs): 97 [0x558dff0fe2b0,0x558dff0fe8c0), 
+INFO:        4 files found in benchmarks/native-memory/2026-10-10/fuzz/bounds/corpus
+INFO: seed corpus: files: 4 min: 40b max: 40b total: 160b rss: 55Mb
+#5	INITED cov: 32 ft: 35 corp: 4/160b exec/s: 0 rss: 55Mb
+#7	NEW    cov: 32 ft: 36 corp: 5/200b lim: 40 exec/s: 0 rss: 55Mb L: 40/40 MS: 2 ChangeByte-CrossOver-
+#9	NEW    cov: 33 ft: 37 corp: 6/237b lim: 40 exec/s: 0 rss: 56Mb L: 37/40 MS: 2 ChangeBinInt-EraseBytes-
+#20	NEW    cov: 34 ft: 38 corp: 7/277b lim: 40 exec/s: 0 rss: 56Mb L: 40/40 MS: 1 CopyPart-
+#35	NEW    cov: 35 ft: 39 corp: 8/317b lim: 40 exec/s: 0 rss: 56Mb L: 40/40 MS: 5 ChangeByte-CopyPart-CopyPart-ShuffleBytes-ChangeBinInt-
+#59	REDUCE cov: 35 ft: 39 corp: 8/309b lim: 40 exec/s: 0 rss: 56Mb L: 29/40 MS: 4 ChangeBinInt-InsertByte-ChangeBit-EraseBytes-
+#82	NEW    cov: 36 ft: 40 corp: 9/349b lim: 40 exec/s: 0 rss: 56Mb L: 40/40 MS: 3 CopyPart-ChangeByte-CMP- DE: "\377\377\377\377\377\377\377\004"-
+#107	NEW    cov: 37 ft: 41 corp: 10/389b lim: 40 exec/s: 0 rss: 57Mb L: 40/40 MS: 5 ChangeBit-ChangeByte-ChangeBinInt-ChangeBit-CrossOver-
+#131	NEW    cov: 38 ft: 42 corp: 11/429b lim: 40 exec/s: 0 rss: 57Mb L: 40/40 MS: 4 ChangeBinInt-ShuffleBytes-CrossOver-PersAutoDict- DE: "\377\377\377\377\377\377\377\004"-
+#162	NEW    cov: 38 ft: 43 corp: 12/469b lim: 40 exec/s: 0 rss: 57Mb L: 40/40 MS: 1 CopyPart-
+#319	REDUCE cov: 38 ft: 43 corp: 12/457b lim: 40 exec/s: 0 rss: 57Mb L: 17/40 MS: 2 ChangeByte-EraseBytes-
+#347	NEW    cov: 39 ft: 44 corp: 13/497b lim: 40 exec/s: 0 rss: 57Mb L: 40/40 MS: 3 ChangeBinInt-CopyPart-CrossOver-
+#358	NEW    cov: 39 ft: 45 corp: 14/537b lim: 40 exec/s: 0 rss: 57Mb L: 40/40 MS: 1 CopyPart-
+#394	NEW    cov: 40 ft: 47 corp: 15/577b lim: 40 exec/s: 0 rss: 57Mb L: 40/40 MS: 1 CrossOver-
+#585	NEW    cov: 41 ft: 48 corp: 16/617b lim: 40 exec/s: 0 rss: 57Mb L: 40/40 MS: 1 ShuffleBytes-
+#694	NEW    cov: 41 ft: 49 corp: 17/657b lim: 40 exec/s: 0 rss: 57Mb L: 40/40 MS: 4 EraseBytes-InsertRepeatedBytes-ChangeBit-PersAutoDict- DE: "\377\377\377\377\377\377\377\004"-
+#721	REDUCE cov: 41 ft: 49 corp: 17/644b lim: 40 exec/s: 0 rss: 57Mb L: 4/40 MS: 2 ChangeBit-CrossOver-
+#737	NEW    cov: 41 ft: 50 corp: 18/684b lim: 40 exec/s: 0 rss: 57Mb L: 40/40 MS: 1 PersAutoDict- DE: "\377\377\377\377\377\377\377\004"-
+#887	NEW    cov: 41 ft: 51 corp: 19/724b lim: 40 exec/s: 0 rss: 57Mb L: 40/40 MS: 5 ChangeByte-ChangeBinInt-ChangeBinInt-CrossOver-ChangeBinInt-
+#901	REDUCE cov: 41 ft: 51 corp: 19/723b lim: 40 exec/s: 0 rss: 57Mb L: 3/40 MS: 4 ChangeByte-CopyPart-ShuffleBytes-EraseBytes-
+#912	NEW    cov: 41 ft: 52 corp: 20/763b lim: 40 exec/s: 0 rss: 57Mb L: 40/40 MS: 1 ChangeByte-
+#1199	NEW    cov: 41 ft: 53 corp: 21/803b lim: 40 exec/s: 0 rss: 57Mb L: 40/40 MS: 2 CopyPart-ShuffleBytes-
+#1217	NEW    cov: 42 ft: 54 corp: 22/843b lim: 40 exec/s: 0 rss: 57Mb L: 40/40 MS: 3 ShuffleBytes-CrossOver-CopyPart-
+#2355	REDUCE cov: 42 ft: 54 corp: 22/842b lim: 50 exec/s: 0 rss: 57Mb L: 2/40 MS: 3 InsertByte-ShuffleBytes-EraseBytes-
+#2725	NEW    cov: 42 ft: 55 corp: 23/885b lim: 50 exec/s: 0 rss: 57Mb L: 43/43 MS: 5 ChangeBit-ChangeByte-CrossOver-InsertRepeatedBytes-PersAutoDict- DE: "\377\377\377\377\377\377\377\004"-
+#3777	REDUCE cov: 42 ft: 55 corp: 23/884b lim: 60 exec/s: 0 rss: 57Mb L: 1/43 MS: 2 ChangeBinInt-EraseBytes-
+#3813	NEW    cov: 42 ft: 56 corp: 24/924b lim: 60 exec/s: 0 rss: 57Mb L: 40/43 MS: 1 ChangeBinInt-
+#4580	NEW    cov: 42 ft: 57 corp: 25/964b lim: 65 exec/s: 0 rss: 57Mb L: 40/43 MS: 2 CrossOver-ChangeBinInt-
+#5281	NEW    cov: 42 ft: 59 corp: 26/1004b lim: 71 exec/s: 0 rss: 58Mb L: 40/43 MS: 1 ChangeByte-
+#10814	NEW    cov: 42 ft: 60 corp: 27/1044b lim: 125 exec/s: 0 rss: 58Mb L: 40/43 MS: 3 ChangeByte-CrossOver-ChangeBinInt-
+#10850	NEW    cov: 42 ft: 61 corp: 28/1084b lim: 125 exec/s: 0 rss: 58Mb L: 40/43 MS: 1 ChangeBinInt-
+#12876	NEW    cov: 42 ft: 62 corp: 29/1124b lim: 145 exec/s: 0 rss: 58Mb L: 40/43 MS: 1 ChangeBinInt-
+#13014	NEW    cov: 42 ft: 63 corp: 30/1201b lim: 145 exec/s: 0 rss: 58Mb L: 77/77 MS: 3 CMP-InsertByte-CopyPart- DE: "\000\000\000\000"-
+#14195	REDUCE cov: 42 ft: 63 corp: 30/1194b lim: 152 exec/s: 0 rss: 59Mb L: 70/70 MS: 1 EraseBytes-
+#17356	REDUCE cov: 42 ft: 63 corp: 30/1186b lim: 180 exec/s: 0 rss: 59Mb L: 62/62 MS: 1 CrossOver-
+#19547	NEW    cov: 42 ft: 64 corp: 31/1226b lim: 201 exec/s: 0 rss: 59Mb L: 40/62 MS: 1 ChangeBinInt-
+#20793	REDUCE cov: 42 ft: 64 corp: 31/1216b lim: 208 exec/s: 0 rss: 59Mb L: 52/52 MS: 1 EraseBytes-
+#22779	NEW    cov: 42 ft: 65 corp: 32/1256b lim: 222 exec/s: 0 rss: 60Mb L: 40/52 MS: 1 ChangeByte-
+#24626	NEW    cov: 42 ft: 66 corp: 33/1296b lim: 236 exec/s: 0 rss: 60Mb L: 40/52 MS: 2 ChangeBit-ChangeBit-
+#34662	REDUCE cov: 42 ft: 66 corp: 33/1288b lim: 256 exec/s: 0 rss: 61Mb L: 44/44 MS: 1 EraseBytes-
+#37008	NEW    cov: 42 ft: 67 corp: 34/1328b lim: 256 exec/s: 0 rss: 61Mb L: 40/44 MS: 1 ChangeBit-
+#47547	REDUCE cov: 42 ft: 67 corp: 34/1324b lim: 256 exec/s: 0 rss: 63Mb L: 40/43 MS: 4 ChangeBinInt-EraseBytes-CMP-EraseBytes- DE: "\377\377\377\377"-
+#52622	REDUCE cov: 42 ft: 67 corp: 34/1323b lim: 256 exec/s: 0 rss: 64Mb L: 42/42 MS: 5 ShuffleBytes-ChangeBit-ChangeBit-EraseBytes-PersAutoDict- DE: "\000\000\000\000"-
+#277223	REDUCE cov: 42 ft: 67 corp: 34/1322b lim: 256 exec/s: 0 rss: 92Mb L: 41/41 MS: 1 EraseBytes-
+#315799	REDUCE cov: 42 ft: 67 corp: 34/1321b lim: 256 exec/s: 0 rss: 97Mb L: 40/40 MS: 1 EraseBytes-
+#1048576	pulse  cov: 42 ft: 67 corp: 34/1321b lim: 256 exec/s: 524288 rss: 192Mb
+#2097152	pulse  cov: 42 ft: 67 corp: 34/1321b lim: 256 exec/s: 349525 rss: 327Mb
+#4194304	pulse  cov: 42 ft: 67 corp: 34/1321b lim: 256 exec/s: 349525 rss: 486Mb
+#8388608	pulse  cov: 42 ft: 67 corp: 34/1321b lim: 256 exec/s: 364722 rss: 487Mb
+#16777216	pulse  cov: 42 ft: 67 corp: 34/1321b lim: 256 exec/s: 409200 rss: 487Mb
+#33554432	pulse  cov: 42 ft: 67 corp: 34/1321b lim: 256 exec/s: 424739 rss: 488Mb
+#67108864	pulse  cov: 42 ft: 67 corp: 34/1321b lim: 256 exec/s: 427444 rss: 488Mb
+#78924359	DONE   cov: 42 ft: 67 corp: 34/1321b lim: 256 exec/s: 436046 rss: 489Mb
+###### Recommended dictionary. ######
+"\377\377\377\377\377\377\377\004" # Uses: 2455417
+"\000\000\000\000" # Uses: 2456558
+"\377\377\377\377" # Uses: 2454734
+###### End of recommended dictionary. ######
+Done 78924359 runs in 181 second(s)

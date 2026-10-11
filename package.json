@@ -1,6 +1,6 @@
 {
   "name": "suitecut",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Record and stream narrated browser flows with embedded CEF, with an explicit Playwright backend.",
   "keywords": [
     "playwright",
@@ -68,6 +68,14 @@
     "./stable": {
       "types": "./dist/playwright.d.ts",
       "default": "./dist/playwright.js"
+    },
+    "./engine": {
+      "types": "./dist/engine.d.ts",
+      "default": "./dist/engine.js"
+    },
+    "./engine/test": {
+      "types": "./dist/engine-test.d.ts",
+      "default": "./dist/engine-test.js"
     }
   },
   "files": [
@@ -81,7 +89,9 @@
     "README.md",
     "SECURITY.md",
     "THIRD_PARTY_NOTICES.md",
-    "native/browser"
+    "native/browser",
+    "scripts/install-cef-codecs.py",
+    "RELEASE.md"
   ],
   "publishConfig": {
     "access": "public"
@@ -141,7 +151,9 @@
     "prepack": "pnpm build",
     "prepublishOnly": "pnpm check && pnpm site:check && pnpm site:build && pnpm test:package:built",
     "test:stream:audio": "pnpm build && node scripts/verify-live-stream.mjs --audio",
-    "test:native": "pnpm build && node scripts/verify-native-browser.mjs && node scripts/verify-native-stream.mjs && node scripts/verify-native-recording.mjs",
+    "test:native": "pnpm build && node scripts/verify-native-browser.mjs && node scripts/verify-native-stream.mjs && node scripts/verify-native-recording.mjs && node benchmarks/native-playback/playback.mjs",
+    "test:native:playback": "pnpm build && node benchmarks/native-playback/playback.mjs",
+    "native:install:cef": "python3 scripts/install-cef-codecs.py",
     "test:native:stream": "pnpm build && node scripts/verify-native-stream.mjs",
     "test:native:recording": "pnpm build && node scripts/verify-native-recording.mjs",
     "benchmark:beta": "pnpm build && node scripts/benchmark-beta.mjs",
@@ -149,11 +161,17 @@
     "pack:beta": "pnpm build && node scripts/pack-beta.mjs",
     "test:beta:package": "node scripts/verify-beta-package.mjs",
     "benchmark:flv": "pnpm build && node scripts/benchmark-flv.mjs",
-    "benchmark:media": "pnpm build && node scripts/benchmark-media.mjs"
+    "benchmark:media": "pnpm build && node scripts/benchmark-media.mjs",
+    "test:engine": "playwright test --config benchmarks/native-engine/playwright.config.ts",
+    "test:native:features": "pnpm build && node benchmarks/native-browser-support/features.mjs",
+    "test:native:rtc-policy": "pnpm build && node benchmarks/native-rtc/network-policy.mjs",
+    "test:browser:connect": "pnpm build && node --expose-gc benchmarks/external-browser/connect.mjs",
+    "pack:release": "pnpm build && pnpm audio-plugins:build && node scripts/pack-release.mjs",
+    "test:release:package": "node scripts/verify-beta-package.mjs --release"
   },
   "peerDependencies": {
-    "@playwright/test": ">=1.59.0 <2",
-    "playwright": ">=1.59.0 <2"
+    "@playwright/test": ">=1.62.1 <2",
+    "playwright": ">=1.62.1 <2"
   },
   "peerDependenciesMeta": {
     "@playwright/test": {

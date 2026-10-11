@@ -1,0 +1,65 @@
+{
+  "id": "4k30-canvas-native-1",
+  "backend": "native",
+  "case": {
+    "name": "4k30-canvas",
+    "width": 3840,
+    "height": 2160,
+    "fps": 30,
+    "workload": "canvas"
+  },
+  "trialNumber": 1,
+  "durationMs": 10000,
+  "status": "passed",
+  "startedAt": "2026-10-09T00:09:01.086Z",
+  "startupMs": 1396.3299100000004,
+  "browserVersion": "152.0.8+g1ce985c+chromium-152.0.7977.134",
+  "workload": {
+    "wallMs": 10030.258903000009,
+    "scrollCommands": 0,
+    "snapshot": {
+      "markerCount": 250,
+      "scrollY": 0,
+      "scrollEvents": 0,
+      "keyEvents": 0,
+      "clicks": 0,
+      "value": "",
+      "choice": "First",
+      "secondary": false
+    }
+  },
+  "nativeCapture": {
+    "frames": 243,
+    "fps": 24.226692685601535,
+    "nativeDrops": 8
+  },
+  "finalizationMs": 4219.8383570000005,
+  "mediaPath": "/workspace/suitecut/.suitecut/obs-cef-optimization/comparison/4k30-canvas-native-1/suitecut-source-fd62b044-d2c9-4136-9a5a-169cbec710ad-7896db83-321f-4572-b9b3-67b5ecf2f60c.webm",
+  "decoded": {
+    "width": 3840,
+    "height": 2160,
+    "codec": "vp9",
+    "containerFps": 30,
+    "durationSeconds": 10.689,
+    "bytes": 166505,
+    "decodedFrames": 71,
+    "markerTransitions": 63,
+    "markerRegressions": 0,
+    "activeFrames": 63,
+    "distinctActiveFrames": 62,
+    "activeDurationSeconds": 10.049,
+    "measurementMethod": "decoded marker transitions / timestamped active media duration",
+    "distinctActiveFps": 6.169768136132949,
+    "repeatFraction": 0.015873015873015928,
+    "longestActiveHoldMs": 1784.0000000000002,
+    "audioStreams": []
+  },
+  "resources": {
+    "sampleCount": 29,
+    "meanCpuPercent": 310.3492250843471,
+    "peakRssBytes": 2780094464,
+    "firstRssBytes": 1354522624,
+    "lastRssBytes": 1412214784
+  },
+  "completedAt": "2026-10-09T00:09:19.131Z"
+}

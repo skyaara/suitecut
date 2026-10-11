@@ -1,0 +1,132 @@
+debug: Attempted path: /workspace/suitecut/.suitecut/obs-cef-profile/root/usr/bin/../share/obs/obs-studio/locale/en-US.ini
+debug: Attempted path: /workspace/suitecut/.suitecut/obs-cef-profile/root/usr/bin/../share/obs/obs-studio/locale.ini
+debug: Attempted path: /workspace/suitecut/.suitecut/obs-cef-profile/root/usr/bin/../share/obs/obs-studio/themes
+debug: Attempted path: /workspace/suitecut/.suitecut/obs-cef-profile/root/usr/bin/../share/obs/obs-studio/themes/
+warning: Get on org.freedesktop.portal.Settings returned an invalid reply
+info: Command Line Arguments: --disable-missing-files-check --disable-updater --profile AudioProfile --remote-debugging-port=9222
+info: Using EGL/X11
+info: CPU Name: INTEL(R) XEON(R) PLATINUM 8573C
+info: CPU Speed: 2299.998MHz
+info: Physical Cores: 5, Logical Cores: 5
+info: Physical Memory: 18007MB Total, 3324MB Free
+info: Kernel Version: Linux 6.18.44
+info: Distribution: "Debian GNU/Linux" "13"
+info: Window System: X11.0, Vendor: The X.Org Foundation, Version: 1.21.1
+info: Current Date/Time: 2026-10-10, 13:48:09
+info: Browser Hardware Acceleration: true
+info: Qt Version: 6.8.2 (runtime), 6.4.2 (compiled)
+info: Portable mode: false
+info: OBS 32.2.0 (linux)
+info: ---------------------------------
+info: ---------------------------------
+info: audio settings reset:
+	samples per sec: 48000
+	speakers:        2
+	max buffering:   960 milliseconds
+	buffering type:  dynamically increasing
+info: ---------------------------------
+info: Initializing OpenGL...
+warning: Unable to open DRM render node.
+info: Loading up OpenGL on adapter Mesa llvmpipe (LLVM 19.1.7, 256 bits)
+info: OpenGL loaded successfully, version 4.5 (Core Profile) Mesa 25.0.7-2+deb13u1, shading language 4.50
+info: ---------------------------------
+info: video settings reset:
+	base resolution:   1920x1080
+	output resolution: 1920x1080
+	downscale filter:  Bicubic
+	fps:               30/1
+	format:            NV12
+	YUV mode:          Rec. 709/Partial
+info: NV12 texture support enabled
+info: P010 texture support not available
+info: Audio monitoring device:
+	name: Default
+	id: default
+info: ---------------------------------
+warning: No AJA devices found, skipping loading AJA UI plugin
+warning: Failed to initialize module 'aja-output-ui.so'
+warning: No AJA devices found, skipping loading AJA plugin
+warning: Failed to initialize module 'aja.so'
+warning: Failed to load 'en-US' text for module: 'decklink-captions.so'
+warning: Failed to load 'en-US' text for module: 'decklink-output-ui.so'
+libDeckLinkAPI.so: cannot open shared object file: No such file or directory
+warning: A DeckLink iterator could not be created.  The DeckLink drivers may not be installed
+warning: Failed to initialize module 'decklink.so'
+error: window manager does not support Extended Window Manager Hints (EWMH).
+XComposite capture disabled.
+info: [pipewire] No capture sources available
+warning: v4l2loopback not installed, virtual camera not registered
+info: [obs-browser]: Version 2.26.9
+info: [obs-browser]: CEF Version 127.0.6533.120 (runtime), 127.0.0-6533-fix-stutter-and-osr-extra-info.3042+g176b09c+chromium-127.0.6533.120 (compiled)
+info: FFmpeg VAAPI H264 encoding not supported
+info: FFmpeg VAAPI AV1 encoding not supported
+info: FFmpeg VAAPI HEVC encoding not supported
+error: os_dlopen(libnvidia-encode.so.1->libnvidia-encode.so.1): libnvidia-encode.so.1: cannot open shared object file: No such file or directory
+
+info: NVENC not supported
+warning: Failed to initialize module 'obs-nvenc.so'
+info: [obs-websocket] [obs_module_load] you can haz websockets (Version: 5.7.4 | RPC Version: 1)
+info: [obs-websocket] [obs_module_load] Qt version (compile-time): 6.4.2 | Qt version (run-time): 6.8.2
+info: [obs-websocket] [obs_module_load] Linked ASIO Version: 102801
+info: [obs-websocket] [obs_module_load] Module loaded.
+info: [vlc-video]: VLC 3.0.23 Vetinari found, VLC video source enabled
+info: ---------------------------------
+info:   Loaded Modules:
+info:     vlc-video.so
+info:     text-freetype2.so
+info:     rtmp-services.so
+info:     obs-x264.so
+info:     obs-websocket.so
+info:     obs-vst.so
+info:     obs-transitions.so
+info:     obs-qsv11.so
+info:     obs-outputs.so
+info:     obs-libfdk.so
+info:     obs-filters.so
+info:     obs-ffmpeg.so
+info:     obs-browser.so
+info:     linux-v4l2.so
+info:     linux-pulseaudio.so
+info:     linux-pipewire.so
+info:     linux-jack.so
+info:     linux-capture.so
+info:     linux-alsa.so
+info:     image-source.so
+info:     frontend-tools.so
+info:     decklink-output-ui.so
+info:     decklink-captions.so
+info: ---------------------------------
+info: [obs-websocket] [obs_module_post_load] WebSocket server is enabled, starting...
+info: [obs-websocket] [WebSocketServer::Start] Not locked to IPv4 bindings
+info: [obs-websocket] [WebSocketServer::ServerRunner] IO thread started.
+info: [obs-websocket] [WebSocketServer::Start] Server started successfully on port 4455. Possible connect address: 172.26.91.244
+info: ---------------------------------
+info: Available Encoders:
+info:   Video Encoders:
+info: 	- ffmpeg_svt_av1 (SVT-AV1)
+info: 	- ffmpeg_aom_av1 (AOM AV1)
+info: 	- obs_x264 (x264)
+info:   Audio Encoders:
+info: 	- ffmpeg_aac (FFmpeg AAC)
+info: 	- ffmpeg_opus (FFmpeg Opus)
+info: 	- ffmpeg_pcm_s16le (FFmpeg PCM (16-bit))
+info: 	- ffmpeg_pcm_s24le (FFmpeg PCM (24-bit))
+info: 	- ffmpeg_pcm_f32le (FFmpeg PCM (32-bit float))
+info: 	- ffmpeg_alac (FFmpeg ALAC (24-bit))
+info: 	- ffmpeg_flac (FFmpeg FLAC (16-bit))
+info: 	- libfdk_aac (libfdk AAC)
+info: ==== Startup complete ===============================================
+info: All scene data cleared
+info: ------------------------------------------------
+error: Cannot query the number of formats: The last function succeeded without error.
+info: Switched to scene 'CEF Audio Profile'
+info: ------------------------------------------------
+info: Loaded scenes:
+info: - scene 'Scene':
+info: - scene 'CEF Audio Profile':
+info:     - source: 'Audio profile 1791623283069' (browser_source)
+info: ------------------------------------------------
+info: [obs-websocket] [WebSocketServer::onOpen] New WebSocket client has connected from [::ffff:127.0.0.1]:57710
+
+DevTools listening on ws://127.0.0.1:9222/devtools/browser/07f14b7b-a16e-4777-adb6-33d0aa0787b3
+info: [obs-websocket] [WebSocketServer::onClose] WebSocket client `[::ffff:127.0.0.1]:57710` has disconnected with code `1000` and reason: 

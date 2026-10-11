@@ -1,0 +1,37 @@
+[
+  {
+    "backend": "obs-cef",
+    "mode": "record",
+    "returncode": 1
+  },
+  {
+    "backend": "obs-external",
+    "mode": "record",
+    "returncode": 1
+  },
+  {
+    "backend": "ts-external",
+    "mode": "record",
+    "returncode": 1
+  },
+  {
+    "backend": "cpp-cef",
+    "mode": "record",
+    "returncode": 1
+  },
+  {
+    "backend": "ts-cef",
+    "mode": "stream",
+    "returncode": 1
+  },
+  {
+    "backend": "obs-cef",
+    "mode": "stream",
+    "returncode": 1
+  },
+  {
+    "backend": "obs-external",
+    "mode": "stream",
+    "returncode": 1
+  }
+]

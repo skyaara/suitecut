@@ -1,0 +1,22 @@
+[  1%] Linking CXX executable suitecut-audio-clock-test
+[  2%] Built target suitecut-media
+[ 15%] Built target yuv_common_objects
+[ 16%] Linking CXX executable suitecut-memory-test
+[ 16%] Built target suitecut-audio-clock-test
+[ 16%] Linking CXX executable suitecut-fuzz-bounds
+[ 16%] Built target suitecut-memory-test
+[ 17%] Linking CXX executable suitecut-fuzz-media
+[ 18%] Built target suitecut-fuzz-bounds
+[ 18%] Built target suitecut-fuzz-media
+[ 18%] Linking CXX executable suitecut-media-test
+[ 95%] Built target libcef_dll_wrapper
+[ 96%] Linking CXX executable suitecut-audio-startup-test
+[ 97%] Built target suitecut-media-test
+[ 97%] Linking CXX executable suitecut-codec-test
+[ 97%] Built target suitecut-audio-startup-test
+[ 98%] Built target yuv
+[ 98%] Linking CXX executable suitecut-pixel-test
+[ 98%] Built target suitecut-pixel-test
+[100%] Linking CXX executable suitecut-browser
+[100%] Built target suitecut-codec-test
+[100%] Built target suitecut-browser

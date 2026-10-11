@@ -1,0 +1,595 @@
+{
+  "method": "Pure generated sample identities, normalized waveform correlation >= 0.95; timestamp-independent",
+  "backend": "suitecut",
+  "traces": {
+    "cef-EC2FAB5CD7E5EF57A003D0315756C3EE": {
+      "sampleFrames": 2984640,
+      "matchedWindows": 3100,
+      "windowCount": 3109,
+      "lowConfidence": [
+        {
+          "index": 2,
+          "offsetMs": 40.0,
+          "correlation": 0.5900891559566861
+        },
+        {
+          "index": 548,
+          "offsetMs": 10960.0,
+          "correlation": 0.4923004086207211
+        },
+        {
+          "index": 549,
+          "offsetMs": 10980.0,
+          "correlation": 0.44761181650506016
+        },
+        {
+          "index": 569,
+          "offsetMs": 11380.0,
+          "correlation": 0.5434181362143302
+        },
+        {
+          "index": 1117,
+          "offsetMs": 22340.0,
+          "correlation": 0.8357430060996368
+        },
+        {
+          "index": 1118,
+          "offsetMs": 22360.0,
+          "correlation": 0.803362540959678
+        },
+        {
+          "index": 2274,
+          "offsetMs": 45480.0,
+          "correlation": 0.7197685039932312
+        }
+      ],
+      "sequenceDiscontinuities": [
+        {
+          "atMs": 11000.0,
+          "jumpFrames": 3839,
+          "jumpMs": 79.97916666666667,
+          "previousIndex": 547,
+          "index": 550,
+          "correlation": 0.9999990383930277,
+          "previousCorrelation": 0.9993014929717097,
+          "ptsDiscontinuityMs": 80.0
+        },
+        {
+          "atMs": 11400.0,
+          "jumpFrames": -612,
+          "jumpMs": -12.75,
+          "previousIndex": 568,
+          "index": 570,
+          "correlation": 0.9998249602013678,
+          "previousCorrelation": 0.9983657286685156,
+          "ptsDiscontinuityMs": 0.0
+        },
+        {
+          "atMs": 22380.0,
+          "jumpFrames": -611,
+          "jumpMs": -12.729166666666666,
+          "previousIndex": 1116,
+          "index": 1119,
+          "correlation": 0.9995254357358974,
+          "previousCorrelation": 0.999647167442386,
+          "ptsDiscontinuityMs": 0.0
+        },
+        {
+          "atMs": 45500.0,
+          "jumpFrames": 960,
+          "jumpMs": 20.0,
+          "previousIndex": 2273,
+          "index": 2275,
+          "correlation": 0.9995225700441202,
+          "previousCorrelation": 0.999518515974838,
+          "ptsDiscontinuityMs": 20.0
+        }
+      ],
+      "positiveJumpTotalMs": 99.97916666666667,
+      "negativeJumpTotalMs": 25.479166666666664,
+      "firstMatchedFrame": 5845,
+      "firstSound": {
+        "firstAudibleOffsetMs": 54.479166666666664,
+        "firstPreservedFrameEstimate": 5580,
+        "correlation": 0.9999983296811107,
+        "method": "960-sample correlation starting 5 ms after first audible sample; back-extrapolated 5 ms"
+      },
+      "globalReacquisitions": 0,
+      "silence": {
+        "resolutionMs": 5,
+        "segments": [
+          {
+            "fromMs": 0,
+            "durationMs": 50,
+            "interior": false
+          },
+          {
+            "fromMs": 10965,
+            "durationMs": 30,
+            "interior": true
+          },
+          {
+            "fromMs": 11380,
+            "durationMs": 10,
+            "interior": true
+          },
+          {
+            "fromMs": 22355,
+            "durationMs": 10,
+            "interior": true
+          }
+        ],
+        "interiorTotalMs": 50,
+        "interiorMaximumMs": 30
+      },
+      "timestampHoles": [
+        {
+          "index": 548,
+          "durationMs": 80.0
+        },
+        {
+          "index": 2274,
+          "durationMs": 20.0
+        }
+      ],
+      "maximumCallbackIntervalMs": 116.10455300000103,
+      "effectiveTimestampHoles": [
+        {
+          "index": 548,
+          "durationMs": 80.0
+        },
+        {
+          "index": 2274,
+          "durationMs": 20.0
+        }
+      ]
+    },
+    "recording.mkv": {
+      "sampleFrames": 2907136,
+      "matchedWindows": 1506,
+      "windowCount": 1514,
+      "lowConfidence": [
+        {
+          "index": 232,
+          "offsetMs": 9280.0,
+          "correlation": 0.7319492597900568
+        },
+        {
+          "index": 234,
+          "offsetMs": 9360.0,
+          "correlation": 0.3357607766168894
+        },
+        {
+          "index": 235,
+          "offsetMs": 9400.0,
+          "correlation": 0.679373768468366
+        },
+        {
+          "index": 245,
+          "offsetMs": 9800.0,
+          "correlation": 0.7132866749817329
+        },
+        {
+          "index": 519,
+          "offsetMs": 20760.0,
+          "correlation": 0.4660148394908372
+        },
+        {
+          "index": 1097,
+          "offsetMs": 43880.0,
+          "correlation": 0.7809413326826923
+        },
+        {
+          "index": 1098,
+          "offsetMs": 43920.0,
+          "correlation": 0.8208505076560588
+        }
+      ],
+      "sequenceDiscontinuities": [
+        {
+          "atMs": 9840.0,
+          "jumpFrames": -610,
+          "jumpMs": -12.708333333333334,
+          "previousIndex": 244,
+          "index": 246,
+          "correlation": 0.9988801933167363,
+          "previousCorrelation": 0.9982460456734383
+        },
+        {
+          "atMs": 20800.0,
+          "jumpFrames": -611,
+          "jumpMs": -12.729166666666666,
+          "previousIndex": 518,
+          "index": 520,
+          "correlation": 0.9980804521792639,
+          "previousCorrelation": 0.9988527400499898
+        }
+      ],
+      "positiveJumpTotalMs": 0,
+      "negativeJumpTotalMs": 25.4375,
+      "firstMatchedFrame": 82476,
+      "firstSound": {
+        "firstAudibleOffsetMs": 0.0,
+        "firstPreservedFrameEstimate": 82476,
+        "correlation": 0.9999990029000071,
+        "method": "960-sample correlation starting 5 ms after first audible sample; back-extrapolated 5 ms"
+      },
+      "globalReacquisitions": 0,
+      "silence": {
+        "resolutionMs": 5,
+        "segments": [
+          {
+            "fromMs": 9305,
+            "durationMs": 75,
+            "interior": true
+          },
+          {
+            "fromMs": 9390,
+            "durationMs": 25,
+            "interior": true
+          },
+          {
+            "fromMs": 9805,
+            "durationMs": 10,
+            "interior": true
+          },
+          {
+            "fromMs": 20780,
+            "durationMs": 5,
+            "interior": true
+          },
+          {
+            "fromMs": 43905,
+            "durationMs": 15,
+            "interior": true
+          }
+        ],
+        "interiorTotalMs": 130,
+        "interiorMaximumMs": 75
+      }
+    },
+    "profile": {
+      "sampleFrames": 2888704,
+      "matchedWindows": 1498,
+      "windowCount": 1504,
+      "lowConfidence": [
+        {
+          "index": 226,
+          "offsetMs": 9040.0,
+          "correlation": 0.32378264914254
+        },
+        {
+          "index": 227,
+          "offsetMs": 9080.0,
+          "correlation": 0.47863878929694575
+        },
+        {
+          "index": 237,
+          "offsetMs": 9480.0,
+          "correlation": 0.4611567652063544
+        },
+        {
+          "index": 511,
+          "offsetMs": 20440.0,
+          "correlation": 0.8190321987113217
+        },
+        {
+          "index": 1090,
+          "offsetMs": 43600.0,
+          "correlation": 0.6295444209991347
+        }
+      ],
+      "sequenceDiscontinuities": [
+        {
+          "atMs": 9520.0,
+          "jumpFrames": -609,
+          "jumpMs": -12.6875,
+          "previousIndex": 236,
+          "index": 238,
+          "correlation": 0.9993695265787187,
+          "previousCorrelation": 0.9991015445422239
+        },
+        {
+          "atMs": 20480.0,
+          "jumpFrames": -612,
+          "jumpMs": -12.75,
+          "previousIndex": 510,
+          "index": 512,
+          "correlation": 0.9647273094592071,
+          "previousCorrelation": 0.9992827137451594
+        }
+      ],
+      "positiveJumpTotalMs": 0,
+      "negativeJumpTotalMs": 25.4375,
+      "firstMatchedFrame": 97295,
+      "firstSound": {
+        "firstAudibleOffsetMs": 0.0,
+        "firstPreservedFrameEstimate": 97295,
+        "correlation": 0.9999987496889784,
+        "method": "960-sample correlation starting 5 ms after first audible sample; back-extrapolated 5 ms"
+      },
+      "globalReacquisitions": 0,
+      "silence": {
+        "resolutionMs": 5,
+        "segments": [
+          {
+            "fromMs": 8995,
+            "durationMs": 75,
+            "interior": true
+          },
+          {
+            "fromMs": 9080,
+            "durationMs": 30,
+            "interior": true
+          },
+          {
+            "fromMs": 9495,
+            "durationMs": 10,
+            "interior": true
+          },
+          {
+            "fromMs": 20470,
+            "durationMs": 10,
+            "interior": true
+          },
+          {
+            "fromMs": 43595,
+            "durationMs": 15,
+            "interior": true
+          },
+          {
+            "fromMs": 60175,
+            "durationMs": 5,
+            "interior": false
+          }
+        ],
+        "interiorTotalMs": 140,
+        "interiorMaximumMs": 75
+      }
+    }
+  },
+  "media": {
+    "recording.mkv": {
+      "sampleFrames": 2908160,
+      "matchedWindows": 1507,
+      "windowCount": 1514,
+      "lowConfidence": [
+        {
+          "index": 0,
+          "offsetMs": 0.0,
+          "correlation": 0.7539359291636933
+        },
+        {
+          "index": 233,
+          "offsetMs": 9320.0,
+          "correlation": 0.37523501028672623
+        },
+        {
+          "index": 235,
+          "offsetMs": 9400.0,
+          "correlation": 0.33020886431984053
+        },
+        {
+          "index": 245,
+          "offsetMs": 9800.0,
+          "correlation": 0.7314714040321423
+        },
+        {
+          "index": 520,
+          "offsetMs": 20800.0,
+          "correlation": 0.8100317263724559
+        },
+        {
+          "index": 1098,
+          "offsetMs": 43920.0,
+          "correlation": 0.5289834282587796
+        }
+      ],
+      "sequenceDiscontinuities": [
+        {
+          "atMs": 9840.0,
+          "jumpFrames": -609,
+          "jumpMs": -12.6875,
+          "previousIndex": 244,
+          "index": 246,
+          "correlation": 0.9984534564204408,
+          "previousCorrelation": 0.9990435991347545
+        },
+        {
+          "atMs": 20840.0,
+          "jumpFrames": -609,
+          "jumpMs": -12.6875,
+          "previousIndex": 519,
+          "index": 521,
+          "correlation": 0.9948503209432623,
+          "previousCorrelation": 0.9689150233459418
+        }
+      ],
+      "positiveJumpTotalMs": 0,
+      "negativeJumpTotalMs": 25.375,
+      "firstMatchedFrame": 83372,
+      "firstSound": {},
+      "globalReacquisitions": 0,
+      "silence": {
+        "resolutionMs": 5,
+        "segments": [
+          {
+            "fromMs": 0,
+            "durationMs": 10,
+            "interior": false
+          },
+          {
+            "fromMs": 9330,
+            "durationMs": 70,
+            "interior": true
+          },
+          {
+            "fromMs": 9410,
+            "durationMs": 30,
+            "interior": true
+          },
+          {
+            "fromMs": 9825,
+            "durationMs": 10,
+            "interior": true
+          },
+          {
+            "fromMs": 20800,
+            "durationMs": 5,
+            "interior": true
+          },
+          {
+            "fromMs": 43925,
+            "durationMs": 15,
+            "interior": true
+          }
+        ],
+        "interiorTotalMs": 130,
+        "interiorMaximumMs": 70
+      },
+      "decodeExitCode": 0,
+      "decodeErrors": false,
+      "durationMs": 60586.666666666664
+    },
+    "receiver.flv": {
+      "sampleFrames": 2889728,
+      "matchedWindows": 1496,
+      "windowCount": 1505,
+      "lowConfidence": [
+        {
+          "index": 0,
+          "offsetMs": 0.0,
+          "correlation": 0.6521184280740913
+        },
+        {
+          "index": 225,
+          "offsetMs": 9000.0,
+          "correlation": 0.5899724587830747
+        },
+        {
+          "index": 227,
+          "offsetMs": 9080.0,
+          "correlation": 0.3301126537285274
+        },
+        {
+          "index": 228,
+          "offsetMs": 9120.0,
+          "correlation": 0.8063473130701859
+        },
+        {
+          "index": 238,
+          "offsetMs": 9520.0,
+          "correlation": 0.87472162280486
+        },
+        {
+          "index": 512,
+          "offsetMs": 20480.0,
+          "correlation": 0.47860602607953534
+        },
+        {
+          "index": 1090,
+          "offsetMs": 43600.0,
+          "correlation": 0.563422252862467
+        },
+        {
+          "index": 1504,
+          "offsetMs": 60160.0,
+          "correlation": 0.94257461717519
+        }
+      ],
+      "sequenceDiscontinuities": [
+        {
+          "atMs": 9560.0,
+          "jumpFrames": -609,
+          "jumpMs": -12.6875,
+          "previousIndex": 237,
+          "index": 239,
+          "correlation": 0.9988563459053993,
+          "previousCorrelation": 0.9670050727835457
+        },
+        {
+          "atMs": 20520.0,
+          "jumpFrames": -610,
+          "jumpMs": -12.708333333333334,
+          "previousIndex": 511,
+          "index": 513,
+          "correlation": 0.9977716391535634,
+          "previousCorrelation": 0.9983154105003104
+        }
+      ],
+      "positiveJumpTotalMs": 0,
+      "negativeJumpTotalMs": 25.395833333333336,
+      "firstMatchedFrame": 98191,
+      "firstSound": {},
+      "globalReacquisitions": 0,
+      "silence": {
+        "resolutionMs": 5,
+        "segments": [
+          {
+            "fromMs": 0,
+            "durationMs": 5,
+            "interior": false
+          },
+          {
+            "fromMs": 9020,
+            "durationMs": 75,
+            "interior": true
+          },
+          {
+            "fromMs": 9100,
+            "durationMs": 30,
+            "interior": true
+          },
+          {
+            "fromMs": 9520,
+            "durationMs": 5,
+            "interior": true
+          },
+          {
+            "fromMs": 20495,
+            "durationMs": 5,
+            "interior": true
+          },
+          {
+            "fromMs": 43620,
+            "durationMs": 15,
+            "interior": true
+          }
+        ],
+        "interiorTotalMs": 130,
+        "interiorMaximumMs": 75
+      },
+      "decodeExitCode": 0,
+      "decodeErrors": false,
+      "durationMs": 60202.666666666664
+    }
+  },
+  "captureStatus": "capture-completed; analysis-pending",
+  "nativeSourceCopy": {
+    "recording.mkv": {
+      "interiorMismatchedFrames": 0,
+      "interiorUncoveredMs": 100.0,
+      "interiorMissingAtEncodeMs": 100.0
+    },
+    "profile": {
+      "interiorMismatchedFrames": 0,
+      "interiorUncoveredMs": 100.0,
+      "interiorMissingAtEncodeMs": 100.0
+    }
+  },
+  "hostCPUStatDelta": {
+    "usage_usec": 66856164,
+    "user_usec": 60730614,
+    "system_usec": 6125549,
+    "nice_usec": 0,
+    "nr_periods": 601,
+    "nr_throttled": 0,
+    "throttled_usec": 0,
+    "nr_bursts": 0,
+    "burst_usec": 0
+  },
+  "profileSamples": 122,
+  "cpuQuota": "400000 100000",
+  "processTreeRSSPeakMiB": 1341.52734375,
+  "processTreeCPUMeanCores": 1.0983704050225267
+}

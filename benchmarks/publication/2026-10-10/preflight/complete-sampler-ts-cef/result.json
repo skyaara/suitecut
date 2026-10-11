@@ -1,0 +1,128 @@
+{
+  "backend": "ts-cef",
+  "mode": "record",
+  "durationRequestedMs": 30000,
+  "width": 1920,
+  "height": 1080,
+  "fps": 30,
+  "status": "completed; media validation pending",
+  "startedAt": "2026-10-10T14:15:52.216Z",
+  "profile": "performance",
+  "encoding": {
+    "video": "H264",
+    "preset": "veryfast",
+    "crf": 18,
+    "bitrateKbps": null,
+    "encoderThreads": 1,
+    "audio": "video only; silent page"
+  },
+  "recordingPath": "/workspace/suitecut/benchmarks/publication/2026-10-10/preflight/complete-sampler-ts-cef/recording.mkv",
+  "receiverPath": "/workspace/suitecut/benchmarks/publication/2026-10-10/preflight/complete-sampler-ts-cef/receiver.flv",
+  "phases": [
+    {
+      "name": "static",
+      "atMs": 0.006634000000303786,
+      "monotonic": 151522.704232981
+    },
+    {
+      "name": "canvas",
+      "atMs": 10034.785804,
+      "monotonic": 151532.679747469
+    },
+    {
+      "name": "scroll",
+      "atMs": 20013.882437,
+      "monotonic": 151542.713903951
+    }
+  ],
+  "events": [
+    {
+      "name": "click, input and selection",
+      "atMs": 10549.828104
+    }
+  ],
+  "cefVersion": "152.0.6+g708dc14+chromium-152.0.7977.83",
+  "browserReadySeconds": 0.9446456320001744,
+  "sourceFrames": {
+    "count": 1089,
+    "firstTimestampMs": 2130.5291180000004,
+    "lastTimestampMs": 39221.832595,
+    "nativeDroppedFrames": 17
+  },
+  "beforeCapture": {
+    "marker": 33,
+    "rendered": 31,
+    "mode": "canvas",
+    "scrollY": 0,
+    "scrollEvents": 0,
+    "keyEvents": 0,
+    "clicks": 0,
+    "value": "",
+    "choice": "First",
+    "actionMask": 0,
+    "width": 1920,
+    "height": 1080
+  },
+  "outputReadySeconds": 0.009727980999741703,
+  "activeBaseline": {
+    "marker": 65,
+    "rendered": 59,
+    "mode": "canvas",
+    "scrollY": 0,
+    "scrollEvents": 0,
+    "keyEvents": 0,
+    "clicks": 0,
+    "value": "",
+    "choice": "First",
+    "actionMask": 0,
+    "width": 1920,
+    "height": 1080
+  },
+  "activeStartMonotonic": 151522.61484257,
+  "nodeBefore": {
+    "rss": 217505792,
+    "heapTotal": 126369792,
+    "heapUsed": 53469328,
+    "external": 23011103,
+    "arrayBuffers": 19006995
+  },
+  "observedActiveMs": 25669.877721999997,
+  "scrollCommands": 20,
+  "activeEndMonotonic": 151552.707145466,
+  "activeMs": 30066.067029000005,
+  "afterCapture": {
+    "marker": 972,
+    "rendered": 962,
+    "mode": "scroll",
+    "scrollY": 720,
+    "scrollEvents": 20,
+    "keyEvents": 1,
+    "clicks": 1,
+    "value": "SuiteCut benchmark",
+    "choice": "Second",
+    "actionMask": 15,
+    "width": 1920,
+    "height": 1080
+  },
+  "nodeAfter": {
+    "rss": 234209280,
+    "heapTotal": 125845504,
+    "heapUsed": 53735544,
+    "external": 32334570,
+    "arrayBuffers": 28338838
+  },
+  "finalizationSeconds": 4.803126807004446,
+  "eventLoop": {
+    "meanMs": 21.11129989142237,
+    "p99Ms": 33.652735,
+    "maxMs": 68.026367
+  },
+  "nodeAfterCleanup": {
+    "rss": 234471424,
+    "heapTotal": 125845504,
+    "heapUsed": 54542104,
+    "external": 10633613,
+    "arrayBuffers": 6633805
+  },
+  "completedAt": "2026-10-10T14:16:31.159Z"
+}

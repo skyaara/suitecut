@@ -1,0 +1,62 @@
+{
+  "package": "suitecut-cef",
+  "version": "0.1.0",
+  "protocolVersion": 1,
+  "nativeMedia": false,
+  "allPassed": true,
+  "published": false,
+  "binarySha256": "cd493edd0a1a9786a481657e9fb6dcabca6b02990d92c5887c753e83550b1b67",
+  "binaryBytes": 2257080,
+  "fullBinarySha256": "757a03fa49ed82dcd119c2888bdc0ebe1c355b4b9d9964bda38b99427a38f0b3",
+  "fullMatchesSealedSuiteCut21": true,
+  "platform": "Linux-6.18.44-x86_64-with-glibc2.41",
+  "affinity": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "display": "private Xvfb",
+  "audio": "private PulseAudio null sink",
+  "tests": {
+    "standaloneNative": 2,
+    "standalonePlaywright": 9,
+    "standaloneProtocolCases": 3,
+    "fullNative": 8,
+    "fullPlaywright": 16,
+    "extractedSourceConfigured": true,
+    "protocolSchema": {
+      "valid": 8,
+      "invalid": 4
+    },
+    "deterministicPackaging": true,
+    "overwriteRefused": true
+  },
+  "cef": {
+    "cefVersion": "152.0.6+g708dc14+chromium-152.0.7977.83",
+    "platform": "linux64",
+    "url": "https://github.com/tobagin/karere/releases/download/cef-152.0.6-proprietary-codecs/cef_binary_152.0.6%2Bg708dc14%2Bchromium-152.0.7977.83_linux64_minimal.zip",
+    "sha256": "3d64f6fac8911a368ffa415e3ee53d002cbd792866f08ed6578dae1e252cbac8",
+    "size": 183510343,
+    "proprietaryCodecs": true,
+    "buildFlags": {
+      "proprietary_codecs": true,
+      "ffmpeg_branding": "Chrome"
+    },
+    "upstreamRelease": "https://github.com/tobagin/karere/releases/tag/cef-152.0.6-proprietary-codecs",
+    "buildRecipe": "https://github.com/tobagin/karere/blob/eb5bfb5fb3c2463a2a71d7201a73122bf1942962/.github/workflows/build-cef-codecs.yml",
+    "source": "third-party CEF distribution; verified release digest and progressive MP4/MSE H.264+AAC native capture regressions",
+    "runtimeLibrarySha256": "d3e896252f190a21cd04b956da638c90315c8d5067cb03f325913841d5c59fc8"
+  },
+  "limitations": [
+    "Linux x86-64 verified only",
+    "No FFmpeg output encoding in the standalone host",
+    "Raw capture taps can drop under backpressure",
+    "Complete Playwright compatibility is not established",
+    "No new whole-Chromium leak audit or audio-quietness fix"
+  ],
+  "buildAttempts": [
+    "Initial standalone link failed because the host lacks the system libX11 development symlink; retry used the existing dependency sysroot.",
+    "One build attempt was refused by the exclusive runtime lock during live browser verification; the subsequent serial build passed."
+  ]
+}

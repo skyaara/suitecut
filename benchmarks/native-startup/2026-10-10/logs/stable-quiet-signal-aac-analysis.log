@@ -1,0 +1,60 @@
+{
+  "sourcePackets": 1018,
+  "sourceFrames": 977280,
+  "sourceSilentPackets": 2,
+  "sourceTimelineGaps": [],
+  "maxCallbackDelayMs": 7.05822900000021,
+  "cases": [
+    {
+      "audioCodec": "aac",
+      "originMs": 622.344494,
+      "finishMs": 20889.011161333332,
+      "missingInputMs": 1.375,
+      "eventuallyUncoveredInputMs": 0.0,
+      "estimatedMissingAtEncodeMs": 0.0,
+      "interiorMissingInputMs": 0.0,
+      "interiorEventuallyUncoveredMs": 0.0,
+      "interiorSourceCopyMismatchedFrames": 0,
+      "sourceGapsWithinOutput": [],
+      "decodedSilence10msWindows": [
+        {
+          "startMs": 0,
+          "endMs": 20,
+          "durationMs": 20
+        }
+      ],
+      "final": {
+        "ready": true,
+        "stopped": true,
+        "paused": false,
+        "videoFrames": 608,
+        "audioSamples": 972800,
+        "repeatedFrames": 3,
+        "droppedAudioSamples": 0,
+        "missingAudioSamples": 66,
+        "lateAudioSamples": 0,
+        "queuedVideoBytes": 0,
+        "queuedAudioBytes": 0,
+        "startedMs": 622.3444943328699,
+        "durationMs": 20266.666666666668,
+        "maximumEncodeMs": 38.164792000000034,
+        "error": ""
+      },
+      "decodedSamples": 973824,
+      "decodeErrors": false
+    }
+  ],
+  "hostCPUQuota": "400000 100000",
+  "hostCPUStatDelta": {
+    "usage_usec": 13370538,
+    "user_usec": 11897747,
+    "system_usec": 1472791,
+    "nice_usec": 0,
+    "nr_periods": 200,
+    "nr_throttled": 0,
+    "throttled_usec": 0,
+    "nr_bursts": 0,
+    "burst_usec": 0
+  },
+  "profileSamples": 21
+}

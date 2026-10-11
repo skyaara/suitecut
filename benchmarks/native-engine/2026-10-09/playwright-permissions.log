@@ -1,0 +1,32 @@
+
+Running 1 test using 1 worker
+
+(node:98504) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+CEF engine failure: Native browser: CEF context policy failed: Failed to find browser context for id 20628D54CF5A364A0433CEDBF99C4C5D
+  ✘  1 benchmarks/native-engine/engine.e2e.spec.ts:167:1 › permission and geolocation setup before page creation (56ms)
+
+
+  1) benchmarks/native-engine/engine.e2e.spec.ts:167:1 › permission and geolocation setup before page creation 
+
+    Error: browserContext.newPage: Target page, context or browser has been closed
+    Browser logs:
+
+    CEF transport closed
+
+
+      171 |   })
+      172 |   try {
+    > 173 |     const page = await context.newPage()
+          |                                ^
+      174 |     await page.goto(url)
+      175 |     const location = await page.evaluate(
+      176 |       () =>
+        at /workspace/suitecut/benchmarks/native-engine/engine.e2e.spec.ts:173:32
+
+    Error Context: benchmarks/native-engine/2026-10-09/playwright-artifacts/engine.e2e-permission-and--bb30a--setup-before-page-creation/error-context.md
+
+    Error Context: benchmarks/native-engine/2026-10-09/playwright-artifacts/engine.e2e-permission-and--bb30a--setup-before-page-creation/error-context.md
+
+  1 failed
+    benchmarks/native-engine/engine.e2e.spec.ts:167:1 › permission and geolocation setup before page creation 

@@ -1,0 +1,113 @@
+{
+  "sha": "10bba03ac8669992276ff0429ff749e85b70c587",
+  "node_id": "C_kwDOKmlVydoAKDEwYmJhMDNhYzg2Njk5OTIyNzZmZjA0MjlmZjc0OWU4NWI3MGM1ODc",
+  "commit": {
+    "author": {
+      "name": "tobagin",
+      "email": "tobagin@users.noreply.github.com",
+      "date": "2026-09-29T19:29:58Z"
+    },
+    "committer": {
+      "name": "tobagin",
+      "email": "tobagin@users.noreply.github.com",
+      "date": "2026-09-29T19:29:58Z"
+    },
+    "message": "packaging: point production and beta manifests at karere v4.3.4",
+    "tree": {
+      "sha": "47fc4f9601591be29ef14160b9babe27315ef3e6",
+      "url": "https://api.github.com/repos/tobagin/karere/git/trees/47fc4f9601591be29ef14160b9babe27315ef3e6"
+    },
+    "url": "https://api.github.com/repos/tobagin/karere/git/commits/10bba03ac8669992276ff0429ff749e85b70c587",
+    "comment_count": 0,
+    "verification": {
+      "verified": false,
+      "reason": "unsigned",
+      "signature": null,
+      "payload": null,
+      "verified_at": null
+    }
+  },
+  "url": "https://api.github.com/repos/tobagin/karere/commits/10bba03ac8669992276ff0429ff749e85b70c587",
+  "html_url": "https://github.com/tobagin/karere/commit/10bba03ac8669992276ff0429ff749e85b70c587",
+  "comments_url": "https://api.github.com/repos/tobagin/karere/commits/10bba03ac8669992276ff0429ff749e85b70c587/comments",
+  "author": {
+    "login": "tobagin",
+    "id": 140509353,
+    "node_id": "U_kgDOCGAAqQ",
+    "avatar_url": "https://avatars.githubusercontent.com/u/140509353?v=4",
+    "gravatar_id": "",
+    "url": "https://api.github.com/users/tobagin",
+    "html_url": "https://github.com/tobagin",
+    "followers_url": "https://api.github.com/users/tobagin/followers",
+    "following_url": "https://api.github.com/users/tobagin/following{/other_user}",
+    "gists_url": "https://api.github.com/users/tobagin/gists{/gist_id}",
+    "starred_url": "https://api.github.com/users/tobagin/starred{/owner}{/repo}",
+    "subscriptions_url": "https://api.github.com/users/tobagin/subscriptions",
+    "organizations_url": "https://api.github.com/users/tobagin/orgs",
+    "repos_url": "https://api.github.com/users/tobagin/repos",
+    "events_url": "https://api.github.com/users/tobagin/events{/privacy}",
+    "received_events_url": "https://api.github.com/users/tobagin/received_events",
+    "type": "User",
+    "user_view_type": "public",
+    "site_admin": false
+  },
+  "committer": {
+    "login": "tobagin",
+    "id": 140509353,
+    "node_id": "U_kgDOCGAAqQ",
+    "avatar_url": "https://avatars.githubusercontent.com/u/140509353?v=4",
+    "gravatar_id": "",
+    "url": "https://api.github.com/users/tobagin",
+    "html_url": "https://github.com/tobagin",
+    "followers_url": "https://api.github.com/users/tobagin/followers",
+    "following_url": "https://api.github.com/users/tobagin/following{/other_user}",
+    "gists_url": "https://api.github.com/users/tobagin/gists{/gist_id}",
+    "starred_url": "https://api.github.com/users/tobagin/starred{/owner}{/repo}",
+    "subscriptions_url": "https://api.github.com/users/tobagin/subscriptions",
+    "organizations_url": "https://api.github.com/users/tobagin/orgs",
+    "repos_url": "https://api.github.com/users/tobagin/repos",
+    "events_url": "https://api.github.com/users/tobagin/events{/privacy}",
+    "received_events_url": "https://api.github.com/users/tobagin/received_events",
+    "type": "User",
+    "user_view_type": "public",
+    "site_admin": false
+  },
+  "parents": [
+    {
+      "sha": "450311a92f93b051d6e189d2ea4771c2db47ab52",
+      "url": "https://api.github.com/repos/tobagin/karere/commits/450311a92f93b051d6e189d2ea4771c2db47ab52",
+      "html_url": "https://github.com/tobagin/karere/commit/450311a92f93b051d6e189d2ea4771c2db47ab52"
+    }
+  ],
+  "stats": {
+    "total": 8,
+    "additions": 4,
+    "deletions": 4
+  },
+  "files": [
+    {
+      "sha": "6de5dfd184959d6553bb665bc46de3a9d91e24f2",
+      "filename": "packaging/flathub-beta/io.github.tobagin.karere.yml",
+      "status": "modified",
+      "additions": 2,
+      "deletions": 2,
+      "changes": 4,
+      "blob_url": "https://github.com/tobagin/karere/blob/10bba03ac8669992276ff0429ff749e85b70c587/packaging%2Fflathub-beta%2Fio.github.tobagin.karere.yml",
+      "raw_url": "https://github.com/tobagin/karere/raw/10bba03ac8669992276ff0429ff749e85b70c587/packaging%2Fflathub-beta%2Fio.github.tobagin.karere.yml",
+      "contents_url": "https://api.github.com/repos/tobagin/karere/contents/packaging%2Fflathub-beta%2Fio.github.tobagin.karere.yml?ref=10bba03ac8669992276ff0429ff749e85b70c587",
+      "patch": "@@ -94,8 +94,8 @@ modules:\n       # commit when the Flathub beta branch is pushed.\n       - type: git\n         url: https://github.com/tobagin/karere\n-        tag: v4.3.3\n-        commit: 87c8172bbf2468393e9618bbae9c04ec71c8e809\n+        tag: v4.3.4\n+        commit: 450311a92f93b051d6e189d2ea4771c2db47ab52\n       - cargo-sources.json\n     # Move our gettext catalogs out of share/locale so flatpak's automatic\n     # per-language .Locale extension (which only deploys the host's languages)"
+    },
+    {
+      "sha": "57632f6e057f4fdded3209501d930417bbf8d1ff",
+      "filename": "packaging/io.github.tobagin.karere.yml",
+      "status": "modified",
+      "additions": 2,
+      "deletions": 2,
+      "changes": 4,
+      "blob_url": "https://github.com/tobagin/karere/blob/10bba03ac8669992276ff0429ff749e85b70c587/packaging%2Fio.github.tobagin.karere.yml",
+      "raw_url": "https://github.com/tobagin/karere/raw/10bba03ac8669992276ff0429ff749e85b70c587/packaging%2Fio.github.tobagin.karere.yml",
+      "contents_url": "https://api.github.com/repos/tobagin/karere/contents/packaging%2Fio.github.tobagin.karere.yml?ref=10bba03ac8669992276ff0429ff749e85b70c587",
+      "patch": "@@ -76,8 +76,8 @@ modules:\n     sources:\n       - type: git\n         url: https://github.com/tobagin/karere\n-        tag: v4.3.3\n-        commit: 87c8172bbf2468393e9618bbae9c04ec71c8e809\n+        tag: v4.3.4\n+        commit: 450311a92f93b051d6e189d2ea4771c2db47ab52\n       - cargo-sources.json\n     post-install:\n       - mkdir -p ${FLATPAK_DEST}/share/karere"
+    }
+  ]
+}

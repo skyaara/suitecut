@@ -1,0 +1,62 @@
+[
+  {
+    "id": "720p60-canvas-obs-1",
+    "backend": "obs",
+    "case": {
+      "name": "720p60-canvas",
+      "width": 1280,
+      "height": 720,
+      "fps": 60,
+      "workload": "canvas"
+    },
+    "trialNumber": 1,
+    "durationMs": 3000,
+    "status": "failed",
+    "startedAt": "2026-10-08T20:21:56.722Z",
+    "startupMs": 1609.740061,
+    "browserVersion": "151.0.7922.34",
+    "obsBefore": {
+      "activeFps": 54.098362819672225,
+      "availableDiskSpace": 26197.7109375,
+      "averageFrameRenderTime": 12.186784,
+      "cpuUsage": 28.774849745723536,
+      "memoryUsage": 187.59375,
+      "outputSkippedFrames": 0,
+      "outputTotalFrames": 0,
+      "renderSkippedFrames": 22,
+      "renderTotalFrames": 1317,
+      "webSocketSessionIncomingMessages": 14,
+      "webSocketSessionOutgoingMessages": 15
+    },
+    "recordStartMs": 2.5467320000002474,
+    "workload": {
+      "wallMs": 3012.09681,
+      "scrollCommands": 0,
+      "snapshot": {
+        "markerCount": 173,
+        "scrollY": 0,
+        "scrollEvents": 0,
+        "keyEvents": 0,
+        "clicks": 0,
+        "value": "",
+        "choice": "First",
+        "secondary": false
+      }
+    },
+    "obsAfter": {
+      "activeFps": 60.0000024000001,
+      "availableDiskSpace": 26197.6875,
+      "averageFrameRenderTime": 3.446731,
+      "cpuUsage": 32.48587570621469,
+      "memoryUsage": 213.08203125,
+      "outputSkippedFrames": 0,
+      "outputTotalFrames": 25,
+      "renderSkippedFrames": 38,
+      "renderTotalFrames": 1530,
+      "webSocketSessionIncomingMessages": 16,
+      "webSocketSessionOutgoingMessages": 19
+    },
+    "error": "Error: {\"code\":501,\"result\":false}\n    at WebSocket.<anonymous> (file:///workspace/suitecut/benchmarks/obs-cef/obs-client.mjs:20:31)\n    at WebSocket.emit (node:events:509:28)\n    at Receiver.receiverOnMessage (/workspace/suitecut/node_modules/.pnpm/ws@8.21.3/node_modules/ws/lib/websocket.js:1239:20)\n    at Receiver.emit (node:events:509:28)\n    at Receiver.dataMessage (/workspace/suitecut/node_modules/.pnpm/ws@8.21.3/node_modules/ws/lib/receiver.js:633:14)\n    at Receiver.getData (/workspace/suitecut/node_modules/.pnpm/ws@8.21.3/node_modules/ws/lib/receiver.js:532:10)\n    at Receiver.startLoop (/workspace/suitecut/node_modules/.pnpm/ws@8.21.3/node_modules/ws/lib/receiver.js:190:16)\n    at Receiver._write (/workspace/suitecut/node_modules/.pnpm/ws@8.21.3/node_modules/ws/lib/receiver.js:117:10)\n    at writeOrBuffer (node:internal/streams/writable:570:12)\n    at _write (node:internal/streams/writable:499:10)",
+    "completedAt": "2026-10-08T20:22:02.134Z"
+  }
+]

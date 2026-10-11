@@ -1,0 +1,13 @@
+[rawvideo @ 0x55678ebc2d80] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 6 >= 6
+[rawvideo @ 0x55678ebc2d80] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 33 >= 33
+[rawvideo @ 0x55678ebc2d80] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 122 >= 122
+[rawvideo @ 0x55678ebc2d80] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 211 >= 211
+[rawvideo @ 0x55678ebc2d80] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 300 >= 300
+[rawvideo @ 0x55678ebc2d80] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 389 >= 389
+[rawvideo @ 0x55678ebc2d80] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 478 >= 478
+[rawvideo @ 0x55678ebc2d80] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 567 >= 567
+[rawvideo @ 0x55678ebc2d80] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 656 >= 656
+[rawvideo @ 0x55678ebc2d80] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 745 >= 745
+[rawvideo @ 0x55678ebc2d80] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 834 >= 834
+[rawvideo @ 0x55678ebc2d80] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 923 >= 923
+{"valid": false, "error": null, "backend": "ts-external", "mode": "stream"}

@@ -1,0 +1,254 @@
+debug: Attempted path: /workspace/suitecut/.suitecut/obs-cef-profile/root/usr/bin/../share/obs/obs-studio/locale/en-US.ini
+debug: Attempted path: /workspace/suitecut/.suitecut/obs-cef-profile/root/usr/bin/../share/obs/obs-studio/locale.ini
+debug: Attempted path: /workspace/suitecut/.suitecut/obs-cef-profile/root/usr/bin/../share/obs/obs-studio/themes
+debug: Attempted path: /workspace/suitecut/.suitecut/obs-cef-profile/root/usr/bin/../share/obs/obs-studio/themes/
+warning: Get on org.freedesktop.portal.Settings returned an invalid reply
+info: Command Line Arguments: --disable-missing-files-check --disable-updater --profile AudioProfile --remote-debugging-port=9222
+info: Using EGL/X11
+info: CPU Name: INTEL(R) XEON(R) PLATINUM 8573C
+info: CPU Speed: 2299.998MHz
+info: Physical Cores: 5, Logical Cores: 5
+info: Physical Memory: 18007MB Total, 10973MB Free
+info: Kernel Version: Linux 6.18.44
+info: Distribution: "Debian GNU/Linux" "13"
+info: Window System: X11.0, Vendor: The X.Org Foundation, Version: 1.21.1
+info: Current Date/Time: 2026-10-11, 04:52:40
+info: Browser Hardware Acceleration: true
+info: Qt Version: 6.8.2 (runtime), 6.4.2 (compiled)
+info: Portable mode: false
+info: OBS 32.2.0 (linux)
+info: ---------------------------------
+info: ---------------------------------
+info: audio settings reset:
+	samples per sec: 48000
+	speakers:        2
+	max buffering:   960 milliseconds
+	buffering type:  dynamically increasing
+info: ---------------------------------
+info: Initializing OpenGL...
+warning: Unable to open DRM render node.
+info: Loading up OpenGL on adapter Mesa llvmpipe (LLVM 19.1.7, 256 bits)
+info: OpenGL loaded successfully, version 4.5 (Core Profile) Mesa 25.0.7-2+deb13u1, shading language 4.50
+info: ---------------------------------
+info: video settings reset:
+	base resolution:   1280x720
+	output resolution: 1280x720
+	downscale filter:  Bicubic
+	fps:               60/1
+	format:            NV12
+	YUV mode:          Rec. 709/Partial
+info: NV12 texture support enabled
+info: P010 texture support not available
+info: Audio monitoring device:
+	name: Default
+	id: default
+info: ---------------------------------
+warning: No AJA devices found, skipping loading AJA UI plugin
+warning: Failed to initialize module 'aja-output-ui.so'
+warning: No AJA devices found, skipping loading AJA plugin
+warning: Failed to initialize module 'aja.so'
+warning: Failed to load 'en-US' text for module: 'decklink-captions.so'
+warning: Failed to load 'en-US' text for module: 'decklink-output-ui.so'
+libDeckLinkAPI.so: cannot open shared object file: No such file or directory
+warning: A DeckLink iterator could not be created.  The DeckLink drivers may not be installed
+warning: Failed to initialize module 'decklink.so'
+error: window manager does not support Extended Window Manager Hints (EWMH).
+XComposite capture disabled.
+info: [pipewire] No capture sources available
+warning: v4l2loopback not installed, virtual camera not registered
+info: [obs-browser]: Version 2.26.9
+info: [obs-browser]: CEF Version 127.0.6533.120 (runtime), 127.0.0-6533-fix-stutter-and-osr-extra-info.3042+g176b09c+chromium-127.0.6533.120 (compiled)
+info: FFmpeg VAAPI H264 encoding not supported
+info: FFmpeg VAAPI AV1 encoding not supported
+info: FFmpeg VAAPI HEVC encoding not supported
+error: os_dlopen(libnvidia-encode.so.1->libnvidia-encode.so.1): libnvidia-encode.so.1: cannot open shared object file: No such file or directory
+
+info: NVENC not supported
+warning: Failed to initialize module 'obs-nvenc.so'
+info: [obs-websocket] [obs_module_load] you can haz websockets (Version: 5.7.4 | RPC Version: 1)
+info: [obs-websocket] [obs_module_load] Qt version (compile-time): 6.4.2 | Qt version (run-time): 6.8.2
+info: [obs-websocket] [obs_module_load] Linked ASIO Version: 102801
+info: [obs-websocket] [obs_module_load] Module loaded.
+info: [vlc-video]: VLC 3.0.23 Vetinari found, VLC video source enabled
+info: ---------------------------------
+info:   Loaded Modules:
+info:     vlc-video.so
+info:     text-freetype2.so
+info:     rtmp-services.so
+info:     obs-x264.so
+info:     obs-websocket.so
+info:     obs-vst.so
+info:     obs-transitions.so
+info:     obs-qsv11.so
+info:     obs-outputs.so
+info:     obs-libfdk.so
+info:     obs-filters.so
+info:     obs-ffmpeg.so
+info:     obs-browser.so
+info:     linux-v4l2.so
+info:     linux-pulseaudio.so
+info:     linux-pipewire.so
+info:     linux-jack.so
+info:     linux-capture.so
+info:     linux-alsa.so
+info:     image-source.so
+info:     frontend-tools.so
+info:     decklink-output-ui.so
+info:     decklink-captions.so
+info: ---------------------------------
+info: [obs-websocket] [obs_module_post_load] WebSocket server is enabled, starting...
+info: [obs-websocket] [WebSocketServer::Start] Not locked to IPv4 bindings
+info: [obs-websocket] [WebSocketServer::ServerRunner] IO thread started.
+info: [obs-websocket] [WebSocketServer::Start] Server started successfully on port 4455. Possible connect address: 172.26.91.244
+info: ---------------------------------
+info: Available Encoders:
+info:   Video Encoders:
+info: 	- ffmpeg_svt_av1 (SVT-AV1)
+info: 	- ffmpeg_aom_av1 (AOM AV1)
+info: 	- obs_x264 (x264)
+info:   Audio Encoders:
+info: 	- ffmpeg_aac (FFmpeg AAC)
+info: 	- ffmpeg_opus (FFmpeg Opus)
+info: 	- ffmpeg_pcm_s16le (FFmpeg PCM (16-bit))
+info: 	- ffmpeg_pcm_s24le (FFmpeg PCM (24-bit))
+info: 	- ffmpeg_pcm_f32le (FFmpeg PCM (32-bit float))
+info: 	- ffmpeg_alac (FFmpeg ALAC (24-bit))
+info: 	- ffmpeg_flac (FFmpeg FLAC (16-bit))
+info: 	- libfdk_aac (libfdk AAC)
+info: ==== Startup complete ===============================================
+info: All scene data cleared
+info: ------------------------------------------------
+info: Switched to scene 'Publication benchmark'
+info: ------------------------------------------------
+info: Loaded scenes:
+info: - scene 'Publication benchmark':
+info: ------------------------------------------------
+info: [obs-websocket] [WebSocketServer::onOpen] New WebSocket client has connected from [::ffff:127.0.0.1]:57416
+error: Cannot query the number of formats: The last function succeeded without error.
+info: User added source 'Publication capture' (browser_source) to scene 'Publication benchmark'
+
+DevTools listening on ws://127.0.0.1:9222/devtools/browser/5b368657-d3c1-454e-a6df-0377ed8d742b
+info: User switched to scene 'Publication benchmark'
+warning: User is ignoring service settings.
+info: ---------------------------------
+info: [x264 encoder: 'advanced_video_stream'] preset: veryfast
+info: [x264 encoder: 'advanced_video_stream'] profile: high
+info: [x264 encoder: 'advanced_video_stream'] tune: zerolatency
+info: [x264 encoder: 'advanced_video_stream'] settings:
+	rate_control: CBR
+	bitrate:      3500
+	buffer size:  3500
+	crf:          23
+	fps_num:      60
+	fps_den:      1
+	width:        1280
+	height:       720
+	keyint:       120
+
+info: [x264 encoder: 'advanced_video_stream'] custom settings: 
+	threads = 1
+	bframes = 0
+info: ---------------------------------
+info: [FFmpeg aac encoder: 'adv_stream_audio'] bitrate: 128, channels: 2, channel_layout: stereo, track: 1
+
+info: [rtmp stream: 'adv_stream'] Connecting to RTMP URL rtmp://127.0.0.1:38659/live...
+info: [rtmp stream: 'adv_stream'] Connection to rtmp://127.0.0.1:38659/live (127.0.0.1) successful
+info: ==== Streaming Start ===============================================
+info: [rtmp stream: 'adv_stream'] User stopped the stream
+info: Output 'adv_stream': stopping
+info: Output 'adv_stream': Total frames output: 7209
+info: Output 'adv_stream': Total drawn frames: 7217 (7230 attempted)
+info: Output 'adv_stream': Number of lagged frames due to rendering lag/stalls: 13 (0.2%)
+info: ==== Streaming Stop ================================================
+[aac @ 0x55ab13629480] Qavg: 700.248
+[aac @ 0x55ab13629480] 2 frames left in the queue on closing
+info: [obs-websocket] [WebSocketServer::onClose] WebSocket client `[::ffff:127.0.0.1]:57416` has disconnected with code `1000` and reason: 
+info: ==== Shutting down ==================================================
+info: All scene data cleared
+info: ------------------------------------------------
+error: Tried to call obs_frontend_remove_event_callback with no callbacks!
+info: [obs-websocket] [obs_module_unload] Shutting down...
+info: [obs-websocket] [WebSocketServer::ServerRunner] IO thread exited.
+info: [obs-websocket] [WebSocketServer::Stop] Server stopped successfully
+error: Tried to call obs_frontend_remove_event_callback with no callbacks!
+info: [obs-websocket] [obs_module_unload] Finished shutting down.
+info: [Scripting] Total detached callbacks: 0
+info: Freeing OBS context data
+info: == Profiler Results =============================
+info: run_program_init: 1022.37 ms
+info:  ┣OBSApp::AppInit: 20.75 ms
+info:  ┃ ┗OBSApp::InitLocale: 1.128 ms
+info:  ┗OBSApp::OBSInit: 935.508 ms
+info:    ┣obs_startup: 0.925 ms
+info:    ┗OBSBasic::OBSInit: 894.252 ms
+info:      ┣OBSBasic::InitBasicConfig: 2.764 ms
+info:      ┣OBSBasic::ResetAudio: 0.373 ms
+info:      ┣OBSBasic::ResetVideo: 125.805 ms
+info:      ┃ ┗obs_init_graphics: 114.356 ms
+info:      ┃   ┗shader compilation: 35.882 ms
+info:      ┣OBSBasic::InitOBSCallbacks: 0.011 ms
+info:      ┣OBSBasic::InitHotkeys: 0.096 ms
+info:      ┣obs_load_all_modules2: 665.73 ms
+info:      ┃ ┣obs_init_module(aja-output-ui.so): 0.189 ms
+info:      ┃ ┣obs_init_module(aja.so): 0.173 ms
+info:      ┃ ┣obs_init_module(decklink-captions.so): 0 ms
+info:      ┃ ┣obs_init_module(decklink-output-ui.so): 0 ms
+info:      ┃ ┣obs_init_module(decklink.so): 0.151 ms
+info:      ┃ ┣obs_init_module(frontend-tools.so): 38.617 ms
+info:      ┃ ┣obs_init_module(image-source.so): 0.006 ms
+info:      ┃ ┣obs_init_module(linux-alsa.so): 0.002 ms
+info:      ┃ ┣obs_init_module(linux-capture.so): 0.511 ms
+info:      ┃ ┣obs_init_module(linux-jack.so): 0.001 ms
+info:      ┃ ┣obs_init_module(linux-pipewire.so): 27.609 ms
+info:      ┃ ┣obs_init_module(linux-pulseaudio.so): 0.003 ms
+info:      ┃ ┣obs_init_module(linux-v4l2.so): 1.826 ms
+info:      ┃ ┣obs_init_module(obs-browser.so): 0.108 ms
+info:      ┃ ┣obs_init_module(obs-ffmpeg.so): 0.559 ms
+info:      ┃ ┣obs_init_module(obs-filters.so): 0.022 ms
+info:      ┃ ┣obs_init_module(obs-libfdk.so): 0.001 ms
+info:      ┃ ┣obs_init_module(obs-nvenc.so): 0.16 ms
+info:      ┃ ┃ ┗nvenc_check: 0.151 ms
+info:      ┃ ┣obs_init_module(obs-outputs.so): 0.005 ms
+info:      ┃ ┣obs_init_module(obs-qsv11.so): 0.031 ms
+info:      ┃ ┣obs_init_module(obs-transitions.so): 0.005 ms
+info:      ┃ ┣obs_init_module(obs-vst.so): 0.012 ms
+info:      ┃ ┣obs_init_module(obs-websocket.so): 9.163 ms
+info:      ┃ ┣obs_init_module(obs-x264.so): 0.001 ms
+info:      ┃ ┣obs_init_module(rtmp-services.so): 0.198 ms
+info:      ┃ ┣obs_init_module(text-freetype2.so): 0.008 ms
+info:      ┃ ┗obs_init_module(vlc-video.so): 2.637 ms
+info:      ┣OBSBasic::InitService: 0.06 ms
+info:      ┣OBSBasic::ResetOutputs: 0.378 ms
+info:      ┣OBSBasic::CreateHotkeys: 0.077 ms
+info:      ┣OBSBasic::InitPrimitives: 0.178 ms
+info:      ┗OBSBasic::Load: 39.47 ms
+info: obs_hotkey_thread(25 ms): min=0.023 ms, median=0.057 ms, max=12.771 ms, 99th percentile=4.95 ms, 100% below 25 ms
+info: audio_thread(Audio): min=0.007 ms, median=2.048 ms, max=40.149 ms, 99th percentile=15.505 ms
+info:  ┗receive_audio: min=0.011 ms, median=0.538 ms, max=40.085 ms, 99th percentile=10.659 ms
+info:    ┣buffer_audio: min=0 ms, median=0.001 ms, max=0.201 ms, 99th percentile=0.002 ms
+info:    ┗do_encode: min=0.098 ms, median=0.535 ms, max=40.082 ms, 99th percentile=10.654 ms
+info:      ┣encode(adv_stream_audio): min=0.094 ms, median=0.506 ms, max=40.037 ms, 99th percentile=10.325 ms
+info:      ┗send_packet: min=0.001 ms, median=0.018 ms, max=5.351 ms, 99th percentile=0.259 ms
+info: obs_graphics_thread(16.6667 ms): min=0.046 ms, median=10.262 ms, max=47.128 ms, 99th percentile=17.403 ms, 98.8431% below 16.667 ms
+info:  ┣tick_sources: min=0.001 ms, median=0.006 ms, max=4.948 ms, 99th percentile=0.057 ms
+info:  ┣output_frame: min=0.034 ms, median=9.024 ms, max=43.495 ms, 99th percentile=15.935 ms
+info:  ┃ ┣gs_context(video->graphics): min=0.034 ms, median=8.739 ms, max=41.694 ms, 99th percentile=15.07 ms
+info:  ┃ ┃ ┣render_video: min=0.011 ms, median=8.581 ms, max=40.863 ms, 99th percentile=14.64 ms
+info:  ┃ ┃ ┃ ┣render_main_texture: min=0.01 ms, median=0.132 ms, max=32.241 ms, 99th percentile=1.163 ms
+info:  ┃ ┃ ┃ ┣render_convert_texture: min=3.888 ms, median=5.601 ms, max=34.754 ms, 99th percentile=10.408 ms
+info:  ┃ ┃ ┃ ┗stage_output_texture: min=0.848 ms, median=2.67 ms, max=17.715 ms, 99th percentile=5.801 ms
+info:  ┃ ┃ ┣gs_flush: min=0.001 ms, median=0.001 ms, max=5.48 ms, 99th percentile=0.035 ms
+info:  ┃ ┃ ┗download_frame: min=0 ms, median=0.002 ms, max=0.668 ms, 99th percentile=0.005 ms
+info:  ┃ ┗output_video_data: min=0.095 ms, median=0.145 ms, max=5.648 ms, 99th percentile=2.834 ms
+info:  ┗render_displays: min=0.001 ms, median=1.12 ms, max=19.029 ms, 99th percentile=3.918 ms
+info: video_thread(video): min=0 ms, median=3.611 ms, max=102.031 ms, 99th percentile=13.716 ms
+info:  ┗receive_video: min=2.658 ms, median=3.61 ms, max=102.029 ms, 99th percentile=13.326 ms
+info:    ┗do_encode: min=2.657 ms, median=3.608 ms, max=102.028 ms, 99th percentile=13.325 ms
+info:      ┣encode(advanced_video_stream): min=2.638 ms, median=3.571 ms, max=102.013 ms, 99th percentile=13.184 ms
+info:      ┗send_packet: min=0.002 ms, median=0.022 ms, max=5.651 ms, 99th percentile=0.233 ms
+info: =================================================
+info: == Profiler Time Between Calls ==================
+info: obs_hotkey_thread(25 ms): min=25.058 ms, median=25.23 ms, max=97.707 ms, 66.8855% within ±2% of 25 ms (0% lower, 33.1145% higher)
+info: obs_graphics_thread(16.6667 ms): min=5.699 ms, median=16.666 ms, max=111.737 ms, 84.7054% within ±2% of 16.667 ms (7.88669% lower, 7.4079% higher)
+info: =================================================
+info: Number of memory leaks: 1

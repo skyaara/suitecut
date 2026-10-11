@@ -1,0 +1,4547 @@
+{
+  "payloadsBeforeInventory": 908,
+  "logicalBytesBeforeInventory": 1877273311,
+  "files": [
+    {
+      "path": "adaptive-pulsed-120s/analysis.json",
+      "bytes": 60800,
+      "symlink": false
+    },
+    {
+      "path": "adaptive-pulsed-120s/attribution.log",
+      "bytes": 60800,
+      "symlink": false
+    },
+    {
+      "path": "adaptive-pulsed-120s/audio-lifecycle-87FFC5A952D86D4B26099582299C86A6.csv",
+      "bytes": 197,
+      "symlink": false
+    },
+    {
+      "path": "adaptive-pulsed-120s/browser-tested",
+      "bytes": 2455488,
+      "symlink": false
+    },
+    {
+      "path": "adaptive-pulsed-120s/cef-87FFC5A952D86D4B26099582299C86A6.csv",
+      "bytes": 348478,
+      "symlink": false
+    },
+    {
+      "path": "adaptive-pulsed-120s/cef-87FFC5A952D86D4B26099582299C86A6.s16",
+      "bytes": 19837440,
+      "symlink": false
+    },
+    {
+      "path": "adaptive-pulsed-120s/native.csv",
+      "bytes": 405576,
+      "symlink": false
+    },
+    {
+      "path": "adaptive-pulsed-120s/native.s16",
+      "bytes": 23322624,
+      "symlink": false
+    },
+    {
+      "path": "adaptive-pulsed-120s/node-memory.jsonl",
+      "bytes": 23298,
+      "symlink": false
+    },
+    {
+      "path": "adaptive-pulsed-120s/processes.jsonl",
+      "bytes": 363357,
+      "symlink": false
+    },
+    {
+      "path": "adaptive-pulsed-120s/progress.json",
+      "bytes": 998,
+      "symlink": false
+    },
+    {
+      "path": "adaptive-pulsed-120s/receiver.flv",
+      "bytes": 4582010,
+      "symlink": false
+    },
+    {
+      "path": "adaptive-pulsed-120s/receiver.flv.csv",
+      "bytes": 405576,
+      "symlink": false
+    },
+    {
+      "path": "adaptive-pulsed-120s/receiver.flv.s16",
+      "bytes": 23322624,
+      "symlink": false
+    },
+    {
+      "path": "adaptive-pulsed-120s/receiver.log",
+      "bytes": 70,
+      "symlink": false
+    },
+    {
+      "path": "adaptive-pulsed-120s/recording.mp4",
+      "bytes": 3012683,
+      "symlink": false
+    },
+    {
+      "path": "adaptive-pulsed-120s/recording.mp4.csv",
+      "bytes": 406979,
+      "symlink": false
+    },
+    {
+      "path": "adaptive-pulsed-120s/recording.mp4.s16",
+      "bytes": 23408640,
+      "symlink": false
+    },
+    {
+      "path": "adaptive-pulsed-120s/result.json",
+      "bytes": 3628,
+      "symlink": false
+    },
+    {
+      "path": "adaptive-pulsed-120s/results.json",
+      "bytes": 1410,
+      "symlink": false
+    },
+    {
+      "path": "adaptive-pulsed-120s/validation.json",
+      "bytes": 83339,
+      "symlink": false
+    },
+    {
+      "path": "analysis-source-used/native-audio-analyze.py",
+      "bytes": 5132,
+      "symlink": false
+    },
+    {
+      "path": "analysis-source-used/native-sync-analyze.py",
+      "bytes": 6705,
+      "symlink": false
+    },
+    {
+      "path": "asan-codec-cycles.json",
+      "bytes": 874,
+      "symlink": false
+    },
+    {
+      "path": "asan-cycles.json",
+      "bytes": 89,
+      "symlink": false
+    },
+    {
+      "path": "asan-final-cycles.json",
+      "bytes": 874,
+      "symlink": false
+    },
+    {
+      "path": "asan-tested-cycles.json",
+      "bytes": 874,
+      "symlink": false
+    },
+    {
+      "path": "browser-clock-before-lifecycle-trace",
+      "bytes": 2450744,
+      "symlink": false
+    },
+    {
+      "path": "browser-thread-split-before-clock-fix",
+      "bytes": 2450744,
+      "symlink": false
+    },
+    {
+      "path": "budget-pulsed-120s/analysis.json",
+      "bytes": 28658,
+      "symlink": false
+    },
+    {
+      "path": "budget-pulsed-120s/attribution.log",
+      "bytes": 28658,
+      "symlink": false
+    },
+    {
+      "path": "budget-pulsed-120s/audio-lifecycle-7AF968186AAE36E079A11C2F9C17EAA0.csv",
+      "bytes": 137,
+      "symlink": false
+    },
+    {
+      "path": "budget-pulsed-120s/browser-tested",
+      "bytes": 2459584,
+      "symlink": false
+    },
+    {
+      "path": "budget-pulsed-120s/cef-7AF968186AAE36E079A11C2F9C17EAA0.csv",
+      "bytes": 406680,
+      "symlink": false
+    },
+    {
+      "path": "budget-pulsed-120s/cef-7AF968186AAE36E079A11C2F9C17EAA0.s16",
+      "bytes": 23216640,
+      "symlink": false
+    },
+    {
+      "path": "budget-pulsed-120s/native.csv",
+      "bytes": 391338,
+      "symlink": false
+    },
+    {
+      "path": "budget-pulsed-120s/native.s16",
+      "bytes": 23109632,
+      "symlink": false
+    },
+    {
+      "path": "budget-pulsed-120s/node-memory.jsonl",
+      "bytes": 24828,
+      "symlink": false
+    },
+    {
+      "path": "budget-pulsed-120s/processes.jsonl",
+      "bytes": 398917,
+      "symlink": false
+    },
+    {
+      "path": "budget-pulsed-120s/progress.json",
+      "bytes": 981,
+      "symlink": false
+    },
+    {
+      "path": "budget-pulsed-120s/receiver.flv",
+      "bytes": 5059016,
+      "symlink": false
+    },
+    {
+      "path": "budget-pulsed-120s/receiver.flv.csv",
+      "bytes": 391338,
+      "symlink": false
+    },
+    {
+      "path": "budget-pulsed-120s/receiver.flv.s16",
+      "bytes": 23109632,
+      "symlink": false
+    },
+    {
+      "path": "budget-pulsed-120s/receiver.log",
+      "bytes": 70,
+      "symlink": false
+    },
+    {
+      "path": "budget-pulsed-120s/recording.mp4",
+      "bytes": 3233408,
+      "symlink": false
+    },
+    {
+      "path": "budget-pulsed-120s/recording.mp4.csv",
+      "bytes": 392036,
+      "symlink": false
+    },
+    {
+      "path": "budget-pulsed-120s/recording.mp4.s16",
+      "bytes": 23154688,
+      "symlink": false
+    },
+    {
+      "path": "budget-pulsed-120s/result.json",
+      "bytes": 3662,
+      "symlink": false
+    },
+    {
+      "path": "budget-pulsed-120s/results.json",
+      "bytes": 1365,
+      "symlink": false
+    },
+    {
+      "path": "budget-pulsed-120s/validation.json",
+      "bytes": 45775,
+      "symlink": false
+    },
+    {
+      "path": "build-metadata.json",
+      "bytes": 2220,
+      "symlink": false
+    },
+    {
+      "path": "cef-source/alloy_browser_host_impl.cc",
+      "bytes": 43649,
+      "symlink": false
+    },
+    {
+      "path": "cef-source/audio_capturer.cc",
+      "bytes": 5147,
+      "symlink": false
+    },
+    {
+      "path": "cef-source/audio_capturer.h",
+      "bytes": 1904,
+      "symlink": false
+    },
+    {
+      "path": "cef-source/audio_input_device.cc",
+      "bytes": 20156,
+      "symlink": false
+    },
+    {
+      "path": "cef-source/ffmpeg-encode.c",
+      "bytes": 30567,
+      "symlink": false
+    },
+    {
+      "path": "cef-source/source-urls.json",
+      "bytes": 620,
+      "symlink": false
+    },
+    {
+      "path": "clock-asan",
+      "bytes": 109640,
+      "symlink": false
+    },
+    {
+      "path": "commands.txt",
+      "bytes": 1366,
+      "symlink": false
+    },
+    {
+      "path": "continuous-60s/analysis.json",
+      "bytes": 8016,
+      "symlink": false
+    },
+    {
+      "path": "continuous-60s/attribution.log",
+      "bytes": 8016,
+      "symlink": false
+    },
+    {
+      "path": "continuous-60s/browser-tested",
+      "bytes": 2450744,
+      "symlink": false
+    },
+    {
+      "path": "continuous-60s/cef-FD9CEC14F4048404F80F53ECB2B07F04.csv",
+      "bytes": 157199,
+      "symlink": false
+    },
+    {
+      "path": "continuous-60s/cef-FD9CEC14F4048404F80F53ECB2B07F04.s16",
+      "bytes": 11900160,
+      "symlink": false
+    },
+    {
+      "path": "continuous-60s/native.csv",
+      "bytes": 192685,
+      "symlink": false
+    },
+    {
+      "path": "continuous-60s/native.s16",
+      "bytes": 11571200,
+      "symlink": false
+    },
+    {
+      "path": "continuous-60s/node-memory.jsonl",
+      "bytes": 11930,
+      "symlink": false
+    },
+    {
+      "path": "continuous-60s/processes.jsonl",
+      "bytes": 205261,
+      "symlink": false
+    },
+    {
+      "path": "continuous-60s/receiver.flv",
+      "bytes": 3357708,
+      "symlink": false
+    },
+    {
+      "path": "continuous-60s/receiver.flv.csv",
+      "bytes": 192685,
+      "symlink": false
+    },
+    {
+      "path": "continuous-60s/receiver.flv.s16",
+      "bytes": 11571200,
+      "symlink": false
+    },
+    {
+      "path": "continuous-60s/receiver.log",
+      "bytes": 70,
+      "symlink": false
+    },
+    {
+      "path": "continuous-60s/recording.mp4",
+      "bytes": 2495105,
+      "symlink": false
+    },
+    {
+      "path": "continuous-60s/recording.mp4.csv",
+      "bytes": 193583,
+      "symlink": false
+    },
+    {
+      "path": "continuous-60s/recording.mp4.s16",
+      "bytes": 11628544,
+      "symlink": false
+    },
+    {
+      "path": "continuous-60s/result.json",
+      "bytes": 2454,
+      "symlink": false
+    },
+    {
+      "path": "continuous-60s/results.json",
+      "bytes": 1309,
+      "symlink": false
+    },
+    {
+      "path": "continuous-60s/validation.json",
+      "bytes": 21470,
+      "symlink": false
+    },
+    {
+      "path": "e2e/audio-readiness.mkv",
+      "bytes": 128081,
+      "symlink": false
+    },
+    {
+      "path": "e2e/delayed-stream-receiver.log",
+      "bytes": 70,
+      "symlink": false
+    },
+    {
+      "path": "e2e/delayed-stream.flv",
+      "bytes": 13760,
+      "symlink": false
+    },
+    {
+      "path": "e2e/playwright-artifacts/.last-run.json",
+      "bytes": 45,
+      "symlink": false
+    },
+    {
+      "path": "e2e/playwright-recording.mp4",
+      "bytes": 126706,
+      "symlink": false
+    },
+    {
+      "path": "e2e/playwright-results.json",
+      "bytes": 12590,
+      "symlink": false
+    },
+    {
+      "path": "e2e/playwright.png",
+      "bytes": 2104,
+      "symlink": false
+    },
+    {
+      "path": "e2e/protocol-silent.mkv",
+      "bytes": 2135,
+      "symlink": false
+    },
+    {
+      "path": "e2e/silent-audio.mkv",
+      "bytes": 51529,
+      "symlink": false
+    },
+    {
+      "path": "e2e/silent-video-only.mkv",
+      "bytes": 2118,
+      "symlink": false
+    },
+    {
+      "path": "e2e-adaptive/audio-readiness.mkv",
+      "bytes": 132764,
+      "symlink": false
+    },
+    {
+      "path": "e2e-adaptive/delayed-stream-receiver.log",
+      "bytes": 70,
+      "symlink": false
+    },
+    {
+      "path": "e2e-adaptive/delayed-stream.flv",
+      "bytes": 13803,
+      "symlink": false
+    },
+    {
+      "path": "e2e-adaptive/paused-static.mkv",
+      "bytes": 114878,
+      "symlink": false
+    },
+    {
+      "path": "e2e-adaptive/playwright-artifacts/.last-run.json",
+      "bytes": 45,
+      "symlink": false
+    },
+    {
+      "path": "e2e-adaptive/playwright-recording.mp4",
+      "bytes": 128006,
+      "symlink": false
+    },
+    {
+      "path": "e2e-adaptive/playwright-results.json",
+      "bytes": 13666,
+      "symlink": false
+    },
+    {
+      "path": "e2e-adaptive/playwright.png",
+      "bytes": 2104,
+      "symlink": false
+    },
+    {
+      "path": "e2e-adaptive/protocol-silent.mkv",
+      "bytes": 2135,
+      "symlink": false
+    },
+    {
+      "path": "e2e-adaptive/silent-audio.mkv",
+      "bytes": 41535,
+      "symlink": false
+    },
+    {
+      "path": "e2e-adaptive/silent-video-only.mkv",
+      "bytes": 2074,
+      "symlink": false
+    },
+    {
+      "path": "e2e-clock/audio-readiness.mkv",
+      "bytes": 125970,
+      "symlink": false
+    },
+    {
+      "path": "e2e-clock/delayed-stream-receiver.log",
+      "bytes": 70,
+      "symlink": false
+    },
+    {
+      "path": "e2e-clock/delayed-stream.flv",
+      "bytes": 13213,
+      "symlink": false
+    },
+    {
+      "path": "e2e-clock/playwright-artifacts/.last-run.json",
+      "bytes": 45,
+      "symlink": false
+    },
+    {
+      "path": "e2e-clock/playwright-recording.mp4",
+      "bytes": 123744,
+      "symlink": false
+    },
+    {
+      "path": "e2e-clock/playwright-results.json",
+      "bytes": 12612,
+      "symlink": false
+    },
+    {
+      "path": "e2e-clock/playwright.png",
+      "bytes": 2105,
+      "symlink": false
+    },
+    {
+      "path": "e2e-clock/protocol-silent.mkv",
+      "bytes": 2135,
+      "symlink": false
+    },
+    {
+      "path": "e2e-clock/silent-audio.mkv",
+      "bytes": 51379,
+      "symlink": false
+    },
+    {
+      "path": "e2e-clock/silent-video-only.mkv",
+      "bytes": 2118,
+      "symlink": false
+    },
+    {
+      "path": "e2e-final/audio-readiness.mkv",
+      "bytes": 120895,
+      "symlink": false
+    },
+    {
+      "path": "e2e-final/delayed-stream-receiver.log",
+      "bytes": 70,
+      "symlink": false
+    },
+    {
+      "path": "e2e-final/delayed-stream.flv",
+      "bytes": 13006,
+      "symlink": false
+    },
+    {
+      "path": "e2e-final/media-validation.json",
+      "bytes": 23911,
+      "symlink": false
+    },
+    {
+      "path": "e2e-final/playwright-artifacts/.last-run.json",
+      "bytes": 45,
+      "symlink": false
+    },
+    {
+      "path": "e2e-final/playwright-recording.mp4",
+      "bytes": 125414,
+      "symlink": false
+    },
+    {
+      "path": "e2e-final/playwright-results.json",
+      "bytes": 12603,
+      "symlink": false
+    },
+    {
+      "path": "e2e-final/playwright.png",
+      "bytes": 2103,
+      "symlink": false
+    },
+    {
+      "path": "e2e-final/protocol-silent.mkv",
+      "bytes": 2135,
+      "symlink": false
+    },
+    {
+      "path": "e2e-final/silent-audio.mkv",
+      "bytes": 51417,
+      "symlink": false
+    },
+    {
+      "path": "e2e-final/silent-video-only.mkv",
+      "bytes": 2118,
+      "symlink": false
+    },
+    {
+      "path": "e2e-final-clock/audio-readiness.mkv",
+      "bytes": 128918,
+      "symlink": false
+    },
+    {
+      "path": "e2e-final-clock/decoded-validation.json",
+      "bytes": 1216,
+      "symlink": false
+    },
+    {
+      "path": "e2e-final-clock/delayed-stream-receiver.log",
+      "bytes": 70,
+      "symlink": false
+    },
+    {
+      "path": "e2e-final-clock/delayed-stream.flv",
+      "bytes": 13120,
+      "symlink": false
+    },
+    {
+      "path": "e2e-final-clock/paused-static.mkv",
+      "bytes": 119091,
+      "symlink": false
+    },
+    {
+      "path": "e2e-final-clock/playwright-artifacts/.last-run.json",
+      "bytes": 45,
+      "symlink": false
+    },
+    {
+      "path": "e2e-final-clock/playwright-recording.mp4",
+      "bytes": 115891,
+      "symlink": false
+    },
+    {
+      "path": "e2e-final-clock/playwright-results.json",
+      "bytes": 13672,
+      "symlink": false
+    },
+    {
+      "path": "e2e-final-clock/playwright.png",
+      "bytes": 2103,
+      "symlink": false
+    },
+    {
+      "path": "e2e-final-clock/protocol-silent.mkv",
+      "bytes": 1922,
+      "symlink": false
+    },
+    {
+      "path": "e2e-final-clock/silent-audio.mkv",
+      "bytes": 50358,
+      "symlink": false
+    },
+    {
+      "path": "e2e-final-clock/silent-video-only.mkv",
+      "bytes": 1983,
+      "symlink": false
+    },
+    {
+      "path": "final-pulsed-30min/audio-lifecycle-DD5AAA3FF35F48FB216A7EAC44EB3D54.csv",
+      "bytes": 0,
+      "symlink": false
+    },
+    {
+      "path": "final-pulsed-30min/browser-tested",
+      "bytes": 2459584,
+      "symlink": false
+    },
+    {
+      "path": "final-pulsed-30min/cef-DD5AAA3FF35F48FB216A7EAC44EB3D54.csv",
+      "bytes": 2920448,
+      "symlink": false
+    },
+    {
+      "path": "final-pulsed-30min/cef-DD5AAA3FF35F48FB216A7EAC44EB3D54.s16",
+      "bytes": 163274752,
+      "symlink": false
+    },
+    {
+      "path": "final-pulsed-30min/interruption.json",
+      "bytes": 1324,
+      "symlink": false
+    },
+    {
+      "path": "final-pulsed-30min/native.csv",
+      "bytes": 2965504,
+      "symlink": false
+    },
+    {
+      "path": "final-pulsed-30min/native.s16",
+      "bytes": 164614144,
+      "symlink": false
+    },
+    {
+      "path": "final-pulsed-30min/node-memory.jsonl",
+      "bytes": 181478,
+      "symlink": false
+    },
+    {
+      "path": "final-pulsed-30min/partial-analysis/analysis.json",
+      "bytes": 246741,
+      "symlink": false
+    },
+    {
+      "path": "final-pulsed-30min/partial-analysis/attribution.log",
+      "bytes": 246741,
+      "symlink": false
+    },
+    {
+      "path": "final-pulsed-30min/partial-analysis/cef-DD5AAA3FF35F48FB216A7EAC44EB3D54.csv",
+      "bytes": 2920429,
+      "symlink": false
+    },
+    {
+      "path": "final-pulsed-30min/partial-analysis/cef-DD5AAA3FF35F48FB216A7EAC44EB3D54.s16",
+      "bytes": 163274752,
+      "symlink": true
+    },
+    {
+      "path": "final-pulsed-30min/partial-analysis/complete-source-copy-verification.json",
+      "bytes": 1706,
+      "symlink": false
+    },
+    {
+      "path": "final-pulsed-30min/partial-analysis/full-decoder-checks.json",
+      "bytes": 543,
+      "symlink": false
+    },
+    {
+      "path": "final-pulsed-30min/partial-analysis/native.csv",
+      "bytes": 2965440,
+      "symlink": false
+    },
+    {
+      "path": "final-pulsed-30min/partial-analysis/native.s16",
+      "bytes": 164614144,
+      "symlink": true
+    },
+    {
+      "path": "final-pulsed-30min/partial-analysis/normalization.json",
+      "bytes": 780,
+      "symlink": false
+    },
+    {
+      "path": "final-pulsed-30min/partial-analysis/processes.jsonl",
+      "bytes": 2789188,
+      "symlink": false
+    },
+    {
+      "path": "final-pulsed-30min/partial-analysis/receiver.flv",
+      "bytes": 33554432,
+      "symlink": true
+    },
+    {
+      "path": "final-pulsed-30min/partial-analysis/receiver.flv.csv",
+      "bytes": 2965440,
+      "symlink": false
+    },
+    {
+      "path": "final-pulsed-30min/partial-analysis/receiver.flv.s16",
+      "bytes": 164614144,
+      "symlink": false
+    },
+    {
+      "path": "final-pulsed-30min/partial-analysis/recording.mp4",
+      "bytes": 22327666,
+      "symlink": true
+    },
+    {
+      "path": "final-pulsed-30min/partial-analysis/recording.mp4.csv",
+      "bytes": 2965477,
+      "symlink": false
+    },
+    {
+      "path": "final-pulsed-30min/partial-analysis/recording.mp4.s16",
+      "bytes": 164671488,
+      "symlink": true
+    },
+    {
+      "path": "final-pulsed-30min/partial-analysis/result.json",
+      "bytes": 3579,
+      "symlink": false
+    },
+    {
+      "path": "final-pulsed-30min/partial-analysis/results.json",
+      "bytes": 1560,
+      "symlink": false
+    },
+    {
+      "path": "final-pulsed-30min/partial-analysis/validation-before-decoder-log-review.json",
+      "bytes": 291462,
+      "symlink": false
+    },
+    {
+      "path": "final-pulsed-30min/partial-analysis/validation.json",
+      "bytes": 294996,
+      "symlink": false
+    },
+    {
+      "path": "final-pulsed-30min/processes.jsonl",
+      "bytes": 2789188,
+      "symlink": false
+    },
+    {
+      "path": "final-pulsed-30min/progress.json",
+      "bytes": 1024,
+      "symlink": false
+    },
+    {
+      "path": "final-pulsed-30min/receiver.flv",
+      "bytes": 33554432,
+      "symlink": false
+    },
+    {
+      "path": "final-pulsed-30min/receiver.log",
+      "bytes": 0,
+      "symlink": false
+    },
+    {
+      "path": "final-pulsed-30min/recording.mp4",
+      "bytes": 22327666,
+      "symlink": false
+    },
+    {
+      "path": "final-pulsed-30min/recording.mp4.csv",
+      "bytes": 2965504,
+      "symlink": false
+    },
+    {
+      "path": "final-pulsed-30min/recording.mp4.s16",
+      "bytes": 164671488,
+      "symlink": false
+    },
+    {
+      "path": "final-pulsed-30min/result-before-interruption.json",
+      "bytes": 2041,
+      "symlink": false
+    },
+    {
+      "path": "final-pulsed-30min/result.json",
+      "bytes": 3579,
+      "symlink": false
+    },
+    {
+      "path": "final-pulsed-30min/scheduling-burst-live.json",
+      "bytes": 20882,
+      "symlink": false
+    },
+    {
+      "path": "final-pulsed-30min/scheduling-burst-top-live.json",
+      "bytes": 3506,
+      "symlink": false
+    },
+    {
+      "path": "git-diff-at-test.patch",
+      "bytes": 209736,
+      "symlink": false
+    },
+    {
+      "path": "git-status-at-test.txt",
+      "bytes": 1684,
+      "symlink": false
+    },
+    {
+      "path": "licenses/CEF-LICENSE.txt",
+      "bytes": 1662,
+      "symlink": false
+    },
+    {
+      "path": "licenses/SuiteCut-MIT-LICENSE.txt",
+      "bytes": 1064,
+      "symlink": false
+    },
+    {
+      "path": "licenses/libyuv-LICENSE.txt",
+      "bytes": 1506,
+      "symlink": false
+    },
+    {
+      "path": "logs/adapter-tests.log",
+      "bytes": 205,
+      "symlink": false
+    },
+    {
+      "path": "logs/adaptive-pulsed-120s-validation.log",
+      "bytes": 5361,
+      "symlink": false
+    },
+    {
+      "path": "logs/adaptive-pulsed-120s.log",
+      "bytes": 3629,
+      "symlink": false
+    },
+    {
+      "path": "logs/asan-adaptive.log",
+      "bytes": 9530,
+      "symlink": false
+    },
+    {
+      "path": "logs/asan-build-adaptive.log",
+      "bytes": 0,
+      "symlink": false
+    },
+    {
+      "path": "logs/asan-build-clock-order.log",
+      "bytes": 0,
+      "symlink": false
+    },
+    {
+      "path": "logs/asan-build-final.log",
+      "bytes": 0,
+      "symlink": false
+    },
+    {
+      "path": "logs/asan-build-labeled.log",
+      "bytes": 0,
+      "symlink": false
+    },
+    {
+      "path": "logs/asan-build-pause.log",
+      "bytes": 0,
+      "symlink": false
+    },
+    {
+      "path": "logs/asan-build.log",
+      "bytes": 0,
+      "symlink": false
+    },
+    {
+      "path": "logs/asan-codec-cycle-01.log",
+      "bytes": 12436,
+      "symlink": false
+    },
+    {
+      "path": "logs/asan-codec-cycle-02.log",
+      "bytes": 12430,
+      "symlink": false
+    },
+    {
+      "path": "logs/asan-codec-cycle-03.log",
+      "bytes": 12430,
+      "symlink": false
+    },
+    {
+      "path": "logs/asan-codec-cycle-04.log",
+      "bytes": 12436,
+      "symlink": false
+    },
+    {
+      "path": "logs/asan-codec-cycle-05.log",
+      "bytes": 12436,
+      "symlink": false
+    },
+    {
+      "path": "logs/asan-codec-cycle-06.log",
+      "bytes": 12436,
+      "symlink": false
+    },
+    {
+      "path": "logs/asan-codec-cycle-07.log",
+      "bytes": 12436,
+      "symlink": false
+    },
+    {
+      "path": "logs/asan-codec-cycle-08.log",
+      "bytes": 12430,
+      "symlink": false
+    },
+    {
+      "path": "logs/asan-codec-cycle-09.log",
+      "bytes": 12436,
+      "symlink": false
+    },
+    {
+      "path": "logs/asan-codec-cycle-10.log",
+      "bytes": 12430,
+      "symlink": false
+    },
+    {
+      "path": "logs/asan-codec-cycle-11.log",
+      "bytes": 12436,
+      "symlink": false
+    },
+    {
+      "path": "logs/asan-codec-cycle-12.log",
+      "bytes": 12031,
+      "symlink": false
+    },
+    {
+      "path": "logs/asan-codec-cycle-13.log",
+      "bytes": 12031,
+      "symlink": false
+    },
+    {
+      "path": "logs/asan-codec-cycle-14.log",
+      "bytes": 12436,
+      "symlink": false
+    },
+    {
+      "path": "logs/asan-codec-cycle-15.log",
+      "bytes": 12436,
+      "symlink": false
+    },
+    {
+      "path": "logs/asan-codec-cycle-16.log",
+      "bytes": 12436,
+      "symlink": false
+    },
+    {
+      "path": "logs/asan-codec-cycle-17.log",
+      "bytes": 12436,
+      "symlink": false
+    },
+    {
+      "path": "logs/asan-codec-cycle-18.log",
+      "bytes": 12436,
+      "symlink": false
+    },
+    {
+      "path": "logs/asan-codec-cycle-19.log",
+      "bytes": 12436,
+      "symlink": false
+    },
+    {
+      "path": "logs/asan-codec-cycle-20.log",
+      "bytes": 12436,
+      "symlink": false
+    },
+    {
+      "path": "logs/asan-cycle-01.log",
+      "bytes": 10986,
+      "symlink": false
+    },
+    {
+      "path": "logs/asan-cycle-02.log",
+      "bytes": 4387,
+      "symlink": false
+    },
+    {
+      "path": "logs/asan-final-build.log",
+      "bytes": 0,
+      "symlink": false
+    },
+    {
+      "path": "logs/asan-final-cycle-01.log",
+      "bytes": 10980,
+      "symlink": false
+    },
+    {
+      "path": "logs/asan-final-cycle-02.log",
+      "bytes": 10581,
+      "symlink": false
+    },
+    {
+      "path": "logs/asan-final-cycle-03.log",
+      "bytes": 10980,
+      "symlink": false
+    },
+    {
+      "path": "logs/asan-final-cycle-04.log",
+      "bytes": 10986,
+      "symlink": false
+    },
+    {
+      "path": "logs/asan-final-cycle-05.log",
+      "bytes": 10986,
+      "symlink": false
+    },
+    {
+      "path": "logs/asan-final-cycle-06.log",
+      "bytes": 10986,
+      "symlink": false
+    },
+    {
+      "path": "logs/asan-final-cycle-07.log",
+      "bytes": 10986,
+      "symlink": false
+    },
+    {
+      "path": "logs/asan-final-cycle-08.log",
+      "bytes": 10986,
+      "symlink": false
+    },
+    {
+      "path": "logs/asan-final-cycle-09.log",
+      "bytes": 10980,
+      "symlink": false
+    },
+    {
+      "path": "logs/asan-final-cycle-10.log",
+      "bytes": 10986,
+      "symlink": false
+    },
+    {
+      "path": "logs/asan-final-cycle-11.log",
+      "bytes": 10986,
+      "symlink": false
+    },
+    {
+      "path": "logs/asan-final-cycle-12.log",
+      "bytes": 10980,
+      "symlink": false
+    },
+    {
+      "path": "logs/asan-final-cycle-13.log",
+      "bytes": 10581,
+      "symlink": false
+    },
+    {
+      "path": "logs/asan-final-cycle-14.log",
+      "bytes": 10980,
+      "symlink": false
+    },
+    {
+      "path": "logs/asan-final-cycle-15.log",
+      "bytes": 10986,
+      "symlink": false
+    },
+    {
+      "path": "logs/asan-final-cycle-16.log",
+      "bytes": 10986,
+      "symlink": false
+    },
+    {
+      "path": "logs/asan-final-cycle-17.log",
+      "bytes": 10986,
+      "symlink": false
+    },
+    {
+      "path": "logs/asan-final-cycle-18.log",
+      "bytes": 10986,
+      "symlink": false
+    },
+    {
+      "path": "logs/asan-final-cycle-19.log",
+      "bytes": 10581,
+      "symlink": false
+    },
+    {
+      "path": "logs/asan-final-cycle-20.log",
+      "bytes": 10986,
+      "symlink": false
+    },
+    {
+      "path": "logs/asan-pause-repeat.log",
+      "bytes": 10986,
+      "symlink": false
+    },
+    {
+      "path": "logs/asan-pause.log",
+      "bytes": 4385,
+      "symlink": false
+    },
+    {
+      "path": "logs/asan-tested-cycle-01.log",
+      "bytes": 12340,
+      "symlink": false
+    },
+    {
+      "path": "logs/asan-tested-cycle-02.log",
+      "bytes": 12340,
+      "symlink": false
+    },
+    {
+      "path": "logs/asan-tested-cycle-03.log",
+      "bytes": 11935,
+      "symlink": false
+    },
+    {
+      "path": "logs/asan-tested-cycle-04.log",
+      "bytes": 12340,
+      "symlink": false
+    },
+    {
+      "path": "logs/asan-tested-cycle-05.log",
+      "bytes": 12340,
+      "symlink": false
+    },
+    {
+      "path": "logs/asan-tested-cycle-06.log",
+      "bytes": 12340,
+      "symlink": false
+    },
+    {
+      "path": "logs/asan-tested-cycle-07.log",
+      "bytes": 12340,
+      "symlink": false
+    },
+    {
+      "path": "logs/asan-tested-cycle-08.log",
+      "bytes": 12340,
+      "symlink": false
+    },
+    {
+      "path": "logs/asan-tested-cycle-09.log",
+      "bytes": 12334,
+      "symlink": false
+    },
+    {
+      "path": "logs/asan-tested-cycle-10.log",
+      "bytes": 12340,
+      "symlink": false
+    },
+    {
+      "path": "logs/asan-tested-cycle-11.log",
+      "bytes": 12334,
+      "symlink": false
+    },
+    {
+      "path": "logs/asan-tested-cycle-12.log",
+      "bytes": 12340,
+      "symlink": false
+    },
+    {
+      "path": "logs/asan-tested-cycle-13.log",
+      "bytes": 11935,
+      "symlink": false
+    },
+    {
+      "path": "logs/asan-tested-cycle-14.log",
+      "bytes": 11935,
+      "symlink": false
+    },
+    {
+      "path": "logs/asan-tested-cycle-15.log",
+      "bytes": 12340,
+      "symlink": false
+    },
+    {
+      "path": "logs/asan-tested-cycle-16.log",
+      "bytes": 12334,
+      "symlink": false
+    },
+    {
+      "path": "logs/asan-tested-cycle-17.log",
+      "bytes": 12340,
+      "symlink": false
+    },
+    {
+      "path": "logs/asan-tested-cycle-18.log",
+      "bytes": 12340,
+      "symlink": false
+    },
+    {
+      "path": "logs/asan-tested-cycle-19.log",
+      "bytes": 12340,
+      "symlink": false
+    },
+    {
+      "path": "logs/asan-tested-cycle-20.log",
+      "bytes": 12340,
+      "symlink": false
+    },
+    {
+      "path": "logs/asan.log",
+      "bytes": 6636,
+      "symlink": false
+    },
+    {
+      "path": "logs/budget-pulsed-120s-validation.log",
+      "bytes": 2065,
+      "symlink": false
+    },
+    {
+      "path": "logs/budget-pulsed-120s.log",
+      "bytes": 3663,
+      "symlink": false
+    },
+    {
+      "path": "logs/cef-patch-check.log",
+      "bytes": 124,
+      "symlink": false
+    },
+    {
+      "path": "logs/clock-asan.log",
+      "bytes": 32,
+      "symlink": false
+    },
+    {
+      "path": "logs/continuous-60s-validation.log",
+      "bytes": 1762,
+      "symlink": false
+    },
+    {
+      "path": "logs/continuous-60s.log",
+      "bytes": 2455,
+      "symlink": false
+    },
+    {
+      "path": "logs/e2e-adaptive.log",
+      "bytes": 1726,
+      "symlink": false
+    },
+    {
+      "path": "logs/e2e-clock.log",
+      "bytes": 1585,
+      "symlink": false
+    },
+    {
+      "path": "logs/e2e-final-clock.log",
+      "bytes": 1726,
+      "symlink": false
+    },
+    {
+      "path": "logs/e2e-final.log",
+      "bytes": 1585,
+      "symlink": false
+    },
+    {
+      "path": "logs/e2e.log",
+      "bytes": 1586,
+      "symlink": false
+    },
+    {
+      "path": "logs/final-pulsed-30min.log",
+      "bytes": 0,
+      "symlink": false
+    },
+    {
+      "path": "logs/final-pulsed-interrupted-validation.log",
+      "bytes": 10594,
+      "symlink": false
+    },
+    {
+      "path": "logs/interrupted-flv-full-decode.log",
+      "bytes": 371,
+      "symlink": false
+    },
+    {
+      "path": "logs/interrupted-mp4-full-decode.log",
+      "bytes": 0,
+      "symlink": false
+    },
+    {
+      "path": "logs/lint-adaptive.log",
+      "bytes": 28,
+      "symlink": false
+    },
+    {
+      "path": "logs/lint-final.log",
+      "bytes": 28,
+      "symlink": false
+    },
+    {
+      "path": "logs/lint-pause.log",
+      "bytes": 0,
+      "symlink": false
+    },
+    {
+      "path": "logs/lint.log",
+      "bytes": 28,
+      "symlink": false
+    },
+    {
+      "path": "logs/native-build-adaptive-drain.log",
+      "bytes": 492,
+      "symlink": false
+    },
+    {
+      "path": "logs/native-build-adaptive.log",
+      "bytes": 744,
+      "symlink": false
+    },
+    {
+      "path": "logs/native-build-clock.log",
+      "bytes": 261,
+      "symlink": false
+    },
+    {
+      "path": "logs/native-build-codec-pause.log",
+      "bytes": 421,
+      "symlink": false
+    },
+    {
+      "path": "logs/native-build-cpu-budget.log",
+      "bytes": 328,
+      "symlink": false
+    },
+    {
+      "path": "logs/native-build-final-adaptive.log",
+      "bytes": 328,
+      "symlink": false
+    },
+    {
+      "path": "logs/native-build-final.log",
+      "bytes": 117,
+      "symlink": false
+    },
+    {
+      "path": "logs/native-build-frame-clock.log",
+      "bytes": 421,
+      "symlink": false
+    },
+    {
+      "path": "logs/native-build-pause-drain.log",
+      "bytes": 492,
+      "symlink": false
+    },
+    {
+      "path": "logs/native-build-resume-view.log",
+      "bytes": 117,
+      "symlink": false
+    },
+    {
+      "path": "logs/native-build.log",
+      "bytes": 328,
+      "symlink": false
+    },
+    {
+      "path": "logs/native-test-build-clock-order.log",
+      "bytes": 150,
+      "symlink": false
+    },
+    {
+      "path": "logs/native-tests-adaptive-drain.log",
+      "bytes": 622,
+      "symlink": false
+    },
+    {
+      "path": "logs/native-tests-adaptive.log",
+      "bytes": 5116,
+      "symlink": false
+    },
+    {
+      "path": "logs/native-tests-clock.log",
+      "bytes": 622,
+      "symlink": false
+    },
+    {
+      "path": "logs/native-tests-codec-pause.log",
+      "bytes": 622,
+      "symlink": false
+    },
+    {
+      "path": "logs/native-tests-cpu-budget.log",
+      "bytes": 622,
+      "symlink": false
+    },
+    {
+      "path": "logs/native-tests-final-adaptive.log",
+      "bytes": 622,
+      "symlink": false
+    },
+    {
+      "path": "logs/native-tests-final.log",
+      "bytes": 622,
+      "symlink": false
+    },
+    {
+      "path": "logs/native-tests-frame-clock.log",
+      "bytes": 622,
+      "symlink": false
+    },
+    {
+      "path": "logs/native-tests-pause-drain.log",
+      "bytes": 622,
+      "symlink": false
+    },
+    {
+      "path": "logs/native-tests.log",
+      "bytes": 622,
+      "symlink": false
+    },
+    {
+      "path": "logs/pulsed-30min.log",
+      "bytes": 0,
+      "symlink": false
+    },
+    {
+      "path": "logs/pulsed-60s-validation.log",
+      "bytes": 2293,
+      "symlink": false
+    },
+    {
+      "path": "logs/pulsed-60s.log",
+      "bytes": 2441,
+      "symlink": false
+    },
+    {
+      "path": "logs/sdk-build-adaptive.log",
+      "bytes": 78,
+      "symlink": false
+    },
+    {
+      "path": "logs/sdk-build.log",
+      "bytes": 78,
+      "symlink": false
+    },
+    {
+      "path": "logs/sdk-tests-adaptive.log",
+      "bytes": 225,
+      "symlink": false
+    },
+    {
+      "path": "logs/sdk-tests-final.log",
+      "bytes": 224,
+      "symlink": false
+    },
+    {
+      "path": "logs/sdk-tests.log",
+      "bytes": 225,
+      "symlink": false
+    },
+    {
+      "path": "logs/startup-matrix.log",
+      "bytes": 249,
+      "symlink": false
+    },
+    {
+      "path": "logs/startup-validation.log",
+      "bytes": 761,
+      "symlink": false
+    },
+    {
+      "path": "logs/typecheck-adaptive.log",
+      "bytes": 15,
+      "symlink": false
+    },
+    {
+      "path": "logs/typecheck-final.log",
+      "bytes": 15,
+      "symlink": false
+    },
+    {
+      "path": "logs/typecheck-pause.log",
+      "bytes": 15,
+      "symlink": false
+    },
+    {
+      "path": "logs/typecheck.log",
+      "bytes": 15,
+      "symlink": false
+    },
+    {
+      "path": "logs/worklet-pulsed-60s-validation.log",
+      "bytes": 2879,
+      "symlink": false
+    },
+    {
+      "path": "logs/worklet-pulsed-60s.log",
+      "bytes": 2665,
+      "symlink": false
+    },
+    {
+      "path": "older-evidence-verification.json",
+      "bytes": 674,
+      "symlink": false
+    },
+    {
+      "path": "pulsed-30min/audio-lifecycle-6D582C91CEB208F317FB078E0FF80B61.csv",
+      "bytes": 137,
+      "symlink": false
+    },
+    {
+      "path": "pulsed-30min/browser-tested",
+      "bytes": 2450432,
+      "symlink": false
+    },
+    {
+      "path": "pulsed-30min/cef-6D582C91CEB208F317FB078E0FF80B61.csv",
+      "bytes": 749882,
+      "symlink": false
+    },
+    {
+      "path": "pulsed-30min/cef-6D582C91CEB208F317FB078E0FF80B61.s16",
+      "bytes": 42305280,
+      "symlink": false
+    },
+    {
+      "path": "pulsed-30min/interruption.json",
+      "bytes": 1312,
+      "symlink": false
+    },
+    {
+      "path": "pulsed-30min/native.csv",
+      "bytes": 769545,
+      "symlink": false
+    },
+    {
+      "path": "pulsed-30min/native.s16",
+      "bytes": 42647552,
+      "symlink": false
+    },
+    {
+      "path": "pulsed-30min/node-memory.jsonl",
+      "bytes": 45933,
+      "symlink": false
+    },
+    {
+      "path": "pulsed-30min/processes.jsonl",
+      "bytes": 725571,
+      "symlink": false
+    },
+    {
+      "path": "pulsed-30min/progress.json",
+      "bytes": 942,
+      "symlink": false
+    },
+    {
+      "path": "pulsed-30min/receiver.flv",
+      "bytes": 8051215,
+      "symlink": false
+    },
+    {
+      "path": "pulsed-30min/receiver.log",
+      "bytes": 0,
+      "symlink": false
+    },
+    {
+      "path": "pulsed-30min/recording.mp4",
+      "bytes": 4868547,
+      "symlink": false
+    },
+    {
+      "path": "pulsed-30min/recording.mp4.csv",
+      "bytes": 770889,
+      "symlink": false
+    },
+    {
+      "path": "pulsed-30min/recording.mp4.s16",
+      "bytes": 42725376,
+      "symlink": false
+    },
+    {
+      "path": "pulsed-30min/result-before-interruption.json",
+      "bytes": 1878,
+      "symlink": false
+    },
+    {
+      "path": "pulsed-30min/result.json",
+      "bytes": 3369,
+      "symlink": false
+    },
+    {
+      "path": "pulsed-60s/analysis.json",
+      "bytes": 19362,
+      "symlink": false
+    },
+    {
+      "path": "pulsed-60s/attribution.log",
+      "bytes": 19362,
+      "symlink": false
+    },
+    {
+      "path": "pulsed-60s/browser-tested",
+      "bytes": 2450744,
+      "symlink": false
+    },
+    {
+      "path": "pulsed-60s/cef-99FB6BC3950E5EF22A1F1B2C76026B23.csv",
+      "bytes": 151191,
+      "symlink": false
+    },
+    {
+      "path": "pulsed-60s/cef-99FB6BC3950E5EF22A1F1B2C76026B23.s16",
+      "bytes": 11431680,
+      "symlink": false
+    },
+    {
+      "path": "pulsed-60s/native.csv",
+      "bytes": 192434,
+      "symlink": false
+    },
+    {
+      "path": "pulsed-60s/native.s16",
+      "bytes": 11554816,
+      "symlink": false
+    },
+    {
+      "path": "pulsed-60s/node-memory.jsonl",
+      "bytes": 12047,
+      "symlink": false
+    },
+    {
+      "path": "pulsed-60s/processes.jsonl",
+      "bytes": 205460,
+      "symlink": false
+    },
+    {
+      "path": "pulsed-60s/receiver.flv",
+      "bytes": 2505209,
+      "symlink": false
+    },
+    {
+      "path": "pulsed-60s/receiver.flv.csv",
+      "bytes": 192434,
+      "symlink": false
+    },
+    {
+      "path": "pulsed-60s/receiver.flv.s16",
+      "bytes": 11554816,
+      "symlink": false
+    },
+    {
+      "path": "pulsed-60s/receiver.log",
+      "bytes": 70,
+      "symlink": false
+    },
+    {
+      "path": "pulsed-60s/recording.mp4",
+      "bytes": 1634362,
+      "symlink": false
+    },
+    {
+      "path": "pulsed-60s/recording.mp4.csv",
+      "bytes": 193197,
+      "symlink": false
+    },
+    {
+      "path": "pulsed-60s/recording.mp4.s16",
+      "bytes": 11603968,
+      "symlink": false
+    },
+    {
+      "path": "pulsed-60s/result.json",
+      "bytes": 2440,
+      "symlink": false
+    },
+    {
+      "path": "pulsed-60s/results.json",
+      "bytes": 1286,
+      "symlink": false
+    },
+    {
+      "path": "pulsed-60s/validation.json",
+      "bytes": 34414,
+      "symlink": false
+    },
+    {
+      "path": "report.md",
+      "bytes": 17418,
+      "symlink": false
+    },
+    {
+      "path": "runtime-ldd.txt",
+      "bytes": 15474,
+      "symlink": false
+    },
+    {
+      "path": "runtime-library-hashes.json",
+      "bytes": 29414,
+      "symlink": false
+    },
+    {
+      "path": "startup/cold-signal-aac/aac.mkv",
+      "bytes": 280605,
+      "symlink": false
+    },
+    {
+      "path": "startup/cold-signal-aac/aac.mkv.csv",
+      "bytes": 18553,
+      "symlink": false
+    },
+    {
+      "path": "startup/cold-signal-aac/aac.mkv.s16",
+      "bytes": 1191936,
+      "symlink": false
+    },
+    {
+      "path": "startup/cold-signal-aac/analysis.json",
+      "bytes": 1649,
+      "symlink": false
+    },
+    {
+      "path": "startup/cold-signal-aac/cef-EC9498CF3BA260EE3D9D67B82824B799.csv",
+      "bytes": 17996,
+      "symlink": false
+    },
+    {
+      "path": "startup/cold-signal-aac/cef-EC9498CF3BA260EE3D9D67B82824B799.s16",
+      "bytes": 1059840,
+      "symlink": false
+    },
+    {
+      "path": "startup/cold-signal-aac/processes.jsonl",
+      "bytes": 20854,
+      "symlink": false
+    },
+    {
+      "path": "startup/cold-signal-aac/results.json",
+      "bytes": 16498,
+      "symlink": false
+    },
+    {
+      "path": "startup/cold-signal-aac/validation.json",
+      "bytes": 20153,
+      "symlink": false
+    },
+    {
+      "path": "startup/cold-signal-aac-mp4/aac.mp4",
+      "bytes": 263287,
+      "symlink": false
+    },
+    {
+      "path": "startup/cold-signal-aac-mp4/aac.mp4.csv",
+      "bytes": 18069,
+      "symlink": false
+    },
+    {
+      "path": "startup/cold-signal-aac-mp4/aac.mp4.s16",
+      "bytes": 1159168,
+      "symlink": false
+    },
+    {
+      "path": "startup/cold-signal-aac-mp4/analysis.json",
+      "bytes": 3179,
+      "symlink": false
+    },
+    {
+      "path": "startup/cold-signal-aac-mp4/cef-F4D1B23EB861222BDD687C9E8F2FEFF8.csv",
+      "bytes": 15656,
+      "symlink": false
+    },
+    {
+      "path": "startup/cold-signal-aac-mp4/cef-F4D1B23EB861222BDD687C9E8F2FEFF8.s16",
+      "bytes": 921600,
+      "symlink": false
+    },
+    {
+      "path": "startup/cold-signal-aac-mp4/processes.jsonl",
+      "bytes": 20917,
+      "symlink": false
+    },
+    {
+      "path": "startup/cold-signal-aac-mp4/results.json",
+      "bytes": 14617,
+      "symlink": false
+    },
+    {
+      "path": "startup/cold-signal-aac-mp4/validation.json",
+      "bytes": 20634,
+      "symlink": false
+    },
+    {
+      "path": "startup/cold-signal-pcm/analysis.json",
+      "bytes": 2408,
+      "symlink": false
+    },
+    {
+      "path": "startup/cold-signal-pcm/cef-80E7150352F4481D7E4770C58F7BD217.csv",
+      "bytes": 18061,
+      "symlink": false
+    },
+    {
+      "path": "startup/cold-signal-pcm/cef-80E7150352F4481D7E4770C58F7BD217.s16",
+      "bytes": 1063680,
+      "symlink": false
+    },
+    {
+      "path": "startup/cold-signal-pcm/pcm_s16le.mkv",
+      "bytes": 1332351,
+      "symlink": false
+    },
+    {
+      "path": "startup/cold-signal-pcm/pcm_s16le.mkv.csv",
+      "bytes": 19264,
+      "symlink": false
+    },
+    {
+      "path": "startup/cold-signal-pcm/pcm_s16le.mkv.s16",
+      "bytes": 1176368,
+      "symlink": false
+    },
+    {
+      "path": "startup/cold-signal-pcm/processes.jsonl",
+      "bytes": 20918,
+      "symlink": false
+    },
+    {
+      "path": "startup/cold-signal-pcm/results.json",
+      "bytes": 15819,
+      "symlink": false
+    },
+    {
+      "path": "startup/cold-signal-pcm/validation.json",
+      "bytes": 20328,
+      "symlink": false
+    },
+    {
+      "path": "startup/comparison.json",
+      "bytes": 197475,
+      "symlink": false
+    },
+    {
+      "path": "startup/logs/default-cold-signal-aac-analysis.log",
+      "bytes": 1649,
+      "symlink": false
+    },
+    {
+      "path": "startup/logs/default-cold-signal-aac-mp4-analysis.log",
+      "bytes": 3179,
+      "symlink": false
+    },
+    {
+      "path": "startup/logs/default-cold-signal-pcm-analysis.log",
+      "bytes": 2408,
+      "symlink": false
+    },
+    {
+      "path": "startup/logs/default-quiet-signal-aac-analysis.log",
+      "bytes": 3038,
+      "symlink": false
+    },
+    {
+      "path": "startup/logs/default-stress-signal-aac-analysis.log",
+      "bytes": 2145,
+      "symlink": false
+    },
+    {
+      "path": "startup/matrix.json",
+      "bytes": 136466,
+      "symlink": false
+    },
+    {
+      "path": "startup/quiet-signal-aac/aac.mkv",
+      "bytes": 942216,
+      "symlink": false
+    },
+    {
+      "path": "startup/quiet-signal-aac/aac.mkv.csv",
+      "bytes": 62571,
+      "symlink": false
+    },
+    {
+      "path": "startup/quiet-signal-aac/aac.mkv.s16",
+      "bytes": 3878912,
+      "symlink": false
+    },
+    {
+      "path": "startup/quiet-signal-aac/analysis.json",
+      "bytes": 3038,
+      "symlink": false
+    },
+    {
+      "path": "startup/quiet-signal-aac/cef-F5813219F0B5541D6C09EA3221F0E1CD.csv",
+      "bytes": 63389,
+      "symlink": false
+    },
+    {
+      "path": "startup/quiet-signal-aac/cef-F5813219F0B5541D6C09EA3221F0E1CD.s16",
+      "bytes": 3678720,
+      "symlink": false
+    },
+    {
+      "path": "startup/quiet-signal-aac/processes.jsonl",
+      "bytes": 63676,
+      "symlink": false
+    },
+    {
+      "path": "startup/quiet-signal-aac/results.json",
+      "bytes": 49716,
+      "symlink": false
+    },
+    {
+      "path": "startup/quiet-signal-aac/validation.json",
+      "bytes": 50638,
+      "symlink": false
+    },
+    {
+      "path": "startup/stress-signal-aac/aac.mkv",
+      "bytes": 942822,
+      "symlink": false
+    },
+    {
+      "path": "startup/stress-signal-aac/aac.mkv.csv",
+      "bytes": 62604,
+      "symlink": false
+    },
+    {
+      "path": "startup/stress-signal-aac/aac.mkv.s16",
+      "bytes": 3870720,
+      "symlink": false
+    },
+    {
+      "path": "startup/stress-signal-aac/analysis.json",
+      "bytes": 2145,
+      "symlink": false
+    },
+    {
+      "path": "startup/stress-signal-aac/cef-63AB384DCBF881991C8D295B155CD229.csv",
+      "bytes": 65801,
+      "symlink": false
+    },
+    {
+      "path": "startup/stress-signal-aac/cef-63AB384DCBF881991C8D295B155CD229.s16",
+      "bytes": 3816960,
+      "symlink": false
+    },
+    {
+      "path": "startup/stress-signal-aac/processes.jsonl",
+      "bytes": 63618,
+      "symlink": false
+    },
+    {
+      "path": "startup/stress-signal-aac/results.json",
+      "bytes": 39745,
+      "symlink": false
+    },
+    {
+      "path": "startup/stress-signal-aac/validation.json",
+      "bytes": 40985,
+      "symlink": false
+    },
+    {
+      "path": "startup-adaptive-asan",
+      "bytes": 5242088,
+      "symlink": false
+    },
+    {
+      "path": "startup-asan",
+      "bytes": 4832824,
+      "symlink": false
+    },
+    {
+      "path": "startup-final-asan",
+      "bytes": 5695568,
+      "symlink": false
+    },
+    {
+      "path": "startup-pause-asan",
+      "bytes": 5529608,
+      "symlink": false
+    },
+    {
+      "path": "startup-tested-asan",
+      "bytes": 5825520,
+      "symlink": false
+    },
+    {
+      "path": "suitecut-audio-clock-test",
+      "bytes": 15968,
+      "symlink": false
+    },
+    {
+      "path": "suitecut-audio-startup-test",
+      "bytes": 163120,
+      "symlink": false
+    },
+    {
+      "path": "suitecut-browser",
+      "bytes": 2459584,
+      "symlink": false
+    },
+    {
+      "path": "suitecut-codec-test",
+      "bytes": 228680,
+      "symlink": false
+    },
+    {
+      "path": "suitecut-media-test",
+      "bytes": 213960,
+      "symlink": false
+    },
+    {
+      "path": "suitecut-pixel-test",
+      "bytes": 954224,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/abort.d.ts",
+      "bytes": 218,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/abort.d.ts.map",
+      "bytes": 235,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/abort.js",
+      "bytes": 1094,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/abort.js.map",
+      "bytes": 1176,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/artifact-sink.d.ts",
+      "bytes": 276,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/artifact-sink.d.ts.map",
+      "bytes": 307,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/artifact-sink.js",
+      "bytes": 52,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/artifact-sink.js.map",
+      "bytes": 118,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/atomic-file.d.ts",
+      "bytes": 546,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/atomic-file.d.ts.map",
+      "bytes": 443,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/atomic-file.js",
+      "bytes": 1084,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/atomic-file.js.map",
+      "bytes": 1147,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/audio-plugin-loader.d.ts",
+      "bytes": 637,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/audio-plugin-loader.d.ts.map",
+      "bytes": 446,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/audio-plugin-loader.js",
+      "bytes": 3102,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/audio-plugin-loader.js.map",
+      "bytes": 2789,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/audio-plugin.d.ts",
+      "bytes": 1363,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/audio-plugin.d.ts.map",
+      "bytes": 833,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/audio-plugin.js",
+      "bytes": 2069,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/audio-plugin.js.map",
+      "bytes": 2369,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/beta.d.ts",
+      "bytes": 462,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/beta.d.ts.map",
+      "bytes": 294,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/beta.js",
+      "bytes": 147,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/beta.js.map",
+      "bytes": 134,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/browser-control.d.ts",
+      "bytes": 1087,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/browser-control.d.ts.map",
+      "bytes": 1268,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/browser-control.js",
+      "bytes": 81,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/browser-control.js.map",
+      "bytes": 154,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/captions.d.ts",
+      "bytes": 1050,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/captions.d.ts.map",
+      "bytes": 441,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/captions.js",
+      "bytes": 2836,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/captions.js.map",
+      "bytes": 2982,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/capture.d.ts",
+      "bytes": 1116,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/capture.d.ts.map",
+      "bytes": 684,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/capture.js",
+      "bytes": 2796,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/capture.js.map",
+      "bytes": 2108,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/cli.d.ts",
+      "bytes": 135,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/cli.d.ts.map",
+      "bytes": 180,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/cli.js",
+      "bytes": 10971,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/cli.js.map",
+      "bytes": 8785,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/constants.d.ts",
+      "bytes": 538,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/constants.d.ts.map",
+      "bytes": 386,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/constants.js",
+      "bytes": 474,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/constants.js.map",
+      "bytes": 454,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/device-scale-capture.d.ts",
+      "bytes": 591,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/device-scale-capture.d.ts.map",
+      "bytes": 585,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/device-scale-capture.js",
+      "bytes": 2385,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/device-scale-capture.js.map",
+      "bytes": 2134,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/engine-test.d.ts",
+      "bytes": 659,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/engine-test.d.ts.map",
+      "bytes": 355,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/engine-test.js",
+      "bytes": 1097,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/engine-test.js.map",
+      "bytes": 1098,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/engine.d.ts",
+      "bytes": 3935,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/engine.d.ts.map",
+      "bytes": 2678,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/engine.js",
+      "bytes": 9803,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/engine.js.map",
+      "bytes": 9886,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/ffmpeg-builds.d.ts",
+      "bytes": 256,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/ffmpeg-builds.d.ts.map",
+      "bytes": 280,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/ffmpeg-builds.js",
+      "bytes": 1896,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/ffmpeg-builds.js.map",
+      "bytes": 705,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/fixtures.d.ts",
+      "bytes": 3189,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/fixtures.d.ts.map",
+      "bytes": 1653,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/fixtures.js",
+      "bytes": 125,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/fixtures.js.map",
+      "bytes": 201,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/index.d.ts",
+      "bytes": 3265,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/index.d.ts.map",
+      "bytes": 2148,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/index.js",
+      "bytes": 432,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/index.js.map",
+      "bytes": 425,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/kokoro.d.ts",
+      "bytes": 1216,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/kokoro.d.ts.map",
+      "bytes": 796,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/kokoro.js",
+      "bytes": 17202,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/kokoro.js.map",
+      "bytes": 18415,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/live-audio.d.ts",
+      "bytes": 956,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/live-audio.d.ts.map",
+      "bytes": 934,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/live-audio.js",
+      "bytes": 7672,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/live-audio.js.map",
+      "bytes": 7604,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/live-bitrate.d.ts",
+      "bytes": 549,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/live-bitrate.d.ts.map",
+      "bytes": 522,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/live-bitrate.js",
+      "bytes": 2441,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/live-bitrate.js.map",
+      "bytes": 2586,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/live-congestion.d.ts",
+      "bytes": 1598,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/live-congestion.d.ts.map",
+      "bytes": 1314,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/live-congestion.js",
+      "bytes": 3558,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/live-congestion.js.map",
+      "bytes": 3182,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/live-flv.d.ts",
+      "bytes": 572,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/live-flv.d.ts.map",
+      "bytes": 511,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/live-flv.js",
+      "bytes": 2326,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/live-flv.js.map",
+      "bytes": 2564,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/live-network.d.ts",
+      "bytes": 484,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/live-network.d.ts.map",
+      "bytes": 477,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/live-network.js",
+      "bytes": 3606,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/live-network.js.map",
+      "bytes": 3748,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/live-publisher.d.ts",
+      "bytes": 769,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/live-publisher.d.ts.map",
+      "bytes": 633,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/live-publisher.js",
+      "bytes": 22417,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/live-publisher.js.map",
+      "bytes": 17818,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/live-stream.d.ts",
+      "bytes": 1879,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/live-stream.d.ts.map",
+      "bytes": 1737,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/live-stream.js",
+      "bytes": 21077,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/live-stream.js.map",
+      "bytes": 18156,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/live-zoom.d.ts",
+      "bytes": 420,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/live-zoom.d.ts.map",
+      "bytes": 352,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/live-zoom.js",
+      "bytes": 4198,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/live-zoom.js.map",
+      "bytes": 4139,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/manifest.d.ts",
+      "bytes": 1768,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/manifest.d.ts.map",
+      "bytes": 605,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/manifest.js",
+      "bytes": 27181,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/manifest.js.map",
+      "bytes": 25750,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/media-tool-paths.d.ts",
+      "bytes": 206,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/media-tool-paths.d.ts.map",
+      "bytes": 260,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/media-tool-paths.js",
+      "bytes": 960,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/media-tool-paths.js.map",
+      "bytes": 1108,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/media-tools.d.ts",
+      "bytes": 1248,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/media-tools.d.ts.map",
+      "bytes": 924,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/media-tools.js",
+      "bytes": 11556,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/media-tools.js.map",
+      "bytes": 11171,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/media.d.ts",
+      "bytes": 1277,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/media.d.ts.map",
+      "bytes": 775,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/media.js",
+      "bytes": 7451,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/media.js.map",
+      "bytes": 7337,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/narration-worker-client.d.ts",
+      "bytes": 483,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/narration-worker-client.d.ts.map",
+      "bytes": 424,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/narration-worker-client.js",
+      "bytes": 5674,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/narration-worker-client.js.map",
+      "bytes": 5634,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/narration-worker-protocol.d.ts",
+      "bytes": 4633,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/narration-worker-protocol.d.ts.map",
+      "bytes": 1235,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/narration-worker-protocol.js",
+      "bytes": 4099,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/narration-worker-protocol.js.map",
+      "bytes": 3433,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/narration-worker.d.ts",
+      "bytes": 57,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/narration-worker.d.ts.map",
+      "bytes": 126,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/narration-worker.js",
+      "bytes": 4340,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/narration-worker.js.map",
+      "bytes": 4836,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/narration.d.ts",
+      "bytes": 831,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/narration.d.ts.map",
+      "bytes": 717,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/narration.js",
+      "bytes": 7830,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/narration.js.map",
+      "bytes": 6635,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/native-audio.d.ts",
+      "bytes": 428,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/native-audio.d.ts.map",
+      "bytes": 417,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/native-audio.js",
+      "bytes": 927,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/native-audio.js.map",
+      "bytes": 1167,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/native-browser.d.ts",
+      "bytes": 3122,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/native-browser.d.ts.map",
+      "bytes": 2247,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/native-browser.js",
+      "bytes": 14323,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/native-browser.js.map",
+      "bytes": 13951,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/native-default.d.ts",
+      "bytes": 3345,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/native-default.d.ts.map",
+      "bytes": 2249,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/native-default.js",
+      "bytes": 3221,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/native-default.js.map",
+      "bytes": 2792,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/native-page.d.ts",
+      "bytes": 1941,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/native-page.d.ts.map",
+      "bytes": 1883,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/native-page.js",
+      "bytes": 9339,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/native-page.js.map",
+      "bytes": 8766,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/native-protocol.d.ts",
+      "bytes": 2047,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/native-protocol.d.ts.map",
+      "bytes": 695,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/native-protocol.js",
+      "bytes": 4864,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/native-protocol.js.map",
+      "bytes": 5212,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/native-recorder.d.ts",
+      "bytes": 821,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/native-recorder.d.ts.map",
+      "bytes": 505,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/native-recorder.js",
+      "bytes": 1426,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/native-recorder.js.map",
+      "bytes": 1408,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/native-recording.d.ts",
+      "bytes": 1748,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/native-recording.d.ts.map",
+      "bytes": 1200,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/native-recording.js",
+      "bytes": 5667,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/native-recording.js.map",
+      "bytes": 5503,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/native-session.d.ts",
+      "bytes": 738,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/native-session.d.ts.map",
+      "bytes": 745,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/native-session.js",
+      "bytes": 10419,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/native-session.js.map",
+      "bytes": 9607,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/native-video-container.d.ts",
+      "bytes": 451,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/native-video-container.d.ts.map",
+      "bytes": 422,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/native-video-container.js",
+      "bytes": 3974,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/native-video-container.js.map",
+      "bytes": 4339,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/native.d.ts",
+      "bytes": 2473,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/native.d.ts.map",
+      "bytes": 1249,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/native.js",
+      "bytes": 2110,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/native.js.map",
+      "bytes": 2106,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/playwright.d.ts",
+      "bytes": 2691,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/playwright.d.ts.map",
+      "bytes": 2196,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/playwright.js",
+      "bytes": 12822,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/playwright.js.map",
+      "bytes": 11201,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/presentation.d.ts",
+      "bytes": 2326,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/presentation.d.ts.map",
+      "bytes": 1666,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/presentation.js",
+      "bytes": 26234,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/presentation.js.map",
+      "bytes": 13997,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/process.d.ts",
+      "bytes": 1017,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/process.d.ts.map",
+      "bytes": 1038,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/process.js",
+      "bytes": 8778,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/process.js.map",
+      "bytes": 8024,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/recording-output.d.ts",
+      "bytes": 656,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/recording-output.d.ts.map",
+      "bytes": 647,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/recording-output.js",
+      "bytes": 3785,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/recording-output.js.map",
+      "bytes": 3754,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/render.d.ts",
+      "bytes": 7616,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/render.d.ts.map",
+      "bytes": 2082,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/render.js",
+      "bytes": 38445,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/render.js.map",
+      "bytes": 37069,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/report-redaction.d.ts",
+      "bytes": 339,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/report-redaction.d.ts.map",
+      "bytes": 312,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/report-redaction.js",
+      "bytes": 768,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/report-redaction.js.map",
+      "bytes": 864,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/reporter.d.ts",
+      "bytes": 978,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/reporter.d.ts.map",
+      "bytes": 682,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/reporter.js",
+      "bytes": 11226,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/reporter.js.map",
+      "bytes": 10107,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/schemas.d.ts",
+      "bytes": 19591,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/schemas.d.ts.map",
+      "bytes": 4333,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/schemas.js",
+      "bytes": 9382,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/schemas.js.map",
+      "bytes": 9352,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/scroll.d.ts",
+      "bytes": 409,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/scroll.d.ts.map",
+      "bytes": 409,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/scroll.js",
+      "bytes": 3208,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/scroll.js.map",
+      "bytes": 3451,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/steps.d.ts",
+      "bytes": 597,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/steps.d.ts.map",
+      "bytes": 469,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/steps.js",
+      "bytes": 3560,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/steps.js.map",
+      "bytes": 3645,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/suitecut.d.ts",
+      "bytes": 993,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/suitecut.d.ts.map",
+      "bytes": 934,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/suitecut.js",
+      "bytes": 58228,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/suitecut.js.map",
+      "bytes": 50401,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/tab-audio-extension.d.ts",
+      "bytes": 5641,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/tab-audio-extension.d.ts.map",
+      "bytes": 248,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/tab-audio-extension.js",
+      "bytes": 5503,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/tab-audio-extension.js.map",
+      "bytes": 379,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/tab-audio.d.ts",
+      "bytes": 689,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/tab-audio.d.ts.map",
+      "bytes": 669,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/tab-audio.js",
+      "bytes": 8378,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/tab-audio.js.map",
+      "bytes": 7215,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/test.d.ts",
+      "bytes": 719,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/test.d.ts.map",
+      "bytes": 392,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/test.js",
+      "bytes": 3676,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/test.js.map",
+      "bytes": 3346,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/timeline.d.ts",
+      "bytes": 494,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/timeline.d.ts.map",
+      "bytes": 463,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/timeline.js",
+      "bytes": 3572,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/timeline.js.map",
+      "bytes": 3596,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/timing.d.ts",
+      "bytes": 475,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/timing.d.ts.map",
+      "bytes": 409,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/timing.js",
+      "bytes": 757,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/timing.js.map",
+      "bytes": 755,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/types/artifacts.d.ts",
+      "bytes": 827,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/types/artifacts.d.ts.map",
+      "bytes": 830,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/types/artifacts.js",
+      "bytes": 103,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/types/artifacts.js.map",
+      "bytes": 182,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/types/captions.d.ts",
+      "bytes": 484,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/types/captions.d.ts.map",
+      "bytes": 528,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/types/captions.js",
+      "bytes": 70,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/types/captions.js.map",
+      "bytes": 149,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/types/clock.d.ts",
+      "bytes": 250,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/types/clock.d.ts.map",
+      "bytes": 287,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/types/clock.js",
+      "bytes": 67,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/types/clock.js.map",
+      "bytes": 143,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/types/diagnostics.d.ts",
+      "bytes": 766,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/types/diagnostics.d.ts.map",
+      "bytes": 642,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/types/diagnostics.js",
+      "bytes": 73,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/types/diagnostics.js.map",
+      "bytes": 155,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/types/errors.d.ts",
+      "bytes": 321,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/types/errors.d.ts.map",
+      "bytes": 409,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/types/errors.js",
+      "bytes": 68,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/types/errors.js.map",
+      "bytes": 145,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/types/events.d.ts",
+      "bytes": 3014,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/types/events.d.ts.map",
+      "bytes": 2391,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/types/events.js",
+      "bytes": 132,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/types/events.js.map",
+      "bytes": 207,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/types/geometry.d.ts",
+      "bytes": 136,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/types/geometry.d.ts.map",
+      "bytes": 190,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/types/geometry.js",
+      "bytes": 47,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/types/geometry.js.map",
+      "bytes": 117,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/types/index.d.ts",
+      "bytes": 429,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/types/index.d.ts.map",
+      "bytes": 392,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/types/index.js",
+      "bytes": 427,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/types/index.js.map",
+      "bytes": 390,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/types/manifest.d.ts",
+      "bytes": 1686,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/types/manifest.d.ts.map",
+      "bytes": 1618,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/types/manifest.js",
+      "bytes": 314,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/types/manifest.js.map",
+      "bytes": 408,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/types/media.d.ts",
+      "bytes": 1150,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/types/media.d.ts.map",
+      "bytes": 1144,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/types/media.js",
+      "bytes": 67,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/types/media.js.map",
+      "bytes": 142,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/types/pages.d.ts",
+      "bytes": 379,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/types/pages.d.ts.map",
+      "bytes": 427,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/types/pages.js",
+      "bytes": 67,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/types/pages.js.map",
+      "bytes": 143,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/types/primitives.d.ts",
+      "bytes": 479,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/types/primitives.d.ts.map",
+      "bytes": 559,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/types/primitives.js",
+      "bytes": 49,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/types/primitives.js.map",
+      "bytes": 121,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/types/recording.d.ts",
+      "bytes": 3267,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/types/recording.d.ts.map",
+      "bytes": 3013,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/types/recording.js",
+      "bytes": 188,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/types/recording.js.map",
+      "bytes": 276,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/types/steps.d.ts",
+      "bytes": 700,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/types/steps.d.ts.map",
+      "bytes": 679,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/types/steps.js",
+      "bytes": 129,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/types/steps.js.map",
+      "bytes": 207,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/types.d.ts",
+      "bytes": 364,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/types.d.ts.map",
+      "bytes": 301,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/types.js",
+      "bytes": 161,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/types.js.map",
+      "bytes": 180,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/untrusted.d.ts",
+      "bytes": 514,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/untrusted.d.ts.map",
+      "bytes": 297,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/untrusted.js",
+      "bytes": 682,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/untrusted.js.map",
+      "bytes": 645,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/validation.d.ts",
+      "bytes": 4673,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/validation.d.ts.map",
+      "bytes": 1080,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/validation.js",
+      "bytes": 1933,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/validation.js.map",
+      "bytes": 1742,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/zoom.d.ts",
+      "bytes": 2357,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/zoom.d.ts.map",
+      "bytes": 1672,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/zoom.js",
+      "bytes": 7636,
+      "symlink": false
+    },
+    {
+      "path": "tested-sdk/zoom.js.map",
+      "bytes": 8005,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/benchmarks/README.md",
+      "bytes": 5439,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/benchmarks/native-audio/analyze.py",
+      "bytes": 5316,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/benchmarks/native-engine/engine.e2e.spec.ts",
+      "bytes": 14496,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/benchmarks/native-engine/playwright.config.ts",
+      "bytes": 1054,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/benchmarks/native-engine/runtime.py",
+      "bytes": 3106,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/benchmarks/native-engine/soak.mjs",
+      "bytes": 8469,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/benchmarks/native-startup/analyze.py",
+      "bytes": 4611,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/benchmarks/native-startup/matrix.mjs",
+      "bytes": 4640,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/benchmarks/native-sync/analyze.py",
+      "bytes": 6947,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/benchmarks/native-sync/progress.py",
+      "bytes": 2195,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/benchmarks/obs-cef/fixture.html",
+      "bytes": 3269,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/benchmarks/obs-cef/profile-pipeline.py",
+      "bytes": 1884,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/eslint.config.js",
+      "bytes": 4556,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/native/browser/AUDIT.md",
+      "bytes": 16161,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/native/browser/BETA.md",
+      "bytes": 6248,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/native/browser/CMakeLists.txt",
+      "bytes": 6720,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/native/browser/ENGINE.md",
+      "bytes": 16225,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/native/browser/Info.plist.in",
+      "bytes": 574,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/native/browser/README.md",
+      "bytes": 19187,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/native/browser/audio_clock.h",
+      "bytes": 1721,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/native/browser/audio_clock_test.cc",
+      "bytes": 2003,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/native/browser/audio_trace.h",
+      "bytes": 1071,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/native/browser/browser.cc",
+      "bytes": 71773,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/native/browser/cef-build-linux.json",
+      "bytes": 377,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/native/browser/cef-build.json",
+      "bytes": 383,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/native/browser/cef-patches/0001-persistent-audio-capture.patch",
+      "bytes": 1038,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/native/browser/cef-patches/README.md",
+      "bytes": 1606,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/native/browser/helper_mac.cc",
+      "bytes": 424,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/native/browser/libyuv-build.json",
+      "bytes": 155,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/native/browser/main_linux.cc",
+      "bytes": 154,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/native/browser/main_mac.mm",
+      "bytes": 836,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/native/browser/media_codec_test.cc",
+      "bytes": 7538,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/native/browser/media_engine.cc",
+      "bytes": 32325,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/native/browser/media_engine.h",
+      "bytes": 2285,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/native/browser/media_engine_test.cc",
+      "bytes": 6439,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/native/browser/media_file.cc",
+      "bytes": 7217,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/native/browser/media_file.h",
+      "bytes": 695,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/native/browser/media_render.cc",
+      "bytes": 18542,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/native/browser/media_render.h",
+      "bytes": 638,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/native/browser/media_startup_test.cc",
+      "bytes": 12264,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/native/browser/pixel_test.cc",
+      "bytes": 1213,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/package.json",
+      "bytes": 11392,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/pnpm-lock.yaml",
+      "bytes": 172272,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/abort.ts",
+      "bytes": 1088,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/artifact-sink.ts",
+      "bytes": 227,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/atomic-file.ts",
+      "bytes": 1120,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/audio-plugin-loader.ts",
+      "bytes": 3337,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/audio-plugin.ts",
+      "bytes": 2797,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/beta.ts",
+      "bytes": 436,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/browser-control.ts",
+      "bytes": 1001,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/captions.ts",
+      "bytes": 2731,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/capture.ts",
+      "bytes": 3084,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/cli.ts",
+      "bytes": 10242,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/constants.ts",
+      "bytes": 448,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/device-scale-capture.ts",
+      "bytes": 2337,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/engine-test.ts",
+      "bytes": 1079,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/engine.ts",
+      "bytes": 11152,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/ffmpeg-builds.ts",
+      "bytes": 1744,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/fixtures.ts",
+      "bytes": 3086,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/index.ts",
+      "bytes": 3332,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/kokoro.ts",
+      "bytes": 17511,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/live-audio.ts",
+      "bytes": 7149,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/live-bitrate.ts",
+      "bytes": 2291,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/live-congestion.ts",
+      "bytes": 4105,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/live-flv.ts",
+      "bytes": 2135,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/live-network.ts",
+      "bytes": 3410,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/live-publisher.ts",
+      "bytes": 19488,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/live-stream.ts",
+      "bytes": 20735,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/live-zoom.ts",
+      "bytes": 3965,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/manifest.ts",
+      "bytes": 25776,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/media-tool-paths.ts",
+      "bytes": 914,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/media-tools.ts",
+      "bytes": 11036,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/media.ts",
+      "bytes": 7669,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/narration-worker-client.ts",
+      "bytes": 5666,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/narration-worker-protocol.ts",
+      "bytes": 4714,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/narration-worker.ts",
+      "bytes": 4582,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/narration.ts",
+      "bytes": 8256,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/native-audio.ts",
+      "bytes": 901,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/native-browser.ts",
+      "bytes": 15609,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/native-default.ts",
+      "bytes": 5648,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/native-page.ts",
+      "bytes": 9533,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/native-protocol.ts",
+      "bytes": 4393,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/native-recorder.ts",
+      "bytes": 1566,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/native-recording.ts",
+      "bytes": 6468,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/native-session.ts",
+      "bytes": 10272,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/native-video-container.ts",
+      "bytes": 3813,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/native.ts",
+      "bytes": 3145,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/playwright.ts",
+      "bytes": 15103,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/presentation.ts",
+      "bytes": 26445,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/process.ts",
+      "bytes": 8788,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/recording-output.ts",
+      "bytes": 3946,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/render.ts",
+      "bytes": 40230,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/report-redaction.ts",
+      "bytes": 862,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/reporter.ts",
+      "bytes": 11079,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/schemas.ts",
+      "bytes": 11787,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/scroll.ts",
+      "bytes": 3376,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/steps.ts",
+      "bytes": 3817,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/suitecut.ts",
+      "bytes": 56979,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/tab-audio-extension.ts",
+      "bytes": 5455,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/tab-audio.ts",
+      "bytes": 8379,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/test.ts",
+      "bytes": 3621,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/timeline.ts",
+      "bytes": 3749,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/timing.ts",
+      "bytes": 928,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/types/artifacts.ts",
+      "bytes": 783,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/types/captions.ts",
+      "bytes": 414,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/types/clock.ts",
+      "bytes": 206,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/types/diagnostics.ts",
+      "bytes": 733,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/types/errors.ts",
+      "bytes": 265,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/types/events.ts",
+      "bytes": 2926,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/types/geometry.ts",
+      "bytes": 97,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/types/index.ts",
+      "bytes": 381,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/types/manifest.ts",
+      "bytes": 1575,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/types/media.ts",
+      "bytes": 1048,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/types/pages.ts",
+      "bytes": 326,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/types/primitives.ts",
+      "bytes": 428,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/types/recording.ts",
+      "bytes": 3091,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/types/steps.ts",
+      "bytes": 637,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/types.ts",
+      "bytes": 340,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/untrusted.ts",
+      "bytes": 931,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/validation.ts",
+      "bytes": 2532,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/src/zoom.ts",
+      "bytes": 8967,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/tests/abort.test.ts",
+      "bytes": 1127,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/tests/atomic-file.test.ts",
+      "bytes": 925,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/tests/audio-plugin.test.ts",
+      "bytes": 3714,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/tests/beta.test.ts",
+      "bytes": 4302,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/tests/captions.test.ts",
+      "bytes": 1421,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/tests/capture.test.ts",
+      "bytes": 2325,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/tests/cli.test.ts",
+      "bytes": 1791,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/tests/events.test.ts",
+      "bytes": 6690,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/tests/fixtures/manifest.ts",
+      "bytes": 4762,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/tests/kokoro.test.ts",
+      "bytes": 1367,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/tests/live-audio.test.ts",
+      "bytes": 5607,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/tests/live-bitrate.test.ts",
+      "bytes": 1550,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/tests/live-congestion.test.ts",
+      "bytes": 2989,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/tests/live-flv.test.ts",
+      "bytes": 3797,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/tests/live-network.test.ts",
+      "bytes": 1968,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/tests/live-stream.test.ts",
+      "bytes": 12983,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/tests/live-zoom.test.ts",
+      "bytes": 3624,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/tests/manifest.test.ts",
+      "bytes": 9470,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/tests/media-tools.test.ts",
+      "bytes": 7596,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/tests/media.test.ts",
+      "bytes": 2424,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/tests/narration-worker.test.ts",
+      "bytes": 3865,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/tests/native-broadcast.test.ts",
+      "bytes": 3628,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/tests/native-browser.test.ts",
+      "bytes": 8591,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/tests/native-page.test.ts",
+      "bytes": 2426,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/tests/native-protocol.test.ts",
+      "bytes": 4905,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/tests/native-recorder.test.ts",
+      "bytes": 4712,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/tests/native-recording.test.ts",
+      "bytes": 515,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/tests/native-session.test.ts",
+      "bytes": 8460,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/tests/process.test.ts",
+      "bytes": 3137,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/tests/recording.test.ts",
+      "bytes": 2748,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/tests/render.test.ts",
+      "bytes": 2707,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/tests/report-redaction.test.ts",
+      "bytes": 1042,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/tests/retry-parallel/global-setup.ts",
+      "bytes": 374,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/tests/retry-parallel/playwright.config.ts",
+      "bytes": 859,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/tests/retry-parallel/retry-parallel.spec.ts",
+      "bytes": 2851,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/tests/sherpa-plugin.test.ts",
+      "bytes": 1742,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/tests/steps.test.ts",
+      "bytes": 4849,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/tests/timeline.test.ts",
+      "bytes": 3320,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/tests/timing.test.ts",
+      "bytes": 1154,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/tests/validation.test.ts",
+      "bytes": 12212,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/tests/zoom.test.ts",
+      "bytes": 4597,
+      "symlink": false
+    },
+    {
+      "path": "tested-sources/tsconfig.json",
+      "bytes": 1145,
+      "symlink": false
+    },
+    {
+      "path": "verification-summary.json",
+      "bytes": 643,
+      "symlink": false
+    },
+    {
+      "path": "worklet-pulsed-60s/analysis.json",
+      "bytes": 24245,
+      "symlink": false
+    },
+    {
+      "path": "worklet-pulsed-60s/attribution.log",
+      "bytes": 24245,
+      "symlink": false
+    },
+    {
+      "path": "worklet-pulsed-60s/audio-lifecycle-78B16AC70AF66256715361E3716344B6.csv",
+      "bytes": 135,
+      "symlink": false
+    },
+    {
+      "path": "worklet-pulsed-60s/browser-tested",
+      "bytes": 2459584,
+      "symlink": false
+    },
+    {
+      "path": "worklet-pulsed-60s/cef-78B16AC70AF66256715361E3716344B6.csv",
+      "bytes": 204954,
+      "symlink": false
+    },
+    {
+      "path": "worklet-pulsed-60s/cef-78B16AC70AF66256715361E3716344B6.s16",
+      "bytes": 11792640,
+      "symlink": false
+    },
+    {
+      "path": "worklet-pulsed-60s/native.csv",
+      "bytes": 195083,
+      "symlink": false
+    },
+    {
+      "path": "worklet-pulsed-60s/native.s16",
+      "bytes": 11608064,
+      "symlink": false
+    },
+    {
+      "path": "worklet-pulsed-60s/node-memory.jsonl",
+      "bytes": 11928,
+      "symlink": false
+    },
+    {
+      "path": "worklet-pulsed-60s/processes.jsonl",
+      "bytes": 205012,
+      "symlink": false
+    },
+    {
+      "path": "worklet-pulsed-60s/receiver.flv",
+      "bytes": 2322842,
+      "symlink": false
+    },
+    {
+      "path": "worklet-pulsed-60s/receiver.flv.csv",
+      "bytes": 195083,
+      "symlink": false
+    },
+    {
+      "path": "worklet-pulsed-60s/receiver.flv.s16",
+      "bytes": 11608064,
+      "symlink": false
+    },
+    {
+      "path": "worklet-pulsed-60s/receiver.log",
+      "bytes": 70,
+      "symlink": false
+    },
+    {
+      "path": "worklet-pulsed-60s/recording.mp4",
+      "bytes": 1518289,
+      "symlink": false
+    },
+    {
+      "path": "worklet-pulsed-60s/recording.mp4.csv",
+      "bytes": 194019,
+      "symlink": false
+    },
+    {
+      "path": "worklet-pulsed-60s/recording.mp4.s16",
+      "bytes": 11640832,
+      "symlink": false
+    },
+    {
+      "path": "worklet-pulsed-60s/result.json",
+      "bytes": 2664,
+      "symlink": false
+    },
+    {
+      "path": "worklet-pulsed-60s/results.json",
+      "bytes": 1402,
+      "symlink": false
+    },
+    {
+      "path": "worklet-pulsed-60s/validation.json",
+      "bytes": 40476,
+      "symlink": false
+    }
+  ],
+  "explicitLimitations": "No completed 30-minute test; interrupted run continuity failed; custom CEF patch unbuilt; whole CEF leak freedom and GPU encoding unverified."
+}

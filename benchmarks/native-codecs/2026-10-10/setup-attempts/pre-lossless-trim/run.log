@@ -1,0 +1,16 @@
+libx264/aac: 614 captured; repeated=20; stop=39.8ms
+libx265/aac: 615 captured; repeated=26; stop=433.4ms
+libvpx/libopus: 611 captured; repeated=9; stop=85.9ms
+libvpx-vp9/libopus: 613 captured; repeated=19; stop=218.2ms
+libsvtav1/aac: 610 captured; repeated=5; stop=41.3ms
+libaom-av1/aac: 612 captured; repeated=0; stop=46.1ms
+ffv1/flac: 612 captured; repeated=0; stop=52.2ms
+ffv1/pcm_s16le: 610 captured; repeated=4; stop=70.6ms
+libx264/aac: presentation render 1284.5ms
+libx265/aac: presentation render 2526.5ms
+libvpx/libopus: presentation render 1690.0ms
+libvpx-vp9/libopus: presentation render 2681.4ms
+libsvtav1/aac: presentation render 1868.2ms
+libaom-av1/aac: presentation render 3547.6ms
+ffv1/flac: presentation render 1191.2ms
+ffv1/pcm_s16le: presentation render 1198.4ms

@@ -1,0 +1,141 @@
+{
+  "startedAt": "2026-10-11T04:44:27.331453+00:00",
+  "cases": [
+    {
+      "name": "1080p30-record",
+      "width": 1920,
+      "height": 1080,
+      "fps": 30,
+      "mode": "record",
+      "durationMs": 120000,
+      "startedAt": "2026-10-11T04:44:27.888241+00:00",
+      "finishedAt": "2026-10-11T04:44:34.687224+00:00",
+      "exitCode": 1,
+      "hostBefore": {
+        "memory.current": "6702342144\n",
+        "memory.events": "low 0\nhigh 0\nmax 279116\noom 0\noom_kill 0\noom_group_kill 0\n",
+        "cpu.stat": "usage_usec 136956381454\nuser_usec 123990310485\nsystem_usec 12966070968\nnice_usec 5986305\nnr_periods 871415\nnr_throttled 140258\nthrottled_usec 8983796572\nnr_bursts 0\nburst_usec 0\n"
+      },
+      "hostAfter": {
+        "memory.current": "7023923200\n",
+        "memory.events": "low 0\nhigh 0\nmax 279116\noom 0\noom_kill 0\noom_group_kill 0\n",
+        "cpu.stat": "usage_usec 136966187201\nuser_usec 123997341024\nsystem_usec 12968846177\nnice_usec 5986305\nnr_periods 871477\nnr_throttled 140258\nthrottled_usec 8983796572\nnr_bursts 0\nburst_usec 0\n"
+      },
+      "cleanCacheBytesAdvisedBeforeCapture": 21577666851
+    },
+    {
+      "name": "1080p30-stream",
+      "width": 1920,
+      "height": 1080,
+      "fps": 30,
+      "mode": "stream",
+      "durationMs": 120000,
+      "startedAt": "2026-10-11T04:44:35.268365+00:00",
+      "finishedAt": "2026-10-11T04:44:41.618626+00:00",
+      "exitCode": 1,
+      "hostBefore": {
+        "memory.current": "6708756480\n",
+        "memory.events": "low 0\nhigh 0\nmax 279116\noom 0\noom_kill 0\noom_group_kill 0\n",
+        "cpu.stat": "usage_usec 136966766451\nuser_usec 123997590421\nsystem_usec 12969176030\nnice_usec 5986305\nnr_periods 871483\nnr_throttled 140258\nthrottled_usec 8983796572\nnr_bursts 0\nburst_usec 0\n"
+      },
+      "hostAfter": {
+        "memory.current": "7029673984\n",
+        "memory.events": "low 0\nhigh 0\nmax 279116\noom 0\noom_kill 0\noom_group_kill 0\n",
+        "cpu.stat": "usage_usec 136975569699\nuser_usec 124004634174\nsystem_usec 12970935524\nnice_usec 5986305\nnr_periods 871540\nnr_throttled 140258\nthrottled_usec 8983796572\nnr_bursts 0\nburst_usec 0\n"
+      },
+      "cleanCacheBytesAdvisedBeforeCapture": 21577666851
+    },
+    {
+      "name": "720p60-record",
+      "width": 1280,
+      "height": 720,
+      "fps": 60,
+      "mode": "record",
+      "durationMs": 120000,
+      "startedAt": "2026-10-11T04:44:42.192912+00:00",
+      "finishedAt": "2026-10-11T04:44:48.710501+00:00",
+      "exitCode": 1,
+      "hostBefore": {
+        "memory.current": "6714716160\n",
+        "memory.events": "low 0\nhigh 0\nmax 279116\noom 0\noom_kill 0\noom_group_kill 0\n",
+        "cpu.stat": "usage_usec 136976141775\nuser_usec 124004789128\nsystem_usec 12971352646\nnice_usec 5986305\nnr_periods 871546\nnr_throttled 140258\nthrottled_usec 8983796572\nnr_bursts 0\nburst_usec 0\n"
+      },
+      "hostAfter": {
+        "memory.current": "7035383808\n",
+        "memory.events": "low 0\nhigh 0\nmax 279116\noom 0\noom_kill 0\noom_group_kill 0\n",
+        "cpu.stat": "usage_usec 136984644145\nuser_usec 124011825069\nsystem_usec 12972819075\nnice_usec 5986305\nnr_periods 871607\nnr_throttled 140258\nthrottled_usec 8983796572\nnr_bursts 0\nburst_usec 0\n"
+      },
+      "cleanCacheBytesAdvisedBeforeCapture": 21577666851
+    },
+    {
+      "name": "720p60-stream",
+      "width": 1280,
+      "height": 720,
+      "fps": 60,
+      "mode": "stream",
+      "durationMs": 120000,
+      "startedAt": "2026-10-11T04:44:49.282502+00:00",
+      "finishedAt": "2026-10-11T04:44:56.065561+00:00",
+      "exitCode": 1,
+      "hostBefore": {
+        "memory.current": "6720774144\n",
+        "memory.events": "low 0\nhigh 0\nmax 279116\noom 0\noom_kill 0\noom_group_kill 0\n",
+        "cpu.stat": "usage_usec 136985229789\nuser_usec 124012110976\nsystem_usec 12973118812\nnice_usec 5986305\nnr_periods 871613\nnr_throttled 140258\nthrottled_usec 8983796572\nnr_bursts 0\nburst_usec 0\n"
+      },
+      "hostAfter": {
+        "memory.current": "7041814528\n",
+        "memory.events": "low 0\nhigh 0\nmax 279116\noom 0\noom_kill 0\noom_group_kill 0\n",
+        "cpu.stat": "usage_usec 136993872501\nuser_usec 124019261838\nsystem_usec 12974610663\nnice_usec 5986305\nnr_periods 871677\nnr_throttled 140258\nthrottled_usec 8983796572\nnr_bursts 0\nburst_usec 0\n"
+      },
+      "cleanCacheBytesAdvisedBeforeCapture": 21577666851
+    },
+    {
+      "name": "4k30-record",
+      "width": 3840,
+      "height": 2160,
+      "fps": 30,
+      "mode": "record",
+      "durationMs": 120000,
+      "startedAt": "2026-10-11T04:44:56.640912+00:00",
+      "finishedAt": "2026-10-11T04:45:10.638604+00:00",
+      "exitCode": 1,
+      "hostBefore": {
+        "memory.current": "6726361088\n",
+        "memory.events": "low 0\nhigh 0\nmax 279116\noom 0\noom_kill 0\noom_group_kill 0\n",
+        "cpu.stat": "usage_usec 136994457414\nuser_usec 124019551866\nsystem_usec 12974905547\nnice_usec 5986305\nnr_periods 871682\nnr_throttled 140258\nthrottled_usec 8983796572\nnr_bursts 0\nburst_usec 0\n"
+      },
+      "hostAfter": {
+        "memory.current": "7047852032\n",
+        "memory.events": "low 0\nhigh 0\nmax 279116\noom 0\noom_kill 0\noom_group_kill 0\n",
+        "cpu.stat": "usage_usec 137036459511\nuser_usec 124056158365\nsystem_usec 12980301145\nnice_usec 5986305\nnr_periods 871819\nnr_throttled 140263\nthrottled_usec 8983864744\nnr_bursts 0\nburst_usec 0\n"
+      },
+      "cleanCacheBytesAdvisedBeforeCapture": 21577666851
+    },
+    {
+      "name": "4k30-stream",
+      "width": 3840,
+      "height": 2160,
+      "fps": 30,
+      "mode": "stream",
+      "durationMs": 120000,
+      "startedAt": "2026-10-11T04:45:11.215810+00:00",
+      "finishedAt": "2026-10-11T04:45:25.311062+00:00",
+      "exitCode": 1,
+      "hostBefore": {
+        "memory.current": "6732619776\n",
+        "memory.events": "low 0\nhigh 0\nmax 279116\noom 0\noom_kill 0\noom_group_kill 0\n",
+        "cpu.stat": "usage_usec 137037033364\nuser_usec 124056385521\nsystem_usec 12980647842\nnice_usec 5986305\nnr_periods 871825\nnr_throttled 140263\nthrottled_usec 8983864744\nnr_bursts 0\nburst_usec 0\n"
+      },
+      "hostAfter": {
+        "memory.current": "7054372864\n",
+        "memory.events": "low 0\nhigh 0\nmax 279116\noom 0\noom_kill 0\noom_group_kill 0\n",
+        "cpu.stat": "usage_usec 137076336904\nuser_usec 124093586867\nsystem_usec 12982750036\nnice_usec 5986305\nnr_periods 871960\nnr_throttled 140269\nthrottled_usec 8983961415\nnr_bursts 0\nburst_usec 0\n"
+      },
+      "cleanCacheBytesAdvisedBeforeCapture": 21577666851
+    }
+  ],
+  "serial": true,
+  "browserCapture": "OBS embedded CEF Browser Source; reroute_audio=true through OBS mixer",
+  "trace": false,
+  "simultaneousRecordingStreaming": false
+}

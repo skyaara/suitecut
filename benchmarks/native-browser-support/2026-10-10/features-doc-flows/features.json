@@ -1,0 +1,98 @@
+{
+  "tests": [
+    {
+      "name": "DOM, shadow DOM and CSS layout",
+      "required": true,
+      "status": "passed",
+      "detail": true
+    },
+    {
+      "name": "Canvas 2D pixels",
+      "required": true,
+      "status": "passed",
+      "detail": true
+    },
+    {
+      "name": "WebAssembly execution",
+      "required": true,
+      "status": "passed",
+      "detail": true
+    },
+    {
+      "name": "Dedicated worker messaging",
+      "required": true,
+      "status": "passed",
+      "detail": true
+    },
+    {
+      "name": "Shared worker messaging",
+      "required": true,
+      "status": "passed",
+      "detail": true
+    },
+    {
+      "name": "IndexedDB write/read",
+      "required": true,
+      "status": "passed",
+      "detail": true
+    },
+    {
+      "name": "Service worker registration and fetch interception",
+      "required": true,
+      "status": "passed",
+      "detail": true
+    },
+    {
+      "name": "CacheStorage write/read",
+      "required": true,
+      "status": "passed",
+      "detail": true
+    },
+    {
+      "name": "WebSocket round trip",
+      "required": true,
+      "status": "passed",
+      "detail": true
+    },
+    {
+      "name": "WebRTC data-channel round trip",
+      "required": true,
+      "status": "passed",
+      "detail": true
+    },
+    {
+      "name": "webgl pixel rendering on this host",
+      "required": false,
+      "status": "unavailable",
+      "detail": false
+    },
+    {
+      "name": "webgl2 pixel rendering on this host",
+      "required": false,
+      "status": "unavailable",
+      "detail": false
+    },
+    {
+      "name": "WebGPU adapter on this host",
+      "required": false,
+      "status": "unavailable",
+      "detail": false
+    },
+    {
+      "name": "Playwright HTML-to-PDF export",
+      "required": false,
+      "status": "passed",
+      "bytes": 12868
+    },
+    {
+      "name": "Clipboard write/read in owned display",
+      "required": false,
+      "status": "passed",
+      "detail": true
+    }
+  ],
+  "status": "passed",
+  "startedAt": "2026-10-10T12:05:11.888Z",
+  "cefVersion": "152.0.6+g708dc14+chromium-152.0.7977.83",
+  "finishedAt": "2026-10-10T12:05:12.979Z"
+}

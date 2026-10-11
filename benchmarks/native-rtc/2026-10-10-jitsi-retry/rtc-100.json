@@ -1,0 +1,85 @@
+[
+  {
+    "connectionState": "closed",
+    "iceConnectionState": "closed",
+    "signalingState": "closed",
+    "stats": []
+  },
+  {
+    "connectionState": "closed",
+    "iceConnectionState": "closed",
+    "signalingState": "closed",
+    "stats": []
+  },
+  {
+    "connectionState": "closed",
+    "iceConnectionState": "closed",
+    "signalingState": "closed",
+    "stats": []
+  },
+  {
+    "connectionState": "closed",
+    "iceConnectionState": "closed",
+    "signalingState": "closed",
+    "stats": []
+  },
+  {
+    "connectionState": "connecting",
+    "iceConnectionState": "checking",
+    "signalingState": "stable",
+    "stats": [
+      {
+        "id": "CPZNXO60sS_D1zn20K3",
+        "type": "candidate-pair",
+        "state": "in-progress",
+        "localCandidateId": "IZNXO60sS",
+        "remoteCandidateId": "ID1zn20K3",
+        "nominated": false,
+        "bytesSent": 0,
+        "bytesReceived": 0,
+        "packetsSent": 0,
+        "packetsReceived": 0
+      },
+      {
+        "id": "I5E5EdoBX",
+        "type": "local-candidate",
+        "candidateType": "host",
+        "protocol": "udp"
+      },
+      {
+        "id": "ID1zn20K3",
+        "type": "remote-candidate",
+        "candidateType": "srflx",
+        "protocol": "udp"
+      },
+      {
+        "id": "IZNXO60sS",
+        "type": "local-candidate",
+        "candidateType": "host",
+        "protocol": "udp"
+      },
+      {
+        "id": "IlRKUQ64y",
+        "type": "local-candidate",
+        "candidateType": "host",
+        "protocol": "tcp"
+      },
+      {
+        "id": "Im4sq1JcG",
+        "type": "local-candidate",
+        "candidateType": "host",
+        "protocol": "tcp"
+      },
+      {
+        "id": "T01",
+        "type": "transport",
+        "bytesSent": 0,
+        "bytesReceived": 0,
+        "packetsSent": 0,
+        "packetsReceived": 0,
+        "dtlsState": "new",
+        "iceState": "checking"
+      }
+    ]
+  }
+]

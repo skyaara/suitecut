@@ -1,0 +1,39 @@
+{
+  "savedAt": "2026-10-10T20:21:52.202974+00:00",
+  "kernel": "Linux-6.18.44-x86_64-with-glibc2.41",
+  "cpuModels": [
+    "INTEL(R) XEON(R) PLATINUM 8573C"
+  ],
+  "affinity": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "cpuQuota": "400000 100000",
+  "memoryKernelLimitBytes": 17179869184,
+  "memoryRequestedBudgetBytes": 8589934592,
+  "budgetEnforcement": "Kernel CPU quota: four cores. Kernel RAM cap: 16 GiB. Capture trees use affinity on four workload CPUs and an 8 GiB aggregate summed-RSS termination guard sampled every 500 ms; this is not a strict 8 GiB kernel cap, and shared pages can be counted repeatedly.",
+  "cefPin": {
+    "cefVersion": "152.0.6+g708dc14+chromium-152.0.7977.83",
+    "platform": "linux64",
+    "url": "https://github.com/tobagin/karere/releases/download/cef-152.0.6-proprietary-codecs/cef_binary_152.0.6%2Bg708dc14%2Bchromium-152.0.7977.83_linux64_minimal.zip",
+    "sha256": "3d64f6fac8911a368ffa415e3ee53d002cbd792866f08ed6578dae1e252cbac8",
+    "size": 183510343,
+    "proprietaryCodecs": true,
+    "buildFlags": {
+      "proprietary_codecs": true,
+      "ffmpeg_branding": "Chrome"
+    },
+    "upstreamRelease": "https://github.com/tobagin/karere/releases/tag/cef-152.0.6-proprietary-codecs",
+    "buildRecipe": "https://github.com/tobagin/karere/blob/eb5bfb5fb3c2463a2a71d7201a73122bf1942962/.github/workflows/build-cef-codecs.yml",
+    "source": "third-party CEF distribution; verified release digest and progressive MP4/MSE H.264+AAC native capture regressions",
+    "runtimeLibrarySha256": "d3e896252f190a21cd04b956da638c90315c8d5067cb03f325913841d5c59fc8"
+  },
+  "gpuDevices": [],
+  "captureEncoding": "H264 libx264 zerolatency; veryfast/one slice thread through 1080p, veryfast/two above 1080p, ultrafast/three at 4K; AAC 48kHz stereo 128kbps",
+  "unitSanitizers": "Clang 19 AddressSanitizer + UndefinedBehaviorSanitizer; detect_leaks=1",
+  "liveCaptureSanitizers": false,
+  "networkBoundary": "Loopback HTTP fixture and loopback RTMP receiver; no external network streaming, WebRTC or GPU validation."
+}

@@ -1,0 +1,78 @@
+{
+  "finalCases": [
+    {
+      "case": "720p60-record",
+      "harnessValid": true,
+      "qualityPassed": false,
+      "verifiedNativeBinarySha256": "757a03fa49ed82dcd119c2888bdc0ebe1c355b4b9d9964bda38b99427a38f0b3",
+      "queuedBytesAfterStop": 0,
+      "audioOverflowAndLateFrames": 0,
+      "maximumEncoderLeadMs": 21.333333333343035
+    },
+    {
+      "case": "720p60-stream",
+      "harnessValid": true,
+      "qualityPassed": false,
+      "verifiedNativeBinarySha256": "757a03fa49ed82dcd119c2888bdc0ebe1c355b4b9d9964bda38b99427a38f0b3",
+      "queuedBytesAfterStop": 0,
+      "audioOverflowAndLateFrames": 0,
+      "maximumEncoderLeadMs": 21.333333333343035
+    },
+    {
+      "case": "1080p30-record",
+      "harnessValid": true,
+      "qualityPassed": false,
+      "verifiedNativeBinarySha256": "757a03fa49ed82dcd119c2888bdc0ebe1c355b4b9d9964bda38b99427a38f0b3",
+      "queuedBytesAfterStop": 0,
+      "audioOverflowAndLateFrames": 0,
+      "maximumEncoderLeadMs": 33.33333333333303
+    },
+    {
+      "case": "1080p30-stream",
+      "harnessValid": true,
+      "qualityPassed": false,
+      "verifiedNativeBinarySha256": "757a03fa49ed82dcd119c2888bdc0ebe1c355b4b9d9964bda38b99427a38f0b3",
+      "queuedBytesAfterStop": 0,
+      "audioOverflowAndLateFrames": 0,
+      "maximumEncoderLeadMs": 33.33333333333576
+    },
+    {
+      "case": "4k30-record",
+      "harnessValid": true,
+      "qualityPassed": false,
+      "verifiedNativeBinarySha256": "757a03fa49ed82dcd119c2888bdc0ebe1c355b4b9d9964bda38b99427a38f0b3",
+      "queuedBytesAfterStop": 0,
+      "audioOverflowAndLateFrames": 0,
+      "maximumEncoderLeadMs": 33.333333333343035
+    },
+    {
+      "case": "4k30-stream",
+      "harnessValid": true,
+      "qualityPassed": false,
+      "verifiedNativeBinarySha256": "757a03fa49ed82dcd119c2888bdc0ebe1c355b4b9d9964bda38b99427a38f0b3",
+      "queuedBytesAfterStop": 0,
+      "audioOverflowAndLateFrames": 0,
+      "maximumEncoderLeadMs": 32.00000000000003
+    },
+    {
+      "case": "controller-stall-1080p30",
+      "harnessValid": true,
+      "qualityPassed": false,
+      "verifiedNativeBinarySha256": "757a03fa49ed82dcd119c2888bdc0ebe1c355b4b9d9964bda38b99427a38f0b3",
+      "queuedBytesAfterStop": 0,
+      "audioOverflowAndLateFrames": 0,
+      "maximumEncoderLeadMs": 33.33333333333576
+    },
+    {
+      "case": "soak-1080p30-stream",
+      "harnessValid": true,
+      "qualityPassed": false,
+      "verifiedNativeBinarySha256": "757a03fa49ed82dcd119c2888bdc0ebe1c355b4b9d9964bda38b99427a38f0b3",
+      "queuedBytesAfterStop": 0,
+      "audioOverflowAndLateFrames": 0,
+      "maximumEncoderLeadMs": 33.333333333488554
+    }
+  ],
+  "sanitizerFuzzTargetsCompleted": 2,
+  "note": "Harness completion and progress bound pass; decoded delivery-quality failures remain explicit."
+}

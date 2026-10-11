@@ -1,0 +1,18 @@
+Defaulting to user installation because normal site-packages is not writeable
+Collecting cmake
+  Downloading cmake-4.4.4-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (7.0 kB)
+Collecting ninja
+  Downloading ninja-1.13.2-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (5.4 kB)
+Collecting obsws-python
+  Downloading obsws_python-1.8.0-py3-none-any.whl.metadata (5.6 kB)
+Requirement already satisfied: psutil in /opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/site-packages (7.2.2)
+Collecting websocket-client (from obsws-python)
+  Downloading websocket_client-1.9.2-py3-none-any.whl.metadata (8.3 kB)
+Downloading cmake-4.4.4-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (30.2 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 30.2/30.2 MB 31.6 MB/s  0:00:00
+Downloading ninja-1.13.2-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (183 kB)
+Downloading obsws_python-1.8.0-py3-none-any.whl (30 kB)
+Downloading websocket_client-1.9.2-py3-none-any.whl (95 kB)
+Installing collected packages: websocket-client, ninja, cmake, obsws-python
+
+Successfully installed cmake-4.4.4 ninja-1.13.2 obsws-python-1.8.0 websocket-client-1.9.2

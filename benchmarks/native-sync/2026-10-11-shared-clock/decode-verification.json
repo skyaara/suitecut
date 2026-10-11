@@ -1,0 +1,198 @@
+{
+  "startedAt": "2026-10-10T22:40:45.335221+00:00",
+  "serial": true,
+  "cases": [
+    {
+      "case": "1080p30-record",
+      "exitCode": 0,
+      "seconds": 8.750023011001758
+    },
+    {
+      "case": "1080p30-record-before-nearest-video",
+      "exitCode": 0,
+      "seconds": 7.984256274008658
+    },
+    {
+      "case": "1080p30-record-cache-pressure",
+      "exitCode": 1,
+      "seconds": 0.9259134790045209
+    },
+    {
+      "case": "1080p30-record-initial",
+      "exitCode": 0,
+      "seconds": 8.062980171001982
+    },
+    {
+      "case": "1080p30-stream",
+      "exitCode": 0,
+      "seconds": 8.08945517599932
+    },
+    {
+      "case": "1080p30-stream-before-nearest-video",
+      "exitCode": 0,
+      "seconds": 8.304663630988216
+    },
+    {
+      "case": "1080p30-stream-initial",
+      "exitCode": 0,
+      "seconds": 8.28608113201335
+    },
+    {
+      "case": "4k30-record",
+      "exitCode": 0,
+      "seconds": 19.825011865003034
+    },
+    {
+      "case": "4k30-record-before-nearest-video",
+      "exitCode": 0,
+      "seconds": 20.307266426010756
+    },
+    {
+      "case": "4k30-record-single-thread",
+      "exitCode": 1,
+      "seconds": 0.8983390330104157
+    },
+    {
+      "case": "4k30-record-three-threads-veryfast",
+      "exitCode": 0,
+      "seconds": 22.940220031014178
+    },
+    {
+      "case": "4k30-record-two-threads",
+      "exitCode": 0,
+      "seconds": 28.297211330005666
+    },
+    {
+      "case": "4k30-stream",
+      "exitCode": 0,
+      "seconds": 25.87587253100355
+    },
+    {
+      "case": "4k30-stream-before-nearest-video",
+      "exitCode": 0,
+      "seconds": 26.93562357701012
+    },
+    {
+      "case": "4k30-stream-single-thread",
+      "exitCode": 1,
+      "seconds": 0.9040460840042215
+    },
+    {
+      "case": "4k30-stream-three-threads-veryfast",
+      "exitCode": 0,
+      "seconds": 24.94109140202636
+    },
+    {
+      "case": "720p60-record",
+      "exitCode": 0,
+      "seconds": 7.71627014700789
+    },
+    {
+      "case": "720p60-record-before-nearest-video",
+      "exitCode": 0,
+      "seconds": 8.07808431101148
+    },
+    {
+      "case": "720p60-record-cache-pressure",
+      "exitCode": 0,
+      "seconds": 9.082387820992153
+    },
+    {
+      "case": "720p60-record-initial",
+      "exitCode": 0,
+      "seconds": 7.879418830998475
+    },
+    {
+      "case": "720p60-stream",
+      "exitCode": 0,
+      "seconds": 9.694662516994867
+    },
+    {
+      "case": "720p60-stream-before-nearest-video",
+      "exitCode": 0,
+      "seconds": 8.737636459001806
+    },
+    {
+      "case": "720p60-stream-cache-pressure",
+      "exitCode": 0,
+      "seconds": 7.820427111000754
+    },
+    {
+      "case": "720p60-stream-initial",
+      "exitCode": 0,
+      "seconds": 8.988743651018012
+    },
+    {
+      "case": "compare-1024-1080p30",
+      "exitCode": 1,
+      "seconds": 5.00431596999988
+    },
+    {
+      "case": "compare-960-1080p30",
+      "exitCode": 1,
+      "seconds": 4.959281577001093
+    },
+    {
+      "case": "controller-stall-1080p30",
+      "exitCode": 0,
+      "seconds": 4.753493700991385
+    },
+    {
+      "case": "controller-stall-1080p30-before-nearest-video",
+      "exitCode": 0,
+      "seconds": 4.811532599997008
+    },
+    {
+      "case": "controller-stall-1080p30-initial",
+      "exitCode": 0,
+      "seconds": 4.616560956987087
+    },
+    {
+      "case": "diagnostic-4k30-record-ultrafast",
+      "exitCode": 1,
+      "seconds": 25.936766459984938
+    },
+    {
+      "case": "lifecycle-1080p30",
+      "exitCode": 1,
+      "seconds": 1.9421525799843948
+    },
+    {
+      "case": "nearest-pilot-720p60",
+      "exitCode": 1,
+      "seconds": 3.3329586969921365
+    },
+    {
+      "case": "pilot-1080p30",
+      "exitCode": 1,
+      "seconds": 3.5095841439906508
+    },
+    {
+      "case": "soak-1080p30-stream",
+      "exitCode": 0,
+      "seconds": 101.6748128089821
+    }
+  ],
+  "finishedAt": "2026-10-10T22:48:15.252453+00:00",
+  "analyzerSha256AtStart": "9a00ae1320b3eb35fd96c109ed07686d7d9cb5164f54f30d23a2514002593c2e",
+  "analyzerSha256AtFinalRetry": "56faf74f37906b5fca75323ff3eec125fc69487635aa914be3e75f97cd1099b7",
+  "analysisRetries": {
+    "cases": [
+      "compare-960-1080p30",
+      "compare-1024-1080p30",
+      "diagnostic-4k30-record-ultrafast",
+      "lifecycle-1080p30",
+      "nearest-pilot-720p60",
+      "pilot-1080p30"
+    ],
+    "exitCode": 0,
+    "log": "logs/trace-analysis-corrected.log",
+    "reason": "Reporting-only NumPy int64 silence count converted to Python int for JSON serialization; native capture binaries unchanged."
+  },
+  "additionalDiagnostic": {
+    "case": "controller-stall-traced-1080p30",
+    "harnessValid": true,
+    "qualityPassed": true,
+    "log": "logs/analyze-controller-stall-traced.log"
+  }
+}

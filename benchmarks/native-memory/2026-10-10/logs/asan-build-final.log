@@ -1,0 +1,19 @@
+[  1%] Built target suitecut-audio-clock-test
+[  2%] Built target suitecut-media
+[ 15%] Built target yuv_common_objects
+[ 16%] Built target suitecut-media-test
+[ 17%] Built target suitecut-audio-startup-test
+[ 17%] Built target suitecut-codec-test
+[ 18%] Built target yuv
+[ 19%] Built target suitecut-memory-test
+[ 20%] Built target suitecut-fuzz-bounds
+[ 21%] Built target suitecut-fuzz-media
+[ 21%] Built target suitecut-pixel-test
+[ 98%] Built target libcef_dll_wrapper
+[ 98%] Building CXX object CMakeFiles/suitecut-browser.dir/browser.cc.o
+[100%] Linking CXX executable suitecut-browser
+/usr/bin/ld: cannot find -lX11: No such file or directory
+clang++-19: error: linker command failed with exit code 1 (use -v to see invocation)
+gmake[2]: *** [CMakeFiles/suitecut-browser.dir/build.make:127: suitecut-browser] Error 1
+gmake[1]: *** [CMakeFiles/Makefile2:461: CMakeFiles/suitecut-browser.dir/all] Error 2
+gmake: *** [Makefile:166: all] Error 2

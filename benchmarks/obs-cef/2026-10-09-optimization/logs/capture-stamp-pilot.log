@@ -1,0 +1,74 @@
+{
+  "startedAt": "2026-10-09T01:26:33.889Z",
+  "requestedMs": 120000,
+  "width": 1920,
+  "height": 1080,
+  "targetFps": 60,
+  "audio": true,
+  "mode": "simultaneous recording and RTMP streaming on one caller-owned CEF source",
+  "gcDuringRun": false,
+  "receiverPath": "/workspace/suitecut/.suitecut/obs-cef-optimization/capture-stamp-pilot/receiver.flv",
+  "readyAt": "2026-10-09T01:26:40.023Z",
+  "baseline": {
+    "rss": 224919552,
+    "heapTotal": 122863616,
+    "heapUsed": 54401504,
+    "external": 84756492,
+    "arrayBuffers": 80750336
+  },
+  "activeMs": 120146.305081,
+  "snapshot": {
+    "markerCount": 2049,
+    "scrollY": 3240,
+    "scrollEvents": 22,
+    "keyEvents": 0,
+    "clicks": 0,
+    "value": "",
+    "choice": "First",
+    "secondary": false
+  },
+  "scrollCommands": 22,
+  "beforeStop": {
+    "rss": 291672064,
+    "heapTotal": 64667648,
+    "heapUsed": 51097752,
+    "external": 44530443,
+    "arrayBuffers": 40532663
+  },
+  "frames": 2555,
+  "audioPackets": 5113,
+  "audioOffsets": {
+    "count": 5862,
+    "minMs": -814.5822489999555,
+    "maxMs": 5.919677000041702,
+    "futureOver100": 0,
+    "futureOver500": 0,
+    "pastOver10000": 0
+  },
+  "recordingPath": "/workspace/suitecut/.suitecut/obs-cef-optimization/capture-stamp-pilot/suitecut-source-e079c9af-eee4-4d5d-9da0-d38c8df90716-cff6921b-213b-466f-a48c-0444c81512e9.webm",
+  "sourceStateAfterRecording": "running",
+  "status": "failed",
+  "error": "AssertionError [ERR_ASSERTION]: recording 5: missing flash/tone matches\n    at file:///workspace/suitecut/benchmarks/obs-cef/soak.mjs:64:4",
+  "afterCleanup": {
+    "rss": 292065280,
+    "heapTotal": 60473344,
+    "heapUsed": 50997160,
+    "external": 11150651,
+    "arrayBuffers": 5148940
+  },
+  "afterCleanupGc": {
+    "rss": 292065280,
+    "heapTotal": 58376192,
+    "heapUsed": 50662760,
+    "external": 4346389,
+    "arrayBuffers": 344533
+  },
+  "nodeCpuMs": 55553.44,
+  "elapsedMs": 144621.869404,
+  "eventLoopDelay": {
+    "meanMs": 27.80202632158675,
+    "p99Ms": 68.354047,
+    "maxMs": 331.612159
+  },
+  "completedAt": "2026-10-09T01:28:58.512Z"
+}

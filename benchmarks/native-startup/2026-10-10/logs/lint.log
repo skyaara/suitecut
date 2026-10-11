@@ -1,0 +1,7 @@
+
+/workspace/suitecut/benchmarks/native-engine/engine.e2e.spec.ts
+  2:1  error  `node:timers/promises` import should occur after import of `node:path`  import-x/order
+
+✖ 1 problem (1 error, 0 warnings)
+  1 error and 0 warnings potentially fixable with the `--fix` option.
+

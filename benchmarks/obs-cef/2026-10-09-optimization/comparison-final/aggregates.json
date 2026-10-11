@@ -1,0 +1,130 @@
+[
+  {
+    "case": "720p60-canvas",
+    "backend": "obs",
+    "attempted": 3,
+    "passed": 3,
+    "distinctFpsMedian": 56.903264450434264,
+    "longestHoldMsMedian": 83.00000000000018,
+    "finalizationMsMedian": 1180.3693120000007,
+    "cpuPercentMedian": 222.2308424021002,
+    "peakRssMiBMedian": 1513.87109375,
+    "fpsValues": [
+      56.903264450434264,
+      58.30845771144279,
+      54.806828391734044
+    ]
+  },
+  {
+    "case": "720p60-canvas",
+    "backend": "native",
+    "attempted": 3,
+    "passed": 3,
+    "distinctFpsMedian": 59.65400676078743,
+    "longestHoldMsMedian": 52.999999999999936,
+    "finalizationMsMedian": 383.3618180000012,
+    "cpuPercentMedian": 200.96646484649804,
+    "peakRssMiBMedian": 1308.78515625,
+    "fpsValues": [
+      59.41088367448826,
+      59.65400676078743,
+      59.76095617529881
+    ]
+  },
+  {
+    "case": "1080p60-canvas",
+    "backend": "obs",
+    "attempted": 3,
+    "passed": 3,
+    "distinctFpsMedian": 41.02513161815834,
+    "longestHoldMsMedian": 65.99999999999983,
+    "finalizationMsMedian": 1471.0125939999998,
+    "cpuPercentMedian": 351.09521215454765,
+    "peakRssMiBMedian": 1806.890625,
+    "fpsValues": [
+      41.32313499552995,
+      41.02513161815834,
+      37.58429194763982
+    ]
+  },
+  {
+    "case": "1080p60-canvas",
+    "backend": "native",
+    "attempted": 3,
+    "passed": 3,
+    "distinctFpsMedian": 34.09090909090909,
+    "longestHoldMsMedian": 128.0000000000001,
+    "finalizationMsMedian": 902.0381350000098,
+    "cpuPercentMedian": 278.8902597615085,
+    "peakRssMiBMedian": 1542.65625,
+    "fpsValues": [
+      28.191866950613527,
+      34.09090909090909,
+      41.80734856007944
+    ]
+  },
+  {
+    "case": "4k30-canvas",
+    "backend": "obs",
+    "attempted": 3,
+    "passed": 3,
+    "distinctFpsMedian": 5.0162289760991445,
+    "longestHoldMsMedian": 300.0000000000003,
+    "finalizationMsMedian": 2786.946167999995,
+    "cpuPercentMedian": 394.7093781843829,
+    "peakRssMiBMedian": 3081.203125,
+    "fpsValues": [
+      4.440935557090694,
+      5.0162289760991445,
+      5.1005100510051005
+    ]
+  },
+  {
+    "case": "4k30-canvas",
+    "backend": "native",
+    "attempted": 3,
+    "passed": 3,
+    "distinctFpsMedian": 6.816069399979345,
+    "longestHoldMsMedian": 652.9999999999995,
+    "finalizationMsMedian": 4273.809601999994,
+    "cpuPercentMedian": 316.2816206828217,
+    "peakRssMiBMedian": 2645.84765625,
+    "fpsValues": [
+      5.782734407269722,
+      6.816069399979345,
+      7.643438554695255
+    ]
+  },
+  {
+    "case": "4k60-scroll",
+    "backend": "obs",
+    "attempted": 3,
+    "passed": 3,
+    "distinctFpsMedian": 1.7,
+    "longestHoldMsMedian": 1666.9999999999998,
+    "finalizationMsMedian": 14174.632952000014,
+    "cpuPercentMedian": 396.3528514092894,
+    "peakRssMiBMedian": 3209.328125,
+    "fpsValues": [
+      1.5972846161525407,
+      1.7,
+      1.7142280931733385
+    ]
+  },
+  {
+    "case": "4k60-scroll",
+    "backend": "native",
+    "attempted": 3,
+    "passed": 3,
+    "distinctFpsMedian": 5.34494704543205,
+    "longestHoldMsMedian": 656.0000000000006,
+    "finalizationMsMedian": 6633.943005000008,
+    "cpuPercentMedian": 337.21081727155155,
+    "peakRssMiBMedian": 2784.63671875,
+    "fpsValues": [
+      5.34494704543205,
+      5.085396277106122,
+      7.110665998998498
+    ]
+  }
+]

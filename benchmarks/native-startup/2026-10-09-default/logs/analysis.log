@@ -1,0 +1,6 @@
+default 154.0.34+g14c5a08+chromium-154.0.8037.98
+cold-signal-pcm ready 778.6 native first signal 0.0 decoded first signal 0.0 max silence 0 native CPU 0.533 fps 24.26
+cold-signal-aac ready 166.6 native first signal 0.0 decoded first signal 6.3125 max silence 10 native CPU 0.552 fps 30.0
+cold-signal-aac-mp4 ready 115.7 native first signal 0.0 decoded first signal 15.708333333333334 max silence 20 native CPU 0.569 fps 30.0
+quiet-signal-aac ready 211.7 native first signal 0.0 decoded first signal 5.416666666666667 max silence 30 native CPU 0.542 fps 29.95
+stress-signal-aac ready 170.0 native first signal 0.0 decoded first signal 13.270833333333334 max silence 20 native CPU 0.601 fps 29.9

@@ -1,0 +1,988 @@
+{
+  "cefVersion": "154.0.34+g14c5a08+chromium-154.0.8037.98",
+  "label": "cold-signal-aac",
+  "audioStartup": "wait-for-signal",
+  "audioCodec": "aac",
+  "audioState": "running",
+  "destination": "/workspace/suitecut/benchmarks/native-startup/2026-10-09-default/capture-initial/cold-signal-aac/aac.mkv",
+  "readyLatencyMs": 1826.573117,
+  "initial": {
+    "ready": true,
+    "stopped": false,
+    "paused": false,
+    "videoFrames": 0,
+    "audioSamples": 0,
+    "repeatedFrames": 0,
+    "droppedAudioSamples": 0,
+    "missingAudioSamples": 0,
+    "lateAudioSamples": 0,
+    "queuedVideoBytes": 62208000,
+    "queuedAudioBytes": 15360,
+    "startedMs": 2393.9785629957914,
+    "durationMs": 0,
+    "maximumEncodeMs": 0,
+    "error": ""
+  },
+  "final": {
+    "ready": true,
+    "stopped": true,
+    "paused": false,
+    "videoFrames": 197,
+    "audioSamples": 315392,
+    "repeatedFrames": 73,
+    "droppedAudioSamples": 0,
+    "missingAudioSamples": 67430,
+    "lateAudioSamples": 0,
+    "queuedVideoBytes": 0,
+    "queuedAudioBytes": 0,
+    "startedMs": 2393.9785629957914,
+    "durationMs": 6566.666666666667,
+    "maximumEncodeMs": 462.1948160000011,
+    "error": ""
+  },
+  "captureStartedMonotonic": 91300.375962163,
+  "captureEndedMonotonic": 91308.959304861,
+  "requestedDurationMs": 6000,
+  "stallMs": 0,
+  "samples": [
+    {
+      "atMs": 0.00428499999907217,
+      "status": {
+        "ready": true,
+        "stopped": false,
+        "paused": false,
+        "videoFrames": 0,
+        "audioSamples": 0,
+        "repeatedFrames": 0,
+        "droppedAudioSamples": 0,
+        "missingAudioSamples": 0,
+        "lateAudioSamples": 0,
+        "queuedVideoBytes": 62208000,
+        "queuedAudioBytes": 15360,
+        "startedMs": 2393.9785629957914,
+        "durationMs": 0,
+        "maximumEncodeMs": 0,
+        "error": ""
+      }
+    },
+    {
+      "atMs": 251.6707320000005,
+      "status": {
+        "ready": true,
+        "stopped": false,
+        "paused": false,
+        "videoFrames": 4,
+        "audioSamples": 6144,
+        "repeatedFrames": 1,
+        "droppedAudioSamples": 0,
+        "missingAudioSamples": 960,
+        "lateAudioSamples": 0,
+        "queuedVideoBytes": 18662400,
+        "queuedAudioBytes": 26880,
+        "startedMs": 2393.9785629957914,
+        "durationMs": 133.33333333333334,
+        "maximumEncodeMs": 18.262793999999758,
+        "error": ""
+      }
+    },
+    {
+      "atMs": 503.1752340000003,
+      "status": {
+        "ready": true,
+        "stopped": false,
+        "paused": false,
+        "videoFrames": 11,
+        "audioSamples": 18432,
+        "repeatedFrames": 1,
+        "droppedAudioSamples": 0,
+        "missingAudioSamples": 960,
+        "lateAudioSamples": 0,
+        "queuedVideoBytes": 18662400,
+        "queuedAudioBytes": 30720,
+        "startedMs": 2393.9785629957914,
+        "durationMs": 366.6666666666667,
+        "maximumEncodeMs": 18.262793999999758,
+        "error": ""
+      }
+    },
+    {
+      "atMs": 773.1567969999996,
+      "status": {
+        "ready": true,
+        "stopped": false,
+        "paused": false,
+        "videoFrames": 19,
+        "audioSamples": 30720,
+        "repeatedFrames": 2,
+        "droppedAudioSamples": 0,
+        "missingAudioSamples": 960,
+        "lateAudioSamples": 0,
+        "queuedVideoBytes": 15552000,
+        "queuedAudioBytes": 34560,
+        "startedMs": 2393.9785629957914,
+        "durationMs": 633.3333333333334,
+        "maximumEncodeMs": 30.477878000000146,
+        "error": ""
+      }
+    },
+    {
+      "atMs": 1081.472678,
+      "status": {
+        "ready": true,
+        "stopped": false,
+        "paused": false,
+        "videoFrames": 29,
+        "audioSamples": 46080,
+        "repeatedFrames": 5,
+        "droppedAudioSamples": 0,
+        "missingAudioSamples": 960,
+        "lateAudioSamples": 0,
+        "queuedVideoBytes": 15552000,
+        "queuedAudioBytes": 30720,
+        "startedMs": 2393.9785629957914,
+        "durationMs": 966.6666666666666,
+        "maximumEncodeMs": 44.653823999999986,
+        "error": ""
+      }
+    },
+    {
+      "atMs": 1334.3439629999993,
+      "status": {
+        "ready": true,
+        "stopped": false,
+        "paused": false,
+        "videoFrames": 36,
+        "audioSamples": 58368,
+        "repeatedFrames": 6,
+        "droppedAudioSamples": 0,
+        "missingAudioSamples": 960,
+        "lateAudioSamples": 0,
+        "queuedVideoBytes": 18662400,
+        "queuedAudioBytes": 30720,
+        "startedMs": 2393.9785629957914,
+        "durationMs": 1200,
+        "maximumEncodeMs": 44.653823999999986,
+        "error": ""
+      }
+    },
+    {
+      "atMs": 1585.7593689999994,
+      "status": {
+        "ready": true,
+        "stopped": false,
+        "paused": false,
+        "videoFrames": 44,
+        "audioSamples": 69632,
+        "repeatedFrames": 7,
+        "droppedAudioSamples": 0,
+        "missingAudioSamples": 960,
+        "lateAudioSamples": 0,
+        "queuedVideoBytes": 18662400,
+        "queuedAudioBytes": 30720,
+        "startedMs": 2393.9785629957914,
+        "durationMs": 1466.6666666666667,
+        "maximumEncodeMs": 44.653823999999986,
+        "error": ""
+      }
+    },
+    {
+      "atMs": 1837.8291919999992,
+      "status": {
+        "ready": true,
+        "stopped": false,
+        "paused": false,
+        "videoFrames": 51,
+        "audioSamples": 81920,
+        "repeatedFrames": 8,
+        "droppedAudioSamples": 0,
+        "missingAudioSamples": 960,
+        "lateAudioSamples": 0,
+        "queuedVideoBytes": 15552000,
+        "queuedAudioBytes": 30720,
+        "startedMs": 2393.9785629957914,
+        "durationMs": 1700,
+        "maximumEncodeMs": 44.653823999999986,
+        "error": ""
+      }
+    },
+    {
+      "atMs": 2094.965238999999,
+      "status": {
+        "ready": true,
+        "stopped": false,
+        "paused": false,
+        "videoFrames": 59,
+        "audioSamples": 94208,
+        "repeatedFrames": 8,
+        "droppedAudioSamples": 0,
+        "missingAudioSamples": 960,
+        "lateAudioSamples": 0,
+        "queuedVideoBytes": 18662400,
+        "queuedAudioBytes": 34560,
+        "startedMs": 2393.9785629957914,
+        "durationMs": 1966.6666666666667,
+        "maximumEncodeMs": 44.653823999999986,
+        "error": ""
+      }
+    },
+    {
+      "atMs": 2350.077873,
+      "status": {
+        "ready": true,
+        "stopped": false,
+        "paused": false,
+        "videoFrames": 67,
+        "audioSamples": 106496,
+        "repeatedFrames": 9,
+        "droppedAudioSamples": 0,
+        "missingAudioSamples": 960,
+        "lateAudioSamples": 0,
+        "queuedVideoBytes": 21772800,
+        "queuedAudioBytes": 30720,
+        "startedMs": 2393.9785629957914,
+        "durationMs": 2233.3333333333335,
+        "maximumEncodeMs": 44.653823999999986,
+        "error": ""
+      }
+    },
+    {
+      "atMs": 2603.4894729999996,
+      "status": {
+        "ready": true,
+        "stopped": false,
+        "paused": false,
+        "videoFrames": 72,
+        "audioSamples": 115712,
+        "repeatedFrames": 9,
+        "droppedAudioSamples": 0,
+        "missingAudioSamples": 960,
+        "lateAudioSamples": 0,
+        "queuedVideoBytes": 18662400,
+        "queuedAudioBytes": 42240,
+        "startedMs": 2393.9785629957914,
+        "durationMs": 2400,
+        "maximumEncodeMs": 44.653823999999986,
+        "error": ""
+      }
+    },
+    {
+      "atMs": 2856.2344869999997,
+      "status": {
+        "ready": true,
+        "stopped": false,
+        "paused": false,
+        "videoFrames": 82,
+        "audioSamples": 131072,
+        "repeatedFrames": 11,
+        "droppedAudioSamples": 0,
+        "missingAudioSamples": 960,
+        "lateAudioSamples": 0,
+        "queuedVideoBytes": 18662400,
+        "queuedAudioBytes": 30720,
+        "startedMs": 2393.9785629957914,
+        "durationMs": 2733.3333333333335,
+        "maximumEncodeMs": 44.653823999999986,
+        "error": ""
+      }
+    },
+    {
+      "atMs": 3152.6727169999995,
+      "status": {
+        "ready": true,
+        "stopped": false,
+        "paused": false,
+        "videoFrames": 91,
+        "audioSamples": 145408,
+        "repeatedFrames": 11,
+        "droppedAudioSamples": 0,
+        "missingAudioSamples": 960,
+        "lateAudioSamples": 0,
+        "queuedVideoBytes": 18662400,
+        "queuedAudioBytes": 26880,
+        "startedMs": 2393.9785629957914,
+        "durationMs": 3033.3333333333335,
+        "maximumEncodeMs": 44.653823999999986,
+        "error": ""
+      }
+    },
+    {
+      "atMs": 3404.2249759999995,
+      "status": {
+        "ready": true,
+        "stopped": false,
+        "paused": false,
+        "videoFrames": 98,
+        "audioSamples": 157696,
+        "repeatedFrames": 12,
+        "droppedAudioSamples": 0,
+        "missingAudioSamples": 960,
+        "lateAudioSamples": 0,
+        "queuedVideoBytes": 18662400,
+        "queuedAudioBytes": 30720,
+        "startedMs": 2393.9785629957914,
+        "durationMs": 3266.6666666666665,
+        "maximumEncodeMs": 44.653823999999986,
+        "error": ""
+      }
+    },
+    {
+      "atMs": 3658.357427000001,
+      "status": {
+        "ready": true,
+        "stopped": false,
+        "paused": false,
+        "videoFrames": 106,
+        "audioSamples": 169984,
+        "repeatedFrames": 12,
+        "droppedAudioSamples": 0,
+        "missingAudioSamples": 960,
+        "lateAudioSamples": 0,
+        "queuedVideoBytes": 15552000,
+        "queuedAudioBytes": 30720,
+        "startedMs": 2393.9785629957914,
+        "durationMs": 3533.3333333333335,
+        "maximumEncodeMs": 44.653823999999986,
+        "error": ""
+      }
+    },
+    {
+      "atMs": 3912.7923489999994,
+      "status": {
+        "ready": true,
+        "stopped": false,
+        "paused": false,
+        "videoFrames": 114,
+        "audioSamples": 181248,
+        "repeatedFrames": 14,
+        "droppedAudioSamples": 0,
+        "missingAudioSamples": 960,
+        "lateAudioSamples": 0,
+        "queuedVideoBytes": 15552000,
+        "queuedAudioBytes": 34560,
+        "startedMs": 2393.9785629957914,
+        "durationMs": 3800,
+        "maximumEncodeMs": 44.653823999999986,
+        "error": ""
+      }
+    },
+    {
+      "atMs": 4169.024185,
+      "status": {
+        "ready": true,
+        "stopped": false,
+        "paused": false,
+        "videoFrames": 120,
+        "audioSamples": 192512,
+        "repeatedFrames": 14,
+        "droppedAudioSamples": 0,
+        "missingAudioSamples": 960,
+        "lateAudioSamples": 0,
+        "queuedVideoBytes": 15552000,
+        "queuedAudioBytes": 34560,
+        "startedMs": 2393.9785629957914,
+        "durationMs": 4000,
+        "maximumEncodeMs": 44.653823999999986,
+        "error": ""
+      }
+    },
+    {
+      "atMs": 4551.9309410000005,
+      "status": {
+        "ready": true,
+        "stopped": false,
+        "paused": false,
+        "videoFrames": 125,
+        "audioSamples": 200704,
+        "repeatedFrames": 15,
+        "droppedAudioSamples": 0,
+        "missingAudioSamples": 960,
+        "lateAudioSamples": 0,
+        "queuedVideoBytes": 18662400,
+        "queuedAudioBytes": 46080,
+        "startedMs": 2393.9785629957914,
+        "durationMs": 4166.666666666667,
+        "maximumEncodeMs": 44.653823999999986,
+        "error": ""
+      }
+    },
+    {
+      "atMs": 4991.700833999999,
+      "status": {
+        "ready": true,
+        "stopped": false,
+        "paused": false,
+        "videoFrames": 144,
+        "audioSamples": 230400,
+        "repeatedFrames": 29,
+        "droppedAudioSamples": 0,
+        "missingAudioSamples": 17280,
+        "lateAudioSamples": 0,
+        "queuedVideoBytes": 21772800,
+        "queuedAudioBytes": 42240,
+        "startedMs": 2393.9785629957914,
+        "durationMs": 4800,
+        "maximumEncodeMs": 44.653823999999986,
+        "error": ""
+      }
+    },
+    {
+      "atMs": 6214.755134999999,
+      "status": {
+        "ready": true,
+        "stopped": false,
+        "paused": false,
+        "videoFrames": 159,
+        "audioSamples": 254976,
+        "repeatedFrames": 41,
+        "droppedAudioSamples": 0,
+        "missingAudioSamples": 29094,
+        "lateAudioSamples": 0,
+        "queuedVideoBytes": 12441600,
+        "queuedAudioBytes": 69120,
+        "startedMs": 2393.9785629957914,
+        "durationMs": 5300,
+        "maximumEncodeMs": 420.78656299999966,
+        "error": ""
+      }
+    }
+  ],
+  "preEncoderFirstSignalMs": 0.0,
+  "decodedFirstSignalMs": 5.270833333333333,
+  "sourceAttribution": {
+    "sourcePackets": 300,
+    "sourceFrames": 288000,
+    "sourceSilentPackets": 34,
+    "sourceTimelineGaps": [
+      {
+        "fromMs": 2479.853563,
+        "toMs": 2499.853563,
+        "durationMs": 20.0,
+        "followingCallbackDelayMs": -0.22232000000030894
+      },
+      {
+        "fromMs": 6739.853563,
+        "toMs": 6919.853563,
+        "durationMs": 180.0,
+        "followingCallbackDelayMs": 5.105847000000722
+      },
+      {
+        "fromMs": 6959.853563,
+        "toMs": 6979.853563,
+        "durationMs": 20.0,
+        "followingCallbackDelayMs": 153.71624800000063
+      },
+      {
+        "fromMs": 6999.853563,
+        "toMs": 7139.853563,
+        "durationMs": 140.0,
+        "followingCallbackDelayMs": 0.39717600000039965
+      },
+      {
+        "fromMs": 7439.853563,
+        "toMs": 7579.853563,
+        "durationMs": 140.0,
+        "followingCallbackDelayMs": 234.64383400000042
+      },
+      {
+        "fromMs": 7599.853563,
+        "toMs": 7819.853563,
+        "durationMs": 220.0,
+        "followingCallbackDelayMs": 6.683463000000302
+      },
+      {
+        "fromMs": 7919.853563,
+        "toMs": 7939.853563,
+        "durationMs": 20.0,
+        "followingCallbackDelayMs": 0.10204400000020541
+      },
+      {
+        "fromMs": 7999.853563,
+        "toMs": 8059.853563,
+        "durationMs": 60.0,
+        "followingCallbackDelayMs": 7.67138900000009
+      },
+      {
+        "fromMs": 8079.853563,
+        "toMs": 8089.853563,
+        "durationMs": 10.0,
+        "followingCallbackDelayMs": 277.94102699999985
+      },
+      {
+        "fromMs": 8109.853563,
+        "toMs": 8289.853563,
+        "durationMs": 180.0000000000009,
+        "followingCallbackDelayMs": 177.87756099999933
+      },
+      {
+        "fromMs": 8309.853563,
+        "toMs": 8389.853563,
+        "durationMs": 80.0,
+        "followingCallbackDelayMs": 89.88269899999977
+      },
+      {
+        "fromMs": 8469.853563,
+        "toMs": 8489.853563,
+        "durationMs": 20.0,
+        "followingCallbackDelayMs": 90.3460899999991
+      },
+      {
+        "fromMs": 8589.853563,
+        "toMs": 8669.853563,
+        "durationMs": 80.0,
+        "followingCallbackDelayMs": 92.00730199999998
+      },
+      {
+        "fromMs": 8709.853563,
+        "toMs": 8849.853563,
+        "durationMs": 140.0,
+        "followingCallbackDelayMs": 97.55914999999914
+      },
+      {
+        "fromMs": 8889.853563,
+        "toMs": 9049.853563,
+        "durationMs": 160.0,
+        "followingCallbackDelayMs": 90.40816599999926
+      },
+      {
+        "fromMs": 9209.853563,
+        "toMs": 9289.853563,
+        "durationMs": 80.0,
+        "followingCallbackDelayMs": 91.67409699999916
+      },
+      {
+        "fromMs": 9349.853563,
+        "toMs": 9469.853563,
+        "durationMs": 120.0,
+        "followingCallbackDelayMs": 166.16942500000005
+      },
+      {
+        "fromMs": 9509.853563,
+        "toMs": 9549.853563,
+        "durationMs": 40.0,
+        "followingCallbackDelayMs": 89.95384999999987
+      },
+      {
+        "fromMs": 9589.853563,
+        "toMs": 9889.853563,
+        "durationMs": 300.0,
+        "followingCallbackDelayMs": 92.02956199999971
+      },
+      {
+        "fromMs": 9989.853563,
+        "toMs": 10089.853563,
+        "durationMs": 100.0,
+        "followingCallbackDelayMs": 144.09473199999957
+      },
+      {
+        "fromMs": 10109.853563,
+        "toMs": 10149.853563,
+        "durationMs": 40.0,
+        "followingCallbackDelayMs": 452.38177499999983
+      },
+      {
+        "fromMs": 10169.853563,
+        "toMs": 10489.853563,
+        "durationMs": 320.0,
+        "followingCallbackDelayMs": 120.68698199999926
+      },
+      {
+        "fromMs": 10509.853563,
+        "toMs": 10529.853563,
+        "durationMs": 20.0,
+        "followingCallbackDelayMs": 89.86200899999858
+      },
+      {
+        "fromMs": 10609.853563,
+        "toMs": 10709.853563,
+        "durationMs": 100.0,
+        "followingCallbackDelayMs": 94.57762199999888
+      }
+    ],
+    "maxCallbackDelayMs": 452.38177499999983,
+    "cases": [
+      {
+        "audioCodec": "aac",
+        "originMs": 2393.978563,
+        "finishMs": 8964.645229333333,
+        "missingInputMs": 1404.7916666666667,
+        "eventuallyUncoveredInputMs": 1384.7916666666667,
+        "estimatedMissingAtEncodeMs": 1384.7916666666667,
+        "interiorMissingInputMs": 1254.125,
+        "interiorEventuallyUncoveredMs": 1254.125,
+        "interiorSourceCopyMismatchedFrames": 0,
+        "sourceGapsWithinOutput": [
+          {
+            "fromMs": 2479.853563,
+            "toMs": 2499.853563,
+            "durationMs": 20.0,
+            "followingCallbackDelayMs": -0.22232000000030894,
+            "outputStartMs": 85.875
+          },
+          {
+            "fromMs": 6739.853563,
+            "toMs": 6919.853563,
+            "durationMs": 180.0,
+            "followingCallbackDelayMs": 5.105847000000722,
+            "outputStartMs": 4345.875
+          },
+          {
+            "fromMs": 6959.853563,
+            "toMs": 6979.853563,
+            "durationMs": 20.0,
+            "followingCallbackDelayMs": 153.71624800000063,
+            "outputStartMs": 4565.875
+          },
+          {
+            "fromMs": 6999.853563,
+            "toMs": 7139.853563,
+            "durationMs": 140.0,
+            "followingCallbackDelayMs": 0.39717600000039965,
+            "outputStartMs": 4605.875
+          },
+          {
+            "fromMs": 7439.853563,
+            "toMs": 7579.853563,
+            "durationMs": 140.0,
+            "followingCallbackDelayMs": 234.64383400000042,
+            "outputStartMs": 5045.875
+          },
+          {
+            "fromMs": 7599.853563,
+            "toMs": 7819.853563,
+            "durationMs": 220.0,
+            "followingCallbackDelayMs": 6.683463000000302,
+            "outputStartMs": 5205.875
+          },
+          {
+            "fromMs": 7919.853563,
+            "toMs": 7939.853563,
+            "durationMs": 20.0,
+            "followingCallbackDelayMs": 0.10204400000020541,
+            "outputStartMs": 5525.875
+          },
+          {
+            "fromMs": 7999.853563,
+            "toMs": 8059.853563,
+            "durationMs": 60.0,
+            "followingCallbackDelayMs": 7.67138900000009,
+            "outputStartMs": 5605.875
+          },
+          {
+            "fromMs": 8079.853563,
+            "toMs": 8089.853563,
+            "durationMs": 10.0,
+            "followingCallbackDelayMs": 277.94102699999985,
+            "outputStartMs": 5685.875
+          },
+          {
+            "fromMs": 8109.853563,
+            "toMs": 8289.853563,
+            "durationMs": 180.0000000000009,
+            "followingCallbackDelayMs": 177.87756099999933,
+            "outputStartMs": 5715.875
+          },
+          {
+            "fromMs": 8309.853563,
+            "toMs": 8389.853563,
+            "durationMs": 80.0,
+            "followingCallbackDelayMs": 89.88269899999977,
+            "outputStartMs": 5915.875
+          },
+          {
+            "fromMs": 8469.853563,
+            "toMs": 8489.853563,
+            "durationMs": 20.0,
+            "followingCallbackDelayMs": 90.3460899999991,
+            "outputStartMs": 6075.875
+          },
+          {
+            "fromMs": 8589.853563,
+            "toMs": 8669.853563,
+            "durationMs": 80.0,
+            "followingCallbackDelayMs": 92.00730199999998,
+            "outputStartMs": 6195.875
+          },
+          {
+            "fromMs": 8709.853563,
+            "toMs": 8849.853563,
+            "durationMs": 140.0,
+            "followingCallbackDelayMs": 97.55914999999914,
+            "outputStartMs": 6315.875
+          },
+          {
+            "fromMs": 8889.853563,
+            "toMs": 9049.853563,
+            "durationMs": 160.0,
+            "followingCallbackDelayMs": 90.40816599999926,
+            "outputStartMs": 6495.875
+          }
+        ],
+        "decodedSilence10msWindows": [
+          {
+            "startMs": 0,
+            "endMs": 10,
+            "durationMs": 10
+          },
+          {
+            "startMs": 110,
+            "endMs": 120,
+            "durationMs": 10
+          },
+          {
+            "startMs": 130,
+            "endMs": 140,
+            "durationMs": 10
+          },
+          {
+            "startMs": 4370,
+            "endMs": 4540,
+            "durationMs": 170
+          },
+          {
+            "startMs": 4550,
+            "endMs": 4570,
+            "durationMs": 20
+          },
+          {
+            "startMs": 4590,
+            "endMs": 4600,
+            "durationMs": 10
+          },
+          {
+            "startMs": 4610,
+            "endMs": 4620,
+            "durationMs": 10
+          },
+          {
+            "startMs": 4630,
+            "endMs": 4760,
+            "durationMs": 130
+          },
+          {
+            "startMs": 4770,
+            "endMs": 4780,
+            "durationMs": 10
+          },
+          {
+            "startMs": 5070,
+            "endMs": 5200,
+            "durationMs": 130
+          },
+          {
+            "startMs": 5210,
+            "endMs": 5470,
+            "durationMs": 260
+          },
+          {
+            "startMs": 5530,
+            "endMs": 5560,
+            "durationMs": 30
+          },
+          {
+            "startMs": 5600,
+            "endMs": 5620,
+            "durationMs": 20
+          },
+          {
+            "startMs": 5630,
+            "endMs": 5680,
+            "durationMs": 50
+          },
+          {
+            "startMs": 5690,
+            "endMs": 6060,
+            "durationMs": 370
+          },
+          {
+            "startMs": 6090,
+            "endMs": 6170,
+            "durationMs": 80
+          },
+          {
+            "startMs": 6220,
+            "endMs": 6290,
+            "durationMs": 70
+          },
+          {
+            "startMs": 6340,
+            "endMs": 6470,
+            "durationMs": 130
+          },
+          {
+            "startMs": 6500,
+            "endMs": 6590,
+            "durationMs": 90
+          }
+        ],
+        "final": {
+          "ready": true,
+          "stopped": true,
+          "paused": false,
+          "videoFrames": 197,
+          "audioSamples": 315392,
+          "repeatedFrames": 73,
+          "droppedAudioSamples": 0,
+          "missingAudioSamples": 67430,
+          "lateAudioSamples": 0,
+          "queuedVideoBytes": 0,
+          "queuedAudioBytes": 0,
+          "startedMs": 2393.9785629957914,
+          "durationMs": 6566.666666666667,
+          "maximumEncodeMs": 462.1948160000011,
+          "error": ""
+        },
+        "decodedSamples": 316416,
+        "decodeErrors": false
+      }
+    ],
+    "hostCPUQuota": "400000 100000",
+    "hostCPUStatDelta": {
+      "usage_usec": 27225174,
+      "user_usec": 24031492,
+      "system_usec": 3193681,
+      "nice_usec": 0,
+      "nr_periods": 105,
+      "nr_throttled": 17,
+      "throttled_usec": 2872301,
+      "nr_bursts": 0,
+      "burst_usec": 0
+    },
+    "profileSamples": 11
+  },
+  "videoDecodedFrames": 197,
+  "distinctDecodedFPS": 18.883248730964468,
+  "maximumDecodedImageHoldMs": 500.0,
+  "meanCPUCoresByRole": {
+    "node": 0.06299000526735203,
+    "suitecut-browser": 0.8783091955689465,
+    "sampler": 0.04794117823653807,
+    "cef-renderer": 0.28797409594806045,
+    "cef-gpu": 0.25778839461043224
+  },
+  "profileCaptureSamples": 9,
+  "nativeMeanCPUCores": 1.4240716861274392,
+  "probe": {
+    "streams": [
+      {
+        "index": 0,
+        "codec_name": "h264",
+        "codec_long_name": "H.264 / AVC / MPEG-4 AVC / MPEG-4 part 10",
+        "profile": "High",
+        "codec_type": "video",
+        "codec_tag_string": "[0][0][0][0]",
+        "codec_tag": "0x0000",
+        "width": 1920,
+        "height": 1080,
+        "coded_width": 1920,
+        "coded_height": 1080,
+        "closed_captions": 0,
+        "film_grain": 0,
+        "has_b_frames": 0,
+        "pix_fmt": "yuv420p",
+        "level": 40,
+        "color_range": "tv",
+        "color_space": "bt709",
+        "color_transfer": "iec61966-2-1",
+        "color_primaries": "bt709",
+        "chroma_location": "left",
+        "field_order": "progressive",
+        "refs": 1,
+        "is_avc": "true",
+        "nal_length_size": "4",
+        "r_frame_rate": "30/1",
+        "avg_frame_rate": "30/1",
+        "time_base": "1/1000",
+        "start_pts": 0,
+        "start_time": "0.000000",
+        "bits_per_raw_sample": "8",
+        "extradata_size": 49,
+        "disposition": {
+          "default": 0,
+          "dub": 0,
+          "original": 0,
+          "comment": 0,
+          "lyrics": 0,
+          "karaoke": 0,
+          "forced": 0,
+          "hearing_impaired": 0,
+          "visual_impaired": 0,
+          "clean_effects": 0,
+          "attached_pic": 0,
+          "timed_thumbnails": 0,
+          "non_diegetic": 0,
+          "captions": 0,
+          "descriptions": 0,
+          "metadata": 0,
+          "dependent": 0,
+          "still_image": 0,
+          "multilayer": 0
+        },
+        "tags": {
+          "DURATION": "00:00:06.566000000"
+        }
+      },
+      {
+        "index": 1,
+        "codec_name": "aac",
+        "codec_long_name": "AAC (Advanced Audio Coding)",
+        "profile": "LC",
+        "codec_type": "audio",
+        "codec_tag_string": "[0][0][0][0]",
+        "codec_tag": "0x0000",
+        "sample_fmt": "fltp",
+        "sample_rate": "48000",
+        "channels": 2,
+        "channel_layout": "stereo",
+        "bits_per_sample": 0,
+        "initial_padding": 1024,
+        "r_frame_rate": "0/0",
+        "avg_frame_rate": "0/0",
+        "time_base": "1/1000",
+        "start_pts": -21,
+        "start_time": "-0.021000",
+        "extradata_size": 5,
+        "disposition": {
+          "default": 0,
+          "dub": 0,
+          "original": 0,
+          "comment": 0,
+          "lyrics": 0,
+          "karaoke": 0,
+          "forced": 0,
+          "hearing_impaired": 0,
+          "visual_impaired": 0,
+          "clean_effects": 0,
+          "attached_pic": 0,
+          "timed_thumbnails": 0,
+          "non_diegetic": 0,
+          "captions": 0,
+          "descriptions": 0,
+          "metadata": 0,
+          "dependent": 0,
+          "still_image": 0,
+          "multilayer": 0
+        },
+        "tags": {
+          "DURATION": "00:00:06.591000000"
+        }
+      }
+    ],
+    "format": {
+      "filename": "/workspace/suitecut/benchmarks/native-startup/2026-10-09-default/capture-initial/cold-signal-aac/aac.mkv",
+      "nb_streams": 2,
+      "nb_programs": 0,
+      "nb_stream_groups": 0,
+      "format_name": "matroska,webm",
+      "format_long_name": "Matroska / WebM",
+      "start_time": "-0.021000",
+      "duration": "6.591000",
+      "size": "252914",
+      "bit_rate": "306981",
+      "probe_score": 100,
+      "tags": {
+        "ENCODER": "Lavf61.7.103"
+      }
+    }
+  },
+  "fileSha256": "ba0f8d1ed3d806b404d48073072b1946c486d8958f4eba46f1f51143f793eae7"
+}

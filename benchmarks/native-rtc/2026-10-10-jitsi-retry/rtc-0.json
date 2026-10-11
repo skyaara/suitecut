@@ -1,0 +1,174 @@
+[
+  {
+    "connectionState": "connecting",
+    "iceConnectionState": "checking",
+    "signalingState": "stable",
+    "stats": [
+      {
+        "id": "CP0Sg5/ApW_6dCfnLLa",
+        "type": "candidate-pair",
+        "state": "in-progress",
+        "localCandidateId": "I0Sg5/ApW",
+        "remoteCandidateId": "I6dCfnLLa",
+        "nominated": false,
+        "bytesSent": 0,
+        "bytesReceived": 0,
+        "packetsSent": 0,
+        "packetsReceived": 0
+      },
+      {
+        "id": "I0Sg5/ApW",
+        "type": "local-candidate",
+        "candidateType": "host",
+        "protocol": "udp"
+      },
+      {
+        "id": "I6dCfnLLa",
+        "type": "remote-candidate",
+        "candidateType": "srflx",
+        "protocol": "udp"
+      },
+      {
+        "id": "IWA6hXEaL",
+        "type": "local-candidate",
+        "candidateType": "host",
+        "protocol": "tcp"
+      },
+      {
+        "id": "IZUIMjsaZ",
+        "type": "local-candidate",
+        "candidateType": "host",
+        "protocol": "udp"
+      },
+      {
+        "id": "Imj7dFinj",
+        "type": "local-candidate",
+        "candidateType": "host",
+        "protocol": "tcp"
+      },
+      {
+        "id": "T01",
+        "type": "transport",
+        "bytesSent": 0,
+        "bytesReceived": 0,
+        "packetsSent": 0,
+        "packetsReceived": 0,
+        "dtlsState": "new",
+        "iceState": "checking"
+      }
+    ]
+  },
+  {
+    "connectionState": "connecting",
+    "iceConnectionState": "checking",
+    "signalingState": "stable",
+    "stats": [
+      {
+        "id": "CPTOXtD+m5_K7zXLD5K",
+        "type": "candidate-pair",
+        "state": "in-progress",
+        "localCandidateId": "ITOXtD+m5",
+        "remoteCandidateId": "IK7zXLD5K",
+        "nominated": false,
+        "bytesSent": 0,
+        "bytesReceived": 0,
+        "packetsSent": 0,
+        "packetsReceived": 0
+      },
+      {
+        "id": "CPTOXtD+m5_NNeVf6D2",
+        "type": "candidate-pair",
+        "state": "in-progress",
+        "localCandidateId": "ITOXtD+m5",
+        "remoteCandidateId": "INNeVf6D2",
+        "nominated": false,
+        "bytesSent": 0,
+        "bytesReceived": 0,
+        "packetsSent": 0,
+        "packetsReceived": 0
+      },
+      {
+        "id": "CPTOXtD+m5_RW8Gmhcg",
+        "type": "candidate-pair",
+        "state": "in-progress",
+        "localCandidateId": "ITOXtD+m5",
+        "remoteCandidateId": "IRW8Gmhcg",
+        "nominated": false,
+        "bytesSent": 0,
+        "bytesReceived": 0,
+        "packetsSent": 0,
+        "packetsReceived": 0
+      },
+      {
+        "id": "CPTOXtD+m5_llzrBXHP",
+        "type": "candidate-pair",
+        "state": "in-progress",
+        "localCandidateId": "ITOXtD+m5",
+        "remoteCandidateId": "IllzrBXHP",
+        "nominated": false,
+        "bytesSent": 0,
+        "bytesReceived": 0,
+        "packetsSent": 0,
+        "packetsReceived": 0
+      },
+      {
+        "id": "I+MoSOnXX",
+        "type": "local-candidate",
+        "candidateType": "host",
+        "protocol": "tcp"
+      },
+      {
+        "id": "I3r76vDQ/",
+        "type": "local-candidate",
+        "candidateType": "host",
+        "protocol": "udp"
+      },
+      {
+        "id": "IK7zXLD5K",
+        "type": "remote-candidate",
+        "candidateType": "relay",
+        "protocol": "udp"
+      },
+      {
+        "id": "INNeVf6D2",
+        "type": "remote-candidate",
+        "candidateType": "relay",
+        "protocol": "udp"
+      },
+      {
+        "id": "IRW8Gmhcg",
+        "type": "remote-candidate",
+        "candidateType": "relay",
+        "protocol": "udp"
+      },
+      {
+        "id": "ITOXtD+m5",
+        "type": "local-candidate",
+        "candidateType": "host",
+        "protocol": "udp"
+      },
+      {
+        "id": "IllzrBXHP",
+        "type": "remote-candidate",
+        "candidateType": "srflx",
+        "protocol": "udp"
+      },
+      {
+        "id": "ItoIfH43f",
+        "type": "local-candidate",
+        "candidateType": "host",
+        "protocol": "tcp"
+      },
+      {
+        "id": "T01",
+        "type": "transport",
+        "bytesSent": 0,
+        "bytesReceived": 0,
+        "packetsSent": 0,
+        "packetsReceived": 0,
+        "dtlsState": "new",
+        "iceState": "checking"
+      }
+    ]
+  }
+]

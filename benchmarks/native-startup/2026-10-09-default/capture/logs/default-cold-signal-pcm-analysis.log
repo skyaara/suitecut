@@ -1,0 +1,56 @@
+{
+  "sourcePackets": 318,
+  "sourceFrames": 305280,
+  "sourceSilentPackets": 2,
+  "sourceTimelineGaps": [],
+  "maxCallbackDelayMs": 5.543023999999605,
+  "cases": [
+    {
+      "audioCodec": "pcm_s16le",
+      "originMs": 1273.64534,
+      "finishMs": 7516.478673333333,
+      "missingInputMs": 0.0,
+      "eventuallyUncoveredInputMs": 0.0,
+      "estimatedMissingAtEncodeMs": 0.0,
+      "interiorMissingInputMs": 0.0,
+      "interiorEventuallyUncoveredMs": 0.0,
+      "interiorSourceCopyMismatchedFrames": 0,
+      "sourceGapsWithinOutput": [],
+      "decodedSilence10msWindows": [],
+      "final": {
+        "ready": true,
+        "stopped": true,
+        "paused": false,
+        "videoFrames": 188,
+        "audioSamples": 299656,
+        "repeatedFrames": 36,
+        "droppedAudioSamples": 0,
+        "missingAudioSamples": 0,
+        "lateAudioSamples": 0,
+        "queuedVideoBytes": 0,
+        "queuedAudioBytes": 0,
+        "startedMs": 1273.6453399956226,
+        "durationMs": 6266.666666666667,
+        "maximumEncodeMs": 35.14347100000009,
+        "error": ""
+      },
+      "decodedSamples": 299656,
+      "decodeErrors": false,
+      "decodedPCMEqualsPreEncoderPCM": true,
+      "decodedPCMSha256": "b6b609e15d3d9ff1f9ec34a2e88f028e2d471d98adc6530a62ce06b600bbe14e"
+    }
+  ],
+  "hostCPUQuota": "400000 100000",
+  "hostCPUStatDelta": {
+    "usage_usec": 4310887,
+    "user_usec": 3652318,
+    "system_usec": 658568,
+    "nice_usec": 0,
+    "nr_periods": 69,
+    "nr_throttled": 0,
+    "throttled_usec": 0,
+    "nr_bursts": 0,
+    "burst_usec": 0
+  },
+  "profileSamples": 8
+}

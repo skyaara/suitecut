@@ -1,0 +1,6 @@
+$ tsc --noEmit
+benchmarks/native-engine/engine.e2e.spec.ts(479,18): error TS2532: Object is possibly 'undefined'.
+benchmarks/native-engine/engine.e2e.spec.ts(480,11): error TS18048: 'page' is possibly 'undefined'.
+benchmarks/native-engine/engine.e2e.spec.ts(481,40): error TS2345: Argument of type 'Page | undefined' is not assignable to parameter of type 'Page'.
+  Type 'undefined' is not assignable to type 'Page'.
+[ELIFECYCLE] Command failed with exit code 2.

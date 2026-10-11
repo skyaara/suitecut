@@ -1,0 +1,676 @@
+{
+  "backend": "obs-cef",
+  "mode": "stream",
+  "durationRequestedMs": 600000,
+  "width": 1920,
+  "height": 1080,
+  "fps": 30,
+  "status": "completed; media validation pending",
+  "startedAt": "2026-10-10T15:16:38.944Z",
+  "profile": "memory",
+  "encoding": {
+    "video": "H264",
+    "preset": "veryfast",
+    "crf": null,
+    "bitrateKbps": 4500,
+    "encoderThreads": 1,
+    "audio": "AAC 48kHz stereo 128kbps"
+  },
+  "recordingPath": "/workspace/suitecut/benchmarks/publication/2026-10-10/runs/memory-obs-cef/recording.mkv",
+  "receiverPath": "/workspace/suitecut/benchmarks/publication/2026-10-10/runs/memory-obs-cef/receiver.flv",
+  "phases": [
+    {
+      "name": "static",
+      "atMs": 0.03405099999963568,
+      "monotonic": 155172.941409251
+    },
+    {
+      "name": "canvas",
+      "atMs": 10011.540870999997,
+      "monotonic": 155182.936982812
+    },
+    {
+      "name": "scroll",
+      "atMs": 20043.740123,
+      "monotonic": 155192.913885532
+    },
+    {
+      "name": "static",
+      "atMs": 30068.142093999995,
+      "monotonic": 155202.968973794
+    },
+    {
+      "name": "canvas",
+      "atMs": 40017.143731,
+      "monotonic": 155212.892422478
+    },
+    {
+      "name": "scroll",
+      "atMs": 50032.772422,
+      "monotonic": 155222.837547331
+    },
+    {
+      "name": "static",
+      "atMs": 60040.946154000005,
+      "monotonic": 155232.890467255
+    },
+    {
+      "name": "canvas",
+      "atMs": 70049.77312499999,
+      "monotonic": 155243.013598527
+    },
+    {
+      "name": "scroll",
+      "atMs": 80017.734876,
+      "monotonic": 155252.823499311
+    },
+    {
+      "name": "static",
+      "atMs": 90016.434455,
+      "monotonic": 155262.86475703
+    },
+    {
+      "name": "canvas",
+      "atMs": 100032.540459,
+      "monotonic": 155272.838576231
+    },
+    {
+      "name": "scroll",
+      "atMs": 110018.657382,
+      "monotonic": 155282.839853249
+    },
+    {
+      "name": "static",
+      "atMs": 120422.390755,
+      "monotonic": 155293.369250302
+    },
+    {
+      "name": "canvas",
+      "atMs": 130013.79163099999,
+      "monotonic": 155302.86071193
+    },
+    {
+      "name": "scroll",
+      "atMs": 140005.218109,
+      "monotonic": 155313.002991614
+    },
+    {
+      "name": "static",
+      "atMs": 150015.283968,
+      "monotonic": 155322.871506049
+    },
+    {
+      "name": "canvas",
+      "atMs": 160017.40171600002,
+      "monotonic": 155332.849395591
+    },
+    {
+      "name": "scroll",
+      "atMs": 170006.53369500002,
+      "monotonic": 155342.821791212
+    },
+    {
+      "name": "static",
+      "atMs": 180028.56368700002,
+      "monotonic": 155353.064486525
+    },
+    {
+      "name": "canvas",
+      "atMs": 190040.45071900001,
+      "monotonic": 155362.866842189
+    },
+    {
+      "name": "scroll",
+      "atMs": 200046.189867,
+      "monotonic": 155372.910032197
+    },
+    {
+      "name": "static",
+      "atMs": 210071.27426200002,
+      "monotonic": 155382.892761296
+    },
+    {
+      "name": "canvas",
+      "atMs": 220025.064022,
+      "monotonic": 155392.856902421
+    },
+    {
+      "name": "scroll",
+      "atMs": 230040.148384,
+      "monotonic": 155402.911709113
+    },
+    {
+      "name": "static",
+      "atMs": 240005.96851,
+      "monotonic": 155412.891521344
+    },
+    {
+      "name": "canvas",
+      "atMs": 250038.766868,
+      "monotonic": 155422.895078193
+    },
+    {
+      "name": "scroll",
+      "atMs": 260035.91301100003,
+      "monotonic": 155432.841898429
+    },
+    {
+      "name": "static",
+      "atMs": 270301.926533,
+      "monotonic": 155443.141864687
+    },
+    {
+      "name": "canvas",
+      "atMs": 280020.559797,
+      "monotonic": 155452.83117452
+    },
+    {
+      "name": "scroll",
+      "atMs": 290015.499871,
+      "monotonic": 155462.835233827
+    },
+    {
+      "name": "static",
+      "atMs": 300040.635009,
+      "monotonic": 155472.868718629
+    },
+    {
+      "name": "canvas",
+      "atMs": 310053.661977,
+      "monotonic": 155483.217258536
+    },
+    {
+      "name": "scroll",
+      "atMs": 320001.334881,
+      "monotonic": 155492.837444612
+    },
+    {
+      "name": "static",
+      "atMs": 330589.40481800004,
+      "monotonic": 155503.609733168
+    },
+    {
+      "name": "canvas",
+      "atMs": 340049.428651,
+      "monotonic": 155512.959093238
+    },
+    {
+      "name": "scroll",
+      "atMs": 350023.224807,
+      "monotonic": 155522.87979345
+    },
+    {
+      "name": "static",
+      "atMs": 360077.79837800004,
+      "monotonic": 155532.889491924
+    },
+    {
+      "name": "canvas",
+      "atMs": 370042.99025100004,
+      "monotonic": 155542.866954212
+    },
+    {
+      "name": "scroll",
+      "atMs": 380025.028504,
+      "monotonic": 155552.856485547
+    },
+    {
+      "name": "static",
+      "atMs": 390018.061887,
+      "monotonic": 155562.893278775
+    },
+    {
+      "name": "canvas",
+      "atMs": 400035.62732800003,
+      "monotonic": 155572.882417176
+    },
+    {
+      "name": "scroll",
+      "atMs": 410019.20688300004,
+      "monotonic": 155582.835172534
+    },
+    {
+      "name": "static",
+      "atMs": 420118.514715,
+      "monotonic": 155592.952937971
+    },
+    {
+      "name": "canvas",
+      "atMs": 430031.797195,
+      "monotonic": 155602.874945922
+    },
+    {
+      "name": "scroll",
+      "atMs": 440023.447218,
+      "monotonic": 155612.864859059
+    },
+    {
+      "name": "static",
+      "atMs": 450002.086682,
+      "monotonic": 155622.855574476
+    },
+    {
+      "name": "canvas",
+      "atMs": 460045.191056,
+      "monotonic": 155632.930722914
+    },
+    {
+      "name": "scroll",
+      "atMs": 470049.420731,
+      "monotonic": 155642.940276002
+    },
+    {
+      "name": "static",
+      "atMs": 480129.855289,
+      "monotonic": 155652.988995233
+    },
+    {
+      "name": "canvas",
+      "atMs": 490013.772643,
+      "monotonic": 155662.933723021
+    },
+    {
+      "name": "scroll",
+      "atMs": 500032.067339,
+      "monotonic": 155672.852416567
+    },
+    {
+      "name": "static",
+      "atMs": 510011.326546,
+      "monotonic": 155682.882081239
+    },
+    {
+      "name": "canvas",
+      "atMs": 520049.035795,
+      "monotonic": 155692.873183355
+    },
+    {
+      "name": "scroll",
+      "atMs": 530038.412179,
+      "monotonic": 155702.845349764
+    },
+    {
+      "name": "static",
+      "atMs": 540004.683564,
+      "monotonic": 155712.874567855
+    },
+    {
+      "name": "canvas",
+      "atMs": 550002.5047419999,
+      "monotonic": 155722.885755061
+    },
+    {
+      "name": "scroll",
+      "atMs": 560032.0823019999,
+      "monotonic": 155732.894020106
+    },
+    {
+      "name": "static",
+      "atMs": 570009.101252,
+      "monotonic": 155742.857215448
+    },
+    {
+      "name": "canvas",
+      "atMs": 580229.297823,
+      "monotonic": 155768.442543073
+    },
+    {
+      "name": "scroll",
+      "atMs": 595843.6534239999,
+      "monotonic": 155773.971159551
+    }
+  ],
+  "events": [
+    {
+      "name": "click, input and selection",
+      "atMs": 12631.132824
+    }
+  ],
+  "obsVersion": {
+    "availableRequests": [
+      "OpenSourceProjector",
+      "OpenInputInteractDialog",
+      "OpenInputFiltersDialog",
+      "OpenInputPropertiesDialog",
+      "OffsetMediaInputCursor",
+      "GetMediaInputStatus",
+      "CreateRecordChapter",
+      "SplitRecordFile",
+      "ResumeRecord",
+      "StopRecord",
+      "ToggleRecord",
+      "SendStreamCaption",
+      "StopStream",
+      "StartStream",
+      "SetInputSettings",
+      "GetInputDefaultSettings",
+      "StopOutput",
+      "GetInputSettings",
+      "SetCurrentSceneTransitionDuration",
+      "SetInputName",
+      "GetInputDeinterlaceMode",
+      "CreateInput",
+      "TriggerHotkeyByKeySequence",
+      "SetSceneSceneTransitionOverride",
+      "SetSceneName",
+      "RemoveScene",
+      "GetInputList",
+      "SetCurrentPreviewScene",
+      "GetSceneSceneTransitionOverride",
+      "SetInputAudioSyncOffset",
+      "BroadcastCustomEvent",
+      "ToggleRecordPause",
+      "GetVirtualCamStatus",
+      "SetCurrentSceneTransitionSettings",
+      "PauseRecord",
+      "GetSceneItemTransform",
+      "GetCurrentProgramScene",
+      "SetCurrentSceneTransition",
+      "GetSceneItemPrivateSettings",
+      "SetSourceFilterSettings",
+      "SetInputVolume",
+      "GetStreamServiceSettings",
+      "GetCurrentSceneTransition",
+      "SaveReplayBuffer",
+      "SetSourcePrivateSettings",
+      "GetCanvasList",
+      "GetSourcePrivateSettings",
+      "Sleep",
+      "StartRecord",
+      "StartOutput",
+      "StopReplayBuffer",
+      "SetStudioModeEnabled",
+      "GetHotkeyList",
+      "GetSceneItemList",
+      "GetStats",
+      "GetRecordStatus",
+      "ToggleReplayBuffer",
+      "GetCurrentPreviewScene",
+      "RemoveInput",
+      "DuplicateSceneItem",
+      "SetCurrentSceneCollection",
+      "GetPersistentData",
+      "CallVendorRequest",
+      "SaveSourceScreenshot",
+      "SetInputAudioBalance",
+      "GetSceneCollectionList",
+      "GetSourceActive",
+      "GetGroupList",
+      "GetVersion",
+      "CreateProfile",
+      "GetProfileParameter",
+      "GetSourceScreenshot",
+      "SetProfileParameter",
+      "OpenVideoMixProjector",
+      "GetInputPropertiesListPropertyItems",
+      "GetStudioModeEnabled",
+      "GetGroupSceneItemList",
+      "GetSceneItemEnabled",
+      "RemoveSourceFilter",
+      "SetVideoSettings",
+      "SetMediaInputCursor",
+      "SetSourceFilterIndex",
+      "SetStreamServiceSettings",
+      "SetInputAudioTracks",
+      "GetSceneItemId",
+      "GetInputAudioBalance",
+      "GetRecordDirectory",
+      "GetReplayBufferStatus",
+      "GetStreamStatus",
+      "GetInputMute",
+      "TriggerHotkeyByName",
+      "SetInputDeinterlaceFieldOrder",
+      "SetCurrentProfile",
+      "RemoveProfile",
+      "ToggleInputMute",
+      "SetRecordDirectory",
+      "GetInputAudioMonitorType",
+      "SetInputAudioMonitorType",
+      "GetInputAudioTracks",
+      "GetSceneTransitionList",
+      "GetInputVolume",
+      "GetTransitionKindList",
+      "PressInputPropertiesButton",
+      "GetMonitorList",
+      "CreateSceneCollection",
+      "TriggerStudioModeTransition",
+      "SetTBarPosition",
+      "GetProfileList",
+      "SetSceneItemBlendMode",
+      "SetInputMute",
+      "GetLastReplayBufferReplay",
+      "SetInputDeinterlaceMode",
+      "GetSourceFilterKindList",
+      "ToggleStream",
+      "GetInputKindList",
+      "GetSourceFilterList",
+      "GetSourceFilterDefaultSettings",
+      "GetInputAudioSyncOffset",
+      "SetSceneItemLocked",
+      "CreateSourceFilter",
+      "GetInputDeinterlaceFieldOrder",
+      "SetSourceFilterName",
+      "StartReplayBuffer",
+      "GetSourceFilter",
+      "SetSourceFilterEnabled",
+      "GetSceneItemSource",
+      "GetSceneList",
+      "SetPersistentData",
+      "CreateSceneItem",
+      "RemoveSceneItem",
+      "TriggerMediaInputAction",
+      "SetSceneItemEnabled",
+      "SetSceneItemIndex",
+      "GetSceneItemLocked",
+      "GetSceneItemIndex",
+      "GetSceneItemBlendMode",
+      "SetSceneItemPrivateSettings",
+      "CreateScene",
+      "GetCurrentSceneTransitionCursor",
+      "ToggleVirtualCam",
+      "GetVideoSettings",
+      "StartVirtualCam",
+      "StopVirtualCam",
+      "GetOutputList",
+      "GetOutputStatus",
+      "SetSceneItemTransform",
+      "ToggleOutput",
+      "GetOutputSettings",
+      "GetSpecialInputs",
+      "SetCurrentProgramScene",
+      "SetOutputSettings"
+    ],
+    "obsVersion": "32.2.0",
+    "obsWebSocketVersion": "5.7.4",
+    "platform": "debian",
+    "platformDescription": "Debian GNU/Linux 13 (trixie)",
+    "rpcVersion": 1,
+    "supportedImageFormats": [
+      "bmp",
+      "cur",
+      "ico",
+      "jfif",
+      "jpeg",
+      "jpg",
+      "pbm",
+      "pgm",
+      "png",
+      "ppm",
+      "xbm",
+      "xpm"
+    ]
+  },
+  "inputKinds": {
+    "inputKinds": [
+      "image_source",
+      "color_source_v3",
+      "slideshow_v2",
+      "alsa_input_capture",
+      "xshm_input_v2",
+      "jack_output_capture",
+      "pipewire-camera-source",
+      "pulse_input_capture",
+      "pulse_output_capture",
+      "v4l2_input",
+      "browser_source",
+      "ffmpeg_source",
+      "text_ft2_source_v2",
+      "vlc_source"
+    ]
+  },
+  "browserVersion": "127.0.6533.120",
+  "effectiveVideo": {
+    "baseHeight": 1080,
+    "baseWidth": 1920,
+    "fpsDenominator": 1,
+    "fpsNumerator": 30,
+    "outputHeight": 1080,
+    "outputWidth": 1920
+  },
+  "obsBefore": {
+    "activeFps": 30.000000300000007,
+    "availableDiskSpace": 3178.171875,
+    "averageFrameRenderTime": 1.070884,
+    "cpuUsage": 28.676470588235293,
+    "memoryUsage": 329.9296875,
+    "outputSkippedFrames": 0,
+    "outputTotalFrames": 0,
+    "renderSkippedFrames": 1,
+    "renderTotalFrames": 57,
+    "webSocketSessionIncomingMessages": 23,
+    "webSocketSessionOutgoingMessages": 29
+  },
+  "screenshotSource": "Publication capture",
+  "browserReadySeconds": 1.8084859110240359,
+  "audioStarted": {
+    "generator": "frame-coded interpolated hash noise",
+    "sampleRate": 48000,
+    "quantum": 24,
+    "amplitude": 0.15,
+    "firstFrame": 0,
+    "currentFrame": 1920
+  },
+  "beforeCapture": {
+    "marker": 129,
+    "rendered": 122,
+    "mode": "canvas",
+    "scrollY": 0,
+    "scrollEvents": 0,
+    "keyEvents": 0,
+    "clicks": 0,
+    "value": "",
+    "choice": "First",
+    "actionMask": 0,
+    "width": 1920,
+    "height": 1080,
+    "audio": {
+      "generator": "frame-coded interpolated hash noise",
+      "sampleRate": 48000,
+      "quantum": 24,
+      "amplitude": 0.15,
+      "firstFrame": 0,
+      "currentFrame": 148352
+    }
+  },
+  "outputReadySeconds": 0.002676114992937073,
+  "activeBaseline": {
+    "marker": 175,
+    "rendered": 158,
+    "mode": "canvas",
+    "scrollY": 0,
+    "scrollEvents": 0,
+    "keyEvents": 0,
+    "clicks": 0,
+    "value": "",
+    "choice": "First",
+    "actionMask": 0,
+    "width": 1920,
+    "height": 1080,
+    "audio": {
+      "generator": "frame-coded interpolated hash noise",
+      "sampleRate": 48000,
+      "quantum": 24,
+      "amplitude": 0.15,
+      "firstFrame": 0,
+      "currentFrame": 216320
+    }
+  },
+  "activeStartMonotonic": 155172.792713428,
+  "nodeBefore": {
+    "rss": 145301504,
+    "heapTotal": 125243392,
+    "heapUsed": 78371528,
+    "external": 7154091,
+    "arrayBuffers": 3018911
+  },
+  "observedActiveMs": 595843.6534239999,
+  "scrollCommands": 366,
+  "activeEndMonotonic": 155774.227985463,
+  "activeMs": 601429.6923489999,
+  "afterCapture": {
+    "marker": 18223,
+    "rendered": 13654,
+    "mode": "scroll",
+    "scrollY": 0,
+    "scrollEvents": 309,
+    "keyEvents": 1,
+    "clicks": 1,
+    "value": "SuiteCut benchmark",
+    "choice": "Second",
+    "actionMask": 15,
+    "width": 1920,
+    "height": 1080,
+    "audio": {
+      "generator": "frame-coded interpolated hash noise",
+      "sampleRate": 48000,
+      "quantum": 24,
+      "amplitude": 0.15,
+      "firstFrame": 0,
+      "currentFrame": 27222272
+    }
+  },
+  "nodeAfter": {
+    "rss": 130363392,
+    "heapTotal": 62992384,
+    "heapUsed": 61030480,
+    "external": 5780662,
+    "arrayBuffers": 1645442
+  },
+  "finalStream": {
+    "outputActive": true,
+    "outputBytes": 332787935,
+    "outputCongestion": 0,
+    "outputDuration": 574166,
+    "outputReconnecting": false,
+    "outputSkippedFrames": 0,
+    "outputTimecode": "00:09:34.166",
+    "outputTotalFrames": 17225
+  },
+  "obsAfter": {
+    "activeFps": 0.5769230826923077,
+    "availableDiskSpace": 2857.19140625,
+    "averageFrameRenderTime": 1742.22014,
+    "cpuUsage": 54.37241424780366,
+    "memoryUsage": 430.33984375,
+    "outputSkippedFrames": 528,
+    "outputTotalFrames": 17226,
+    "renderSkippedFrames": 4229,
+    "renderTotalFrames": 18257,
+    "webSocketSessionIncomingMessages": 584,
+    "webSocketSessionOutgoingMessages": 593
+  },
+  "finalizationSeconds": 0.05598305002786219,
+  "eventLoop": {
+    "meanMs": 22.19672226163701,
+    "p99Ms": 33.079295,
+    "maxMs": 1630.535679
+  },
+  "nodeAfterCleanup": {
+    "rss": 130494464,
+    "heapTotal": 63254528,
+    "heapUsed": 60750048,
+    "external": 5715037,
+    "arrayBuffers": 1575741
+  },
+  "completedAt": "2026-10-10T15:27:02.754Z"
+}

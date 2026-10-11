@@ -1,0 +1,10 @@
+[1/10] Building CXX object CMakeFiles/suitecut-audio-startup-test.dir/media_startup_test.cc.o
+[2/10] Building CXX object CMakeFiles/suitecut-media.dir/media_engine.cc.o
+[3/10] Linking CXX static library libsuitecut-media.a
+[4/10] Linking CXX executable suitecut-audio-startup-test
+[5/10] Linking CXX executable suitecut-media-test
+[6/10] Linking CXX executable suitecut-codec-test
+[7/10] Linking CXX executable suitecut-memory-test
+[8/10] Linking CXX executable suitecut-sync-test
+[9/10] Linking CXX executable suitecut-scaler-failure-test
+[10/10] Linking CXX executable suitecut-browser

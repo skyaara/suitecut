@@ -1,0 +1,495 @@
+
+/workspace/suitecut/benchmarks/native-playback/2026-10-10/before-entry-fix/suitecut-browser:     file format elf64-x86-64
+
+
+Disassembly of section .init:
+
+Disassembly of section .plt:
+
+Disassembly of section .plt.got:
+
+Disassembly of section .text:
+
+0000000000037fe0 <RunSuiteCutBrowser(int, char**)>:
+   37fe0:	41 57                	push   %r15
+   37fe2:	41 56                	push   %r14
+   37fe4:	41 55                	push   %r13
+   37fe6:	41 89 fd             	mov    %edi,%r13d
+   37fe9:	bf 0d 00 00 00       	mov    $0xd,%edi
+   37fee:	41 54                	push   %r12
+   37ff0:	55                   	push   %rbp
+   37ff1:	53                   	push   %rbx
+   37ff2:	48 81 ec e8 04 00 00 	sub    $0x4e8,%rsp
+   37ff9:	64 4c 8b 34 25 28 00 	mov    %fs:0x28,%r14
+   38000:	00 00 
+   38002:	4c 89 b4 24 d8 04 00 	mov    %r14,0x4d8(%rsp)
+   38009:	00 
+   3800a:	49 89 f6             	mov    %rsi,%r14
+   3800d:	48 8d 9c 24 80 00 00 	lea    0x80(%rsp),%rbx
+   38014:	00 
+   38015:	be 01 00 00 00       	mov    $0x1,%esi
+   3801a:	48 8d 6c 24 50       	lea    0x50(%rsp),%rbp
+   3801f:	e8 7c 69 fe ff       	call   1e9a0 <signal@plt>
+   38024:	31 d2                	xor    %edx,%edx
+   38026:	48 89 de             	mov    %rbx,%rsi
+   38029:	48 89 ef             	mov    %rbp,%rdi
+   3802c:	44 89 6c 24 50       	mov    %r13d,0x50(%rsp)
+   38031:	48 c7 84 24 80 00 00 	movq   $0x0,0x80(%rsp)
+   38038:	00 00 00 00 00 
+   3803d:	4c 89 74 24 58       	mov    %r14,0x58(%rsp)
+   38042:	e8 49 cb 02 00       	call   64b90 <CefExecuteProcess(CefMainArgs const&, scoped_refptr<CefApp>, void*)>
+   38047:	48 8b bc 24 80 00 00 	mov    0x80(%rsp),%rdi
+   3804e:	00 
+   3804f:	41 89 c4             	mov    %eax,%r12d
+   38052:	48 85 ff             	test   %rdi,%rdi
+   38055:	74 05                	je     3805c <RunSuiteCutBrowser(int, char**)+0x7c>
+   38057:	e8 04 ff ff ff       	call   37f60 <scoped_refptr<CefApp>::Release(CefApp*)>
+   3805c:	45 85 e4             	test   %r12d,%r12d
+   3805f:	78 2f                	js     38090 <RunSuiteCutBrowser(int, char**)+0xb0>
+   38061:	48 8b 84 24 d8 04 00 	mov    0x4d8(%rsp),%rax
+   38068:	00 
+   38069:	64 48 2b 04 25 28 00 	sub    %fs:0x28,%rax
+   38070:	00 00 
+   38072:	0f 85 c1 06 00 00    	jne    38739 <RunSuiteCutBrowser(int, char**)+0x759>
+   38078:	48 81 c4 e8 04 00 00 	add    $0x4e8,%rsp
+   3807f:	44 89 e0             	mov    %r12d,%eax
+   38082:	5b                   	pop    %rbx
+   38083:	5d                   	pop    %rbp
+   38084:	41 5c                	pop    %r12
+   38086:	41 5d                	pop    %r13
+   38088:	41 5e                	pop    %r14
+   3808a:	41 5f                	pop    %r15
+   3808c:	c3                   	ret
+   3808d:	0f 1f 00             	nopl   (%rax)
+   38090:	bf 01 00 00 00       	mov    $0x1,%edi
+   38095:	e8 d6 66 fe ff       	call   1e770 <dup@plt>
+   3809a:	41 89 c7             	mov    %eax,%r15d
+   3809d:	85 c0                	test   %eax,%eax
+   3809f:	0f 88 4b 04 00 00    	js     384f0 <RunSuiteCutBrowser(int, char**)+0x510>
+   380a5:	89 c7                	mov    %eax,%edi
+   380a7:	ba 01 00 00 00       	mov    $0x1,%edx
+   380ac:	31 c0                	xor    %eax,%eax
+   380ae:	be 02 00 00 00       	mov    $0x2,%esi
+   380b3:	e8 28 60 fe ff       	call   1e0e0 <fcntl64@plt>
+   380b8:	85 c0                	test   %eax,%eax
+   380ba:	0f 88 30 04 00 00    	js     384f0 <RunSuiteCutBrowser(int, char**)+0x510>
+   380c0:	be 01 00 00 00       	mov    $0x1,%esi
+   380c5:	bf 02 00 00 00       	mov    $0x2,%edi
+   380ca:	e8 c1 69 fe ff       	call   1ea90 <dup2@plt>
+   380cf:	85 c0                	test   %eax,%eax
+   380d1:	0f 88 19 04 00 00    	js     384f0 <RunSuiteCutBrowser(int, char**)+0x510>
+   380d7:	48 8d 7c 24 40       	lea    0x40(%rsp),%rdi
+   380dc:	e8 bf 30 02 00       	call   5b1a0 <CefCommandLine::CreateCommandLine()>
+   380e1:	48 8b 7c 24 40       	mov    0x40(%rsp),%rdi
+   380e6:	4c 89 f2             	mov    %r14,%rdx
+   380e9:	44 89 ee             	mov    %r13d,%esi
+   380ec:	48 8b 07             	mov    (%rdi),%rax
+   380ef:	ff 50 48             	call   *0x48(%rax)
+   380f2:	4c 8b 64 24 40       	mov    0x40(%rsp),%r12
+   380f7:	31 d2                	xor    %edx,%edx
+   380f9:	48 8d 35 c8 c0 15 00 	lea    0x15c0c8(%rip),%rsi        # 1941c8 <_IO_stdin_used+0x1c8>
+   38100:	48 89 df             	mov    %rbx,%rdi
+   38103:	49 8b 04 24          	mov    (%r12),%rax
+   38107:	4c 8b a8 88 00 00 00 	mov    0x88(%rax),%r13
+   3810e:	c6 84 24 88 00 00 00 	movb   $0x0,0x88(%rsp)
+   38115:	00 
+   38116:	48 c7 84 24 80 00 00 	movq   $0x0,0x80(%rsp)
+   3811d:	00 00 00 00 00 
+   38122:	e8 c9 08 ff ff       	call   289f0 <CefStringBase<CefStringTraitsUTF16>::FromString(char const*, unsigned long) [clone .isra.0]>
+   38127:	48 89 de             	mov    %rbx,%rsi
+   3812a:	4c 89 e7             	mov    %r12,%rdi
+   3812d:	41 ff d5             	call   *%r13
+   38130:	41 89 c4             	mov    %eax,%r12d
+   38133:	48 8d 84 24 a0 02 00 	lea    0x2a0(%rsp),%rax
+   3813a:	00 
+   3813b:	66 0f ef c0          	pxor   %xmm0,%xmm0
+   3813f:	48 c7 84 24 90 02 00 	movq   $0x0,0x290(%rsp)
+   38146:	00 00 00 00 00 
+   3814b:	48 89 c7             	mov    %rax,%rdi
+   3814e:	48 89 44 24 30       	mov    %rax,0x30(%rsp)
+   38153:	0f 29 84 24 70 02 00 	movaps %xmm0,0x270(%rsp)
+   3815a:	00 
+   3815b:	0f 29 84 24 80 02 00 	movaps %xmm0,0x280(%rsp)
+   38162:	00 
+   38163:	44 89 bc 24 98 02 00 	mov    %r15d,0x298(%rsp)
+   3816a:	00 
+   3816b:	e8 e0 63 fe ff       	call   1e550 <std::condition_variable::condition_variable()@plt>
+   38170:	48 8d 84 24 d0 02 00 	lea    0x2d0(%rsp),%rax
+   38177:	00 
+   38178:	66 0f ef c0          	pxor   %xmm0,%xmm0
+   3817c:	48 c7 84 24 d0 02 00 	movq   $0x0,0x2d0(%rsp)
+   38183:	00 00 00 00 00 
+   38188:	48 89 c7             	mov    %rax,%rdi
+   3818b:	48 89 44 24 10       	mov    %rax,0x10(%rsp)
+   38190:	48 c7 84 24 d8 02 00 	movq   $0x0,0x2d8(%rsp)
+   38197:	00 00 00 00 00 
+   3819c:	0f 29 84 24 e0 02 00 	movaps %xmm0,0x2e0(%rsp)
+   381a3:	00 
+   381a4:	0f 29 84 24 f0 02 00 	movaps %xmm0,0x2f0(%rsp)
+   381ab:	00 
+   381ac:	0f 29 84 24 00 03 00 	movaps %xmm0,0x300(%rsp)
+   381b3:	00 
+   381b4:	0f 29 84 24 10 03 00 	movaps %xmm0,0x310(%rsp)
+   381bb:	00 
+   381bc:	e8 0f 0e ff ff       	call   28fd0 <std::_Deque_base<(anonymous namespace)::Packet, std::allocator<(anonymous namespace)::Packet> >::_M_initialize_map(unsigned long) [clone .constprop.0]>
+   381c1:	4c 8d bc 24 20 03 00 	lea    0x320(%rsp),%r15
+   381c8:	00 
+   381c9:	66 0f ef c0          	pxor   %xmm0,%xmm0
+   381cd:	48 c7 84 24 20 03 00 	movq   $0x0,0x320(%rsp)
+   381d4:	00 00 00 00 00 
+   381d9:	4c 89 ff             	mov    %r15,%rdi
+   381dc:	0f 29 84 24 30 03 00 	movaps %xmm0,0x330(%rsp)
+   381e3:	00 
+   381e4:	48 c7 84 24 28 03 00 	movq   $0x0,0x328(%rsp)
+   381eb:	00 00 00 00 00 
+   381f0:	0f 29 84 24 40 03 00 	movaps %xmm0,0x340(%rsp)
+   381f7:	00 
+   381f8:	0f 29 84 24 50 03 00 	movaps %xmm0,0x350(%rsp)
+   381ff:	00 
+   38200:	0f 29 84 24 60 03 00 	movaps %xmm0,0x360(%rsp)
+   38207:	00 
+   38208:	e8 c3 0d ff ff       	call   28fd0 <std::_Deque_base<(anonymous namespace)::Packet, std::allocator<(anonymous namespace)::Packet> >::_M_initialize_map(unsigned long) [clone .constprop.0]>
+   3820d:	31 c0                	xor    %eax,%eax
+   3820f:	66 0f ef c0          	pxor   %xmm0,%xmm0
+   38213:	66 0f ef c9          	pxor   %xmm1,%xmm1
+   38217:	48 c7 84 24 70 03 00 	movq   $0x0,0x370(%rsp)
+   3821e:	00 00 00 00 00 
+   38223:	66 89 84 24 58 04 00 	mov    %ax,0x458(%rsp)
+   3822a:	00 
+   3822b:	48 8d 84 24 88 04 00 	lea    0x488(%rsp),%rax
+   38232:	00 
+   38233:	48 89 c7             	mov    %rax,%rdi
+   38236:	0f 11 84 24 08 04 00 	movups %xmm0,0x408(%rsp)
+   3823d:	00 
+   3823e:	0f 11 84 24 18 04 00 	movups %xmm0,0x418(%rsp)
+   38245:	00 
+   38246:	0f 11 84 24 28 04 00 	movups %xmm0,0x428(%rsp)
+   3824d:	00 
+   3824e:	0f 11 84 24 38 04 00 	movups %xmm0,0x438(%rsp)
+   38255:	00 
+   38256:	0f 11 84 24 48 04 00 	movups %xmm0,0x448(%rsp)
+   3825d:	00 
+   3825e:	66 0f ef c0          	pxor   %xmm0,%xmm0
+   38262:	48 89 44 24 38       	mov    %rax,0x38(%rsp)
+   38267:	0f 11 8c 24 d8 03 00 	movups %xmm1,0x3d8(%rsp)
+   3826e:	00 
+   3826f:	0f 11 8c 24 e8 03 00 	movups %xmm1,0x3e8(%rsp)
+   38276:	00 
+   38277:	0f 11 8c 24 f8 03 00 	movups %xmm1,0x3f8(%rsp)
+   3827e:	00 
+   3827f:	c6 84 24 c0 03 00 00 	movb   $0x0,0x3c0(%rsp)
+   38286:	00 
+   38287:	48 c7 84 24 c8 03 00 	movq   $0x0,0x3c8(%rsp)
+   3828e:	00 00 00 00 00 
+   38293:	44 88 a4 24 d0 03 00 	mov    %r12b,0x3d0(%rsp)
+   3829a:	00 
+   3829b:	48 c7 84 24 80 04 00 	movq   $0x0,0x480(%rsp)
+   382a2:	00 00 00 00 00 
+   382a7:	0f 29 84 24 60 04 00 	movaps %xmm0,0x460(%rsp)
+   382ae:	00 
+   382af:	0f 29 84 24 70 04 00 	movaps %xmm0,0x470(%rsp)
+   382b6:	00 
+   382b7:	e8 94 62 fe ff       	call   1e550 <std::condition_variable::condition_variable()@plt>
+   382bc:	66 0f ef c9          	pxor   %xmm1,%xmm1
+   382c0:	be 03 00 00 00       	mov    $0x3,%esi
+   382c5:	31 c0                	xor    %eax,%eax
+   382c7:	8b bc 24 98 02 00 00 	mov    0x298(%rsp),%edi
+   382ce:	c6 84 24 b8 04 00 00 	movb   $0x0,0x4b8(%rsp)
+   382d5:	00 
+   382d6:	0f 29 8c 24 c0 04 00 	movaps %xmm1,0x4c0(%rsp)
+   382dd:	00 
+   382de:	e8 fd 5d fe ff       	call   1e0e0 <fcntl64@plt>
+   382e3:	80 cc 08             	or     $0x8,%ah
+   382e6:	8b bc 24 98 02 00 00 	mov    0x298(%rsp),%edi
+   382ed:	be 04 00 00 00       	mov    $0x4,%esi
+   382f2:	89 c2                	mov    %eax,%edx
+   382f4:	31 c0                	xor    %eax,%eax
+   382f6:	e8 e5 5d fe ff       	call   1e0e0 <fcntl64@plt>
+   382fb:	48 c7 44 24 60 00 00 	movq   $0x0,0x60(%rsp)
+   38302:	00 00 
+   38304:	bf 10 00 00 00       	mov    $0x10,%edi
+   38309:	e8 02 65 fe ff       	call   1e810 <operator new(unsigned long)@plt>
+   3830e:	4c 8d 74 24 70       	lea    0x70(%rsp),%r14
+   38313:	48 8d 8c 24 70 02 00 	lea    0x270(%rsp),%rcx
+   3831a:	00 
+   3831b:	48 89 44 24 70       	mov    %rax,0x70(%rsp)
+   38320:	48 89 4c 24 08       	mov    %rcx,0x8(%rsp)
+   38325:	48 8d 0d 34 03 1a 00 	lea    0x1a0334(%rip),%rcx        # 1d8660 <vtable for std::thread::_State_impl<std::thread::_Invoker<std::tuple<(anonymous namespace)::Writer::Writer(int, bool)::{lambda()#1}> > >+0x10>
+   3832c:	4c 8d 6c 24 60       	lea    0x60(%rsp),%r13
+   38331:	4c 89 f6             	mov    %r14,%rsi
+   38334:	66 48 0f 6e c1       	movq   %rcx,%xmm0
+   38339:	4c 8d 25 f0 f6 fe ff 	lea    -0x10910(%rip),%r12        # 27a30 <std::thread::_M_thread_deps_never_run()>
+   38340:	4c 89 ef             	mov    %r13,%rdi
+   38343:	4c 89 e2             	mov    %r12,%rdx
+   38346:	0f 16 44 24 08       	movhps 0x8(%rsp),%xmm0
+   3834b:	0f 11 00             	movups %xmm0,(%rax)
+   3834e:	e8 cd 62 fe ff       	call   1e620 <std::thread::_M_start_thread(std::unique_ptr<std::thread::_State, std::default_delete<std::thread::_State> >, void (*)())@plt>
+   38353:	48 8b 7c 24 70       	mov    0x70(%rsp),%rdi
+   38358:	48 85 ff             	test   %rdi,%rdi
+   3835b:	74 06                	je     38363 <RunSuiteCutBrowser(int, char**)+0x383>
+   3835d:	48 8b 07             	mov    (%rdi),%rax
+   38360:	ff 50 08             	call   *0x8(%rax)
+   38363:	48 83 bc 24 c0 04 00 	cmpq   $0x0,0x4c0(%rsp)
+   3836a:	00 00 
+   3836c:	0f 85 d4 03 00 00    	jne    38746 <RunSuiteCutBrowser(int, char**)+0x766>
+   38372:	48 8b 44 24 60       	mov    0x60(%rsp),%rax
+   38377:	80 bc 24 d0 03 00 00 	cmpb   $0x0,0x3d0(%rsp)
+   3837e:	00 
+   3837f:	48 89 84 24 c0 04 00 	mov    %rax,0x4c0(%rsp)
+   38386:	00 
+   38387:	0f 85 cb 02 00 00    	jne    38658 <RunSuiteCutBrowser(int, char**)+0x678>
+   3838d:	48 89 df             	mov    %rbx,%rdi
+   38390:	e8 bb a4 ff ff       	call   32850 <CefStringBase<CefStringTraitsUTF16>::ClearAndFree()>
+   38395:	bf 28 00 00 00       	mov    $0x28,%edi
+   3839a:	e8 71 64 fe ff       	call   1e810 <operator new(unsigned long)@plt>
+   3839f:	f3 0f 7e 15 d9 04 1a 	movq   0x1a04d9(%rip),%xmm2        # 1d8880 <vtable for std::_Sp_counted_ptr_inplace<suitecut::MediaOutput, std::allocator<void>, (__gnu_cxx::_Lock_policy)2>+0x60>
+   383a6:	00 
+   383a7:	49 89 c4             	mov    %rax,%r12
+   383aa:	48 8d 05 37 02 1a 00 	lea    0x1a0237(%rip),%rax        # 1d85e8 <vtable for (anonymous namespace)::App+0xe0>
+   383b1:	49 c7 44 24 18 00 00 	movq   $0x0,0x18(%r12)
+   383b8:	00 00 
+   383ba:	66 48 0f 6e d8       	movq   %rax,%xmm3
+   383bf:	48 8b 44 24 08       	mov    0x8(%rsp),%rax
+   383c4:	41 c7 44 24 20 00 00 	movl   $0x0,0x20(%r12)
+   383cb:	00 00 
+   383cd:	66 0f 6c d3          	punpcklqdq %xmm3,%xmm2
+   383d1:	49 89 44 24 10       	mov    %rax,0x10(%r12)
+   383d6:	49 8d 44 24 20       	lea    0x20(%r12),%rax
+   383db:	48 89 44 24 18       	mov    %rax,0x18(%rsp)
+   383e0:	0f 29 54 24 20       	movaps %xmm2,0x20(%rsp)
+   383e5:	41 0f 11 14 24       	movups %xmm2,(%r12)
+   383ea:	f0 41 83 44 24 20 01 	lock addl $0x1,0x20(%r12)
+   383f1:	31 c0                	xor    %eax,%eax
+   383f3:	b9 38 00 00 00       	mov    $0x38,%ecx
+   383f8:	31 d2                	xor    %edx,%edx
+   383fa:	48 8d 35 dc bd 15 00 	lea    0x15bddc(%rip),%rsi        # 1941dd <_IO_stdin_used+0x1dd>
+   38401:	4c 8b 7c 24 40       	mov    0x40(%rsp),%r15
+   38406:	48 c7 84 24 40 02 00 	movq   $0x0,0x240(%rsp)
+   3840d:	00 00 00 00 00 
+   38412:	48 89 df             	mov    %rbx,%rdi
+   38415:	f3 48 ab             	rep stos %rax,%es:(%rdi)
+   38418:	4c 89 ef             	mov    %r13,%rdi
+   3841b:	48 c7 84 24 80 00 00 	movq   $0x1c0,0x80(%rsp)
+   38422:	00 c0 01 00 00 
+   38427:	49 8b 07             	mov    (%r15),%rax
+   3842a:	48 8b 80 90 00 00 00 	mov    0x90(%rax),%rax
+   38431:	c6 44 24 68 00       	movb   $0x0,0x68(%rsp)
+   38436:	48 c7 44 24 60 00 00 	movq   $0x0,0x60(%rsp)
+   3843d:	00 00 
+   3843f:	48 89 44 24 10       	mov    %rax,0x10(%rsp)
+   38444:	e8 a7 05 ff ff       	call   289f0 <CefStringBase<CefStringTraitsUTF16>::FromString(char const*, unsigned long) [clone .isra.0]>
+   38449:	48 8b 44 24 10       	mov    0x10(%rsp),%rax
+   3844e:	4c 89 ea             	mov    %r13,%rdx
+   38451:	4c 89 fe             	mov    %r15,%rsi
+   38454:	4c 89 f7             	mov    %r14,%rdi
+   38457:	ff d0                	call   *%rax
+   38459:	4c 8d bc 24 50 02 00 	lea    0x250(%rsp),%r15
+   38460:	00 
+   38461:	48 8b 74 24 70       	mov    0x70(%rsp),%rsi
+   38466:	4c 89 ff             	mov    %r15,%rdi
+   38469:	e8 f2 7d ff ff       	call   30260 <CefStringBase<CefStringTraitsUTF16>::ToString[abi:cxx11]() const [clone .isra.0]>
+   3846e:	4c 89 f7             	mov    %r14,%rdi
+   38471:	e8 da a3 ff ff       	call   32850 <CefStringBase<CefStringTraitsUTF16>::ClearAndFree()>
+   38476:	4c 89 ef             	mov    %r13,%rdi
+   38479:	e8 d2 a3 ff ff       	call   32850 <CefStringBase<CefStringTraitsUTF16>::ClearAndFree()>
+   3847e:	48 83 bc 24 58 02 00 	cmpq   $0x0,0x258(%rsp)
+   38485:	00 00 
+   38487:	74 0d                	je     38496 <RunSuiteCutBrowser(int, char**)+0x4b6>
+   38489:	48 8b 84 24 50 02 00 	mov    0x250(%rsp),%rax
+   38490:	00 
+   38491:	80 38 2f             	cmpb   $0x2f,(%rax)
+   38494:	74 6a                	je     38500 <RunSuiteCutBrowser(int, char**)+0x520>
+   38496:	4c 89 ff             	mov    %r15,%rdi
+   38499:	e8 92 7d ff ff       	call   30230 <std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_M_dispose()>
+   3849e:	48 83 bc 24 40 02 00 	cmpq   $0x0,0x240(%rsp)
+   384a5:	00 00 
+   384a7:	0f 84 1b 02 00 00    	je     386c8 <RunSuiteCutBrowser(int, char**)+0x6e8>
+   384ad:	48 8b 44 24 18       	mov    0x18(%rsp),%rax
+   384b2:	f0 83 28 01          	lock subl $0x1,(%rax)
+   384b6:	0f 84 6d 01 00 00    	je     38629 <RunSuiteCutBrowser(int, char**)+0x649>
+   384bc:	41 bc 01 00 00 00    	mov    $0x1,%r12d
+   384c2:	48 8b 7c 24 08       	mov    0x8(%rsp),%rdi
+   384c7:	e8 64 3e ff ff       	call   2c330 <(anonymous namespace)::Writer::~Writer()>
+   384cc:	48 8b 7c 24 40       	mov    0x40(%rsp),%rdi
+   384d1:	48 85 ff             	test   %rdi,%rdi
+   384d4:	0f 84 87 fb ff ff    	je     38061 <RunSuiteCutBrowser(int, char**)+0x81>
+   384da:	48 8b 07             	mov    (%rdi),%rax
+   384dd:	48 03 78 c0          	add    -0x40(%rax),%rdi
+   384e1:	48 8b 07             	mov    (%rdi),%rax
+   384e4:	ff 50 08             	call   *0x8(%rax)
+   384e7:	e9 75 fb ff ff       	jmp    38061 <RunSuiteCutBrowser(int, char**)+0x81>
+   384ec:	0f 1f 40 00          	nopl   0x0(%rax)
+   384f0:	41 bc 01 00 00 00    	mov    $0x1,%r12d
+   384f6:	e9 66 fb ff ff       	jmp    38061 <RunSuiteCutBrowser(int, char**)+0x81>
+   384fb:	0f 1f 44 00 00       	nopl   0x0(%rax,%rax,1)
+   38500:	48 8d 84 24 00 01 00 	lea    0x100(%rsp),%rax
+   38507:	00 
+   38508:	4c 89 fe             	mov    %r15,%rsi
+   3850b:	4c 89 f7             	mov    %r14,%rdi
+   3850e:	c6 44 24 78 00       	movb   $0x0,0x78(%rsp)
+   38513:	48 89 44 24 70       	mov    %rax,0x70(%rsp)
+   38518:	e8 a3 0b ff ff       	call   290c0 <CefStringBase<CefStringTraitsUTF16>::FromString(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) [clone .isra.0]>
+   3851d:	4c 89 f7             	mov    %r14,%rdi
+   38520:	e8 2b a3 ff ff       	call   32850 <CefStringBase<CefStringTraitsUTF16>::ClearAndFree()>
+   38525:	49 8b 04 24          	mov    (%r12),%rax
+   38529:	c7 84 24 e0 00 00 00 	movl   $0x1,0xe0(%rsp)
+   38530:	01 00 00 00 
+   38534:	48 8d 15 b5 fc fe ff 	lea    -0x1034b(%rip),%rdx        # 281f0 <(anonymous namespace)::App::AddRef() const>
+   3853b:	c7 84 24 80 01 00 00 	movl   $0x63,0x180(%rsp)
+   38542:	63 00 00 00 
+   38546:	c7 84 24 18 01 00 00 	movl   $0x0,0x118(%rsp)
+   3854d:	00 00 00 00 
+   38551:	4c 89 64 24 70       	mov    %r12,0x70(%rsp)
+   38556:	48 8b 78 c0          	mov    -0x40(%rax),%rdi
+   3855a:	4c 01 e7             	add    %r12,%rdi
+   3855d:	48 8b 07             	mov    (%rdi),%rax
+   38560:	48 8b 00             	mov    (%rax),%rax
+   38563:	48 39 d0             	cmp    %rdx,%rax
+   38566:	0f 85 69 01 00 00    	jne    386d5 <RunSuiteCutBrowser(int, char**)+0x6f5>
+   3856c:	f0 83 47 20 01       	lock addl $0x1,0x20(%rdi)
+   38571:	31 c9                	xor    %ecx,%ecx
+   38573:	4c 89 f2             	mov    %r14,%rdx
+   38576:	48 89 de             	mov    %rbx,%rsi
+   38579:	48 89 ef             	mov    %rbp,%rdi
+   3857c:	e8 3f c7 02 00       	call   64cc0 <CefInitialize(CefMainArgs const&, CefStructBase<CefSettingsTraits> const&, scoped_refptr<CefApp>, void*)>
+   38581:	48 8b 7c 24 70       	mov    0x70(%rsp),%rdi
+   38586:	89 c5                	mov    %eax,%ebp
+   38588:	48 85 ff             	test   %rdi,%rdi
+   3858b:	74 05                	je     38592 <RunSuiteCutBrowser(int, char**)+0x5b2>
+   3858d:	e8 ce f9 ff ff       	call   37f60 <scoped_refptr<CefApp>::Release(CefApp*)>
+   38592:	40 84 ed             	test   %bpl,%bpl
+   38595:	0f 84 fb fe ff ff    	je     38496 <RunSuiteCutBrowser(int, char**)+0x4b6>
+   3859b:	e8 90 c8 02 00       	call   64e30 <CefRunMessageLoop()>
+   385a0:	49 8b 7c 24 18       	mov    0x18(%r12),%rdi
+   385a5:	49 c7 44 24 18 00 00 	movq   $0x0,0x18(%r12)
+   385ac:	00 00 
+   385ae:	48 85 ff             	test   %rdi,%rdi
+   385b1:	74 05                	je     385b8 <RunSuiteCutBrowser(int, char**)+0x5d8>
+   385b3:	e8 d8 64 ff ff       	call   2ea90 <(anonymous namespace)::Source::Release() const>
+   385b8:	48 8b 44 24 18       	mov    0x18(%rsp),%rax
+   385bd:	f0 83 28 01          	lock subl $0x1,(%rax)
+   385c1:	0f 84 39 01 00 00    	je     38700 <RunSuiteCutBrowser(int, char**)+0x720>
+   385c7:	e8 54 c8 02 00       	call   64e20 <CefShutdown()>
+   385cc:	b8 01 00 00 00       	mov    $0x1,%eax
+   385d1:	86 84 24 b8 04 00 00 	xchg   %al,0x4b8(%rsp)
+   385d8:	48 8b 7c 24 30       	mov    0x30(%rsp),%rdi
+   385dd:	e8 1e 60 fe ff       	call   1e600 <std::condition_variable::notify_all()@plt>
+   385e2:	48 8b 7c 24 38       	mov    0x38(%rsp),%rdi
+   385e7:	e8 14 60 fe ff       	call   1e600 <std::condition_variable::notify_all()@plt>
+   385ec:	48 83 bc 24 c0 04 00 	cmpq   $0x0,0x4c0(%rsp)
+   385f3:	00 00 
+   385f5:	0f 85 f3 00 00 00    	jne    386ee <RunSuiteCutBrowser(int, char**)+0x70e>
+   385fb:	48 83 bc 24 c8 04 00 	cmpq   $0x0,0x4c8(%rsp)
+   38602:	00 00 
+   38604:	0f 85 d2 00 00 00    	jne    386dc <RunSuiteCutBrowser(int, char**)+0x6fc>
+   3860a:	4c 89 ff             	mov    %r15,%rdi
+   3860d:	e8 1e 7c ff ff       	call   30230 <std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_M_dispose()>
+   38612:	48 83 bc 24 40 02 00 	cmpq   $0x0,0x240(%rsp)
+   38619:	00 00 
+   3861b:	0f 84 0b 01 00 00    	je     3872c <RunSuiteCutBrowser(int, char**)+0x74c>
+   38621:	45 31 e4             	xor    %r12d,%r12d
+   38624:	e9 99 fe ff ff       	jmp    384c2 <RunSuiteCutBrowser(int, char**)+0x4e2>
+   38629:	66 0f 6f 64 24 20    	movdqa 0x20(%rsp),%xmm4
+   3862f:	49 8b 7c 24 18       	mov    0x18(%r12),%rdi
+   38634:	41 0f 11 24 24       	movups %xmm4,(%r12)
+   38639:	48 85 ff             	test   %rdi,%rdi
+   3863c:	74 05                	je     38643 <RunSuiteCutBrowser(int, char**)+0x663>
+   3863e:	e8 4d 64 ff ff       	call   2ea90 <(anonymous namespace)::Source::Release() const>
+   38643:	be 28 00 00 00       	mov    $0x28,%esi
+   38648:	4c 89 e7             	mov    %r12,%rdi
+   3864b:	e8 50 5a fe ff       	call   1e0a0 <operator delete(void*, unsigned long)@plt>
+   38650:	e9 67 fe ff ff       	jmp    384bc <RunSuiteCutBrowser(int, char**)+0x4dc>
+   38655:	0f 1f 00             	nopl   (%rax)
+   38658:	48 c7 44 24 48 00 00 	movq   $0x0,0x48(%rsp)
+   3865f:	00 00 
+   38661:	bf 10 00 00 00       	mov    $0x10,%edi
+   38666:	e8 a5 61 fe ff       	call   1e810 <operator new(unsigned long)@plt>
+   3866b:	48 8d 7c 24 48       	lea    0x48(%rsp),%rdi
+   38670:	4c 89 e2             	mov    %r12,%rdx
+   38673:	4c 89 f6             	mov    %r14,%rsi
+   38676:	48 89 44 24 70       	mov    %rax,0x70(%rsp)
+   3867b:	48 8d 0d 06 00 1a 00 	lea    0x1a0006(%rip),%rcx        # 1d8688 <vtable for std::thread::_State_impl<std::thread::_Invoker<std::tuple<(anonymous namespace)::Writer::Writer(int, bool)::{lambda()#2}> > >+0x10>
+   38682:	66 48 0f 6e c1       	movq   %rcx,%xmm0
+   38687:	0f 16 44 24 08       	movhps 0x8(%rsp),%xmm0
+   3868c:	0f 11 00             	movups %xmm0,(%rax)
+   3868f:	e8 8c 5f fe ff       	call   1e620 <std::thread::_M_start_thread(std::unique_ptr<std::thread::_State, std::default_delete<std::thread::_State> >, void (*)())@plt>
+   38694:	48 8b 7c 24 70       	mov    0x70(%rsp),%rdi
+   38699:	48 85 ff             	test   %rdi,%rdi
+   3869c:	74 06                	je     386a4 <RunSuiteCutBrowser(int, char**)+0x6c4>
+   3869e:	48 8b 07             	mov    (%rdi),%rax
+   386a1:	ff 50 08             	call   *0x8(%rax)
+   386a4:	48 83 bc 24 c8 04 00 	cmpq   $0x0,0x4c8(%rsp)
+   386ab:	00 00 
+   386ad:	0f 85 a8 00 00 00    	jne    3875b <RunSuiteCutBrowser(int, char**)+0x77b>
+   386b3:	48 8b 44 24 48       	mov    0x48(%rsp),%rax
+   386b8:	48 89 84 24 c8 04 00 	mov    %rax,0x4c8(%rsp)
+   386bf:	00 
+   386c0:	e9 c8 fc ff ff       	jmp    3838d <RunSuiteCutBrowser(int, char**)+0x3ad>
+   386c5:	0f 1f 00             	nopl   (%rax)
+   386c8:	48 89 df             	mov    %rbx,%rdi
+   386cb:	e8 50 45 ff ff       	call   2cc20 <CefSettingsTraits::clear(_cef_settings_t*)>
+   386d0:	e9 d8 fd ff ff       	jmp    384ad <RunSuiteCutBrowser(int, char**)+0x4cd>
+   386d5:	ff d0                	call   *%rax
+   386d7:	e9 95 fe ff ff       	jmp    38571 <RunSuiteCutBrowser(int, char**)+0x591>
+   386dc:	48 8d bc 24 c8 04 00 	lea    0x4c8(%rsp),%rdi
+   386e3:	00 
+   386e4:	e8 97 5b fe ff       	call   1e280 <std::thread::join()@plt>
+   386e9:	e9 1c ff ff ff       	jmp    3860a <RunSuiteCutBrowser(int, char**)+0x62a>
+   386ee:	48 8d bc 24 c0 04 00 	lea    0x4c0(%rsp),%rdi
+   386f5:	00 
+   386f6:	e8 85 5b fe ff       	call   1e280 <std::thread::join()@plt>
+   386fb:	e9 fb fe ff ff       	jmp    385fb <RunSuiteCutBrowser(int, char**)+0x61b>
+   38700:	66 0f 6f 6c 24 20    	movdqa 0x20(%rsp),%xmm5
+   38706:	49 8b 7c 24 18       	mov    0x18(%r12),%rdi
+   3870b:	41 0f 11 2c 24       	movups %xmm5,(%r12)
+   38710:	48 85 ff             	test   %rdi,%rdi
+   38713:	74 05                	je     3871a <RunSuiteCutBrowser(int, char**)+0x73a>
+   38715:	e8 76 63 ff ff       	call   2ea90 <(anonymous namespace)::Source::Release() const>
+   3871a:	be 28 00 00 00       	mov    $0x28,%esi
+   3871f:	4c 89 e7             	mov    %r12,%rdi
+   38722:	e8 79 59 fe ff       	call   1e0a0 <operator delete(void*, unsigned long)@plt>
+   38727:	e9 9b fe ff ff       	jmp    385c7 <RunSuiteCutBrowser(int, char**)+0x5e7>
+   3872c:	48 89 df             	mov    %rbx,%rdi
+   3872f:	e8 ec 44 ff ff       	call   2cc20 <CefSettingsTraits::clear(_cef_settings_t*)>
+   38734:	e9 e8 fe ff ff       	jmp    38621 <RunSuiteCutBrowser(int, char**)+0x641>
+   38739:	e8 e2 5a fe ff       	call   1e220 <__stack_chk_fail@plt>
+   3873e:	48 89 c5             	mov    %rax,%rbp
+   38741:	e9 ed 74 fe ff       	jmp    1fc33 <RunSuiteCutBrowser(int, char**) [clone .cold]>
+   38746:	e9 fb 74 fe ff       	jmp    1fc46 <RunSuiteCutBrowser(int, char**) [clone .cold]+0x13>
+   3874b:	48 89 c5             	mov    %rax,%rbp
+   3874e:	e9 51 75 fe ff       	jmp    1fca4 <RunSuiteCutBrowser(int, char**) [clone .cold]+0x71>
+   38753:	48 89 c5             	mov    %rax,%rbp
+   38756:	e9 61 75 fe ff       	jmp    1fcbc <RunSuiteCutBrowser(int, char**) [clone .cold]+0x89>
+   3875b:	e9 e6 74 fe ff       	jmp    1fc46 <RunSuiteCutBrowser(int, char**) [clone .cold]+0x13>
+   38760:	48 89 c3             	mov    %rax,%rbx
+   38763:	e9 eb 75 fe ff       	jmp    1fd53 <RunSuiteCutBrowser(int, char**) [clone .cold]+0x120>
+   38768:	48 89 c5             	mov    %rax,%rbp
+   3876b:	e9 1a 75 fe ff       	jmp    1fc8a <RunSuiteCutBrowser(int, char**) [clone .cold]+0x57>
+   38770:	48 89 c5             	mov    %rax,%rbp
+   38773:	e9 4e 75 fe ff       	jmp    1fcc6 <RunSuiteCutBrowser(int, char**) [clone .cold]+0x93>
+   38778:	48 89 c5             	mov    %rax,%rbp
+   3877b:	e9 00 76 fe ff       	jmp    1fd80 <RunSuiteCutBrowser(int, char**) [clone .cold]+0x14d>
+   38780:	48 89 c5             	mov    %rax,%rbp
+   38783:	e9 b3 74 fe ff       	jmp    1fc3b <RunSuiteCutBrowser(int, char**) [clone .cold]+0x8>
+   38788:	48 89 c5             	mov    %rax,%rbp
+   3878b:	e9 e6 74 fe ff       	jmp    1fc76 <RunSuiteCutBrowser(int, char**) [clone .cold]+0x43>
+   38790:	48 89 c5             	mov    %rax,%rbp
+   38793:	e9 e8 74 fe ff       	jmp    1fc80 <RunSuiteCutBrowser(int, char**) [clone .cold]+0x4d>
+   38798:	48 89 c5             	mov    %rax,%rbp
+   3879b:	e9 f5 75 fe ff       	jmp    1fd95 <RunSuiteCutBrowser(int, char**) [clone .cold]+0x162>
+   387a0:	48 89 c5             	mov    %rax,%rbp
+   387a3:	e9 fa 75 fe ff       	jmp    1fda2 <RunSuiteCutBrowser(int, char**) [clone .cold]+0x16f>
+   387a8:	48 89 c5             	mov    %rax,%rbp
+   387ab:	e9 e4 74 fe ff       	jmp    1fc94 <RunSuiteCutBrowser(int, char**) [clone .cold]+0x61>
+   387b0:	48 89 c5             	mov    %rax,%rbp
+   387b3:	e9 e4 74 fe ff       	jmp    1fc9c <RunSuiteCutBrowser(int, char**) [clone .cold]+0x69>
+   387b8:	48 89 c5             	mov    %rax,%rbp
+   387bb:	e9 f3 75 fe ff       	jmp    1fdb3 <RunSuiteCutBrowser(int, char**) [clone .cold]+0x180>
+   387c0:	48 89 c5             	mov    %rax,%rbp
+   387c3:	e9 ca 75 fe ff       	jmp    1fd92 <RunSuiteCutBrowser(int, char**) [clone .cold]+0x15f>
+   387c8:	48 89 c5             	mov    %rax,%rbp
+   387cb:	e9 c2 75 fe ff       	jmp    1fd92 <RunSuiteCutBrowser(int, char**) [clone .cold]+0x15f>
+   387d0:	48 89 c5             	mov    %rax,%rbp
+   387d3:	e9 ba 75 fe ff       	jmp    1fd92 <RunSuiteCutBrowser(int, char**) [clone .cold]+0x15f>
+
+Disassembly of section .fini:

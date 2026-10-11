@@ -1,0 +1,290 @@
+{
+  "obs-baseline": {
+    "recording.mkv": {
+      "decodedAudioFrames": 2930688,
+      "audioDecodeExitCode": 0,
+      "audioDecodeErrors": false,
+      "decodedVideoFrames": 1832,
+      "videoDecodeExitCode": 0,
+      "videoDecodeErrors": false,
+      "maximumMarkerHoldMs": 200.0,
+      "distinctMarkerFPS": 29.426855895196503,
+      "caveat": "Four-second page JavaScript stalls intentionally freeze both visual markers in stress cases. This marker analysis is not a full A/V sync verdict."
+    },
+    "receiver.flv": {
+      "decodedAudioFrames": 2491392,
+      "audioDecodeExitCode": 0,
+      "audioDecodeErrors": false,
+      "decodedVideoFrames": 1559,
+      "videoDecodeExitCode": 0,
+      "videoDecodeErrors": false,
+      "maximumMarkerHoldMs": 200.0,
+      "distinctMarkerFPS": 29.384220654265555,
+      "caveat": "Four-second page JavaScript stalls intentionally freeze both visual markers in stress cases. This marker analysis is not a full A/V sync verdict."
+    }
+  },
+  "obs-cold": {
+    "recording.mkv": {
+      "decodedAudioFrames": 812032,
+      "audioDecodeExitCode": 0,
+      "audioDecodeErrors": false,
+      "decodedVideoFrames": 507,
+      "videoDecodeExitCode": 0,
+      "videoDecodeErrors": false,
+      "maximumMarkerHoldMs": 333.3333333333333,
+      "distinctMarkerFPS": 26.804733727810653,
+      "caveat": "Four-second page JavaScript stalls intentionally freeze both visual markers in stress cases. This marker analysis is not a full A/V sync verdict."
+    },
+    "receiver.flv": {
+      "decodedAudioFrames": 746496,
+      "audioDecodeExitCode": 0,
+      "audioDecodeErrors": false,
+      "decodedVideoFrames": 466,
+      "videoDecodeExitCode": 0,
+      "videoDecodeErrors": false,
+      "maximumMarkerHoldMs": 333.3333333333333,
+      "distinctMarkerFPS": 27.42489270386266,
+      "caveat": "Four-second page JavaScript stalls intentionally freeze both visual markers in stress cases. This marker analysis is not a full A/V sync verdict."
+    }
+  },
+  "obs-matched": {
+    "recording.mkv": {
+      "decodedAudioFrames": 2911232,
+      "audioDecodeExitCode": 0,
+      "audioDecodeErrors": false,
+      "decodedVideoFrames": 1819,
+      "videoDecodeExitCode": 0,
+      "videoDecodeErrors": false,
+      "maximumMarkerHoldMs": 3966.6666666666665,
+      "distinctMarkerFPS": 25.068719076415615,
+      "caveat": "Four-second page JavaScript stalls intentionally freeze both visual markers in stress cases. This marker analysis is not a full A/V sync verdict."
+    },
+    "receiver.flv": {
+      "decodedAudioFrames": 2888704,
+      "audioDecodeExitCode": 0,
+      "audioDecodeErrors": false,
+      "decodedVideoFrames": 1805,
+      "videoDecodeExitCode": 0,
+      "videoDecodeErrors": false,
+      "maximumMarkerHoldMs": 3966.6666666666665,
+      "distinctMarkerFPS": 25.030470914127424,
+      "caveat": "Four-second page JavaScript stalls intentionally freeze both visual markers in stress cases. This marker analysis is not a full A/V sync verdict."
+    }
+  },
+  "obs-pilot": {
+    "recording.mkv": {
+      "decodedAudioFrames": 835584,
+      "audioDecodeExitCode": 0,
+      "audioDecodeErrors": false,
+      "decodedVideoFrames": 523,
+      "videoDecodeExitCode": 0,
+      "videoDecodeErrors": false,
+      "maximumMarkerHoldMs": 1100.0,
+      "distinctMarkerFPS": 4.474187380497132,
+      "caveat": "Four-second page JavaScript stalls intentionally freeze both visual markers in stress cases. This marker analysis is not a full A/V sync verdict."
+    },
+    "receiver.flv": {
+      "decodedAudioFrames": 729088,
+      "audioDecodeExitCode": 0,
+      "audioDecodeErrors": false,
+      "decodedVideoFrames": 457,
+      "videoDecodeExitCode": 0,
+      "videoDecodeErrors": false,
+      "maximumMarkerHoldMs": 1100.0,
+      "distinctMarkerFPS": 4.070021881838074,
+      "caveat": "Four-second page JavaScript stalls intentionally freeze both visual markers in stress cases. This marker analysis is not a full A/V sync verdict."
+    }
+  },
+  "obs-tap-off": {
+    "recording.mkv": {
+      "decodedAudioFrames": 2922496,
+      "audioDecodeExitCode": 0,
+      "audioDecodeErrors": false,
+      "decodedVideoFrames": 1826,
+      "videoDecodeExitCode": 0,
+      "videoDecodeErrors": false,
+      "maximumMarkerHoldMs": 3966.6666666666665,
+      "distinctMarkerFPS": 27.699890470974807,
+      "caveat": "Four-second page JavaScript stalls intentionally freeze both visual markers in stress cases. This marker analysis is not a full A/V sync verdict."
+    },
+    "receiver.flv": {
+      "decodedAudioFrames": 2897920,
+      "audioDecodeExitCode": 0,
+      "audioDecodeErrors": false,
+      "decodedVideoFrames": 1811,
+      "videoDecodeExitCode": 0,
+      "videoDecodeErrors": false,
+      "maximumMarkerHoldMs": 3966.6666666666665,
+      "distinctMarkerFPS": 27.69740474875759,
+      "caveat": "Four-second page JavaScript stalls intentionally freeze both visual markers in stress cases. This marker analysis is not a full A/V sync verdict."
+    }
+  },
+  "obs-traced": {
+    "recording.mkv": {
+      "decodedAudioFrames": 1661952,
+      "audioDecodeExitCode": 0,
+      "audioDecodeErrors": false,
+      "decodedVideoFrames": 1038,
+      "videoDecodeExitCode": 0,
+      "videoDecodeErrors": false,
+      "maximumMarkerHoldMs": 1666.6666666666667,
+      "distinctMarkerFPS": 15.953757225433526,
+      "caveat": "Four-second page JavaScript stalls intentionally freeze both visual markers in stress cases. This marker analysis is not a full A/V sync verdict."
+    },
+    "receiver.flv": {
+      "decodedAudioFrames": 1457152,
+      "audioDecodeExitCode": 0,
+      "audioDecodeErrors": false,
+      "decodedVideoFrames": 910,
+      "videoDecodeExitCode": 0,
+      "videoDecodeErrors": false,
+      "maximumMarkerHoldMs": 1666.6666666666667,
+      "distinctMarkerFPS": 15.0989010989011,
+      "caveat": "Four-second page JavaScript stalls intentionally freeze both visual markers in stress cases. This marker analysis is not a full A/V sync verdict."
+    }
+  },
+  "suitecut-baseline-traced": {
+    "recording.mkv": {
+      "decodedAudioFrames": 5828608,
+      "audioDecodeExitCode": 0,
+      "audioDecodeErrors": false,
+      "decodedVideoFrames": 3643,
+      "videoDecodeExitCode": 0,
+      "videoDecodeErrors": false,
+      "maximumMarkerHoldMs": 2300.0,
+      "distinctMarkerFPS": 22.03678287125995,
+      "caveat": "Four-second page JavaScript stalls intentionally freeze both visual markers in stress cases. This marker analysis is not a full A/V sync verdict."
+    },
+    "receiver.flv": {
+      "decodedAudioFrames": 5765120,
+      "audioDecodeExitCode": 0,
+      "audioDecodeErrors": false,
+      "decodedVideoFrames": 3602,
+      "videoDecodeExitCode": 0,
+      "videoDecodeErrors": false,
+      "maximumMarkerHoldMs": 2300.0,
+      "distinctMarkerFPS": 23.64519711271516,
+      "caveat": "Four-second page JavaScript stalls intentionally freeze both visual markers in stress cases. This marker analysis is not a full A/V sync verdict."
+    }
+  },
+  "suitecut-cold": {
+    "recording.mkv": {
+      "decodedAudioFrames": 745472,
+      "audioDecodeExitCode": 0,
+      "audioDecodeErrors": false,
+      "decodedVideoFrames": 466,
+      "videoDecodeExitCode": 0,
+      "videoDecodeErrors": false,
+      "maximumMarkerHoldMs": 466.6666666666667,
+      "distinctMarkerFPS": 27.23175965665236,
+      "caveat": "Four-second page JavaScript stalls intentionally freeze both visual markers in stress cases. This marker analysis is not a full A/V sync verdict."
+    },
+    "receiver.flv": {
+      "decodedAudioFrames": 724992,
+      "audioDecodeExitCode": 0,
+      "audioDecodeErrors": false,
+      "decodedVideoFrames": 453,
+      "videoDecodeExitCode": 0,
+      "videoDecodeErrors": false,
+      "maximumMarkerHoldMs": 466.6666666666667,
+      "distinctMarkerFPS": 26.821192052980134,
+      "caveat": "Four-second page JavaScript stalls intentionally freeze both visual markers in stress cases. This marker analysis is not a full A/V sync verdict."
+    }
+  },
+  "suitecut-final": {
+    "recording.mkv": {
+      "decodedAudioFrames": 2907136,
+      "audioDecodeExitCode": 0,
+      "audioDecodeErrors": false,
+      "decodedVideoFrames": 1817,
+      "videoDecodeExitCode": 0,
+      "videoDecodeErrors": false,
+      "maximumMarkerHoldMs": 4100.0,
+      "distinctMarkerFPS": 27.52339020363236,
+      "caveat": "Four-second page JavaScript stalls intentionally freeze both visual markers in stress cases. This marker analysis is not a full A/V sync verdict."
+    },
+    "receiver.flv": {
+      "decodedAudioFrames": 2888704,
+      "audioDecodeExitCode": 0,
+      "audioDecodeErrors": false,
+      "decodedVideoFrames": 1805,
+      "videoDecodeExitCode": 0,
+      "videoDecodeErrors": false,
+      "maximumMarkerHoldMs": 4100.0,
+      "distinctMarkerFPS": 27.47368421052632,
+      "caveat": "Four-second page JavaScript stalls intentionally freeze both visual markers in stress cases. This marker analysis is not a full A/V sync verdict."
+    }
+  },
+  "suitecut-matched": {
+    "recording.mkv": {
+      "decodedAudioFrames": 2908160,
+      "audioDecodeExitCode": 0,
+      "audioDecodeErrors": false,
+      "decodedVideoFrames": 1817,
+      "videoDecodeExitCode": 0,
+      "videoDecodeErrors": false,
+      "maximumMarkerHoldMs": 4000.0,
+      "distinctMarkerFPS": 27.87011557512383,
+      "caveat": "Four-second page JavaScript stalls intentionally freeze both visual markers in stress cases. This marker analysis is not a full A/V sync verdict."
+    },
+    "receiver.flv": {
+      "decodedAudioFrames": 2889728,
+      "audioDecodeExitCode": 0,
+      "audioDecodeErrors": false,
+      "decodedVideoFrames": 1806,
+      "videoDecodeExitCode": 0,
+      "videoDecodeErrors": false,
+      "maximumMarkerHoldMs": 3966.6666666666665,
+      "distinctMarkerFPS": 27.956810631229235,
+      "caveat": "Four-second page JavaScript stalls intentionally freeze both visual markers in stress cases. This marker analysis is not a full A/V sync verdict."
+    }
+  },
+  "suitecut-tap-off": {
+    "recording.mkv": {
+      "decodedAudioFrames": 2908160,
+      "audioDecodeExitCode": 0,
+      "audioDecodeErrors": false,
+      "decodedVideoFrames": 1817,
+      "videoDecodeExitCode": 0,
+      "videoDecodeErrors": false,
+      "maximumMarkerHoldMs": 3966.6666666666665,
+      "distinctMarkerFPS": 27.32526141992295,
+      "caveat": "Four-second page JavaScript stalls intentionally freeze both visual markers in stress cases. This marker analysis is not a full A/V sync verdict."
+    },
+    "receiver.flv": {
+      "decodedAudioFrames": 2887680,
+      "audioDecodeExitCode": 0,
+      "audioDecodeErrors": false,
+      "decodedVideoFrames": 1804,
+      "videoDecodeExitCode": 0,
+      "videoDecodeErrors": false,
+      "maximumMarkerHoldMs": 3966.6666666666665,
+      "distinctMarkerFPS": 27.389135254988915,
+      "caveat": "Four-second page JavaScript stalls intentionally freeze both visual markers in stress cases. This marker analysis is not a full A/V sync verdict."
+    }
+  },
+  "suitecut-trace-fixed": {
+    "recording.mkv": {
+      "decodedAudioFrames": 1481728,
+      "audioDecodeExitCode": 0,
+      "audioDecodeErrors": false,
+      "decodedVideoFrames": 925,
+      "videoDecodeExitCode": 0,
+      "videoDecodeErrors": false,
+      "maximumMarkerHoldMs": 566.6666666666666,
+      "distinctMarkerFPS": 25.32972972972973,
+      "caveat": "Four-second page JavaScript stalls intentionally freeze both visual markers in stress cases. This marker analysis is not a full A/V sync verdict."
+    },
+    "receiver.flv": {
+      "decodedAudioFrames": 1444864,
+      "audioDecodeExitCode": 0,
+      "audioDecodeErrors": false,
+      "decodedVideoFrames": 903,
+      "videoDecodeExitCode": 0,
+      "videoDecodeErrors": false,
+      "maximumMarkerHoldMs": 533.3333333333334,
+      "distinctMarkerFPS": 28.30564784053156,
+      "caveat": "Four-second page JavaScript stalls intentionally freeze both visual markers in stress cases. This marker analysis is not a full A/V sync verdict."
+    }
+  }
+}

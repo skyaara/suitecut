@@ -1,0 +1,23 @@
+{
+  "cpus": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "cpuQuota": "400000 100000",
+  "hostMemoryLimitBytes": 17179869184,
+  "memoryGuardBytes": 8589934592,
+  "memoryGuardKind": "sampled summed-RSS guard, not kernel cap",
+  "displaySize": [
+    1920,
+    1080
+  ],
+  "infrastructurePids": [
+    795702,
+    795705
+  ],
+  "executable": "/workspace/suitecut/.suitecut/native-build/suitecut-browser-sync-960",
+  "audioTrace": "/workspace/suitecut/benchmarks/native-sync/2026-10-11-shared-clock/runs/compare-960-1080p30",
+  "sanitizers": false
+}

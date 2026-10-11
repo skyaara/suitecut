@@ -1,0 +1,810 @@
+debug: Attempted path: /workspace/suitecut/.suitecut/obs-deps/root/usr/bin/../share/obs/obs-studio/locale/en-US.ini
+debug: Attempted path: /workspace/suitecut/.suitecut/obs-deps/root/usr/bin/../share/obs/obs-studio/themes
+debug: Attempted path: /workspace/suitecut/.suitecut/obs-deps/root/usr/bin/../share/obs/obs-studio/themes/
+warning: Get on org.freedesktop.portal.Settings returned an invalid reply
+info: Command Line Arguments: --disable-missing-files-check --disable-updater
+info: Using EGL/X11
+info: CPU Name: INTEL(R) XEON(R) PLATINUM 8573C
+info: CPU Speed: 2299.998MHz
+info: Physical Cores: 5, Logical Cores: 5
+info: Physical Memory: 18007MB Total, 12121MB Free
+info: Kernel Version: Linux 6.18.44
+info: Distribution: "Debian GNU/Linux" "13"
+info: Window System: X11.0, Vendor: The X.Org Foundation, Version: 1.21.1
+info: Qt Version: 6.8.2 (runtime), 6.8.2 (compiled)
+info: Portable mode: false
+info: OBS 30.2.3.1-3 (linux)
+info: ---------------------------------
+info: ---------------------------------
+info: audio settings reset:
+	samples per sec: 48000
+	speakers:        2
+	max buffering:   960 milliseconds
+	buffering type:  dynamically increasing
+info: ---------------------------------
+info: Initializing OpenGL...
+info: Loading up OpenGL on adapter Mesa llvmpipe (LLVM 19.1.7, 256 bits)
+info: OpenGL loaded successfully, version 4.5 (Core Profile) Mesa 25.0.7-2+deb13u1, shading language 4.50
+info: ---------------------------------
+info: video settings reset:
+	base resolution:   1920x1080
+	output resolution: 1920x1080
+	downscale filter:  Bicubic
+	fps:               60/1
+	format:            NV12
+	YUV mode:          Rec. 709/Partial
+info: NV12 texture support enabled
+info: P010 texture support not available
+info: Audio monitoring device:
+	name: Default
+	id: default
+info: ---------------------------------
+warning: Failed to load 'en-US' text for module: 'decklink-captions.so'
+warning: Failed to load 'en-US' text for module: 'decklink-output-ui.so'
+libDeckLinkAPI.so: cannot open shared object file: No such file or directory
+warning: A DeckLink iterator could not be created.  The DeckLink drivers may not be installed
+warning: Failed to initialize module 'decklink.so'
+warning: [Python] Python failure in obs_scripting_load_python:1766:
+ModuleNotFoundError: No module named 'obspython'
+warning: [Python] Error importing obspython.py', unloading obs-python
+warning: [Python] Failed to load python plugin
+error: window manager does not support Extended Window Manager Hints (EWMH).
+XComposite capture disabled.
+info: [pipewire] No capture sources available
+warning: v4l2loopback not installed, virtual camera not registered
+info: FFmpeg VAAPI H264 encoding not supported
+info: FFmpeg VAAPI AV1 encoding not supported
+info: FFmpeg VAAPI HEVC encoding not supported
+info: [obs-websocket] [obs_module_load] you can haz websockets (Version: 5.5.2 | RPC Version: 1)
+info: [obs-websocket] [obs_module_load] Qt version (compile-time): 6.8.2 | Qt version (run-time): 6.8.2
+info: [obs-websocket] [obs_module_load] Linked ASIO Version: 103002
+info: [obs-websocket] [obs_module_load] Module loaded.
+info: [vlc-video]: VLC 3.0.23 Vetinari found, VLC video source enabled
+info: ---------------------------------
+info:   Loaded Modules:
+info:     vlc-video.so
+info:     text-freetype2.so
+info:     rtmp-services.so
+info:     obs-x264.so
+info:     obs-websocket.so
+info:     obs-transitions.so
+info:     obs-outputs.so
+info:     obs-filters.so
+info:     obs-ffmpeg.so
+info:     linux-v4l2.so
+info:     linux-pulseaudio.so
+info:     linux-pipewire.so
+info:     linux-jack.so
+info:     linux-capture.so
+info:     linux-alsa.so
+info:     image-source.so
+info:     frontend-tools.so
+info:     decklink-output-ui.so
+info:     decklink-captions.so
+info: ---------------------------------
+info: [obs-websocket] [obs_module_post_load] WebSocket server is enabled, starting...
+info: [obs-websocket] [WebSocketServer::Start] Not locked to IPv4 bindings
+info: [obs-websocket] [WebSocketServer::ServerRunner] IO thread started.
+info: [obs-websocket] [WebSocketServer::Start] Server started successfully on port 4455. Possible connect address: 172.26.91.244
+info: ---------------------------------
+info: Available Encoders:
+info:   Video Encoders:
+info: 	- ffmpeg_svt_av1 (SVT-AV1)
+info: 	- ffmpeg_aom_av1 (AOM AV1)
+info: 	- obs_x264 (x264)
+info:   Audio Encoders:
+info: 	- ffmpeg_aac (FFmpeg AAC)
+info: 	- ffmpeg_opus (FFmpeg Opus)
+info: 	- ffmpeg_pcm_s16le (FFmpeg PCM (16-bit))
+info: 	- ffmpeg_pcm_s24le (FFmpeg PCM (24-bit))
+info: 	- ffmpeg_pcm_f32le (FFmpeg PCM (32-bit float))
+info: 	- ffmpeg_alac (FFmpeg ALAC (24-bit))
+info: 	- ffmpeg_flac (FFmpeg FLAC (16-bit))
+info: ==== Startup complete ===============================================
+info: All scene data cleared
+info: ------------------------------------------------
+info: xshm-input: Geometry 3840x2300 @ 0,0
+info: pulse-input: Server name: 'pulseaudio 17.0'
+info: pulse-input: Audio format: s16le, 48000 Hz, 2 channels
+info: pulse-input: Started recording from 'benchmark.monitor'
+info: Switched to scene 'Scene'
+info: ------------------------------------------------
+info: Loaded scenes:
+info: - scene 'Scene':
+info:     - source: 'Benchmark display' (xshm_input)
+info:     - source: 'Benchmark audio' (pulse_output_capture)
+info: ------------------------------------------------
+info: adding 21 milliseconds of audio buffering, total audio buffering is now 21 milliseconds (source: Benchmark audio)
+
+info: adding 21 milliseconds of audio buffering, total audio buffering is now 42 milliseconds (source: Benchmark audio)
+
+info: adding 64 milliseconds of audio buffering, total audio buffering is now 106 milliseconds (source: Benchmark audio)
+
+info: adding 256 milliseconds of audio buffering, total audio buffering is now 362 milliseconds (source: Benchmark audio)
+
+warning: Max audio buffering reached!
+info: adding 597 milliseconds of audio buffering, total audio buffering is now 960 milliseconds (source: Benchmark audio)
+
+info: [obs-websocket] [WebSocketServer::onOpen] New WebSocket client has connected from [::ffff:127.0.0.1]:46250
+warning: Number of remaining views: 1
+info: ---------------------------------
+info: video settings reset:
+	base resolution:   1280x720
+	output resolution: 1280x720
+	downscale filter:  Bicubic
+	fps:               60/1
+	format:            NV12
+	YUV mode:          Rec. 709/Partial
+info: NV12 texture support enabled
+info: P010 texture support not available
+info: xshm-input: Geometry 3840x2300 @ 0,0
+info: ---------------------------------
+info: [x264 encoder: 'advanced_video_recording'] preset: veryfast
+info: [x264 encoder: 'advanced_video_recording'] profile: high
+info: [x264 encoder: 'advanced_video_recording'] settings:
+	rate_control: CRF
+	bitrate:      0
+	buffer size:  0
+	crf:          18
+	fps_num:      60
+	fps_den:      1
+	width:        1280
+	height:       720
+	keyint:       120
+
+info: ---------------------------------
+info: [FFmpeg aac encoder: 'Track1'] bitrate: 160, channels: 2, channel_layout: stereo
+
+info: ==== Recording Start ===============================================
+info: [ffmpeg muxer: 'adv_file_output'] Writing file '/workspace/suitecut/.suitecut/obs-cef-optimization/comparison-final/2026-10-09 03-09-24.mkv'...
+info: [ffmpeg muxer: 'adv_file_output'] Output of file '/workspace/suitecut/.suitecut/obs-cef-optimization/comparison-final/2026-10-09 03-09-24.mkv' stopped
+info: Output 'adv_file_output': stopping
+info: Output 'adv_file_output': Total frames output: 634
+info: Output 'adv_file_output': Total drawn frames: 658 (694 attempted)
+info: Output 'adv_file_output': Number of lagged frames due to rendering lag/stalls: 36 (5.2%)
+info: ==== Recording Stop ================================================
+[aac @ 0x56413a42fd00] Qavg: 65536.000
+[aac @ 0x56413a42fd00] 2 frames left in the queue on closing
+warning: Number of remaining views: 1
+info: ---------------------------------
+info: video settings reset:
+	base resolution:   1280x720
+	output resolution: 1280x720
+	downscale filter:  Bicubic
+	fps:               60/1
+	format:            NV12
+	YUV mode:          Rec. 709/Partial
+info: NV12 texture support enabled
+info: P010 texture support not available
+info: xshm-input: Geometry 3840x2300 @ 0,0
+info: ---------------------------------
+info: [x264 encoder: 'advanced_video_recording'] preset: veryfast
+info: [x264 encoder: 'advanced_video_recording'] profile: high
+info: [x264 encoder: 'advanced_video_recording'] settings:
+	rate_control: CRF
+	bitrate:      0
+	buffer size:  0
+	crf:          18
+	fps_num:      60
+	fps_den:      1
+	width:        1280
+	height:       720
+	keyint:       120
+
+info: ---------------------------------
+info: [FFmpeg aac encoder: 'Track1'] bitrate: 160, channels: 2, channel_layout: stereo
+
+info: ==== Recording Start ===============================================
+info: [ffmpeg muxer: 'adv_file_output'] Writing file '/workspace/suitecut/.suitecut/obs-cef-optimization/comparison-final/2026-10-09 03-10-08.mkv'...
+info: [ffmpeg muxer: 'adv_file_output'] Output of file '/workspace/suitecut/.suitecut/obs-cef-optimization/comparison-final/2026-10-09 03-10-08.mkv' stopped
+info: Output 'adv_file_output': stopping
+info: Output 'adv_file_output': Total frames output: 635
+info: Output 'adv_file_output': Total drawn frames: 682 (697 attempted)
+info: Output 'adv_file_output': Number of lagged frames due to rendering lag/stalls: 15 (2.2%)
+info: ==== Recording Stop ================================================
+[aac @ 0x56413a079500] Qavg: 65536.000
+[aac @ 0x56413a079500] 2 frames left in the queue on closing
+warning: Number of remaining views: 1
+info: ---------------------------------
+info: video settings reset:
+	base resolution:   1280x720
+	output resolution: 1280x720
+	downscale filter:  Bicubic
+	fps:               60/1
+	format:            NV12
+	YUV mode:          Rec. 709/Partial
+info: NV12 texture support enabled
+info: P010 texture support not available
+info: xshm-input: Geometry 3840x2300 @ 0,0
+info: ---------------------------------
+info: [x264 encoder: 'advanced_video_recording'] preset: veryfast
+info: [x264 encoder: 'advanced_video_recording'] profile: high
+info: [x264 encoder: 'advanced_video_recording'] settings:
+	rate_control: CRF
+	bitrate:      0
+	buffer size:  0
+	crf:          18
+	fps_num:      60
+	fps_den:      1
+	width:        1280
+	height:       720
+	keyint:       120
+
+info: ---------------------------------
+info: [FFmpeg aac encoder: 'Track1'] bitrate: 160, channels: 2, channel_layout: stereo
+
+info: ==== Recording Start ===============================================
+info: [ffmpeg muxer: 'adv_file_output'] Writing file '/workspace/suitecut/.suitecut/obs-cef-optimization/comparison-final/2026-10-09 03-10-23.mkv'...
+info: [ffmpeg muxer: 'adv_file_output'] Output of file '/workspace/suitecut/.suitecut/obs-cef-optimization/comparison-final/2026-10-09 03-10-23.mkv' stopped
+info: Output 'adv_file_output': stopping
+info: Output 'adv_file_output': Total frames output: 634
+info: Output 'adv_file_output': Total drawn frames: 661 (695 attempted)
+info: Output 'adv_file_output': Number of lagged frames due to rendering lag/stalls: 34 (4.9%)
+info: ==== Recording Stop ================================================
+[aac @ 0x56413a074f80] Qavg: 65536.000
+[aac @ 0x56413a074f80] 2 frames left in the queue on closing
+warning: Number of remaining views: 1
+info: ---------------------------------
+info: video settings reset:
+	base resolution:   1920x1080
+	output resolution: 1920x1080
+	downscale filter:  Bicubic
+	fps:               60/1
+	format:            NV12
+	YUV mode:          Rec. 709/Partial
+info: NV12 texture support enabled
+info: P010 texture support not available
+info: xshm-input: Geometry 3840x2300 @ 0,0
+info: ---------------------------------
+info: [x264 encoder: 'advanced_video_recording'] preset: veryfast
+info: [x264 encoder: 'advanced_video_recording'] profile: high
+info: [x264 encoder: 'advanced_video_recording'] settings:
+	rate_control: CRF
+	bitrate:      0
+	buffer size:  0
+	crf:          18
+	fps_num:      60
+	fps_den:      1
+	width:        1920
+	height:       1080
+	keyint:       120
+
+info: ---------------------------------
+info: [FFmpeg aac encoder: 'Track1'] bitrate: 160, channels: 2, channel_layout: stereo
+
+info: ==== Recording Start ===============================================
+info: [ffmpeg muxer: 'adv_file_output'] Writing file '/workspace/suitecut/.suitecut/obs-cef-optimization/comparison-final/2026-10-09 03-10-52.mkv'...
+info: [ffmpeg muxer: 'adv_file_output'] Output of file '/workspace/suitecut/.suitecut/obs-cef-optimization/comparison-final/2026-10-09 03-10-52.mkv' stopped
+info: Output 'adv_file_output': stopping
+info: Output 'adv_file_output': Total frames output: 637
+info: Output 'adv_file_output': Total drawn frames: 475 (699 attempted)
+info: Output 'adv_file_output': Number of lagged frames due to rendering lag/stalls: 224 (32.0%)
+info: ==== Recording Stop ================================================
+[aac @ 0x56413a0816c0] Qavg: 65536.000
+[aac @ 0x56413a0816c0] 2 frames left in the queue on closing
+warning: Number of remaining views: 1
+info: ---------------------------------
+info: video settings reset:
+	base resolution:   1920x1080
+	output resolution: 1920x1080
+	downscale filter:  Bicubic
+	fps:               60/1
+	format:            NV12
+	YUV mode:          Rec. 709/Partial
+info: NV12 texture support enabled
+info: P010 texture support not available
+info: xshm-input: Geometry 3840x2300 @ 0,0
+info: ---------------------------------
+info: [x264 encoder: 'advanced_video_recording'] preset: veryfast
+info: [x264 encoder: 'advanced_video_recording'] profile: high
+info: [x264 encoder: 'advanced_video_recording'] settings:
+	rate_control: CRF
+	bitrate:      0
+	buffer size:  0
+	crf:          18
+	fps_num:      60
+	fps_den:      1
+	width:        1920
+	height:       1080
+	keyint:       120
+
+info: ---------------------------------
+info: [FFmpeg aac encoder: 'Track1'] bitrate: 160, channels: 2, channel_layout: stereo
+
+info: ==== Recording Start ===============================================
+info: [ffmpeg muxer: 'adv_file_output'] Writing file '/workspace/suitecut/.suitecut/obs-cef-optimization/comparison-final/2026-10-09 03-11-38.mkv'...
+info: [ffmpeg muxer: 'adv_file_output'] Output of file '/workspace/suitecut/.suitecut/obs-cef-optimization/comparison-final/2026-10-09 03-11-38.mkv' stopped
+info: Output 'adv_file_output': stopping
+info: Output 'adv_file_output': Total frames output: 636
+info: Output 'adv_file_output': Total drawn frames: 479 (697 attempted)
+info: Output 'adv_file_output': Number of lagged frames due to rendering lag/stalls: 218 (31.3%)
+info: ==== Recording Stop ================================================
+[aac @ 0x56413a0816c0] Qavg: 65536.000
+[aac @ 0x56413a0816c0] 2 frames left in the queue on closing
+warning: Number of remaining views: 1
+info: ---------------------------------
+info: video settings reset:
+	base resolution:   1920x1080
+	output resolution: 1920x1080
+	downscale filter:  Bicubic
+	fps:               60/1
+	format:            NV12
+	YUV mode:          Rec. 709/Partial
+info: NV12 texture support enabled
+info: P010 texture support not available
+info: xshm-input: Geometry 3840x2300 @ 0,0
+info: ---------------------------------
+info: [x264 encoder: 'advanced_video_recording'] preset: veryfast
+info: [x264 encoder: 'advanced_video_recording'] profile: high
+info: [x264 encoder: 'advanced_video_recording'] settings:
+	rate_control: CRF
+	bitrate:      0
+	buffer size:  0
+	crf:          18
+	fps_num:      60
+	fps_den:      1
+	width:        1920
+	height:       1080
+	keyint:       120
+
+info: ---------------------------------
+info: [FFmpeg aac encoder: 'Track1'] bitrate: 160, channels: 2, channel_layout: stereo
+
+info: ==== Recording Start ===============================================
+info: [ffmpeg muxer: 'adv_file_output'] Writing file '/workspace/suitecut/.suitecut/obs-cef-optimization/comparison-final/2026-10-09 03-11-55.mkv'...
+info: [ffmpeg muxer: 'adv_file_output'] Output of file '/workspace/suitecut/.suitecut/obs-cef-optimization/comparison-final/2026-10-09 03-11-55.mkv' stopped
+info: Output 'adv_file_output': stopping
+info: Output 'adv_file_output': Total frames output: 636
+info: Output 'adv_file_output': Total drawn frames: 445 (697 attempted)
+info: Output 'adv_file_output': Number of lagged frames due to rendering lag/stalls: 252 (36.2%)
+info: ==== Recording Stop ================================================
+[aac @ 0x564139f73a00] Qavg: 65536.000
+[aac @ 0x564139f73a00] 2 frames left in the queue on closing
+warning: Number of remaining views: 1
+info: ---------------------------------
+info: video settings reset:
+	base resolution:   3840x2160
+	output resolution: 3840x2160
+	downscale filter:  Bicubic
+	fps:               30/1
+	format:            NV12
+	YUV mode:          Rec. 709/Partial
+info: NV12 texture support enabled
+info: P010 texture support not available
+info: xshm-input: Geometry 3840x2300 @ 0,0
+info: ---------------------------------
+info: [x264 encoder: 'advanced_video_recording'] preset: veryfast
+info: [x264 encoder: 'advanced_video_recording'] profile: high
+info: [x264 encoder: 'advanced_video_recording'] settings:
+	rate_control: CRF
+	bitrate:      0
+	buffer size:  0
+	crf:          18
+	fps_num:      30
+	fps_den:      1
+	width:        3840
+	height:       2160
+	keyint:       60
+
+info: ---------------------------------
+info: [FFmpeg aac encoder: 'Track1'] bitrate: 160, channels: 2, channel_layout: stereo
+
+info: ==== Recording Start ===============================================
+info: [ffmpeg muxer: 'adv_file_output'] Writing file '/workspace/suitecut/.suitecut/obs-cef-optimization/comparison-final/2026-10-09 03-12-28.mkv'...
+info: [ffmpeg muxer: 'adv_file_output'] Output of file '/workspace/suitecut/.suitecut/obs-cef-optimization/comparison-final/2026-10-09 03-12-28.mkv' stopped
+info: Output 'adv_file_output': stopping
+info: Output 'adv_file_output': Total frames output: 322
+info: Output 'adv_file_output': Total drawn frames: 57 (372 attempted)
+info: Output 'adv_file_output': Number of lagged frames due to rendering lag/stalls: 315 (84.7%)
+info: ==== Recording Stop ================================================
+[aac @ 0x56413e9ffa00] Qavg: 65536.000
+[aac @ 0x56413e9ffa00] 2 frames left in the queue on closing
+warning: Number of remaining views: 1
+info: ---------------------------------
+info: video settings reset:
+	base resolution:   3840x2160
+	output resolution: 3840x2160
+	downscale filter:  Bicubic
+	fps:               30/1
+	format:            NV12
+	YUV mode:          Rec. 709/Partial
+info: NV12 texture support enabled
+info: P010 texture support not available
+info: xshm-input: Geometry 3840x2300 @ 0,0
+info: ---------------------------------
+info: [x264 encoder: 'advanced_video_recording'] preset: veryfast
+info: [x264 encoder: 'advanced_video_recording'] profile: high
+info: [x264 encoder: 'advanced_video_recording'] settings:
+	rate_control: CRF
+	bitrate:      0
+	buffer size:  0
+	crf:          18
+	fps_num:      30
+	fps_den:      1
+	width:        3840
+	height:       2160
+	keyint:       60
+
+info: ---------------------------------
+info: [FFmpeg aac encoder: 'Track1'] bitrate: 160, channels: 2, channel_layout: stereo
+
+info: ==== Recording Start ===============================================
+info: [ffmpeg muxer: 'adv_file_output'] Writing file '/workspace/suitecut/.suitecut/obs-cef-optimization/comparison-final/2026-10-09 03-13-38.mkv'...
+info: [ffmpeg muxer: 'adv_file_output'] Output of file '/workspace/suitecut/.suitecut/obs-cef-optimization/comparison-final/2026-10-09 03-13-38.mkv' stopped
+info: Output 'adv_file_output': stopping
+info: Output 'adv_file_output': Total frames output: 319
+info: Output 'adv_file_output': Total drawn frames: 62 (381 attempted)
+info: Output 'adv_file_output': Number of lagged frames due to rendering lag/stalls: 319 (83.7%)
+info: ==== Recording Stop ================================================
+[aac @ 0x56413a672ec0] Qavg: 65536.000
+[aac @ 0x56413a672ec0] 2 frames left in the queue on closing
+warning: Number of remaining views: 1
+info: ---------------------------------
+info: video settings reset:
+	base resolution:   3840x2160
+	output resolution: 3840x2160
+	downscale filter:  Bicubic
+	fps:               30/1
+	format:            NV12
+	YUV mode:          Rec. 709/Partial
+info: NV12 texture support enabled
+info: P010 texture support not available
+info: xshm-input: Geometry 3840x2300 @ 0,0
+info: ---------------------------------
+info: [x264 encoder: 'advanced_video_recording'] preset: veryfast
+info: [x264 encoder: 'advanced_video_recording'] profile: high
+info: [x264 encoder: 'advanced_video_recording'] settings:
+	rate_control: CRF
+	bitrate:      0
+	buffer size:  0
+	crf:          18
+	fps_num:      30
+	fps_den:      1
+	width:        3840
+	height:       2160
+	keyint:       60
+
+info: ---------------------------------
+info: [FFmpeg aac encoder: 'Track1'] bitrate: 160, channels: 2, channel_layout: stereo
+
+info: ==== Recording Start ===============================================
+info: [ffmpeg muxer: 'adv_file_output'] Writing file '/workspace/suitecut/.suitecut/obs-cef-optimization/comparison-final/2026-10-09 03-14-03.mkv'...
+info: [ffmpeg muxer: 'adv_file_output'] Output of file '/workspace/suitecut/.suitecut/obs-cef-optimization/comparison-final/2026-10-09 03-14-03.mkv' stopped
+info: Output 'adv_file_output': stopping
+info: Output 'adv_file_output': Total frames output: 318
+info: Output 'adv_file_output': Total drawn frames: 63 (351 attempted)
+info: Output 'adv_file_output': Number of lagged frames due to rendering lag/stalls: 288 (82.1%)
+info: ==== Recording Stop ================================================
+[aac @ 0x56413a672e40] Qavg: 65536.000
+[aac @ 0x56413a672e40] 2 frames left in the queue on closing
+warning: Number of remaining views: 1
+info: ---------------------------------
+info: video settings reset:
+	base resolution:   3840x2160
+	output resolution: 3840x2160
+	downscale filter:  Bicubic
+	fps:               60/1
+	format:            NV12
+	YUV mode:          Rec. 709/Partial
+info: NV12 texture support enabled
+info: P010 texture support not available
+info: xshm-input: Geometry 3840x2300 @ 0,0
+info: ---------------------------------
+info: [x264 encoder: 'advanced_video_recording'] preset: veryfast
+info: [x264 encoder: 'advanced_video_recording'] profile: high
+info: [x264 encoder: 'advanced_video_recording'] settings:
+	rate_control: CRF
+	bitrate:      0
+	buffer size:  0
+	crf:          18
+	fps_num:      60
+	fps_den:      1
+	width:        3840
+	height:       2160
+	keyint:       120
+
+info: ---------------------------------
+info: [FFmpeg aac encoder: 'Track1'] bitrate: 160, channels: 2, channel_layout: stereo
+
+info: ==== Recording Start ===============================================
+info: [ffmpeg muxer: 'adv_file_output'] Writing file '/workspace/suitecut/.suitecut/obs-cef-optimization/comparison-final/2026-10-09 03-14-46.mkv'...
+info: [ffmpeg muxer: 'adv_file_output'] Output of file '/workspace/suitecut/.suitecut/obs-cef-optimization/comparison-final/2026-10-09 03-14-46.mkv' stopped
+info: Output 'adv_file_output': stopping
+info: Output 'adv_file_output': Total frames output: 639
+info: Output 'adv_file_output': Total drawn frames: 95 (1423 attempted)
+info: Output 'adv_file_output': Number of lagged frames due to rendering lag/stalls: 1328 (93.3%)
+info: ==== Recording Stop ================================================
+info: Video stopped, number of skipped frames due to encoding lag: 349/675 (51.7%)
+[aac @ 0x564139f1b280] Qavg: 65536.000
+[aac @ 0x564139f1b280] 2 frames left in the queue on closing
+warning: Number of remaining views: 1
+info: ---------------------------------
+info: video settings reset:
+	base resolution:   3840x2160
+	output resolution: 3840x2160
+	downscale filter:  Bicubic
+	fps:               60/1
+	format:            NV12
+	YUV mode:          Rec. 709/Partial
+info: NV12 texture support enabled
+info: P010 texture support not available
+info: xshm-input: Geometry 3840x2300 @ 0,0
+info: ---------------------------------
+info: [x264 encoder: 'advanced_video_recording'] preset: veryfast
+info: [x264 encoder: 'advanced_video_recording'] profile: high
+info: [x264 encoder: 'advanced_video_recording'] settings:
+	rate_control: CRF
+	bitrate:      0
+	buffer size:  0
+	crf:          18
+	fps_num:      60
+	fps_den:      1
+	width:        3840
+	height:       2160
+	keyint:       120
+
+info: ---------------------------------
+info: [FFmpeg aac encoder: 'Track1'] bitrate: 160, channels: 2, channel_layout: stereo
+
+info: ==== Recording Start ===============================================
+info: [ffmpeg muxer: 'adv_file_output'] Writing file '/workspace/suitecut/.suitecut/obs-cef-optimization/comparison-final/2026-10-09 03-16-25.mkv'...
+info: [ffmpeg muxer: 'adv_file_output'] Output of file '/workspace/suitecut/.suitecut/obs-cef-optimization/comparison-final/2026-10-09 03-16-25.mkv' stopped
+info: Output 'adv_file_output': stopping
+info: Output 'adv_file_output': Total frames output: 629
+info: Output 'adv_file_output': Total drawn frames: 93 (1310 attempted)
+info: Output 'adv_file_output': Number of lagged frames due to rendering lag/stalls: 1217 (92.9%)
+info: ==== Recording Stop ================================================
+info: Video stopped, number of skipped frames due to encoding lag: 399/700 (57.0%)
+[aac @ 0x564139edb100] Qavg: 65536.000
+[aac @ 0x564139edb100] 2 frames left in the queue on closing
+warning: Number of remaining views: 1
+info: ---------------------------------
+info: video settings reset:
+	base resolution:   3840x2160
+	output resolution: 3840x2160
+	downscale filter:  Bicubic
+	fps:               60/1
+	format:            NV12
+	YUV mode:          Rec. 709/Partial
+info: NV12 texture support enabled
+info: P010 texture support not available
+info: xshm-input: Geometry 3840x2300 @ 0,0
+info: ---------------------------------
+info: [x264 encoder: 'advanced_video_recording'] preset: veryfast
+info: [x264 encoder: 'advanced_video_recording'] profile: high
+info: [x264 encoder: 'advanced_video_recording'] settings:
+	rate_control: CRF
+	bitrate:      0
+	buffer size:  0
+	crf:          18
+	fps_num:      60
+	fps_den:      1
+	width:        3840
+	height:       2160
+	keyint:       120
+
+info: ---------------------------------
+info: [FFmpeg aac encoder: 'Track1'] bitrate: 160, channels: 2, channel_layout: stereo
+
+info: ==== Recording Start ===============================================
+info: [ffmpeg muxer: 'adv_file_output'] Writing file '/workspace/suitecut/.suitecut/obs-cef-optimization/comparison-final/2026-10-09 03-17-13.mkv'...
+info: [ffmpeg muxer: 'adv_file_output'] Output of file '/workspace/suitecut/.suitecut/obs-cef-optimization/comparison-final/2026-10-09 03-17-13.mkv' stopped
+info: Output 'adv_file_output': stopping
+info: Output 'adv_file_output': Total frames output: 634
+info: Output 'adv_file_output': Total drawn frames: 103 (1513 attempted)
+info: Output 'adv_file_output': Number of lagged frames due to rendering lag/stalls: 1410 (93.2%)
+info: ==== Recording Stop ================================================
+info: Video stopped, number of skipped frames due to encoding lag: 400/672 (59.5%)
+[aac @ 0x564139f3b480] Qavg: 65536.000
+[aac @ 0x564139f3b480] 2 frames left in the queue on closing
+info: [obs-websocket] [WebSocketServer::onClose] WebSocket client `[::ffff:127.0.0.1]:46250` has disconnected with code `1000` and reason: 
+info: [obs-websocket] [WebSocketServer::onOpen] New WebSocket client has connected from [::ffff:127.0.0.1]:34842
+warning: Number of remaining views: 1
+info: ---------------------------------
+info: video settings reset:
+	base resolution:   1920x1080
+	output resolution: 1920x1080
+	downscale filter:  Bicubic
+	fps:               60/1
+	format:            NV12
+	YUV mode:          Rec. 709/Partial
+info: NV12 texture support enabled
+info: P010 texture support not available
+info: xshm-input: Geometry 3840x2300 @ 0,0
+warning: User is ignoring service settings.
+info: ---------------------------------
+info: [x264 encoder: 'advanced_video_stream'] preset: veryfast
+info: [x264 encoder: 'advanced_video_stream'] profile: high
+info: [x264 encoder: 'advanced_video_stream'] settings:
+	rate_control: CBR
+	bitrate:      4500
+	buffer size:  4500
+	crf:          23
+	fps_num:      60
+	fps_den:      1
+	width:        1920
+	height:       1080
+	keyint:       120
+
+info: ---------------------------------
+info: [FFmpeg aac encoder: 'adv_stream_audio'] bitrate: 160, channels: 2, channel_layout: stereo
+
+info: [rtmp stream: 'adv_stream'] Connecting to RTMP URL rtmp://127.0.0.1:35481/live...
+info: [rtmp stream: 'adv_stream'] Connection to rtmp://127.0.0.1:35481/live (127.0.0.1) successful
+info: ==== Streaming Start ===============================================
+info: [rtmp stream: 'adv_stream'] User stopped the stream
+info: Output 'adv_stream': stopping
+info: Output 'adv_stream': Total frames output: 1211
+info: Output 'adv_stream': Total drawn frames: 843 (1286 attempted)
+info: Output 'adv_stream': Number of lagged frames due to rendering lag/stalls: 443 (34.4%)
+info: ==== Streaming Stop ================================================
+[aac @ 0x56413a051d40] Qavg: 60093.672
+[aac @ 0x56413a051d40] 2 frames left in the queue on closing
+info: [obs-websocket] [WebSocketServer::onClose] WebSocket client `[::ffff:127.0.0.1]:34842` has disconnected with code `1000` and reason: 
+info: [obs-websocket] [WebSocketServer::onOpen] New WebSocket client has connected from [::ffff:127.0.0.1]:37610
+warning: Number of remaining views: 1
+info: ---------------------------------
+info: video settings reset:
+	base resolution:   1920x1080
+	output resolution: 1920x1080
+	downscale filter:  Bicubic
+	fps:               60/1
+	format:            NV12
+	YUV mode:          Rec. 709/Partial
+info: NV12 texture support enabled
+info: P010 texture support not available
+info: xshm-input: Geometry 3840x2300 @ 0,0
+warning: User is ignoring service settings.
+info: ---------------------------------
+info: [x264 encoder: 'advanced_video_stream'] preset: veryfast
+info: [x264 encoder: 'advanced_video_stream'] profile: high
+info: [x264 encoder: 'advanced_video_stream'] settings:
+	rate_control: CBR
+	bitrate:      4500
+	buffer size:  4500
+	crf:          23
+	fps_num:      60
+	fps_den:      1
+	width:        1920
+	height:       1080
+	keyint:       120
+
+info: ---------------------------------
+info: [FFmpeg aac encoder: 'adv_stream_audio'] bitrate: 160, channels: 2, channel_layout: stereo
+
+info: [rtmp stream: 'adv_stream'] Connecting to RTMP URL rtmp://127.0.0.1:33063/live...
+info: [rtmp stream: 'adv_stream'] Connection to rtmp://127.0.0.1:33063/live (127.0.0.1) successful
+info: ==== Streaming Start ===============================================
+info: [rtmp stream: 'adv_stream'] User stopped the stream
+info: Output 'adv_stream': stopping
+info: Output 'adv_stream': Total frames output: 1218
+info: Output 'adv_stream': Total drawn frames: 642 (1298 attempted)
+info: Output 'adv_stream': Number of lagged frames due to rendering lag/stalls: 656 (50.5%)
+info: Video stopped, number of skipped frames due to encoding lag: 3/1279 (0.2%)
+info: ==== Streaming Stop ================================================
+[aac @ 0x56413a060780] Qavg: 60207.656
+[aac @ 0x56413a060780] 2 frames left in the queue on closing
+info: [obs-websocket] [WebSocketServer::onClose] WebSocket client `[::ffff:127.0.0.1]:37610` has disconnected with code `1000` and reason: 
+info: [obs-websocket] [WebSocketServer::onOpen] New WebSocket client has connected from [::ffff:127.0.0.1]:49924
+warning: Number of remaining views: 1
+info: ---------------------------------
+info: video settings reset:
+	base resolution:   1920x1080
+	output resolution: 1920x1080
+	downscale filter:  Bicubic
+	fps:               60/1
+	format:            NV12
+	YUV mode:          Rec. 709/Partial
+info: NV12 texture support enabled
+info: P010 texture support not available
+info: xshm-input: Geometry 3840x2300 @ 0,0
+warning: User is ignoring service settings.
+info: ---------------------------------
+info: [x264 encoder: 'advanced_video_stream'] preset: veryfast
+info: [x264 encoder: 'advanced_video_stream'] profile: high
+info: [x264 encoder: 'advanced_video_stream'] settings:
+	rate_control: CBR
+	bitrate:      4500
+	buffer size:  4500
+	crf:          23
+	fps_num:      60
+	fps_den:      1
+	width:        1920
+	height:       1080
+	keyint:       120
+
+info: ---------------------------------
+info: [FFmpeg aac encoder: 'adv_stream_audio'] bitrate: 160, channels: 2, channel_layout: stereo
+
+info: [rtmp stream: 'adv_stream'] Connecting to RTMP URL rtmp://127.0.0.1:40437/live...
+info: [rtmp stream: 'adv_stream'] Connection to rtmp://127.0.0.1:40437/live (127.0.0.1) successful
+info: ==== Streaming Start ===============================================
+info: [rtmp stream: 'adv_stream'] User stopped the stream
+info: Output 'adv_stream': stopping
+info: Output 'adv_stream': Total frames output: 1211
+info: Output 'adv_stream': Total drawn frames: 825 (1286 attempted)
+info: Output 'adv_stream': Number of lagged frames due to rendering lag/stalls: 461 (35.8%)
+info: ==== Streaming Stop ================================================
+[aac @ 0x564139f6dec0] Qavg: 60215.703
+[aac @ 0x564139f6dec0] 2 frames left in the queue on closing
+info: [obs-websocket] [WebSocketServer::onClose] WebSocket client `[::ffff:127.0.0.1]:49924` has disconnected with code `1000` and reason: 
+info: [obs-websocket] [WebSocketServer::onOpen] New WebSocket client has connected from [::ffff:127.0.0.1]:45888
+warning: Number of remaining views: 1
+info: ---------------------------------
+info: video settings reset:
+	base resolution:   1280x720
+	output resolution: 1280x720
+	downscale filter:  Bicubic
+	fps:               30/1
+	format:            NV12
+	YUV mode:          Rec. 709/Partial
+info: NV12 texture support enabled
+info: P010 texture support not available
+info: xshm-input: Geometry 3840x2300 @ 0,0
+info: ---------------------------------
+info: [x264 encoder: 'advanced_video_recording'] preset: veryfast
+info: [x264 encoder: 'advanced_video_recording'] profile: high
+info: [x264 encoder: 'advanced_video_recording'] settings:
+	rate_control: CRF
+	bitrate:      0
+	buffer size:  0
+	crf:          18
+	fps_num:      30
+	fps_den:      1
+	width:        1280
+	height:       720
+	keyint:       60
+
+info: ---------------------------------
+info: [FFmpeg aac encoder: 'Track1'] bitrate: 160, channels: 2, channel_layout: stereo
+
+info: ==== Recording Start ===============================================
+info: [ffmpeg muxer: 'adv_file_output'] Writing file '/workspace/suitecut/.suitecut/obs-cef-optimization/features-record-final/2026-10-09 03-21-31.mkv'...
+info: [ffmpeg muxer: 'adv_file_output'] Output of file '/workspace/suitecut/.suitecut/obs-cef-optimization/features-record-final/2026-10-09 03-21-31.mkv' stopped
+info: Output 'adv_file_output': stopping
+info: Output 'adv_file_output': Total frames output: 310
+info: Output 'adv_file_output': Total drawn frames: 339
+info: ==== Recording Stop ================================================
+[aac @ 0x56413a672f40] Qavg: 65536.000
+[aac @ 0x56413a672f40] 2 frames left in the queue on closing
+warning: Number of remaining views: 1
+info: ---------------------------------
+info: video settings reset:
+	base resolution:   1280x720
+	output resolution: 1280x720
+	downscale filter:  Bicubic
+	fps:               30/1
+	format:            NV12
+	YUV mode:          Rec. 709/Partial
+info: NV12 texture support enabled
+info: P010 texture support not available
+info: xshm-input: Geometry 3840x2300 @ 0,0
+info: ---------------------------------
+info: [x264 encoder: 'advanced_video_recording'] preset: veryfast
+info: [x264 encoder: 'advanced_video_recording'] profile: high
+info: [x264 encoder: 'advanced_video_recording'] settings:
+	rate_control: CRF
+	bitrate:      0
+	buffer size:  0
+	crf:          18
+	fps_num:      30
+	fps_den:      1
+	width:        1280
+	height:       720
+	keyint:       60
+
+info: ---------------------------------
+info: [FFmpeg aac encoder: 'Track1'] bitrate: 160, channels: 2, channel_layout: stereo
+
+info: ==== Recording Start ===============================================
+info: [ffmpeg muxer: 'adv_file_output'] Writing file '/workspace/suitecut/.suitecut/obs-cef-optimization/features-record-final/2026-10-09 03-22-00.mkv'...
+info: [ffmpeg muxer: 'adv_file_output'] Output of file '/workspace/suitecut/.suitecut/obs-cef-optimization/features-record-final/2026-10-09 03-22-00.mkv' stopped
+info: Output 'adv_file_output': stopping
+info: Output 'adv_file_output': Total frames output: 312
+info: Output 'adv_file_output': Total drawn frames: 341
+info: ==== Recording Stop ================================================
+[aac @ 0x564137298200] Qavg: 28651.254
+[aac @ 0x564137298200] 2 frames left in the queue on closing
+info: [obs-websocket] [WebSocketServer::onClose] WebSocket client `[::ffff:127.0.0.1]:45888` has disconnected with code `1000` and reason: 
+warning: The X11 connection broke (error 1). Did the X11 server die?
+info: [obs-websocket] [WebSocketServer::ServerRunner] IO thread exited.

@@ -1,0 +1,641 @@
+{
+  "config": {
+    "argv": [
+      "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+      "/workspace/suitecut/node_modules/playwright/cli.js",
+      "test",
+      "--config",
+      "benchmarks/playwright-compatibility/playwright.config.ts",
+      "--grep",
+      "worker:|oopif:"
+    ],
+    "configFile": "/workspace/suitecut/benchmarks/playwright-compatibility/playwright.config.ts",
+    "rootDir": "/workspace/suitecut/benchmarks/playwright-compatibility",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/workspace/suitecut/benchmarks/playwright-compatibility/2026-10-11/worker-fix/artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "/workspace/suitecut/benchmarks/playwright-compatibility",
+        "testIgnore": [
+          "**/2026-*/**"
+        ],
+        "testMatch": [
+          "compatibility.spec.ts"
+        ],
+        "timeout": 20000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "/workspace/suitecut/benchmarks/playwright-compatibility/2026-10-11/worker-fix/results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.62.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "compatibility.spec.ts",
+      "file": "compatibility.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "worker: dedicated Worker evaluation and messaging",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 20000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 177,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T09:16:36.963Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b0b409d468a60194358f-fe14127b116aa2981ef9",
+          "file": "compatibility.spec.ts",
+          "line": 70,
+          "column": 1
+        },
+        {
+          "title": "worker: service worker website control and fetch",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 20000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 183,
+                  "error": {
+                    "message": "Error: page.evaluate: Target page, context or browser has been closed\nBrowser logs:\n\nCEF transport closed\n",
+                    "stack": "Error: page.evaluate: Target page, context or browser has been closed\nBrowser logs:\n\nCEF transport closed\n\n    at register (/workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts:68:14)\n    at /workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts:75:73",
+                    "location": {
+                      "file": "/workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts",
+                      "column": 14,
+                      "line": 68
+                    },
+                    "snippet": "  66 | async function register(page: import('@playwright/test').Page) {\n  67 |   await page.goto(origin)\n> 68 |   await page.evaluate(async()=>{await navigator.serviceWorker.register('/sw.js');await navigator.serviceWorker.ready;if(!navigator.serviceWorker.controller)await new Promise<void>(r=>navigator.serviceWorker.addEventListener('controllerchange',()=>r(),{once:true}))})\n     |              ^\n  69 | }\n  70 | test('worker: dedicated Worker evaluation and messaging',async({page})=>{\n  71 |   await page.goto(origin);const event=page.waitForEvent('worker');await page.evaluate(()=>{const w=new Worker('/worker.js');(window as any).worker=w})"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts",
+                        "column": 14,
+                        "line": 68
+                      },
+                      "message": "Error: page.evaluate: Target page, context or browser has been closed\nBrowser logs:\n\nCEF transport closed\n\n\n  66 | async function register(page: import('@playwright/test').Page) {\n  67 |   await page.goto(origin)\n> 68 |   await page.evaluate(async()=>{await navigator.serviceWorker.register('/sw.js');await navigator.serviceWorker.ready;if(!navigator.serviceWorker.controller)await new Promise<void>(r=>navigator.serviceWorker.addEventListener('controllerchange',()=>r(),{once:true}))})\n     |              ^\n  69 | }\n  70 | test('worker: dedicated Worker evaluation and messaging',async({page})=>{\n  71 |   await page.goto(origin);const event=page.waitForEvent('worker');await page.evaluate(()=>{const w=new Worker('/worker.js');(window as any).worker=w})\n    at register (/workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts:68:14)\n    at /workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts:75:73"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T09:16:37.748Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/workspace/suitecut/benchmarks/playwright-compatibility/2026-10-11/worker-fix/artifacts/compatibility-worker-servi-6f06e-r-website-control-and-fetch/error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/workspace/suitecut/benchmarks/playwright-compatibility/2026-10-11/worker-fix/artifacts/compatibility-worker-servi-6f06e-r-website-control-and-fetch/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts",
+                    "column": 14,
+                    "line": 68
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "b0b409d468a60194358f-c72e69bafe0d58060887",
+          "file": "compatibility.spec.ts",
+          "line": 75,
+          "column": 1
+        },
+        {
+          "title": "worker: context serviceworker event, enumeration and evaluation",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 20000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 177,
+                  "error": {
+                    "message": "Error: page.evaluate: Target page, context or browser has been closed\nBrowser logs:\n\nCEF transport closed\n",
+                    "stack": "Error: page.evaluate: Target page, context or browser has been closed\nBrowser logs:\n\nCEF transport closed\n\n    at register (/workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts:68:14)\n    at /workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts:78:3",
+                    "location": {
+                      "file": "/workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts",
+                      "column": 14,
+                      "line": 68
+                    },
+                    "snippet": "  66 | async function register(page: import('@playwright/test').Page) {\n  67 |   await page.goto(origin)\n> 68 |   await page.evaluate(async()=>{await navigator.serviceWorker.register('/sw.js');await navigator.serviceWorker.ready;if(!navigator.serviceWorker.controller)await new Promise<void>(r=>navigator.serviceWorker.addEventListener('controllerchange',()=>r(),{once:true}))})\n     |              ^\n  69 | }\n  70 | test('worker: dedicated Worker evaluation and messaging',async({page})=>{\n  71 |   await page.goto(origin);const event=page.waitForEvent('worker');await page.evaluate(()=>{const w=new Worker('/worker.js');(window as any).worker=w})"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts",
+                        "column": 14,
+                        "line": 68
+                      },
+                      "message": "Error: page.evaluate: Target page, context or browser has been closed\nBrowser logs:\n\nCEF transport closed\n\n\n  66 | async function register(page: import('@playwright/test').Page) {\n  67 |   await page.goto(origin)\n> 68 |   await page.evaluate(async()=>{await navigator.serviceWorker.register('/sw.js');await navigator.serviceWorker.ready;if(!navigator.serviceWorker.controller)await new Promise<void>(r=>navigator.serviceWorker.addEventListener('controllerchange',()=>r(),{once:true}))})\n     |              ^\n  69 | }\n  70 | test('worker: dedicated Worker evaluation and messaging',async({page})=>{\n  71 |   await page.goto(origin);const event=page.waitForEvent('worker');await page.evaluate(()=>{const w=new Worker('/worker.js');(window as any).worker=w})\n    at register (/workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts:68:14)\n    at /workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts:78:3"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T09:16:38.522Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/workspace/suitecut/benchmarks/playwright-compatibility/2026-10-11/worker-fix/artifacts/compatibility-worker-conte-0bd89--enumeration-and-evaluation/error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/workspace/suitecut/benchmarks/playwright-compatibility/2026-10-11/worker-fix/artifacts/compatibility-worker-conte-0bd89--enumeration-and-evaluation/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts",
+                    "column": 14,
+                    "line": 68
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "b0b409d468a60194358f-3a9f6d7d52736de58bdc",
+          "file": "compatibility.spec.ts",
+          "line": 76,
+          "column": 1
+        },
+        {
+          "title": "worker: service worker console and close event on context disposal",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 20000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 178,
+                  "error": {
+                    "message": "Error: page.evaluate: Target page, context or browser has been closed\nBrowser logs:\n\nCEF transport closed\n",
+                    "stack": "Error: page.evaluate: Target page, context or browser has been closed\nBrowser logs:\n\nCEF transport closed\n\n    at register (/workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts:68:14)\n    at /workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts:81:93",
+                    "location": {
+                      "file": "/workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts",
+                      "column": 14,
+                      "line": 68
+                    },
+                    "snippet": "  66 | async function register(page: import('@playwright/test').Page) {\n  67 |   await page.goto(origin)\n> 68 |   await page.evaluate(async()=>{await navigator.serviceWorker.register('/sw.js');await navigator.serviceWorker.ready;if(!navigator.serviceWorker.controller)await new Promise<void>(r=>navigator.serviceWorker.addEventListener('controllerchange',()=>r(),{once:true}))})\n     |              ^\n  69 | }\n  70 | test('worker: dedicated Worker evaluation and messaging',async({page})=>{\n  71 |   await page.goto(origin);const event=page.waitForEvent('worker');await page.evaluate(()=>{const w=new Worker('/worker.js');(window as any).worker=w})"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts",
+                        "column": 14,
+                        "line": 68
+                      },
+                      "message": "Error: page.evaluate: Target page, context or browser has been closed\nBrowser logs:\n\nCEF transport closed\n\n\n  66 | async function register(page: import('@playwright/test').Page) {\n  67 |   await page.goto(origin)\n> 68 |   await page.evaluate(async()=>{await navigator.serviceWorker.register('/sw.js');await navigator.serviceWorker.ready;if(!navigator.serviceWorker.controller)await new Promise<void>(r=>navigator.serviceWorker.addEventListener('controllerchange',()=>r(),{once:true}))})\n     |              ^\n  69 | }\n  70 | test('worker: dedicated Worker evaluation and messaging',async({page})=>{\n  71 |   await page.goto(origin);const event=page.waitForEvent('worker');await page.evaluate(()=>{const w=new Worker('/worker.js');(window as any).worker=w})\n    at register (/workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts:68:14)\n    at /workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts:81:93"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T09:16:39.749Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/workspace/suitecut/benchmarks/playwright-compatibility/2026-10-11/worker-fix/artifacts/compatibility-worker-servi-e2553-e-event-on-context-disposal/error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/workspace/suitecut/benchmarks/playwright-compatibility/2026-10-11/worker-fix/artifacts/compatibility-worker-servi-e2553-e-event-on-context-disposal/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts",
+                    "column": 14,
+                    "line": 68
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "b0b409d468a60194358f-bc49d60280c61457dc76",
+          "file": "compatibility.spec.ts",
+          "line": 80,
+          "column": 1
+        },
+        {
+          "title": "worker: multiple pages expose one service worker identity",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 20000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 172,
+                  "error": {
+                    "message": "Error: page.evaluate: Target page, context or browser has been closed\nBrowser logs:\n\nCEF transport closed\n",
+                    "stack": "Error: page.evaluate: Target page, context or browser has been closed\nBrowser logs:\n\nCEF transport closed\n\n    at register (/workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts:68:14)\n    at /workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts:86:93",
+                    "location": {
+                      "file": "/workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts",
+                      "column": 14,
+                      "line": 68
+                    },
+                    "snippet": "  66 | async function register(page: import('@playwright/test').Page) {\n  67 |   await page.goto(origin)\n> 68 |   await page.evaluate(async()=>{await navigator.serviceWorker.register('/sw.js');await navigator.serviceWorker.ready;if(!navigator.serviceWorker.controller)await new Promise<void>(r=>navigator.serviceWorker.addEventListener('controllerchange',()=>r(),{once:true}))})\n     |              ^\n  69 | }\n  70 | test('worker: dedicated Worker evaluation and messaging',async({page})=>{\n  71 |   await page.goto(origin);const event=page.waitForEvent('worker');await page.evaluate(()=>{const w=new Worker('/worker.js');(window as any).worker=w})"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts",
+                        "column": 14,
+                        "line": 68
+                      },
+                      "message": "Error: page.evaluate: Target page, context or browser has been closed\nBrowser logs:\n\nCEF transport closed\n\n\n  66 | async function register(page: import('@playwright/test').Page) {\n  67 |   await page.goto(origin)\n> 68 |   await page.evaluate(async()=>{await navigator.serviceWorker.register('/sw.js');await navigator.serviceWorker.ready;if(!navigator.serviceWorker.controller)await new Promise<void>(r=>navigator.serviceWorker.addEventListener('controllerchange',()=>r(),{once:true}))})\n     |              ^\n  69 | }\n  70 | test('worker: dedicated Worker evaluation and messaging',async({page})=>{\n  71 |   await page.goto(origin);const event=page.waitForEvent('worker');await page.evaluate(()=>{const w=new Worker('/worker.js');(window as any).worker=w})\n    at register (/workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts:68:14)\n    at /workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts:86:93"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T09:16:41.113Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/workspace/suitecut/benchmarks/playwright-compatibility/2026-10-11/worker-fix/artifacts/compatibility-worker-multi-eae91-one-service-worker-identity/error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/workspace/suitecut/benchmarks/playwright-compatibility/2026-10-11/worker-fix/artifacts/compatibility-worker-multi-eae91-one-service-worker-identity/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts",
+                    "column": 14,
+                    "line": 68
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "b0b409d468a60194358f-14f4b1b5ed5869e77629",
+          "file": "compatibility.spec.ts",
+          "line": 85,
+          "column": 1
+        },
+        {
+          "title": "worker: worker remains automatable after its first page closes",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 20000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 4,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 164,
+                  "error": {
+                    "message": "Error: page.evaluate: Target page, context or browser has been closed\nBrowser logs:\n\nCEF transport closed\n",
+                    "stack": "Error: page.evaluate: Target page, context or browser has been closed\nBrowser logs:\n\nCEF transport closed\n\n    at register (/workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts:68:14)\n    at /workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts:91:93",
+                    "location": {
+                      "file": "/workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts",
+                      "column": 14,
+                      "line": 68
+                    },
+                    "snippet": "  66 | async function register(page: import('@playwright/test').Page) {\n  67 |   await page.goto(origin)\n> 68 |   await page.evaluate(async()=>{await navigator.serviceWorker.register('/sw.js');await navigator.serviceWorker.ready;if(!navigator.serviceWorker.controller)await new Promise<void>(r=>navigator.serviceWorker.addEventListener('controllerchange',()=>r(),{once:true}))})\n     |              ^\n  69 | }\n  70 | test('worker: dedicated Worker evaluation and messaging',async({page})=>{\n  71 |   await page.goto(origin);const event=page.waitForEvent('worker');await page.evaluate(()=>{const w=new Worker('/worker.js');(window as any).worker=w})"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts",
+                        "column": 14,
+                        "line": 68
+                      },
+                      "message": "Error: page.evaluate: Target page, context or browser has been closed\nBrowser logs:\n\nCEF transport closed\n\n\n  66 | async function register(page: import('@playwright/test').Page) {\n  67 |   await page.goto(origin)\n> 68 |   await page.evaluate(async()=>{await navigator.serviceWorker.register('/sw.js');await navigator.serviceWorker.ready;if(!navigator.serviceWorker.controller)await new Promise<void>(r=>navigator.serviceWorker.addEventListener('controllerchange',()=>r(),{once:true}))})\n     |              ^\n  69 | }\n  70 | test('worker: dedicated Worker evaluation and messaging',async({page})=>{\n  71 |   await page.goto(origin);const event=page.waitForEvent('worker');await page.evaluate(()=>{const w=new Worker('/worker.js');(window as any).worker=w})\n    at register (/workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts:68:14)\n    at /workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts:91:93"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T09:16:42.488Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/workspace/suitecut/benchmarks/playwright-compatibility/2026-10-11/worker-fix/artifacts/compatibility-worker-worke-ea7be-after-its-first-page-closes/error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/workspace/suitecut/benchmarks/playwright-compatibility/2026-10-11/worker-fix/artifacts/compatibility-worker-worke-ea7be-after-its-first-page-closes/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts",
+                    "column": 14,
+                    "line": 68
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "b0b409d468a60194358f-c128c8d7c91a4e6fed30",
+          "file": "compatibility.spec.ts",
+          "line": 90,
+          "column": 1
+        },
+        {
+          "title": "worker: repeated worker contexts release browser target registrations",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 20000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 5,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 170,
+                  "error": {
+                    "message": "Error: cdpSession.detach: Target page, context or browser has been closed",
+                    "stack": "Error: cdpSession.detach: Target page, context or browser has been closed\n    at /workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts:100:23",
+                    "location": {
+                      "file": "/workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts",
+                      "column": 23,
+                      "line": 100
+                    },
+                    "snippet": "   98 |   try{for(let i=0;i<12;i++){const c=await browser.newContext();try{const p=await c.newPage();const event=c.waitForEvent('serviceworker',{timeout:5000});void event.catch(()=>{});await register(p);expect(await (await event).evaluate(()=> (self as any).marker)).toBe(42)}finally{await c.close()}}\n   99 |     await expect.poll(async()=> (await root.send('Target.getTargets')).targetInfos.filter(t=>t.type==='service_worker').length).toBe(0)\n> 100 |   }finally{await root.detach()}\n      |                       ^\n  101 | })\n  102 | test('worker: serviceWorkers block prevents registration',async({browser})=>{\n  103 |   const c=await browser.newContext({serviceWorkers:'block'});try{const p=await c.newPage();await p.goto(origin);await p.evaluate(()=>navigator.serviceWorker.register('/sw.js').catch(()=>null));expect(await p.evaluate(()=>navigator.serviceWorker.getRegistrations().then(r=>r.length))).toBe(0)}finally{await c.close()}"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts",
+                        "column": 23,
+                        "line": 100
+                      },
+                      "message": "Error: cdpSession.detach: Target page, context or browser has been closed\n\n   98 |   try{for(let i=0;i<12;i++){const c=await browser.newContext();try{const p=await c.newPage();const event=c.waitForEvent('serviceworker',{timeout:5000});void event.catch(()=>{});await register(p);expect(await (await event).evaluate(()=> (self as any).marker)).toBe(42)}finally{await c.close()}}\n   99 |     await expect.poll(async()=> (await root.send('Target.getTargets')).targetInfos.filter(t=>t.type==='service_worker').length).toBe(0)\n> 100 |   }finally{await root.detach()}\n      |                       ^\n  101 | })\n  102 | test('worker: serviceWorkers block prevents registration',async({browser})=>{\n  103 |   const c=await browser.newContext({serviceWorkers:'block'});try{const p=await c.newPage();await p.goto(origin);await p.evaluate(()=>navigator.serviceWorker.register('/sw.js').catch(()=>null));expect(await p.evaluate(()=>navigator.serviceWorker.getRegistrations().then(r=>r.length))).toBe(0)}finally{await c.close()}\n    at /workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts:100:23"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T09:16:43.711Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/workspace/suitecut/benchmarks/playwright-compatibility/2026-10-11/worker-fix/artifacts/compatibility-worker-repea-18d6b-rowser-target-registrations/error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/workspace/suitecut/benchmarks/playwright-compatibility/2026-10-11/worker-fix/artifacts/compatibility-worker-repea-18d6b-rowser-target-registrations/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts",
+                    "column": 23,
+                    "line": 100
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "b0b409d468a60194358f-0f005fd1efed08b77ea8",
+          "file": "compatibility.spec.ts",
+          "line": 96,
+          "column": 1
+        },
+        {
+          "title": "worker: serviceWorkers block prevents registration",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 20000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 6,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 144,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T09:16:44.968Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b0b409d468a60194358f-754ae17028c80e62beb5",
+          "file": "compatibility.spec.ts",
+          "line": 102,
+          "column": 1
+        },
+        {
+          "title": "oopif: cross-site frame is a separate CDP target and remains interactive",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 20000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 6,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 372,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T09:16:45.652Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b0b409d468a60194358f-4df969da01a66816e5e5",
+          "file": "compatibility.spec.ts",
+          "line": 105,
+          "column": 1
+        },
+        {
+          "title": "oopif: cross-site navigation, detach and network routing",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 20000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 6,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 557,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T09:16:46.036Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b0b409d468a60194358f-ccb58ab45f51b92201e5",
+          "file": "compatibility.spec.ts",
+          "line": 113,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-11T09:16:35.710Z",
+    "duration": 10997.788,
+    "expected": 4,
+    "skipped": 0,
+    "unexpected": 6,
+    "flaky": 0
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "vpn_configured": false,
+  "http_proxy": "http://proxy:8080",
+  "http_network_policy": {
+    "type": "unrestricted"
+  },
+  "tcp_connect_proxy": "http://proxy:8088",
+  "tcp_network_access": {
+    "domains": [],
+    "ip_ranges": []
+  }
+}

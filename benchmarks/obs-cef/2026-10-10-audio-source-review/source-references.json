@@ -1,0 +1,11 @@
+{
+  "browserAudio": "https://github.com/obsproject/obs-browser/blob/9ecf652c9df4a0cace934917ce5ae754da58a529/browser-client.cpp#L567-L605",
+  "browserParameters": "https://github.com/obsproject/obs-browser/blob/9ecf652c9df4a0cace934917ce5ae754da58a529/browser-client.cpp#L631-L639",
+  "browserTickRender": "https://github.com/obsproject/obs-browser/blob/9ecf652c9df4a0cace934917ce5ae754da58a529/obs-browser-source.cpp#L567-L629",
+  "audioClock": "https://github.com/obsproject/obs-studio/blob/7d98bebe1115b12608837b622164ea5fe6d9483a/libobs/media-io/audio-io.c#L158-L244",
+  "timestampRecovery": "https://github.com/obsproject/obs-studio/blob/7d98bebe1115b12608837b622164ea5fe6d9483a/libobs/obs-source.c#L1485-L1693",
+  "mixer": "https://github.com/obsproject/obs-studio/blob/7d98bebe1115b12608837b622164ea5fe6d9483a/libobs/obs-audio.c#L620-L690",
+  "buffering": "https://github.com/obsproject/obs-studio/blob/7d98bebe1115b12608837b622164ea5fe6d9483a/libobs/obs-audio.c#L315-L448",
+  "bufferCap": "https://github.com/obsproject/obs-studio/blob/7d98bebe1115b12608837b622164ea5fe6d9483a/libobs/obs.c#L1615-L1626",
+  "legacySmoothing": "https://github.com/obsproject/obs-studio/blob/144599fbff18e348652ccadfc3ca08794a03d970/libobs/obs-source.c#L1396-L1400"
+}

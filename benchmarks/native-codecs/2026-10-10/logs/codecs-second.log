@@ -1,0 +1,41 @@
+[libx264 @ 0x7fed1c001140] using cpu capabilities: MMX2 SSE2Fast SSSE3 SSE4.2 AVX FMA3 BMI2 AVX2 AVX512
+[libx264 @ 0x7fed1c001140] profile High, level 1.3, 4:2:0, 8-bit
+[libx264 @ 0x7fed1c001140] 264 - core 164 r3108 31e19f9 - H.264/MPEG-4 AVC codec - Copyleft 2003-2023 - http://www.videolan.org/x264.html - options: cabac=1 ref=1 deblock=1:0:0 analyse=0x3:0x113 me=hex subme=2 psy=1 psy_rd=1.00:0.00 mixed_ref=0 me_range=16 chroma_me=1 trellis=0 8x8dct=1 cqm=0 deadzone=21,11 fast_pskip=1 chroma_qp_offset=0 threads=2 lookahead_threads=2 sliced_threads=1 slices=2 nr=0 decimate=1 interlaced=0 bluray_compat=0 constrained_intra=0 bframes=0 weightp=1 keyint=60 keyint_min=6 scenecut=40 intra_refresh=0 rc=crf mbtree=0 crf=18.0 qcomp=0.60 qpmin=0 qpmax=69 qpstep=4 ip_ratio=1.40 aq=1:1.00
+[libx264 @ 0x7fed1c001140] frame I:30    Avg QP: 0.97  size:   123
+[libx264 @ 0x7fed1c001140] mb I  I16..4: 99.2%  0.0%  0.8%
+[libx264 @ 0x7fed1c001140] 8x8 transform intra:0.0%
+[libx264 @ 0x7fed1c001140] coded y,uvDC,uvAC intra: 0.2% 0.0% 0.0%
+[libx264 @ 0x7fed1c001140] i16 v,h,dc,p: 84%  0% 16%  0%
+[libx264 @ 0x7fed1c001140] i4 v,h,dc,ddl,ddr,vr,hd,vl,hu:  0%  0% 100%  0%  0%  0%  0%  0%  0%
+[libx264 @ 0x7fed1c001140] i8c dc,h,v,p: 100%  0%  0%  0%
+[libx264 @ 0x7fed1c001140] kb/s:29.54
+[aac @ 0x7fed1c0dc7c0] Qavg: 342.132
+[libx264 @ 0x564f27b57380] using SAR=1/1
+[libx264 @ 0x564f27b57380] using cpu capabilities: MMX2 SSE2Fast SSSE3 SSE4.2 AVX FMA3 BMI2 AVX2 AVX512
+[libx264 @ 0x564f27b57380] profile Constrained Baseline, level 1.3, 4:2:0, 8-bit
+[libx264 @ 0x564f27b57380] 264 - core 164 r3108 31e19f9 - H.264/MPEG-4 AVC codec - Copyleft 2003-2023 - http://www.videolan.org/x264.html - options: cabac=0 ref=1 deblock=0:0:0 analyse=0:0 me=dia subme=0 psy=1 psy_rd=1.00:0.00 mixed_ref=0 me_range=16 chroma_me=1 trellis=0 8x8dct=0 cqm=0 deadzone=21,11 fast_pskip=1 chroma_qp_offset=0 threads=2 lookahead_threads=1 sliced_threads=0 nr=0 decimate=1 interlaced=0 bluray_compat=0 constrained_intra=0 bframes=0 weightp=0 keyint=250 keyint_min=25 scenecut=0 intra_refresh=0 rc=crf mbtree=0 crf=23.0 qcomp=0.60 qpmin=0 qpmax=69 qpstep=4 ip_ratio=1.40 aq=0
+[input-0:v @ 0x564f27ae2d40] Changing video frame properties on the fly is not supported by all filters.
+[input-0:v @ 0x564f27ae2d40] filter context - w: 320 h: 180 fmt: 0 csp: unknown range: unknown, incoming frame - w: 320 h: 180 fmt: 0 csp: bt709 range: tv pts_time: 0
+[mp4 @ 0x564f27b0b240] Starting second pass: moving the moov atom to the beginning of the file
+[libx264 @ 0x564f27b57380] frame I:1     Avg QP:20.00  size:   198
+[libx264 @ 0x564f27b57380] frame P:14    Avg QP:14.79  size:   272
+[libx264 @ 0x564f27b57380] mb I  I16..4: 100.0%  0.0%  0.0%
+[libx264 @ 0x564f27b57380] mb P  I16..4: 92.5%  0.0%  0.0%  P16..4:  0.4%  0.0%  0.0%  0.0%  0.0%    skip: 7.1%
+[libx264 @ 0x564f27b57380] coded y,uvDC,uvAC intra: 0.0% 0.0% 0.0% inter: 5.1% 0.0% 0.0%
+[libx264 @ 0x564f27b57380] i16 v,h,dc,p: 92%  0%  8%  0%
+[libx264 @ 0x564f27b57380] i8c dc,h,v,p: 100%  0%  0%  0%
+[libx264 @ 0x564f27b57380] kb/s:64.08
+[aac @ 0x564f27bf3140] Qavg: 2931.778
+[aac @ 0x7fed141bac40] Qavg: 342.132
+[input-0:v @ 0x564f285cdd40] Changing video frame properties on the fly is not supported by all filters.
+[input-0:v @ 0x564f285cdd40] filter context - w: 320 h: 180 fmt: 0 csp: unknown range: unknown, incoming frame - w: 320 h: 180 fmt: 0 csp: bt709 range: tv pts_time: 0
+[mp4 @ 0x564f27b0b240] Starting second pass: moving the moov atom to the beginning of the file
+[aac @ 0x564f27d39400] Qavg: 2931.778
+[libvpx @ 0x7fed100011c0] v1.15.0
+[libvpx @ 0x564f27d3fd40] v1.15.0
+[opus @ 0x564f27b03b00] Could not update timestamps for skipped samples.
+[input-0:v @ 0x564f27b11740] Changing video frame properties on the fly is not supported by all filters.
+[input-0:v @ 0x564f27b11740] filter context - w: 320 h: 180 fmt: 0 csp: unknown range: unknown, incoming frame - w: 320 h: 180 fmt: 0 csp: bt470bg range: tv pts_time: 0
+PASS libx264/aac: 30 captured + 15 rendered frames
+PASS libx265/aac: 30 captured + 15 rendered frames
+libvpx rendering lost media: video=15 audio=23640

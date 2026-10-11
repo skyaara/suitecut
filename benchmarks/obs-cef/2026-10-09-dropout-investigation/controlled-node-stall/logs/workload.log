@@ -1,0 +1,227 @@
+{
+  "startedAt": "2026-10-09T14:59:38.334Z",
+  "requestedMs": 90000,
+  "width": 1920,
+  "height": 1080,
+  "targetFps": 30,
+  "audio": true,
+  "syncPulseMs": 250,
+  "privateMemoryEveryIterations": 0,
+  "mode": "simultaneous recording and RTMP streaming on one caller-owned CEF source",
+  "gcDuringRun": false,
+  "receiverPath": "/workspace/suitecut/.suitecut/dropout-investigation/controlled-node-stall/receiver.flv",
+  "readyAt": "2026-10-09T14:59:48.355Z",
+  "runStartPerformanceMs": 11084.114771,
+  "runStartMonotonicSeconds": 67755.51488918299,
+  "baseline": {
+    "rss": 232181760,
+    "heapTotal": 122339328,
+    "heapUsed": 50255672,
+    "external": 48154793,
+    "arrayBuffers": 44157053
+  },
+  "injection": {
+    "kind": "controlled Node event-loop blocking wait",
+    "atMs": 40221.474754,
+    "durationMs": 4000
+  },
+  "activeMs": 90199.84954699999,
+  "snapshot": {
+    "markerCount": 2676,
+    "scrollY": 2880,
+    "scrollEvents": 16,
+    "keyEvents": 0,
+    "clicks": 0,
+    "value": "",
+    "choice": "First",
+    "secondary": false
+  },
+  "scrollCommands": 16,
+  "beforeStop": {
+    "rss": 285618176,
+    "heapTotal": 73318400,
+    "heapUsed": 51233264,
+    "external": 72793013,
+    "arrayBuffers": 68795233
+  },
+  "frames": 2225,
+  "audioPackets": 4641,
+  "pipelineTiming": {
+    "maxMarkerHoldMs": 4178.991335999999,
+    "maxFrameReceiveGapMs": 4145.004908000003,
+    "maxFrameCaptureGapMs": 4178.991335999999,
+    "maxFrameTransitMs": 4182.876107000004,
+    "nativeVideoReplaced": 453,
+    "maxAudioReceiveGapMs": 4145.742675000001,
+    "maxAudioCaptureGapMs": 2180
+  },
+  "audioOffsets": {
+    "count": 5354,
+    "minMs": -1985.545221995315,
+    "maxMs": 3.2876380046855047,
+    "futureOver100": 0,
+    "futureOver500": 0,
+    "pastOver10000": 0
+  },
+  "recordingPath": "/workspace/suitecut/.suitecut/dropout-investigation/controlled-node-stall/suitecut-source-1740ac3a-d680-4850-8baa-1b6fbd5ea500-30d3148c-48e5-4f6c-acdc-4af9685cd9e8.webm",
+  "sourceStateAfterRecording": "running",
+  "recording": {
+    "durationSeconds": 100.119,
+    "bytes": 2971650,
+    "windows": [
+      {
+        "offset": 5,
+        "matchedFlashes": 12,
+        "audioBursts": 23,
+        "medianAudioMinusVideoMs": -49.99999999999982,
+        "p95AbsoluteOffsetMs": 198.5,
+        "firstThirdMedianMs": -49.99999999999982,
+        "lastThirdMedianMs": -83.33333333333303,
+        "offsetsMs": [
+          -49.99999999999982,
+          36.66666666666663,
+          -80.00000000000007,
+          -49.99999999999982,
+          -13.333333333332753,
+          -140.00000000000057,
+          -59.99999999999872,
+          -29.99999999999936,
+          -3.333333333332078,
+          -269.99999999999955,
+          -33.333333333333215,
+          -133.33333333333286
+        ]
+      },
+      {
+        "offset": 45,
+        "matchedFlashes": 7,
+        "audioBursts": 26,
+        "medianAudioMinusVideoMs": -19.999999999999574,
+        "p95AbsoluteOffsetMs": 37.99999999999936,
+        "firstThirdMedianMs": -5.0000000000001155,
+        "lastThirdMedianMs": -23.333333333333428,
+        "offsetsMs": [
+          20.000000000000018,
+          -30.00000000000025,
+          39.99999999999915,
+          -33.333333333333215,
+          26.666666666667282,
+          -19.999999999999574,
+          -26.666666666667282
+        ]
+      },
+      {
+        "offset": 70,
+        "matchedFlashes": 13,
+        "audioBursts": 14,
+        "medianAudioMinusVideoMs": -53.33333333333279,
+        "p95AbsoluteOffsetMs": 89.99999999999986,
+        "firstThirdMedianMs": -56.6666666666662,
+        "lastThirdMedianMs": -44.99999999999993,
+        "offsetsMs": [
+          -3.3333333333334103,
+          -59.99999999999961,
+          -53.33333333333279,
+          -83.33333333333393,
+          -36.66666666666618,
+          -26.666666666666394,
+          -60.0000000000005,
+          -29.99999999999936,
+          -89.99999999999986,
+          -60.0000000000005,
+          -89.99999999999986,
+          -23.333333333333428,
+          -29.99999999999936
+        ]
+      }
+    ]
+  },
+  "receiver": {
+    "durationSeconds": 91.605,
+    "bytes": 2390312,
+    "windows": [
+      {
+        "offset": 5,
+        "matchedFlashes": 8,
+        "audioBursts": 25,
+        "medianAudioMinusVideoMs": -23.333333333333872,
+        "p95AbsoluteOffsetMs": 113.49999999999982,
+        "firstThirdMedianMs": -26.666666666666618,
+        "lastThirdMedianMs": -66.66666666666643,
+        "offsetsMs": [
+          -36.66666666666663,
+          -16.666666666666607,
+          36.66666666666618,
+          -16.666666666666607,
+          -76.66666666666711,
+          -30.000000000001137,
+          0,
+          -133.33333333333286
+        ]
+      },
+      {
+        "offset": 45,
+        "matchedFlashes": 7,
+        "audioBursts": 29,
+        "medianAudioMinusVideoMs": 19.999999999999574,
+        "p95AbsoluteOffsetMs": 75.66666666666612,
+        "firstThirdMedianMs": 36.6666666666664,
+        "lastThirdMedianMs": 28.33333333333332,
+        "offsetsMs": [
+          23.333333333332984,
+          49.99999999999982,
+          -3.333333333332966,
+          -86.666666666666,
+          -9.999999999999787,
+          36.66666666666707,
+          19.999999999999574
+        ]
+      },
+      {
+        "offset": 70,
+        "matchedFlashes": 11,
+        "audioBursts": 16,
+        "medianAudioMinusVideoMs": -16.666666666667496,
+        "p95AbsoluteOffsetMs": 138.33333333333366,
+        "firstThirdMedianMs": -26.66666666666684,
+        "lastThirdMedianMs": 9.999999999999787,
+        "offsetsMs": [
+          -6.666666666666821,
+          -26.66666666666684,
+          -36.66666666666707,
+          -33.333333333333215,
+          -9.999999999999787,
+          -16.666666666667496,
+          -16.666666666667496,
+          -240.00000000000023,
+          13.333333333333641,
+          -9.999999999999787,
+          9.999999999999787
+        ]
+      }
+    ]
+  },
+  "status": "passed",
+  "afterCleanup": {
+    "rss": 286117888,
+    "heapTotal": 73580544,
+    "heapUsed": 52562576,
+    "external": 4425426,
+    "arrayBuffers": 423570
+  },
+  "afterCleanupGc": {
+    "rss": 286117888,
+    "heapTotal": 73580544,
+    "heapUsed": 50831856,
+    "external": 4346389,
+    "arrayBuffers": 344533
+  },
+  "nodeCpuMs": 89098.33,
+  "elapsedMs": 115363.78175,
+  "eventLoopDelay": {
+    "meanMs": 24.059288680175477,
+    "p99Ms": 55.934975,
+    "maxMs": 4037.017599
+  },
+  "completedAt": "2026-10-09T15:01:33.699Z"
+}

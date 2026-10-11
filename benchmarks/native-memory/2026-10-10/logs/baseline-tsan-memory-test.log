@@ -1,0 +1,51 @@
+==190352==WARNING: invalid path to external symbolizer!
+==190352==WARNING: Failed to use and restart external symbolizer!
+==================
+WARNING: ThreadSanitizer: data race (pid=190352)
+  Write of size 8 at 0x726000000780 by thread T1:
+    #0 <null> <null> (baseline-tsan+0xfacd1) (BuildId: a564b21c219ad4b91783d69770c5d700d9430690)
+    #1 <null> <null> (baseline-tsan+0xf9118) (BuildId: a564b21c219ad4b91783d69770c5d700d9430690)
+    #2 <null> <null> (baseline-tsan+0xf82a8) (BuildId: a564b21c219ad4b91783d69770c5d700d9430690)
+    #3 <null> <null> (baseline-tsan+0xf8263) (BuildId: a564b21c219ad4b91783d69770c5d700d9430690)
+    #4 <null> <null> (libstdc++.so.6+0xe1223) (BuildId: 133b71e0013695cc7832680a74edb51008c4fc4c)
+
+  Previous read of size 8 at 0x726000000780 by thread T2 (mutexes: write M0, write M1):
+    #0 <null> <null> (baseline-tsan+0xf037c) (BuildId: a564b21c219ad4b91783d69770c5d700d9430690)
+    #1 <null> <null> (baseline-tsan+0x10fa0c) (BuildId: a564b21c219ad4b91783d69770c5d700d9430690)
+    #2 <null> <null> (libstdc++.so.6+0xe1223) (BuildId: 133b71e0013695cc7832680a74edb51008c4fc4c)
+
+  Location is heap block of size 1016 at 0x726000000400 allocated by main thread:
+    #0 <null> <null> (baseline-tsan+0xece86) (BuildId: a564b21c219ad4b91783d69770c5d700d9430690)
+    #1 <null> <null> (baseline-tsan+0xf1f60) (BuildId: a564b21c219ad4b91783d69770c5d700d9430690)
+    #2 <null> <null> (baseline-tsan+0xef449) (BuildId: a564b21c219ad4b91783d69770c5d700d9430690)
+    #3 <null> <null> (baseline-tsan+0x10dcec) (BuildId: a564b21c219ad4b91783d69770c5d700d9430690)
+    #4 <null> <null> (libc.so.6+0x29ca7) (BuildId: c495b62edadd6c356265942ec1282d98058a7b41)
+
+  Mutex M0 (0x726000000718) created at:
+    #0 <null> <null> (baseline-tsan+0x6a382) (BuildId: a564b21c219ad4b91783d69770c5d700d9430690)
+    #1 <null> <null> (baseline-tsan+0xf0267) (BuildId: a564b21c219ad4b91783d69770c5d700d9430690)
+    #2 <null> <null> (baseline-tsan+0x10fa0c) (BuildId: a564b21c219ad4b91783d69770c5d700d9430690)
+    #3 <null> <null> (libstdc++.so.6+0xe1223) (BuildId: 133b71e0013695cc7832680a74edb51008c4fc4c)
+
+  Mutex M1 (0x7260000004c8) created at:
+    #0 <null> <null> (baseline-tsan+0x6a382) (BuildId: a564b21c219ad4b91783d69770c5d700d9430690)
+    #1 <null> <null> (baseline-tsan+0xef5b3) (BuildId: a564b21c219ad4b91783d69770c5d700d9430690)
+    #2 <null> <null> (baseline-tsan+0x10deb8) (BuildId: a564b21c219ad4b91783d69770c5d700d9430690)
+    #3 <null> <null> (libc.so.6+0x29ca7) (BuildId: c495b62edadd6c356265942ec1282d98058a7b41)
+
+  Thread T1 (tid=190358, running) created by main thread at:
+    #0 <null> <null> (baseline-tsan+0x68605) (BuildId: a564b21c219ad4b91783d69770c5d700d9430690)
+    #1 <null> <null> (libstdc++.so.6+0xe12f8) (BuildId: 133b71e0013695cc7832680a74edb51008c4fc4c)
+    #2 <null> <null> (baseline-tsan+0xf2284) (BuildId: a564b21c219ad4b91783d69770c5d700d9430690)
+    #3 <null> <null> (baseline-tsan+0xef449) (BuildId: a564b21c219ad4b91783d69770c5d700d9430690)
+    #4 <null> <null> (baseline-tsan+0x10dcec) (BuildId: a564b21c219ad4b91783d69770c5d700d9430690)
+    #5 <null> <null> (libc.so.6+0x29ca7) (BuildId: c495b62edadd6c356265942ec1282d98058a7b41)
+
+  Thread T2 (tid=190359, finished) created by main thread at:
+    #0 <null> <null> (baseline-tsan+0x68605) (BuildId: a564b21c219ad4b91783d69770c5d700d9430690)
+    #1 <null> <null> (libstdc++.so.6+0xe12f8) (BuildId: 133b71e0013695cc7832680a74edb51008c4fc4c)
+    #2 <null> <null> (baseline-tsan+0x10df73) (BuildId: a564b21c219ad4b91783d69770c5d700d9430690)
+    #3 <null> <null> (libc.so.6+0x29ca7) (BuildId: c495b62edadd6c356265942ec1282d98058a7b41)
+
+SUMMARY: ThreadSanitizer: data race (/workspace/suitecut/.suitecut/memory-tools/baseline-tsan+0xfacd1) (BuildId: a564b21c219ad4b91783d69770c5d700d9430690) 
+==================

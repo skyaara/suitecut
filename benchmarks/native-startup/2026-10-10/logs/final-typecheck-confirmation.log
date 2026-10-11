@@ -1,0 +1,31 @@
+$ tsc --noEmit
+benchmarks/native-startup/2026-10-10/capture-sources/benchmarks/native-engine/engine.e2e.spec.ts(6,30): error TS2307: Cannot find module '../../src/engine-test.js' or its corresponding type declarations.
+benchmarks/native-startup/2026-10-10/capture-sources/benchmarks/native-engine/engine.e2e.spec.ts(50,3): error TS7031: Binding element 'page' implicitly has an 'any' type.
+benchmarks/native-startup/2026-10-10/capture-sources/benchmarks/native-engine/engine.e2e.spec.ts(66,3): error TS7031: Binding element 'page' implicitly has an 'any' type.
+benchmarks/native-startup/2026-10-10/capture-sources/benchmarks/native-engine/engine.e2e.spec.ts(67,3): error TS7031: Binding element 'suitecutEngine' implicitly has an 'any' type.
+benchmarks/native-startup/2026-10-10/capture-sources/benchmarks/native-engine/engine.e2e.spec.ts(95,3): error TS7031: Binding element 'page' implicitly has an 'any' type.
+benchmarks/native-startup/2026-10-10/capture-sources/benchmarks/native-engine/engine.e2e.spec.ts(96,3): error TS7031: Binding element 'suitecutEngine' implicitly has an 'any' type.
+benchmarks/native-startup/2026-10-10/capture-sources/benchmarks/native-engine/engine.e2e.spec.ts(113,75): error TS7031: Binding element 'browser' implicitly has an 'any' type.
+benchmarks/native-startup/2026-10-10/capture-sources/benchmarks/native-engine/engine.e2e.spec.ts(121,40): error TS7006: Parameter 'c' implicitly has an 'any' type.
+benchmarks/native-startup/2026-10-10/capture-sources/benchmarks/native-engine/engine.e2e.spec.ts(125,32): error TS7006: Parameter 'route' implicitly has an 'any' type.
+benchmarks/native-startup/2026-10-10/capture-sources/benchmarks/native-engine/engine.e2e.spec.ts(133,40): error TS7006: Parameter 'c' implicitly has an 'any' type.
+benchmarks/native-startup/2026-10-10/capture-sources/benchmarks/native-engine/engine.e2e.spec.ts(142,79): error TS7031: Binding element 'page' implicitly has an 'any' type.
+benchmarks/native-startup/2026-10-10/capture-sources/benchmarks/native-engine/engine.e2e.spec.ts(142,85): error TS7031: Binding element 'context' implicitly has an 'any' type.
+benchmarks/native-startup/2026-10-10/capture-sources/benchmarks/native-engine/engine.e2e.spec.ts(150,30): error TS7006: Parameter 'dialog' implicitly has an 'any' type.
+benchmarks/native-startup/2026-10-10/capture-sources/benchmarks/native-engine/engine.e2e.spec.ts(179,3): error TS7031: Binding element 'suitecutEngine' implicitly has an 'any' type.
+benchmarks/native-startup/2026-10-10/capture-sources/benchmarks/native-engine/engine.e2e.spec.ts(180,3): error TS7031: Binding element 'page' implicitly has an 'any' type.
+benchmarks/native-startup/2026-10-10/capture-sources/benchmarks/native-engine/engine.e2e.spec.ts(181,3): error TS7031: Binding element 'context' implicitly has an 'any' type.
+benchmarks/native-startup/2026-10-10/capture-sources/benchmarks/native-engine/engine.e2e.spec.ts(215,73): error TS7031: Binding element 'browser' implicitly has an 'any' type.
+benchmarks/native-startup/2026-10-10/capture-sources/benchmarks/native-engine/engine.e2e.spec.ts(215,82): error TS7031: Binding element 'page' implicitly has an 'any' type.
+benchmarks/native-startup/2026-10-10/capture-sources/benchmarks/native-engine/engine.e2e.spec.ts(226,72): error TS7031: Binding element 'browser' implicitly has an 'any' type.
+benchmarks/native-startup/2026-10-10/capture-sources/src/engine.ts(8,29): error TS2307: Cannot find module './manifest.js' or its corresponding type declarations.
+benchmarks/native-startup/2026-10-10/capture-sources/src/engine.ts(13,8): error TS2307: Cannot find module './native-browser.js' or its corresponding type declarations.
+benchmarks/native-startup/2026-10-10/capture-sources/src/engine.ts(14,87): error TS2307: Cannot find module './render.js' or its corresponding type declarations.
+benchmarks/native-startup/2026-10-10/capture-sources/src/engine.ts(15,59): error TS2307: Cannot find module './types.js' or its corresponding type declarations.
+benchmarks/native-startup/2026-10-10/capture-sources/src/engine.ts(16,37): error TS2307: Cannot find module './untrusted.js' or its corresponding type declarations.
+benchmarks/native-startup/2026-10-10/capture-sources/src/engine.ts(118,47): error TS7006: Parameter 'message' implicitly has an 'any' type.
+benchmarks/native-startup/2026-10-10/capture-sources/src/engine.ts(217,5): error TS2322: Type '() => Promise<{ ready: boolean; stopped: boolean; paused: boolean; videoFrames: number; audioSamples: number; repeatedFrames: number; droppedAudioSamples: number; missingAudioSamples: number; lateAudioSamples: number; ... 5 more ...; error: string; }> | undefined' is not assignable to type '() => Promise<{ ready: boolean; stopped: boolean; paused: boolean; videoFrames: number; audioSamples: number; repeatedFrames: number; droppedAudioSamples: number; missingAudioSamples: number; lateAudioSamples: number; ... 5 more ...; error: string; }>'.
+  Type 'Promise<{ ready: boolean; stopped: boolean; paused: boolean; videoFrames: number; audioSamples: number; repeatedFrames: number; droppedAudioSamples: number; missingAudioSamples: number; lateAudioSamples: number; ... 5 more ...; error: string; }> | undefined' is not assignable to type 'Promise<{ ready: boolean; stopped: boolean; paused: boolean; videoFrames: number; audioSamples: number; repeatedFrames: number; droppedAudioSamples: number; missingAudioSamples: number; lateAudioSamples: number; ... 5 more ...; error: string; }>'.
+    Type 'undefined' is not assignable to type 'Promise<{ ready: boolean; stopped: boolean; paused: boolean; videoFrames: number; audioSamples: number; repeatedFrames: number; droppedAudioSamples: number; missingAudioSamples: number; lateAudioSamples: number; ... 5 more ...; error: string; }>'.
+benchmarks/native-startup/2026-10-10/capture-sources/src/engine.ts(220,72): error TS7006: Parameter 'value' implicitly has an 'any' type.
+[ELIFECYCLE] Command failed with exit code 2.

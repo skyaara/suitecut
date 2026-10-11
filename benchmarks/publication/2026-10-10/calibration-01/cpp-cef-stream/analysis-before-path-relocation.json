@@ -1,0 +1,7 @@
+{
+  "backend": "cpp-cef",
+  "mode": "stream",
+  "workloadStatus": "completed; media validation pending",
+  "valid": false,
+  "error": "CalledProcessError(1, ['ffprobe', '-v', 'error', '-show_streams', '-show_format', '-of', 'json', '/workspace/suitecut/benchmarks/publication/2026-10-10/smoke/cpp-cef-stream/receiver.flv'])"
+}

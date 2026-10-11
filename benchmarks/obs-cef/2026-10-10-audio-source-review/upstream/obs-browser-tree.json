@@ -1,0 +1,1207 @@
+{
+  "sha": "9ecf652c9df4a0cace934917ce5ae754da58a529",
+  "url": "https://api.github.com/repos/obsproject/obs-browser/git/trees/9ecf652c9df4a0cace934917ce5ae754da58a529",
+  "tree": [
+    {
+      "path": ".clang-format",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ee640426a58fa98aef68a20cd9617fc9bf0f78d8",
+      "size": 5972,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/ee640426a58fa98aef68a20cd9617fc9bf0f78d8"
+    },
+    {
+      "path": ".cmake-format.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "20610be23e52cc097666068d877779867f3e7f23",
+      "size": 1096,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/20610be23e52cc097666068d877779867f3e7f23"
+    },
+    {
+      "path": ".github",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "df7e78c68afddca67c4a508a30a1cb2f04f0155e",
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/trees/df7e78c68afddca67c4a508a30a1cb2f04f0155e"
+    },
+    {
+      "path": ".github/actions",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "df0554b1b63281760b3267cdea8ed0e44f7fe651",
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/trees/df0554b1b63281760b3267cdea8ed0e44f7fe651"
+    },
+    {
+      "path": ".github/actions/check-changes",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "dac85bed66ec18346595f144cc2c333b586863f2",
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/trees/dac85bed66ec18346595f144cc2c333b586863f2"
+    },
+    {
+      "path": ".github/actions/check-changes/action.yaml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e5690b8a78efa88daf79e70b42768bb7912244a3",
+      "size": 2952,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/e5690b8a78efa88daf79e70b42768bb7912244a3"
+    },
+    {
+      "path": ".github/actions/run-clang-format",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "8b1e5a8cdb6b5aef857cb72a2bce8b2d20baa5b3",
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/trees/8b1e5a8cdb6b5aef857cb72a2bce8b2d20baa5b3"
+    },
+    {
+      "path": ".github/actions/run-clang-format/action.yaml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3bd00ffe5815b8f12e674bcdfb6b359c1b340b04",
+      "size": 2160,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/3bd00ffe5815b8f12e674bcdfb6b359c1b340b04"
+    },
+    {
+      "path": ".github/workflows",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "ce2428cc61c93dfcf2ee7484b1a48605116b9573",
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/trees/ce2428cc61c93dfcf2ee7484b1a48605116b9573"
+    },
+    {
+      "path": ".github/workflows/check-format.yaml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7b5f3fa1d1ce28117c3055db1aba272aa581a479",
+      "size": 393,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/7b5f3fa1d1ce28117c3055db1aba272aa581a479"
+    },
+    {
+      "path": ".github/workflows/pr-pull.yaml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b2ffa34c37bd86ed7f7b254d2136ebfd739d17cb",
+      "size": 538,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/b2ffa34c37bd86ed7f7b254d2136ebfd739d17cb"
+    },
+    {
+      "path": ".github/workflows/push.yaml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c6f8521cea0288b5c1d2b6cd23ef11fda7d33097",
+      "size": 373,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/c6f8521cea0288b5c1d2b6cd23ef11fda7d33097"
+    },
+    {
+      "path": ".gitignore",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6d5e8845241a5a3b54c931f4fdf5d47f1f410f19",
+      "size": 689,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/6d5e8845241a5a3b54c931f4fdf5d47f1f410f19"
+    },
+    {
+      "path": "CMakeLists.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6d28b355af5fdbe04e11dbd0d266546cba3bf7c8",
+      "size": 1742,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/6d28b355af5fdbe04e11dbd0d266546cba3bf7c8"
+    },
+    {
+      "path": "COPYING",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d60c31a97a544b53039088d14fe9114583c0efc3",
+      "size": 17992,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/d60c31a97a544b53039088d14fe9114583c0efc3"
+    },
+    {
+      "path": "README.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3e1732802cf33f2bd02894d7c8c502f6a872b524",
+      "size": 9267,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/3e1732802cf33f2bd02894d7c8c502f6a872b524"
+    },
+    {
+      "path": "browser-app.cpp",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3d4f257b5be4c7cb485c8e441106750ffe38e1da",
+      "size": 15401,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/3d4f257b5be4c7cb485c8e441106750ffe38e1da"
+    },
+    {
+      "path": "browser-app.hpp",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0694d0c8eb6ccb5fc0b008c9adde2f8e3b627e9b",
+      "size": 4130,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/0694d0c8eb6ccb5fc0b008c9adde2f8e3b627e9b"
+    },
+    {
+      "path": "browser-client.cpp",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "de4587ef9e3cb194301b7a007e56c3d69e653774",
+      "size": 20994,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/de4587ef9e3cb194301b7a007e56c3d69e653774"
+    },
+    {
+      "path": "browser-client.hpp",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5046b822d21a60bacdbffc5c61797e570e7525c9",
+      "size": 6906,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/5046b822d21a60bacdbffc5c61797e570e7525c9"
+    },
+    {
+      "path": "browser-config.h.in",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9427ec4bfb9634212dc3bd57e2a7bae179112931",
+      "size": 228,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/9427ec4bfb9634212dc3bd57e2a7bae179112931"
+    },
+    {
+      "path": "browser-dummy-client.cpp",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e891ca706673d8416755112cbd0e255e35135904",
+      "size": 2599,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/e891ca706673d8416755112cbd0e255e35135904"
+    },
+    {
+      "path": "browser-dummy-client.hpp",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "12cf1a53157f3400d842c63790019e8dd0228abc",
+      "size": 2945,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/12cf1a53157f3400d842c63790019e8dd0228abc"
+    },
+    {
+      "path": "browser-scheme.cpp",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b9ea148157a937c76e1204c912fb807c065cfbdb",
+      "size": 2557,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/b9ea148157a937c76e1204c912fb807c065cfbdb"
+    },
+    {
+      "path": "browser-scheme.hpp",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "323e947c604f724942e1c4b5c47083ec6d998b67",
+      "size": 1284,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/323e947c604f724942e1c4b5c47083ec6d998b67"
+    },
+    {
+      "path": "browser-version.h",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ec4ddec9956ddba8cd5e670f0acaae7e45cae67d",
+      "size": 707,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/ec4ddec9956ddba8cd5e670f0acaae7e45cae67d"
+    },
+    {
+      "path": "build-aux",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "8494357641b243967d4fef2e13e92dd6d73f6439",
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/trees/8494357641b243967d4fef2e13e92dd6d73f6439"
+    },
+    {
+      "path": "build-aux/.functions",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "3aafeace0b1bf9bba04988033426435ba06e93be",
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/trees/3aafeace0b1bf9bba04988033426435ba06e93be"
+    },
+    {
+      "path": "build-aux/.functions/log_debug",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6a477a18139f76fd4afa54c3f049cae25024f515",
+      "size": 127,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/6a477a18139f76fd4afa54c3f049cae25024f515"
+    },
+    {
+      "path": "build-aux/.functions/log_error",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f1c7b4364d046fe9ea68e7a838620d37d4f19796",
+      "size": 78,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/f1c7b4364d046fe9ea68e7a838620d37d4f19796"
+    },
+    {
+      "path": "build-aux/.functions/log_group",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7b6aca9782328f99602ffaeb13fcbbd546173840",
+      "size": 284,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/7b6aca9782328f99602ffaeb13fcbbd546173840"
+    },
+    {
+      "path": "build-aux/.functions/log_info",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d437c292d2fe3d6496e809d22498b9a488909fb5",
+      "size": 142,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/d437c292d2fe3d6496e809d22498b9a488909fb5"
+    },
+    {
+      "path": "build-aux/.functions/log_output",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4d9b52f393d42da87f295d1a2774012c30a4db1a",
+      "size": 128,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/4d9b52f393d42da87f295d1a2774012c30a4db1a"
+    },
+    {
+      "path": "build-aux/.functions/log_status",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "950e68187a751e59d3e186050c4c735c1c654725",
+      "size": 138,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/950e68187a751e59d3e186050c4c735c1c654725"
+    },
+    {
+      "path": "build-aux/.functions/log_warning",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ceff982a97361322dc352942dcbbe412d86910ce",
+      "size": 156,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/ceff982a97361322dc352942dcbbe412d86910ce"
+    },
+    {
+      "path": "build-aux/.functions/set_loglevel",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e32f4bb35ee012d37c45e991d3e5a3771f6dc452",
+      "size": 429,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/e32f4bb35ee012d37c45e991d3e5a3771f6dc452"
+    },
+    {
+      "path": "build-aux/.run-format.zsh",
+      "mode": "100755",
+      "type": "blob",
+      "sha": "6b275b382542e17d08b8cb54fe8cad1aa327ea4b",
+      "size": 8371,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/6b275b382542e17d08b8cb54fe8cad1aa327ea4b"
+    },
+    {
+      "path": "build-aux/run-clang-format",
+      "mode": "120000",
+      "type": "blob",
+      "sha": "eabec2f977eafde0dea66c0c973dd1b15a840540",
+      "size": 15,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/eabec2f977eafde0dea66c0c973dd1b15a840540"
+    },
+    {
+      "path": "cef-headers.hpp",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2b14f490cb0d46ba9c8adbf5f1790025ee80f76f",
+      "size": 2170,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/2b14f490cb0d46ba9c8adbf5f1790025ee80f76f"
+    },
+    {
+      "path": "cmake",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "8340a56d4a823119304a5ee9e30f7d12076866a4",
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/trees/8340a56d4a823119304a5ee9e30f7d12076866a4"
+    },
+    {
+      "path": "cmake/feature-panels.cmake",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "32ad506e3c6794ebdc1d088d3360a3fb1a1fe0f9",
+      "size": 839,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/32ad506e3c6794ebdc1d088d3360a3fb1a1fe0f9"
+    },
+    {
+      "path": "cmake/macos",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "7eaaab897125d4b9455f4e3002a6c672fdeb6cdf",
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/trees/7eaaab897125d4b9455f4e3002a6c672fdeb6cdf"
+    },
+    {
+      "path": "cmake/macos/entitlements-helper.gpu.plist",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a7a497451364e7494254c5e9fdad878a29c7dc4a",
+      "size": 323,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/a7a497451364e7494254c5e9fdad878a29c7dc4a"
+    },
+    {
+      "path": "cmake/macos/entitlements-helper.plist",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4228cf176f4ad86257dbd2d0f7c314cb0db65b77",
+      "size": 399,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/4228cf176f4ad86257dbd2d0f7c314cb0db65b77"
+    },
+    {
+      "path": "cmake/macos/entitlements-helper.plugin.plist",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7cd9df032bd084539852bd6efc2e4fab894728b0",
+      "size": 346,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/7cd9df032bd084539852bd6efc2e4fab894728b0"
+    },
+    {
+      "path": "cmake/macos/entitlements-helper.renderer.plist",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "777b3abd95eea35e875f46073a81b4154597a23d",
+      "size": 323,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/777b3abd95eea35e875f46073a81b4154597a23d"
+    },
+    {
+      "path": "cmake/os-linux.cmake",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4e636e0e5e2530a1d12ebcfe18dea4b5b3928056",
+      "size": 1520,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/4e636e0e5e2530a1d12ebcfe18dea4b5b3928056"
+    },
+    {
+      "path": "cmake/os-macos.cmake",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "336e92c99119e53b861c492cde92ea587c4df7a2",
+      "size": 3091,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/336e92c99119e53b861c492cde92ea587c4df7a2"
+    },
+    {
+      "path": "cmake/os-windows.cmake",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "bd7a78b14e164483a44e870b82ea5110adb88321",
+      "size": 1859,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/bd7a78b14e164483a44e870b82ea5110adb88321"
+    },
+    {
+      "path": "cmake/windows",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "b6c6e5ffe96c572d06ba081fd13eab139acf2da5",
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/trees/b6c6e5ffe96c572d06ba081fd13eab139acf2da5"
+    },
+    {
+      "path": "cmake/windows/obs-browser-page.manifest",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d8d34bd1405d53a3b2d9d3871cbd2c587cfe2cbe",
+      "size": 818,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/d8d34bd1405d53a3b2d9d3871cbd2c587cfe2cbe"
+    },
+    {
+      "path": "cmake/windows/obs-module-helper.rc.in",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4637190b1495ec7c8828b53f698f4f4c2ee11dda",
+      "size": 710,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/4637190b1495ec7c8828b53f698f4f4c2ee11dda"
+    },
+    {
+      "path": "cmake/windows/obs-module.rc.in",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "94ef73320114136e19a028766701edd7e004c44a",
+      "size": 702,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/94ef73320114136e19a028766701edd7e004c44a"
+    },
+    {
+      "path": "data",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "f922b8ce75e960dc1719ebeeddbba7d2dad41044",
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/trees/f922b8ce75e960dc1719ebeeddbba7d2dad41044"
+    },
+    {
+      "path": "data/error.html",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1fbb59b106bb974cbe7152671c5b1428506c7440",
+      "size": 10165,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/1fbb59b106bb974cbe7152671c5b1428506c7440"
+    },
+    {
+      "path": "data/locale",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "c71f8e2565329009d61e8860067ba5c586d5ede3",
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/trees/c71f8e2565329009d61e8860067ba5c586d5ede3"
+    },
+    {
+      "path": "data/locale/af-ZA.ini",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "778e92fc3b60c16df2ab197ff08477ce2a229940",
+      "size": 2034,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/778e92fc3b60c16df2ab197ff08477ce2a229940"
+    },
+    {
+      "path": "data/locale/ar-SA.ini",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "61e33440d5efa807e64ae861f3a1c6149e5e33f8",
+      "size": 2955,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/61e33440d5efa807e64ae861f3a1c6149e5e33f8"
+    },
+    {
+      "path": "data/locale/az-AZ.ini",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5301b8c3fa011f546823869ca21f20aa2f3f74bf",
+      "size": 2360,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/5301b8c3fa011f546823869ca21f20aa2f3f74bf"
+    },
+    {
+      "path": "data/locale/ba-RU.ini",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1291a5ef78ca35bbf0dbd1794f629643d112e97a",
+      "size": 112,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/1291a5ef78ca35bbf0dbd1794f629643d112e97a"
+    },
+    {
+      "path": "data/locale/be-BY.ini",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0a7d3711610232e06d2915645c51d51d0061705f",
+      "size": 3187,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/0a7d3711610232e06d2915645c51d51d0061705f"
+    },
+    {
+      "path": "data/locale/bg-BG.ini",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "20c079abed47cc0f81c7d1279ebe71de2e5d2954",
+      "size": 2860,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/20c079abed47cc0f81c7d1279ebe71de2e5d2954"
+    },
+    {
+      "path": "data/locale/bn-BD.ini",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a61f078570153f0ae9659a9ad3bcc4903d024946",
+      "size": 3002,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/a61f078570153f0ae9659a9ad3bcc4903d024946"
+    },
+    {
+      "path": "data/locale/ca-ES.ini",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4bb00ccc3885e78c9c410d56ed081fe4594bf2b7",
+      "size": 2466,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/4bb00ccc3885e78c9c410d56ed081fe4594bf2b7"
+    },
+    {
+      "path": "data/locale/cs-CZ.ini",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2ec2a8937ce6f6a7a68dab317b34e97a15ebacf6",
+      "size": 2352,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/2ec2a8937ce6f6a7a68dab317b34e97a15ebacf6"
+    },
+    {
+      "path": "data/locale/da-DK.ini",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "05c29345f905160f84d13a1c2588e2439ba149f1",
+      "size": 2124,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/05c29345f905160f84d13a1c2588e2439ba149f1"
+    },
+    {
+      "path": "data/locale/de-DE.ini",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f2f7fe9dd3081729a88718c1a7e3f554fb80eeec",
+      "size": 2386,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/f2f7fe9dd3081729a88718c1a7e3f554fb80eeec"
+    },
+    {
+      "path": "data/locale/el-GR.ini",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cc4d9389f4ede828cc2c648c0a2c6a4cb62d088c",
+      "size": 3615,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/cc4d9389f4ede828cc2c648c0a2c6a4cb62d088c"
+    },
+    {
+      "path": "data/locale/en-GB.ini",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "85e461daae9da6036504075906509141fc42f7fb",
+      "size": 23,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/85e461daae9da6036504075906509141fc42f7fb"
+    },
+    {
+      "path": "data/locale/en-US.ini",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "59ac1c8044688f7105dc11ec0cbf8464042f4a15",
+      "size": 2498,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/59ac1c8044688f7105dc11ec0cbf8464042f4a15"
+    },
+    {
+      "path": "data/locale/eo-UY.ini",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ae0aeebe375f622e5b70c684cf75635978f30941",
+      "size": 649,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/ae0aeebe375f622e5b70c684cf75635978f30941"
+    },
+    {
+      "path": "data/locale/es-ES.ini",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "18c47d55c9468265b3a203923037422a49c1ee6f",
+      "size": 2381,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/18c47d55c9468265b3a203923037422a49c1ee6f"
+    },
+    {
+      "path": "data/locale/et-EE.ini",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c35e75de333a6bf08e2d739db5006de96a0fcb97",
+      "size": 2237,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/c35e75de333a6bf08e2d739db5006de96a0fcb97"
+    },
+    {
+      "path": "data/locale/eu-ES.ini",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0c1c38934c3a2652bafce99ed2dab9bbe859aeb6",
+      "size": 2289,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/0c1c38934c3a2652bafce99ed2dab9bbe859aeb6"
+    },
+    {
+      "path": "data/locale/fa-IR.ini",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "406a52b98d88c6772a04998a177ba080e3e195c8",
+      "size": 2982,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/406a52b98d88c6772a04998a177ba080e3e195c8"
+    },
+    {
+      "path": "data/locale/fi-FI.ini",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "fb5c198f4850a3262693796cc3117a5a5254b3c6",
+      "size": 2284,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/fb5c198f4850a3262693796cc3117a5a5254b3c6"
+    },
+    {
+      "path": "data/locale/fil-PH.ini",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1b419cc62b9d9eaa18c099b18b16e5959beebacf",
+      "size": 2096,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/1b419cc62b9d9eaa18c099b18b16e5959beebacf"
+    },
+    {
+      "path": "data/locale/fr-FR.ini",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "29cb2d2cca976abeed30d30f5d167bfd359d4753",
+      "size": 2473,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/29cb2d2cca976abeed30d30f5d167bfd359d4753"
+    },
+    {
+      "path": "data/locale/gd-GB.ini",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e0cd170f029113cd1c0bb820919373144e08fb89",
+      "size": 1816,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/e0cd170f029113cd1c0bb820919373144e08fb89"
+    },
+    {
+      "path": "data/locale/gl-ES.ini",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c3765bd29c76324f09008d1d12090c59ef48ca11",
+      "size": 2329,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/c3765bd29c76324f09008d1d12090c59ef48ca11"
+    },
+    {
+      "path": "data/locale/he-IL.ini",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "bdc85154525e16b3c0a23037903e45b5757d3ac4",
+      "size": 2755,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/bdc85154525e16b3c0a23037903e45b5757d3ac4"
+    },
+    {
+      "path": "data/locale/hi-IN.ini",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cc59f8dc35f4120a3673f53a401eb99d3424c3e7",
+      "size": 4079,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/cc59f8dc35f4120a3673f53a401eb99d3424c3e7"
+    },
+    {
+      "path": "data/locale/hr-HR.ini",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e805c48b50428e13ca663232e568dd03734c2a45",
+      "size": 2348,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/e805c48b50428e13ca663232e568dd03734c2a45"
+    },
+    {
+      "path": "data/locale/hu-HU.ini",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cb708700c0dcd503b488a470799ffd755899e498",
+      "size": 2576,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/cb708700c0dcd503b488a470799ffd755899e498"
+    },
+    {
+      "path": "data/locale/hy-AM.ini",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8422f8e868c12cacb2c3d5a8d5e06ba8e1bb56eb",
+      "size": 3337,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/8422f8e868c12cacb2c3d5a8d5e06ba8e1bb56eb"
+    },
+    {
+      "path": "data/locale/id-ID.ini",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "afbba22a7ad363a0a15f978fcbac54511f16049d",
+      "size": 2206,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/afbba22a7ad363a0a15f978fcbac54511f16049d"
+    },
+    {
+      "path": "data/locale/it-IT.ini",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "48fead33ccd4e7226cb1a0f84e1ba5b22fc0eacc",
+      "size": 2326,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/48fead33ccd4e7226cb1a0f84e1ba5b22fc0eacc"
+    },
+    {
+      "path": "data/locale/ja-JP.ini",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c4ebd8517f4aed238a70d3b929a0c5e2cf180f52",
+      "size": 2714,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/c4ebd8517f4aed238a70d3b929a0c5e2cf180f52"
+    },
+    {
+      "path": "data/locale/ka-GE.ini",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5e6daa83f097cdcb0e2349e17273a45a92e0594b",
+      "size": 4256,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/5e6daa83f097cdcb0e2349e17273a45a92e0594b"
+    },
+    {
+      "path": "data/locale/kaa.ini",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4213428137622c84fc08cafe5987b2c9fd5e7a30",
+      "size": 1279,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/4213428137622c84fc08cafe5987b2c9fd5e7a30"
+    },
+    {
+      "path": "data/locale/kab-KAB.ini",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c76e27966a6929827cd9ece56678bb50268a6e30",
+      "size": 2061,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/c76e27966a6929827cd9ece56678bb50268a6e30"
+    },
+    {
+      "path": "data/locale/kmr-TR.ini",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "10d53431284aa98f610c148177f58faafa04ce98",
+      "size": 2409,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/10d53431284aa98f610c148177f58faafa04ce98"
+    },
+    {
+      "path": "data/locale/ko-KR.ini",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b5e251b219f3434f78f5af9318e7139c401b3c69",
+      "size": 2426,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/b5e251b219f3434f78f5af9318e7139c401b3c69"
+    },
+    {
+      "path": "data/locale/lo-LA.ini",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "387690315fc0baa4ed1e28b94dbb4d6000dc260c",
+      "size": 4019,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/387690315fc0baa4ed1e28b94dbb4d6000dc260c"
+    },
+    {
+      "path": "data/locale/lt-LT.ini",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cc9db2cef7e9a6f5733fa57bd977929c5c35bedb",
+      "size": 1849,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/cc9db2cef7e9a6f5733fa57bd977929c5c35bedb"
+    },
+    {
+      "path": "data/locale/lv-LV.ini",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "467a6ac95edd2a12af9f9c55ac43feba905f2f52",
+      "size": 545,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/467a6ac95edd2a12af9f9c55ac43feba905f2f52"
+    },
+    {
+      "path": "data/locale/mn-MN.ini",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b51619ff4d133ba9e18f5cbfc9810abfb5094fb4",
+      "size": 429,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/b51619ff4d133ba9e18f5cbfc9810abfb5094fb4"
+    },
+    {
+      "path": "data/locale/ms-MY.ini",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b3e624decc3741e3b06ac3ac37eee7cafe5bc22f",
+      "size": 2153,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/b3e624decc3741e3b06ac3ac37eee7cafe5bc22f"
+    },
+    {
+      "path": "data/locale/nb-NO.ini",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d518a698bdb1d75c9d9fcddb80c2bb0d1cbae0ba",
+      "size": 1671,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/d518a698bdb1d75c9d9fcddb80c2bb0d1cbae0ba"
+    },
+    {
+      "path": "data/locale/nl-NL.ini",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "aad74bdf52184fb84b30f46cfdbaf687735ee19b",
+      "size": 2180,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/aad74bdf52184fb84b30f46cfdbaf687735ee19b"
+    },
+    {
+      "path": "data/locale/nn-NO.ini",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "692831117aa30c40a12d5be36db3c15cbb8d46bc",
+      "size": 196,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/692831117aa30c40a12d5be36db3c15cbb8d46bc"
+    },
+    {
+      "path": "data/locale/oc-FR.ini",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "80641e358353d6c2b19c8d1e147bb3ea92018dcc",
+      "size": 26,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/80641e358353d6c2b19c8d1e147bb3ea92018dcc"
+    },
+    {
+      "path": "data/locale/pl-PL.ini",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a7295e46eb78df429a0cd1f10fff2ef3d38efb04",
+      "size": 2399,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/a7295e46eb78df429a0cd1f10fff2ef3d38efb04"
+    },
+    {
+      "path": "data/locale/pt-BR.ini",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d8057e006114df45f098035ee1e34fc994b8c45a",
+      "size": 2339,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/d8057e006114df45f098035ee1e34fc994b8c45a"
+    },
+    {
+      "path": "data/locale/pt-PT.ini",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2431a6e7a00a457816d34092a2c42075c82a2c44",
+      "size": 2328,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/2431a6e7a00a457816d34092a2c42075c82a2c44"
+    },
+    {
+      "path": "data/locale/ro-RO.ini",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "89cf5887b1521c447b64de76b6883f1791ce0d6a",
+      "size": 2364,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/89cf5887b1521c447b64de76b6883f1791ce0d6a"
+    },
+    {
+      "path": "data/locale/ru-RU.ini",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "431d5cfb2114cb1afb92ccd7788c38930eaf3137",
+      "size": 3411,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/431d5cfb2114cb1afb92ccd7788c38930eaf3137"
+    },
+    {
+      "path": "data/locale/si-LK.ini",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "171d04a1472ac6c79603911105bb75734188a5b8",
+      "size": 2416,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/171d04a1472ac6c79603911105bb75734188a5b8"
+    },
+    {
+      "path": "data/locale/sk-SK.ini",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "48a23a51521ca7e8d98f4003ec4c703e770cdb32",
+      "size": 2354,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/48a23a51521ca7e8d98f4003ec4c703e770cdb32"
+    },
+    {
+      "path": "data/locale/sl-SI.ini",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "974fbeb460a3edd7ef01a1845584f5fe2cf0b0ea",
+      "size": 2335,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/974fbeb460a3edd7ef01a1845584f5fe2cf0b0ea"
+    },
+    {
+      "path": "data/locale/sq-AL.ini",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "fb1ed8bd8a7897577724072c628901a603d217a9",
+      "size": 65,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/fb1ed8bd8a7897577724072c628901a603d217a9"
+    },
+    {
+      "path": "data/locale/sr-CS.ini",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cde9d9e3c2d608d6ea0a86433470ded56d7c1a39",
+      "size": 367,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/cde9d9e3c2d608d6ea0a86433470ded56d7c1a39"
+    },
+    {
+      "path": "data/locale/sr-SP.ini",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c0708cbbc5b1a93454d5fedfe284037d7800b81b",
+      "size": 3391,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/c0708cbbc5b1a93454d5fedfe284037d7800b81b"
+    },
+    {
+      "path": "data/locale/sv-SE.ini",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2cee6bf24cfb9b6a291feb74d1aee1e2d25f4e12",
+      "size": 2306,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/2cee6bf24cfb9b6a291feb74d1aee1e2d25f4e12"
+    },
+    {
+      "path": "data/locale/szl-PL.ini",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "24fa65fb4b0f63bfdd629730ae75359a5826fa2e",
+      "size": 966,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/24fa65fb4b0f63bfdd629730ae75359a5826fa2e"
+    },
+    {
+      "path": "data/locale/ta-IN.ini",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d5f4a948791d1dc92514cdb019847c44a6d40975",
+      "size": 1016,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/d5f4a948791d1dc92514cdb019847c44a6d40975"
+    },
+    {
+      "path": "data/locale/th-TH.ini",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f17f897c2e9d88efcc85a631c3a5d3bd0352d785",
+      "size": 4133,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/f17f897c2e9d88efcc85a631c3a5d3bd0352d785"
+    },
+    {
+      "path": "data/locale/tr-TR.ini",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "28eae3a8441c87c00d74e0380e7ca427f32547e6",
+      "size": 2361,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/28eae3a8441c87c00d74e0380e7ca427f32547e6"
+    },
+    {
+      "path": "data/locale/tt-RU.ini",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0519eafc04d045bf001caafedc407366dc68be6f",
+      "size": 349,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/0519eafc04d045bf001caafedc407366dc68be6f"
+    },
+    {
+      "path": "data/locale/ug-CN.ini",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "69bd1ac8e605d8bc1beed387b037a1ade9d30d78",
+      "size": 3409,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/69bd1ac8e605d8bc1beed387b037a1ade9d30d78"
+    },
+    {
+      "path": "data/locale/uk-UA.ini",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6d38487f7419800f0cda9f079523c77fc90cd512",
+      "size": 3327,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/6d38487f7419800f0cda9f079523c77fc90cd512"
+    },
+    {
+      "path": "data/locale/ur-PK.ini",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6c27c32a4ce79c5a5a019efc11aa8c44ce2b2a4f",
+      "size": 3128,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/6c27c32a4ce79c5a5a019efc11aa8c44ce2b2a4f"
+    },
+    {
+      "path": "data/locale/vi-VN.ini",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1a4f23471705d5bf7c38fdcf328b6af88ac286f6",
+      "size": 2635,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/1a4f23471705d5bf7c38fdcf328b6af88ac286f6"
+    },
+    {
+      "path": "data/locale/zh-CN.ini",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a7cbc7383291d95f8bdf226e1048ab6fc11187bd",
+      "size": 2086,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/a7cbc7383291d95f8bdf226e1048ab6fc11187bd"
+    },
+    {
+      "path": "data/locale/zh-TW.ini",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6d8266f410e6f819013576ee8c73d135d2b22531",
+      "size": 2142,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/6d8266f410e6f819013576ee8c73d135d2b22531"
+    },
+    {
+      "path": "deps",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "fac97c89075198423ccef4efb24cd8bcbcae658c",
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/trees/fac97c89075198423ccef4efb24cd8bcbcae658c"
+    },
+    {
+      "path": "deps/base64",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "b43b611c8257d53584f36356dc3dce327c3cd5b2",
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/trees/b43b611c8257d53584f36356dc3dce327c3cd5b2"
+    },
+    {
+      "path": "deps/base64/.clang-format",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6420a46881e0547edbc4307b4141b6e01e6c47a2",
+      "size": 54,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/6420a46881e0547edbc4307b4141b6e01e6c47a2"
+    },
+    {
+      "path": "deps/base64/base64.cpp",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4d79ba1f28114cf9b9ab0eeb17438754e6a2f1a1",
+      "size": 3552,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/4d79ba1f28114cf9b9ab0eeb17438754e6a2f1a1"
+    },
+    {
+      "path": "deps/base64/base64.hpp",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "aaa738069af75eff88d711ccf30012ea3a3971ec",
+      "size": 402,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/aaa738069af75eff88d711ccf30012ea3a3971ec"
+    },
+    {
+      "path": "deps/ip-string-posix.cpp",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "187874b51cbd23d59f32b771c28e31740e8e21f2",
+      "size": 1186,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/187874b51cbd23d59f32b771c28e31740e8e21f2"
+    },
+    {
+      "path": "deps/ip-string-windows.cpp",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9efaadd894362d7943584db46428dba72d9abd48",
+      "size": 1235,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/9efaadd894362d7943584db46428dba72d9abd48"
+    },
+    {
+      "path": "deps/ip-string.hpp",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0b3833392e6f7cd4672221df20f5cbf028b847dc",
+      "size": 992,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/0b3833392e6f7cd4672221df20f5cbf028b847dc"
+    },
+    {
+      "path": "deps/signal-restore.cpp",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6195dbb4c575b96c013143f4b19b7719770cdb3a",
+      "size": 1824,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/6195dbb4c575b96c013143f4b19b7719770cdb3a"
+    },
+    {
+      "path": "deps/signal-restore.hpp",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e0f4918faa3b460b02fc2efd9255f914563d4491",
+      "size": 935,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/e0f4918faa3b460b02fc2efd9255f914563d4491"
+    },
+    {
+      "path": "deps/wide-string.cpp",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5ce16bd6b6c18abe3437c180be2cd307255a4552",
+      "size": 1570,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/5ce16bd6b6c18abe3437c180be2cd307255a4552"
+    },
+    {
+      "path": "deps/wide-string.hpp",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "177dbc7b3ad36fb228384f4a0e3224d08bebac83",
+      "size": 976,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/177dbc7b3ad36fb228384f4a0e3224d08bebac83"
+    },
+    {
+      "path": "drm-format.cpp",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0f9a68e813eabcecb79793c876a8541de2496cff",
+      "size": 1424,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/0f9a68e813eabcecb79793c876a8541de2496cff"
+    },
+    {
+      "path": "drm-format.hpp",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "37037e78d1d8b95533fde9378c13bf3e7e23bade",
+      "size": 426,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/37037e78d1d8b95533fde9378c13bf3e7e23bade"
+    },
+    {
+      "path": "linux-keyboard-helpers.hpp",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d9b3e1e127c631ca9ebc91843cb3d44bbb2cd4e0",
+      "size": 18018,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/d9b3e1e127c631ca9ebc91843cb3d44bbb2cd4e0"
+    },
+    {
+      "path": "obs-browser-page.manifest",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "29a909731154318b2ff07c117f21a4b29ba65db1",
+      "size": 1110,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/29a909731154318b2ff07c117f21a4b29ba65db1"
+    },
+    {
+      "path": "obs-browser-page",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "0e3432ea89670568897f1bd93adf06b61bdb2229",
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/trees/0e3432ea89670568897f1bd93adf06b61bdb2229"
+    },
+    {
+      "path": "obs-browser-page/obs-browser-page-main.cpp",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "64c0f0e67bd61ebc6913e3962fafcaea164a4e12",
+      "size": 4437,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/64c0f0e67bd61ebc6913e3962fafcaea164a4e12"
+    },
+    {
+      "path": "obs-browser-plugin.cpp",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0496eb83d7770e8adc7ed1d345e4d1a4dd48db1f",
+      "size": 28163,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/0496eb83d7770e8adc7ed1d345e4d1a4dd48db1f"
+    },
+    {
+      "path": "obs-browser-source.cpp",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "bb43839c141126aab22604a12c646471bba1f10f",
+      "size": 18339,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/bb43839c141126aab22604a12c646471bba1f10f"
+    },
+    {
+      "path": "obs-browser-source.hpp",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5bf26b5ceefc83df75ff3ccfa19fd930e8fc74ca",
+      "size": 3714,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/5bf26b5ceefc83df75ff3ccfa19fd930e8fc74ca"
+    },
+    {
+      "path": "panel",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "b57488b40b1d0cea913616d11dd1e0aa7ab62896",
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/trees/b57488b40b1d0cea913616d11dd1e0aa7ab62896"
+    },
+    {
+      "path": "panel/browser-panel-client.cpp",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4da3b8a65ce97c111934698066b832c86cbcd660",
+      "size": 16681,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/4da3b8a65ce97c111934698066b832c86cbcd660"
+    },
+    {
+      "path": "panel/browser-panel-client.hpp",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ad23151544ab9d386bc82f85847400fa32dc0a1e",
+      "size": 5015,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/ad23151544ab9d386bc82f85847400fa32dc0a1e"
+    },
+    {
+      "path": "panel/browser-panel-internal.hpp",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e689bb2f2b41e98cdd973dd424734ef4a12669bf",
+      "size": 1712,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/e689bb2f2b41e98cdd973dd424734ef4a12669bf"
+    },
+    {
+      "path": "panel/browser-panel.cpp",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e6751dee4671b13a8f4c4d3999ec99b74ade7cb0",
+      "size": 16103,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/e6751dee4671b13a8f4c4d3999ec99b74ade7cb0"
+    },
+    {
+      "path": "panel/browser-panel.hpp",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0a4777c9b6ac825151e3cd9c085a87ce7fcdc580",
+      "size": 3094,
+      "url": "https://api.github.com/repos/obsproject/obs-browser/git/blobs/0a4777c9b6ac825151e3cd9c085a87ce7fcdc580"
+    }
+  ],
+  "truncated": false
+}

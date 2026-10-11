@@ -1,0 +1,1101 @@
+diff --git a/benchmarks/README.md b/benchmarks/README.md
+index 042c491..a9fd3c1 100644
+--- a/benchmarks/README.md
++++ b/benchmarks/README.md
+@@ -66,3 +66,20 @@ Generated recordings and reports go under ignored `.suitecut/` directories.
+ Avoid inferring a sustained 4K60 improvement from a removed memory copy alone.
+ Compare complete capture runs, including popup composition, before publishing a
+ native throughput claim.
++
++## CEF and OBS capture
++
++The [saved CEF / OBS comparison](obs-cef/README.md) includes Linux setup scripts,
++repeated recording trials, scrolling and browser controls, audio checks, local
++RTMP tests, and bounded streaming soaks. Its report retains failures, decoded
++motion measurements, resource samples, and partial media evidence. OBS captures
++external Chromium with XSHM because the installed package has no browser-source
++plugin. Recording codecs differ; compare the documented pipelines and settings
++before interpreting performance.
++
++## CEF optimization evidence
++
++The follow-up profiling, recorder/lifetime fixes, repeated OBS comparison, and
++continuous recording/streaming memory evidence are saved separately in
++[2026-10-09 optimization](obs-cef/2026-10-09-optimization/report.md).
++The original CEF/OBS measurements remain the before-change evidence.
+diff --git a/native/browser/README.md b/native/browser/README.md
+index 34b6856..2c7e919 100644
+--- a/native/browser/README.md
++++ b/native/browser/README.md
+@@ -52,7 +52,11 @@ Chromium credits. Keep the complete `.app` together. Distribution builds need
+ platform signing/notarization; local compilation is not a signed release.
+ 
+ The Linux CMake branch needs a matching CEF SDK and Chromium's runtime/display
+-dependencies. It is not yet validated by this project's native integration test.
++dependencies. The native C++ checks and browser integration verifier passed on
++Debian 13 x86-64 with software graphics. See the saved
++[Linux CEF / OBS benchmark](../../benchmarks/obs-cef/README.md) for setup, exact
++versions, and recording/streaming evidence. That bounded cloud run does not
++establish hardware encoding support or sustained 4K recording throughput.
+ Windows configuration deliberately fails until its sandbox and packaging are
+ implemented. Do not work around platform problems by disabling the sandbox.
+ 
+@@ -109,6 +113,8 @@ track and does not subscribe to CEF audio packets.
+   frame is delivered immediately to a new subscriber when available. Callbacks
+   must be synchronous and return promptly. Do not mutate buffers shared with
+   other subscribers; copy before modifying. Unsubscribe using the returned function.
++  New native builds negotiate frame subscriptions: pixel conversion and transfer
++  stop when there are no frame subscribers, and resume with a fresh snapshot.
+ - `pixelFormat: 'bgra'` (default) preserves full-resolution BGRA8 pixels. Use
+   `pixelFormat: 'i420'` for streaming: native libyuv converts to contiguous Y, U,
+   and V planes with BT.709 limited-range coefficients. I420 needs even CSS
+@@ -132,6 +138,9 @@ track and does not subscribe to CEF audio packets.
+   process closure. The user’s normal browser profile is never reused.
+   `state` reports `running`, `closing`, `closed`, or `failed`; closed/failed sources
+   reject new subscriptions and cannot be selected for a broadcast.
++  `onFailure(listener)` and `onClose(listener)` return removable subscriptions.
++  Use these for repeated sessions on a caller-owned source; unsubscribe at the
++  end of each session so pending lifecycle promises do not retain old sessions.
+ - A broadcast owns its publisher, **not** its sources. `selectSource(next)` requires
+   matching physical size, pixel format, and FPS and preserves the publisher connection. It clears
+   previous audio. If a source fails, the publisher holds its last frame and emits
+@@ -238,6 +247,12 @@ checks source-specific page tones, narration mixing, the default audio-off path,
+ and callback-failure/cancellation cleanup. Its narration fixture is a
+ repeatable tone, not a speech-model quality benchmark.
+ 
++Native source recording feeds timestamped raw Matroska to FFmpeg and produces
++variable-rate VP9 WebM. When encoding falls behind, the pending frame is replaced
++with the newest capture; missed time slots do not trigger stale-frame encoding.
++Capture timestamps preserve gaps and a final held frame preserves elapsed
++recording duration. Rendering still produces the requested constant-rate output.
++
+ ## Memory and backpressure
+ 
+ CEF callbacks never wait for pipe writes. The native writer retains one pending
+@@ -245,6 +260,11 @@ video frame, up to 100 audio packets, and up to 128 control packets. A stalled
+ consumer causes video replacement and old audio eviction. Node retains only the
+ latest source frame unless the caller retains more. Commands are capped at 64 KiB
+ and 64 outstanding requests; results at 1 MiB; packet headers at 16 KiB.
++Recording retains the latest and pending raw frame references, releases them on
++finalization, and caps queued PCM at 30 seconds. Closed packet decoders release
++partial frame allocations. These bounds exclude caller-retained buffers and
++CEF/FFmpeg internal allocations; measured long-run evidence is linked from
++`benchmarks/obs-cef/2026-10-09-optimization/`.
+ 
+ The publisher retains enough raw video for its 150 ms audio delay plus three
+ frames, with a minimum cap of 64 MiB. At 1080p60 the raw queue cap is about 95 MiB;
+@@ -263,6 +283,7 @@ Every command has `version: 1`, a positive integer `id`, and `command`:
+ ```json
+ {"version":1,"id":1,"command":"navigate","url":"https://example.com"}
+ {"version":1,"id":2,"command":"devtools","method":"Runtime.evaluate","params":{"expression":"document.title","returnByValue":true}}
++{"version":1,"id":3,"command":"frames","enabled":false}
+ ```
+ 
+ EOF requests graceful browser shutdown. Stdout is exclusively binary IPC:
+@@ -271,17 +292,26 @@ payload bytes. All headers include `version`, `type`, and `bytes`.
+ 
+ | Type | Header fields | Payload |
+ | --- | --- | --- |
+-| `ready` | `timestampMs`, `cefVersion` | none |
++| `ready` | `timestampMs`, `cefVersion`, optional `frameSubscriptions` | none |
+ | `frame` | `timestampMs`, `width`, `height`, `pixelFormat`, `dropped` | tightly packed BGRA8 or contiguous I420 planes |
+ | `audio` | `timestampMs`, `frames` | interleaved stereo PCM s16le |
+ | `response` | `id`, `ok`, optional `error` | optional JSON DevTools result |
+ | `error` | `error` | none; source is no longer reliable |
+ 
+ Native timestamps are milliseconds from process start. Audio presentation time
+-is anchored against callback receipt time. Unknown versions and malformed
++is anchored against callback receipt time, with at most 250 ms of native future
++presentation time. The Node consumer refines the handshake clock upper bound
++using capture receipt times; handshake transit delay must not place captured
++frames in the future. Live audio retains bounded history and accepts up to
++500 ms of future presentation time for native audio plus scheduling slack.
++Unknown versions and malformed
+ lengths are fatal; consumers must not attempt to resynchronize a corrupt stream.
+ Stderr is drained without forwarding page URLs or browser diagnostics into reports.
+ 
++The launcher supplies `--suitecut-frame-subscriptions` to opt into the optional
++capability. Older launchers receive the original handshake; newer launchers
++fall back to continuous transfer with older binaries that do not advertise it.
++
+ ## Open-source distribution
+ 
+ SuiteCut's source is MIT licensed. CEF and Chromium retain their own licenses and
+diff --git a/native/browser/browser.cc b/native/browser/browser.cc
+index 00dc785..542d816 100644
+--- a/native/browser/browser.cc
++++ b/native/browser/browser.cc
+@@ -143,8 +143,9 @@ class Source : public CefClient, public CefLifeSpanHandler, public CefRenderHand
+                public CefDevToolsMessageObserver, public CefJSDialogHandler,
+                public CefDownloadHandler, public CefContextMenuHandler {
+  public:
+-  Source(Writer& writer, int width, int height, double scale, bool i420)
+-      : writer_(writer), width_(width), height_(height), scale_(scale), i420_(i420) {}
++  Source(Writer& writer, int width, int height, double scale, bool i420, bool subscriptions)
++      : writer_(writer), width_(width), height_(height), scale_(scale), i420_(i420),
++        frame_subscriptions_(subscriptions) {}
+   CefRefPtr<CefLifeSpanHandler> GetLifeSpanHandler() override { return this; }
+   CefRefPtr<CefRenderHandler> GetRenderHandler() override { return this; }
+   CefRefPtr<CefAudioHandler> GetAudioHandler() override { return this; }
+@@ -186,7 +187,7 @@ class Source : public CefClient, public CefLifeSpanHandler, public CefRenderHand
+     CefQuitMessageLoop();
+   }
+   bool OnBeforePopup(CefRefPtr<CefBrowser>, CefRefPtr<CefFrame>, int, const CefString&,
+-                     const CefString&, WindowOpenDisposition, bool, const CefPopupFeatures&,
++                     const CefString&, CefLifeSpanHandler::WindowOpenDisposition, bool, const CefPopupFeatures&,
+                      CefWindowInfo&, CefRefPtr<CefClient>&, CefBrowserSettings&,
+                      CefRefPtr<CefDictionaryValue>&, bool*) override { return true; }
+   void OnPaint(CefRefPtr<CefBrowser>, PaintElementType type, const RectList&,
+@@ -249,6 +250,7 @@ class Source : public CefClient, public CefLifeSpanHandler, public CefRenderHand
+       auto header = Header("ready");
+       header->SetDouble("timestampMs", Now());
+       header->SetString("cefVersion", CEF_VERSION);
++      if (frame_subscriptions_) header->SetBool("frameSubscriptions", true);
+       writer_.Send(header);
+       reader_ = std::thread([this] { ReadCommands(); });
+       EmitFrame();
+@@ -276,9 +278,11 @@ class Source : public CefClient, public CefLifeSpanHandler, public CefRenderHand
+   }
+  private:
+   void EmitFrame(double timestamp = Now()) {
+-    if (!ready_ || view_.empty()) return;
+-    auto output = view_;
++    if (!ready_ || !emit_frames_ || view_.empty()) return;
++    std::vector<uint8_t> output;
++    const uint8_t* pixels = view_.data();
+     if (show_popup_ && !popup_.empty()) {
++      output = view_;
+       const int left = static_cast<int>(std::round(popup_rect_.x * scale_));
+       const int top = static_cast<int>(std::round(popup_rect_.y * scale_));
+       for (int y = 0; y < popup_height_; ++y) {
+@@ -289,6 +293,7 @@ class Source : public CefClient, public CefLifeSpanHandler, public CefRenderHand
+         std::memcpy(output.data() + ((top + y) * frame_width_ + left + start) * 4,
+                     popup_.data() + (y * popup_width_ + start) * 4, static_cast<size_t>(end - start) * 4);
+       }
++      pixels = output.data();
+     }
+     auto header = Header("frame");
+     header->SetString("pixelFormat", i420_ ? "i420" : "bgra");
+@@ -297,7 +302,7 @@ class Source : public CefClient, public CefLifeSpanHandler, public CefRenderHand
+       std::vector<uint8_t> planes(y_size * 3 / 2);
+       // libyuv's ARGB name describes registers; in little-endian memory its
+       // input is BGRA, matching CEF. Use explicit limited-range BT.709.
+-      if (libyuv::ARGBToI420Matrix(output.data(), frame_width_ * 4,
++      if (libyuv::ARGBToI420Matrix(pixels, frame_width_ * 4,
+           planes.data(), frame_width_, planes.data() + y_size, frame_width_ / 2,
+           planes.data() + y_size * 5 / 4, frame_width_ / 2,
+           &libyuv::kArgbH709Constants, frame_width_, frame_height_) != 0) {
+@@ -305,7 +310,7 @@ class Source : public CefClient, public CefLifeSpanHandler, public CefRenderHand
+         return;
+       }
+       output = std::move(planes);
+-    }
++    } else if (output.empty()) output = view_;
+     header->SetDouble("timestampMs", timestamp);
+     header->SetInt("width", frame_width_);
+     header->SetInt("height", frame_height_);
+@@ -321,7 +326,14 @@ class Source : public CefClient, public CefLifeSpanHandler, public CefRenderHand
+     }
+     const int id = message->GetInt("id");
+     const auto command = message->GetString("command").ToString();
+-    if (command == "navigate") {
++    if (command == "frames") {
++      if (message->GetType("enabled") != VTYPE_BOOL) {
++        writer_.Reply(id, false, "Frame subscription requires a boolean"); return;
++      }
++      emit_frames_ = message->GetBool("enabled");
++      writer_.Reply(id, true);
++      if (emit_frames_) EmitFrame();
++    } else if (command == "navigate") {
+       const auto url = message->GetString("url").ToString();
+       if (!url.starts_with("https://") && !url.starts_with("http://")) {
+         writer_.Reply(id, false, "Navigation requires HTTP(S)"); return;
+@@ -366,8 +378,9 @@ class Source : public CefClient, public CefLifeSpanHandler, public CefRenderHand
+   int width_, height_;
+   double scale_;
+   bool i420_;
++  bool frame_subscriptions_;
+   int frame_width_ = 0, frame_height_ = 0, popup_width_ = 0, popup_height_ = 0, navigation_ = 0;
+-  bool show_popup_ = false, ready_ = false;
++  bool show_popup_ = false, ready_ = false, emit_frames_ = true;
+   CefRect popup_rect_;
+   std::vector<uint8_t> view_, popup_;
+   std::atomic<bool> stopped_{false}, audio_valid_{false};
+@@ -384,6 +397,9 @@ class App : public CefApp, public CefBrowserProcessHandler {
+   explicit App(Writer& writer) : writer_(writer) {}
+   CefRefPtr<CefBrowserProcessHandler> GetBrowserProcessHandler() override { return this; }
+   void OnBeforeCommandLineProcessing(const CefString&, CefRefPtr<CefCommandLine> command) override {
++    // Each source uses a fresh profile. Chrome's first-run UI can block
++    // initialization before the windowless browser is created on Linux.
++    command->AppendSwitch("no-first-run");
+     command->AppendSwitchWithValue("autoplay-policy", "no-user-gesture-required");
+     command->AppendSwitch("disable-background-timer-throttling");
+     command->AppendSwitch("disable-renderer-backgrounding");
+@@ -408,7 +424,8 @@ class App : public CefApp, public CefBrowserProcessHandler {
+     CefBrowserSettings settings;
+     settings.windowless_frame_rate = fps;
+     settings.background_color = CefColorSetARGB(255, 0, 0, 0);
+-    source_ = new Source(writer_, width, height, scale, pixel_format == "i420");
++    source_ = new Source(writer_, width, height, scale, pixel_format == "i420",
++                         command->HasSwitch("suitecut-frame-subscriptions"));
+     if (!CefBrowserHost::CreateBrowser(window, source_, "about:blank", settings, nullptr, nullptr)) CefQuitMessageLoop();
+   }
+   void ReleaseSource() { source_ = nullptr; }
+diff --git a/src/live-audio.ts b/src/live-audio.ts
+index 2ac4b26..e1f8209 100644
+--- a/src/live-audio.ts
++++ b/src/live-audio.ts
+@@ -9,6 +9,9 @@ import { LIVE_RECOVERY_WINDOW_MS } from './live-congestion.js'
+ export const LIVE_AUDIO_DELAY_MS = 150
+ const SAMPLE_RATE = 48_000
+ const BYTES_PER_SAMPLE = 4
++// Native presentation PTS may legitimately lead capture receipt by 250 ms;
++// allow additional IPC/scheduling slack while keeping future retention bounded.
++const MAX_FUTURE_AUDIO_MS = 500
+ 
+ /** Timestamped stereo PCM with bounded retention and silence for missing samples. */
+ export class LiveAudioBuffer {
+@@ -23,7 +26,7 @@ export class LiveAudioBuffer {
+     if (
+       !Number.isFinite(at) ||
+       at < now - LIVE_RECOVERY_WINDOW_MS - LIVE_AUDIO_DELAY_MS ||
+-      at > now + 100 ||
++      at > now + MAX_FUTURE_AUDIO_MS ||
+       pcm.length !== 3840
+     )
+       return
+diff --git a/src/live-stream.ts b/src/live-stream.ts
+index 7df4365..1fcb831 100644
+--- a/src/live-stream.ts
++++ b/src/live-stream.ts
+@@ -135,6 +135,12 @@ export function createLiveStreamAttempt(
+         : createCaptureScaleFilter(inputSize, size),
+       '-c:v',
+       'libx264',
++      // Bound software encoder/filter workers. Autodetected host CPU counts
++      // can greatly exceed the container's actual CPU quota.
++      '-threads',
++      '4',
++      '-filter_threads',
++      '1',
+       '-preset',
+       'veryfast',
+       '-tune',
+@@ -181,6 +187,7 @@ export function createLiveStreamAttempt(
+   )
+ 
+   let latestFrame: Buffer | undefined
++  let latestTimestamp: number | undefined
+   let timer: ReturnType<typeof setTimeout> | undefined
+   let closing = false
+   let failure: Error | undefined
+@@ -333,10 +340,12 @@ export function createLiveStreamAttempt(
+     const mediaAt =
+       firstWriteAt + (writtenFrames * 1000) / framesPerSecond - (audio ? LIVE_AUDIO_DELAY_MS : 0)
+     let selectedFrame = latestFrame
++    let selectedTimestamp = latestTimestamp ?? mediaAt
+     if (audio) {
+       while (frames.length > 1 && (frames[1]?.at ?? Infinity) <= mediaAt)
+         frameBytes -= frames.shift()?.data.length ?? 0
+       selectedFrame = frames[0]?.data ?? latestFrame
++      selectedTimestamp = frames[0]?.at ?? selectedTimestamp
+     }
+     pendingStage = 'processing'
+     pendingAt = performance.now()
+@@ -361,7 +370,9 @@ export function createLiveStreamAttempt(
+       ioController.signal,
+       AbortSignal.timeout(LIVE_NO_PROGRESS_MS),
+     ])
+-    encodedOutput?.frame(writtenFrames, mediaAt)
++    // Stamp the pixels actually selected, including frames retained through
++    // processing/backpressure, rather than their intended scheduling slot.
++    encodedOutput?.frame(writtenFrames, selectedTimestamp)
+     videoPending = true
+     audioPending = audioInput !== undefined
+     pendingStage = 'writing'
+@@ -433,6 +444,7 @@ export function createLiveStreamAttempt(
+         throw new Error('Raw frame length does not match input dimensions')
+       if (!Number.isFinite(timestampMs)) throw new Error('Invalid capture timestamp')
+       latestFrame = frame
++      latestTimestamp = timestampMs
+       if (audio) {
+         const now = performance.now()
+         frames.push({ at: timestampMs, data: frame })
+diff --git a/src/media.ts b/src/media.ts
+index dbd2f74..b0e5e46 100644
+--- a/src/media.ts
++++ b/src/media.ts
+@@ -24,7 +24,7 @@ const NonNegativeProbeNumberSchema = FiniteProbeNumberSchema.pipe(z.number().non
+ 
+ const PositiveProbeNumberSchema = FiniteProbeNumberSchema.pipe(z.number().positive())
+ 
+-const FrameRateSchema = z
++const KnownFrameRateSchema = z
+   .string()
+   .regex(/^\d+(?:\.\d+)?\/\d+(?:\.\d+)?$/u)
+   .transform((value, context) => {
+@@ -40,6 +40,10 @@ const FrameRateSchema = z
+ 
+     return numerator / denominator
+   })
++  .pipe(z.number().positive())
++
++// FFprobe reports 0/0 when a sparse variable-rate stream has no average rate.
++const FrameRateSchema = z.union([KnownFrameRateSchema, z.literal('0/0').transform(() => undefined)])
+ 
+ const ProbeFormatSchema = z.object({
+   format_name: z.string().trim().min(1),
+@@ -106,6 +110,8 @@ function parseStream(
+     const colorSpace = knownProbeValue(parsed.color_space)
+     const colorTransfer = knownProbeValue(parsed.color_transfer)
+     const colorPrimaries = knownProbeValue(parsed.color_primaries)
++    const frameRate = parsed.avg_frame_rate ?? parsed.r_frame_rate
++    if (frameRate === undefined) throw new Error('FFprobe reported no usable video frame rate')
+ 
+     const video: SuiteCutMediaStream = {
+       kind: 'video',
+@@ -113,8 +119,9 @@ function parseStream(
+       width: parsed.width,
+       height: parsed.height,
+       durationMs: (parsed.duration ?? formatDurationMs / 1_000) * 1_000,
+-      frameRate: parsed.avg_frame_rate,
+-      hasVariableFrameRate: parsed.avg_frame_rate !== parsed.r_frame_rate,
++      frameRate,
++      hasVariableFrameRate:
++        parsed.avg_frame_rate === undefined || parsed.avg_frame_rate !== parsed.r_frame_rate,
+     }
+ 
+     if (parsed.pix_fmt !== undefined) video.pixelFormat = parsed.pix_fmt
+diff --git a/src/native-browser.ts b/src/native-browser.ts
+index 91e1263..6a87ec7 100644
+--- a/src/native-browser.ts
++++ b/src/native-browser.ts
+@@ -79,6 +79,9 @@ export interface NativeBrowser {
+   readonly failure: Promise<never>
+   /** Settles only after the native process and its stdio have closed. */
+   readonly closed: Promise<void>
++  /** Removable lifecycle observation for reusable caller-owned sources. */
++  onFailure?(listener: (error: Error) => void): () => void
++  onClose?(listener: () => void): () => void
+   /** Navigates an HTTP(S) page and waits for its main-frame load. */
+   navigate(url: string): Promise<void>
+   /** Executes a DevTools method through private process IPC, without opening a debugging port. */
+@@ -110,6 +113,7 @@ export async function launchNativeBrowser(options: NativeBrowserOptions): Promis
+         `--suitecut-fps=${config.framesPerSecond}`,
+         `--suitecut-pixel-format=${config.pixelFormat}`,
+         `--suitecut-profile=${profile}`,
++        '--suitecut-frame-subscriptions',
+       ],
+       { shell: false, stdio: ['pipe', 'pipe', 'pipe'] },
+     )
+@@ -122,6 +126,8 @@ export async function launchNativeBrowser(options: NativeBrowserOptions): Promis
+   }
+   const frames = new Set<(frame: NativeVideoFrame) => void>()
+   const audio = new Set<(packet: NativeAudioPacket) => void>()
++  const failures = new Set<(error: Error) => void>()
++  const closes = new Set<() => void>()
+   const pending = new Map<
+     number,
+     {
+@@ -134,10 +140,12 @@ export async function launchNativeBrowser(options: NativeBrowserOptions): Promis
+   let closing: Promise<void> | undefined
+   let stopping = false
+   let exited = false
++  let fullyClosed = false
+   let terminal: Error | undefined
+   let lastFrame: NativeVideoFrame | undefined
+   let clockOffset: number | undefined
+   let cefVersion = ''
++  let frameSubscriptions = false
+   let rejectFailure: (error: Error) => void = () => undefined
+   let resolveReady: () => void = () => undefined
+   let resolveClosed: () => void = () => undefined
+@@ -155,6 +163,14 @@ export async function launchNativeBrowser(options: NativeBrowserOptions): Promis
+     if (terminal) return
+     terminal = error
+     rejectFailure(error)
++    for (const listener of failures) {
++      try {
++        listener(error)
++      } catch {
++        // Observers cannot prevent terminal process cleanup.
++      }
++    }
++    failures.clear()
+     for (const request of pending.values()) {
+       clearTimeout(request.timer)
+       request.reject(error)
+@@ -168,6 +184,7 @@ export async function launchNativeBrowser(options: NativeBrowserOptions): Promis
+       if (clockOffset !== undefined) throw new Error('Duplicate native handshake')
+       clockOffset = performance.now() - header.timestampMs
+       cefVersion = header.cefVersion
++      frameSubscriptions = header.frameSubscriptions === true
+       resolveReady()
+       return
+     }
+@@ -199,6 +216,11 @@ export async function launchNativeBrowser(options: NativeBrowserOptions): Promis
+         fail(new Error('Native frame dimensions changed unexpectedly'))
+         return
+       }
++      if (frames.size === 0 && frameSubscriptions) return
++      // The ready packet's one-way transit time can overestimate the clock
++      // offset. A captured video frame cannot arrive from the future. Refine
++      // that upper bound without moving the clock forward on delayed packets.
++      clockOffset = Math.min(clockOffset ?? 0, performance.now() - header.timestampMs)
+       lastFrame = {
+         data: payload,
+         pixelFormat: header.pixelFormat,
+@@ -243,9 +265,22 @@ export async function launchNativeBrowser(options: NativeBrowserOptions): Promis
+     audio.clear()
+     lastFrame = undefined
+     config.signal?.removeEventListener('abort', abort)
+-    void rm(profile, { recursive: true, force: true }).then(resolveClosed, () => {
+-      fail(new Error('Could not remove the native browser temporary profile'))
++    const finish = () => {
++      fullyClosed = true
+       resolveClosed()
++      for (const listener of closes) {
++        try {
++          listener()
++        } catch {
++          // Closing all subscriptions takes precedence over observer errors.
++        }
++      }
++      closes.clear()
++      failures.clear()
++    }
++    void rm(profile, { recursive: true, force: true }).then(finish, () => {
++      fail(new Error('Could not remove the native browser temporary profile'))
++      finish()
+     })
+   })
+   const request = (
+@@ -299,6 +334,7 @@ export async function launchNativeBrowser(options: NativeBrowserOptions): Promis
+       Promise.race([ready, failure]),
+       AbortSignal.timeout(config.startupTimeoutMs),
+     )
++    if (frameSubscriptions) await request('frames', { enabled: false })
+   } catch (error) {
+     await close()
+     throw error
+@@ -314,6 +350,20 @@ export async function launchNativeBrowser(options: NativeBrowserOptions): Promis
+     cefVersion,
+     failure,
+     closed,
++    onFailure: (listener) => {
++      if (terminal) listener(terminal)
++      else if (!fullyClosed) failures.add(listener)
++      return () => {
++        failures.delete(listener)
++      }
++    },
++    onClose: (listener) => {
++      if (fullyClosed) listener()
++      else closes.add(listener)
++      return () => {
++        closes.delete(listener)
++      }
++    },
+     navigate: async (url) => {
+       const parsed = new URL(url)
+       if (!['http:', 'https:'].includes(parsed.protocol))
+@@ -323,10 +373,21 @@ export async function launchNativeBrowser(options: NativeBrowserOptions): Promis
+     sendDevToolsCommand: (method, params = {}) => request('devtools', { method, params }),
+     onFrame: (listener) => {
+       if (terminal || stopping || exited) throw new Error('Native browser is not running')
++      const first = frames.size === 0
+       frames.add(listener)
++      if (first && frameSubscriptions)
++        void request('frames', { enabled: true }).catch((error: Error) => {
++          if (!stopping && !terminal) fail(error)
++        })
+       if (lastFrame) listener(lastFrame)
+       return () => {
+         frames.delete(listener)
++        if (frames.size === 0 && frameSubscriptions && !stopping && !terminal) {
++          lastFrame = undefined
++          void request('frames', { enabled: false }).catch((error: Error) => {
++            if (!stopping && !terminal) fail(error)
++          })
++        }
+       }
+     },
+     onAudio: (listener) => {
+diff --git a/src/native-page.ts b/src/native-page.ts
+index d6c1157..39f45e3 100644
+--- a/src/native-page.ts
++++ b/src/native-page.ts
+@@ -20,6 +20,24 @@ const EvaluationResult = z.object({
+     .optional(),
+ })
+ 
++const sourceSignals = new WeakMap<NativeBrowser, AbortSignal>()
++
++function sourceSignal(source: NativeBrowser): AbortSignal {
++  const existing = sourceSignals.get(source)
++  if (existing) return existing
++  const runtime = new AbortController()
++  sourceSignals.set(source, runtime.signal)
++  // Every page wrapper shares one source lifetime. Pending promise observers
++  // must not accumulate each time a reusable source gets another page wrapper.
++  const fail = (error: Error) => runtime.abort(error)
++  const close = () => runtime.abort(new Error('Native source closed'))
++  if (source.onFailure) source.onFailure(fail)
++  else void source.failure.catch(fail)
++  if (source.onClose) source.onClose(close)
++  else void source.closed.then(close)
++  return runtime.signal
++}
++
+ /** A deliberately small browser-control API; this is not a Playwright Page. */
+ export class NativePage implements PresentationPage {
+   private readonly signal: AbortSignal
+@@ -27,10 +45,8 @@ export class NativePage implements PresentationPage {
+     readonly source: NativeBrowser,
+     signal?: AbortSignal,
+   ) {
+-    const runtime = new AbortController()
+-    this.signal = signal ? AbortSignal.any([signal, runtime.signal]) : runtime.signal
+-    void source.failure.catch((error: Error) => runtime.abort(error))
+-    void source.closed.then(() => runtime.abort(new Error('Native source closed')))
++    const lifetime = sourceSignal(source)
++    this.signal = signal ? AbortSignal.any([signal, lifetime]) : lifetime
+   }
+ 
+   goto(url: string): Promise<void> {
+diff --git a/src/native-protocol.ts b/src/native-protocol.ts
+index d5c2f15..c993281 100644
+--- a/src/native-protocol.ts
++++ b/src/native-protocol.ts
+@@ -15,6 +15,7 @@ export const NativePacketSchema = z.discriminatedUnion('type', [
+     type: z.literal('ready'),
+     timestampMs: timestamp,
+     cefVersion: z.string().max(128),
++    frameSubscriptions: z.boolean().optional(),
+   }),
+   z.strictObject({
+     ...base,
+@@ -100,7 +101,12 @@ export class NativePacketDecoder {
+   }
+ 
+   end(): void {
+-    if (this.phase !== 'length' || this.offset !== 0) throw new Error('Truncated native packet')
++    const truncated = this.phase !== 'length' || this.offset !== 0
++    // Closed handles may remain in application history. Do not retain a
++    // partially allocated multi-megabyte frame after EOF or cancellation.
++    this.reset()
++    this.offset = 0
++    if (truncated) throw new Error('Truncated native packet')
+   }
+ 
+   private reset(): void {
+diff --git a/src/native-recorder.ts b/src/native-recorder.ts
+index 8f3d5d7..095b4f5 100644
+--- a/src/native-recorder.ts
++++ b/src/native-recorder.ts
+@@ -7,10 +7,11 @@ import { finished } from 'node:stream/promises'
+ import { raceWithAbort } from './abort.js'
+ import { createCaptureScaleFilter } from './capture.js'
+ import { type NativeBrowser } from './native-browser.js'
++import { NativeVideoContainer } from './native-video-container.js'
+ import { runProcess, waitForProcessExit } from './process.js'
+ import { type SuiteCutCaptureSize } from './schemas.js'
+ 
+-/** Bounded latest-frame encoder; repeats held frames to preserve wall-clock timing. */
++/** Bounded latest-frame encoder with capture timestamps and variable-rate output. */
+ export function createNativeVideoRecorder(options: {
+   source: Pick<NativeBrowser, 'width' | 'height' | 'pixelFormat' | 'framesPerSecond'>
+   ffmpegPath: string
+@@ -19,6 +20,12 @@ export function createNativeVideoRecorder(options: {
+   audio?: boolean
+ }) {
+   const { source } = options
++  const container = new NativeVideoContainer(
++    source.width,
++    source.height,
++    source.pixelFormat,
++    source.framesPerSecond,
++  )
+   const videoOutputPath = options.audio ? `${options.outputPath}.video.webm` : options.outputPath
+   const audioOutputPath = `${options.outputPath}.audio.pcm`
+   const child = spawn(
+@@ -28,16 +35,16 @@ export function createNativeVideoRecorder(options: {
+       '-loglevel',
+       'error',
+       '-f',
+-      'rawvideo',
+-      '-pixel_format',
+-      source.pixelFormat === 'bgra' ? 'bgra' : 'yuv420p',
+-      '-video_size',
+-      `${source.width}x${source.height}`,
+-      '-framerate',
+-      String(source.framesPerSecond),
++      'matroska',
+       '-i',
+       'pipe:0',
+       '-an',
++      '-filter_threads',
++      '1',
++      '-fps_mode',
++      'vfr',
++      '-enc_time_base',
++      '1:1000',
+       '-vf',
+       createCaptureScaleFilter(source, options.size),
+       '-c:v',
+@@ -107,10 +114,9 @@ export function createNativeVideoRecorder(options: {
+   void completion.catch(() => undefined)
+   child.stdin.on('error', fail)
+   let pending: { data: Buffer; atMs: number } | undefined
+-  let last: Buffer | undefined
+   let latest: Buffer | undefined
+   let firstAtMs: number | undefined
+-  let lastNumber = -1
++  let lastTimestampMs = -1
+   let work: Promise<void> | undefined
+   const audioOutput = options.audio ? createWriteStream(audioOutputPath, { flags: 'w' }) : undefined
+   const audioPackets: { data: Buffer; atMs: number }[] = []
+@@ -129,21 +135,15 @@ export function createNativeVideoRecorder(options: {
+       pending = undefined
+       if (firstAtMs === undefined) {
+         firstAtMs = frame.atMs
++        await write(container.header)
+         startAudioWork()
+       }
+-      const number = Math.max(
+-        0,
+-        Math.floor(((frame.atMs - firstAtMs) * source.framesPerSecond) / 1000),
+-      )
+-      while (last && lastNumber + 1 < number) {
+-        await write(last)
+-        lastNumber++
+-      }
+-      if (number > lastNumber) {
++      const timestampMs = Math.max(0, Math.round(frame.atMs - firstAtMs))
++      if (timestampMs > lastTimestampMs) {
++        await write(container.frameHeader(timestampMs))
+         await write(frame.data)
+-        lastNumber = number
++        lastTimestampMs = timestampMs
+       }
+-      last = frame.data
+     }
+   }
+   const startWork = () => {
+@@ -158,6 +158,10 @@ export function createNativeVideoRecorder(options: {
+   }
+   const push = (data: Buffer, atMs: number) => {
+     if (ending || failed) return
++    if (data.length !== container.frameBytes || !Number.isFinite(atMs) || atMs < 0) {
++      fail(new Error('Native recording received malformed video'))
++      return
++    }
+     latest = data
+     pending = { data, atMs }
+     startWork()
+@@ -299,6 +303,7 @@ export function createNativeVideoRecorder(options: {
+             ])
+           }
+         } catch (error) {
++          fail(error instanceof Error ? error : new Error('Native recording finalization failed'))
+           child.stdin.destroy()
+           audioOutput?.destroy()
+           if (child.exitCode === null && child.signalCode === null) child.kill('SIGTERM')
+@@ -309,6 +314,11 @@ export function createNativeVideoRecorder(options: {
+               rm(audioOutputPath, { force: true }),
+             ])
+           throw error
++        } finally {
++          latest = undefined
++          pending = undefined
++          audioPackets.length = 0
++          audioPacketBytes = 0
+         }
+       })()
+       return stopping
+diff --git a/src/native-session.ts b/src/native-session.ts
+index c1c51bb..bae1559 100644
+--- a/src/native-session.ts
++++ b/src/native-session.ts
+@@ -50,6 +50,8 @@ export async function createNativeRecordingSession(options: {
+       recorder: ReturnType<typeof createNativeVideoRecorder>
+       unsubscribeFrame(): void
+       unsubscribeAudio(): void
++      unsubscribeFailure(): void
++      unsubscribeClose(): void
+       latest?: Buffer
+       startedAtMs: number
+       startedAtMonotonicMs: number
+@@ -109,6 +111,8 @@ export async function createNativeRecordingSession(options: {
+       lastReceivedAtMs: performance.now(),
+       unsubscribeFrame: () => undefined,
+       unsubscribeAudio: () => undefined,
++      unsubscribeFailure: () => undefined,
++      unsubscribeClose: () => undefined,
+     }
+     entries.set(page, entry)
+     pages.set(pageId, {
+@@ -142,12 +146,16 @@ export async function createNativeRecordingSession(options: {
+     void recorder.failure.catch((error: Error) => {
+       if (active) rejectFailure(error)
+     })
+-    void source.failure.catch((error: Error) => {
++    const onSourceFailure = (error: Error) => {
+       if (active) rejectFailure(error)
+-    })
+-    void source.closed.then(() => {
++    }
++    const onSourceClose = () => {
+       if (active) rejectFailure(new Error('Native source closed during recording'))
+-    })
++    }
++    if (source.onFailure) entry.unsubscribeFailure = source.onFailure(onSourceFailure)
++    else void source.failure.catch(onSourceFailure)
++    if (source.onClose) entry.unsubscribeClose = source.onClose(onSourceClose)
++    else void source.closed.then(onSourceClose)
+     await raceWithAbort(
+       Promise.race([first, failure]),
+       AbortSignal.any([AbortSignal.timeout(30_000), ...(signal ? [signal] : [])]),
+@@ -179,7 +187,10 @@ export async function createNativeRecordingSession(options: {
+         [...entries.entries()].map(async ([page, entry]) => {
+           entry.unsubscribeFrame()
+           entry.unsubscribeAudio()
++          entry.unsubscribeFailure()
++          entry.unsubscribeClose()
+           await entry.recorder.stop(endedAtMs)
++          delete entry.latest
+           const firstAtMs = entry.recorder.firstAtMs
+           if (firstAtMs === undefined)
+             throw new Error('Native recording has no first-frame timestamp')
+diff --git a/tests/live-audio.test.ts b/tests/live-audio.test.ts
+index 0ac5663..b889670 100644
+--- a/tests/live-audio.test.ts
++++ b/tests/live-audio.test.ts
+@@ -14,6 +14,15 @@ function tone(value: number): Buffer {
+ }
+ 
+ describe('live audio timeline', () => {
++  it('retains native presentation samples ahead of receipt time', () => {
++    const audio = new LiveAudioBuffer()
++    const now = performance.now()
++    audio.push(now + 250, tone(1234))
++    expect(audio.read(now + 250, 960).equals(tone(1234))).toBe(true)
++    audio.push(now + 1000, tone(2345))
++    expect(audio.read(now + 1000, 960).equals(Buffer.alloc(3840))).toBe(true)
++  })
++
+   it('places timestamped samples and fills missing time with silence', () => {
+     const audio = new LiveAudioBuffer()
+     const now = performance.now()
+diff --git a/tests/live-stream.test.ts b/tests/live-stream.test.ts
+index 90ac8fd..2d2924a 100644
+--- a/tests/live-stream.test.ts
++++ b/tests/live-stream.test.ts
+@@ -223,6 +223,55 @@ describe('live stream publishing', () => {
+     await stream.stop()
+   })
+ 
++  it('stamps the selected pixels with capture time across delayed processing', async () => {
++    let now = 1000
++    const clock = vi.spyOn(performance, 'now').mockImplementation(() => now)
++    let release = (): void => undefined
++    const blocked = new Promise<void>((resolve) => {
++      release = resolve
++    })
++    const capturedTimes: number[] = []
++    const stream = createLiveStream(
++      'ffmpeg',
++      { url: 'rtmp://localhost/live/key' },
++      30,
++      { width: 640, height: 360 },
++      undefined,
++      async (frame) => {
++        await blocked
++        return frame
++      },
++      undefined,
++      undefined,
++      undefined,
++      {
++        frame: (_index, at) => capturedTimes.push(at),
++        data: () => Promise.resolve(),
++        health: () => ({
++          outputLagMs: 0,
++          progressAgeMs: 0,
++          networkBlockedMs: 0,
++          networkQueuedBytes: 0,
++        }),
++      },
++    )
++    try {
++      stream.update(Buffer.from('first'), 900)
++      now = 1100
++      stream.update(Buffer.from('second'), 1050)
++      release()
++      await vi.advanceTimersByTimeAsync(50)
++      expect(frames[0]?.toString()).toBe('first')
++      expect(capturedTimes[0]).toBe(900)
++      expect(frames.at(-1)?.toString()).toBe('second')
++      expect(capturedTimes.at(-1)).toBe(1050)
++    } finally {
++      release()
++      await stream.stop()
++      clock.mockRestore()
++    }
++  })
++
+   it('reports a disconnect without exposing FFmpeg diagnostics or stream keys', async () => {
+     const stream = createLiveStream('ffmpeg', { url: 'rtmps://localhost/live/secret-key' }, 30, {
+       width: 640,
+diff --git a/tests/media.test.ts b/tests/media.test.ts
+index 7c0e60d..19ab93d 100644
+--- a/tests/media.test.ts
++++ b/tests/media.test.ts
+@@ -1,8 +1,45 @@
+-import { describe, expect, it } from 'vitest'
++import { describe, expect, it, vi } from 'vitest'
+ 
+-import { decodeProbeDocument } from '../src/media.js'
++import { decodeProbeDocument, probeMedia } from '../src/media.js'
++
++const { runProcess } = vi.hoisted(() => ({ runProcess: vi.fn() }))
++vi.mock('../src/process.js', () => ({
++  resolveFfprobe: () => Promise.resolve('ffprobe'),
++  runProcess,
++}))
+ 
+ describe('FFprobe metadata decoder', () => {
++  it('accepts an unknown average rate for sparse variable-rate video', async () => {
++    runProcess.mockResolvedValue({
++      exitCode: 0,
++      stdout: JSON.stringify({
++        streams: [
++          {
++            codec_type: 'video',
++            codec_name: 'vp9',
++            width: 960,
++            height: 540,
++            avg_frame_rate: '0/0',
++            r_frame_rate: '10/1',
++          },
++        ],
++        format: { format_name: 'matroska,webm', duration: '0.3' },
++      }),
++    })
++    const media = await probeMedia(
++      {
++        id: 'test',
++        name: 'Sparse clip',
++        role: 'checkpoint',
++        contentType: 'video/webm',
++        path: 'test.webm',
++        pathKind: 'manifest-relative',
++      },
++      '/test.webm',
++    )
++    expect(media.streams[0]).toMatchObject({ frameRate: 10, hasVariableFrameRate: true })
++  })
++
+   it('accepts finite numeric strings and structured streams', () => {
+     const document = decodeProbeDocument({
+       streams: [
+diff --git a/tests/native-browser.test.ts b/tests/native-browser.test.ts
+index 1a68f48..091cf2e 100644
+--- a/tests/native-browser.test.ts
++++ b/tests/native-browser.test.ts
+@@ -137,4 +137,67 @@ describe('native browser lifecycle', () => {
+     ).rejects.toThrow()
+     expect(spawn).not.toHaveBeenCalled()
+   })
++
++  it('refines delayed handshake clock bounds without shifting late captures forward', async () => {
++    let now = 100
++    vi.spyOn(performance, 'now').mockImplementation(() => now)
++    const browser = await launch()
++    const video = vi.fn(),
++      audio = vi.fn()
++    browser.onFrame(video)
++    browser.onAudio(audio)
++    now = 101
++    emit({ type: 'frame', timestampMs: 50, width: 2, height: 2, dropped: 0 }, Buffer.alloc(16))
++    expect(video).toHaveBeenNthCalledWith(1, expect.objectContaining({ timestampMs: 101 }))
++    now = 102
++    emit({ type: 'audio', timestampMs: 75, frames: 1 }, Buffer.alloc(4))
++    expect(audio).toHaveBeenNthCalledWith(1, expect.objectContaining({ timestampMs: 126 }))
++    now = 160
++    emit({ type: 'frame', timestampMs: 51, width: 2, height: 2, dropped: 0 }, Buffer.alloc(16))
++    expect(video).toHaveBeenNthCalledWith(2, expect.objectContaining({ timestampMs: 102 }))
++    await browser.close()
++  })
++
++  it('removes lifecycle observers when reusable-source consumers finish', async () => {
++    const browser = await launch()
++    const removedFailure = vi.fn()
++    const removedClose = vi.fn()
++    browser.onFailure?.(removedFailure)()
++    browser.onClose?.(removedClose)()
++    const failure = vi.fn()
++    const closed = vi.fn()
++    browser.onFailure?.(failure)
++    browser.onClose?.(closed)
++    emit({ type: 'error', error: 'Renderer failed' })
++    await browser.closed
++    expect(failure).toHaveBeenCalledOnce()
++    expect(closed).toHaveBeenCalledOnce()
++    expect(removedFailure).not.toHaveBeenCalled()
++    expect(removedClose).not.toHaveBeenCalled()
++  })
++
++  it('suspends frame IPC between subscriptions and tolerates unsubscribe immediately before close', async () => {
++    const commands: { id: number; command: string; enabled?: boolean }[] = []
++    input.on('data', (bytes: Buffer) => {
++      const command = JSON.parse(bytes.toString()) as (typeof commands)[number]
++      commands.push(command)
++      if (command.enabled !== false)
++        queueMicrotask(() => emit({ type: 'response', id: command.id, ok: true }))
++      else if (commands.length === 1)
++        queueMicrotask(() => emit({ type: 'response', id: command.id, ok: true }))
++    })
++    const launched = launchNativeBrowser({ executablePath: path, width: 2, height: 2 })
++    await vi.waitFor(() => expect(spawn).toHaveBeenCalled())
++    emit({ type: 'ready', timestampMs: 1, cefVersion: 'test', frameSubscriptions: true })
++    const browser = await launched
++    const listener = vi.fn()
++    const unsubscribe = browser.onFrame(listener)
++    await Promise.resolve()
++    emit({ type: 'frame', timestampMs: 2, width: 2, height: 2, dropped: 0 }, Buffer.alloc(16))
++    expect(listener).toHaveBeenCalledOnce()
++    unsubscribe()
++    await browser.close()
++    expect(browser.state).toBe('closed')
++    expect(commands.map((command) => command.enabled)).toEqual([false, true, false])
++  })
+ })
+diff --git a/tests/native-recorder.test.ts b/tests/native-recorder.test.ts
+index 2df2944..529b867 100644
+--- a/tests/native-recorder.test.ts
++++ b/tests/native-recorder.test.ts
+@@ -27,7 +27,9 @@ describe('native recording cadence and shutdown', () => {
+     frames = []
+     child.stdin = new PassThrough()
+     child.stderr = new PassThrough()
+-    child.stdin.on('data', (frame: Buffer) => frames.push(Buffer.from(frame)))
++    child.stdin.on('data', (chunk: Buffer) => {
++      if (chunk.length === 16) frames.push(Buffer.from(chunk))
++    })
+     child.stdin.on('finish', () => child.emit('close', 0))
+     vi.mocked(spawn).mockReturnValue(child)
+   })
+@@ -38,22 +40,22 @@ describe('native recording cadence and shutdown', () => {
+     recorder.push(Buffer.alloc(16, 1), 100)
+     await vi.waitFor(() => expect(frames).toHaveLength(1))
+     recorder.push(Buffer.alloc(16, 2), 200)
+-    await vi.waitFor(() => expect(frames).toHaveLength(4))
++    await vi.waitFor(() => expect(frames).toHaveLength(2))
+     const stop = recorder.stop(300)
+     expect(recorder.stop(400)).toBe(stop)
+     await stop
+     expect(recorder.firstAtMs).toBe(100)
+-    expect(frames.map((frame) => frame[0])).toEqual([1, 1, 1, 2, 2, 2, 2])
++    expect(frames.map((frame) => frame[0])).toEqual([1, 2, 2])
+   })
+ 
+-  it('bounds backpressure by replacing queued frames without shortening duration', async () => {
++  it('replaces obsolete frames under backpressure instead of encoding a stale catch-up backlog', async () => {
+     let release: (() => void) | undefined
+     let first = true
+     child.stdin = new Writable({
+       highWaterMark: 1,
+       write(chunk: Buffer, _encoding, callback) {
+-        frames.push(Buffer.from(chunk))
+-        if (first) {
++        if (chunk.length === 16) frames.push(Buffer.from(chunk))
++        if (first && chunk.length === 16) {
+           first = false
+           release = () => callback()
+         } else callback()
+@@ -62,14 +64,15 @@ describe('native recording cadence and shutdown', () => {
+     child.stdin.on('finish', () => child.emit('close', 0))
+     const recorder = start()
+     recorder.push(Buffer.alloc(16, 1), 0)
++    await vi.waitFor(() => expect(frames).toHaveLength(1))
+     for (let i = 1; i <= 30; i++) recorder.push(Buffer.alloc(16, i), (i * 1000) / 30)
+     expect(frames).toHaveLength(1)
+     release?.()
+-    await vi.waitFor(() => expect(frames).toHaveLength(31))
++    await vi.waitFor(() => expect(frames).toHaveLength(2))
+     await recorder.stop(1000)
+-    expect(frames).toHaveLength(31)
++    expect(frames).toHaveLength(2)
+     expect(frames.at(-1)?.[0]).toBe(30)
+-    expect(frames.slice(0, -1).every((frame) => frame[0] === 1)).toBe(true)
++    expect(frames[0]?.[0]).toBe(1)
+   })
+ 
+   it('flushes the final hold when stopping during the very first blocked write', async () => {
+@@ -78,8 +81,8 @@ describe('native recording cadence and shutdown', () => {
+     child.stdin = new Writable({
+       highWaterMark: 1,
+       write(chunk: Buffer, _encoding, callback) {
+-        frames.push(Buffer.from(chunk))
+-        if (first) {
++        if (chunk.length === 16) frames.push(Buffer.from(chunk))
++        if (first && chunk.length === 16) {
+           first = false
+           release = () => callback()
+         } else callback()
+@@ -88,10 +91,11 @@ describe('native recording cadence and shutdown', () => {
+     child.stdin.on('finish', () => child.emit('close', 0))
+     const recorder = start()
+     recorder.push(Buffer.alloc(16, 7), 0)
++    await vi.waitFor(() => expect(frames).toHaveLength(1))
+     const stop = recorder.stop(1000)
+     release?.()
+     await stop
+-    expect(frames).toHaveLength(31)
++    expect(frames.map((frame) => frame[0])).toEqual([7, 7])
+   })
+ 
+   it('rejects encoder failures instead of reporting a successful recording', async () => {
+diff --git a/tests/native-session.test.ts b/tests/native-session.test.ts
+index b27956e..b4b180d 100644
+--- a/tests/native-session.test.ts
++++ b/tests/native-session.test.ts
+@@ -20,6 +20,8 @@ function source() {
+   const close = vi.fn(() => Promise.resolve())
+   const unsubscribe = vi.fn()
+   const unsubscribeAudio = vi.fn()
++  const unsubscribeFailure = vi.fn()
++  const unsubscribeClose = vi.fn()
+   const browser: NativeBrowser = {
+     state: 'running',
+     width: 2,
+@@ -29,6 +31,8 @@ function source() {
+     cefVersion: 'test',
+     failure: new Promise<never>(() => undefined),
+     closed: new Promise<void>(() => undefined),
++    onFailure: () => unsubscribeFailure,
++    onClose: () => unsubscribeClose,
+     close,
+     navigate: () => Promise.resolve(),
+     sendDevToolsCommand: () => Promise.resolve({ result: { value: 'http://fixture/' } }),
+@@ -54,6 +58,8 @@ function source() {
+     close,
+     unsubscribe,
+     unsubscribeAudio,
++    unsubscribeFailure,
++    unsubscribeClose,
+     emit: () =>
+       deliver?.({
+         data: Buffer.alloc(16),
+@@ -161,6 +167,10 @@ describe('native recording clock and ownership', () => {
+       expect(second.unsubscribe).toHaveBeenCalledTimes(1)
+       expect(first.unsubscribeAudio).toHaveBeenCalledTimes(1)
+       expect(second.unsubscribeAudio).toHaveBeenCalledTimes(1)
++      expect(first.unsubscribeFailure).toHaveBeenCalledTimes(1)
++      expect(first.unsubscribeClose).toHaveBeenCalledTimes(1)
++      expect(second.unsubscribeFailure).toHaveBeenCalledTimes(1)
++      expect(second.unsubscribeClose).toHaveBeenCalledTimes(1)
+       expect(() => session.selectPage(page)).toThrow('ended')
+     } finally {
+       await session.endRecording()

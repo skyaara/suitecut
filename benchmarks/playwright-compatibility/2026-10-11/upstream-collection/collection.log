@@ -1,0 +1,115 @@
+[WARN] Your node_modules are out of sync with your lockfile. The workspace structure has changed since last install
+
+Error: Cannot find module 'formidable'
+Require stack:
+- /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts
+- /workspace/suitecut/node_modules/.pnpm/playwright@1.62.1/node_modules/playwright/lib/common/index.js
+- /workspace/suitecut/node_modules/.pnpm/playwright@1.62.1/node_modules/playwright/lib/program.js
+- /workspace/suitecut/node_modules/.pnpm/playwright@1.62.1/node_modules/playwright/cli.js
+
+   at library/browsercontext-fetch.spec.ts:18
+
+  16 |
+  17 | import type { LookupAddress } from 'dns';
+> 18 | import formidable from 'formidable';
+     | ^
+  19 | import fs from 'fs';
+  20 | import http from 'http';
+  21 | import type { IncomingMessage } from 'http';
+    at Object.<anonymous> (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-fetch.spec.ts:18:1)
+
+Error: Cannot find module 'get-stream'
+Require stack:
+- /tmp/suitecut-playwright-upstream/playwright-1.62.1/packages/utils/third_party/extractZip.ts
+- /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts
+- /workspace/suitecut/node_modules/.pnpm/playwright@1.62.1/node_modules/playwright/lib/common/index.js
+- /workspace/suitecut/node_modules/.pnpm/playwright@1.62.1/node_modules/playwright/lib/program.js
+- /workspace/suitecut/node_modules/.pnpm/playwright@1.62.1/node_modules/playwright/cli.js
+
+   at ../packages/utils/third_party/extractZip.ts:33
+
+  31 |
+  32 | import debugPkg from 'debug';
+> 33 | import getStream from 'get-stream';
+     | ^
+  34 | import yauzl from 'yauzl';
+  35 | import type { Entry, ZipFile } from 'yauzl';
+  36 |
+    at Object.<anonymous> (/tmp/suitecut-playwright-upstream/playwright-1.62.1/packages/utils/third_party/extractZip.ts:33:1)
+    at Object.<anonymous> (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-har.spec.ts:20:1)
+
+Error: Cannot find module 'formidable'
+Require stack:
+- /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsertype-connect.spec.ts
+- /workspace/suitecut/node_modules/.pnpm/playwright@1.62.1/node_modules/playwright/lib/common/index.js
+- /workspace/suitecut/node_modules/.pnpm/playwright@1.62.1/node_modules/playwright/lib/program.js
+- /workspace/suitecut/node_modules/.pnpm/playwright@1.62.1/node_modules/playwright/cli.js
+
+   at library/browsertype-connect.spec.ts:26
+
+  24 | import { expect, playwrightTest } from '../config/browserTest';
+  25 | import { ensureSomeFrames, parseTraceRaw, suppressCertificateWarning } from '../config/utils';
+> 26 | import formidable from 'formidable';
+     | ^
+  27 | import type { Browser, ConnectOptions } from 'playwright-core';
+  28 |
+  29 | const { createHttpServer } = utils;
+    at Object.<anonymous> (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsertype-connect.spec.ts:26:1)
+
+Error: Cannot find module 'get-stream'
+Require stack:
+- /tmp/suitecut-playwright-upstream/playwright-1.62.1/packages/utils/third_party/extractZip.ts
+- /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/trace-viewer.spec.ts
+- /workspace/suitecut/node_modules/.pnpm/playwright@1.62.1/node_modules/playwright/lib/common/index.js
+- /workspace/suitecut/node_modules/.pnpm/playwright@1.62.1/node_modules/playwright/lib/program.js
+- /workspace/suitecut/node_modules/.pnpm/playwright@1.62.1/node_modules/playwright/cli.js
+
+   at ../packages/utils/third_party/extractZip.ts:33
+
+  31 |
+  32 | import debugPkg from 'debug';
+> 33 | import getStream from 'get-stream';
+     | ^
+  34 | import yauzl from 'yauzl';
+  35 | import type { Entry, ZipFile } from 'yauzl';
+  36 |
+    at Object.<anonymous> (/tmp/suitecut-playwright-upstream/playwright-1.62.1/packages/utils/third_party/extractZip.ts:33:1)
+    at Object.<anonymous> (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/trace-viewer.spec.ts:22:1)
+
+Error: Cannot find module 'formidable'
+Require stack:
+- /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/page/page-filechooser.spec.ts
+- /workspace/suitecut/node_modules/.pnpm/playwright@1.62.1/node_modules/playwright/lib/common/index.js
+- /workspace/suitecut/node_modules/.pnpm/playwright@1.62.1/node_modules/playwright/lib/program.js
+- /workspace/suitecut/node_modules/.pnpm/playwright@1.62.1/node_modules/playwright/cli.js
+
+   at page/page-filechooser.spec.ts:22
+
+  20 |
+  21 | import fs from 'fs';
+> 22 | import formidable from 'formidable';
+     | ^
+  23 |
+  24 | test('should upload multiple large files', async ({ page, server, isAndroid, mode }, testInfo) => {
+  25 |   test.skip(isAndroid);
+    at Object.<anonymous> (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/page/page-filechooser.spec.ts:22:1)
+
+Error: Cannot find module 'formidable'
+Require stack:
+- /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/page/page-set-input-files.spec.ts
+- /workspace/suitecut/node_modules/.pnpm/playwright@1.62.1/node_modules/playwright/lib/common/index.js
+- /workspace/suitecut/node_modules/.pnpm/playwright@1.62.1/node_modules/playwright/lib/program.js
+- /workspace/suitecut/node_modules/.pnpm/playwright@1.62.1/node_modules/playwright/cli.js
+
+   at page/page-set-input-files.spec.ts:22
+
+  20 | import path from 'path';
+  21 | import fs from 'fs';
+> 22 | import formidable from 'formidable';
+     | ^
+  23 |
+  24 | test('should upload the file', async ({ page, server, asset }) => {
+  25 |   await page.goto(server.PREFIX + '/input/fileupload.html');
+    at Object.<anonymous> (/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/page/page-set-input-files.spec.ts:22:1)
+Listing tests:
+Total: 0 tests in 0 files

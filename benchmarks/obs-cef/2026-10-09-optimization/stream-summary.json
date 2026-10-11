@@ -1,0 +1,20 @@
+[
+  {
+    "backend": "obs",
+    "runs": 3,
+    "passedChecks": 12,
+    "attemptedChecks": 12,
+    "distinctFpsMedian": 38.07783484788621,
+    "p95AbsoluteOffsetMsMedian": 127.99999999999793,
+    "averageMuxedKbpsMedian": 4503.239035954168
+  },
+  {
+    "backend": "native",
+    "runs": 3,
+    "passedChecks": 12,
+    "attemptedChecks": 12,
+    "distinctFpsMedian": 23.90088299200222,
+    "p95AbsoluteOffsetMsMedian": 60.00000000000028,
+    "averageMuxedKbpsMedian": 322.0318986639545
+  }
+]

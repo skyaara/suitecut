@@ -1,0 +1,50 @@
+ M README.md
+ M benchmarks/README.md
+ M eslint.config.js
+ M native/browser/CMakeLists.txt
+ M native/browser/README.md
+ M native/browser/audio_clock.h
+ M native/browser/audio_clock_test.cc
+ M native/browser/browser.cc
+ M package.json
+ M scripts/verify-native-recording.mjs
+ M scripts/verify-native-stream.mjs
+ M src/cli.ts
+ M src/index.ts
+ M src/live-audio.ts
+ M src/live-stream.ts
+ M src/manifest.ts
+ M src/media.ts
+ M src/native-browser.ts
+ M src/native-default.ts
+ M src/native-page.ts
+ M src/native-protocol.ts
+ M src/native-recorder.ts
+ M src/native-recording.ts
+ M src/native-session.ts
+ M src/native.ts
+ M src/recording-output.ts
+ M src/render.ts
+ M tests/live-audio.test.ts
+ M tests/live-stream.test.ts
+ M tests/media.test.ts
+ M tests/native-broadcast.test.ts
+ M tests/native-browser.test.ts
+ M tests/native-protocol.test.ts
+ M tests/native-recorder.test.ts
+ M tests/native-session.test.ts
+ M tsconfig.json
+?? benchmarks/native-engine/
+?? benchmarks/obs-cef/
+?? native/browser/ENGINE.md
+?? native/browser/media_engine.cc
+?? native/browser/media_engine.h
+?? native/browser/media_engine_test.cc
+?? native/browser/media_file.cc
+?? native/browser/media_file.h
+?? native/browser/media_render.cc
+?? native/browser/media_render.h
+?? src/engine-test.ts
+?? src/engine.ts
+?? src/native-video-container.ts
+?? tests/native-page.test.ts

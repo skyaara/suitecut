@@ -1,0 +1,81 @@
+{
+  "tests": [
+    {
+      "name": "DOM, shadow DOM and CSS layout",
+      "required": true,
+      "status": "passed",
+      "detail": true
+    },
+    {
+      "name": "Canvas 2D pixels",
+      "required": true,
+      "status": "passed",
+      "detail": true
+    },
+    {
+      "name": "WebAssembly execution",
+      "required": true,
+      "status": "passed",
+      "detail": true
+    },
+    {
+      "name": "Dedicated worker messaging",
+      "required": true,
+      "status": "passed",
+      "detail": true
+    },
+    {
+      "name": "Shared worker messaging",
+      "required": true,
+      "status": "passed",
+      "detail": true
+    },
+    {
+      "name": "IndexedDB write/read",
+      "required": true,
+      "status": "passed",
+      "detail": true
+    },
+    {
+      "name": "Service worker registration and fetch interception",
+      "required": true,
+      "status": "passed",
+      "detail": true
+    },
+    {
+      "name": "CacheStorage write/read",
+      "required": true,
+      "status": "passed",
+      "detail": true
+    },
+    {
+      "name": "WebSocket round trip",
+      "required": true,
+      "status": "unavailable",
+      "detail": false
+    },
+    {
+      "name": "WebRTC data-channel round trip",
+      "required": true,
+      "status": "passed",
+      "detail": true
+    },
+    {
+      "name": "WebGL pixel rendering on this host",
+      "required": false,
+      "status": "unavailable",
+      "detail": false
+    },
+    {
+      "name": "WebGPU adapter on this host",
+      "required": false,
+      "status": "unavailable",
+      "detail": false
+    }
+  ],
+  "status": "failed",
+  "startedAt": "2026-10-10T11:52:56.850Z",
+  "cefVersion": "152.0.6+g708dc14+chromium-152.0.7977.83",
+  "error": "AssertionError [ERR_ASSERTION]: Required browser functionality failed; inspect features.json\n    at file:///workspace/suitecut/benchmarks/native-browser-support/features.mjs:253:3",
+  "finishedAt": "2026-10-10T11:52:58.002Z"
+}

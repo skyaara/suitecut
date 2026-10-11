@@ -1,0 +1,19 @@
+
+Running 12 tests using 1 worker
+
+(node:183930) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 benchmarks/native-engine/engine.e2e.spec.ts:52:1 › real Playwright locators, auto-wait, input, scrolling, iframe and screenshot (1.4s)
+  ✓   2 benchmarks/native-engine/engine.e2e.spec.ts:68:1 › native engine records silent startup and accepts later sound (929ms)
+  ✓   3 benchmarks/native-engine/engine.e2e.spec.ts:85:1 › streaming initializes silent audio and accepts later browser sound (2.0s)
+  ✓   4 benchmarks/native-engine/engine.e2e.spec.ts:148:1 › silent pages record a valid audio track with mandatory engine readiness (535ms)
+  ✓   5 benchmarks/native-engine/engine.e2e.spec.ts:170:1 › native protocol rejects bypasses and requires audio readiness when audio is omitted (486ms)
+  ✓   6 benchmarks/native-engine/engine.e2e.spec.ts:217:1 › network interception, init scripts and storage isolation (623ms)
+  ✓   7 benchmarks/native-engine/engine.e2e.spec.ts:246:1 › popup, dialog, file upload, download and public CDP sessions (1.3s)
+  ✓   8 benchmarks/native-engine/engine.e2e.spec.ts:282:1 › explicit CDP sessions receive page events and tracing completion (685ms)
+  ✓   9 benchmarks/native-engine/engine.e2e.spec.ts:311:1 › native recording survives blocked Node, pause and page switching (6.7s)
+  ✓  10 benchmarks/native-engine/engine.e2e.spec.ts:348:1 › pause drains pending media and resume captures a prepared static page (1.3s)
+  ✓  11 benchmarks/native-engine/engine.e2e.spec.ts:371:1 › repeated context/page shutdown keeps the engine usable (1.6s)
+  ✓  12 benchmarks/native-engine/engine.e2e.spec.ts:382:1 › permission and geolocation setup before page creation (120ms)
+
+  12 passed (19.4s)

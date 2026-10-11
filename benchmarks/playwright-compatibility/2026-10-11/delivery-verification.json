@@ -1,0 +1,246 @@
+{
+  "archivePayloadHashes": "passed",
+  "recordedSourceHashes": "passed",
+  "retainedBinaryHashes": "passed",
+  "retainedVerification": {
+    "upstream-api-final": {
+      "passed": 155,
+      "failed": 5,
+      "skipped": 5
+    },
+    "upstream-video-final": {
+      "passed": 20,
+      "timedOut": 2,
+      "failed": 7
+    },
+    "validated-cef-final": {
+      "passed": 26,
+      "failed": 2
+    },
+    "validated-native-final": {
+      "passed": 16
+    },
+    "release-verified-chromium": {
+      "passed": 25,
+      "skipped": 1,
+      "failed": 2
+    }
+  },
+  "sourceArchive": {
+    "file": "suitecut-native-2.1.0-source.tar.gz",
+    "bytes": 84612,
+    "sha256": "df96e6624dd7c5fd254ff975f0ec7536de53842316c3a60631041ec8e763196a",
+    "files": [
+      {
+        "path": "BROWSER-PROTOCOL.md",
+        "bytes": 7442,
+        "sha256": "cb82f163fd0dac5686fa2ec163a9a555eff4976381b4befae9aee8e609844f26"
+      },
+      {
+        "path": "CMakeLists.txt",
+        "bytes": 439,
+        "sha256": "497690adc4f4ee79357a4b4fa6863cd2c3b27977211f4ee12c13c9b271bec914"
+      },
+      {
+        "path": "LICENSE",
+        "bytes": 1064,
+        "sha256": "a8f07b544c0d0e952e3348452d62f1462fdbb39415529fb8e3ca5f72782aa99e"
+      },
+      {
+        "path": "PROTOCOL.md",
+        "bytes": 6392,
+        "sha256": "4c786114e6fe3b0a0620bce865614bbe32946f46615a9c49eb070ddc824379da"
+      },
+      {
+        "path": "README.md",
+        "bytes": 4783,
+        "sha256": "7adae666d415d1f46dbda186dc16d74da6669aff6a8445497daf11aae884f11b"
+      },
+      {
+        "path": "manifest.json",
+        "bytes": 707,
+        "sha256": "abcc43bfcfdb62b9aa9b778ec417cff8509906a7879892a5c4ab4834651490ce"
+      },
+      {
+        "path": "native/browser/CMakeLists.txt",
+        "bytes": 10808,
+        "sha256": "f4daa7269c1c3a0988f44917eda22d39d20be9ed797972817e629160d911749b"
+      },
+      {
+        "path": "native/browser/Info.plist.in",
+        "bytes": 574,
+        "sha256": "d8a488b6e8d4c40ad908acf6210036dd134fef2b97b1f3564aa9ae1466c90b7c"
+      },
+      {
+        "path": "native/browser/audio_clock.h",
+        "bytes": 2461,
+        "sha256": "4161430985ba116506595a5f8410beef627be4e6b70053d4a6d3402521c05dc7"
+      },
+      {
+        "path": "native/browser/audio_clock_test.cc",
+        "bytes": 2779,
+        "sha256": "9405b48a5644d4c9360f336578944f518adfbb2a3412ab2ce6218d6b4ee404b1"
+      },
+      {
+        "path": "native/browser/audio_trace.h",
+        "bytes": 1453,
+        "sha256": "eadc75da9114b6bb945207194cf5206fa81c4b33f963facf78d73ce609a5104a"
+      },
+      {
+        "path": "native/browser/browser.cc",
+        "bytes": 101457,
+        "sha256": "48c0a08b1e28218de87ac69fc3e55a9ecf2d17618315fac64af7ae16aafea5a7"
+      },
+      {
+        "path": "native/browser/cdp_json.h",
+        "bytes": 4089,
+        "sha256": "219195a57071be65460fd2c4a6d62c8265539f3aca48d99f983f849d97ea2340"
+      },
+      {
+        "path": "native/browser/cdp_json_test.cc",
+        "bytes": 1389,
+        "sha256": "5f4ee58fca9d40cdde6c50f3e352fe2924303f0f60beb74c927000d0a68cc540"
+      },
+      {
+        "path": "native/browser/cef-build-linux-codecs.json",
+        "bytes": 939,
+        "sha256": "91c129bc8c08f0be0b830ae36f1c46d027f36041e9d4594ec76174e1d99335f1"
+      },
+      {
+        "path": "native/browser/cef-build-linux.json",
+        "bytes": 377,
+        "sha256": "4984f16b17bd08c24981ed417c92e18ea072c5dc6cd5e588703a93b3856a1364"
+      },
+      {
+        "path": "native/browser/cef-build.json",
+        "bytes": 383,
+        "sha256": "b414df140860af2f96a9617e1622b464461222b217e68ef7ea9089f364a66d37"
+      },
+      {
+        "path": "native/browser/fuzz_bounds.cc",
+        "bytes": 1486,
+        "sha256": "b892dcf7629167e2d6f9aaf10f8a4825b74bccda24e66d611449bafc6cd8a8f9"
+      },
+      {
+        "path": "native/browser/fuzz_cdp_json.cc",
+        "bytes": 802,
+        "sha256": "4b605e14952b4fb0a0ca1608add5c2aa56fa14bd39cad7bc8863ebf86e9a30d9"
+      },
+      {
+        "path": "native/browser/fuzz_media.cc",
+        "bytes": 1485,
+        "sha256": "24504b543b84de669aa0e585b0609292ab2cb09f1286ab3f6ba667d122ea8a87"
+      },
+      {
+        "path": "native/browser/helper_mac.cc",
+        "bytes": 424,
+        "sha256": "a1f18927b508f70e7b036ad0bd9544d14bcadf8402f6e2964e67aee336869d1d"
+      },
+      {
+        "path": "native/browser/libyuv-build.json",
+        "bytes": 155,
+        "sha256": "78dff3f7d2c851be52d04013dffbe48c4d969d093ca22d5fde339ed484152c27"
+      },
+      {
+        "path": "native/browser/main_linux.cc",
+        "bytes": 576,
+        "sha256": "debf89015bb35e0141a8e840f5760617ab4a55d265072897f3d78c996b7cfaf3"
+      },
+      {
+        "path": "native/browser/main_mac.mm",
+        "bytes": 836,
+        "sha256": "449be3a0e6f3a7ca5401b3b514cb7bf3419f38f9c70e2252e70b08f34fc26a6f"
+      },
+      {
+        "path": "native/browser/media_codec_test.cc",
+        "bytes": 8623,
+        "sha256": "b59bcb4a566f34180509ce464cd7da02c758ca6bfe9afb8d7118d2f726e5ca55"
+      },
+      {
+        "path": "native/browser/media_engine.cc",
+        "bytes": 36984,
+        "sha256": "ceea99ed4a1a378869abda35b494df033c1d46bc3183cb3c623902303dad4b47"
+      },
+      {
+        "path": "native/browser/media_engine.h",
+        "bytes": 2482,
+        "sha256": "d90e9e00eb049e0fe57b4c534adcd51e61af9b41d164b6aebd87df0d84f77e97"
+      },
+      {
+        "path": "native/browser/media_engine_test.cc",
+        "bytes": 7408,
+        "sha256": "41e809870f2605955f3b9ddddc2963a00281dfa2f1301dc16133274fc3f13695"
+      },
+      {
+        "path": "native/browser/media_file.cc",
+        "bytes": 7647,
+        "sha256": "9be21deb274faab77a2d8023d052e55b0b3bfd798f29e4941cb13df01439c02a"
+      },
+      {
+        "path": "native/browser/media_file.h",
+        "bytes": 695,
+        "sha256": "db0da8d4e5295904565474150891c33c561d28409db33955185baa280281f8d7"
+      },
+      {
+        "path": "native/browser/media_render.cc",
+        "bytes": 19005,
+        "sha256": "4d3cd662477b1ecef0c16473eaed1f81ec47f512312d9e54906d1b3304a6c35c"
+      },
+      {
+        "path": "native/browser/media_render.h",
+        "bytes": 638,
+        "sha256": "4bd3aa5b8fc414634f869fd545eeb09c11cd53c0b11db96ee5a688bb2eab35c7"
+      },
+      {
+        "path": "native/browser/media_startup_test.cc",
+        "bytes": 16078,
+        "sha256": "d679c03999543ee0b808adbab5d6cc654032d096b83d4cd41839108cc3f0bae1"
+      },
+      {
+        "path": "native/browser/media_sync_test.cc",
+        "bytes": 4037,
+        "sha256": "bb8614e4e03eff3e0531471173af28e55b189ec1afd9c309a6b0d8708297cef6"
+      },
+      {
+        "path": "native/browser/memory_bounds.h",
+        "bytes": 2293,
+        "sha256": "7d3a30664b19e1b6cb42469adbd0e66200bef2f8398458fbc093d329276e94bf"
+      },
+      {
+        "path": "native/browser/memory_test.cc",
+        "bytes": 6079,
+        "sha256": "b136f95f5fbbc3baac6921264cdc8be729dad6ac4efc7997db1dd1327d6ecb2d"
+      },
+      {
+        "path": "native/browser/pixel_test.cc",
+        "bytes": 1213,
+        "sha256": "dfd501e5101425c213920114f8e3ca14e7240d9c068c560b219c594a25aa5f76"
+      },
+      {
+        "path": "native/browser/scaler_failure_test.cc",
+        "bytes": 2215,
+        "sha256": "aa05f55fb9428edb0b9b138583980ede7366610581948bc12b3ba06b74d7934d"
+      },
+      {
+        "path": "protocol.schema.json",
+        "bytes": 9944,
+        "sha256": "c89b9a92f2c719fa4be7b36eb88f82e6e54f9ce54658b20ea6e41ac3d0de8bfb"
+      },
+      {
+        "path": "scripts/install-cef-codecs.py",
+        "bytes": 3502,
+        "sha256": "69c9cd5c1a6622f55c7957d2e8e39ec076220ce421361b12318b82d112fcf374"
+      },
+      {
+        "path": "tests/probe.py",
+        "bytes": 10030,
+        "sha256": "113c63cc48004f8dd5dcd48c7648f8564129a79e6b4a141c93dfc4a9dae7daea"
+      },
+      {
+        "path": "tests/protocol_probe.py",
+        "bytes": 10203,
+        "sha256": "14b7e9db008574117d13a9bf4e60366e8385a6e1a3b30da02ecc34594a52c9ce"
+      }
+    ]
+  }
+}

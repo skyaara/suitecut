@@ -1,0 +1,1050 @@
+{
+  "action": "POSIX_FADV_DONTNEED on owned clean files >=8MiB; no file bytes modified or deleted. The interrupted matrix launched one child during teardown; its capture is retained as interrupted and excluded from clean comparisons.",
+  "beforeCgroupMemoryBytes": 15543373824,
+  "afterCgroupMemoryBytes": 6078558208,
+  "memoryEventsBefore": "low 0\nhigh 0\nmax 279116\noom 0\noom_kill 0\noom_group_kill 0\n",
+  "memoryEventsAfter": "low 0\nhigh 0\nmax 279116\noom 0\noom_kill 0\noom_group_kill 0\n",
+  "files": [
+    {
+      "path": ".suitecut/native-codec-build/resources.pak",
+      "bytes": 21754668
+    },
+    {
+      "path": ".suitecut/native-codec-build/icudtl.dat",
+      "bytes": 10876560
+    },
+    {
+      "path": ".suitecut/native-codec-build/CEF-CREDITS.html",
+      "bytes": 19914947
+    },
+    {
+      "path": ".suitecut/native-codec-build/libcef.so",
+      "bytes": 456213272
+    },
+    {
+      "path": ".suitecut/cef-obs-comparison/cef-index.json",
+      "bytes": 10482926
+    },
+    {
+      "path": ".suitecut/cef-obs-comparison/cef-linux64.tar.bz2",
+      "bytes": 321520830
+    },
+    {
+      "path": ".suitecut/cef-codecs-sdk/CREDITS.html",
+      "bytes": 19914947
+    },
+    {
+      "path": ".suitecut/cef-codecs-sdk/Resources/resources.pak",
+      "bytes": 21754668
+    },
+    {
+      "path": ".suitecut/cef-codecs-sdk/Resources/icudtl.dat",
+      "bytes": 10876560
+    },
+    {
+      "path": ".suitecut/cef-codecs-sdk/Release/libcef.so",
+      "bytes": 456213272
+    },
+    {
+      "path": ".suitecut/obs-cef-optimization/features-stream-thread-limited-3/obs-stream-20000.flv",
+      "bytes": 11613248
+    },
+    {
+      "path": ".suitecut/obs-cef-optimization/features-stream-final-2/obs-stream-20000.flv",
+      "bytes": 11463586
+    },
+    {
+      "path": ".suitecut/obs-cef-optimization/soak-before-capture-stamp-fix/receiver.flv",
+      "bytes": 38064735
+    },
+    {
+      "path": ".suitecut/obs-cef-optimization/soak-before-capture-stamp-fix/suitecut-source-81375cba-7b8f-469d-8ccd-6012565a1012-8395c896-df9a-4431-902e-4bbf2653bf7e.webm",
+      "bytes": 44441081
+    },
+    {
+      "path": ".suitecut/obs-cef-optimization/soak/receiver.flv",
+      "bytes": 48410109
+    },
+    {
+      "path": ".suitecut/obs-cef-optimization/soak/suitecut-source-413fde13-3160-40d4-a21e-fd6b260db204-1590cfb7-9026-40f2-afbb-1a540e06409f.webm",
+      "bytes": 52020733
+    },
+    {
+      "path": ".suitecut/obs-cef-optimization/features-stream-thread-limited-1/obs-stream-20000.flv",
+      "bytes": 11406499
+    },
+    {
+      "path": ".suitecut/obs-cef-optimization/features-stream-thread-limited-3-runtime-collision/obs-stream-20000.flv",
+      "bytes": 11416596
+    },
+    {
+      "path": ".suitecut/obs-cef-optimization/features-stream-thread-limited-2/obs-stream-20000.flv",
+      "bytes": 11415833
+    },
+    {
+      "path": ".suitecut/obs-cef-optimization/features-stream-thread-limited-2-runtime-collision/obs-stream-20000.flv",
+      "bytes": 11522324
+    },
+    {
+      "path": ".suitecut/obs-cef-optimization/features-stream-thread-limited-1-runtime-collision/obs-stream-20000.flv",
+      "bytes": 11513484
+    },
+    {
+      "path": ".suitecut/obs-cef-optimization/features-stream/obs-stream-20000.flv",
+      "bytes": 11532279
+    },
+    {
+      "path": ".suitecut/obs-cef-optimization/soak-60fps-private-sampler-stall/receiver.flv",
+      "bytes": 39368219
+    },
+    {
+      "path": ".suitecut/obs-cef-optimization/soak-60fps-private-sampler-stall/suitecut-source-20fbd192-eff6-4a7d-8245-cdffee32c8d3-6568722d-dea8-43e7-a99c-5668876f8b5c.webm",
+      "bytes": 53820669
+    },
+    {
+      "path": ".suitecut/obs-cef-optimization/features-stream-final-1/obs-stream-20000.flv",
+      "bytes": 11397617
+    },
+    {
+      "path": ".suitecut/obs-cef-optimization/features-stream-final-3/obs-stream-20000.flv",
+      "bytes": 11397698
+    },
+    {
+      "path": ".suitecut/obs-cef-optimization/soak-before-audio-window-fix/receiver.flv",
+      "bytes": 41071753
+    },
+    {
+      "path": ".suitecut/obs-cef-optimization/soak-before-audio-window-fix/suitecut-source-e158512d-01d8-4cd0-bcf4-0cd47499357d-49294ae2-0617-49b5-9475-3d48fb2017cd.webm",
+      "bytes": 43824731
+    },
+    {
+      "path": ".suitecut/obs-cef-optimization/soak-before-audio-window-fix/receiver-seekable.mkv",
+      "bytes": 39825879
+    },
+    {
+      "path": ".suitecut/obs-cef-optimization/interrupted-pilot-soak/suitecut-source-e6a32b50-c250-45ad-93f1-8278d69f0265-1bf19ff6-a410-4b71-a4ed-d4defb5c06ee.webm.audio.pcm",
+      "bytes": 15798664
+    },
+    {
+      "path": ".suitecut/dropout-investigation/clean-30-minute/receiver.flv",
+      "bytes": 52641718
+    },
+    {
+      "path": ".suitecut/dropout-investigation/clean-30-minute/suitecut-source-a8fb5145-a5b4-4883-a54a-033ad05f0ecc-fe5cd60c-ebdf-47fd-9fd6-fc20e9ab18db.webm",
+      "bytes": 57325982
+    },
+    {
+      "path": ".suitecut/memory-tools/ffmpeg-7.1.5.tar.xz",
+      "bytes": 11050340
+    },
+    {
+      "path": ".suitecut/memory-tools/debian-packages.txt",
+      "bytes": 56620099
+    },
+    {
+      "path": ".suitecut/memory-tools/ffmpeg-tsan-build/libavcodec/libavcodec.so.61",
+      "bytes": 13920656
+    },
+    {
+      "path": ".suitecut/memory-tools/root/usr/bin/gdb",
+      "bytes": 11197160
+    },
+    {
+      "path": ".suitecut/memory-tools/root/usr/lib/x86_64-linux-gnu/libclang-cpp.so.19.1",
+      "bytes": 71043800
+    },
+    {
+      "path": ".suitecut/memory-tools/root/usr/lib/llvm-19/bin/llvm-exegesis",
+      "bytes": 47004024
+    },
+    {
+      "path": ".suitecut/memory-tools/packages/libclang-cpp19_19.1.7-3+b1_amd64.deb",
+      "bytes": 13191148
+    },
+    {
+      "path": ".suitecut/memory-tools/packages/llvm-19_19.1.7-3+b1_amd64.deb",
+      "bytes": 16385748
+    },
+    {
+      "path": ".suitecut/native-media-deps/root/usr/lib/x86_64-linux-gnu/libavfilter.a",
+      "bytes": 9239930
+    },
+    {
+      "path": ".suitecut/native-media-deps/root/usr/lib/x86_64-linux-gnu/libavcodec.a",
+      "bytes": 24207052
+    },
+    {
+      "path": ".suitecut/publication-old/native-build/resources.pak",
+      "bytes": 21754668
+    },
+    {
+      "path": ".suitecut/publication-old/native-build/icudtl.dat",
+      "bytes": 10876560
+    },
+    {
+      "path": ".suitecut/publication-old/native-build/CEF-CREDITS.html",
+      "bytes": 19914947
+    },
+    {
+      "path": ".suitecut/publication-old/native-build/libcef.so",
+      "bytes": 456213272
+    },
+    {
+      "path": ".suitecut/obs-deps/apt/lists/deb.debian.org_debian_dists_trixie_main_binary-amd64_Packages.lz4",
+      "bytes": 20802454
+    },
+    {
+      "path": ".suitecut/cef-version-tests/cef_binary_154.0.34+g14c5a08+chromium-154.0.8037.98_linux64_minimal.tar.bz2",
+      "bytes": 326489962
+    },
+    {
+      "path": ".suitecut/cef-version-tests/cef_binary_152.0.13+g841e03d+chromium-152.0.7977.158_linux64_minimal.tar.bz2",
+      "bytes": 321289603
+    },
+    {
+      "path": ".suitecut/cef-version-tests/cef-154-macosarm64-minimal.tar.bz2",
+      "bytes": 132210884
+    },
+    {
+      "path": ".suitecut/cef-version-tests/154.0.34/CREDITS.html",
+      "bytes": 8679939
+    },
+    {
+      "path": ".suitecut/cef-version-tests/154.0.34/Resources/resources.pak",
+      "bytes": 23500543
+    },
+    {
+      "path": ".suitecut/cef-version-tests/154.0.34/Resources/icudtl.dat",
+      "bytes": 10819840
+    },
+    {
+      "path": ".suitecut/cef-version-tests/154.0.34/Release/libcef.so",
+      "bytes": 1455021248
+    },
+    {
+      "path": ".suitecut/cef-version-tests/154.0.34/Release/libvk_swiftshader.so",
+      "bytes": 14907128
+    },
+    {
+      "path": ".suitecut/cef-version-tests/build-154.0.34/resources.pak",
+      "bytes": 23500543
+    },
+    {
+      "path": ".suitecut/cef-version-tests/build-154.0.34/icudtl.dat",
+      "bytes": 10819840
+    },
+    {
+      "path": ".suitecut/cef-version-tests/build-154.0.34/CEF-CREDITS.html",
+      "bytes": 8679939
+    },
+    {
+      "path": ".suitecut/cef-version-tests/build-154.0.34/libcef.so",
+      "bytes": 1455021248
+    },
+    {
+      "path": ".suitecut/cef-version-tests/build-154.0.34/libvk_swiftshader.so",
+      "bytes": 14907128
+    },
+    {
+      "path": ".suitecut/cef-version-tests/152.0.13/CREDITS.html",
+      "bytes": 19815473
+    },
+    {
+      "path": ".suitecut/cef-version-tests/152.0.13/Resources/resources.pak",
+      "bytes": 21752972
+    },
+    {
+      "path": ".suitecut/cef-version-tests/152.0.13/Resources/icudtl.dat",
+      "bytes": 10876560
+    },
+    {
+      "path": ".suitecut/cef-version-tests/152.0.13/Release/libcef.so",
+      "bytes": 1428289632
+    },
+    {
+      "path": ".suitecut/cef-version-tests/152.0.13/Release/libvk_swiftshader.so",
+      "bytes": 14912912
+    },
+    {
+      "path": ".suitecut/cef-version-tests/build-152.0.13/resources.pak",
+      "bytes": 21752972
+    },
+    {
+      "path": ".suitecut/cef-version-tests/build-152.0.13/icudtl.dat",
+      "bytes": 10876560
+    },
+    {
+      "path": ".suitecut/cef-version-tests/build-152.0.13/CEF-CREDITS.html",
+      "bytes": 19815473
+    },
+    {
+      "path": ".suitecut/cef-version-tests/build-152.0.13/libcef.so",
+      "bytes": 1428289632
+    },
+    {
+      "path": ".suitecut/cef-version-tests/build-152.0.13/libvk_swiftshader.so",
+      "bytes": 14912912
+    },
+    {
+      "path": ".suitecut/memory-asan/resources.pak",
+      "bytes": 23500543
+    },
+    {
+      "path": ".suitecut/memory-asan/icudtl.dat",
+      "bytes": 10819840
+    },
+    {
+      "path": ".suitecut/memory-asan/CEF-CREDITS.html",
+      "bytes": 8679939
+    },
+    {
+      "path": ".suitecut/memory-asan/libcef.so",
+      "bytes": 1455021248
+    },
+    {
+      "path": ".suitecut/memory-asan/libvk_swiftshader.so",
+      "bytes": 14907128
+    },
+    {
+      "path": ".suitecut/memory-asan/suitecut-browser",
+      "bytes": 23542368
+    },
+    {
+      "path": ".suitecut/memory-asan/libcef_dll_wrapper/libcef_dll_wrapper.a",
+      "bytes": 57702240
+    },
+    {
+      "path": ".suitecut/publication-asan/libyuv/libyuv.a",
+      "bytes": 11198644
+    },
+    {
+      "path": ".suitecut/obs-cef-evidence/2026-10-09/features/obs-stream-300000.flv",
+      "bytes": 170502620
+    },
+    {
+      "path": ".suitecut/obs-cef-evidence/2026-10-09/features/obs-stream-20000.flv",
+      "bytes": 11529353
+    },
+    {
+      "path": ".suitecut/native-codecs/codecs-asan",
+      "bytes": 8389056
+    },
+    {
+      "path": ".suitecut/obs-cef-profile/obs-studio.deb",
+      "bytes": 105017400
+    },
+    {
+      "path": ".suitecut/obs-cef-profile/obs-source.tar.gz",
+      "bytes": 16185428
+    },
+    {
+      "path": ".suitecut/obs-cef-profile/apt/lists/archive.ubuntu.com_ubuntu_dists_noble_universe_binary-amd64_Packages",
+      "bytes": 73379142
+    },
+    {
+      "path": ".suitecut/obs-cef-profile/apt/lists/archive.ubuntu.com_ubuntu_dists_noble_universe_i18n_Translation-en",
+      "bytes": 32194499
+    },
+    {
+      "path": ".suitecut/obs-cef-profile/apt/lists/archive.ubuntu.com_ubuntu_dists_noble-updates_universe_binary-amd64_Packages",
+      "bytes": 10614268
+    },
+    {
+      "path": ".suitecut/obs-cef-profile/root/usr/lib/x86_64-linux-gnu/libavfilter.so.9.12.100",
+      "bytes": 13549208
+    },
+    {
+      "path": ".suitecut/obs-cef-profile/root/usr/lib/x86_64-linux-gnu/libx265.so.199",
+      "bytes": 16308864
+    },
+    {
+      "path": ".suitecut/obs-cef-profile/root/usr/lib/x86_64-linux-gnu/libavcodec.so.60.31.102",
+      "bytes": 16550936
+    },
+    {
+      "path": ".suitecut/obs-cef-profile/root/usr/lib/x86_64-linux-gnu/libplacebo.so.338",
+      "bytes": 8827616
+    },
+    {
+      "path": ".suitecut/obs-cef-profile/root/usr/lib/x86_64-linux-gnu/libpython3.12.so.1.0",
+      "bytes": 9061000
+    },
+    {
+      "path": ".suitecut/obs-cef-profile/root/usr/lib/x86_64-linux-gnu/obs-plugins/resources.pak",
+      "bytes": 8816122
+    },
+    {
+      "path": ".suitecut/obs-cef-profile/root/usr/lib/x86_64-linux-gnu/obs-plugins/icudtl.dat",
+      "bytes": 10468208
+    },
+    {
+      "path": ".suitecut/obs-cef-profile/root/usr/lib/x86_64-linux-gnu/obs-plugins/libcef.so",
+      "bytes": 233363816
+    },
+    {
+      "path": ".suitecut/cef-sdk-152.0.8/CREDITS.html",
+      "bytes": 19815473
+    },
+    {
+      "path": ".suitecut/cef-sdk-152.0.8/Resources/resources.pak",
+      "bytes": 21753164
+    },
+    {
+      "path": ".suitecut/cef-sdk-152.0.8/Resources/icudtl.dat",
+      "bytes": 10876560
+    },
+    {
+      "path": ".suitecut/cef-sdk-152.0.8/Release/libcef.so",
+      "bytes": 1428168760
+    },
+    {
+      "path": ".suitecut/cef-sdk-152.0.8/Release/libvk_swiftshader.so",
+      "bytes": 14912912
+    },
+    {
+      "path": ".suitecut/native-build/resources.pak",
+      "bytes": 21754668
+    },
+    {
+      "path": ".suitecut/native-build/icudtl.dat",
+      "bytes": 10876560
+    },
+    {
+      "path": ".suitecut/native-build/CEF-CREDITS.html",
+      "bytes": 19914947
+    },
+    {
+      "path": ".suitecut/native-build/libcef.so",
+      "bytes": 456213272
+    },
+    {
+      "path": ".suitecut/cef-codec-runtime/cef_binary_152.0.6+g708dc14+chromium-152.0.7977.83_linux64_minimal.zip",
+      "bytes": 183510343
+    },
+    {
+      "path": ".suitecut/cef-codec-runtime/cef_binary_152.0.6+g708dc14+chromium-152.0.7977.83_linux64_minimal/CREDITS.html",
+      "bytes": 19914947
+    },
+    {
+      "path": ".suitecut/cef-codec-runtime/cef_binary_152.0.6+g708dc14+chromium-152.0.7977.83_linux64_minimal/Resources/resources.pak",
+      "bytes": 21754668
+    },
+    {
+      "path": ".suitecut/cef-codec-runtime/cef_binary_152.0.6+g708dc14+chromium-152.0.7977.83_linux64_minimal/Resources/icudtl.dat",
+      "bytes": 10876560
+    },
+    {
+      "path": ".suitecut/cef-codec-runtime/cef_binary_152.0.6+g708dc14+chromium-152.0.7977.83_linux64_minimal/Release/libcef.so",
+      "bytes": 456213272
+    },
+    {
+      "path": ".suitecut/obs-long-control/2026-10-09/media/receiver.flv",
+      "bytes": 1025918763
+    },
+    {
+      "path": ".suitecut/obs-long-control/2026-10-09/media/2026-10-09 05-12-45.mkv",
+      "bytes": 41387639
+    },
+    {
+      "path": ".suitecut/playwright-browsers/chromium-1234/chrome-linux64/resources.pak",
+      "bytes": 21334407
+    },
+    {
+      "path": ".suitecut/playwright-browsers/chromium-1234/chrome-linux64/icudtl.dat",
+      "bytes": 10876560
+    },
+    {
+      "path": ".suitecut/playwright-browsers/chromium-1234/chrome-linux64/chrome",
+      "bytes": 290614600
+    },
+    {
+      "path": ".suitecut/playwright-browsers/chromium-1234/chrome-linux64/WidevineCdm/_platform_specific/linux_x64/libwidevinecdm.so",
+      "bytes": 21681344
+    },
+    {
+      "path": ".suitecut/playwright-browsers/chromium_headless_shell-1234/chrome-headless-shell-linux64/chrome-headless-shell",
+      "bytes": 196975952
+    },
+    {
+      "path": ".suitecut/playwright-browsers/chromium_headless_shell-1234/chrome-headless-shell-linux64/icudtl.dat",
+      "bytes": 10876560
+    },
+    {
+      "path": "benchmarks/twitch-capture/2026-10-10-gofns/display/recorded.mp4",
+      "bytes": 36248852
+    },
+    {
+      "path": "benchmarks/native-startup/2026-10-09-default/cef-index.json",
+      "bytes": 10491547
+    },
+    {
+      "path": "benchmarks/native-startup/2026-10-09-default/CEF-CREDITS.html",
+      "bytes": 8679939
+    },
+    {
+      "path": "benchmarks/native-startup/2026-10-09-default/simultaneous/native.s16",
+      "bytes": 11632640
+    },
+    {
+      "path": "benchmarks/native-startup/2026-10-09-default/simultaneous/receiver.flv.s16",
+      "bytes": 11632640
+    },
+    {
+      "path": "benchmarks/native-startup/2026-10-09-default/simultaneous/recording.mp4.s16",
+      "bytes": 11636736
+    },
+    {
+      "path": "benchmarks/native-startup/2026-10-09-default/simultaneous-continuous/cef-E44DDEDC4528BD02DA80F55E6D3010FF.s16",
+      "bytes": 11969280
+    },
+    {
+      "path": "benchmarks/native-startup/2026-10-09-default/simultaneous-continuous/native.s16",
+      "bytes": 11636736
+    },
+    {
+      "path": "benchmarks/native-startup/2026-10-09-default/simultaneous-continuous/receiver.flv.s16",
+      "bytes": 11636736
+    },
+    {
+      "path": "benchmarks/native-startup/2026-10-09-default/simultaneous-continuous/recording.mp4.s16",
+      "bytes": 11632640
+    },
+    {
+      "path": "benchmarks/publication/2026-10-10/runs/memory-obs-external/receiver.flv",
+      "bytes": 348277483
+    },
+    {
+      "path": "benchmarks/publication/2026-10-10/runs/stream-obs-external-01/receiver.flv",
+      "bytes": 17823921
+    },
+    {
+      "path": "benchmarks/publication/2026-10-10/runs/stream-obs-cef-04/receiver.flv",
+      "bytes": 17818858
+    },
+    {
+      "path": "benchmarks/publication/2026-10-10/runs/stream-obs-cef-03/receiver.flv",
+      "bytes": 17728845
+    },
+    {
+      "path": "benchmarks/publication/2026-10-10/runs/stream-obs-cef-01/receiver.flv",
+      "bytes": 17921755
+    },
+    {
+      "path": "benchmarks/publication/2026-10-10/runs/memory-ts-external/receiver.flv",
+      "bytes": 35783721
+    },
+    {
+      "path": "benchmarks/publication/2026-10-10/runs/memory-cpp-cef/receiver.flv",
+      "bytes": 110704415
+    },
+    {
+      "path": "benchmarks/publication/2026-10-10/runs/memory-cpp-cef/resources.jsonl",
+      "bytes": 8662485
+    },
+    {
+      "path": "benchmarks/publication/2026-10-10/runs/memory-ts-cef/receiver.flv",
+      "bytes": 25333495
+    },
+    {
+      "path": "benchmarks/publication/2026-10-10/runs/stream-obs-cef-02/receiver.flv",
+      "bytes": 17821266
+    },
+    {
+      "path": "benchmarks/publication/2026-10-10/runs/stream-obs-external-02/receiver.flv",
+      "bytes": 17791151
+    },
+    {
+      "path": "benchmarks/publication/2026-10-10/runs/memory-obs-cef/receiver.flv",
+      "bytes": 348722718
+    },
+    {
+      "path": "benchmarks/publication/2026-10-10/runs/stream-obs-external-03/receiver.flv",
+      "bytes": 17814482
+    },
+    {
+      "path": "benchmarks/publication/2026-10-10/runs/stream-obs-cef-05/receiver.flv",
+      "bytes": 17864784
+    },
+    {
+      "path": "benchmarks/publication/2026-10-10/runs/stream-obs-external-04/receiver.flv",
+      "bytes": 17857960
+    },
+    {
+      "path": "benchmarks/publication/2026-10-10/runs/stream-obs-external-05/receiver.flv",
+      "bytes": 17857069
+    },
+    {
+      "path": "benchmarks/native-playback/2026-10-10/twitch-stack-trace/recorded.mp4",
+      "bytes": 11631074
+    },
+    {
+      "path": "benchmarks/native-playback/2026-10-10/twitch-native/recorded.mp4",
+      "bytes": 90104230
+    },
+    {
+      "path": "benchmarks/native-playback/2026-10-10/twitch-native-entry-fixed/recorded.mp4",
+      "bytes": 75970493
+    },
+    {
+      "path": "benchmarks/native-playback/2026-10-10/twitch-native-entry-fixed/final-deliverable.mp4",
+      "bytes": 75993382
+    },
+    {
+      "path": "benchmarks/native-playback/2026-10-10/binaries/candidate-CEF-CREDITS.html",
+      "bytes": 19914947
+    },
+    {
+      "path": "benchmarks/native-playback/2026-10-10/binaries/final-CEF-CREDITS.html",
+      "bytes": 19914947
+    },
+    {
+      "path": "benchmarks/native-playback/2026-10-10/distribution/cef_binary_152.0.6+g708dc14+chromium-152.0.7977.83_linux64_minimal.zip",
+      "bytes": 183510343
+    },
+    {
+      "path": "benchmarks/native-memory/2026-10-10/soak-release/receiver.flv",
+      "bytes": 49509230
+    },
+    {
+      "path": "benchmarks/native-memory/2026-10-10/soak-release/recording.mp4",
+      "bytes": 43295884
+    },
+    {
+      "path": "benchmarks/native-memory/2026-10-10/tested-binaries/memory-asan/suitecut-browser",
+      "bytes": 23542368
+    },
+    {
+      "path": "benchmarks/native-audio/2026-10-10/stress-nice-1080p/cef-B2040C9976B57C8CF924D2D524E3F420.s16",
+      "bytes": 11888640
+    },
+    {
+      "path": "benchmarks/native-audio/2026-10-10/quiet-1080p/cef-89CE0BE739C924AB037368BECF009680.s16",
+      "bytes": 11827200
+    },
+    {
+      "path": "benchmarks/native-audio/2026-10-10/stress-1080p/cef-4059C5864423C88E7B83292FCBE38AB7.s16",
+      "bytes": 10752000
+    },
+    {
+      "path": "benchmarks/native-audio/2026-10-10/baseline/cef-55986AAC671EEC8CC7079739E3F27D41.s16",
+      "bytes": 11297280
+    },
+    {
+      "path": "benchmarks/native-audio/2026-10-10/tested-binaries/media-asan",
+      "bytes": 8576176
+    },
+    {
+      "path": "benchmarks/native-codecs/2026-10-10/tested-binaries/codecs-asan",
+      "bytes": 8389056
+    },
+    {
+      "path": "benchmarks/native-codecs/2026-10-10/setup-attempts/pre-lossless-trim/captures/ffv1-flac.mkv",
+      "bytes": 19486499
+    },
+    {
+      "path": "benchmarks/native-codecs/2026-10-10/setup-attempts/pre-lossless-trim/captures/ffv1-pcm_s16le.mkv",
+      "bytes": 23045503
+    },
+    {
+      "path": "benchmarks/native-codecs/2026-10-10/setup-attempts/first-matrix/captures/ffv1-flac.mkv",
+      "bytes": 20072477
+    },
+    {
+      "path": "benchmarks/native-codecs/2026-10-10/setup-attempts/first-matrix/captures/ffv1-pcm_s16le.mkv",
+      "bytes": 23063364
+    },
+    {
+      "path": "benchmarks/native-codecs/2026-10-10/captures/ffv1-flac.mkv",
+      "bytes": 19487890
+    },
+    {
+      "path": "benchmarks/native-codecs/2026-10-10/captures/ffv1-pcm_s16le.mkv",
+      "bytes": 23484399
+    },
+    {
+      "path": "benchmarks/native-engine/2026-10-09/soak/receiver.flv",
+      "bytes": 72711977
+    },
+    {
+      "path": "benchmarks/native-engine/2026-10-09/soak/recording.mp4",
+      "bytes": 48613073
+    },
+    {
+      "path": "benchmarks/native-engine/2026-10-09/soak/analysis/receiver/full-audio-8k.f32",
+      "bytes": 57617068
+    },
+    {
+      "path": "benchmarks/native-engine/2026-10-09/soak/analysis/recording/full-audio-8k.f32",
+      "bytes": 57621164
+    },
+    {
+      "path": "benchmarks/native-engine/2026-10-09/corrected-soak/receiver.flv",
+      "bytes": 62128128
+    },
+    {
+      "path": "benchmarks/native-engine/2026-10-09/corrected-soak/recording.mp4",
+      "bytes": 38273072
+    },
+    {
+      "path": "benchmarks/native-engine/2026-10-09/final-soak/receiver.flv",
+      "bytes": 73671200
+    },
+    {
+      "path": "benchmarks/native-engine/2026-10-09/final-soak/recording.mp4",
+      "bytes": 48709103
+    },
+    {
+      "path": "benchmarks/native-engine/2026-10-09/final-soak/analysis/receiver/full-audio-8k.f32",
+      "bytes": 57607512
+    },
+    {
+      "path": "benchmarks/native-engine/2026-10-09/final-soak/analysis/recording/full-audio-8k.f32",
+      "bytes": 57616384
+    },
+    {
+      "path": "benchmarks/native-sync/2026-10-10/adaptive-pulsed-120s/cef-87FFC5A952D86D4B26099582299C86A6.s16",
+      "bytes": 19837440
+    },
+    {
+      "path": "benchmarks/native-sync/2026-10-10/adaptive-pulsed-120s/native.s16",
+      "bytes": 23322624
+    },
+    {
+      "path": "benchmarks/native-sync/2026-10-10/adaptive-pulsed-120s/receiver.flv.s16",
+      "bytes": 23322624
+    },
+    {
+      "path": "benchmarks/native-sync/2026-10-10/adaptive-pulsed-120s/recording.mp4.s16",
+      "bytes": 23408640
+    },
+    {
+      "path": "benchmarks/native-sync/2026-10-10/pulsed-30min/native.s16",
+      "bytes": 42647552
+    },
+    {
+      "path": "benchmarks/native-sync/2026-10-10/pulsed-30min/cef-6D582C91CEB208F317FB078E0FF80B61.s16",
+      "bytes": 42305280
+    },
+    {
+      "path": "benchmarks/native-sync/2026-10-10/pulsed-30min/recording.mp4.s16",
+      "bytes": 42725376
+    },
+    {
+      "path": "benchmarks/native-sync/2026-10-10/budget-pulsed-120s/cef-7AF968186AAE36E079A11C2F9C17EAA0.s16",
+      "bytes": 23216640
+    },
+    {
+      "path": "benchmarks/native-sync/2026-10-10/budget-pulsed-120s/native.s16",
+      "bytes": 23109632
+    },
+    {
+      "path": "benchmarks/native-sync/2026-10-10/budget-pulsed-120s/receiver.flv.s16",
+      "bytes": 23109632
+    },
+    {
+      "path": "benchmarks/native-sync/2026-10-10/budget-pulsed-120s/recording.mp4.s16",
+      "bytes": 23154688
+    },
+    {
+      "path": "benchmarks/native-sync/2026-10-10/continuous-60s/native.s16",
+      "bytes": 11571200
+    },
+    {
+      "path": "benchmarks/native-sync/2026-10-10/continuous-60s/receiver.flv.s16",
+      "bytes": 11571200
+    },
+    {
+      "path": "benchmarks/native-sync/2026-10-10/continuous-60s/recording.mp4.s16",
+      "bytes": 11628544
+    },
+    {
+      "path": "benchmarks/native-sync/2026-10-10/continuous-60s/cef-FD9CEC14F4048404F80F53ECB2B07F04.s16",
+      "bytes": 11900160
+    },
+    {
+      "path": "benchmarks/native-sync/2026-10-10/final-pulsed-30min/receiver.flv",
+      "bytes": 33554432
+    },
+    {
+      "path": "benchmarks/native-sync/2026-10-10/final-pulsed-30min/cef-DD5AAA3FF35F48FB216A7EAC44EB3D54.s16",
+      "bytes": 163274752
+    },
+    {
+      "path": "benchmarks/native-sync/2026-10-10/final-pulsed-30min/native.s16",
+      "bytes": 164614144
+    },
+    {
+      "path": "benchmarks/native-sync/2026-10-10/final-pulsed-30min/recording.mp4.s16",
+      "bytes": 164671488
+    },
+    {
+      "path": "benchmarks/native-sync/2026-10-10/final-pulsed-30min/recording.mp4",
+      "bytes": 22327666
+    },
+    {
+      "path": "benchmarks/native-sync/2026-10-10/final-pulsed-30min/partial-analysis/receiver.flv.s16",
+      "bytes": 164614144
+    },
+    {
+      "path": "benchmarks/native-sync/2026-10-10/pulsed-60s/native.s16",
+      "bytes": 11554816
+    },
+    {
+      "path": "benchmarks/native-sync/2026-10-10/pulsed-60s/receiver.flv.s16",
+      "bytes": 11554816
+    },
+    {
+      "path": "benchmarks/native-sync/2026-10-10/pulsed-60s/recording.mp4.s16",
+      "bytes": 11603968
+    },
+    {
+      "path": "benchmarks/native-sync/2026-10-10/pulsed-60s/cef-99FB6BC3950E5EF22A1F1B2C76026B23.s16",
+      "bytes": 11431680
+    },
+    {
+      "path": "benchmarks/native-sync/2026-10-10/worklet-pulsed-60s/native.s16",
+      "bytes": 11608064
+    },
+    {
+      "path": "benchmarks/native-sync/2026-10-10/worklet-pulsed-60s/cef-78B16AC70AF66256715361E3716344B6.s16",
+      "bytes": 11792640
+    },
+    {
+      "path": "benchmarks/native-sync/2026-10-10/worklet-pulsed-60s/receiver.flv.s16",
+      "bytes": 11608064
+    },
+    {
+      "path": "benchmarks/native-sync/2026-10-10/worklet-pulsed-60s/recording.mp4.s16",
+      "bytes": 11640832
+    },
+    {
+      "path": "benchmarks/native-sync/2026-10-11-shared-clock/runs/compare-960-1080p30/recording.mkv.s16",
+      "bytes": 11542528
+    },
+    {
+      "path": "benchmarks/native-sync/2026-10-11-shared-clock/runs/compare-960-1080p30/cef-7D186A65E81FD45BAF10FFB83F76DCD5.s16",
+      "bytes": 11470080
+    },
+    {
+      "path": "benchmarks/native-sync/2026-10-11-shared-clock/runs/compare-1024-1080p30/cef-53934BBFFAA08E5F38EA2E75D8A7BA39.s16",
+      "bytes": 11530240
+    },
+    {
+      "path": "benchmarks/native-sync/2026-10-11-shared-clock/runs/compare-1024-1080p30/recording.mkv.s16",
+      "bytes": 11542528
+    },
+    {
+      "path": "benchmarks/native-sync/2026-10-11-shared-clock/runs/diagnostic-4k30-record-ultrafast/cef-875338C837DDBA43D45FCF314991A8B6.s16",
+      "bytes": 23085056
+    },
+    {
+      "path": "benchmarks/native-sync/2026-10-11-shared-clock/runs/diagnostic-4k30-record-ultrafast/recording.mkv",
+      "bytes": 14067180
+    },
+    {
+      "path": "benchmarks/native-sync/2026-10-11-shared-clock/runs/diagnostic-4k30-record-ultrafast/recording.mkv.s16",
+      "bytes": 23068672
+    },
+    {
+      "path": "benchmarks/obs-cef/2026-10-09-obs-long-control/analysis/obs/receiver/full-audio-8k.f32",
+      "bytes": 57614336
+    },
+    {
+      "path": "benchmarks/obs-cef/2026-10-09-obs-long-control/analysis/obs/recording/full-audio-8k.f32",
+      "bytes": 57680556
+    },
+    {
+      "path": "benchmarks/obs-cef/2026-10-09-dropout-investigation/clean-30-minute/logs/workload.log",
+      "bytes": 21260567
+    },
+    {
+      "path": "benchmarks/obs-cef/2026-10-09-dropout-investigation/clean-30-minute/analysis/receiver/full-audio-8k.f32",
+      "bytes": 57645740
+    },
+    {
+      "path": "benchmarks/obs-cef/2026-10-09-dropout-investigation/clean-30-minute/analysis/recording/full-audio-8k.f32",
+      "bytes": 57694948
+    },
+    {
+      "path": "benchmarks/obs-cef/2026-10-10-native-audio-profile/obs-pilot/receiver.flv",
+      "bytes": 8778788
+    },
+    {
+      "path": "benchmarks/obs-cef/2026-10-10-native-audio-profile/suitecut-baseline-traced/profile.s16",
+      "bytes": 23056384
+    },
+    {
+      "path": "benchmarks/obs-cef/2026-10-10-native-audio-profile/suitecut-baseline-traced/recording.mkv.decoded.s16",
+      "bytes": 23314432
+    },
+    {
+      "path": "benchmarks/obs-cef/2026-10-10-native-audio-profile/suitecut-baseline-traced/recording.mkv.s16",
+      "bytes": 23310336
+    },
+    {
+      "path": "benchmarks/obs-cef/2026-10-10-native-audio-profile/suitecut-baseline-traced/receiver.flv.decoded.s16",
+      "bytes": 23060480
+    },
+    {
+      "path": "benchmarks/obs-cef/2026-10-10-native-audio-profile/suitecut-baseline-traced/cef-07EB30234B227CA47BE609F6F8CA0E14.s16",
+      "bytes": 22652160
+    },
+    {
+      "path": "benchmarks/obs-cef/2026-10-10-native-audio-profile/obs-baseline/receiver.flv",
+      "bytes": 40087666
+    },
+    {
+      "path": "benchmarks/obs-cef/2026-10-10-native-audio-profile/obs-baseline/recording.mkv.decoded.s16",
+      "bytes": 11722752
+    },
+    {
+      "path": "benchmarks/obs-cef/2026-10-10-native-audio-profile/obs-baseline/obs-mixed-output.s16",
+      "bytes": 14647296
+    },
+    {
+      "path": "benchmarks/obs-cef/2026-10-10-native-audio-profile/obs-baseline/recording.mkv",
+      "bytes": 47038257
+    },
+    {
+      "path": "benchmarks/obs-cef/2026-10-10-native-audio-profile/obs-baseline/receiver.flv.decoded.s16",
+      "bytes": 9965568
+    },
+    {
+      "path": "benchmarks/obs-cef/2026-10-10-native-audio-profile/obs-baseline/obs-cef-input.s16",
+      "bytes": 14925824
+    },
+    {
+      "path": "benchmarks/obs-cef/2026-10-10-native-audio-profile/obs-matched/receiver.flv",
+      "bytes": 34834400
+    },
+    {
+      "path": "benchmarks/obs-cef/2026-10-10-native-audio-profile/obs-matched/recording.mkv.decoded.s16",
+      "bytes": 11644928
+    },
+    {
+      "path": "benchmarks/obs-cef/2026-10-10-native-audio-profile/obs-matched/obs-mixed-output.s16",
+      "bytes": 14561280
+    },
+    {
+      "path": "benchmarks/obs-cef/2026-10-10-native-audio-profile/obs-matched/receiver.flv.decoded.s16",
+      "bytes": 11554816
+    },
+    {
+      "path": "benchmarks/obs-cef/2026-10-10-native-audio-profile/obs-matched/obs-cef-input.s16",
+      "bytes": 14778368
+    },
+    {
+      "path": "benchmarks/obs-cef/2026-10-10-native-audio-profile/suitecut-tap-off/recording.mkv.decoded.s16",
+      "bytes": 11632640
+    },
+    {
+      "path": "benchmarks/obs-cef/2026-10-10-native-audio-profile/suitecut-tap-off/receiver.flv.decoded.s16",
+      "bytes": 11550720
+    },
+    {
+      "path": "benchmarks/obs-cef/2026-10-10-native-audio-profile/suitecut-matched/profile.s16",
+      "bytes": 11554816
+    },
+    {
+      "path": "benchmarks/obs-cef/2026-10-10-native-audio-profile/suitecut-matched/recording.mkv.decoded.s16",
+      "bytes": 11632640
+    },
+    {
+      "path": "benchmarks/obs-cef/2026-10-10-native-audio-profile/suitecut-matched/cef-EC2FAB5CD7E5EF57A003D0315756C3EE.s16",
+      "bytes": 11938560
+    },
+    {
+      "path": "benchmarks/obs-cef/2026-10-10-native-audio-profile/suitecut-matched/recording.mkv.s16",
+      "bytes": 11628544
+    },
+    {
+      "path": "benchmarks/obs-cef/2026-10-10-native-audio-profile/suitecut-matched/receiver.flv.decoded.s16",
+      "bytes": 11558912
+    },
+    {
+      "path": "benchmarks/obs-cef/2026-10-10-native-audio-profile/obs-traced/receiver.flv",
+      "bytes": 17527405
+    },
+    {
+      "path": "benchmarks/obs-cef/2026-10-10-native-audio-profile/obs-traced/obs-mixed-output.s16",
+      "bytes": 9572352
+    },
+    {
+      "path": "benchmarks/obs-cef/2026-10-10-native-audio-profile/obs-traced/obs-cef-input.s16",
+      "bytes": 9641984
+    },
+    {
+      "path": "benchmarks/obs-cef/2026-10-10-native-audio-profile/obs-cold/receiver.flv",
+      "bytes": 8930310
+    },
+    {
+      "path": "benchmarks/obs-cef/2026-10-10-native-audio-profile/suitecut-final/profile.s16",
+      "bytes": 11550720
+    },
+    {
+      "path": "benchmarks/obs-cef/2026-10-10-native-audio-profile/suitecut-final/cef-C7EABB298FD1DC841ED586C7B9E47AAE.s16",
+      "bytes": 11827200
+    },
+    {
+      "path": "benchmarks/obs-cef/2026-10-10-native-audio-profile/suitecut-final/recording.mkv.decoded.s16",
+      "bytes": 11628544
+    },
+    {
+      "path": "benchmarks/obs-cef/2026-10-10-native-audio-profile/suitecut-final/recording.mkv.s16",
+      "bytes": 11624448
+    },
+    {
+      "path": "benchmarks/obs-cef/2026-10-10-native-audio-profile/suitecut-final/receiver.flv.decoded.s16",
+      "bytes": 11554816
+    },
+    {
+      "path": "benchmarks/obs-cef/2026-10-10-native-audio-profile/obs-tap-off/receiver.flv",
+      "bytes": 34951562
+    },
+    {
+      "path": "benchmarks/obs-cef/2026-10-10-native-audio-profile/obs-tap-off/recording.mkv.decoded.s16",
+      "bytes": 11689984
+    },
+    {
+      "path": "benchmarks/obs-cef/2026-10-10-native-audio-profile/obs-tap-off/receiver.flv.decoded.s16",
+      "bytes": 11591680
+    },
+    {
+      "path": "benchmarks/obs-cef/2026-10-09/features/native-stream-300000/audio.f32",
+      "bytes": 57942016
+    },
+    {
+      "path": "benchmarks/obs-cef/2026-10-09/features/obs-stream-300000/probe.json",
+      "bytes": 11869596
+    },
+    {
+      "path": "benchmarks/obs-cef/2026-10-09/features/obs-stream-300000/audio.f32",
+      "bytes": 57659392
+    },
+    {
+      "path": "benchmarks/obs-cef/2026-10-09-optimization/soak/receiver-full-audio-8k.f32",
+      "bytes": 57656664
+    },
+    {
+      "path": "benchmarks/obs-cef/2026-10-09-optimization/soak/recording-full-audio-8k.f32",
+      "bytes": 57722488
+    },
+    {
+      "path": "benchmarks/obs-cef/2026-10-09-optimization/soak-60fps-private-sampler-stall/receiver-full-audio-8k.f32",
+      "bytes": 57655980
+    },
+    {
+      "path": "benchmarks/obs-cef/2026-10-09-optimization/soak-60fps-private-sampler-stall/recording-full-audio-8k.f32",
+      "bytes": 57723728
+    },
+    {
+      "path": "benchmarks/obs-cef/2026-10-09-optimization/profiles/extended-reuse-after/heap-10.heapsnapshot",
+      "bytes": 48420138
+    },
+    {
+      "path": "benchmarks/obs-cef/2026-10-09-optimization/profiles/extended-reuse-after/heap-199.heapsnapshot",
+      "bytes": 48683576
+    }
+  ],
+  "errors": []
+}

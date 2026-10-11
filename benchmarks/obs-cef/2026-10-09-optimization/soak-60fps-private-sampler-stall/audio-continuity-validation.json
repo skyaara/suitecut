@@ -1,0 +1,375 @@
+{
+  "recording": {
+    "decodedSeconds": 1803.8665,
+    "analyzedStartSeconds": 3,
+    "analyzedEndSeconds": 1795.0,
+    "rmsBlockMs": 20,
+    "audibleRmsThreshold": 0.015,
+    "longestSilentInterval": {
+      "startSeconds": 1444.76,
+      "endSeconds": 1459.96,
+      "durationSeconds": 15.200000000000001
+    },
+    "silentIntervalsOver2Seconds": [
+      {
+        "startSeconds": 1017.0,
+        "endSeconds": 1019.0400000000001,
+        "durationSeconds": 2.04
+      },
+      {
+        "startSeconds": 1440.08,
+        "endSeconds": 1444.54,
+        "durationSeconds": 4.46
+      },
+      {
+        "startSeconds": 1444.76,
+        "endSeconds": 1459.96,
+        "durationSeconds": 15.200000000000001
+      }
+    ],
+    "silentIntervalsOver5Seconds": [
+      {
+        "startSeconds": 1444.76,
+        "endSeconds": 1459.96,
+        "durationSeconds": 15.200000000000001
+      }
+    ],
+    "minuteMetrics": [
+      {
+        "startSeconds": 0,
+        "rms": 0.06689921332686179,
+        "audibleFraction": 0.24766666666666667
+      },
+      {
+        "startSeconds": 60,
+        "rms": 0.06801561661340229,
+        "audibleFraction": 0.25633333333333336
+      },
+      {
+        "startSeconds": 120,
+        "rms": 0.06778315479315039,
+        "audibleFraction": 0.25833333333333336
+      },
+      {
+        "startSeconds": 180,
+        "rms": 0.06784897072280961,
+        "audibleFraction": 0.26166666666666666
+      },
+      {
+        "startSeconds": 240,
+        "rms": 0.06779373183887517,
+        "audibleFraction": 0.26366666666666666
+      },
+      {
+        "startSeconds": 300,
+        "rms": 0.06794151584371735,
+        "audibleFraction": 0.263
+      },
+      {
+        "startSeconds": 360,
+        "rms": 0.06775857438664713,
+        "audibleFraction": 0.2643333333333333
+      },
+      {
+        "startSeconds": 420,
+        "rms": 0.06777055007647824,
+        "audibleFraction": 0.26
+      },
+      {
+        "startSeconds": 480,
+        "rms": 0.06688622137796373,
+        "audibleFraction": 0.257
+      },
+      {
+        "startSeconds": 540,
+        "rms": 0.06851092390703332,
+        "audibleFraction": 0.26033333333333336
+      },
+      {
+        "startSeconds": 600,
+        "rms": 0.0684473040733227,
+        "audibleFraction": 0.262
+      },
+      {
+        "startSeconds": 660,
+        "rms": 0.06787530317310801,
+        "audibleFraction": 0.25633333333333336
+      },
+      {
+        "startSeconds": 720,
+        "rms": 0.06952982941825035,
+        "audibleFraction": 0.26266666666666666
+      },
+      {
+        "startSeconds": 780,
+        "rms": 0.06872612070029993,
+        "audibleFraction": 0.264
+      },
+      {
+        "startSeconds": 840,
+        "rms": 0.06885347563298636,
+        "audibleFraction": 0.26066666666666666
+      },
+      {
+        "startSeconds": 900,
+        "rms": 0.06774696553162071,
+        "audibleFraction": 0.25433333333333336
+      },
+      {
+        "startSeconds": 960,
+        "rms": 0.06652256291181809,
+        "audibleFraction": 0.25033333333333335
+      },
+      {
+        "startSeconds": 1020,
+        "rms": 0.06795852577762214,
+        "audibleFraction": 0.257
+      },
+      {
+        "startSeconds": 1080,
+        "rms": 0.06887576299409992,
+        "audibleFraction": 0.25933333333333336
+      },
+      {
+        "startSeconds": 1140,
+        "rms": 0.06755079081132988,
+        "audibleFraction": 0.258
+      },
+      {
+        "startSeconds": 1200,
+        "rms": 0.06803386609705918,
+        "audibleFraction": 0.257
+      },
+      {
+        "startSeconds": 1260,
+        "rms": 0.06917608011833756,
+        "audibleFraction": 0.264
+      },
+      {
+        "startSeconds": 1320,
+        "rms": 0.06839625294934495,
+        "audibleFraction": 0.264
+      },
+      {
+        "startSeconds": 1380,
+        "rms": 0.06521738735630708,
+        "audibleFraction": 0.24633333333333332
+      },
+      {
+        "startSeconds": 1440,
+        "rms": 0.055896763230689935,
+        "audibleFraction": 0.17466666666666666
+      },
+      {
+        "startSeconds": 1500,
+        "rms": 0.07035892874428798,
+        "audibleFraction": 0.27066666666666667
+      },
+      {
+        "startSeconds": 1560,
+        "rms": 0.07006502466559127,
+        "audibleFraction": 0.266
+      },
+      {
+        "startSeconds": 1620,
+        "rms": 0.06876298717201221,
+        "audibleFraction": 0.259
+      },
+      {
+        "startSeconds": 1680,
+        "rms": 0.06957270376653746,
+        "audibleFraction": 0.26566666666666666
+      },
+      {
+        "startSeconds": 1740,
+        "rms": 0.06973642077266358,
+        "audibleFraction": 0.268
+      }
+    ],
+    "status": "failed"
+  },
+  "receiver": {
+    "decodedSeconds": 1801.749375,
+    "analyzedStartSeconds": 3,
+    "analyzedEndSeconds": 1795.0,
+    "rmsBlockMs": 20,
+    "audibleRmsThreshold": 0.015,
+    "longestSilentInterval": {
+      "startSeconds": 1440.02,
+      "endSeconds": 1459.88,
+      "durationSeconds": 19.86
+    },
+    "silentIntervalsOver2Seconds": [
+      {
+        "startSeconds": 1016.94,
+        "endSeconds": 1018.98,
+        "durationSeconds": 2.04
+      },
+      {
+        "startSeconds": 1440.02,
+        "endSeconds": 1459.88,
+        "durationSeconds": 19.86
+      }
+    ],
+    "silentIntervalsOver5Seconds": [
+      {
+        "startSeconds": 1440.02,
+        "endSeconds": 1459.88,
+        "durationSeconds": 19.86
+      }
+    ],
+    "minuteMetrics": [
+      {
+        "startSeconds": 0,
+        "rms": 0.06627480833188061,
+        "audibleFraction": 0.24833333333333332
+      },
+      {
+        "startSeconds": 60,
+        "rms": 0.06750777704517026,
+        "audibleFraction": 0.25966666666666666
+      },
+      {
+        "startSeconds": 120,
+        "rms": 0.06738322840008446,
+        "audibleFraction": 0.25933333333333336
+      },
+      {
+        "startSeconds": 180,
+        "rms": 0.06707142940490596,
+        "audibleFraction": 0.2613333333333333
+      },
+      {
+        "startSeconds": 240,
+        "rms": 0.06767628403328996,
+        "audibleFraction": 0.2633333333333333
+      },
+      {
+        "startSeconds": 300,
+        "rms": 0.06785390799048167,
+        "audibleFraction": 0.2633333333333333
+      },
+      {
+        "startSeconds": 360,
+        "rms": 0.06754720234914015,
+        "audibleFraction": 0.261
+      },
+      {
+        "startSeconds": 420,
+        "rms": 0.06705011655974825,
+        "audibleFraction": 0.255
+      },
+      {
+        "startSeconds": 480,
+        "rms": 0.06531026599610361,
+        "audibleFraction": 0.24666666666666667
+      },
+      {
+        "startSeconds": 540,
+        "rms": 0.06808633127472946,
+        "audibleFraction": 0.25733333333333336
+      },
+      {
+        "startSeconds": 600,
+        "rms": 0.06837110532594028,
+        "audibleFraction": 0.259
+      },
+      {
+        "startSeconds": 660,
+        "rms": 0.06773057614314426,
+        "audibleFraction": 0.25966666666666666
+      },
+      {
+        "startSeconds": 720,
+        "rms": 0.06927360649762054,
+        "audibleFraction": 0.262
+      },
+      {
+        "startSeconds": 780,
+        "rms": 0.06875348004079852,
+        "audibleFraction": 0.264
+      },
+      {
+        "startSeconds": 840,
+        "rms": 0.06812422750632595,
+        "audibleFraction": 0.25733333333333336
+      },
+      {
+        "startSeconds": 900,
+        "rms": 0.06786803300681166,
+        "audibleFraction": 0.25466666666666665
+      },
+      {
+        "startSeconds": 960,
+        "rms": 0.06555580222207323,
+        "audibleFraction": 0.24866666666666667
+      },
+      {
+        "startSeconds": 1020,
+        "rms": 0.06777810658864998,
+        "audibleFraction": 0.258
+      },
+      {
+        "startSeconds": 1080,
+        "rms": 0.06875747303961498,
+        "audibleFraction": 0.25933333333333336
+      },
+      {
+        "startSeconds": 1140,
+        "rms": 0.06731559230504087,
+        "audibleFraction": 0.25733333333333336
+      },
+      {
+        "startSeconds": 1200,
+        "rms": 0.06770983020066346,
+        "audibleFraction": 0.255
+      },
+      {
+        "startSeconds": 1260,
+        "rms": 0.06888315436349478,
+        "audibleFraction": 0.258
+      },
+      {
+        "startSeconds": 1320,
+        "rms": 0.06825852298364145,
+        "audibleFraction": 0.262
+      },
+      {
+        "startSeconds": 1380,
+        "rms": 0.06396600427133559,
+        "audibleFraction": 0.23833333333333334
+      },
+      {
+        "startSeconds": 1440,
+        "rms": 0.05552608011449447,
+        "audibleFraction": 0.169
+      },
+      {
+        "startSeconds": 1500,
+        "rms": 0.07044867139252554,
+        "audibleFraction": 0.27
+      },
+      {
+        "startSeconds": 1560,
+        "rms": 0.0697988195489171,
+        "audibleFraction": 0.265
+      },
+      {
+        "startSeconds": 1620,
+        "rms": 0.06851459894268541,
+        "audibleFraction": 0.26066666666666666
+      },
+      {
+        "startSeconds": 1680,
+        "rms": 0.06912575674265607,
+        "audibleFraction": 0.2623333333333333
+      },
+      {
+        "startSeconds": 1740,
+        "rms": 0.06943040763996326,
+        "audibleFraction": 0.26466666666666666
+      }
+    ],
+    "status": "failed"
+  }
+}

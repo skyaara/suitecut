@@ -1,0 +1,322 @@
+{
+  "nativeMedia": true,
+  "allPassed": true,
+  "ready": {
+    "audioSubscriptions": true,
+    "bytes": 0,
+    "cefVersion": "152.0.6+g708dc14+chromium-152.0.7977.83",
+    "frameSubscriptions": true,
+    "nativeMedia": true,
+    "timestampMs": 515.558621,
+    "type": "ready",
+    "version": 1
+  },
+  "outputs": [
+    {
+      "nativeStatus": {
+        "activeMissingAudioSamples": 7315.0,
+        "audioSamples": 118784.0,
+        "audioSyncWaits": 174.0,
+        "bufferedDelayMs": 185.60392566666678,
+        "droppedAudioSamples": 0.0,
+        "durationMs": 2466.6666666666665,
+        "error": "",
+        "lateAudioSamples": 0.0,
+        "maximumEncodeMs": 18.26470299999994,
+        "maximumTrackLeadMs": 32.00000000000003,
+        "missingAudioSamples": 51347.0,
+        "paused": false,
+        "queuedAudioBytes": 0.0,
+        "queuedVideoBytes": 0.0,
+        "ready": true,
+        "repeatedFrames": 1.0,
+        "startedMs": 828.362382,
+        "stopped": true,
+        "videoEncoderPreset": "veryfast",
+        "videoEncoderThreads": 1,
+        "videoFrames": 74.0,
+        "videoSyncWaits": 212.0
+      },
+      "nativeProbe": {
+        "audio": true,
+        "durationMs": 2496.0,
+        "formatName": "mov,mp4,m4a,3gp,3g2,mj2",
+        "height": 360,
+        "streams": [
+          {
+            "codec": "h264",
+            "colorPrimaries": "bt709",
+            "colorRange": "limited",
+            "colorSpace": "bt709",
+            "colorTransfer": "iec61966-2-1",
+            "durationMs": 2488.020833333333,
+            "frameRate": 29.74251622357128,
+            "hasVariableFrameRate": true,
+            "height": 360,
+            "kind": "video",
+            "pixelFormat": "yuv420p",
+            "timeBase": "1/15360",
+            "width": 640
+          },
+          {
+            "channels": 2,
+            "codec": "aac",
+            "durationMs": 2496.0,
+            "kind": "audio",
+            "sampleRate": 48000
+          }
+        ],
+        "width": 640
+      },
+      "file": "/workspace/suitecut/benchmarks/native-package/2026-10-11-suitecut-native/recording.mp4",
+      "videoCodec": "h264",
+      "audioCodec": "aac",
+      "tracks": {
+        "audio": {
+          "firstPtsSeconds": 0.0,
+          "endSeconds": 2.496,
+          "packets": 117
+        },
+        "video": {
+          "firstPtsSeconds": 0.0,
+          "endSeconds": 2.4880199999999997,
+          "packets": 74
+        }
+      },
+      "initialSkewMs": 0.0,
+      "endSkewMs": 7.98000000000032,
+      "peakAudioSample": 6584,
+      "decodedVideo": true
+    },
+    {
+      "nativeStatus": {
+        "activeMissingAudioSamples": 0.0,
+        "audioSamples": 117732.0,
+        "audioSyncWaits": 206.0,
+        "bufferedDelayMs": 150.0,
+        "droppedAudioSamples": 0.0,
+        "durationMs": 2466.6666666666665,
+        "error": "",
+        "lateAudioSamples": 0.0,
+        "maximumEncodeMs": 79.4653930000004,
+        "maximumTrackLeadMs": 26.666666666666742,
+        "missingAudioSamples": 0.0,
+        "paused": false,
+        "queuedAudioBytes": 0.0,
+        "queuedVideoBytes": 0.0,
+        "ready": true,
+        "repeatedFrames": 2.0,
+        "startedMs": 4203.930306,
+        "stopped": true,
+        "videoEncoderPreset": "",
+        "videoEncoderThreads": 1,
+        "videoFrames": 74.0,
+        "videoSyncWaits": 157.0
+      },
+      "nativeProbe": {
+        "audio": true,
+        "durationMs": 2466.0,
+        "formatName": "matroska,webm",
+        "height": 360,
+        "streams": [
+          {
+            "codec": "ffv1",
+            "colorPrimaries": "bt709",
+            "colorRange": "limited",
+            "colorSpace": "bt709",
+            "colorTransfer": "iec61966-2-1",
+            "durationMs": 2466.0,
+            "frameRate": 30.0,
+            "hasVariableFrameRate": false,
+            "height": 360,
+            "kind": "video",
+            "pixelFormat": "yuv420p",
+            "timeBase": "1/1000",
+            "width": 640
+          },
+          {
+            "channels": 2,
+            "codec": "pcm_s16le",
+            "durationMs": 2466.0,
+            "kind": "audio",
+            "sampleRate": 48000
+          }
+        ],
+        "width": 640
+      },
+      "file": "/workspace/suitecut/benchmarks/native-package/2026-10-11-suitecut-native/lossless.mkv",
+      "videoCodec": "ffv1",
+      "audioCodec": "pcm_s16le",
+      "tracks": {
+        "audio": {
+          "firstPtsSeconds": 0.0,
+          "endSeconds": 2.452,
+          "packets": 123
+        },
+        "video": {
+          "firstPtsSeconds": 0.0,
+          "endSeconds": 2.4659999999999997,
+          "packets": 74
+        }
+      },
+      "initialSkewMs": 0.0,
+      "endSkewMs": 13.99999999999979,
+      "peakAudioSample": 6553,
+      "decodedVideo": true
+    },
+    {
+      "nativeStatus": {
+        "activeMissingAudioSamples": 4.0,
+        "audioSamples": 118080.0,
+        "audioSyncWaits": 183.0,
+        "bufferedDelayMs": 150.0,
+        "droppedAudioSamples": 0.0,
+        "durationMs": 2466.6666666666665,
+        "error": "",
+        "lateAudioSamples": 0.0,
+        "maximumEncodeMs": 28.359887999999955,
+        "maximumTrackLeadMs": 33.33333333333337,
+        "missingAudioSamples": 4.0,
+        "paused": false,
+        "queuedAudioBytes": 0.0,
+        "queuedVideoBytes": 0.0,
+        "ready": true,
+        "repeatedFrames": 0.0,
+        "startedMs": 7073.54258,
+        "stopped": true,
+        "videoEncoderPreset": "",
+        "videoEncoderThreads": 1,
+        "videoFrames": 74.0,
+        "videoSyncWaits": 165.0
+      },
+      "nativeProbe": {
+        "audio": true,
+        "durationMs": 2468.0,
+        "formatName": "matroska,webm",
+        "height": 360,
+        "streams": [
+          {
+            "codec": "vp9",
+            "colorPrimaries": "bt709",
+            "colorRange": "limited",
+            "colorSpace": "bt709",
+            "colorTransfer": "iec61966-2-1",
+            "durationMs": 2468.0,
+            "frameRate": 30.0,
+            "hasVariableFrameRate": false,
+            "height": 360,
+            "kind": "video",
+            "pixelFormat": "yuv420p",
+            "timeBase": "1/1000",
+            "width": 640
+          },
+          {
+            "channels": 2,
+            "codec": "opus",
+            "durationMs": 2468.0,
+            "kind": "audio",
+            "sampleRate": 48000
+          }
+        ],
+        "width": 640
+      },
+      "file": "/workspace/suitecut/benchmarks/native-package/2026-10-11-suitecut-native/recording.webm",
+      "videoCodec": "vp9",
+      "audioCodec": "opus",
+      "tracks": {
+        "audio": {
+          "firstPtsSeconds": -0.007,
+          "endSeconds": 2.474,
+          "packets": 124
+        },
+        "video": {
+          "firstPtsSeconds": 0.0,
+          "endSeconds": 2.4659999999999997,
+          "packets": 74
+        }
+      },
+      "initialSkewMs": 7.0,
+      "endSkewMs": 8.000000000000451,
+      "peakAudioSample": 6627,
+      "decodedVideo": true
+    },
+    {
+      "nativeStatus": {
+        "activeMissingAudioSamples": 0.0,
+        "audioSamples": 130048.0,
+        "audioSyncWaits": 228.0,
+        "bufferedDelayMs": 150.0,
+        "droppedAudioSamples": 0.0,
+        "durationMs": 2733.3333333333335,
+        "error": "",
+        "lateAudioSamples": 0.0,
+        "maximumEncodeMs": 8.00702000000092,
+        "maximumTrackLeadMs": 32.00000000000003,
+        "missingAudioSamples": 0.0,
+        "paused": false,
+        "queuedAudioBytes": 0.0,
+        "queuedVideoBytes": 0.0,
+        "ready": true,
+        "repeatedFrames": 0.0,
+        "startedMs": 10018.857402,
+        "stopped": true,
+        "videoEncoderPreset": "veryfast",
+        "videoEncoderThreads": 1,
+        "videoFrames": 82.0,
+        "videoSyncWaits": 224.0
+      },
+      "nativeProbe": {
+        "audio": true,
+        "durationMs": 2754.0,
+        "formatName": "flv",
+        "height": 360,
+        "streams": [
+          {
+            "codec": "h264",
+            "colorPrimaries": "bt709",
+            "colorRange": "limited",
+            "colorSpace": "bt709",
+            "colorTransfer": "iec61966-2-1",
+            "durationMs": 2754.0,
+            "frameRate": 30.0,
+            "hasVariableFrameRate": false,
+            "height": 360,
+            "kind": "video",
+            "pixelFormat": "yuv420p",
+            "timeBase": "1/1000",
+            "width": 640
+          },
+          {
+            "channels": 2,
+            "codec": "aac",
+            "durationMs": 2754.0,
+            "kind": "audio",
+            "sampleRate": 48000
+          }
+        ],
+        "width": 640
+      },
+      "file": "/workspace/suitecut/benchmarks/native-package/2026-10-11-suitecut-native/stream.flv",
+      "videoCodec": "h264",
+      "audioCodec": "aac",
+      "tracks": {
+        "audio": {
+          "firstPtsSeconds": 0.0,
+          "endSeconds": 2.73,
+          "packets": 128
+        },
+        "video": {
+          "firstPtsSeconds": 0.021,
+          "endSeconds": 2.754,
+          "packets": 82
+        }
+      },
+      "initialSkewMs": 21.0,
+      "endSkewMs": 24.00000000000002,
+      "peakAudioSample": 6796,
+      "decodedVideo": true
+    }
+  ],
+  "pauseResume": true,
+  "invalidOptionsRejected": true
+}

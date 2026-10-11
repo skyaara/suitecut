@@ -1,0 +1,8 @@
+
+/workspace/suitecut/benchmarks/native-engine/playwright.config.ts
+  1:1  error  There should be at least one empty line between import groups        import-x/order
+  2:1  error  `node:path` import should occur before import of `@playwright/test`  import-x/order
+
+✖ 2 problems (2 errors, 0 warnings)
+  2 errors and 0 warnings potentially fixable with the `--fix` option.
+

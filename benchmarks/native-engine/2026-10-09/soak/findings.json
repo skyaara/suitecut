@@ -1,0 +1,139 @@
+{
+  "controllerStatus": "passed",
+  "decodedMediaStatus": "failed",
+  "activeSeconds": 1800.191446109,
+  "profileObservedSeconds": 1798.4334040789981,
+  "profileMaximumSampleMs": 503.10014600108843,
+  "hostMeanCpuCores": 2.307817367374526,
+  "hostCpuStatDelta": {
+    "usage_usec": 4150455844,
+    "user_usec": 3751277944,
+    "system_usec": 399177900,
+    "nice_usec": 0,
+    "nr_periods": 17984,
+    "nr_throttled": 1130,
+    "throttled_usec": 48949806,
+    "nr_bursts": 0,
+    "burst_usec": 0
+  },
+  "roleCpu": {
+    "node": {
+      "seconds": 11.14,
+      "meanCores": 0.006194279963179923
+    },
+    "receiver": {
+      "seconds": 18.28,
+      "meanCores": 0.010164401950352692
+    },
+    "sampler": {
+      "seconds": 57.26,
+      "meanCores": 0.0318388214265424
+    },
+    "suitecut-browser": {
+      "seconds": 2470.0800000000004,
+      "meanCores": 1.3734620333439378
+    },
+    "cef-renderer": {
+      "seconds": 230.44,
+      "meanCores": 0.1281337409977721
+    },
+    "cef-gpu": {
+      "seconds": 698.8,
+      "meanCores": 0.3885603984084497
+    }
+  },
+  "rssMiB": {
+    "node": {
+      "minutes3to8Median": 99.7734375,
+      "last5MinutesMedian": 106.3671875
+    },
+    "receiver": {
+      "minutes3to8Median": 37.44921875,
+      "last5MinutesMedian": 37.44921875
+    },
+    "sampler": {
+      "minutes3to8Median": 11.40625,
+      "last5MinutesMedian": 11.41015625
+    },
+    "suitecut-browser": {
+      "minutes3to8Median": 814.94921875,
+      "last5MinutesMedian": 829.310546875
+    },
+    "cef-renderer": {
+      "minutes3to8Median": 265.677734375,
+      "last5MinutesMedian": 271.771484375
+    },
+    "cef-gpu": {
+      "minutes3to8Median": 194.34765625,
+      "last5MinutesMedian": 197.33203125
+    }
+  },
+  "rssCaveat": "Role sums double count shared mappings. RSS is not private allocation or a leak proof.",
+  "nodeFinalGc": {
+    "rss": 111480832,
+    "heapTotal": 53473280,
+    "heapUsed": 48836144,
+    "external": 4271716,
+    "arrayBuffers": 278927
+  },
+  "nodeArrayBufferMiB": {
+    "first5MinutesMedian": 0.3304738998413086,
+    "last5MinutesMedian": 1.3294963836669922
+  },
+  "outputs": {
+    "recording": {
+      "status": "failed",
+      "longestSilenceSeconds": 1.54,
+      "distinctFps": 25.845982142857142,
+      "longestContentHoldSeconds": 0.6666660000000206,
+      "maximumPresentationGapSeconds": 0.033334000000195374,
+      "syncP95Ms": [
+        83.33333333333393,
+        119.6666666666668,
+        346.6666666666667
+      ],
+      "nativeCounters": {
+        "ready": true,
+        "stopped": true,
+        "paused": false,
+        "videoFrames": 54020,
+        "audioSamples": 86431744,
+        "repeatedFrames": 4075,
+        "droppedAudioSamples": 0,
+        "queuedVideoBytes": 0,
+        "queuedAudioBytes": 0,
+        "startedMs": 2766.85078,
+        "durationMs": 1800666.6666666667,
+        "maximumEncodeMs": 719.1391479999875,
+        "error": ""
+      }
+    },
+    "receiver": {
+      "status": "failed",
+      "longestSilenceSeconds": 1.52,
+      "distinctFps": 27.897879464285715,
+      "longestContentHoldSeconds": 0.6999999999999886,
+      "maximumPresentationGapSeconds": 0.0340000000001055,
+      "syncP95Ms": [
+        71.33333333333273,
+        126.66666666666619,
+        489.3333333333326
+      ],
+      "nativeCounters": {
+        "ready": true,
+        "stopped": true,
+        "paused": false,
+        "videoFrames": 54015,
+        "audioSamples": 86424576,
+        "repeatedFrames": 2730,
+        "droppedAudioSamples": 0,
+        "queuedVideoBytes": 0,
+        "queuedAudioBytes": 0,
+        "startedMs": 3116.756579,
+        "durationMs": 1800500,
+        "maximumEncodeMs": 459.7572429999709,
+        "error": ""
+      }
+    }
+  }
+}

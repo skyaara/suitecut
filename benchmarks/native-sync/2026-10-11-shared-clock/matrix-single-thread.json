@@ -1,0 +1,86 @@
+{
+  "startedAt": "2026-10-10T20:21:09.031763+00:00",
+  "cases": [
+    {
+      "name": "720p60-record",
+      "width": 1280,
+      "height": 720,
+      "fps": 60,
+      "mode": "record",
+      "durationMs": 120000,
+      "startedAt": "2026-10-10T20:21:09.031831+00:00",
+      "finishedAt": "2026-10-10T20:23:14.164546+00:00",
+      "exitCode": 0
+    },
+    {
+      "name": "720p60-stream",
+      "width": 1280,
+      "height": 720,
+      "fps": 60,
+      "mode": "stream",
+      "durationMs": 120000,
+      "startedAt": "2026-10-10T20:23:14.166197+00:00",
+      "finishedAt": "2026-10-10T20:25:29.217720+00:00",
+      "exitCode": 0
+    },
+    {
+      "name": "1080p30-record",
+      "width": 1920,
+      "height": 1080,
+      "fps": 30,
+      "mode": "record",
+      "durationMs": 120000,
+      "startedAt": "2026-10-10T20:25:29.220976+00:00",
+      "finishedAt": "2026-10-10T20:27:34.000564+00:00",
+      "exitCode": 0
+    },
+    {
+      "name": "1080p30-stream",
+      "width": 1920,
+      "height": 1080,
+      "fps": 30,
+      "mode": "stream",
+      "durationMs": 120000,
+      "startedAt": "2026-10-10T20:27:34.003233+00:00",
+      "finishedAt": "2026-10-10T20:29:49.716460+00:00",
+      "exitCode": 0
+    },
+    {
+      "name": "4k30-record",
+      "width": 3840,
+      "height": 2160,
+      "fps": 30,
+      "mode": "record",
+      "durationMs": 120000,
+      "startedAt": "2026-10-10T20:29:49.720453+00:00",
+      "finishedAt": "2026-10-10T20:32:32.577033+00:00",
+      "exitCode": 1
+    },
+    {
+      "name": "4k30-stream",
+      "width": 3840,
+      "height": 2160,
+      "fps": 30,
+      "mode": "stream",
+      "durationMs": 120000,
+      "startedAt": "2026-10-10T20:32:32.585060+00:00",
+      "finishedAt": "2026-10-10T20:35:33.175618+00:00",
+      "exitCode": 1
+    },
+    {
+      "name": "controller-stall-1080p30",
+      "width": 1920,
+      "height": 1080,
+      "fps": 30,
+      "mode": "record",
+      "durationMs": 60000,
+      "startedAt": "2026-10-10T20:35:33.180869+00:00",
+      "finishedAt": "2026-10-10T20:36:38.299735+00:00",
+      "exitCode": 0
+    }
+  ],
+  "serial": true,
+  "trace": false,
+  "simultaneousRecordingStreaming": false,
+  "finishedAt": "2026-10-10T20:36:38.301441+00:00"
+}

@@ -1,0 +1,39 @@
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/lib/x86_64-linux-gnu/libthread_db.so.1".
+C API probe: before initialize
+[New Thread 0x7fdd05bad6c0 (LWP 427586)]
+[Detaching after fork from child process 427587]
+[Detaching after fork from child process 427588]
+[Detaching after fork from child process 427589]
+[New Thread 0x7fdd048a36c0 (LWP 427592)]
+[New Thread 0x7fdcfde8c6c0 (LWP 427593)]
+[New Thread 0x7fdcfcb826c0 (LWP 427594)]
+[New Thread 0x7fdcf74f66c0 (LWP 427595)]
+[New Thread 0x7fdcf6cf56c0 (LWP 427596)]
+[New Thread 0x7fdcf59eb6c0 (LWP 427597)]
+[New Thread 0x7fdce3fff6c0 (LWP 427598)]
+[New Thread 0x7fdce21ec6c0 (LWP 427599)]
+[New Thread 0x7fdce19eb6c0 (LWP 427600)]
+[427583:427597:1010/102819.379025:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Failed to connect to socket /run/dbus/system_bus_socket: No such file or directory
+munmap_chunk(): invalid pointer
+
+Thread 1 "cef-memory-prob" received signal SIGABRT, Aborted.
+0x00007fdd0b14f95c in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#0  0x00007fdd0b14f95c in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007fdd0b0facc2 in raise () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007fdd0b0e34ac in abort () from /lib/x86_64-linux-gnu/libc.so.6
+#3  0x00007fdd0b0e4291 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007fdd0b159465 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#5  0x00007fdd0b1596ec in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#6  0x00007fdd0b15e3d8 in free () from /lib/x86_64-linux-gnu/libc.so.6
+#7  0x00007fdd1612f249 in ?? () from /workspace/suitecut/.suitecut/memory-asan/libcef.so
+#8  0x00007fdd1b1f6bf0 in ?? () from /workspace/suitecut/.suitecut/memory-asan/libcef.so
+#9  0x0000563365893be0 in ?? ()
+#10 0x00007ffe8e5181a0 in ?? ()
+#11 0x00007fdd0f44fa81 in ?? () from /workspace/suitecut/.suitecut/memory-asan/libcef.so
+#12 0x0000563365894270 in ?? ()
+#13 0x000000000000000c in ?? ()
+#14 0x00005030000025e0 in ?? ()
+#15 0x00007ffe8e518284 in ?? ()
+#16 0x0000563365894270 in ?? ()
+#17 0x0000000000000000 in ?? ()

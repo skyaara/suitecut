@@ -9,6 +9,9 @@ import { LIVE_RECOVERY_WINDOW_MS } from './live-congestion.js'
 export const LIVE_AUDIO_DELAY_MS = 150
 const SAMPLE_RATE = 48_000
 const BYTES_PER_SAMPLE = 4
+// Native presentation PTS may legitimately lead capture receipt by 250 ms;
+// allow additional IPC/scheduling slack while keeping future retention bounded.
+const MAX_FUTURE_AUDIO_MS = 500
 
 /** Timestamped stereo PCM with bounded retention and silence for missing samples. */
 export class LiveAudioBuffer {
@@ -23,7 +26,7 @@ export class LiveAudioBuffer {
     if (
       !Number.isFinite(at) ||
       at < now - LIVE_RECOVERY_WINDOW_MS - LIVE_AUDIO_DELAY_MS ||
-      at > now + 100 ||
+      at > now + MAX_FUTURE_AUDIO_MS ||
       pcm.length !== 3840
     )
       return

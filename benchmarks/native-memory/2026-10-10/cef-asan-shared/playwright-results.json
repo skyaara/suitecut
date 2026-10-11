@@ -1,0 +1,917 @@
+{
+  "config": {
+    "argv": [
+      "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+      "/workspace/suitecut/node_modules/playwright/cli.js",
+      "test",
+      "--config",
+      "benchmarks/native-engine/playwright.config.ts"
+    ],
+    "configFile": "/workspace/suitecut/benchmarks/native-engine/playwright.config.ts",
+    "rootDir": "/workspace/suitecut/benchmarks/native-engine",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/workspace/suitecut/benchmarks/native-memory/2026-10-10/cef-asan-shared/playwright-artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "/workspace/suitecut/benchmarks/native-engine",
+        "testIgnore": [
+          "**/tested-sources*/**"
+        ],
+        "testMatch": [
+          "engine.e2e.spec.ts"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "/workspace/suitecut/benchmarks/native-memory/2026-10-10/cef-asan-shared/playwright-results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.62.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "engine.e2e.spec.ts",
+      "file": "engine.e2e.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "real Playwright locators, auto-wait, input, scrolling, iframe and screenshot",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 1,
+                  "error": {
+                    "message": "Error: Native browser exited unexpectedly (null)",
+                    "stack": "Error: Native browser exited unexpectedly (null)\n    at ChildProcess.<anonymous> (/workspace/suitecut/src/native-browser.ts:276:25)",
+                    "location": {
+                      "file": "/workspace/suitecut/src/native-browser.ts",
+                      "column": 25,
+                      "line": 276
+                    },
+                    "snippet": "\u001b[90m   at \u001b[39m../../src/native-browser.ts:276\n\n  274 |       if (!stopping) fail(new Error('Native browser output was truncated'))\n  275 |     }\n> 276 |     if (!stopping) fail(new Error(`Native browser exited unexpectedly (${String(code)})`))\n      |                         ^\n  277 |     frames.clear()\n  278 |     audio.clear()\n  279 |     protocolEvents.clear()"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/workspace/suitecut/src/native-browser.ts",
+                        "column": 25,
+                        "line": 276
+                      },
+                      "message": "Error: Native browser exited unexpectedly (null)\n\n   at ../../src/native-browser.ts:276\n\n  274 |       if (!stopping) fail(new Error('Native browser output was truncated'))\n  275 |     }\n> 276 |     if (!stopping) fail(new Error(`Native browser exited unexpectedly (${String(code)})`))\n      |                         ^\n  277 |     frames.clear()\n  278 |     audio.clear()\n  279 |     protocolEvents.clear()\n    at ChildProcess.<anonymous> (/workspace/suitecut/src/native-browser.ts:276:25)"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-10T10:16:33.140Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/workspace/suitecut/benchmarks/native-memory/2026-10-10/cef-asan-shared/playwright-artifacts/engine.e2e-real-Playwright-3958d-lling-iframe-and-screenshot/error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/workspace/suitecut/benchmarks/native-memory/2026-10-10/cef-asan-shared/playwright-artifacts/engine.e2e-real-Playwright-3958d-lling-iframe-and-screenshot/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/workspace/suitecut/src/native-browser.ts",
+                    "column": 25,
+                    "line": 276
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "1671f79a60a4bd98e4da-0dc5a03d0834ad6c0ef1",
+          "file": "engine.e2e.spec.ts",
+          "line": 52,
+          "column": 1
+        },
+        {
+          "title": "native engine records silent startup and accepts later sound",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 1,
+                  "error": {
+                    "message": "Error: Native browser exited unexpectedly (null)",
+                    "stack": "Error: Native browser exited unexpectedly (null)\n    at ChildProcess.<anonymous> (/workspace/suitecut/src/native-browser.ts:276:25)",
+                    "location": {
+                      "file": "/workspace/suitecut/src/native-browser.ts",
+                      "column": 25,
+                      "line": 276
+                    },
+                    "snippet": "\u001b[90m   at \u001b[39m../../src/native-browser.ts:276\n\n  274 |       if (!stopping) fail(new Error('Native browser output was truncated'))\n  275 |     }\n> 276 |     if (!stopping) fail(new Error(`Native browser exited unexpectedly (${String(code)})`))\n      |                         ^\n  277 |     frames.clear()\n  278 |     audio.clear()\n  279 |     protocolEvents.clear()"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/workspace/suitecut/src/native-browser.ts",
+                        "column": 25,
+                        "line": 276
+                      },
+                      "message": "Error: Native browser exited unexpectedly (null)\n\n   at ../../src/native-browser.ts:276\n\n  274 |       if (!stopping) fail(new Error('Native browser output was truncated'))\n  275 |     }\n> 276 |     if (!stopping) fail(new Error(`Native browser exited unexpectedly (${String(code)})`))\n      |                         ^\n  277 |     frames.clear()\n  278 |     audio.clear()\n  279 |     protocolEvents.clear()\n    at ChildProcess.<anonymous> (/workspace/suitecut/src/native-browser.ts:276:25)"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-10T10:16:34.620Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/workspace/suitecut/benchmarks/native-memory/2026-10-10/cef-asan-shared/playwright-artifacts/engine.e2e-native-engine-r-22c0c-tup-and-accepts-later-sound/error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/workspace/suitecut/benchmarks/native-memory/2026-10-10/cef-asan-shared/playwright-artifacts/engine.e2e-native-engine-r-22c0c-tup-and-accepts-later-sound/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/workspace/suitecut/src/native-browser.ts",
+                    "column": 25,
+                    "line": 276
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "1671f79a60a4bd98e4da-b242a1b6d524c52a26cb",
+          "file": "engine.e2e.spec.ts",
+          "line": 68,
+          "column": 1
+        },
+        {
+          "title": "streaming initializes silent audio and accepts later browser sound",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 1,
+                  "error": {
+                    "message": "Error: Native browser exited unexpectedly (null)",
+                    "stack": "Error: Native browser exited unexpectedly (null)\n    at ChildProcess.<anonymous> (/workspace/suitecut/src/native-browser.ts:276:25)",
+                    "location": {
+                      "file": "/workspace/suitecut/src/native-browser.ts",
+                      "column": 25,
+                      "line": 276
+                    },
+                    "snippet": "\u001b[90m   at \u001b[39m../../src/native-browser.ts:276\n\n  274 |       if (!stopping) fail(new Error('Native browser output was truncated'))\n  275 |     }\n> 276 |     if (!stopping) fail(new Error(`Native browser exited unexpectedly (${String(code)})`))\n      |                         ^\n  277 |     frames.clear()\n  278 |     audio.clear()\n  279 |     protocolEvents.clear()"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/workspace/suitecut/src/native-browser.ts",
+                        "column": 25,
+                        "line": 276
+                      },
+                      "message": "Error: Native browser exited unexpectedly (null)\n\n   at ../../src/native-browser.ts:276\n\n  274 |       if (!stopping) fail(new Error('Native browser output was truncated'))\n  275 |     }\n> 276 |     if (!stopping) fail(new Error(`Native browser exited unexpectedly (${String(code)})`))\n      |                         ^\n  277 |     frames.clear()\n  278 |     audio.clear()\n  279 |     protocolEvents.clear()\n    at ChildProcess.<anonymous> (/workspace/suitecut/src/native-browser.ts:276:25)"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-10T10:16:35.401Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/workspace/suitecut/benchmarks/native-memory/2026-10-10/cef-asan-shared/playwright-artifacts/engine.e2e-streaming-initi-b3d17-accepts-later-browser-sound/error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/workspace/suitecut/benchmarks/native-memory/2026-10-10/cef-asan-shared/playwright-artifacts/engine.e2e-streaming-initi-b3d17-accepts-later-browser-sound/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/workspace/suitecut/src/native-browser.ts",
+                    "column": 25,
+                    "line": 276
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "1671f79a60a4bd98e4da-5f25fe8e8dd40b0e719d",
+          "file": "engine.e2e.spec.ts",
+          "line": 85,
+          "column": 1
+        },
+        {
+          "title": "silent pages record a valid audio track with mandatory engine readiness",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 1,
+                  "error": {
+                    "message": "Error: Native browser exited unexpectedly (null)",
+                    "stack": "Error: Native browser exited unexpectedly (null)\n    at ChildProcess.<anonymous> (/workspace/suitecut/src/native-browser.ts:276:25)",
+                    "location": {
+                      "file": "/workspace/suitecut/src/native-browser.ts",
+                      "column": 25,
+                      "line": 276
+                    },
+                    "snippet": "\u001b[90m   at \u001b[39m../../src/native-browser.ts:276\n\n  274 |       if (!stopping) fail(new Error('Native browser output was truncated'))\n  275 |     }\n> 276 |     if (!stopping) fail(new Error(`Native browser exited unexpectedly (${String(code)})`))\n      |                         ^\n  277 |     frames.clear()\n  278 |     audio.clear()\n  279 |     protocolEvents.clear()"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/workspace/suitecut/src/native-browser.ts",
+                        "column": 25,
+                        "line": 276
+                      },
+                      "message": "Error: Native browser exited unexpectedly (null)\n\n   at ../../src/native-browser.ts:276\n\n  274 |       if (!stopping) fail(new Error('Native browser output was truncated'))\n  275 |     }\n> 276 |     if (!stopping) fail(new Error(`Native browser exited unexpectedly (${String(code)})`))\n      |                         ^\n  277 |     frames.clear()\n  278 |     audio.clear()\n  279 |     protocolEvents.clear()\n    at ChildProcess.<anonymous> (/workspace/suitecut/src/native-browser.ts:276:25)"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-10T10:16:36.353Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/workspace/suitecut/benchmarks/native-memory/2026-10-10/cef-asan-shared/playwright-artifacts/engine.e2e-silent-pages-re-95e0c--mandatory-engine-readiness/error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/workspace/suitecut/benchmarks/native-memory/2026-10-10/cef-asan-shared/playwright-artifacts/engine.e2e-silent-pages-re-95e0c--mandatory-engine-readiness/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/workspace/suitecut/src/native-browser.ts",
+                    "column": 25,
+                    "line": 276
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "1671f79a60a4bd98e4da-9e4a2748ecc36cb90065",
+          "file": "engine.e2e.spec.ts",
+          "line": 148,
+          "column": 1
+        },
+        {
+          "title": "native protocol rejects bypasses and requires audio readiness when audio is omitted",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 4,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 1,
+                  "error": {
+                    "message": "Error: Native browser exited unexpectedly (null)",
+                    "stack": "Error: Native browser exited unexpectedly (null)\n    at ChildProcess.<anonymous> (/workspace/suitecut/src/native-browser.ts:276:25)",
+                    "location": {
+                      "file": "/workspace/suitecut/src/native-browser.ts",
+                      "column": 25,
+                      "line": 276
+                    },
+                    "snippet": "\u001b[90m   at \u001b[39m../../src/native-browser.ts:276\n\n  274 |       if (!stopping) fail(new Error('Native browser output was truncated'))\n  275 |     }\n> 276 |     if (!stopping) fail(new Error(`Native browser exited unexpectedly (${String(code)})`))\n      |                         ^\n  277 |     frames.clear()\n  278 |     audio.clear()\n  279 |     protocolEvents.clear()"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/workspace/suitecut/src/native-browser.ts",
+                        "column": 25,
+                        "line": 276
+                      },
+                      "message": "Error: Native browser exited unexpectedly (null)\n\n   at ../../src/native-browser.ts:276\n\n  274 |       if (!stopping) fail(new Error('Native browser output was truncated'))\n  275 |     }\n> 276 |     if (!stopping) fail(new Error(`Native browser exited unexpectedly (${String(code)})`))\n      |                         ^\n  277 |     frames.clear()\n  278 |     audio.clear()\n  279 |     protocolEvents.clear()\n    at ChildProcess.<anonymous> (/workspace/suitecut/src/native-browser.ts:276:25)"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-10T10:16:37.176Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/workspace/suitecut/benchmarks/native-memory/2026-10-10/cef-asan-shared/playwright-artifacts/engine.e2e-native-protocol-6abb9-iness-when-audio-is-omitted/error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/workspace/suitecut/benchmarks/native-memory/2026-10-10/cef-asan-shared/playwright-artifacts/engine.e2e-native-protocol-6abb9-iness-when-audio-is-omitted/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/workspace/suitecut/src/native-browser.ts",
+                    "column": 25,
+                    "line": 276
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "1671f79a60a4bd98e4da-c54c48c7ca98517de7f6",
+          "file": "engine.e2e.spec.ts",
+          "line": 170,
+          "column": 1
+        },
+        {
+          "title": "network interception, init scripts and storage isolation",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 5,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 1,
+                  "error": {
+                    "message": "Error: Native browser exited unexpectedly (null)",
+                    "stack": "Error: Native browser exited unexpectedly (null)\n    at ChildProcess.<anonymous> (/workspace/suitecut/src/native-browser.ts:276:25)",
+                    "location": {
+                      "file": "/workspace/suitecut/src/native-browser.ts",
+                      "column": 25,
+                      "line": 276
+                    },
+                    "snippet": "\u001b[90m   at \u001b[39m../../src/native-browser.ts:276\n\n  274 |       if (!stopping) fail(new Error('Native browser output was truncated'))\n  275 |     }\n> 276 |     if (!stopping) fail(new Error(`Native browser exited unexpectedly (${String(code)})`))\n      |                         ^\n  277 |     frames.clear()\n  278 |     audio.clear()\n  279 |     protocolEvents.clear()"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/workspace/suitecut/src/native-browser.ts",
+                        "column": 25,
+                        "line": 276
+                      },
+                      "message": "Error: Native browser exited unexpectedly (null)\n\n   at ../../src/native-browser.ts:276\n\n  274 |       if (!stopping) fail(new Error('Native browser output was truncated'))\n  275 |     }\n> 276 |     if (!stopping) fail(new Error(`Native browser exited unexpectedly (${String(code)})`))\n      |                         ^\n  277 |     frames.clear()\n  278 |     audio.clear()\n  279 |     protocolEvents.clear()\n    at ChildProcess.<anonymous> (/workspace/suitecut/src/native-browser.ts:276:25)"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-10T10:16:38.146Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/workspace/suitecut/benchmarks/native-memory/2026-10-10/cef-asan-shared/playwright-artifacts/engine.e2e-network-interce-24565-ripts-and-storage-isolation/error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/workspace/suitecut/benchmarks/native-memory/2026-10-10/cef-asan-shared/playwright-artifacts/engine.e2e-network-interce-24565-ripts-and-storage-isolation/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/workspace/suitecut/src/native-browser.ts",
+                    "column": 25,
+                    "line": 276
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "1671f79a60a4bd98e4da-663e8387a9407445a601",
+          "file": "engine.e2e.spec.ts",
+          "line": 217,
+          "column": 1
+        },
+        {
+          "title": "popup, dialog, file upload, download and public CDP sessions",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 6,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 1,
+                  "error": {
+                    "message": "Error: Native browser exited unexpectedly (null)",
+                    "stack": "Error: Native browser exited unexpectedly (null)\n    at ChildProcess.<anonymous> (/workspace/suitecut/src/native-browser.ts:276:25)",
+                    "location": {
+                      "file": "/workspace/suitecut/src/native-browser.ts",
+                      "column": 25,
+                      "line": 276
+                    },
+                    "snippet": "\u001b[90m   at \u001b[39m../../src/native-browser.ts:276\n\n  274 |       if (!stopping) fail(new Error('Native browser output was truncated'))\n  275 |     }\n> 276 |     if (!stopping) fail(new Error(`Native browser exited unexpectedly (${String(code)})`))\n      |                         ^\n  277 |     frames.clear()\n  278 |     audio.clear()\n  279 |     protocolEvents.clear()"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/workspace/suitecut/src/native-browser.ts",
+                        "column": 25,
+                        "line": 276
+                      },
+                      "message": "Error: Native browser exited unexpectedly (null)\n\n   at ../../src/native-browser.ts:276\n\n  274 |       if (!stopping) fail(new Error('Native browser output was truncated'))\n  275 |     }\n> 276 |     if (!stopping) fail(new Error(`Native browser exited unexpectedly (${String(code)})`))\n      |                         ^\n  277 |     frames.clear()\n  278 |     audio.clear()\n  279 |     protocolEvents.clear()\n    at ChildProcess.<anonymous> (/workspace/suitecut/src/native-browser.ts:276:25)"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-10T10:16:38.989Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/workspace/suitecut/benchmarks/native-memory/2026-10-10/cef-asan-shared/playwright-artifacts/engine.e2e-popup-dialog-fi-b54b1-oad-and-public-CDP-sessions/error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/workspace/suitecut/benchmarks/native-memory/2026-10-10/cef-asan-shared/playwright-artifacts/engine.e2e-popup-dialog-fi-b54b1-oad-and-public-CDP-sessions/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/workspace/suitecut/src/native-browser.ts",
+                    "column": 25,
+                    "line": 276
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "1671f79a60a4bd98e4da-ec15ea415cc8c6e41c56",
+          "file": "engine.e2e.spec.ts",
+          "line": 246,
+          "column": 1
+        },
+        {
+          "title": "explicit CDP sessions receive page events and tracing completion",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 7,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 1,
+                  "error": {
+                    "message": "Error: Native browser exited unexpectedly (null)",
+                    "stack": "Error: Native browser exited unexpectedly (null)\n    at ChildProcess.<anonymous> (/workspace/suitecut/src/native-browser.ts:276:25)",
+                    "location": {
+                      "file": "/workspace/suitecut/src/native-browser.ts",
+                      "column": 25,
+                      "line": 276
+                    },
+                    "snippet": "\u001b[90m   at \u001b[39m../../src/native-browser.ts:276\n\n  274 |       if (!stopping) fail(new Error('Native browser output was truncated'))\n  275 |     }\n> 276 |     if (!stopping) fail(new Error(`Native browser exited unexpectedly (${String(code)})`))\n      |                         ^\n  277 |     frames.clear()\n  278 |     audio.clear()\n  279 |     protocolEvents.clear()"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/workspace/suitecut/src/native-browser.ts",
+                        "column": 25,
+                        "line": 276
+                      },
+                      "message": "Error: Native browser exited unexpectedly (null)\n\n   at ../../src/native-browser.ts:276\n\n  274 |       if (!stopping) fail(new Error('Native browser output was truncated'))\n  275 |     }\n> 276 |     if (!stopping) fail(new Error(`Native browser exited unexpectedly (${String(code)})`))\n      |                         ^\n  277 |     frames.clear()\n  278 |     audio.clear()\n  279 |     protocolEvents.clear()\n    at ChildProcess.<anonymous> (/workspace/suitecut/src/native-browser.ts:276:25)"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-10T10:16:39.789Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/workspace/suitecut/benchmarks/native-memory/2026-10-10/cef-asan-shared/playwright-artifacts/engine.e2e-explicit-CDP-se-d8144-ents-and-tracing-completion/error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/workspace/suitecut/benchmarks/native-memory/2026-10-10/cef-asan-shared/playwright-artifacts/engine.e2e-explicit-CDP-se-d8144-ents-and-tracing-completion/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/workspace/suitecut/src/native-browser.ts",
+                    "column": 25,
+                    "line": 276
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "1671f79a60a4bd98e4da-6c26f34740c0821458c6",
+          "file": "engine.e2e.spec.ts",
+          "line": 282,
+          "column": 1
+        },
+        {
+          "title": "native recording survives blocked Node, pause and page switching",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 8,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 1,
+                  "error": {
+                    "message": "Error: Native browser exited unexpectedly (null)",
+                    "stack": "Error: Native browser exited unexpectedly (null)\n    at ChildProcess.<anonymous> (/workspace/suitecut/src/native-browser.ts:276:25)",
+                    "location": {
+                      "file": "/workspace/suitecut/src/native-browser.ts",
+                      "column": 25,
+                      "line": 276
+                    },
+                    "snippet": "\u001b[90m   at \u001b[39m../../src/native-browser.ts:276\n\n  274 |       if (!stopping) fail(new Error('Native browser output was truncated'))\n  275 |     }\n> 276 |     if (!stopping) fail(new Error(`Native browser exited unexpectedly (${String(code)})`))\n      |                         ^\n  277 |     frames.clear()\n  278 |     audio.clear()\n  279 |     protocolEvents.clear()"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/workspace/suitecut/src/native-browser.ts",
+                        "column": 25,
+                        "line": 276
+                      },
+                      "message": "Error: Native browser exited unexpectedly (null)\n\n   at ../../src/native-browser.ts:276\n\n  274 |       if (!stopping) fail(new Error('Native browser output was truncated'))\n  275 |     }\n> 276 |     if (!stopping) fail(new Error(`Native browser exited unexpectedly (${String(code)})`))\n      |                         ^\n  277 |     frames.clear()\n  278 |     audio.clear()\n  279 |     protocolEvents.clear()\n    at ChildProcess.<anonymous> (/workspace/suitecut/src/native-browser.ts:276:25)"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-10T10:16:40.634Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/workspace/suitecut/benchmarks/native-memory/2026-10-10/cef-asan-shared/playwright-artifacts/engine.e2e-native-recordin-5850c-de-pause-and-page-switching/error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/workspace/suitecut/benchmarks/native-memory/2026-10-10/cef-asan-shared/playwright-artifacts/engine.e2e-native-recordin-5850c-de-pause-and-page-switching/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/workspace/suitecut/src/native-browser.ts",
+                    "column": 25,
+                    "line": 276
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "1671f79a60a4bd98e4da-269a80c5141b7d753e12",
+          "file": "engine.e2e.spec.ts",
+          "line": 311,
+          "column": 1
+        },
+        {
+          "title": "pause drains pending media and resume captures a prepared static page",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 9,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 1,
+                  "error": {
+                    "message": "Error: Native browser exited unexpectedly (null)",
+                    "stack": "Error: Native browser exited unexpectedly (null)\n    at ChildProcess.<anonymous> (/workspace/suitecut/src/native-browser.ts:276:25)",
+                    "location": {
+                      "file": "/workspace/suitecut/src/native-browser.ts",
+                      "column": 25,
+                      "line": 276
+                    },
+                    "snippet": "\u001b[90m   at \u001b[39m../../src/native-browser.ts:276\n\n  274 |       if (!stopping) fail(new Error('Native browser output was truncated'))\n  275 |     }\n> 276 |     if (!stopping) fail(new Error(`Native browser exited unexpectedly (${String(code)})`))\n      |                         ^\n  277 |     frames.clear()\n  278 |     audio.clear()\n  279 |     protocolEvents.clear()"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/workspace/suitecut/src/native-browser.ts",
+                        "column": 25,
+                        "line": 276
+                      },
+                      "message": "Error: Native browser exited unexpectedly (null)\n\n   at ../../src/native-browser.ts:276\n\n  274 |       if (!stopping) fail(new Error('Native browser output was truncated'))\n  275 |     }\n> 276 |     if (!stopping) fail(new Error(`Native browser exited unexpectedly (${String(code)})`))\n      |                         ^\n  277 |     frames.clear()\n  278 |     audio.clear()\n  279 |     protocolEvents.clear()\n    at ChildProcess.<anonymous> (/workspace/suitecut/src/native-browser.ts:276:25)"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-10T10:16:41.508Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/workspace/suitecut/benchmarks/native-memory/2026-10-10/cef-asan-shared/playwright-artifacts/engine.e2e-pause-drains-pe-56492-ures-a-prepared-static-page/error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/workspace/suitecut/benchmarks/native-memory/2026-10-10/cef-asan-shared/playwright-artifacts/engine.e2e-pause-drains-pe-56492-ures-a-prepared-static-page/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/workspace/suitecut/src/native-browser.ts",
+                    "column": 25,
+                    "line": 276
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "1671f79a60a4bd98e4da-24fb9fec2f9f97ebd5bf",
+          "file": "engine.e2e.spec.ts",
+          "line": 348,
+          "column": 1
+        },
+        {
+          "title": "repeated context/page shutdown keeps the engine usable",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 10,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 1,
+                  "error": {
+                    "message": "Error: Native browser exited unexpectedly (null)",
+                    "stack": "Error: Native browser exited unexpectedly (null)\n    at ChildProcess.<anonymous> (/workspace/suitecut/src/native-browser.ts:276:25)",
+                    "location": {
+                      "file": "/workspace/suitecut/src/native-browser.ts",
+                      "column": 25,
+                      "line": 276
+                    },
+                    "snippet": "\u001b[90m   at \u001b[39m../../src/native-browser.ts:276\n\n  274 |       if (!stopping) fail(new Error('Native browser output was truncated'))\n  275 |     }\n> 276 |     if (!stopping) fail(new Error(`Native browser exited unexpectedly (${String(code)})`))\n      |                         ^\n  277 |     frames.clear()\n  278 |     audio.clear()\n  279 |     protocolEvents.clear()"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/workspace/suitecut/src/native-browser.ts",
+                        "column": 25,
+                        "line": 276
+                      },
+                      "message": "Error: Native browser exited unexpectedly (null)\n\n   at ../../src/native-browser.ts:276\n\n  274 |       if (!stopping) fail(new Error('Native browser output was truncated'))\n  275 |     }\n> 276 |     if (!stopping) fail(new Error(`Native browser exited unexpectedly (${String(code)})`))\n      |                         ^\n  277 |     frames.clear()\n  278 |     audio.clear()\n  279 |     protocolEvents.clear()\n    at ChildProcess.<anonymous> (/workspace/suitecut/src/native-browser.ts:276:25)"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-10T10:16:42.412Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/workspace/suitecut/benchmarks/native-memory/2026-10-10/cef-asan-shared/playwright-artifacts/engine.e2e-repeated-contex-b7c1d-own-keeps-the-engine-usable/error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/workspace/suitecut/benchmarks/native-memory/2026-10-10/cef-asan-shared/playwright-artifacts/engine.e2e-repeated-contex-b7c1d-own-keeps-the-engine-usable/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/workspace/suitecut/src/native-browser.ts",
+                    "column": 25,
+                    "line": 276
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "1671f79a60a4bd98e4da-4fda2b2fb15942c20c57",
+          "file": "engine.e2e.spec.ts",
+          "line": 371,
+          "column": 1
+        },
+        {
+          "title": "permission and geolocation setup before page creation",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 11,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 1,
+                  "error": {
+                    "message": "Error: Native browser exited unexpectedly (null)",
+                    "stack": "Error: Native browser exited unexpectedly (null)\n    at ChildProcess.<anonymous> (/workspace/suitecut/src/native-browser.ts:276:25)",
+                    "location": {
+                      "file": "/workspace/suitecut/src/native-browser.ts",
+                      "column": 25,
+                      "line": 276
+                    },
+                    "snippet": "\u001b[90m   at \u001b[39m../../src/native-browser.ts:276\n\n  274 |       if (!stopping) fail(new Error('Native browser output was truncated'))\n  275 |     }\n> 276 |     if (!stopping) fail(new Error(`Native browser exited unexpectedly (${String(code)})`))\n      |                         ^\n  277 |     frames.clear()\n  278 |     audio.clear()\n  279 |     protocolEvents.clear()"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/workspace/suitecut/src/native-browser.ts",
+                        "column": 25,
+                        "line": 276
+                      },
+                      "message": "Error: Native browser exited unexpectedly (null)\n\n   at ../../src/native-browser.ts:276\n\n  274 |       if (!stopping) fail(new Error('Native browser output was truncated'))\n  275 |     }\n> 276 |     if (!stopping) fail(new Error(`Native browser exited unexpectedly (${String(code)})`))\n      |                         ^\n  277 |     frames.clear()\n  278 |     audio.clear()\n  279 |     protocolEvents.clear()\n    at ChildProcess.<anonymous> (/workspace/suitecut/src/native-browser.ts:276:25)"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-10T10:16:43.287Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/workspace/suitecut/benchmarks/native-memory/2026-10-10/cef-asan-shared/playwright-artifacts/engine.e2e-permission-and--bb30a--setup-before-page-creation/error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/workspace/suitecut/benchmarks/native-memory/2026-10-10/cef-asan-shared/playwright-artifacts/engine.e2e-permission-and--bb30a--setup-before-page-creation/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/workspace/suitecut/src/native-browser.ts",
+                    "column": 25,
+                    "line": 276
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "1671f79a60a4bd98e4da-84259a977fcef415d73e",
+          "file": "engine.e2e.spec.ts",
+          "line": 382,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-10T10:16:32.479Z",
+    "duration": 11182.833,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 12,
+    "flaky": 0
+  }
+}

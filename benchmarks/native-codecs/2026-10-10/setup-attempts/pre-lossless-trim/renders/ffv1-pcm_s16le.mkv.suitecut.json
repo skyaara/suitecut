@@ -1,0 +1,91 @@
+{
+  "attemptId": "f202a85e-456b-44d8-b292-a3f7f3f90f4b",
+  "testId": "552aa2bb-8a10-4a4c-a995-8d4ab57bf969",
+  "startedAt": "2026-10-09T19:45:58.045Z",
+  "endedAt": "2026-10-09T19:45:59.242Z",
+  "status": "rendered",
+  "executionDurationMs": 5898.633084,
+  "presentationDurationMs": 5898.633084,
+  "edits": [
+    {
+      "kind": "hold",
+      "pageId": "7d5c463e-a695-483e-b05f-b0ee9654d1e8",
+      "executionStartMs": 1466.6666666666665,
+      "executionEndMs": 1466.6666666666665,
+      "presentationStartMs": 0,
+      "presentationEndMs": 1466.6666666666665
+    },
+    {
+      "kind": "play",
+      "pageId": "7d5c463e-a695-483e-b05f-b0ee9654d1e8",
+      "executionStartMs": 1466.6666666666665,
+      "executionEndMs": 4600,
+      "presentationStartMs": 1466.6666666666665,
+      "presentationEndMs": 4600
+    },
+    {
+      "kind": "play",
+      "pageId": "0660961a-0488-43f1-a033-bd435b8614e4",
+      "executionStartMs": 4600,
+      "executionEndMs": 5500,
+      "presentationStartMs": 4600,
+      "presentationEndMs": 5500
+    },
+    {
+      "kind": "play",
+      "pageId": "7d5c463e-a695-483e-b05f-b0ee9654d1e8",
+      "executionStartMs": 5500,
+      "executionEndMs": 5898.633084,
+      "presentationStartMs": 5500,
+      "presentationEndMs": 5898.633084
+    }
+  ],
+  "diagnostics": [],
+  "ffmpeg": {
+    "executable": "suitecut-native-libav",
+    "args": [
+      "-hide_banner",
+      "-loglevel",
+      "error",
+      "-nostats",
+      "-y",
+      "-i",
+      "<input-1>",
+      "-i",
+      "<input-2>",
+      "-i",
+      "<input-3>",
+      "-filter_complex",
+      "[1:v]trim=start=1.460810,trim=end_frame=1,loop=loop=-1:size=1:start=0,setpts=N/(30*TB),trim=duration=1.466667,fps=30,scale=640:360:flags=lanczos+accurate_rnd+full_chroma_int:force_original_aspect_ratio=decrease:in_range=limited:out_range=limited,pad=640:360:(ow-iw)/2:(oh-ih)/2:0x0B1020@1,setsar=1,format=yuv420p[segment0];[1:v]trim=start=1.460810:duration=3.133333,setpts=PTS-STARTPTS,tpad=stop_mode=clone:stop_duration=3.133333,trim=duration=3.133333,fps=30,perspective=x0='-((if(gte((on/30+1.466667),2.142875)*lt((on/30+1.466667),2.402875),1.000000+0.200000*(1-pow(1-max(0,min(1,(((on/30+1.466667))-2.142875)/0.260000)),3)),if(gte((on/30+1.466667),2.402875)*lt((on/30+1.466667),2.802875),1.200000,if(gte((on/30+1.466667),2.802875)*lt((on/30+1.466667),3.022875),1.200000+-0.200000*(if(lt(max(0,min(1,(((on/30+1.466667))-2.802875)/0.220000)),0.5),4*pow(max(0,min(1,(((on/30+1.466667))-2.802875)/0.220000)),3),1-pow(-2*max(0,min(1,(((on/30+1.466667))-2.802875)/0.220000))+2,3)/2)),1))))-1)*(if(gte((on/30+1.466667),2.142875)*lt((on/30+1.466667),2.402875),0.000000,if(gte((on/30+1.466667),2.402875)*lt((on/30+1.466667),2.802875),0.000000,if(gte((on/30+1.466667),2.802875)*lt((on/30+1.466667),3.022875),0.000000,480.000000))))':y0='-((if(gte((on/30+1.466667),2.142875)*lt((on/30+1.466667),2.402875),1.000000+0.200000*(1-pow(1-max(0,min(1,(((on/30+1.466667))-2.142875)/0.260000)),3)),if(gte((on/30+1.466667),2.402875)*lt((on/30+1.466667),2.802875),1.200000,if(gte((on/30+1.466667),2.802875)*lt((on/30+1.466667),3.022875),1.200000+-0.200000*(if(lt(max(0,min(1,(((on/30+1.466667))-2.802875)/0.220000)),0.5),4*pow(max(0,min(1,(((on/30+1.466667))-2.802875)/0.220000)),3),1-pow(-2*max(0,min(1,(((on/30+1.466667))-2.802875)/0.220000))+2,3)/2)),1))))-1)*(if(gte((on/30+1.466667),2.142875)*lt((on/30+1.466667),2.402875),270.187500,if(gte((on/30+1.466667),2.402875)*lt((on/30+1.466667),2.802875),270.187500,if(gte((on/30+1.466667),2.802875)*lt((on/30+1.466667),3.022875),270.187500,270.000000))))':x1='960*(if(gte((on/30+1.466667),2.142875)*lt((on/30+1.466667),2.402875),1.000000+0.200000*(1-pow(1-max(0,min(1,(((on/30+1.466667))-2.142875)/0.260000)),3)),if(gte((on/30+1.466667),2.402875)*lt((on/30+1.466667),2.802875),1.200000,if(gte((on/30+1.466667),2.802875)*lt((on/30+1.466667),3.022875),1.200000+-0.200000*(if(lt(max(0,min(1,(((on/30+1.466667))-2.802875)/0.220000)),0.5),4*pow(max(0,min(1,(((on/30+1.466667))-2.802875)/0.220000)),3),1-pow(-2*max(0,min(1,(((on/30+1.466667))-2.802875)/0.220000))+2,3)/2)),1))))-((if(gte((on/30+1.466667),2.142875)*lt((on/30+1.466667),2.402875),1.000000+0.200000*(1-pow(1-max(0,min(1,(((on/30+1.466667))-2.142875)/0.260000)),3)),if(gte((on/30+1.466667),2.402875)*lt((on/30+1.466667),2.802875),1.200000,if(gte((on/30+1.466667),2.802875)*lt((on/30+1.466667),3.022875),1.200000+-0.200000*(if(lt(max(0,min(1,(((on/30+1.466667))-2.802875)/0.220000)),0.5),4*pow(max(0,min(1,(((on/30+1.466667))-2.802875)/0.220000)),3),1-pow(-2*max(0,min(1,(((on/30+1.466667))-2.802875)/0.220000))+2,3)/2)),1))))-1)*(if(gte((on/30+1.466667),2.142875)*lt((on/30+1.466667),2.402875),0.000000,if(gte((on/30+1.466667),2.402875)*lt((on/30+1.466667),2.802875),0.000000,if(gte((on/30+1.466667),2.802875)*lt((on/30+1.466667),3.022875),0.000000,480.000000))))':y1='-((if(gte((on/30+1.466667),2.142875)*lt((on/30+1.466667),2.402875),1.000000+0.200000*(1-pow(1-max(0,min(1,(((on/30+1.466667))-2.142875)/0.260000)),3)),if(gte((on/30+1.466667),2.402875)*lt((on/30+1.466667),2.802875),1.200000,if(gte((on/30+1.466667),2.802875)*lt((on/30+1.466667),3.022875),1.200000+-0.200000*(if(lt(max(0,min(1,(((on/30+1.466667))-2.802875)/0.220000)),0.5),4*pow(max(0,min(1,(((on/30+1.466667))-2.802875)/0.220000)),3),1-pow(-2*max(0,min(1,(((on/30+1.466667))-2.802875)/0.220000))+2,3)/2)),1))))-1)*(if(gte((on/30+1.466667),2.142875)*lt((on/30+1.466667),2.402875),270.187500,if(gte((on/30+1.466667),2.402875)*lt((on/30+1.466667),2.802875),270.187500,if(gte((on/30+1.466667),2.802875)*lt((on/30+1.466667),3.022875),270.187500,270.000000))))':x2='-((if(gte((on/30+1.466667),2.142875)*lt((on/30+1.466667),2.402875),1.000000+0.200000*(1-pow(1-max(0,min(1,(((on/30+1.466667))-2.142875)/0.260000)),3)),if(gte((on/30+1.466667),2.402875)*lt((on/30+1.466667),2.802875),1.200000,if(gte((on/30+1.466667),2.802875)*lt((on/30+1.466667),3.022875),1.200000+-0.200000*(if(lt(max(0,min(1,(((on/30+1.466667))-2.802875)/0.220000)),0.5),4*pow(max(0,min(1,(((on/30+1.466667))-2.802875)/0.220000)),3),1-pow(-2*max(0,min(1,(((on/30+1.466667))-2.802875)/0.220000))+2,3)/2)),1))))-1)*(if(gte((on/30+1.466667),2.142875)*lt((on/30+1.466667),2.402875),0.000000,if(gte((on/30+1.466667),2.402875)*lt((on/30+1.466667),2.802875),0.000000,if(gte((on/30+1.466667),2.802875)*lt((on/30+1.466667),3.022875),0.000000,480.000000))))':y2='540*(if(gte((on/30+1.466667),2.142875)*lt((on/30+1.466667),2.402875),1.000000+0.200000*(1-pow(1-max(0,min(1,(((on/30+1.466667))-2.142875)/0.260000)),3)),if(gte((on/30+1.466667),2.402875)*lt((on/30+1.466667),2.802875),1.200000,if(gte((on/30+1.466667),2.802875)*lt((on/30+1.466667),3.022875),1.200000+-0.200000*(if(lt(max(0,min(1,(((on/30+1.466667))-2.802875)/0.220000)),0.5),4*pow(max(0,min(1,(((on/30+1.466667))-2.802875)/0.220000)),3),1-pow(-2*max(0,min(1,(((on/30+1.466667))-2.802875)/0.220000))+2,3)/2)),1))))-((if(gte((on/30+1.466667),2.142875)*lt((on/30+1.466667),2.402875),1.000000+0.200000*(1-pow(1-max(0,min(1,(((on/30+1.466667))-2.142875)/0.260000)),3)),if(gte((on/30+1.466667),2.402875)*lt((on/30+1.466667),2.802875),1.200000,if(gte((on/30+1.466667),2.802875)*lt((on/30+1.466667),3.022875),1.200000+-0.200000*(if(lt(max(0,min(1,(((on/30+1.466667))-2.802875)/0.220000)),0.5),4*pow(max(0,min(1,(((on/30+1.466667))-2.802875)/0.220000)),3),1-pow(-2*max(0,min(1,(((on/30+1.466667))-2.802875)/0.220000))+2,3)/2)),1))))-1)*(if(gte((on/30+1.466667),2.142875)*lt((on/30+1.466667),2.402875),270.187500,if(gte((on/30+1.466667),2.402875)*lt((on/30+1.466667),2.802875),270.187500,if(gte((on/30+1.466667),2.802875)*lt((on/30+1.466667),3.022875),270.187500,270.000000))))':x3='960*(if(gte((on/30+1.466667),2.142875)*lt((on/30+1.466667),2.402875),1.000000+0.200000*(1-pow(1-max(0,min(1,(((on/30+1.466667))-2.142875)/0.260000)),3)),if(gte((on/30+1.466667),2.402875)*lt((on/30+1.466667),2.802875),1.200000,if(gte((on/30+1.466667),2.802875)*lt((on/30+1.466667),3.022875),1.200000+-0.200000*(if(lt(max(0,min(1,(((on/30+1.466667))-2.802875)/0.220000)),0.5),4*pow(max(0,min(1,(((on/30+1.466667))-2.802875)/0.220000)),3),1-pow(-2*max(0,min(1,(((on/30+1.466667))-2.802875)/0.220000))+2,3)/2)),1))))-((if(gte((on/30+1.466667),2.142875)*lt((on/30+1.466667),2.402875),1.000000+0.200000*(1-pow(1-max(0,min(1,(((on/30+1.466667))-2.142875)/0.260000)),3)),if(gte((on/30+1.466667),2.402875)*lt((on/30+1.466667),2.802875),1.200000,if(gte((on/30+1.466667),2.802875)*lt((on/30+1.466667),3.022875),1.200000+-0.200000*(if(lt(max(0,min(1,(((on/30+1.466667))-2.802875)/0.220000)),0.5),4*pow(max(0,min(1,(((on/30+1.466667))-2.802875)/0.220000)),3),1-pow(-2*max(0,min(1,(((on/30+1.466667))-2.802875)/0.220000))+2,3)/2)),1))))-1)*(if(gte((on/30+1.466667),2.142875)*lt((on/30+1.466667),2.402875),0.000000,if(gte((on/30+1.466667),2.402875)*lt((on/30+1.466667),2.802875),0.000000,if(gte((on/30+1.466667),2.802875)*lt((on/30+1.466667),3.022875),0.000000,480.000000))))':y3='540*(if(gte((on/30+1.466667),2.142875)*lt((on/30+1.466667),2.402875),1.000000+0.200000*(1-pow(1-max(0,min(1,(((on/30+1.466667))-2.142875)/0.260000)),3)),if(gte((on/30+1.466667),2.402875)*lt((on/30+1.466667),2.802875),1.200000,if(gte((on/30+1.466667),2.802875)*lt((on/30+1.466667),3.022875),1.200000+-0.200000*(if(lt(max(0,min(1,(((on/30+1.466667))-2.802875)/0.220000)),0.5),4*pow(max(0,min(1,(((on/30+1.466667))-2.802875)/0.220000)),3),1-pow(-2*max(0,min(1,(((on/30+1.466667))-2.802875)/0.220000))+2,3)/2)),1))))-((if(gte((on/30+1.466667),2.142875)*lt((on/30+1.466667),2.402875),1.000000+0.200000*(1-pow(1-max(0,min(1,(((on/30+1.466667))-2.142875)/0.260000)),3)),if(gte((on/30+1.466667),2.402875)*lt((on/30+1.466667),2.802875),1.200000,if(gte((on/30+1.466667),2.802875)*lt((on/30+1.466667),3.022875),1.200000+-0.200000*(if(lt(max(0,min(1,(((on/30+1.466667))-2.802875)/0.220000)),0.5),4*pow(max(0,min(1,(((on/30+1.466667))-2.802875)/0.220000)),3),1-pow(-2*max(0,min(1,(((on/30+1.466667))-2.802875)/0.220000))+2,3)/2)),1))))-1)*(if(gte((on/30+1.466667),2.142875)*lt((on/30+1.466667),2.402875),270.187500,if(gte((on/30+1.466667),2.402875)*lt((on/30+1.466667),2.802875),270.187500,if(gte((on/30+1.466667),2.802875)*lt((on/30+1.466667),3.022875),270.187500,270.000000))))':sense=destination:eval=frame:interpolation=linear,scale=640:360:flags=lanczos+accurate_rnd+full_chroma_int:force_original_aspect_ratio=decrease:in_range=limited:out_range=limited,pad=640:360:(ow-iw)/2:(oh-ih)/2:0x0B1020@1,setsar=1,format=yuv420p[segment1];[0:v]trim=start=0.062096:duration=0.900000,setpts=PTS-STARTPTS,tpad=stop_mode=clone:stop_duration=0.900000,trim=duration=0.900000,fps=30,scale=640:360:flags=lanczos+accurate_rnd+full_chroma_int:force_original_aspect_ratio=decrease:in_range=limited:out_range=limited,pad=640:360:(ow-iw)/2:(oh-ih)/2:0x0B1020@1,setsar=1,format=yuv420p[segment2];[1:v]trim=start=5.494143:duration=0.398633,setpts=PTS-STARTPTS,tpad=stop_mode=clone:stop_duration=0.398633,trim=duration=0.398633,fps=30,scale=640:360:flags=lanczos+accurate_rnd+full_chroma_int:force_original_aspect_ratio=decrease:in_range=limited:out_range=limited,pad=640:360:(ow-iw)/2:(oh-ih)/2:0x0B1020@1,setsar=1,format=yuv420p[segment3];[segment0][segment1][segment2][segment3]concat=n=4:v=1:a=0[joinedvideo];[joinedvideo]tpad=stop_mode=clone:stop_duration=5.898633,trim=duration=5.898633,format=yuv420p,setparams=range=limited:color_primaries=bt709:color_trc=bt709:colorspace=bt709[video0];anullsrc=r=48000:cl=stereo,atrim=duration=1.466667[sourceaudiosegment0];[1:a]atrim=start=1.460810:duration=3.133333,asetpts=PTS-STARTPTS,apad=pad_dur=3.133333,atrim=duration=3.133333,aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo[sourceaudiosegment1];[0:a]atrim=start=0.062096:duration=0.900000,asetpts=PTS-STARTPTS,apad=pad_dur=0.900000,atrim=duration=0.900000,aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo[sourceaudiosegment2];[1:a]atrim=start=5.494143:duration=0.398633,asetpts=PTS-STARTPTS,apad=pad_dur=0.398633,atrim=duration=0.398633,aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo[sourceaudiosegment3];[sourceaudiosegment0][sourceaudiosegment1][sourceaudiosegment2][sourceaudiosegment3]concat=n=4:v=0:a=1[joinedsourceaudio];[joinedsourceaudio]volume=1.000000[sourceaudio];[2:a]aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,asetpts=PTS-STARTPTS,adelay=3026:all=1,volume=2.000000[audio0];[sourceaudio][audio0]amix=inputs=2:duration=longest:dropout_transition=0:normalize=0,atrim=duration=5.898633,alimiter=limit=0.75:attack=5:release=50:level=false[audioout]",
+      "-map",
+      "[video0]",
+      "-map",
+      "[audioout]",
+      "-r",
+      "30",
+      "-t",
+      "5.898633",
+      "-c:v",
+      "ffv1",
+      "-pix_fmt",
+      "yuv420p",
+      "-color_range",
+      "tv",
+      "-color_primaries",
+      "bt709",
+      "-color_trc",
+      "bt709",
+      "-colorspace",
+      "bt709",
+      "-c:a",
+      "pcm_s16le",
+      "-f",
+      "matroska",
+      "<output>"
+    ],
+    "exitCode": 0,
+    "signal": null,
+    "stderrTail": ""
+  },
+  "outputPath": "ffv1-pcm_s16le.mkv"
+}

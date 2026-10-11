@@ -1,0 +1,110 @@
+{
+  "caveat": "Live diagnostic estimates. Process and cgroup counters are read at different moments; delayed samples can distort per-second ownership/CPU estimates. Use cumulative throttling for robust totals. Not evidence of unrelated CPU activity.",
+  "samples": [
+    {
+      "atSeconds": 442.79692172700015,
+      "ownedCPUCores": 5.717356500628041,
+      "cgroupCPUCores": 6.252807391677716,
+      "unaccountedCPUCores": 0.5354508910496748,
+      "throttledPeriods": 13
+    },
+    {
+      "atSeconds": 450.0123215030035,
+      "ownedCPUCores": 5.15304276885805,
+      "cgroupCPUCores": 5.494019011995858,
+      "unaccountedCPUCores": 0.34097624313780883,
+      "throttledPeriods": 10
+    },
+    {
+      "atSeconds": 571.3151476649946,
+      "ownedCPUCores": 3.5249522746212363,
+      "cgroupCPUCores": 3.54828928766392,
+      "unaccountedCPUCores": 0.023337013042683225,
+      "throttledPeriods": 8
+    },
+    {
+      "atSeconds": 441.7947103030019,
+      "ownedCPUCores": 2.936030589407584,
+      "cgroupCPUCores": 3.08878665282612,
+      "unaccountedCPUCores": 0.15275606341853562,
+      "throttledPeriods": 5
+    },
+    {
+      "atSeconds": 444.9692104309943,
+      "ownedCPUCores": 2.766893583671853,
+      "cgroupCPUCores": 3.0088589270032204,
+      "unaccountedCPUCores": 0.24196534333136732,
+      "throttledPeriods": 4
+    },
+    {
+      "atSeconds": 447.9977651520021,
+      "ownedCPUCores": 2.9064945018547133,
+      "cgroupCPUCores": 2.9480123568181185,
+      "unaccountedCPUCores": 0.04151785496340528,
+      "throttledPeriods": 3
+    },
+    {
+      "atSeconds": 449.00709018000634,
+      "ownedCPUCores": 2.655239814373032,
+      "cgroupCPUCores": 2.9432798331317285,
+      "unaccountedCPUCores": 0.2880400187586964,
+      "throttledPeriods": 3
+    },
+    {
+      "atSeconds": 446.97591563599417,
+      "ownedCPUCores": 1.9374907576741478,
+      "cgroupCPUCores": 2.213210673089858,
+      "unaccountedCPUCores": 0.27571991541571045,
+      "throttledPeriods": 2
+    },
+    {
+      "atSeconds": 369.5448971599981,
+      "ownedCPUCores": 1.2945979470041054,
+      "cgroupCPUCores": 1.3381183466040978,
+      "unaccountedCPUCores": 0.04352039959999248,
+      "throttledPeriods": 1
+    },
+    {
+      "atSeconds": 445.9746205370029,
+      "ownedCPUCores": 2.1981080026870843,
+      "cgroupCPUCores": 2.2661847005349487,
+      "unaccountedCPUCores": 0.06807669784786462,
+      "throttledPeriods": 1
+    },
+    {
+      "atSeconds": 452.0183403139963,
+      "ownedCPUCores": 1.7994539701004597,
+      "cgroupCPUCores": 1.8458358958764318,
+      "unaccountedCPUCores": 0.04638192577597221,
+      "throttledPeriods": 1
+    },
+    {
+      "atSeconds": 574.3213400690001,
+      "ownedCPUCores": 1.5420905527957867,
+      "cgroupCPUCores": 1.5514167185002719,
+      "unaccountedCPUCores": 0.009326165704485247,
+      "throttledPeriods": 1
+    },
+    {
+      "atSeconds": 575.3220650139992,
+      "ownedCPUCores": 1.7587250210912244,
+      "cgroupCPUCores": 1.777373501968229,
+      "unaccountedCPUCores": 0.018648480877004648,
+      "throttledPeriods": 1
+    },
+    {
+      "atSeconds": 619.3453574470041,
+      "ownedCPUCores": 2.2077660300016415,
+      "cgroupCPUCores": 2.3808638776560955,
+      "unaccountedCPUCores": 0.17309784765445402,
+      "throttledPeriods": 1
+    },
+    {
+      "atSeconds": 0.9767150190018583,
+      "ownedCPUCores": 0.9297811081472047,
+      "cgroupCPUCores": 0.9452264719534048,
+      "unaccountedCPUCores": 0.015445363806200114,
+      "throttledPeriods": 0
+    }
+  ]
+}

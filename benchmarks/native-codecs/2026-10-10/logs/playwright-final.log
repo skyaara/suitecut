@@ -1,0 +1,13 @@
+
+Running 6 tests using 1 worker
+
+(node:118958) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 benchmarks/native-engine/engine.e2e.spec.ts:41:1 › real Playwright locators, auto-wait, input, scrolling, iframe and screenshot (895ms)
+  ✓  2 benchmarks/native-engine/engine.e2e.spec.ts:57:1 › network interception, init scripts and storage isolation (397ms)
+  ✓  3 benchmarks/native-engine/engine.e2e.spec.ts:86:1 › popup, dialog, file upload, download and public CDP sessions (1.1s)
+  ✓  4 benchmarks/native-engine/engine.e2e.spec.ts:122:1 › native recording survives blocked Node, pause and page switching (6.3s)
+  ✓  5 benchmarks/native-engine/engine.e2e.spec.ts:159:1 › repeated context/page shutdown keeps the engine usable (1.4s)
+  ✓  6 benchmarks/native-engine/engine.e2e.spec.ts:170:1 › permission and geolocation setup before page creation (142ms)
+
+  6 passed (11.6s)

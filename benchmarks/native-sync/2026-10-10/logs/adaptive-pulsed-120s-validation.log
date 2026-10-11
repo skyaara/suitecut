@@ -1,0 +1,194 @@
+{
+  "outputs": [
+    {
+      "path": "/workspace/suitecut/benchmarks/native-sync/2026-10-10/adaptive-pulsed-120s/recording.mp4",
+      "fullyDecodedVideoFrames": 3658,
+      "nativeVideoFrames": 3658,
+      "distinctImageFPS": 24.529797703663203,
+      "maximumImageHoldMs": 3566.6666666666665,
+      "decodedInteriorSilenceMs": 93640,
+      "maximumInteriorSilenceMs": 17080,
+      "decodedSilenceLongerThanExpectedPulseMs": [
+        {
+          "startMs": 1690,
+          "endMs": 3080,
+          "durationMs": 1390
+        },
+        {
+          "startMs": 3440,
+          "endMs": 20520,
+          "durationMs": 17080
+        },
+        {
+          "startMs": 20860,
+          "endMs": 22750,
+          "durationMs": 1890
+        },
+        {
+          "startMs": 23100,
+          "endMs": 24240,
+          "durationMs": 1140
+        }
+      ],
+      "preEncoderPulseOnsets": 114,
+      "visualPulseOnsets": 102,
+      "pulseVisualMinusNativeAudioMs": {
+        "samples": 97,
+        "median": 23.333333333328483,
+        "p95Absolute": 56.66666666667152,
+        "maximumAbsolute": 173.33333333333348,
+        "unmatched": [
+          {
+            "audioMs": 20500,
+            "nearestVideoMinusAudioMs": 1533.3333333333321
+          },
+          {
+            "audioMs": 20540,
+            "nearestVideoMinusAudioMs": 1493.3333333333321
+          },
+          {
+            "audioMs": 20790,
+            "nearestVideoMinusAudioMs": 1243.3333333333321
+          },
+          {
+            "audioMs": 20830,
+            "nearestVideoMinusAudioMs": 1203.3333333333321
+          },
+          {
+            "audioMs": 22730,
+            "nearestVideoMinusAudioMs": -696.6666666666679
+          },
+          {
+            "audioMs": 22790,
+            "nearestVideoMinusAudioMs": -756.6666666666679
+          },
+          {
+            "audioMs": 22910,
+            "nearestVideoMinusAudioMs": -876.6666666666679
+          },
+          {
+            "audioMs": 22950,
+            "nearestVideoMinusAudioMs": -916.6666666666679
+          },
+          {
+            "audioMs": 24220,
+            "nearestVideoMinusAudioMs": -2186.666666666668
+          },
+          {
+            "audioMs": 25210,
+            "nearestVideoMinusAudioMs": 1723.3333333333321
+          },
+          {
+            "audioMs": 26210,
+            "nearestVideoMinusAudioMs": 723.3333333333321
+          },
+          {
+            "audioMs": 27210,
+            "nearestVideoMinusAudioMs": -276.6666666666679
+          },
+          {
+            "audioMs": 27430,
+            "nearestVideoMinusAudioMs": -496.6666666666679
+          },
+          {
+            "audioMs": 27450,
+            "nearestVideoMinusAudioMs": -516.6666666666679
+          }
+        ]
+      }
+    },
+    {
+      "path": "/workspace/suitecut/benchmarks/native-sync/2026-10-10/adaptive-pulsed-120s/receiver.flv",
+      "fullyDecodedVideoFrames": 3644,
+      "nativeVideoFrames": 3644,
+      "distinctImageFPS": 24.5993413830955,
+      "maximumImageHoldMs": 3566.6666666666665,
+      "decodedInteriorSilenceMs": 93100,
+      "maximumInteriorSilenceMs": 17080,
+      "decodedSilenceLongerThanExpectedPulseMs": [
+        {
+          "startMs": 1120,
+          "endMs": 2510,
+          "durationMs": 1390
+        },
+        {
+          "startMs": 2870,
+          "endMs": 19950,
+          "durationMs": 17080
+        },
+        {
+          "startMs": 20300,
+          "endMs": 22180,
+          "durationMs": 1880
+        },
+        {
+          "startMs": 22530,
+          "endMs": 23680,
+          "durationMs": 1150
+        }
+      ],
+      "preEncoderPulseOnsets": 113,
+      "visualPulseOnsets": 102,
+      "pulseVisualMinusNativeAudioMs": {
+        "samples": 100,
+        "median": 23.33333333333212,
+        "p95Absolute": 50.33333333333338,
+        "maximumAbsolute": 213.33333333333212,
+        "unmatched": [
+          {
+            "audioMs": 19930,
+            "nearestVideoMinusAudioMs": -1130.0
+          },
+          {
+            "audioMs": 19970,
+            "nearestVideoMinusAudioMs": -1170.0
+          },
+          {
+            "audioMs": 20230,
+            "nearestVideoMinusAudioMs": -1430.0
+          },
+          {
+            "audioMs": 20260,
+            "nearestVideoMinusAudioMs": -1460.0
+          },
+          {
+            "audioMs": 22160,
+            "nearestVideoMinusAudioMs": 640.0
+          },
+          {
+            "audioMs": 22340,
+            "nearestVideoMinusAudioMs": 460.0
+          },
+          {
+            "audioMs": 22380,
+            "nearestVideoMinusAudioMs": 420.0
+          },
+          {
+            "audioMs": 23660,
+            "nearestVideoMinusAudioMs": -860.0
+          },
+          {
+            "audioMs": 24650,
+            "nearestVideoMinusAudioMs": -1850.0
+          },
+          {
+            "audioMs": 25640,
+            "nearestVideoMinusAudioMs": 1026.6666666666679
+          }
+        ]
+      }
+    }
+  ],
+  "resources": {
+    "captureSamples": 106,
+    "nativeMeanCPUCores": 1.1651222810173543,
+    "nativeAggregateRSSPeakMiB": 1432.4375,
+    "aggregateRSSFirstWindowMedianMiB": 1333.484375,
+    "aggregateRSSLastWindowMedianMiB": 1410.041015625,
+    "rssWindowSeconds": 30.06073033825,
+    "rssIsSummedNotPrivateMemory": true,
+    "wholeCEFLeakFreedomProven": false
+  },
+  "sourceGapCount": 65,
+  "maxCallbackDelayMs": 2725.8911400000006
+}

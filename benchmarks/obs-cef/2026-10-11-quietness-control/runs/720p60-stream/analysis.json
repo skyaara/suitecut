@@ -1,0 +1,263 @@
+{
+  "case": "720p60-stream",
+  "backend": "obs-cef",
+  "width": 1280,
+  "height": 720,
+  "fps": 60,
+  "mode": "stream",
+  "durationRequestedMs": 120000,
+  "workloadStatus": "completed; media validation pending",
+  "harnessValid": true,
+  "qualityPassed": false,
+  "issues": [
+    "Silence in continuous source",
+    "Video marker held beyond two frame intervals",
+    "Source audio content differs from AudioContext marker beyond one video interval + 10 ms marker resolution"
+  ],
+  "mediaBytes": 54681956,
+  "mediaDurationSeconds": 120.17,
+  "markerConfidence": 1.0,
+  "motion": {
+    "frames": 7200,
+    "durationSeconds": 119.98299999999999,
+    "distinctFps": 56.52467432886326,
+    "repeatedFraction": 0.05792471176552294,
+    "maxHoldMs": 99.99999999999432,
+    "maxPtsGapMs": 17.000000000010118,
+    "nonIncreasingPts": 0,
+    "markerRegressions": 0,
+    "missedLogicalTicks": 417
+  },
+  "fullOutputMotion": {
+    "frames": 7209,
+    "durationSeconds": 120.133,
+    "distinctFps": 56.52068956906096,
+    "repeatedFraction": 0.05799112097669257,
+    "maxHoldMs": 99.99999999999432,
+    "maxPtsGapMs": 17.000000000010118,
+    "nonIncreasingPts": 0,
+    "markerRegressions": 0,
+    "missedLogicalTicks": 418
+  },
+  "capturedActionStates": [
+    0,
+    1,
+    3,
+    7,
+    15
+  ],
+  "audio": {
+    "present": true,
+    "stream": {
+      "index": 1,
+      "codec_name": "aac",
+      "codec_long_name": "AAC (Advanced Audio Coding)",
+      "profile": "LC",
+      "codec_type": "audio",
+      "codec_tag_string": "[0][0][0][0]",
+      "codec_tag": "0x0000",
+      "sample_fmt": "fltp",
+      "sample_rate": "48000",
+      "channels": 2,
+      "channel_layout": "stereo",
+      "bits_per_sample": 0,
+      "initial_padding": 0,
+      "missing_streams": "0",
+      "r_frame_rate": "0/0",
+      "avg_frame_rate": "0/0",
+      "time_base": "1/1000",
+      "start_pts": 0,
+      "start_time": "0.000000",
+      "bit_rate": "131072",
+      "extradata_size": 5,
+      "disposition": {
+        "default": 0,
+        "dub": 0,
+        "original": 0,
+        "comment": 0,
+        "lyrics": 0,
+        "karaoke": 0,
+        "forced": 0,
+        "hearing_impaired": 0,
+        "visual_impaired": 0,
+        "clean_effects": 0,
+        "attached_pic": 0,
+        "timed_thumbnails": 0,
+        "non_diegetic": 0,
+        "captions": 0,
+        "descriptions": 0,
+        "metadata": 0,
+        "dependent": 0,
+        "still_image": 0,
+        "multilayer": 0
+      }
+    },
+    "decodedSamples": 5768160,
+    "silence": {
+      "thresholdRms": 0.001,
+      "resolutionMs": 5,
+      "activeBins": 24008,
+      "leadingMs": 10,
+      "trailingMs": 0,
+      "interiorTotalMs": 120,
+      "interiorMaximumMs": 50,
+      "intervals": [
+        {
+          "fromMs": 0,
+          "durationMs": 10,
+          "interior": false
+        },
+        {
+          "fromMs": 15,
+          "durationMs": 5,
+          "interior": true
+        },
+        {
+          "fromMs": 4910,
+          "durationMs": 20,
+          "interior": true
+        },
+        {
+          "fromMs": 50435,
+          "durationMs": 5,
+          "interior": true
+        },
+        {
+          "fromMs": 68705,
+          "durationMs": 40,
+          "interior": true
+        },
+        {
+          "fromMs": 68760,
+          "durationMs": 50,
+          "interior": true
+        }
+      ]
+    },
+    "anchors": [
+      {
+        "outputTime": 1.0,
+        "videoClockTime": 3.2,
+        "videoPts": 1.004,
+        "anchor": {
+          "frame": 151742,
+          "correlation": 0.9991863975305662
+        },
+        "audioMinusVideoMs": -38.70833333333357
+      },
+      {
+        "outputTime": 31.0,
+        "videoClockTime": 33.19,
+        "videoPts": 31.004,
+        "anchor": {
+          "frame": 1591196,
+          "correlation": 0.9997658985032329
+        },
+        "audioMinusVideoMs": -40.08333333332814
+      },
+      {
+        "outputTime": 61.0,
+        "videoClockTime": 63.2,
+        "videoPts": 61.004,
+        "anchor": {
+          "frame": 3030618,
+          "correlation": 0.9996316060121463
+        },
+        "audioMinusVideoMs": -62.12500000000176
+      },
+      {
+        "outputTime": 91.0,
+        "videoClockTime": 93.11,
+        "videoPts": 91.004,
+        "anchor": {
+          "frame": 4466153,
+          "correlation": 0.9995904970213765
+        },
+        "audioMinusVideoMs": -65.14583333333235
+      }
+    ],
+    "sync": {
+      "method": "Known generated sample content versus encoded AudioContext clock marker; nearest video frame",
+      "acceptedAnchors": 4,
+      "totalAnchors": 4,
+      "correlationThreshold": 0.85,
+      "medianMs": -51.10416666666495,
+      "maximumAbsoluteMs": 65.14583333333235,
+      "quantization": "10 ms marker plus nearest output video frame; excludes display/network latency",
+      "investigationThresholdMs": 26.666666666666668
+    },
+    "activeWindow": {
+      "quietTotalMs": 115,
+      "quietMaximumMs": 50,
+      "observedAudioSeconds": 119.995,
+      "missingCoverageMs": 0,
+      "intervalCount": 4,
+      "quietFraction": 0.0009583732655527314,
+      "quietMsPerMinute": 57.502395933163875
+    }
+  },
+  "resources": {
+    "activeSamples": 240,
+    "boundary": "Controller, capture/browser children and encoders; receiver, display and Pulse reported separately/excluded",
+    "cpuMeanCores": 2.130507846449659,
+    "cpuP95Cores": 2.264957964777724,
+    "rssPeakMiB": 1060.63671875,
+    "rssMeanMiB": 1042.2050455729166,
+    "rssSlopeMiBPerMinuteAfterWarmup": null,
+    "pssCompleteSamples": 0,
+    "pssPeakMiB": null,
+    "pssSlopeMiBPerMinuteAfterWarmup": null,
+    "nodeHeapSlopeMiBPerMinuteAfterWarmup": null,
+    "nodeExternalSlopeMiBPerMinuteAfterWarmup": null,
+    "cpuMeanByRole": {
+      "audio-utility": 0.011895560157581938,
+      "controller": 0.010387999673154331,
+      "gpu": 0.08379746653748014,
+      "obs": 1.8593397713745368,
+      "obs-browser-page": 0.00032998911797057454,
+      "renderer": 0.16475705958893488
+    },
+    "samplerDurationP95Ms": 19.77299817663151,
+    "samplerCpuMeanCores": 0.012878291267205268,
+    "memoryGuardExceeded": false,
+    "ussPeakMiB": null,
+    "ussSlopeMiBPerMinuteAfterWarmup": null,
+    "hostMemoryEventsDelta": {
+      "low": 0,
+      "high": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_kill": 0,
+      "oom_group_kill": 0
+    },
+    "hostQuotaThrottledPeriodsDelta": 0,
+    "hostCgroupPeakSampledMemoryMiB": 7266.9453125
+  },
+  "obsBefore": {
+    "activeFps": 59.01639580327879,
+    "availableDiskSpace": 1124.171875,
+    "averageFrameRenderTime": 1.26297,
+    "cpuUsage": 17.464788732394364,
+    "memoryUsage": 303.453125,
+    "outputSkippedFrames": 0,
+    "outputTotalFrames": 0,
+    "renderSkippedFrames": 1,
+    "renderTotalFrames": 123,
+    "webSocketSessionIncomingMessages": 23,
+    "webSocketSessionOutgoingMessages": 29
+  },
+  "obsAfter": {
+    "activeFps": 60.0000024000001,
+    "availableDiskSpace": 1070.6328125,
+    "averageFrameRenderTime": 9.152618,
+    "cpuUsage": 36.906627489389486,
+    "memoryUsage": 350,
+    "outputSkippedFrames": 0,
+    "outputTotalFrames": 7207,
+    "renderSkippedFrames": 14,
+    "renderTotalFrames": 7475,
+    "webSocketSessionIncomingMessages": 159,
+    "webSocketSessionOutgoingMessages": 168
+  },
+  "obsAudioEvents": []
+}

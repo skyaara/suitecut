@@ -1,0 +1,123 @@
+{
+  "backend": "ts-external",
+  "mode": "record",
+  "durationRequestedMs": 30000,
+  "width": 1920,
+  "height": 1080,
+  "fps": 30,
+  "status": "completed; media validation pending",
+  "startedAt": "2026-10-10T14:01:29.399Z",
+  "profile": "performance",
+  "encoding": {
+    "video": "H264",
+    "preset": "veryfast",
+    "crf": 18,
+    "bitrateKbps": null,
+    "encoderThreads": 1,
+    "audio": "silent AAC 48kHz stereo 128kbps; silent page"
+  },
+  "recordingPath": "/workspace/suitecut/benchmarks/publication/2026-10-10/runs/record-ts-external-01/recording.mkv",
+  "receiverPath": "/workspace/suitecut/benchmarks/publication/2026-10-10/runs/record-ts-external-01/receiver.flv",
+  "phases": [
+    {
+      "name": "static",
+      "atMs": 0.31418500000017957,
+      "monotonic": 150660.770491962
+    },
+    {
+      "name": "canvas",
+      "atMs": 10046.042599,
+      "monotonic": 150670.713697156
+    },
+    {
+      "name": "scroll",
+      "atMs": 20028.163869,
+      "monotonic": 150680.700393001
+    }
+  ],
+  "events": [
+    {
+      "name": "click, input and selection",
+      "atMs": 10633.99052
+    }
+  ],
+  "browserVersion": "151.0.7922.34",
+  "browserReadySeconds": 1.1832602089853026,
+  "beforeCapture": {
+    "marker": 34,
+    "rendered": 32,
+    "mode": "canvas",
+    "scrollY": 0,
+    "scrollEvents": 0,
+    "keyEvents": 0,
+    "clicks": 0,
+    "value": "",
+    "choice": "First",
+    "actionMask": 0,
+    "width": 1920,
+    "height": 1080
+  },
+  "outputReadySeconds": 0.38014583798940293,
+  "activeBaseline": {
+    "marker": 87,
+    "rendered": 59,
+    "mode": "canvas",
+    "scrollY": 0,
+    "scrollEvents": 0,
+    "keyEvents": 0,
+    "clicks": 0,
+    "value": "",
+    "choice": "First",
+    "actionMask": 0,
+    "width": 1920,
+    "height": 1080
+  },
+  "activeStartMonotonic": 150660.656555298,
+  "nodeBefore": {
+    "rss": 146157568,
+    "heapTotal": 122253312,
+    "heapUsed": 81708824,
+    "external": 10815973,
+    "arrayBuffers": 6809817
+  },
+  "observedActiveMs": 25104.770533000003,
+  "scrollCommands": 20,
+  "activeEndMonotonic": 150690.729404701,
+  "activeMs": 30064.573867000003,
+  "afterCapture": {
+    "marker": 989,
+    "rendered": 948,
+    "mode": "scroll",
+    "scrollY": 720,
+    "scrollEvents": 20,
+    "keyEvents": 1,
+    "clicks": 1,
+    "value": "SuiteCut benchmark",
+    "choice": "Second",
+    "actionMask": 15,
+    "width": 1920,
+    "height": 1080
+  },
+  "nodeAfter": {
+    "rss": 169631744,
+    "heapTotal": 129855488,
+    "heapUsed": 62243472,
+    "external": 9804008,
+    "arrayBuffers": 5806228
+  },
+  "originalRecordPath": "/workspace/suitecut/benchmarks/publication/2026-10-10/runs/record-ts-external-01/suitecut-source-cc86bc0f-a0d0-4ea2-9579-a1d9dd589aa8-45ba99a8-34c0-4523-be77-b20b7ca83da8.webm",
+  "finalizationSeconds": 0.06335269700502977,
+  "eventLoop": {
+    "meanMs": 21.32360626934796,
+    "p99Ms": 34.537471,
+    "maxMs": 187.957247
+  },
+  "nodeAfterCleanup": {
+    "rss": 169762816,
+    "heapTotal": 129855488,
+    "heapUsed": 63821344,
+    "external": 9812556,
+    "arrayBuffers": 5810700
+  },
+  "completedAt": "2026-10-10T14:02:04.441Z"
+}

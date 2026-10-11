@@ -223,6 +223,55 @@ describe('live stream publishing', () => {
     await stream.stop()
   })
 
+  it('stamps the selected pixels with capture time across delayed processing', async () => {
+    let now = 1000
+    const clock = vi.spyOn(performance, 'now').mockImplementation(() => now)
+    let release = (): void => undefined
+    const blocked = new Promise<void>((resolve) => {
+      release = resolve
+    })
+    const capturedTimes: number[] = []
+    const stream = createLiveStream(
+      'ffmpeg',
+      { url: 'rtmp://localhost/live/key' },
+      30,
+      { width: 640, height: 360 },
+      undefined,
+      async (frame) => {
+        await blocked
+        return frame
+      },
+      undefined,
+      undefined,
+      undefined,
+      {
+        frame: (_index, at) => capturedTimes.push(at),
+        data: () => Promise.resolve(),
+        health: () => ({
+          outputLagMs: 0,
+          progressAgeMs: 0,
+          networkBlockedMs: 0,
+          networkQueuedBytes: 0,
+        }),
+      },
+    )
+    try {
+      stream.update(Buffer.from('first'), 900)
+      now = 1100
+      stream.update(Buffer.from('second'), 1050)
+      release()
+      await vi.advanceTimersByTimeAsync(50)
+      expect(frames[0]?.toString()).toBe('first')
+      expect(capturedTimes[0]).toBe(900)
+      expect(frames.at(-1)?.toString()).toBe('second')
+      expect(capturedTimes.at(-1)).toBe(1050)
+    } finally {
+      release()
+      await stream.stop()
+      clock.mockRestore()
+    }
+  })
+
   it('reports a disconnect without exposing FFmpeg diagnostics or stream keys', async () => {
     const stream = createLiveStream('ffmpeg', { url: 'rtmps://localhost/live/secret-key' }, 30, {
       width: 640,

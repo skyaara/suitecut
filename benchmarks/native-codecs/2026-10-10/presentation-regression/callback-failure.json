@@ -1,0 +1,109 @@
+{
+  "schemaVersion": 1,
+  "startedAt": "2026-10-09T19:49:47.155Z",
+  "endedAt": "2026-10-09T19:49:47.523Z",
+  "status": "failed",
+  "rootDirectory": "/workspace/suitecut",
+  "tests": [
+    {
+      "id": "c492fc96-4051-4bd4-a709-389ac22fc6fa",
+      "order": 0,
+      "title": "Expected callback failure",
+      "titlePath": [
+        "Expected callback failure"
+      ],
+      "projectName": "native-chromium",
+      "location": {
+        "file": "/workspace/suitecut/scripts/verify-native-recording.mjs",
+        "line": 1,
+        "column": 1
+      },
+      "attempts": [
+        {
+          "id": "dc804379-6fd6-44d2-ac48-748a4b947946",
+          "retry": 0,
+          "status": "failed",
+          "clock": {
+            "originEpochMs": 1791575387155,
+            "originMonotonicMs": 15391.893397,
+            "startedAt": "2026-10-09T19:49:47.155Z"
+          },
+          "durationMs": 171.15776899999946,
+          "pages": [
+            {
+              "id": "82989395-2216-490a-9197-e67c239e3170",
+              "kind": "main",
+              "initialUrl": "http://127.0.0.1:35167/",
+              "createdAtMs": 4.643313000000489
+            }
+          ],
+          "events": [
+            {
+              "id": "2f20ce74-6cbd-448c-a612-37a487504787",
+              "atMs": 62.011593000001085,
+              "pageId": "82989395-2216-490a-9197-e67c239e3170",
+              "type": "hold",
+              "durationMs": 100,
+              "reason": "author"
+            }
+          ],
+          "steps": [],
+          "artifacts": [
+            {
+              "id": "9a6ecbb4-ff9a-4aa0-88d3-0f11235e6a90",
+              "name": "suitecut-source-dc804379-6fd6-44d2-ac48-748a4b947946-9a6ecbb4-ff9a-4aa0-88d3-0f11235e6a90.webm",
+              "role": "source-video",
+              "contentType": "video/webm",
+              "path": "/workspace/suitecut/benchmarks/native-codecs/2026-10-10/presentation-regression/suitecut-source-dc804379-6fd6-44d2-ac48-748a4b947946-9a6ecbb4-ff9a-4aa0-88d3-0f11235e6a90.webm",
+              "pathKind": "absolute",
+              "sizeBytes": 22517,
+              "pageId": "82989395-2216-490a-9197-e67c239e3170",
+              "createdAtMs": 4.631117999999333
+            }
+          ],
+          "media": [
+            {
+              "id": "media-709bb8f6-80b7-45d9-a8b3-a88d2e555bb9",
+              "artifactId": "9a6ecbb4-ff9a-4aa0-88d3-0f11235e6a90",
+              "formatName": "matroska,webm",
+              "durationMs": 167,
+              "streams": [
+                {
+                  "kind": "video",
+                  "codec": "vp9",
+                  "pixelFormat": "yuv420p",
+                  "colorRange": "limited",
+                  "colorSpace": "bt709",
+                  "colorTransfer": "iec61966-2-1",
+                  "colorPrimaries": "bt709",
+                  "width": 960,
+                  "height": 540,
+                  "durationMs": 167,
+                  "frameRate": 60,
+                  "timeBase": "1/1000",
+                  "hasVariableFrameRate": false
+                }
+              ]
+            }
+          ],
+          "videoTiming": [
+            {
+              "pageId": "82989395-2216-490a-9197-e67c239e3170",
+              "mediaId": "media-709bb8f6-80b7-45d9-a8b3-a88d2e555bb9",
+              "firstFrameEpochMs": 1791575387216,
+              "sourceStartedAtMs": 4.631117999999333
+            }
+          ],
+          "errors": [
+            {
+              "message": "Deliberate callback failure",
+              "name": "Error",
+              "stack": "Error: Deliberate callback failure\n    at assert.rejects.recordNative.source.source (file:///workspace/suitecut/scripts/verify-native-recording.mjs:294:15)"
+            }
+          ],
+          "diagnostics": []
+        }
+      ]
+    }
+  ]
+}

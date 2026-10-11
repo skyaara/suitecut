@@ -1,0 +1,24 @@
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+browserType.connectOverCDP: Protocol error (Browser.setDownloadBehavior): Browser context management is not supported.
+Call log:
+[2m  - <ws preparing> retrieving websocket url from http://127.0.0.1:9222[22m
+[2m  - <ws connecting> ws://127.0.0.1:9222/devtools/browser/8a8cd46b-9017-4ed4-ac3a-d257e77ff558[22m
+[2m  - <ws connected> ws://127.0.0.1:9222/devtools/browser/8a8cd46b-9017-4ed4-ac3a-d257e77ff558[22m
+[2m  - <ws disconnecting> ws://127.0.0.1:9222/devtools/browser/8a8cd46b-9017-4ed4-ac3a-d257e77ff558[22m
+[2m  - <ws disconnected> ws://127.0.0.1:9222/devtools/browser/8a8cd46b-9017-4ed4-ac3a-d257e77ff558 code=1000 reason=[22m
+
+    at /workspace/suitecut/benchmarks/obs-cef/native-audio-profile/probe.mjs:31:25 {
+  log: [
+    '  - <ws preparing> retrieving websocket url from http://127.0.0.1:9222',
+    '  - <ws connecting> ws://127.0.0.1:9222/devtools/browser/8a8cd46b-9017-4ed4-ac3a-d257e77ff558',
+    '  - <ws connected> ws://127.0.0.1:9222/devtools/browser/8a8cd46b-9017-4ed4-ac3a-d257e77ff558',
+    '  - <ws disconnecting> ws://127.0.0.1:9222/devtools/browser/8a8cd46b-9017-4ed4-ac3a-d257e77ff558',
+    '  - <ws disconnected> ws://127.0.0.1:9222/devtools/browser/8a8cd46b-9017-4ed4-ac3a-d257e77ff558 code=1000 reason='
+  ],
+  name: 'Error'
+}
+
+Node.js v24.19.0

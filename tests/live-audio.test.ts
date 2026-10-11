@@ -14,6 +14,15 @@ function tone(value: number): Buffer {
 }
 
 describe('live audio timeline', () => {
+  it('retains native presentation samples ahead of receipt time', () => {
+    const audio = new LiveAudioBuffer()
+    const now = performance.now()
+    audio.push(now + 250, tone(1234))
+    expect(audio.read(now + 250, 960).equals(tone(1234))).toBe(true)
+    audio.push(now + 1000, tone(2345))
+    expect(audio.read(now + 1000, 960).equals(Buffer.alloc(3840))).toBe(true)
+  })
+
   it('places timestamped samples and fills missing time with silence', () => {
     const audio = new LiveAudioBuffer()
     const now = performance.now()

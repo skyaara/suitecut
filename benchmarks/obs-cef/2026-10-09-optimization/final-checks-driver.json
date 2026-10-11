@@ -1,0 +1,168 @@
+{
+  "startedAt": "2026-10-09T03:08:43.487652+00:00",
+  "stages": [
+    {
+      "label": "soak-complete-media",
+      "command": [
+        "python3",
+        "benchmarks/obs-cef/complete-soak-validation.py"
+      ],
+      "environmentOverrides": {},
+      "startedAt": "2026-10-09T03:08:43.488997+00:00",
+      "status": "passed",
+      "exitCode": 0,
+      "completedAt": "2026-10-09T03:08:44.814948+00:00"
+    },
+    {
+      "label": "soak-audio-continuity",
+      "command": [
+        "python3",
+        "benchmarks/obs-cef/analyze-audio-continuity.py",
+        "soak",
+        "--diagnostic"
+      ],
+      "environmentOverrides": {},
+      "startedAt": "2026-10-09T03:08:44.815243+00:00",
+      "status": "passed",
+      "exitCode": 0,
+      "completedAt": "2026-10-09T03:09:16.578704+00:00"
+    },
+    {
+      "label": "soak-packet-motion",
+      "command": [
+        "python3",
+        "benchmarks/obs-cef/analyze-soak-media.py"
+      ],
+      "environmentOverrides": {},
+      "startedAt": "2026-10-09T03:09:16.580089+00:00",
+      "status": "passed",
+      "exitCode": 0,
+      "completedAt": "2026-10-09T03:09:21.309271+00:00"
+    },
+    {
+      "label": "comparison",
+      "command": [
+        "node",
+        "benchmarks/obs-cef/run-optimized.mjs"
+      ],
+      "environmentOverrides": {
+        "BENCHMARK_OUTPUT": "/workspace/suitecut/benchmarks/obs-cef/2026-10-09-optimization/comparison-final",
+        "BENCHMARK_MEDIA": "/workspace/suitecut/.suitecut/obs-cef-optimization/comparison-final",
+        "BENCHMARK_CASE": "720p60-canvas,1080p60-canvas,4k30-canvas,4k60-scroll",
+        "BENCHMARK_TRIALS": "3"
+      },
+      "startedAt": "2026-10-09T03:09:21.309841+00:00",
+      "status": "passed",
+      "exitCode": 0,
+      "completedAt": "2026-10-09T03:18:18.996120+00:00"
+    },
+    {
+      "label": "features-stream-final-1",
+      "command": [
+        "node",
+        "benchmarks/obs-cef/features.mjs"
+      ],
+      "environmentOverrides": {
+        "FEATURE_OUTPUT": "/workspace/suitecut/benchmarks/obs-cef/2026-10-09-optimization/features-stream-final-1",
+        "FEATURE_MEDIA": "/workspace/suitecut/.suitecut/obs-cef-optimization/features-stream-final-1",
+        "FEATURE_MODE": "stream",
+        "FEATURE_BACKENDS": "obs,native"
+      },
+      "startedAt": "2026-10-09T03:18:18.999046+00:00",
+      "status": "passed",
+      "exitCode": 0,
+      "completedAt": "2026-10-09T03:19:22.559143+00:00"
+    },
+    {
+      "label": "features-stream-final-2",
+      "command": [
+        "node",
+        "benchmarks/obs-cef/features.mjs"
+      ],
+      "environmentOverrides": {
+        "FEATURE_OUTPUT": "/workspace/suitecut/benchmarks/obs-cef/2026-10-09-optimization/features-stream-final-2",
+        "FEATURE_MEDIA": "/workspace/suitecut/.suitecut/obs-cef-optimization/features-stream-final-2",
+        "FEATURE_MODE": "stream",
+        "FEATURE_BACKENDS": "obs,native"
+      },
+      "startedAt": "2026-10-09T03:19:22.559962+00:00",
+      "status": "passed",
+      "exitCode": 0,
+      "completedAt": "2026-10-09T03:20:26.970503+00:00"
+    },
+    {
+      "label": "features-stream-final-3",
+      "command": [
+        "node",
+        "benchmarks/obs-cef/features.mjs"
+      ],
+      "environmentOverrides": {
+        "FEATURE_OUTPUT": "/workspace/suitecut/benchmarks/obs-cef/2026-10-09-optimization/features-stream-final-3",
+        "FEATURE_MEDIA": "/workspace/suitecut/.suitecut/obs-cef-optimization/features-stream-final-3",
+        "FEATURE_MODE": "stream",
+        "FEATURE_BACKENDS": "obs,native"
+      },
+      "startedAt": "2026-10-09T03:20:26.971494+00:00",
+      "status": "passed",
+      "exitCode": 0,
+      "completedAt": "2026-10-09T03:21:30.151915+00:00"
+    },
+    {
+      "label": "features-record-final",
+      "command": [
+        "node",
+        "benchmarks/obs-cef/features.mjs"
+      ],
+      "environmentOverrides": {
+        "FEATURE_OUTPUT": "/workspace/suitecut/benchmarks/obs-cef/2026-10-09-optimization/features-record-final",
+        "FEATURE_MEDIA": "/workspace/suitecut/.suitecut/obs-cef-optimization/features-record-final",
+        "FEATURE_MODE": "record",
+        "FEATURE_BACKENDS": "obs,native"
+      },
+      "startedAt": "2026-10-09T03:21:30.153120+00:00",
+      "status": "passed",
+      "exitCode": 0,
+      "completedAt": "2026-10-09T03:22:32.218769+00:00"
+    },
+    {
+      "label": "native-browser",
+      "command": [
+        "node",
+        "scripts/verify-native-browser.mjs"
+      ],
+      "environmentOverrides": {},
+      "startedAt": "2026-10-09T03:22:32.239734+00:00",
+      "status": "passed",
+      "exitCode": 0,
+      "completedAt": "2026-10-09T03:22:40.476397+00:00"
+    },
+    {
+      "label": "native-recording",
+      "command": [
+        "node",
+        "scripts/verify-native-recording.mjs"
+      ],
+      "environmentOverrides": {},
+      "startedAt": "2026-10-09T03:22:40.478521+00:00",
+      "status": "passed",
+      "exitCode": 0,
+      "completedAt": "2026-10-09T03:22:54.487582+00:00"
+    },
+    {
+      "label": "native-stream",
+      "command": [
+        "node",
+        "scripts/verify-native-stream.mjs"
+      ],
+      "environmentOverrides": {},
+      "startedAt": "2026-10-09T03:22:54.488348+00:00",
+      "status": "passed",
+      "exitCode": 0,
+      "completedAt": "2026-10-09T03:23:33.337577+00:00"
+    }
+  ],
+  "longRunMediaStatus": "failed",
+  "longRunMediaError": "AssertionError [ERR_ASSERTION]: receiver 5: A/V drift 298.3333333333328ms\n    at file:///workspace/suitecut/benchmarks/obs-cef/soak.mjs:66:86",
+  "status": "passed",
+  "completedAt": "2026-10-09T03:23:33.338936+00:00"
+}

@@ -1,0 +1,49 @@
+{
+  "startedAt": "2026-10-09T20:26:31.375Z",
+  "cases": [
+    {
+      "audioCodec": "pcm_s16le",
+      "destination": "/workspace/suitecut/benchmarks/native-audio/2026-10-10/stress-1080p/pcm_s16le.mkv",
+      "final": {
+        "ready": true,
+        "stopped": true,
+        "paused": false,
+        "videoFrames": 905,
+        "audioSamples": 1447687,
+        "repeatedFrames": 43,
+        "droppedAudioSamples": 0,
+        "missingAudioSamples": 38984,
+        "lateAudioSamples": 0,
+        "queuedVideoBytes": 0,
+        "queuedAudioBytes": 0,
+        "startedMs": 3984.581634,
+        "durationMs": 30166.666666666668,
+        "maximumEncodeMs": 308.406422,
+        "error": ""
+      }
+    },
+    {
+      "audioCodec": "aac",
+      "destination": "/workspace/suitecut/benchmarks/native-audio/2026-10-10/stress-1080p/aac.mkv",
+      "final": {
+        "ready": true,
+        "stopped": true,
+        "paused": false,
+        "videoFrames": 903,
+        "audioSamples": 1443840,
+        "repeatedFrames": 146,
+        "droppedAudioSamples": 0,
+        "missingAudioSamples": 195650,
+        "lateAudioSamples": 0,
+        "queuedVideoBytes": 0,
+        "queuedAudioBytes": 0,
+        "startedMs": 34194.509677,
+        "durationMs": 30100,
+        "maximumEncodeMs": 2566.835092000001,
+        "error": ""
+      }
+    }
+  ],
+  "audioState": "running",
+  "finishedAt": "2026-10-09T20:27:36.015Z"
+}

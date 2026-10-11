@@ -1,0 +1,1 @@
+{"pid": 44499, "cycles": 200, "heapSnapshots": [10, 199], "purpose": "Investigate small post-GC heap drift across recording lifecycles; overlaps memory stress test, excluded from serial comparison."}

@@ -1,0 +1,59 @@
+{
+  "timestamp": "2026-10-09T18:20:33.498139+00:00",
+  "platform": "Linux-6.18.44-x86_64-with-glibc2.41",
+  "sha256": {
+    ".suitecut/native-build/suitecut-browser": "528e468a3f41f15f9f8b024952b4b4b1cc97607e2b01ebae1668e7bd49cfd914",
+    ".suitecut/cef-sdk/Release/libcef.so": "403f6fa4c77007ee2df21fd9c8a0d1bd9d27ad7a7439947499282119ef98b3cb",
+    ".suitecut/native-media-deps/packages.json": "224cc5477923cf5a1eccacff8affdff04860a4b79ecf6b71cc260d59f96f86d5",
+    "pnpm-lock.yaml": "1212669f77e118b6a24381bd544a21cd6295265f0046277ee9c39c53a3c600a2",
+    "sanitizers/media-asan-tested": "6d8b32e0d2490ce684e64907b5986072faf45ca6526156234d9ae1a347bf7ca0",
+    "sanitizers/media-release-test": "e5e1ebfc17180b026a68dba39f20aa91b6bfde72fc2b0c0d119e1be0d6561075",
+    "tsconfig.json": "e9ecf576140fec710b181c83bd535c9ea1bf254b70fb303ed4ebcb640f819cac",
+    "eslint.config.js": "ed0cdf191c4fb2fe64ce9b58f1089fafc57919f6c138e8856380230caed10fdf"
+  },
+  "cefVersion": "152.0.8+g1ce985c+chromium-152.0.7977.134",
+  "ffmpeg": [
+    "ffmpeg version 7.1.5-0+deb13u1 Copyright (c) 2000-2026 the FFmpeg developers",
+    "built with gcc 14 (Debian 14.2.0-19)",
+    "configuration: --prefix=/usr --extra-version=0+deb13u1 --toolchain=hardened --libdir=/usr/lib/x86_64-linux-gnu --incdir=/usr/include/x86_64-linux-gnu --arch=amd64 --enable-gpl --disable-stripping --disable-libmfx --disable-omx --enable-gnutls --enable-libaom --enable-libass --enable-libbs2b --enable-libcdio --enable-libcodec2 --enable-libdav1d --enable-libflite --enable-libfontconfig --enable-libfreetype --enable-libfribidi --enable-libglslang --enable-libgme --enable-libgsm --enable-libharfbuzz --enable-libmp3lame --enable-libmysofa --enable-libopenjpeg --enable-libopenmpt --enable-libopus --enable-librubberband --enable-libshine --enable-libsnappy --enable-libsoxr --enable-libspeex --enable-libtheora --enable-libtwolame --enable-libvidstab --enable-libvorbis --enable-libvpx --enable-libwebp --enable-libx265 --enable-libxml2 --enable-libxvid --enable-libzimg --enable-openal --enable-opencl --enable-opengl --disable-sndio --enable-libvpl --enable-libdc1394 --enable-libdrm --enable-libiec61883 --enable-chromaprint --enable-frei0r --enable-ladspa --enable-libbluray --enable-libcaca --enable-libdvdnav --enable-libdvdread --enable-libjack --enable-libpulse --enable-librabbitmq --enable-librist --enable-libsrt --enable-libssh --enable-libsvtav1 --enable-libx264 --enable-libzmq --enable-libzvbi --enable-lv2 --enable-sdl2 --enable-libplacebo --enable-librav1e --enable-pocketsphinx --enable-librsvg --enable-libjxl --enable-shared"
+  ],
+  "playwright": "1.62.1",
+  "cgroupCpuMax": "400000 100000",
+  "cgroupMemoryMax": "17179869184",
+  "gitHead": "2d4158c95217b2b4099898a2508a40f3fa4f121a",
+  "developmentPackages": [
+    {
+      "file": ".suitecut/native-media-deps/packages/libavcodec-dev_7%3a7.1.5-0+deb13u1_amd64.deb",
+      "sha256": "36f190f54441bd3bac0eddcfa4713e41c3b41da6476ac9bb868cc3c9f027fe02"
+    },
+    {
+      "file": ".suitecut/native-media-deps/packages/libavfilter-dev_7%3a7.1.5-0+deb13u1_amd64.deb",
+      "sha256": "499737081b46818f8ad9f918babb09df4549f1cd54cf52e83ede8e0caec6e932"
+    },
+    {
+      "file": ".suitecut/native-media-deps/packages/libavformat-dev_7%3a7.1.5-0+deb13u1_amd64.deb",
+      "sha256": "73edfc824646be309a8379b2e7dd2faa3b9806815ae815651b8ec15f1088da0e"
+    },
+    {
+      "file": ".suitecut/native-media-deps/packages/libavutil-dev_7%3a7.1.5-0+deb13u1_amd64.deb",
+      "sha256": "71aae526cbdb5fb55cb8269427769eca120308393f70590843ba4d1a1b6befdd"
+    },
+    {
+      "file": ".suitecut/native-media-deps/packages/libswresample-dev_7%3a7.1.5-0+deb13u1_amd64.deb",
+      "sha256": "f1dc861dcdbcf61d757a0b7e7f189cf1695433a0935c3ceabcaf58709af2b51b"
+    },
+    {
+      "file": ".suitecut/native-media-deps/packages/libswscale-dev_7%3a7.1.5-0+deb13u1_amd64.deb",
+      "sha256": "85cc0875936727d3ee12ebf1dad87ebef313e7cbc4287280fd4c362e539a3cd0"
+    }
+  ],
+  "finalRunLabel": "final-soak",
+  "sanitizers": {
+    "compileFlags": "-O1 -g -fno-omit-frame-pointer -fsanitize=address,undefined",
+    "ASAN_OPTIONS": "detect_leaks=1:halt_on_error=1",
+    "UBSAN_OPTIONS": "halt_on_error=1:print_stacktrace=1",
+    "suppressions": null
+  },
+  "validationCompletedAt": "2026-10-09T19:01:05.926414+00:00",
+  "postCaptureConfigurationChanges": "Exclude both historical source snapshots from type checking and lint; exclude standalone benchmark MJS collectors outside the typed SDK project. Runtime implementation unchanged."
+}

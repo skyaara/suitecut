@@ -1,0 +1,50 @@
+{
+  "native": {
+    "status": "passed",
+    "tests": 7,
+    "log": "final-native-tests.log"
+  },
+  "cefIntegration": {
+    "startTime": "2026-10-10T11:39:58.642Z",
+    "duration": 22181.008,
+    "expected": 15,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "playback": "passed",
+  "twitch": "recorded",
+  "twitchDecoded": "passed",
+  "twitchStackProtectorTerminations": 0,
+  "sdk": {
+    "build": "passed",
+    "typecheck": "passed",
+    "lint": "passed",
+    "format": "passed",
+    "whitespace": "passed"
+  },
+  "distributionGuards": [
+    {
+      "test": "installer-existing",
+      "exitCode": 0,
+      "expected": true
+    },
+    {
+      "test": "cmake-runtime-mismatch",
+      "exitCode": 1,
+      "expected": false
+    },
+    {
+      "test": "installer-bad-archive",
+      "exitCode": 1,
+      "expected": false
+    }
+  ],
+  "limits": [
+    "Linux x64 only",
+    "Third-party CEF152 binary; not independently rebuilt",
+    "Live audio uncovered-sample coverage remains",
+    "No full CEF/Chromium sanitizer or GPU validation",
+    "No matched OBS performance comparison"
+  ]
+}

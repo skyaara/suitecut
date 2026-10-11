@@ -1,0 +1,325 @@
+{
+  "datasetsChecked": 29,
+  "allPublishedActiveQuietMetricsMatched": true,
+  "results": [
+    {
+      "id": "stream-ts-cef-01",
+      "matchesPublishedActiveQuietMetrics": true,
+      "audioSummary": {
+        "quietTotalMs": 380,
+        "quietMaximumMs": 95,
+        "observedAudioSeconds": 28.64,
+        "missingCoverageMs": 0
+      },
+      "correctedAudioPass": false
+    },
+    {
+      "id": "stream-ts-external-01",
+      "matchesPublishedActiveQuietMetrics": true,
+      "audioSummary": {
+        "quietTotalMs": 3000,
+        "quietMaximumMs": 210,
+        "observedAudioSeconds": 29.69,
+        "missingCoverageMs": 5
+      },
+      "correctedAudioPass": false
+    },
+    {
+      "id": "stream-obs-cef-01",
+      "matchesPublishedActiveQuietMetrics": true,
+      "audioSummary": {
+        "quietTotalMs": 250,
+        "quietMaximumMs": 100,
+        "observedAudioSeconds": 30.16,
+        "missingCoverageMs": 5
+      },
+      "correctedAudioPass": false
+    },
+    {
+      "id": "stream-obs-external-01",
+      "matchesPublishedActiveQuietMetrics": true,
+      "audioSummary": {
+        "quietTotalMs": 650,
+        "quietMaximumMs": 135,
+        "observedAudioSeconds": 30.0,
+        "missingCoverageMs": 25
+      },
+      "correctedAudioPass": false
+    },
+    {
+      "id": "stream-cpp-cef-01",
+      "matchesPublishedActiveQuietMetrics": true,
+      "audioSummary": {
+        "quietTotalMs": 1500,
+        "quietMaximumMs": 220,
+        "observedAudioSeconds": 29.955000000000002,
+        "missingCoverageMs": 5
+      },
+      "correctedAudioPass": false
+    },
+    {
+      "id": "stream-ts-cef-02",
+      "matchesPublishedActiveQuietMetrics": true,
+      "audioSummary": {
+        "quietTotalMs": 575,
+        "quietMaximumMs": 215,
+        "observedAudioSeconds": 28.665,
+        "missingCoverageMs": 0
+      },
+      "correctedAudioPass": false
+    },
+    {
+      "id": "stream-cpp-cef-02",
+      "matchesPublishedActiveQuietMetrics": true,
+      "audioSummary": {
+        "quietTotalMs": 270,
+        "quietMaximumMs": 95,
+        "observedAudioSeconds": 29.965,
+        "missingCoverageMs": 0
+      },
+      "correctedAudioPass": false
+    },
+    {
+      "id": "stream-obs-external-02",
+      "matchesPublishedActiveQuietMetrics": true,
+      "audioSummary": {
+        "quietTotalMs": 1570,
+        "quietMaximumMs": 375,
+        "observedAudioSeconds": 30.03,
+        "missingCoverageMs": 0
+      },
+      "correctedAudioPass": false
+    },
+    {
+      "id": "stream-obs-cef-02",
+      "matchesPublishedActiveQuietMetrics": true,
+      "audioSummary": {
+        "quietTotalMs": 1610,
+        "quietMaximumMs": 155,
+        "observedAudioSeconds": 29.995,
+        "missingCoverageMs": 0
+      },
+      "correctedAudioPass": false
+    },
+    {
+      "id": "stream-ts-external-02",
+      "matchesPublishedActiveQuietMetrics": true,
+      "audioSummary": {
+        "quietTotalMs": 1155,
+        "quietMaximumMs": 135,
+        "observedAudioSeconds": 28.165,
+        "missingCoverageMs": 0
+      },
+      "correctedAudioPass": false
+    },
+    {
+      "id": "stream-obs-cef-03",
+      "matchesPublishedActiveQuietMetrics": true,
+      "audioSummary": {
+        "quietTotalMs": 135,
+        "quietMaximumMs": 55,
+        "observedAudioSeconds": 29.985,
+        "missingCoverageMs": 10
+      },
+      "correctedAudioPass": false
+    },
+    {
+      "id": "stream-obs-external-03",
+      "matchesPublishedActiveQuietMetrics": true,
+      "audioSummary": {
+        "quietTotalMs": 1210,
+        "quietMaximumMs": 245,
+        "observedAudioSeconds": 30.02,
+        "missingCoverageMs": 5
+      },
+      "correctedAudioPass": false
+    },
+    {
+      "id": "stream-cpp-cef-03",
+      "matchesPublishedActiveQuietMetrics": true,
+      "audioSummary": {
+        "quietTotalMs": 1095,
+        "quietMaximumMs": 265,
+        "observedAudioSeconds": 30.060000000000002,
+        "missingCoverageMs": 0
+      },
+      "correctedAudioPass": false
+    },
+    {
+      "id": "stream-ts-external-03",
+      "matchesPublishedActiveQuietMetrics": true,
+      "audioSummary": {
+        "quietTotalMs": 1635,
+        "quietMaximumMs": 110,
+        "observedAudioSeconds": 29.560000000000002,
+        "missingCoverageMs": 0
+      },
+      "correctedAudioPass": false
+    },
+    {
+      "id": "stream-obs-cef-04",
+      "matchesPublishedActiveQuietMetrics": true,
+      "audioSummary": {
+        "quietTotalMs": 525,
+        "quietMaximumMs": 465,
+        "observedAudioSeconds": 29.990000000000002,
+        "missingCoverageMs": 5
+      },
+      "correctedAudioPass": false
+    },
+    {
+      "id": "stream-ts-external-04",
+      "matchesPublishedActiveQuietMetrics": true,
+      "audioSummary": {
+        "quietTotalMs": 785,
+        "quietMaximumMs": 115,
+        "observedAudioSeconds": 29.73,
+        "missingCoverageMs": 0
+      },
+      "correctedAudioPass": false
+    },
+    {
+      "id": "stream-ts-cef-04",
+      "matchesPublishedActiveQuietMetrics": true,
+      "audioSummary": {
+        "quietTotalMs": 1830,
+        "quietMaximumMs": 380,
+        "observedAudioSeconds": 28.935000000000002,
+        "missingCoverageMs": 0
+      },
+      "correctedAudioPass": false
+    },
+    {
+      "id": "stream-cpp-cef-04",
+      "matchesPublishedActiveQuietMetrics": true,
+      "audioSummary": {
+        "quietTotalMs": 1080,
+        "quietMaximumMs": 215,
+        "observedAudioSeconds": 29.93,
+        "missingCoverageMs": 0
+      },
+      "correctedAudioPass": false
+    },
+    {
+      "id": "stream-obs-external-04",
+      "matchesPublishedActiveQuietMetrics": true,
+      "audioSummary": {
+        "quietTotalMs": 620,
+        "quietMaximumMs": 235,
+        "observedAudioSeconds": 30.085,
+        "missingCoverageMs": 10
+      },
+      "correctedAudioPass": false
+    },
+    {
+      "id": "stream-cpp-cef-05",
+      "matchesPublishedActiveQuietMetrics": true,
+      "audioSummary": {
+        "quietTotalMs": 0,
+        "quietMaximumMs": 0,
+        "observedAudioSeconds": 29.925,
+        "missingCoverageMs": 5
+      },
+      "correctedAudioPass": true
+    },
+    {
+      "id": "stream-ts-cef-05",
+      "matchesPublishedActiveQuietMetrics": true,
+      "audioSummary": {
+        "quietTotalMs": 680,
+        "quietMaximumMs": 125,
+        "observedAudioSeconds": 29.1,
+        "missingCoverageMs": 0
+      },
+      "correctedAudioPass": false
+    },
+    {
+      "id": "stream-ts-external-05",
+      "matchesPublishedActiveQuietMetrics": true,
+      "audioSummary": {
+        "quietTotalMs": 1510,
+        "quietMaximumMs": 255,
+        "observedAudioSeconds": 29.695,
+        "missingCoverageMs": 0
+      },
+      "correctedAudioPass": false
+    },
+    {
+      "id": "stream-obs-cef-05",
+      "matchesPublishedActiveQuietMetrics": true,
+      "audioSummary": {
+        "quietTotalMs": 300,
+        "quietMaximumMs": 70,
+        "observedAudioSeconds": 30.03,
+        "missingCoverageMs": 0
+      },
+      "correctedAudioPass": false
+    },
+    {
+      "id": "stream-obs-external-05",
+      "matchesPublishedActiveQuietMetrics": true,
+      "audioSummary": {
+        "quietTotalMs": 695,
+        "quietMaximumMs": 210,
+        "observedAudioSeconds": 30.055,
+        "missingCoverageMs": 10
+      },
+      "correctedAudioPass": false
+    },
+    {
+      "id": "memory-obs-external",
+      "matchesPublishedActiveQuietMetrics": true,
+      "audioSummary": {
+        "quietTotalMs": 12465,
+        "quietMaximumMs": 550,
+        "observedAudioSeconds": 600.0600000000001,
+        "missingCoverageMs": 0
+      },
+      "correctedAudioPass": false
+    },
+    {
+      "id": "memory-ts-cef",
+      "matchesPublishedActiveQuietMetrics": true,
+      "audioSummary": {
+        "quietTotalMs": 407290,
+        "quietMaximumMs": 165645,
+        "observedAudioSeconds": 598.505,
+        "missingCoverageMs": 0
+      },
+      "correctedAudioPass": false
+    },
+    {
+      "id": "memory-obs-cef",
+      "matchesPublishedActiveQuietMetrics": true,
+      "audioSummary": {
+        "quietTotalMs": 44705,
+        "quietMaximumMs": 21760,
+        "observedAudioSeconds": 601.485,
+        "missingCoverageMs": 5
+      },
+      "correctedAudioPass": false
+    },
+    {
+      "id": "memory-ts-external",
+      "matchesPublishedActiveQuietMetrics": true,
+      "audioSummary": {
+        "quietTotalMs": 561620,
+        "quietMaximumMs": 550190,
+        "observedAudioSeconds": 599.745,
+        "missingCoverageMs": 20
+      },
+      "correctedAudioPass": false
+    },
+    {
+      "id": "memory-cpp-cef",
+      "matchesPublishedActiveQuietMetrics": true,
+      "audioSummary": {
+        "quietTotalMs": 41690,
+        "quietMaximumMs": 555,
+        "observedAudioSeconds": 1799.98,
+        "missingCoverageMs": 15
+      },
+      "correctedAudioPass": false
+    }
+  ]
+}

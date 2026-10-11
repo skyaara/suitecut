@@ -1,0 +1,17 @@
+{
+  "attemptId": "8fc8bdb8-f796-4cea-882d-dd7936fe07dd",
+  "testId": "5bd8482e-bca2-4e5d-a507-5859a74082a6",
+  "startedAt": "2026-10-09T17:11:30.368Z",
+  "endedAt": "2026-10-09T17:11:36.521Z",
+  "status": "failed",
+  "executionDurationMs": 6536.201078999999,
+  "presentationDurationMs": 0,
+  "edits": [],
+  "diagnostics": [
+    {
+      "level": "error",
+      "code": "RENDER_FAILED",
+      "message": "Feed native render graph: End of file"
+    }
+  ]
+}

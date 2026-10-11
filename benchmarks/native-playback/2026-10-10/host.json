@@ -1,0 +1,13 @@
+{
+  "savedTimezone": "Asia/Calcutta",
+  "rawTimestampConvention": "Original runtime JSON/log timestamps remain UTC; report times are local IST.",
+  "os": "Linux 2b2ce4aa4cff 6.18.44 #1 SMP Sat Sep 26 20:02:31 UTC 2026 x86_64 GNU/Linux",
+  "machine": "x86_64",
+  "node": "v24.19.0",
+  "pnpm": "11.19.0",
+  "cmake": "cmake version 4.4.4",
+  "g++": "g++ (Debian 14.2.0-19) 14.2.0",
+  "ffmpeg": "ffmpeg version 7.1.5-0+deb13u1 Copyright (c) 2000-2026 the FFmpeg developers",
+  "gitHead": "2d4158c95217b2b4099898a2508a40f3fa4f121a",
+  "cgroupCpuMax": "400000 100000"
+}

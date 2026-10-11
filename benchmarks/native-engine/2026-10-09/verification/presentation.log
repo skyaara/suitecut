@@ -1,0 +1,22 @@
+file:///workspace/suitecut/dist/native-recording.js:96
+        throw new AggregateError(errors, `Native recording "${name}" could not finish`);
+              ^
+
+AggregateError: Native recording "Native presentation integration" could not finish
+    at recordNative (file:///workspace/suitecut/dist/native-recording.js:96:15)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async file:///workspace/suitecut/scripts/verify-native-recording.mjs:74:18 {
+  [errors]: [
+    Error: Invalid native clip interval
+        at NativePacketDecoder.receive (file:///workspace/suitecut/dist/native-browser.js:139:32)
+        at NativePacketDecoder.push (file:///workspace/suitecut/dist/native-protocol.js:88:26)
+        at Socket.<anonymous> (file:///workspace/suitecut/dist/native-browser.js:182:21)
+        at Socket.emit (node:events:509:28)
+        at addChunk (node:internal/streams/readable:563:12)
+        at readableAddChunkPushByteMode (node:internal/streams/readable:514:3)
+        at Readable.push (node:internal/streams/readable:394:5)
+        at Pipe.onStreamRead (node:internal/stream_base_commons:189:23)
+  ]
+}
+
+Node.js v24.19.0

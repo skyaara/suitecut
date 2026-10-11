@@ -1,0 +1,10 @@
+SuiteCut diagnostic: initialize
+[4751:4764:1008/202414.401271:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Failed to connect to socket /run/dbus/system_bus_socket: No such file or directory
+[4751:4764:1008/202414.495683:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Failed to connect to socket /run/dbus/system_bus_socket: No such file or directory
+[4751:4764:1008/202414.495716:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Failed to connect to socket /run/dbus/system_bus_socket: No such file or directory
+SuiteCut diagnostic: context initialized
+SuiteCut diagnostic: 640 360 30 1.0 i420
+SuiteCut diagnostic: message loop
+[4751:4764:1008/202414.590704:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Failed to connect to socket /run/dbus/system_bus_socket: No such file or directory
+[4751:4764:1008/202414.590737:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Failed to connect to socket /run/dbus/system_bus_socket: No such file or directory
+[4751:4751:1008/202414.594826:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.Properties.GetAll: object_path= /org/freedesktop/UPower/devices/DisplayDevice: unknown error type: 

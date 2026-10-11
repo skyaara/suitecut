@@ -1,0 +1,24 @@
+{
+  "startedAt": "2026-10-09T05:12:41.444330+00:00",
+  "exclusiveRuntimeLock": true,
+  "status": "workload completed; validation pending",
+  "sourceHashes": {
+    "benchmarks/obs-cef/obs-long-soak.mjs": "f0da49987310f62629958fe7b4b05cfd600df97cc2c94d17274655de543a68bb",
+    "benchmarks/obs-cef/fixture.html": "09b5de97645d3c85a9b68740d5c8e2122e1dbd35040ee394af64b062f180bbb5",
+    "benchmarks/obs-cef/soak.mjs": "05d139c5d3945e98d92227c074c4b1a9b4069b43b740e00fb3c86c6a2f70f603",
+    "benchmarks/obs-cef/profile-obs-long.py": "360ccd2d2d625c88d64c0b363ee9e69f1661ec987950d46df09e2a2e8b9c7523",
+    "benchmarks/obs-cef/start-runtime.sh": "39e278b2c7deb2e82bbac75c2e3c1fc6bfddcae9540787384bafe15c742b498c"
+  },
+  "runtimeDriverPid": 75705,
+  "runtimePids": {
+    "Xvfb": 75708,
+    "pulseaudio": 75709,
+    "obs": 75722
+  },
+  "workloadPid": 75800,
+  "workloadExitCode": 0,
+  "workloadResult": "workload completed; media validation pending",
+  "runtimeExitCode": 143,
+  "runtimeStopped": true,
+  "completedAt": "2026-10-09T05:43:05.259592+00:00"
+}

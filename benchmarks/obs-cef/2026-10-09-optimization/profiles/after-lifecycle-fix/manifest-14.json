@@ -1,0 +1,92 @@
+{
+  "schemaVersion": 1,
+  "startedAt": "2026-10-08T23:57:46.531Z",
+  "endedAt": "2026-10-08T23:57:47.007Z",
+  "status": "passed",
+  "rootDirectory": "/workspace/suitecut",
+  "tests": [
+    {
+      "id": "fbe90926-c750-4e9d-9cc9-b07bfe7216fa",
+      "order": 0,
+      "title": "reuse-14",
+      "titlePath": [
+        "reuse-14"
+      ],
+      "projectName": "native-chromium",
+      "location": {
+        "file": "/workspace/suitecut/benchmarks/obs-cef/reuse-source.mjs",
+        "line": 1,
+        "column": 1
+      },
+      "attempts": [
+        {
+          "id": "d295760c-f4f9-463c-9901-4500a0f9d80a",
+          "retry": 0,
+          "status": "passed",
+          "clock": {
+            "originEpochMs": 1791503866531,
+            "originMonotonicMs": 11778.524742,
+            "startedAt": "2026-10-08T23:57:46.531Z"
+          },
+          "durationMs": 257.5719280000012,
+          "pages": [
+            {
+              "id": "d4239c30-ee1f-4f25-8184-d9743e5510c1",
+              "kind": "main",
+              "initialUrl": "http://127.0.0.1:39565/",
+              "createdAtMs": 3.6173070000004373
+            }
+          ],
+          "events": [],
+          "steps": [],
+          "artifacts": [
+            {
+              "id": "e1b7326c-89d2-4661-b424-8f5b63b71c20",
+              "name": "suitecut-source-d295760c-f4f9-463c-9901-4500a0f9d80a-e1b7326c-89d2-4661-b424-8f5b63b71c20.webm",
+              "role": "source-video",
+              "contentType": "video/webm",
+              "path": "/workspace/suitecut/.suitecut/obs-cef-optimization/after-lifecycle-fix/14/suitecut-source-d295760c-f4f9-463c-9901-4500a0f9d80a-e1b7326c-89d2-4661-b424-8f5b63b71c20.webm",
+              "pathKind": "absolute",
+              "sizeBytes": 11496,
+              "pageId": "d4239c30-ee1f-4f25-8184-d9743e5510c1",
+              "createdAtMs": 8.3122170000006
+            }
+          ],
+          "media": [
+            {
+              "id": "media-66de7b20-5213-4cfc-9e5a-c8b3e6297b33",
+              "artifactId": "e1b7326c-89d2-4661-b424-8f5b63b71c20",
+              "formatName": "matroska,webm",
+              "durationMs": 282,
+              "streams": [
+                {
+                  "kind": "video",
+                  "codec": "vp9",
+                  "pixelFormat": "yuv420p",
+                  "colorRange": "limited",
+                  "colorSpace": "bt709",
+                  "width": 960,
+                  "height": 540,
+                  "durationMs": 282,
+                  "frameRate": 30,
+                  "timeBase": "1/1000",
+                  "hasVariableFrameRate": false
+                }
+              ]
+            }
+          ],
+          "videoTiming": [
+            {
+              "pageId": "d4239c30-ee1f-4f25-8184-d9743e5510c1",
+              "mediaId": "media-66de7b20-5213-4cfc-9e5a-c8b3e6297b33",
+              "firstFrameEpochMs": 1791503866539.3123,
+              "sourceStartedAtMs": 8.3122170000006
+            }
+          ],
+          "errors": [],
+          "diagnostics": []
+        }
+      ]
+    }
+  ]
+}

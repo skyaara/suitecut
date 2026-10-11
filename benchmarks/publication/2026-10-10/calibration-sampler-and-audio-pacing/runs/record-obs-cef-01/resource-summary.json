@@ -1,0 +1,24 @@
+{
+  "activeSamples": 60,
+  "boundary": "Controller, capture/browser children and encoders; receiver, display and Pulse reported separately/excluded",
+  "cpuMeanCores": 2.5574023555069827,
+  "cpuP95Cores": 2.744083377828198,
+  "rssPeakMiB": 1069.734375,
+  "rssMeanMiB": 1040.7357421875,
+  "rssSlopeMiBPerMinuteAfterWarmup": null,
+  "pssCompleteSamples": 0,
+  "pssPeakMiB": null,
+  "pssSlopeMiBPerMinuteAfterWarmup": null,
+  "nodeHeapSlopeMiBPerMinuteAfterWarmup": null,
+  "nodeExternalSlopeMiBPerMinuteAfterWarmup": null,
+  "cpuMeanByRole": {
+    "controller": 0.01786295016373518,
+    "gpu": 0.08290549601499238,
+    "obs": 2.3631685336444574,
+    "obs-browser-page": 0.0006843962536972781,
+    "obs-ffmpeg-mux": 0.0008563326452805015,
+    "renderer": 0.09192464678481925
+  },
+  "samplerDurationP95Ms": 291.13136846281105,
+  "memoryGuardExceeded": false
+}

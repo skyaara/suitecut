@@ -1,0 +1,150 @@
+{
+  "startedAt": "2026-10-09T02:27:37.309Z",
+  "requestedMs": 1800000,
+  "width": 1920,
+  "height": 1080,
+  "targetFps": 30,
+  "audio": true,
+  "syncPulseMs": 250,
+  "privateMemoryEveryIterations": 0,
+  "mode": "simultaneous recording and RTMP streaming on one caller-owned CEF source",
+  "gcDuringRun": false,
+  "receiverPath": "/workspace/suitecut/.suitecut/obs-cef-optimization/soak/receiver.flv",
+  "readyAt": "2026-10-09T02:27:40.516Z",
+  "baseline": {
+    "rss": 234598400,
+    "heapTotal": 123387904,
+    "heapUsed": 54617088,
+    "external": 104914208,
+    "arrayBuffers": 100908052
+  },
+  "activeMs": 1800245.135608,
+  "snapshot": {
+    "markerCount": 46593,
+    "scrollY": 3240,
+    "scrollEvents": 342,
+    "keyEvents": 0,
+    "clicks": 0,
+    "value": "",
+    "choice": "First",
+    "secondary": false
+  },
+  "scrollCommands": 342,
+  "beforeStop": {
+    "rss": 306855936,
+    "heapTotal": 191021056,
+    "heapUsed": 51393872,
+    "external": 88518548,
+    "arrayBuffers": 84520768
+  },
+  "frames": 67747,
+  "audioPackets": 84228,
+  "audioOffsets": {
+    "count": 86516,
+    "minMs": -11197.997845998732,
+    "maxMs": 110.89541699946858,
+    "futureOver100": 1010,
+    "futureOver500": 0,
+    "pastOver10000": 6
+  },
+  "recordingPath": "/workspace/suitecut/.suitecut/obs-cef-optimization/soak/suitecut-source-413fde13-3160-40d4-a21e-fd6b260db204-1590cfb7-9026-40f2-afbb-1a540e06409f.webm",
+  "sourceStateAfterRecording": "running",
+  "recording": {
+    "durationSeconds": 1803.835,
+    "bytes": 52020733,
+    "windows": [
+      {
+        "offset": 5,
+        "matchedFlashes": 12,
+        "audioBursts": 34,
+        "medianAudioMinusVideoMs": -1.666666666666039,
+        "p95AbsoluteOffsetMs": 69.66666666666634,
+        "firstThirdMedianMs": 15.000000000000124,
+        "lastThirdMedianMs": -13.333333333332753,
+        "offsetsMs": [
+          -36.66666666666663,
+          16.666666666666607,
+          23.333333333333428,
+          13.333333333333641,
+          30.00000000000025,
+          -109.99999999999943,
+          6.666666666667709,
+          16.666666666667496,
+          -23.33333333333165,
+          -16.66666666666572,
+          -9.999999999999787,
+          -9.999999999999787
+        ]
+      },
+      {
+        "offset": 900,
+        "matchedFlashes": 12,
+        "audioBursts": 26,
+        "medianAudioMinusVideoMs": 18.333333333333535,
+        "p95AbsoluteOffsetMs": 79.00000000000009,
+        "firstThirdMedianMs": 44.99999999999993,
+        "lastThirdMedianMs": 6.666666666665932,
+        "offsetsMs": [
+          43.33333333333344,
+          46.666666666666416,
+          -26.666666666666394,
+          70.00000000000028,
+          -89.99999999999986,
+          16.666666666667496,
+          6.666666666667709,
+          26.666666666665506,
+          19.999999999999574,
+          66.66666666666643,
+          -43.333333333333,
+          -6.666666666667709
+        ]
+      },
+      {
+        "offset": 1780,
+        "matchedFlashes": 11,
+        "audioBursts": 36,
+        "medianAudioMinusVideoMs": -13.333333333333641,
+        "p95AbsoluteOffsetMs": 53.33333333333323,
+        "firstThirdMedianMs": -13.333333333333197,
+        "lastThirdMedianMs": -6.666666666665932,
+        "offsetsMs": [
+          -13.333333333333197,
+          -46.66666666666597,
+          49.99999999999982,
+          -13.333333333332753,
+          -36.66666666666618,
+          -56.66666666666664,
+          -46.666666666666856,
+          -46.66666666666508,
+          -13.333333333333641,
+          -6.666666666665932,
+          36.66666666666707
+        ]
+      }
+    ]
+  },
+  "status": "failed",
+  "error": "AssertionError [ERR_ASSERTION]: receiver 5: A/V drift 298.3333333333328ms\n    at file:///workspace/suitecut/benchmarks/obs-cef/soak.mjs:66:86",
+  "afterCleanup": {
+    "rss": 307511296,
+    "heapTotal": 191021056,
+    "heapUsed": 52712920,
+    "external": 26281658,
+    "arrayBuffers": 22279802
+  },
+  "afterCleanupGc": {
+    "rss": 307511296,
+    "heapTotal": 57851904,
+    "heapUsed": 50807096,
+    "external": 4346389,
+    "arrayBuffers": 344533
+  },
+  "nodeCpuMs": 1190967.496,
+  "elapsedMs": 1850914.825293,
+  "eventLoopDelay": {
+    "meanMs": 25.129417305235716,
+    "p99Ms": 59.080703,
+    "maxMs": 7335.837695
+  },
+  "completedAt": "2026-10-09T02:58:28.230Z"
+}

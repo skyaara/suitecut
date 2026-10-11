@@ -1,0 +1,48 @@
+{
+  "dependencies": [
+    {
+      "path": ".suitecut/native-build/resources.pak",
+      "bytes": 21754668,
+      "sha256": "80ac809062e51c9def8138b751d1990aec309a33de1821ae5f6ef9e1d4f1e024"
+    },
+    {
+      "path": ".suitecut/native-build/icudtl.dat",
+      "bytes": 10876560,
+      "sha256": "9f48c7f9c7c94d516a14870707e910ab94d75ae640ff6842c4af53276cd26ebe"
+    },
+    {
+      "path": ".suitecut/native-build/libcef.so",
+      "bytes": 456213272,
+      "sha256": "d3e896252f190a21cd04b956da638c90315c8d5067cb03f325913841d5c59fc8"
+    },
+    {
+      "path": ".suitecut/native-build/chrome_200_percent.pak",
+      "bytes": 1284244,
+      "sha256": "e52f88bc1fd43d1dfab365991af11d0aed4db2c28be9b4fdf098c2097762dfbc"
+    },
+    {
+      "path": ".suitecut/native-build/libEGL.so",
+      "bytes": 358528,
+      "sha256": "c648f247432605f1da38a976f25d7a54e9a14f88353359d56ebe0e2a253592cb"
+    },
+    {
+      "path": ".suitecut/native-build/libGLESv2.so",
+      "bytes": 358528,
+      "sha256": "2b320347f06912902cb6336ee75b6742fcba72145e1edeb1d4464d238fbd45ed"
+    },
+    {
+      "path": ".suitecut/native-build/chrome_100_percent.pak",
+      "bytes": 731515,
+      "sha256": "e469779e030e2e0371aa319dc61c006bcaace4249c7edac4dbcc774d8b92a935"
+    },
+    {
+      "path": ".suitecut/native-build/libvk_swiftshader.so",
+      "bytes": 5981608,
+      "sha256": "976d7313815442d32cc544ac084196ef685d09b6b488ff03b7bd44513202aeab"
+    }
+  ],
+  "sdkArchive": "benchmarks/native-playback/2026-10-10/distribution/cef_binary_152.0.6+g708dc14+chromium-152.0.7977.83_linux64_minimal.zip",
+  "sdkArchiveSha256": "3d64f6fac8911a368ffa415e3ee53d002cbd792866f08ed6578dae1e252cbac8",
+  "priorArchive": "/workspace/shared/suitecut-native-playback-codecs-2026-10-10.tar.gz",
+  "priorArchiveSha256": "d91a84f405c75c6ef2d02354336a3934cb82691df4807a140ce87806585b184a"
+}

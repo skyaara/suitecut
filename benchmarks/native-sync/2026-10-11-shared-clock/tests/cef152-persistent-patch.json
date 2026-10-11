@@ -1,0 +1,12 @@
+{
+  "cefRevision": "708dc14",
+  "upstreamSourceSha256": "f18aafe7254fbf82c5a8a0b7221db7dc10fb76d14e7e86cf02fb039037374ebf",
+  "patchSha256": "09df2168b2270f33064862efdebffd4d8ea279fa2618bc80455786ea2033e24c",
+  "dryApplyExitCode": 0,
+  "fuzzAllowed": 0,
+  "compiled": false,
+  "runtimeVerified": false,
+  "enabledInBenchmarkBinary": false,
+  "scope": "Candidate first-sound/persistent-silent capture only. Does not claim recovery of Chromium glitch samples or solve interior audio discontinuities.",
+  "buildConstraint": "32 GiB host filesystem, under 2 GiB currently free; full Chromium/CEF source build unavailable on this host."
+}

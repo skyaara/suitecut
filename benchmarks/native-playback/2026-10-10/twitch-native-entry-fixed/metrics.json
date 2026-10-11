@@ -1,0 +1,46 @@
+{
+  "sampleCount": 121,
+  "sampledDurationSeconds": 120.07025262800744,
+  "peakProcessTreeRssMiB": 2135.21875,
+  "medianProcessTreeRssMiB": 2083.96484375,
+  "processTreeCpuPercentMedian": 106.98288164473803,
+  "processTreeCpuPercentPeak": 270.02450636479176,
+  "observedCpuSeconds": 144.03,
+  "observedCpuSecondsByRole": {
+    "cef-gpu": 13.440000000000001,
+    "cef-renderer": 50.47,
+    "node": 1.2400000000000002,
+    "sampler": 3.28,
+    "suitecut-browser": 75.6
+  },
+  "missingAudioSeconds": 0.5412083333333333,
+  "repeatedFrameFraction": 0.039422543031649084,
+  "browserDroppedFrameDelta": 1912,
+  "browserTotalFrameDelta": 5455,
+  "peakVideoQueueBytes": 13824000,
+  "peakAudioQueueBytes": 34560,
+  "stackProtectorTerminations": 0,
+  "missingAudioCounterIncrements": [
+    {
+      "sampledAtMs": 21022.339987,
+      "newMissingSamples": 6010,
+      "newMissingMs": 125.20833333333333
+    },
+    {
+      "sampledAtMs": 22025.11681,
+      "newMissingSamples": 710,
+      "newMissingMs": 14.791666666666666
+    },
+    {
+      "sampledAtMs": 37048.765109,
+      "newMissingSamples": 5760,
+      "newMissingMs": 120.0
+    },
+    {
+      "sampledAtMs": 77092.793288,
+      "newMissingSamples": 13440,
+      "newMissingMs": 280.0
+    }
+  ],
+  "limits": "RSS sums double-count shared pages; sampled CPU excludes unobserved short-lived subprocesses. Missing audio counters are uncovered sample slots, not proof of an equivalent audible silence interval. Twitch content naturally contains silence."
+}

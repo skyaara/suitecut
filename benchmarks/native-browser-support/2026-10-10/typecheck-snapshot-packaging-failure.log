@@ -1,0 +1,3 @@
+$ tsc --noEmit
+benchmarks/native-browser-support/2026-10-10/snapshot/tests/sherpa-plugin.test.ts(3,24): error TS2307: Cannot find module '../plugins/vits/src/index.js' or its corresponding type declarations.
+[ELIFECYCLE] Command failed with exit code 2.

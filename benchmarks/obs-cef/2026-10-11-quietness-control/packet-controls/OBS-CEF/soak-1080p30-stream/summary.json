@@ -1,0 +1,13 @@
+{
+  "product": "OBS-CEF",
+  "case": "soak-1080p30-stream",
+  "packetCount": 84385,
+  "activeBeginSeconds": 0.187,
+  "activeEndSeconds": 1800.2199999999998,
+  "activePacketTimelineGapTotalMs": 0,
+  "activePacketTimelineMaximumGapMs": 0,
+  "nonIncreasingActivePacketPts": 0,
+  "activePacketTimelineGaps": [],
+  "thresholdMs": 2,
+  "note": "Packet timeline holes are separate from decoded quiet PCM. Continuous AAC packets can contain quiet audio. Quantized mux timestamps up to 2 ms are tolerated."
+}

@@ -1,0 +1,15 @@
+{
+  "ownedRuntimeProcesses": [
+    {
+      "pid": 4743,
+      "name": "Xvfb",
+      "action": "SIGTERM"
+    },
+    {
+      "pid": 5937,
+      "name": "pulseaudio",
+      "action": "SIGTERM"
+    }
+  ],
+  "OBS": "Closed by feature orchestrator after all tests"
+}

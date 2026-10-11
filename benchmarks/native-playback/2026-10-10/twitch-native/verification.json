@@ -1,0 +1,18 @@
+{
+  "file": "/workspace/shared/gofns-suitecut-native-2-minutes.mp4",
+  "durationSeconds": 120.021354,
+  "video": {
+    "codec": "h264",
+    "width": 1280,
+    "height": 720,
+    "fps": "6912000/230441"
+  },
+  "audio": {
+    "codec": "aac",
+    "sampleRate": "48000",
+    "channels": 2,
+    "rmsDbfs": -28.25420498741968
+  },
+  "fullAudioVideoDecode": "passed",
+  "sha256": "fae36a3e61696536f231beb70824a1ccc3f9ccca4c8df7df431d8ceaf9010b0d"
+}

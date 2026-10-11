@@ -1,0 +1,421 @@
+{
+  "outputs": [
+    {
+      "path": "/workspace/suitecut/benchmarks/native-sync/2026-10-10/final-pulsed-30min/partial-analysis/recording.mp4",
+      "fullyDecodedVideoFrames": 25680,
+      "nativeVideoFrames": null,
+      "distinctImageFPS": 29.54322429906542,
+      "maximumImageHoldMs": 1666.6666666666667,
+      "decodedInteriorSilenceMs": 635320,
+      "maximumInteriorSilenceMs": 2130,
+      "decodedSilenceLongerThanExpectedPulseMs": [
+        {
+          "startMs": 72010,
+          "endMs": 72880,
+          "durationMs": 870
+        },
+        {
+          "startMs": 441300,
+          "endMs": 442680,
+          "durationMs": 1380
+        },
+        {
+          "startMs": 443110,
+          "endMs": 445240,
+          "durationMs": 2130
+        },
+        {
+          "startMs": 446730,
+          "endMs": 447630,
+          "durationMs": 900
+        },
+        {
+          "startMs": 448020,
+          "endMs": 449450,
+          "durationMs": 1430
+        },
+        {
+          "startMs": 450020,
+          "endMs": 451290,
+          "durationMs": 1270
+        },
+        {
+          "startMs": 451550,
+          "endMs": 452420,
+          "durationMs": 870
+        },
+        {
+          "startMs": 570940,
+          "endMs": 572450,
+          "durationMs": 1510
+        },
+        {
+          "startMs": 574800,
+          "endMs": 575750,
+          "durationMs": 950
+        },
+        {
+          "startMs": 619030,
+          "endMs": 620060,
+          "durationMs": 1030
+        },
+        {
+          "startMs": 641330,
+          "endMs": 642200,
+          "durationMs": 870
+        },
+        {
+          "startMs": 654640,
+          "endMs": 655540,
+          "durationMs": 900
+        },
+        {
+          "startMs": 658910,
+          "endMs": 659800,
+          "durationMs": 890
+        },
+        {
+          "startMs": 784120,
+          "endMs": 785070,
+          "durationMs": 950
+        },
+        {
+          "startMs": 823330,
+          "endMs": 824270,
+          "durationMs": 940
+        },
+        {
+          "startMs": 826540,
+          "endMs": 827640,
+          "durationMs": 1100
+        },
+        {
+          "startMs": 828940,
+          "endMs": 829960,
+          "durationMs": 1020
+        }
+      ],
+      "preEncoderPulseOnsets": 887,
+      "visualPulseOnsets": 847,
+      "pulseVisualMinusNativeAudioMs": {
+        "samples": 878,
+        "median": 56.66666666668607,
+        "p95Absolute": 90.0,
+        "maximumAbsolute": 246.66666666662786,
+        "unmatched": [
+          {
+            "audioMs": 368860,
+            "nearestVideoMinusAudioMs": -326.66666666668607
+          },
+          {
+            "audioMs": 368890,
+            "nearestVideoMinusAudioMs": -356.66666666668607
+          },
+          {
+            "audioMs": 405120,
+            "nearestVideoMinusAudioMs": -286.66666666668607
+          },
+          {
+            "audioMs": 446700,
+            "nearestVideoMinusAudioMs": -266.66666666668607
+          },
+          {
+            "audioMs": 449430,
+            "nearestVideoMinusAudioMs": 703.3333333333139
+          },
+          {
+            "audioMs": 449580,
+            "nearestVideoMinusAudioMs": 553.3333333333139
+          },
+          {
+            "audioMs": 449800,
+            "nearestVideoMinusAudioMs": 333.33333333331393
+          }
+        ]
+      },
+      "uniqueBidirectionalPulseMatches": {
+        "samples": 846,
+        "p95AbsoluteMs": 83.33333333337214,
+        "unmatchedAudioOnsetsMs": [
+          70940.0,
+          70970.0,
+          114940.0,
+          115040.0,
+          121240.0,
+          121280.0,
+          212330.0,
+          212500.0,
+          212540.0,
+          368860.0,
+          368890.0,
+          405120.0,
+          442870.0,
+          445290.0,
+          445330.0,
+          446420.0,
+          446700.0,
+          447760.0,
+          447840.0,
+          449430.0,
+          449580.0,
+          449800.0,
+          453600.0,
+          531590.0,
+          570680.0,
+          570720.0,
+          570840.0,
+          570900.0,
+          574760.0,
+          618800.0,
+          618840.0,
+          618920.0,
+          638060.0,
+          644310.0,
+          654600.0,
+          658720.0,
+          780990.0,
+          784080.0,
+          825510.0
+        ],
+        "unmatchedVideoOnsetsMs": [],
+        "matchingToleranceMs": 250,
+        "caveat": "Coarse content test; missing video frames and multiple onsets from interrupted tones affect detection. This is not a hardware clock measurement."
+      }
+    },
+    {
+      "path": "/workspace/suitecut/benchmarks/native-sync/2026-10-10/final-pulsed-30min/partial-analysis/receiver.flv",
+      "fullyDecodedVideoFrames": 25518,
+      "nativeVideoFrames": null,
+      "distinctImageFPS": 28.0084646132142,
+      "maximumImageHoldMs": 1700.0,
+      "decodedInteriorSilenceMs": 631520,
+      "maximumInteriorSilenceMs": 2140,
+      "decodedSilenceLongerThanExpectedPulseMs": [
+        {
+          "startMs": 71730,
+          "endMs": 72610,
+          "durationMs": 880
+        },
+        {
+          "startMs": 441020,
+          "endMs": 442400,
+          "durationMs": 1380
+        },
+        {
+          "startMs": 442830,
+          "endMs": 444970,
+          "durationMs": 2140
+        },
+        {
+          "startMs": 446460,
+          "endMs": 447360,
+          "durationMs": 900
+        },
+        {
+          "startMs": 447740,
+          "endMs": 449180,
+          "durationMs": 1440
+        },
+        {
+          "startMs": 449750,
+          "endMs": 451020,
+          "durationMs": 1270
+        },
+        {
+          "startMs": 451270,
+          "endMs": 452150,
+          "durationMs": 880
+        },
+        {
+          "startMs": 570660,
+          "endMs": 572180,
+          "durationMs": 1520
+        },
+        {
+          "startMs": 574520,
+          "endMs": 575470,
+          "durationMs": 950
+        },
+        {
+          "startMs": 618750,
+          "endMs": 619780,
+          "durationMs": 1030
+        },
+        {
+          "startMs": 641050,
+          "endMs": 641930,
+          "durationMs": 880
+        },
+        {
+          "startMs": 654360,
+          "endMs": 655260,
+          "durationMs": 900
+        },
+        {
+          "startMs": 658630,
+          "endMs": 659520,
+          "durationMs": 890
+        },
+        {
+          "startMs": 783840,
+          "endMs": 784790,
+          "durationMs": 950
+        },
+        {
+          "startMs": 823050,
+          "endMs": 823990,
+          "durationMs": 940
+        },
+        {
+          "startMs": 826260,
+          "endMs": 827370,
+          "durationMs": 1110
+        },
+        {
+          "startMs": 828660,
+          "endMs": 829680,
+          "durationMs": 1020
+        }
+      ],
+      "preEncoderPulseOnsets": 886,
+      "visualPulseOnsets": 841,
+      "pulseVisualMinusNativeAudioMs": {
+        "samples": 868,
+        "median": 60.0,
+        "p95Absolute": 93.33333333331393,
+        "maximumAbsolute": 233.33333333332848,
+        "unmatched": [
+          {
+            "audioMs": 368580,
+            "nearestVideoMinusAudioMs": -313.33333333331393
+          },
+          {
+            "audioMs": 368610,
+            "nearestVideoMinusAudioMs": -343.33333333331393
+          },
+          {
+            "audioMs": 404840,
+            "nearestVideoMinusAudioMs": -273.33333333331393
+          },
+          {
+            "audioMs": 446420,
+            "nearestVideoMinusAudioMs": -253.33333333331393
+          },
+          {
+            "audioMs": 449160,
+            "nearestVideoMinusAudioMs": 706.6666666666861
+          },
+          {
+            "audioMs": 449310,
+            "nearestVideoMinusAudioMs": 556.6666666666861
+          },
+          {
+            "audioMs": 449340,
+            "nearestVideoMinusAudioMs": 526.6666666666861
+          },
+          {
+            "audioMs": 449520,
+            "nearestVideoMinusAudioMs": 346.66666666668607
+          },
+          {
+            "audioMs": 654330,
+            "nearestVideoMinusAudioMs": -263.33333333337214
+          },
+          {
+            "audioMs": 783810,
+            "nearestVideoMinusAudioMs": -276.66666666662786
+          },
+          {
+            "audioMs": 850660,
+            "nearestVideoMinusAudioMs": -993.3333333333721
+          },
+          {
+            "audioMs": 851660,
+            "nearestVideoMinusAudioMs": -1993.3333333333721
+          },
+          {
+            "audioMs": 852660,
+            "nearestVideoMinusAudioMs": -2993.333333333372
+          },
+          {
+            "audioMs": 853660,
+            "nearestVideoMinusAudioMs": -3993.333333333372
+          },
+          {
+            "audioMs": 854660,
+            "nearestVideoMinusAudioMs": -4993.333333333372
+          },
+          {
+            "audioMs": 855660,
+            "nearestVideoMinusAudioMs": -5993.333333333372
+          }
+        ]
+      },
+      "uniqueBidirectionalPulseMatches": {
+        "samples": 840,
+        "p95AbsoluteMs": 93.33333333331393,
+        "unmatchedAudioOnsetsMs": [
+          70660.0,
+          70700.0,
+          114660.0,
+          114770.0,
+          120960.0,
+          121000.0,
+          212220.0,
+          212260.0,
+          368580.0,
+          368610.0,
+          404840.0,
+          442590.0,
+          445010.0,
+          445050.0,
+          446140.0,
+          446420.0,
+          447480.0,
+          447560.0,
+          449160.0,
+          449310.0,
+          449340.0,
+          449520.0,
+          453330.0,
+          531310.0,
+          570400.0,
+          570440.0,
+          570570.0,
+          570630.0,
+          574490.0,
+          618530.0,
+          618570.0,
+          618650.0,
+          637780.0,
+          644030.0,
+          654330.0,
+          658440.0,
+          780710.0,
+          783810.0,
+          850660.0,
+          851660.0,
+          852660.0,
+          853660.0,
+          854660.0,
+          855660.0
+        ],
+        "unmatchedVideoOnsetsMs": [],
+        "matchingToleranceMs": 250,
+        "caveat": "Coarse content test; missing video frames and multiple onsets from interrupted tones affect detection. This is not a hardware clock measurement."
+      }
+    }
+  ],
+  "resources": {
+    "captureSamples": 856,
+    "nativeMeanCPUCores": 0.9000211628148499,
+    "nativeAggregateRSSPeakMiB": 1285.6875,
+    "aggregateRSSFirstWindowMedianMiB": 1243.4765625,
+    "aggregateRSSLastWindowMedianMiB": 1274.5,
+    "rssWindowSeconds": 202.11934495550003,
+    "rssIsSummedNotPrivateMemory": true,
+    "wholeCEFLeakFreedomProven": false
+  },
+  "sourceGapCount": 100,
+  "maxCallbackDelayMs": 1099.9503149999655
+}

@@ -1,0 +1,12 @@
+{
+  "id": "4k60-scroll-native-5",
+  "trialStatus": "failed",
+  "artifacts": [
+    {
+      "path": "/workspace/suitecut/.suitecut/obs-cef-evidence/2026-10-09/4k60-scroll-native-5/suitecut-source-b6a42bcf-e09c-469b-99ea-e6f38332982f-5bbd9885-ba95-4b42-afbd-ba46428a99e5.webm",
+      "bytes": 0,
+      "probeExitCode": 1,
+      "probeError": "[matroska,webm @ 0x562d241b9ec0] EBML header parsing failed\n.suitecut/obs-cef-evidence/2026-10-09/4k60-scroll-native-5/suitecut-source-b6a42bcf-e09c-469b-99ea-e6f38332982f-5bbd9885-ba95-4b42-afbd-ba46428a99e5.webm: Invalid data found when processing input\n"
+    }
+  ]
+}

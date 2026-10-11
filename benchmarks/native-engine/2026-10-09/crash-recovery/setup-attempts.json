@@ -1,0 +1,21 @@
+{
+  "failedChecks": [
+    {
+      "case": "Missing explicit executablePath",
+      "result": "Launch schema rejected undefined executable; verifier was corrected."
+    },
+    {
+      "case": "AudioContext on initial blank document",
+      "result": "Awaiting resume did not complete; recovery fixture moved to a local HTTP origin."
+    },
+    {
+      "case": "Linux children pseudo-file",
+      "result": "This host kernel lacks /proc/PID/task/PID/children; verifier discovers only its direct child via ps and verifies the executable."
+    },
+    {
+      "case": "Fragmented MP4 without packet/header flush",
+      "result": "Low-motion recording left only a 28-byte ftyp header at SIGKILL; native header and packet flushing now preserves decodable completed fragments."
+    }
+  ],
+  "scope": "Verifier setup and recoverability checks; final native recovery report and binary hashes are saved separately."
+}

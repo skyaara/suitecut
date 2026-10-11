@@ -1,0 +1,45 @@
+{
+  "startedAt": "2026-10-09T20:20:43.743Z",
+  "cases": [
+    {
+      "audioCodec": "pcm_s16le",
+      "destination": "/workspace/suitecut/benchmarks/native-audio/2026-10-10/baseline/pcm_s16le.mkv",
+      "final": {
+        "ready": true,
+        "stopped": true,
+        "paused": false,
+        "videoFrames": 904,
+        "audioSamples": 1446392,
+        "repeatedFrames": 49,
+        "droppedAudioSamples": 0,
+        "queuedVideoBytes": 0,
+        "queuedAudioBytes": 0,
+        "startedMs": 580.065293,
+        "durationMs": 30133.333333333332,
+        "maximumEncodeMs": 170.6598099999992,
+        "error": ""
+      }
+    },
+    {
+      "audioCodec": "aac",
+      "destination": "/workspace/suitecut/benchmarks/native-audio/2026-10-10/baseline/aac.mkv",
+      "final": {
+        "ready": true,
+        "stopped": true,
+        "paused": false,
+        "videoFrames": 905,
+        "audioSamples": 1446912,
+        "repeatedFrames": 149,
+        "droppedAudioSamples": 0,
+        "queuedVideoBytes": 0,
+        "queuedAudioBytes": 0,
+        "startedMs": 30774.208141,
+        "durationMs": 30166.666666666668,
+        "maximumEncodeMs": 187.57981899999868,
+        "error": ""
+      }
+    }
+  ],
+  "audioState": "running",
+  "finishedAt": "2026-10-09T20:21:44.920Z"
+}

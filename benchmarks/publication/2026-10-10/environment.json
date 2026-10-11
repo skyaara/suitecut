@@ -1,0 +1,164 @@
+{
+  "savedAt": "2026-10-10T19:21:41.216297+05:30",
+  "host": "Linux-6.18.44-x86_64-with-glibc2.41",
+  "cpuQuota": "400000 100000",
+  "hostMemoryLimitBytes": 17179869184,
+  "cpusAvailable": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "workloadCpus": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "memoryGuardBytes": 8589934592,
+  "memoryLimitDescription": "Actual host kernel limit is 16 GiB. Workload uses an 8 GiB sampled summed-RSS guard; not a kernel 8 GiB cgroup.",
+  "gpuDevicesPresent": false,
+  "historicalRevision": "2d4158c95217b2b4099898a2508a40f3fa4f121a",
+  "binaries": {
+    "new-native": {
+      "path": "/workspace/suitecut/.suitecut/native-build/suitecut-browser",
+      "bytes": 2482848,
+      "sha256": "b4378ec3711101e4cd5a60b592e92992d416d6d29cf91dc5217013abf1346b6d"
+    },
+    "old-native": {
+      "path": "/workspace/suitecut/.suitecut/publication-old/native-build/suitecut-browser",
+      "bytes": 2049224,
+      "sha256": "4b8d30d06fd12167fb2706a025649127c890fa97bc50b8c17d01f7f895a6fa09"
+    },
+    "suitecut-libcef": {
+      "path": "/workspace/suitecut/.suitecut/native-build/libcef.so",
+      "bytes": 456213272,
+      "sha256": "d3e896252f190a21cd04b956da638c90315c8d5067cb03f325913841d5c59fc8"
+    },
+    "old-libcef": {
+      "path": "/workspace/suitecut/.suitecut/publication-old/native-build/libcef.so",
+      "bytes": 456213272,
+      "sha256": "d3e896252f190a21cd04b956da638c90315c8d5067cb03f325913841d5c59fc8"
+    },
+    "obs": {
+      "path": "/workspace/suitecut/.suitecut/obs-cef-profile/root/usr/bin/obs",
+      "bytes": 5875984,
+      "sha256": "47e3d0157aac6a356694a95a6feb3a1495b2bacfd3f2f4f7cd4dc98adb220521"
+    },
+    "obs-libcef": {
+      "path": "/workspace/suitecut/.suitecut/obs-cef-profile/root/usr/lib/x86_64-linux-gnu/obs-plugins/libcef.so",
+      "bytes": 233363816,
+      "sha256": "1eab0976dad660be969f97bd0f7a1b1e4fcd3b75f7775d512de981a58ec3a40f"
+    }
+  },
+  "versions": {
+    "capturedAt": "2026-10-10T18:52:55.851289+05:30",
+    "suitecut": {
+      "version": "2.0.0",
+      "status": "unpublished development checkout"
+    },
+    "activeCef": {
+      "cefVersion": "152.0.6+g708dc14+chromium-152.0.7977.83",
+      "platform": "linux64",
+      "url": "https://github.com/tobagin/karere/releases/download/cef-152.0.6-proprietary-codecs/cef_binary_152.0.6%2Bg708dc14%2Bchromium-152.0.7977.83_linux64_minimal.zip",
+      "sha256": "3d64f6fac8911a368ffa415e3ee53d002cbd792866f08ed6578dae1e252cbac8",
+      "size": 183510343,
+      "proprietaryCodecs": true,
+      "buildFlags": {
+        "proprietary_codecs": true,
+        "ffmpeg_branding": "Chrome"
+      },
+      "upstreamRelease": "https://github.com/tobagin/karere/releases/tag/cef-152.0.6-proprietary-codecs",
+      "buildRecipe": "https://github.com/tobagin/karere/blob/eb5bfb5fb3c2463a2a71d7201a73122bf1942962/.github/workflows/build-cef-codecs.yml",
+      "source": "third-party CEF distribution; verified release digest and progressive MP4/MSE H.264+AAC native capture regressions",
+      "runtimeLibrarySha256": "d3e896252f190a21cd04b956da638c90315c8d5067cb03f325913841d5c59fc8"
+    },
+    "retainedStockCef": {
+      "cefVersion": "154.0.34+g14c5a08+chromium-154.0.8037.98",
+      "platform": "linux64",
+      "url": "https://cef-builds.spotifycdn.com/cef_binary_154.0.34%2Bg14c5a08%2Bchromium-154.0.8037.98_linux64_minimal.tar.bz2",
+      "sha256": "e87e2c76304372dd28b899ceb6efa4b353f52700594ddc358a8237ec07ec6492",
+      "upstreamSha1": "15c91ad767097217b2e82ba8b933fe30b134be69",
+      "size": 326489962
+    },
+    "obsEmbeddedCef": {
+      "obs": "32.2.0",
+      "chromium": "127.0.6533.120",
+      "cefDistribution": "6533-fix-stutter-and-osr-extra-info",
+      "cefVersionEvidence": "benchmarks/obs-cef/2026-10-10-native-audio-profile/report.md"
+    },
+    "obsEarlierControl": "30.2.3.1-3",
+    "nativeFFmpeg": "7.1.5-0+deb13u1",
+    "systemFFmpeg": "7.1.5-0+deb13u1",
+    "playwright": "1.62.1",
+    "chromium": "151.0.7922.34",
+    "node": "24.19.0",
+    "typescript": "5.9.3",
+    "pnpmActual": "11.19.0",
+    "pnpmDeclared": "11.21.0",
+    "cmake": "4.4.4",
+    "gcc": "14.2.0"
+  },
+  "matrix": [
+    {
+      "backend": "ts-cef",
+      "recording": true,
+      "streaming": true,
+      "reason": "Historical TypeScript capture/queues, rebuilt shim on common CEF; normalized FFmpeg settings"
+    },
+    {
+      "backend": "ts-external",
+      "recording": true,
+      "streaming": true,
+      "reason": "Historical Playwright CDP capture and tab-audio extension; normalized FFmpeg settings"
+    },
+    {
+      "backend": "obs-cef",
+      "recording": true,
+      "streaming": true,
+      "reason": "OBS 32.2 embedded browser_source"
+    },
+    {
+      "backend": "obs-external",
+      "recording": true,
+      "streaming": true,
+      "reason": "OBS 32.2 XSHM and Pulse capture of standalone Chromium"
+    },
+    {
+      "backend": "cpp-cef",
+      "recording": true,
+      "streaming": true,
+      "reason": "Current native C++ CEF and linked libav"
+    },
+    {
+      "backend": "cpp-external",
+      "recording": false,
+      "streaming": false,
+      "reason": "connectBrowser provides automation only; no native external capture adapter"
+    }
+  ],
+  "trialProtocol": {
+    "trialsPerBackendPerMode": 5,
+    "durationMs": 30000,
+    "modes": [
+      "record",
+      "stream"
+    ],
+    "workload": "repeating 10s low-motion marker, 10s animation/input, 10s scrolling",
+    "memorySoakMs": 600000,
+    "nativeMemorySoakMs": 1800000,
+    "freshProfiles": true,
+    "pageWarmupMs": 1000,
+    "encoderWarmupMs": 1000,
+    "forcedGcDuringActiveCapture": false,
+    "analysesOverlapCapture": false,
+    "recordingAudio": "SuiteCut video only; OBS recording profile imposes an encoded silent AAC track. Recording source is silent for every backend; this small unmatched cost is disclosed.",
+    "recordingVideo": "H264 CRF18 veryfast zerolatency one video encoder thread, bframes=0 GOP60",
+    "streamingVideo": "H264 target4500kbps veryfast zerolatency one video encoder thread, bframes=0 GOP60; AAC48kHz stereo128kbps",
+    "sampler": "500ms process samples, 1s cached-zombie-aware descendant inventory; observer CPU and collection duration saved; smaps_rollup every10s in memory profiles"
+  },
+  "reportedCpuModel": "INTEL(R) XEON(R) PLATINUM 8573C",
+  "reportedLogicalCpuCount": 5,
+  "cpuIsolation": "Four affinity CPUs and four-core cgroup quota on a shared managed cloud container, not dedicated physical cores"
+}

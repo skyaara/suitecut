@@ -1,0 +1,17 @@
+{
+  "status": "failed",
+  "tests": [],
+  "startedAt": "2026-10-10T11:23:14.710Z",
+  "cefVersion": "154.0.34+g14c5a08+chromium-154.0.8037.98",
+  "capabilities": {
+    "baseline": "",
+    "main": "",
+    "high": "",
+    "aac": "",
+    "vp9opus": "probably",
+    "av1": "probably",
+    "mse": false
+  },
+  "error": "AssertionError [ERR_ASSERTION]: CEF playback codec missing: baseline; use the codec-enabled distribution, not the stock SDK\n    at file:///workspace/suitecut/benchmarks/native-playback/playback.mjs:132:5",
+  "finishedAt": "2026-10-10T11:23:16.448Z"
+}

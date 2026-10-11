@@ -1,0 +1,6 @@
+
+/workspace/suitecut/tests/media.test.ts
+  6:39  error  Async method 'resolveFfprobe' has no 'await' expression  @typescript-eslint/require-await
+
+✖ 1 problem (1 error, 0 warnings)
+

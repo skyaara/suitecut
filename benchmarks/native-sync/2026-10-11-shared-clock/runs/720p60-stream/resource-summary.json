@@ -1,0 +1,40 @@
+{
+  "activeSamples": 240,
+  "boundary": "Controller, capture/browser children and encoders; receiver, display and Pulse reported separately/excluded",
+  "cpuMeanCores": 0.6343531815612654,
+  "cpuP95Cores": 0.8711544062235385,
+  "rssPeakMiB": 1340.33203125,
+  "rssMeanMiB": 1265.6582682291667,
+  "rssSlopeMiBPerMinuteAfterWarmup": null,
+  "pssCompleteSamples": 0,
+  "pssPeakMiB": null,
+  "pssSlopeMiBPerMinuteAfterWarmup": null,
+  "nodeHeapSlopeMiBPerMinuteAfterWarmup": null,
+  "nodeExternalSlopeMiBPerMinuteAfterWarmup": null,
+  "cpuMeanByRole": {
+    "audio-utility": 0.013195387539997272,
+    "browser": 0.37189000325234756,
+    "controller": 0.008895022060698986,
+    "gpu": 0.07308321644035673,
+    "renderer": 0.16728955226786482
+  },
+  "samplerDurationP95Ms": 12.757076148409395,
+  "samplerCpuMeanCores": 0.011288935818947151,
+  "memoryGuardExceeded": false,
+  "ussPeakMiB": null,
+  "ussSlopeMiBPerMinuteAfterWarmup": null,
+  "nativeQueuedVideoPeakMiB": 13.18359375,
+  "nativeQueuedAudioPeakMiB": 0.03125,
+  "nativeAdaptiveBufferInitialMs": 150,
+  "nativeAdaptiveBufferMaximumMs": 150,
+  "hostMemoryEventsDelta": {
+    "low": 0,
+    "high": 0,
+    "max": 0,
+    "oom": 0,
+    "oom_kill": 0,
+    "oom_group_kill": 0
+  },
+  "hostQuotaThrottledPeriodsDelta": 0,
+  "hostCgroupPeakSampledMemoryMiB": 7544.546875
+}

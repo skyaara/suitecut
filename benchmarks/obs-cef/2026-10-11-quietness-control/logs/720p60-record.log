@@ -1,0 +1,4 @@
+{"backend":"obs-cef","mode":"record","status":"completed; media validation pending","directory":"/workspace/suitecut/benchmarks/obs-cef/2026-10-11-quietness-control/runs/720p60-record"}
+{"case": "1080p30-record", "harnessValid": true, "qualityPassed": false, "issues": ["Silence in continuous source", "Video marker held beyond two frame intervals"], "error": null}
+{"case": "1080p30-stream", "harnessValid": true, "qualityPassed": false, "issues": ["Silence in continuous source", "Video marker held beyond two frame intervals"], "error": null}
+{"case": "720p60-record", "harnessValid": true, "qualityPassed": false, "issues": ["Silence in continuous source", "Video marker held beyond two frame intervals", "Source audio content differs from AudioContext marker beyond one video interval + 10 ms marker resolution"], "error": null}

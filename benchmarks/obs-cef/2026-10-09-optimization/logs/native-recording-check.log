@@ -1,0 +1,25 @@
+file:///workspace/suitecut/dist/media.js:79
+        const parsed = ProbeVideoStreamSchema.parse(stream);
+                                              ^
+
+ZodError: [
+  {
+    "code": "custom",
+    "message": "must have a positive denominator",
+    "path": [
+      "avg_frame_rate"
+    ]
+  }
+]
+    at parseStream (file:///workspace/suitecut/dist/media.js:79:47)
+    at file:///workspace/suitecut/dist/media.js:145:26
+    at Array.map (<anonymous>)
+    at probeMedia (file:///workspace/suitecut/dist/media.js:145:10)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async Promise.allSettled (index 1)
+    at async probeMediaBatch (file:///workspace/suitecut/dist/media.js:161:23)
+    at async createAttempt (file:///workspace/suitecut/dist/recording-output.js:75:19)
+    at async recordNative (file:///workspace/suitecut/dist/native-recording.js:96:21)
+    at async file:///workspace/suitecut/scripts/verify-native-recording.mjs:74:18
+
+Node.js v24.19.0

@@ -1,0 +1,79 @@
+[
+  {
+    "label": "baseline-record",
+    "mode": "record",
+    "dimensions": "1280x720",
+    "decodedDistinctFps": 0.594059405940594,
+    "nodeCpuPercent": 42.31383911448264,
+    "eventLoopUtilization": 0.5599837379290322,
+    "eventLoopP99Ms": 30.031871,
+    "finalizationMs": 15689.974346,
+    "error": null
+  },
+  {
+    "label": "baseline-stream",
+    "mode": "stream",
+    "dimensions": "1920x1080",
+    "decodedDistinctFps": 5.172172778528494,
+    "nodeCpuPercent": 68.95921806127566,
+    "eventLoopUtilization": 0.7080469880428577,
+    "eventLoopP99Ms": 39.059455,
+    "finalizationMs": 2968.782113000001,
+    "error": null
+  },
+  {
+    "label": "latest-4k-record",
+    "mode": "record",
+    "dimensions": "3840x2160",
+    "decodedDistinctFps": 7.755791985681615,
+    "nodeCpuPercent": 84.49274670405296,
+    "eventLoopUtilization": 0.7203014484680174,
+    "eventLoopP99Ms": 25.427967,
+    "finalizationMs": 5914.29487,
+    "error": null
+  },
+  {
+    "label": "timestamp-h264-record",
+    "mode": "record",
+    "dimensions": "1920x1080",
+    "decodedDistinctFps": 21.064082278481013,
+    "nodeCpuPercent": 59.19810387515392,
+    "eventLoopUtilization": 0.6457489348281584,
+    "eventLoopP99Ms": 31.653887,
+    "finalizationMs": 942.5948739999985,
+    "error": null
+  },
+  {
+    "label": "timestamp-record",
+    "mode": "record",
+    "dimensions": "1280x720",
+    "decodedDistinctFps": 22.404263718910382,
+    "nodeCpuPercent": 62.14209697218703,
+    "eventLoopUtilization": 0.6376333413706431,
+    "eventLoopP99Ms": 30.605311,
+    "finalizationMs": 1148.8071739999996,
+    "error": null
+  },
+  {
+    "label": "tuned-frame-threads-stream",
+    "mode": "stream",
+    "dimensions": "1920x1080",
+    "decodedDistinctFps": 10.749170444454831,
+    "nodeCpuPercent": 84.48545829485468,
+    "eventLoopUtilization": 0.7576508035157293,
+    "eventLoopP99Ms": 35.291135,
+    "finalizationMs": 1278.1190260000003,
+    "error": null
+  },
+  {
+    "label": "tuned-threads-stream",
+    "mode": "stream",
+    "dimensions": "1920x1080",
+    "decodedDistinctFps": 14.351614556637623,
+    "nodeCpuPercent": 81.33455799403868,
+    "eventLoopUtilization": 0.7068692227088726,
+    "eventLoopP99Ms": 30.572543,
+    "finalizationMs": 1535.397691000002,
+    "error": null
+  }
+]

@@ -1,0 +1,8 @@
+file:///workspace/suitecut/benchmarks/obs-cef/native-audio-profile/probe.mjs:18
+ if(!obs)throw new Error('OBS WebSocket did not become ready')
+               ^
+
+Error: OBS WebSocket did not become ready
+    at file:///workspace/suitecut/benchmarks/obs-cef/native-audio-profile/probe.mjs:18:16
+
+Node.js v24.19.0

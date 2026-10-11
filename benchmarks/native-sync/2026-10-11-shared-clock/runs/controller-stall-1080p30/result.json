@@ -1,0 +1,165 @@
+{
+  "backend": "cpp-cef",
+  "mode": "record",
+  "profile": "performance",
+  "width": 1920,
+  "height": 1080,
+  "fps": 30,
+  "durationRequestedMs": 60000,
+  "startedAt": "2026-10-10T21:49:16.831Z",
+  "status": "completed; media validation pending",
+  "recordingPath": "/workspace/suitecut/benchmarks/native-sync/2026-10-11-shared-clock/runs/controller-stall-1080p30/recording.mkv",
+  "receiverPath": "/workspace/suitecut/benchmarks/native-sync/2026-10-11-shared-clock/runs/controller-stall-1080p30/receiver.flv",
+  "phases": [
+    {
+      "name": "static",
+      "atMs": 5.8116250000002765,
+      "monotonic": 178728.407881821
+    },
+    {
+      "name": "canvas",
+      "atMs": 10049.314499,
+      "monotonic": 178738.448812054
+    },
+    {
+      "name": "scroll",
+      "atMs": 20008.297619,
+      "monotonic": 178748.408303912
+    },
+    {
+      "name": "static",
+      "atMs": 30041.211671999998,
+      "monotonic": 178758.440544714
+    },
+    {
+      "name": "canvas",
+      "atMs": 40036.226641,
+      "monotonic": 178768.437930378
+    },
+    {
+      "name": "scroll",
+      "atMs": 50031.101763,
+      "monotonic": 178778.431444575
+    }
+  ],
+  "encoding": {
+    "video": "H264 veryfast zerolatency, GOP 2 seconds; configured thread count/preset in finalOutput",
+    "audio": "AAC 48kHz stereo 128kbps",
+    "recordCrf": 18,
+    "streamBitrateKbps": 4500
+  },
+  "cefVersion": "152.0.6+g708dc14+chromium-152.0.7977.83",
+  "browserVersion": "152.0.7977.83",
+  "audioStarted": {
+    "generator": "frame-coded interpolated hash noise",
+    "sampleRate": 48000,
+    "quantum": 24,
+    "amplitude": 0.15,
+    "firstFrame": 0,
+    "currentFrame": 1024
+  },
+  "captureAudioReadiness": {
+    "waitMs": 54.48789199999919,
+    "active": true,
+    "lastPacketMs": 2993.885737,
+    "packets": 8,
+    "requested": true
+  },
+  "beforeCapture": {
+    "marker": 44,
+    "rendered": 29,
+    "mode": "static",
+    "scrollY": 0,
+    "scrollEvents": 0,
+    "keyEvents": 0,
+    "clicks": 0,
+    "value": "",
+    "choice": "First",
+    "actionMask": 0,
+    "width": 1920,
+    "height": 1080,
+    "audio": {
+      "generator": "frame-coded interpolated hash noise",
+      "sampleRate": 48000,
+      "quantum": 24,
+      "amplitude": 0.15,
+      "firstFrame": 0,
+      "currentFrame": 12928
+    }
+  },
+  "activeBaseline": {
+    "marker": 64,
+    "rendered": 33,
+    "mode": "static",
+    "scrollY": 0,
+    "scrollEvents": 0,
+    "keyEvents": 0,
+    "clicks": 0,
+    "value": "",
+    "choice": "First",
+    "actionMask": 0,
+    "width": 1920,
+    "height": 1080,
+    "audio": {
+      "generator": "frame-coded interpolated hash noise",
+      "sampleRate": 48000,
+      "quantum": 24,
+      "amplitude": 0.15,
+      "firstFrame": 0,
+      "currentFrame": 35200
+    }
+  },
+  "activeStartMonotonic": 178728.396210175,
+  "inputDwellMs": 200,
+  "controllerStallMs": 2000.0840179999977,
+  "activeEndMonotonic": 178788.439931291,
+  "activeMs": 60043.721116002416,
+  "afterCapture": {
+    "marker": 1866,
+    "rendered": 1727,
+    "mode": "scroll",
+    "scrollY": 0,
+    "scrollEvents": 40,
+    "keyEvents": 1,
+    "clicks": 1,
+    "value": "SuiteCut benchmark",
+    "choice": "Second",
+    "actionMask": 15,
+    "width": 1920,
+    "height": 1080,
+    "audio": {
+      "generator": "frame-coded interpolated hash noise",
+      "sampleRate": 48000,
+      "quantum": 24,
+      "amplitude": 0.15,
+      "firstFrame": 0,
+      "currentFrame": 2795136
+    }
+  },
+  "scrollCommands": 40,
+  "finalOutput": {
+    "ready": true,
+    "stopped": true,
+    "paused": false,
+    "videoFrames": 1822,
+    "audioSamples": 2914304,
+    "repeatedFrames": 115,
+    "droppedAudioSamples": 0,
+    "missingAudioSamples": 111568,
+    "activeMissingAudioSamples": 111568,
+    "lateAudioSamples": 0,
+    "queuedVideoBytes": 0,
+    "queuedAudioBytes": 0,
+    "startedMs": 3051.340014,
+    "durationMs": 60733.333333333336,
+    "maximumEncodeMs": 2274.270378,
+    "bufferedDelayMs": 492.9854593333366,
+    "audioSyncWaits": 7001,
+    "videoSyncWaits": 4696,
+    "maximumTrackLeadMs": 33.33333333333576,
+    "videoEncoderThreads": 1,
+    "videoEncoderPreset": "veryfast",
+    "error": ""
+  },
+  "finishedAt": "2026-10-10T21:50:21.987Z"
+}

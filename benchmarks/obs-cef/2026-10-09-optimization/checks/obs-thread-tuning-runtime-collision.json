@@ -1,0 +1,40 @@
+{
+  "before": {
+    "recordEncoder.json": {
+      "rate_control": "CRF",
+      "crf": 18,
+      "preset": "veryfast",
+      "profile": "high",
+      "keyint_sec": 2,
+      "x264opts": "threads=4"
+    },
+    "streamEncoder.json": {
+      "rate_control": "CBR",
+      "bitrate": 4500,
+      "preset": "veryfast",
+      "profile": "high",
+      "keyint_sec": 2,
+      "x264opts": "threads=4"
+    }
+  },
+  "after": {
+    "recordEncoder.json": {
+      "rate_control": "CRF",
+      "crf": 18,
+      "preset": "veryfast",
+      "profile": "high",
+      "keyint_sec": 2,
+      "x264opts": "threads=4"
+    },
+    "streamEncoder.json": {
+      "rate_control": "CBR",
+      "bitrate": 4500,
+      "preset": "veryfast",
+      "profile": "high",
+      "keyint_sec": 2,
+      "x264opts": "threads=4"
+    }
+  },
+  "cpuQuotaEquivalents": 4,
+  "scope": "x264 opts only; codec/preset/rate control unchanged"
+}

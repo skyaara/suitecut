@@ -1,0 +1,306 @@
+[
+  {
+    "name": ".github",
+    "path": ".github",
+    "sha": "b848e350bad23997cd5fd62ae113713e1247dd1b",
+    "size": 0,
+    "url": "https://api.github.com/repos/jcefmaven/jcefbuild/contents/.github?ref=master",
+    "html_url": "https://github.com/jcefmaven/jcefbuild/tree/master/.github",
+    "git_url": "https://api.github.com/repos/jcefmaven/jcefbuild/git/trees/b848e350bad23997cd5fd62ae113713e1247dd1b",
+    "download_url": null,
+    "type": "dir",
+    "_links": {
+      "self": "https://api.github.com/repos/jcefmaven/jcefbuild/contents/.github?ref=master",
+      "git": "https://api.github.com/repos/jcefmaven/jcefbuild/git/trees/b848e350bad23997cd5fd62ae113713e1247dd1b",
+      "html": "https://github.com/jcefmaven/jcefbuild/tree/master/.github"
+    }
+  },
+  {
+    "name": ".gitignore",
+    "path": ".gitignore",
+    "sha": "8feb632595b32623067d7eca898911ccaf84fb1c",
+    "size": 84,
+    "url": "https://api.github.com/repos/jcefmaven/jcefbuild/contents/.gitignore?ref=master",
+    "html_url": "https://github.com/jcefmaven/jcefbuild/blob/master/.gitignore",
+    "git_url": "https://api.github.com/repos/jcefmaven/jcefbuild/git/blobs/8feb632595b32623067d7eca898911ccaf84fb1c",
+    "download_url": "https://raw.githubusercontent.com/jcefmaven/jcefbuild/master/.gitignore",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/jcefmaven/jcefbuild/contents/.gitignore?ref=master",
+      "git": "https://api.github.com/repos/jcefmaven/jcefbuild/git/blobs/8feb632595b32623067d7eca898911ccaf84fb1c",
+      "html": "https://github.com/jcefmaven/jcefbuild/blob/master/.gitignore"
+    }
+  },
+  {
+    "name": "DockerfileLinux",
+    "path": "DockerfileLinux",
+    "sha": "91be540d25b2780692814f91ef05ccf3399124bc",
+    "size": 891,
+    "url": "https://api.github.com/repos/jcefmaven/jcefbuild/contents/DockerfileLinux?ref=master",
+    "html_url": "https://github.com/jcefmaven/jcefbuild/blob/master/DockerfileLinux",
+    "git_url": "https://api.github.com/repos/jcefmaven/jcefbuild/git/blobs/91be540d25b2780692814f91ef05ccf3399124bc",
+    "download_url": "https://raw.githubusercontent.com/jcefmaven/jcefbuild/master/DockerfileLinux",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/jcefmaven/jcefbuild/contents/DockerfileLinux?ref=master",
+      "git": "https://api.github.com/repos/jcefmaven/jcefbuild/git/blobs/91be540d25b2780692814f91ef05ccf3399124bc",
+      "html": "https://github.com/jcefmaven/jcefbuild/blob/master/DockerfileLinux"
+    }
+  },
+  {
+    "name": "DockerfileLinuxARMPrebuild",
+    "path": "DockerfileLinuxARMPrebuild",
+    "sha": "423121266c8aecd668b1136acac384b2a81c051f",
+    "size": 740,
+    "url": "https://api.github.com/repos/jcefmaven/jcefbuild/contents/DockerfileLinuxARMPrebuild?ref=master",
+    "html_url": "https://github.com/jcefmaven/jcefbuild/blob/master/DockerfileLinuxARMPrebuild",
+    "git_url": "https://api.github.com/repos/jcefmaven/jcefbuild/git/blobs/423121266c8aecd668b1136acac384b2a81c051f",
+    "download_url": "https://raw.githubusercontent.com/jcefmaven/jcefbuild/master/DockerfileLinuxARMPrebuild",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/jcefmaven/jcefbuild/contents/DockerfileLinuxARMPrebuild?ref=master",
+      "git": "https://api.github.com/repos/jcefmaven/jcefbuild/git/blobs/423121266c8aecd668b1136acac384b2a81c051f",
+      "html": "https://github.com/jcefmaven/jcefbuild/blob/master/DockerfileLinuxARMPrebuild"
+    }
+  },
+  {
+    "name": "DockerfileWindows",
+    "path": "DockerfileWindows",
+    "sha": "6ac59fbebd7d5db9045b58e90a178694038471d3",
+    "size": 237,
+    "url": "https://api.github.com/repos/jcefmaven/jcefbuild/contents/DockerfileWindows?ref=master",
+    "html_url": "https://github.com/jcefmaven/jcefbuild/blob/master/DockerfileWindows",
+    "git_url": "https://api.github.com/repos/jcefmaven/jcefbuild/git/blobs/6ac59fbebd7d5db9045b58e90a178694038471d3",
+    "download_url": "https://raw.githubusercontent.com/jcefmaven/jcefbuild/master/DockerfileWindows",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/jcefmaven/jcefbuild/contents/DockerfileWindows?ref=master",
+      "git": "https://api.github.com/repos/jcefmaven/jcefbuild/git/blobs/6ac59fbebd7d5db9045b58e90a178694038471d3",
+      "html": "https://github.com/jcefmaven/jcefbuild/blob/master/DockerfileWindows"
+    }
+  },
+  {
+    "name": "LICENSE",
+    "path": "LICENSE",
+    "sha": "7a4a3ea2424c09fbe48d455aed1eaa94d9124835",
+    "size": 11357,
+    "url": "https://api.github.com/repos/jcefmaven/jcefbuild/contents/LICENSE?ref=master",
+    "html_url": "https://github.com/jcefmaven/jcefbuild/blob/master/LICENSE",
+    "git_url": "https://api.github.com/repos/jcefmaven/jcefbuild/git/blobs/7a4a3ea2424c09fbe48d455aed1eaa94d9124835",
+    "download_url": "https://raw.githubusercontent.com/jcefmaven/jcefbuild/master/LICENSE",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/jcefmaven/jcefbuild/contents/LICENSE?ref=master",
+      "git": "https://api.github.com/repos/jcefmaven/jcefbuild/git/blobs/7a4a3ea2424c09fbe48d455aed1eaa94d9124835",
+      "html": "https://github.com/jcefmaven/jcefbuild/blob/master/LICENSE"
+    }
+  },
+  {
+    "name": "README.md",
+    "path": "README.md",
+    "sha": "dd4ff62196284e8bbc5f1ad26518196f11de4639",
+    "size": 5326,
+    "url": "https://api.github.com/repos/jcefmaven/jcefbuild/contents/README.md?ref=master",
+    "html_url": "https://github.com/jcefmaven/jcefbuild/blob/master/README.md",
+    "git_url": "https://api.github.com/repos/jcefmaven/jcefbuild/git/blobs/dd4ff62196284e8bbc5f1ad26518196f11de4639",
+    "download_url": "https://raw.githubusercontent.com/jcefmaven/jcefbuild/master/README.md",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/jcefmaven/jcefbuild/contents/README.md?ref=master",
+      "git": "https://api.github.com/repos/jcefmaven/jcefbuild/git/blobs/dd4ff62196284e8bbc5f1ad26518196f11de4639",
+      "html": "https://github.com/jcefmaven/jcefbuild/blob/master/README.md"
+    }
+  },
+  {
+    "name": "compile_linux.sh",
+    "path": "compile_linux.sh",
+    "sha": "1d3c8893ad0635b941c4df8f210c2d80e3ceabd1",
+    "size": 2971,
+    "url": "https://api.github.com/repos/jcefmaven/jcefbuild/contents/compile_linux.sh?ref=master",
+    "html_url": "https://github.com/jcefmaven/jcefbuild/blob/master/compile_linux.sh",
+    "git_url": "https://api.github.com/repos/jcefmaven/jcefbuild/git/blobs/1d3c8893ad0635b941c4df8f210c2d80e3ceabd1",
+    "download_url": "https://raw.githubusercontent.com/jcefmaven/jcefbuild/master/compile_linux.sh",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/jcefmaven/jcefbuild/contents/compile_linux.sh?ref=master",
+      "git": "https://api.github.com/repos/jcefmaven/jcefbuild/git/blobs/1d3c8893ad0635b941c4df8f210c2d80e3ceabd1",
+      "html": "https://github.com/jcefmaven/jcefbuild/blob/master/compile_linux.sh"
+    }
+  },
+  {
+    "name": "compile_macosx.sh",
+    "path": "compile_macosx.sh",
+    "sha": "44843e62032387d9046a021747bc0688b979bf5d",
+    "size": 2539,
+    "url": "https://api.github.com/repos/jcefmaven/jcefbuild/contents/compile_macosx.sh?ref=master",
+    "html_url": "https://github.com/jcefmaven/jcefbuild/blob/master/compile_macosx.sh",
+    "git_url": "https://api.github.com/repos/jcefmaven/jcefbuild/git/blobs/44843e62032387d9046a021747bc0688b979bf5d",
+    "download_url": "https://raw.githubusercontent.com/jcefmaven/jcefbuild/master/compile_macosx.sh",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/jcefmaven/jcefbuild/contents/compile_macosx.sh?ref=master",
+      "git": "https://api.github.com/repos/jcefmaven/jcefbuild/git/blobs/44843e62032387d9046a021747bc0688b979bf5d",
+      "html": "https://github.com/jcefmaven/jcefbuild/blob/master/compile_macosx.sh"
+    }
+  },
+  {
+    "name": "compile_windows.bat",
+    "path": "compile_windows.bat",
+    "sha": "8496386371f3c6bdd5ca2cfa236bbd5a52346014",
+    "size": 1032,
+    "url": "https://api.github.com/repos/jcefmaven/jcefbuild/contents/compile_windows.bat?ref=master",
+    "html_url": "https://github.com/jcefmaven/jcefbuild/blob/master/compile_windows.bat",
+    "git_url": "https://api.github.com/repos/jcefmaven/jcefbuild/git/blobs/8496386371f3c6bdd5ca2cfa236bbd5a52346014",
+    "download_url": "https://raw.githubusercontent.com/jcefmaven/jcefbuild/master/compile_windows.bat",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/jcefmaven/jcefbuild/contents/compile_windows.bat?ref=master",
+      "git": "https://api.github.com/repos/jcefmaven/jcefbuild/git/blobs/8496386371f3c6bdd5ca2cfa236bbd5a52346014",
+      "html": "https://github.com/jcefmaven/jcefbuild/blob/master/compile_windows.bat"
+    }
+  },
+  {
+    "name": "entitlements",
+    "path": "entitlements",
+    "sha": "b470379e103b122083956d5c9f723048eae772dc",
+    "size": 0,
+    "url": "https://api.github.com/repos/jcefmaven/jcefbuild/contents/entitlements?ref=master",
+    "html_url": "https://github.com/jcefmaven/jcefbuild/tree/master/entitlements",
+    "git_url": "https://api.github.com/repos/jcefmaven/jcefbuild/git/trees/b470379e103b122083956d5c9f723048eae772dc",
+    "download_url": null,
+    "type": "dir",
+    "_links": {
+      "self": "https://api.github.com/repos/jcefmaven/jcefbuild/contents/entitlements?ref=master",
+      "git": "https://api.github.com/repos/jcefmaven/jcefbuild/git/trees/b470379e103b122083956d5c9f723048eae772dc",
+      "html": "https://github.com/jcefmaven/jcefbuild/tree/master/entitlements"
+    }
+  },
+  {
+    "name": "jcef",
+    "path": "jcef",
+    "sha": "847f875ac216adebf7a84c31f9c492cc5ef718be",
+    "size": 0,
+    "url": "https://api.github.com/repos/jcefmaven/jcefbuild/contents/jcef?ref=master",
+    "html_url": "https://github.com/jcefmaven/jcefbuild/tree/master/jcef",
+    "git_url": "https://api.github.com/repos/jcefmaven/jcefbuild/git/trees/847f875ac216adebf7a84c31f9c492cc5ef718be",
+    "download_url": null,
+    "type": "dir",
+    "_links": {
+      "self": "https://api.github.com/repos/jcefmaven/jcefbuild/contents/jcef?ref=master",
+      "git": "https://api.github.com/repos/jcefmaven/jcefbuild/git/trees/847f875ac216adebf7a84c31f9c492cc5ef718be",
+      "html": "https://github.com/jcefmaven/jcefbuild/tree/master/jcef"
+    }
+  },
+  {
+    "name": "macosx_codesign.sh",
+    "path": "macosx_codesign.sh",
+    "sha": "10559256db966257b3b2993311cd56f07edf041d",
+    "size": 5182,
+    "url": "https://api.github.com/repos/jcefmaven/jcefbuild/contents/macosx_codesign.sh?ref=master",
+    "html_url": "https://github.com/jcefmaven/jcefbuild/blob/master/macosx_codesign.sh",
+    "git_url": "https://api.github.com/repos/jcefmaven/jcefbuild/git/blobs/10559256db966257b3b2993311cd56f07edf041d",
+    "download_url": "https://raw.githubusercontent.com/jcefmaven/jcefbuild/master/macosx_codesign.sh",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/jcefmaven/jcefbuild/contents/macosx_codesign.sh?ref=master",
+      "git": "https://api.github.com/repos/jcefmaven/jcefbuild/git/blobs/10559256db966257b3b2993311cd56f07edf041d",
+      "html": "https://github.com/jcefmaven/jcefbuild/blob/master/macosx_codesign.sh"
+    }
+  },
+  {
+    "name": "macosx_codesign_zip.sh",
+    "path": "macosx_codesign_zip.sh",
+    "sha": "f99a5e1eae8aba6e78479980d047a383f5e44c26",
+    "size": 636,
+    "url": "https://api.github.com/repos/jcefmaven/jcefbuild/contents/macosx_codesign_zip.sh?ref=master",
+    "html_url": "https://github.com/jcefmaven/jcefbuild/blob/master/macosx_codesign_zip.sh",
+    "git_url": "https://api.github.com/repos/jcefmaven/jcefbuild/git/blobs/f99a5e1eae8aba6e78479980d047a383f5e44c26",
+    "download_url": "https://raw.githubusercontent.com/jcefmaven/jcefbuild/master/macosx_codesign_zip.sh",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/jcefmaven/jcefbuild/contents/macosx_codesign_zip.sh?ref=master",
+      "git": "https://api.github.com/repos/jcefmaven/jcefbuild/git/blobs/f99a5e1eae8aba6e78479980d047a383f5e44c26",
+      "html": "https://github.com/jcefmaven/jcefbuild/blob/master/macosx_codesign_zip.sh"
+    }
+  },
+  {
+    "name": "macosx_notarize.sh",
+    "path": "macosx_notarize.sh",
+    "sha": "7abf00335d9795e7b6ae8a383836579455ac24b4",
+    "size": 1719,
+    "url": "https://api.github.com/repos/jcefmaven/jcefbuild/contents/macosx_notarize.sh?ref=master",
+    "html_url": "https://github.com/jcefmaven/jcefbuild/blob/master/macosx_notarize.sh",
+    "git_url": "https://api.github.com/repos/jcefmaven/jcefbuild/git/blobs/7abf00335d9795e7b6ae8a383836579455ac24b4",
+    "download_url": "https://raw.githubusercontent.com/jcefmaven/jcefbuild/master/macosx_notarize.sh",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/jcefmaven/jcefbuild/contents/macosx_notarize.sh?ref=master",
+      "git": "https://api.github.com/repos/jcefmaven/jcefbuild/git/blobs/7abf00335d9795e7b6ae8a383836579455ac24b4",
+      "html": "https://github.com/jcefmaven/jcefbuild/blob/master/macosx_notarize.sh"
+    }
+  },
+  {
+    "name": "natives",
+    "path": "natives",
+    "sha": "691597cbf81256f5d91b94d6add1935e192230a0",
+    "size": 0,
+    "url": "https://api.github.com/repos/jcefmaven/jcefbuild/contents/natives?ref=master",
+    "html_url": "https://github.com/jcefmaven/jcefbuild/tree/master/natives",
+    "git_url": "https://api.github.com/repos/jcefmaven/jcefbuild/git/trees/691597cbf81256f5d91b94d6add1935e192230a0",
+    "download_url": null,
+    "type": "dir",
+    "_links": {
+      "self": "https://api.github.com/repos/jcefmaven/jcefbuild/contents/natives?ref=master",
+      "git": "https://api.github.com/repos/jcefmaven/jcefbuild/git/trees/691597cbf81256f5d91b94d6add1935e192230a0",
+      "html": "https://github.com/jcefmaven/jcefbuild/tree/master/natives"
+    }
+  },
+  {
+    "name": "patch",
+    "path": "patch",
+    "sha": "f5d6cb11a5d657a365a223552931feb50e0dfcd3",
+    "size": 0,
+    "url": "https://api.github.com/repos/jcefmaven/jcefbuild/contents/patch?ref=master",
+    "html_url": "https://github.com/jcefmaven/jcefbuild/tree/master/patch",
+    "git_url": "https://api.github.com/repos/jcefmaven/jcefbuild/git/trees/f5d6cb11a5d657a365a223552931feb50e0dfcd3",
+    "download_url": null,
+    "type": "dir",
+    "_links": {
+      "self": "https://api.github.com/repos/jcefmaven/jcefbuild/contents/patch?ref=master",
+      "git": "https://api.github.com/repos/jcefmaven/jcefbuild/git/trees/f5d6cb11a5d657a365a223552931feb50e0dfcd3",
+      "html": "https://github.com/jcefmaven/jcefbuild/tree/master/patch"
+    }
+  },
+  {
+    "name": "release_gen",
+    "path": "release_gen",
+    "sha": "8e0cc611c3308f9954af5d642bafcb1a66d760ff",
+    "size": 0,
+    "url": "https://api.github.com/repos/jcefmaven/jcefbuild/contents/release_gen?ref=master",
+    "html_url": "https://github.com/jcefmaven/jcefbuild/tree/master/release_gen",
+    "git_url": "https://api.github.com/repos/jcefmaven/jcefbuild/git/trees/8e0cc611c3308f9954af5d642bafcb1a66d760ff",
+    "download_url": null,
+    "type": "dir",
+    "_links": {
+      "self": "https://api.github.com/repos/jcefmaven/jcefbuild/contents/release_gen?ref=master",
+      "git": "https://api.github.com/repos/jcefmaven/jcefbuild/git/trees/8e0cc611c3308f9954af5d642bafcb1a66d760ff",
+      "html": "https://github.com/jcefmaven/jcefbuild/tree/master/release_gen"
+    }
+  },
+  {
+    "name": "scripts",
+    "path": "scripts",
+    "sha": "8efed92c3b661c05fd17fed6957e7040ceb20610",
+    "size": 0,
+    "url": "https://api.github.com/repos/jcefmaven/jcefbuild/contents/scripts?ref=master",
+    "html_url": "https://github.com/jcefmaven/jcefbuild/tree/master/scripts",
+    "git_url": "https://api.github.com/repos/jcefmaven/jcefbuild/git/trees/8efed92c3b661c05fd17fed6957e7040ceb20610",
+    "download_url": null,
+    "type": "dir",
+    "_links": {
+      "self": "https://api.github.com/repos/jcefmaven/jcefbuild/contents/scripts?ref=master",
+      "git": "https://api.github.com/repos/jcefmaven/jcefbuild/git/trees/8efed92c3b661c05fd17fed6957e7040ceb20610",
+      "html": "https://github.com/jcefmaven/jcefbuild/tree/master/scripts"
+    }
+  }
+]

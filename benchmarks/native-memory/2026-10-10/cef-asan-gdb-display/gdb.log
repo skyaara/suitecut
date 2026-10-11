@@ -1,0 +1,39 @@
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/lib/x86_64-linux-gnu/libthread_db.so.1".
+[New Thread 0x7fe59fbff6c0 (LWP 426756)]
+[New Thread 0x7fe59daa36c0 (LWP 426757)]
+[Detaching after fork from child process 426758]
+[Detaching after fork from child process 426759]
+[Detaching after fork from child process 426760]
+[New Thread 0x7fe597fff6c0 (LWP 426763)]
+[New Thread 0x7fe59568b6c0 (LWP 426764)]
+[New Thread 0x7fe58ffff6c0 (LWP 426765)]
+[New Thread 0x7fe58ecf56c0 (LWP 426766)]
+[New Thread 0x7fe58e4f46c0 (LWP 426767)]
+[New Thread 0x7fe58d1ea6c0 (LWP 426768)]
+[New Thread 0x7fe58c9e96c0 (LWP 426769)]
+[New Thread 0x7fe5829ed6c0 (LWP 426770)]
+[New Thread 0x7fe5816e36c0 (LWP 426771)]
+free(): invalid next size (normal)
+
+Thread 1 "suitecut-browse" received signal SIGABRT, Aborted.
+0x00007fe5ad2cc95c in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#0  0x00007fe5ad2cc95c in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007fe5ad277cc2 in raise () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007fe5ad2604ac in abort () from /lib/x86_64-linux-gnu/libc.so.6
+#3  0x00007fe5ad261291 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007fe5ad2d6465 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#5  0x00007fe5ad2d852c in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#6  0x00007fe5ad2d8690 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#7  0x00007fe5ad2db400 in free () from /lib/x86_64-linux-gnu/libc.so.6
+#8  0x00007fe5bbc14249 in ?? () from /workspace/suitecut/.suitecut/memory-asan/libcef.so
+#9  0x00007fe5c0cdbbf0 in ?? () from /workspace/suitecut/.suitecut/memory-asan/libcef.so
+#10 0x0000557c4bed9160 in ?? ()
+#11 0x00007ffc8e24dc20 in ?? ()
+#12 0x00007fe5b4f34a81 in ?? () from /workspace/suitecut/.suitecut/memory-asan/libcef.so
+#13 0x0000557c4bed81a0 in ?? ()
+#14 0x000000000000000c in ?? ()
+#15 0x0000503000019650 in ?? ()
+#16 0x0000557c4bed75f8 in ?? ()
+#17 0x0000557c4bed81a0 in ?? ()
+#18 0x0000000000000000 in ?? ()

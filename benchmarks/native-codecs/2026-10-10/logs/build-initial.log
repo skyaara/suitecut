@@ -1,0 +1,18 @@
+[1/8] Building CXX object CMakeFiles/suitecut-media.dir/media_file.cc.o
+[2/8] Building CXX object CMakeFiles/suitecut-media.dir/media_engine.cc.o
+[3/8] Building CXX object CMakeFiles/suitecut-media.dir/media_render.cc.o
+[4/8] Linking CXX static library libsuitecut-media.a
+[5/8] Building CXX object CMakeFiles/suitecut-media-test.dir/media_engine_test.cc.o
+[6/8] Linking CXX executable suitecut-media-test
+[7/8] Building CXX object CMakeFiles/suitecut-browser.dir/browser.cc.o
+FAILED: [code=1] CMakeFiles/suitecut-browser.dir/browser.cc.o 
+/usr/bin/c++ -DCEF_USE_SANDBOX -DNDEBUG -D_FILE_OFFSET_BITS=64 -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -I/workspace/suitecut/.suitecut/cef-sdk -I/workspace/suitecut/.suitecut/libyuv/include -O3 -DNDEBUG -std=gnu++20 -fno-strict-aliasing -fPIC -fstack-protector -funwind-tables -fvisibility=hidden --param=ssp-buffer-size=4 -pipe -pthread -Wall -Werror -Wno-missing-field-initializers -Wno-unused-parameter -Wno-error=comment -Wno-comment -Wno-deprecated-declarations -m64 -march=x86-64 -fno-exceptions -fno-rtti -fno-threadsafe-statics -fvisibility-inlines-hidden -std=c++20 -Wsign-compare -Wno-undefined-var-template -Wno-literal-suffix -Wno-narrowing -Wno-attributes -Wno-array-bounds -Wno-stringop-overflow -O2 -fdata-sections -ffunction-sections -fno-ident -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2 -fexceptions -MD -MT CMakeFiles/suitecut-browser.dir/browser.cc.o -MF CMakeFiles/suitecut-browser.dir/browser.cc.o.d -o CMakeFiles/suitecut-browser.dir/browser.cc.o -c /workspace/suitecut/native/browser/browser.cc
+/workspace/suitecut/native/browser/browser.cc: In member function ‘void {anonymous}::Source::Command(const std::string&)’:
+/workspace/suitecut/native/browser/browser.cc:792:43: error: could not convert ‘value’ from ‘scoped_refptr<CefListValue>’ to ‘scoped_refptr<CefDictionaryValue>’
+  792 |       writer_.Reply(id,true,"",Bytes(Json(value)));return;
+      |                                           ^~~~~
+      |                                           |
+      |                                           scoped_refptr<CefListValue>
+At global scope:
+cc1plus: note: unrecognized command-line option ‘-Wno-undefined-var-template’ may have been intended to silence earlier diagnostics
+ninja: build stopped: subcommand failed.

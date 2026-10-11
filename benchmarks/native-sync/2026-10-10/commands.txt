@@ -1,0 +1,15 @@
+cmake --build .suitecut/native-build -j2
+ctest --test-dir .suitecut/native-build --output-on-failure
+pnpm build
+pnpm lint
+pnpm typecheck
+pnpm test
+SUITECUT_ENGINE_E2E_DIRECTORY=$CASE python3 benchmarks/native-engine/runtime.py playwright
+SOAK_DIRECTORY=benchmarks/native-sync/2026-10-10 SOAK_LABEL=$LABEL SOAK_DURATION_MS=$DURATION SUITECUT_AUDIO_TRACE_DIRECTORY=$CASE python3 benchmarks/native-engine/runtime.py benchmarks/native-engine/soak.mjs
+# AudioWorklet control only: add SOAK_WORKLET_AUDIO=1; original matched fixture is unchanged without it.
+python3 benchmarks/native-sync/analyze.py $CASE
+# Capture is serialized. No build, sanitizer, decoder, or parallel benchmark runs during capture.
+# Sanitizer compile (native media core only):
+g++ -std=c++20 -g -O1 -fsanitize=address,undefined -fno-omit-frame-pointer -I.suitecut/native-media-deps/root/usr/include/x86_64-linux-gnu native/browser/media_startup_test.cc native/browser/media_engine.cc -L.suitecut/native-media-deps/root/usr/lib/x86_64-linux-gnu -Wl,-rpath,/workspace/suitecut/.suitecut/native-media-deps/root/usr/lib/x86_64-linux-gnu -lavformat -lavcodec -lavutil -lswresample -lswscale -pthread -o benchmarks/native-sync/2026-10-10/startup-tested-asan
+# 20 repetitions with LD_LIBRARY_PATH pointing to the FFmpeg sysroot,
+# ASAN_OPTIONS=detect_leaks=1:halt_on_error=1 UBSAN_OPTIONS=halt_on_error=1.

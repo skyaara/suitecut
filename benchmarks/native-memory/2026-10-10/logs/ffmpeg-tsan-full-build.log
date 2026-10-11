@@ -1,0 +1,1168 @@
+CC	libavdevice/alldevices.o
+CC	libavdevice/avdevice.o
+CC	libavdevice/utils.o
+CC	libavdevice/version.o
+CC	libavformat/allformats.o
+CC	libavformat/av1.o
+CC	libavformat/avc.o
+CC	libavformat/avformat.o
+CC	libavformat/avio.o
+src/libavformat/avio.c:63:137: warning: implicit conversion from 'long' to 'double' changes value from 9223372036854775807 to 9223372036854775808 [-Wimplicit-const-int-float-conversion]
+   63 |     {"rw_timeout", "Timeout for IO operations (in microseconds)", offsetof(URLContext, rw_timeout), AV_OPT_TYPE_INT64, { .i64 = 0 }, 0, INT64_MAX, AV_OPT_FLAG_ENCODING_PARAM | AV_OPT_FLAG_DECODING_PARAM },
+      |     ~                                                                                                                                   ^~~~~~~~~
+/usr/include/stdint.h:113:22: note: expanded from macro 'INT64_MAX'
+  113 | # define INT64_MAX              (__INT64_C(9223372036854775807))
+      |                                  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/usr/include/stdint.h:95:24: note: expanded from macro '__INT64_C'
+   95 | #  define __INT64_C(c)  c ## L
+      |                         ^~~~~~
+<scratch space>:167:1: note: expanded from here
+  167 | 9223372036854775807L
+      | ^~~~~~~~~~~~~~~~~~~~
+CC	libavformat/aviobuf.o
+1 warning generated.
+CC	libavformat/demux.o
+src/libavformat/demux.c:1389:13: warning: mixing declarations and code is incompatible with standards before C99 [-Wdeclaration-after-statement]
+ 1389 |         int new_extradata = !!av_packet_side_data_get(pkt->side_data, pkt->side_data_elems,
+      |             ^
+src/libavformat/demux.c:1783:40: warning: implicit conversion from 'long' to 'double' changes value from 9223372036854775807 to 9223372036854775808 [-Wimplicit-const-int-float-conversion]
+ 1783 |         if (bitrate >= 0 && bitrate <= INT64_MAX)
+      |                                     ~~ ^~~~~~~~~
+/usr/include/stdint.h:113:22: note: expanded from macro 'INT64_MAX'
+  113 | # define INT64_MAX              (__INT64_C(9223372036854775807))
+      |                                  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/usr/include/stdint.h:95:24: note: expanded from macro '__INT64_C'
+   95 | #  define __INT64_C(c)  c ## L
+      |                         ^~~~~~
+<scratch space>:18:1: note: expanded from here
+   18 | 9223372036854775807L
+      | ^~~~~~~~~~~~~~~~~~~~
+CC	libavformat/demux_utils.o
+CC	libavformat/dovi_isom.o
+CC	libavformat/dump.o
+src/libavformat/dump.c:231:53: warning: implicit conversion from 'unsigned int' to 'float' changes value from 4294967295 to 4294967296 [-Wimplicit-const-int-float-conversion]
+  231 |         av_log(ctx, log_level, "%f", (float) peak / UINT32_MAX);
+      |                                                   ~ ^~~~~~~~~~
+/usr/include/stdint.h:118:23: note: expanded from macro 'UINT32_MAX'
+  118 | # define UINT32_MAX             (4294967295U)
+      |                                  ^~~~~~~~~~~
+2 warnings generated.
+CC	libavformat/dv.o
+1 warning generated.
+CC	libavformat/evc.o
+CC	libavformat/file.o
+CC	libavformat/flac_picture.o
+CC	libavformat/flacenc_header.o
+CC	libavformat/format.o
+CC	libavformat/hevc.o
+CC	libavformat/iamf.o
+CC	libavformat/iamf_parse.o
+CC	libavformat/iamf_reader.o
+CC	libavformat/iamf_writer.o
+CC	libavformat/id3v1.o
+CC	libavformat/id3v2.o
+CC	libavformat/isom.o
+CC	libavformat/isom_tags.o
+CC	libavformat/matroska.o
+CC	libavformat/matroskadec.o
+CC	libavformat/matroskaenc.o
+src/libavformat/matroskadec.c:3175:40: warning: implicit conversion from 'unsigned long' to 'double' changes value from 18446744073709551615 to 18446744073709551616 [-Wimplicit-const-int-float-conversion]
+ 3175 |                 if (default_duration > UINT64_MAX || default_duration < 0) {
+      |                                      ~ ^~~~~~~~~~
+/usr/include/stdint.h:119:23: note: expanded from macro 'UINT64_MAX'
+  119 | # define UINT64_MAX             (__UINT64_C(18446744073709551615))
+      |                                  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/usr/include/stdint.h:96:25: note: expanded from macro '__UINT64_C'
+   96 | #  define __UINT64_C(c) c ## UL
+      |                         ^~~~~~~
+<scratch space>:85:1: note: expanded from here
+   85 | 18446744073709551615UL
+      | ^~~~~~~~~~~~~~~~~~~~~~
+src/libavformat/matroskaenc.c:3543:192: warning: implicit conversion from 'long' to 'double' changes value from 9223372036854775807 to 9223372036854775808 [-Wimplicit-const-int-float-conversion]
+ 3543 |     { "cluster_time_limit",  "store at most the provided number of milliseconds in a cluster",                               OFFSET(cluster_time_limit), AV_OPT_TYPE_INT64, { .i64 = -1 }, -1, INT64_MAX, FLAGS },
+      |     ~                                                                                                                                                                                          ^~~~~~~~~
+/usr/include/stdint.h:113:22: note: expanded from macro 'INT64_MAX'
+  113 | # define INT64_MAX              (__INT64_C(9223372036854775807))
+      |                                  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/usr/include/stdint.h:95:24: note: expanded from macro '__INT64_C'
+   95 | #  define __INT64_C(c)  c ## L
+      |                         ^~~~~~
+<scratch space>:103:1: note: expanded from here
+  103 | 9223372036854775807L
+      | ^~~~~~~~~~~~~~~~~~~~
+1 warning generated.
+CC	libavformat/metadata.o
+CC	libavformat/mov.o
+1 warning generated.
+CC	libavformat/mov_chan.o
+src/libavformat/mov.c:1212:12: warning: variable 'ret' is uninitialized when used here [-Wuninitialized]
+ 1212 |     return ret;
+      |            ^~~
+src/libavformat/mov.c:1189:12: note: initialize the variable 'ret' to silence this warning
+ 1189 |     int ret;
+      |            ^
+      |             = 0
+CC	libavformat/mov_esds.o
+CC	libavformat/movenc.o
+1 warning generated.
+CC	libavformat/movenc_ttml.o
+CC	libavformat/movenccenc.o
+CC	libavformat/movenchint.o
+CC	libavformat/mux.o
+CC	libavformat/mux_utils.o
+CC	libavformat/network.o
+CC	libavformat/oggparsevorbis.o
+CC	libavformat/options.o
+In file included from src/libavformat/options.c:41:
+src/libavformat/options_table.h:111:181: warning: implicit conversion from 'long' to 'double' changes value from 9223372036854775807 to 9223372036854775808 [-Wimplicit-const-int-float-conversion]
+  111 | {"duration_probesize", "Maximum number of bytes to probe the durations of the streams in estimate_timings_from_pts", OFFSET(duration_probesize), AV_OPT_TYPE_INT64, {.i64 = 0 }, 0, INT64_MAX, D},
+      | ~                                                                                                                                                                                   ^~~~~~~~~
+/usr/include/stdint.h:113:22: note: expanded from macro 'INT64_MAX'
+  113 | # define INT64_MAX              (__INT64_C(9223372036854775807))
+      |                                  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/usr/include/stdint.h:95:24: note: expanded from macro '__INT64_C'
+   95 | #  define __INT64_C(c)  c ## L
+      |                         ^~~~~~
+<scratch space>:162:1: note: expanded from here
+  162 | 9223372036854775807L
+      | ^~~~~~~~~~~~~~~~~~~~
+In file included from src/libavformat/options.c:41:
+src/libavformat/options_table.h:89:146: warning: implicit conversion from 'long' to 'double' changes value from 9223372036854775807 to 9223372036854775808 [-Wimplicit-const-int-float-conversion]
+   89 | {"max_interleave_delta", "maximum buffering duration for interleaving", OFFSET(max_interleave_delta), AV_OPT_TYPE_INT64, { .i64 = 10000000 }, 0, INT64_MAX, E },
+      | ~                                                                                                                                                ^~~~~~~~~
+/usr/include/stdint.h:113:22: note: expanded from macro 'INT64_MAX'
+  113 | # define INT64_MAX              (__INT64_C(9223372036854775807))
+      |                                  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/usr/include/stdint.h:95:24: note: expanded from macro '__INT64_C'
+   95 | #  define __INT64_C(c)  c ## L
+      |                         ^~~~~~
+<scratch space>:161:1: note: expanded from here
+  161 | 9223372036854775807L
+      | ^~~~~~~~~~~~~~~~~~~~
+In file included from src/libavformat/options.c:41:
+src/libavformat/options_table.h:88:125: warning: implicit conversion from 'long' to 'double' changes value from 9223372036854775807 to 9223372036854775808 [-Wimplicit-const-int-float-conversion]
+   88 | {"output_ts_offset", "set output timestamp offset", OFFSET(output_ts_offset), AV_OPT_TYPE_DURATION, {.i64 = 0}, -INT64_MAX, INT64_MAX, E},
+      | ~                                                                                                                           ^~~~~~~~~
+/usr/include/stdint.h:113:22: note: expanded from macro 'INT64_MAX'
+  113 | # define INT64_MAX              (__INT64_C(9223372036854775807))
+      |                                  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/usr/include/stdint.h:95:24: note: expanded from macro '__INT64_C'
+   95 | #  define __INT64_C(c)  c ## L
+      |                         ^~~~~~
+<scratch space>:160:1: note: expanded from here
+  160 | 9223372036854775807L
+      | ^~~~~~~~~~~~~~~~~~~~
+In file included from src/libavformat/options.c:41:
+src/libavformat/options_table.h:88:113: warning: implicit conversion from 'long' to 'double' changes value from -9223372036854775807 to -9223372036854775808 [-Wimplicit-const-int-float-conversion]
+   88 | {"output_ts_offset", "set output timestamp offset", OFFSET(output_ts_offset), AV_OPT_TYPE_DURATION, {.i64 = 0}, -INT64_MAX, INT64_MAX, E},
+      | ~                                                                                                               ^~~~~~~~~~
+src/libavformat/options_table.h:84:159: warning: implicit conversion from 'long' to 'double' changes value from 9223372036854775806 to 9223372036854775808 [-Wimplicit-const-int-float-conversion]
+   84 | {"skip_initial_bytes", "set number of bytes to skip before reading header and frames", OFFSET(skip_initial_bytes), AV_OPT_TYPE_INT64, {.i64 = 0}, 0, INT64_MAX-1, D},
+      | ~                                                                                                                                                    ~~~~~~~~~^~
+src/libavformat/options_table.h:66:156: warning: implicit conversion from 'long' to 'double' changes value from 9223372036854775807 to 9223372036854775808 [-Wimplicit-const-int-float-conversion]
+   66 | {"start_time_realtime", "wall-clock time when stream begins (PTS==0)", OFFSET(start_time_realtime), AV_OPT_TYPE_INT64, {.i64 = AV_NOPTS_VALUE}, INT64_MIN, INT64_MAX, E},
+      | ~                                                                                                                                                          ^~~~~~~~~
+/usr/include/stdint.h:113:22: note: expanded from macro 'INT64_MAX'
+  113 | # define INT64_MAX              (__INT64_C(9223372036854775807))
+      |                                  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/usr/include/stdint.h:95:24: note: expanded from macro '__INT64_C'
+   95 | #  define __INT64_C(c)  c ## L
+      |                         ^~~~~~
+<scratch space>:157:1: note: expanded from here
+  157 | 9223372036854775807L
+      | ^~~~~~~~~~~~~~~~~~~~
+In file included from src/libavformat/options.c:41:
+src/libavformat/options_table.h:59:151: warning: implicit conversion from 'long' to 'double' changes value from 9223372036854775807 to 9223372036854775808 [-Wimplicit-const-int-float-conversion]
+   59 | {"analyzeduration", "specify how many microseconds are analyzed to probe the input", OFFSET(max_analyze_duration), AV_OPT_TYPE_INT64, {.i64 = 0 }, 0, INT64_MAX, D},
+      | ~                                                                                                                                                     ^~~~~~~~~
+/usr/include/stdint.h:113:22: note: expanded from macro 'INT64_MAX'
+  113 | # define INT64_MAX              (__INT64_C(9223372036854775807))
+      |                                  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/usr/include/stdint.h:95:24: note: expanded from macro '__INT64_C'
+   95 | #  define __INT64_C(c)  c ## L
+      |                         ^~~~~~
+<scratch space>:154:1: note: expanded from here
+  154 | 9223372036854775807L
+      | ^~~~~~~~~~~~~~~~~~~~
+In file included from src/libavformat/options.c:41:
+src/libavformat/options_table.h:39:96: warning: implicit conversion from 'long' to 'double' changes value from 9223372036854775807 to 9223372036854775808 [-Wimplicit-const-int-float-conversion]
+   39 | {"probesize", "set probing size", OFFSET(probesize), AV_OPT_TYPE_INT64, {.i64 = 5000000 }, 32, INT64_MAX, D},
+      | ~                                                                                              ^~~~~~~~~
+/usr/include/stdint.h:113:22: note: expanded from macro 'INT64_MAX'
+  113 | # define INT64_MAX              (__INT64_C(9223372036854775807))
+      |                                  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/usr/include/stdint.h:95:24: note: expanded from macro '__INT64_C'
+   95 | #  define __INT64_C(c)  c ## L
+      |                         ^~~~~~
+<scratch space>:153:1: note: expanded from here
+  153 | 9223372036854775807L
+      | ^~~~~~~~~~~~~~~~~~~~
+src/libavformat/options.c:427:91: warning: implicit conversion from 'long' to 'double' changes value from 9223372036854775807 to 9223372036854775808 [-Wimplicit-const-int-float-conversion]
+  427 |     {"id", "Set group id", offsetof(AVStreamGroup, id), AV_OPT_TYPE_INT64, {.i64 = 0}, 0, INT64_MAX, AV_OPT_FLAG_ENCODING_PARAM },
+      |     ~                                                                                     ^~~~~~~~~
+/usr/include/stdint.h:113:22: note: expanded from macro 'INT64_MAX'
+  113 | # define INT64_MAX              (__INT64_C(9223372036854775807))
+      |                                  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/usr/include/stdint.h:95:24: note: expanded from macro '__INT64_C'
+   95 | #  define __INT64_C(c)  c ## L
+      |                         ^~~~~~
+<scratch space>:181:1: note: expanded from here
+  181 | 9223372036854775807L
+      | ^~~~~~~~~~~~~~~~~~~~
+CC	libavformat/os_support.o
+9 warnings generated.
+CC	libavformat/qtpalette.o
+CC	libavformat/rawutils.o
+CC	libavformat/replaygain.o
+CC	libavformat/riff.o
+CC	libavformat/riffdec.o
+CC	libavformat/riffenc.o
+CC	libavformat/rtp.o
+CC	libavformat/rtpenc_chain.o
+CC	libavformat/sdp.o
+CC	libavformat/seek.o
+CC	libavformat/url.o
+CC	libavformat/utils.o
+CC	libavformat/version.o
+CC	libavformat/vorbiscomment.o
+CC	libavformat/vpcc.o
+CC	libavformat/vvc.o
+CC	libavformat/wv.o
+CC	libavformat/to_upper4.o
+CC	libavcodec/aac/aacdec.o
+src/libavcodec/aac/aacdec.c:1138:24: warning: mixing declarations and code is incompatible with standards before C99 [-Wdeclaration-after-statement]
+ 1138 |         AACUSACConfig *usac = &oc->usac;
+      |                        ^
+src/libavcodec/aac/aacdec.c:2585:8: warning: 'sample_fmts' is deprecated [-Wdeprecated-declarations]
+ 2585 |     .p.sample_fmts   = (const enum AVSampleFormat[]) {
+      |        ^
+src/libavcodec/codec.h:218:5: note: 'sample_fmts' has been explicitly marked deprecated here
+  218 |     attribute_deprecated
+      |     ^
+src/libavutil/attributes.h:100:49: note: expanded from macro 'attribute_deprecated'
+  100 | #    define attribute_deprecated __attribute__((deprecated))
+      |                                                 ^
+src/libavcodec/aac/aacdec.c:2590:8: warning: 'ch_layouts' is deprecated [-Wdeprecated-declarations]
+ 2590 |     .p.ch_layouts    = ff_aac_ch_layout,
+      |        ^
+src/libavcodec/codec.h:240:5: note: 'ch_layouts' has been explicitly marked deprecated here
+  240 |     attribute_deprecated
+      |     ^
+src/libavutil/attributes.h:100:49: note: expanded from macro 'attribute_deprecated'
+  100 | #    define attribute_deprecated __attribute__((deprecated))
+      |                                                 ^
+CC	libavcodec/aac/aacdec_ac.o
+CC	libavcodec/aac/aacdec_float.o
+CC	libavcodec/aac/aacdec_lpd.o
+CC	libavcodec/aac/aacdec_tab.o
+3 warnings generated.
+CC	libavcodec/aac/aacdec_usac.o
+src/libavcodec/aac/aacdec_usac.c:218:13: warning: mixing declarations and code is incompatible with standards before C99 [-Wdeclaration-after-statement]
+  218 |         int numBands = ((int[]){0,28,20,14,10,7,5,4})[e->mps.freq_res]; // ISO/IEC 23003-1:2007, 5.2, Table 39
+      |             ^
+CC	libavcodec/aac_ac3_parser.o
+src/libavcodec/aac_ac3_parser.c:151:17: warning: unused variable 'profile' [-Wunused-variable]
+  151 |             int profile;
+      |                 ^~~~~~~
+1 warning generated.
+CC	libavcodec/aac_parser.o
+CC	libavcodec/aaccoder.o
+src/libavcodec/aaccoder.c:534:20: warning: implicit conversion from 'int' to 'float' changes value from 2147483647 to 2147483648 [-Wimplicit-const-int-float-conversion]
+  534 |             qmin = INT_MAX;
+      |                  ~ ^~~~~~~
+/workspace/suitecut/.suitecut/memory-tools/root/usr/lib/llvm-19/lib/clang/19/include/limits.h:50:19: note: expanded from macro 'INT_MAX'
+   50 | #define INT_MAX   __INT_MAX__
+      |                   ^~~~~~~~~~~
+<built-in>:61:21: note: expanded from macro '__INT_MAX__'
+   61 | #define __INT_MAX__ 2147483647
+      |                     ^~~~~~~~~~
+1 warning generated.
+CC	libavcodec/aacenc.o
+src/libavcodec/aacenc.c:1433:8: warning: 'supported_samplerates' is deprecated [-Wdeprecated-declarations]
+ 1433 |     .p.supported_samplerates = ff_mpeg4audio_sample_rates,
+      |        ^
+src/libavcodec/codec.h:216:5: note: 'supported_samplerates' has been explicitly marked deprecated here
+  216 |     attribute_deprecated
+      |     ^
+src/libavutil/attributes.h:100:49: note: expanded from macro 'attribute_deprecated'
+  100 | #    define attribute_deprecated __attribute__((deprecated))
+      |                                                 ^
+src/libavcodec/aacenc.c:1435:8: warning: 'sample_fmts' is deprecated [-Wdeprecated-declarations]
+ 1435 |     .p.sample_fmts  = (const enum AVSampleFormat[]){ AV_SAMPLE_FMT_FLTP,
+      |        ^
+src/libavcodec/codec.h:218:5: note: 'sample_fmts' has been explicitly marked deprecated here
+  218 |     attribute_deprecated
+      |     ^
+src/libavutil/attributes.h:100:49: note: expanded from macro 'attribute_deprecated'
+  100 | #    define attribute_deprecated __attribute__((deprecated))
+      |                                                 ^
+2 warnings generated.
+CC	libavcodec/aacenc_is.o
+1 warning generated.
+CC	libavcodec/aacenc_ltp.o
+CC	libavcodec/aacenc_pred.o
+CC	libavcodec/aacenc_tns.o
+CC	libavcodec/aacps_common.o
+CC	libavcodec/aacps_float.o
+CC	libavcodec/aacpsdsp_float.o
+CC	libavcodec/aacpsy.o
+CC	libavcodec/aacsbr.o
+CC	libavcodec/aactab.o
+CC	libavcodec/ac3_parser.o
+CC	libavcodec/adts_header.o
+CC	libavcodec/adts_parser.o
+CC	libavcodec/allcodecs.o
+CC	libavcodec/aom_film_grain.o
+CC	libavcodec/atsc_a53.o
+CC	libavcodec/audio_frame_queue.o
+CC	libavcodec/avcodec.o
+CC	libavcodec/avdct.o
+CC	libavcodec/bitstream.o
+CC	libavcodec/bitstream_filters.o
+CC	libavcodec/bsf.o
+CC	libavcodec/bsf/aac_adtstoasc.o
+CC	libavcodec/bsf/pgs_frame_merge.o
+CC	libavcodec/bsf/vp9_superframe.o
+CC	libavcodec/bsf/vp9_superframe_split.o
+CC	libavcodec/bswapdsp.o
+CC	libavcodec/cabac.o
+CC	libavcodec/cbrt_data.o
+CC	libavcodec/codec_desc.o
+CC	libavcodec/codec_par.o
+CC	libavcodec/d3d11va.o
+CC	libavcodec/decode.o
+CC	libavcodec/dirac.o
+CC	libavcodec/dv_profile.o
+CC	libavcodec/encode.o
+CC	libavcodec/error_resilience.o
+CC	libavcodec/faandct.o
+CC	libavcodec/faanidct.o
+CC	libavcodec/fdctdsp.o
+CC	libavcodec/ffv1.o
+CC	libavcodec/ffv1dec.o
+CC	libavcodec/ffv1enc.o
+src/libavcodec/ffv1enc.c:1311:8: warning: 'pix_fmts' is deprecated [-Wdeprecated-declarations]
+ 1311 |     .p.pix_fmts     = (const enum AVPixelFormat[]) {
+      |        ^
+src/libavcodec/codec.h:214:5: note: 'pix_fmts' has been explicitly marked deprecated here
+  214 |     attribute_deprecated
+      |     ^
+src/libavutil/attributes.h:100:49: note: expanded from macro 'attribute_deprecated'
+  100 | #    define attribute_deprecated __attribute__((deprecated))
+      |                                                 ^
+CC	libavcodec/flac.o
+CC	libavcodec/flac_parser.o
+CC	libavcodec/flacdata.o
+CC	libavcodec/flacdec.o
+src/libavcodec/flacdec.c:830:8: warning: 'sample_fmts' is deprecated [-Wdeprecated-declarations]
+  830 |     .p.sample_fmts  = (const enum AVSampleFormat[]) { AV_SAMPLE_FMT_S16,
+      |        ^
+src/libavcodec/codec.h:218:5: note: 'sample_fmts' has been explicitly marked deprecated here
+  218 |     attribute_deprecated
+      |     ^
+src/libavutil/attributes.h:100:49: note: expanded from macro 'attribute_deprecated'
+  100 | #    define attribute_deprecated __attribute__((deprecated))
+      |                                                 ^
+1 warning generated.
+CC	libavcodec/flacdsp.o
+CC	libavcodec/flacenc.o
+src/libavcodec/flacenc.c:1763:8: warning: 'sample_fmts' is deprecated [-Wdeprecated-declarations]
+ 1763 |     .p.sample_fmts  = (const enum AVSampleFormat[]){ AV_SAMPLE_FMT_S16,
+      |        ^
+src/libavcodec/codec.h:218:5: note: 'sample_fmts' has been explicitly marked deprecated here
+  218 |     attribute_deprecated
+      |     ^
+src/libavutil/attributes.h:100:49: note: expanded from macro 'attribute_deprecated'
+  100 | #    define attribute_deprecated __attribute__((deprecated))
+      |                                                 ^
+1 warning generated.
+CC	libavcodec/flacencdsp.o
+1 warning generated.
+CC	libavcodec/frame_thread_encoder.o
+CC	libavcodec/get_buffer.o
+CC	libavcodec/h2645_parse.o
+CC	libavcodec/h2645_sei.o
+CC	libavcodec/h2645_vui.o
+CC	libavcodec/h264_cabac.o
+CC	libavcodec/h264_cavlc.o
+CC	libavcodec/h264_direct.o
+CC	libavcodec/h264_loopfilter.o
+CC	libavcodec/h264_mb.o
+CC	libavcodec/h264_parse.o
+CC	libavcodec/h264_parser.o
+src/libavcodec/h264_parser.c:229:24: warning: mixing declarations and code is incompatible with standards before C99 [-Wdeclaration-after-statement]
+  229 |             MMCOOpcode opcode = get_ue_golomb_31(gb);
+      |                        ^
+1 warning generated.
+CC	libavcodec/h264_picture.o
+CC	libavcodec/h264_ps.o
+CC	libavcodec/h264_refs.o
+CC	libavcodec/h264_sei.o
+CC	libavcodec/h264_slice.o
+CC	libavcodec/h264chroma.o
+CC	libavcodec/h264data.o
+CC	libavcodec/h264dec.o
+CC	libavcodec/h264dsp.o
+CC	libavcodec/h264idct.o
+CC	libavcodec/h264pred.o
+CC	libavcodec/h264qpel.o
+CC	libavcodec/h274.o
+CC	libavcodec/idctdsp.o
+CC	libavcodec/iirfilter.o
+CC	libavcodec/imgconvert.o
+CC	libavcodec/jfdctint.o
+CC	libavcodec/jni.o
+CC	libavcodec/jrevdct.o
+CC	libavcodec/kbdwin.o
+CC	libavcodec/libvpxenc.o
+CC	libavcodec/libx264.o
+src/libavcodec/libx264.c:1636:8: warning: 'pix_fmts' is deprecated [-Wdeprecated-declarations]
+ 1636 |     .p.pix_fmts       = pix_fmts_all,
+      |        ^
+src/libavcodec/codec.h:214:5: note: 'pix_fmts' has been explicitly marked deprecated here
+  214 |     attribute_deprecated
+      |     ^
+src/libavutil/attributes.h:100:49: note: expanded from macro 'attribute_deprecated'
+  100 | #    define attribute_deprecated __attribute__((deprecated))
+      |                                                 ^
+1 warning generated.
+CC	libavcodec/lpc.o
+CC	libavcodec/mathtables.o
+CC	libavcodec/me_cmp.o
+CC	libavcodec/mediacodec.o
+CC	libavcodec/mpeg4audio.o
+CC	libavcodec/options.o
+In file included from src/libavcodec/options.c:39:
+src/libavcodec/options_table.h:50:110: warning: implicit conversion from 'long' to 'double' changes value from 9223372036854775807 to 9223372036854775808 [-Wimplicit-const-int-float-conversion]
+   50 | {"b", "set bitrate (in bits/s)", OFFSET(bit_rate), AV_OPT_TYPE_INT64, {.i64 = AV_CODEC_DEFAULT_BITRATE }, 0, INT64_MAX, A|V|E},
+      | ~                                                                                                            ^~~~~~~~~
+/usr/include/stdint.h:113:22: note: expanded from macro 'INT64_MAX'
+  113 | # define INT64_MAX              (__INT64_C(9223372036854775807))
+      |                                  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/usr/include/stdint.h:95:24: note: expanded from macro '__INT64_C'
+   95 | #  define __INT64_C(c)  c ## L
+      |                         ^~~~~~
+<scratch space>:153:1: note: expanded from here
+  153 | 9223372036854775807L
+      | ^~~~~~~~~~~~~~~~~~~~
+1 warning generated.
+CC	libavcodec/packet.o
+CC	libavcodec/parser.o
+CC	libavcodec/parsers.o
+CC	libavcodec/pcm.o
+src/libavcodec/pcm.c:287:39: warning: 'sample_fmts' is deprecated [-Wdeprecated-declarations]
+  287 |     avctx->sample_fmt = avctx->codec->sample_fmts[0];
+      |                                       ^
+src/libavcodec/codec.h:218:5: note: 'sample_fmts' has been explicitly marked deprecated here
+  218 |     attribute_deprecated
+      |     ^
+src/libavutil/attributes.h:100:49: note: expanded from macro 'attribute_deprecated'
+  100 | #    define attribute_deprecated __attribute__((deprecated))
+      |                                                 ^
+src/libavcodec/pcm.c:611:1: warning: 'sample_fmts' is deprecated [-Wdeprecated-declarations]
+  611 | PCM_CODEC  (PCM_S16LE,        AV_SAMPLE_FMT_S16, pcm_s16le,        "PCM signed 16-bit little-endian");
+      | ^
+src/libavcodec/pcm.c:594:5: note: expanded from macro 'PCM_CODEC'
+  594 |     PCM_ENCODER(id, sample_fmt_, name, long_name_);                     \
+      |     ^
+src/libavcodec/pcm.c:569:5: note: expanded from macro 'PCM_ENCODER'
+  569 |     PCM_ENCODER_3(CONFIG_ ## id ## _ENCODER, id, sample_fmt, name, long_name)
+      |     ^
+src/libavcodec/pcm.c:567:5: note: expanded from macro 'PCM_ENCODER_3'
+  567 |     PCM_ENCODER_2(cf, id, sample_fmt, name, long_name)
+      |     ^
+src/libavcodec/pcm.c:565:5: note: expanded from macro 'PCM_ENCODER_2'
+  565 |     PCM_ENCODER_ ## cf(id, sample_fmt, name, long_name)
+      |     ^
+<scratch space>:106:1: note: expanded from here
+  106 | PCM_ENCODER_1
+      | ^
+src/libavcodec/pcm.c:560:8: note: expanded from macro 'PCM_ENCODER_1'
+  560 |     .p.sample_fmts = (const enum AVSampleFormat[]){ sample_fmt_,             \
+      |        ^
+src/libavcodec/codec.h:218:5: note: 'sample_fmts' has been explicitly marked deprecated here
+  218 |     attribute_deprecated
+      |     ^
+src/libavutil/attributes.h:100:49: note: expanded from macro 'attribute_deprecated'
+  100 | #    define attribute_deprecated __attribute__((deprecated))
+      |                                                 ^
+src/libavcodec/pcm.c:611:1: warning: 'sample_fmts' is deprecated [-Wdeprecated-declarations]
+  611 | PCM_CODEC  (PCM_S16LE,        AV_SAMPLE_FMT_S16, pcm_s16le,        "PCM signed 16-bit little-endian");
+      | ^
+src/libavcodec/pcm.c:595:5: note: expanded from macro 'PCM_CODEC'
+  595 |     PCM_DECODER(id, sample_fmt_, name, long_name_)
+      |     ^
+src/libavcodec/pcm.c:591:5: note: expanded from macro 'PCM_DECODER'
+  591 |     PCM_DECODER_3(CONFIG_ ## id ## _DECODER, id, sample_fmt, name, long_name)
+      |     ^
+src/libavcodec/pcm.c:589:5: note: expanded from macro 'PCM_DECODER_3'
+  589 |     PCM_DECODER_2(cf, id, sample_fmt, name, long_name)
+      |     ^
+src/libavcodec/pcm.c:587:5: note: expanded from macro 'PCM_DECODER_2'
+  587 |     PCM_DECODER_ ## cf(id, sample_fmt, name, long_name)
+      |     ^
+<scratch space>:113:1: note: expanded from here
+  113 | PCM_DECODER_1
+      | ^
+src/libavcodec/pcm.c:582:8: note: expanded from macro 'PCM_DECODER_1'
+  582 |     .p.sample_fmts  = (const enum AVSampleFormat[]){ sample_fmt_,           \
+      |        ^
+src/libavcodec/codec.h:218:5: note: 'sample_fmts' has been explicitly marked deprecated here
+  218 |     attribute_deprecated
+      |     ^
+src/libavutil/attributes.h:100:49: note: expanded from macro 'attribute_deprecated'
+  100 | #    define attribute_deprecated __attribute__((deprecated))
+      |                                                 ^
+3 warnings generated.
+CC	libavcodec/profiles.o
+CC	libavcodec/psymodel.o
+CC	libavcodec/pthread.o
+CC	libavcodec/pthread_frame.o
+CC	libavcodec/pthread_slice.o
+CC	libavcodec/qsv_api.o
+CC	libavcodec/rangecoder.o
+CC	libavcodec/raw.o
+CC	libavcodec/refstruct.o
+CC	libavcodec/sbrdsp.o
+CC	libavcodec/simple_idct.o
+CC	libavcodec/sinewin.o
+CC	libavcodec/startcode.o
+CC	libavcodec/threadprogress.o
+CC	libavcodec/utils.o
+CC	libavcodec/v4l2_buffers.o
+CC	libavcodec/v4l2_context.o
+CC	libavcodec/v4l2_fmt.o
+CC	libavcodec/v4l2_m2m.o
+CC	libavcodec/version.o
+CC	libavcodec/videodsp.o
+CC	libavcodec/vlc.o
+CC	libavcodec/vorbis_parser.o
+CC	libavcodec/vp9.o
+CC	libavcodec/vp9_parser.o
+CC	libavcodec/vp9block.o
+CC	libavcodec/vp9data.o
+CC	libavcodec/vp9dsp.o
+CC	libavcodec/vp9dsp_10bpp.o
+CC	libavcodec/vp9dsp_12bpp.o
+CC	libavcodec/vp9dsp_8bpp.o
+CC	libavcodec/vp9lpf.o
+CC	libavcodec/vp9mvs.o
+CC	libavcodec/vp9prob.o
+CC	libavcodec/vp9recon.o
+CC	libavcodec/vpx_rac.o
+CC	libavcodec/x86/aacencdsp_init.o
+CC	libavcodec/x86/aacpsdsp_init.o
+CC	libavcodec/x86/bswapdsp_init.o
+CC	libavcodec/x86/constants.o
+CC	libavcodec/x86/fdct.o
+CC	libavcodec/x86/fdctdsp_init.o
+CC	libavcodec/x86/flacdsp_init.o
+CC	libavcodec/x86/flacencdsp_init.o
+CC	libavcodec/x86/h264_intrapred_init.o
+CC	libavcodec/x86/h264_qpel.o
+CC	libavcodec/x86/h264chroma_init.o
+CC	libavcodec/x86/h264dsp_init.o
+CC	libavcodec/x86/idctdsp_init.o
+CC	libavcodec/x86/lpc_init.o
+CC	libavcodec/x86/me_cmp_init.o
+CC	libavcodec/x86/sbrdsp_init.o
+CC	libavcodec/x86/videodsp_init.o
+CC	libavcodec/x86/vp9dsp_init.o
+CC	libavcodec/x86/vp9dsp_init_10bpp.o
+CC	libavcodec/x86/vp9dsp_init_12bpp.o
+CC	libavcodec/x86/vp9dsp_init_16bpp.o
+CC	libavcodec/xiph.o
+CC	libavutil/adler32.o
+CC	libavutil/aes.o
+CC	libavutil/aes_ctr.o
+CC	libavutil/ambient_viewing_environment.o
+CC	libavutil/avsscanf.o
+CC	libavutil/avstring.o
+CC	libavutil/base64.o
+CC	libavutil/blowfish.o
+CC	libavutil/buffer.o
+CC	libavutil/camellia.o
+CC	libavutil/cast5.o
+CC	libavutil/channel_layout.o
+CC	libavutil/cpu.o
+src/libavutil/cpu.c:120:76: warning: implicit conversion from 'long' to 'double' changes value from 9223372036854775807 to 9223372036854775808 [-Wimplicit-const-int-float-conversion]
+  120 |         { "flags"   , NULL, 0, AV_OPT_TYPE_FLAGS, { .i64 = 0 }, INT64_MIN, INT64_MAX, .unit = "flags" },
+      |         ~                                                                  ^~~~~~~~~
+/usr/include/stdint.h:113:22: note: expanded from macro 'INT64_MAX'
+  113 | # define INT64_MAX              (__INT64_C(9223372036854775807))
+      |                                  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/usr/include/stdint.h:95:24: note: expanded from macro '__INT64_C'
+   95 | #  define __INT64_C(c)  c ## L
+      |                         ^~~~~~
+<scratch space>:109:1: note: expanded from here
+  109 | 9223372036854775807L
+      | ^~~~~~~~~~~~~~~~~~~~
+1 warning generated.
+CC	libavutil/crc.o
+CC	libavutil/des.o
+CC	libavutil/detection_bbox.o
+CC	libavutil/dict.o
+CC	libavutil/display.o
+CC	libavutil/downmix_info.o
+CC	libavutil/encryption_info.o
+CC	libavutil/error.o
+CC	libavutil/eval.o
+CC	libavutil/executor.o
+src/libavutil/eval.c:252:29: warning: implicit conversion from 'unsigned long' to 'double' changes value from 18446744073709551615 to 18446744073709551616 [-Wimplicit-const-int-float-conversion]
+  252 |             return r * (1.0/UINT64_MAX);
+      |                            ~^~~~~~~~~~
+/usr/include/stdint.h:119:23: note: expanded from macro 'UINT64_MAX'
+  119 | # define UINT64_MAX             (__UINT64_C(18446744073709551615))
+      |                                  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/usr/include/stdint.h:96:25: note: expanded from macro '__UINT64_C'
+   96 | #  define __UINT64_C(c) c ## UL
+      |                         ^~~~~~~
+<scratch space>:127:1: note: expanded from here
+  127 | 18446744073709551615UL
+      | ^~~~~~~~~~~~~~~~~~~~~~
+src/libavutil/eval.c:258:44: warning: implicit conversion from 'unsigned long' to 'double' changes value from 18446744073709551615 to 18446744073709551616 [-Wimplicit-const-int-float-conversion]
+  258 |             return min + (max - min) * r / UINT64_MAX;
+      |                                          ~ ^~~~~~~~~~
+/usr/include/stdint.h:119:23: note: expanded from macro 'UINT64_MAX'
+  119 | # define UINT64_MAX             (__UINT64_C(18446744073709551615))
+      |                                  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/usr/include/stdint.h:96:25: note: expanded from macro '__UINT64_C'
+   96 | #  define __UINT64_C(c) c ## UL
+      |                         ^~~~~~~
+<scratch space>:128:1: note: expanded from here
+  128 | 18446744073709551615UL
+      | ^~~~~~~~~~~~~~~~~~~~~~
+src/libavutil/eval.c:546:13: warning: mixing declarations and code is incompatible with standards before C99 [-Wdeclaration-after-statement]
+  546 |     AVExpr *e = av_mallocz(sizeof(AVExpr));
+      |             ^
+CC	libavutil/fifo.o
+CC	libavutil/file.o
+3 warnings generated.
+CC	libavutil/file_open.o
+CC	libavutil/film_grain_params.o
+CC	libavutil/fixed_dsp.o
+CC	libavutil/float_dsp.o
+CC	libavutil/frame.o
+CC	libavutil/hash.o
+CC	libavutil/hdr_dynamic_metadata.o
+CC	libavutil/hdr_dynamic_vivid_metadata.o
+CC	libavutil/hwcontext.o
+CC	libavutil/hwcontext_stub.o
+CC	libavutil/iamf.o
+CC	libavutil/imgutils.o
+CC	libavutil/integer.o
+CC	libavutil/intmath.o
+CC	libavutil/lfg.o
+CC	libavutil/lls.o
+CC	libavutil/log.o
+CC	libavutil/lzo.o
+CC	libavutil/mastering_display_metadata.o
+CC	libavutil/mathematics.o
+CC	libavutil/md5.o
+CC	libavutil/mem.o
+CC	libavutil/murmur3.o
+CC	libavutil/opt.o
+CC	libavutil/parseutils.o
+CC	libavutil/pixdesc.o
+CC	libavutil/pixelutils.o
+CC	libavutil/random_seed.o
+CC	libavutil/rational.o
+CC	libavutil/ripemd.o
+CC	libavutil/sha.o
+CC	libavutil/sha512.o
+CC	libavutil/slicethread.o
+CC	libavutil/stereo3d.o
+CC	libavutil/tea.o
+CC	libavutil/threadmessage.o
+CC	libavutil/time.o
+CC	libavutil/timecode.o
+CC	libavutil/timestamp.o
+CC	libavutil/twofish.o
+CC	libavutil/tx.o
+CC	libavutil/tx_double.o
+CC	libavutil/tx_float.o
+CC	libavutil/tx_int32.o
+CC	libavutil/utils.o
+CC	libavutil/version.o
+CC	libavutil/video_enc_params.o
+CC	libavutil/video_hint.o
+CC	libavutil/x86/cpu.o
+CC	libavutil/x86/fixed_dsp_init.o
+CC	libavutil/x86/float_dsp_init.o
+CC	libavutil/x86/imgutils_init.o
+CC	libavutil/x86/lls_init.o
+CC	libavutil/xga_font_data.o
+CC	libavutil/xtea.o
+GEN	libavdevice/libavdevice.pc
+CC	libavfilter/af_aformat.o
+CC	libavfilter/af_aresample.o
+CC	libavfilter/allfilters.o
+CC	libavfilter/audio.o
+CC	libavfilter/avf_concat.o
+CC	libavfilter/avfilter.o
+CC	libavfilter/avfiltergraph.o
+CC	libavfilter/buffersink.o
+CC	libavfilter/buffersrc.o
+CC	libavfilter/ccfifo.o
+CC	libavfilter/colorspace.o
+CC	libavfilter/drawutils.o
+CC	libavfilter/f_loop.o
+src/libavfilter/f_loop.c:453:114: warning: implicit conversion from 'long' to 'double' changes value from 9223372036854775807 to 9223372036854775808 [-Wimplicit-const-int-float-conversion]
+  453 |     { "time",  "set the loop start time",      OFFSET(time),  AV_OPT_TYPE_DURATION, {.i64=INT64_MAX}, INT64_MIN, INT64_MAX, VFLAGS },
+      |     ~                                                                                                            ^~~~~~~~~
+/usr/include/stdint.h:113:22: note: expanded from macro 'INT64_MAX'
+  113 | # define INT64_MAX              (__INT64_C(9223372036854775807))
+      |                                  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/usr/include/stdint.h:95:24: note: expanded from macro '__INT64_C'
+   95 | #  define __INT64_C(c)  c ## L
+      |                         ^~~~~~
+<scratch space>:152:1: note: expanded from here
+  152 | 9223372036854775807L
+      | ^~~~~~~~~~~~~~~~~~~~
+src/libavfilter/f_loop.c:452:99: warning: implicit conversion from 'long' to 'double' changes value from 9223372036854775807 to 9223372036854775808 [-Wimplicit-const-int-float-conversion]
+  452 |     { "start", "set the loop start frame",     OFFSET(start), AV_OPT_TYPE_INT64, {.i64 = 0 }, -1, INT64_MAX, VFLAGS },
+      |     ~                                                                                             ^~~~~~~~~
+/usr/include/stdint.h:113:22: note: expanded from macro 'INT64_MAX'
+  113 | # define INT64_MAX              (__INT64_C(9223372036854775807))
+      |                                  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/usr/include/stdint.h:95:24: note: expanded from macro '__INT64_C'
+   95 | #  define __INT64_C(c)  c ## L
+      |                         ^~~~~~
+<scratch space>:149:1: note: expanded from here
+  149 | 9223372036854775807L
+      | ^~~~~~~~~~~~~~~~~~~~
+2 warnings generated.
+CC	libavfilter/formats.o
+CC	libavfilter/framepool.o
+CC	libavfilter/framequeue.o
+CC	libavfilter/framesync.o
+CC	libavfilter/graphdump.o
+CC	libavfilter/graphparser.o
+CC	libavfilter/pthread.o
+CC	libavfilter/scale_eval.o
+CC	libavfilter/setpts.o
+CC	libavfilter/split.o
+CC	libavfilter/trim.o
+CC	libavfilter/version.o
+src/libavfilter/trim.c:344:140: warning: implicit conversion from 'long' to 'double' changes value from 9223372036854775807 to 9223372036854775808 [-Wimplicit-const-int-float-conversion]
+  343 |     { "end_frame",   "Number of the first frame that should be dropped "
+      |     ~
+  344 |         "again",                                                         OFFSET(end_frame),   AV_OPT_TYPE_INT64,  { .i64 = INT64_MAX }, 0, INT64_MAX, FLAGS },
+      |                                                                                                                                            ^~~~~~~~~
+/usr/include/stdint.h:113:22: note: expanded from macro 'INT64_MAX'
+  113 | # define INT64_MAX              (__INT64_C(9223372036854775807))
+      |                                  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/usr/include/stdint.h:95:24: note: expanded from macro '__INT64_C'
+   95 | #  define __INT64_C(c)  c ## L
+      |                         ^~~~~~
+<scratch space>:189:1: note: expanded from here
+  189 | 9223372036854775807L
+      | ^~~~~~~~~~~~~~~~~~~~
+src/libavfilter/trim.c:342:140: warning: implicit conversion from 'long' to 'double' changes value from 9223372036854775807 to 9223372036854775808 [-Wimplicit-const-int-float-conversion]
+  341 |     { "start_frame", "Number of the first frame that should be passed "
+      |     ~
+  342 |         "to the output",                                                 OFFSET(start_frame), AV_OPT_TYPE_INT64,  { .i64 = -1 },       -1, INT64_MAX, FLAGS },
+      |                                                                                                                                            ^~~~~~~~~
+/usr/include/stdint.h:113:22: note: expanded from macro 'INT64_MAX'
+  113 | # define INT64_MAX              (__INT64_C(9223372036854775807))
+      |                                  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/usr/include/stdint.h:95:24: note: expanded from macro '__INT64_C'
+   95 | #  define __INT64_C(c)  c ## L
+      |                         ^~~~~~
+<scratch space>:187:1: note: expanded from here
+  187 | 9223372036854775807L
+      | ^~~~~~~~~~~~~~~~~~~~
+src/libavfilter/trim.c:340:5: warning: implicit conversion from 'long' to 'double' changes value from 9223372036854775807 to 9223372036854775808 [-Wimplicit-const-int-float-conversion]
+  340 |     COMMON_OPTS
+      |     ^~~~~~~~~~~
+src/libavfilter/trim.c:333:153: note: expanded from macro 'COMMON_OPTS'
+  333 |     { "durationi",   "Maximum duration of the output",                   OFFSET(duration),    AV_OPT_TYPE_DURATION, { .i64 = 0 },                    0, INT64_MAX, FLAGS },
+      |     ~                                                                                                                                                   ^~~~~~~~~
+/usr/include/stdint.h:113:22: note: expanded from macro 'INT64_MAX'
+  113 | # define INT64_MAX              (__INT64_C(9223372036854775807))
+      |                                  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/usr/include/stdint.h:95:24: note: expanded from macro '__INT64_C'
+   95 | #  define __INT64_C(c)  c ## L
+      |                         ^~~~~~
+<scratch space>:186:1: note: expanded from here
+  186 | 9223372036854775807L
+      | ^~~~~~~~~~~~~~~~~~~~
+src/libavfilter/trim.c:340:5: warning: implicit conversion from 'long' to 'double' changes value from 9223372036854775807 to 9223372036854775808 [-Wimplicit-const-int-float-conversion]
+  340 |     COMMON_OPTS
+      |     ^~~~~~~~~~~
+src/libavfilter/trim.c:332:153: note: expanded from macro 'COMMON_OPTS'
+  332 |     { "duration",    "Maximum duration of the output",                   OFFSET(duration),    AV_OPT_TYPE_DURATION, { .i64 = 0 },                    0, INT64_MAX, FLAGS }, \
+      |     ~                                                                                                                                                   ^~~~~~~~~
+/usr/include/stdint.h:113:22: note: expanded from macro 'INT64_MAX'
+  113 | # define INT64_MAX              (__INT64_C(9223372036854775807))
+      |                                  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/usr/include/stdint.h:95:24: note: expanded from macro '__INT64_C'
+   95 | #  define __INT64_C(c)  c ## L
+      |                         ^~~~~~
+<scratch space>:185:1: note: expanded from here
+  185 | 9223372036854775807L
+      | ^~~~~~~~~~~~~~~~~~~~
+src/libavfilter/trim.c:340:5: warning: implicit conversion from 'long' to 'double' changes value from 9223372036854775807 to 9223372036854775808 [-Wimplicit-const-int-float-conversion]
+  340 |     COMMON_OPTS
+      |     ^~~~~~~~~~~
+src/libavfilter/trim.c:331:153: note: expanded from macro 'COMMON_OPTS'
+  330 |     { "end_pts",     "Timestamp of the first frame that should be "                                                                                                         \
+      |     ~
+  331 |         "dropped again",                                                 OFFSET(end_pts),     AV_OPT_TYPE_INT64,  { .i64 = AV_NOPTS_VALUE }, INT64_MIN, INT64_MAX, FLAGS }, \
+      |                                                                                                                                                         ^~~~~~~~~
+/usr/include/stdint.h:113:22: note: expanded from macro 'INT64_MAX'
+  113 | # define INT64_MAX              (__INT64_C(9223372036854775807))
+      |                                  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/usr/include/stdint.h:95:24: note: expanded from macro '__INT64_C'
+   95 | #  define __INT64_C(c)  c ## L
+      |                         ^~~~~~
+<scratch space>:184:1: note: expanded from here
+  184 | 9223372036854775807L
+      | ^~~~~~~~~~~~~~~~~~~~
+src/libavfilter/trim.c:340:5: warning: implicit conversion from 'long' to 'double' changes value from 9223372036854775807 to 9223372036854775808 [-Wimplicit-const-int-float-conversion]
+  340 |     COMMON_OPTS
+      |     ^~~~~~~~~~~
+src/libavfilter/trim.c:329:153: note: expanded from macro 'COMMON_OPTS'
+  328 |     { "start_pts",   "Timestamp of the first frame that should be "                                                                                                         \
+      |     ~
+  329 |        " passed",                                                        OFFSET(start_pts),   AV_OPT_TYPE_INT64,  { .i64 = AV_NOPTS_VALUE }, INT64_MIN, INT64_MAX, FLAGS }, \
+      |                                                                                                                                                         ^~~~~~~~~
+/usr/include/stdint.h:113:22: note: expanded from macro 'INT64_MAX'
+  113 | # define INT64_MAX              (__INT64_C(9223372036854775807))
+      |                                  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/usr/include/stdint.h:95:24: note: expanded from macro '__INT64_C'
+   95 | #  define __INT64_C(c)  c ## L
+      |                         ^~~~~~
+<scratch space>:181:1: note: expanded from here
+  181 | 9223372036854775807L
+      | ^~~~~~~~~~~~~~~~~~~~
+src/libavfilter/trim.c:340:5: warning: implicit conversion from 'long' to 'double' changes value from 9223372036854775807 to 9223372036854775808 [-Wimplicit-const-int-float-conversion]
+  340 |     COMMON_OPTS
+      |     ^~~~~~~~~~~
+src/libavfilter/trim.c:327:153: note: expanded from macro 'COMMON_OPTS'
+  326 |     { "endi",        "Timestamp of the first frame that "                                                                                                        \
+      |     ~
+  327 |         "should be dropped again",                                       OFFSET(end_time),    AV_OPT_TYPE_DURATION, { .i64 = INT64_MAX },    INT64_MIN, INT64_MAX, FLAGS }, \
+      |                                                                                                                                                         ^~~~~~~~~
+/usr/include/stdint.h:113:22: note: expanded from macro 'INT64_MAX'
+  113 | # define INT64_MAX              (__INT64_C(9223372036854775807))
+      |                                  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/usr/include/stdint.h:95:24: note: expanded from macro '__INT64_C'
+   95 | #  define __INT64_C(c)  c ## L
+      |                         ^~~~~~
+<scratch space>:178:1: note: expanded from here
+  178 | 9223372036854775807L
+      | ^~~~~~~~~~~~~~~~~~~~
+src/libavfilter/trim.c:340:5: warning: implicit conversion from 'long' to 'double' changes value from 9223372036854775807 to 9223372036854775808 [-Wimplicit-const-int-float-conversion]
+  340 |     COMMON_OPTS
+      |     ^~~~~~~~~~~
+src/libavfilter/trim.c:325:153: note: expanded from macro 'COMMON_OPTS'
+  324 |     { "end",         "Timestamp of the first frame that "                                                                                                        \
+      |     ~
+  325 |         "should be dropped again",                                       OFFSET(end_time),    AV_OPT_TYPE_DURATION, { .i64 = INT64_MAX },    INT64_MIN, INT64_MAX, FLAGS }, \
+      |                                                                                                                                                         ^~~~~~~~~
+/usr/include/stdint.h:113:22: note: expanded from macro 'INT64_MAX'
+  113 | # define INT64_MAX              (__INT64_C(9223372036854775807))
+      |                                  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/usr/include/stdint.h:95:24: note: expanded from macro '__INT64_C'
+   95 | #  define __INT64_C(c)  c ## L
+      |                         ^~~~~~
+<scratch space>:175:1: note: expanded from here
+  175 | 9223372036854775807L
+      | ^~~~~~~~~~~~~~~~~~~~
+src/libavfilter/trim.c:340:5: warning: implicit conversion from 'long' to 'double' changes value from 9223372036854775807 to 9223372036854775808 [-Wimplicit-const-int-float-conversion]
+  340 |     COMMON_OPTS
+      |     ^~~~~~~~~~~
+src/libavfilter/trim.c:323:153: note: expanded from macro 'COMMON_OPTS'
+  322 |     { "starti",      "Timestamp of the first frame that "                                                                                                        \
+      |     ~
+  323 |         "should be passed",                                              OFFSET(start_time),  AV_OPT_TYPE_DURATION, { .i64 = INT64_MAX },    INT64_MIN, INT64_MAX, FLAGS }, \
+      |                                                                                                                                                         ^~~~~~~~~
+/usr/include/stdint.h:113:22: note: expanded from macro 'INT64_MAX'
+  113 | # define INT64_MAX              (__INT64_C(9223372036854775807))
+      |                                  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/usr/include/stdint.h:95:24: note: expanded from macro '__INT64_C'
+   95 | #  define __INT64_C(c)  c ## L
+      |                         ^~~~~~
+<scratch space>:172:1: note: expanded from here
+  172 | 9223372036854775807L
+      | ^~~~~~~~~~~~~~~~~~~~
+src/libavfilter/trim.c:340:5: warning: implicit conversion from 'long' to 'double' changes value from 9223372036854775807 to 9223372036854775808 [-Wimplicit-const-int-float-conversion]
+  340 |     COMMON_OPTS
+      |     ^~~~~~~~~~~
+src/libavfilter/trim.c:321:153: note: expanded from macro 'COMMON_OPTS'
+  320 |     { "start",       "Timestamp of the first frame that "                                                                                                        \
+      |     ~
+  321 |         "should be passed",                                              OFFSET(start_time),  AV_OPT_TYPE_DURATION, { .i64 = INT64_MAX },    INT64_MIN, INT64_MAX, FLAGS }, \
+      |                                                                                                                                                         ^~~~~~~~~
+/usr/include/stdint.h:113:22: note: expanded from macro 'INT64_MAX'
+  113 | # define INT64_MAX              (__INT64_C(9223372036854775807))
+      |                                  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/usr/include/stdint.h:95:24: note: expanded from macro '__INT64_C'
+   95 | #  define __INT64_C(c)  c ## L
+      |                         ^~~~~~
+<scratch space>:169:1: note: expanded from here
+  169 | 9223372036854775807L
+      | ^~~~~~~~~~~~~~~~~~~~
+src/libavfilter/trim.c:380:141: warning: implicit conversion from 'long' to 'double' changes value from 9223372036854775807 to 9223372036854775808 [-Wimplicit-const-int-float-conversion]
+  379 |     { "end_sample",   "Number of the first audio sample that should be "
+      |     ~
+  380 |         "dropped again",                                                 OFFSET(end_sample),   AV_OPT_TYPE_INT64,  { .i64 = INT64_MAX }, 0, INT64_MAX, FLAGS },
+      |                                                                                                                                             ^~~~~~~~~
+/usr/include/stdint.h:113:22: note: expanded from macro 'INT64_MAX'
+  113 | # define INT64_MAX              (__INT64_C(9223372036854775807))
+      |                                  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/usr/include/stdint.h:95:24: note: expanded from macro '__INT64_C'
+   95 | #  define __INT64_C(c)  c ## L
+      |                         ^~~~~~
+<scratch space>:217:1: note: expanded from here
+  217 | 9223372036854775807L
+      | ^~~~~~~~~~~~~~~~~~~~
+src/libavfilter/trim.c:378:141: warning: implicit conversion from 'long' to 'double' changes value from 9223372036854775807 to 9223372036854775808 [-Wimplicit-const-int-float-conversion]
+  377 |     { "start_sample", "Number of the first audio sample that should be "
+      |     ~
+  378 |         "passed to the output",                                          OFFSET(start_sample), AV_OPT_TYPE_INT64,  { .i64 = -1 },       -1, INT64_MAX, FLAGS },
+      |                                                                                                                                             ^~~~~~~~~
+/usr/include/stdint.h:113:22: note: expanded from macro 'INT64_MAX'
+  113 | # define INT64_MAX              (__INT64_C(9223372036854775807))
+      |                                  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/usr/include/stdint.h:95:24: note: expanded from macro '__INT64_C'
+   95 | #  define __INT64_C(c)  c ## L
+      |                         ^~~~~~
+<scratch space>:215:1: note: expanded from here
+  215 | 9223372036854775807L
+      | ^~~~~~~~~~~~~~~~~~~~
+src/libavfilter/trim.c:376:5: warning: implicit conversion from 'long' to 'double' changes value from 9223372036854775807 to 9223372036854775808 [-Wimplicit-const-int-float-conversion]
+  376 |     COMMON_OPTS
+      |     ^~~~~~~~~~~
+src/libavfilter/trim.c:333:153: note: expanded from macro 'COMMON_OPTS'
+  333 |     { "durationi",   "Maximum duration of the output",                   OFFSET(duration),    AV_OPT_TYPE_DURATION, { .i64 = 0 },                    0, INT64_MAX, FLAGS },
+      |     ~                                                                                                                                                   ^~~~~~~~~
+/usr/include/stdint.h:113:22: note: expanded from macro 'INT64_MAX'
+  113 | # define INT64_MAX              (__INT64_C(9223372036854775807))
+      |                                  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/usr/include/stdint.h:95:24: note: expanded from macro '__INT64_C'
+   95 | #  define __INT64_C(c)  c ## L
+      |                         ^~~~~~
+<scratch space>:214:1: note: expanded from here
+  214 | 9223372036854775807L
+      | ^~~~~~~~~~~~~~~~~~~~
+src/libavfilter/trim.c:376:5: warning: implicit conversion from 'long' to 'double' changes value from 9223372036854775807 to 9223372036854775808 [-Wimplicit-const-int-float-conversion]
+  376 |     COMMON_OPTS
+      |     ^~~~~~~~~~~
+src/libavfilter/trim.c:332:153: note: expanded from macro 'COMMON_OPTS'
+  332 |     { "duration",    "Maximum duration of the output",                   OFFSET(duration),    AV_OPT_TYPE_DURATION, { .i64 = 0 },                    0, INT64_MAX, FLAGS }, \
+      |     ~                                                                                                                                                   ^~~~~~~~~
+/usr/include/stdint.h:113:22: note: expanded from macro 'INT64_MAX'
+  113 | # define INT64_MAX              (__INT64_C(9223372036854775807))
+      |                                  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/usr/include/stdint.h:95:24: note: expanded from macro '__INT64_C'
+   95 | #  define __INT64_C(c)  c ## L
+      |                         ^~~~~~
+<scratch space>:213:1: note: expanded from here
+  213 | 9223372036854775807L
+      | ^~~~~~~~~~~~~~~~~~~~
+src/libavfilter/trim.c:376:5: warning: implicit conversion from 'long' to 'double' changes value from 9223372036854775807 to 9223372036854775808 [-Wimplicit-const-int-float-conversion]
+  376 |     COMMON_OPTS
+      |     ^~~~~~~~~~~
+src/libavfilter/trim.c:331:153: note: expanded from macro 'COMMON_OPTS'
+  330 |     { "end_pts",     "Timestamp of the first frame that should be "                                                                                                         \
+      |     ~
+  331 |         "dropped again",                                                 OFFSET(end_pts),     AV_OPT_TYPE_INT64,  { .i64 = AV_NOPTS_VALUE }, INT64_MIN, INT64_MAX, FLAGS }, \
+      |                                                                                                                                                         ^~~~~~~~~
+/usr/include/stdint.h:113:22: note: expanded from macro 'INT64_MAX'
+  113 | # define INT64_MAX              (__INT64_C(9223372036854775807))
+      |                                  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/usr/include/stdint.h:95:24: note: expanded from macro '__INT64_C'
+   95 | #  define __INT64_C(c)  c ## L
+      |                         ^~~~~~
+<scratch space>:212:1: note: expanded from here
+  212 | 9223372036854775807L
+      | ^~~~~~~~~~~~~~~~~~~~
+src/libavfilter/trim.c:376:5: warning: implicit conversion from 'long' to 'double' changes value from 9223372036854775807 to 9223372036854775808 [-Wimplicit-const-int-float-conversion]
+  376 |     COMMON_OPTS
+      |     ^~~~~~~~~~~
+src/libavfilter/trim.c:329:153: note: expanded from macro 'COMMON_OPTS'
+  328 |     { "start_pts",   "Timestamp of the first frame that should be "                                                                                                         \
+      |     ~
+  329 |        " passed",                                                        OFFSET(start_pts),   AV_OPT_TYPE_INT64,  { .i64 = AV_NOPTS_VALUE }, INT64_MIN, INT64_MAX, FLAGS }, \
+      |                                                                                                                                                         ^~~~~~~~~
+/usr/include/stdint.h:113:22: note: expanded from macro 'INT64_MAX'
+  113 | # define INT64_MAX              (__INT64_C(9223372036854775807))
+      |                                  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/usr/include/stdint.h:95:24: note: expanded from macro '__INT64_C'
+   95 | #  define __INT64_C(c)  c ## L
+      |                         ^~~~~~
+<scratch space>:209:1: note: expanded from here
+  209 | 9223372036854775807L
+      | ^~~~~~~~~~~~~~~~~~~~
+src/libavfilter/trim.c:376:5: warning: implicit conversion from 'long' to 'double' changes value from 9223372036854775807 to 9223372036854775808 [-Wimplicit-const-int-float-conversion]
+  376 |     COMMON_OPTS
+      |     ^~~~~~~~~~~
+src/libavfilter/trim.c:327:153: note: expanded from macro 'COMMON_OPTS'
+  326 |     { "endi",        "Timestamp of the first frame that "                                                                                                        \
+      |     ~
+  327 |         "should be dropped again",                                       OFFSET(end_time),    AV_OPT_TYPE_DURATION, { .i64 = INT64_MAX },    INT64_MIN, INT64_MAX, FLAGS }, \
+      |                                                                                                                                                         ^~~~~~~~~
+/usr/include/stdint.h:113:22: note: expanded from macro 'INT64_MAX'
+  113 | # define INT64_MAX              (__INT64_C(9223372036854775807))
+      |                                  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/usr/include/stdint.h:95:24: note: expanded from macro '__INT64_C'
+   95 | #  define __INT64_C(c)  c ## L
+      |                         ^~~~~~
+<scratch space>:206:1: note: expanded from here
+  206 | 9223372036854775807L
+      | ^~~~~~~~~~~~~~~~~~~~
+src/libavfilter/trim.c:376:5: warning: implicit conversion from 'long' to 'double' changes value from 9223372036854775807 to 9223372036854775808 [-Wimplicit-const-int-float-conversion]
+  376 |     COMMON_OPTS
+      |     ^~~~~~~~~~~
+src/libavfilter/trim.c:325:153: note: expanded from macro 'COMMON_OPTS'
+  324 |     { "end",         "Timestamp of the first frame that "                                                                                                        \
+      |     ~
+  325 |         "should be dropped again",                                       OFFSET(end_time),    AV_OPT_TYPE_DURATION, { .i64 = INT64_MAX },    INT64_MIN, INT64_MAX, FLAGS }, \
+      |                                                                                                                                                         ^~~~~~~~~
+/usr/include/stdint.h:113:22: note: expanded from macro 'INT64_MAX'
+  113 | # define INT64_MAX              (__INT64_C(9223372036854775807))
+      |                                  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/usr/include/stdint.h:95:24: note: expanded from macro '__INT64_C'
+   95 | #  define __INT64_C(c)  c ## L
+      |                         ^~~~~~
+<scratch space>:203:1: note: expanded from here
+  203 | 9223372036854775807L
+      | ^~~~~~~~~~~~~~~~~~~~
+src/libavfilter/trim.c:376:5: warning: implicit conversion from 'long' to 'double' changes value from 9223372036854775807 to 9223372036854775808 [-Wimplicit-const-int-float-conversion]
+  376 |     COMMON_OPTS
+      |     ^~~~~~~~~~~
+src/libavfilter/trim.c:323:153: note: expanded from macro 'COMMON_OPTS'
+  322 |     { "starti",      "Timestamp of the first frame that "                                                                                                        \
+      |     ~
+  323 |         "should be passed",                                              OFFSET(start_time),  AV_OPT_TYPE_DURATION, { .i64 = INT64_MAX },    INT64_MIN, INT64_MAX, FLAGS }, \
+      |                                                                                                                                                         ^~~~~~~~~
+/usr/include/stdint.h:113:22: note: expanded from macro 'INT64_MAX'
+  113 | # define INT64_MAX              (__INT64_C(9223372036854775807))
+      |                                  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/usr/include/stdint.h:95:24: note: expanded from macro '__INT64_C'
+   95 | #  define __INT64_C(c)  c ## L
+      |                         ^~~~~~
+<scratch space>:200:1: note: expanded from here
+  200 | 9223372036854775807L
+      | ^~~~~~~~~~~~~~~~~~~~
+src/libavfilter/trim.c:376:5: warning: implicit conversion from 'long' to 'double' changes value from 9223372036854775807 to 9223372036854775808 [-Wimplicit-const-int-float-conversion]
+  376 |     COMMON_OPTS
+      |     ^~~~~~~~~~~
+src/libavfilter/trim.c:321:153: note: expanded from macro 'COMMON_OPTS'
+  320 |     { "start",       "Timestamp of the first frame that "                                                                                                        \
+      |     ~
+  321 |         "should be passed",                                              OFFSET(start_time),  AV_OPT_TYPE_DURATION, { .i64 = INT64_MAX },    INT64_MIN, INT64_MAX, FLAGS }, \
+      |                                                                                                                                                         ^~~~~~~~~
+/usr/include/stdint.h:113:22: note: expanded from macro 'INT64_MAX'
+  113 | # define INT64_MAX              (__INT64_C(9223372036854775807))
+      |                                  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/usr/include/stdint.h:95:24: note: expanded from macro '__INT64_C'
+   95 | #  define __INT64_C(c)  c ## L
+      |                         ^~~~~~
+<scratch space>:197:1: note: expanded from here
+  197 | 9223372036854775807L
+      | ^~~~~~~~~~~~~~~~~~~~
+CC	libavfilter/vf_format.o
+20 warnings generated.
+CC	libavfilter/vf_fps.o
+src/libavfilter/vf_fps.c:204:50: warning: implicit conversion from 'long' to 'double' changes value from 9223372036854775807 to 9223372036854775808 [-Wimplicit-const-int-float-conversion]
+  204 |         if (first_pts < INT64_MIN || first_pts > INT64_MAX) {
+      |                                                ~ ^~~~~~~~~
+/usr/include/stdint.h:113:22: note: expanded from macro 'INT64_MAX'
+  113 | # define INT64_MAX              (__INT64_C(9223372036854775807))
+      |                                  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/usr/include/stdint.h:95:24: note: expanded from macro '__INT64_C'
+   95 | #  define __INT64_C(c)  c ## L
+      |                         ^~~~~~
+<scratch space>:158:1: note: expanded from here
+  158 | 9223372036854775807L
+      | ^~~~~~~~~~~~~~~~~~~~
+CC	libavfilter/vf_scale.o
+1 warning generated.
+CC	libavfilter/video.o
+CC	libswscale/alphablend.o
+CC	libswscale/gamma.o
+CC	libswscale/half2float.o
+CC	libswscale/hscale.o
+CC	libswscale/hscale_fast_bilinear.o
+CC	libswscale/input.o
+CC	libswscale/options.o
+CC	libswscale/output.o
+CC	libswscale/rgb2rgb.o
+CC	libswscale/slice.o
+CC	libswscale/swscale.o
+CC	libswscale/swscale_unscaled.o
+CC	libswscale/utils.o
+src/libswscale/utils.c:1916:13: warning: mixing declarations and code is incompatible with standards before C99 [-Wdeclaration-after-statement]
+ 1916 |         int usecascade = (ret == RETCODE_USE_CASCADE);
+      |             ^
+src/libswscale/utils.c:1422:13: warning: mixing declarations and code is incompatible with standards before C99 [-Wdeclaration-after-statement]
+ 1422 |     int64_t lumXInc      = (((int64_t)srcW << 16) + (dstW >> 1)) / dstW;
+      |             ^
+CC	libswscale/version.o
+CC	libswscale/vscale.o
+2 warnings generated.
+CC	libswscale/x86/hscale_fast_bilinear_simd.o
+CC	libswscale/x86/rgb2rgb.o
+CC	libswscale/x86/swscale.o
+CC	libswscale/x86/yuv2rgb.o
+CC	libswscale/yuv2rgb.o
+CC	libswresample/audioconvert.o
+CC	libswresample/dither.o
+CC	libswresample/options.o
+src/libswresample/options.c:111:144: warning: implicit conversion from 'long' to 'double' changes value from 9223372036854775807 to 9223372036854775808 [-Wimplicit-const-int-float-conversion]
+  110 | {"first_pts"            , "Assume the first pts should be this value (in samples)."
+      | ~
+  111 |                                                         , OFFSET(firstpts_in_samples), AV_OPT_TYPE_INT64 ,{.i64=AV_NOPTS_VALUE    }, INT64_MIN,INT64_MAX, PARAM },
+      |                                                                                                                                                ^~~~~~~~~
+/usr/include/stdint.h:113:22: note: expanded from macro 'INT64_MAX'
+  113 | # define INT64_MAX              (__INT64_C(9223372036854775807))
+      |                                  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/usr/include/stdint.h:95:24: note: expanded from macro '__INT64_C'
+   95 | #  define __INT64_C(c)  c ## L
+      |                         ^~~~~~
+<scratch space>:135:1: note: expanded from here
+  135 | 9223372036854775807L
+      | ^~~~~~~~~~~~~~~~~~~~
+1 warning generated.
+CC	libswresample/rematrix.o
+CC	libswresample/resample.o
+CC	libswresample/resample_dsp.o
+CC	libswresample/swresample.o
+CC	libswresample/swresample_frame.o
+CC	libswresample/version.o
+CC	libswresample/x86/audio_convert_init.o
+CC	libswresample/x86/rematrix_init.o
+CC	libswresample/x86/resample_init.o
+GEN	libavfilter/libavfilter.pc
+GEN	libavformat/libavformat.pc
+GEN	libavcodec/libavcodec.pc
+CC	libpostproc/postprocess.o
+In file included from src/libpostproc/postprocess.c:511:
+src/libpostproc/postprocess_template.c:839:34: warning: mixing declarations and code is incompatible with standards before C99 [-Wdeclaration-after-statement]
+  839 |     DECLARE_ALIGNED(8, uint64_t, tmp)[3];
+      |                                  ^
+CC	libpostproc/version.o
+GEN	libpostproc/libpostproc.pc
+GEN	libswresample/libswresample.pc
+GEN	libswscale/libswscale.pc
+GEN	libavutil/libavutil.pc
+GEN	libavdevice/libavdevice.ver
+GEN	libavformat/libavformat.ver
+GEN	libavcodec/libavcodec.ver
+GEN	libavutil/libavutil.ver
+GEN	libavfilter/libavfilter.ver
+GEN	libswscale/libswscale.ver
+GEN	libswresample/libswresample.ver
+LD	libavutil/libavutil.so.59
+LD	libavcodec/libavcodec.so.61
+LD	libswscale/libswscale.so.8
+1 warning generated.
+LD	libswresample/libswresample.so.5
+GEN	libpostproc/libpostproc.ver
+LD	libpostproc/libpostproc.so.58
+LD	libavformat/libavformat.so.61
+LD	libavfilter/libavfilter.so.10
+LD	libavdevice/libavdevice.so.61

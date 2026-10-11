@@ -1,0 +1,53 @@
+{
+  "files": [
+    {
+      "path": "benchmarks/native-sync/2026-10-10/e2e-final-clock/paused-static.mkv",
+      "decodeExitCode": 0,
+      "errors": ""
+    },
+    {
+      "path": "benchmarks/native-sync/2026-10-10/e2e-final-clock/delayed-stream.flv",
+      "decodeExitCode": 0,
+      "errors": ""
+    },
+    {
+      "path": "benchmarks/native-sync/2026-10-10/e2e-final-clock/protocol-silent.mkv",
+      "decodeExitCode": 0,
+      "errors": ""
+    },
+    {
+      "path": "benchmarks/native-sync/2026-10-10/e2e-final-clock/playwright-recording.mp4",
+      "decodeExitCode": 0,
+      "errors": ""
+    },
+    {
+      "path": "benchmarks/native-sync/2026-10-10/e2e-final-clock/silent-audio.mkv",
+      "decodeExitCode": 0,
+      "errors": ""
+    },
+    {
+      "path": "benchmarks/native-sync/2026-10-10/e2e-final-clock/audio-readiness.mkv",
+      "decodeExitCode": 0,
+      "errors": ""
+    },
+    {
+      "path": "benchmarks/native-sync/2026-10-10/e2e-final-clock/silent-video-only.mkv",
+      "decodeExitCode": 0,
+      "errors": ""
+    }
+  ],
+  "staticResume": {
+    "firstRGB": [
+      253,
+      2,
+      1
+    ],
+    "lastRGB": [
+      2,
+      1,
+      253
+    ],
+    "firstRed": true,
+    "lastBlue": true
+  }
+}

@@ -1,0 +1,59 @@
+-- Configuring done (0.0s)
+-- Generating done (0.1s)
+-- Build files have been written to: /workspace/suitecut/.suitecut/memory-tsan
+[ 50%] Built target suitecut-media
+[100%] Built target suitecut-memory-test
+[ 50%] Built target suitecut-media
+[100%] Built target suitecut-media-test
+[ 50%] Built target suitecut-media
+[100%] Built target suitecut-audio-startup-test
+[ 50%] Built target suitecut-media
+[100%] Building CXX object CMakeFiles/suitecut-codec-test.dir/media_codec_test.cc.o
+[100%] Linking CXX executable suitecut-codec-test
+[100%] Built target suitecut-codec-test
+Building CXX object CMakeFiles/suitecut-audio-clock-test.dir/audio_clock_test.cc.o
+Linking CXX executable suitecut-audio-clock-test
+Built target suitecut-audio-clock-test
+[  0%] Building CXX object libyuv/CMakeFiles/yuv_common_objects.dir/source/compare.cc.o
+[  0%] Building CXX object libyuv/CMakeFiles/yuv_common_objects.dir/source/compare_common.cc.o
+[  6%] Building CXX object libyuv/CMakeFiles/yuv_common_objects.dir/source/compare_gcc.cc.o
+[  6%] Building CXX object libyuv/CMakeFiles/yuv_common_objects.dir/source/compare_win.cc.o
+[  6%] Building CXX object libyuv/CMakeFiles/yuv_common_objects.dir/source/convert.cc.o
+[ 13%] Building CXX object libyuv/CMakeFiles/yuv_common_objects.dir/source/convert_argb.cc.o
+[ 13%] Building CXX object libyuv/CMakeFiles/yuv_common_objects.dir/source/convert_from.cc.o
+[ 20%] Building CXX object libyuv/CMakeFiles/yuv_common_objects.dir/source/convert_from_argb.cc.o
+[ 20%] Building CXX object libyuv/CMakeFiles/yuv_common_objects.dir/source/convert_jpeg.cc.o
+[ 20%] Building CXX object libyuv/CMakeFiles/yuv_common_objects.dir/source/convert_to_argb.cc.o
+[ 26%] Building CXX object libyuv/CMakeFiles/yuv_common_objects.dir/source/convert_to_i420.cc.o
+[ 26%] Building CXX object libyuv/CMakeFiles/yuv_common_objects.dir/source/cpu_id.cc.o
+[ 26%] Building CXX object libyuv/CMakeFiles/yuv_common_objects.dir/source/mjpeg_decoder.cc.o
+[ 33%] Building CXX object libyuv/CMakeFiles/yuv_common_objects.dir/source/mjpeg_validate.cc.o
+[ 33%] Building CXX object libyuv/CMakeFiles/yuv_common_objects.dir/source/planar_functions.cc.o
+[ 33%] Building CXX object libyuv/CMakeFiles/yuv_common_objects.dir/source/rotate.cc.o
+[ 40%] Building CXX object libyuv/CMakeFiles/yuv_common_objects.dir/source/rotate_any.cc.o
+[ 40%] Building CXX object libyuv/CMakeFiles/yuv_common_objects.dir/source/rotate_argb.cc.o
+[ 46%] Building CXX object libyuv/CMakeFiles/yuv_common_objects.dir/source/rotate_common.cc.o
+[ 46%] Building CXX object libyuv/CMakeFiles/yuv_common_objects.dir/source/rotate_gcc.cc.o
+[ 46%] Building CXX object libyuv/CMakeFiles/yuv_common_objects.dir/source/rotate_win.cc.o
+[ 53%] Building CXX object libyuv/CMakeFiles/yuv_common_objects.dir/source/row_any.cc.o
+[ 53%] Building CXX object libyuv/CMakeFiles/yuv_common_objects.dir/source/row_common.cc.o
+[ 53%] Building CXX object libyuv/CMakeFiles/yuv_common_objects.dir/source/row_gcc.cc.o
+[ 60%] Building CXX object libyuv/CMakeFiles/yuv_common_objects.dir/source/row_rvv.cc.o
+[ 60%] Building CXX object libyuv/CMakeFiles/yuv_common_objects.dir/source/row_win.cc.o
+[ 60%] Building CXX object libyuv/CMakeFiles/yuv_common_objects.dir/source/scale.cc.o
+[ 66%] Building CXX object libyuv/CMakeFiles/yuv_common_objects.dir/source/scale_any.cc.o
+[ 66%] Building CXX object libyuv/CMakeFiles/yuv_common_objects.dir/source/scale_argb.cc.o
+[ 73%] Building CXX object libyuv/CMakeFiles/yuv_common_objects.dir/source/scale_common.cc.o
+[ 73%] Building CXX object libyuv/CMakeFiles/yuv_common_objects.dir/source/scale_gcc.cc.o
+[ 73%] Building CXX object libyuv/CMakeFiles/yuv_common_objects.dir/source/scale_rgb.cc.o
+[ 80%] Building CXX object libyuv/CMakeFiles/yuv_common_objects.dir/source/scale_rvv.cc.o
+[ 80%] Building CXX object libyuv/CMakeFiles/yuv_common_objects.dir/source/scale_uv.cc.o
+[ 80%] Building CXX object libyuv/CMakeFiles/yuv_common_objects.dir/source/scale_win.cc.o
+[ 86%] Building CXX object libyuv/CMakeFiles/yuv_common_objects.dir/source/video_common.cc.o
+[ 86%] Built target yuv_common_objects
+[ 93%] Linking CXX static library libyuv.a
+[ 93%] Built target yuv
+[ 93%] Building CXX object CMakeFiles/suitecut-pixel-test.dir/pixel_test.cc.o
+[100%] Linking CXX executable suitecut-pixel-test
+[100%] Built target suitecut-pixel-test
+gmake: *** No rule to make target 'suitecut-scaler-failure-test'.  Stop.

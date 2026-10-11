@@ -1,0 +1,91 @@
+{
+  "id": "1080p30-canvas-obs-3",
+  "backend": "obs",
+  "case": {
+    "name": "1080p30-canvas",
+    "width": 1920,
+    "height": 1080,
+    "fps": 30,
+    "workload": "canvas"
+  },
+  "trialNumber": 3,
+  "durationMs": 10000,
+  "status": "passed",
+  "startedAt": "2026-10-08T20:40:41.018Z",
+  "startupMs": 1481.5064969999949,
+  "browserVersion": "151.0.7922.34",
+  "obsBefore": {
+    "activeFps": 30.000000300000007,
+    "availableDiskSpace": 26164.74609375,
+    "averageFrameRenderTime": 11.678925,
+    "cpuUsage": 38.21276595744681,
+    "memoryUsage": 373.37109375,
+    "outputSkippedFrames": 0,
+    "outputTotalFrames": 0,
+    "renderSkippedFrames": 3849,
+    "renderTotalFrames": 56923,
+    "webSocketSessionIncomingMessages": 398,
+    "webSocketSessionOutgoingMessages": 504
+  },
+  "recordStartMs": 0.6758210000116378,
+  "workload": {
+    "wallMs": 10041.857276999974,
+    "scrollCommands": 0,
+    "snapshot": {
+      "markerCount": 603,
+      "scrollY": 0,
+      "scrollEvents": 0,
+      "keyEvents": 0,
+      "clicks": 0,
+      "value": "",
+      "choice": "First",
+      "secondary": false
+    }
+  },
+  "obsAfter": {
+    "activeFps": 25.312500253125002,
+    "availableDiskSpace": 26164.5859375,
+    "averageFrameRenderTime": 38.638154,
+    "cpuUsage": 56.67610953729933,
+    "memoryUsage": 652.203125,
+    "outputSkippedFrames": 0,
+    "outputTotalFrames": 314,
+    "renderSkippedFrames": 3873,
+    "renderTotalFrames": 57240,
+    "webSocketSessionIncomingMessages": 400,
+    "webSocketSessionOutgoingMessages": 508
+  },
+  "finalizationMs": 1155.6783430000069,
+  "mediaPath": "/workspace/suitecut/.suitecut/obs-cef-evidence/2026-10-09/2026-10-08 20-40-42.mkv",
+  "decoded": {
+    "width": 1920,
+    "height": 1080,
+    "codec": "h264",
+    "containerFps": 30,
+    "durationSeconds": 10.633,
+    "bytes": 236776,
+    "decodedFrames": 317,
+    "markerTransitions": 279,
+    "markerRegressions": 0,
+    "activeFrames": 302,
+    "distinctActiveFrames": 278,
+    "distinctActiveFps": 27.6158940397351,
+    "repeatFraction": 0.07947019867549665,
+    "longestActiveHoldMs": 66.66666666666667,
+    "audioStreams": [
+      {
+        "codec": "aac",
+        "sampleRate": "48000",
+        "channels": 2
+      }
+    ]
+  },
+  "resources": {
+    "sampleCount": 23,
+    "meanCpuPercent": 321.5336420749749,
+    "peakRssBytes": 1897758720,
+    "firstRssBytes": 1597575168,
+    "lastRssBytes": 1879814144
+  },
+  "completedAt": "2026-10-08T20:40:56.074Z"
+}

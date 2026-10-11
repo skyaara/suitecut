@@ -1,0 +1,17 @@
+[
+  {
+    "test": "installer-existing",
+    "exitCode": 0,
+    "expected": true
+  },
+  {
+    "test": "cmake-runtime-mismatch",
+    "exitCode": 1,
+    "expected": false
+  },
+  {
+    "test": "installer-bad-archive",
+    "exitCode": 1,
+    "expected": false
+  }
+]

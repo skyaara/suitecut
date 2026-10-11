@@ -1,0 +1,10 @@
+{
+  "cpu.max": "400000 100000",
+  "cpu.stat": "usage_usec 17262106522\nuser_usec 15884946526\nsystem_usec 1377159995\nnice_usec 0\nnr_periods 52310\nnr_throttled 27116\nthrottled_usec 1316852068\nnr_bursts 0\nburst_usec 0",
+  "memory.max": "17179869184",
+  "memory.current": "5352685568",
+  "memory.peak": "9259880448",
+  "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0",
+  "savedAtUtc": "2026-10-08T21:40:07.552597+00:00",
+  "scope": "End-of-task cgroup snapshot includes setup/build and measurements; not an isolated runtime benchmark."
+}

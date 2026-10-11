@@ -1,0 +1,442 @@
+[
+  {
+    "id": "record-ts-cef-01",
+    "backend": "ts-cef",
+    "mode": "record",
+    "profile": "performance",
+    "durationMs": 30000,
+    "trial": 1
+  },
+  {
+    "id": "record-ts-external-01",
+    "backend": "ts-external",
+    "mode": "record",
+    "profile": "performance",
+    "durationMs": 30000,
+    "trial": 1
+  },
+  {
+    "id": "record-obs-cef-01",
+    "backend": "obs-cef",
+    "mode": "record",
+    "profile": "performance",
+    "durationMs": 30000,
+    "trial": 1
+  },
+  {
+    "id": "record-obs-external-01",
+    "backend": "obs-external",
+    "mode": "record",
+    "profile": "performance",
+    "durationMs": 30000,
+    "trial": 1
+  },
+  {
+    "id": "record-cpp-cef-01",
+    "backend": "cpp-cef",
+    "mode": "record",
+    "profile": "performance",
+    "durationMs": 30000,
+    "trial": 1
+  },
+  {
+    "id": "stream-ts-cef-01",
+    "backend": "ts-cef",
+    "mode": "stream",
+    "profile": "performance",
+    "durationMs": 30000,
+    "trial": 1
+  },
+  {
+    "id": "stream-ts-external-01",
+    "backend": "ts-external",
+    "mode": "stream",
+    "profile": "performance",
+    "durationMs": 30000,
+    "trial": 1
+  },
+  {
+    "id": "stream-obs-cef-01",
+    "backend": "obs-cef",
+    "mode": "stream",
+    "profile": "performance",
+    "durationMs": 30000,
+    "trial": 1
+  },
+  {
+    "id": "stream-obs-external-01",
+    "backend": "obs-external",
+    "mode": "stream",
+    "profile": "performance",
+    "durationMs": 30000,
+    "trial": 1
+  },
+  {
+    "id": "stream-cpp-cef-01",
+    "backend": "cpp-cef",
+    "mode": "stream",
+    "profile": "performance",
+    "durationMs": 30000,
+    "trial": 1
+  },
+  {
+    "id": "stream-ts-cef-02",
+    "backend": "ts-cef",
+    "mode": "stream",
+    "profile": "performance",
+    "durationMs": 30000,
+    "trial": 2
+  },
+  {
+    "id": "stream-cpp-cef-02",
+    "backend": "cpp-cef",
+    "mode": "stream",
+    "profile": "performance",
+    "durationMs": 30000,
+    "trial": 2
+  },
+  {
+    "id": "stream-obs-external-02",
+    "backend": "obs-external",
+    "mode": "stream",
+    "profile": "performance",
+    "durationMs": 30000,
+    "trial": 2
+  },
+  {
+    "id": "stream-obs-cef-02",
+    "backend": "obs-cef",
+    "mode": "stream",
+    "profile": "performance",
+    "durationMs": 30000,
+    "trial": 2
+  },
+  {
+    "id": "stream-ts-external-02",
+    "backend": "ts-external",
+    "mode": "stream",
+    "profile": "performance",
+    "durationMs": 30000,
+    "trial": 2
+  },
+  {
+    "id": "record-ts-cef-02",
+    "backend": "ts-cef",
+    "mode": "record",
+    "profile": "performance",
+    "durationMs": 30000,
+    "trial": 2
+  },
+  {
+    "id": "record-cpp-cef-02",
+    "backend": "cpp-cef",
+    "mode": "record",
+    "profile": "performance",
+    "durationMs": 30000,
+    "trial": 2
+  },
+  {
+    "id": "record-obs-external-02",
+    "backend": "obs-external",
+    "mode": "record",
+    "profile": "performance",
+    "durationMs": 30000,
+    "trial": 2
+  },
+  {
+    "id": "record-obs-cef-02",
+    "backend": "obs-cef",
+    "mode": "record",
+    "profile": "performance",
+    "durationMs": 30000,
+    "trial": 2
+  },
+  {
+    "id": "record-ts-external-02",
+    "backend": "ts-external",
+    "mode": "record",
+    "profile": "performance",
+    "durationMs": 30000,
+    "trial": 2
+  },
+  {
+    "id": "record-obs-cef-03",
+    "backend": "obs-cef",
+    "mode": "record",
+    "profile": "performance",
+    "durationMs": 30000,
+    "trial": 3
+  },
+  {
+    "id": "record-obs-external-03",
+    "backend": "obs-external",
+    "mode": "record",
+    "profile": "performance",
+    "durationMs": 30000,
+    "trial": 3
+  },
+  {
+    "id": "record-cpp-cef-03",
+    "backend": "cpp-cef",
+    "mode": "record",
+    "profile": "performance",
+    "durationMs": 30000,
+    "trial": 3
+  },
+  {
+    "id": "record-ts-cef-03",
+    "backend": "ts-cef",
+    "mode": "record",
+    "profile": "performance",
+    "durationMs": 30000,
+    "trial": 3
+  },
+  {
+    "id": "record-ts-external-03",
+    "backend": "ts-external",
+    "mode": "record",
+    "profile": "performance",
+    "durationMs": 30000,
+    "trial": 3
+  },
+  {
+    "id": "stream-obs-cef-03",
+    "backend": "obs-cef",
+    "mode": "stream",
+    "profile": "performance",
+    "durationMs": 30000,
+    "trial": 3
+  },
+  {
+    "id": "stream-obs-external-03",
+    "backend": "obs-external",
+    "mode": "stream",
+    "profile": "performance",
+    "durationMs": 30000,
+    "trial": 3
+  },
+  {
+    "id": "stream-cpp-cef-03",
+    "backend": "cpp-cef",
+    "mode": "stream",
+    "profile": "performance",
+    "durationMs": 30000,
+    "trial": 3
+  },
+  {
+    "id": "stream-ts-cef-03",
+    "backend": "ts-cef",
+    "mode": "stream",
+    "profile": "performance",
+    "durationMs": 30000,
+    "trial": 3
+  },
+  {
+    "id": "stream-ts-external-03",
+    "backend": "ts-external",
+    "mode": "stream",
+    "profile": "performance",
+    "durationMs": 30000,
+    "trial": 3
+  },
+  {
+    "id": "stream-obs-cef-04",
+    "backend": "obs-cef",
+    "mode": "stream",
+    "profile": "performance",
+    "durationMs": 30000,
+    "trial": 4
+  },
+  {
+    "id": "stream-ts-external-04",
+    "backend": "ts-external",
+    "mode": "stream",
+    "profile": "performance",
+    "durationMs": 30000,
+    "trial": 4
+  },
+  {
+    "id": "stream-ts-cef-04",
+    "backend": "ts-cef",
+    "mode": "stream",
+    "profile": "performance",
+    "durationMs": 30000,
+    "trial": 4
+  },
+  {
+    "id": "stream-cpp-cef-04",
+    "backend": "cpp-cef",
+    "mode": "stream",
+    "profile": "performance",
+    "durationMs": 30000,
+    "trial": 4
+  },
+  {
+    "id": "stream-obs-external-04",
+    "backend": "obs-external",
+    "mode": "stream",
+    "profile": "performance",
+    "durationMs": 30000,
+    "trial": 4
+  },
+  {
+    "id": "record-obs-cef-04",
+    "backend": "obs-cef",
+    "mode": "record",
+    "profile": "performance",
+    "durationMs": 30000,
+    "trial": 4
+  },
+  {
+    "id": "record-ts-external-04",
+    "backend": "ts-external",
+    "mode": "record",
+    "profile": "performance",
+    "durationMs": 30000,
+    "trial": 4
+  },
+  {
+    "id": "record-ts-cef-04",
+    "backend": "ts-cef",
+    "mode": "record",
+    "profile": "performance",
+    "durationMs": 30000,
+    "trial": 4
+  },
+  {
+    "id": "record-cpp-cef-04",
+    "backend": "cpp-cef",
+    "mode": "record",
+    "profile": "performance",
+    "durationMs": 30000,
+    "trial": 4
+  },
+  {
+    "id": "record-obs-external-04",
+    "backend": "obs-external",
+    "mode": "record",
+    "profile": "performance",
+    "durationMs": 30000,
+    "trial": 4
+  },
+  {
+    "id": "record-cpp-cef-05",
+    "backend": "cpp-cef",
+    "mode": "record",
+    "profile": "performance",
+    "durationMs": 30000,
+    "trial": 5
+  },
+  {
+    "id": "record-ts-cef-05",
+    "backend": "ts-cef",
+    "mode": "record",
+    "profile": "performance",
+    "durationMs": 30000,
+    "trial": 5
+  },
+  {
+    "id": "record-ts-external-05",
+    "backend": "ts-external",
+    "mode": "record",
+    "profile": "performance",
+    "durationMs": 30000,
+    "trial": 5
+  },
+  {
+    "id": "record-obs-cef-05",
+    "backend": "obs-cef",
+    "mode": "record",
+    "profile": "performance",
+    "durationMs": 30000,
+    "trial": 5
+  },
+  {
+    "id": "record-obs-external-05",
+    "backend": "obs-external",
+    "mode": "record",
+    "profile": "performance",
+    "durationMs": 30000,
+    "trial": 5
+  },
+  {
+    "id": "stream-cpp-cef-05",
+    "backend": "cpp-cef",
+    "mode": "stream",
+    "profile": "performance",
+    "durationMs": 30000,
+    "trial": 5
+  },
+  {
+    "id": "stream-ts-cef-05",
+    "backend": "ts-cef",
+    "mode": "stream",
+    "profile": "performance",
+    "durationMs": 30000,
+    "trial": 5
+  },
+  {
+    "id": "stream-ts-external-05",
+    "backend": "ts-external",
+    "mode": "stream",
+    "profile": "performance",
+    "durationMs": 30000,
+    "trial": 5
+  },
+  {
+    "id": "stream-obs-cef-05",
+    "backend": "obs-cef",
+    "mode": "stream",
+    "profile": "performance",
+    "durationMs": 30000,
+    "trial": 5
+  },
+  {
+    "id": "stream-obs-external-05",
+    "backend": "obs-external",
+    "mode": "stream",
+    "profile": "performance",
+    "durationMs": 30000,
+    "trial": 5
+  },
+  {
+    "id": "memory-obs-external",
+    "backend": "obs-external",
+    "mode": "stream",
+    "profile": "memory",
+    "durationMs": 600000,
+    "trial": null
+  },
+  {
+    "id": "memory-ts-cef",
+    "backend": "ts-cef",
+    "mode": "stream",
+    "profile": "memory",
+    "durationMs": 600000,
+    "trial": null
+  },
+  {
+    "id": "memory-obs-cef",
+    "backend": "obs-cef",
+    "mode": "stream",
+    "profile": "memory",
+    "durationMs": 600000,
+    "trial": null
+  },
+  {
+    "id": "memory-ts-external",
+    "backend": "ts-external",
+    "mode": "stream",
+    "profile": "memory",
+    "durationMs": 600000,
+    "trial": null
+  },
+  {
+    "id": "memory-cpp-cef",
+    "backend": "cpp-cef",
+    "mode": "stream",
+    "profile": "memory",
+    "durationMs": 1800000,
+    "trial": null
+  }
+]

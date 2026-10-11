@@ -1,0 +1,13 @@
+{
+  "product": "SuiteCut",
+  "case": "720p60-stream",
+  "packetCount": 5643,
+  "activeBeginSeconds": 0.354,
+  "activeEndSeconds": 120.38799999999999,
+  "activePacketTimelineGapTotalMs": 0,
+  "activePacketTimelineMaximumGapMs": 0,
+  "nonIncreasingActivePacketPts": 0,
+  "activePacketTimelineGaps": [],
+  "thresholdMs": 2,
+  "note": "Packet timeline holes are separate from decoded quiet PCM. Continuous AAC packets can contain quiet audio. Quantized mux timestamps up to 2 ms are tolerated."
+}

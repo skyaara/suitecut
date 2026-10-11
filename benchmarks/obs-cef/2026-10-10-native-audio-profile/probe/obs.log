@@ -1,0 +1,240 @@
+debug: Attempted path: /workspace/suitecut/.suitecut/obs-cef-profile/root/usr/share/obslocale/en-US.ini
+debug: Attempted path: /workspace/suitecut/.suitecut/obs-cef-profile/root/usr/bin/../share/obs/obs-studio/locale/en-US.ini
+debug: Attempted path: /workspace/suitecut/.suitecut/obs-cef-profile/root/usr/share/obslocale.ini
+debug: Attempted path: /workspace/suitecut/.suitecut/obs-cef-profile/root/usr/bin/../share/obs/obs-studio/locale.ini
+debug: Attempted path: /workspace/suitecut/.suitecut/obs-cef-profile/root/usr/share/obsthemes
+debug: Attempted path: /workspace/suitecut/.suitecut/obs-cef-profile/root/usr/bin/../share/obs/obs-studio/themes
+debug: Attempted path: /workspace/suitecut/.suitecut/obs-cef-profile/root/usr/share/obsthemes/
+debug: Attempted path: /workspace/suitecut/.suitecut/obs-cef-profile/root/usr/bin/../share/obs/obs-studio/themes/
+warning: Get on org.freedesktop.portal.Settings returned an invalid reply
+error: Failed to rename basic scene collection file:
+filesystem error: cannot rename: No such file or directory [/workspace/suitecut/.suitecut/obs-cef-profile/config/obs-studio/basic/scenes.json] [/workspace/suitecut/.suitecut/obs-cef-profile/config/obs-studio/basic/scenes/Untitled.json]
+info: Command Line Arguments: --disable-missing-files-check --disable-updater --remote-debugging-port=9222
+info: Using EGL/X11
+info: CPU Name: INTEL(R) XEON(R) PLATINUM 8573C
+info: CPU Speed: 2299.998MHz
+info: Physical Cores: 5, Logical Cores: 5
+info: Physical Memory: 18007MB Total, 1289MB Free
+info: Kernel Version: Linux 6.18.44
+info: Distribution: "Debian GNU/Linux" "13"
+info: Window System: X11.0, Vendor: The X.Org Foundation, Version: 1.21.1
+info: Current Date/Time: 2026-10-10, 08:36:55
+info: Browser Hardware Acceleration: true
+info: Qt Version: 6.8.2 (runtime), 6.4.2 (compiled)
+info: Portable mode: false
+info: OBS 32.2.0 (linux)
+info: ---------------------------------
+info: ---------------------------------
+info: audio settings reset:
+	samples per sec: 48000
+	speakers:        2
+	max buffering:   960 milliseconds
+	buffering type:  dynamically increasing
+info: ---------------------------------
+info: Initializing OpenGL...
+warning: Unable to open DRM render node.
+info: Loading up OpenGL on adapter Mesa llvmpipe (LLVM 19.1.7, 256 bits)
+info: OpenGL loaded successfully, version 4.5 (Core Profile) Mesa 25.0.7-2+deb13u1, shading language 4.50
+info: ---------------------------------
+info: video settings reset:
+	base resolution:   1920x1080
+	output resolution: 1280x720
+	downscale filter:  Bicubic
+	fps:               30/1
+	format:            NV12
+	YUV mode:          Rec. 709/Partial
+info: NV12 texture support enabled
+info: P010 texture support not available
+info: Audio monitoring device:
+	name: Default
+	id: default
+info: ---------------------------------
+warning: No AJA devices found, skipping loading AJA UI plugin
+warning: Failed to initialize module 'aja-output-ui.so'
+warning: No AJA devices found, skipping loading AJA plugin
+warning: Failed to initialize module 'aja.so'
+warning: Failed to load 'en-US' text for module: 'decklink-captions.so'
+warning: Failed to load 'en-US' text for module: 'decklink-output-ui.so'
+libDeckLinkAPI.so: cannot open shared object file: No such file or directory
+warning: A DeckLink iterator could not be created.  The DeckLink drivers may not be installed
+warning: Failed to initialize module 'decklink.so'
+error: window manager does not support Extended Window Manager Hints (EWMH).
+XComposite capture disabled.
+info: [pipewire] No capture sources available
+warning: v4l2loopback not installed, virtual camera not registered
+info: [obs-browser]: Version 2.26.9
+info: [obs-browser]: CEF Version 127.0.6533.120 (runtime), 127.0.0-6533-fix-stutter-and-osr-extra-info.3042+g176b09c+chromium-127.0.6533.120 (compiled)
+info: FFmpeg VAAPI H264 encoding not supported
+info: FFmpeg VAAPI AV1 encoding not supported
+info: FFmpeg VAAPI HEVC encoding not supported
+error: os_dlopen(libnvidia-encode.so.1->libnvidia-encode.so.1): libnvidia-encode.so.1: cannot open shared object file: No such file or directory
+
+info: NVENC not supported
+warning: Failed to initialize module 'obs-nvenc.so'
+info: [obs-websocket] [obs_module_load] you can haz websockets (Version: 5.7.4 | RPC Version: 1)
+info: [obs-websocket] [obs_module_load] Qt version (compile-time): 6.4.2 | Qt version (run-time): 6.8.2
+info: [obs-websocket] [obs_module_load] Linked ASIO Version: 102801
+info: [obs-websocket] [obs_module_load] Module loaded.
+info: [vlc-video]: VLC 3.0.23 Vetinari found, VLC video source enabled
+warning: No AJA devices found, skipping loading AJA UI plugin
+warning: Failed to initialize module 'aja-output-ui.so'
+warning: No AJA devices found, skipping loading AJA plugin
+warning: Failed to initialize module 'aja.so'
+warning: Failed to load 'en-US' text for module: 'decklink-captions.so'
+warning: Failed to load 'en-US' text for module: 'decklink-output-ui.so'
+warning: A DeckLink iterator could not be created.  The DeckLink drivers may not be installed
+warning: Failed to initialize module 'decklink.so'
+warning: obs_register_source: Source 'image_source' already exists!  Duplicate library?
+warning: obs_register_source: Source 'color_source' already exists!  Duplicate library?
+warning: obs_register_source: Source 'color_source' already exists!  Duplicate library?
+warning: obs_register_source: Source 'color_source' already exists!  Duplicate library?
+warning: obs_register_source: Source 'slideshow' already exists!  Duplicate library?
+warning: obs_register_source: Source 'slideshow' already exists!  Duplicate library?
+warning: obs_register_source: Source 'alsa_input_capture' already exists!  Duplicate library?
+warning: obs_register_source: Source 'xshm_input' already exists!  Duplicate library?
+warning: obs_register_source: Source 'xshm_input_v2' already exists!  Duplicate library?
+error: window manager does not support Extended Window Manager Hints (EWMH).
+XComposite capture disabled.
+warning: obs_register_source: Source 'jack_output_capture' already exists!  Duplicate library?
+warning: obs_register_source: Source 'pipewire-camera-source' already exists!  Duplicate library?
+info: [pipewire] No capture sources available
+warning: obs_register_source: Source 'pulse_input_capture' already exists!  Duplicate library?
+warning: obs_register_source: Source 'pulse_output_capture' already exists!  Duplicate library?
+warning: obs_register_source: Source 'v4l2_input' already exists!  Duplicate library?
+warning: v4l2loopback not installed, virtual camera not registered
+info: [obs-browser]: Version 2.26.9
+info: [obs-browser]: CEF Version 127.0.6533.120 (runtime), 127.0.0-6533-fix-stutter-and-osr-extra-info.3042+g176b09c+chromium-127.0.6533.120 (compiled)
+warning: obs_register_source: Source 'browser_source' already exists!  Duplicate library?
+warning: obs_register_source: Source 'ffmpeg_source' already exists!  Duplicate library?
+warning: obs_register_output: Output id 'ffmpeg_output' already exists!  Duplicate library?
+warning: obs_register_output: Output id 'ffmpeg_muxer' already exists!  Duplicate library?
+warning: obs_register_output: Output id 'ffmpeg_mpegts_muxer' already exists!  Duplicate library?
+warning: obs_register_output: Output id 'ffmpeg_hls_muxer' already exists!  Duplicate library?
+warning: obs_register_output: Output id 'replay_buffer' already exists!  Duplicate library?
+warning: obs_register_encoder: Encoder id 'ffmpeg_aac' already exists!  Duplicate library?
+warning: obs_register_encoder: Encoder id 'ffmpeg_svt_av1' already exists!  Duplicate library?
+warning: obs_register_encoder: Encoder id 'ffmpeg_aom_av1' already exists!  Duplicate library?
+warning: obs_register_encoder: Encoder id 'ffmpeg_opus' already exists!  Duplicate library?
+warning: obs_register_encoder: Encoder id 'ffmpeg_pcm_s16le' already exists!  Duplicate library?
+warning: obs_register_encoder: Encoder id 'ffmpeg_pcm_s24le' already exists!  Duplicate library?
+warning: obs_register_encoder: Encoder id 'ffmpeg_pcm_f32le' already exists!  Duplicate library?
+warning: obs_register_encoder: Encoder id 'ffmpeg_alac' already exists!  Duplicate library?
+warning: obs_register_encoder: Encoder id 'ffmpeg_flac' already exists!  Duplicate library?
+info: FFmpeg VAAPI H264 encoding not supported
+info: FFmpeg VAAPI AV1 encoding not supported
+info: FFmpeg VAAPI HEVC encoding not supported
+warning: obs_register_source: Source 'mask_filter' already exists!  Duplicate library?
+warning: obs_register_source: Source 'mask_filter' already exists!  Duplicate library?
+warning: obs_register_source: Source 'crop_filter' already exists!  Duplicate library?
+warning: obs_register_source: Source 'gain_filter' already exists!  Duplicate library?
+warning: obs_register_source: Source 'basic_eq_filter' already exists!  Duplicate library?
+warning: obs_register_source: Source 'hdr_tonemap_filter' already exists!  Duplicate library?
+warning: obs_register_source: Source 'sdr_on_hdr_filter' already exists!  Duplicate library?
+warning: obs_register_source: Source 'color_filter' already exists!  Duplicate library?
+warning: obs_register_source: Source 'color_filter' already exists!  Duplicate library?
+warning: obs_register_source: Source 'scale_filter' already exists!  Duplicate library?
+warning: obs_register_source: Source 'scroll_filter' already exists!  Duplicate library?
+warning: obs_register_source: Source 'gpu_delay' already exists!  Duplicate library?
+warning: obs_register_source: Source 'color_key_filter' already exists!  Duplicate library?
+warning: obs_register_source: Source 'color_key_filter' already exists!  Duplicate library?
+warning: obs_register_source: Source 'clut_filter' already exists!  Duplicate library?
+warning: obs_register_source: Source 'sharpness_filter' already exists!  Duplicate library?
+warning: obs_register_source: Source 'sharpness_filter' already exists!  Duplicate library?
+warning: obs_register_source: Source 'chroma_key_filter' already exists!  Duplicate library?
+warning: obs_register_source: Source 'chroma_key_filter' already exists!  Duplicate library?
+warning: obs_register_source: Source 'async_delay_filter' already exists!  Duplicate library?
+warning: obs_register_source: Source 'noise_suppress_filter' already exists!  Duplicate library?
+warning: obs_register_source: Source 'noise_suppress_filter' already exists!  Duplicate library?
+warning: obs_register_source: Source 'invert_polarity_filter' already exists!  Duplicate library?
+warning: obs_register_source: Source 'noise_gate_filter' already exists!  Duplicate library?
+warning: obs_register_source: Source 'compressor_filter' already exists!  Duplicate library?
+warning: obs_register_source: Source 'limiter_filter' already exists!  Duplicate library?
+warning: obs_register_source: Source 'expander_filter' already exists!  Duplicate library?
+warning: obs_register_source: Source 'upward_compressor_filter' already exists!  Duplicate library?
+warning: obs_register_source: Source 'luma_key_filter' already exists!  Duplicate library?
+warning: obs_register_source: Source 'luma_key_filter' already exists!  Duplicate library?
+warning: obs_register_encoder: Encoder id 'libfdk_aac' already exists!  Duplicate library?
+error: os_dlopen(libnvidia-encode.so.1->libnvidia-encode.so.1): libnvidia-encode.so.1: cannot open shared object file: No such file or directory
+
+info: NVENC not supported
+warning: Failed to initialize module 'obs-nvenc.so'
+warning: obs_register_output: Output id 'rtmp_output' already exists!  Duplicate library?
+warning: obs_register_output: Output id 'null_output' already exists!  Duplicate library?
+warning: obs_register_output: Output id 'flv_output' already exists!  Duplicate library?
+warning: obs_register_output: Output id 'mp4_output' already exists!  Duplicate library?
+warning: obs_register_output: Output id 'mov_output' already exists!  Duplicate library?
+warning: obs_register_source: Source 'cut_transition' already exists!  Duplicate library?
+warning: obs_register_source: Source 'fade_transition' already exists!  Duplicate library?
+warning: obs_register_source: Source 'swipe_transition' already exists!  Duplicate library?
+warning: obs_register_source: Source 'slide_transition' already exists!  Duplicate library?
+warning: obs_register_source: Source 'obs_stinger_transition' already exists!  Duplicate library?
+warning: obs_register_source: Source 'fade_to_color_transition' already exists!  Duplicate library?
+warning: obs_register_source: Source 'wipe_transition' already exists!  Duplicate library?
+warning: obs_register_source: Source 'vst_filter' already exists!  Duplicate library?
+info: [obs-websocket] [obs_module_load] you can haz websockets (Version: 5.7.4 | RPC Version: 1)
+info: [obs-websocket] [obs_module_load] Qt version (compile-time): 6.4.2 | Qt version (run-time): 6.8.2
+info: [obs-websocket] [obs_module_load] Linked ASIO Version: 102801
+warning: Procedure 'obs_websocket_api_get_ph' already exists
+info: [obs-websocket] [obs_module_load] Module loaded.
+warning: obs_register_encoder: Encoder id 'obs_x264' already exists!  Duplicate library?
+warning: Procedure 'twitch_ingests_refresh' already exists
+warning: Procedure 'amazon_ivs_ingests_refresh' already exists
+warning: obs_register_service: Service id 'rtmp_common' already exists!  Duplicate library?
+warning: obs_register_service: Service id 'rtmp_custom' already exists!  Duplicate library?
+warning: obs_register_source: Source 'text_ft2_source' already exists!  Duplicate library?
+warning: obs_register_source: Source 'text_ft2_source' already exists!  Duplicate library?
+info: [vlc-video]: VLC 3.0.23 Vetinari found, VLC video source enabled
+warning: obs_register_source: Source 'vlc_source' already exists!  Duplicate library?
+info: ---------------------------------
+info:   Loaded Modules:
+info:     vlc-video.so
+info:     text-freetype2.so
+info:     rtmp-services.so
+info:     obs-x264.so
+info:     obs-websocket.so
+info:     obs-vst.so
+info:     obs-transitions.so
+info:     obs-qsv11.so
+info:     obs-outputs.so
+info:     obs-libfdk.so
+info:     obs-filters.so
+info:     obs-ffmpeg.so
+info:     obs-browser.so
+info:     linux-v4l2.so
+info:     linux-pulseaudio.so
+info:     linux-pipewire.so
+info:     linux-jack.so
+info:     linux-capture.so
+info:     linux-alsa.so
+info:     image-source.so
+info:     frontend-tools.so
+info:     decklink-output-ui.so
+info:     decklink-captions.so
+info:     vlc-video.so
+info:     text-freetype2.so
+info:     rtmp-services.so
+info:     obs-x264.so
+info:     obs-websocket.so
+info:     obs-vst.so
+info:     obs-transitions.so
+info:     obs-qsv11.so
+info:     obs-outputs.so
+info:     obs-libfdk.so
+info:     obs-filters.so
+info:     obs-ffmpeg.so
+info:     obs-browser.so
+info:     linux-v4l2.so
+info:     linux-pulseaudio.so
+info:     linux-pipewire.so
+info:     linux-jack.so
+info:     linux-capture.so
+info:     linux-alsa.so
+info:     image-source.so
+info:     frontend-tools.so
+info:     decklink-output-ui.so
+info:     decklink-captions.so
+info: ---------------------------------
+info: [obs-websocket] [obs_module_post_load] WebSocket server is enabled, starting...
+info: [obs-websocket] [WebSocketServer::Start] Not locked to IPv4 bindings
+info: [obs-websocket] [WebSocketServer::ServerRunner] IO thread started.
+info: [obs-websocket] [WebSocketServer::Start] Server started successfully on port 4455. Possible connect address: 172.26.91.244

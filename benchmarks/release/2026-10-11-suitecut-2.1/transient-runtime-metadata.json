@@ -1,0 +1,16 @@
+{
+  "danglingLinks": [
+    {
+      "path": "external-browser/chrome-profile-ld0m2Z/SingletonCookie",
+      "target": "2441481170189339663",
+      "archivedAs": "symbolic link metadata; no dereference of a vanished temporary Chromium endpoint"
+    },
+    {
+      "path": "external-browser/chrome-profile-ld0m2Z/SingletonLock",
+      "target": "2b2ce4aa4cff-904697",
+      "archivedAs": "symbolic link metadata; no dereference of a vanished temporary Chromium endpoint"
+    }
+  ],
+  "socketFilesExcluded": [],
+  "scope": "Fresh isolated browser harness runtime endpoints, after all owned processes were stopped; no regular evidence files excluded."
+}

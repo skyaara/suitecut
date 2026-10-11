@@ -1,0 +1,39 @@
+[
+  {
+    "case": "1080p30-stream",
+    "path": "/workspace/suitecut/benchmarks/obs-cef/2026-10-11-quietness-control/runs/1080p30-stream/receiver.flv",
+    "target": "/tmp/suitecut-obs-control-storage/1080p30-stream-receiver.flv",
+    "bytes": 69721481,
+    "startedMonotonic": 204987.56424911,
+    "finishedMonotonic": 204987.917764256,
+    "reason": "Preserve completed raw streams on a separate temporary filesystem to leave space for unchanged active CBR stream"
+  },
+  {
+    "case": "720p60-stream",
+    "path": "/workspace/suitecut/benchmarks/obs-cef/2026-10-11-quietness-control/runs/720p60-stream/receiver.flv",
+    "target": "/tmp/suitecut-obs-control-storage/720p60-stream-receiver.flv",
+    "bytes": 54681956,
+    "startedMonotonic": 204987.918100871,
+    "finishedMonotonic": 204988.088846398,
+    "reason": "Preserve completed raw streams on a separate temporary filesystem to leave space for unchanged active CBR stream"
+  },
+  {
+    "case": "4k30-stream",
+    "path": "/workspace/suitecut/benchmarks/obs-cef/2026-10-11-quietness-control/runs/4k30-stream/receiver.flv",
+    "target": "/tmp/suitecut-obs-control-storage/4k30-stream-receiver.flv",
+    "bytes": 183055382,
+    "startedMonotonic": 204988.088951116,
+    "finishedMonotonic": 204989.18831163,
+    "reason": "Preserve completed raw streams on a separate temporary filesystem to leave space for unchanged active CBR stream"
+  },
+  {
+    "case": "soak-1080p30-stream",
+    "path": "/workspace/suitecut/benchmarks/obs-cef/2026-10-11-quietness-control/runs/soak-1080p30-stream/receiver.flv",
+    "target": "/tmp/suitecut-obs-control-storage/soak-1080p30-stream-receiver.flv",
+    "bytes": 1043730462,
+    "startedMonotonic": 206560.449491874,
+    "finishedMonotonic": 206564.812682276,
+    "reason": "Post-capture, post-analysis relocation to reserve space for verified full evidence archive",
+    "outsideMeasuredCapture": true
+  }
+]

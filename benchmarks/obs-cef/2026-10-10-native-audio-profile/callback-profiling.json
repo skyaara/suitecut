@@ -1,0 +1,668 @@
+{
+  "suitecut-trace-fixed": {
+    "AudioInputDevice::AudioThreadCallback::Process": {
+      "count": 1590,
+      "medianMs": 0.069,
+      "p99Ms": 1.025,
+      "maximumMs": 6.503,
+      "slowestEvents": [
+        {
+          "args": {
+            "capture_delay (ms)": 41.367,
+            "capture_time (ms)": 132981887.297
+          },
+          "cat": "audio",
+          "dur": 6503,
+          "name": "AudioInputDevice::AudioThreadCallback::Process",
+          "ph": "X",
+          "pid": 182407,
+          "tdur": 52,
+          "tid": 182522,
+          "ts": 132981928660,
+          "tts": 110638
+        },
+        {
+          "args": {
+            "capture_delay (ms)": 20.757,
+            "capture_time (ms)": 132981387.297
+          },
+          "cat": "audio",
+          "dur": 4852,
+          "name": "AudioInputDevice::AudioThreadCallback::Process",
+          "ph": "X",
+          "pid": 182407,
+          "tdur": 490,
+          "tid": 182522,
+          "ts": 132981407981,
+          "tts": 107909
+        },
+        {
+          "args": {
+            "capture_delay (ms)": 25.026,
+            "capture_time (ms)": 132979487.297
+          },
+          "cat": "audio",
+          "dur": 4403,
+          "name": "AudioInputDevice::AudioThreadCallback::Process",
+          "ph": "X",
+          "pid": 182407,
+          "tdur": 55,
+          "tid": 182522,
+          "ts": 132979507976,
+          "tts": 94002
+        },
+        {
+          "args": {
+            "capture_delay (ms)": 23.291,
+            "capture_time (ms)": 132994027.297
+          },
+          "cat": "audio",
+          "dur": 3121,
+          "name": "AudioInputDevice::AudioThreadCallback::Process",
+          "ph": "X",
+          "pid": 182407,
+          "tdur": 3120,
+          "tid": 182522,
+          "ts": 132994047511,
+          "tts": 192686
+        },
+        {
+          "args": {
+            "capture_delay (ms)": 20.755,
+            "capture_time (ms)": 132975727.297
+          },
+          "cat": "audio",
+          "dur": 2458,
+          "name": "AudioInputDevice::AudioThreadCallback::Process",
+          "ph": "X",
+          "pid": 182407,
+          "tdur": 1733,
+          "tid": 182522,
+          "ts": 132975748023,
+          "tts": 59050
+        },
+        {
+          "args": {
+            "capture_delay (ms)": 20.185,
+            "capture_time (ms)": 132996207.297
+          },
+          "cat": "audio",
+          "dur": 2385,
+          "name": "AudioInputDevice::AudioThreadCallback::Process",
+          "ph": "X",
+          "pid": 182407,
+          "tdur": 2276,
+          "tid": 182522,
+          "ts": 132996227477,
+          "tts": 206661
+        },
+        {
+          "args": {
+            "capture_delay (ms)": 20.369,
+            "capture_time (ms)": 132993427.297
+          },
+          "cat": "audio",
+          "dur": 2287,
+          "name": "AudioInputDevice::AudioThreadCallback::Process",
+          "ph": "X",
+          "pid": 182407,
+          "tdur": 2220,
+          "tid": 182522,
+          "ts": 132993447661,
+          "tts": 187731
+        },
+        {
+          "args": {
+            "capture_delay (ms)": 22.248,
+            "capture_time (ms)": 132980887.297
+          },
+          "cat": "audio",
+          "dur": 1694,
+          "name": "AudioInputDevice::AudioThreadCallback::Process",
+          "ph": "X",
+          "pid": 182407,
+          "tdur": 1694,
+          "tid": 182522,
+          "ts": 132980909538,
+          "tts": 103427
+        },
+        {
+          "args": {
+            "capture_delay (ms)": 20.324,
+            "capture_time (ms)": 132972927.297
+          },
+          "cat": "audio",
+          "dur": 1627,
+          "name": "AudioInputDevice::AudioThreadCallback::Process",
+          "ph": "X",
+          "pid": 182407,
+          "tdur": 945,
+          "tid": 182522,
+          "ts": 132972947616,
+          "tts": 44590
+        },
+        {
+          "args": {
+            "capture_delay (ms)": 20.221,
+            "capture_time (ms)": 132980747.297
+          },
+          "cat": "audio",
+          "dur": 1308,
+          "name": "AudioInputDevice::AudioThreadCallback::Process",
+          "ph": "X",
+          "pid": 182407,
+          "tdur": 102,
+          "tid": 182522,
+          "ts": 132980767514,
+          "tts": 102277
+        }
+      ]
+    },
+    "AudioOutputDevice::FireRenderCallback": {
+      "count": 2739,
+      "medianMs": 0.258,
+      "p99Ms": 4.997,
+      "maximumMs": 229.944,
+      "slowestEvents": [
+        {
+          "args": {
+            "callback_num": 1363,
+            "delay_timestamp (ms)": 132979718.522,
+            "playout_delay (ms)": 34.875
+          },
+          "cat": "audio",
+          "dur": 229944,
+          "name": "AudioOutputDevice::FireRenderCallback",
+          "ph": "X",
+          "pid": 182465,
+          "tdur": 138904,
+          "tid": 15,
+          "ts": 132979718794,
+          "tts": 116253
+        },
+        {
+          "args": {
+            "callback_num": 1531,
+            "delay_timestamp (ms)": 132982159.777,
+            "playout_delay (ms)": 34.875
+          },
+          "cat": "audio",
+          "dur": 31997,
+          "name": "AudioOutputDevice::FireRenderCallback",
+          "ph": "X",
+          "pid": 182465,
+          "tdur": 90,
+          "tid": 15,
+          "ts": 132982159850,
+          "tts": 270618
+        },
+        {
+          "args": {
+            "callback_num": 1582,
+            "delay_timestamp (ms)": 132982950.606,
+            "playout_delay (ms)": 34.875
+          },
+          "cat": "audio",
+          "dur": 16453,
+          "name": "AudioOutputDevice::FireRenderCallback",
+          "ph": "X",
+          "pid": 182465,
+          "tdur": 48,
+          "tid": 15,
+          "ts": 132982958663,
+          "tts": 278062
+        },
+        {
+          "args": {
+            "callback_num": 1349,
+            "delay_timestamp (ms)": 132979555.765,
+            "playout_delay (ms)": 34.875
+          },
+          "cat": "audio",
+          "dur": 14059,
+          "name": "AudioOutputDevice::FireRenderCallback",
+          "ph": "X",
+          "pid": 182465,
+          "tdur": 39,
+          "tid": 15,
+          "ts": 132979556368,
+          "tts": 112613
+        },
+        {
+          "args": {
+            "callback_num": 1186,
+            "delay_timestamp (ms)": 132977638.372,
+            "playout_delay (ms)": 34.875
+          },
+          "cat": "audio",
+          "dur": 12565,
+          "name": "AudioOutputDevice::FireRenderCallback",
+          "ph": "X",
+          "pid": 182465,
+          "tdur": 1827,
+          "tid": 15,
+          "ts": 132977667767,
+          "tts": 88211
+        },
+        {
+          "args": {
+            "callback_num": 1404,
+            "delay_timestamp (ms)": 132980660.312,
+            "playout_delay (ms)": 34.875
+          },
+          "cat": "audio",
+          "dur": 11205,
+          "name": "AudioOutputDevice::FireRenderCallback",
+          "ph": "X",
+          "pid": 182465,
+          "tdur": 25,
+          "tid": 15,
+          "ts": 132980660853,
+          "tts": 260291
+        },
+        {
+          "args": {
+            "callback_num": 1184,
+            "delay_timestamp (ms)": 132977477.643,
+            "playout_delay (ms)": 34.875
+          },
+          "cat": "audio",
+          "dur": 10884,
+          "name": "AudioOutputDevice::FireRenderCallback",
+          "ph": "X",
+          "pid": 182465,
+          "tdur": 64,
+          "tid": 15,
+          "ts": 132977477741,
+          "tts": 88035
+        },
+        {
+          "args": {
+            "callback_num": 1581,
+            "delay_timestamp (ms)": 132982944.251,
+            "playout_delay (ms)": 34.875
+          },
+          "cat": "audio",
+          "dur": 9646,
+          "name": "AudioOutputDevice::FireRenderCallback",
+          "ph": "X",
+          "pid": 182465,
+          "tdur": 619,
+          "tid": 15,
+          "ts": 132982945351,
+          "tts": 277400
+        },
+        {
+          "args": {
+            "callback_num": 1468,
+            "delay_timestamp (ms)": 132981405.028,
+            "playout_delay (ms)": 34.875
+          },
+          "cat": "audio",
+          "dur": 8930,
+          "name": "AudioOutputDevice::FireRenderCallback",
+          "ph": "X",
+          "pid": 182465,
+          "tdur": 1017,
+          "tid": 15,
+          "ts": 132981406217,
+          "tts": 264537
+        },
+        {
+          "args": {
+            "callback_num": 1470,
+            "delay_timestamp (ms)": 132981436.063,
+            "playout_delay (ms)": 34.875
+          },
+          "cat": "audio",
+          "dur": 8259,
+          "name": "AudioOutputDevice::FireRenderCallback",
+          "ph": "X",
+          "pid": 182465,
+          "tdur": 45,
+          "tid": 15,
+          "ts": 132981436135,
+          "tts": 265734
+        }
+      ]
+    }
+  },
+  "obs-traced": {
+    "AudioInputDevice::AudioThreadCallback::Process": {
+      "count": 1647,
+      "medianMs": 0.056,
+      "p99Ms": 2.58,
+      "maximumMs": 65.766,
+      "slowestEvents": [
+        {
+          "args": {
+            "capture_time (ms)": 133072056.266,
+            "now_time (ms)": 133072100.323
+          },
+          "cat": "audio",
+          "dur": 65766,
+          "name": "AudioInputDevice::AudioThreadCallback::Process",
+          "ph": "X",
+          "pid": 182610,
+          "tdur": 26525,
+          "tid": 182783,
+          "ts": 133072100317,
+          "tts": 115301
+        },
+        {
+          "args": {
+            "capture_time (ms)": 133075362.933,
+            "now_time (ms)": 133075408.924
+          },
+          "cat": "audio",
+          "dur": 31710,
+          "name": "AudioInputDevice::AudioThreadCallback::Process",
+          "ph": "X",
+          "pid": 182610,
+          "tdur": 17042,
+          "tid": 182783,
+          "ts": 133075408918,
+          "tts": 173936
+        },
+        {
+          "args": {
+            "capture_time (ms)": 133075960.266,
+            "now_time (ms)": 133076048.044
+          },
+          "cat": "audio",
+          "dur": 25419,
+          "name": "AudioInputDevice::AudioThreadCallback::Process",
+          "ph": "X",
+          "pid": 182610,
+          "tdur": 8254,
+          "tid": 182783,
+          "ts": 133076047692,
+          "tts": 195611
+        },
+        {
+          "args": {
+            "capture_time (ms)": 133070196.282,
+            "now_time (ms)": 133070222.491
+          },
+          "cat": "audio",
+          "dur": 13514,
+          "name": "AudioInputDevice::AudioThreadCallback::Process",
+          "ph": "X",
+          "pid": 182610,
+          "tdur": 2608,
+          "tid": 182783,
+          "ts": 133070222425,
+          "tts": 94712
+        },
+        {
+          "args": {
+            "capture_time (ms)": 133087330.933,
+            "now_time (ms)": 133087368.9
+          },
+          "cat": "audio",
+          "dur": 11199,
+          "name": "AudioInputDevice::AudioThreadCallback::Process",
+          "ph": "X",
+          "pid": 182610,
+          "tdur": 102,
+          "tid": 182783,
+          "ts": 133087368895,
+          "tts": 268932
+        },
+        {
+          "args": {
+            "capture_time (ms)": 133086029.599,
+            "now_time (ms)": 133086067.375
+          },
+          "cat": "audio",
+          "dur": 9985,
+          "name": "AudioInputDevice::AudioThreadCallback::Process",
+          "ph": "X",
+          "pid": 182610,
+          "tdur": 2359,
+          "tid": 182783,
+          "ts": 133086067369,
+          "tts": 258092
+        },
+        {
+          "args": {
+            "capture_time (ms)": 133075469.599,
+            "now_time (ms)": 133075507.252
+          },
+          "cat": "audio",
+          "dur": 8856,
+          "name": "AudioInputDevice::AudioThreadCallback::Process",
+          "ph": "X",
+          "pid": 182610,
+          "tdur": 96,
+          "tid": 182783,
+          "ts": 133075507246,
+          "tts": 191343
+        },
+        {
+          "args": {
+            "capture_time (ms)": 133069641.615,
+            "now_time (ms)": 133069662.824
+          },
+          "cat": "audio",
+          "dur": 8845,
+          "name": "AudioInputDevice::AudioThreadCallback::Process",
+          "ph": "X",
+          "pid": 182610,
+          "tdur": 3006,
+          "tid": 182783,
+          "ts": 133069662752,
+          "tts": 81751
+        },
+        {
+          "args": {
+            "capture_time (ms)": 133055732.282,
+            "now_time (ms)": 133055752.494
+          },
+          "cat": "audio",
+          "dur": 7855,
+          "name": "AudioInputDevice::AudioThreadCallback::Process",
+          "ph": "X",
+          "pid": 182610,
+          "tdur": 80,
+          "tid": 182783,
+          "ts": 133055752487,
+          "tts": 14875
+        },
+        {
+          "args": {
+            "capture_time (ms)": 133085624.266,
+            "now_time (ms)": 133085666.898
+          },
+          "cat": "audio",
+          "dur": 6392,
+          "name": "AudioInputDevice::AudioThreadCallback::Process",
+          "ph": "X",
+          "pid": 182610,
+          "tdur": 4011,
+          "tid": 182783,
+          "ts": 133085666890,
+          "tts": 252471
+        }
+      ]
+    },
+    "AudioOutputDevice::FireRenderCallback": {
+      "count": 2957,
+      "medianMs": 0.026,
+      "p99Ms": 2.927,
+      "maximumMs": 34.533,
+      "slowestEvents": [
+        {
+          "args": {
+            "callback_num": 1591,
+            "delay (ms)": 34.828,
+            "glitches": 0,
+            "timestamp (ms)": 133072301.925
+          },
+          "cat": "audio",
+          "dur": 34533,
+          "name": "AudioOutputDevice::FireRenderCallback",
+          "ph": "X",
+          "pid": 182707,
+          "tdur": 45,
+          "tid": 182780,
+          "ts": 133072303968,
+          "tts": 116152
+        },
+        {
+          "args": {
+            "callback_num": 1815,
+            "delay (ms)": 34.828,
+            "glitches": 0,
+            "timestamp (ms)": 133075364.871
+          },
+          "cat": "audio",
+          "dur": 33985,
+          "name": "AudioOutputDevice::FireRenderCallback",
+          "ph": "X",
+          "pid": 182707,
+          "tdur": 10477,
+          "tid": 182780,
+          "ts": 133075399196,
+          "tts": 142296
+        },
+        {
+          "args": {
+            "callback_num": 1579,
+            "delay (ms)": 34.828,
+            "glitches": 0,
+            "timestamp (ms)": 133071992.339
+          },
+          "cat": "audio",
+          "dur": 31732,
+          "name": "AudioOutputDevice::FireRenderCallback",
+          "ph": "X",
+          "pid": 182707,
+          "tdur": 854,
+          "tid": 182780,
+          "ts": 133072003865,
+          "tts": 111804
+        },
+        {
+          "args": {
+            "callback_num": 2251,
+            "delay (ms)": 34.828,
+            "glitches": 0,
+            "timestamp (ms)": 133080915.565
+          },
+          "cat": "audio",
+          "dur": 18960,
+          "name": "AudioOutputDevice::FireRenderCallback",
+          "ph": "X",
+          "pid": 182707,
+          "tdur": 45,
+          "tid": 182780,
+          "ts": 133080915625,
+          "tts": 177221
+        },
+        {
+          "args": {
+            "callback_num": 2066,
+            "delay (ms)": 34.828,
+            "glitches": 0,
+            "timestamp (ms)": 133078721.251
+          },
+          "cat": "audio",
+          "dur": 15988,
+          "name": "AudioOutputDevice::FireRenderCallback",
+          "ph": "X",
+          "pid": 182707,
+          "tdur": 45,
+          "tid": 182780,
+          "ts": 133078721305,
+          "tts": 165712
+        },
+        {
+          "args": {
+            "callback_num": 2320,
+            "delay (ms)": 34.828,
+            "glitches": 0,
+            "timestamp (ms)": 133081763.168
+          },
+          "cat": "audio",
+          "dur": 8331,
+          "name": "AudioOutputDevice::FireRenderCallback",
+          "ph": "X",
+          "pid": 182707,
+          "tdur": 82,
+          "tid": 182780,
+          "ts": 133081763243,
+          "tts": 181106
+        },
+        {
+          "args": {
+            "callback_num": 2716,
+            "delay (ms)": 34.828,
+            "glitches": 0,
+            "timestamp (ms)": 133086600.676
+          },
+          "cat": "audio",
+          "dur": 7115,
+          "name": "AudioOutputDevice::FireRenderCallback",
+          "ph": "X",
+          "pid": 182707,
+          "tdur": 555,
+          "tid": 182780,
+          "ts": 133086601128,
+          "tts": 204880
+        },
+        {
+          "args": {
+            "callback_num": 2762,
+            "delay (ms)": 34.828,
+            "glitches": 0,
+            "timestamp (ms)": 133087184.946
+          },
+          "cat": "audio",
+          "dur": 7079,
+          "name": "AudioOutputDevice::FireRenderCallback",
+          "ph": "X",
+          "pid": 182707,
+          "tdur": 29,
+          "tid": 182780,
+          "ts": 133087184973,
+          "tts": 207606
+        },
+        {
+          "args": {
+            "callback_num": 2027,
+            "delay (ms)": 34.828,
+            "glitches": 0,
+            "timestamp (ms)": 133078268.466
+          },
+          "cat": "audio",
+          "dur": 7051,
+          "name": "AudioOutputDevice::FireRenderCallback",
+          "ph": "X",
+          "pid": 182707,
+          "tdur": 25,
+          "tid": 182780,
+          "ts": 133078269991,
+          "tts": 163854
+        },
+        {
+          "args": {
+            "callback_num": 2765,
+            "delay (ms)": 34.828,
+            "glitches": 0,
+            "timestamp (ms)": 133087220.833
+          },
+          "cat": "audio",
+          "dur": 6232,
+          "name": "AudioOutputDevice::FireRenderCallback",
+          "ph": "X",
+          "pid": 182707,
+          "tdur": 35,
+          "tid": 182780,
+          "ts": 133087222108,
+          "tts": 207731
+        }
+      ]
+    }
+  }
+}

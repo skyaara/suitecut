@@ -1,0 +1,303 @@
+{
+  "source": "benchmarks/native-sync/2026-10-11-shared-clock/runs/soak-1080p30-stream",
+  "method": "Per-PID OLS over the earlier sealed active run after 120 seconds; infrastructure excluded. Browser role includes CEF main and other CEF subprocesses. This is descriptive, not leak allocation attribution.",
+  "rows": [
+    {
+      "pid": 853188,
+      "role": "browser",
+      "metrics": {
+        "rssBytes": {
+          "samples": 3355,
+          "slopeMiBPerMinute": 0.6164558720092016,
+          "firstMiB": 354.359375,
+          "lastMiB": 367.625,
+          "peakMiB": 370.58984375
+        },
+        "pssBytes": {
+          "samples": 167,
+          "slopeMiBPerMinute": 0.6066290256170966,
+          "firstMiB": 246.4921875,
+          "lastMiB": 259.4833984375,
+          "peakMiB": 262.4521484375
+        },
+        "ussBytes": {
+          "samples": 167,
+          "slopeMiBPerMinute": 0.6063536810166347,
+          "firstMiB": 203.859375,
+          "lastMiB": 216.82421875,
+          "peakMiB": 219.79296875
+        }
+      }
+    },
+    {
+      "pid": 853175,
+      "role": "controller",
+      "metrics": {
+        "rssBytes": {
+          "samples": 3355,
+          "slopeMiBPerMinute": 0.21870597278510387,
+          "firstMiB": 107.63671875,
+          "lastMiB": 114.45703125,
+          "peakMiB": 114.45703125
+        },
+        "pssBytes": {
+          "samples": 167,
+          "slopeMiBPerMinute": 0.21976174335168175,
+          "firstMiB": 106.0283203125,
+          "lastMiB": 112.83984375,
+          "peakMiB": 112.83984375
+        },
+        "ussBytes": {
+          "samples": 167,
+          "slopeMiBPerMinute": 0.219771327245843,
+          "firstMiB": 105.87109375,
+          "lastMiB": 112.68359375,
+          "peakMiB": 112.68359375
+        }
+      }
+    },
+    {
+      "pid": 853264,
+      "role": "renderer",
+      "metrics": {
+        "rssBytes": {
+          "samples": 3355,
+          "slopeMiBPerMinute": 0.07130104457901798,
+          "firstMiB": 196.4609375,
+          "lastMiB": 198.05078125,
+          "peakMiB": 199.171875
+        },
+        "pssBytes": {
+          "samples": 167,
+          "slopeMiBPerMinute": 0.06260391494090028,
+          "firstMiB": 113.5546875,
+          "lastMiB": 114.9462890625,
+          "peakMiB": 115.3955078125
+        },
+        "ussBytes": {
+          "samples": 167,
+          "slopeMiBPerMinute": 0.061182260590309165,
+          "firstMiB": 73.4609375,
+          "lastMiB": 74.8984375,
+          "peakMiB": 75.28515625
+        }
+      }
+    },
+    {
+      "pid": 853215,
+      "role": "gpu",
+      "metrics": {
+        "rssBytes": {
+          "samples": 3355,
+          "slopeMiBPerMinute": 0.04329892025913157,
+          "firstMiB": 144.41015625,
+          "lastMiB": 145.640625,
+          "peakMiB": 145.83203125
+        },
+        "pssBytes": {
+          "samples": 167,
+          "slopeMiBPerMinute": 0.02922473096920604,
+          "firstMiB": 71.0615234375,
+          "lastMiB": 71.798828125,
+          "peakMiB": 71.892578125
+        },
+        "ussBytes": {
+          "samples": 167,
+          "slopeMiBPerMinute": 0.024767588722213876,
+          "firstMiB": 28.72265625,
+          "lastMiB": 29.3984375,
+          "peakMiB": 29.3984375
+        }
+      }
+    },
+    {
+      "pid": 853219,
+      "role": "browser",
+      "metrics": {
+        "rssBytes": {
+          "samples": 3355,
+          "slopeMiBPerMinute": 0.03314959454871114,
+          "firstMiB": 54.4765625,
+          "lastMiB": 55.453125,
+          "peakMiB": 55.453125
+        },
+        "pssBytes": {
+          "samples": 167,
+          "slopeMiBPerMinute": 0.008700710052016732,
+          "firstMiB": 11.9296875,
+          "lastMiB": 12.1845703125,
+          "peakMiB": 12.1845703125
+        },
+        "ussBytes": {
+          "samples": 167,
+          "slopeMiBPerMinute": 0.0040003264606973486,
+          "firstMiB": 2.24609375,
+          "lastMiB": 2.36328125,
+          "peakMiB": 2.36328125
+        }
+      }
+    },
+    {
+      "pid": 853278,
+      "role": "audio-utility",
+      "metrics": {
+        "rssBytes": {
+          "samples": 3355,
+          "slopeMiBPerMinute": 0.023846027169451806,
+          "firstMiB": 97.109375,
+          "lastMiB": 97.8046875,
+          "peakMiB": 97.8046875
+        },
+        "pssBytes": {
+          "samples": 167,
+          "slopeMiBPerMinute": 0.006333819984972006,
+          "firstMiB": 36.02734375,
+          "lastMiB": 36.205078125,
+          "peakMiB": 36.205078125
+        },
+        "ussBytes": {
+          "samples": 167,
+          "slopeMiBPerMinute": 0.0034396861837677497,
+          "firstMiB": 22.99609375,
+          "lastMiB": 23.08984375,
+          "peakMiB": 23.08984375
+        }
+      }
+    },
+    {
+      "pid": 853217,
+      "role": "browser",
+      "metrics": {
+        "rssBytes": {
+          "samples": 3355,
+          "slopeMiBPerMinute": 0.018203789022323724,
+          "firstMiB": 114.7578125,
+          "lastMiB": 115.29296875,
+          "peakMiB": 115.29296875
+        },
+        "pssBytes": {
+          "samples": 167,
+          "slopeMiBPerMinute": 0.0034702771680538234,
+          "firstMiB": 44.5791015625,
+          "lastMiB": 44.6796875,
+          "peakMiB": 44.6796875
+        },
+        "ussBytes": {
+          "samples": 167,
+          "slopeMiBPerMinute": 0.001503449991544294,
+          "firstMiB": 26.91796875,
+          "lastMiB": 26.9609375,
+          "peakMiB": 26.9609375
+        }
+      }
+    },
+    {
+      "pid": 853258,
+      "role": "renderer",
+      "metrics": {
+        "rssBytes": {
+          "samples": 3355,
+          "slopeMiBPerMinute": 0.014453223223238058,
+          "firstMiB": 81.6171875,
+          "lastMiB": 82.04296875,
+          "peakMiB": 82.04296875
+        },
+        "pssBytes": {
+          "samples": 167,
+          "slopeMiBPerMinute": 0.003400277491592746,
+          "firstMiB": 25.115234375,
+          "lastMiB": 25.21484375,
+          "peakMiB": 25.21484375
+        },
+        "ussBytes": {
+          "samples": 167,
+          "slopeMiBPerMinute": 0.002800228522488144,
+          "firstMiB": 6.83203125,
+          "lastMiB": 6.9140625,
+          "peakMiB": 6.9140625
+        }
+      }
+    },
+    {
+      "pid": 853192,
+      "role": "browser",
+      "metrics": {
+        "rssBytes": {
+          "samples": 3355,
+          "slopeMiBPerMinute": 0.0,
+          "firstMiB": 83.10546875,
+          "lastMiB": 83.10546875,
+          "peakMiB": 83.10546875
+        },
+        "pssBytes": {
+          "samples": 167,
+          "slopeMiBPerMinute": -0.00010565144118251291,
+          "firstMiB": 22.0546875,
+          "lastMiB": 22.0595703125,
+          "peakMiB": 22.064453125
+        },
+        "ussBytes": {
+          "samples": 167,
+          "slopeMiBPerMinute": 0.0001220576560264199,
+          "firstMiB": 1.109375,
+          "lastMiB": 1.12890625,
+          "peakMiB": 1.12890625
+        }
+      }
+    },
+    {
+      "pid": 853193,
+      "role": "browser",
+      "metrics": {
+        "rssBytes": {
+          "samples": 3355,
+          "slopeMiBPerMinute": 0.0,
+          "firstMiB": 82.0546875,
+          "lastMiB": 82.0546875,
+          "peakMiB": 82.0546875
+        },
+        "pssBytes": {
+          "samples": 167,
+          "slopeMiBPerMinute": -0.00010000816151743371,
+          "firstMiB": 14.66015625,
+          "lastMiB": 14.6572265625,
+          "peakMiB": 14.66015625
+        },
+        "ussBytes": {
+          "samples": 167,
+          "slopeMiBPerMinute": 0.0,
+          "firstMiB": 0.14453125,
+          "lastMiB": 0.14453125,
+          "peakMiB": 0.14453125
+        }
+      }
+    },
+    {
+      "pid": 853195,
+      "role": "browser",
+      "metrics": {
+        "rssBytes": {
+          "samples": 3355,
+          "slopeMiBPerMinute": 0.0,
+          "firstMiB": 25.05859375,
+          "lastMiB": 25.05859375,
+          "peakMiB": 25.05859375
+        },
+        "pssBytes": {
+          "samples": 167,
+          "slopeMiBPerMinute": -0.00013334421535657828,
+          "firstMiB": 4.9921875,
+          "lastMiB": 4.98828125,
+          "peakMiB": 4.9921875
+        },
+        "ussBytes": {
+          "samples": 167,
+          "slopeMiBPerMinute": 0.0,
+          "firstMiB": 0.21875,
+          "lastMiB": 0.21875,
+          "peakMiB": 0.21875
+        }
+      }
+    }
+  ]
+}

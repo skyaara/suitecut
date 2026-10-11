@@ -1,0 +1,23 @@
+[
+  {
+    "name": "libvpx-dev",
+    "version": "1.15.0-2.1+deb13u1",
+    "url": "https://deb.debian.org/debian/pool/main/libv/libvpx/libvpx-dev_1.15.0-2.1+deb13u1_amd64.deb",
+    "sha256": "9d07ba78b4c65ba93606449bf73f0f51ee6ba7f750b53323a57e2eaa0fa4d7a2",
+    "bytes": 1270836
+  },
+  {
+    "name": "llvm-19",
+    "version": "1:19.1.7-3+b1",
+    "url": "https://deb.debian.org/debian/pool/main/l/llvm-toolchain-19/llvm-19_19.1.7-3+b1_amd64.deb",
+    "sha256": "0b1b7263f4f45e261099240fdbf00fc14b42b88410fd829e041bf83ea45866cb",
+    "bytes": 16385748
+  },
+  {
+    "name": "libx264-dev",
+    "version": "2:0.164.3108+git31e19f9-2+b1",
+    "url": "https://deb.debian.org/debian/pool/main/x/x264/libx264-dev_0.164.3108+git31e19f9-2+b1_amd64.deb",
+    "sha256": "120094146e402348d7ee305d0977183f1514441aca128863b6ad2599d92a2f3c",
+    "bytes": 617664
+  }
+]

@@ -1,0 +1,536 @@
+{
+  "attemptId": "9eb3c9bb-6841-4591-b21b-ca50106268f4",
+  "clock": {
+    "originEpochMs": 1791640554308,
+    "originMonotonicMs": 2412.814665,
+    "startedAt": "2026-10-10T13:55:54.308Z"
+  },
+  "endedAtMs": 31116.818467000005,
+  "pages": [
+    {
+      "id": "6c4a5c1f-8f2c-4a1c-a454-8b0acebda283",
+      "kind": "main",
+      "initialUrl": "http://127.0.0.1:36713/",
+      "createdAtMs": 0
+    }
+  ],
+  "events": [
+    {
+      "id": "d0288a98-63ed-479d-b1ff-64453fc4df9b",
+      "atMs": 11247.644712,
+      "pageId": "6c4a5c1f-8f2c-4a1c-a454-8b0acebda283",
+      "point": {
+        "x": 442,
+        "y": 220.30999755859375
+      },
+      "pointerType": "mouse",
+      "viewport": {
+        "width": 1920,
+        "height": 1080,
+        "scrollX": 0,
+        "scrollY": 0
+      },
+      "targetRect": {
+        "x": 402,
+        "y": 192.3125,
+        "width": 80,
+        "height": 56
+      },
+      "type": "pointer-move"
+    },
+    {
+      "id": "ea7c080c-019e-4502-8554-a6b2953fafe6",
+      "atMs": 11252.065371,
+      "pageId": "6c4a5c1f-8f2c-4a1c-a454-8b0acebda283",
+      "point": {
+        "x": 442,
+        "y": 220
+      },
+      "pointerType": "mouse",
+      "viewport": {
+        "width": 1920,
+        "height": 1080,
+        "scrollX": 0,
+        "scrollY": 0
+      },
+      "targetRect": {
+        "x": 402,
+        "y": 192.3125,
+        "width": 80,
+        "height": 56
+      },
+      "type": "click",
+      "button": "left"
+    },
+    {
+      "id": "c4f43308-16dd-4a12-8ed4-dcae731cebcf",
+      "atMs": 21148.314162000002,
+      "pageId": "6c4a5c1f-8f2c-4a1c-a454-8b0acebda283",
+      "point": {
+        "x": 442,
+        "y": 220.30999755859375
+      },
+      "pointerType": "mouse",
+      "viewport": {
+        "width": 1920,
+        "height": 1080,
+        "scrollX": 0,
+        "scrollY": 180
+      },
+      "targetRect": {
+        "x": 40,
+        "y": 124.3125,
+        "width": 1825,
+        "height": 160
+      },
+      "type": "pointer-move"
+    },
+    {
+      "id": "b6ac2035-9e9f-4dda-bfbd-d3c190299712",
+      "atMs": 21666.913524000003,
+      "pageId": "6c4a5c1f-8f2c-4a1c-a454-8b0acebda283",
+      "point": {
+        "x": 442,
+        "y": 220.30999755859375
+      },
+      "pointerType": "mouse",
+      "viewport": {
+        "width": 1920,
+        "height": 1080,
+        "scrollX": 0,
+        "scrollY": 360
+      },
+      "targetRect": {
+        "x": 40,
+        "y": 128.3125,
+        "width": 1825,
+        "height": 160
+      },
+      "type": "pointer-move"
+    },
+    {
+      "id": "28d9bdb9-59b8-404d-9943-c490b073bccc",
+      "atMs": 22181.816249000003,
+      "pageId": "6c4a5c1f-8f2c-4a1c-a454-8b0acebda283",
+      "point": {
+        "x": 442,
+        "y": 220.30999755859375
+      },
+      "pointerType": "mouse",
+      "viewport": {
+        "width": 1920,
+        "height": 1080,
+        "scrollX": 0,
+        "scrollY": 540
+      },
+      "targetRect": {
+        "x": 40,
+        "y": 132.3125,
+        "width": 1825,
+        "height": 160
+      },
+      "type": "pointer-move"
+    },
+    {
+      "id": "9a35ab92-5b72-4f67-9d59-36f9c41469b0",
+      "atMs": 22707.308251000002,
+      "pageId": "6c4a5c1f-8f2c-4a1c-a454-8b0acebda283",
+      "point": {
+        "x": 442,
+        "y": 220.30999755859375
+      },
+      "pointerType": "mouse",
+      "viewport": {
+        "width": 1920,
+        "height": 1080,
+        "scrollX": 0,
+        "scrollY": 720
+      },
+      "targetRect": {
+        "x": 40,
+        "y": 136.3125,
+        "width": 1825,
+        "height": 160
+      },
+      "type": "pointer-move"
+    },
+    {
+      "id": "adb49da9-6364-4b4b-b982-d589674fda7e",
+      "atMs": 23265.938549,
+      "pageId": "6c4a5c1f-8f2c-4a1c-a454-8b0acebda283",
+      "point": {
+        "x": 442,
+        "y": 220.30999755859375
+      },
+      "pointerType": "mouse",
+      "viewport": {
+        "width": 1920,
+        "height": 1080,
+        "scrollX": 0,
+        "scrollY": 900
+      },
+      "targetRect": {
+        "x": 40,
+        "y": 140.3125,
+        "width": 1825,
+        "height": 160
+      },
+      "type": "pointer-move"
+    },
+    {
+      "id": "d7c4e3b2-f940-4b30-8994-7e33ba996d27",
+      "atMs": 23958.96275,
+      "pageId": "6c4a5c1f-8f2c-4a1c-a454-8b0acebda283",
+      "point": {
+        "x": 442,
+        "y": 220.30999755859375
+      },
+      "pointerType": "mouse",
+      "viewport": {
+        "width": 1920,
+        "height": 1080,
+        "scrollX": 0,
+        "scrollY": 1080
+      },
+      "targetRect": {
+        "x": 40,
+        "y": 144.3125,
+        "width": 1825,
+        "height": 160
+      },
+      "type": "pointer-move"
+    },
+    {
+      "id": "85c2cd2f-326f-4404-b8ad-777f4cd97d0d",
+      "atMs": 24308.684317,
+      "pageId": "6c4a5c1f-8f2c-4a1c-a454-8b0acebda283",
+      "point": {
+        "x": 442,
+        "y": 220.30999755859375
+      },
+      "pointerType": "mouse",
+      "viewport": {
+        "width": 1920,
+        "height": 1080,
+        "scrollX": 0,
+        "scrollY": 1260
+      },
+      "targetRect": {
+        "x": 40,
+        "y": 148.3125,
+        "width": 1825,
+        "height": 160
+      },
+      "type": "pointer-move"
+    },
+    {
+      "id": "4a74f51c-b646-4f29-a43c-624f1a3895f3",
+      "atMs": 24823.901167999997,
+      "pageId": "6c4a5c1f-8f2c-4a1c-a454-8b0acebda283",
+      "point": {
+        "x": 442,
+        "y": 220.30999755859375
+      },
+      "pointerType": "mouse",
+      "viewport": {
+        "width": 1920,
+        "height": 1080,
+        "scrollX": 0,
+        "scrollY": 1440
+      },
+      "targetRect": {
+        "x": 40,
+        "y": 152.3125,
+        "width": 1825,
+        "height": 160
+      },
+      "type": "pointer-move"
+    },
+    {
+      "id": "7ba25833-d03f-4406-b574-5f1600270422",
+      "atMs": 25344.714687,
+      "pageId": "6c4a5c1f-8f2c-4a1c-a454-8b0acebda283",
+      "point": {
+        "x": 442,
+        "y": 220.30999755859375
+      },
+      "pointerType": "mouse",
+      "viewport": {
+        "width": 1920,
+        "height": 1080,
+        "scrollX": 0,
+        "scrollY": 1260
+      },
+      "targetRect": {
+        "x": 40,
+        "y": 148.3125,
+        "width": 1825,
+        "height": 160
+      },
+      "type": "pointer-move"
+    },
+    {
+      "id": "9f4d1c99-097c-4845-ae8e-db8847235174",
+      "atMs": 25898.422112,
+      "pageId": "6c4a5c1f-8f2c-4a1c-a454-8b0acebda283",
+      "point": {
+        "x": 442,
+        "y": 220.30999755859375
+      },
+      "pointerType": "mouse",
+      "viewport": {
+        "width": 1920,
+        "height": 1080,
+        "scrollX": 0,
+        "scrollY": 1080
+      },
+      "targetRect": {
+        "x": 40,
+        "y": 144.3125,
+        "width": 1825,
+        "height": 160
+      },
+      "type": "pointer-move"
+    },
+    {
+      "id": "4b5ffb84-3702-4434-b25a-d5ac84e5b09c",
+      "atMs": 26399.765468999998,
+      "pageId": "6c4a5c1f-8f2c-4a1c-a454-8b0acebda283",
+      "point": {
+        "x": 442,
+        "y": 220.30999755859375
+      },
+      "pointerType": "mouse",
+      "viewport": {
+        "width": 1920,
+        "height": 1080,
+        "scrollX": 0,
+        "scrollY": 900
+      },
+      "targetRect": {
+        "x": 40,
+        "y": 140.3125,
+        "width": 1825,
+        "height": 160
+      },
+      "type": "pointer-move"
+    },
+    {
+      "id": "bec60856-968e-4027-b628-baaf4dabcf77",
+      "atMs": 26924.16799,
+      "pageId": "6c4a5c1f-8f2c-4a1c-a454-8b0acebda283",
+      "point": {
+        "x": 442,
+        "y": 220.30999755859375
+      },
+      "pointerType": "mouse",
+      "viewport": {
+        "width": 1920,
+        "height": 1080,
+        "scrollX": 0,
+        "scrollY": 720
+      },
+      "targetRect": {
+        "x": 40,
+        "y": 136.3125,
+        "width": 1825,
+        "height": 160
+      },
+      "type": "pointer-move"
+    },
+    {
+      "id": "24ecb582-8488-4854-a05a-a993325383d7",
+      "atMs": 27450.651574000003,
+      "pageId": "6c4a5c1f-8f2c-4a1c-a454-8b0acebda283",
+      "point": {
+        "x": 442,
+        "y": 220.30999755859375
+      },
+      "pointerType": "mouse",
+      "viewport": {
+        "width": 1920,
+        "height": 1080,
+        "scrollX": 0,
+        "scrollY": 540
+      },
+      "targetRect": {
+        "x": 40,
+        "y": 132.3125,
+        "width": 1825,
+        "height": 160
+      },
+      "type": "pointer-move"
+    },
+    {
+      "id": "46665cfa-abe0-4693-8bef-ca08e7d9711f",
+      "atMs": 27971.779457999997,
+      "pageId": "6c4a5c1f-8f2c-4a1c-a454-8b0acebda283",
+      "point": {
+        "x": 442,
+        "y": 220.30999755859375
+      },
+      "pointerType": "mouse",
+      "viewport": {
+        "width": 1920,
+        "height": 1080,
+        "scrollX": 0,
+        "scrollY": 360
+      },
+      "targetRect": {
+        "x": 40,
+        "y": 128.3125,
+        "width": 1825,
+        "height": 160
+      },
+      "type": "pointer-move"
+    },
+    {
+      "id": "1184a264-48bf-4eec-9342-ecd8a949325a",
+      "atMs": 28479.070559,
+      "pageId": "6c4a5c1f-8f2c-4a1c-a454-8b0acebda283",
+      "point": {
+        "x": 442,
+        "y": 220.30999755859375
+      },
+      "pointerType": "mouse",
+      "viewport": {
+        "width": 1920,
+        "height": 1080,
+        "scrollX": 0,
+        "scrollY": 180
+      },
+      "targetRect": {
+        "x": 40,
+        "y": 124.3125,
+        "width": 1825,
+        "height": 160
+      },
+      "type": "pointer-move"
+    },
+    {
+      "id": "65a6edaf-04a6-4c31-ac23-476aaa63237b",
+      "atMs": 29002.655827000002,
+      "pageId": "6c4a5c1f-8f2c-4a1c-a454-8b0acebda283",
+      "point": {
+        "x": 442,
+        "y": 220.30999755859375
+      },
+      "pointerType": "mouse",
+      "viewport": {
+        "width": 1920,
+        "height": 1080,
+        "scrollX": 0,
+        "scrollY": 0
+      },
+      "targetRect": {
+        "x": 402,
+        "y": 192.3125,
+        "width": 80,
+        "height": 56
+      },
+      "type": "pointer-move"
+    },
+    {
+      "id": "bec2dfc6-1096-4a91-8a35-17084ba0c2fb",
+      "atMs": 29538.607612,
+      "pageId": "6c4a5c1f-8f2c-4a1c-a454-8b0acebda283",
+      "point": {
+        "x": 442,
+        "y": 220.30999755859375
+      },
+      "pointerType": "mouse",
+      "viewport": {
+        "width": 1920,
+        "height": 1080,
+        "scrollX": 0,
+        "scrollY": 180
+      },
+      "targetRect": {
+        "x": 40,
+        "y": 124.3125,
+        "width": 1825,
+        "height": 160
+      },
+      "type": "pointer-move"
+    },
+    {
+      "id": "c226dca1-79ff-4fbb-ba7a-a906e97b654a",
+      "atMs": 30058.344895000002,
+      "pageId": "6c4a5c1f-8f2c-4a1c-a454-8b0acebda283",
+      "point": {
+        "x": 442,
+        "y": 220.30999755859375
+      },
+      "pointerType": "mouse",
+      "viewport": {
+        "width": 1920,
+        "height": 1080,
+        "scrollX": 0,
+        "scrollY": 360
+      },
+      "targetRect": {
+        "x": 40,
+        "y": 128.3125,
+        "width": 1825,
+        "height": 160
+      },
+      "type": "pointer-move"
+    },
+    {
+      "id": "ff756672-f9f8-4946-96f1-6d1724bce7e7",
+      "atMs": 30568.396651000003,
+      "pageId": "6c4a5c1f-8f2c-4a1c-a454-8b0acebda283",
+      "point": {
+        "x": 442,
+        "y": 220.30999755859375
+      },
+      "pointerType": "mouse",
+      "viewport": {
+        "width": 1920,
+        "height": 1080,
+        "scrollX": 0,
+        "scrollY": 540
+      },
+      "targetRect": {
+        "x": 40,
+        "y": 132.3125,
+        "width": 1825,
+        "height": 160
+      },
+      "type": "pointer-move"
+    },
+    {
+      "id": "4c1fc026-e49f-4bec-8632-47c3ee42854a",
+      "atMs": 31086.898748,
+      "pageId": "6c4a5c1f-8f2c-4a1c-a454-8b0acebda283",
+      "point": {
+        "x": 442,
+        "y": 220.30999755859375
+      },
+      "pointerType": "mouse",
+      "viewport": {
+        "width": 1920,
+        "height": 1080,
+        "scrollX": 0,
+        "scrollY": 720
+      },
+      "targetRect": {
+        "x": 40,
+        "y": 136.3125,
+        "width": 1825,
+        "height": 160
+      },
+      "type": "pointer-move"
+    }
+  ],
+  "artifacts": [],
+  "videos": [
+    {
+      "artifactId": "14958fd7-4b87-4fa8-b260-c9189765aa6d",
+      "pageId": "6c4a5c1f-8f2c-4a1c-a454-8b0acebda283",
+      "attachmentName": "suitecut-source-9eb3c9bb-6841-4591-b21b-ca50106268f4-14958fd7-4b87-4fa8-b260-c9189765aa6d.webm",
+      "firstFrameEpochMs": 1791640554356.7742,
+      "sourceStartedAtMs": 48.774169921875
+    }
+  ]
+}

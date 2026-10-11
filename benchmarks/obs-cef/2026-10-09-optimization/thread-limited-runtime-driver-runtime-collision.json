@@ -1,0 +1,9 @@
+{
+  "pid": 62530,
+  "children": {
+    "Xvfb": 62533,
+    "pulseaudio": 62534,
+    "obs": 62548
+  },
+  "detachedProcessGroup": true
+}

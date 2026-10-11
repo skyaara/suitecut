@@ -1,0 +1,61 @@
+Test project /workspace/suitecut/.suitecut/memory-tsan
+    Start 1: native-media
+1/3 Test #1: native-media .....................***Failed    2.71 sec
+[libx264 @ 0x725c00000000] using cpu capabilities: MMX2 SSE2Fast SSSE3 SSE4.2 AVX FMA3 BMI2 AVX2 AVX512
+[libx264 @ 0x725c00000000] profile High, level 1.3, 4:2:0, 8-bit
+[libx264 @ 0x725c00000000] 264 - core 164 r3108 31e19f9 - H.264/MPEG-4 AVC codec - Copyleft 2003-2023 - http://www.videolan.org/x264.html - options: cabac=1 ref=1 deblock=1:0:0 analyse=0x3:0x113 me=hex subme=2 psy=1 psy_rd=1.00:0.00 mixed_ref=0 me_range=16 chroma_me=1 trellis=0 8x8dct=1 cqm=0 deadzone=21,11 fast_pskip=1 chroma_qp_offset=0 threads=1 lookahead_threads=1 sliced_threads=0 nr=0 decimate=1 interlaced=0 bluray_compat=0 constrained_intra=0 bframes=0 weightp=1 keyint=60 keyint_min=6 scenecut=40 intra_refresh=0 rc=crf mbtree=0 crf=18.0 qcomp=0.60 qpmin=0 qpmax=69 qpstep=4 ip_ratio=1.40 aq=1:1.00
+[libx264 @ 0x725c00000000] frame I:8     Avg QP: 0.00  size:    65
+[libx264 @ 0x725c00000000] frame P:56    Avg QP: 0.00  size:    18
+[libx264 @ 0x725c00000000] mb I  I16..4: 99.6%  0.1%  0.4%
+[libx264 @ 0x725c00000000] mb P  I16..4:  0.0%  0.0%  0.0%  P16..4:  0.0%  0.0%  0.0%  0.0%  0.0%    skip:100.0%
+[libx264 @ 0x725c00000000] 8x8 transform intra:0.1%
+[libx264 @ 0x725c00000000] coded y,uvDC,uvAC intra: 0.1% 0.0% 0.0% inter: 0.0% 0.0% 0.0%
+[libx264 @ 0x725c00000000] i16 v,h,dc,p: 92%  0%  8%  0%
+[libx264 @ 0x725c00000000] i8 v,h,dc,ddl,ddr,vr,hd,vl,hu:  0%  0% 100%  0%  0%  0%  0%  0%  0%
+[libx264 @ 0x725c00000000] i4 v,h,dc,ddl,ddr,vr,hd,vl,hu:  0%  0% 100%  0%  0%  0%  0%  0%  0%
+[libx264 @ 0x725c00000000] i8c dc,h,v,p: 100%  0%  0%  0%
+[libx264 @ 0x725c00000000] Weighted P-Frames: Y:100.0% UV:0.0%
+[libx264 @ 0x725c00000000] kb/s:5.74
+[aac @ 0x725c00000e00] Qavg: 297.444
+[libvpx-vp9 @ 0x725c0000ff80] v1.15.0
+==190542==WARNING: invalid path to external symbolizer!
+==190542==WARNING: Failed to use and restart external symbolizer!
+==================
+WARNING: ThreadSanitizer: data race (pid=190542)
+  Write of size 8 at 0x722000000b00 by main thread:
+    #0 <null> <null> (suitecut-media-test+0x671c6) (BuildId: 2065bbbf8321700e228e6e51d3df6c9c787211c6)
+    #1 <null> <null> (libavutil.so.59+0x2979f) (BuildId: 4e5bcd19d6097fb5134ba56892dedd6306b9a059)
+    #2 <null> <null> (suitecut-media-test+0xef1fd) (BuildId: 2065bbbf8321700e228e6e51d3df6c9c787211c6)
+    #3 <null> <null> (libc.so.6+0x29ca7) (BuildId: c495b62edadd6c356265942ec1282d98058a7b41)
+
+  Previous read of size 4 at 0x722000000b04 by thread T3 (mutexes: write M0):
+    #0 <null> <null> (suitecut-media-test+0x63df2) (BuildId: 2065bbbf8321700e228e6e51d3df6c9c787211c6)
+    #1 <null> <null> (libavcodec.so.61+0x3bd30b) (BuildId: 8d7acd0ef33a7587d850536fd0dd8d9edc60d2db)
+
+  Mutex M0 (0x725400001228) created at:
+    #0 <null> <null> (suitecut-media-test+0x6a067) (BuildId: 2065bbbf8321700e228e6e51d3df6c9c787211c6)
+    #1 <null> <null> (libavcodec.so.61+0xd1cdf) (BuildId: 8d7acd0ef33a7587d850536fd0dd8d9edc60d2db)
+    #2 <null> <null> (suitecut-media-test+0xef1fd) (BuildId: 2065bbbf8321700e228e6e51d3df6c9c787211c6)
+    #3 <null> <null> (libc.so.6+0x29ca7) (BuildId: c495b62edadd6c356265942ec1282d98058a7b41)
+
+  Thread T3 'av:h264:df0' (tid=190566, running) created by main thread at:
+    #0 <null> <null> (suitecut-media-test+0x68625) (BuildId: 2065bbbf8321700e228e6e51d3df6c9c787211c6)
+    #1 <null> <null> (libavcodec.so.61+0xd1f7a) (BuildId: 8d7acd0ef33a7587d850536fd0dd8d9edc60d2db)
+    #2 <null> <null> (suitecut-media-test+0xef1fd) (BuildId: 2065bbbf8321700e228e6e51d3df6c9c787211c6)
+    #3 <null> <null> (libc.so.6+0x29ca7) (BuildId: c495b62edadd6c356265942ec1282d98058a7b41)
+
+SUMMARY: ThreadSanitizer: data race (/workspace/suitecut/.suitecut/memory-tsan/suitecut-media-test+0x671c6) (BuildId: 2065bbbf8321700e228e6e51d3df6c9c787211c6) 
+==================
+
+    Start 2: native-audio-startup
+2/3 Test #2: native-audio-startup .............   Passed    1.32 sec
+    Start 6: native-memory-lifecycle
+3/3 Test #6: native-memory-lifecycle ..........   Passed    0.75 sec
+
+67% tests passed, 1 tests failed out of 3
+
+Total Test time (real) =   4.79 sec
+
+The following tests FAILED:
+	  1 - native-media (Failed)
+Errors while running CTest

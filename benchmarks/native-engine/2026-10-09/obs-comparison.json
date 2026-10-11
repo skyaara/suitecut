@@ -1,0 +1,308 @@
+{
+  "nativeMeanCpuCores": 1.2979290940261758,
+  "obsMeanCpuCores": 3.0337558642488007,
+  "nativeLowerHostCpuPercent": 57.21708825282944,
+  "obsHostCpuSampleCount": 360,
+  "obsObservedSeconds": 1800.801928191002,
+  "outputs": {
+    "recording": {
+      "native": {
+        "status": "passed",
+        "longestSilenceSeconds": 1.22,
+        "distinctFps": 28.284040178571427,
+        "longestContentHoldSeconds": 0.5,
+        "maximumPresentationGapSeconds": 0.054688,
+        "syncP95Ms": [
+          63.333333333332575,
+          49.99999999999982,
+          20.66666666666704
+        ],
+        "nativeCounters": {
+          "ready": true,
+          "stopped": true,
+          "paused": false,
+          "videoFrames": 54015,
+          "audioSamples": 86423552,
+          "repeatedFrames": 3094,
+          "droppedAudioSamples": 0,
+          "queuedVideoBytes": 0,
+          "queuedAudioBytes": 0,
+          "startedMs": 2715.934439,
+          "durationMs": 1800500,
+          "maximumEncodeMs": 503.0487140000332,
+          "error": ""
+        }
+      },
+      "obs": {
+        "mediaPath": "/workspace/suitecut/.suitecut/obs-long-control/2026-10-09/media/2026-10-09 05-12-45.mkv",
+        "durationSeconds": 1802.666,
+        "bytes": 41387639,
+        "videoCodec": "h264",
+        "audioCodec": "aac",
+        "audio": {
+          "status": "passed",
+          "decodedSeconds": 1802.517375,
+          "pcmPath": "benchmarks/obs-cef/2026-10-09-obs-long-control/analysis/obs/recording/full-audio-8k.f32",
+          "longestSilentInterval": {
+            "startSeconds": 71.36,
+            "endSeconds": 72.46000000000001,
+            "durationSeconds": 1.1
+          },
+          "silentIntervalsOver2Seconds": [],
+          "silentIntervalsOver5Seconds": []
+        },
+        "video": {
+          "status": "passed",
+          "decodedFrames": 54077,
+          "activeFrames": 53760,
+          "distinctActiveFps": 28.814732142857142,
+          "repeatFraction": 0.039508928571428625,
+          "longestContentHold": {
+            "startSeconds": 1278.7,
+            "endSeconds": 1279.233,
+            "durationSeconds": 0.5329999999999018,
+            "marker": 75791,
+            "encodedFrames": 16
+          },
+          "contentHoldsOver1Second": [],
+          "contentHoldsOver5Seconds": [],
+          "maximumPresentationGapSeconds": 0.1330000000000382,
+          "markerRange": [
+            0,
+            106738
+          ]
+        },
+        "syncWindows": [
+          {
+            "matchedFlashes": 13,
+            "audioBursts": 13,
+            "medianAudioMinusVideoMs": -9.999999999999787,
+            "p95AbsoluteOffsetMs": 15.333333333333492,
+            "firstThirdMedianMs": -10.000000000000009,
+            "lastThirdMedianMs": -9.999999999999787,
+            "offsetsMs": [
+              -10.000000000000231,
+              -10.000000000000231,
+              -9.999999999999787,
+              -9.999999999999787,
+              -9.999999999999787,
+              -9.999999999999787,
+              -9.999999999999787,
+              23.333333333333428,
+              -9.999999999999787,
+              -9.999999999999787,
+              -9.999999999999787,
+              -9.999999999999787,
+              -9.999999999999787
+            ],
+            "offsetSeconds": 5,
+            "status": "passed"
+          },
+          {
+            "matchedFlashes": 13,
+            "audioBursts": 15,
+            "medianAudioMinusVideoMs": 50.00000000000071,
+            "p95AbsoluteOffsetMs": 83.33333333333339,
+            "firstThirdMedianMs": 50.00000000000027,
+            "lastThirdMedianMs": 73.33333333333326,
+            "offsetsMs": [
+              50.00000000000027,
+              50.00000000000027,
+              49.99999999999982,
+              83.33333333333303,
+              49.99999999999982,
+              49.99999999999982,
+              50.00000000000071,
+              50.00000000000071,
+              50.00000000000071,
+              83.33333333333393,
+              30.000000000001137,
+              63.33333333333435,
+              83.33333333333215
+            ],
+            "offsetSeconds": 900,
+            "status": "passed"
+          },
+          {
+            "matchedFlashes": 13,
+            "audioBursts": 14,
+            "medianAudioMinusVideoMs": 46.666666666666856,
+            "p95AbsoluteOffsetMs": 46.666666666666856,
+            "firstThirdMedianMs": 30.00000000000003,
+            "lastThirdMedianMs": 46.666666666666856,
+            "offsetsMs": [
+              13.333333333333197,
+              13.333333333333197,
+              46.666666666666856,
+              46.666666666666856,
+              46.666666666666856,
+              46.666666666666856,
+              46.666666666666856,
+              46.666666666666856,
+              46.666666666666856,
+              46.666666666666856,
+              46.666666666666856,
+              46.666666666666856,
+              46.666666666666856
+            ],
+            "offsetSeconds": 1780,
+            "status": "passed"
+          }
+        ],
+        "continuityStatus": "passed",
+        "syncStatus": "passed",
+        "status": "passed"
+      }
+    },
+    "receiver": {
+      "native": {
+        "status": "passed",
+        "longestSilenceSeconds": 1.22,
+        "distinctFps": 28.7890625,
+        "longestContentHoldSeconds": 0.5,
+        "maximumPresentationGapSeconds": 0.0340000000001055,
+        "syncP95Ms": [
+          67.99999999999997,
+          47.99999999999968,
+          14.000000000000576
+        ],
+        "nativeCounters": {
+          "ready": true,
+          "stopped": true,
+          "paused": false,
+          "videoFrames": 54006,
+          "audioSamples": 86410240,
+          "repeatedFrames": 2177,
+          "droppedAudioSamples": 0,
+          "queuedVideoBytes": 0,
+          "queuedAudioBytes": 0,
+          "startedMs": 3051.735867,
+          "durationMs": 1800200,
+          "maximumEncodeMs": 489.1234810000751,
+          "error": ""
+        }
+      },
+      "obs": {
+        "mediaPath": "/workspace/suitecut/.suitecut/obs-long-control/2026-10-09/media/receiver.flv",
+        "durationSeconds": 1800.599,
+        "bytes": 1025918763,
+        "videoCodec": "h264",
+        "audioCodec": "aac",
+        "audio": {
+          "status": "passed",
+          "decodedSeconds": 1800.448,
+          "pcmPath": "benchmarks/obs-cef/2026-10-09-obs-long-control/analysis/obs/receiver/full-audio-8k.f32",
+          "longestSilentInterval": {
+            "startSeconds": 71.06,
+            "endSeconds": 72.16,
+            "durationSeconds": 1.1
+          },
+          "silentIntervalsOver2Seconds": [],
+          "silentIntervalsOver5Seconds": []
+        },
+        "video": {
+          "status": "passed",
+          "decodedFrames": 54015,
+          "activeFrames": 53760,
+          "distinctActiveFps": 28.814732142857142,
+          "repeatFraction": 0.039508928571428625,
+          "longestContentHold": {
+            "startSeconds": 1278.465,
+            "endSeconds": 1278.999,
+            "durationSeconds": 0.5340000000001055,
+            "marker": 75791,
+            "encodedFrames": 16
+          },
+          "contentHoldsOver1Second": [],
+          "contentHoldsOver5Seconds": [],
+          "maximumPresentationGapSeconds": 0.06799999999998363,
+          "markerRange": [
+            16,
+            106627
+          ]
+        },
+        "syncWindows": [
+          {
+            "matchedFlashes": 13,
+            "audioBursts": 14,
+            "medianAudioMinusVideoMs": -9.999999999999787,
+            "p95AbsoluteOffsetMs": 15.333333333333226,
+            "firstThirdMedianMs": -9.999999999999787,
+            "lastThirdMedianMs": -9.999999999999787,
+            "offsetsMs": [
+              -9.999999999999787,
+              -9.999999999999787,
+              -9.999999999999787,
+              -9.999999999999787,
+              -9.999999999999787,
+              -9.999999999999787,
+              23.333333333333428,
+              -9.999999999999787,
+              -9.999999999999787,
+              -9.999999999999787,
+              -9.999999999999787,
+              -9.999999999999787,
+              -9.999999999999787
+            ],
+            "offsetSeconds": 5,
+            "status": "passed"
+          },
+          {
+            "matchedFlashes": 13,
+            "audioBursts": 14,
+            "medianAudioMinusVideoMs": 50.00000000000071,
+            "p95AbsoluteOffsetMs": 83.33333333333393,
+            "firstThirdMedianMs": 49.99999999999982,
+            "lastThirdMedianMs": 73.33333333333326,
+            "offsetsMs": [
+              49.99999999999982,
+              49.99999999999982,
+              49.99999999999982,
+              83.33333333333303,
+              49.99999999999982,
+              49.99999999999982,
+              50.00000000000071,
+              50.00000000000071,
+              50.00000000000071,
+              83.33333333333393,
+              29.99999999999936,
+              63.333333333332575,
+              83.33333333333393
+            ],
+            "offsetSeconds": 900,
+            "status": "passed"
+          },
+          {
+            "matchedFlashes": 13,
+            "audioBursts": 14,
+            "medianAudioMinusVideoMs": 46.666666666666856,
+            "p95AbsoluteOffsetMs": 46.666666666666856,
+            "firstThirdMedianMs": 29.999999999999805,
+            "lastThirdMedianMs": 46.666666666666856,
+            "offsetsMs": [
+              13.333333333333641,
+              13.333333333333641,
+              46.66666666666597,
+              46.66666666666597,
+              46.66666666666597,
+              46.66666666666597,
+              46.666666666666856,
+              46.666666666666856,
+              46.666666666666856,
+              46.666666666666856,
+              46.666666666666856,
+              46.666666666666856,
+              46.666666666666856
+            ],
+            "offsetSeconds": 1780,
+            "status": "passed"
+          }
+        ],
+        "continuityStatus": "passed",
+        "syncStatus": "passed",
+        "status": "passed"
+      }
+    }
+  },
+  "qualification": "Different capture paths, browser versions and encoder threading/B-frame settings. Whole-cgroup CPU includes observer/display/audio/control work. No image-quality equivalence or OBS CEF plugin comparison is established."
+}

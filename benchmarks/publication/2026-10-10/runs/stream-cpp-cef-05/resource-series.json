@@ -1,0 +1,655 @@
+{
+  "series": [
+    {
+      "atSeconds": 0.23889263399178162,
+      "cpuCores": 0.881592964683928,
+      "rssMiB": 1294.70703125,
+      "threads": 116,
+      "processes": 11,
+      "nodeHeapMiB": null
+    },
+    {
+      "atSeconds": 0.7390962810022756,
+      "cpuCores": 0.7502876608607109,
+      "rssMiB": 1294.94921875,
+      "threads": 116,
+      "processes": 11,
+      "nodeHeapMiB": null
+    },
+    {
+      "atSeconds": 1.2392039010010194,
+      "cpuCores": 0.7554432340155507,
+      "rssMiB": 1295.2578125,
+      "threads": 115,
+      "processes": 11,
+      "nodeHeapMiB": null
+    },
+    {
+      "atSeconds": 1.7393060679896735,
+      "cpuCores": 0.7248465097752329,
+      "rssMiB": 1295.421875,
+      "threads": 115,
+      "processes": 11,
+      "nodeHeapMiB": null
+    },
+    {
+      "atSeconds": 2.2394112829933874,
+      "cpuCores": 0.7145159975393518,
+      "rssMiB": 1295.60546875,
+      "threads": 115,
+      "processes": 11,
+      "nodeHeapMiB": null
+    },
+    {
+      "atSeconds": 2.739640481013339,
+      "cpuCores": 0.6105346467070043,
+      "rssMiB": 1295.73046875,
+      "threads": 115,
+      "processes": 11,
+      "nodeHeapMiB": null
+    },
+    {
+      "atSeconds": 3.239748816995416,
+      "cpuCores": 0.6298594052796822,
+      "rssMiB": 1295.9921875,
+      "threads": 115,
+      "processes": 11,
+      "nodeHeapMiB": null
+    },
+    {
+      "atSeconds": 3.7398515559907537,
+      "cpuCores": 0.5891399418406738,
+      "rssMiB": 1294.1015625,
+      "threads": 115,
+      "processes": 11,
+      "nodeHeapMiB": null
+    },
+    {
+      "atSeconds": 4.2399604660167824,
+      "cpuCores": 0.5493415537250171,
+      "rssMiB": 1294.31640625,
+      "threads": 115,
+      "processes": 11,
+      "nodeHeapMiB": null
+    },
+    {
+      "atSeconds": 4.740183849004097,
+      "cpuCores": 0.6626288072312303,
+      "rssMiB": 1294.6640625,
+      "threads": 115,
+      "processes": 11,
+      "nodeHeapMiB": null
+    },
+    {
+      "atSeconds": 5.240294374001678,
+      "cpuCores": 0.5745716849964163,
+      "rssMiB": 1294.8671875,
+      "threads": 115,
+      "processes": 11,
+      "nodeHeapMiB": null
+    },
+    {
+      "atSeconds": 5.740405424992787,
+      "cpuCores": 0.572038488796008,
+      "rssMiB": 1295.0625,
+      "threads": 115,
+      "processes": 11,
+      "nodeHeapMiB": null
+    },
+    {
+      "atSeconds": 6.240690208011074,
+      "cpuCores": 0.7282509050257276,
+      "rssMiB": 1295.24609375,
+      "threads": 115,
+      "processes": 11,
+      "nodeHeapMiB": null
+    },
+    {
+      "atSeconds": 6.740798065002309,
+      "cpuCores": 0.5666425471404394,
+      "rssMiB": 1295.40625,
+      "threads": 115,
+      "processes": 11,
+      "nodeHeapMiB": null
+    },
+    {
+      "atSeconds": 7.241050198994344,
+      "cpuCores": 0.5942972338675024,
+      "rssMiB": 1295.546875,
+      "threads": 115,
+      "processes": 11,
+      "nodeHeapMiB": null
+    },
+    {
+      "atSeconds": 7.741144104016712,
+      "cpuCores": 0.5724671114991329,
+      "rssMiB": 1295.68359375,
+      "threads": 115,
+      "processes": 11,
+      "nodeHeapMiB": null
+    },
+    {
+      "atSeconds": 8.241320614994038,
+      "cpuCores": 0.6081084601340333,
+      "rssMiB": 1295.83203125,
+      "threads": 115,
+      "processes": 11,
+      "nodeHeapMiB": null
+    },
+    {
+      "atSeconds": 8.741517690010369,
+      "cpuCores": 0.6798320052951625,
+      "rssMiB": 1296.01953125,
+      "threads": 115,
+      "processes": 11,
+      "nodeHeapMiB": null
+    },
+    {
+      "atSeconds": 9.241659546998562,
+      "cpuCores": 0.6183766424933895,
+      "rssMiB": 1296.20703125,
+      "threads": 115,
+      "processes": 11,
+      "nodeHeapMiB": null
+    },
+    {
+      "atSeconds": 9.741757372015854,
+      "cpuCores": 0.5844950276295053,
+      "rssMiB": 1296.41015625,
+      "threads": 115,
+      "processes": 11,
+      "nodeHeapMiB": null
+    },
+    {
+      "atSeconds": 10.241850182996131,
+      "cpuCores": 0.8620903172848552,
+      "rssMiB": 1299.328125,
+      "threads": 115,
+      "processes": 11,
+      "nodeHeapMiB": null
+    },
+    {
+      "atSeconds": 10.7421761630103,
+      "cpuCores": 1.0614935311799734,
+      "rssMiB": 1306.51953125,
+      "threads": 115,
+      "processes": 11,
+      "nodeHeapMiB": null
+    },
+    {
+      "atSeconds": 11.242273265990661,
+      "cpuCores": 0.6514037339629054,
+      "rssMiB": 1306.8046875,
+      "threads": 115,
+      "processes": 11,
+      "nodeHeapMiB": null
+    },
+    {
+      "atSeconds": 11.742374576017028,
+      "cpuCores": 0.6699029885335458,
+      "rssMiB": 1307.09375,
+      "threads": 115,
+      "processes": 11,
+      "nodeHeapMiB": null
+    },
+    {
+      "atSeconds": 12.242512828001054,
+      "cpuCores": 0.7509334297439353,
+      "rssMiB": 1307.3203125,
+      "threads": 115,
+      "processes": 11,
+      "nodeHeapMiB": null
+    },
+    {
+      "atSeconds": 12.742644885001937,
+      "cpuCores": 0.762920478167188,
+      "rssMiB": 1307.6328125,
+      "threads": 115,
+      "processes": 11,
+      "nodeHeapMiB": null
+    },
+    {
+      "atSeconds": 13.242743442999199,
+      "cpuCores": 0.7978030466447252,
+      "rssMiB": 1307.85546875,
+      "threads": 115,
+      "processes": 11,
+      "nodeHeapMiB": null
+    },
+    {
+      "atSeconds": 13.742847096000332,
+      "cpuCores": 0.7427760119362198,
+      "rssMiB": 1308.19140625,
+      "threads": 115,
+      "processes": 11,
+      "nodeHeapMiB": null
+    },
+    {
+      "atSeconds": 14.243209106993163,
+      "cpuCores": 0.7126155108161799,
+      "rssMiB": 1308.41015625,
+      "threads": 115,
+      "processes": 11,
+      "nodeHeapMiB": null
+    },
+    {
+      "atSeconds": 14.74331374099711,
+      "cpuCores": 0.7922827199969227,
+      "rssMiB": 1308.71875,
+      "threads": 115,
+      "processes": 11,
+      "nodeHeapMiB": null
+    },
+    {
+      "atSeconds": 15.243422007013578,
+      "cpuCores": 0.7095526269314114,
+      "rssMiB": 1306.06640625,
+      "threads": 115,
+      "processes": 11,
+      "nodeHeapMiB": null
+    },
+    {
+      "atSeconds": 15.743523395009106,
+      "cpuCores": 0.7517366230446242,
+      "rssMiB": 1304.37890625,
+      "threads": 115,
+      "processes": 11,
+      "nodeHeapMiB": null
+    },
+    {
+      "atSeconds": 16.243922202993417,
+      "cpuCores": 0.666477421098747,
+      "rssMiB": 1304.65625,
+      "threads": 115,
+      "processes": 11,
+      "nodeHeapMiB": null
+    },
+    {
+      "atSeconds": 16.74403822599561,
+      "cpuCores": 0.7329116542791507,
+      "rssMiB": 1304.91796875,
+      "threads": 115,
+      "processes": 11,
+      "nodeHeapMiB": null
+    },
+    {
+      "atSeconds": 17.244140435010195,
+      "cpuCores": 0.6458739882137692,
+      "rssMiB": 1305.27734375,
+      "threads": 115,
+      "processes": 11,
+      "nodeHeapMiB": null
+    },
+    {
+      "atSeconds": 17.744251702999463,
+      "cpuCores": 0.711344780985891,
+      "rssMiB": 1305.515625,
+      "threads": 115,
+      "processes": 11,
+      "nodeHeapMiB": null
+    },
+    {
+      "atSeconds": 18.244449616991915,
+      "cpuCores": 0.8284164331475116,
+      "rssMiB": 1305.7890625,
+      "threads": 115,
+      "processes": 11,
+      "nodeHeapMiB": null
+    },
+    {
+      "atSeconds": 18.74455671699252,
+      "cpuCores": 0.8173989311049595,
+      "rssMiB": 1306.0625,
+      "threads": 115,
+      "processes": 11,
+      "nodeHeapMiB": null
+    },
+    {
+      "atSeconds": 19.244757890992332,
+      "cpuCores": 0.8827522943353813,
+      "rssMiB": 1306.33984375,
+      "threads": 115,
+      "processes": 11,
+      "nodeHeapMiB": null
+    },
+    {
+      "atSeconds": 19.744861882005353,
+      "cpuCores": 0.7419171597716105,
+      "rssMiB": 1309.55078125,
+      "threads": 115,
+      "processes": 11,
+      "nodeHeapMiB": null
+    },
+    {
+      "atSeconds": 20.245037887012586,
+      "cpuCores": 0.9207495511257566,
+      "rssMiB": 1317.76953125,
+      "threads": 115,
+      "processes": 11,
+      "nodeHeapMiB": null
+    },
+    {
+      "atSeconds": 20.745239711017348,
+      "cpuCores": 1.500238153252891,
+      "rssMiB": 1321.5859375,
+      "threads": 115,
+      "processes": 11,
+      "nodeHeapMiB": null
+    },
+    {
+      "atSeconds": 21.2453432350012,
+      "cpuCores": 1.2170601334037106,
+      "rssMiB": 1325.23828125,
+      "threads": 115,
+      "processes": 11,
+      "nodeHeapMiB": null
+    },
+    {
+      "atSeconds": 21.745485613995697,
+      "cpuCores": 1.061147441396647,
+      "rssMiB": 1328.75,
+      "threads": 115,
+      "processes": 11,
+      "nodeHeapMiB": null
+    },
+    {
+      "atSeconds": 22.24567644801573,
+      "cpuCores": 1.0150767285950129,
+      "rssMiB": 1330.10546875,
+      "threads": 115,
+      "processes": 11,
+      "nodeHeapMiB": null
+    },
+    {
+      "atSeconds": 22.745821570017142,
+      "cpuCores": 0.8852397701992588,
+      "rssMiB": 1336.2421875,
+      "threads": 115,
+      "processes": 11,
+      "nodeHeapMiB": null
+    },
+    {
+      "atSeconds": 23.25015477000852,
+      "cpuCores": 0.9286369058321756,
+      "rssMiB": 1337.27734375,
+      "threads": 115,
+      "processes": 11,
+      "nodeHeapMiB": null
+    },
+    {
+      "atSeconds": 23.75027372999466,
+      "cpuCores": 1.0198936194964094,
+      "rssMiB": 1338.69921875,
+      "threads": 115,
+      "processes": 11,
+      "nodeHeapMiB": null
+    },
+    {
+      "atSeconds": 24.250393130991142,
+      "cpuCores": 0.9131774879167637,
+      "rssMiB": 1340.3203125,
+      "threads": 115,
+      "processes": 11,
+      "nodeHeapMiB": null
+    },
+    {
+      "atSeconds": 24.750519621011335,
+      "cpuCores": 1.484433405067593,
+      "rssMiB": 1344.7265625,
+      "threads": 115,
+      "processes": 11,
+      "nodeHeapMiB": null
+    },
+    {
+      "atSeconds": 25.252932074014097,
+      "cpuCores": 1.4141845759832492,
+      "rssMiB": 1347.83203125,
+      "threads": 115,
+      "processes": 11,
+      "nodeHeapMiB": null
+    },
+    {
+      "atSeconds": 25.755011494009523,
+      "cpuCores": 1.3863501101399411,
+      "rssMiB": 1344.98828125,
+      "threads": 115,
+      "processes": 11,
+      "nodeHeapMiB": null
+    },
+    {
+      "atSeconds": 26.255326364014763,
+      "cpuCores": 1.263268132332752,
+      "rssMiB": 1345.14453125,
+      "threads": 115,
+      "processes": 11,
+      "nodeHeapMiB": null
+    },
+    {
+      "atSeconds": 26.755441189015983,
+      "cpuCores": 0.9047262098033538,
+      "rssMiB": 1342.28515625,
+      "threads": 115,
+      "processes": 11,
+      "nodeHeapMiB": null
+    },
+    {
+      "atSeconds": 27.257885922997957,
+      "cpuCores": 1.2121861046624116,
+      "rssMiB": 1342.43359375,
+      "threads": 115,
+      "processes": 11,
+      "nodeHeapMiB": null
+    },
+    {
+      "atSeconds": 27.75802771601593,
+      "cpuCores": 1.435133860157352,
+      "rssMiB": 1342.08203125,
+      "threads": 115,
+      "processes": 11,
+      "nodeHeapMiB": null
+    },
+    {
+      "atSeconds": 28.262206585990498,
+      "cpuCores": 1.3362011804191838,
+      "rssMiB": 1348.0546875,
+      "threads": 115,
+      "processes": 11,
+      "nodeHeapMiB": null
+    },
+    {
+      "atSeconds": 28.762327222008025,
+      "cpuCores": 1.7762009105517491,
+      "rssMiB": 1354.07421875,
+      "threads": 115,
+      "processes": 11,
+      "nodeHeapMiB": null
+    },
+    {
+      "atSeconds": 29.262505423015682,
+      "cpuCores": 1.4832052578216683,
+      "rssMiB": 1342.4765625,
+      "threads": 115,
+      "processes": 11,
+      "nodeHeapMiB": null
+    },
+    {
+      "atSeconds": 29.76266030300758,
+      "cpuCores": 1.0355475785476165,
+      "rssMiB": 1342.44140625,
+      "threads": 115,
+      "processes": 11,
+      "nodeHeapMiB": null
+    }
+  ],
+  "privateMemory": [],
+  "nodeMemory": [
+    {
+      "atSeconds": 1.0250881449999998,
+      "heapMiB": 74.81489562988281,
+      "externalMiB": 5.062490463256836,
+      "arrayBuffersMiB": 1.2438373565673828
+    },
+    {
+      "atSeconds": 2.035399159999999,
+      "heapMiB": 74.885498046875,
+      "externalMiB": 5.063323020935059,
+      "arrayBuffersMiB": 1.2446699142456055
+    },
+    {
+      "atSeconds": 3.0464553259999994,
+      "heapMiB": 75.03409576416016,
+      "externalMiB": 5.064157485961914,
+      "arrayBuffersMiB": 1.245504379272461
+    },
+    {
+      "atSeconds": 4.054232634,
+      "heapMiB": 75.0971908569336,
+      "externalMiB": 5.0649919509887695,
+      "arrayBuffersMiB": 1.2463388442993164
+    },
+    {
+      "atSeconds": 5.063901188,
+      "heapMiB": 75.18074035644531,
+      "externalMiB": 5.066222190856934,
+      "arrayBuffersMiB": 1.2475690841674805
+    },
+    {
+      "atSeconds": 6.079538188999999,
+      "heapMiB": 75.24375915527344,
+      "externalMiB": 5.067055702209473,
+      "arrayBuffersMiB": 1.2484025955200195
+    },
+    {
+      "atSeconds": 7.092047715999999,
+      "heapMiB": 75.30725860595703,
+      "externalMiB": 5.067889213562012,
+      "arrayBuffersMiB": 1.2492361068725586
+    },
+    {
+      "atSeconds": 8.099644111,
+      "heapMiB": 75.37271881103516,
+      "externalMiB": 5.06871223449707,
+      "arrayBuffersMiB": 1.2500591278076172
+    },
+    {
+      "atSeconds": 9.107701839999999,
+      "heapMiB": 75.44255828857422,
+      "externalMiB": 5.069535255432129,
+      "arrayBuffersMiB": 1.2508821487426758
+    },
+    {
+      "atSeconds": 10.688713409999998,
+      "heapMiB": 60.251251220703125,
+      "externalMiB": 4.288680076599121,
+      "arrayBuffersMiB": 0.47002696990966797
+    },
+    {
+      "atSeconds": 11.693956843999999,
+      "heapMiB": 60.32434844970703,
+      "externalMiB": 4.289914131164551,
+      "arrayBuffersMiB": 0.47126102447509766
+    },
+    {
+      "atSeconds": 12.701350950999998,
+      "heapMiB": 60.384674072265625,
+      "externalMiB": 4.290740966796875,
+      "arrayBuffersMiB": 0.4720878601074219
+    },
+    {
+      "atSeconds": 13.707138295999998,
+      "heapMiB": 60.45692443847656,
+      "externalMiB": 4.291567802429199,
+      "arrayBuffersMiB": 0.4729146957397461
+    },
+    {
+      "atSeconds": 14.721536831,
+      "heapMiB": 60.51569366455078,
+      "externalMiB": 4.292394638061523,
+      "arrayBuffersMiB": 0.4737415313720703
+    },
+    {
+      "atSeconds": 15.728514718,
+      "heapMiB": 60.574432373046875,
+      "externalMiB": 4.293221473693848,
+      "arrayBuffersMiB": 0.47456836700439453
+    },
+    {
+      "atSeconds": 16.735711841999997,
+      "heapMiB": 60.654624938964844,
+      "externalMiB": 4.294455528259277,
+      "arrayBuffersMiB": 0.4758024215698242
+    },
+    {
+      "atSeconds": 17.743804109999996,
+      "heapMiB": 60.716148376464844,
+      "externalMiB": 4.295292854309082,
+      "arrayBuffersMiB": 0.4766397476196289
+    },
+    {
+      "atSeconds": 18.758093592999998,
+      "heapMiB": 60.789337158203125,
+      "externalMiB": 4.296130180358887,
+      "arrayBuffersMiB": 0.4774770736694336
+    },
+    {
+      "atSeconds": 19.767070287000003,
+      "heapMiB": 60.849082946777344,
+      "externalMiB": 4.296963691711426,
+      "arrayBuffersMiB": 0.47831058502197266
+    },
+    {
+      "atSeconds": 20.791919369000002,
+      "heapMiB": 61.1173095703125,
+      "externalMiB": 4.298764228820801,
+      "arrayBuffersMiB": 0.48011112213134766
+    },
+    {
+      "atSeconds": 21.807442324999997,
+      "heapMiB": 61.263282775878906,
+      "externalMiB": 4.299917221069336,
+      "arrayBuffersMiB": 0.4812641143798828
+    },
+    {
+      "atSeconds": 22.818792854999998,
+      "heapMiB": 61.40937805175781,
+      "externalMiB": 4.301074028015137,
+      "arrayBuffersMiB": 0.4824209213256836
+    },
+    {
+      "atSeconds": 23.820215216999998,
+      "heapMiB": 61.575965881347656,
+      "externalMiB": 4.302231788635254,
+      "arrayBuffersMiB": 0.4835786819458008
+    },
+    {
+      "atSeconds": 24.827097810999998,
+      "heapMiB": 61.72444152832031,
+      "externalMiB": 4.303386688232422,
+      "arrayBuffersMiB": 0.48473358154296875
+    },
+    {
+      "atSeconds": 25.833766232000002,
+      "heapMiB": 61.86846923828125,
+      "externalMiB": 4.304534912109375,
+      "arrayBuffersMiB": 0.4858818054199219
+    },
+    {
+      "atSeconds": 26.873842525,
+      "heapMiB": 62.053924560546875,
+      "externalMiB": 4.368590354919434,
+      "arrayBuffersMiB": 0.5499372482299805
+    },
+    {
+      "atSeconds": 27.935764650000003,
+      "heapMiB": 62.20420837402344,
+      "externalMiB": 4.369759559631348,
+      "arrayBuffersMiB": 0.5511064529418945
+    },
+    {
+      "atSeconds": 28.984374332999998,
+      "heapMiB": 62.351158142089844,
+      "externalMiB": 4.370929718017578,
+      "arrayBuffersMiB": 0.552276611328125
+    }
+  ]
+}

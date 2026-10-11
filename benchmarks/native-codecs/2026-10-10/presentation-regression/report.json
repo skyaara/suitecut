@@ -1,0 +1,35 @@
+{
+  "recording": "passed",
+  "callbackFailure": "passed",
+  "cancellation": "passed",
+  "nativeInput": "passed",
+  "presentation": "passed",
+  "checkpoints": 2,
+  "sources": 2,
+  "outputFps": 60,
+  "audibleSamples": 169014,
+  "pageAudioSelection": "passed",
+  "visualPageSelection": "passed",
+  "visualPixels": {
+    "narration": [
+      21,
+      51,
+      72
+    ],
+    "selected": [
+      21,
+      116,
+      69
+    ],
+    "returned": [
+      21,
+      51,
+      72
+    ]
+  },
+  "narrationMix": "passed",
+  "defaultAudioDisabled": "passed",
+  "excludedPreparationMs": 3297,
+  "sourceOwnership": "passed",
+  "outputPath": "/workspace/suitecut/benchmarks/native-codecs/2026-10-10/presentation-regression/native-presentation.mp4"
+}

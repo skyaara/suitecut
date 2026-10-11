@@ -1,0 +1,9 @@
+[1/9] Building CXX object CMakeFiles/suitecut-media.dir/media_file.cc.o
+[2/9] Building CXX object CMakeFiles/suitecut-media.dir/media_engine.cc.o
+[3/9] Linking CXX static library libsuitecut-media.a
+[4/9] Building CXX object CMakeFiles/suitecut-media-test.dir/media_engine_test.cc.o
+[5/9] Building CXX object CMakeFiles/suitecut-codec-test.dir/media_codec_test.cc.o
+[6/9] Linking CXX executable suitecut-media-test
+[7/9] Linking CXX executable suitecut-codec-test
+[8/9] Building CXX object CMakeFiles/suitecut-browser.dir/browser.cc.o
+[9/9] Linking CXX executable suitecut-browser

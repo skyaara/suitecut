@@ -1,0 +1,62 @@
+{
+  "id": "720p60-canvas-obs-1",
+  "backend": "obs",
+  "case": {
+    "name": "720p60-canvas",
+    "width": 1280,
+    "height": 720,
+    "fps": 60,
+    "workload": "canvas"
+  },
+  "trialNumber": 1,
+  "durationMs": 3000,
+  "status": "failed",
+  "startedAt": "2026-10-08T20:24:33.178Z",
+  "startupMs": 1445.1585610000002,
+  "browserVersion": "151.0.7922.34",
+  "obsBefore": {
+    "activeFps": 60.0000024000001,
+    "availableDiskSpace": 26184.19921875,
+    "averageFrameRenderTime": 4.064519,
+    "cpuUsage": 32.414529914529915,
+    "memoryUsage": 187.49609375,
+    "outputSkippedFrames": 0,
+    "outputTotalFrames": 0,
+    "renderSkippedFrames": 15,
+    "renderTotalFrames": 1143,
+    "webSocketSessionIncomingMessages": 14,
+    "webSocketSessionOutgoingMessages": 15
+  },
+  "recordStartMs": 1.078769999999622,
+  "workload": {
+    "wallMs": 3012.605112,
+    "scrollCommands": 0,
+    "snapshot": {
+      "markerCount": 182,
+      "scrollY": 0,
+      "scrollEvents": 0,
+      "keyEvents": 0,
+      "clicks": 0,
+      "value": "",
+      "choice": "First",
+      "secondary": false
+    }
+  },
+  "obsAfter": {
+    "activeFps": 60.0000024000001,
+    "availableDiskSpace": 26184.1953125,
+    "averageFrameRenderTime": 11.249213,
+    "cpuUsage": 43.66197183098592,
+    "memoryUsage": 342.3203125,
+    "outputSkippedFrames": 0,
+    "outputTotalFrames": 209,
+    "renderSkippedFrames": 16,
+    "renderTotalFrames": 1356,
+    "webSocketSessionIncomingMessages": 16,
+    "webSocketSessionOutgoingMessages": 19
+  },
+  "finalizationMs": 0.6309229999997115,
+  "mediaPath": "/workspace/suitecut/.suitecut/obs-cef-evidence/2026-10-09/2026-10-08 20-24-34.mkv",
+  "error": "Error: Command failed: ffprobe -v error -show_streams -show_format -of json /workspace/suitecut/.suitecut/obs-cef-evidence/2026-10-09/2026-10-08 20-24-34.mkv\n[matroska,webm @ 0x55aae5b08f00] EBML header parsing failed\n/workspace/suitecut/.suitecut/obs-cef-evidence/2026-10-09/2026-10-08 20-24-34.mkv: Invalid data found when processing input\n\n    at genericNodeError (node:internal/errors:985:15)\n    at wrappedFn (node:internal/errors:539:14)\n    at ChildProcess.exithandler (node:child_process:417:12)\n    at ChildProcess.emit (node:events:509:28)\n    at maybeClose (node:internal/child_process:1141:16)\n    at Socket.<anonymous> (node:internal/child_process:498:11)\n    at Socket.emit (node:events:509:28)\n    at Pipe.<anonymous> (node:net:355:12)",
+  "completedAt": "2026-10-08T20:24:38.487Z"
+}

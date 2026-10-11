@@ -1,0 +1,16 @@
+{
+  "files": [
+    {
+      "path": "/workspace/suitecut/.suitecut/native-build/libcef.so",
+      "bytes": 456213272,
+      "sha256": "d3e896252f190a21cd04b956da638c90315c8d5067cb03f325913841d5c59fc8"
+    },
+    {
+      "path": "/home/agent/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome",
+      "bytes": 290614600,
+      "sha256": "0b20b130e7edd9dd51873be867761295fe0cfad490c2b9a64f95bd3cfc08fa71"
+    }
+  ],
+  "cefArchive": "/workspace/shared/suitecut-native-playback-codecs-2026-10-10.tar.gz",
+  "cefArchiveSha256": "d91a84f405c75c6ef2d02354336a3934cb82691df4807a140ce87806585b184a"
+}

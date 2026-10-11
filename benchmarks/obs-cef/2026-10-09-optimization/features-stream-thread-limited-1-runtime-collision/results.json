@@ -1,0 +1,195 @@
+[
+  {
+    "id": "obs-stream-20000",
+    "backend": "obs",
+    "durationMs": 20000,
+    "checks": [
+      {
+        "name": "decoded receiver motion",
+        "status": "passed",
+        "durationMs": 2688.6440030000012,
+        "details": {
+          "mediaSeconds": 20.432,
+          "decodedFrames": 1222,
+          "markerTransitions": 715,
+          "distinctFps": 34.99412685982772,
+          "targetMotionStatus": "below target",
+          "repeatFraction": 0.4148936170212766,
+          "longestHoldMs": 66.88052373158756
+        }
+      },
+      {
+        "name": "receiver media and timestamps",
+        "status": "passed",
+        "durationMs": 136.95074199999726,
+        "details": {
+          "durationSeconds": 20.432,
+          "bytes": 11513484,
+          "averageMuxedKbps": 4508.020360219264,
+          "encodedPackets": 1222,
+          "encodedFps": 60.00294854784019,
+          "presentationReorders": 593,
+          "duplicatePresentationTimes": 0,
+          "nonIncreasingDecodeTimes": 0
+        }
+      },
+      {
+        "name": "receiver audible page tone",
+        "status": "passed",
+        "durationMs": 517.7906230000008,
+        "details": {
+          "samples": 976896,
+          "seconds": 20.352,
+          "rms": 0.05277237668633461,
+          "peak": 0.2296389937400818,
+          "tone440": 0.02547874115407467,
+          "tone880": 0.0001512852613814175
+        }
+      },
+      {
+        "name": "decoded audio and video sync",
+        "status": "passed",
+        "durationMs": 2395.0224510000007,
+        "details": {
+          "matchedFlashes": 19,
+          "audioBursts": 19,
+          "medianAudioMinusVideoMs": 6.666666666667709,
+          "p95AbsoluteOffsetMs": 40.33333333333333,
+          "firstThirdMedianMs": 23.333333333333428,
+          "lastThirdMedianMs": -1.6666666666669272,
+          "offsetsMs": [
+            23.333333333332984,
+            6.6666666666663765,
+            23.333333333333428,
+            40.000000000000036,
+            23.333333333333428,
+            23.333333333333428,
+            23.333333333333428,
+            6.666666666665932,
+            39.99999999999915,
+            -43.333333333333,
+            -9.999999999999787,
+            6.666666666665932,
+            6.666666666665932,
+            -26.666666666667282,
+            6.666666666667709,
+            6.666666666667709,
+            6.666666666667709,
+            -10.000000000001563,
+            -10.000000000001563
+          ]
+        }
+      }
+    ],
+    "startedAt": "2026-10-09T03:32:27.617Z",
+    "mediaPath": "/workspace/suitecut/.suitecut/obs-cef-optimization/features-stream-thread-limited-1/obs-stream-20000.flv",
+    "publisherReadyMs": 523.7302950000001,
+    "wallMs": 20107.539388,
+    "snapshot": {
+      "markerCount": 1280,
+      "scrollY": 0,
+      "scrollEvents": 0,
+      "keyEvents": 0,
+      "clicks": 0,
+      "value": "",
+      "choice": "First",
+      "secondary": false
+    },
+    "stopMs": 550.1540559999994,
+    "completedAt": "2026-10-09T03:32:55.879Z"
+  },
+  {
+    "id": "native-stream-20000",
+    "backend": "native",
+    "durationMs": 20000,
+    "checks": [
+      {
+        "name": "decoded receiver motion",
+        "status": "passed",
+        "durationMs": 1052.406498999997,
+        "details": {
+          "mediaSeconds": 21.375,
+          "decodedFrames": 598,
+          "markerTransitions": 502,
+          "distinctFps": 23.485380116959064,
+          "targetMotionStatus": "below target",
+          "repeatFraction": 0.1605351170568562,
+          "longestHoldMs": 285.9531772575251
+        }
+      },
+      {
+        "name": "receiver media and timestamps",
+        "status": "passed",
+        "durationMs": 126.80342499999824,
+        "details": {
+          "durationSeconds": 21.375,
+          "bytes": 859514,
+          "averageMuxedKbps": 321.6894502923976,
+          "encodedPackets": 598,
+          "encodedFps": 28.858703533620147,
+          "presentationReorders": 0,
+          "duplicatePresentationTimes": 0,
+          "nonIncreasingDecodeTimes": 0
+        }
+      },
+      {
+        "name": "receiver audible page tone",
+        "status": "passed",
+        "durationMs": 390.73294200000237,
+        "details": {
+          "samples": 1026048,
+          "seconds": 21.376,
+          "rms": 0.050989605486392975,
+          "peak": 0.23102132976055145,
+          "tone440": 0.02553003653883934,
+          "tone880": 0.00025376296252943575
+        }
+      },
+      {
+        "name": "decoded audio and video sync",
+        "status": "passed",
+        "durationMs": 757.5436069999996,
+        "details": {
+          "matchedFlashes": 14,
+          "audioBursts": 20,
+          "medianAudioMinusVideoMs": 36.66666666666707,
+          "p95AbsoluteOffsetMs": 80.50000000000006,
+          "firstThirdMedianMs": -5.000000000000114,
+          "lastThirdMedianMs": 38.333333333334,
+          "offsetsMs": [
+            -69.99999999999984,
+            -53.33333333333323,
+            49.99999999999982,
+            43.333333333333,
+            -99.99999999999964,
+            70.00000000000028,
+            29.99999999999936,
+            56.66666666666842,
+            13.333333333333641,
+            46.666666666666856,
+            46.666666666666856,
+            30.000000000001137,
+            30.000000000001137,
+            63.33333333333613
+          ]
+        }
+      }
+    ],
+    "startedAt": "2026-10-09T03:32:55.880Z",
+    "mediaPath": "/workspace/suitecut/.suitecut/obs-cef-optimization/features-stream-thread-limited-1/native-stream-20000.flv",
+    "publisherReadyMs": 1528.0196629999991,
+    "wallMs": 20040.18759,
+    "snapshot": {
+      "markerCount": 1242,
+      "scrollY": 0,
+      "scrollEvents": 0,
+      "keyEvents": 0,
+      "clicks": 0,
+      "value": "",
+      "choice": "First",
+      "secondary": false
+    },
+    "stopMs": 589.4408339999936,
+    "completedAt": "2026-10-09T03:33:21.390Z"
+  }
+]

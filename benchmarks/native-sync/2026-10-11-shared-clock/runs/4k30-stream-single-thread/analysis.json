@@ -1,0 +1,13 @@
+{
+  "case": "4k30-stream-single-thread",
+  "width": 3840,
+  "height": 2160,
+  "fps": 30,
+  "mode": "stream",
+  "durationRequestedMs": 120000,
+  "workloadStatus": "failed",
+  "harnessValid": false,
+  "qualityPassed": false,
+  "issues": [],
+  "error": "AssertionError('Error: Native browser command timed out')"
+}

@@ -1,0 +1,85 @@
+ M README.md
+ M THIRD_PARTY_NOTICES.md
+ M benchmarks/README.md
+ M eslint.config.js
+ M native/browser/AUDIT.md
+ M native/browser/BETA.md
+ M native/browser/CMakeLists.txt
+ M native/browser/README.md
+ M native/browser/audio_clock.h
+ M native/browser/audio_clock_test.cc
+ M native/browser/browser.cc
+ M native/browser/cef-build.json
+ M native/browser/main_linux.cc
+ M package.json
+ M scripts/verify-native-recording.mjs
+ M scripts/verify-native-stream.mjs
+ M src/cli.ts
+ M src/index.ts
+ M src/live-audio.ts
+ M src/live-stream.ts
+ M src/manifest.ts
+ M src/media.ts
+ M src/native-browser.ts
+ M src/native-default.ts
+ M src/native-page.ts
+ M src/native-protocol.ts
+ M src/native-recorder.ts
+ M src/native-recording.ts
+ M src/native-session.ts
+ M src/native.ts
+ M src/playwright.ts
+ M src/recording-output.ts
+ M src/render.ts
+ M tests/live-audio.test.ts
+ M tests/live-stream.test.ts
+ M tests/media.test.ts
+ M tests/native-broadcast.test.ts
+ M tests/native-browser.test.ts
+ M tests/native-protocol.test.ts
+ M tests/native-recorder.test.ts
+ M tests/native-session.test.ts
+ M tsconfig.json
+?? benchmarks/external-browser/
+?? benchmarks/native-audio/
+?? benchmarks/native-browser-support/
+?? benchmarks/native-codecs/
+?? benchmarks/native-engine/
+?? benchmarks/native-memory/
+?? benchmarks/native-playback/
+?? benchmarks/native-rtc/
+?? benchmarks/native-startup/
+?? benchmarks/native-sync/
+?? benchmarks/obs-cef/
+?? benchmarks/publication/
+?? benchmarks/release/
+?? benchmarks/twitch-capture/
+?? native/browser/BROWSER_SUPPORT.md
+?? native/browser/ENGINE.md
+?? native/browser/MEMORY_SAFETY.md
+?? native/browser/audio_trace.h
+?? native/browser/cef-build-linux-codecs.json
+?? native/browser/cef-build-linux.json
+?? native/browser/cef-patches/
+?? native/browser/fuzz_bounds.cc
+?? native/browser/fuzz_media.cc
+?? native/browser/media_codec_test.cc
+?? native/browser/media_engine.cc
+?? native/browser/media_engine.h
+?? native/browser/media_engine_test.cc
+?? native/browser/media_file.cc
+?? native/browser/media_file.h
+?? native/browser/media_render.cc
+?? native/browser/media_render.h
+?? native/browser/media_startup_test.cc
+?? native/browser/media_sync_test.cc
+?? native/browser/memory_bounds.h
+?? native/browser/memory_test.cc
+?? native/browser/scaler_failure_test.cc
+?? scripts/install-cef-codecs.py
+?? src/browser-connection.ts
+?? src/engine-test.ts
+?? src/engine.ts
+?? src/native-video-container.ts
+?? tests/browser-connection.test.ts
+?? tests/native-page.test.ts

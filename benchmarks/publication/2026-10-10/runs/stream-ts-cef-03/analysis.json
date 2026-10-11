@@ -1,0 +1,9 @@
+{
+  "backend": "ts-cef",
+  "mode": "stream",
+  "workloadStatus": "failed",
+  "valid": false,
+  "mediaDecoded": false,
+  "validationIssues": [],
+  "error": "AssertionError('Error: RTMP receiver exited before the workload completed\\n    at file:///workspace/suitecut/benchmarks/publication/capture.mjs:203:80')"
+}

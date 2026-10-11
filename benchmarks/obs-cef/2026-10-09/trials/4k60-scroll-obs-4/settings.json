@@ -1,0 +1,15 @@
+{
+  "id": "4k60-scroll-obs-4",
+  "backend": "obs",
+  "case": {
+    "name": "4k60-scroll",
+    "width": 3840,
+    "height": 2160,
+    "fps": 60,
+    "workload": "scroll"
+  },
+  "trialNumber": 4,
+  "durationMs": 10000,
+  "status": "running",
+  "startedAt": "2026-10-08T21:20:48.063Z"
+}

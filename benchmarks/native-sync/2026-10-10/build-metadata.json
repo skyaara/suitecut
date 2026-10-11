@@ -1,0 +1,48 @@
+{
+  "savedAtUTC": "2026-10-09T23:17:58.980507+00:00",
+  "gitHead": "2d4158c95217b2b4099898a2508a40f3fa4f121a",
+  "nativeBackend": "CEF callbacks + C++ libav encoding and muxing; thin TypeScript IPC and Playwright transport",
+  "cefVersion": "154.0.34+g14c5a08+chromium-154.0.8037.98",
+  "linuxPin": {
+    "cefVersion": "154.0.34+g14c5a08+chromium-154.0.8037.98",
+    "platform": "linux64",
+    "url": "https://cef-builds.spotifycdn.com/cef_binary_154.0.34%2Bg14c5a08%2Bchromium-154.0.8037.98_linux64_minimal.tar.bz2",
+    "sha256": "e87e2c76304372dd28b899ceb6efa4b353f52700594ddc358a8237ec07ec6492",
+    "upstreamSha1": "15c91ad767097217b2e82ba8b933fe30b134be69",
+    "size": 326489962
+  },
+  "macPin": {
+    "cefVersion": "154.0.34+g14c5a08+chromium-154.0.8037.98",
+    "platform": "macosarm64",
+    "url": "https://cef-builds.spotifycdn.com/cef_binary_154.0.34%2Bg14c5a08%2Bchromium-154.0.8037.98_macosarm64_minimal.tar.bz2",
+    "sha256": "b7efb24bcce34b94e836a9f545005aea210e08abdf4ee1483ea03b8daf93f080",
+    "upstreamSha1": "b7081f6609e5edccf07be96b5d7977329fbe1bdf",
+    "size": 132210884
+  },
+  "macBuiltOrRun": false,
+  "gpuEncodingVerified": false,
+  "cpuQuota": "400000 100000",
+  "memoryLimitBytes": 17179869184,
+  "kernel": "Linux 2b2ce4aa4cff 6.18.44 #1 SMP Sat Sep 26 20:02:31 UTC 2026 x86_64 GNU/Linux",
+  "node": "v24.19.0",
+  "compiler": "g++ (Debian 14.2.0-19) 14.2.0",
+  "wholeCEFLeakFreedomProven": false,
+  "obsComparison": "Historical external Chromium/XSHM; installed OBS lacks browser-source plugin. No embedded-CEF OBS comparison claimed.",
+  "cefPatchDeployed": false,
+  "videoEncoderThreadsPerOutput": 1,
+  "audioEncoderThreadsPerOutput": 2,
+  "initialJitterMs": 150,
+  "maximumJitterMs": 1000,
+  "maximumTrackLeadMs": 500,
+  "note": "Working tree includes the previously authorized native migration; this snapshot records its current state.",
+  "runtimeHashes": {
+    ".suitecut/native-build/libcef.so": {
+      "sha256": "8952fb40b6bd1d8f145a27c9f4103dac92438309768d928235c4a8913eb1dba3",
+      "bytes": 1455021248
+    },
+    ".suitecut/native-build/suitecut-browser": {
+      "sha256": "fa8aa19d8b0f7aa88cb51d8d2850af930ac8252d8b44087e0631dc99ba560868",
+      "bytes": 2459584
+    }
+  }
+}

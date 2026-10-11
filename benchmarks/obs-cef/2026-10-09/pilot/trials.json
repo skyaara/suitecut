@@ -1,0 +1,109 @@
+[
+  {
+    "id": "720p60-static-obs-1",
+    "backend": "obs",
+    "case": {
+      "name": "720p60-static",
+      "width": 1280,
+      "height": 720,
+      "fps": 60,
+      "workload": "static"
+    },
+    "trialNumber": 1,
+    "durationMs": 10000,
+    "status": "passed",
+    "startedAt": "2026-10-08T20:26:04.378Z",
+    "startupMs": 1539.2156570000002,
+    "browserVersion": "151.0.7922.34",
+    "obsBefore": {
+      "activeFps": 60.0000024000001,
+      "availableDiskSpace": 26183.484375,
+      "averageFrameRenderTime": 5.810293,
+      "cpuUsage": 25.959770114942533,
+      "memoryUsage": 257.57421875,
+      "outputSkippedFrames": 0,
+      "outputTotalFrames": 0,
+      "renderSkippedFrames": 67,
+      "renderTotalFrames": 6621,
+      "webSocketSessionIncomingMessages": 14,
+      "webSocketSessionOutgoingMessages": 15
+    },
+    "recordStartMs": 0.6472320000002583,
+    "workload": {
+      "wallMs": 10057.225759,
+      "scrollCommands": 0,
+      "snapshot": {
+        "markerCount": 0,
+        "scrollY": 0,
+        "scrollEvents": 0,
+        "keyEvents": 0,
+        "clicks": 0,
+        "value": "",
+        "choice": "First",
+        "secondary": false
+      }
+    },
+    "obsAfter": {
+      "activeFps": 36.39344407868859,
+      "availableDiskSpace": 26183.41015625,
+      "averageFrameRenderTime": 27.695685,
+      "cpuUsage": 45.41509433962264,
+      "memoryUsage": 364.08203125,
+      "outputSkippedFrames": 0,
+      "outputTotalFrames": 632,
+      "renderSkippedFrames": 237,
+      "renderTotalFrames": 7257,
+      "webSocketSessionIncomingMessages": 16,
+      "webSocketSessionOutgoingMessages": 19
+    },
+    "finalizationMs": 1501.6187160000009,
+    "mediaPath": "/workspace/suitecut/.suitecut/obs-cef-evidence/2026-10-09/2026-10-08 20-26-06.mkv",
+    "decoded": {
+      "width": 1280,
+      "height": 720,
+      "codec": "h264",
+      "containerFps": 60,
+      "durationSeconds": 10.617,
+      "bytes": 148266,
+      "decodedFrames": 636,
+      "markerTransitions": 1,
+      "markerRegressions": 0,
+      "activeFrames": 0,
+      "distinctActiveFrames": 0,
+      "distinctActiveFps": null,
+      "repeatFraction": null,
+      "longestActiveHoldMs": null,
+      "audioStreams": [
+        {
+          "codec": "aac",
+          "sampleRate": "48000",
+          "channels": 2
+        }
+      ]
+    },
+    "resources": {
+      "sampleCount": 24,
+      "meanCpuPercent": 243.24916294521293,
+      "peakRssBytes": 1454346240,
+      "firstRssBytes": 1332051968,
+      "lastRssBytes": 1352929280
+    },
+    "completedAt": "2026-10-08T20:26:20.875Z"
+  },
+  {
+    "id": "720p60-static-native-1",
+    "backend": "native",
+    "case": {
+      "name": "720p60-static",
+      "width": 1280,
+      "height": 720,
+      "fps": 60,
+      "workload": "static"
+    },
+    "trialNumber": 1,
+    "durationMs": 10000,
+    "status": "interrupted",
+    "startedAt": "2026-10-08T20:26:20.885Z",
+    "error": "Pilot stopped to disable idle OBS capture during native trials and align encoder warmup."
+  }
+]

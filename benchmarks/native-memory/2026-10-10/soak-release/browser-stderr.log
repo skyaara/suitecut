@@ -1,0 +1,67 @@
+[libx264 @ 0x7fcba4001140] using cpu capabilities: MMX2 SSE2Fast SSSE3 SSE4.2 AVX FMA3 BMI2 AVX2 AVX512
+[libx264 @ 0x7fcba4001140] profile High, level 3.0, 4:2:0, 8-bit
+[libx264 @ 0x7fcba4001140] 264 - core 164 r3108 31e19f9 - H.264/MPEG-4 AVC codec - Copyleft 2003-2023 - http://www.videolan.org/x264.html - options: cabac=1 ref=1 deblock=1:0:0 analyse=0x3:0x113 me=hex subme=2 psy=1 psy_rd=1.00:0.00 mixed_ref=0 me_range=16 chroma_me=1 trellis=0 8x8dct=1 cqm=0 deadzone=21,11 fast_pskip=1 chroma_qp_offset=0 threads=1 lookahead_threads=1 sliced_threads=0 nr=0 decimate=1 interlaced=0 bluray_compat=0 constrained_intra=0 bframes=0 weightp=1 keyint=60 keyint_min=6 scenecut=40 intra_refresh=0 rc=crf mbtree=0 crf=18.0 qcomp=0.60 qpmin=0 qpmax=69 qpstep=4 ip_ratio=1.40 aq=1:1.00
+[libx264 @ 0x7fcb9c001100] using cpu capabilities: MMX2 SSE2Fast SSSE3 SSE4.2 AVX FMA3 BMI2 AVX2 AVX512
+[libx264 @ 0x7fcb9c001100] profile High, level 3.0, 4:2:0, 8-bit
+[libx264 @ 0x7fcb9c001100] 264 - core 164 r3108 31e19f9 - H.264/MPEG-4 AVC codec - Copyleft 2003-2023 - http://www.videolan.org/x264.html - options: cabac=1 ref=1 deblock=1:0:0 analyse=0x3:0x113 me=hex subme=2 psy=1 psy_rd=1.00:0.00 mixed_ref=0 me_range=16 chroma_me=1 trellis=0 8x8dct=1 cqm=0 deadzone=21,11 fast_pskip=1 chroma_qp_offset=0 threads=1 lookahead_threads=1 sliced_threads=0 nr=0 decimate=1 interlaced=0 bluray_compat=0 constrained_intra=0 bframes=0 weightp=1 keyint=60 keyint_min=6 scenecut=40 intra_refresh=0 rc_lookahead=0 rc=cbr mbtree=0 bitrate=4500 ratetol=1.0 qcomp=0.60 qpmin=0 qpmax=69 qpstep=4 vbv_maxrate=4500 vbv_bufsize=9000 nal_hrd=none filler=0 ip_ratio=1.40 aq=1:1.00
+*** stack smashing detected ***: terminated
+*** stack smashing detected ***: terminated
+*** stack smashing detected ***: terminated
+*** stack smashing detected ***: terminated
+*** stack smashing detected ***: terminated
+*** stack smashing detected ***: terminated
+*** stack smashing detected ***: terminated
+*** stack smashing detected ***: terminated
+*** stack smashing detected ***: terminated
+*** stack smashing detected ***: terminated
+*** stack smashing detected ***: terminated
+*** stack smashing detected ***: terminated
+*** stack smashing detected ***: terminated
+*** stack smashing detected ***: terminated
+*** stack smashing detected ***: terminated
+*** stack smashing detected ***: terminated
+*** stack smashing detected ***: terminated
+*** stack smashing detected ***: terminated
+*** stack smashing detected ***: terminated
+*** stack smashing detected ***: terminated
+*** stack smashing detected ***: terminated
+*** stack smashing detected ***: terminated
+*** stack smashing detected ***: terminated
+*** stack smashing detected ***: terminated
+*** stack smashing detected ***: terminated
+*** stack smashing detected ***: terminated
+*** stack smashing detected ***: terminated
+*** stack smashing detected ***: terminated
+*** stack smashing detected ***: terminated
+Warning: vkCreateInstance: Found no drivers!
+Warning: vkCreateInstance failed with VK_ERROR_INCOMPATIBLE_DRIVER
+    at CheckVkSuccessImpl (../../third_party/dawn/src/dawn/native/vulkan/VulkanError.cpp:106)
+
+*** stack smashing detected ***: terminated
+[flv @ 0x7fcb9c000900] Failed to update header with correct duration.
+[flv @ 0x7fcb9c000900] Failed to update header with correct filesize.
+[libx264 @ 0x7fcb9c001100] frame I:901   Avg QP: 0.66  size:  1284
+[libx264 @ 0x7fcb9c001100] frame P:53106 Avg QP: 3.13  size:   192
+[libx264 @ 0x7fcba4001140] frame I:869   Avg QP: 2.33  size:   981
+[libx264 @ 0x7fcba4001140] frame P:51167 Avg QP:11.74  size:   144
+[libx264 @ 0x7fcb9c001100] mb I  I16..4: 97.9%  0.0%  2.1%
+[libx264 @ 0x7fcb9c001100] mb P  I16..4: 51.7%  0.0%  0.0%  P16..4:  4.3%  0.0%  0.0%  0.0%  0.0%    skip:43.9%
+[libx264 @ 0x7fcb9c001100] 8x8 transform intra:0.0% inter:76.3%
+[libx264 @ 0x7fcb9c001100] coded y,uvDC,uvAC intra: 0.1% 0.1% 0.1% inter: 0.8% 8.1% 4.7%
+[libx264 @ 0x7fcb9c001100] i16 v,h,dc,p: 94%  4%  1%  0%
+[libx264 @ 0x7fcb9c001100] i4 v,h,dc,ddl,ddr,vr,hd,vl,hu: 52% 22% 17%  1%  2%  1%  1%  2%  1%
+[libx264 @ 0x7fcb9c001100] i8c dc,h,v,p: 96%  3%  1%  0%
+[libx264 @ 0x7fcb9c001100] Weighted P-Frames: Y:18.4% UV:8.2%
+[libx264 @ 0x7fcb9c001100] kb/s:50.50
+[libx264 @ 0x7fcba4001140] mb I  I16..4: 97.8%  0.0%  2.2%
+[libx264 @ 0x7fcba4001140] mb P  I16..4: 37.9%  0.0%  0.0%  P16..4:  3.0%  0.0%  0.0%  0.0%  0.0%    skip:59.0%
+[libx264 @ 0x7fcba4001140] 8x8 transform intra:0.1% inter:55.0%
+[libx264 @ 0x7fcba4001140] coded y,uvDC,uvAC intra: 0.1% 0.5% 0.2% inter: 0.4% 4.2% 0.2%
+[libx264 @ 0x7fcba4001140] i16 v,h,dc,p: 93%  5%  2%  0%
+[libx264 @ 0x7fcba4001140] i8 v,h,dc,ddl,ddr,vr,hd,vl,hu: 48% 19% 33%  0%  0%  0%  0%  0%  0%
+[libx264 @ 0x7fcba4001140] i4 v,h,dc,ddl,ddr,vr,hd,vl,hu: 44% 26% 22%  1%  1%  2%  1%  2%  1%
+[libx264 @ 0x7fcba4001140] i8c dc,h,v,p: 90%  9%  2%  0%
+[libx264 @ 0x7fcba4001140] Weighted P-Frames: Y:18.3% UV:8.3%
+[libx264 @ 0x7fcba4001140] kb/s:37.98
+[aac @ 0x7fcba418f0c0] Qavg: 31751.973
+[aac @ 0x7fcb9c18f140] Qavg: 39840.207

@@ -1,0 +1,27 @@
+{
+  "status": "completed with long-run media failures",
+  "longRunMediaStatus": "failed",
+  "failedSyncWindows": [
+    {
+      "media": "receiver",
+      "offset": 5,
+      "p95AbsoluteOffsetMs": 298.3333333333328
+    }
+  ],
+  "audioContinuityStatus": {
+    "recording": "failed",
+    "receiver": "failed"
+  },
+  "memoryConclusion": "No per-recording retained-frame growth after fixes in the measured reuse tests; continuous memory observations are finite, not an indefinite leak guarantee.",
+  "repeatedTrials": 48,
+  "passedTrials": 48,
+  "retentionCyclesPerBuild": 25,
+  "finalExtendedReuseCycles": 200,
+  "updatedFeatureChecks": 88,
+  "soakObservedActiveSeconds": 1800.245135608,
+  "recordedSeconds": 1803.835,
+  "receivedSeconds": 1801.77,
+  "syncWindows": 6,
+  "nodeSamples": 1809,
+  "processSamples": 3601
+}

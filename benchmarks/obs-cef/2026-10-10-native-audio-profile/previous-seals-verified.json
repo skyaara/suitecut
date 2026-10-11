@@ -1,0 +1,37 @@
+[
+  {
+    "directory": "benchmarks/native-engine/2026-10-09",
+    "payloadsVerified": 529,
+    "passed": true
+  },
+  {
+    "directory": "benchmarks/native-codecs/2026-10-10",
+    "payloadsVerified": 710,
+    "passed": true
+  },
+  {
+    "directory": "benchmarks/native-audio/2026-10-10",
+    "payloadsVerified": 428,
+    "passed": true
+  },
+  {
+    "directory": "benchmarks/native-startup/2026-10-10",
+    "payloadsVerified": 1234,
+    "passed": true
+  },
+  {
+    "directory": "benchmarks/native-startup/2026-10-09-default",
+    "payloadsVerified": 726,
+    "passed": true
+  },
+  {
+    "directory": "benchmarks/obs-cef/2026-10-10-audio-source-review",
+    "payloadsVerified": 26,
+    "passed": true
+  },
+  {
+    "directory": "benchmarks/native-sync/2026-10-10",
+    "payloadsVerified": 909,
+    "passed": true
+  }
+]

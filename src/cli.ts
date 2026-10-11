@@ -7,8 +7,8 @@ import process from 'node:process'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
 import { installMediaTools, verifyMediaTools } from './media-tools.js'
+import { renderSuiteCut, type SuiteCutRenderConfig } from './native-default.js'
 import { resolveFfmpeg, resolveFfprobe } from './process.js'
-import { renderSuiteCut, type SuiteCutRenderConfig } from './render.js'
 
 const USAGE = `SuiteCut
 

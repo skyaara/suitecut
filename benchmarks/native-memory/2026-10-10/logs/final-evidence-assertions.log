@@ -1,0 +1,5 @@
+Final source/binary snapshots refreshed.
+7/7 release, 7/7 ASan/UBSan/LSan, 7/7 TSan; 15/15 real CEF integration.
+30-minute workload passed; all final output queues empty, no output errors.
+All three saved media outputs decode both audio and video.
+Full CEF sanitizer coverage blocked; audio interruptions remain open.

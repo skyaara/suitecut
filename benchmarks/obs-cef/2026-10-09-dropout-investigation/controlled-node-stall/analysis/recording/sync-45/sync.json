@@ -1,0 +1,19 @@
+{
+  "matchedFlashes": 7,
+  "audioBursts": 26,
+  "medianAudioMinusVideoMs": -19.999999999999574,
+  "p95AbsoluteOffsetMs": 37.99999999999936,
+  "firstThirdMedianMs": -5.0000000000001155,
+  "lastThirdMedianMs": -23.333333333333428,
+  "offsetsMs": [
+    20.000000000000018,
+    -30.00000000000025,
+    39.99999999999915,
+    -33.333333333333215,
+    26.666666666667282,
+    -19.999999999999574,
+    -26.666666666667282
+  ],
+  "offsetSeconds": 45,
+  "status": "passed"
+}

@@ -1,0 +1,298 @@
+{
+  "anonymous-auth-check": {
+    "counts": {
+      "passed": 15
+    },
+    "launcherOutsideHarness": 0
+  },
+  "asan-crash-diagnosis": {
+    "counts": {
+      "failed": 1
+    },
+    "launcherOutsideHarness": 0
+  },
+  "asan-diagnosis": {
+    "counts": {
+      "failed": 1
+    },
+    "launcherOutsideHarness": 0
+  },
+  "auth-screencast-check": {
+    "counts": {
+      "failed": 2,
+      "passed": 14
+    },
+    "launcherOutsideHarness": 0
+  },
+  "automation-flags-check": {
+    "counts": {
+      "passed": 12
+    },
+    "launcherOutsideHarness": 0
+  },
+  "baseline": {
+    "counts": {
+      "passed": 12,
+      "failed": 7
+    },
+    "launcherOutsideHarness": 0
+  },
+  "blank-popup-repeated": {
+    "counts": {
+      "timedOut": 1,
+      "passed": 5
+    },
+    "launcherOutsideHarness": 0
+  },
+  "chromium-control": {
+    "counts": {
+      "passed": 16,
+      "failed": 3
+    },
+    "launcherOutsideHarness": 0
+  },
+  "delivery-cef": {
+    "counts": {
+      "passed": 25,
+      "failed": 3
+    },
+    "launcherOutsideHarness": 0
+  },
+  "delivery-native": {
+    "counts": {
+      "passed": 16
+    },
+    "launcherOutsideHarness": 0
+  },
+  "delivery-upstream-api": {
+    "counts": {
+      "passed": 154,
+      "failed": 5,
+      "skipped": 5,
+      "timedOut": 1
+    },
+    "launcherOutsideHarness": 4
+  },
+  "dialog-repeated": {
+    "counts": {
+      "passed": 3
+    },
+    "launcherOutsideHarness": 0
+  },
+  "final-cef": {
+    "counts": {
+      "passed": 23,
+      "failed": 2
+    },
+    "launcherOutsideHarness": 0
+  },
+  "final-chromium-control": {
+    "counts": {
+      "passed": 23,
+      "failed": 2
+    },
+    "launcherOutsideHarness": 0
+  },
+  "final-native-regression": {
+    "counts": {
+      "passed": 16
+    },
+    "launcherOutsideHarness": 0
+  },
+  "final-verified-cef": {
+    "counts": {
+      "passed": 25,
+      "failed": 2
+    },
+    "launcherOutsideHarness": 0
+  },
+  "final-verified-chromium": {
+    "counts": {
+      "passed": 24,
+      "skipped": 1,
+      "failed": 2
+    },
+    "launcherOutsideHarness": 0
+  },
+  "native-regression": {
+    "counts": {
+      "passed": 16
+    },
+    "launcherOutsideHarness": 0
+  },
+  "refined-baseline": {
+    "counts": {},
+    "launcherOutsideHarness": 0
+  },
+  "refined-cef": {
+    "counts": {
+      "passed": 18,
+      "failed": 3
+    },
+    "launcherOutsideHarness": 0
+  },
+  "release-native-regression": {
+    "counts": {
+      "passed": 15,
+      "failed": 1
+    },
+    "launcherOutsideHarness": 0
+  },
+  "release-verified-cef": {
+    "counts": {
+      "passed": 26,
+      "failed": 2
+    },
+    "launcherOutsideHarness": 0
+  },
+  "release-verified-chromium": {
+    "counts": {
+      "passed": 25,
+      "skipped": 1,
+      "failed": 2
+    },
+    "launcherOutsideHarness": 0
+  },
+  "unicode-worker-auth-check": {
+    "counts": {
+      "failed": 2,
+      "passed": 15
+    },
+    "launcherOutsideHarness": 0
+  },
+  "upstream-api-final": {
+    "counts": {
+      "passed": 155,
+      "failed": 5,
+      "skipped": 5
+    },
+    "launcherOutsideHarness": 4
+  },
+  "upstream-collection": {
+    "counts": {
+      "not-run": 4730
+    },
+    "launcherOutsideHarness": 0
+  },
+  "upstream-core": {
+    "counts": {
+      "failed": 27,
+      "passed": 259,
+      "timedOut": 11,
+      "skipped": 2,
+      "not-run": 3921
+    },
+    "launcherOutsideHarness": 5
+  },
+  "upstream-edge-control": {
+    "counts": {
+      "passed": 16
+    },
+    "launcherOutsideHarness": 0
+  },
+  "upstream-final": {
+    "counts": {
+      "failed": 26,
+      "passed": 151,
+      "timedOut": 12,
+      "skipped": 5
+    },
+    "launcherOutsideHarness": 11
+  },
+  "upstream-final-repaired": {
+    "counts": {
+      "passed": 124,
+      "failed": 3,
+      "skipped": 4,
+      "not-run": 60,
+      "timedOut": 3
+    },
+    "launcherOutsideHarness": 2
+  },
+  "upstream-repaired": {
+    "counts": {
+      "failed": 6,
+      "passed": 119,
+      "skipped": 4,
+      "not-run": 61,
+      "timedOut": 4
+    },
+    "launcherOutsideHarness": 2
+  },
+  "upstream-targeted": {
+    "counts": {
+      "failed": 42,
+      "passed": 121,
+      "timedOut": 5,
+      "skipped": 2
+    },
+    "launcherOutsideHarness": 9
+  },
+  "upstream-video-final": {
+    "counts": {
+      "passed": 20,
+      "timedOut": 2,
+      "failed": 7
+    },
+    "launcherOutsideHarness": 7
+  },
+  "validated-cef-final": {
+    "counts": {
+      "passed": 26,
+      "failed": 2
+    },
+    "launcherOutsideHarness": 0
+  },
+  "validated-native-final": {
+    "counts": {
+      "passed": 16
+    },
+    "launcherOutsideHarness": 0
+  },
+  "verified-cef": {
+    "counts": {
+      "passed": 24,
+      "failed": 2
+    },
+    "launcherOutsideHarness": 0
+  },
+  "verified-chromium": {
+    "counts": {
+      "passed": 23,
+      "failed": 3
+    },
+    "launcherOutsideHarness": 0
+  },
+  "video-lifecycle-visibility": {
+    "counts": {
+      "passed": 9
+    },
+    "launcherOutsideHarness": 0
+  },
+  "worker-deferred-tests": {
+    "counts": {
+      "passed": 10
+    },
+    "launcherOutsideHarness": 0
+  },
+  "worker-fix": {
+    "counts": {
+      "passed": 4,
+      "failed": 6
+    },
+    "launcherOutsideHarness": 0
+  },
+  "worker-fix-diagnosis": {
+    "counts": {
+      "failed": 1
+    },
+    "launcherOutsideHarness": 0
+  },
+  "worker-fixed": {
+    "counts": {
+      "passed": 4,
+      "failed": 6
+    },
+    "launcherOutsideHarness": 0
+  }
+}

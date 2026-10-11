@@ -1,0 +1,19 @@
+Test project /workspace/suitecut/.suitecut/memory-tsan
+    Start 1: native-media
+1/7 Test #1: native-media .....................   Passed    5.36 sec
+    Start 2: native-audio-startup
+2/7 Test #2: native-audio-startup .............   Passed    1.25 sec
+    Start 3: native-codecs
+3/7 Test #3: native-codecs ....................   Passed    2.03 sec
+    Start 4: native-audio-clock
+4/7 Test #4: native-audio-clock ...............   Passed    0.01 sec
+    Start 5: native-pixel-conversion
+5/7 Test #5: native-pixel-conversion ..........   Passed    0.01 sec
+    Start 6: native-memory-lifecycle
+6/7 Test #6: native-memory-lifecycle ..........   Passed    3.05 sec
+    Start 7: native-scaler-failure
+7/7 Test #7: native-scaler-failure ............   Passed    0.03 sec
+
+100% tests passed out of 7
+
+Total Test time (real) =  11.75 sec

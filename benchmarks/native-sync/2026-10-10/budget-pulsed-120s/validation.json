@@ -1,0 +1,1805 @@
+{
+  "result": {
+    "startedAt": "2026-10-09T23:12:13.061Z",
+    "requestedMs": 120000,
+    "width": 1920,
+    "height": 1080,
+    "targetFps": 30,
+    "audio": true,
+    "audioPattern": "250 ms pulse every second",
+    "audioGenerator": "main-thread 2 s lookahead scheduler",
+    "recordingPath": "/workspace/suitecut/benchmarks/native-sync/2026-10-10/budget-pulsed-120s/recording.mp4",
+    "receiverPath": "/workspace/suitecut/benchmarks/native-sync/2026-10-10/budget-pulsed-120s/receiver.flv",
+    "mode": "C++ libav simultaneous H264 recording + RTMP; Playwright automation over private IPC; no raw media subscribers",
+    "status": "passed",
+    "readyAt": "2026-10-09T23:12:16.078Z",
+    "baseline": {
+      "rss": 130514944,
+      "heapTotal": 121892864,
+      "heapUsed": 58238704,
+      "external": 6698010,
+      "arrayBuffers": 2709545
+    },
+    "runStartMonotonicSeconds": 97303.26,
+    "injection": {
+      "atMs": 40098.85464,
+      "durationMs": 4000
+    },
+    "latest": {
+      "record": {
+        "ready": true,
+        "stopped": false,
+        "paused": false,
+        "videoFrames": 2089,
+        "audioSamples": 3342336,
+        "repeatedFrames": 52,
+        "droppedAudioSamples": 0,
+        "missingAudioSamples": 4800,
+        "lateAudioSamples": 0,
+        "queuedVideoBytes": 18662400,
+        "queuedAudioBytes": 26880,
+        "startedMs": 2555.448589,
+        "durationMs": 69633.33333333333,
+        "maximumEncodeMs": 74.78696299999865,
+        "bufferedDelayMs": 150,
+        "error": ""
+      },
+      "stream": {
+        "ready": true,
+        "stopped": false,
+        "paused": false,
+        "videoFrames": 2081,
+        "audioSamples": 3329024,
+        "repeatedFrames": 17,
+        "droppedAudioSamples": 0,
+        "missingAudioSamples": 4800,
+        "lateAudioSamples": 0,
+        "queuedVideoBytes": 18662400,
+        "queuedAudioBytes": 26880,
+        "startedMs": 2829.397736,
+        "durationMs": 69366.66666666667,
+        "maximumEncodeMs": 139.6762090000011,
+        "bufferedDelayMs": 150,
+        "error": ""
+      }
+    },
+    "stoppedEarly": false,
+    "activeMs": 120249.780152,
+    "scrollCommands": 22,
+    "snapshot": {
+      "markerCount": 3677,
+      "scrollY": 3240,
+      "scrollEvents": 22,
+      "keyEvents": 0,
+      "clicks": 0,
+      "value": "",
+      "choice": "First",
+      "secondary": false
+    },
+    "beforeStop": {
+      "rss": 108523520,
+      "heapTotal": 57405440,
+      "heapUsed": 52015856,
+      "external": 4335190,
+      "arrayBuffers": 346685
+    },
+    "recordStatus": {
+      "ready": true,
+      "stopped": true,
+      "paused": false,
+      "videoFrames": 3618,
+      "audioSamples": 5788672,
+      "repeatedFrames": 69,
+      "droppedAudioSamples": 0,
+      "missingAudioSamples": 5760,
+      "lateAudioSamples": 0,
+      "queuedVideoBytes": 0,
+      "queuedAudioBytes": 0,
+      "startedMs": 2555.448589,
+      "durationMs": 120600,
+      "maximumEncodeMs": 74.78696299999865,
+      "bufferedDelayMs": 150,
+      "error": ""
+    },
+    "streamStatus": {
+      "ready": true,
+      "stopped": true,
+      "paused": false,
+      "videoFrames": 3611,
+      "audioSamples": 5777408,
+      "repeatedFrames": 19,
+      "droppedAudioSamples": 0,
+      "missingAudioSamples": 5760,
+      "lateAudioSamples": 0,
+      "queuedVideoBytes": 0,
+      "queuedAudioBytes": 0,
+      "startedMs": 2829.397736,
+      "durationMs": 120366.66666666667,
+      "maximumEncodeMs": 139.6762090000011,
+      "bufferedDelayMs": 150,
+      "error": ""
+    },
+    "completedRequestedDuration": true,
+    "afterCleanup": {
+      "rss": 109309952,
+      "heapTotal": 57667584,
+      "heapUsed": 52227664,
+      "external": 4337482,
+      "arrayBuffers": 344901
+    },
+    "afterCleanupGc": {
+      "rss": 109309952,
+      "heapTotal": 57143296,
+      "heapUsed": 51592592,
+      "external": 4271716,
+      "arrayBuffers": 278927
+    },
+    "completedAt": "2026-10-09T23:14:16.723Z"
+  },
+  "audioAttribution": {
+    "sourcePackets": 6046,
+    "sourceFrames": 5804160,
+    "sourceSilentPackets": 4424,
+    "sourceTimelineGaps": [
+      {
+        "fromMs": 21458.052505,
+        "toMs": 21558.052505,
+        "durationMs": 100.0,
+        "followingCallbackDelayMs": 20.417955000000802
+      },
+      {
+        "fromMs": 72658.052505,
+        "toMs": 72678.052505,
+        "durationMs": 20.0,
+        "followingCallbackDelayMs": 24.21246599999722
+      }
+    ],
+    "maxCallbackDelayMs": 137.57542900000044,
+    "cases": [
+      {
+        "audioCodec": "aac",
+        "originMs": 2555.448589,
+        "finishMs": 123152.78192233334,
+        "missingInputMs": 120.0,
+        "eventuallyUncoveredInputMs": 120.0,
+        "estimatedMissingAtEncodeMs": 120.0,
+        "interiorMissingInputMs": 120.0,
+        "interiorEventuallyUncoveredMs": 120.0,
+        "interiorSourceCopyMismatchedFrames": 0,
+        "sourceGapsWithinOutput": [
+          {
+            "fromMs": 21458.052505,
+            "toMs": 21558.052505,
+            "durationMs": 100.0,
+            "followingCallbackDelayMs": 20.417955000000802,
+            "outputStartMs": 18902.603916
+          },
+          {
+            "fromMs": 72658.052505,
+            "toMs": 72678.052505,
+            "durationMs": 20.0,
+            "followingCallbackDelayMs": 24.21246599999722,
+            "outputStartMs": 70102.603916
+          }
+        ],
+        "decodedSilence10msWindows": [
+          {
+            "startMs": 0,
+            "endMs": 670,
+            "durationMs": 670
+          },
+          {
+            "startMs": 930,
+            "endMs": 1670,
+            "durationMs": 740
+          },
+          {
+            "startMs": 1930,
+            "endMs": 2670,
+            "durationMs": 740
+          },
+          {
+            "startMs": 2930,
+            "endMs": 3670,
+            "durationMs": 740
+          },
+          {
+            "startMs": 3930,
+            "endMs": 4670,
+            "durationMs": 740
+          },
+          {
+            "startMs": 4930,
+            "endMs": 5670,
+            "durationMs": 740
+          },
+          {
+            "startMs": 5930,
+            "endMs": 6670,
+            "durationMs": 740
+          },
+          {
+            "startMs": 6930,
+            "endMs": 7670,
+            "durationMs": 740
+          },
+          {
+            "startMs": 7930,
+            "endMs": 8670,
+            "durationMs": 740
+          },
+          {
+            "startMs": 8930,
+            "endMs": 9670,
+            "durationMs": 740
+          },
+          {
+            "startMs": 9930,
+            "endMs": 10670,
+            "durationMs": 740
+          },
+          {
+            "startMs": 10930,
+            "endMs": 11670,
+            "durationMs": 740
+          },
+          {
+            "startMs": 11930,
+            "endMs": 12670,
+            "durationMs": 740
+          },
+          {
+            "startMs": 12930,
+            "endMs": 13670,
+            "durationMs": 740
+          },
+          {
+            "startMs": 13930,
+            "endMs": 14670,
+            "durationMs": 740
+          },
+          {
+            "startMs": 14930,
+            "endMs": 15670,
+            "durationMs": 740
+          },
+          {
+            "startMs": 15930,
+            "endMs": 16670,
+            "durationMs": 740
+          },
+          {
+            "startMs": 16930,
+            "endMs": 17670,
+            "durationMs": 740
+          },
+          {
+            "startMs": 17930,
+            "endMs": 18670,
+            "durationMs": 740
+          },
+          {
+            "startMs": 18930,
+            "endMs": 19810,
+            "durationMs": 880
+          },
+          {
+            "startMs": 20070,
+            "endMs": 20810,
+            "durationMs": 740
+          },
+          {
+            "startMs": 21070,
+            "endMs": 21810,
+            "durationMs": 740
+          },
+          {
+            "startMs": 22070,
+            "endMs": 22810,
+            "durationMs": 740
+          },
+          {
+            "startMs": 23070,
+            "endMs": 23810,
+            "durationMs": 740
+          },
+          {
+            "startMs": 24070,
+            "endMs": 24810,
+            "durationMs": 740
+          },
+          {
+            "startMs": 25070,
+            "endMs": 25810,
+            "durationMs": 740
+          },
+          {
+            "startMs": 26070,
+            "endMs": 26810,
+            "durationMs": 740
+          },
+          {
+            "startMs": 27070,
+            "endMs": 27810,
+            "durationMs": 740
+          },
+          {
+            "startMs": 28070,
+            "endMs": 28810,
+            "durationMs": 740
+          },
+          {
+            "startMs": 29070,
+            "endMs": 29810,
+            "durationMs": 740
+          },
+          {
+            "startMs": 30070,
+            "endMs": 30810,
+            "durationMs": 740
+          },
+          {
+            "startMs": 31070,
+            "endMs": 31810,
+            "durationMs": 740
+          },
+          {
+            "startMs": 32070,
+            "endMs": 32810,
+            "durationMs": 740
+          },
+          {
+            "startMs": 33070,
+            "endMs": 33810,
+            "durationMs": 740
+          },
+          {
+            "startMs": 34070,
+            "endMs": 34810,
+            "durationMs": 740
+          },
+          {
+            "startMs": 35070,
+            "endMs": 35810,
+            "durationMs": 740
+          },
+          {
+            "startMs": 36070,
+            "endMs": 36810,
+            "durationMs": 740
+          },
+          {
+            "startMs": 37070,
+            "endMs": 37810,
+            "durationMs": 740
+          },
+          {
+            "startMs": 38070,
+            "endMs": 38810,
+            "durationMs": 740
+          },
+          {
+            "startMs": 39070,
+            "endMs": 39810,
+            "durationMs": 740
+          },
+          {
+            "startMs": 40070,
+            "endMs": 40810,
+            "durationMs": 740
+          },
+          {
+            "startMs": 41070,
+            "endMs": 41810,
+            "durationMs": 740
+          },
+          {
+            "startMs": 42070,
+            "endMs": 42810,
+            "durationMs": 740
+          },
+          {
+            "startMs": 43070,
+            "endMs": 43810,
+            "durationMs": 740
+          },
+          {
+            "startMs": 44070,
+            "endMs": 44810,
+            "durationMs": 740
+          },
+          {
+            "startMs": 45070,
+            "endMs": 45810,
+            "durationMs": 740
+          },
+          {
+            "startMs": 46070,
+            "endMs": 46810,
+            "durationMs": 740
+          },
+          {
+            "startMs": 47070,
+            "endMs": 47810,
+            "durationMs": 740
+          },
+          {
+            "startMs": 48070,
+            "endMs": 48810,
+            "durationMs": 740
+          },
+          {
+            "startMs": 49070,
+            "endMs": 49810,
+            "durationMs": 740
+          },
+          {
+            "startMs": 50070,
+            "endMs": 50810,
+            "durationMs": 740
+          },
+          {
+            "startMs": 51070,
+            "endMs": 51810,
+            "durationMs": 740
+          },
+          {
+            "startMs": 52070,
+            "endMs": 52810,
+            "durationMs": 740
+          },
+          {
+            "startMs": 53070,
+            "endMs": 53810,
+            "durationMs": 740
+          },
+          {
+            "startMs": 54070,
+            "endMs": 54810,
+            "durationMs": 740
+          },
+          {
+            "startMs": 55070,
+            "endMs": 55810,
+            "durationMs": 740
+          },
+          {
+            "startMs": 56070,
+            "endMs": 56810,
+            "durationMs": 740
+          },
+          {
+            "startMs": 57070,
+            "endMs": 57810,
+            "durationMs": 740
+          },
+          {
+            "startMs": 58070,
+            "endMs": 58810,
+            "durationMs": 740
+          },
+          {
+            "startMs": 59070,
+            "endMs": 59810,
+            "durationMs": 740
+          },
+          {
+            "startMs": 60070,
+            "endMs": 60810,
+            "durationMs": 740
+          },
+          {
+            "startMs": 61070,
+            "endMs": 61810,
+            "durationMs": 740
+          },
+          {
+            "startMs": 62070,
+            "endMs": 62810,
+            "durationMs": 740
+          },
+          {
+            "startMs": 63070,
+            "endMs": 63810,
+            "durationMs": 740
+          },
+          {
+            "startMs": 64070,
+            "endMs": 64810,
+            "durationMs": 740
+          },
+          {
+            "startMs": 65070,
+            "endMs": 65810,
+            "durationMs": 740
+          },
+          {
+            "startMs": 66070,
+            "endMs": 66810,
+            "durationMs": 740
+          },
+          {
+            "startMs": 67070,
+            "endMs": 67810,
+            "durationMs": 740
+          },
+          {
+            "startMs": 68070,
+            "endMs": 68810,
+            "durationMs": 740
+          },
+          {
+            "startMs": 69070,
+            "endMs": 69810,
+            "durationMs": 740
+          },
+          {
+            "startMs": 70070,
+            "endMs": 70830,
+            "durationMs": 760
+          },
+          {
+            "startMs": 71090,
+            "endMs": 71830,
+            "durationMs": 740
+          },
+          {
+            "startMs": 72090,
+            "endMs": 72830,
+            "durationMs": 740
+          },
+          {
+            "startMs": 73090,
+            "endMs": 73830,
+            "durationMs": 740
+          },
+          {
+            "startMs": 74090,
+            "endMs": 74830,
+            "durationMs": 740
+          },
+          {
+            "startMs": 75090,
+            "endMs": 75830,
+            "durationMs": 740
+          },
+          {
+            "startMs": 76090,
+            "endMs": 76830,
+            "durationMs": 740
+          },
+          {
+            "startMs": 77090,
+            "endMs": 77830,
+            "durationMs": 740
+          },
+          {
+            "startMs": 78090,
+            "endMs": 78830,
+            "durationMs": 740
+          },
+          {
+            "startMs": 79090,
+            "endMs": 79830,
+            "durationMs": 740
+          },
+          {
+            "startMs": 80090,
+            "endMs": 80830,
+            "durationMs": 740
+          },
+          {
+            "startMs": 81090,
+            "endMs": 81830,
+            "durationMs": 740
+          },
+          {
+            "startMs": 82090,
+            "endMs": 82830,
+            "durationMs": 740
+          },
+          {
+            "startMs": 83090,
+            "endMs": 83830,
+            "durationMs": 740
+          },
+          {
+            "startMs": 84090,
+            "endMs": 84830,
+            "durationMs": 740
+          },
+          {
+            "startMs": 85090,
+            "endMs": 85830,
+            "durationMs": 740
+          },
+          {
+            "startMs": 86090,
+            "endMs": 86830,
+            "durationMs": 740
+          },
+          {
+            "startMs": 87090,
+            "endMs": 87830,
+            "durationMs": 740
+          },
+          {
+            "startMs": 88090,
+            "endMs": 88830,
+            "durationMs": 740
+          },
+          {
+            "startMs": 89090,
+            "endMs": 89830,
+            "durationMs": 740
+          },
+          {
+            "startMs": 90090,
+            "endMs": 90830,
+            "durationMs": 740
+          },
+          {
+            "startMs": 91090,
+            "endMs": 91830,
+            "durationMs": 740
+          },
+          {
+            "startMs": 92090,
+            "endMs": 92830,
+            "durationMs": 740
+          },
+          {
+            "startMs": 93090,
+            "endMs": 93830,
+            "durationMs": 740
+          },
+          {
+            "startMs": 94090,
+            "endMs": 94830,
+            "durationMs": 740
+          },
+          {
+            "startMs": 95090,
+            "endMs": 95830,
+            "durationMs": 740
+          },
+          {
+            "startMs": 96090,
+            "endMs": 96830,
+            "durationMs": 740
+          },
+          {
+            "startMs": 97090,
+            "endMs": 97830,
+            "durationMs": 740
+          },
+          {
+            "startMs": 98090,
+            "endMs": 98830,
+            "durationMs": 740
+          },
+          {
+            "startMs": 99090,
+            "endMs": 99830,
+            "durationMs": 740
+          },
+          {
+            "startMs": 100090,
+            "endMs": 100830,
+            "durationMs": 740
+          },
+          {
+            "startMs": 101090,
+            "endMs": 101830,
+            "durationMs": 740
+          },
+          {
+            "startMs": 102090,
+            "endMs": 102830,
+            "durationMs": 740
+          },
+          {
+            "startMs": 103090,
+            "endMs": 103830,
+            "durationMs": 740
+          },
+          {
+            "startMs": 104090,
+            "endMs": 104830,
+            "durationMs": 740
+          },
+          {
+            "startMs": 105090,
+            "endMs": 105830,
+            "durationMs": 740
+          },
+          {
+            "startMs": 106090,
+            "endMs": 106830,
+            "durationMs": 740
+          },
+          {
+            "startMs": 107090,
+            "endMs": 107830,
+            "durationMs": 740
+          },
+          {
+            "startMs": 108090,
+            "endMs": 108830,
+            "durationMs": 740
+          },
+          {
+            "startMs": 109090,
+            "endMs": 109830,
+            "durationMs": 740
+          },
+          {
+            "startMs": 110090,
+            "endMs": 110830,
+            "durationMs": 740
+          },
+          {
+            "startMs": 111090,
+            "endMs": 111830,
+            "durationMs": 740
+          },
+          {
+            "startMs": 112090,
+            "endMs": 112830,
+            "durationMs": 740
+          },
+          {
+            "startMs": 113090,
+            "endMs": 113830,
+            "durationMs": 740
+          },
+          {
+            "startMs": 114090,
+            "endMs": 114830,
+            "durationMs": 740
+          },
+          {
+            "startMs": 115090,
+            "endMs": 115830,
+            "durationMs": 740
+          },
+          {
+            "startMs": 116090,
+            "endMs": 116830,
+            "durationMs": 740
+          },
+          {
+            "startMs": 117090,
+            "endMs": 117830,
+            "durationMs": 740
+          },
+          {
+            "startMs": 118090,
+            "endMs": 118830,
+            "durationMs": 740
+          },
+          {
+            "startMs": 119090,
+            "endMs": 119830,
+            "durationMs": 740
+          },
+          {
+            "startMs": 120090,
+            "endMs": 120610,
+            "durationMs": 520
+          }
+        ],
+        "final": {
+          "ready": true,
+          "stopped": true,
+          "paused": false,
+          "videoFrames": 3618,
+          "audioSamples": 5788672,
+          "repeatedFrames": 69,
+          "droppedAudioSamples": 0,
+          "missingAudioSamples": 5760,
+          "lateAudioSamples": 0,
+          "queuedVideoBytes": 0,
+          "queuedAudioBytes": 0,
+          "startedMs": 2555.448589,
+          "durationMs": 120600,
+          "maximumEncodeMs": 74.78696299999865,
+          "bufferedDelayMs": 150,
+          "error": ""
+        },
+        "decodedSamples": 5789696,
+        "decodeErrors": false
+      },
+      {
+        "audioCodec": "aac",
+        "originMs": 2829.397736,
+        "finishMs": 123192.06440233333,
+        "missingInputMs": 120.0,
+        "eventuallyUncoveredInputMs": 120.0,
+        "estimatedMissingAtEncodeMs": 120.0,
+        "interiorMissingInputMs": 120.0,
+        "interiorEventuallyUncoveredMs": 120.0,
+        "interiorSourceCopyMismatchedFrames": 0,
+        "sourceGapsWithinOutput": [
+          {
+            "fromMs": 21458.052505,
+            "toMs": 21558.052505,
+            "durationMs": 100.0,
+            "followingCallbackDelayMs": 20.417955000000802,
+            "outputStartMs": 18628.654769
+          },
+          {
+            "fromMs": 72658.052505,
+            "toMs": 72678.052505,
+            "durationMs": 20.0,
+            "followingCallbackDelayMs": 24.21246599999722,
+            "outputStartMs": 69828.654769
+          }
+        ],
+        "decodedSilence10msWindows": [
+          {
+            "startMs": 0,
+            "endMs": 390,
+            "durationMs": 390
+          },
+          {
+            "startMs": 650,
+            "endMs": 1390,
+            "durationMs": 740
+          },
+          {
+            "startMs": 1650,
+            "endMs": 2390,
+            "durationMs": 740
+          },
+          {
+            "startMs": 2650,
+            "endMs": 3390,
+            "durationMs": 740
+          },
+          {
+            "startMs": 3650,
+            "endMs": 4390,
+            "durationMs": 740
+          },
+          {
+            "startMs": 4650,
+            "endMs": 5390,
+            "durationMs": 740
+          },
+          {
+            "startMs": 5650,
+            "endMs": 6390,
+            "durationMs": 740
+          },
+          {
+            "startMs": 6650,
+            "endMs": 7390,
+            "durationMs": 740
+          },
+          {
+            "startMs": 7650,
+            "endMs": 8390,
+            "durationMs": 740
+          },
+          {
+            "startMs": 8650,
+            "endMs": 9390,
+            "durationMs": 740
+          },
+          {
+            "startMs": 9650,
+            "endMs": 10390,
+            "durationMs": 740
+          },
+          {
+            "startMs": 10650,
+            "endMs": 11390,
+            "durationMs": 740
+          },
+          {
+            "startMs": 11650,
+            "endMs": 12390,
+            "durationMs": 740
+          },
+          {
+            "startMs": 12650,
+            "endMs": 13390,
+            "durationMs": 740
+          },
+          {
+            "startMs": 13650,
+            "endMs": 14390,
+            "durationMs": 740
+          },
+          {
+            "startMs": 14650,
+            "endMs": 15390,
+            "durationMs": 740
+          },
+          {
+            "startMs": 15650,
+            "endMs": 16390,
+            "durationMs": 740
+          },
+          {
+            "startMs": 16650,
+            "endMs": 17390,
+            "durationMs": 740
+          },
+          {
+            "startMs": 17650,
+            "endMs": 18390,
+            "durationMs": 740
+          },
+          {
+            "startMs": 18650,
+            "endMs": 19540,
+            "durationMs": 890
+          },
+          {
+            "startMs": 19800,
+            "endMs": 20540,
+            "durationMs": 740
+          },
+          {
+            "startMs": 20790,
+            "endMs": 21530,
+            "durationMs": 740
+          },
+          {
+            "startMs": 21790,
+            "endMs": 22530,
+            "durationMs": 740
+          },
+          {
+            "startMs": 22790,
+            "endMs": 23530,
+            "durationMs": 740
+          },
+          {
+            "startMs": 23790,
+            "endMs": 24530,
+            "durationMs": 740
+          },
+          {
+            "startMs": 24790,
+            "endMs": 25530,
+            "durationMs": 740
+          },
+          {
+            "startMs": 25790,
+            "endMs": 26530,
+            "durationMs": 740
+          },
+          {
+            "startMs": 26790,
+            "endMs": 27530,
+            "durationMs": 740
+          },
+          {
+            "startMs": 27790,
+            "endMs": 28530,
+            "durationMs": 740
+          },
+          {
+            "startMs": 28790,
+            "endMs": 29530,
+            "durationMs": 740
+          },
+          {
+            "startMs": 29790,
+            "endMs": 30530,
+            "durationMs": 740
+          },
+          {
+            "startMs": 30790,
+            "endMs": 31530,
+            "durationMs": 740
+          },
+          {
+            "startMs": 31790,
+            "endMs": 32530,
+            "durationMs": 740
+          },
+          {
+            "startMs": 32790,
+            "endMs": 33530,
+            "durationMs": 740
+          },
+          {
+            "startMs": 33790,
+            "endMs": 34530,
+            "durationMs": 740
+          },
+          {
+            "startMs": 34790,
+            "endMs": 35530,
+            "durationMs": 740
+          },
+          {
+            "startMs": 35790,
+            "endMs": 36530,
+            "durationMs": 740
+          },
+          {
+            "startMs": 36790,
+            "endMs": 37530,
+            "durationMs": 740
+          },
+          {
+            "startMs": 37790,
+            "endMs": 38530,
+            "durationMs": 740
+          },
+          {
+            "startMs": 38790,
+            "endMs": 39530,
+            "durationMs": 740
+          },
+          {
+            "startMs": 39790,
+            "endMs": 40530,
+            "durationMs": 740
+          },
+          {
+            "startMs": 40790,
+            "endMs": 41530,
+            "durationMs": 740
+          },
+          {
+            "startMs": 41790,
+            "endMs": 42530,
+            "durationMs": 740
+          },
+          {
+            "startMs": 42790,
+            "endMs": 43530,
+            "durationMs": 740
+          },
+          {
+            "startMs": 43790,
+            "endMs": 44530,
+            "durationMs": 740
+          },
+          {
+            "startMs": 44790,
+            "endMs": 45530,
+            "durationMs": 740
+          },
+          {
+            "startMs": 45790,
+            "endMs": 46530,
+            "durationMs": 740
+          },
+          {
+            "startMs": 46790,
+            "endMs": 47530,
+            "durationMs": 740
+          },
+          {
+            "startMs": 47790,
+            "endMs": 48530,
+            "durationMs": 740
+          },
+          {
+            "startMs": 48790,
+            "endMs": 49530,
+            "durationMs": 740
+          },
+          {
+            "startMs": 49790,
+            "endMs": 50530,
+            "durationMs": 740
+          },
+          {
+            "startMs": 50790,
+            "endMs": 51530,
+            "durationMs": 740
+          },
+          {
+            "startMs": 51790,
+            "endMs": 52530,
+            "durationMs": 740
+          },
+          {
+            "startMs": 52790,
+            "endMs": 53530,
+            "durationMs": 740
+          },
+          {
+            "startMs": 53790,
+            "endMs": 54530,
+            "durationMs": 740
+          },
+          {
+            "startMs": 54790,
+            "endMs": 55530,
+            "durationMs": 740
+          },
+          {
+            "startMs": 55790,
+            "endMs": 56530,
+            "durationMs": 740
+          },
+          {
+            "startMs": 56790,
+            "endMs": 57530,
+            "durationMs": 740
+          },
+          {
+            "startMs": 57790,
+            "endMs": 58530,
+            "durationMs": 740
+          },
+          {
+            "startMs": 58790,
+            "endMs": 59530,
+            "durationMs": 740
+          },
+          {
+            "startMs": 59790,
+            "endMs": 60530,
+            "durationMs": 740
+          },
+          {
+            "startMs": 60790,
+            "endMs": 61530,
+            "durationMs": 740
+          },
+          {
+            "startMs": 61790,
+            "endMs": 62530,
+            "durationMs": 740
+          },
+          {
+            "startMs": 62790,
+            "endMs": 63530,
+            "durationMs": 740
+          },
+          {
+            "startMs": 63790,
+            "endMs": 64530,
+            "durationMs": 740
+          },
+          {
+            "startMs": 64790,
+            "endMs": 65530,
+            "durationMs": 740
+          },
+          {
+            "startMs": 65790,
+            "endMs": 66530,
+            "durationMs": 740
+          },
+          {
+            "startMs": 66790,
+            "endMs": 67530,
+            "durationMs": 740
+          },
+          {
+            "startMs": 67790,
+            "endMs": 68530,
+            "durationMs": 740
+          },
+          {
+            "startMs": 68790,
+            "endMs": 69530,
+            "durationMs": 740
+          },
+          {
+            "startMs": 69790,
+            "endMs": 70560,
+            "durationMs": 770
+          },
+          {
+            "startMs": 70820,
+            "endMs": 71560,
+            "durationMs": 740
+          },
+          {
+            "startMs": 71820,
+            "endMs": 72560,
+            "durationMs": 740
+          },
+          {
+            "startMs": 72820,
+            "endMs": 73560,
+            "durationMs": 740
+          },
+          {
+            "startMs": 73820,
+            "endMs": 74560,
+            "durationMs": 740
+          },
+          {
+            "startMs": 74820,
+            "endMs": 75560,
+            "durationMs": 740
+          },
+          {
+            "startMs": 75820,
+            "endMs": 76560,
+            "durationMs": 740
+          },
+          {
+            "startMs": 76820,
+            "endMs": 77560,
+            "durationMs": 740
+          },
+          {
+            "startMs": 77820,
+            "endMs": 78560,
+            "durationMs": 740
+          },
+          {
+            "startMs": 78820,
+            "endMs": 79560,
+            "durationMs": 740
+          },
+          {
+            "startMs": 79820,
+            "endMs": 80560,
+            "durationMs": 740
+          },
+          {
+            "startMs": 80820,
+            "endMs": 81560,
+            "durationMs": 740
+          },
+          {
+            "startMs": 81820,
+            "endMs": 82560,
+            "durationMs": 740
+          },
+          {
+            "startMs": 82820,
+            "endMs": 83560,
+            "durationMs": 740
+          },
+          {
+            "startMs": 83820,
+            "endMs": 84560,
+            "durationMs": 740
+          },
+          {
+            "startMs": 84820,
+            "endMs": 85560,
+            "durationMs": 740
+          },
+          {
+            "startMs": 85820,
+            "endMs": 86560,
+            "durationMs": 740
+          },
+          {
+            "startMs": 86820,
+            "endMs": 87560,
+            "durationMs": 740
+          },
+          {
+            "startMs": 87820,
+            "endMs": 88560,
+            "durationMs": 740
+          },
+          {
+            "startMs": 88820,
+            "endMs": 89560,
+            "durationMs": 740
+          },
+          {
+            "startMs": 89820,
+            "endMs": 90560,
+            "durationMs": 740
+          },
+          {
+            "startMs": 90820,
+            "endMs": 91560,
+            "durationMs": 740
+          },
+          {
+            "startMs": 91820,
+            "endMs": 92560,
+            "durationMs": 740
+          },
+          {
+            "startMs": 92820,
+            "endMs": 93560,
+            "durationMs": 740
+          },
+          {
+            "startMs": 93820,
+            "endMs": 94560,
+            "durationMs": 740
+          },
+          {
+            "startMs": 94820,
+            "endMs": 95560,
+            "durationMs": 740
+          },
+          {
+            "startMs": 95820,
+            "endMs": 96560,
+            "durationMs": 740
+          },
+          {
+            "startMs": 96820,
+            "endMs": 97560,
+            "durationMs": 740
+          },
+          {
+            "startMs": 97820,
+            "endMs": 98560,
+            "durationMs": 740
+          },
+          {
+            "startMs": 98820,
+            "endMs": 99560,
+            "durationMs": 740
+          },
+          {
+            "startMs": 99820,
+            "endMs": 100560,
+            "durationMs": 740
+          },
+          {
+            "startMs": 100820,
+            "endMs": 101560,
+            "durationMs": 740
+          },
+          {
+            "startMs": 101820,
+            "endMs": 102560,
+            "durationMs": 740
+          },
+          {
+            "startMs": 102820,
+            "endMs": 103560,
+            "durationMs": 740
+          },
+          {
+            "startMs": 103820,
+            "endMs": 104560,
+            "durationMs": 740
+          },
+          {
+            "startMs": 104820,
+            "endMs": 105560,
+            "durationMs": 740
+          },
+          {
+            "startMs": 105820,
+            "endMs": 106560,
+            "durationMs": 740
+          },
+          {
+            "startMs": 106820,
+            "endMs": 107560,
+            "durationMs": 740
+          },
+          {
+            "startMs": 107820,
+            "endMs": 108560,
+            "durationMs": 740
+          },
+          {
+            "startMs": 108820,
+            "endMs": 109560,
+            "durationMs": 740
+          },
+          {
+            "startMs": 109820,
+            "endMs": 110560,
+            "durationMs": 740
+          },
+          {
+            "startMs": 110820,
+            "endMs": 111560,
+            "durationMs": 740
+          },
+          {
+            "startMs": 111820,
+            "endMs": 112560,
+            "durationMs": 740
+          },
+          {
+            "startMs": 112820,
+            "endMs": 113560,
+            "durationMs": 740
+          },
+          {
+            "startMs": 113820,
+            "endMs": 114560,
+            "durationMs": 740
+          },
+          {
+            "startMs": 114820,
+            "endMs": 115560,
+            "durationMs": 740
+          },
+          {
+            "startMs": 115820,
+            "endMs": 116560,
+            "durationMs": 740
+          },
+          {
+            "startMs": 116820,
+            "endMs": 117560,
+            "durationMs": 740
+          },
+          {
+            "startMs": 117820,
+            "endMs": 118560,
+            "durationMs": 740
+          },
+          {
+            "startMs": 118820,
+            "endMs": 119560,
+            "durationMs": 740
+          },
+          {
+            "startMs": 119820,
+            "endMs": 120380,
+            "durationMs": 560
+          }
+        ],
+        "final": {
+          "ready": true,
+          "stopped": true,
+          "paused": false,
+          "videoFrames": 3611,
+          "audioSamples": 5777408,
+          "repeatedFrames": 19,
+          "droppedAudioSamples": 0,
+          "missingAudioSamples": 5760,
+          "lateAudioSamples": 0,
+          "queuedVideoBytes": 0,
+          "queuedAudioBytes": 0,
+          "startedMs": 2829.397736,
+          "durationMs": 120366.66666666667,
+          "maximumEncodeMs": 139.6762090000011,
+          "bufferedDelayMs": 150,
+          "error": ""
+        },
+        "decodedSamples": 5778432,
+        "decodeErrors": false
+      }
+    ],
+    "hostCPUQuota": "400000 100000",
+    "hostCPUStatDelta": {
+      "usage_usec": 116820018,
+      "user_usec": 107097484,
+      "system_usec": 9722535,
+      "nice_usec": 0,
+      "nr_periods": 1230,
+      "nr_throttled": 0,
+      "throttled_usec": 0,
+      "nr_bursts": 0,
+      "burst_usec": 0
+    },
+    "profileSamples": 124
+  },
+  "outputs": [
+    {
+      "path": "/workspace/suitecut/benchmarks/native-sync/2026-10-10/budget-pulsed-120s/recording.mp4",
+      "sha256": "e9a8860884d7e12b7bc77dbabf52cd5e9e549d1633e626b0ef79b9663c369cc6",
+      "fullyDecodedVideoFrames": 3618,
+      "nativeVideoFrames": 3618,
+      "distinctImageFPS": 29.427860696517413,
+      "maximumImageHoldMs": 166.66666666666666,
+      "decodedInteriorSilenceMs": 86740,
+      "maximumInteriorSilenceMs": 880,
+      "decodedSilenceLongerThanExpectedPulseMs": [
+        {
+          "startMs": 18930,
+          "endMs": 19810,
+          "durationMs": 880
+        }
+      ],
+      "preEncoderPulseOnsets": 120,
+      "visualPulseOnsets": 120,
+      "pulseVisualMinusNativeAudioMs": {
+        "samples": 118,
+        "median": 16.666666666666288,
+        "p95Absolute": 23.333333333328483,
+        "maximumAbsolute": 56.66666666667152,
+        "unmatched": []
+      },
+      "probe": {
+        "streams": [
+          {
+            "index": 0,
+            "codec_name": "h264",
+            "codec_long_name": "H.264 / AVC / MPEG-4 AVC / MPEG-4 part 10",
+            "profile": "High",
+            "codec_type": "video",
+            "codec_tag_string": "avc1",
+            "codec_tag": "0x31637661",
+            "width": 1920,
+            "height": 1080,
+            "coded_width": 1920,
+            "coded_height": 1080,
+            "closed_captions": 0,
+            "film_grain": 0,
+            "has_b_frames": 0,
+            "pix_fmt": "yuv420p",
+            "level": 40,
+            "color_range": "tv",
+            "color_space": "bt709",
+            "color_transfer": "iec61966-2-1",
+            "color_primaries": "bt709",
+            "chroma_location": "left",
+            "field_order": "progressive",
+            "refs": 1,
+            "is_avc": "true",
+            "nal_length_size": "4",
+            "id": "0x1",
+            "r_frame_rate": "30/1",
+            "avg_frame_rate": "6946560/231593",
+            "time_base": "1/15360",
+            "start_pts": 0,
+            "start_time": "0.000000",
+            "duration_ts": 1852744,
+            "duration": "120.621354",
+            "bit_rate": "164288",
+            "bits_per_raw_sample": "8",
+            "extradata_size": 49,
+            "disposition": {
+              "default": 1,
+              "dub": 0,
+              "original": 0,
+              "comment": 0,
+              "lyrics": 0,
+              "karaoke": 0,
+              "forced": 0,
+              "hearing_impaired": 0,
+              "visual_impaired": 0,
+              "clean_effects": 0,
+              "attached_pic": 0,
+              "timed_thumbnails": 0,
+              "non_diegetic": 0,
+              "captions": 0,
+              "descriptions": 0,
+              "metadata": 0,
+              "dependent": 0,
+              "still_image": 0,
+              "multilayer": 0
+            },
+            "tags": {
+              "language": "und",
+              "handler_name": "VideoHandler",
+              "vendor_id": "[0][0][0][0]"
+            }
+          },
+          {
+            "index": 1,
+            "codec_name": "aac",
+            "codec_long_name": "AAC (Advanced Audio Coding)",
+            "profile": "LC",
+            "codec_type": "audio",
+            "codec_tag_string": "mp4a",
+            "codec_tag": "0x6134706d",
+            "sample_fmt": "fltp",
+            "sample_rate": "48000",
+            "channels": 2,
+            "channel_layout": "stereo",
+            "bits_per_sample": 0,
+            "initial_padding": 0,
+            "id": "0x2",
+            "r_frame_rate": "0/0",
+            "avg_frame_rate": "0/0",
+            "time_base": "1/48000",
+            "start_pts": 0,
+            "start_time": "0.000000",
+            "duration_ts": 5789696,
+            "duration": "120.618667",
+            "bit_rate": "46685",
+            "extradata_size": 5,
+            "disposition": {
+              "default": 1,
+              "dub": 0,
+              "original": 0,
+              "comment": 0,
+              "lyrics": 0,
+              "karaoke": 0,
+              "forced": 0,
+              "hearing_impaired": 0,
+              "visual_impaired": 0,
+              "clean_effects": 0,
+              "attached_pic": 0,
+              "timed_thumbnails": 0,
+              "non_diegetic": 0,
+              "captions": 0,
+              "descriptions": 0,
+              "metadata": 0,
+              "dependent": 0,
+              "still_image": 0,
+              "multilayer": 0
+            },
+            "tags": {
+              "language": "und",
+              "handler_name": "SoundHandler",
+              "vendor_id": "[0][0][0][0]"
+            }
+          }
+        ],
+        "format": {
+          "filename": "/workspace/suitecut/benchmarks/native-sync/2026-10-10/budget-pulsed-120s/recording.mp4",
+          "nb_streams": 2,
+          "nb_programs": 0,
+          "nb_stream_groups": 0,
+          "format_name": "mov,mp4,m4a,3gp,3g2,mj2",
+          "format_long_name": "QuickTime / MOV",
+          "start_time": "0.000000",
+          "duration": "120.621354",
+          "size": "3233408",
+          "bit_rate": "214450",
+          "probe_score": 100,
+          "tags": {
+            "major_brand": "iso5",
+            "minor_version": "512",
+            "compatible_brands": "iso5iso6mp41",
+            "encoder": "Lavf61.7.103"
+          }
+        }
+      }
+    },
+    {
+      "path": "/workspace/suitecut/benchmarks/native-sync/2026-10-10/budget-pulsed-120s/receiver.flv",
+      "sha256": "deacadeaee36d7a212b0a5fead483e604733a84ffd9af4728138998a6bc87036",
+      "fullyDecodedVideoFrames": 3611,
+      "nativeVideoFrames": 3611,
+      "distinctImageFPS": 29.842148989199668,
+      "maximumImageHoldMs": 166.66666666666666,
+      "decodedInteriorSilenceMs": 86760,
+      "maximumInteriorSilenceMs": 890,
+      "decodedSilenceLongerThanExpectedPulseMs": [
+        {
+          "startMs": 18650,
+          "endMs": 19540,
+          "durationMs": 890
+        }
+      ],
+      "preEncoderPulseOnsets": 120,
+      "visualPulseOnsets": 120,
+      "pulseVisualMinusNativeAudioMs": {
+        "samples": 118,
+        "median": 26.666666666671517,
+        "p95Absolute": 30.0,
+        "maximumAbsolute": 30.0,
+        "unmatched": []
+      },
+      "probe": {
+        "streams": [
+          {
+            "index": 0,
+            "codec_name": "h264",
+            "codec_long_name": "H.264 / AVC / MPEG-4 AVC / MPEG-4 part 10",
+            "profile": "High",
+            "codec_type": "video",
+            "codec_tag_string": "[0][0][0][0]",
+            "codec_tag": "0x0000",
+            "width": 1920,
+            "height": 1080,
+            "coded_width": 1920,
+            "coded_height": 1080,
+            "closed_captions": 0,
+            "film_grain": 0,
+            "has_b_frames": 0,
+            "pix_fmt": "yuv420p",
+            "level": 40,
+            "color_range": "tv",
+            "color_space": "bt709",
+            "color_transfer": "iec61966-2-1",
+            "color_primaries": "bt709",
+            "chroma_location": "left",
+            "field_order": "progressive",
+            "refs": 1,
+            "is_avc": "true",
+            "nal_length_size": "4",
+            "missing_streams": "0",
+            "r_frame_rate": "30/1",
+            "avg_frame_rate": "30/1",
+            "time_base": "1/1000",
+            "start_pts": 21,
+            "start_time": "0.021000",
+            "bit_rate": "4500000",
+            "bits_per_raw_sample": "8",
+            "extradata_size": 48,
+            "disposition": {
+              "default": 0,
+              "dub": 0,
+              "original": 0,
+              "comment": 0,
+              "lyrics": 0,
+              "karaoke": 0,
+              "forced": 0,
+              "hearing_impaired": 0,
+              "visual_impaired": 0,
+              "clean_effects": 0,
+              "attached_pic": 0,
+              "timed_thumbnails": 0,
+              "non_diegetic": 0,
+              "captions": 0,
+              "descriptions": 0,
+              "metadata": 0,
+              "dependent": 0,
+              "still_image": 0,
+              "multilayer": 0
+            }
+          },
+          {
+            "index": 1,
+            "codec_name": "aac",
+            "codec_long_name": "AAC (Advanced Audio Coding)",
+            "profile": "LC",
+            "codec_type": "audio",
+            "codec_tag_string": "[0][0][0][0]",
+            "codec_tag": "0x0000",
+            "sample_fmt": "fltp",
+            "sample_rate": "48000",
+            "channels": 2,
+            "channel_layout": "stereo",
+            "bits_per_sample": 0,
+            "initial_padding": 0,
+            "missing_streams": "0",
+            "r_frame_rate": "0/0",
+            "avg_frame_rate": "0/0",
+            "time_base": "1/1000",
+            "start_pts": 0,
+            "start_time": "0.000000",
+            "bit_rate": "160000",
+            "extradata_size": 5,
+            "disposition": {
+              "default": 0,
+              "dub": 0,
+              "original": 0,
+              "comment": 0,
+              "lyrics": 0,
+              "karaoke": 0,
+              "forced": 0,
+              "hearing_impaired": 0,
+              "visual_impaired": 0,
+              "clean_effects": 0,
+              "attached_pic": 0,
+              "timed_thumbnails": 0,
+              "non_diegetic": 0,
+              "captions": 0,
+              "descriptions": 0,
+              "metadata": 0,
+              "dependent": 0,
+              "still_image": 0,
+              "multilayer": 0
+            }
+          }
+        ],
+        "format": {
+          "filename": "/workspace/suitecut/benchmarks/native-sync/2026-10-10/budget-pulsed-120s/receiver.flv",
+          "nb_streams": 2,
+          "nb_programs": 0,
+          "nb_stream_groups": 0,
+          "format_name": "flv",
+          "format_long_name": "FLV (Flash Video)",
+          "start_time": "0.000000",
+          "duration": "120.387000",
+          "size": "5059016",
+          "bit_rate": "336183",
+          "probe_score": 100,
+          "tags": {
+            "encoder": "Lavf61.7.103"
+          }
+        }
+      }
+    }
+  ],
+  "resources": {
+    "captureSamples": 121,
+    "nativeMeanCPUCores": 0.8951799111496725,
+    "nativeAggregateRSSPeakMiB": 1251.23046875,
+    "aggregateRSSFirstWindowMedianMiB": 1170.32421875,
+    "aggregateRSSLastWindowMedianMiB": 1241.99609375,
+    "rssWindowSeconds": 30.062445038,
+    "rssIsSummedNotPrivateMemory": true,
+    "wholeCEFLeakFreedomProven": false
+  }
+}

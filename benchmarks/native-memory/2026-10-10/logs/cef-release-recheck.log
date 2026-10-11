@@ -1,0 +1,58 @@
+
+Running 1 test using 1 worker
+
+(node:417682) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  pw:api => browserType.connectOverCDP started +0ms
+  pw:api <= browserType.connectOverCDP succeeded +30ms
+  pw:api => browser.newContext started +5ms
+  pw:api <= browser.newContext succeeded +9ms
+  pw:api => browserContext.newPage started +2ms
+  pw:api <= browserContext.newPage succeeded +42ms
+  pw:api => page.goto started +2ms
+  pw:api navigating to "http://127.0.0.1:41469/", waiting until "load" +2ms
+  pw:api   "commit" event fired +19ms
+  pw:api   navigated to "http://127.0.0.1:41469/" +0ms
+  pw:api   navigated to "about:srcdoc" +113ms
+  pw:api   "domcontentloaded" event fired +3ms
+  pw:api   "load" event fired +5ms
+  pw:api <= page.goto succeeded +0ms
+  pw:api => page.waitForTimeout started +2ms
+  pw:api   "networkidle" event fired +491ms
+  pw:api <= page.waitForTimeout succeeded +511ms
+  pw:api => browserContext.newCDPSession started +1ms
+  pw:api <= browserContext.newCDPSession succeeded +2ms
+  pw:api => cdpSession.send started +1ms
+  pw:api <= cdpSession.send succeeded +1ms
+  pw:api => cdpSession.detach started +58ms
+  pw:api <= cdpSession.detach succeeded +3ms
+  pw:api => browserContext.close started +29s
+  pw:api <= browserContext.close succeeded +33ms
+  ✘  1 benchmarks/native-engine/engine.e2e.spec.ts:311:1 › native recording survives blocked Node, pause and page switching (30.2s)
+
+
+  1) benchmarks/native-engine/engine.e2e.spec.ts:311:1 › native recording survives blocked Node, pause and page switching 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: Unknown native output
+
+       at ../../src/native-browser.ts:219
+
+      217 |       clearTimeout(request.timer)
+      218 |       if (header.ok) request.resolve(result)
+    > 219 |       else request.reject(new Error(header.error ?? 'Native command failed'))
+          |                           ^
+      220 |       return
+      221 |     }
+      222 |     if (stopping) return
+        at NativePacketDecoder.receive (/workspace/suitecut/src/native-browser.ts:219:27)
+        at NativePacketDecoder.push (/workspace/suitecut/src/native-protocol.ts:90:16)
+        at Socket.<anonymous> (/workspace/suitecut/src/native-browser.ts:258:15)
+
+    Error Context: benchmarks/native-memory/2026-10-10/cef-release-recheck/playwright-artifacts/engine.e2e-native-recordin-5850c-de-pause-and-page-switching/error-context.md
+
+    Error Context: benchmarks/native-memory/2026-10-10/cef-release-recheck/playwright-artifacts/engine.e2e-native-recordin-5850c-de-pause-and-page-switching/error-context.md
+
+  1 failed
+    benchmarks/native-engine/engine.e2e.spec.ts:311:1 › native recording survives blocked Node, pause and page switching 

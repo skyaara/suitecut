@@ -1,0 +1,85 @@
+{
+  "sourcePackets": 1014,
+  "sourceFrames": 973440,
+  "sourceSilentPackets": 3,
+  "sourceTimelineGaps": [
+    {
+      "fromMs": 3642.549395,
+      "toMs": 3662.549395,
+      "durationMs": 20.0,
+      "followingCallbackDelayMs": 3.577299000000039
+    }
+  ],
+  "maxCallbackDelayMs": 20.46378700000014,
+  "cases": [
+    {
+      "audioCodec": "aac",
+      "originMs": 657.278562,
+      "finishMs": 20817.278561333333,
+      "missingInputMs": 20.0,
+      "eventuallyUncoveredInputMs": 20.0,
+      "estimatedMissingAtEncodeMs": 20.0,
+      "interiorMissingInputMs": 20.0,
+      "interiorEventuallyUncoveredMs": 20.0,
+      "interiorSourceCopyMismatchedFrames": 0,
+      "sourceGapsWithinOutput": [
+        {
+          "fromMs": 3642.549395,
+          "toMs": 3662.549395,
+          "durationMs": 20.0,
+          "followingCallbackDelayMs": 3.577299000000039,
+          "outputStartMs": 2985.270833
+        }
+      ],
+      "decodedSilence10msWindows": [
+        {
+          "startMs": 0,
+          "endMs": 20,
+          "durationMs": 20
+        },
+        {
+          "startMs": 3010,
+          "endMs": 3020,
+          "durationMs": 10
+        },
+        {
+          "startMs": 13740,
+          "endMs": 13750,
+          "durationMs": 10
+        }
+      ],
+      "final": {
+        "ready": true,
+        "stopped": true,
+        "paused": false,
+        "videoFrames": 605,
+        "audioSamples": 967680,
+        "repeatedFrames": 2,
+        "droppedAudioSamples": 0,
+        "missingAudioSamples": 960,
+        "lateAudioSamples": 0,
+        "queuedVideoBytes": 0,
+        "queuedAudioBytes": 0,
+        "startedMs": 657.2785616616408,
+        "durationMs": 20166.666666666668,
+        "maximumEncodeMs": 40.84361399999989,
+        "error": ""
+      },
+      "decodedSamples": 968704,
+      "decodeErrors": false
+    }
+  ],
+  "hostCPUQuota": "400000 100000",
+  "hostCPUStatDelta": {
+    "usage_usec": 16836285,
+    "user_usec": 15773624,
+    "system_usec": 1062660,
+    "nice_usec": 0,
+    "nr_periods": 200,
+    "nr_throttled": 0,
+    "throttled_usec": 0,
+    "nr_bursts": 0,
+    "burst_usec": 0
+  },
+  "profileSamples": 21
+}

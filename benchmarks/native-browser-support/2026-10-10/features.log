@@ -1,0 +1,27 @@
+{"name":"DOM, shadow DOM and CSS layout","required":true,"status":"passed","detail":true}
+{"name":"Canvas 2D pixels","required":true,"status":"passed","detail":true}
+{"name":"WebAssembly execution","required":true,"status":"passed","detail":true}
+{"name":"Dedicated worker messaging","required":true,"status":"passed","detail":true}
+{"name":"Shared worker messaging","required":true,"status":"passed","detail":true}
+{"name":"IndexedDB write/read","required":true,"status":"passed","detail":true}
+{"name":"Service worker registration and fetch interception","required":true,"status":"passed","detail":true}
+{"name":"CacheStorage write/read","required":true,"status":"passed","detail":true}
+{"name":"WebSocket round trip","required":true,"status":"unavailable","detail":false}
+{"name":"WebRTC data-channel round trip","required":true,"status":"passed","detail":true}
+{"name":"WebGL pixel rendering on this host","required":false,"status":"unavailable","detail":false}
+{"name":"WebGPU adapter on this host","required":false,"status":"unavailable","detail":false}
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Required browser functionality failed; inspect features.json
+    at file:///workspace/suitecut/benchmarks/native-browser-support/features.mjs:253:3 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: false,
+  expected: true,
+  operator: '==',
+  diff: 'simple'
+}
+
+Node.js v24.19.0

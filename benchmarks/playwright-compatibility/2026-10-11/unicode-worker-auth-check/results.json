@@ -1,0 +1,777 @@
+{
+  "config": {
+    "argv": [
+      "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+      "/workspace/suitecut/node_modules/playwright/cli.js",
+      "test",
+      "--config",
+      "/tmp/suitecut-playwright-upstream/playwright-1.62.1/suitecut.config.ts",
+      "browsercontext-credentials.spec.ts",
+      "browsercontext-storage-state.spec.ts",
+      "chromium/chromium.spec.ts",
+      "--global-timeout",
+      "90000",
+      "--timeout",
+      "10000",
+      "--grep",
+      "lone surrogates|serviceWorker\\(\\), and fromServiceWorker|intercept service worker requests \\(main and within\\)|report intercepted service worker requests in HAR|credentials|setHTTPCredentials|resource body"
+    ],
+    "configFile": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/suitecut.config.ts",
+    "rootDir": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 90000,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 100,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/workspace/suitecut/benchmarks/playwright-compatibility/2026-10-11/unicode-worker-auth-check/artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests",
+        "testIgnore": [
+          "**/firefox/**",
+          "**/webkit/**",
+          "**/inspector/**"
+        ],
+        "testMatch": [
+          "library/**/*.spec.ts",
+          "page/**/*.spec.ts"
+        ],
+        "timeout": 10000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "/workspace/suitecut/benchmarks/playwright-compatibility/2026-10-11/unicode-worker-auth-check/results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.62.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "library/browsercontext-credentials.spec.ts",
+      "file": "library/browsercontext-credentials.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "should fail without credentials",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 125,
+                  "error": {
+                    "message": "TypeError: responseOrError.status is not a function",
+                    "stack": "TypeError: responseOrError.status is not a function\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:34:28",
+                    "location": {
+                      "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts",
+                      "column": 28,
+                      "line": 34
+                    },
+                    "snippet": "  32 |     expect(responseOrError.message).toContain('net::ERR_INVALID_AUTH_CREDENTIALS');\n  33 |   else\n> 34 |     expect(responseOrError.status()).toBe(401);\n     |                            ^\n  35 | });\n  36 |\n  37 | it('should work with setHTTPCredentials', async ({ browser, server, failsOn401 }) => {"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts",
+                        "column": 28,
+                        "line": 34
+                      },
+                      "message": "TypeError: responseOrError.status is not a function\n\n  32 |     expect(responseOrError.message).toContain('net::ERR_INVALID_AUTH_CREDENTIALS');\n  33 |   else\n> 34 |     expect(responseOrError.status()).toBe(401);\n     |                            ^\n  35 | });\n  36 |\n  37 | it('should work with setHTTPCredentials', async ({ browser, server, failsOn401 }) => {\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:34:28"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T10:10:52.838Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/workspace/suitecut/benchmarks/playwright-compatibility/2026-10-11/unicode-worker-auth-check/artifacts/library-browsercontext-cre-27f77-ld-fail-without-credentials/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts",
+                    "column": 28,
+                    "line": 34
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "a77da768f7b10734303d-758b96f1e736d1b9b1f8",
+          "file": "library/browsercontext-credentials.spec.ts",
+          "line": 26,
+          "column": 1
+        },
+        {
+          "title": "should work with setHTTPCredentials",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 110,
+                  "error": {
+                    "message": "TypeError: responseOrError.status is not a function",
+                    "stack": "TypeError: responseOrError.status is not a function\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:46:28",
+                    "location": {
+                      "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts",
+                      "column": 28,
+                      "line": 46
+                    },
+                    "snippet": "  44 |     expect(responseOrError.message).toContain('net::ERR_INVALID_AUTH_CREDENTIALS');\n  45 |   else\n> 46 |     expect(responseOrError.status()).toBe(401);\n     |                            ^\n  47 |\n  48 |   await context.setHTTPCredentials({ username: 'user', password: 'pass' });\n  49 |   responseOrError = await page.reload();"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts",
+                        "column": 28,
+                        "line": 46
+                      },
+                      "message": "TypeError: responseOrError.status is not a function\n\n  44 |     expect(responseOrError.message).toContain('net::ERR_INVALID_AUTH_CREDENTIALS');\n  45 |   else\n> 46 |     expect(responseOrError.status()).toBe(401);\n     |                            ^\n  47 |\n  48 |   await context.setHTTPCredentials({ username: 'user', password: 'pass' });\n  49 |   responseOrError = await page.reload();\n    at /tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts:46:28"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T10:10:54.688Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/workspace/suitecut/benchmarks/playwright-compatibility/2026-10-11/unicode-worker-auth-check/artifacts/library-browsercontext-cre-00620-ork-with-setHTTPCredentials/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browsercontext-credentials.spec.ts",
+                    "column": 28,
+                    "line": 46
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "a77da768f7b10734303d-9422411a1076424dc472",
+          "file": "library/browsercontext-credentials.spec.ts",
+          "line": 37,
+          "column": 1
+        },
+        {
+          "title": "should work with correct credentials @smoke",
+          "ok": true,
+          "tags": [
+            "smoke"
+          ],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 158,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T10:10:56.208Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "a77da768f7b10734303d-7a34806773a12baa3788",
+          "file": "library/browsercontext-credentials.spec.ts",
+          "line": 54,
+          "column": 1
+        },
+        {
+          "title": "should fail with wrong credentials",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 121,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T10:10:57.057Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "a77da768f7b10734303d-49e5cba23e17002b2a8d",
+          "file": "library/browsercontext-credentials.spec.ts",
+          "line": 65,
+          "column": 1
+        },
+        {
+          "title": "should return resource body",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 192,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T10:10:57.207Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "a77da768f7b10734303d-943e0b7d0cebd9f29499",
+          "file": "library/browsercontext-credentials.spec.ts",
+          "line": 76,
+          "column": 1
+        },
+        {
+          "title": "should work with correct credentials and matching origin",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 103,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T10:10:57.411Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "a77da768f7b10734303d-0f41b830e96c8cf9eb54",
+          "file": "library/browsercontext-credentials.spec.ts",
+          "line": 89,
+          "column": 1
+        },
+        {
+          "title": "should work with correct credentials and matching origin case insensitive",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 106,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T10:10:57.525Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "a77da768f7b10734303d-4aca753e61a31ef9875b",
+          "file": "library/browsercontext-credentials.spec.ts",
+          "line": 100,
+          "column": 1
+        },
+        {
+          "title": "should fail with correct credentials and mismatching scheme",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 118,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T10:10:57.641Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "a77da768f7b10734303d-c7798dc605cec2aebda2",
+          "file": "library/browsercontext-credentials.spec.ts",
+          "line": 111,
+          "column": 1
+        },
+        {
+          "title": "should fail with correct credentials and mismatching hostname",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 107,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T10:10:57.788Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "a77da768f7b10734303d-5ff0b7002ecf229694dc",
+          "file": "library/browsercontext-credentials.spec.ts",
+          "line": 125,
+          "column": 1
+        },
+        {
+          "title": "should fail with correct credentials and mismatching port",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 132,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T10:10:57.911Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "a77da768f7b10734303d-935f695d871e5acaf196",
+          "file": "library/browsercontext-credentials.spec.ts",
+          "line": 141,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "library/browsercontext-storage-state.spec.ts",
+      "file": "library/browsercontext-storage-state.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "should serialize storageState with lone surrogates",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [
+                {
+                  "type": "issue",
+                  "description": "https://github.com/microsoft/playwright-dotnet/issues/2819"
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 148,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T10:10:58.065Z",
+                  "annotations": [
+                    {
+                      "type": "issue",
+                      "description": "https://github.com/microsoft/playwright-dotnet/issues/2819"
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f676264934f766ea79c7-4ca57b0b29ed551c199a",
+          "file": "library/browsercontext-storage-state.spec.ts",
+          "line": 314,
+          "column": 3
+        },
+        {
+          "title": "should round-trip WebAuthn credentials with storageState",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 74,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T10:10:58.249Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f676264934f766ea79c7-38e516b9d5d2568998d8",
+          "file": "library/browsercontext-storage-state.spec.ts",
+          "line": 543,
+          "column": 3
+        },
+        {
+          "title": "setStorageState should replace credentials",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 52,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T10:10:58.349Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f676264934f766ea79c7-c559b39269b5c19efe98",
+          "file": "library/browsercontext-storage-state.spec.ts",
+          "line": 559,
+          "column": 3
+        }
+      ]
+    },
+    {
+      "title": "library/chromium/chromium.spec.ts",
+      "file": "library/chromium/chromium.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "serviceWorker(), and fromServiceWorker() work",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 160,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T10:10:58.698Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "83cbaf49a46c82c2c321-38f71b6352785ec8d2d4",
+          "file": "library/chromium/chromium.spec.ts",
+          "line": 177,
+          "column": 5
+        },
+        {
+          "title": "should intercept service worker requests (main and within)",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 175,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T10:10:58.871Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "83cbaf49a46c82c2c321-7b298597460b5ca8df92",
+          "file": "library/chromium/chromium.spec.ts",
+          "line": 211,
+          "column": 5
+        },
+        {
+          "title": "should report intercepted service worker requests in HAR",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 159,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T10:10:59.063Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "83cbaf49a46c82c2c321-8cd55d165849a58dca18",
+          "file": "library/chromium/chromium.spec.ts",
+          "line": 299,
+          "column": 5
+        }
+      ],
+      "suites": [
+        {
+          "title": "http credentials",
+          "file": "library/chromium/chromium.spec.ts",
+          "line": 86,
+          "column": 6,
+          "specs": [
+            {
+              "title": "httpCredentials",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 10000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 260,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-11T10:10:58.422Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "83cbaf49a46c82c2c321-75cfaf49e8291a68f851",
+              "file": "library/chromium/chromium.spec.ts",
+              "line": 89,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-11T10:10:51.949Z",
+    "duration": 7411.398,
+    "expected": 15,
+    "skipped": 0,
+    "unexpected": 2,
+    "flaky": 0
+  }
+}

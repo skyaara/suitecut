@@ -1,0 +1,17 @@
+Get:1 https://archive.ubuntu.com/ubuntu noble InRelease [256 kB]
+Get:2 https://archive.ubuntu.com/ubuntu noble-updates InRelease [126 kB]
+Get:3 https://archive.ubuntu.com/ubuntu noble/main amd64 Packages [1401 kB]
+Get:4 https://archive.ubuntu.com/ubuntu noble/main Translation-en [513 kB]
+Get:5 https://archive.ubuntu.com/ubuntu noble/universe amd64 Packages [15.0 MB]
+Get:6 https://archive.ubuntu.com/ubuntu noble/universe Translation-en [5982 kB]
+Get:7 https://archive.ubuntu.com/ubuntu noble/multiverse amd64 Packages [269 kB]
+Get:8 https://archive.ubuntu.com/ubuntu noble/multiverse Translation-en [118 kB]
+Get:9 https://archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages [1375 kB]
+Get:10 https://archive.ubuntu.com/ubuntu noble-updates/main Translation-en [306 kB]
+Get:11 https://archive.ubuntu.com/ubuntu noble-updates/universe amd64 Packages [1702 kB]
+Get:12 https://archive.ubuntu.com/ubuntu noble-updates/universe Translation-en [342 kB]
+Get:13 https://archive.ubuntu.com/ubuntu noble-updates/multiverse amd64 Packages [55.0 kB]
+Get:14 https://archive.ubuntu.com/ubuntu noble-updates/multiverse Translation-en [14.3 kB]
+Fetched 27.5 MB in 15s (1842 kB/s)
+Reading package lists...
+W: Unable to read /etc/apt/-/ - DirectoryExists (2: No such file or directory)

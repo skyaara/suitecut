@@ -1,0 +1,133 @@
+{
+  "backend": "suitecut",
+  "durationRequestedMs": 60000,
+  "stress": true,
+  "cold": false,
+  "width": 1920,
+  "height": 1080,
+  "fps": 30,
+  "startedAt": "2026-10-10T08:53:56.336Z",
+  "fixture": "Continuous deterministic AudioWorklet noise; no intentional silence",
+  "events": [
+    {
+      "atMs": 20029.679176999998,
+      "type": "renderer-main-thread-block",
+      "durationMs": 4000
+    },
+    {
+      "atMs": 40064.814329,
+      "type": "controller-block",
+      "durationMs": 4000
+    }
+  ],
+  "status": "capture-completed; analysis-pending",
+  "recordingPath": "/workspace/suitecut/benchmarks/obs-cef/2026-10-10-native-audio-profile/suitecut-matched/recording.mkv",
+  "receiverPath": "/workspace/suitecut/benchmarks/obs-cef/2026-10-10-native-audio-profile/suitecut-matched/receiver.flv",
+  "browserVersion": "154.0.8037.98",
+  "audioStart": {
+    "generator": "frame-coded interpolated hash noise",
+    "sampleRate": 48000,
+    "quantum": 24,
+    "amplitude": 0.15,
+    "firstFrame": 640,
+    "currentFrame": 768
+  },
+  "latest": {
+    "atMs": 59450.913154,
+    "record": {
+      "ready": true,
+      "stopped": false,
+      "paused": false,
+      "videoFrames": 1790,
+      "audioSamples": 2864128,
+      "repeatedFrames": 129,
+      "droppedAudioSamples": 0,
+      "missingAudioSamples": 4800,
+      "lateAudioSamples": 0,
+      "queuedVideoBytes": 18662400,
+      "queuedAudioBytes": 26880,
+      "startedMs": 2944.045139,
+      "durationMs": 59666.666666666664,
+      "maximumEncodeMs": 98.31504999999743,
+      "bufferedDelayMs": 150,
+      "error": ""
+    },
+    "stream": {
+      "ready": true,
+      "stopped": false,
+      "paused": false,
+      "videoFrames": 1781,
+      "audioSamples": 2849792,
+      "repeatedFrames": 123,
+      "droppedAudioSamples": 0,
+      "missingAudioSamples": 4800,
+      "lateAudioSamples": 0,
+      "queuedVideoBytes": 18662400,
+      "queuedAudioBytes": 26880,
+      "startedMs": 3252.785967,
+      "durationMs": 59366.666666666664,
+      "maximumEncodeMs": 104.89091899999767,
+      "bufferedDelayMs": 150,
+      "error": ""
+    }
+  },
+  "activeMs": 60093.645183,
+  "page": {
+    "snapshot": {
+      "markerCount": 1759,
+      "scrollY": 180,
+      "scrollEvents": 11,
+      "keyEvents": 0,
+      "clicks": 0,
+      "value": "",
+      "choice": "First",
+      "secondary": false
+    },
+    "audioProfile": {
+      "generator": "frame-coded interpolated hash noise",
+      "sampleRate": 48000,
+      "quantum": 24,
+      "amplitude": 0.15,
+      "firstFrame": 640,
+      "currentFrame": 2984832
+    }
+  },
+  "finalStream": {
+    "ready": true,
+    "stopped": true,
+    "paused": false,
+    "videoFrames": 1806,
+    "audioSamples": 2888704,
+    "repeatedFrames": 123,
+    "droppedAudioSamples": 0,
+    "missingAudioSamples": 5114,
+    "lateAudioSamples": 0,
+    "queuedVideoBytes": 0,
+    "queuedAudioBytes": 0,
+    "startedMs": 3252.785967,
+    "durationMs": 60200,
+    "maximumEncodeMs": 104.89091899999767,
+    "bufferedDelayMs": 150,
+    "error": ""
+  },
+  "finalRecord": {
+    "ready": true,
+    "stopped": true,
+    "paused": false,
+    "videoFrames": 1817,
+    "audioSamples": 2907136,
+    "repeatedFrames": 129,
+    "droppedAudioSamples": 0,
+    "missingAudioSamples": 4887,
+    "lateAudioSamples": 0,
+    "queuedVideoBytes": 0,
+    "queuedAudioBytes": 0,
+    "startedMs": 2944.045139,
+    "durationMs": 60566.666666666664,
+    "maximumEncodeMs": 98.31504999999743,
+    "bufferedDelayMs": 150,
+    "error": ""
+  },
+  "receiverExitCode": 0,
+  "completedAt": "2026-10-10T08:55:00.361Z"
+}

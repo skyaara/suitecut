@@ -1,0 +1,97 @@
+[WARN] Your node_modules are out of sync with your lockfile. The workspace structure has changed since last install
+$ pnpm check && pnpm site:check && pnpm site:build && pnpm test:package:built
+$ pnpm site:sync && pnpm build && pnpm audio-plugins:check && pnpm test:audio-plugin:built && pnpm lint && pnpm format:check && pnpm typecheck && pnpm test -- --run
+$ pnpm --filter suitecut-docs sync
+$ astro sync
+07:44:11 [types] Generated 118ms
+$ pnpm clean:dist && tsc -p tsconfig.build.json
+$ node scripts/clean-dist.mjs
+$ pnpm audio-plugins:build && pnpm --filter @suitecut/audio-sherpa-core check && pnpm --filter @suitecut/audio-vits check && pnpm --filter @suitecut/audio-matcha check && pnpm --filter @suitecut/audio-kokoro-sherpa check && pnpm --filter @suitecut/audio-kitten check && pnpm --filter @suitecut/audio-zipvoice check && pnpm --filter @suitecut/audio-pocket check && pnpm --filter @suitecut/audio-supertonic check
+$ pnpm --filter @suitecut/audio-sherpa-core build && pnpm --filter @suitecut/audio-vits build && pnpm --filter @suitecut/audio-matcha build && pnpm --filter @suitecut/audio-kokoro-sherpa build && pnpm --filter @suitecut/audio-kitten build && pnpm --filter @suitecut/audio-zipvoice build && pnpm --filter @suitecut/audio-pocket build && pnpm --filter @suitecut/audio-supertonic build
+$ pnpm clean:dist && tsc -p tsconfig.json
+$ node ../../scripts/clean-plugin-dist.mjs
+$ pnpm clean:dist && tsc -p tsconfig.json
+$ node ../../scripts/clean-plugin-dist.mjs
+$ pnpm clean:dist && tsc -p tsconfig.json
+$ node ../../scripts/clean-plugin-dist.mjs
+$ pnpm clean:dist && tsc -p tsconfig.json
+$ node ../../scripts/clean-plugin-dist.mjs
+$ pnpm clean:dist && tsc -p tsconfig.json
+$ node ../../scripts/clean-plugin-dist.mjs
+$ pnpm clean:dist && tsc -p tsconfig.json
+$ node ../../scripts/clean-plugin-dist.mjs
+$ pnpm clean:dist && tsc -p tsconfig.json
+$ node ../../scripts/clean-plugin-dist.mjs
+$ pnpm clean:dist && tsc -p tsconfig.json
+$ node ../../scripts/clean-plugin-dist.mjs
+$ tsc --noEmit -p tsconfig.json
+$ tsc --noEmit -p tsconfig.json
+$ tsc --noEmit -p tsconfig.json
+$ tsc --noEmit -p tsconfig.json
+$ tsc --noEmit -p tsconfig.json
+$ tsc --noEmit -p tsconfig.json
+$ tsc --noEmit -p tsconfig.json
+$ tsc --noEmit -p tsconfig.json
+$ node scripts/verify-audio-plugin.mjs
+Verified external audio plugin synthesis and disposal on normal and aborted worker shutdown.
+$ eslint . --max-warnings 0
+$ prettier --check "{src,tests,examples}/**/*.ts" "plugins/**/*.{ts,json,mjs}" "scripts/**/*.mjs" "site/**/*.{astro,css,ts,json,mjs}" ".github/**/*.yml" "*.{js,json}"
+Checking formatting...
+All matched files use Prettier code style!
+$ tsc --noEmit
+$ vitest run -- --run
+
+ RUN  v4.1.11 /workspace/suitecut
+
+
+ Test Files  38 passed (38)
+      Tests  328 passed (328)
+   Start at  07:45:50
+   Duration  10.63s (transform 2.06s, setup 0ms, import 16.85s, tests 6.55s, environment 8ms)
+
+$ pnpm --filter suitecut-docs check
+$ astro check
+▶ Astro collects anonymous usage data.
+  This information helps us improve Astro.
+  Run "astro telemetry disable" to opt-out.
+  https://astro.build/telemetry
+
+07:46:03 [types] Generated 80ms
+07:46:03 [check] Getting diagnostics for Astro files in /workspace/suitecut/site...
+Result (26 files): 
+- 0 errors
+- 0 warnings
+- 0 hints
+
+$ pnpm --filter suitecut-docs build
+$ astro build
+07:46:11 [types] Generated 78ms
+07:46:11 [build] output: "static"
+07:46:11 [build] mode: "static"
+07:46:11 [build] directory: /workspace/suitecut/site/dist/
+07:46:11 [build] Collecting build info...
+07:46:11 [build] ✓ Completed in 104ms.
+07:46:11 [build] Building static entrypoints...
+07:46:11 [vite] ✓ built in 828ms
+07:46:12 [vite] ✓ built in 62ms
+07:46:12 [build] Rearranging server assets...
+
+ generating static routes 
+07:46:12   ├─ /404.html (+12ms) 
+07:46:12   ├─ /benchmarks/data.json (+3ms) 
+07:46:12   ├─ /benchmarks/index.html (+6ms) 
+07:46:12   ├─ /docs/api/index.html (+322ms) 
+07:46:12   ├─ /docs/audio-plugins/index.html (+69ms) 
+07:46:12   ├─ /docs/examples/index.html (+5ms) 
+07:46:12   ├─ /docs/kokoro/index.html (+5ms) 
+07:46:12   ├─ /docs/streaming/index.html (+48ms) 
+07:46:12   ├─ /docs/index.html (+12ms) 
+07:46:12   ├─ /examples/index.html (+33ms) 
+07:46:12   ├─ /index.html (+1.38s) 
+07:46:14 ✓ Completed in 1.95s.
+
+07:46:14 [build] ✓ Completed in 2.90s.
+07:46:14 [build] 10 page(s) built in 3.01s
+07:46:14 [build] Complete!
+$ node scripts/verify-package.mjs
+Verified suitecut@2.1.0 and 8 split audio packages. VITS-only install, Playwright Test, standalone Playwright, and public import smokes passed.

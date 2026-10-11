@@ -1,0 +1,15 @@
+{
+  "clientTimezone": "Asia/Calcutta",
+  "clientDate": "2026-10-09",
+  "rawTimestamps": "UTC",
+  "platform": "Linux-6.18.44-x86_64-with-glibc2.41",
+  "cpuQuota": "400000 100000",
+  "memoryLimitBytes": 17179869184,
+  "gpu": "Mesa llvmpipe software rendering",
+  "obsVersion": "30.2.3.1-3",
+  "obsBrowserPlugin": false,
+  "obsCapture": "external sandboxed Chromium, XSHM crop, PulseAudio benchmark.monitor",
+  "audioSampleRate": 48000,
+  "nativeReferenceArchive": "/workspace/shared/suitecut-optimization-evidence-2026-10-09.tar.gz",
+  "observationNotes": "Full media decode is deferred until capture finishes. Analysis-script preparation includes brief syntax checks; no production build, unit suite or additional browser/encoder benchmark runs concurrently."
+}

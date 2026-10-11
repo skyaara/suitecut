@@ -1,0 +1,21 @@
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+HTTP/1.1 200 OK
+date: Sat, 10 Oct 2026 11:01:49 GMT
+server: envoy
+
+HTTP/2 405 
+allow: GET
+x-frame-options: SAMEORIGIN
+x-xss-protection: 1; mode=block
+x-content-type-options: nosniff
+strict-transport-security: max-age=31536000
+cache-control: private, max-age=0
+date: Sat, 10 Oct 2026 11:01:49 GMT
+set-cookie: twitch.lohp.countryCode=US; domain=.twitch.tv; path=/; expires=Thu, 04 Nov 2027 11:01:49 GMT;
+nel: {"report_to":"nel","max_age":86400,"include_subdomains":true,"success_fraction":0,"failure_fraction":1}
+report-to: {"group":"nel","max_age":86400,"include_subdomains":true,"endpoints":[{"url":"https://nel.twitch.tv/nel"}]}
+x-envoy-upstream-service-time: 46
+server: envoy
+

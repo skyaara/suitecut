@@ -1,0 +1,7 @@
+{
+  "backend": "obs-external",
+  "mode": "record",
+  "workloadStatus": "completed; media validation pending",
+  "valid": false,
+  "error": "AssertionError('No visible marker motion')"
+}

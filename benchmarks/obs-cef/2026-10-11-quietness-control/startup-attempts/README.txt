@@ -1,0 +1,1 @@
+Profile setup attempts aborted before output. OBS INI parser requires no spaces around key delimiters. Effective-video assertions rejected every misconfigured attempt; none is a benchmark result. Fixed ConfigParser writer to space_around_delimiters=False.

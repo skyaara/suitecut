@@ -1,0 +1,50 @@
+{
+  "suitecutVersion": "2.1.0",
+  "playwrightVersion": "1.62.1",
+  "cefVersion": "152.0.6+g708dc14+chromium-152.0.7977.83",
+  "stockChromiumVersion": "151.0.7922.34",
+  "upstreamTag": "v1.62.1",
+  "upstreamSourceSha256": "f6b38805b0b021423bb908cd7682a455283c22742bf7d95c190927f3fb11172c",
+  "cpuAffinity": "0-3",
+  "cpuQuota": "400000 100000",
+  "memoryMaxBytes": 17179869184,
+  "benchmark": false,
+  "sourceSha256": {
+    "native/browser/browser.cc": "48c0a08b1e28218de87ac69fc3e55a9ecf2d17618315fac64af7ae16aafea5a7",
+    "src/engine.ts": "556f0e645f2417fe08de334922c63531973bbd0e79c7800b5971be89dd1ae300",
+    "src/native-browser.ts": "914ae6d9cff35bd9736cc3684fe0da014cd466ba16be46b7a8d30b7cb01db889",
+    "src/engine-test.ts": "aa9dcc9bcb4cd70148cf306fe7dc004385aa7c452f5758f44ea3bc6bf71f8fab",
+    "native/browser/CMakeLists.txt": "f4daa7269c1c3a0988f44917eda22d39d20be9ed797972817e629160d911749b",
+    "benchmarks/playwright-compatibility/compatibility.spec.ts": "843a0b91d8ca0f6373217cadf29d95a4c21edd0a37f9e2b57f2d140e265f1fb7",
+    "benchmarks/playwright-compatibility/playwright.config.ts": "5bce3a2e89dd405cdf009ffd7f86796708f27d6f88ec6b3ba4ecd49043199187",
+    "native/browser/cdp_json.h": "219195a57071be65460fd2c4a6d62c8265539f3aca48d99f983f849d97ea2340",
+    "native/browser/cdp_json_test.cc": "5f4ee58fca9d40cdde6c50f3e352fe2924303f0f60beb74c927000d0a68cc540",
+    "native/browser/fuzz_cdp_json.cc": "4b605e14952b4fb0a0ca1608add5c2aa56fa14bd39cad7bc8863ebf86e9a30d9",
+    "scripts/pack-cef.py": "3b7a1e027f1dd92ff363a737bbe4454eda933a0c9972f1da04c5cd6887cb034a",
+    "scripts/pack-native.py": "917fa9c14f10f8a73d51ce841aeef92ad3061a37fc2fbcac47e17baafba03f0d"
+  },
+  "note": "Functional compatibility tests. Not a repeat of the prior 4 CPU / 8 GB published performance benchmark.",
+  "finalBinarySha256": "26029b3d5623c07c51e451ec6cc26796ce1f3405bc689497b3b1c72ba91eb0f8",
+  "compiler": "GCC 14 Release; standalone JSON fuzz target: Clang 19 ASAN/UBSAN/libFuzzer",
+  "fuzz": {
+    "target": "cdp_json",
+    "executions": 366054,
+    "seconds": 31,
+    "seed": 20261011,
+    "crashes": 0,
+    "scope": "JSON transport helper only, not CEF or browser.cc"
+  },
+  "retainedVerificationRuns": [
+    "upstream-api-final",
+    "upstream-video-final",
+    "validated-cef-final",
+    "validated-native-final",
+    "release-verified-chromium"
+  ],
+  "discardedPageDebuggerTrialRuns": [
+    "delivery-upstream-api",
+    "delivery-cef",
+    "delivery-native",
+    "blank-popup-repeated"
+  ]
+}

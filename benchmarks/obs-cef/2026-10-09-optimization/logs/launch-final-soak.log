@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "/workspace/suitecut/benchmarks/obs-cef/launch-final-soak.py", line 9, in <module>
+    assert pilot['status']=='passed',pilot.get('error')
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: AssertionError [ERR_ASSERTION]: recording 5: missing flash/tone matches
+    at file:///workspace/suitecut/benchmarks/obs-cef/soak.mjs:64:4

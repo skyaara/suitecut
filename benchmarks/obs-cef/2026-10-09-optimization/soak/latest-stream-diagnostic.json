@@ -1,0 +1,14 @@
+{
+  "event": "resynchronized",
+  "bottleneck": "video-input-backpressure",
+  "lagMs": 605.2478966664057,
+  "networkBlockedMs": 0,
+  "networkQueuedBytes": 0,
+  "processingMs": 0.0003400000277906656,
+  "videoWriteMs": 127.18131599994376,
+  "audioWriteMs": 0.0835589999333024,
+  "outputLagMs": 0,
+  "progressAgeMs": 84.58560100011528,
+  "skippedMs": 605.2478966664057,
+  "incidents": 0
+}

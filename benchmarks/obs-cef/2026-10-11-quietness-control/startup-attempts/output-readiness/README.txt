@@ -1,0 +1,1 @@
+OBS StartRecord/StartStream requests acknowledge before the output is active. The immediate status assertion aborted these setup attempts, so they are excluded from benchmark results. Updated harness polls until outputActive and outputBytes > 0, with a 10-second timeout, then starts workload. Interrupted final attempt retained.

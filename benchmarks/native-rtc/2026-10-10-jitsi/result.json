@@ -1,0 +1,23 @@
+{
+  "requestedUrl": "https://meet.jit.si/ColourfulProsperitiesSignalTotally",
+  "startedAt": "2026-10-10T12:30:10.669Z",
+  "backend": "SuiteCut CEF via private Playwright adapter",
+  "status": "failed",
+  "actions": [
+    {
+      "id": "name",
+      "type": "fill",
+      "selector": "#premeeting-name-input",
+      "at": "2026-10-10T12:30:33.366Z"
+    }
+  ],
+  "cefVersion": "152.0.6+g708dc14+chromium-152.0.7977.83",
+  "lastRequestFailure": {
+    "origin": "null",
+    "path": "/",
+    "error": "net::ERR_BLOCKED_BY_CLIENT"
+  },
+  "lastPeers": [],
+  "error": "locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('button[aria-label=\"Join meeting\"]')\u001b[22m\n",
+  "finishedAt": "2026-10-10T12:30:50.879Z"
+}

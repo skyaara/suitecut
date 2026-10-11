@@ -1,0 +1,61 @@
+[
+  {
+    "output": "recording.mp4",
+    "completeSourceEndMs": 859606.694389,
+    "verificationEndMs": 859456.694389,
+    "checkedFrames": 41128960,
+    "mismatchedFramesWithinCompleteSourceRange": 0,
+    "initialMismatchLocations": [],
+    "reason": "Aborted source CSV has an unflushed tail. Compare only intervals covered by complete source rows and exclude 150 ms at that boundary."
+  },
+  {
+    "output": "receiver.flv",
+    "completeSourceEndMs": 859606.694389,
+    "verificationEndMs": 859456.694389,
+    "checkedFrames": 41115648,
+    "mismatchedFramesWithinCompleteSourceRange": 0,
+    "initialMismatchLocations": [
+      {
+        "atMs": 859600.564688,
+        "frames": 730,
+        "withinCompleteSourceRange": false
+      },
+      {
+        "atMs": 859621.898021,
+        "frames": 1024,
+        "withinCompleteSourceRange": false
+      },
+      {
+        "atMs": 859643.231354,
+        "frames": 1024,
+        "withinCompleteSourceRange": false
+      },
+      {
+        "atMs": 859664.564688,
+        "frames": 1024,
+        "withinCompleteSourceRange": false
+      },
+      {
+        "atMs": 859685.898021,
+        "frames": 1024,
+        "withinCompleteSourceRange": false
+      },
+      {
+        "atMs": 859707.231354,
+        "frames": 1024,
+        "withinCompleteSourceRange": false
+      },
+      {
+        "atMs": 859728.564688,
+        "frames": 1024,
+        "withinCompleteSourceRange": false
+      },
+      {
+        "atMs": 859749.898021,
+        "frames": 762,
+        "withinCompleteSourceRange": false
+      }
+    ],
+    "reason": "Aborted source CSV has an unflushed tail. Compare only intervals covered by complete source rows and exclude 150 ms at that boundary."
+  }
+]

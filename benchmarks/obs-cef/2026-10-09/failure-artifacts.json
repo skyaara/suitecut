@@ -1,0 +1,410 @@
+[
+  {
+    "id": "720p60-scroll-native-4",
+    "trialStatus": "failed",
+    "artifacts": [
+      {
+        "path": "/workspace/suitecut/.suitecut/obs-cef-evidence/2026-10-09/720p60-scroll-native-4/suitecut-source-e561583d-4c61-4d05-8c0c-8c856c724868-4937e1f7-72e3-4de7-9a8a-f964bd6dc7ee.webm",
+        "bytes": 220163,
+        "probeExitCode": 0,
+        "probe": {
+          "streams": [
+            {
+              "index": 0,
+              "codec_name": "vp9",
+              "codec_long_name": "Google VP9",
+              "profile": "Profile 0",
+              "codec_type": "video",
+              "codec_tag_string": "[0][0][0][0]",
+              "codec_tag": "0x0000",
+              "width": 1280,
+              "height": 720,
+              "coded_width": 1280,
+              "coded_height": 720,
+              "closed_captions": 0,
+              "film_grain": 0,
+              "has_b_frames": 0,
+              "sample_aspect_ratio": "1:1",
+              "display_aspect_ratio": "16:9",
+              "pix_fmt": "yuv420p",
+              "level": -99,
+              "color_range": "tv",
+              "color_space": "bt709",
+              "field_order": "progressive",
+              "refs": 1,
+              "r_frame_rate": "60/1",
+              "avg_frame_rate": "60/1",
+              "time_base": "1/1000",
+              "start_pts": 0,
+              "start_time": "0.000000",
+              "disposition": {
+                "default": 0,
+                "dub": 0,
+                "original": 0,
+                "comment": 0,
+                "lyrics": 0,
+                "karaoke": 0,
+                "forced": 0,
+                "hearing_impaired": 0,
+                "visual_impaired": 0,
+                "clean_effects": 0,
+                "attached_pic": 0,
+                "timed_thumbnails": 0,
+                "non_diegetic": 0,
+                "captions": 0,
+                "descriptions": 0,
+                "metadata": 0,
+                "dependent": 0,
+                "still_image": 0,
+                "multilayer": 0
+              },
+              "tags": {
+                "ENCODER": "Lavc61.19.101 libvpx-vp9",
+                "DURATION": "00:00:10.917000000"
+              }
+            }
+          ],
+          "format": {
+            "filename": ".suitecut/obs-cef-evidence/2026-10-09/720p60-scroll-native-4/suitecut-source-e561583d-4c61-4d05-8c0c-8c856c724868-4937e1f7-72e3-4de7-9a8a-f964bd6dc7ee.webm",
+            "nb_streams": 1,
+            "nb_programs": 0,
+            "nb_stream_groups": 0,
+            "format_name": "matroska,webm",
+            "format_long_name": "Matroska / WebM",
+            "start_time": "0.000000",
+            "duration": "10.917000",
+            "size": "220163",
+            "bit_rate": "161335",
+            "probe_score": 100,
+            "tags": {
+              "ENCODER": "Lavf61.7.103"
+            }
+          }
+        },
+        "frameDecodeExitCode": 0
+      }
+    ]
+  },
+  {
+    "id": "4k30-canvas-native-1",
+    "trialStatus": "failed",
+    "artifacts": [
+      {
+        "path": "/workspace/suitecut/.suitecut/obs-cef-evidence/2026-10-09/4k30-canvas-native-1/suitecut-source-4e28d5d5-f004-4d68-8f86-604be56823cb-66943da3-3cee-479f-9dc5-2c4e97c1a697.webm",
+        "bytes": 0,
+        "probeExitCode": 1,
+        "probeError": "[matroska,webm @ 0x55ead5a70ec0] EBML header parsing failed\n.suitecut/obs-cef-evidence/2026-10-09/4k30-canvas-native-1/suitecut-source-4e28d5d5-f004-4d68-8f86-604be56823cb-66943da3-3cee-479f-9dc5-2c4e97c1a697.webm: Invalid data found when processing input\n"
+      }
+    ]
+  },
+  {
+    "id": "4k30-canvas-native-2",
+    "trialStatus": "failed",
+    "artifacts": [
+      {
+        "path": "/workspace/suitecut/.suitecut/obs-cef-evidence/2026-10-09/4k30-canvas-native-2/suitecut-source-d6371def-b568-49f5-98d1-56437e2a4647-9ce4ff3a-2893-4357-b466-cf1260c807e6.webm",
+        "bytes": 0,
+        "probeExitCode": 1,
+        "probeError": "[matroska,webm @ 0x56104beeeec0] EBML header parsing failed\n.suitecut/obs-cef-evidence/2026-10-09/4k30-canvas-native-2/suitecut-source-d6371def-b568-49f5-98d1-56437e2a4647-9ce4ff3a-2893-4357-b466-cf1260c807e6.webm: Invalid data found when processing input\n"
+      }
+    ]
+  },
+  {
+    "id": "4k30-canvas-native-4",
+    "trialStatus": "failed",
+    "artifacts": [
+      {
+        "path": "/workspace/suitecut/.suitecut/obs-cef-evidence/2026-10-09/4k30-canvas-native-4/suitecut-source-b6420568-aed4-4d07-a430-23c0c8727e9f-74d01023-9efb-4afe-b2b8-4bbe594195d0.webm",
+        "bytes": 0,
+        "probeExitCode": 1,
+        "probeError": "[matroska,webm @ 0x56212ef88ec0] EBML header parsing failed\n.suitecut/obs-cef-evidence/2026-10-09/4k30-canvas-native-4/suitecut-source-b6420568-aed4-4d07-a430-23c0c8727e9f-74d01023-9efb-4afe-b2b8-4bbe594195d0.webm: Invalid data found when processing input\n"
+      }
+    ]
+  },
+  {
+    "id": "4k30-canvas-native-5",
+    "trialStatus": "failed",
+    "artifacts": [
+      {
+        "path": "/workspace/suitecut/.suitecut/obs-cef-evidence/2026-10-09/4k30-canvas-native-5/suitecut-source-c182b487-a9c1-453b-8af3-6384aa12603c-76a86b6d-b541-487a-9349-779586a298b2.webm",
+        "bytes": 0,
+        "probeExitCode": 1,
+        "probeError": "[matroska,webm @ 0x56211e34fec0] EBML header parsing failed\n.suitecut/obs-cef-evidence/2026-10-09/4k30-canvas-native-5/suitecut-source-c182b487-a9c1-453b-8af3-6384aa12603c-76a86b6d-b541-487a-9349-779586a298b2.webm: Invalid data found when processing input\n"
+      }
+    ]
+  },
+  {
+    "id": "4k60-canvas-native-1",
+    "trialStatus": "failed",
+    "artifacts": [
+      {
+        "path": "/workspace/suitecut/.suitecut/obs-cef-evidence/2026-10-09/4k60-canvas-native-1/suitecut-source-229283f2-9da0-46aa-ac90-8587b81e85df-d159a90d-1317-4c45-8d37-60abe8b72507.webm",
+        "bytes": 0,
+        "probeExitCode": 1,
+        "probeError": "[matroska,webm @ 0x560f668beec0] EBML header parsing failed\n.suitecut/obs-cef-evidence/2026-10-09/4k60-canvas-native-1/suitecut-source-229283f2-9da0-46aa-ac90-8587b81e85df-d159a90d-1317-4c45-8d37-60abe8b72507.webm: Invalid data found when processing input\n"
+      }
+    ]
+  },
+  {
+    "id": "4k60-canvas-native-2",
+    "trialStatus": "failed",
+    "artifacts": [
+      {
+        "path": "/workspace/suitecut/.suitecut/obs-cef-evidence/2026-10-09/4k60-canvas-native-2/suitecut-source-6de388a1-3b97-42f9-bd24-0178f89bd638-26d9adaa-5144-47db-b8b8-0a9951f40ae5.webm",
+        "bytes": 0,
+        "probeExitCode": 1,
+        "probeError": "[matroska,webm @ 0x55fa1d0a1ec0] EBML header parsing failed\n.suitecut/obs-cef-evidence/2026-10-09/4k60-canvas-native-2/suitecut-source-6de388a1-3b97-42f9-bd24-0178f89bd638-26d9adaa-5144-47db-b8b8-0a9951f40ae5.webm: Invalid data found when processing input\n"
+      }
+    ]
+  },
+  {
+    "id": "4k60-canvas-native-3",
+    "trialStatus": "failed",
+    "artifacts": [
+      {
+        "path": "/workspace/suitecut/.suitecut/obs-cef-evidence/2026-10-09/4k60-canvas-native-3/suitecut-source-e5c94e4f-b69e-4064-a54c-55d2e80b5a7b-5887303a-2618-455f-a4ea-3cefaeeee664.webm",
+        "bytes": 0,
+        "probeExitCode": 1,
+        "probeError": "[matroska,webm @ 0x557f891e7ec0] EBML header parsing failed\n.suitecut/obs-cef-evidence/2026-10-09/4k60-canvas-native-3/suitecut-source-e5c94e4f-b69e-4064-a54c-55d2e80b5a7b-5887303a-2618-455f-a4ea-3cefaeeee664.webm: Invalid data found when processing input\n"
+      }
+    ]
+  },
+  {
+    "id": "4k60-canvas-native-4",
+    "trialStatus": "failed",
+    "artifacts": [
+      {
+        "path": "/workspace/suitecut/.suitecut/obs-cef-evidence/2026-10-09/4k60-canvas-native-4/suitecut-source-4141904c-a910-400e-b6f8-adbc3c5c295e-3a7ca1a2-d105-4b58-a1ee-d53afb365795.webm",
+        "bytes": 0,
+        "probeExitCode": 1,
+        "probeError": "[matroska,webm @ 0x55c09730fec0] EBML header parsing failed\n.suitecut/obs-cef-evidence/2026-10-09/4k60-canvas-native-4/suitecut-source-4141904c-a910-400e-b6f8-adbc3c5c295e-3a7ca1a2-d105-4b58-a1ee-d53afb365795.webm: Invalid data found when processing input\n"
+      }
+    ]
+  },
+  {
+    "id": "4k60-canvas-native-5",
+    "trialStatus": "failed",
+    "artifacts": [
+      {
+        "path": "/workspace/suitecut/.suitecut/obs-cef-evidence/2026-10-09/4k60-canvas-native-5/suitecut-source-286ef1fa-00aa-465e-9b7b-87e0d8e61722-0fbf404c-08a7-4380-b0e7-e4bcc2b43f66.webm",
+        "bytes": 0,
+        "probeExitCode": 1,
+        "probeError": "[matroska,webm @ 0x557e2ce56ec0] EBML header parsing failed\n.suitecut/obs-cef-evidence/2026-10-09/4k60-canvas-native-5/suitecut-source-286ef1fa-00aa-465e-9b7b-87e0d8e61722-0fbf404c-08a7-4380-b0e7-e4bcc2b43f66.webm: Invalid data found when processing input\n"
+      }
+    ]
+  },
+  {
+    "id": "4k60-scroll-native-1",
+    "trialStatus": "failed",
+    "artifacts": [
+      {
+        "path": "/workspace/suitecut/.suitecut/obs-cef-evidence/2026-10-09/4k60-scroll-native-1/suitecut-source-10110214-3201-4511-b31a-fdd01074ef3c-b58f4a8a-8271-438e-b163-c7d650e013af.webm",
+        "bytes": 0,
+        "probeExitCode": 1,
+        "probeError": "[matroska,webm @ 0x55ce6287fec0] EBML header parsing failed\n.suitecut/obs-cef-evidence/2026-10-09/4k60-scroll-native-1/suitecut-source-10110214-3201-4511-b31a-fdd01074ef3c-b58f4a8a-8271-438e-b163-c7d650e013af.webm: Invalid data found when processing input\n"
+      }
+    ]
+  },
+  {
+    "id": "4k60-scroll-native-2",
+    "trialStatus": "failed",
+    "artifacts": [
+      {
+        "path": "/workspace/suitecut/.suitecut/obs-cef-evidence/2026-10-09/4k60-scroll-native-2/suitecut-source-427677c4-69f5-46a4-b398-091c4edbfd24-2364529e-79fe-4197-a69b-f9d6eab0eb04.webm",
+        "bytes": 0,
+        "probeExitCode": 1,
+        "probeError": "[matroska,webm @ 0x560e55a8cec0] EBML header parsing failed\n.suitecut/obs-cef-evidence/2026-10-09/4k60-scroll-native-2/suitecut-source-427677c4-69f5-46a4-b398-091c4edbfd24-2364529e-79fe-4197-a69b-f9d6eab0eb04.webm: Invalid data found when processing input\n"
+      }
+    ]
+  },
+  {
+    "id": "4k60-scroll-native-3",
+    "trialStatus": "failed",
+    "artifacts": [
+      {
+        "path": "/workspace/suitecut/.suitecut/obs-cef-evidence/2026-10-09/4k60-scroll-native-3/suitecut-source-03b1ed12-6166-4a7f-8087-3f71bce850a6-26d254ec-8f8c-4584-8cfe-54781b54f125.webm",
+        "bytes": 262144,
+        "probeExitCode": 0,
+        "probe": {
+          "streams": [
+            {
+              "index": 0,
+              "codec_name": "vp9",
+              "codec_long_name": "Google VP9",
+              "profile": "Profile 0",
+              "codec_type": "video",
+              "codec_tag_string": "[0][0][0][0]",
+              "codec_tag": "0x0000",
+              "width": 3840,
+              "height": 2160,
+              "coded_width": 3840,
+              "coded_height": 2160,
+              "closed_captions": 0,
+              "film_grain": 0,
+              "has_b_frames": 0,
+              "sample_aspect_ratio": "1:1",
+              "display_aspect_ratio": "16:9",
+              "pix_fmt": "yuv420p",
+              "level": -99,
+              "color_range": "tv",
+              "color_space": "bt709",
+              "field_order": "progressive",
+              "refs": 1,
+              "r_frame_rate": "60/1",
+              "avg_frame_rate": "60/1",
+              "time_base": "1/1000",
+              "start_pts": 0,
+              "start_time": "0.000000",
+              "disposition": {
+                "default": 0,
+                "dub": 0,
+                "original": 0,
+                "comment": 0,
+                "lyrics": 0,
+                "karaoke": 0,
+                "forced": 0,
+                "hearing_impaired": 0,
+                "visual_impaired": 0,
+                "clean_effects": 0,
+                "attached_pic": 0,
+                "timed_thumbnails": 0,
+                "non_diegetic": 0,
+                "captions": 0,
+                "descriptions": 0,
+                "metadata": 0,
+                "dependent": 0,
+                "still_image": 0,
+                "multilayer": 0
+              },
+              "tags": {
+                "ENCODER": "Lavc61.19.101 libvpx-vp9"
+              }
+            }
+          ],
+          "format": {
+            "filename": ".suitecut/obs-cef-evidence/2026-10-09/4k60-scroll-native-3/suitecut-source-03b1ed12-6166-4a7f-8087-3f71bce850a6-26d254ec-8f8c-4584-8cfe-54781b54f125.webm",
+            "nb_streams": 1,
+            "nb_programs": 0,
+            "nb_stream_groups": 0,
+            "format_name": "matroska,webm",
+            "format_long_name": "Matroska / WebM",
+            "start_time": "0.000000",
+            "size": "262144",
+            "probe_score": 100,
+            "tags": {
+              "ENCODER": "Lavf61.7.103"
+            }
+          }
+        },
+        "frameDecodeExitCode": 0
+      }
+    ]
+  },
+  {
+    "id": "4k60-scroll-native-4",
+    "trialStatus": "failed",
+    "artifacts": [
+      {
+        "path": "/workspace/suitecut/.suitecut/obs-cef-evidence/2026-10-09/4k60-scroll-native-4/suitecut-source-87f54d3a-a343-4495-9c41-7a3e01858be0-70258156-5a14-4312-8a5a-2581421f07e7.webm",
+        "bytes": 262144,
+        "probeExitCode": 0,
+        "probe": {
+          "streams": [
+            {
+              "index": 0,
+              "codec_name": "vp9",
+              "codec_long_name": "Google VP9",
+              "profile": "Profile 0",
+              "codec_type": "video",
+              "codec_tag_string": "[0][0][0][0]",
+              "codec_tag": "0x0000",
+              "width": 3840,
+              "height": 2160,
+              "coded_width": 3840,
+              "coded_height": 2160,
+              "closed_captions": 0,
+              "film_grain": 0,
+              "has_b_frames": 0,
+              "sample_aspect_ratio": "1:1",
+              "display_aspect_ratio": "16:9",
+              "pix_fmt": "yuv420p",
+              "level": -99,
+              "color_range": "tv",
+              "color_space": "bt709",
+              "field_order": "progressive",
+              "refs": 1,
+              "r_frame_rate": "60/1",
+              "avg_frame_rate": "60/1",
+              "time_base": "1/1000",
+              "start_pts": 0,
+              "start_time": "0.000000",
+              "disposition": {
+                "default": 0,
+                "dub": 0,
+                "original": 0,
+                "comment": 0,
+                "lyrics": 0,
+                "karaoke": 0,
+                "forced": 0,
+                "hearing_impaired": 0,
+                "visual_impaired": 0,
+                "clean_effects": 0,
+                "attached_pic": 0,
+                "timed_thumbnails": 0,
+                "non_diegetic": 0,
+                "captions": 0,
+                "descriptions": 0,
+                "metadata": 0,
+                "dependent": 0,
+                "still_image": 0,
+                "multilayer": 0
+              },
+              "tags": {
+                "ENCODER": "Lavc61.19.101 libvpx-vp9"
+              }
+            }
+          ],
+          "format": {
+            "filename": ".suitecut/obs-cef-evidence/2026-10-09/4k60-scroll-native-4/suitecut-source-87f54d3a-a343-4495-9c41-7a3e01858be0-70258156-5a14-4312-8a5a-2581421f07e7.webm",
+            "nb_streams": 1,
+            "nb_programs": 0,
+            "nb_stream_groups": 0,
+            "format_name": "matroska,webm",
+            "format_long_name": "Matroska / WebM",
+            "start_time": "0.000000",
+            "size": "262144",
+            "probe_score": 100,
+            "tags": {
+              "ENCODER": "Lavf61.7.103"
+            }
+          }
+        },
+        "frameDecodeExitCode": 0
+      }
+    ]
+  },
+  {
+    "id": "4k60-scroll-native-5",
+    "trialStatus": "failed",
+    "artifacts": [
+      {
+        "path": "/workspace/suitecut/.suitecut/obs-cef-evidence/2026-10-09/4k60-scroll-native-5/suitecut-source-b6a42bcf-e09c-469b-99ea-e6f38332982f-5bbd9885-ba95-4b42-afbd-ba46428a99e5.webm",
+        "bytes": 0,
+        "probeExitCode": 1,
+        "probeError": "[matroska,webm @ 0x562d241b9ec0] EBML header parsing failed\n.suitecut/obs-cef-evidence/2026-10-09/4k60-scroll-native-5/suitecut-source-b6a42bcf-e09c-469b-99ea-e6f38332982f-5bbd9885-ba95-4b42-afbd-ba46428a99e5.webm: Invalid data found when processing input\n"
+      }
+    ]
+  },
+  {
+    "id": "4k30-canvas-native-3",
+    "trialStatus": "failed",
+    "artifacts": [
+      {
+        "path": "/workspace/suitecut/.suitecut/obs-cef-evidence/2026-10-09/4k30-canvas-native-3/suitecut-source-1712fc85-2ed1-4352-8db7-4a4137fbd356-04c0a67a-1b12-4e6c-a7af-3c999228ce92.webm",
+        "bytes": 0,
+        "probeExitCode": 1,
+        "probeError": "[matroska,webm @ 0x55f63389cec0] EBML header parsing failed\n.suitecut/obs-cef-evidence/2026-10-09/4k30-canvas-native-3/suitecut-source-1712fc85-2ed1-4352-8db7-4a4137fbd356-04c0a67a-1b12-4e6c-a7af-3c999228ce92.webm: Invalid data found when processing input\n"
+      }
+    ]
+  }
+]

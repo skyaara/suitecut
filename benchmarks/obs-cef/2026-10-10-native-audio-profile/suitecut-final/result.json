@@ -1,0 +1,143 @@
+{
+  "backend": "suitecut",
+  "durationRequestedMs": 60000,
+  "stress": true,
+  "cold": false,
+  "width": 1920,
+  "height": 1080,
+  "fps": 30,
+  "startedAt": "2026-10-10T09:13:18.374Z",
+  "fixture": "Continuous deterministic AudioWorklet noise; no intentional silence",
+  "events": [
+    {
+      "atMs": 20032.583302,
+      "type": "renderer-main-thread-block",
+      "durationMs": 4000
+    },
+    {
+      "atMs": 40020.363939999996,
+      "type": "controller-block",
+      "durationMs": 4000
+    }
+  ],
+  "status": "capture-completed; analysis-pending",
+  "recordingPath": "/workspace/suitecut/benchmarks/obs-cef/2026-10-10-native-audio-profile/suitecut-final/recording.mkv",
+  "receiverPath": "/workspace/suitecut/benchmarks/obs-cef/2026-10-10-native-audio-profile/suitecut-final/receiver.flv",
+  "hostMemoryBefore": {
+    "memory.current": "16608657408\n",
+    "memory.events": "low 0\nhigh 0\nmax 120765\noom 0\noom_kill 0\noom_group_kill 0\n",
+    "memory.stat": "anon 187109376\nfile 16036675584\nkernel 384233472\nkernel_stack 1048576\npagetables 6717440\nsec_pagetables 0\npercpu 15344\nsock 0\nvmalloc 0\nshmem 642850816\nfile_mapped 2912256\nfile_dirty 1570926592\nfile_writeback 0\nswapcached 0\nanon_thp 0\nfile_thp 4022337536\nshmem_thp 0\ninactive_anon 432832512\nactive_anon 396849152\ninactive_file 2221174784\nactive_file 13172649984\nunevictable 0\nslab_reclaimable 354205560\nslab_unreclaimable 22102712\nslab 376308272\nworkingset_refault_anon 0\nworkingset_refault_file 2376034\nworkingset_activate_anon 0\nworkingset_activate_file 2371712\nworkingset_restore_anon 0\nworkingset_restore_file 292687\nworkingset_nodereclaim 0\npgdemote_kswapd 0\npgdemote_direct 0\npgdemote_khugepaged 0\npgdemote_proactive 0\npgscan 5247947\npgsteal 4980319\npswpin 0\npswpout 0\npgscan_kswapd 533610\npgscan_direct 4709931\npgscan_khugepaged 4406\npgscan_proactive 0\npgsteal_kswapd 533610\npgsteal_direct 4442303\npgsteal_khugepaged 4406\npgsteal_proactive 0\npgfault 502801296\npgmajfault 1013\npgrefill 1363680\npgactivate 12151280\npgdeactivate 1363673\npglazyfree 2\npglazyfreed 0\nswpin_zero 0\nswpout_zero 0\nthp_fault_alloc 33190\nthp_collapse_alloc 769\nthp_swpout 0\nthp_swpout_fallback 0\n"
+  },
+  "browserVersion": "154.0.8037.98",
+  "audioStart": {
+    "generator": "frame-coded interpolated hash noise",
+    "sampleRate": 48000,
+    "quantum": 24,
+    "amplitude": 0.15,
+    "firstFrame": 0,
+    "currentFrame": 1152
+  },
+  "latest": {
+    "atMs": 59510.949489000006,
+    "record": {
+      "ready": true,
+      "stopped": false,
+      "paused": false,
+      "videoFrames": 1793,
+      "audioSamples": 2869248,
+      "repeatedFrames": 150,
+      "droppedAudioSamples": 0,
+      "missingAudioSamples": 24000,
+      "lateAudioSamples": 0,
+      "queuedVideoBytes": 18662400,
+      "queuedAudioBytes": 34560,
+      "startedMs": 2648.777237,
+      "durationMs": 59766.666666666664,
+      "maximumEncodeMs": 217.9260160000049,
+      "bufferedDelayMs": 175.1111453333324,
+      "error": ""
+    },
+    "stream": {
+      "ready": true,
+      "stopped": false,
+      "paused": false,
+      "videoFrames": 1784,
+      "audioSamples": 2853888,
+      "repeatedFrames": 152,
+      "droppedAudioSamples": 0,
+      "missingAudioSamples": 24000,
+      "lateAudioSamples": 0,
+      "queuedVideoBytes": 18662400,
+      "queuedAudioBytes": 30720,
+      "startedMs": 2980.319487,
+      "durationMs": 59466.666666666664,
+      "maximumEncodeMs": 190.91293700000097,
+      "bufferedDelayMs": 172.8670396666639,
+      "error": ""
+    }
+  },
+  "activeMs": 60083.238068000006,
+  "hostMemoryAfter": {
+    "memory.current": "17100455936\n",
+    "memory.events": "low 0\nhigh 0\nmax 120765\noom 0\noom_kill 0\noom_group_kill 0\n",
+    "memory.stat": "anon 535068672\nfile 16160178176\nkernel 404537344\nkernel_stack 2916352\npagetables 17055744\nsec_pagetables 0\npercpu 20076\nsock 4096\nvmalloc 32768\nshmem 724729856\nfile_mapped 240594944\nfile_dirty 29855744\nfile_writeback 0\nswapcached 0\nanon_thp 79691776\nfile_thp 4022337536\nshmem_thp 0\ninactive_anon 838000640\nactive_anon 421658624\ninactive_file 2238042112\nactive_file 13197352960\nunevictable 0\nslab_reclaimable 356649776\nslab_unreclaimable 27706576\nslab 384356352\nworkingset_refault_anon 0\nworkingset_refault_file 2376034\nworkingset_activate_anon 0\nworkingset_activate_file 2371712\nworkingset_restore_anon 0\nworkingset_restore_file 292687\nworkingset_nodereclaim 0\npgdemote_kswapd 0\npgdemote_direct 0\npgdemote_khugepaged 0\npgdemote_proactive 0\npgscan 5247947\npgsteal 4980319\npswpin 0\npswpout 0\npgscan_kswapd 533610\npgscan_direct 4709931\npgscan_khugepaged 4406\npgscan_proactive 0\npgsteal_kswapd 533610\npgsteal_direct 4442303\npgsteal_khugepaged 4406\npgsteal_proactive 0\npgfault 503162243\npgmajfault 1013\npgrefill 1363680\npgactivate 12167517\npgdeactivate 1363673\npglazyfree 2\npglazyfreed 0\nswpin_zero 0\nswpout_zero 0\nthp_fault_alloc 33228\nthp_collapse_alloc 769\nthp_swpout 0\nthp_swpout_fallback 0\n"
+  },
+  "page": {
+    "snapshot": {
+      "markerCount": 1740,
+      "scrollY": 180,
+      "scrollEvents": 11,
+      "keyEvents": 0,
+      "clicks": 0,
+      "value": "",
+      "choice": "First",
+      "secondary": false
+    },
+    "audioProfile": {
+      "generator": "frame-coded interpolated hash noise",
+      "sampleRate": 48000,
+      "quantum": 24,
+      "amplitude": 0.15,
+      "firstFrame": 0,
+      "currentFrame": 2940672
+    }
+  },
+  "finalStream": {
+    "ready": true,
+    "stopped": true,
+    "paused": false,
+    "videoFrames": 1805,
+    "audioSamples": 2887680,
+    "repeatedFrames": 152,
+    "droppedAudioSamples": 0,
+    "missingAudioSamples": 24299,
+    "lateAudioSamples": 0,
+    "queuedVideoBytes": 0,
+    "queuedAudioBytes": 0,
+    "startedMs": 2980.319487,
+    "durationMs": 60166.666666666664,
+    "maximumEncodeMs": 190.91293700000097,
+    "bufferedDelayMs": 172.8670396666639,
+    "error": ""
+  },
+  "finalRecord": {
+    "ready": true,
+    "stopped": true,
+    "paused": false,
+    "videoFrames": 1817,
+    "audioSamples": 2906112,
+    "repeatedFrames": 150,
+    "droppedAudioSamples": 0,
+    "missingAudioSamples": 24000,
+    "lateAudioSamples": 0,
+    "queuedVideoBytes": 0,
+    "queuedAudioBytes": 0,
+    "startedMs": 2648.777237,
+    "durationMs": 60566.666666666664,
+    "maximumEncodeMs": 217.9260160000049,
+    "bufferedDelayMs": 175.1111453333324,
+    "error": ""
+  },
+  "receiverExitCode": 0,
+  "completedAt": "2026-10-10T09:14:21.968Z"
+}

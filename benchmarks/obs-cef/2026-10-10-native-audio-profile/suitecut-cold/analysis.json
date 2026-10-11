@@ -1,0 +1,2474 @@
+{
+  "method": "Pure generated sample identities, normalized waveform correlation >= 0.95; timestamp-independent",
+  "backend": "suitecut",
+  "traces": {
+    "cef-192F7A8CFC7EE7BFD9A4E7709C2BED4D": {
+      "sampleFrames": 607680,
+      "matchedWindows": 593,
+      "windowCount": 633,
+      "lowConfidence": [
+        {
+          "index": 2,
+          "offsetMs": 40.0,
+          "correlation": 0.5876485471147911
+        },
+        {
+          "index": 126,
+          "offsetMs": 2520.0,
+          "correlation": 0.6926139506551979
+        },
+        {
+          "index": 166,
+          "offsetMs": 3320.0,
+          "correlation": 0.5163824935749828
+        },
+        {
+          "index": 167,
+          "offsetMs": 3340.0,
+          "correlation": 0.6853202091823501
+        },
+        {
+          "index": 168,
+          "offsetMs": 3360.0,
+          "correlation": 0.43529850193539754
+        },
+        {
+          "index": 170,
+          "offsetMs": 3400.0,
+          "correlation": 0.7773210783690736
+        },
+        {
+          "index": 340,
+          "offsetMs": 6800.0,
+          "correlation": 0.6053076141512438
+        },
+        {
+          "index": 341,
+          "offsetMs": 6820.0,
+          "correlation": 0.7777377637190912
+        },
+        {
+          "index": 342,
+          "offsetMs": 6840.0,
+          "correlation": 0.7122115590966174
+        },
+        {
+          "index": 346,
+          "offsetMs": 6920.0,
+          "correlation": 0.7394290748964826
+        },
+        {
+          "index": 359,
+          "offsetMs": 7180.0,
+          "correlation": 0.40420631017436626
+        },
+        {
+          "index": 360,
+          "offsetMs": 7200.0,
+          "correlation": 0.47532036562278274
+        },
+        {
+          "index": 363,
+          "offsetMs": 7260.0,
+          "correlation": 0.4473866383191299
+        },
+        {
+          "index": 366,
+          "offsetMs": 7320.0,
+          "correlation": 0.6966604693005437
+        },
+        {
+          "index": 374,
+          "offsetMs": 7480.0,
+          "correlation": 0.4443579281552656
+        },
+        {
+          "index": 376,
+          "offsetMs": 7520.0,
+          "correlation": 0.8947704248248914
+        },
+        {
+          "index": 377,
+          "offsetMs": 7540.0,
+          "correlation": 0.9483565143760575
+        },
+        {
+          "index": 431,
+          "offsetMs": 8620.0,
+          "correlation": 0.35934337726672394
+        },
+        {
+          "index": 433,
+          "offsetMs": 8660.0,
+          "correlation": 0.6255673458774039
+        },
+        {
+          "index": 434,
+          "offsetMs": 8680.0,
+          "correlation": 0.42214376310003304
+        },
+        {
+          "index": 436,
+          "offsetMs": 8720.0,
+          "correlation": 0.4706811401237335
+        },
+        {
+          "index": 437,
+          "offsetMs": 8740.0,
+          "correlation": 0.940045745985741
+        },
+        {
+          "index": 474,
+          "offsetMs": 9480.0,
+          "correlation": 0.5296596865754253
+        },
+        {
+          "index": 477,
+          "offsetMs": 9540.0,
+          "correlation": 0.8178835599766733
+        },
+        {
+          "index": 479,
+          "offsetMs": 9580.0,
+          "correlation": 0.5493146522691116
+        },
+        {
+          "index": 482,
+          "offsetMs": 9640.0,
+          "correlation": 0.8654132635653741
+        }
+      ],
+      "sequenceDiscontinuities": [
+        {
+          "atMs": 2540.0,
+          "jumpFrames": -617,
+          "jumpMs": -12.854166666666666,
+          "previousIndex": 125,
+          "index": 127,
+          "correlation": 0.9998533681482933,
+          "previousCorrelation": 0.9618707774388933,
+          "ptsDiscontinuityMs": 0.0
+        },
+        {
+          "atMs": 3420.0,
+          "jumpFrames": -847,
+          "jumpMs": -17.645833333333332,
+          "previousIndex": 165,
+          "index": 171,
+          "correlation": 0.9869717156765776,
+          "previousCorrelation": 0.9996840611167654,
+          "ptsDiscontinuityMs": 120.0
+        },
+        {
+          "atMs": 6940.0,
+          "jumpFrames": -982,
+          "jumpMs": -20.458333333333332,
+          "previousIndex": 344,
+          "index": 347,
+          "correlation": 0.9952240166942652,
+          "previousCorrelation": 0.9653173689151594,
+          "ptsDiscontinuityMs": 0.0
+        },
+        {
+          "atMs": 7220.0,
+          "jumpFrames": -363,
+          "jumpMs": -7.5625,
+          "previousIndex": 358,
+          "index": 361,
+          "correlation": 0.9815904498510171,
+          "previousCorrelation": 0.9965477057764137,
+          "ptsDiscontinuityMs": 40.0
+        },
+        {
+          "atMs": 7340.0,
+          "jumpFrames": -1488,
+          "jumpMs": -31.0,
+          "previousIndex": 362,
+          "index": 367,
+          "correlation": 0.9977471634390661,
+          "previousCorrelation": 0.9893921995519555,
+          "ptsDiscontinuityMs": 60.0
+        },
+        {
+          "atMs": 8760.0,
+          "jumpFrames": -2117,
+          "jumpMs": -44.104166666666664,
+          "previousIndex": 430,
+          "index": 438,
+          "correlation": 0.9806637851497773,
+          "previousCorrelation": 0.9953696508454625,
+          "ptsDiscontinuityMs": 440.0
+        },
+        {
+          "atMs": 9560.0,
+          "jumpFrames": -196,
+          "jumpMs": -4.083333333333333,
+          "previousIndex": 473,
+          "index": 478,
+          "correlation": 0.9927129932002708,
+          "previousCorrelation": 0.9906544055178265,
+          "ptsDiscontinuityMs": 80.0
+        },
+        {
+          "atMs": 9660.0,
+          "jumpFrames": -860,
+          "jumpMs": -17.916666666666668,
+          "previousIndex": 478,
+          "index": 483,
+          "correlation": 0.9867135330957353,
+          "previousCorrelation": 0.9927129932002708,
+          "ptsDiscontinuityMs": 40.0
+        }
+      ],
+      "positiveJumpTotalMs": 0,
+      "negativeJumpTotalMs": 155.625,
+      "firstMatchedFrame": 4772,
+      "firstSound": {
+        "firstAudibleOffsetMs": 53.458333333333336,
+        "firstPreservedFrameEstimate": 4458,
+        "correlation": 0.9999982769849829,
+        "method": "960-sample correlation starting 5 ms after first audible sample; back-extrapolated 5 ms"
+      },
+      "globalReacquisitions": 0,
+      "silence": {
+        "resolutionMs": 5,
+        "segments": [
+          {
+            "fromMs": 0,
+            "durationMs": 50,
+            "interior": false
+          },
+          {
+            "fromMs": 2520,
+            "durationMs": 10,
+            "interior": true
+          },
+          {
+            "fromMs": 3325,
+            "durationMs": 20,
+            "interior": true
+          },
+          {
+            "fromMs": 3365,
+            "durationMs": 40,
+            "interior": true
+          },
+          {
+            "fromMs": 6805,
+            "durationMs": 20,
+            "interior": true
+          },
+          {
+            "fromMs": 6840,
+            "durationMs": 10,
+            "interior": true
+          },
+          {
+            "fromMs": 6900,
+            "durationMs": 25,
+            "interior": true
+          },
+          {
+            "fromMs": 7185,
+            "durationMs": 30,
+            "interior": true
+          },
+          {
+            "fromMs": 7270,
+            "durationMs": 55,
+            "interior": true
+          },
+          {
+            "fromMs": 7485,
+            "durationMs": 40,
+            "interior": true
+          },
+          {
+            "fromMs": 8625,
+            "durationMs": 50,
+            "interior": true
+          },
+          {
+            "fromMs": 8685,
+            "durationMs": 50,
+            "interior": true
+          },
+          {
+            "fromMs": 9485,
+            "durationMs": 60,
+            "interior": true
+          },
+          {
+            "fromMs": 9590,
+            "durationMs": 55,
+            "interior": true
+          },
+          {
+            "fromMs": 12640,
+            "durationMs": 20,
+            "interior": false
+          }
+        ],
+        "interiorTotalMs": 465,
+        "interiorMaximumMs": 60
+      },
+      "timestampHoles": [
+        {
+          "index": 166,
+          "durationMs": 60.0
+        },
+        {
+          "index": 168,
+          "durationMs": 60.0
+        },
+        {
+          "index": 343,
+          "durationMs": 7.0
+        },
+        {
+          "index": 359,
+          "durationMs": 40.0
+        },
+        {
+          "index": 363,
+          "durationMs": 20.0
+        },
+        {
+          "index": 364,
+          "durationMs": 40.0
+        },
+        {
+          "index": 374,
+          "durationMs": 80.0
+        },
+        {
+          "index": 431,
+          "durationMs": 400.0
+        },
+        {
+          "index": 434,
+          "durationMs": 40.0
+        },
+        {
+          "index": 474,
+          "durationMs": 80.0
+        },
+        {
+          "index": 479,
+          "durationMs": 40.0
+        }
+      ],
+      "maximumCallbackIntervalMs": 437.2596510000003,
+      "effectiveTimestampHoles": [
+        {
+          "index": 166,
+          "durationMs": 60.0
+        },
+        {
+          "index": 168,
+          "durationMs": 60.0
+        },
+        {
+          "index": 343,
+          "durationMs": 7.0
+        },
+        {
+          "index": 359,
+          "durationMs": 40.0
+        },
+        {
+          "index": 363,
+          "durationMs": 20.0
+        },
+        {
+          "index": 364,
+          "durationMs": 40.0
+        },
+        {
+          "index": 374,
+          "durationMs": 80.0
+        },
+        {
+          "index": 431,
+          "durationMs": 400.0
+        },
+        {
+          "index": 434,
+          "durationMs": 40.0
+        },
+        {
+          "index": 474,
+          "durationMs": 80.0
+        },
+        {
+          "index": 479,
+          "durationMs": 40.0
+        }
+      ]
+    },
+    "recording.mkv": {
+      "sampleFrames": 744448,
+      "matchedWindows": 254,
+      "windowCount": 387,
+      "lowConfidence": [
+        {
+          "index": 54,
+          "offsetMs": 2160.0,
+          "correlation": 0.6797266093657144
+        },
+        {
+          "index": 116,
+          "offsetMs": 4640.0,
+          "correlation": 0.8028599659827799
+        },
+        {
+          "index": 136,
+          "offsetMs": 5440.0,
+          "correlation": 0.3850074048598107
+        },
+        {
+          "index": 137,
+          "offsetMs": 5480.0,
+          "correlation": 0.3978712214855235
+        },
+        {
+          "index": 138,
+          "offsetMs": 5520.0,
+          "correlation": 0.48865057423628894
+        },
+        {
+          "index": 140,
+          "offsetMs": 5600.0,
+          "correlation": 0.3007020214201977
+        },
+        {
+          "index": 141,
+          "offsetMs": 5640.0,
+          "correlation": 0.7848832922325689
+        },
+        {
+          "index": 142,
+          "offsetMs": 5680.0,
+          "correlation": 0.9428918912089514
+        },
+        {
+          "index": 143,
+          "offsetMs": 5720.0,
+          "correlation": 0.9343871995187755
+        },
+        {
+          "index": 144,
+          "offsetMs": 5760.0,
+          "correlation": 0.948420017443713
+        },
+        {
+          "index": 145,
+          "offsetMs": 5800.0,
+          "correlation": 0.9281281857204482
+        },
+        {
+          "index": 147,
+          "offsetMs": 5880.0,
+          "correlation": 0.9487664428205536
+        },
+        {
+          "index": 148,
+          "offsetMs": 5920.0,
+          "correlation": 0.9432665829255682
+        },
+        {
+          "index": 149,
+          "offsetMs": 5960.0,
+          "correlation": 0.9492467284052772
+        },
+        {
+          "index": 226,
+          "offsetMs": 9040.0,
+          "correlation": 0.6652077647746154
+        },
+        {
+          "index": 227,
+          "offsetMs": 9080.0,
+          "correlation": 0.4524583053915932
+        },
+        {
+          "index": 228,
+          "offsetMs": 9120.0,
+          "correlation": 0.8328263075935124
+        },
+        {
+          "index": 229,
+          "offsetMs": 9160.0,
+          "correlation": 0.6728756194581408
+        },
+        {
+          "index": 235,
+          "offsetMs": 9400.0,
+          "correlation": 0.9083905126337142
+        },
+        {
+          "index": 236,
+          "offsetMs": 9440.0,
+          "correlation": 0.29126669364698005
+        },
+        {
+          "index": 237,
+          "offsetMs": 9480.0,
+          "correlation": 0.5302504543236252
+        },
+        {
+          "index": 238,
+          "offsetMs": 9520.0,
+          "correlation": 0.8904558241497003
+        },
+        {
+          "index": 239,
+          "offsetMs": 9560.0,
+          "correlation": 0.34868552238715644
+        },
+        {
+          "index": 245,
+          "offsetMs": 9800.0,
+          "correlation": 0.8871242227096108
+        },
+        {
+          "index": 247,
+          "offsetMs": 9880.0,
+          "correlation": 0.3204765961662829
+        },
+        {
+          "index": 248,
+          "offsetMs": 9920.0,
+          "correlation": 0.36811861389104145
+        },
+        {
+          "index": 249,
+          "offsetMs": 9960.0,
+          "correlation": 0.8971824449573831
+        },
+        {
+          "index": 250,
+          "offsetMs": 10000.0,
+          "correlation": 0.9157576739815299
+        },
+        {
+          "index": 251,
+          "offsetMs": 10040.0,
+          "correlation": 0.8912569136807611
+        },
+        {
+          "index": 252,
+          "offsetMs": 10080.0,
+          "correlation": 0.9371364576125301
+        },
+        {
+          "index": 253,
+          "offsetMs": 10120.0,
+          "correlation": 0.8959740146492883
+        },
+        {
+          "index": 254,
+          "offsetMs": 10160.0,
+          "correlation": 0.9377931610022773
+        },
+        {
+          "index": 255,
+          "offsetMs": 10200.0,
+          "correlation": 0.9144989407732559
+        },
+        {
+          "index": 256,
+          "offsetMs": 10240.0,
+          "correlation": 0.9440767443865835
+        },
+        {
+          "index": 257,
+          "offsetMs": 10280.0,
+          "correlation": 0.9475674966754649
+        },
+        {
+          "index": 258,
+          "offsetMs": 10320.0,
+          "correlation": 0.9255027667577284
+        },
+        {
+          "index": 259,
+          "offsetMs": 10360.0,
+          "correlation": 0.9471830806304005
+        },
+        {
+          "index": 262,
+          "offsetMs": 10480.0,
+          "correlation": 0.9450425160273556
+        },
+        {
+          "index": 263,
+          "offsetMs": 10520.0,
+          "correlation": 0.9341999931578063
+        },
+        {
+          "index": 267,
+          "offsetMs": 10680.0,
+          "correlation": 0.9408379102211099
+        },
+        {
+          "index": 276,
+          "offsetMs": 11040.0,
+          "correlation": 0.6175042875159212
+        },
+        {
+          "index": 286,
+          "offsetMs": 11440.0,
+          "correlation": 0.24630154737346352
+        },
+        {
+          "index": 287,
+          "offsetMs": 11480.0,
+          "correlation": 0.43938640570302046
+        },
+        {
+          "index": 288,
+          "offsetMs": 11520.0,
+          "correlation": 0.3048371831720997
+        },
+        {
+          "index": 290,
+          "offsetMs": 11600.0,
+          "correlation": 0.8043415069458074
+        },
+        {
+          "index": 291,
+          "offsetMs": 11640.0,
+          "correlation": 0.9121927554029384
+        },
+        {
+          "index": 292,
+          "offsetMs": 11680.0,
+          "correlation": 0.9026923300940389
+        },
+        {
+          "index": 293,
+          "offsetMs": 11720.0,
+          "correlation": 0.9404243241227467
+        },
+        {
+          "index": 294,
+          "offsetMs": 11760.0,
+          "correlation": 0.896037820122465
+        },
+        {
+          "index": 295,
+          "offsetMs": 11800.0,
+          "correlation": 0.9042449807207968
+        },
+        {
+          "index": 296,
+          "offsetMs": 11840.0,
+          "correlation": 0.9442950754992725
+        },
+        {
+          "index": 298,
+          "offsetMs": 11920.0,
+          "correlation": 0.9388511166274838
+        },
+        {
+          "index": 301,
+          "offsetMs": 12040.0,
+          "correlation": 0.9494540096881232
+        },
+        {
+          "index": 303,
+          "offsetMs": 12120.0,
+          "correlation": 0.9464754891255138
+        },
+        {
+          "index": 308,
+          "offsetMs": 12320.0,
+          "correlation": 0.8932298710851361
+        },
+        {
+          "index": 310,
+          "offsetMs": 12400.0,
+          "correlation": 0.37648470151525926
+        },
+        {
+          "index": 312,
+          "offsetMs": 12480.0,
+          "correlation": 0.7104890374405304
+        },
+        {
+          "index": 313,
+          "offsetMs": 12520.0,
+          "correlation": 0.5076895792829088
+        },
+        {
+          "index": 314,
+          "offsetMs": 12560.0,
+          "correlation": 0.4055054358928132
+        },
+        {
+          "index": 315,
+          "offsetMs": 12600.0,
+          "correlation": 0.3466383734838318
+        },
+        {
+          "index": 316,
+          "offsetMs": 12640.0,
+          "correlation": 0.944538357405788
+        },
+        {
+          "index": 317,
+          "offsetMs": 12680.0,
+          "correlation": 0.9190111986699155
+        },
+        {
+          "index": 319,
+          "offsetMs": 12760.0,
+          "correlation": 0.927479666088257
+        }
+      ],
+      "sequenceDiscontinuities": [
+        {
+          "atMs": 4680.0,
+          "jumpFrames": -616,
+          "jumpMs": -12.833333333333334,
+          "previousIndex": 115,
+          "index": 117,
+          "correlation": 0.9988346442883518,
+          "previousCorrelation": 0.9995865352849359
+        },
+        {
+          "atMs": 5840.0,
+          "jumpFrames": -6517,
+          "jumpMs": -135.77083333333334,
+          "previousIndex": 135,
+          "index": 146,
+          "correlation": 0.9569809449141619,
+          "previousCorrelation": 0.9996690288210063
+        },
+        {
+          "atMs": 6000.0,
+          "jumpFrames": 66,
+          "jumpMs": 1.375,
+          "previousIndex": 146,
+          "index": 150,
+          "correlation": 0.9520392682744915,
+          "previousCorrelation": 0.9569809449141619
+        },
+        {
+          "atMs": 9200.0,
+          "jumpFrames": -1313,
+          "jumpMs": -27.354166666666668,
+          "previousIndex": 225,
+          "index": 230,
+          "correlation": 0.9832337911885355,
+          "previousCorrelation": 0.9998126136342392
+        },
+        {
+          "atMs": 9680.0,
+          "jumpFrames": -6667,
+          "jumpMs": -138.89583333333334,
+          "previousIndex": 234,
+          "index": 242,
+          "correlation": 0.9902088751596165,
+          "previousCorrelation": 0.9900514196385355
+        },
+        {
+          "atMs": 10400.0,
+          "jumpFrames": -3599,
+          "jumpMs": -74.97916666666667,
+          "previousIndex": 244,
+          "index": 260,
+          "correlation": 0.9624635008754913,
+          "previousCorrelation": 0.9917826014117416
+        },
+        {
+          "atMs": 11880.0,
+          "jumpFrames": -23090,
+          "jumpMs": -481.0416666666667,
+          "previousIndex": 275,
+          "index": 297,
+          "correlation": 0.9552708825231803,
+          "previousCorrelation": 0.97394966931059
+        },
+        {
+          "atMs": 12720.0,
+          "jumpFrames": -6770,
+          "jumpMs": -141.04166666666666,
+          "previousIndex": 307,
+          "index": 318,
+          "correlation": 0.9518795269528146,
+          "previousCorrelation": 0.9820364933281773
+        }
+      ],
+      "positiveJumpTotalMs": 1.375,
+      "negativeJumpTotalMs": 1011.9166666666667,
+      "firstMatchedFrame": 5496,
+      "firstSound": {
+        "firstAudibleOffsetMs": 2178.375,
+        "firstPreservedFrameEstimate": 4458,
+        "correlation": 0.9999982769849829,
+        "method": "960-sample correlation starting 5 ms after first audible sample; back-extrapolated 5 ms"
+      },
+      "globalReacquisitions": 0,
+      "silence": {
+        "resolutionMs": 5,
+        "segments": [
+          {
+            "fromMs": 0,
+            "durationMs": 2175,
+            "interior": false
+          },
+          {
+            "fromMs": 4645,
+            "durationMs": 10,
+            "interior": true
+          },
+          {
+            "fromMs": 5445,
+            "durationMs": 55,
+            "interior": true
+          },
+          {
+            "fromMs": 5510,
+            "durationMs": 20,
+            "interior": true
+          },
+          {
+            "fromMs": 5545,
+            "durationMs": 55,
+            "interior": true
+          },
+          {
+            "fromMs": 5610,
+            "durationMs": 40,
+            "interior": true
+          },
+          {
+            "fromMs": 9050,
+            "durationMs": 20,
+            "interior": true
+          },
+          {
+            "fromMs": 9085,
+            "durationMs": 10,
+            "interior": true
+          },
+          {
+            "fromMs": 9105,
+            "durationMs": 5,
+            "interior": true
+          },
+          {
+            "fromMs": 9150,
+            "durationMs": 30,
+            "interior": true
+          },
+          {
+            "fromMs": 9435,
+            "durationMs": 35,
+            "interior": true
+          },
+          {
+            "fromMs": 9475,
+            "durationMs": 30,
+            "interior": true
+          },
+          {
+            "fromMs": 9555,
+            "durationMs": 15,
+            "interior": true
+          },
+          {
+            "fromMs": 9580,
+            "durationMs": 100,
+            "interior": true
+          },
+          {
+            "fromMs": 9835,
+            "durationMs": 75,
+            "interior": true
+          },
+          {
+            "fromMs": 9915,
+            "durationMs": 40,
+            "interior": true
+          },
+          {
+            "fromMs": 11055,
+            "durationMs": 395,
+            "interior": true
+          },
+          {
+            "fromMs": 11455,
+            "durationMs": 50,
+            "interior": true
+          },
+          {
+            "fromMs": 11515,
+            "durationMs": 35,
+            "interior": true
+          },
+          {
+            "fromMs": 11555,
+            "durationMs": 50,
+            "interior": true
+          },
+          {
+            "fromMs": 12355,
+            "durationMs": 75,
+            "interior": true
+          },
+          {
+            "fromMs": 12440,
+            "durationMs": 55,
+            "interior": true
+          },
+          {
+            "fromMs": 12535,
+            "durationMs": 35,
+            "interior": true
+          },
+          {
+            "fromMs": 12585,
+            "durationMs": 50,
+            "interior": true
+          }
+        ],
+        "interiorTotalMs": 1285,
+        "interiorMaximumMs": 395
+      }
+    },
+    "profile": {
+      "sampleFrames": 723968,
+      "matchedWindows": 257,
+      "windowCount": 377,
+      "lowConfidence": [
+        {
+          "index": 47,
+          "offsetMs": 1880.0,
+          "correlation": 0.9030568673624171
+        },
+        {
+          "index": 108,
+          "offsetMs": 4320.0,
+          "correlation": 0.8404570728195447
+        },
+        {
+          "index": 128,
+          "offsetMs": 5120.0,
+          "correlation": 0.7944486456014652
+        },
+        {
+          "index": 130,
+          "offsetMs": 5200.0,
+          "correlation": 0.36809721926750183
+        },
+        {
+          "index": 131,
+          "offsetMs": 5240.0,
+          "correlation": 0.48604311866712085
+        },
+        {
+          "index": 132,
+          "offsetMs": 5280.0,
+          "correlation": 0.28932868993211275
+        },
+        {
+          "index": 133,
+          "offsetMs": 5320.0,
+          "correlation": 0.2209376968432947
+        },
+        {
+          "index": 134,
+          "offsetMs": 5360.0,
+          "correlation": 0.9296741472690037
+        },
+        {
+          "index": 135,
+          "offsetMs": 5400.0,
+          "correlation": 0.9193189703599233
+        },
+        {
+          "index": 136,
+          "offsetMs": 5440.0,
+          "correlation": 0.9251102619801588
+        },
+        {
+          "index": 137,
+          "offsetMs": 5480.0,
+          "correlation": 0.9427341718042606
+        },
+        {
+          "index": 138,
+          "offsetMs": 5520.0,
+          "correlation": 0.9400439820478342
+        },
+        {
+          "index": 139,
+          "offsetMs": 5560.0,
+          "correlation": 0.9390556079113648
+        },
+        {
+          "index": 141,
+          "offsetMs": 5640.0,
+          "correlation": 0.9469864813365692
+        },
+        {
+          "index": 144,
+          "offsetMs": 5760.0,
+          "correlation": 0.9475276646790236
+        },
+        {
+          "index": 219,
+          "offsetMs": 8760.0,
+          "correlation": 0.5411449374257427
+        },
+        {
+          "index": 220,
+          "offsetMs": 8800.0,
+          "correlation": 0.7280215551453079
+        },
+        {
+          "index": 221,
+          "offsetMs": 8840.0,
+          "correlation": 0.5937628539684591
+        },
+        {
+          "index": 222,
+          "offsetMs": 8880.0,
+          "correlation": 0.8886429696437568
+        },
+        {
+          "index": 228,
+          "offsetMs": 9120.0,
+          "correlation": 0.6928049788370436
+        },
+        {
+          "index": 229,
+          "offsetMs": 9160.0,
+          "correlation": 0.2830570894333807
+        },
+        {
+          "index": 230,
+          "offsetMs": 9200.0,
+          "correlation": 0.7287081388816353
+        },
+        {
+          "index": 231,
+          "offsetMs": 9240.0,
+          "correlation": 0.6591071839427977
+        },
+        {
+          "index": 232,
+          "offsetMs": 9280.0,
+          "correlation": 0.30198515576508417
+        },
+        {
+          "index": 234,
+          "offsetMs": 9360.0,
+          "correlation": 0.5388048376040994
+        },
+        {
+          "index": 238,
+          "offsetMs": 9520.0,
+          "correlation": 0.6881874513333347
+        },
+        {
+          "index": 240,
+          "offsetMs": 9600.0,
+          "correlation": 0.3182056611285619
+        },
+        {
+          "index": 241,
+          "offsetMs": 9640.0,
+          "correlation": 0.6480482728674632
+        },
+        {
+          "index": 242,
+          "offsetMs": 9680.0,
+          "correlation": 0.8478266504805058
+        },
+        {
+          "index": 243,
+          "offsetMs": 9720.0,
+          "correlation": 0.8811325620581648
+        },
+        {
+          "index": 244,
+          "offsetMs": 9760.0,
+          "correlation": 0.9201926355302779
+        },
+        {
+          "index": 245,
+          "offsetMs": 9800.0,
+          "correlation": 0.9156458480046156
+        },
+        {
+          "index": 246,
+          "offsetMs": 9840.0,
+          "correlation": 0.908644606927387
+        },
+        {
+          "index": 247,
+          "offsetMs": 9880.0,
+          "correlation": 0.902845608388217
+        },
+        {
+          "index": 248,
+          "offsetMs": 9920.0,
+          "correlation": 0.927170606598527
+        },
+        {
+          "index": 249,
+          "offsetMs": 9960.0,
+          "correlation": 0.9304848064976715
+        },
+        {
+          "index": 250,
+          "offsetMs": 10000.0,
+          "correlation": 0.9400275083993807
+        },
+        {
+          "index": 251,
+          "offsetMs": 10040.0,
+          "correlation": 0.9238752705192438
+        },
+        {
+          "index": 252,
+          "offsetMs": 10080.0,
+          "correlation": 0.9493903046432799
+        },
+        {
+          "index": 255,
+          "offsetMs": 10200.0,
+          "correlation": 0.9450142170787611
+        },
+        {
+          "index": 278,
+          "offsetMs": 11120.0,
+          "correlation": 0.25821351032262496
+        },
+        {
+          "index": 280,
+          "offsetMs": 11200.0,
+          "correlation": 0.4136965065029769
+        },
+        {
+          "index": 281,
+          "offsetMs": 11240.0,
+          "correlation": 0.3002088481539336
+        },
+        {
+          "index": 282,
+          "offsetMs": 11280.0,
+          "correlation": 0.45753104076088846
+        },
+        {
+          "index": 283,
+          "offsetMs": 11320.0,
+          "correlation": 0.8906591931091747
+        },
+        {
+          "index": 284,
+          "offsetMs": 11360.0,
+          "correlation": 0.9156489012418036
+        },
+        {
+          "index": 285,
+          "offsetMs": 11400.0,
+          "correlation": 0.9236582056555529
+        },
+        {
+          "index": 286,
+          "offsetMs": 11440.0,
+          "correlation": 0.9380741473623847
+        },
+        {
+          "index": 287,
+          "offsetMs": 11480.0,
+          "correlation": 0.9146926166298448
+        },
+        {
+          "index": 288,
+          "offsetMs": 11520.0,
+          "correlation": 0.914002797235116
+        },
+        {
+          "index": 301,
+          "offsetMs": 12040.0,
+          "correlation": 0.6581093806509839
+        },
+        {
+          "index": 303,
+          "offsetMs": 12120.0,
+          "correlation": 0.38094119678182015
+        },
+        {
+          "index": 305,
+          "offsetMs": 12200.0,
+          "correlation": 0.8861882333060566
+        },
+        {
+          "index": 306,
+          "offsetMs": 12240.0,
+          "correlation": 0.3418092043646932
+        },
+        {
+          "index": 307,
+          "offsetMs": 12280.0,
+          "correlation": 0.3540301882371961
+        },
+        {
+          "index": 308,
+          "offsetMs": 12320.0,
+          "correlation": 0.6717861735352267
+        },
+        {
+          "index": 309,
+          "offsetMs": 12360.0,
+          "correlation": 0.9277750103215823
+        },
+        {
+          "index": 311,
+          "offsetMs": 12440.0,
+          "correlation": 0.9470881207864775
+        }
+      ],
+      "sequenceDiscontinuities": [
+        {
+          "atMs": 4360.0,
+          "jumpFrames": -618,
+          "jumpMs": -12.875,
+          "previousIndex": 107,
+          "index": 109,
+          "correlation": 0.9754425031004751,
+          "previousCorrelation": 0.9951494955858232
+        },
+        {
+          "atMs": 5600.0,
+          "jumpFrames": -6493,
+          "jumpMs": -135.27083333333334,
+          "previousIndex": 127,
+          "index": 140,
+          "correlation": 0.9542591526825173,
+          "previousCorrelation": 0.9996994359344553
+        },
+        {
+          "atMs": 8920.0,
+          "jumpFrames": -1310,
+          "jumpMs": -27.291666666666668,
+          "previousIndex": 218,
+          "index": 223,
+          "correlation": 0.984207910180832,
+          "previousCorrelation": 0.9530128647026115
+        },
+        {
+          "atMs": 9400.0,
+          "jumpFrames": -6662,
+          "jumpMs": -138.79166666666666,
+          "previousIndex": 227,
+          "index": 235,
+          "correlation": 0.9914791985459269,
+          "previousCorrelation": 0.9847095151270231
+        },
+        {
+          "atMs": 10120.0,
+          "jumpFrames": -3597,
+          "jumpMs": -74.9375,
+          "previousIndex": 237,
+          "index": 253,
+          "correlation": 0.9743446388013858,
+          "previousCorrelation": 0.9937192950878082
+        },
+        {
+          "atMs": 11560.0,
+          "jumpFrames": -23109,
+          "jumpMs": -481.4375,
+          "previousIndex": 268,
+          "index": 289,
+          "correlation": 0.9505757124044271,
+          "previousCorrelation": 0.9569816522827023
+        },
+        {
+          "atMs": 12400.0,
+          "jumpFrames": -6786,
+          "jumpMs": -141.375,
+          "previousIndex": 300,
+          "index": 310,
+          "correlation": 0.9559844667220646,
+          "previousCorrelation": 0.9768468933507546
+        }
+      ],
+      "positiveJumpTotalMs": 0,
+      "negativeJumpTotalMs": 1011.9791666666666,
+      "firstMatchedFrame": 6176,
+      "firstSound": {
+        "firstAudibleOffsetMs": 1884.2083333333333,
+        "firstPreservedFrameEstimate": 4458,
+        "correlation": 0.9999982769849829,
+        "method": "960-sample correlation starting 5 ms after first audible sample; back-extrapolated 5 ms"
+      },
+      "globalReacquisitions": 0,
+      "silence": {
+        "resolutionMs": 5,
+        "segments": [
+          {
+            "fromMs": 0,
+            "durationMs": 1880,
+            "interior": false
+          },
+          {
+            "fromMs": 4350,
+            "durationMs": 10,
+            "interior": true
+          },
+          {
+            "fromMs": 5155,
+            "durationMs": 55,
+            "interior": true
+          },
+          {
+            "fromMs": 5215,
+            "durationMs": 25,
+            "interior": true
+          },
+          {
+            "fromMs": 5255,
+            "durationMs": 55,
+            "interior": true
+          },
+          {
+            "fromMs": 5315,
+            "durationMs": 40,
+            "interior": true
+          },
+          {
+            "fromMs": 8760,
+            "durationMs": 15,
+            "interior": true
+          },
+          {
+            "fromMs": 8795,
+            "durationMs": 5,
+            "interior": true
+          },
+          {
+            "fromMs": 8860,
+            "durationMs": 25,
+            "interior": true
+          },
+          {
+            "fromMs": 9140,
+            "durationMs": 35,
+            "interior": true
+          },
+          {
+            "fromMs": 9185,
+            "durationMs": 25,
+            "interior": true
+          },
+          {
+            "fromMs": 9260,
+            "durationMs": 15,
+            "interior": true
+          },
+          {
+            "fromMs": 9285,
+            "durationMs": 100,
+            "interior": true
+          },
+          {
+            "fromMs": 9540,
+            "durationMs": 75,
+            "interior": true
+          },
+          {
+            "fromMs": 9620,
+            "durationMs": 40,
+            "interior": true
+          },
+          {
+            "fromMs": 10760,
+            "durationMs": 395,
+            "interior": true
+          },
+          {
+            "fromMs": 11160,
+            "durationMs": 50,
+            "interior": true
+          },
+          {
+            "fromMs": 11220,
+            "durationMs": 35,
+            "interior": true
+          },
+          {
+            "fromMs": 11265,
+            "durationMs": 45,
+            "interior": true
+          },
+          {
+            "fromMs": 12060,
+            "durationMs": 75,
+            "interior": true
+          },
+          {
+            "fromMs": 12145,
+            "durationMs": 55,
+            "interior": true
+          },
+          {
+            "fromMs": 12240,
+            "durationMs": 35,
+            "interior": true
+          },
+          {
+            "fromMs": 12290,
+            "durationMs": 50,
+            "interior": true
+          }
+        ],
+        "interiorTotalMs": 1260,
+        "interiorMaximumMs": 395
+      }
+    }
+  },
+  "media": {
+    "recording.mkv": {
+      "sampleFrames": 745472,
+      "matchedWindows": 261,
+      "windowCount": 388,
+      "lowConfidence": [
+        {
+          "index": 54,
+          "offsetMs": 2160.0,
+          "correlation": 0.1423825045813477
+        },
+        {
+          "index": 116,
+          "offsetMs": 4640.0,
+          "correlation": 0.7742164242781838
+        },
+        {
+          "index": 136,
+          "offsetMs": 5440.0,
+          "correlation": 0.7333537240055765
+        },
+        {
+          "index": 138,
+          "offsetMs": 5520.0,
+          "correlation": 0.394479550674248
+        },
+        {
+          "index": 139,
+          "offsetMs": 5560.0,
+          "correlation": 0.4082935840088895
+        },
+        {
+          "index": 140,
+          "offsetMs": 5600.0,
+          "correlation": 0.302244663869806
+        },
+        {
+          "index": 141,
+          "offsetMs": 5640.0,
+          "correlation": 0.35240086407776644
+        },
+        {
+          "index": 142,
+          "offsetMs": 5680.0,
+          "correlation": 0.9159478223598047
+        },
+        {
+          "index": 143,
+          "offsetMs": 5720.0,
+          "correlation": 0.9297389062437996
+        },
+        {
+          "index": 144,
+          "offsetMs": 5760.0,
+          "correlation": 0.9273069840665312
+        },
+        {
+          "index": 145,
+          "offsetMs": 5800.0,
+          "correlation": 0.9383463716834923
+        },
+        {
+          "index": 146,
+          "offsetMs": 5840.0,
+          "correlation": 0.939469244503833
+        },
+        {
+          "index": 147,
+          "offsetMs": 5880.0,
+          "correlation": 0.9422536026840643
+        },
+        {
+          "index": 148,
+          "offsetMs": 5920.0,
+          "correlation": 0.9497791664239271
+        },
+        {
+          "index": 149,
+          "offsetMs": 5960.0,
+          "correlation": 0.946148965207018
+        },
+        {
+          "index": 226,
+          "offsetMs": 9040.0,
+          "correlation": 0.9000027641062729
+        },
+        {
+          "index": 227,
+          "offsetMs": 9080.0,
+          "correlation": 0.59007309035638
+        },
+        {
+          "index": 228,
+          "offsetMs": 9120.0,
+          "correlation": 0.7769738008614254
+        },
+        {
+          "index": 229,
+          "offsetMs": 9160.0,
+          "correlation": 0.5095061600060324
+        },
+        {
+          "index": 236,
+          "offsetMs": 9440.0,
+          "correlation": 0.59558202627339
+        },
+        {
+          "index": 237,
+          "offsetMs": 9480.0,
+          "correlation": 0.27861925019256734
+        },
+        {
+          "index": 238,
+          "offsetMs": 9520.0,
+          "correlation": 0.8354991297977397
+        },
+        {
+          "index": 239,
+          "offsetMs": 9560.0,
+          "correlation": 0.5330631325798191
+        },
+        {
+          "index": 242,
+          "offsetMs": 9680.0,
+          "correlation": 0.6339013749037741
+        },
+        {
+          "index": 246,
+          "offsetMs": 9840.0,
+          "correlation": 0.5793751666741384
+        },
+        {
+          "index": 248,
+          "offsetMs": 9920.0,
+          "correlation": 0.3173727097668637
+        },
+        {
+          "index": 249,
+          "offsetMs": 9960.0,
+          "correlation": 0.7051217047287262
+        },
+        {
+          "index": 250,
+          "offsetMs": 10000.0,
+          "correlation": 0.8755750846014445
+        },
+        {
+          "index": 251,
+          "offsetMs": 10040.0,
+          "correlation": 0.8913616974513093
+        },
+        {
+          "index": 252,
+          "offsetMs": 10080.0,
+          "correlation": 0.9035338434089768
+        },
+        {
+          "index": 253,
+          "offsetMs": 10120.0,
+          "correlation": 0.9041026560976951
+        },
+        {
+          "index": 254,
+          "offsetMs": 10160.0,
+          "correlation": 0.9038656585351174
+        },
+        {
+          "index": 255,
+          "offsetMs": 10200.0,
+          "correlation": 0.9041102086226007
+        },
+        {
+          "index": 256,
+          "offsetMs": 10240.0,
+          "correlation": 0.915224223754344
+        },
+        {
+          "index": 257,
+          "offsetMs": 10280.0,
+          "correlation": 0.9214379672379467
+        },
+        {
+          "index": 259,
+          "offsetMs": 10360.0,
+          "correlation": 0.9252261135419614
+        },
+        {
+          "index": 260,
+          "offsetMs": 10400.0,
+          "correlation": 0.9485989185700398
+        },
+        {
+          "index": 263,
+          "offsetMs": 10520.0,
+          "correlation": 0.9423180523334652
+        },
+        {
+          "index": 276,
+          "offsetMs": 11040.0,
+          "correlation": 0.9130683558921072
+        },
+        {
+          "index": 286,
+          "offsetMs": 11440.0,
+          "correlation": 0.25012262181460015
+        },
+        {
+          "index": 288,
+          "offsetMs": 11520.0,
+          "correlation": 0.4031148938253232
+        },
+        {
+          "index": 289,
+          "offsetMs": 11560.0,
+          "correlation": 0.2938712012626159
+        },
+        {
+          "index": 290,
+          "offsetMs": 11600.0,
+          "correlation": 0.5794000254049317
+        },
+        {
+          "index": 291,
+          "offsetMs": 11640.0,
+          "correlation": 0.8959774658604167
+        },
+        {
+          "index": 292,
+          "offsetMs": 11680.0,
+          "correlation": 0.9259289222344711
+        },
+        {
+          "index": 293,
+          "offsetMs": 11720.0,
+          "correlation": 0.9451461134823411
+        },
+        {
+          "index": 294,
+          "offsetMs": 11760.0,
+          "correlation": 0.9382219229663449
+        },
+        {
+          "index": 295,
+          "offsetMs": 11800.0,
+          "correlation": 0.8959406815503143
+        },
+        {
+          "index": 296,
+          "offsetMs": 11840.0,
+          "correlation": 0.9335125422585235
+        },
+        {
+          "index": 297,
+          "offsetMs": 11880.0,
+          "correlation": 0.9377163484850917
+        },
+        {
+          "index": 309,
+          "offsetMs": 12360.0,
+          "correlation": 0.5531893397371032
+        },
+        {
+          "index": 311,
+          "offsetMs": 12440.0,
+          "correlation": 0.3796564662322272
+        },
+        {
+          "index": 313,
+          "offsetMs": 12520.0,
+          "correlation": 0.8518344122797363
+        },
+        {
+          "index": 314,
+          "offsetMs": 12560.0,
+          "correlation": 0.36394464643448504
+        },
+        {
+          "index": 315,
+          "offsetMs": 12600.0,
+          "correlation": 0.2425645977086361
+        },
+        {
+          "index": 316,
+          "offsetMs": 12640.0,
+          "correlation": 0.7711474161454834
+        },
+        {
+          "index": 317,
+          "offsetMs": 12680.0,
+          "correlation": 0.9227547854917618
+        }
+      ],
+      "sequenceDiscontinuities": [
+        {
+          "atMs": 4680.0,
+          "jumpFrames": -618,
+          "jumpMs": -12.875,
+          "previousIndex": 115,
+          "index": 117,
+          "correlation": 0.9988957983654575,
+          "previousCorrelation": 0.996237871812942
+        },
+        {
+          "atMs": 6000.0,
+          "jumpFrames": -6458,
+          "jumpMs": -134.54166666666666,
+          "previousIndex": 135,
+          "index": 150,
+          "correlation": 0.9573560717170615,
+          "previousCorrelation": 0.9990619749989725
+        },
+        {
+          "atMs": 9200.0,
+          "jumpFrames": -1318,
+          "jumpMs": -27.458333333333332,
+          "previousIndex": 225,
+          "index": 230,
+          "correlation": 0.9643976592833535,
+          "previousCorrelation": 0.9991630357873656
+        },
+        {
+          "atMs": 9720.0,
+          "jumpFrames": -6661,
+          "jumpMs": -138.77083333333334,
+          "previousIndex": 235,
+          "index": 243,
+          "correlation": 0.9909740115879617,
+          "previousCorrelation": 0.9839702126414303
+        },
+        {
+          "atMs": 10320.0,
+          "jumpFrames": -3647,
+          "jumpMs": -75.97916666666667,
+          "previousIndex": 245,
+          "index": 258,
+          "correlation": 0.9534928602639348,
+          "previousCorrelation": 0.9935696046544348
+        },
+        {
+          "atMs": 10440.0,
+          "jumpFrames": 50,
+          "jumpMs": 1.0416666666666667,
+          "previousIndex": 258,
+          "index": 261,
+          "correlation": 0.9718374324902831,
+          "previousCorrelation": 0.9534928602639348
+        },
+        {
+          "atMs": 11920.0,
+          "jumpFrames": -23078,
+          "jumpMs": -480.7916666666667,
+          "previousIndex": 275,
+          "index": 298,
+          "correlation": 0.9629229296135194,
+          "previousCorrelation": 0.9807088434968104
+        },
+        {
+          "atMs": 12720.0,
+          "jumpFrames": -6784,
+          "jumpMs": -141.33333333333334,
+          "previousIndex": 308,
+          "index": 318,
+          "correlation": 0.9530929621786095,
+          "previousCorrelation": 0.9804198235477275
+        }
+      ],
+      "positiveJumpTotalMs": 1.0416666666666667,
+      "negativeJumpTotalMs": 1011.75,
+      "firstMatchedFrame": 4472,
+      "firstSound": {
+        "firstAudibleOffsetMs": 2199.625,
+        "firstPreservedFrameEstimate": 4454,
+        "correlation": 0.9999538779030369,
+        "method": "960-sample correlation starting 5 ms after first audible sample; back-extrapolated 5 ms"
+      },
+      "globalReacquisitions": 0,
+      "silence": {
+        "resolutionMs": 5,
+        "segments": [
+          {
+            "fromMs": 0,
+            "durationMs": 2195,
+            "interior": false
+          },
+          {
+            "fromMs": 4665,
+            "durationMs": 10,
+            "interior": true
+          },
+          {
+            "fromMs": 5470,
+            "durationMs": 55,
+            "interior": true
+          },
+          {
+            "fromMs": 5530,
+            "durationMs": 25,
+            "interior": true
+          },
+          {
+            "fromMs": 5570,
+            "durationMs": 55,
+            "interior": true
+          },
+          {
+            "fromMs": 5630,
+            "durationMs": 45,
+            "interior": true
+          },
+          {
+            "fromMs": 9075,
+            "durationMs": 15,
+            "interior": true
+          },
+          {
+            "fromMs": 9110,
+            "durationMs": 5,
+            "interior": true
+          },
+          {
+            "fromMs": 9175,
+            "durationMs": 25,
+            "interior": true
+          },
+          {
+            "fromMs": 9455,
+            "durationMs": 35,
+            "interior": true
+          },
+          {
+            "fromMs": 9500,
+            "durationMs": 25,
+            "interior": true
+          },
+          {
+            "fromMs": 9575,
+            "durationMs": 15,
+            "interior": true
+          },
+          {
+            "fromMs": 9600,
+            "durationMs": 100,
+            "interior": true
+          },
+          {
+            "fromMs": 9855,
+            "durationMs": 75,
+            "interior": true
+          },
+          {
+            "fromMs": 9935,
+            "durationMs": 40,
+            "interior": true
+          },
+          {
+            "fromMs": 11075,
+            "durationMs": 395,
+            "interior": true
+          },
+          {
+            "fromMs": 11475,
+            "durationMs": 50,
+            "interior": true
+          },
+          {
+            "fromMs": 11535,
+            "durationMs": 35,
+            "interior": true
+          },
+          {
+            "fromMs": 11580,
+            "durationMs": 45,
+            "interior": true
+          },
+          {
+            "fromMs": 12375,
+            "durationMs": 75,
+            "interior": true
+          },
+          {
+            "fromMs": 12460,
+            "durationMs": 60,
+            "interior": true
+          },
+          {
+            "fromMs": 12555,
+            "durationMs": 35,
+            "interior": true
+          },
+          {
+            "fromMs": 12605,
+            "durationMs": 50,
+            "interior": true
+          }
+        ],
+        "interiorTotalMs": 1270,
+        "interiorMaximumMs": 395
+      },
+      "decodeExitCode": 0,
+      "decodeErrors": false,
+      "durationMs": 15530.666666666666
+    },
+    "receiver.flv": {
+      "sampleFrames": 724992,
+      "matchedWindows": 257,
+      "windowCount": 377,
+      "lowConfidence": [
+        {
+          "index": 47,
+          "offsetMs": 1880.0,
+          "correlation": 0.5499477662140416
+        },
+        {
+          "index": 109,
+          "offsetMs": 4360.0,
+          "correlation": 0.6453721977422073
+        },
+        {
+          "index": 129,
+          "offsetMs": 5160.0,
+          "correlation": 0.46461135070612497
+        },
+        {
+          "index": 130,
+          "offsetMs": 5200.0,
+          "correlation": 0.3890342261608061
+        },
+        {
+          "index": 131,
+          "offsetMs": 5240.0,
+          "correlation": 0.48492627687906914
+        },
+        {
+          "index": 133,
+          "offsetMs": 5320.0,
+          "correlation": 0.27463941300107725
+        },
+        {
+          "index": 134,
+          "offsetMs": 5360.0,
+          "correlation": 0.6925833483881233
+        },
+        {
+          "index": 135,
+          "offsetMs": 5400.0,
+          "correlation": 0.918422126961302
+        },
+        {
+          "index": 136,
+          "offsetMs": 5440.0,
+          "correlation": 0.9310998028258057
+        },
+        {
+          "index": 137,
+          "offsetMs": 5480.0,
+          "correlation": 0.9405611847643315
+        },
+        {
+          "index": 138,
+          "offsetMs": 5520.0,
+          "correlation": 0.9356793307665466
+        },
+        {
+          "index": 139,
+          "offsetMs": 5560.0,
+          "correlation": 0.9478769308413729
+        },
+        {
+          "index": 140,
+          "offsetMs": 5600.0,
+          "correlation": 0.9359525364256472
+        },
+        {
+          "index": 142,
+          "offsetMs": 5680.0,
+          "correlation": 0.9367071569890699
+        },
+        {
+          "index": 219,
+          "offsetMs": 8760.0,
+          "correlation": 0.6513785917683744
+        },
+        {
+          "index": 220,
+          "offsetMs": 8800.0,
+          "correlation": 0.6957140820752176
+        },
+        {
+          "index": 222,
+          "offsetMs": 8880.0,
+          "correlation": 0.5674762955638427
+        },
+        {
+          "index": 229,
+          "offsetMs": 9160.0,
+          "correlation": 0.15883708548707814
+        },
+        {
+          "index": 230,
+          "offsetMs": 9200.0,
+          "correlation": 0.4044031114341295
+        },
+        {
+          "index": 231,
+          "offsetMs": 9240.0,
+          "correlation": 0.945400160529627
+        },
+        {
+          "index": 232,
+          "offsetMs": 9280.0,
+          "correlation": 0.3343881839721824
+        },
+        {
+          "index": 235,
+          "offsetMs": 9400.0,
+          "correlation": 0.8640896890931311
+        },
+        {
+          "index": 240,
+          "offsetMs": 9600.0,
+          "correlation": 0.2981776732711786
+        },
+        {
+          "index": 241,
+          "offsetMs": 9640.0,
+          "correlation": 0.20045734538653787
+        },
+        {
+          "index": 242,
+          "offsetMs": 9680.0,
+          "correlation": 0.8636021259827011
+        },
+        {
+          "index": 243,
+          "offsetMs": 9720.0,
+          "correlation": 0.9073040235682533
+        },
+        {
+          "index": 244,
+          "offsetMs": 9760.0,
+          "correlation": 0.8844402305984889
+        },
+        {
+          "index": 245,
+          "offsetMs": 9800.0,
+          "correlation": 0.9190146392789135
+        },
+        {
+          "index": 246,
+          "offsetMs": 9840.0,
+          "correlation": 0.885508263595848
+        },
+        {
+          "index": 247,
+          "offsetMs": 9880.0,
+          "correlation": 0.9316752693406933
+        },
+        {
+          "index": 248,
+          "offsetMs": 9920.0,
+          "correlation": 0.9212011342537358
+        },
+        {
+          "index": 249,
+          "offsetMs": 9960.0,
+          "correlation": 0.9132718783791919
+        },
+        {
+          "index": 250,
+          "offsetMs": 10000.0,
+          "correlation": 0.9463336248015637
+        },
+        {
+          "index": 251,
+          "offsetMs": 10040.0,
+          "correlation": 0.9406896624162683
+        },
+        {
+          "index": 252,
+          "offsetMs": 10080.0,
+          "correlation": 0.9295275078109652
+        },
+        {
+          "index": 256,
+          "offsetMs": 10240.0,
+          "correlation": 0.9385994016643515
+        },
+        {
+          "index": 260,
+          "offsetMs": 10400.0,
+          "correlation": 0.9476962636724398
+        },
+        {
+          "index": 269,
+          "offsetMs": 10760.0,
+          "correlation": 0.7472322168582579
+        },
+        {
+          "index": 279,
+          "offsetMs": 11160.0,
+          "correlation": 0.2621647667075216
+        },
+        {
+          "index": 280,
+          "offsetMs": 11200.0,
+          "correlation": 0.40668521656416995
+        },
+        {
+          "index": 281,
+          "offsetMs": 11240.0,
+          "correlation": 0.2395908379892323
+        },
+        {
+          "index": 282,
+          "offsetMs": 11280.0,
+          "correlation": 0.30049202710709366
+        },
+        {
+          "index": 283,
+          "offsetMs": 11320.0,
+          "correlation": 0.7166901284163092
+        },
+        {
+          "index": 284,
+          "offsetMs": 11360.0,
+          "correlation": 0.9284775881346709
+        },
+        {
+          "index": 285,
+          "offsetMs": 11400.0,
+          "correlation": 0.9150016348878007
+        },
+        {
+          "index": 286,
+          "offsetMs": 11440.0,
+          "correlation": 0.9405979457208148
+        },
+        {
+          "index": 287,
+          "offsetMs": 11480.0,
+          "correlation": 0.9105581636553418
+        },
+        {
+          "index": 288,
+          "offsetMs": 11520.0,
+          "correlation": 0.9006481354847496
+        },
+        {
+          "index": 289,
+          "offsetMs": 11560.0,
+          "correlation": 0.9312081156602976
+        },
+        {
+          "index": 291,
+          "offsetMs": 11640.0,
+          "correlation": 0.9299393009106889
+        },
+        {
+          "index": 303,
+          "offsetMs": 12120.0,
+          "correlation": 0.17209973608123566
+        },
+        {
+          "index": 304,
+          "offsetMs": 12160.0,
+          "correlation": 0.4050030115942638
+        },
+        {
+          "index": 305,
+          "offsetMs": 12200.0,
+          "correlation": 0.5919472601416024
+        },
+        {
+          "index": 306,
+          "offsetMs": 12240.0,
+          "correlation": 0.6470573637561038
+        },
+        {
+          "index": 307,
+          "offsetMs": 12280.0,
+          "correlation": 0.4153473069691571
+        },
+        {
+          "index": 309,
+          "offsetMs": 12360.0,
+          "correlation": 0.9139592802026704
+        },
+        {
+          "index": 310,
+          "offsetMs": 12400.0,
+          "correlation": 0.9218300597757916
+        },
+        {
+          "index": 312,
+          "offsetMs": 12480.0,
+          "correlation": 0.9461351292866153
+        }
+      ],
+      "sequenceDiscontinuities": [
+        {
+          "atMs": 4400.0,
+          "jumpFrames": -616,
+          "jumpMs": -12.833333333333334,
+          "previousIndex": 108,
+          "index": 110,
+          "correlation": 0.9985347240665292,
+          "previousCorrelation": 0.9991587496663018
+        },
+        {
+          "atMs": 5640.0,
+          "jumpFrames": -6484,
+          "jumpMs": -135.08333333333334,
+          "previousIndex": 128,
+          "index": 141,
+          "correlation": 0.9579397038977351,
+          "previousCorrelation": 0.9991226429820141
+        },
+        {
+          "atMs": 8840.0,
+          "jumpFrames": -337,
+          "jumpMs": -7.020833333333333,
+          "previousIndex": 218,
+          "index": 221,
+          "correlation": 0.9575479850092068,
+          "previousCorrelation": 0.9995663382815826
+        },
+        {
+          "atMs": 8920.0,
+          "jumpFrames": -978,
+          "jumpMs": -20.375,
+          "previousIndex": 221,
+          "index": 223,
+          "correlation": 0.9763676119075722,
+          "previousCorrelation": 0.9575479850092068
+        },
+        {
+          "atMs": 9440.0,
+          "jumpFrames": -6655,
+          "jumpMs": -138.64583333333334,
+          "previousIndex": 228,
+          "index": 236,
+          "correlation": 0.9907248023314064,
+          "previousCorrelation": 0.981121599257007
+        },
+        {
+          "atMs": 10120.0,
+          "jumpFrames": -3606,
+          "jumpMs": -75.125,
+          "previousIndex": 238,
+          "index": 253,
+          "correlation": 0.9588852234452795,
+          "previousCorrelation": 0.984722111582298
+        },
+        {
+          "atMs": 11600.0,
+          "jumpFrames": -23091,
+          "jumpMs": -481.0625,
+          "previousIndex": 268,
+          "index": 290,
+          "correlation": 0.9659017577119388,
+          "previousCorrelation": 0.9815856655987629
+        },
+        {
+          "atMs": 12440.0,
+          "jumpFrames": -6782,
+          "jumpMs": -141.29166666666666,
+          "previousIndex": 301,
+          "index": 311,
+          "correlation": 0.9505941206105157,
+          "previousCorrelation": 0.9591000856971839
+        }
+      ],
+      "positiveJumpTotalMs": 0,
+      "negativeJumpTotalMs": 1011.4375,
+      "firstMatchedFrame": 5152,
+      "firstSound": {
+        "firstAudibleOffsetMs": 1905.5208333333333,
+        "firstPreservedFrameEstimate": 4457,
+        "correlation": 0.9999765564135018,
+        "method": "960-sample correlation starting 5 ms after first audible sample; back-extrapolated 5 ms"
+      },
+      "globalReacquisitions": 0,
+      "silence": {
+        "resolutionMs": 5,
+        "segments": [
+          {
+            "fromMs": 0,
+            "durationMs": 1905,
+            "interior": false
+          },
+          {
+            "fromMs": 4375,
+            "durationMs": 5,
+            "interior": true
+          },
+          {
+            "fromMs": 5175,
+            "durationMs": 55,
+            "interior": true
+          },
+          {
+            "fromMs": 5235,
+            "durationMs": 25,
+            "interior": true
+          },
+          {
+            "fromMs": 5275,
+            "durationMs": 55,
+            "interior": true
+          },
+          {
+            "fromMs": 5335,
+            "durationMs": 45,
+            "interior": true
+          },
+          {
+            "fromMs": 8780,
+            "durationMs": 20,
+            "interior": true
+          },
+          {
+            "fromMs": 8815,
+            "durationMs": 5,
+            "interior": true
+          },
+          {
+            "fromMs": 8880,
+            "durationMs": 25,
+            "interior": true
+          },
+          {
+            "fromMs": 9165,
+            "durationMs": 30,
+            "interior": true
+          },
+          {
+            "fromMs": 9205,
+            "durationMs": 25,
+            "interior": true
+          },
+          {
+            "fromMs": 9280,
+            "durationMs": 15,
+            "interior": true
+          },
+          {
+            "fromMs": 9305,
+            "durationMs": 100,
+            "interior": true
+          },
+          {
+            "fromMs": 9560,
+            "durationMs": 75,
+            "interior": true
+          },
+          {
+            "fromMs": 9645,
+            "durationMs": 40,
+            "interior": true
+          },
+          {
+            "fromMs": 10785,
+            "durationMs": 390,
+            "interior": true
+          },
+          {
+            "fromMs": 11185,
+            "durationMs": 45,
+            "interior": true
+          },
+          {
+            "fromMs": 11240,
+            "durationMs": 35,
+            "interior": true
+          },
+          {
+            "fromMs": 11285,
+            "durationMs": 45,
+            "interior": true
+          },
+          {
+            "fromMs": 12085,
+            "durationMs": 70,
+            "interior": true
+          },
+          {
+            "fromMs": 12165,
+            "durationMs": 60,
+            "interior": true
+          },
+          {
+            "fromMs": 12260,
+            "durationMs": 35,
+            "interior": true
+          },
+          {
+            "fromMs": 12310,
+            "durationMs": 55,
+            "interior": true
+          }
+        ],
+        "interiorTotalMs": 1255,
+        "interiorMaximumMs": 390
+      },
+      "decodeExitCode": 0,
+      "decodeErrors": false,
+      "durationMs": 15104.0
+    }
+  },
+  "captureStatus": "capture-completed; analysis-pending",
+  "nativeSourceCopy": {
+    "recording.mkv": {
+      "interiorMismatchedFrames": 0,
+      "interiorUncoveredMs": 867.0,
+      "interiorMissingAtEncodeMs": 867.0
+    },
+    "profile": {
+      "interiorMismatchedFrames": 0,
+      "interiorUncoveredMs": 867.0,
+      "interiorMissingAtEncodeMs": 867.0
+    }
+  },
+  "hostCPUStatDelta": {
+    "usage_usec": 23068124,
+    "user_usec": 20626480,
+    "system_usec": 2441644,
+    "nice_usec": 0,
+    "nr_periods": 151,
+    "nr_throttled": 9,
+    "throttled_usec": 1282003,
+    "nr_bursts": 0,
+    "burst_usec": 0
+  },
+  "profileSamples": 32,
+  "cpuQuota": "400000 100000",
+  "processTreeRSSPeakMiB": 1373.0390625,
+  "processTreeCPUMeanCores": 1.5047181970268493
+}

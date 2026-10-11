@@ -1,0 +1,19 @@
+{
+  "channel": "GOFNS",
+  "url": "https://www.twitch.tv/gofns",
+  "requestedMs": 120000,
+  "status": "failed",
+  "backend": "SuiteCut Playwright with tab audio; native CEF Twitch playback failed",
+  "startedAt": "2026-10-10T11:05:16.223Z",
+  "cefCodecSupport": {
+    "h264aac": "",
+    "h264": "",
+    "aac": "",
+    "vp9opus": "probably",
+    "av1": "probably"
+  },
+  "cefVersion": "154.0.34+g14c5a08+chromium-154.0.8037.98",
+  "chromiumVersion": "151.0.7922.34",
+  "error": "locator.isVisible: Error: strict mode violation: locator('[data-a-target=\"player-fullscreen-button\"]') resolved to 2 elements:\n    1) <button aria-haspopup=\"menu\" aria-label=\"Fullscreen (f)\" data-a-target=\"player-fullscreen-button\" class=\"ScCoreButton-sc-ocjdkq-0 eBQIRH ScButtonIcon-sc-9yap0r-0 jcYIUn\">…</button> aka getByRole('button', { name: 'Fullscreen (f)' })\n    2) <button aria-haspopup=\"menu\" aria-label=\"Fullscreen (f)\" data-a-target=\"player-fullscreen-button\" class=\"ScCoreButton-sc-ocjdkq-0 eBQIRH ScButtonIcon-sc-9yap0r-0 jcYIUn\">…</button> aka getByLabel('Fullscreen (f)').nth(1)\n\nCall log:\n\u001b[2m    - checking visibility of locator('[data-a-target=\"player-fullscreen-button\"]')\u001b[22m\n\n    at /workspace/suitecut/benchmarks/twitch-capture/capture.mjs:50:24",
+  "finishedAt": "2026-10-10T11:05:25.394Z"
+}

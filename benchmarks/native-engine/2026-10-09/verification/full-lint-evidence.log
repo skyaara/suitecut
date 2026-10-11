@@ -1,0 +1,71 @@
+$ eslint . --max-warnings 0
+
+/workspace/suitecut/benchmarks/native-engine/2026-10-09/presentation-final/delayed-tone.mjs
+  0:0  error  Parsing error: /workspace/suitecut/benchmarks/native-engine/2026-10-09/presentation-final/delayed-tone.mjs was not found by the project service. Consider either including it in the tsconfig.json or including it in allowDefaultProject
+
+/workspace/suitecut/benchmarks/native-engine/2026-10-09/presentation-fixed/delayed-tone.mjs
+  0:0  error  Parsing error: /workspace/suitecut/benchmarks/native-engine/2026-10-09/presentation-fixed/delayed-tone.mjs was not found by the project service. Consider either including it in the tsconfig.json or including it in allowDefaultProject
+
+/workspace/suitecut/benchmarks/native-engine/2026-10-09/presentation-success/delayed-tone.mjs
+  0:0  error  Parsing error: /workspace/suitecut/benchmarks/native-engine/2026-10-09/presentation-success/delayed-tone.mjs was not found by the project service. Consider either including it in the tsconfig.json or including it in allowDefaultProject
+
+/workspace/suitecut/benchmarks/native-engine/2026-10-09/presentation-visual-fixed/delayed-tone.mjs
+  0:0  error  Parsing error: /workspace/suitecut/benchmarks/native-engine/2026-10-09/presentation-visual-fixed/delayed-tone.mjs was not found by the project service. Consider either including it in the tsconfig.json or including it in allowDefaultProject
+
+/workspace/suitecut/benchmarks/native-engine/2026-10-09/presentation-visual/delayed-tone.mjs
+  0:0  error  Parsing error: /workspace/suitecut/benchmarks/native-engine/2026-10-09/presentation-visual/delayed-tone.mjs was not found by the project service. Consider either including it in the tsconfig.json or including it in allowDefaultProject
+
+/workspace/suitecut/benchmarks/native-engine/2026-10-09/presentation/delayed-tone.mjs
+  0:0  error  Parsing error: /workspace/suitecut/benchmarks/native-engine/2026-10-09/presentation/delayed-tone.mjs was not found by the project service. Consider either including it in the tsconfig.json or including it in allowDefaultProject
+
+/workspace/suitecut/benchmarks/native-engine/recovery.mjs
+  0:0  error  Parsing error: /workspace/suitecut/benchmarks/native-engine/recovery.mjs was not found by the project service. Consider either including it in the tsconfig.json or including it in allowDefaultProject
+
+/workspace/suitecut/benchmarks/native-engine/soak.mjs
+  0:0  error  Parsing error: /workspace/suitecut/benchmarks/native-engine/soak.mjs was not found by the project service. Consider either including it in the tsconfig.json or including it in allowDefaultProject
+
+/workspace/suitecut/benchmarks/obs-cef/2026-10-09-optimization/baseline-source/native-page.before-shared-lifetime.js
+  0:0  error  Parsing error: /workspace/suitecut/benchmarks/obs-cef/2026-10-09-optimization/baseline-source/native-page.before-shared-lifetime.js was not found by the project service. Consider either including it in the tsconfig.json or including it in allowDefaultProject
+
+/workspace/suitecut/benchmarks/obs-cef/2026-10-09-optimization/baseline-source/native-session-before-lifecycle-fix.js
+  0:0  error  Parsing error: /workspace/suitecut/benchmarks/obs-cef/2026-10-09-optimization/baseline-source/native-session-before-lifecycle-fix.js was not found by the project service. Consider either including it in the tsconfig.json or including it in allowDefaultProject
+
+/workspace/suitecut/benchmarks/obs-cef/2026-10-09/features-executed.mjs
+  0:0  error  Parsing error: /workspace/suitecut/benchmarks/obs-cef/2026-10-09/features-executed.mjs was not found by the project service. Consider either including it in the tsconfig.json or including it in allowDefaultProject
+
+/workspace/suitecut/benchmarks/obs-cef/features.mjs
+  0:0  error  Parsing error: /workspace/suitecut/benchmarks/obs-cef/features.mjs was not found by the project service. Consider either including it in the tsconfig.json or including it in allowDefaultProject
+
+/workspace/suitecut/benchmarks/obs-cef/investigate-soak.mjs
+  0:0  error  Parsing error: /workspace/suitecut/benchmarks/obs-cef/investigate-soak.mjs was not found by the project service. Consider either including it in the tsconfig.json or including it in allowDefaultProject
+
+/workspace/suitecut/benchmarks/obs-cef/obs-client.mjs
+  0:0  error  Parsing error: /workspace/suitecut/benchmarks/obs-cef/obs-client.mjs was not found by the project service. Consider either including it in the tsconfig.json or including it in allowDefaultProject
+
+/workspace/suitecut/benchmarks/obs-cef/obs-long-soak.mjs
+  0:0  error  Parsing error: /workspace/suitecut/benchmarks/obs-cef/obs-long-soak.mjs was not found by the project service. Consider either including it in the tsconfig.json or including it in allowDefaultProject
+
+/workspace/suitecut/benchmarks/obs-cef/profile-media.mjs
+  0:0  error  Parsing error: /workspace/suitecut/benchmarks/obs-cef/profile-media.mjs was not found by the project service. Consider either including it in the tsconfig.json or including it in allowDefaultProject
+
+/workspace/suitecut/benchmarks/obs-cef/reuse-source.mjs
+  0:0  error  Parsing error: /workspace/suitecut/benchmarks/obs-cef/reuse-source.mjs was not found by the project service. Consider either including it in the tsconfig.json or including it in allowDefaultProject
+
+/workspace/suitecut/benchmarks/obs-cef/run-optimized.mjs
+  0:0  error  Parsing error: /workspace/suitecut/benchmarks/obs-cef/run-optimized.mjs was not found by the project service. Consider either including it in the tsconfig.json or including it in allowDefaultProject
+
+/workspace/suitecut/benchmarks/obs-cef/run.mjs
+  0:0  error  Parsing error: /workspace/suitecut/benchmarks/obs-cef/run.mjs was not found by the project service. Consider either including it in the tsconfig.json or including it in allowDefaultProject
+
+/workspace/suitecut/benchmarks/obs-cef/soak.mjs
+  0:0  error  Parsing error: /workspace/suitecut/benchmarks/obs-cef/soak.mjs was not found by the project service. Consider either including it in the tsconfig.json or including it in allowDefaultProject
+
+/workspace/suitecut/benchmarks/obs-cef/trace-stdio.mjs
+  0:0  error  Parsing error: /workspace/suitecut/benchmarks/obs-cef/trace-stdio.mjs was not found by the project service. Consider either including it in the tsconfig.json or including it in allowDefaultProject
+
+/workspace/suitecut/benchmarks/obs-cef/verify-container.mjs
+  0:0  error  Parsing error: /workspace/suitecut/benchmarks/obs-cef/verify-container.mjs was not found by the project service. Consider either including it in the tsconfig.json or including it in allowDefaultProject
+
+✖ 22 problems (22 errors, 0 warnings)
+
+[ELIFECYCLE] Command failed with exit code 1.

@@ -1,0 +1,1521 @@
+[
+  {
+    "profile": "CPU.20261008.233845.29002.0.001.cpuprofile",
+    "samples": 15684,
+    "durationMs": 31511.988,
+    "topFunctions": [
+      {
+        "function": "(idle)",
+        "url": "",
+        "line": 0,
+        "samples": 12139,
+        "samplePercent": 77.39734761540423
+      },
+      {
+        "function": "(garbage collector)",
+        "url": "",
+        "line": 0,
+        "samples": 1572,
+        "samplePercent": 10.022953328232594
+      },
+      {
+        "function": "(program)",
+        "url": "",
+        "line": 0,
+        "samples": 297,
+        "samplePercent": 1.8936495791889825
+      },
+      {
+        "function": "_copyActual",
+        "url": "node:buffer",
+        "line": 274,
+        "samples": 124,
+        "samplePercent": 0.7906146391226727
+      },
+      {
+        "function": "_copyActual",
+        "url": "node:buffer",
+        "line": 274,
+        "samples": 83,
+        "samplePercent": 0.5292017342514664
+      },
+      {
+        "function": "wrapSafe",
+        "url": "node:internal/modules/cjs/loader",
+        "line": 1762,
+        "samples": 82,
+        "samplePercent": 0.5228258097424127
+      },
+      {
+        "function": "wrapSafe",
+        "url": "node:internal/modules/cjs/loader",
+        "line": 1762,
+        "samples": 74,
+        "samplePercent": 0.4718184136699822
+      },
+      {
+        "function": "_copyActual",
+        "url": "node:buffer",
+        "line": 274,
+        "samples": 54,
+        "samplePercent": 0.34429992348890587
+      },
+      {
+        "function": "readFileSync",
+        "url": "node:fs",
+        "line": 474,
+        "samples": 53,
+        "samplePercent": 0.3379239989798521
+      },
+      {
+        "function": "_copyActual",
+        "url": "node:buffer",
+        "line": 274,
+        "samples": 51,
+        "samplePercent": 0.3251721499617445
+      },
+      {
+        "function": "readFileUtf8",
+        "url": "",
+        "line": 0,
+        "samples": 36,
+        "samplePercent": 0.22953328232593728
+      },
+      {
+        "function": "readFileSync",
+        "url": "node:fs",
+        "line": 474,
+        "samples": 30,
+        "samplePercent": 0.1912777352716144
+      },
+      {
+        "function": "readFileUtf8",
+        "url": "",
+        "line": 0,
+        "samples": 23,
+        "samplePercent": 0.1466462637082377
+      },
+      {
+        "function": "writeBuffer",
+        "url": "",
+        "line": 0,
+        "samples": 21,
+        "samplePercent": 0.13389441469013008
+      },
+      {
+        "function": "nextTick",
+        "url": "node:internal/process/task_queues",
+        "line": 113,
+        "samples": 20,
+        "samplePercent": 0.12751849018107625
+      },
+      {
+        "function": "onStreamRead",
+        "url": "node:internal/stream_base_commons",
+        "line": 166,
+        "samples": 18,
+        "samplePercent": 0.11476664116296864
+      },
+      {
+        "function": "",
+        "url": "file:///workspace/suitecut/node_modules/.pnpm/playwright-core@1.62.1/node_modules/playwright-core/lib/utilsBundle.js",
+        "line": 1,
+        "samples": 17,
+        "samplePercent": 0.10839071665391482
+      },
+      {
+        "function": "dlopen",
+        "url": "",
+        "line": 0,
+        "samples": 17,
+        "samplePercent": 0.10839071665391482
+      },
+      {
+        "function": "push",
+        "url": "file:///workspace/suitecut/.suitecut/profile-baseline-dist/native-protocol.js",
+        "line": 51,
+        "samples": 15,
+        "samplePercent": 0.0956388676358072
+      },
+      {
+        "function": "parse",
+        "url": "",
+        "line": 0,
+        "samples": 12,
+        "samplePercent": 0.07651109410864575
+      },
+      {
+        "function": "",
+        "url": "",
+        "line": 0,
+        "samples": 12,
+        "samplePercent": 0.07651109410864575
+      },
+      {
+        "function": "push",
+        "url": "file:///workspace/suitecut/.suitecut/profile-baseline-dist/native-protocol.js",
+        "line": 51,
+        "samples": 11,
+        "samplePercent": 0.07013516959959194
+      },
+      {
+        "function": "compileSourceTextModule",
+        "url": "node:internal/modules/esm/utils",
+        "line": 316,
+        "samples": 10,
+        "samplePercent": 0.06375924509053812
+      },
+      {
+        "function": "compileSourceTextModule",
+        "url": "node:internal/modules/esm/utils",
+        "line": 316,
+        "samples": 10,
+        "samplePercent": 0.06375924509053812
+      },
+      {
+        "function": "processTicksAndRejections",
+        "url": "node:internal/process/task_queues",
+        "line": 72,
+        "samples": 10,
+        "samplePercent": 0.06375924509053812
+      },
+      {
+        "function": "nextTick",
+        "url": "node:internal/process/task_queues",
+        "line": 113,
+        "samples": 9,
+        "samplePercent": 0.05738332058148432
+      },
+      {
+        "function": "createUnsafeBuffer",
+        "url": "node:internal/buffer",
+        "line": 1097,
+        "samples": 8,
+        "samplePercent": 0.0510073960724305
+      },
+      {
+        "function": "spawn",
+        "url": "node:internal/child_process",
+        "line": 356,
+        "samples": 8,
+        "samplePercent": 0.0510073960724305
+      },
+      {
+        "function": "compileSourceTextModule",
+        "url": "node:internal/modules/esm/utils",
+        "line": 316,
+        "samples": 7,
+        "samplePercent": 0.04463147156337669
+      },
+      {
+        "function": "cjsPreparseModuleExports",
+        "url": "node:internal/modules/esm/translators",
+        "line": 420,
+        "samples": 7,
+        "samplePercent": 0.04463147156337669
+      }
+    ]
+  },
+  {
+    "profile": "CPU.20261008.234024.29307.0.001.cpuprofile",
+    "samples": 12568,
+    "durationMs": 29171.6,
+    "topFunctions": [
+      {
+        "function": "(idle)",
+        "url": "",
+        "line": 0,
+        "samples": 7559,
+        "samplePercent": 60.144812221514954
+      },
+      {
+        "function": "(garbage collector)",
+        "url": "",
+        "line": 0,
+        "samples": 2547,
+        "samplePercent": 20.265754296626355
+      },
+      {
+        "function": "(program)",
+        "url": "",
+        "line": 0,
+        "samples": 404,
+        "samplePercent": 3.214513049013367
+      },
+      {
+        "function": "_copyActual",
+        "url": "node:buffer",
+        "line": 274,
+        "samples": 247,
+        "samplePercent": 1.965308720560153
+      },
+      {
+        "function": "_copyActual",
+        "url": "node:buffer",
+        "line": 274,
+        "samples": 147,
+        "samplePercent": 1.1696371737746658
+      },
+      {
+        "function": "_copyActual",
+        "url": "node:buffer",
+        "line": 274,
+        "samples": 136,
+        "samplePercent": 1.0821133036282622
+      },
+      {
+        "function": "writeBuffer",
+        "url": "",
+        "line": 0,
+        "samples": 97,
+        "samplePercent": 0.7718014003819224
+      },
+      {
+        "function": "wrapSafe",
+        "url": "node:internal/modules/cjs/loader",
+        "line": 1762,
+        "samples": 72,
+        "samplePercent": 0.5728835136855506
+      },
+      {
+        "function": "wrapSafe",
+        "url": "node:internal/modules/cjs/loader",
+        "line": 1762,
+        "samples": 33,
+        "samplePercent": 0.26257161043921073
+      },
+      {
+        "function": "onStreamRead",
+        "url": "node:internal/stream_base_commons",
+        "line": 166,
+        "samples": 29,
+        "samplePercent": 0.23074474856779123
+      },
+      {
+        "function": "readFileUtf8",
+        "url": "",
+        "line": 0,
+        "samples": 27,
+        "samplePercent": 0.2148313176320815
+      },
+      {
+        "function": "nextTick",
+        "url": "node:internal/process/task_queues",
+        "line": 113,
+        "samples": 27,
+        "samplePercent": 0.2148313176320815
+      },
+      {
+        "function": "writeBuffer",
+        "url": "",
+        "line": 0,
+        "samples": 27,
+        "samplePercent": 0.2148313176320815
+      },
+      {
+        "function": "writeBuffer",
+        "url": "",
+        "line": 0,
+        "samples": 26,
+        "samplePercent": 0.2068746021642266
+      },
+      {
+        "function": "writeBuffer",
+        "url": "",
+        "line": 0,
+        "samples": 23,
+        "samplePercent": 0.183004455760662
+      },
+      {
+        "function": "push",
+        "url": "file:///workspace/suitecut/.suitecut/profile-baseline-dist/native-protocol.js",
+        "line": 51,
+        "samples": 22,
+        "samplePercent": 0.17504774029280715
+      },
+      {
+        "function": "writeBuffer",
+        "url": "",
+        "line": 0,
+        "samples": 22,
+        "samplePercent": 0.17504774029280715
+      },
+      {
+        "function": "nextTick",
+        "url": "node:internal/process/task_queues",
+        "line": 113,
+        "samples": 21,
+        "samplePercent": 0.16709102482495225
+      },
+      {
+        "function": "readFileSync",
+        "url": "node:fs",
+        "line": 474,
+        "samples": 20,
+        "samplePercent": 0.15913430935709738
+      },
+      {
+        "function": "readFileSync",
+        "url": "node:fs",
+        "line": 474,
+        "samples": 18,
+        "samplePercent": 0.14322087842138764
+      },
+      {
+        "function": "_copyActual",
+        "url": "node:buffer",
+        "line": 274,
+        "samples": 18,
+        "samplePercent": 0.14322087842138764
+      },
+      {
+        "function": "FastBuffer",
+        "url": "node:internal/buffer",
+        "line": 960,
+        "samples": 18,
+        "samplePercent": 0.14322087842138764
+      },
+      {
+        "function": "parse",
+        "url": "",
+        "line": 0,
+        "samples": 15,
+        "samplePercent": 0.11935073201782304
+      },
+      {
+        "function": "readFileUtf8",
+        "url": "",
+        "line": 0,
+        "samples": 15,
+        "samplePercent": 0.11935073201782304
+      },
+      {
+        "function": "dlopen",
+        "url": "",
+        "line": 0,
+        "samples": 15,
+        "samplePercent": 0.11935073201782304
+      },
+      {
+        "function": "push",
+        "url": "file:///workspace/suitecut/.suitecut/profile-baseline-dist/native-protocol.js",
+        "line": 51,
+        "samples": 14,
+        "samplePercent": 0.11139401654996818
+      },
+      {
+        "function": "runMicrotasks",
+        "url": "",
+        "line": 0,
+        "samples": 12,
+        "samplePercent": 0.09548058561425843
+      },
+      {
+        "function": "compileSourceTextModule",
+        "url": "node:internal/modules/esm/utils",
+        "line": 316,
+        "samples": 11,
+        "samplePercent": 0.08752387014640357
+      },
+      {
+        "function": "spawn",
+        "url": "node:internal/child_process",
+        "line": 356,
+        "samples": 11,
+        "samplePercent": 0.08752387014640357
+      },
+      {
+        "function": "",
+        "url": "",
+        "line": 0,
+        "samples": 10,
+        "samplePercent": 0.07956715467854869
+      }
+    ]
+  },
+  {
+    "profile": "CPU.20261008.234224.29667.0.001.cpuprofile",
+    "samples": 13768,
+    "durationMs": 27419.043,
+    "topFunctions": [
+      {
+        "function": "(idle)",
+        "url": "",
+        "line": 0,
+        "samples": 8398,
+        "samplePercent": 60.996513654851825
+      },
+      {
+        "function": "(garbage collector)",
+        "url": "",
+        "line": 0,
+        "samples": 2974,
+        "samplePercent": 21.600813480534573
+      },
+      {
+        "function": "(program)",
+        "url": "",
+        "line": 0,
+        "samples": 425,
+        "samplePercent": 3.0868680999418943
+      },
+      {
+        "function": "_copyActual",
+        "url": "node:buffer",
+        "line": 274,
+        "samples": 300,
+        "samplePercent": 2.178965717606043
+      },
+      {
+        "function": "writeBuffer",
+        "url": "",
+        "line": 0,
+        "samples": 101,
+        "samplePercent": 0.7335851249273678
+      },
+      {
+        "function": "_copyActual",
+        "url": "node:buffer",
+        "line": 274,
+        "samples": 85,
+        "samplePercent": 0.6173736199883788
+      },
+      {
+        "function": "wrapSafe",
+        "url": "node:internal/modules/cjs/loader",
+        "line": 1762,
+        "samples": 65,
+        "samplePercent": 0.4721092388146426
+      },
+      {
+        "function": "_copyActual",
+        "url": "node:buffer",
+        "line": 274,
+        "samples": 58,
+        "samplePercent": 0.421266705403835
+      },
+      {
+        "function": "wrapSafe",
+        "url": "node:internal/modules/cjs/loader",
+        "line": 1762,
+        "samples": 49,
+        "samplePercent": 0.35589773387565365
+      },
+      {
+        "function": "_copyActual",
+        "url": "node:buffer",
+        "line": 274,
+        "samples": 48,
+        "samplePercent": 0.3486345148169669
+      },
+      {
+        "function": "writeBuffer",
+        "url": "",
+        "line": 0,
+        "samples": 38,
+        "samplePercent": 0.2760023242300988
+      },
+      {
+        "function": "onStreamRead",
+        "url": "node:internal/stream_base_commons",
+        "line": 166,
+        "samples": 25,
+        "samplePercent": 0.18158047646717027
+      },
+      {
+        "function": "push",
+        "url": "file:///workspace/suitecut/.suitecut/profile-baseline-dist/native-protocol.js",
+        "line": 51,
+        "samples": 23,
+        "samplePercent": 0.16705403834979662
+      },
+      {
+        "function": "writeBuffer",
+        "url": "",
+        "line": 0,
+        "samples": 23,
+        "samplePercent": 0.16705403834979662
+      },
+      {
+        "function": "listOnTimeout",
+        "url": "node:internal/timers",
+        "line": 576,
+        "samples": 21,
+        "samplePercent": 0.152527600232423
+      },
+      {
+        "function": "push",
+        "url": "file:///workspace/suitecut/.suitecut/profile-baseline-dist/native-protocol.js",
+        "line": 51,
+        "samples": 18,
+        "samplePercent": 0.13073794305636258
+      },
+      {
+        "function": "nextTick",
+        "url": "node:internal/process/task_queues",
+        "line": 113,
+        "samples": 16,
+        "samplePercent": 0.11621150493898895
+      },
+      {
+        "function": "readFileSync",
+        "url": "node:fs",
+        "line": 474,
+        "samples": 15,
+        "samplePercent": 0.10894828588030214
+      },
+      {
+        "function": "Readable.push",
+        "url": "node:internal/streams/readable",
+        "line": 389,
+        "samples": 13,
+        "samplePercent": 0.09442184776292853
+      },
+      {
+        "function": "nextTick",
+        "url": "node:internal/process/task_queues",
+        "line": 113,
+        "samples": 13,
+        "samplePercent": 0.09442184776292853
+      },
+      {
+        "function": "writeBuffer",
+        "url": "",
+        "line": 0,
+        "samples": 13,
+        "samplePercent": 0.09442184776292853
+      },
+      {
+        "function": "tick",
+        "url": "file:///workspace/suitecut/.suitecut/profile-baseline-dist/live-stream.js",
+        "line": 261,
+        "samples": 12,
+        "samplePercent": 0.08715862870424172
+      },
+      {
+        "function": "createUnsafeBuffer",
+        "url": "node:internal/buffer",
+        "line": 1097,
+        "samples": 12,
+        "samplePercent": 0.08715862870424172
+      },
+      {
+        "function": "",
+        "url": "",
+        "line": 0,
+        "samples": 12,
+        "samplePercent": 0.08715862870424172
+      },
+      {
+        "function": "parse",
+        "url": "",
+        "line": 0,
+        "samples": 11,
+        "samplePercent": 0.07989540964555492
+      },
+      {
+        "function": "readFileSync",
+        "url": "node:fs",
+        "line": 474,
+        "samples": 11,
+        "samplePercent": 0.07989540964555492
+      },
+      {
+        "function": "FastBuffer",
+        "url": "node:internal/buffer",
+        "line": 960,
+        "samples": 11,
+        "samplePercent": 0.07989540964555492
+      },
+      {
+        "function": "runMicrotasks",
+        "url": "",
+        "line": 0,
+        "samples": 11,
+        "samplePercent": 0.07989540964555492
+      },
+      {
+        "function": "processTicksAndRejections",
+        "url": "node:internal/process/task_queues",
+        "line": 72,
+        "samples": 10,
+        "samplePercent": 0.0726321905868681
+      },
+      {
+        "function": "spawn",
+        "url": "node:internal/child_process",
+        "line": 356,
+        "samples": 10,
+        "samplePercent": 0.0726321905868681
+      }
+    ]
+  },
+  {
+    "profile": "CPU.20261008.234346.30052.0.001.cpuprofile",
+    "samples": 6956,
+    "durationMs": 14317.91,
+    "topFunctions": [
+      {
+        "function": "(idle)",
+        "url": "",
+        "line": 0,
+        "samples": 4716,
+        "samplePercent": 67.79758481886141
+      },
+      {
+        "function": "(garbage collector)",
+        "url": "",
+        "line": 0,
+        "samples": 1308,
+        "samplePercent": 18.803910293271993
+      },
+      {
+        "function": "(program)",
+        "url": "",
+        "line": 0,
+        "samples": 203,
+        "samplePercent": 2.9183438757906845
+      },
+      {
+        "function": "_copyActual",
+        "url": "node:buffer",
+        "line": 274,
+        "samples": 56,
+        "samplePercent": 0.8050603795284648
+      },
+      {
+        "function": "wrapSafe",
+        "url": "node:internal/modules/cjs/loader",
+        "line": 1762,
+        "samples": 40,
+        "samplePercent": 0.5750431282346177
+      },
+      {
+        "function": "wrapSafe",
+        "url": "node:internal/modules/cjs/loader",
+        "line": 1762,
+        "samples": 35,
+        "samplePercent": 0.5031627372052904
+      },
+      {
+        "function": "_copyActual",
+        "url": "node:buffer",
+        "line": 274,
+        "samples": 29,
+        "samplePercent": 0.4169062679700977
+      },
+      {
+        "function": "_copyActual",
+        "url": "node:buffer",
+        "line": 274,
+        "samples": 29,
+        "samplePercent": 0.4169062679700977
+      },
+      {
+        "function": "nextTick",
+        "url": "node:internal/process/task_queues",
+        "line": 113,
+        "samples": 18,
+        "samplePercent": 0.2587694077055779
+      },
+      {
+        "function": "onStreamRead",
+        "url": "node:internal/stream_base_commons",
+        "line": 166,
+        "samples": 12,
+        "samplePercent": 0.17251293847038526
+      },
+      {
+        "function": "_copyActual",
+        "url": "node:buffer",
+        "line": 274,
+        "samples": 11,
+        "samplePercent": 0.15813686026451984
+      },
+      {
+        "function": "parse",
+        "url": "",
+        "line": 0,
+        "samples": 10,
+        "samplePercent": 0.14376078205865442
+      },
+      {
+        "function": "readFileSync",
+        "url": "node:fs",
+        "line": 474,
+        "samples": 9,
+        "samplePercent": 0.12938470385278894
+      },
+      {
+        "function": "compileSourceTextModule",
+        "url": "node:internal/modules/esm/utils",
+        "line": 316,
+        "samples": 8,
+        "samplePercent": 0.11500862564692352
+      },
+      {
+        "function": "readFileSync",
+        "url": "node:fs",
+        "line": 474,
+        "samples": 8,
+        "samplePercent": 0.11500862564692352
+      },
+      {
+        "function": "compileSourceTextModule",
+        "url": "node:internal/modules/esm/utils",
+        "line": 316,
+        "samples": 7,
+        "samplePercent": 0.1006325474410581
+      },
+      {
+        "function": "",
+        "url": "",
+        "line": 0,
+        "samples": 6,
+        "samplePercent": 0.08625646923519263
+      },
+      {
+        "function": "processTicksAndRejections",
+        "url": "node:internal/process/task_queues",
+        "line": 72,
+        "samples": 6,
+        "samplePercent": 0.08625646923519263
+      },
+      {
+        "function": "createUnsafeBuffer",
+        "url": "node:internal/buffer",
+        "line": 1097,
+        "samples": 6,
+        "samplePercent": 0.08625646923519263
+      },
+      {
+        "function": "push",
+        "url": "file:///workspace/suitecut/dist/native-protocol.js",
+        "line": 51,
+        "samples": 6,
+        "samplePercent": 0.08625646923519263
+      },
+      {
+        "function": "writeBuffer",
+        "url": "",
+        "line": 0,
+        "samples": 6,
+        "samplePercent": 0.08625646923519263
+      },
+      {
+        "function": "cjsPreparseModuleExports",
+        "url": "node:internal/modules/esm/translators",
+        "line": 420,
+        "samples": 5,
+        "samplePercent": 0.07188039102932721
+      },
+      {
+        "function": "",
+        "url": "file:///workspace/suitecut/node_modules/.pnpm/playwright-core@1.62.1/node_modules/playwright-core/lib/utilsBundle.js",
+        "line": 1,
+        "samples": 5,
+        "samplePercent": 0.07188039102932721
+      },
+      {
+        "function": "addChunk",
+        "url": "node:internal/streams/readable",
+        "line": 552,
+        "samples": 5,
+        "samplePercent": 0.07188039102932721
+      },
+      {
+        "function": "",
+        "url": "file:///workspace/suitecut/benchmarks/obs-cef/profile-media.mjs",
+        "line": 1,
+        "samples": 5,
+        "samplePercent": 0.07188039102932721
+      },
+      {
+        "function": "push",
+        "url": "file:///workspace/suitecut/dist/native-protocol.js",
+        "line": 51,
+        "samples": 5,
+        "samplePercent": 0.07188039102932721
+      },
+      {
+        "function": "maybeReadMore",
+        "url": "node:internal/streams/readable",
+        "line": 859,
+        "samples": 5,
+        "samplePercent": 0.07188039102932721
+      },
+      {
+        "function": "packages/protocol/src/validator.ts",
+        "url": "file:///workspace/suitecut/node_modules/.pnpm/playwright-core@1.62.1/node_modules/playwright-core/lib/coreBundle.js",
+        "line": 15321,
+        "samples": 4,
+        "samplePercent": 0.05750431282346176
+      },
+      {
+        "function": "",
+        "url": "file:///workspace/suitecut/node_modules/.pnpm/zod@4.4.3/node_modules/zod/v4/core/parse.js",
+        "line": 4,
+        "samples": 4,
+        "samplePercent": 0.05750431282346176
+      },
+      {
+        "function": "readableAddChunkPushByteMode",
+        "url": "node:internal/streams/readable",
+        "line": 465,
+        "samples": 4,
+        "samplePercent": 0.05750431282346176
+      }
+    ]
+  },
+  {
+    "profile": "CPU.20261008.235215.30722.0.001.cpuprofile",
+    "samples": 12681,
+    "durationMs": 27482.836,
+    "topFunctions": [
+      {
+        "function": "(idle)",
+        "url": "",
+        "line": 0,
+        "samples": 7315,
+        "samplePercent": 57.68472517940225
+      },
+      {
+        "function": "(garbage collector)",
+        "url": "",
+        "line": 0,
+        "samples": 2768,
+        "samplePercent": 21.8279315511395
+      },
+      {
+        "function": "(program)",
+        "url": "",
+        "line": 0,
+        "samples": 555,
+        "samplePercent": 4.376626449018216
+      },
+      {
+        "function": "_copyActual",
+        "url": "node:buffer",
+        "line": 274,
+        "samples": 266,
+        "samplePercent": 2.097626370160082
+      },
+      {
+        "function": "_copyActual",
+        "url": "node:buffer",
+        "line": 274,
+        "samples": 187,
+        "samplePercent": 1.474647109849381
+      },
+      {
+        "function": "_copyActual",
+        "url": "node:buffer",
+        "line": 274,
+        "samples": 173,
+        "samplePercent": 1.3642457219462187
+      },
+      {
+        "function": "writeBuffer",
+        "url": "",
+        "line": 0,
+        "samples": 115,
+        "samplePercent": 0.906868543490261
+      },
+      {
+        "function": "writeBuffer",
+        "url": "",
+        "line": 0,
+        "samples": 49,
+        "samplePercent": 0.38640485766106775
+      },
+      {
+        "function": "wrapSafe",
+        "url": "node:internal/modules/cjs/loader",
+        "line": 1762,
+        "samples": 36,
+        "samplePercent": 0.28388928317955997
+      },
+      {
+        "function": "wrapSafe",
+        "url": "node:internal/modules/cjs/loader",
+        "line": 1762,
+        "samples": 35,
+        "samplePercent": 0.2760034697579056
+      },
+      {
+        "function": "writeBuffer",
+        "url": "",
+        "line": 0,
+        "samples": 35,
+        "samplePercent": 0.2760034697579056
+      },
+      {
+        "function": "onStreamRead",
+        "url": "node:internal/stream_base_commons",
+        "line": 166,
+        "samples": 28,
+        "samplePercent": 0.2208027758063244
+      },
+      {
+        "function": "listOnTimeout",
+        "url": "node:internal/timers",
+        "line": 576,
+        "samples": 20,
+        "samplePercent": 0.1577162684330889
+      },
+      {
+        "function": "processTicksAndRejections",
+        "url": "node:internal/process/task_queues",
+        "line": 72,
+        "samples": 18,
+        "samplePercent": 0.14194464158977999
+      },
+      {
+        "function": "_copyActual",
+        "url": "node:buffer",
+        "line": 274,
+        "samples": 18,
+        "samplePercent": 0.14194464158977999
+      },
+      {
+        "function": "push",
+        "url": "file:///workspace/suitecut/.suitecut/profile-baseline-dist/native-protocol.js",
+        "line": 51,
+        "samples": 17,
+        "samplePercent": 0.13405882816812553
+      },
+      {
+        "function": "push",
+        "url": "file:///workspace/suitecut/.suitecut/profile-baseline-dist/native-protocol.js",
+        "line": 51,
+        "samples": 17,
+        "samplePercent": 0.13405882816812553
+      },
+      {
+        "function": "nextTick",
+        "url": "node:internal/process/task_queues",
+        "line": 113,
+        "samples": 16,
+        "samplePercent": 0.1261730147464711
+      },
+      {
+        "function": "createUnsafeBuffer",
+        "url": "node:internal/buffer",
+        "line": 1097,
+        "samples": 16,
+        "samplePercent": 0.1261730147464711
+      },
+      {
+        "function": "writeBuffer",
+        "url": "",
+        "line": 0,
+        "samples": 15,
+        "samplePercent": 0.11828720132481667
+      },
+      {
+        "function": "tick",
+        "url": "file:///workspace/suitecut/.suitecut/profile-baseline-dist/live-stream.js",
+        "line": 261,
+        "samples": 15,
+        "samplePercent": 0.11828720132481667
+      },
+      {
+        "function": "writeBuffer",
+        "url": "",
+        "line": 0,
+        "samples": 15,
+        "samplePercent": 0.11828720132481667
+      },
+      {
+        "function": "nextTick",
+        "url": "node:internal/process/task_queues",
+        "line": 113,
+        "samples": 14,
+        "samplePercent": 0.1104013879031622
+      },
+      {
+        "function": "",
+        "url": "",
+        "line": 0,
+        "samples": 12,
+        "samplePercent": 0.09462976105985332
+      },
+      {
+        "function": "runMicrotasks",
+        "url": "",
+        "line": 0,
+        "samples": 11,
+        "samplePercent": 0.08674394763819887
+      },
+      {
+        "function": "DOMException",
+        "url": "node:internal/per_context/domexception",
+        "line": 72,
+        "samples": 11,
+        "samplePercent": 0.08674394763819887
+      },
+      {
+        "function": "readableAddChunkPushByteMode",
+        "url": "node:internal/streams/readable",
+        "line": 465,
+        "samples": 10,
+        "samplePercent": 0.07885813421654445
+      },
+      {
+        "function": "parse",
+        "url": "",
+        "line": 0,
+        "samples": 9,
+        "samplePercent": 0.07097232079488999
+      },
+      {
+        "function": "addChunk",
+        "url": "node:internal/streams/readable",
+        "line": 552,
+        "samples": 9,
+        "samplePercent": 0.07097232079488999
+      },
+      {
+        "function": "FastBuffer",
+        "url": "node:internal/buffer",
+        "line": 960,
+        "samples": 9,
+        "samplePercent": 0.07097232079488999
+      }
+    ]
+  },
+  {
+    "profile": "CPU.20261008.235913.32588.0.001.cpuprofile",
+    "samples": 7859,
+    "durationMs": 14947.45,
+    "topFunctions": [
+      {
+        "function": "(idle)",
+        "url": "",
+        "line": 0,
+        "samples": 5563,
+        "samplePercent": 70.78508716121644
+      },
+      {
+        "function": "(garbage collector)",
+        "url": "",
+        "line": 0,
+        "samples": 1077,
+        "samplePercent": 13.704033592060059
+      },
+      {
+        "function": "(program)",
+        "url": "",
+        "line": 0,
+        "samples": 180,
+        "samplePercent": 2.29036773126352
+      },
+      {
+        "function": "_copyActual",
+        "url": "node:buffer",
+        "line": 274,
+        "samples": 72,
+        "samplePercent": 0.9161470925054078
+      },
+      {
+        "function": "wrapSafe",
+        "url": "node:internal/modules/cjs/loader",
+        "line": 1762,
+        "samples": 61,
+        "samplePercent": 0.7761801755948594
+      },
+      {
+        "function": "wrapSafe",
+        "url": "node:internal/modules/cjs/loader",
+        "line": 1762,
+        "samples": 50,
+        "samplePercent": 0.636213258684311
+      },
+      {
+        "function": "_copyActual",
+        "url": "node:buffer",
+        "line": 274,
+        "samples": 49,
+        "samplePercent": 0.6234889935106248
+      },
+      {
+        "function": "_copyActual",
+        "url": "node:buffer",
+        "line": 274,
+        "samples": 43,
+        "samplePercent": 0.5471434024685075
+      },
+      {
+        "function": "readFileSync",
+        "url": "node:fs",
+        "line": 474,
+        "samples": 20,
+        "samplePercent": 0.2544853034737244
+      },
+      {
+        "function": "onStreamRead",
+        "url": "node:internal/stream_base_commons",
+        "line": 166,
+        "samples": 20,
+        "samplePercent": 0.2544853034737244
+      },
+      {
+        "function": "_copyActual",
+        "url": "node:buffer",
+        "line": 274,
+        "samples": 19,
+        "samplePercent": 0.24176103830003814
+      },
+      {
+        "function": "readFileSync",
+        "url": "node:fs",
+        "line": 474,
+        "samples": 14,
+        "samplePercent": 0.1781397124316071
+      },
+      {
+        "function": "readFileUtf8",
+        "url": "",
+        "line": 0,
+        "samples": 13,
+        "samplePercent": 0.16541544725792084
+      },
+      {
+        "function": "compileSourceTextModule",
+        "url": "node:internal/modules/esm/utils",
+        "line": 316,
+        "samples": 12,
+        "samplePercent": 0.15269118208423463
+      },
+      {
+        "function": "parse",
+        "url": "",
+        "line": 0,
+        "samples": 11,
+        "samplePercent": 0.13996691691054844
+      },
+      {
+        "function": "nextTick",
+        "url": "node:internal/process/task_queues",
+        "line": 113,
+        "samples": 11,
+        "samplePercent": 0.13996691691054844
+      },
+      {
+        "function": "writeBuffer",
+        "url": "",
+        "line": 0,
+        "samples": 10,
+        "samplePercent": 0.1272426517368622
+      },
+      {
+        "function": "compileSourceTextModule",
+        "url": "node:internal/modules/esm/utils",
+        "line": 316,
+        "samples": 9,
+        "samplePercent": 0.11451838656317598
+      },
+      {
+        "function": "nextTick",
+        "url": "node:internal/process/task_queues",
+        "line": 113,
+        "samples": 9,
+        "samplePercent": 0.11451838656317598
+      },
+      {
+        "function": "compileSourceTextModule",
+        "url": "node:internal/modules/esm/utils",
+        "line": 316,
+        "samples": 7,
+        "samplePercent": 0.08906985621580354
+      },
+      {
+        "function": "",
+        "url": "file:///workspace/suitecut/node_modules/.pnpm/playwright-core@1.62.1/node_modules/playwright-core/lib/utilsBundle.js",
+        "line": 1,
+        "samples": 7,
+        "samplePercent": 0.08906985621580354
+      },
+      {
+        "function": "packages/protocol/src/validator.ts",
+        "url": "file:///workspace/suitecut/node_modules/.pnpm/playwright-core@1.62.1/node_modules/playwright-core/lib/coreBundle.js",
+        "line": 15321,
+        "samples": 7,
+        "samplePercent": 0.08906985621580354
+      },
+      {
+        "function": "writeBuffer",
+        "url": "",
+        "line": 0,
+        "samples": 7,
+        "samplePercent": 0.08906985621580354
+      },
+      {
+        "function": "processTicksAndRejections",
+        "url": "node:internal/process/task_queues",
+        "line": 72,
+        "samples": 7,
+        "samplePercent": 0.08906985621580354
+      },
+      {
+        "function": "readFileUtf8",
+        "url": "",
+        "line": 0,
+        "samples": 6,
+        "samplePercent": 0.07634559104211731
+      },
+      {
+        "function": "cjsPreparseModuleExports",
+        "url": "node:internal/modules/esm/translators",
+        "line": 420,
+        "samples": 6,
+        "samplePercent": 0.07634559104211731
+      },
+      {
+        "function": "compileSourceTextModule",
+        "url": "node:internal/modules/esm/utils",
+        "line": 316,
+        "samples": 5,
+        "samplePercent": 0.0636213258684311
+      },
+      {
+        "function": "compileSourceTextModule",
+        "url": "node:internal/modules/esm/utils",
+        "line": 316,
+        "samples": 5,
+        "samplePercent": 0.0636213258684311
+      },
+      {
+        "function": "readableAddChunkPushByteMode",
+        "url": "node:internal/streams/readable",
+        "line": 465,
+        "samples": 5,
+        "samplePercent": 0.0636213258684311
+      },
+      {
+        "function": "createUnsafeBuffer",
+        "url": "node:internal/buffer",
+        "line": 1097,
+        "samples": 5,
+        "samplePercent": 0.0636213258684311
+      }
+    ]
+  },
+  {
+    "profile": "CPU.20261009.001633.41868.0.001.cpuprofile",
+    "samples": 12933,
+    "durationMs": 18932.309,
+    "topFunctions": [
+      {
+        "function": "(idle)",
+        "url": "",
+        "line": 0,
+        "samples": 9195,
+        "samplePercent": 71.09719322662956
+      },
+      {
+        "function": "(garbage collector)",
+        "url": "",
+        "line": 0,
+        "samples": 1528,
+        "samplePercent": 11.814737493234361
+      },
+      {
+        "function": "(program)",
+        "url": "",
+        "line": 0,
+        "samples": 682,
+        "samplePercent": 5.273331786901724
+      },
+      {
+        "function": "_copyActual",
+        "url": "node:buffer",
+        "line": 274,
+        "samples": 344,
+        "samplePercent": 2.659862367586794
+      },
+      {
+        "function": "_copyActual",
+        "url": "node:buffer",
+        "line": 274,
+        "samples": 255,
+        "samplePercent": 1.9717003015541639
+      },
+      {
+        "function": "_copyActual",
+        "url": "node:buffer",
+        "line": 274,
+        "samples": 71,
+        "samplePercent": 0.5489832212170417
+      },
+      {
+        "function": "wrapSafe",
+        "url": "node:internal/modules/cjs/loader",
+        "line": 1762,
+        "samples": 53,
+        "samplePercent": 0.4098043764014537
+      },
+      {
+        "function": "wrapSafe",
+        "url": "node:internal/modules/cjs/loader",
+        "line": 1762,
+        "samples": 46,
+        "samplePercent": 0.3556792700842805
+      },
+      {
+        "function": "nextTick",
+        "url": "node:internal/process/task_queues",
+        "line": 113,
+        "samples": 19,
+        "samplePercent": 0.14691100286089848
+      },
+      {
+        "function": "createUnsafeBuffer",
+        "url": "node:internal/buffer",
+        "line": 1097,
+        "samples": 19,
+        "samplePercent": 0.14691100286089848
+      },
+      {
+        "function": "_copyActual",
+        "url": "node:buffer",
+        "line": 274,
+        "samples": 18,
+        "samplePercent": 0.13917884481558804
+      },
+      {
+        "function": "push",
+        "url": "file:///workspace/suitecut/dist/native-protocol.js",
+        "line": 52,
+        "samples": 16,
+        "samplePercent": 0.12371452872496713
+      },
+      {
+        "function": "",
+        "url": "file:///workspace/suitecut/node_modules/.pnpm/playwright-core@1.62.1/node_modules/playwright-core/lib/utilsBundle.js",
+        "line": 1,
+        "samples": 15,
+        "samplePercent": 0.1159823706796567
+      },
+      {
+        "function": "processTicksAndRejections",
+        "url": "node:internal/process/task_queues",
+        "line": 72,
+        "samples": 14,
+        "samplePercent": 0.10825021263434625
+      },
+      {
+        "function": "onStreamRead",
+        "url": "node:internal/stream_base_commons",
+        "line": 166,
+        "samples": 14,
+        "samplePercent": 0.10825021263434625
+      },
+      {
+        "function": "nextTick",
+        "url": "node:internal/process/task_queues",
+        "line": 113,
+        "samples": 13,
+        "samplePercent": 0.10051805458903579
+      },
+      {
+        "function": "parse",
+        "url": "",
+        "line": 0,
+        "samples": 12,
+        "samplePercent": 0.09278589654372535
+      },
+      {
+        "function": "compileSourceTextModule",
+        "url": "node:internal/modules/esm/utils",
+        "line": 316,
+        "samples": 11,
+        "samplePercent": 0.08505373849841491
+      },
+      {
+        "function": "compileSourceTextModule",
+        "url": "node:internal/modules/esm/utils",
+        "line": 316,
+        "samples": 10,
+        "samplePercent": 0.07732158045310446
+      },
+      {
+        "function": "readFileSync",
+        "url": "node:fs",
+        "line": 474,
+        "samples": 9,
+        "samplePercent": 0.06958942240779402
+      },
+      {
+        "function": "readFileSync",
+        "url": "node:fs",
+        "line": 474,
+        "samples": 9,
+        "samplePercent": 0.06958942240779402
+      },
+      {
+        "function": "compileSourceTextModule",
+        "url": "node:internal/modules/esm/utils",
+        "line": 316,
+        "samples": 8,
+        "samplePercent": 0.061857264362483566
+      },
+      {
+        "function": "packages/protocol/src/validator.ts",
+        "url": "file:///workspace/suitecut/node_modules/.pnpm/playwright-core@1.62.1/node_modules/playwright-core/lib/coreBundle.js",
+        "line": 15321,
+        "samples": 7,
+        "samplePercent": 0.05412510631717313
+      },
+      {
+        "function": "compileSourceTextModule",
+        "url": "node:internal/modules/esm/utils",
+        "line": 316,
+        "samples": 6,
+        "samplePercent": 0.046392948271862675
+      },
+      {
+        "function": "FastBuffer",
+        "url": "node:internal/buffer",
+        "line": 960,
+        "samples": 6,
+        "samplePercent": 0.046392948271862675
+      },
+      {
+        "function": "",
+        "url": "",
+        "line": 0,
+        "samples": 6,
+        "samplePercent": 0.046392948271862675
+      },
+      {
+        "function": "compileSourceTextModule",
+        "url": "node:internal/modules/esm/utils",
+        "line": 316,
+        "samples": 5,
+        "samplePercent": 0.03866079022655223
+      },
+      {
+        "function": "readFileUtf8",
+        "url": "",
+        "line": 0,
+        "samples": 5,
+        "samplePercent": 0.03866079022655223
+      },
+      {
+        "function": "readFileUtf8",
+        "url": "",
+        "line": 0,
+        "samples": 5,
+        "samplePercent": 0.03866079022655223
+      },
+      {
+        "function": "readableAddChunkPushByteMode",
+        "url": "node:internal/streams/readable",
+        "line": 465,
+        "samples": 5,
+        "samplePercent": 0.03866079022655223
+      }
+    ]
+  }
+]

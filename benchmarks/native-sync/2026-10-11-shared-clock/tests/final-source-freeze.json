@@ -1,0 +1,6 @@
+{
+  "nativeBinarySha256": "757a03fa49ed82dcd119c2888bdc0ebe1c355b4b9d9964bda38b99427a38f0b3",
+  "productionFreezeAfter": "nearest half-frame sampling regression passed in release and ASan/UBSan/LSan builds",
+  "finalCaptureMatrix": "720p60 and 1080p30 and 4k30, recording/streaming separately; controller 2s stall; 30-minute memory streaming",
+  "trace": "off for performance matrix/soak; opt-in diagnostic pilots retained"
+}

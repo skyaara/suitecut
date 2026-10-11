@@ -1,0 +1,29 @@
+[  0%] Built target suitecut-audio-clock-test
+[  1%] Building CXX object CMakeFiles/suitecut-media.dir/media_engine.cc.o
+[ 14%] Built target yuv_common_objects
+[ 91%] Built target libcef_dll_wrapper
+[ 91%] Built target yuv
+[ 92%] Built target suitecut-pixel-test
+[ 92%] Building CXX object CMakeFiles/suitecut-media.dir/media_file.cc.o
+[ 93%] Linking CXX static library libsuitecut-media.a
+[ 93%] Built target suitecut-media
+[ 93%] Linking CXX executable suitecut-audio-startup-test
+[ 93%] Linking CXX executable suitecut-media-test
+[ 94%] Built target suitecut-audio-startup-test
+[ 95%] Linking CXX executable suitecut-codec-test
+[ 95%] Built target suitecut-media-test
+[ 96%] Building CXX object CMakeFiles/suitecut-memory-test.dir/memory_test.cc.o
+[ 96%] Built target suitecut-codec-test
+[ 97%] Linking CXX executable suitecut-scaler-failure-test
+[ 97%] Built target suitecut-scaler-failure-test
+[ 97%] Building CXX object CMakeFiles/suitecut-fuzz-bounds.dir/fuzz_bounds.cc.o
+[ 98%] Linking CXX executable suitecut-fuzz-bounds
+[ 98%] Built target suitecut-fuzz-bounds
+[ 98%] Building CXX object CMakeFiles/suitecut-fuzz-media.dir/fuzz_media.cc.o
+[ 98%] Linking CXX executable suitecut-fuzz-media
+[ 98%] Linking CXX executable suitecut-memory-test
+[ 98%] Built target suitecut-fuzz-media
+[ 98%] Building CXX object CMakeFiles/suitecut-browser.dir/browser.cc.o
+[ 98%] Built target suitecut-memory-test
+[ 98%] Linking CXX executable suitecut-browser
+[100%] Built target suitecut-browser

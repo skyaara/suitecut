@@ -1,0 +1,162 @@
+[
+  {
+    "name": ".gitignore",
+    "path": ".gitignore",
+    "sha": "21d9980e4d8207ec93544c2a1910552ea10c896c",
+    "size": 288,
+    "url": "https://api.github.com/repos/cefsharp/cef-binary/contents/.gitignore?ref=master",
+    "html_url": "https://github.com/cefsharp/cef-binary/blob/master/.gitignore",
+    "git_url": "https://api.github.com/repos/cefsharp/cef-binary/git/blobs/21d9980e4d8207ec93544c2a1910552ea10c896c",
+    "download_url": "https://raw.githubusercontent.com/cefsharp/cef-binary/master/.gitignore",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/cefsharp/cef-binary/contents/.gitignore?ref=master",
+      "git": "https://api.github.com/repos/cefsharp/cef-binary/git/blobs/21d9980e4d8207ec93544c2a1910552ea10c896c",
+      "html": "https://github.com/cefsharp/cef-binary/blob/master/.gitignore"
+    }
+  },
+  {
+    "name": "LICENSE.txt",
+    "path": "LICENSE.txt",
+    "sha": "b55d613db340595b60f2736c55abfae5c105bb11",
+    "size": 1662,
+    "url": "https://api.github.com/repos/cefsharp/cef-binary/contents/LICENSE.txt?ref=master",
+    "html_url": "https://github.com/cefsharp/cef-binary/blob/master/LICENSE.txt",
+    "git_url": "https://api.github.com/repos/cefsharp/cef-binary/git/blobs/b55d613db340595b60f2736c55abfae5c105bb11",
+    "download_url": "https://raw.githubusercontent.com/cefsharp/cef-binary/master/LICENSE.txt",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/cefsharp/cef-binary/contents/LICENSE.txt?ref=master",
+      "git": "https://api.github.com/repos/cefsharp/cef-binary/git/blobs/b55d613db340595b60f2736c55abfae5c105bb11",
+      "html": "https://github.com/cefsharp/cef-binary/blob/master/LICENSE.txt"
+    }
+  },
+  {
+    "name": "NuGet",
+    "path": "NuGet",
+    "sha": "ff71065f9f966e51a2fb027f5a1b228ded71e82e",
+    "size": 0,
+    "url": "https://api.github.com/repos/cefsharp/cef-binary/contents/NuGet?ref=master",
+    "html_url": "https://github.com/cefsharp/cef-binary/tree/master/NuGet",
+    "git_url": "https://api.github.com/repos/cefsharp/cef-binary/git/trees/ff71065f9f966e51a2fb027f5a1b228ded71e82e",
+    "download_url": null,
+    "type": "dir",
+    "_links": {
+      "self": "https://api.github.com/repos/cefsharp/cef-binary/contents/NuGet?ref=master",
+      "git": "https://api.github.com/repos/cefsharp/cef-binary/git/trees/ff71065f9f966e51a2fb027f5a1b228ded71e82e",
+      "html": "https://github.com/cefsharp/cef-binary/tree/master/NuGet"
+    }
+  },
+  {
+    "name": "README.md",
+    "path": "README.md",
+    "sha": "5dd300c18468802c3e91ddd3d51556f26865ea51",
+    "size": 1450,
+    "url": "https://api.github.com/repos/cefsharp/cef-binary/contents/README.md?ref=master",
+    "html_url": "https://github.com/cefsharp/cef-binary/blob/master/README.md",
+    "git_url": "https://api.github.com/repos/cefsharp/cef-binary/git/blobs/5dd300c18468802c3e91ddd3d51556f26865ea51",
+    "download_url": "https://raw.githubusercontent.com/cefsharp/cef-binary/master/README.md",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/cefsharp/cef-binary/contents/README.md?ref=master",
+      "git": "https://api.github.com/repos/cefsharp/cef-binary/git/blobs/5dd300c18468802c3e91ddd3d51556f26865ea51",
+      "html": "https://github.com/cefsharp/cef-binary/blob/master/README.md"
+    }
+  },
+  {
+    "name": "README.txt",
+    "path": "README.txt",
+    "sha": "6550bc3e395d05221f842ad055c6c4bd4b9abbc2",
+    "size": 260,
+    "url": "https://api.github.com/repos/cefsharp/cef-binary/contents/README.txt?ref=master",
+    "html_url": "https://github.com/cefsharp/cef-binary/blob/master/README.txt",
+    "git_url": "https://api.github.com/repos/cefsharp/cef-binary/git/blobs/6550bc3e395d05221f842ad055c6c4bd4b9abbc2",
+    "download_url": "https://raw.githubusercontent.com/cefsharp/cef-binary/master/README.txt",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/cefsharp/cef-binary/contents/README.txt?ref=master",
+      "git": "https://api.github.com/repos/cefsharp/cef-binary/git/blobs/6550bc3e395d05221f842ad055c6c4bd4b9abbc2",
+      "html": "https://github.com/cefsharp/cef-binary/blob/master/README.txt"
+    }
+  },
+  {
+    "name": "appveyor.yml",
+    "path": "appveyor.yml",
+    "sha": "319342b7c3b6d94713d078353152cbf5b6f7259c",
+    "size": 769,
+    "url": "https://api.github.com/repos/cefsharp/cef-binary/contents/appveyor.yml?ref=master",
+    "html_url": "https://github.com/cefsharp/cef-binary/blob/master/appveyor.yml",
+    "git_url": "https://api.github.com/repos/cefsharp/cef-binary/git/blobs/319342b7c3b6d94713d078353152cbf5b6f7259c",
+    "download_url": "https://raw.githubusercontent.com/cefsharp/cef-binary/master/appveyor.yml",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/cefsharp/cef-binary/contents/appveyor.yml?ref=master",
+      "git": "https://api.github.com/repos/cefsharp/cef-binary/git/blobs/319342b7c3b6d94713d078353152cbf5b6f7259c",
+      "html": "https://github.com/cefsharp/cef-binary/blob/master/appveyor.yml"
+    }
+  },
+  {
+    "name": "build.ps1",
+    "path": "build.ps1",
+    "sha": "9f940ea157cd9f551a507d319273c0e991dc5aee",
+    "size": 21114,
+    "url": "https://api.github.com/repos/cefsharp/cef-binary/contents/build.ps1?ref=master",
+    "html_url": "https://github.com/cefsharp/cef-binary/blob/master/build.ps1",
+    "git_url": "https://api.github.com/repos/cefsharp/cef-binary/git/blobs/9f940ea157cd9f551a507d319273c0e991dc5aee",
+    "download_url": "https://raw.githubusercontent.com/cefsharp/cef-binary/master/build.ps1",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/cefsharp/cef-binary/contents/build.ps1?ref=master",
+      "git": "https://api.github.com/repos/cefsharp/cef-binary/git/blobs/9f940ea157cd9f551a507d319273c0e991dc5aee",
+      "html": "https://github.com/cefsharp/cef-binary/blob/master/build.ps1"
+    }
+  },
+  {
+    "name": "cef_binary_3.y.z_windows32",
+    "path": "cef_binary_3.y.z_windows32",
+    "sha": "70bfe9793f3fc43d2a2306a58186fe0c88b86999",
+    "size": 0,
+    "url": "https://api.github.com/repos/cefsharp/cef-binary/contents/cef_binary_3.y.z_windows32?ref=master",
+    "html_url": "https://github.com/cefsharp/cef-binary/tree/master/cef_binary_3.y.z_windows32",
+    "git_url": "https://api.github.com/repos/cefsharp/cef-binary/git/trees/70bfe9793f3fc43d2a2306a58186fe0c88b86999",
+    "download_url": null,
+    "type": "dir",
+    "_links": {
+      "self": "https://api.github.com/repos/cefsharp/cef-binary/contents/cef_binary_3.y.z_windows32?ref=master",
+      "git": "https://api.github.com/repos/cefsharp/cef-binary/git/trees/70bfe9793f3fc43d2a2306a58186fe0c88b86999",
+      "html": "https://github.com/cefsharp/cef-binary/tree/master/cef_binary_3.y.z_windows32"
+    }
+  },
+  {
+    "name": "cef_binary_3.y.z_windows64",
+    "path": "cef_binary_3.y.z_windows64",
+    "sha": "70bfe9793f3fc43d2a2306a58186fe0c88b86999",
+    "size": 0,
+    "url": "https://api.github.com/repos/cefsharp/cef-binary/contents/cef_binary_3.y.z_windows64?ref=master",
+    "html_url": "https://github.com/cefsharp/cef-binary/tree/master/cef_binary_3.y.z_windows64",
+    "git_url": "https://api.github.com/repos/cefsharp/cef-binary/git/trees/70bfe9793f3fc43d2a2306a58186fe0c88b86999",
+    "download_url": null,
+    "type": "dir",
+    "_links": {
+      "self": "https://api.github.com/repos/cefsharp/cef-binary/contents/cef_binary_3.y.z_windows64?ref=master",
+      "git": "https://api.github.com/repos/cefsharp/cef-binary/git/trees/70bfe9793f3fc43d2a2306a58186fe0c88b86999",
+      "html": "https://github.com/cefsharp/cef-binary/tree/master/cef_binary_3.y.z_windows64"
+    }
+  },
+  {
+    "name": "cef_binary_3.y.z_windowsarm64",
+    "path": "cef_binary_3.y.z_windowsarm64",
+    "sha": "70bfe9793f3fc43d2a2306a58186fe0c88b86999",
+    "size": 0,
+    "url": "https://api.github.com/repos/cefsharp/cef-binary/contents/cef_binary_3.y.z_windowsarm64?ref=master",
+    "html_url": "https://github.com/cefsharp/cef-binary/tree/master/cef_binary_3.y.z_windowsarm64",
+    "git_url": "https://api.github.com/repos/cefsharp/cef-binary/git/trees/70bfe9793f3fc43d2a2306a58186fe0c88b86999",
+    "download_url": null,
+    "type": "dir",
+    "_links": {
+      "self": "https://api.github.com/repos/cefsharp/cef-binary/contents/cef_binary_3.y.z_windowsarm64?ref=master",
+      "git": "https://api.github.com/repos/cefsharp/cef-binary/git/trees/70bfe9793f3fc43d2a2306a58186fe0c88b86999",
+      "html": "https://github.com/cefsharp/cef-binary/tree/master/cef_binary_3.y.z_windowsarm64"
+    }
+  }
+]

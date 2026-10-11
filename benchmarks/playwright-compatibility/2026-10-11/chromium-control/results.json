@@ -1,0 +1,842 @@
+{
+  "config": {
+    "argv": [
+      "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+      "/workspace/suitecut/node_modules/playwright/cli.js",
+      "test",
+      "--config",
+      "benchmarks/playwright-compatibility/playwright.config.ts"
+    ],
+    "configFile": "/workspace/suitecut/benchmarks/playwright-compatibility/playwright.config.ts",
+    "rootDir": "/workspace/suitecut/benchmarks/playwright-compatibility",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/workspace/suitecut/benchmarks/playwright-compatibility/2026-10-11/chromium-control/artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "/workspace/suitecut/benchmarks/playwright-compatibility",
+        "testIgnore": [],
+        "testMatch": [
+          "compatibility.spec.ts"
+        ],
+        "timeout": 20000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "/workspace/suitecut/benchmarks/playwright-compatibility/2026-10-11/chromium-control/results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.62.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "compatibility.spec.ts",
+      "file": "compatibility.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "worker: dedicated Worker evaluation and messaging",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 20000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 219,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T09:02:01.961Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b0b409d468a60194358f-fe14127b116aa2981ef9",
+          "file": "compatibility.spec.ts",
+          "line": 70,
+          "column": 1
+        },
+        {
+          "title": "worker: service worker website control and fetch",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 20000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 141,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T09:02:02.437Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b0b409d468a60194358f-c72e69bafe0d58060887",
+          "file": "compatibility.spec.ts",
+          "line": 75,
+          "column": 1
+        },
+        {
+          "title": "worker: context serviceworker event, enumeration and evaluation",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 20000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 120,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T09:02:02.590Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b0b409d468a60194358f-3a9f6d7d52736de58bdc",
+          "file": "compatibility.spec.ts",
+          "line": 76,
+          "column": 1
+        },
+        {
+          "title": "worker: serviceWorkers block prevents registration",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 20000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 71,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T09:02:02.720Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b0b409d468a60194358f-754ae17028c80e62beb5",
+          "file": "compatibility.spec.ts",
+          "line": 80,
+          "column": 1
+        },
+        {
+          "title": "oopif: cross-site frame is a separate CDP target and remains interactive",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 20000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 271,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T09:02:02.802Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b0b409d468a60194358f-4df969da01a66816e5e5",
+          "file": "compatibility.spec.ts",
+          "line": 83,
+          "column": 1
+        },
+        {
+          "title": "oopif: cross-site navigation, detach and network routing",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 20000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 247,
+                  "error": {
+                    "message": "Error: frame.goto: Target page, context or browser has been closed\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:46201/next\", waiting until \"load\"\u001b[22m\n",
+                    "stack": "Error: frame.goto: Target page, context or browser has been closed\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:46201/next\", waiting until \"load\"\u001b[22m\n\n    at /workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts:96:11",
+                    "location": {
+                      "file": "/workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts",
+                      "column": 11,
+                      "line": 96
+                    },
+                    "snippet": "  94 |   const inner=page.frameLocator('iframe');await inner.getByLabel('Name').fill('cross-site');await expect(inner.getByLabel('Name')).toHaveValue('cross-site')\n  95 |   const f=page.frames().find(f=>f.url().startsWith(cross))!;expect(await f.evaluate(()=>fetch('/json').then(r=>r.json()))).toEqual({value:'routed'})\n> 96 |   await f.goto(origin+'/next');await inner.getByRole('button').click();await expect(inner.getByRole('button')).toHaveText('clicked')\n     |           ^\n  97 |   const detached=page.waitForEvent('framedetached');await page.locator('iframe').evaluate(f=>f.remove());await detached;expect(page.frames()).toHaveLength(1)\n  98 | })\n  99 | test('state: IndexedDB auth export to file and restore into a fresh context',async({page,context,browser},info)=>{"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts",
+                        "column": 11,
+                        "line": 96
+                      },
+                      "message": "Error: frame.goto: Target page, context or browser has been closed\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:46201/next\", waiting until \"load\"\u001b[22m\n\n\n  94 |   const inner=page.frameLocator('iframe');await inner.getByLabel('Name').fill('cross-site');await expect(inner.getByLabel('Name')).toHaveValue('cross-site')\n  95 |   const f=page.frames().find(f=>f.url().startsWith(cross))!;expect(await f.evaluate(()=>fetch('/json').then(r=>r.json()))).toEqual({value:'routed'})\n> 96 |   await f.goto(origin+'/next');await inner.getByRole('button').click();await expect(inner.getByRole('button')).toHaveText('clicked')\n     |           ^\n  97 |   const detached=page.waitForEvent('framedetached');await page.locator('iframe').evaluate(f=>f.remove());await detached;expect(page.frames()).toHaveLength(1)\n  98 | })\n  99 | test('state: IndexedDB auth export to file and restore into a fresh context',async({page,context,browser},info)=>{\n    at /workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts:96:11"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T09:02:03.086Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/workspace/suitecut/benchmarks/playwright-compatibility/2026-10-11/chromium-control/artifacts/compatibility-oopif-cross--5eb50--detach-and-network-routing/error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/workspace/suitecut/benchmarks/playwright-compatibility/2026-10-11/chromium-control/artifacts/compatibility-oopif-cross--5eb50--detach-and-network-routing/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts",
+                    "column": 11,
+                    "line": 96
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "b0b409d468a60194358f-ccb58ab45f51b92201e5",
+          "file": "compatibility.spec.ts",
+          "line": 91,
+          "column": 1
+        },
+        {
+          "title": "state: IndexedDB auth export to file and restore into a fresh context",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 20000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 485,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T09:02:04.092Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b0b409d468a60194358f-337f129e799a945067e9",
+          "file": "compatibility.spec.ts",
+          "line": 99,
+          "column": 1
+        },
+        {
+          "title": "state: empty IndexedDB export and restore",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 20000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 290,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T09:02:04.968Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b0b409d468a60194358f-fdd39fd2701f188e6d11",
+          "file": "compatibility.spec.ts",
+          "line": 113,
+          "column": 1
+        },
+        {
+          "title": "auth: http origin HTTP credentials",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 20000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 135,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T09:02:05.272Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b0b409d468a60194358f-32903fd7fb9c744cceb4",
+          "file": "compatibility.spec.ts",
+          "line": 118,
+          "column": 3
+        },
+        {
+          "title": "proxy: http through local proxy plus origin auth",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 20000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 285,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T09:02:05.417Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b0b409d468a60194358f-490ffa9b6db83903f0aa",
+          "file": "compatibility.spec.ts",
+          "line": 119,
+          "column": 3
+        },
+        {
+          "title": "proxy: http authenticated proxy plus origin auth",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 20000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 103,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m401\u001b[39m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m401\u001b[39m\n    at /workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts:120:392",
+                    "location": {
+                      "file": "/workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts",
+                      "column": 392,
+                      "line": 120
+                    },
+                    "snippet": "  118 |   test(`auth: ${scheme} origin HTTP credentials`,async({browser})=>{const c=await browser.newContext({httpCredentials:{username:'user',password:'password'},ignoreHTTPSErrors:true});try{const p=await c.newPage();expect((await p.goto((scheme==='http'?origin:tlsOrigin)+'/auth'))!.status()).toBe(200);await expect(p.getByRole('heading')).toHaveText('Authenticated')}finally{await c.close()}})\n  119 |   test(`proxy: ${scheme} through local proxy plus origin auth`,async({browser})=>{proxyRequests=[];const c=await browser.newContext({proxy:{server:proxyUrl,bypass:'<-loopback>'},httpCredentials:{username:'user',password:'password'},ignoreHTTPSErrors:true});try{const p=await c.newPage();expect((await p.goto(`${scheme}://proxy.test/auth`))!.status()).toBe(200);await expect(p.getByRole('heading')).toHaveText('Authenticated');expect(proxyRequests.length).toBeGreaterThan(0)}finally{await c.close()}})\n> 120 |   test(`proxy: ${scheme} authenticated proxy plus origin auth`,async({browser})=>{proxyRequests=[];const c=await browser.newContext({proxy:{server:proxyUrl,username:'proxy',password:'secret',bypass:'<-loopback>'},httpCredentials:{username:'user',password:'password'},ignoreHTTPSErrors:true});try{const p=await c.newPage();expect((await p.goto(`${scheme}://auth-proxy.test/auth`))!.status()).toBe(200);await expect(p.getByRole('heading')).toHaveText('Authenticated');expect(proxyRequests.some(r=>r.authenticated)).toBe(true)}finally{await c.close()}})\n      |                                                                                                                                                                                                                                                                                                                                                                                                        ^\n  121 | }\n  122 | test('auth: wrong credentials fail and a fresh context does not inherit them',async({browser})=>{for(const creds of [{username:'user',password:'wrong'},undefined]){const c=await browser.newContext({httpCredentials:creds});try{const p=await c.newPage();expect((await p.goto(origin+'/auth'))!.status()).toBe(401)}finally{await c.close()}}})\n  123 | test('proxy: bypass uses the real origin without contacting the proxy',async({browser})=>{proxyRequests=[];const c=await browser.newContext({proxy:{server:proxyUrl,bypass:'127.0.0.1'}});try{const p=await c.newPage();await p.goto(origin);expect(proxyRequests).toHaveLength(0)}finally{await c.close()}})"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts",
+                        "column": 392,
+                        "line": 120
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m401\u001b[39m\n\n  118 |   test(`auth: ${scheme} origin HTTP credentials`,async({browser})=>{const c=await browser.newContext({httpCredentials:{username:'user',password:'password'},ignoreHTTPSErrors:true});try{const p=await c.newPage();expect((await p.goto((scheme==='http'?origin:tlsOrigin)+'/auth'))!.status()).toBe(200);await expect(p.getByRole('heading')).toHaveText('Authenticated')}finally{await c.close()}})\n  119 |   test(`proxy: ${scheme} through local proxy plus origin auth`,async({browser})=>{proxyRequests=[];const c=await browser.newContext({proxy:{server:proxyUrl,bypass:'<-loopback>'},httpCredentials:{username:'user',password:'password'},ignoreHTTPSErrors:true});try{const p=await c.newPage();expect((await p.goto(`${scheme}://proxy.test/auth`))!.status()).toBe(200);await expect(p.getByRole('heading')).toHaveText('Authenticated');expect(proxyRequests.length).toBeGreaterThan(0)}finally{await c.close()}})\n> 120 |   test(`proxy: ${scheme} authenticated proxy plus origin auth`,async({browser})=>{proxyRequests=[];const c=await browser.newContext({proxy:{server:proxyUrl,username:'proxy',password:'secret',bypass:'<-loopback>'},httpCredentials:{username:'user',password:'password'},ignoreHTTPSErrors:true});try{const p=await c.newPage();expect((await p.goto(`${scheme}://auth-proxy.test/auth`))!.status()).toBe(200);await expect(p.getByRole('heading')).toHaveText('Authenticated');expect(proxyRequests.some(r=>r.authenticated)).toBe(true)}finally{await c.close()}})\n      |                                                                                                                                                                                                                                                                                                                                                                                                        ^\n  121 | }\n  122 | test('auth: wrong credentials fail and a fresh context does not inherit them',async({browser})=>{for(const creds of [{username:'user',password:'wrong'},undefined]){const c=await browser.newContext({httpCredentials:creds});try{const p=await c.newPage();expect((await p.goto(origin+'/auth'))!.status()).toBe(401)}finally{await c.close()}}})\n  123 | test('proxy: bypass uses the real origin without contacting the proxy',async({browser})=>{proxyRequests=[];const c=await browser.newContext({proxy:{server:proxyUrl,bypass:'127.0.0.1'}});try{const p=await c.newPage();await p.goto(origin);expect(proxyRequests).toHaveLength(0)}finally{await c.close()}})\n    at /workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts:120:392"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T09:02:05.714Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/workspace/suitecut/benchmarks/playwright-compatibility/2026-10-11/chromium-control/artifacts/compatibility-proxy-http-a-d59e1-ated-proxy-plus-origin-auth/error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/workspace/suitecut/benchmarks/playwright-compatibility/2026-10-11/chromium-control/artifacts/compatibility-proxy-http-a-d59e1-ated-proxy-plus-origin-auth/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts",
+                    "column": 392,
+                    "line": 120
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "b0b409d468a60194358f-2f081a623c2153c5559b",
+          "file": "compatibility.spec.ts",
+          "line": 120,
+          "column": 3
+        },
+        {
+          "title": "auth: https origin HTTP credentials",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 20000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 267,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T09:02:06.565Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b0b409d468a60194358f-b97a329061717b42d1a4",
+          "file": "compatibility.spec.ts",
+          "line": 118,
+          "column": 3
+        },
+        {
+          "title": "proxy: https through local proxy plus origin auth",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 20000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 181,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T09:02:07.072Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b0b409d468a60194358f-560a2867e9881480d980",
+          "file": "compatibility.spec.ts",
+          "line": 119,
+          "column": 3
+        },
+        {
+          "title": "proxy: https authenticated proxy plus origin auth",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 20000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 92,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m401\u001b[39m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m401\u001b[39m\n    at /workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts:120:392",
+                    "location": {
+                      "file": "/workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts",
+                      "column": 392,
+                      "line": 120
+                    },
+                    "snippet": "  118 |   test(`auth: ${scheme} origin HTTP credentials`,async({browser})=>{const c=await browser.newContext({httpCredentials:{username:'user',password:'password'},ignoreHTTPSErrors:true});try{const p=await c.newPage();expect((await p.goto((scheme==='http'?origin:tlsOrigin)+'/auth'))!.status()).toBe(200);await expect(p.getByRole('heading')).toHaveText('Authenticated')}finally{await c.close()}})\n  119 |   test(`proxy: ${scheme} through local proxy plus origin auth`,async({browser})=>{proxyRequests=[];const c=await browser.newContext({proxy:{server:proxyUrl,bypass:'<-loopback>'},httpCredentials:{username:'user',password:'password'},ignoreHTTPSErrors:true});try{const p=await c.newPage();expect((await p.goto(`${scheme}://proxy.test/auth`))!.status()).toBe(200);await expect(p.getByRole('heading')).toHaveText('Authenticated');expect(proxyRequests.length).toBeGreaterThan(0)}finally{await c.close()}})\n> 120 |   test(`proxy: ${scheme} authenticated proxy plus origin auth`,async({browser})=>{proxyRequests=[];const c=await browser.newContext({proxy:{server:proxyUrl,username:'proxy',password:'secret',bypass:'<-loopback>'},httpCredentials:{username:'user',password:'password'},ignoreHTTPSErrors:true});try{const p=await c.newPage();expect((await p.goto(`${scheme}://auth-proxy.test/auth`))!.status()).toBe(200);await expect(p.getByRole('heading')).toHaveText('Authenticated');expect(proxyRequests.some(r=>r.authenticated)).toBe(true)}finally{await c.close()}})\n      |                                                                                                                                                                                                                                                                                                                                                                                                        ^\n  121 | }\n  122 | test('auth: wrong credentials fail and a fresh context does not inherit them',async({browser})=>{for(const creds of [{username:'user',password:'wrong'},undefined]){const c=await browser.newContext({httpCredentials:creds});try{const p=await c.newPage();expect((await p.goto(origin+'/auth'))!.status()).toBe(401)}finally{await c.close()}}})\n  123 | test('proxy: bypass uses the real origin without contacting the proxy',async({browser})=>{proxyRequests=[];const c=await browser.newContext({proxy:{server:proxyUrl,bypass:'127.0.0.1'}});try{const p=await c.newPage();await p.goto(origin);expect(proxyRequests).toHaveLength(0)}finally{await c.close()}})"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts",
+                        "column": 392,
+                        "line": 120
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m401\u001b[39m\n\n  118 |   test(`auth: ${scheme} origin HTTP credentials`,async({browser})=>{const c=await browser.newContext({httpCredentials:{username:'user',password:'password'},ignoreHTTPSErrors:true});try{const p=await c.newPage();expect((await p.goto((scheme==='http'?origin:tlsOrigin)+'/auth'))!.status()).toBe(200);await expect(p.getByRole('heading')).toHaveText('Authenticated')}finally{await c.close()}})\n  119 |   test(`proxy: ${scheme} through local proxy plus origin auth`,async({browser})=>{proxyRequests=[];const c=await browser.newContext({proxy:{server:proxyUrl,bypass:'<-loopback>'},httpCredentials:{username:'user',password:'password'},ignoreHTTPSErrors:true});try{const p=await c.newPage();expect((await p.goto(`${scheme}://proxy.test/auth`))!.status()).toBe(200);await expect(p.getByRole('heading')).toHaveText('Authenticated');expect(proxyRequests.length).toBeGreaterThan(0)}finally{await c.close()}})\n> 120 |   test(`proxy: ${scheme} authenticated proxy plus origin auth`,async({browser})=>{proxyRequests=[];const c=await browser.newContext({proxy:{server:proxyUrl,username:'proxy',password:'secret',bypass:'<-loopback>'},httpCredentials:{username:'user',password:'password'},ignoreHTTPSErrors:true});try{const p=await c.newPage();expect((await p.goto(`${scheme}://auth-proxy.test/auth`))!.status()).toBe(200);await expect(p.getByRole('heading')).toHaveText('Authenticated');expect(proxyRequests.some(r=>r.authenticated)).toBe(true)}finally{await c.close()}})\n      |                                                                                                                                                                                                                                                                                                                                                                                                        ^\n  121 | }\n  122 | test('auth: wrong credentials fail and a fresh context does not inherit them',async({browser})=>{for(const creds of [{username:'user',password:'wrong'},undefined]){const c=await browser.newContext({httpCredentials:creds});try{const p=await c.newPage();expect((await p.goto(origin+'/auth'))!.status()).toBe(401)}finally{await c.close()}}})\n  123 | test('proxy: bypass uses the real origin without contacting the proxy',async({browser})=>{proxyRequests=[];const c=await browser.newContext({proxy:{server:proxyUrl,bypass:'127.0.0.1'}});try{const p=await c.newPage();await p.goto(origin);expect(proxyRequests).toHaveLength(0)}finally{await c.close()}})\n    at /workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts:120:392"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T09:02:07.273Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/workspace/suitecut/benchmarks/playwright-compatibility/2026-10-11/chromium-control/artifacts/compatibility-proxy-https--00d57-ated-proxy-plus-origin-auth/error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/workspace/suitecut/benchmarks/playwright-compatibility/2026-10-11/chromium-control/artifacts/compatibility-proxy-https--00d57-ated-proxy-plus-origin-auth/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts",
+                    "column": 392,
+                    "line": 120
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "b0b409d468a60194358f-7540ff9fe2ac094e5a3b",
+          "file": "compatibility.spec.ts",
+          "line": 120,
+          "column": 3
+        },
+        {
+          "title": "auth: wrong credentials fail and a fresh context does not inherit them",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 20000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 198,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T09:02:08.040Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b0b409d468a60194358f-9b0be4b6379a062a4fd1",
+          "file": "compatibility.spec.ts",
+          "line": 122,
+          "column": 1
+        },
+        {
+          "title": "proxy: bypass uses the real origin without contacting the proxy",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 20000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 106,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T09:02:08.409Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b0b409d468a60194358f-b7b2c9389d04f56121b8",
+          "file": "compatibility.spec.ts",
+          "line": 123,
+          "column": 1
+        },
+        {
+          "title": "har: har captures and replays bodies, POST and redirects",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 20000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 328,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T09:02:08.525Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b0b409d468a60194358f-557b08d75307ec646809",
+          "file": "compatibility.spec.ts",
+          "line": 124,
+          "column": 42
+        },
+        {
+          "title": "har: har.zip captures and replays bodies, POST and redirects",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 20000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 456,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T09:02:08.866Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b0b409d468a60194358f-80d7e6e9502ac54eab63",
+          "file": "compatibility.spec.ts",
+          "line": 124,
+          "column": 42
+        },
+        {
+          "title": "video: Playwright recordVideo creates a decodable WebM after context close",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 20000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1524,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [
+                    {
+                      "buffer": ""
+                    }
+                  ],
+                  "retry": 0,
+                  "startTime": "2026-10-11T09:02:09.358Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b0b409d468a60194358f-3df64f5739781d20d5e5",
+          "file": "compatibility.spec.ts",
+          "line": 130,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-11T09:02:01.237Z",
+    "duration": 9733.130000000001,
+    "expected": 16,
+    "skipped": 0,
+    "unexpected": 3,
+    "flaky": 0
+  }
+}

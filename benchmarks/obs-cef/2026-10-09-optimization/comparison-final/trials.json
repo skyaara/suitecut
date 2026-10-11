@@ -1,0 +1,1898 @@
+[
+  {
+    "id": "720p60-canvas-obs-1",
+    "backend": "obs",
+    "case": {
+      "name": "720p60-canvas",
+      "width": 1280,
+      "height": 720,
+      "fps": 60,
+      "workload": "canvas"
+    },
+    "trialNumber": 1,
+    "durationMs": 10000,
+    "status": "passed",
+    "startedAt": "2026-10-09T03:09:22.139Z",
+    "startupMs": 2185.206947,
+    "browserVersion": "151.0.7922.34",
+    "obsBefore": {
+      "activeFps": 60.0000024000001,
+      "availableDiskSpace": 24757.98046875,
+      "averageFrameRenderTime": 5.504152,
+      "cpuUsage": 26.673506375300406,
+      "memoryUsage": 225.3828125,
+      "outputSkippedFrames": 0,
+      "outputTotalFrames": 0,
+      "renderSkippedFrames": 288353,
+      "renderTotalFrames": 601210,
+      "webSocketSessionIncomingMessages": 15,
+      "webSocketSessionOutgoingMessages": 16
+    },
+    "recordStartMs": 6.121063999999933,
+    "workload": {
+      "wallMs": 10051.843893,
+      "scrollCommands": 0,
+      "snapshot": {
+        "markerCount": 604,
+        "scrollY": 0,
+        "scrollEvents": 0,
+        "keyEvents": 0,
+        "clicks": 0,
+        "value": "",
+        "choice": "First",
+        "secondary": false
+      }
+    },
+    "obsAfter": {
+      "activeFps": 60.0000024000001,
+      "availableDiskSpace": 24757.81640625,
+      "averageFrameRenderTime": 9.373563,
+      "cpuUsage": 41.712135465663216,
+      "memoryUsage": 366.140625,
+      "outputSkippedFrames": 0,
+      "outputTotalFrames": 631,
+      "renderSkippedFrames": 288389,
+      "renderTotalFrames": 601848,
+      "webSocketSessionIncomingMessages": 17,
+      "webSocketSessionOutgoingMessages": 20
+    },
+    "finalizationMs": 1180.3693120000007,
+    "mediaPath": "/workspace/suitecut/.suitecut/obs-cef-optimization/comparison-final/2026-10-09 03-09-24.mkv",
+    "decoded": {
+      "width": 1280,
+      "height": 720,
+      "codec": "h264",
+      "containerFps": 60,
+      "durationSeconds": 10.567,
+      "bytes": 243239,
+      "decodedFrames": 633,
+      "markerTransitions": 571,
+      "markerRegressions": 0,
+      "activeFrames": 600,
+      "distinctActiveFrames": 570,
+      "activeDurationSeconds": 10.017,
+      "measurementMethod": "decoded marker transitions / timestamped active media duration",
+      "distinctActiveFps": 56.903264450434264,
+      "repeatFraction": 0.050000000000000044,
+      "longestActiveHoldMs": 83.00000000000018,
+      "audioStreams": [
+        {
+          "codec": "aac",
+          "sampleRate": "48000",
+          "channels": 2
+        }
+      ]
+    },
+    "resources": {
+      "sampleCount": 22,
+      "meanCpuPercent": 240.43385994683845,
+      "peakRssBytes": 1464586240,
+      "firstRssBytes": 1331130368,
+      "lastRssBytes": 1464586240
+    },
+    "completedAt": "2026-10-09T03:09:38.117Z"
+  },
+  {
+    "id": "720p60-canvas-native-1",
+    "backend": "native",
+    "case": {
+      "name": "720p60-canvas",
+      "width": 1280,
+      "height": 720,
+      "fps": 60,
+      "workload": "canvas"
+    },
+    "trialNumber": 1,
+    "durationMs": 10000,
+    "status": "passed",
+    "startedAt": "2026-10-09T03:09:38.118Z",
+    "startupMs": 1623.9339619999992,
+    "browserVersion": "152.0.8+g1ce985c+chromium-152.0.7977.134",
+    "workload": {
+      "wallMs": 10010.165035999999,
+      "scrollCommands": 0,
+      "snapshot": {
+        "markerCount": 601,
+        "scrollY": 0,
+        "scrollEvents": 0,
+        "keyEvents": 0,
+        "clicks": 0,
+        "value": "",
+        "choice": "First",
+        "secondary": false
+      }
+    },
+    "nativeCapture": {
+      "frames": 603,
+      "fps": 60.23876707640728,
+      "nativeDrops": 0
+    },
+    "finalizationMs": 383.3618180000012,
+    "mediaPath": "/workspace/suitecut/.suitecut/obs-cef-optimization/comparison-final/720p60-canvas-native-1/suitecut-source-d267c2a4-d939-4bad-bc96-fbbf1b510f5b-cfe96c17-f9aa-46c0-bb8b-08a065cbfcc2.webm",
+    "decoded": {
+      "width": 1280,
+      "height": 720,
+      "codec": "vp9",
+      "containerFps": 60,
+      "durationSeconds": 10.551,
+      "bytes": 446604,
+      "decodedFrames": 620,
+      "markerTransitions": 596,
+      "markerRegressions": 0,
+      "activeFrames": 596,
+      "distinctActiveFrames": 595,
+      "activeDurationSeconds": 10.015,
+      "measurementMethod": "decoded marker transitions / timestamped active media duration",
+      "distinctActiveFps": 59.41088367448826,
+      "repeatFraction": 0.001677852348993314,
+      "longestActiveHoldMs": 98.99999999999997,
+      "audioStreams": []
+    },
+    "resources": {
+      "sampleCount": 22,
+      "meanCpuPercent": 218.07441207888965,
+      "peakRssBytes": 1372741632,
+      "firstRssBytes": 1065594880,
+      "lastRssBytes": 456757248
+    },
+    "completedAt": "2026-10-09T03:09:52.208Z"
+  },
+  {
+    "id": "720p60-canvas-native-2",
+    "backend": "native",
+    "case": {
+      "name": "720p60-canvas",
+      "width": 1280,
+      "height": 720,
+      "fps": 60,
+      "workload": "canvas"
+    },
+    "trialNumber": 2,
+    "durationMs": 10000,
+    "status": "passed",
+    "startedAt": "2026-10-09T03:09:52.210Z",
+    "startupMs": 1335.2459999999992,
+    "browserVersion": "152.0.8+g1ce985c+chromium-152.0.7977.134",
+    "workload": {
+      "wallMs": 10032.115345999995,
+      "scrollCommands": 0,
+      "snapshot": {
+        "markerCount": 601,
+        "scrollY": 0,
+        "scrollEvents": 0,
+        "keyEvents": 0,
+        "clicks": 0,
+        "value": "",
+        "choice": "First",
+        "secondary": false
+      }
+    },
+    "nativeCapture": {
+      "frames": 601,
+      "fps": 59.90760465484786,
+      "nativeDrops": 0
+    },
+    "finalizationMs": 846.9329489999946,
+    "mediaPath": "/workspace/suitecut/.suitecut/obs-cef-optimization/comparison-final/720p60-canvas-native-2/suitecut-source-af3afb16-83a9-4bb8-8bfb-b631ea4e65d7-2156cde5-8f3c-4ec8-ab08-af17b9ea50d9.webm",
+    "decoded": {
+      "width": 1280,
+      "height": 720,
+      "codec": "vp9",
+      "containerFps": 60,
+      "durationSeconds": 10.579,
+      "bytes": 451978,
+      "decodedFrames": 628,
+      "markerTransitions": 601,
+      "markerRegressions": 0,
+      "activeFrames": 601,
+      "distinctActiveFrames": 600,
+      "activeDurationSeconds": 10.058,
+      "measurementMethod": "decoded marker transitions / timestamped active media duration",
+      "distinctActiveFps": 59.65400676078743,
+      "repeatFraction": 0.0016638935108153063,
+      "longestActiveHoldMs": 52.999999999999936,
+      "audioStreams": []
+    },
+    "resources": {
+      "sampleCount": 22,
+      "meanCpuPercent": 200.96646484649804,
+      "peakRssBytes": 1372360704,
+      "firstRssBytes": 1125928960,
+      "lastRssBytes": 1347907584
+    },
+    "completedAt": "2026-10-09T03:10:06.816Z"
+  },
+  {
+    "id": "720p60-canvas-obs-2",
+    "backend": "obs",
+    "case": {
+      "name": "720p60-canvas",
+      "width": 1280,
+      "height": 720,
+      "fps": 60,
+      "workload": "canvas"
+    },
+    "trialNumber": 2,
+    "durationMs": 10000,
+    "status": "passed",
+    "startedAt": "2026-10-09T03:10:06.819Z",
+    "startupMs": 1494.190413999997,
+    "browserVersion": "151.0.7922.34",
+    "obsBefore": {
+      "activeFps": 59.01639580327879,
+      "availableDiskSpace": 24756.33984375,
+      "averageFrameRenderTime": 3.920031,
+      "cpuUsage": 4.830075187969925,
+      "memoryUsage": 308.6953125,
+      "outputSkippedFrames": 0,
+      "outputTotalFrames": 0,
+      "renderSkippedFrames": 288391,
+      "renderTotalFrames": 603843,
+      "webSocketSessionIncomingMessages": 41,
+      "webSocketSessionOutgoingMessages": 49
+    },
+    "recordStartMs": 0.5493009999991045,
+    "workload": {
+      "wallMs": 10039.130212999997,
+      "scrollCommands": 0,
+      "snapshot": {
+        "markerCount": 603,
+        "scrollY": 0,
+        "scrollEvents": 0,
+        "keyEvents": 0,
+        "clicks": 0,
+        "value": "",
+        "choice": "First",
+        "secondary": false
+      }
+    },
+    "obsAfter": {
+      "activeFps": 60.0000024000001,
+      "availableDiskSpace": 24756.171875,
+      "averageFrameRenderTime": 8.594695,
+      "cpuUsage": 39.433427762039656,
+      "memoryUsage": 400.19140625,
+      "outputSkippedFrames": 0,
+      "outputTotalFrames": 632,
+      "renderSkippedFrames": 288406,
+      "renderTotalFrames": 604478,
+      "webSocketSessionIncomingMessages": 43,
+      "webSocketSessionOutgoingMessages": 53
+    },
+    "finalizationMs": 1395.7917400000006,
+    "mediaPath": "/workspace/suitecut/.suitecut/obs-cef-optimization/comparison-final/2026-10-09 03-10-08.mkv",
+    "decoded": {
+      "width": 1280,
+      "height": 720,
+      "codec": "h264",
+      "containerFps": 60,
+      "durationSeconds": 10.6,
+      "bytes": 242450,
+      "decodedFrames": 634,
+      "markerTransitions": 587,
+      "markerRegressions": 0,
+      "activeFrames": 601,
+      "distinctActiveFrames": 586,
+      "activeDurationSeconds": 10.049999999999999,
+      "measurementMethod": "decoded marker transitions / timestamped active media duration",
+      "distinctActiveFps": 58.30845771144279,
+      "repeatFraction": 0.024958402662229595,
+      "longestActiveHoldMs": 67.00000000000017,
+      "audioStreams": [
+        {
+          "codec": "aac",
+          "sampleRate": "48000",
+          "channels": 2
+        }
+      ]
+    },
+    "resources": {
+      "sampleCount": 23,
+      "meanCpuPercent": 222.2308424021002,
+      "peakRssBytes": 1587539968,
+      "firstRssBytes": 1490313216,
+      "lastRssBytes": 1480163328
+    },
+    "completedAt": "2026-10-09T03:10:22.369Z"
+  },
+  {
+    "id": "720p60-canvas-obs-3",
+    "backend": "obs",
+    "case": {
+      "name": "720p60-canvas",
+      "width": 1280,
+      "height": 720,
+      "fps": 60,
+      "workload": "canvas"
+    },
+    "trialNumber": 3,
+    "durationMs": 10000,
+    "status": "passed",
+    "startedAt": "2026-10-09T03:10:22.371Z",
+    "startupMs": 1395.2874979999979,
+    "browserVersion": "151.0.7922.34",
+    "obsBefore": {
+      "activeFps": 59.01639580327879,
+      "availableDiskSpace": 24755.89453125,
+      "averageFrameRenderTime": 6.183902,
+      "cpuUsage": 27.593360995850624,
+      "memoryUsage": 318.37109375,
+      "outputSkippedFrames": 0,
+      "outputTotalFrames": 0,
+      "renderSkippedFrames": 288407,
+      "renderTotalFrames": 604766,
+      "webSocketSessionIncomingMessages": 64,
+      "webSocketSessionOutgoingMessages": 77
+    },
+    "recordStartMs": 0.4876850000000559,
+    "workload": {
+      "wallMs": 10043.363386999998,
+      "scrollCommands": 0,
+      "snapshot": {
+        "markerCount": 602,
+        "scrollY": 0,
+        "scrollEvents": 0,
+        "keyEvents": 0,
+        "clicks": 0,
+        "value": "",
+        "choice": "First",
+        "secondary": false
+      }
+    },
+    "obsAfter": {
+      "activeFps": 43.27869025573778,
+      "availableDiskSpace": 24755.73046875,
+      "averageFrameRenderTime": 22.926737,
+      "cpuUsage": 38.76893939393939,
+      "memoryUsage": 399.43359375,
+      "outputSkippedFrames": 0,
+      "outputTotalFrames": 632,
+      "renderSkippedFrames": 288441,
+      "renderTotalFrames": 605400,
+      "webSocketSessionIncomingMessages": 66,
+      "webSocketSessionOutgoingMessages": 81
+    },
+    "finalizationMs": 1139.3997660000023,
+    "mediaPath": "/workspace/suitecut/.suitecut/obs-cef-optimization/comparison-final/2026-10-09 03-10-23.mkv",
+    "decoded": {
+      "width": 1280,
+      "height": 720,
+      "codec": "h264",
+      "containerFps": 60,
+      "durationSeconds": 10.55,
+      "bytes": 235392,
+      "decodedFrames": 633,
+      "markerTransitions": 550,
+      "markerRegressions": 0,
+      "activeFrames": 601,
+      "distinctActiveFrames": 549,
+      "activeDurationSeconds": 10.017000000000001,
+      "measurementMethod": "decoded marker transitions / timestamped active media duration",
+      "distinctActiveFps": 54.806828391734044,
+      "repeatFraction": 0.08652246256239604,
+      "longestActiveHoldMs": 83.00000000000018,
+      "audioStreams": [
+        {
+          "codec": "aac",
+          "sampleRate": "48000",
+          "channels": 2
+        }
+      ]
+    },
+    "resources": {
+      "sampleCount": 22,
+      "meanCpuPercent": 219.56636954355616,
+      "peakRssBytes": 1587408896,
+      "firstRssBytes": 1506902016,
+      "lastRssBytes": 1587408896
+    },
+    "completedAt": "2026-10-09T03:10:37.126Z"
+  },
+  {
+    "id": "720p60-canvas-native-3",
+    "backend": "native",
+    "case": {
+      "name": "720p60-canvas",
+      "width": 1280,
+      "height": 720,
+      "fps": 60,
+      "workload": "canvas"
+    },
+    "trialNumber": 3,
+    "durationMs": 10000,
+    "status": "passed",
+    "startedAt": "2026-10-09T03:10:37.128Z",
+    "startupMs": 1292.7105329999904,
+    "browserVersion": "152.0.8+g1ce985c+chromium-152.0.7977.134",
+    "workload": {
+      "wallMs": 10026.593987999993,
+      "scrollCommands": 0,
+      "snapshot": {
+        "markerCount": 602,
+        "scrollY": 0,
+        "scrollEvents": 0,
+        "keyEvents": 0,
+        "clicks": 0,
+        "value": "",
+        "choice": "First",
+        "secondary": false
+      }
+    },
+    "nativeCapture": {
+      "frames": 602,
+      "fps": 60.040328821580324,
+      "nativeDrops": 1
+    },
+    "finalizationMs": 265.8359289999935,
+    "mediaPath": "/workspace/suitecut/.suitecut/obs-cef-optimization/comparison-final/720p60-canvas-native-3/suitecut-source-34225c36-9194-4d8e-bef6-1236e4c16a47-667ec3d2-831d-419e-b29f-5a6b0b3888df.webm",
+    "decoded": {
+      "width": 1280,
+      "height": 720,
+      "codec": "vp9",
+      "containerFps": 60,
+      "durationSeconds": 10.577,
+      "bytes": 447662,
+      "decodedFrames": 630,
+      "markerTransitions": 601,
+      "markerRegressions": 0,
+      "activeFrames": 601,
+      "distinctActiveFrames": 600,
+      "activeDurationSeconds": 10.04,
+      "measurementMethod": "decoded marker transitions / timestamped active media duration",
+      "distinctActiveFps": 59.76095617529881,
+      "repeatFraction": 0.0016638935108153063,
+      "longestActiveHoldMs": 47.00000000000004,
+      "audioStreams": []
+    },
+    "resources": {
+      "sampleCount": 21,
+      "meanCpuPercent": 198.26962890095263,
+      "peakRssBytes": 1348341760,
+      "firstRssBytes": 1128308736,
+      "lastRssBytes": 1130029056
+    },
+    "completedAt": "2026-10-09T03:10:50.591Z"
+  },
+  {
+    "id": "1080p60-canvas-obs-1",
+    "backend": "obs",
+    "case": {
+      "name": "1080p60-canvas",
+      "width": 1920,
+      "height": 1080,
+      "fps": 60,
+      "workload": "canvas"
+    },
+    "trialNumber": 1,
+    "durationMs": 10000,
+    "status": "passed",
+    "startedAt": "2026-10-09T03:10:50.593Z",
+    "startupMs": 1455.7044559999922,
+    "browserVersion": "151.0.7922.34",
+    "obsBefore": {
+      "activeFps": 58.032789206557474,
+      "availableDiskSpace": 24754.8515625,
+      "averageFrameRenderTime": 8.519711,
+      "cpuUsage": 9.14093206064009,
+      "memoryUsage": 364.78515625,
+      "outputSkippedFrames": 0,
+      "outputTotalFrames": 0,
+      "renderSkippedFrames": 288443,
+      "renderTotalFrames": 606468,
+      "webSocketSessionIncomingMessages": 88,
+      "webSocketSessionOutgoingMessages": 108
+    },
+    "recordStartMs": 0.6902810000028694,
+    "workload": {
+      "wallMs": 10049.135823000004,
+      "scrollCommands": 0,
+      "snapshot": {
+        "markerCount": 603,
+        "scrollY": 0,
+        "scrollEvents": 0,
+        "keyEvents": 0,
+        "clicks": 0,
+        "value": "",
+        "choice": "First",
+        "secondary": false
+      }
+    },
+    "obsAfter": {
+      "activeFps": 42.29508365901646,
+      "availableDiskSpace": 24754.66015625,
+      "averageFrameRenderTime": 23.563101,
+      "cpuUsage": 63.69462770970782,
+      "memoryUsage": 639.41796875,
+      "outputSkippedFrames": 0,
+      "outputTotalFrames": 633,
+      "renderSkippedFrames": 288649,
+      "renderTotalFrames": 607104,
+      "webSocketSessionIncomingMessages": 90,
+      "webSocketSessionOutgoingMessages": 112
+    },
+    "finalizationMs": 1471.0125939999998,
+    "mediaPath": "/workspace/suitecut/.suitecut/obs-cef-optimization/comparison-final/2026-10-09 03-10-52.mkv",
+    "decoded": {
+      "width": 1920,
+      "height": 1080,
+      "codec": "h264",
+      "containerFps": 60,
+      "durationSeconds": 10.617,
+      "bytes": 271699,
+      "decodedFrames": 636,
+      "markerTransitions": 417,
+      "markerRegressions": 0,
+      "activeFrames": 603,
+      "distinctActiveFrames": 416,
+      "activeDurationSeconds": 10.067,
+      "measurementMethod": "decoded marker transitions / timestamped active media duration",
+      "distinctActiveFps": 41.32313499552995,
+      "repeatFraction": 0.31011608623548925,
+      "longestActiveHoldMs": 50.00000000000071,
+      "audioStreams": [
+        {
+          "codec": "aac",
+          "sampleRate": "48000",
+          "channels": 2
+        }
+      ]
+    },
+    "resources": {
+      "sampleCount": 23,
+      "meanCpuPercent": 353.62624961771024,
+      "peakRssBytes": 1872035840,
+      "firstRssBytes": 1572446208,
+      "lastRssBytes": 1575321600
+    },
+    "completedAt": "2026-10-09T03:11:07.463Z"
+  },
+  {
+    "id": "1080p60-canvas-native-1",
+    "backend": "native",
+    "case": {
+      "name": "1080p60-canvas",
+      "width": 1920,
+      "height": 1080,
+      "fps": 60,
+      "workload": "canvas"
+    },
+    "trialNumber": 1,
+    "durationMs": 10000,
+    "status": "passed",
+    "startedAt": "2026-10-09T03:11:07.465Z",
+    "startupMs": 1279.550951000012,
+    "browserVersion": "152.0.8+g1ce985c+chromium-152.0.7977.134",
+    "workload": {
+      "wallMs": 10030.952283000006,
+      "scrollCommands": 0,
+      "snapshot": {
+        "markerCount": 587,
+        "scrollY": 0,
+        "scrollEvents": 0,
+        "keyEvents": 0,
+        "clicks": 0,
+        "value": "",
+        "choice": "First",
+        "secondary": false
+      }
+    },
+    "nativeCapture": {
+      "frames": 1069,
+      "fps": 106.57014108338365,
+      "nativeDrops": 106
+    },
+    "finalizationMs": 1150.2115440000052,
+    "mediaPath": "/workspace/suitecut/.suitecut/obs-cef-optimization/comparison-final/1080p60-canvas-native-1/suitecut-source-bacd2841-f7db-4ee8-8775-3b5aff01a6bb-712051b0-889c-4e75-91b1-e827f2a1bf68.webm",
+    "decoded": {
+      "width": 1920,
+      "height": 1080,
+      "codec": "vp9",
+      "containerFps": 60,
+      "durationSeconds": 10.598,
+      "bytes": 277615,
+      "decodedFrames": 299,
+      "markerTransitions": 279,
+      "markerRegressions": 0,
+      "activeFrames": 279,
+      "distinctActiveFrames": 278,
+      "activeDurationSeconds": 9.861,
+      "measurementMethod": "decoded marker transitions / timestamped active media duration",
+      "distinctActiveFps": 28.191866950613527,
+      "repeatFraction": 0.0035842293906810374,
+      "longestActiveHoldMs": 128.0000000000001,
+      "audioStreams": []
+    },
+    "resources": {
+      "sampleCount": 23,
+      "meanCpuPercent": 331.2420929833275,
+      "peakRssBytes": 1700077568,
+      "firstRssBytes": 1202610176,
+      "lastRssBytes": 924848128
+    },
+    "completedAt": "2026-10-09T03:11:21.950Z"
+  },
+  {
+    "id": "1080p60-canvas-native-2",
+    "backend": "native",
+    "case": {
+      "name": "1080p60-canvas",
+      "width": 1920,
+      "height": 1080,
+      "fps": 60,
+      "workload": "canvas"
+    },
+    "trialNumber": 2,
+    "durationMs": 10000,
+    "status": "passed",
+    "startedAt": "2026-10-09T03:11:21.953Z",
+    "startupMs": 1294.6043499999942,
+    "browserVersion": "152.0.8+g1ce985c+chromium-152.0.7977.134",
+    "workload": {
+      "wallMs": 10010.465801999992,
+      "scrollCommands": 0,
+      "snapshot": {
+        "markerCount": 601,
+        "scrollY": 0,
+        "scrollEvents": 0,
+        "keyEvents": 0,
+        "clicks": 0,
+        "value": "",
+        "choice": "First",
+        "secondary": false
+      }
+    },
+    "nativeCapture": {
+      "frames": 600,
+      "fps": 59.93727083909781,
+      "nativeDrops": 3
+    },
+    "finalizationMs": 902.0381350000098,
+    "mediaPath": "/workspace/suitecut/.suitecut/obs-cef-optimization/comparison-final/1080p60-canvas-native-2/suitecut-source-9767b067-7619-4b53-91dc-000c18e3037f-6eb2cb3f-32ba-4c60-b9fc-8e599be37eb0.webm",
+    "decoded": {
+      "width": 1920,
+      "height": 1080,
+      "codec": "vp9",
+      "containerFps": 60,
+      "durationSeconds": 10.56,
+      "bytes": 311428,
+      "decodedFrames": 370,
+      "markerTransitions": 343,
+      "markerRegressions": 0,
+      "activeFrames": 342,
+      "distinctActiveFrames": 342,
+      "activeDurationSeconds": 10.032,
+      "measurementMethod": "decoded marker transitions / timestamped active media duration",
+      "distinctActiveFps": 34.09090909090909,
+      "repeatFraction": 0,
+      "longestActiveHoldMs": 67.99999999999962,
+      "audioStreams": []
+    },
+    "resources": {
+      "sampleCount": 22,
+      "meanCpuPercent": 264.6803972712316,
+      "peakRssBytes": 1600012288,
+      "firstRssBytes": 1155837952,
+      "lastRssBytes": 1593823232
+    },
+    "completedAt": "2026-10-09T03:11:36.422Z"
+  },
+  {
+    "id": "1080p60-canvas-obs-2",
+    "backend": "obs",
+    "case": {
+      "name": "1080p60-canvas",
+      "width": 1920,
+      "height": 1080,
+      "fps": 60,
+      "workload": "canvas"
+    },
+    "trialNumber": 2,
+    "durationMs": 10000,
+    "status": "passed",
+    "startedAt": "2026-10-09T03:11:36.427Z",
+    "startupMs": 1542.75815899999,
+    "browserVersion": "151.0.7922.34",
+    "obsBefore": {
+      "activeFps": 47.21311664262303,
+      "availableDiskSpace": 24753.4765625,
+      "averageFrameRenderTime": 14.66218,
+      "cpuUsage": 10.702549575070822,
+      "memoryUsage": 396.66015625,
+      "outputSkippedFrames": 0,
+      "outputTotalFrames": 0,
+      "renderSkippedFrames": 288690,
+      "renderTotalFrames": 609222,
+      "webSocketSessionIncomingMessages": 115,
+      "webSocketSessionOutgoingMessages": 142
+    },
+    "recordStartMs": 2.8196569999854546,
+    "workload": {
+      "wallMs": 10067.049196000007,
+      "scrollCommands": 0,
+      "snapshot": {
+        "markerCount": 605,
+        "scrollY": 0,
+        "scrollEvents": 0,
+        "keyEvents": 0,
+        "clicks": 0,
+        "value": "",
+        "choice": "First",
+        "secondary": false
+      }
+    },
+    "obsAfter": {
+      "activeFps": 44.262296852459095,
+      "availableDiskSpace": 24753.29296875,
+      "averageFrameRenderTime": 22.773492,
+      "cpuUsage": 63.37735849056604,
+      "memoryUsage": 658.265625,
+      "outputSkippedFrames": 0,
+      "outputTotalFrames": 632,
+      "renderSkippedFrames": 288891,
+      "renderTotalFrames": 609858,
+      "webSocketSessionIncomingMessages": 117,
+      "webSocketSessionOutgoingMessages": 146
+    },
+    "finalizationMs": 1380.1933890000219,
+    "mediaPath": "/workspace/suitecut/.suitecut/obs-cef-optimization/comparison-final/2026-10-09 03-11-38.mkv",
+    "decoded": {
+      "width": 1920,
+      "height": 1080,
+      "codec": "h264",
+      "containerFps": 60,
+      "durationSeconds": 10.617,
+      "bytes": 266719,
+      "decodedFrames": 635,
+      "markerTransitions": 414,
+      "markerRegressions": 0,
+      "activeFrames": 602,
+      "distinctActiveFrames": 413,
+      "activeDurationSeconds": 10.067,
+      "measurementMethod": "decoded marker transitions / timestamped active media duration",
+      "distinctActiveFps": 41.02513161815834,
+      "repeatFraction": 0.313953488372093,
+      "longestActiveHoldMs": 65.99999999999983,
+      "audioStreams": [
+        {
+          "codec": "aac",
+          "sampleRate": "48000",
+          "channels": 2
+        }
+      ]
+    },
+    "resources": {
+      "sampleCount": 23,
+      "meanCpuPercent": 351.09521215454765,
+      "peakRssBytes": 1894944768,
+      "firstRssBytes": 1629986816,
+      "lastRssBytes": 1341358080
+    },
+    "completedAt": "2026-10-09T03:11:53.728Z"
+  },
+  {
+    "id": "1080p60-canvas-obs-3",
+    "backend": "obs",
+    "case": {
+      "name": "1080p60-canvas",
+      "width": 1920,
+      "height": 1080,
+      "fps": 60,
+      "workload": "canvas"
+    },
+    "trialNumber": 3,
+    "durationMs": 10000,
+    "status": "passed",
+    "startedAt": "2026-10-09T03:11:53.739Z",
+    "startupMs": 1473.4360230000166,
+    "browserVersion": "151.0.7922.34",
+    "obsBefore": {
+      "activeFps": 58.032789206557474,
+      "availableDiskSpace": 24752.98046875,
+      "averageFrameRenderTime": 10.771702,
+      "cpuUsage": 48.30815709969788,
+      "memoryUsage": 399.328125,
+      "outputSkippedFrames": 0,
+      "outputTotalFrames": 0,
+      "renderSkippedFrames": 288911,
+      "renderTotalFrames": 610255,
+      "webSocketSessionIncomingMessages": 138,
+      "webSocketSessionOutgoingMessages": 170
+    },
+    "recordStartMs": 5.229118000017479,
+    "workload": {
+      "wallMs": 10056.286953999981,
+      "scrollCommands": 0,
+      "snapshot": {
+        "markerCount": 600,
+        "scrollY": 0,
+        "scrollEvents": 0,
+        "keyEvents": 0,
+        "clicks": 0,
+        "value": "",
+        "choice": "First",
+        "secondary": false
+      }
+    },
+    "obsAfter": {
+      "activeFps": 43.27869025573778,
+      "availableDiskSpace": 24752.80078125,
+      "averageFrameRenderTime": 23.339975,
+      "cpuUsage": 62.71698113207547,
+      "memoryUsage": 648.1953125,
+      "outputSkippedFrames": 0,
+      "outputTotalFrames": 631,
+      "renderSkippedFrames": 289145,
+      "renderTotalFrames": 610890,
+      "webSocketSessionIncomingMessages": 140,
+      "webSocketSessionOutgoingMessages": 174
+    },
+    "finalizationMs": 1477.43725800002,
+    "mediaPath": "/workspace/suitecut/.suitecut/obs-cef-optimization/comparison-final/2026-10-09 03-11-55.mkv",
+    "decoded": {
+      "width": 1920,
+      "height": 1080,
+      "codec": "h264",
+      "containerFps": 60,
+      "durationSeconds": 10.617,
+      "bytes": 262226,
+      "decodedFrames": 635,
+      "markerTransitions": 380,
+      "markerRegressions": 0,
+      "activeFrames": 603,
+      "distinctActiveFrames": 379,
+      "activeDurationSeconds": 10.084000000000001,
+      "measurementMethod": "decoded marker transitions / timestamped active media duration",
+      "distinctActiveFps": 37.58429194763982,
+      "repeatFraction": 0.3714759535655058,
+      "longestActiveHoldMs": 150.00000000000034,
+      "audioStreams": [
+        {
+          "codec": "aac",
+          "sampleRate": "48000",
+          "channels": 2
+        }
+      ]
+    },
+    "resources": {
+      "sampleCount": 23,
+      "meanCpuPercent": 347.77247897878954,
+      "peakRssBytes": 1894662144,
+      "firstRssBytes": 1620393984,
+      "lastRssBytes": 1392119808
+    },
+    "completedAt": "2026-10-09T03:12:11.609Z"
+  },
+  {
+    "id": "1080p60-canvas-native-3",
+    "backend": "native",
+    "case": {
+      "name": "1080p60-canvas",
+      "width": 1920,
+      "height": 1080,
+      "fps": 60,
+      "workload": "canvas"
+    },
+    "trialNumber": 3,
+    "durationMs": 10000,
+    "status": "passed",
+    "startedAt": "2026-10-09T03:12:11.610Z",
+    "startupMs": 1306.2997579999792,
+    "browserVersion": "152.0.8+g1ce985c+chromium-152.0.7977.134",
+    "workload": {
+      "wallMs": 10082.187441999995,
+      "scrollCommands": 0,
+      "snapshot": {
+        "markerCount": 586,
+        "scrollY": 0,
+        "scrollEvents": 0,
+        "keyEvents": 0,
+        "clicks": 0,
+        "value": "",
+        "choice": "First",
+        "secondary": false
+      }
+    },
+    "nativeCapture": {
+      "frames": 567,
+      "fps": 56.23779594079087,
+      "nativeDrops": 19
+    },
+    "finalizationMs": 820.768207999994,
+    "mediaPath": "/workspace/suitecut/.suitecut/obs-cef-optimization/comparison-final/1080p60-canvas-native-3/suitecut-source-1703a630-cbc9-4bfc-836d-fffe7435a4c5-10af2573-7960-4e52-a8c3-4f0df6db4701.webm",
+    "decoded": {
+      "width": 1920,
+      "height": 1080,
+      "codec": "vp9",
+      "containerFps": 60,
+      "durationSeconds": 10.613,
+      "bytes": 388795,
+      "decodedFrames": 450,
+      "markerTransitions": 422,
+      "markerRegressions": 0,
+      "activeFrames": 422,
+      "distinctActiveFrames": 421,
+      "activeDurationSeconds": 10.07,
+      "measurementMethod": "decoded marker transitions / timestamped active media duration",
+      "distinctActiveFps": 41.80734856007944,
+      "repeatFraction": 0.0023696682464454666,
+      "longestActiveHoldMs": 271.9999999999994,
+      "audioStreams": []
+    },
+    "resources": {
+      "sampleCount": 22,
+      "meanCpuPercent": 278.8902597615085,
+      "peakRssBytes": 1617592320,
+      "firstRssBytes": 1182900224,
+      "lastRssBytes": 1171439616
+    },
+    "completedAt": "2026-10-09T03:12:26.371Z"
+  },
+  {
+    "id": "4k30-canvas-obs-1",
+    "backend": "obs",
+    "case": {
+      "name": "4k30-canvas",
+      "width": 3840,
+      "height": 2160,
+      "fps": 30,
+      "workload": "canvas"
+    },
+    "trialNumber": 1,
+    "durationMs": 10000,
+    "status": "passed",
+    "startedAt": "2026-10-09T03:12:26.375Z",
+    "startupMs": 1846.340709000011,
+    "browserVersion": "151.0.7922.34",
+    "obsBefore": {
+      "activeFps": 16.875000168750002,
+      "availableDiskSpace": 24751.8984375,
+      "averageFrameRenderTime": 59.027049,
+      "cpuUsage": 19.48695652173913,
+      "memoryUsage": 571.24609375,
+      "outputSkippedFrames": 0,
+      "outputTotalFrames": 0,
+      "renderSkippedFrames": 289258,
+      "renderTotalFrames": 612191,
+      "webSocketSessionIncomingMessages": 163,
+      "webSocketSessionOutgoingMessages": 202
+    },
+    "recordStartMs": 13.860614000004716,
+    "workload": {
+      "wallMs": 10193.551957999996,
+      "scrollCommands": 0,
+      "snapshot": {
+        "markerCount": 424,
+        "scrollY": 0,
+        "scrollEvents": 0,
+        "keyEvents": 0,
+        "clicks": 0,
+        "value": "",
+        "choice": "First",
+        "secondary": false
+      }
+    },
+    "obsAfter": {
+      "activeFps": 3.870967780645162,
+      "availableDiskSpace": 24751.6953125,
+      "averageFrameRenderTime": 257.069399,
+      "cpuUsage": 63.54359925788498,
+      "memoryUsage": 1637.8046875,
+      "outputSkippedFrames": 0,
+      "outputTotalFrames": 285,
+      "renderSkippedFrames": 289526,
+      "renderTotalFrames": 612510,
+      "webSocketSessionIncomingMessages": 165,
+      "webSocketSessionOutgoingMessages": 206
+    },
+    "finalizationMs": 2786.946167999995,
+    "mediaPath": "/workspace/suitecut/.suitecut/obs-cef-optimization/comparison-final/2026-10-09 03-12-28.mkv",
+    "decoded": {
+      "width": 3840,
+      "height": 2160,
+      "codec": "h264",
+      "containerFps": 30,
+      "durationSeconds": 10.7,
+      "bytes": 306457,
+      "decodedFrames": 321,
+      "markerTransitions": 46,
+      "markerRegressions": 0,
+      "activeFrames": 304,
+      "distinctActiveFrames": 45,
+      "activeDurationSeconds": 10.133,
+      "measurementMethod": "decoded marker transitions / timestamped active media duration",
+      "distinctActiveFps": 4.440935557090694,
+      "repeatFraction": 0.8519736842105263,
+      "longestActiveHoldMs": 532.9999999999994,
+      "audioStreams": [
+        {
+          "codec": "aac",
+          "sampleRate": "48000",
+          "channels": 2
+        }
+      ]
+    },
+    "resources": {
+      "sampleCount": 23,
+      "meanCpuPercent": 394.7093781843829,
+      "peakRssBytes": 3098992640,
+      "firstRssBytes": 1995276288,
+      "lastRssBytes": 2088583168
+    },
+    "completedAt": "2026-10-09T03:12:55.565Z"
+  },
+  {
+    "id": "4k30-canvas-native-1",
+    "backend": "native",
+    "case": {
+      "name": "4k30-canvas",
+      "width": 3840,
+      "height": 2160,
+      "fps": 30,
+      "workload": "canvas"
+    },
+    "trialNumber": 1,
+    "durationMs": 10000,
+    "status": "passed",
+    "startedAt": "2026-10-09T03:12:55.583Z",
+    "startupMs": 1469.8331209999742,
+    "browserVersion": "152.0.8+g1ce985c+chromium-152.0.7977.134",
+    "workload": {
+      "wallMs": 10153.396334999998,
+      "scrollCommands": 0,
+      "snapshot": {
+        "markerCount": 179,
+        "scrollY": 0,
+        "scrollEvents": 0,
+        "keyEvents": 0,
+        "clicks": 0,
+        "value": "",
+        "choice": "First",
+        "secondary": false
+      }
+    },
+    "nativeCapture": {
+      "frames": 159,
+      "fps": 15.659784642889155,
+      "nativeDrops": 23
+    },
+    "finalizationMs": 6968.053776000015,
+    "mediaPath": "/workspace/suitecut/.suitecut/obs-cef-optimization/comparison-final/4k30-canvas-native-1/suitecut-source-ffd0a1e0-9fc7-4ca7-b139-6edb21c19ea6-265ae577-ea9d-471c-bee1-faf347618880.webm",
+    "decoded": {
+      "width": 3840,
+      "height": 2160,
+      "codec": "vp9",
+      "containerFps": 30,
+      "durationSeconds": 10.867,
+      "bytes": 163872,
+      "decodedFrames": 65,
+      "markerTransitions": 57,
+      "markerRegressions": 0,
+      "activeFrames": 57,
+      "distinctActiveFrames": 56,
+      "activeDurationSeconds": 9.684000000000001,
+      "measurementMethod": "decoded marker transitions / timestamped active media duration",
+      "distinctActiveFps": 5.782734407269722,
+      "repeatFraction": 0.01754385964912286,
+      "longestActiveHoldMs": 799.999999999999,
+      "audioStreams": []
+    },
+    "resources": {
+      "sampleCount": 33,
+      "meanCpuPercent": 310.6311547321272,
+      "peakRssBytes": 2832261120,
+      "firstRssBytes": 1341255680,
+      "lastRssBytes": 334704640
+    },
+    "completedAt": "2026-10-09T03:13:17.424Z"
+  },
+  {
+    "id": "4k30-canvas-native-2",
+    "backend": "native",
+    "case": {
+      "name": "4k30-canvas",
+      "width": 3840,
+      "height": 2160,
+      "fps": 30,
+      "workload": "canvas"
+    },
+    "trialNumber": 2,
+    "durationMs": 10000,
+    "status": "passed",
+    "startedAt": "2026-10-09T03:13:17.426Z",
+    "startupMs": 1322.3469540000078,
+    "browserVersion": "152.0.8+g1ce985c+chromium-152.0.7977.134",
+    "workload": {
+      "wallMs": 10024.536874000012,
+      "scrollCommands": 0,
+      "snapshot": {
+        "markerCount": 254,
+        "scrollY": 0,
+        "scrollEvents": 0,
+        "keyEvents": 0,
+        "clicks": 0,
+        "value": "",
+        "choice": "First",
+        "secondary": false
+      }
+    },
+    "nativeCapture": {
+      "frames": 247,
+      "fps": 24.6395422656011,
+      "nativeDrops": 7
+    },
+    "finalizationMs": 4273.809601999994,
+    "mediaPath": "/workspace/suitecut/.suitecut/obs-cef-optimization/comparison-final/4k30-canvas-native-2/suitecut-source-4c1e1496-1417-42ad-8171-fdd16a5d50d7-ba280d2f-0e5d-4b48-b738-e6333cdf0036.webm",
+    "decoded": {
+      "width": 3840,
+      "height": 2160,
+      "codec": "vp9",
+      "containerFps": 30,
+      "durationSeconds": 10.575,
+      "bytes": 169586,
+      "decodedFrames": 79,
+      "markerTransitions": 67,
+      "markerRegressions": 0,
+      "activeFrames": 67,
+      "distinctActiveFrames": 66,
+      "activeDurationSeconds": 9.683,
+      "measurementMethod": "decoded marker transitions / timestamped active media duration",
+      "distinctActiveFps": 6.816069399979345,
+      "repeatFraction": 0.014925373134328401,
+      "longestActiveHoldMs": 652.9999999999995,
+      "audioStreams": []
+    },
+    "resources": {
+      "sampleCount": 28,
+      "meanCpuPercent": 317.33134620930934,
+      "peakRssBytes": 2774372352,
+      "firstRssBytes": 1305698304,
+      "lastRssBytes": 1362362368
+    },
+    "completedAt": "2026-10-09T03:13:35.669Z"
+  },
+  {
+    "id": "4k30-canvas-obs-2",
+    "backend": "obs",
+    "case": {
+      "name": "4k30-canvas",
+      "width": 3840,
+      "height": 2160,
+      "fps": 30,
+      "workload": "canvas"
+    },
+    "trialNumber": 2,
+    "durationMs": 10000,
+    "status": "passed",
+    "startedAt": "2026-10-09T03:13:35.670Z",
+    "startupMs": 1582.6066209999844,
+    "browserVersion": "151.0.7922.34",
+    "obsBefore": {
+      "activeFps": 15.483871122580648,
+      "availableDiskSpace": 24750.578125,
+      "averageFrameRenderTime": 64.445748,
+      "cpuUsage": 21.401644962302946,
+      "memoryUsage": 727.75,
+      "outputSkippedFrames": 0,
+      "outputTotalFrames": 0,
+      "renderSkippedFrames": 289902,
+      "renderTotalFrames": 614259,
+      "webSocketSessionIncomingMessages": 195,
+      "webSocketSessionOutgoingMessages": 241
+    },
+    "recordStartMs": 2.566211999976076,
+    "workload": {
+      "wallMs": 10076.981558999978,
+      "scrollCommands": 0,
+      "snapshot": {
+        "markerCount": 509,
+        "scrollY": 0,
+        "scrollEvents": 0,
+        "keyEvents": 0,
+        "clicks": 0,
+        "value": "",
+        "choice": "First",
+        "secondary": false
+      }
+    },
+    "obsAfter": {
+      "activeFps": 5.142857194285715,
+      "availableDiskSpace": 24750.37109375,
+      "averageFrameRenderTime": 193.385132,
+      "cpuUsage": 64.64419475655431,
+      "memoryUsage": 1734.56640625,
+      "outputSkippedFrames": 0,
+      "outputTotalFrames": 305,
+      "renderSkippedFrames": 290163,
+      "renderTotalFrames": 614576,
+      "webSocketSessionIncomingMessages": 197,
+      "webSocketSessionOutgoingMessages": 245
+    },
+    "finalizationMs": 3229.982229999965,
+    "mediaPath": "/workspace/suitecut/.suitecut/obs-cef-optimization/comparison-final/2026-10-09 03-13-38.mkv",
+    "decoded": {
+      "width": 3840,
+      "height": 2160,
+      "codec": "h264",
+      "containerFps": 30,
+      "durationSeconds": 10.7,
+      "bytes": 307783,
+      "decodedFrames": 318,
+      "markerTransitions": 52,
+      "markerRegressions": 0,
+      "activeFrames": 302,
+      "distinctActiveFrames": 51,
+      "activeDurationSeconds": 10.167,
+      "measurementMethod": "decoded marker transitions / timestamped active media duration",
+      "distinctActiveFps": 5.0162289760991445,
+      "repeatFraction": 0.8311258278145696,
+      "longestActiveHoldMs": 299.9999999999989,
+      "audioStreams": [
+        {
+          "codec": "aac",
+          "sampleRate": "48000",
+          "channels": 2
+        }
+      ]
+    },
+    "resources": {
+      "sampleCount": 25,
+      "meanCpuPercent": 387.58303319437556,
+      "peakRssBytes": 3230875648,
+      "firstRssBytes": 2195120128,
+      "lastRssBytes": 1278754816
+    },
+    "completedAt": "2026-10-09T03:14:01.138Z"
+  },
+  {
+    "id": "4k30-canvas-obs-3",
+    "backend": "obs",
+    "case": {
+      "name": "4k30-canvas",
+      "width": 3840,
+      "height": 2160,
+      "fps": 30,
+      "workload": "canvas"
+    },
+    "trialNumber": 3,
+    "durationMs": 10000,
+    "status": "passed",
+    "startedAt": "2026-10-09T03:14:01.141Z",
+    "startupMs": 1488.2039760000189,
+    "browserVersion": "151.0.7922.34",
+    "obsBefore": {
+      "activeFps": 15.000000150000002,
+      "availableDiskSpace": 24749.9609375,
+      "averageFrameRenderTime": 66.256854,
+      "cpuUsage": 55.67081604426003,
+      "memoryUsage": 759.2890625,
+      "outputSkippedFrames": 0,
+      "outputTotalFrames": 0,
+      "renderSkippedFrames": 290398,
+      "renderTotalFrames": 615010,
+      "webSocketSessionIncomingMessages": 224,
+      "webSocketSessionOutgoingMessages": 275
+    },
+    "recordStartMs": 3.666756999969948,
+    "workload": {
+      "wallMs": 10061.15924399998,
+      "scrollCommands": 0,
+      "snapshot": {
+        "markerCount": 522,
+        "scrollY": 0,
+        "scrollEvents": 0,
+        "keyEvents": 0,
+        "clicks": 0,
+        "value": "",
+        "choice": "First",
+        "secondary": false
+      }
+    },
+    "obsAfter": {
+      "activeFps": 5.294117700000001,
+      "availableDiskSpace": 24749.75390625,
+      "averageFrameRenderTime": 191.845819,
+      "cpuUsage": 64.79245283018868,
+      "memoryUsage": 1766.48828125,
+      "outputSkippedFrames": 0,
+      "outputTotalFrames": 306,
+      "renderSkippedFrames": 290657,
+      "renderTotalFrames": 615326,
+      "webSocketSessionIncomingMessages": 226,
+      "webSocketSessionOutgoingMessages": 279
+    },
+    "finalizationMs": 1800.8593539999565,
+    "mediaPath": "/workspace/suitecut/.suitecut/obs-cef-optimization/comparison-final/2026-10-09 03-14-03.mkv",
+    "decoded": {
+      "width": 3840,
+      "height": 2160,
+      "codec": "h264",
+      "containerFps": 30,
+      "durationSeconds": 10.566,
+      "bytes": 305612,
+      "decodedFrames": 317,
+      "markerTransitions": 52,
+      "markerRegressions": 0,
+      "activeFrames": 300,
+      "distinctActiveFrames": 51,
+      "activeDurationSeconds": 9.999,
+      "measurementMethod": "decoded marker transitions / timestamped active media duration",
+      "distinctActiveFps": 5.1005100510051005,
+      "repeatFraction": 0.83,
+      "longestActiveHoldMs": 300.0000000000003,
+      "audioStreams": [
+        {
+          "codec": "aac",
+          "sampleRate": "48000",
+          "channels": 2
+        }
+      ]
+    },
+    "resources": {
+      "sampleCount": 22,
+      "meanCpuPercent": 397.39330062542274,
+      "peakRssBytes": 3270754304,
+      "firstRssBytes": 2217172992,
+      "lastRssBytes": 3252629504
+    },
+    "completedAt": "2026-10-09T03:14:25.414Z"
+  },
+  {
+    "id": "4k30-canvas-native-3",
+    "backend": "native",
+    "case": {
+      "name": "4k30-canvas",
+      "width": 3840,
+      "height": 2160,
+      "fps": 30,
+      "workload": "canvas"
+    },
+    "trialNumber": 3,
+    "durationMs": 10000,
+    "status": "passed",
+    "startedAt": "2026-10-09T03:14:25.416Z",
+    "startupMs": 1366.0857770000002,
+    "browserVersion": "152.0.8+g1ce985c+chromium-152.0.7977.134",
+    "workload": {
+      "wallMs": 10065.031577999995,
+      "scrollCommands": 0,
+      "snapshot": {
+        "markerCount": 288,
+        "scrollY": 0,
+        "scrollEvents": 0,
+        "keyEvents": 0,
+        "clicks": 0,
+        "value": "",
+        "choice": "First",
+        "secondary": false
+      }
+    },
+    "nativeCapture": {
+      "frames": 276,
+      "fps": 27.421672536356166,
+      "nativeDrops": 13
+    },
+    "finalizationMs": 4062.110566999996,
+    "mediaPath": "/workspace/suitecut/.suitecut/obs-cef-optimization/comparison-final/4k30-canvas-native-3/suitecut-source-6d36780a-1da8-49a6-89ab-8ff91aff2567-d76343a8-af49-4b05-90d5-c1ac5d1d5f0c.webm",
+    "decoded": {
+      "width": 3840,
+      "height": 2160,
+      "codec": "vp9",
+      "containerFps": 30,
+      "durationSeconds": 10.736,
+      "bytes": 173747,
+      "decodedFrames": 87,
+      "markerTransitions": 78,
+      "markerRegressions": 0,
+      "activeFrames": 77,
+      "distinctActiveFrames": 77,
+      "activeDurationSeconds": 10.074,
+      "measurementMethod": "decoded marker transitions / timestamped active media duration",
+      "distinctActiveFps": 7.643438554695255,
+      "repeatFraction": 0,
+      "longestActiveHoldMs": 206.99999999999986,
+      "audioStreams": []
+    },
+    "resources": {
+      "sampleCount": 28,
+      "meanCpuPercent": 316.2816206828217,
+      "peakRssBytes": 2762113024,
+      "firstRssBytes": 1330024448,
+      "lastRssBytes": 1418883072
+    },
+    "completedAt": "2026-10-09T03:14:43.611Z"
+  },
+  {
+    "id": "4k60-scroll-obs-1",
+    "backend": "obs",
+    "case": {
+      "name": "4k60-scroll",
+      "width": 3840,
+      "height": 2160,
+      "fps": 60,
+      "workload": "scroll"
+    },
+    "trialNumber": 1,
+    "durationMs": 10000,
+    "status": "passed",
+    "startedAt": "2026-10-09T03:14:43.613Z",
+    "startupMs": 1637.417883999995,
+    "browserVersion": "151.0.7922.34",
+    "obsBefore": {
+      "activeFps": 14.754098950819698,
+      "availableDiskSpace": 24748.984375,
+      "averageFrameRenderTime": 66.733203,
+      "cpuUsage": 26.513647642679906,
+      "memoryUsage": 779.5390625,
+      "outputSkippedFrames": 0,
+      "outputTotalFrames": 0,
+      "renderSkippedFrames": 290973,
+      "renderTotalFrames": 616363,
+      "webSocketSessionIncomingMessages": 250,
+      "webSocketSessionOutgoingMessages": 308
+    },
+    "recordStartMs": 4.855351000034716,
+    "workload": {
+      "wallMs": 10095.66211199999,
+      "scrollCommands": 70,
+      "snapshot": {
+        "markerCount": 255,
+        "scrollY": 2400,
+        "scrollEvents": 70,
+        "keyEvents": 0,
+        "clicks": 0,
+        "value": "",
+        "choice": "First",
+        "secondary": false
+      }
+    },
+    "obsAfter": {
+      "activeFps": 3.8709678967741996,
+      "availableDiskSpace": 24748.7734375,
+      "averageFrameRenderTime": 258.533523,
+      "cpuUsage": 60.67542213883678,
+      "memoryUsage": 1743.3203125,
+      "outputSkippedFrames": 31,
+      "outputTotalFrames": 263,
+      "renderSkippedFrames": 291565,
+      "renderTotalFrames": 616996,
+      "webSocketSessionIncomingMessages": 252,
+      "webSocketSessionOutgoingMessages": 312
+    },
+    "finalizationMs": 14174.632952000014,
+    "mediaPath": "/workspace/suitecut/.suitecut/obs-cef-optimization/comparison-final/2026-10-09 03-14-46.mkv",
+    "decoded": {
+      "width": 3840,
+      "height": 2160,
+      "codec": "h264",
+      "containerFps": 60,
+      "durationSeconds": 10.634,
+      "bytes": 533584,
+      "decodedFrames": 638,
+      "markerTransitions": 17,
+      "markerRegressions": 0,
+      "activeFrames": 601,
+      "distinctActiveFrames": 16,
+      "activeDurationSeconds": 10.017,
+      "measurementMethod": "decoded marker transitions / timestamped active media duration",
+      "distinctActiveFps": 1.5972846161525407,
+      "repeatFraction": 0.9733777038269551,
+      "longestActiveHoldMs": 1883.000000000001,
+      "audioStreams": [
+        {
+          "codec": "aac",
+          "sampleRate": "48000",
+          "channels": 2
+        }
+      ]
+    },
+    "resources": {
+      "sampleCount": 41,
+      "meanCpuPercent": 396.3528514092894,
+      "peakRssBytes": 3308199936,
+      "firstRssBytes": 2170953728,
+      "lastRssBytes": 2262728704
+    },
+    "completedAt": "2026-10-09T03:15:32.841Z"
+  },
+  {
+    "id": "4k60-scroll-native-1",
+    "backend": "native",
+    "case": {
+      "name": "4k60-scroll",
+      "width": 3840,
+      "height": 2160,
+      "fps": 60,
+      "workload": "scroll"
+    },
+    "trialNumber": 1,
+    "durationMs": 10000,
+    "status": "passed",
+    "startedAt": "2026-10-09T03:15:32.882Z",
+    "startupMs": 1609.9537459999556,
+    "browserVersion": "152.0.8+g1ce985c+chromium-152.0.7977.134",
+    "workload": {
+      "wallMs": 10228.634996000037,
+      "scrollCommands": 34,
+      "snapshot": {
+        "markerCount": 106,
+        "scrollY": 1920,
+        "scrollEvents": 34,
+        "keyEvents": 0,
+        "clicks": 0,
+        "value": "",
+        "choice": "First",
+        "secondary": false
+      }
+    },
+    "nativeCapture": {
+      "frames": 203,
+      "fps": 19.846245376766717,
+      "nativeDrops": 14
+    },
+    "finalizationMs": 6116.97276199999,
+    "mediaPath": "/workspace/suitecut/.suitecut/obs-cef-optimization/comparison-final/4k60-scroll-native-1/suitecut-source-bf4e531c-cbab-48ba-9bc8-3650594a70e3-52426633-a231-46da-9cfd-9856f9805493.webm",
+    "decoded": {
+      "width": 3840,
+      "height": 2160,
+      "codec": "vp9",
+      "containerFps": 60,
+      "durationSeconds": 10.945,
+      "bytes": 2736708,
+      "decodedFrames": 72,
+      "markerTransitions": 55,
+      "markerRegressions": 0,
+      "activeFrames": 65,
+      "distinctActiveFrames": 54,
+      "activeDurationSeconds": 10.103,
+      "measurementMethod": "decoded marker transitions / timestamped active media duration",
+      "distinctActiveFps": 5.34494704543205,
+      "repeatFraction": 0.16923076923076918,
+      "longestActiveHoldMs": 656.0000000000006,
+      "audioStreams": []
+    },
+    "resources": {
+      "sampleCount": 31,
+      "meanCpuPercent": 337.21081727155155,
+      "peakRssBytes": 3115323392,
+      "firstRssBytes": 1470328832,
+      "lastRssBytes": 1465507840
+    },
+    "completedAt": "2026-10-09T03:15:55.509Z"
+  },
+  {
+    "id": "4k60-scroll-native-2",
+    "backend": "native",
+    "case": {
+      "name": "4k60-scroll",
+      "width": 3840,
+      "height": 2160,
+      "fps": 60,
+      "workload": "scroll"
+    },
+    "trialNumber": 2,
+    "durationMs": 10000,
+    "status": "passed",
+    "startedAt": "2026-10-09T03:15:55.517Z",
+    "startupMs": 1636.740512999997,
+    "browserVersion": "152.0.8+g1ce985c+chromium-152.0.7977.134",
+    "workload": {
+      "wallMs": 10150.243378999992,
+      "scrollCommands": 49,
+      "snapshot": {
+        "markerCount": 189,
+        "scrollY": 120,
+        "scrollEvents": 49,
+        "keyEvents": 0,
+        "clicks": 0,
+        "value": "",
+        "choice": "First",
+        "secondary": false
+      }
+    },
+    "nativeCapture": {
+      "frames": 179,
+      "fps": 17.6350451231875,
+      "nativeDrops": 14
+    },
+    "finalizationMs": 10249.987504000019,
+    "mediaPath": "/workspace/suitecut/.suitecut/obs-cef-optimization/comparison-final/4k60-scroll-native-2/suitecut-source-9fe91901-e035-4744-87ce-0bfa2ef3e9ed-bf226f85-35c3-4bdc-b169-3b2d10541265.webm",
+    "decoded": {
+      "width": 3840,
+      "height": 2160,
+      "codec": "vp9",
+      "containerFps": 60,
+      "durationSeconds": 11.097,
+      "bytes": 2897809,
+      "decodedFrames": 74,
+      "markerTransitions": 54,
+      "markerRegressions": 0,
+      "activeFrames": 58,
+      "distinctActiveFrames": 53,
+      "activeDurationSeconds": 10.421999999999999,
+      "measurementMethod": "decoded marker transitions / timestamped active media duration",
+      "distinctActiveFps": 5.085396277106122,
+      "repeatFraction": 0.08620689655172409,
+      "longestActiveHoldMs": 711.0000000000003,
+      "audioStreams": []
+    },
+    "resources": {
+      "sampleCount": 34,
+      "meanCpuPercent": 322.6771639187163,
+      "peakRssBytes": 2874437632,
+      "firstRssBytes": 1315979264,
+      "lastRssBytes": 1491206144
+    },
+    "completedAt": "2026-10-09T03:16:22.853Z"
+  },
+  {
+    "id": "4k60-scroll-obs-2",
+    "backend": "obs",
+    "case": {
+      "name": "4k60-scroll",
+      "width": 3840,
+      "height": 2160,
+      "fps": 60,
+      "workload": "scroll"
+    },
+    "trialNumber": 2,
+    "durationMs": 10000,
+    "status": "passed",
+    "startedAt": "2026-10-09T03:16:22.855Z",
+    "startupMs": 1835.0849720000406,
+    "browserVersion": "151.0.7922.34",
+    "obsBefore": {
+      "activeFps": 16.721312144262324,
+      "availableDiskSpace": 24742.33984375,
+      "averageFrameRenderTime": 60.081072,
+      "cpuUsage": 29.916816546762586,
+      "memoryUsage": 751.85546875,
+      "outputSkippedFrames": 0,
+      "outputTotalFrames": 0,
+      "renderSkippedFrames": 293581,
+      "renderTotalFrames": 622328,
+      "webSocketSessionIncomingMessages": 325,
+      "webSocketSessionOutgoingMessages": 390
+    },
+    "recordStartMs": 22.927527000021655,
+    "workload": {
+      "wallMs": 10026.204610999965,
+      "scrollCommands": 81,
+      "snapshot": {
+        "markerCount": 304,
+        "scrollY": 2280,
+        "scrollEvents": 81,
+        "keyEvents": 0,
+        "clicks": 0,
+        "value": "",
+        "choice": "First",
+        "secondary": false
+      }
+    },
+    "obsAfter": {
+      "activeFps": 4.2857144571428645,
+      "availableDiskSpace": 24742.05078125,
+      "averageFrameRenderTime": 233.717823,
+      "cpuUsage": 62.37288135593221,
+      "memoryUsage": 1753.7421875,
+      "outputSkippedFrames": 84,
+      "outputTotalFrames": 295,
+      "renderSkippedFrames": 294164,
+      "renderTotalFrames": 622958,
+      "webSocketSessionIncomingMessages": 327,
+      "webSocketSessionOutgoingMessages": 394
+    },
+    "finalizationMs": 13993.61967699998,
+    "mediaPath": "/workspace/suitecut/.suitecut/obs-cef-optimization/comparison-final/2026-10-09 03-16-25.mkv",
+    "decoded": {
+      "width": 3840,
+      "height": 2160,
+      "codec": "h264",
+      "containerFps": 60,
+      "durationSeconds": 10.517,
+      "bytes": 547073,
+      "decodedFrames": 628,
+      "markerTransitions": 18,
+      "markerRegressions": 0,
+      "activeFrames": 597,
+      "distinctActiveFrames": 17,
+      "activeDurationSeconds": 10,
+      "measurementMethod": "decoded marker transitions / timestamped active media duration",
+      "distinctActiveFps": 1.7,
+      "repeatFraction": 0.9715242881072027,
+      "longestActiveHoldMs": 1383,
+      "audioStreams": [
+        {
+          "codec": "aac",
+          "sampleRate": "48000",
+          "channels": 2
+        }
+      ]
+    },
+    "resources": {
+      "sampleCount": 41,
+      "meanCpuPercent": 397.9598912450179,
+      "peakRssBytes": 3365224448,
+      "firstRssBytes": 2218774528,
+      "lastRssBytes": 2386608128
+    },
+    "completedAt": "2026-10-09T03:17:10.702Z"
+  },
+  {
+    "id": "4k60-scroll-obs-3",
+    "backend": "obs",
+    "case": {
+      "name": "4k60-scroll",
+      "width": 3840,
+      "height": 2160,
+      "fps": 60,
+      "workload": "scroll"
+    },
+    "trialNumber": 3,
+    "durationMs": 10000,
+    "status": "passed",
+    "startedAt": "2026-10-09T03:17:10.707Z",
+    "startupMs": 1694.7283419999876,
+    "browserVersion": "151.0.7922.34",
+    "obsBefore": {
+      "activeFps": 16.190476838095265,
+      "availableDiskSpace": 24741.5078125,
+      "averageFrameRenderTime": 60.937791,
+      "cpuUsage": 56.803677663601945,
+      "memoryUsage": 876.4921875,
+      "outputSkippedFrames": 0,
+      "outputTotalFrames": 0,
+      "renderSkippedFrames": 296020,
+      "renderTotalFrames": 625175,
+      "webSocketSessionIncomingMessages": 395,
+      "webSocketSessionOutgoingMessages": 465
+    },
+    "recordStartMs": 0.5888129999511875,
+    "workload": {
+      "wallMs": 10012.938267999969,
+      "scrollCommands": 84,
+      "snapshot": {
+        "markerCount": 325,
+        "scrollY": 1920,
+        "scrollEvents": 84,
+        "keyEvents": 0,
+        "clicks": 0,
+        "value": "",
+        "choice": "First",
+        "secondary": false
+      }
+    },
+    "obsAfter": {
+      "activeFps": 4.225352281690148,
+      "availableDiskSpace": 24741.26171875,
+      "averageFrameRenderTime": 237.54924,
+      "cpuUsage": 62.19489120151371,
+      "memoryUsage": 1869.7734375,
+      "outputSkippedFrames": 107,
+      "outputTotalFrames": 301,
+      "renderSkippedFrames": 296603,
+      "renderTotalFrames": 625806,
+      "webSocketSessionIncomingMessages": 397,
+      "webSocketSessionOutgoingMessages": 469
+    },
+    "finalizationMs": 16018.926603999978,
+    "mediaPath": "/workspace/suitecut/.suitecut/obs-cef-optimization/comparison-final/2026-10-09 03-17-13.mkv",
+    "decoded": {
+      "width": 3840,
+      "height": 2160,
+      "codec": "h264",
+      "containerFps": 60,
+      "durationSeconds": 10.55,
+      "bytes": 537371,
+      "decodedFrames": 633,
+      "markerTransitions": 18,
+      "markerRegressions": 0,
+      "activeFrames": 595,
+      "distinctActiveFrames": 17,
+      "activeDurationSeconds": 9.917000000000002,
+      "measurementMethod": "decoded marker transitions / timestamped active media duration",
+      "distinctActiveFps": 1.7142280931733385,
+      "repeatFraction": 0.9714285714285714,
+      "longestActiveHoldMs": 1666.9999999999998,
+      "audioStreams": [
+        {
+          "codec": "aac",
+          "sampleRate": "48000",
+          "channels": 2
+        }
+      ]
+    },
+    "resources": {
+      "sampleCount": 43,
+      "meanCpuPercent": 392.5988676216425,
+      "peakRssBytes": 3478892544,
+      "firstRssBytes": 2353541120,
+      "lastRssBytes": 2565808128
+    },
+    "completedAt": "2026-10-09T03:17:56.890Z"
+  },
+  {
+    "id": "4k60-scroll-native-3",
+    "backend": "native",
+    "case": {
+      "name": "4k60-scroll",
+      "width": 3840,
+      "height": 2160,
+      "fps": 60,
+      "workload": "scroll"
+    },
+    "trialNumber": 3,
+    "durationMs": 10000,
+    "status": "passed",
+    "startedAt": "2026-10-09T03:17:56.897Z",
+    "startupMs": 1499.9153860000079,
+    "browserVersion": "152.0.8+g1ce985c+chromium-152.0.7977.134",
+    "workload": {
+      "wallMs": 10043.69493399997,
+      "scrollCommands": 65,
+      "snapshot": {
+        "markerCount": 233,
+        "scrollY": 1800,
+        "scrollEvents": 65,
+        "keyEvents": 0,
+        "clicks": 0,
+        "value": "",
+        "choice": "First",
+        "secondary": false
+      }
+    },
+    "nativeCapture": {
+      "frames": 229,
+      "fps": 22.80037391665372,
+      "nativeDrops": 9
+    },
+    "finalizationMs": 6633.943005000008,
+    "mediaPath": "/workspace/suitecut/.suitecut/obs-cef-optimization/comparison-final/4k60-scroll-native-3/suitecut-source-e327557a-6c6c-4100-bf10-f6e62c544db7-62910634-4680-4858-b1a4-a74bbe3451fe.webm",
+    "decoded": {
+      "width": 3840,
+      "height": 2160,
+      "codec": "vp9",
+      "containerFps": 60,
+      "durationSeconds": 10.66,
+      "bytes": 3503172,
+      "decodedFrames": 77,
+      "markerTransitions": 72,
+      "markerRegressions": 0,
+      "activeFrames": 71,
+      "distinctActiveFrames": 71,
+      "activeDurationSeconds": 9.985,
+      "measurementMethod": "decoded marker transitions / timestamped active media duration",
+      "distinctActiveFps": 7.110665998998498,
+      "repeatFraction": 0,
+      "longestActiveHoldMs": 279.00000000000034,
+      "audioStreams": []
+    },
+    "resources": {
+      "sampleCount": 32,
+      "meanCpuPercent": 345.43653537767455,
+      "peakRssBytes": 2919903232,
+      "firstRssBytes": 1350238208,
+      "lastRssBytes": 1492029440
+    },
+    "completedAt": "2026-10-09T03:18:18.933Z"
+  }
+]

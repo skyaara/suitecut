@@ -1,0 +1,29 @@
+{
+  "name": "suitecut-native",
+  "version": "2.1.0",
+  "protocolVersion": 1,
+  "sourceLicense": "MIT",
+  "artifactType": "native-process",
+  "executable": "runtime/suitecut-browser",
+  "transport": "private-stdio",
+  "nativeMedia": true,
+  "capabilities": [
+    "cdp",
+    "frames",
+    "audio",
+    "recording",
+    "streaming",
+    "encoding",
+    "muxing",
+    "pause",
+    "target-selection",
+    "probe",
+    "cut",
+    "render"
+  ],
+  "verifiedPlatform": "linux-x86_64",
+  "repository": "https://github.com/skyaara/suitecut",
+  "cefPin": "native/browser/cef-build-linux-codecs.json",
+  "libyuvPin": "native/browser/libyuv-build.json",
+  "ffmpeg": "7.1.5 (Debian 13 runtime with GPL-enabled codecs)"
+}

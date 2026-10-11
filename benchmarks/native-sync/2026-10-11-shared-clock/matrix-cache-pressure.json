@@ -1,0 +1,30 @@
+{
+  "startedAt": "2026-10-10T20:59:25.662300+00:00",
+  "cases": [
+    {
+      "name": "720p60-record",
+      "width": 1280,
+      "height": 720,
+      "fps": 60,
+      "mode": "record",
+      "durationMs": 120000,
+      "startedAt": "2026-10-10T20:59:25.662384+00:00",
+      "finishedAt": "2026-10-10T21:02:36.571438+00:00",
+      "exitCode": 0
+    },
+    {
+      "name": "720p60-stream",
+      "width": 1280,
+      "height": 720,
+      "fps": 60,
+      "mode": "stream",
+      "durationMs": 120000,
+      "startedAt": "2026-10-10T21:02:36.573965+00:00",
+      "finishedAt": "2026-10-10T21:04:51.707200+00:00",
+      "exitCode": 0
+    }
+  ],
+  "serial": true,
+  "trace": false,
+  "simultaneousRecordingStreaming": false
+}

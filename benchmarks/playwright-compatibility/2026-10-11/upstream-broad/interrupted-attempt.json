@@ -1,0 +1,111 @@
+{
+  "scheduled": 4730,
+  "completedLoggedCases": [
+    {
+      "status": "failed",
+      "index": 1,
+      "location": "../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/beforeunload.spec.ts:20:3",
+      "title": "should close browser with beforeunload page",
+      "duration": "5ms"
+    },
+    {
+      "status": "passed",
+      "index": 2,
+      "location": "../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/beforeunload.spec.ts:30:3",
+      "title": "should close browsercontext with beforeunload page",
+      "duration": "251ms"
+    },
+    {
+      "status": "failed",
+      "index": 3,
+      "location": "../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/beforeunload.spec.ts:38:3",
+      "title": "should be able to navigate away from page with beforeunload",
+      "duration": "5ms"
+    },
+    {
+      "status": "failed",
+      "index": 4,
+      "location": "../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/beforeunload.spec.ts:46:3",
+      "title": "should close page with beforeunload listener",
+      "duration": "240ms"
+    },
+    {
+      "status": "failed",
+      "index": 5,
+      "location": "../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/beforeunload.spec.ts:55:3",
+      "title": "should run beforeunload if asked for @smoke",
+      "duration": "243ms"
+    },
+    {
+      "status": "passed",
+      "index": 6,
+      "location": "../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/beforeunload.spec.ts:79:3",
+      "title": "should access page after beforeunload",
+      "duration": "264ms"
+    },
+    {
+      "status": "failed",
+      "index": 7,
+      "location": "../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/beforeunload.spec.ts:92:3",
+      "title": "should not stall on evaluate when dismissing beforeunload",
+      "duration": "7ms"
+    },
+    {
+      "status": "failed",
+      "index": 8,
+      "location": "../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/beforeunload.spec.ts:107:3",
+      "title": "should not stall on click when dismissing beforeunload",
+      "duration": "237ms"
+    },
+    {
+      "status": "failed",
+      "index": 9,
+      "location": "../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/beforeunload.spec.ts:130:3",
+      "title": "should support dismissing the dialog multiple times",
+      "duration": "257ms"
+    },
+    {
+      "status": "failed",
+      "index": 10,
+      "location": "../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/beforeunload.spec.ts:152:3",
+      "title": "should support closing the page after a previous dismiss",
+      "duration": "240ms"
+    },
+    {
+      "status": "passed",
+      "index": 11,
+      "location": "../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/beforeunload.spec.ts:170:3",
+      "title": "should support closing the page via a subsequent onbeforeunload dialog",
+      "duration": "249ms"
+    },
+    {
+      "status": "failed",
+      "index": 12,
+      "location": "../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/beforeunload.spec.ts:188:3",
+      "title": "does not get stalled by beforeUnload",
+      "duration": "269ms"
+    },
+    {
+      "status": "failed",
+      "index": 13,
+      "location": "../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browser-server.spec.ts:28:3",
+      "title": "should start and stop pipe server",
+      "duration": "10ms"
+    },
+    {
+      "status": "passed",
+      "index": 14,
+      "location": "../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browser-server.spec.ts:43:3",
+      "title": "should write descriptor on start and remove on stop",
+      "duration": "14ms"
+    },
+    {
+      "status": "failed",
+      "index": 15,
+      "location": "../../tmp/suitecut-playwright-upstream/playwright-1.62.1/tests/library/browser-server.spec.ts:66:3",
+      "title": "should start ws server with host/port and produce well-formed endpoint",
+      "duration": "12ms"
+    }
+  ],
+  "reason": "Blocked in a launcher/server harness; SIGINT did not complete teardown. Terminated this test runner and retained its partial log. No full-suite score is assigned."
+}

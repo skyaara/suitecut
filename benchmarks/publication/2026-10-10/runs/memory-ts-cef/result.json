@@ -1,0 +1,459 @@
+{
+  "backend": "ts-cef",
+  "mode": "stream",
+  "durationRequestedMs": 600000,
+  "width": 1920,
+  "height": 1080,
+  "fps": 30,
+  "status": "completed; media validation pending",
+  "startedAt": "2026-10-10T15:05:47.897Z",
+  "profile": "memory",
+  "encoding": {
+    "video": "H264",
+    "preset": "veryfast",
+    "crf": null,
+    "bitrateKbps": 4500,
+    "encoderThreads": 1,
+    "audio": "AAC 48kHz stereo 128kbps"
+  },
+  "recordingPath": "/workspace/suitecut/benchmarks/publication/2026-10-10/runs/memory-ts-cef/recording.mkv",
+  "receiverPath": "/workspace/suitecut/benchmarks/publication/2026-10-10/runs/memory-ts-cef/receiver.flv",
+  "phases": [
+    {
+      "name": "static",
+      "atMs": 0.1333199999999124,
+      "monotonic": 154522.111173721
+    },
+    {
+      "name": "canvas",
+      "atMs": 10037.106403999998,
+      "monotonic": 154532.197376484
+    },
+    {
+      "name": "scroll",
+      "atMs": 20104.951448,
+      "monotonic": 154542.219554046
+    },
+    {
+      "name": "static",
+      "atMs": 30025.448201999996,
+      "monotonic": 154552.122354908
+    },
+    {
+      "name": "canvas",
+      "atMs": 40032.850681,
+      "monotonic": 154562.139490701
+    },
+    {
+      "name": "scroll",
+      "atMs": 50052.846347000006,
+      "monotonic": 154572.145851251
+    },
+    {
+      "name": "static",
+      "atMs": 60006.00816900001,
+      "monotonic": 154582.141615017
+    },
+    {
+      "name": "canvas",
+      "atMs": 70010.84869900001,
+      "monotonic": 154592.109427494
+    },
+    {
+      "name": "scroll",
+      "atMs": 80013.19055900001,
+      "monotonic": 154602.095241234
+    },
+    {
+      "name": "static",
+      "atMs": 90128.805699,
+      "monotonic": 154612.229616514
+    },
+    {
+      "name": "canvas",
+      "atMs": 100015.108966,
+      "monotonic": 154622.103719677
+    },
+    {
+      "name": "scroll",
+      "atMs": 110036.002486,
+      "monotonic": 154632.124234224
+    },
+    {
+      "name": "static",
+      "atMs": 120023.860883,
+      "monotonic": 154642.140628597
+    },
+    {
+      "name": "canvas",
+      "atMs": 130016.98283300002,
+      "monotonic": 154652.10497824
+    },
+    {
+      "name": "scroll",
+      "atMs": 140023.672085,
+      "monotonic": 154662.124592844
+    },
+    {
+      "name": "static",
+      "atMs": 150086.222349,
+      "monotonic": 154672.422943765
+    },
+    {
+      "name": "canvas",
+      "atMs": 160017.66491,
+      "monotonic": 154682.144694183
+    },
+    {
+      "name": "scroll",
+      "atMs": 170043.875083,
+      "monotonic": 154692.136994899
+    },
+    {
+      "name": "static",
+      "atMs": 180009.037107,
+      "monotonic": 154702.142676474
+    },
+    {
+      "name": "canvas",
+      "atMs": 190030.280969,
+      "monotonic": 154712.1160994
+    },
+    {
+      "name": "scroll",
+      "atMs": 200045.869662,
+      "monotonic": 154722.141142432
+    },
+    {
+      "name": "static",
+      "atMs": 210019.660554,
+      "monotonic": 154732.132286497
+    },
+    {
+      "name": "canvas",
+      "atMs": 220004.109249,
+      "monotonic": 154742.095772939
+    },
+    {
+      "name": "scroll",
+      "atMs": 230036.323868,
+      "monotonic": 154752.124294667
+    },
+    {
+      "name": "static",
+      "atMs": 240031.779247,
+      "monotonic": 154762.277325516
+    },
+    {
+      "name": "canvas",
+      "atMs": 250013.127201,
+      "monotonic": 154772.135309384
+    },
+    {
+      "name": "scroll",
+      "atMs": 260001.16436599998,
+      "monotonic": 154782.083228271
+    },
+    {
+      "name": "static",
+      "atMs": 272674.771108,
+      "monotonic": 154794.773607925
+    },
+    {
+      "name": "canvas",
+      "atMs": 282570.000106,
+      "monotonic": 154804.966472058
+    },
+    {
+      "name": "scroll",
+      "atMs": 290033.752477,
+      "monotonic": 154812.125712372
+    },
+    {
+      "name": "static",
+      "atMs": 300028.584743,
+      "monotonic": 154822.11527043
+    },
+    {
+      "name": "canvas",
+      "atMs": 310031.168366,
+      "monotonic": 154832.20733018
+    },
+    {
+      "name": "scroll",
+      "atMs": 320004.960292,
+      "monotonic": 154842.087960639
+    },
+    {
+      "name": "static",
+      "atMs": 330031.78558,
+      "monotonic": 154852.153577495
+    },
+    {
+      "name": "canvas",
+      "atMs": 340043.182265,
+      "monotonic": 154862.127988061
+    },
+    {
+      "name": "scroll",
+      "atMs": 350012.873833,
+      "monotonic": 154872.101724501
+    },
+    {
+      "name": "static",
+      "atMs": 360077.943489,
+      "monotonic": 154882.782000115
+    },
+    {
+      "name": "canvas",
+      "atMs": 370004.035129,
+      "monotonic": 154892.142943452
+    },
+    {
+      "name": "scroll",
+      "atMs": 380009.012624,
+      "monotonic": 154902.096597069
+    },
+    {
+      "name": "static",
+      "atMs": 390007.823729,
+      "monotonic": 154912.143204681
+    },
+    {
+      "name": "canvas",
+      "atMs": 400041.003135,
+      "monotonic": 154922.146462092
+    },
+    {
+      "name": "scroll",
+      "atMs": 410003.600801,
+      "monotonic": 154932.084288282
+    },
+    {
+      "name": "static",
+      "atMs": 420041.342085,
+      "monotonic": 154942.183897439
+    },
+    {
+      "name": "canvas",
+      "atMs": 430014.951616,
+      "monotonic": 154952.101963233
+    },
+    {
+      "name": "scroll",
+      "atMs": 440004.070606,
+      "monotonic": 154962.132266721
+    },
+    {
+      "name": "static",
+      "atMs": 450045.38117300003,
+      "monotonic": 154972.245907947
+    },
+    {
+      "name": "canvas",
+      "atMs": 460005.296074,
+      "monotonic": 154982.101483379
+    },
+    {
+      "name": "scroll",
+      "atMs": 470038.214034,
+      "monotonic": 154992.122304385
+    },
+    {
+      "name": "static",
+      "atMs": 480043.242393,
+      "monotonic": 155002.219771066
+    },
+    {
+      "name": "canvas",
+      "atMs": 490042.538359,
+      "monotonic": 155012.146045105
+    },
+    {
+      "name": "scroll",
+      "atMs": 500011.285897,
+      "monotonic": 155022.096650757
+    },
+    {
+      "name": "static",
+      "atMs": 510113.032414,
+      "monotonic": 155032.224575258
+    },
+    {
+      "name": "canvas",
+      "atMs": 520044.55866399995,
+      "monotonic": 155042.127424408
+    },
+    {
+      "name": "scroll",
+      "atMs": 530029.8515689999,
+      "monotonic": 155052.111969489
+    },
+    {
+      "name": "static",
+      "atMs": 540009.591349,
+      "monotonic": 155062.152595984
+    },
+    {
+      "name": "canvas",
+      "atMs": 550018.31945,
+      "monotonic": 155072.102143761
+    },
+    {
+      "name": "scroll",
+      "atMs": 560037.374002,
+      "monotonic": 155082.119537831
+    },
+    {
+      "name": "static",
+      "atMs": 570023.7725699999,
+      "monotonic": 155092.132253766
+    },
+    {
+      "name": "canvas",
+      "atMs": 580011.0500279999,
+      "monotonic": 155102.105033606
+    },
+    {
+      "name": "scroll",
+      "atMs": 590037.0867399999,
+      "monotonic": 155112.124674703
+    }
+  ],
+  "events": [
+    {
+      "name": "click, input and selection",
+      "atMs": 11445.376060999999
+    },
+    {
+      "name": "native browser failure",
+      "status": "completed; media validation pending",
+      "monotonic": 155123.098498514,
+      "error": "Error: Native browser: Native audio capture failed"
+    }
+  ],
+  "cefVersion": "152.0.6+g708dc14+chromium-152.0.7977.83",
+  "browserReadySeconds": 1.0661880760162603,
+  "sourceFrames": {
+    "count": 16108,
+    "firstTimestampMs": 2050.004545,
+    "lastTimestampMs": 608894.243881,
+    "nativeDroppedFrames": 584
+  },
+  "audioStarted": {
+    "generator": "frame-coded interpolated hash noise",
+    "sampleRate": 48000,
+    "quantum": 24,
+    "amplitude": 0.15,
+    "firstFrame": 0,
+    "currentFrame": 768
+  },
+  "beforeCapture": {
+    "marker": 96,
+    "rendered": 96,
+    "mode": "canvas",
+    "scrollY": 0,
+    "scrollEvents": 0,
+    "keyEvents": 0,
+    "clicks": 0,
+    "value": "",
+    "choice": "First",
+    "actionMask": 0,
+    "width": 1920,
+    "height": 1080,
+    "audio": {
+      "generator": "frame-coded interpolated hash noise",
+      "sampleRate": 48000,
+      "quantum": 24,
+      "amplitude": 0.15,
+      "firstFrame": 0,
+      "currentFrame": 111616
+    }
+  },
+  "outputReadySeconds": 1.4997393439989537,
+  "activeBaseline": {
+    "marker": 176,
+    "rendered": 153,
+    "mode": "canvas",
+    "scrollY": 0,
+    "scrollEvents": 0,
+    "keyEvents": 0,
+    "clicks": 0,
+    "value": "",
+    "choice": "First",
+    "actionMask": 0,
+    "width": 1920,
+    "height": 1080,
+    "audio": {
+      "generator": "frame-coded interpolated hash noise",
+      "sampleRate": 48000,
+      "quantum": 24,
+      "amplitude": 0.15,
+      "firstFrame": 0,
+      "currentFrame": 218240
+    }
+  },
+  "activeStartMonotonic": 154522.058304149,
+  "nodeBefore": {
+    "rss": 221511680,
+    "heapTotal": 126271488,
+    "heapUsed": 53781000,
+    "external": 41923142,
+    "arrayBuffers": 37925402
+  },
+  "observedActiveMs": 597337.850318,
+  "scrollCommands": 378,
+  "activeEndMonotonic": 155122.112818079,
+  "activeMs": 600033.6850099999,
+  "afterCapture": {
+    "marker": 18179,
+    "rendered": 16659,
+    "mode": "scroll",
+    "scrollY": 1080,
+    "scrollEvents": 313,
+    "keyEvents": 1,
+    "clicks": 1,
+    "value": "SuiteCut benchmark",
+    "choice": "Second",
+    "actionMask": 15,
+    "width": 1920,
+    "height": 1080,
+    "audio": {
+      "generator": "frame-coded interpolated hash noise",
+      "sampleRate": 48000,
+      "quantum": 24,
+      "amplitude": 0.15,
+      "firstFrame": 0,
+      "currentFrame": 27472640
+    }
+  },
+  "nodeAfter": {
+    "rss": 295792640,
+    "heapTotal": 65122304,
+    "heapUsed": 55120664,
+    "external": 76178215,
+    "arrayBuffers": 72180435
+  },
+  "finalHealth": {
+    "captureLagMs": 400.6433833332849,
+    "outputLagMs": 33.333333333333336,
+    "progressAgeMs": 33.512572000036016,
+    "networkBlockedMs": 0,
+    "networkQueuedBytes": 0
+  },
+  "finalizationSeconds": 0.9339468590042088,
+  "eventLoop": {
+    "meanMs": 22.673944561659653,
+    "p99Ms": 49.381375,
+    "maxMs": 3590.324223
+  },
+  "cleanupFailure": "Error: Native browser: Native audio capture failed",
+  "nodeAfterCleanup": {
+    "rss": 296300544,
+    "heapTotal": 64929792,
+    "heapUsed": 56281000,
+    "external": 20183942,
+    "arrayBuffers": 16182086
+  },
+  "completedAt": "2026-10-10T15:15:56.762Z"
+}

@@ -1,0 +1,7 @@
+{
+  "originalEvidencePrefix": "/workspace/suitecut/benchmarks/obs-cef/2026-10-09-optimization/soak",
+  "savedEvidencePrefix": "/workspace/suitecut/benchmarks/obs-cef/2026-10-09-optimization/soak-before-audio-window-fix",
+  "originalMediaPrefix": "/workspace/suitecut/.suitecut/obs-cef-optimization/soak",
+  "savedMediaPrefix": "/workspace/suitecut/.suitecut/obs-cef-optimization/soak-before-audio-window-fix",
+  "reason": "Preserve failed midpoint-audio run before a corrected-build repeat."
+}

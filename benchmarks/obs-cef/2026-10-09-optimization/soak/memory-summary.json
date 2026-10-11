@@ -1,0 +1,478 @@
+{
+  "nodeBuckets": [
+    {
+      "startMinute": 0,
+      "samples": 289,
+      "rss": {
+        "minMiB": 235.48828125,
+        "medianMiB": 285.109375,
+        "maxMiB": 291.65625
+      },
+      "heapUsed": {
+        "minMiB": 47.91981506347656,
+        "medianMiB": 48.91868591308594,
+        "maxMiB": 49.82623291015625
+      },
+      "external": {
+        "minMiB": 12.369318008422852,
+        "medianMiB": 81.74863910675049,
+        "maxMiB": 146.34979820251465
+      },
+      "arrayBuffers": {
+        "minMiB": 8.556737899780273,
+        "medianMiB": 77.2275972366333,
+        "maxMiB": 142.53721809387207
+      }
+    },
+    {
+      "startMinute": 5,
+      "samples": 294,
+      "rss": {
+        "minMiB": 269.3125,
+        "medianMiB": 287.59765625,
+        "maxMiB": 294.40234375
+      },
+      "heapUsed": {
+        "minMiB": 48.599327087402344,
+        "medianMiB": 49.098388671875,
+        "maxMiB": 50.31132507324219
+      },
+      "external": {
+        "minMiB": 23.8757381439209,
+        "medianMiB": 87.62985944747925,
+        "maxMiB": 156.52998542785645
+      },
+      "arrayBuffers": {
+        "minMiB": 20.06315803527832,
+        "medianMiB": 82.36370086669922,
+        "maxMiB": 152.71740531921387
+      }
+    },
+    {
+      "startMinute": 10,
+      "samples": 299,
+      "rss": {
+        "minMiB": 274.08984375,
+        "medianMiB": 291.140625,
+        "maxMiB": 298.1328125
+      },
+      "heapUsed": {
+        "minMiB": 48.75121307373047,
+        "medianMiB": 49.075164794921875,
+        "maxMiB": 49.64698028564453
+      },
+      "external": {
+        "minMiB": 13.328625679016113,
+        "medianMiB": 90.16682052612305,
+        "maxMiB": 151.54865837097168
+      },
+      "arrayBuffers": {
+        "minMiB": 9.516045570373535,
+        "medianMiB": 83.49483013153076,
+        "maxMiB": 147.31434535980225
+      }
+    },
+    {
+      "startMinute": 15,
+      "samples": 290,
+      "rss": {
+        "minMiB": 274.58203125,
+        "medianMiB": 292.33203125,
+        "maxMiB": 307.44921875
+      },
+      "heapUsed": {
+        "minMiB": 48.757041931152344,
+        "medianMiB": 49.153778076171875,
+        "maxMiB": 49.76477813720703
+      },
+      "external": {
+        "minMiB": 19.140913009643555,
+        "medianMiB": 83.62703609466553,
+        "maxMiB": 144.29908275604248
+      },
+      "arrayBuffers": {
+        "minMiB": 15.328332901000977,
+        "medianMiB": 77.83439636230469,
+        "maxMiB": 140.4865026473999
+      }
+    },
+    {
+      "startMinute": 20,
+      "samples": 299,
+      "rss": {
+        "minMiB": 276.8203125,
+        "medianMiB": 294.5625,
+        "maxMiB": 298.296875
+      },
+      "heapUsed": {
+        "minMiB": 48.84080505371094,
+        "medianMiB": 49.196197509765625,
+        "maxMiB": 49.83666229248047
+      },
+      "external": {
+        "minMiB": 27.164474487304688,
+        "medianMiB": 89.7234992980957,
+        "maxMiB": 152.823317527771
+      },
+      "arrayBuffers": {
+        "minMiB": 23.35189437866211,
+        "medianMiB": 84.8214521408081,
+        "maxMiB": 149.01073741912842
+      }
+    },
+    {
+      "startMinute": 25,
+      "samples": 299,
+      "rss": {
+        "minMiB": 277.80078125,
+        "medianMiB": 295.453125,
+        "maxMiB": 307.6640625
+      },
+      "heapUsed": {
+        "minMiB": 48.83678436279297,
+        "medianMiB": 49.23078155517578,
+        "maxMiB": 50.4052734375
+      },
+      "external": {
+        "minMiB": 25.808696746826172,
+        "medianMiB": 84.44809246063232,
+        "maxMiB": 146.4886646270752
+      },
+      "arrayBuffers": {
+        "minMiB": 21.996116638183594,
+        "medianMiB": 80.46105003356934,
+        "maxMiB": 142.43523979187012
+      }
+    },
+    {
+      "startMinute": 30,
+      "samples": 39,
+      "rss": {
+        "minMiB": 292.765625,
+        "medianMiB": 292.890625,
+        "maxMiB": 292.890625
+      },
+      "heapUsed": {
+        "minMiB": 48.397438049316406,
+        "medianMiB": 48.70561981201172,
+        "maxMiB": 49.09822082519531
+      },
+      "external": {
+        "minMiB": 17.32564640045166,
+        "medianMiB": 62.39761447906494,
+        "maxMiB": 93.12615489959717
+      },
+      "arrayBuffers": {
+        "minMiB": 12.135059356689453,
+        "medianMiB": 53.6245059967041,
+        "maxMiB": 89.31357479095459
+      }
+    }
+  ],
+  "nodeSamples": 1809,
+  "processSamples": 3601,
+  "rolesRssBuckets": {
+    "node": [
+      {
+        "startMinute": 0,
+        "medianMiB": 285.78515625
+      },
+      {
+        "startMinute": 5,
+        "medianMiB": 288.1484375
+      },
+      {
+        "startMinute": 10,
+        "medianMiB": 291.8515625
+      },
+      {
+        "startMinute": 15,
+        "medianMiB": 292.921875
+      },
+      {
+        "startMinute": 20,
+        "medianMiB": 295.078125
+      },
+      {
+        "startMinute": 25,
+        "medianMiB": 296.09375
+      },
+      {
+        "startMinute": 30,
+        "medianMiB": 293.2265625
+      }
+    ],
+    "receiver": [
+      {
+        "startMinute": 0,
+        "medianMiB": 37.65625
+      },
+      {
+        "startMinute": 5,
+        "medianMiB": 37.65625
+      },
+      {
+        "startMinute": 10,
+        "medianMiB": 37.66015625
+      },
+      {
+        "startMinute": 15,
+        "medianMiB": 37.6796875
+      },
+      {
+        "startMinute": 20,
+        "medianMiB": 37.68359375
+      },
+      {
+        "startMinute": 25,
+        "medianMiB": 37.68359375
+      },
+      {
+        "startMinute": 30,
+        "medianMiB": 37.68359375
+      }
+    ],
+    "sampler": [
+      {
+        "startMinute": 0,
+        "medianMiB": 11.11328125
+      },
+      {
+        "startMinute": 5,
+        "medianMiB": 11.1328125
+      },
+      {
+        "startMinute": 10,
+        "medianMiB": 11.1328125
+      },
+      {
+        "startMinute": 15,
+        "medianMiB": 11.13671875
+      },
+      {
+        "startMinute": 20,
+        "medianMiB": 11.13671875
+      },
+      {
+        "startMinute": 25,
+        "medianMiB": 11.13671875
+      },
+      {
+        "startMinute": 30,
+        "medianMiB": 11.13671875
+      }
+    ],
+    "cef-browser": [
+      {
+        "startMinute": 0,
+        "medianMiB": 589.67578125
+      },
+      {
+        "startMinute": 5,
+        "medianMiB": 592.5234375
+      },
+      {
+        "startMinute": 10,
+        "medianMiB": 592.74609375
+      },
+      {
+        "startMinute": 15,
+        "medianMiB": 595.75
+      },
+      {
+        "startMinute": 20,
+        "medianMiB": 595.828125
+      },
+      {
+        "startMinute": 25,
+        "medianMiB": 595.8359375
+      },
+      {
+        "startMinute": 30,
+        "medianMiB": 595.83984375
+      }
+    ],
+    "cef-renderer": [
+      {
+        "startMinute": 0,
+        "medianMiB": 251.837890625
+      },
+      {
+        "startMinute": 5,
+        "medianMiB": 258.6640625
+      },
+      {
+        "startMinute": 10,
+        "medianMiB": 256.65234375
+      },
+      {
+        "startMinute": 15,
+        "medianMiB": 259.498046875
+      },
+      {
+        "startMinute": 20,
+        "medianMiB": 259.59765625
+      },
+      {
+        "startMinute": 25,
+        "medianMiB": 257.833984375
+      },
+      {
+        "startMinute": 30,
+        "medianMiB": 262.546875
+      }
+    ],
+    "cef-gpu": [
+      {
+        "startMinute": 0,
+        "medianMiB": 183.8046875
+      },
+      {
+        "startMinute": 5,
+        "medianMiB": 183.36328125
+      },
+      {
+        "startMinute": 10,
+        "medianMiB": 190.984375
+      },
+      {
+        "startMinute": 15,
+        "medianMiB": 191.82421875
+      },
+      {
+        "startMinute": 20,
+        "medianMiB": 191.859375
+      },
+      {
+        "startMinute": 25,
+        "medianMiB": 191.859375
+      },
+      {
+        "startMinute": 30,
+        "medianMiB": 194.734375
+      }
+    ],
+    "encoder": [
+      {
+        "startMinute": 0,
+        "medianMiB": 612.48828125
+      },
+      {
+        "startMinute": 5,
+        "medianMiB": 621.734375
+      },
+      {
+        "startMinute": 10,
+        "medianMiB": 620.28515625
+      },
+      {
+        "startMinute": 15,
+        "medianMiB": 619.34375
+      },
+      {
+        "startMinute": 20,
+        "medianMiB": 622.36328125
+      },
+      {
+        "startMinute": 25,
+        "medianMiB": 622.703125
+      },
+      {
+        "startMinute": 30,
+        "medianMiB": 482.779296875
+      }
+    ],
+    "publisher": [
+      {
+        "startMinute": 0,
+        "medianMiB": 36.33984375
+      },
+      {
+        "startMinute": 5,
+        "medianMiB": 36.4140625
+      },
+      {
+        "startMinute": 10,
+        "medianMiB": 36.4140625
+      },
+      {
+        "startMinute": 15,
+        "medianMiB": 36.4140625
+      },
+      {
+        "startMinute": 20,
+        "medianMiB": 36.4140625
+      },
+      {
+        "startMinute": 25,
+        "medianMiB": 36.4140625
+      },
+      {
+        "startMinute": 30,
+        "medianMiB": 36.4140625
+      }
+    ],
+    "audio-encoder": [
+      {
+        "startMinute": 0,
+        "medianMiB": 32.80859375
+      },
+      {
+        "startMinute": 5,
+        "medianMiB": 32.90625
+      },
+      {
+        "startMinute": 10,
+        "medianMiB": 32.984375
+      },
+      {
+        "startMinute": 15,
+        "medianMiB": 33.32421875
+      },
+      {
+        "startMinute": 20,
+        "medianMiB": 33.45703125
+      },
+      {
+        "startMinute": 25,
+        "medianMiB": 33.5390625
+      },
+      {
+        "startMinute": 30,
+        "medianMiB": 34.953125
+      }
+    ],
+    "ffprobe": [
+      {
+        "startMinute": 0,
+        "medianMiB": null
+      },
+      {
+        "startMinute": 5,
+        "medianMiB": null
+      },
+      {
+        "startMinute": 10,
+        "medianMiB": null
+      },
+      {
+        "startMinute": 15,
+        "medianMiB": null
+      },
+      {
+        "startMinute": 20,
+        "medianMiB": null
+      },
+      {
+        "startMinute": 25,
+        "medianMiB": null
+      },
+      {
+        "startMinute": 30,
+        "medianMiB": 34.931640625
+      }
+    ]
+  },
+  "rolesUssBuckets": {},
+  "rolesPssBuckets": {}
+}

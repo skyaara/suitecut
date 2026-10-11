@@ -1,0 +1,4 @@
+[WARN] Your node_modules are out of sync with your lockfile. The workspace structure has changed since last install
+Error: Cannot find module '/workspace/suitecut/benchmarks/playwright-compatibility/2026-10-11/src/engine.js' imported from /workspace/suitecut/benchmarks/playwright-compatibility/2026-10-11/baseline/source/compatibility.spec.ts
+    at eval (<anonymous>:1:1)
+

@@ -1,0 +1,42 @@
+[
+  {
+    "pixelFormat": "bgra",
+    "pts": [
+      0,
+      0.017,
+      0.4,
+      1
+    ],
+    "topRgb": [
+      239,
+      0,
+      0
+    ],
+    "bottomRgb": [
+      0,
+      0,
+      238
+    ],
+    "status": "passed"
+  },
+  {
+    "pixelFormat": "i420",
+    "pts": [
+      0,
+      0.017,
+      0.4,
+      1
+    ],
+    "topRgb": [
+      18,
+      18,
+      18
+    ],
+    "bottomRgb": [
+      214,
+      214,
+      214
+    ],
+    "status": "passed"
+  }
+]

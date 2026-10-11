@@ -1,0 +1,133 @@
+{
+  "savedAtUTC": "2026-10-09T21:12:56.157359+00:00",
+  "displayTimezone": "Asia/Kolkata",
+  "gitHead": "2d4158c95217b2b4099898a2508a40f3fa4f121a",
+  "workingTreeUncommitted": true,
+  "defaultCEFSDK": "152.0.8+g1ce985c+chromium-152.0.7977.134",
+  "cpuMax": "400000 100000",
+  "memoryMax": "17179869184",
+  "gpuDevices": [],
+  "sourceFiles": 160,
+  "bufferMs": 150,
+  "startupThresholdS16": 32,
+  "defaultAudioStartup": "immediate",
+  "comparisonCaptures": 21,
+  "finalColdCaptures": 6,
+  "verification": {
+    "ctestTargets": 5,
+    "unitTests": 307,
+    "finalPlaywrightCasesPerVersion": 8,
+    "finalVersions": 3,
+    "startupASAN_UBSAN_LeakDetection": "passed (SuiteCut core/test only)",
+    "typecheck": "passed",
+    "changedFileLint": "passed"
+  },
+  "gapFree": false,
+  "finalBinaries": {
+    "current": "0b6237e7c231ad279114c1889fdae9f5842110eab269ba98d5cf53c14dafbb1b",
+    "patch": "c1aabdaa65455b2a74a45601053617e8e385cfafe9d7663259e5a3b330ac64f0",
+    "stable": "bc929f8e38bef6ec392b55c46adfbda1d95bc9fce608c316997446b1555d0f4e"
+  },
+  "runtimeFiles": {
+    "current": {
+      "libcef.so": {
+        "bytes": 1428168760,
+        "sha256": "403f6fa4c77007ee2df21fd9c8a0d1bd9d27ad7a7439947499282119ef98b3cb"
+      },
+      "libEGL.so": {
+        "bytes": 695544,
+        "sha256": "ac96dc098560fde4660c0768ea60f87d5690fe5c179cdda55d127cb744f6d073"
+      },
+      "libGLESv2.so": {
+        "bytes": 695608,
+        "sha256": "b875e7205ce16b7e961873ef4cb7eb396b96a57b4949a5a024e5d956e4007155"
+      },
+      "icudtl.dat": {
+        "bytes": 10876560,
+        "sha256": "9f48c7f9c7c94d516a14870707e910ab94d75ae640ff6842c4af53276cd26ebe"
+      },
+      "v8_context_snapshot.bin": {
+        "bytes": 742200,
+        "sha256": "306c3ed05c4e124eb5caa7cf2675ced600712bd454361c5b93b8841749a62c09"
+      },
+      "resources.pak": {
+        "bytes": 21753164,
+        "sha256": "6dec75bfd9da3f660091002d5e1244fd13036176f7c3c5d6bd85cc8ae55339b6"
+      },
+      "chrome_100_percent.pak": {
+        "bytes": 731514,
+        "sha256": "0bd3af031c6aaae851aae67be5619309a58f74d8424423252cb928fcbc69ce2d"
+      },
+      "chrome_200_percent.pak": {
+        "bytes": 1284243,
+        "sha256": "a98931c6abe06aa915b5e59bfafb056c18d1688b4f5cf30f6459afe10850f672"
+      }
+    },
+    "patch": {
+      "libcef.so": {
+        "bytes": 1428289632,
+        "sha256": "fa123eea7166348cc5438bd40e28e6ee076deac4eaae2bea32e74beb4fd20e10"
+      },
+      "icudtl.dat": {
+        "bytes": 10876560,
+        "sha256": "9f48c7f9c7c94d516a14870707e910ab94d75ae640ff6842c4af53276cd26ebe"
+      },
+      "v8_context_snapshot.bin": {
+        "bytes": 742200,
+        "sha256": "6e1a626c89ac03237caa20a7de9fe0271ff7109d1e7293ef36d6dc23394e76ca"
+      },
+      "resources.pak": {
+        "bytes": 21752972,
+        "sha256": "e140dbb9c9904d08142c0e4bc10df50ece6a8061f53ead457f428d468c7dea56"
+      },
+      "chrome_100_percent.pak": {
+        "bytes": 731518,
+        "sha256": "af5d65bcb96515f7d75daf3d070e0fc0affe3efd7664bd7e63de11bdf444a5e8"
+      },
+      "chrome_200_percent.pak": {
+        "bytes": 1284247,
+        "sha256": "cf26b69d15ac535b649109b23b0e08a7fe9e817ca3c283c62290e3f1bd1c74e8"
+      }
+    },
+    "stable": {
+      "libcef.so": {
+        "bytes": 1455021248,
+        "sha256": "8952fb40b6bd1d8f145a27c9f4103dac92438309768d928235c4a8913eb1dba3"
+      },
+      "icudtl.dat": {
+        "bytes": 10819840,
+        "sha256": "495c45cc7a65562ec461f860c310c6b66e006acd96833f61d1aa31f77fe18cf1"
+      },
+      "v8_context_snapshot.bin": {
+        "bytes": 757576,
+        "sha256": "2d6d6fbb813b65470a2f12b7ca0b4f98e4c5f5be851067cefc22dca076886f1f"
+      },
+      "resources.pak": {
+        "bytes": 23500543,
+        "sha256": "64d850a64fc281c48e3338d71f4d6d05caab538369dd6337b8420c3a370dafa5"
+      },
+      "chrome_100_percent.pak": {
+        "bytes": 582158,
+        "sha256": "15a9858a308e90f456ab9e8b3c1bac9ffd2fb764e76fb121909599cea96940f2"
+      },
+      "chrome_200_percent.pak": {
+        "bytes": 944863,
+        "sha256": "4bb4289b0b9915aaa4eba82f68d2d379b3838a19d1b5c2958a02f73c2b682c77"
+      }
+    }
+  },
+  "independentlyDecodedCaptures": 27,
+  "finalSignalCaptureNativeFirstSample": 0,
+  "finalAACDecodedFirstSignalMs": 6.3125,
+  "originalEvidenceChecksums": "passed",
+  "executableSnapshots": {
+    "tested-binaries/startup-asan-final": "c27c6c845fab70e8311afa4a6037612b47fee90db87260c9839b5f3dad3a9781",
+    "tested-binaries/capture-patch": "04f49433c456a3af7e51bfc61de252b8ce7a43616f95f2780b69bed8857cb1c4",
+    "tested-binaries/final-patch": "c1aabdaa65455b2a74a45601053617e8e385cfafe9d7663259e5a3b330ac64f0",
+    "tested-binaries/final-current": "0b6237e7c231ad279114c1889fdae9f5842110eab269ba98d5cf53c14dafbb1b",
+    "tested-binaries/startup-asan": "ad9068386d9703d78a6f060ea93623a99343c670639632f4c1d33f63169f531a",
+    "tested-binaries/final-stable": "bc929f8e38bef6ec392b55c46adfbda1d95bc9fce608c316997446b1555d0f4e",
+    "tested-binaries/capture-stable": "a22cb2a14441d5b94d73c26a7e143e37d7677060c09ebe4d0a399e6740c19979",
+    "tested-binaries/capture-current": "ac9374a6ccf8c0bf9544c58e79ce06809ba5fbb2b042c5e5ab721b33f06c75ab"
+  }
+}

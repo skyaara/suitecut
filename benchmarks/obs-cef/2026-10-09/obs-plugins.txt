@@ -1,0 +1,24 @@
+total 4568
+drwxr-xr-x  3 agent agent    4096 Apr 25  2025 .
+drwxr-xr-x 10 agent agent   12288 Oct  8 20:17 ..
+-rw-r--r--  1 agent agent   35960 Apr 25  2025 decklink-captions.so
+-rw-r--r--  1 agent agent  249608 Apr 25  2025 decklink-output-ui.so
+-rw-r--r--  1 agent agent   80856 Apr 25  2025 decklink.so
+-rw-r--r--  1 agent agent  510824 Apr 25  2025 frontend-tools.so
+-rw-r--r--  1 agent agent   67128 Apr 25  2025 image-source.so
+-rw-r--r--  1 agent agent   23544 Apr 25  2025 linux-alsa.so
+-rw-r--r--  1 agent agent  180064 Apr 25  2025 linux-capture.so
+-rw-r--r--  1 agent agent   15128 Apr 25  2025 linux-jack.so
+-rw-r--r--  1 agent agent  269800 Apr 25  2025 linux-pipewire.so
+-rw-r--r--  1 agent agent   23960 Apr 25  2025 linux-pulseaudio.so
+-rw-r--r--  1 agent agent   52952 Apr 25  2025 linux-v4l2.so
+drwxr-xr-x  2 agent agent    4096 Apr 25  2025 obs-ffmpeg
+-rw-r--r--  1 agent agent  386472 Oct  8 20:21 obs-ffmpeg.so
+-rw-r--r--  1 agent agent  261344 Apr 25  2025 obs-filters.so
+-rw-r--r--  1 agent agent  353352 Apr 25  2025 obs-outputs.so
+-rw-r--r--  1 agent agent   47040 Apr 25  2025 obs-transitions.so
+-rw-r--r--  1 agent agent 1906224 Apr 25  2025 obs-websocket.so
+-rw-r--r--  1 agent agent   31544 Apr 25  2025 obs-x264.so
+-rw-r--r--  1 agent agent   60824 Apr 25  2025 rtmp-services.so
+-rw-r--r--  1 agent agent   40856 Apr 25  2025 text-freetype2.so
+-rw-r--r--  1 agent agent   35992 Apr 25  2025 vlc-video.so

@@ -1,0 +1,17 @@
+{
+  "attemptId": "8214eeee-3535-433c-b529-49764de7d2e4",
+  "testId": "b585a723-aaae-4f58-a25e-0153fdddae78",
+  "startedAt": "2026-10-09T17:13:53.350Z",
+  "endedAt": "2026-10-09T17:13:53.902Z",
+  "status": "failed",
+  "executionDurationMs": 6317.128101999998,
+  "presentationDurationMs": 0,
+  "edits": [],
+  "diagnostics": [
+    {
+      "level": "error",
+      "code": "RENDER_FAILED",
+      "message": "Mux rendered packet: Invalid argument"
+    }
+  ]
+}

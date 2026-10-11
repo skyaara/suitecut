@@ -1,0 +1,14 @@
+START 720p60-record
+FINISH 720p60-record 0
+START 720p60-stream
+FINISH 720p60-stream 0
+START 1080p30-record
+FINISH 1080p30-record 0
+START 1080p30-stream
+FINISH 1080p30-stream 0
+START 4k30-record
+FINISH 4k30-record 1
+START 4k30-stream
+FINISH 4k30-stream 1
+START controller-stall-1080p30
+FINISH controller-stall-1080p30 0

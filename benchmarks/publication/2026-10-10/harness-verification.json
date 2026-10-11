@@ -1,0 +1,15 @@
+{
+  "pythonSyntaxChecks": "passed",
+  "analyzerNumericTests": {
+    "passed": 8,
+    "total": 8
+  },
+  "nodeSyntaxChecks": "passed",
+  "format": "Prettier check on formatted repository harness; executed snapshots preserved separately",
+  "eslint": "Repository config intentionally ignores benchmarks; targeted invocation reported ignored-file warning, not a code lint result",
+  "sdkCodeChangedForThisBenchmark": false,
+  "activeAudioOracleSavedDatasets": {
+    "passed": 29,
+    "total": 29
+  }
+}

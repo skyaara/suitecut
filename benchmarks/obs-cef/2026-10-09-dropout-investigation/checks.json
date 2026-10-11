@@ -1,0 +1,29 @@
+{
+  "nativeBuild": "passed",
+  "nativeCTest": {
+    "tests": 2,
+    "passed": 2
+  },
+  "focusedVitest": {
+    "files": [
+      "tests/native-protocol.test.ts",
+      "tests/native-browser.test.ts",
+      "tests/native-recorder.test.ts",
+      "tests/live-audio.test.ts"
+    ],
+    "tests": 37,
+    "passed": 37
+  },
+  "mediaBehaviorChanged": false,
+  "runtimeCleanup": {
+    "controlled-node-stall": {
+      "driverStopped": true,
+      "ownedProcessesStillRunning": []
+    },
+    "clean-30-minute": {
+      "driverStopped": true,
+      "ownedProcessesStillRunning": []
+    }
+  },
+  "syntaxAndDiffChecks": "passed"
+}

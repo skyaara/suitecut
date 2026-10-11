@@ -1,0 +1,11 @@
+[ 14%] Built target yuv_common_objects
+[ 15%] Built target yuv
+[ 98%] Built target libcef_dll_wrapper
+[ 98%] Building CXX object CMakeFiles/suitecut-browser.dir/browser.cc.o
+[100%] Linking CXX executable suitecut-browser
+/usr/bin/ld: cannot find -lX11: No such file or directory
+collect2: error: ld returned 1 exit status
+gmake[3]: *** [CMakeFiles/suitecut-browser.dir/build.make:120: suitecut-browser] Error 1
+gmake[2]: *** [CMakeFiles/Makefile2:215: CMakeFiles/suitecut-browser.dir/all] Error 2
+gmake[1]: *** [CMakeFiles/Makefile2:222: CMakeFiles/suitecut-browser.dir/rule] Error 2
+gmake: *** [Makefile:225: suitecut-browser] Error 2

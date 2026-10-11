@@ -1,0 +1,36 @@
+CONNECTED 1
+CONTEXT
+PAGE
+NAVIGATED
+TEXT clicked native cef
+RECORDING
+STATUS {
+  ready: true,
+  stopped: false,
+  paused: false,
+  videoFrames: 118,
+  audioSamples: 187392,
+  repeatedFrames: 0,
+  droppedAudioSamples: 0,
+  queuedVideoBytes: 2073600,
+  queuedAudioBytes: 34560,
+  startedMs: 814.905125,
+  durationMs: 3933.3333333333335,
+  maximumEncodeMs: 4.02201500000001,
+  error: ''
+}
+STOP {
+  ready: true,
+  stopped: true,
+  paused: false,
+  videoFrames: 122,
+  audioSamples: 195584,
+  repeatedFrames: 0,
+  droppedAudioSamples: 0,
+  queuedVideoBytes: 0,
+  queuedAudioBytes: 0,
+  startedMs: 814.905125,
+  durationMs: 4066.6666666666665,
+  maximumEncodeMs: 4.02201500000001,
+  error: ''
+}

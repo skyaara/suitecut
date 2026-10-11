@@ -1,0 +1,128 @@
+[
+  {
+    "name": "configure-tsan",
+    "args": [
+      "cmake",
+      "-S",
+      "native/browser",
+      "-B",
+      "/tmp/suitecut-release-tsan",
+      "-DCEF_ROOT=/workspace/suitecut/.suitecut/cef-codecs-sdk",
+      "-DLIBYUV_ROOT=/workspace/suitecut/.suitecut/libyuv",
+      "-DSUITECUT_CEF_PIN_FILE=cef-build-linux-codecs.json",
+      "-DSUITECUT_FFMPEG_ROOT=/workspace/suitecut/.suitecut/memory-tools/ffmpeg-tsan",
+      "-DCMAKE_BUILD_TYPE=RelWithDebInfo",
+      "-DSUITECUT_SANITIZERS=thread",
+      "-DCMAKE_C_COMPILER=/workspace/suitecut/.suitecut/memory-tools/root/usr/bin/clang-19",
+      "-DCMAKE_CXX_COMPILER=/workspace/suitecut/.suitecut/memory-tools/root/usr/bin/clang++-19"
+    ],
+    "exitCode": 0,
+    "wallSeconds": 3.1369623100035824
+  },
+  {
+    "name": "build-tsan",
+    "args": [
+      "cmake",
+      "--build",
+      "/tmp/suitecut-release-tsan",
+      "--parallel",
+      "2",
+      "--target",
+      "suitecut-media-test",
+      "suitecut-audio-startup-test",
+      "suitecut-codec-test",
+      "suitecut-audio-clock-test",
+      "suitecut-pixel-test",
+      "suitecut-memory-test",
+      "suitecut-sync-test",
+      "suitecut-scaler-failure-test"
+    ],
+    "exitCode": 0,
+    "wallSeconds": 28.653855582000688
+  },
+  {
+    "name": "ctest-tsan",
+    "args": [
+      "ctest",
+      "--test-dir",
+      "/tmp/suitecut-release-tsan",
+      "--output-on-failure",
+      "-j",
+      "1"
+    ],
+    "exitCode": 0,
+    "wallSeconds": 15.836723947984865
+  },
+  {
+    "name": "frozen-lock",
+    "args": [
+      "pnpm",
+      "install",
+      "--lockfile-only",
+      "--ignore-scripts",
+      "--offline",
+      "--frozen-lockfile"
+    ],
+    "exitCode": 0,
+    "wallSeconds": 8.217073455016362
+  },
+  {
+    "name": "prepublish",
+    "args": [
+      "pnpm",
+      "prepublishOnly"
+    ],
+    "exitCode": 0,
+    "wallSeconds": 155.27827618501033,
+    "log": "logs/prepublish-attempt2.log",
+    "pnpmEnvironment": "verify_deps_before_run=warn; frozen lockfile separately passed; existing workspace symlinks retained"
+  },
+  {
+    "name": "pack-release",
+    "args": [
+      "pnpm",
+      "pack:release"
+    ],
+    "exitCode": 0,
+    "wallSeconds": 37.20309941499727,
+    "log": "logs/pack-release-attempt1.log",
+    "pnpmEnvironment": "verify_deps_before_run=warn; frozen lockfile separately passed; existing workspace symlinks retained"
+  },
+  {
+    "name": "installed-native",
+    "args": [
+      "python3",
+      "benchmarks/native-memory/runtime.py",
+      "scripts/verify-beta-package.mjs",
+      "--release"
+    ],
+    "exitCode": 0,
+    "wallSeconds": 11.474060965992976,
+    "log": "logs/installed-native-attempt1.log",
+    "pnpmEnvironment": "verify_deps_before_run=warn; frozen lockfile separately passed; existing workspace symlinks retained"
+  },
+  {
+    "name": "engine-e2e",
+    "args": [
+      "python3",
+      "benchmarks/native-memory/runtime.py",
+      "playwright"
+    ],
+    "exitCode": 0,
+    "wallSeconds": 26.636643120989902,
+    "log": "logs/engine-e2e-attempt1.log",
+    "pnpmEnvironment": "verify_deps_before_run=warn; frozen lockfile separately passed; existing workspace symlinks retained"
+  },
+  {
+    "name": "external-browser",
+    "args": [
+      "python3",
+      "benchmarks/native-memory/runtime.py",
+      "benchmarks/external-browser/connect.mjs"
+    ],
+    "exitCode": 0,
+    "wallSeconds": 9.62745933799306,
+    "log": "logs/external-browser-attempt1.log",
+    "pnpmEnvironment": "verify_deps_before_run=warn; frozen lockfile separately passed; existing workspace symlinks retained"
+  }
+]

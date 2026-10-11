@@ -1,0 +1,62 @@
+--- historical/native/browser/browser.cc
++++ tested/native/browser/browser.cc
+@@ -186,7 +186,7 @@
+     CefQuitMessageLoop();
+   }
+   bool OnBeforePopup(CefRefPtr<CefBrowser>, CefRefPtr<CefFrame>, int, const CefString&,
+-                     const CefString&, WindowOpenDisposition, bool, const CefPopupFeatures&,
++                     const CefString&, CefLifeSpanHandler::WindowOpenDisposition, bool, const CefPopupFeatures&,
+                      CefWindowInfo&, CefRefPtr<CefClient>&, CefBrowserSettings&,
+                      CefRefPtr<CefDictionaryValue>&, bool*) override { return true; }
+   void OnPaint(CefRefPtr<CefBrowser>, PaintElementType type, const RectList&,
+@@ -384,6 +384,8 @@
+   explicit App(Writer& writer) : writer_(writer) {}
+   CefRefPtr<CefBrowserProcessHandler> GetBrowserProcessHandler() override { return this; }
+   void OnBeforeCommandLineProcessing(const CefString&, CefRefPtr<CefCommandLine> command) override {
++    command->AppendSwitch("no-first-run");
++    command->AppendSwitch("no-default-browser-check");
+     command->AppendSwitchWithValue("autoplay-policy", "no-user-gesture-required");
+     command->AppendSwitch("disable-background-timer-throttling");
+     command->AppendSwitch("disable-renderer-backgrounding");
+@@ -422,10 +424,6 @@
+ int RunSuiteCutBrowser(int argc, char** argv) {
+   signal(SIGPIPE, SIG_IGN);
+   CefMainArgs args(argc, argv);
+-#if !defined(__APPLE__)
+-  const int code = CefExecuteProcess(args, nullptr, nullptr);
+-  if (code >= 0) return code;
+-#endif
+   // CEF and subprocess libraries may print diagnostics to stdout. Reserve a
+   // close-on-exec descriptor for media, then redirect ordinary stdout to stderr.
+   const int output = dup(STDOUT_FILENO);
+--- historical/native/browser/main_linux.cc
++++ tested/native/browser/main_linux.cc
+@@ -1,3 +1,16 @@
+ // SPDX-License-Identifier: MIT
++#include <csignal>
++#include "include/base/cef_compiler_specific.h"
++#include "include/cef_app.h"
+ int RunSuiteCutBrowser(int argc, char** argv);
+-int main(int argc, char** argv) { return RunSuiteCutBrowser(argc, argv); }
++
++// Chromium changes the stack canary after a zygote fork. Only this small
++// subprocess dispatcher crosses that boundary; browser/media code keeps SSP.
++NO_STACK_PROTECTOR
++int main(int argc, char** argv) {
++  signal(SIGPIPE, SIG_IGN);
++  CefMainArgs args(argc, argv);
++  const int code = CefExecuteProcess(args, nullptr, nullptr);
++  if (code >= 0) return code;
++  return RunSuiteCutBrowser(argc, argv);
++}
+--- historical/native/browser/CMakeLists.txt
++++ tested/native/browser/CMakeLists.txt
+@@ -12,6 +12,8 @@
+ list(APPEND CMAKE_MODULE_PATH "${CEF_ROOT}/cmake")
+ set(USE_SANDBOX ON CACHE BOOL "Keep Chromium renderer sandbox enabled" FORCE)
+ find_package(CEF REQUIRED)
++list(REMOVE_ITEM CEF_STANDARD_LIBS X11)
++list(APPEND CEF_STANDARD_LIBS /usr/lib/x86_64-linux-gnu/libX11.so.6)
+ add_subdirectory("${CEF_LIBCEF_DLL_WRAPPER_PATH}" libcef_dll_wrapper)
+ if(NOT IS_ABSOLUTE "${LIBYUV_ROOT}")
+   message(FATAL_ERROR "Pass -DLIBYUV_ROOT=/absolute/path/to/the/pinned/libyuv/source")

@@ -1,0 +1,619 @@
+{
+  "directory": "benchmarks/obs-cef/2026-10-10-native-audio-profile/suitecut-final",
+  "summary": {
+    "traces": {
+      "cef-C7EABB298FD1DC841ED586C7B9E47AAE": {
+        "positiveJumpTotalMs": 10.9375,
+        "negativeJumpTotalMs": 311.2708333333333,
+        "matchedWindows": 3039,
+        "windowCount": 3080,
+        "silence": {
+          "resolutionMs": 5,
+          "segments": [
+            {
+              "fromMs": 0,
+              "durationMs": 50,
+              "interior": false
+            },
+            {
+              "fromMs": 2775,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 4075,
+              "durationMs": 10,
+              "interior": true
+            },
+            {
+              "fromMs": 4175,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 17840,
+              "durationMs": 5,
+              "interior": true
+            },
+            {
+              "fromMs": 20365,
+              "durationMs": 35,
+              "interior": true
+            },
+            {
+              "fromMs": 25290,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 25545,
+              "durationMs": 30,
+              "interior": true
+            },
+            {
+              "fromMs": 26450,
+              "durationMs": 40,
+              "interior": true
+            },
+            {
+              "fromMs": 27205,
+              "durationMs": 45,
+              "interior": true
+            },
+            {
+              "fromMs": 31885,
+              "durationMs": 40,
+              "interior": true
+            },
+            {
+              "fromMs": 32005,
+              "durationMs": 40,
+              "interior": true
+            },
+            {
+              "fromMs": 32085,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 35465,
+              "durationMs": 5,
+              "interior": true
+            },
+            {
+              "fromMs": 35495,
+              "durationMs": 20,
+              "interior": true
+            },
+            {
+              "fromMs": 50445,
+              "durationMs": 30,
+              "interior": true
+            },
+            {
+              "fromMs": 53965,
+              "durationMs": 30,
+              "interior": true
+            },
+            {
+              "fromMs": 54070,
+              "durationMs": 45,
+              "interior": true
+            }
+          ],
+          "interiorTotalMs": 435,
+          "interiorMaximumMs": 45
+        }
+      },
+      "recording.mkv": {
+        "positiveJumpTotalMs": 8.666666666666668,
+        "negativeJumpTotalMs": 804.3333333333334,
+        "matchedWindows": 1464,
+        "windowCount": 1513,
+        "silence": {
+          "resolutionMs": 5,
+          "segments": [
+            {
+              "fromMs": 1280,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 2580,
+              "durationMs": 10,
+              "interior": true
+            },
+            {
+              "fromMs": 2680,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 16345,
+              "durationMs": 5,
+              "interior": true
+            },
+            {
+              "fromMs": 18870,
+              "durationMs": 95,
+              "interior": true
+            },
+            {
+              "fromMs": 18970,
+              "durationMs": 35,
+              "interior": true
+            },
+            {
+              "fromMs": 23895,
+              "durationMs": 20,
+              "interior": true
+            },
+            {
+              "fromMs": 24150,
+              "durationMs": 30,
+              "interior": true
+            },
+            {
+              "fromMs": 25055,
+              "durationMs": 40,
+              "interior": true
+            },
+            {
+              "fromMs": 25810,
+              "durationMs": 75,
+              "interior": true
+            },
+            {
+              "fromMs": 25890,
+              "durationMs": 45,
+              "interior": true
+            },
+            {
+              "fromMs": 30570,
+              "durationMs": 75,
+              "interior": true
+            },
+            {
+              "fromMs": 30650,
+              "durationMs": 40,
+              "interior": true
+            },
+            {
+              "fromMs": 30770,
+              "durationMs": 135,
+              "interior": true
+            },
+            {
+              "fromMs": 30910,
+              "durationMs": 45,
+              "interior": true
+            },
+            {
+              "fromMs": 30990,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 34370,
+              "durationMs": 5,
+              "interior": true
+            },
+            {
+              "fromMs": 34405,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 49350,
+              "durationMs": 30,
+              "interior": true
+            },
+            {
+              "fromMs": 52870,
+              "durationMs": 95,
+              "interior": true
+            },
+            {
+              "fromMs": 52970,
+              "durationMs": 30,
+              "interior": true
+            },
+            {
+              "fromMs": 53075,
+              "durationMs": 45,
+              "interior": true
+            }
+          ],
+          "interiorTotalMs": 915,
+          "interiorMaximumMs": 135
+        }
+      },
+      "profile": {
+        "positiveJumpTotalMs": 7.541666666666667,
+        "negativeJumpTotalMs": 803.375,
+        "matchedWindows": 1449,
+        "windowCount": 1504,
+        "silence": {
+          "resolutionMs": 5,
+          "segments": [
+            {
+              "fromMs": 945,
+              "durationMs": 20,
+              "interior": true
+            },
+            {
+              "fromMs": 2250,
+              "durationMs": 10,
+              "interior": true
+            },
+            {
+              "fromMs": 2345,
+              "durationMs": 20,
+              "interior": true
+            },
+            {
+              "fromMs": 16015,
+              "durationMs": 5,
+              "interior": true
+            },
+            {
+              "fromMs": 18535,
+              "durationMs": 95,
+              "interior": true
+            },
+            {
+              "fromMs": 18640,
+              "durationMs": 35,
+              "interior": true
+            },
+            {
+              "fromMs": 23560,
+              "durationMs": 20,
+              "interior": true
+            },
+            {
+              "fromMs": 23815,
+              "durationMs": 35,
+              "interior": true
+            },
+            {
+              "fromMs": 24720,
+              "durationMs": 45,
+              "interior": true
+            },
+            {
+              "fromMs": 25475,
+              "durationMs": 75,
+              "interior": true
+            },
+            {
+              "fromMs": 25560,
+              "durationMs": 45,
+              "interior": true
+            },
+            {
+              "fromMs": 30235,
+              "durationMs": 75,
+              "interior": true
+            },
+            {
+              "fromMs": 30320,
+              "durationMs": 40,
+              "interior": true
+            },
+            {
+              "fromMs": 30435,
+              "durationMs": 135,
+              "interior": true
+            },
+            {
+              "fromMs": 30580,
+              "durationMs": 40,
+              "interior": true
+            },
+            {
+              "fromMs": 30660,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 34040,
+              "durationMs": 5,
+              "interior": true
+            },
+            {
+              "fromMs": 34070,
+              "durationMs": 20,
+              "interior": true
+            },
+            {
+              "fromMs": 49020,
+              "durationMs": 30,
+              "interior": true
+            },
+            {
+              "fromMs": 52535,
+              "durationMs": 95,
+              "interior": true
+            },
+            {
+              "fromMs": 52640,
+              "durationMs": 30,
+              "interior": true
+            },
+            {
+              "fromMs": 52745,
+              "durationMs": 45,
+              "interior": true
+            },
+            {
+              "fromMs": 60155,
+              "durationMs": 5,
+              "interior": false
+            }
+          ],
+          "interiorTotalMs": 935,
+          "interiorMaximumMs": 135
+        }
+      }
+    },
+    "media": {
+      "recording.mkv": {
+        "positiveJumpTotalMs": 9.291666666666668,
+        "negativeJumpTotalMs": 805.6666666666666,
+        "matchedWindows": 1465,
+        "windowCount": 1514,
+        "silence": {
+          "resolutionMs": 5,
+          "segments": [
+            {
+              "fromMs": 0,
+              "durationMs": 15,
+              "interior": false
+            },
+            {
+              "fromMs": 1300,
+              "durationMs": 20,
+              "interior": true
+            },
+            {
+              "fromMs": 2605,
+              "durationMs": 5,
+              "interior": true
+            },
+            {
+              "fromMs": 2700,
+              "durationMs": 20,
+              "interior": true
+            },
+            {
+              "fromMs": 16365,
+              "durationMs": 5,
+              "interior": true
+            },
+            {
+              "fromMs": 18890,
+              "durationMs": 95,
+              "interior": true
+            },
+            {
+              "fromMs": 18990,
+              "durationMs": 35,
+              "interior": true
+            },
+            {
+              "fromMs": 23915,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 24170,
+              "durationMs": 35,
+              "interior": true
+            },
+            {
+              "fromMs": 25075,
+              "durationMs": 40,
+              "interior": true
+            },
+            {
+              "fromMs": 25830,
+              "durationMs": 75,
+              "interior": true
+            },
+            {
+              "fromMs": 25910,
+              "durationMs": 50,
+              "interior": true
+            },
+            {
+              "fromMs": 30590,
+              "durationMs": 75,
+              "interior": true
+            },
+            {
+              "fromMs": 30670,
+              "durationMs": 45,
+              "interior": true
+            },
+            {
+              "fromMs": 30790,
+              "durationMs": 135,
+              "interior": true
+            },
+            {
+              "fromMs": 30930,
+              "durationMs": 45,
+              "interior": true
+            },
+            {
+              "fromMs": 31015,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 34390,
+              "durationMs": 5,
+              "interior": true
+            },
+            {
+              "fromMs": 34425,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 49375,
+              "durationMs": 25,
+              "interior": true
+            },
+            {
+              "fromMs": 52890,
+              "durationMs": 95,
+              "interior": true
+            },
+            {
+              "fromMs": 52990,
+              "durationMs": 35,
+              "interior": true
+            },
+            {
+              "fromMs": 53100,
+              "durationMs": 40,
+              "interior": true
+            }
+          ],
+          "interiorTotalMs": 925,
+          "interiorMaximumMs": 135
+        }
+      },
+      "receiver.flv": {
+        "positiveJumpTotalMs": 8.916666666666666,
+        "negativeJumpTotalMs": 805.7291666666666,
+        "matchedWindows": 1454,
+        "windowCount": 1504,
+        "silence": {
+          "resolutionMs": 5,
+          "segments": [
+            {
+              "fromMs": 0,
+              "durationMs": 10,
+              "interior": false
+            },
+            {
+              "fromMs": 970,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 2275,
+              "durationMs": 5,
+              "interior": true
+            },
+            {
+              "fromMs": 2380,
+              "durationMs": 5,
+              "interior": true
+            },
+            {
+              "fromMs": 16035,
+              "durationMs": 5,
+              "interior": true
+            },
+            {
+              "fromMs": 18560,
+              "durationMs": 95,
+              "interior": true
+            },
+            {
+              "fromMs": 18660,
+              "durationMs": 35,
+              "interior": true
+            },
+            {
+              "fromMs": 23585,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 23840,
+              "durationMs": 30,
+              "interior": true
+            },
+            {
+              "fromMs": 24745,
+              "durationMs": 40,
+              "interior": true
+            },
+            {
+              "fromMs": 25500,
+              "durationMs": 75,
+              "interior": true
+            },
+            {
+              "fromMs": 25580,
+              "durationMs": 45,
+              "interior": true
+            },
+            {
+              "fromMs": 30260,
+              "durationMs": 75,
+              "interior": true
+            },
+            {
+              "fromMs": 30340,
+              "durationMs": 40,
+              "interior": true
+            },
+            {
+              "fromMs": 30460,
+              "durationMs": 135,
+              "interior": true
+            },
+            {
+              "fromMs": 30600,
+              "durationMs": 40,
+              "interior": true
+            },
+            {
+              "fromMs": 30680,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 34060,
+              "durationMs": 5,
+              "interior": true
+            },
+            {
+              "fromMs": 34090,
+              "durationMs": 20,
+              "interior": true
+            },
+            {
+              "fromMs": 49040,
+              "durationMs": 30,
+              "interior": true
+            },
+            {
+              "fromMs": 52560,
+              "durationMs": 95,
+              "interior": true
+            },
+            {
+              "fromMs": 52660,
+              "durationMs": 30,
+              "interior": true
+            },
+            {
+              "fromMs": 52765,
+              "durationMs": 45,
+              "interior": true
+            }
+          ],
+          "interiorTotalMs": 895,
+          "interiorMaximumMs": 135
+        }
+      }
+    }
+  }
+}

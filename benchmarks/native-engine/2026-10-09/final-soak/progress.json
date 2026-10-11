@@ -1,0 +1,34 @@
+{
+  "atMs": 1792140.202915,
+  "scrolls": 348,
+  "record": {
+    "ready": true,
+    "stopped": false,
+    "paused": false,
+    "videoFrames": 53771,
+    "audioSamples": 86034432,
+    "repeatedFrames": 3094,
+    "droppedAudioSamples": 0,
+    "queuedVideoBytes": 18662400,
+    "queuedAudioBytes": 11520,
+    "startedMs": 2715.934439,
+    "durationMs": 1792366.6666666667,
+    "maximumEncodeMs": 503.0487140000332,
+    "error": ""
+  },
+  "stream": {
+    "ready": true,
+    "stopped": false,
+    "paused": false,
+    "videoFrames": 53761,
+    "audioSamples": 86018048,
+    "repeatedFrames": 2177,
+    "droppedAudioSamples": 0,
+    "queuedVideoBytes": 21772800,
+    "queuedAudioBytes": 11520,
+    "startedMs": 3051.735867,
+    "durationMs": 1792033.3333333333,
+    "maximumEncodeMs": 489.1234810000751,
+    "error": ""
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "startedAt": "2026-10-09T15:02:47.911374+00:00",
+  "label": "clean-30-minute",
+  "durationMs": 1800000,
+  "status": "completed; media analysis pending",
+  "sourceHashes": {
+    "native/browser/browser.cc": "bc123329ce0fef68fa727b88338be616bd09485734cf0b00197bcbb1a61b2ab1",
+    "src/native-audio.ts": "f779031620c253e13b53c287aa5b49ad441d08ff3287ffb09797a777888c523f",
+    "src/native-browser.ts": "7063455b1ae25665c15dd055718663b7c2686227daa45d0b22cf3b144e037e74",
+    "src/native-default.ts": "4b1c8a6a4dd2f00dfb4b42aff3661b70f8d755d618d438ccb0458a31ad94ffbe",
+    "src/native-page.ts": "77ddce7f2de2cf3fbe474d156017afbcf58a4585fe820eb355061ad3e630cb7c",
+    "src/native-protocol.ts": "531bc97888a2164cec28a77f83fa486c162af7cb6c15c8d486d3fc723c949d82",
+    "src/native-recorder.ts": "852105617adb2b44011e7028ff35297153fd042b21d4b562e1e0c2c0df6cf869",
+    "src/native-recording.ts": "7637b5b8a5d820c4f4d2e1ab92f2c437dc2e05731a24db0062b4318453b40ea7",
+    "src/native-session.ts": "1ae976689f8246c65bcb129cc96159ff131c17e80d198401dbebdfa6f6a1c6c7",
+    "src/native-video-container.ts": "cd231acfb87bc850f5282288c516ac781dcba15e32100c3b5c81df9b79953842",
+    "src/native.ts": "2e0aeaef0b9d33737124d87538fa5bfb31f3bdfa0a0e48acb0f8913c1bf9c375",
+    "src/live-stream.ts": "7b977afa7850d4cde5612989cff21020e97764fd9606b4ee8bd72b328ed51a7e",
+    "src/live-audio.ts": "366c36c1bc55944044eb139f9d6540c811f5fbc67e6ed174b527750439d94826",
+    "benchmarks/obs-cef/investigate-soak.mjs": "59f44313e411995fbed30c10dad6bff278ab10411df0238d1ffcfea80a0e9f26",
+    "benchmarks/obs-cef/trace-stdio.mjs": "77593c5e9846d2dc1782d935a4791d9d21a55217c26cf38955025dd68827640f",
+    "benchmarks/obs-cef/profile-pipeline.py": "a1016b5750d82fbd4b1c783c662841cca3ec8608e878fbd484ff813215c67243",
+    "benchmarks/obs-cef/fixture.html": "09b5de97645d3c85a9b68740d5c8e2122e1dbd35040ee394af64b062f180bbb5"
+  },
+  "binarySha256": "b8758ed85c0622d190ad44a8fd4e007e06d3bbc59f9e7f602430e3dd5c8a13d1",
+  "runtimePids": [
+    82768,
+    82769
+  ],
+  "workloadPid": 82780,
+  "workloadExitCode": 0,
+  "runtimeStopped": true,
+  "completedAt": "2026-10-09T15:33:35.040410+00:00"
+}

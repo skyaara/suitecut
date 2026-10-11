@@ -1,0 +1,37 @@
+{
+  "observedAtIST": "2026-10-10T18:02:38.553436+05:30",
+  "roomJoinConfirmed": true,
+  "displayName": "SuiteCut RTC test",
+  "microphone": "muted/unavailable",
+  "camera": "off/unavailable",
+  "otherParticipantScreenShareAdvertised": true,
+  "peerStates": [
+    {
+      "connectionState": "closed",
+      "iceConnectionState": "closed",
+      "transports": []
+    },
+    {
+      "connectionState": "closed",
+      "iceConnectionState": "closed",
+      "transports": []
+    },
+    {
+      "connectionState": "failed",
+      "iceConnectionState": "disconnected",
+      "transports": [
+        {
+          "id": "T01",
+          "type": "transport",
+          "bytesSent": 0,
+          "bytesReceived": 0,
+          "packetsSent": 0,
+          "packetsReceived": 0,
+          "dtlsState": "new",
+          "iceState": "failed"
+        }
+      ]
+    }
+  ],
+  "note": "Signaling/room membership succeeded. No remote media connection verified. ICE has failed with zero transport bytes; compatible with restricted media egress, not a proven SuiteCut codec/browser defect. Session remains open for bounded 4-minute monitoring and closes automatically."
+}

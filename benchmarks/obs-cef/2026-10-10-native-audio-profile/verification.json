@@ -1,0 +1,16 @@
+{
+  "nativeCTestPassed": 5,
+  "nativePlaywrightPassed": 12,
+  "sdkTestsPassed": 309,
+  "sdkTestFilesPassed": 37,
+  "analyzerTestsPassed": 5,
+  "typecheck": "passed",
+  "lint": "passed",
+  "videoOutputsFullyDecoded": 24,
+  "videoDecodeErrors": [],
+  "longRunLeakFreedomProven": false,
+  "gpuEncodingVerified": false,
+  "remainingAudioInterruptionVerifiedMs": 195,
+  "audioOutputsFullyDecoded": 24,
+  "audioAndVideoDecodeErrors": []
+}

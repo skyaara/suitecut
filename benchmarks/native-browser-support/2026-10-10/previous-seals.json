@@ -1,0 +1,65 @@
+{
+  "totalVerifiedFiles": 6954,
+  "manifests": [
+    {
+      "manifest": "benchmarks/native-audio/2026-10-10/checksums.sha256",
+      "verifiedFiles": 428,
+      "status": "unchanged"
+    },
+    {
+      "manifest": "benchmarks/native-codecs/2026-10-10/checksums.sha256",
+      "verifiedFiles": 710,
+      "status": "unchanged"
+    },
+    {
+      "manifest": "benchmarks/native-engine/2026-10-09/checksums.sha256",
+      "verifiedFiles": 529,
+      "status": "unchanged"
+    },
+    {
+      "manifest": "benchmarks/native-memory/2026-10-10/checksums.sha256",
+      "verifiedFiles": 710,
+      "status": "unchanged"
+    },
+    {
+      "manifest": "benchmarks/native-playback/2026-10-10/checksums.sha256",
+      "verifiedFiles": 677,
+      "status": "unchanged"
+    },
+    {
+      "manifest": "benchmarks/native-startup/2026-10-09-default/checksums.sha256",
+      "verifiedFiles": 726,
+      "status": "unchanged"
+    },
+    {
+      "manifest": "benchmarks/native-startup/2026-10-10/checksums.sha256",
+      "verifiedFiles": 1234,
+      "status": "unchanged"
+    },
+    {
+      "manifest": "benchmarks/native-sync/2026-10-10/checksums.sha256",
+      "verifiedFiles": 909,
+      "status": "unchanged"
+    },
+    {
+      "manifest": "benchmarks/obs-cef/2026-10-09/package-checksums.sha256",
+      "verifiedFiles": 88,
+      "status": "unchanged"
+    },
+    {
+      "manifest": "benchmarks/obs-cef/2026-10-10-audio-source-review/checksums.sha256",
+      "verifiedFiles": 26,
+      "status": "unchanged"
+    },
+    {
+      "manifest": "benchmarks/obs-cef/2026-10-10-native-audio-profile/checksums.sha256",
+      "verifiedFiles": 863,
+      "status": "unchanged"
+    },
+    {
+      "manifest": "benchmarks/twitch-capture/2026-10-10-gofns/checksums.sha256",
+      "verifiedFiles": 54,
+      "status": "unchanged"
+    }
+  ]
+}

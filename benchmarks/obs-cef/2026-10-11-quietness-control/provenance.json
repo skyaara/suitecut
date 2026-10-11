@@ -1,0 +1,166 @@
+{
+  "createdAt": "2026-10-11T05:35:57.443898+00:00",
+  "platform": "Linux-6.18.44-x86_64-with-glibc2.41",
+  "pythonDependencies": {
+    "numpy": "2.3.5",
+    "scipy": "1.17.0",
+    "matplotlib": "3.10.8",
+    "psutil": "7.2.2"
+  },
+  "python": "3.12.14 (main, Aug 25 2026, 14:00:49) [Clang 22.1.3 ]",
+  "cpuQuota": "400000 100000",
+  "hostMemoryLimit": "17179869184",
+  "requestedMemoryGiB": 8,
+  "enforcement": "sampled summed-RSS guard, not a kernel 8 GiB cap",
+  "binaryAssets": [
+    {
+      "path": "/workspace/suitecut/.suitecut/obs-cef-profile/root/usr/bin/obs",
+      "bytes": 5875984,
+      "sha256": "47e3d0157aac6a356694a95a6feb3a1495b2bacfd3f2f4f7cd4dc98adb220521"
+    },
+    {
+      "path": "/workspace/suitecut/.suitecut/obs-cef-profile/root/usr/lib/x86_64-linux-gnu/obs-plugins/obs-browser.so",
+      "bytes": 1009768,
+      "sha256": "0ba5daab8875ca1a87501176652f2de69825cd991f2bbd3e107c27c2811fe5e3"
+    },
+    {
+      "path": "/workspace/suitecut/.suitecut/obs-cef-profile/root/usr/lib/x86_64-linux-gnu/obs-plugins/obs-browser-page",
+      "bytes": 793312,
+      "sha256": "5ac7851b5643add99c896935eac14045edaae5bc54976db4fc3cf8f6df81d039"
+    },
+    {
+      "path": "/workspace/suitecut/.suitecut/obs-cef-profile/root/usr/lib/x86_64-linux-gnu/obs-plugins/libcef.so",
+      "bytes": 233363816,
+      "sha256": "1eab0976dad660be969f97bd0f7a1b1e4fcd3b75f7775d512de981a58ec3a40f"
+    },
+    {
+      "path": "/workspace/suitecut/.suitecut/native-build/suitecut-browser",
+      "bytes": 2495648,
+      "sha256": "757a03fa49ed82dcd119c2888bdc0ebe1c355b4b9d9964bda38b99427a38f0b3"
+    },
+    {
+      "path": "/usr/bin/ffmpeg",
+      "bytes": 366984,
+      "sha256": "e8a8d46f5225f3062cec7c07fb145d58ae73c603cb740dcd5bad34bfb54e455a"
+    },
+    {
+      "path": "/usr/bin/ffprobe",
+      "bytes": 206504,
+      "sha256": "cefc5f81c0b18429cdbf8fa5a89e1e9c759235e10f93f9b329ff1b2fdff26f46"
+    }
+  ],
+  "baselineCopies": [
+    {
+      "source": "/workspace/suitecut/benchmarks/native-sync/2026-10-11-shared-clock/runs/720p60-record/analysis.json",
+      "saved": "baseline/720p60-record/analysis.json",
+      "sha256": "8180a26664b73a442856b3542340469a03e8b15289a1302ee98be62af538c88b"
+    },
+    {
+      "source": "/workspace/suitecut/benchmarks/native-sync/2026-10-11-shared-clock/runs/720p60-record/result.json",
+      "saved": "baseline/720p60-record/result.json",
+      "sha256": "33212c8b8c943bfd5a06e760561c46858edc40bf7bff47326f6fd72d23976914"
+    },
+    {
+      "source": "/workspace/suitecut/benchmarks/native-sync/2026-10-11-shared-clock/runs/720p60-record/fixture.html",
+      "saved": "baseline/720p60-record/fixture.html",
+      "sha256": "34bc3ec135bbb3d0f6819fb19e450d2982745e1d716efb210e639edc4599d70a"
+    },
+    {
+      "source": "/workspace/suitecut/benchmarks/native-sync/2026-10-11-shared-clock/runs/720p60-stream/analysis.json",
+      "saved": "baseline/720p60-stream/analysis.json",
+      "sha256": "09919687b0fb0f6c41ce6dda5606d0ea25d9719d4bc9a6573f18b25d4b16767e"
+    },
+    {
+      "source": "/workspace/suitecut/benchmarks/native-sync/2026-10-11-shared-clock/runs/720p60-stream/result.json",
+      "saved": "baseline/720p60-stream/result.json",
+      "sha256": "c534a65339500f23200ffa31cefc8e48e3b25ca90ad8e607e91840cd5d647e5d"
+    },
+    {
+      "source": "/workspace/suitecut/benchmarks/native-sync/2026-10-11-shared-clock/runs/720p60-stream/fixture.html",
+      "saved": "baseline/720p60-stream/fixture.html",
+      "sha256": "34bc3ec135bbb3d0f6819fb19e450d2982745e1d716efb210e639edc4599d70a"
+    },
+    {
+      "source": "/workspace/suitecut/benchmarks/native-sync/2026-10-11-shared-clock/runs/1080p30-record/analysis.json",
+      "saved": "baseline/1080p30-record/analysis.json",
+      "sha256": "32e1154cc94b1cf076f9bac3b7626a797f776bccc739294deff7290615088c5c"
+    },
+    {
+      "source": "/workspace/suitecut/benchmarks/native-sync/2026-10-11-shared-clock/runs/1080p30-record/result.json",
+      "saved": "baseline/1080p30-record/result.json",
+      "sha256": "8ef7733c594fddc2ba7bcbe5a90aab7512b32c9c6e83ef64d72bf67497749519"
+    },
+    {
+      "source": "/workspace/suitecut/benchmarks/native-sync/2026-10-11-shared-clock/runs/1080p30-record/fixture.html",
+      "saved": "baseline/1080p30-record/fixture.html",
+      "sha256": "b04eacc9045b93369f8b97ef93ed57e2763aad05567adba2c1f464ee000e09d1"
+    },
+    {
+      "source": "/workspace/suitecut/benchmarks/native-sync/2026-10-11-shared-clock/runs/1080p30-stream/analysis.json",
+      "saved": "baseline/1080p30-stream/analysis.json",
+      "sha256": "e58e36ee8abeed06b985290792f18dcd681d89b2c230815197e1cf2eb76a9536"
+    },
+    {
+      "source": "/workspace/suitecut/benchmarks/native-sync/2026-10-11-shared-clock/runs/1080p30-stream/result.json",
+      "saved": "baseline/1080p30-stream/result.json",
+      "sha256": "c3ef8a9700da174e219df5d46f932fa50fb22ccf0c2abab98f097deda3c0d0fc"
+    },
+    {
+      "source": "/workspace/suitecut/benchmarks/native-sync/2026-10-11-shared-clock/runs/1080p30-stream/fixture.html",
+      "saved": "baseline/1080p30-stream/fixture.html",
+      "sha256": "b04eacc9045b93369f8b97ef93ed57e2763aad05567adba2c1f464ee000e09d1"
+    },
+    {
+      "source": "/workspace/suitecut/benchmarks/native-sync/2026-10-11-shared-clock/runs/4k30-record/analysis.json",
+      "saved": "baseline/4k30-record/analysis.json",
+      "sha256": "67ac01ec826df5c57531ae1d4901459c53dd855912fb80c56c31d4b5b285e726"
+    },
+    {
+      "source": "/workspace/suitecut/benchmarks/native-sync/2026-10-11-shared-clock/runs/4k30-record/result.json",
+      "saved": "baseline/4k30-record/result.json",
+      "sha256": "4c1a02ba5db5cfe6855444f8b6754ac985332a9cfef76fd8ae2d7a15cc58c373"
+    },
+    {
+      "source": "/workspace/suitecut/benchmarks/native-sync/2026-10-11-shared-clock/runs/4k30-record/fixture.html",
+      "saved": "baseline/4k30-record/fixture.html",
+      "sha256": "f1dea5aef7f66e9d2e0789a00f978f195bd693cfba223ebfbb28950663c5ee1d"
+    },
+    {
+      "source": "/workspace/suitecut/benchmarks/native-sync/2026-10-11-shared-clock/runs/4k30-stream/analysis.json",
+      "saved": "baseline/4k30-stream/analysis.json",
+      "sha256": "02088971eaf3e229fd6f44616e5b9949d4bfe47eefeeef9c688a9cc4e86288e2"
+    },
+    {
+      "source": "/workspace/suitecut/benchmarks/native-sync/2026-10-11-shared-clock/runs/4k30-stream/result.json",
+      "saved": "baseline/4k30-stream/result.json",
+      "sha256": "b7f85b00f4544633f874e01382de18cb07e42beeae14d4edfc174970bc58f48f"
+    },
+    {
+      "source": "/workspace/suitecut/benchmarks/native-sync/2026-10-11-shared-clock/runs/4k30-stream/fixture.html",
+      "saved": "baseline/4k30-stream/fixture.html",
+      "sha256": "f1dea5aef7f66e9d2e0789a00f978f195bd693cfba223ebfbb28950663c5ee1d"
+    },
+    {
+      "source": "/workspace/suitecut/benchmarks/native-sync/2026-10-11-shared-clock/runs/soak-1080p30-stream/analysis.json",
+      "saved": "baseline/soak-1080p30-stream/analysis.json",
+      "sha256": "5e6731c714f1dbb3d66d4e14263c3083ec09185287fd3b18823b05ac1cb7a968"
+    },
+    {
+      "source": "/workspace/suitecut/benchmarks/native-sync/2026-10-11-shared-clock/runs/soak-1080p30-stream/result.json",
+      "saved": "baseline/soak-1080p30-stream/result.json",
+      "sha256": "6acccbb7d4c5b59deb756e9171ab63f781657cbb23415beca5ad105fab625c8d"
+    },
+    {
+      "source": "/workspace/suitecut/benchmarks/native-sync/2026-10-11-shared-clock/runs/soak-1080p30-stream/fixture.html",
+      "saved": "baseline/soak-1080p30-stream/fixture.html",
+      "sha256": "b04eacc9045b93369f8b97ef93ed57e2763aad05567adba2c1f464ee000e09d1"
+    }
+  ],
+  "ffmpegVersion": "ffmpeg version 7.1.5-0+deb13u1 Copyright (c) 2000-2026 the FFmpeg developers\nbuilt with gcc 14 (Debian 14.2.0-19)\nconfiguration: --prefix=/usr --extra-version=0+deb13u1 --toolchain=hardened --libdir=/usr/lib/x86_64-linux-gnu --incdir=/usr/include/x86_64-linux-gnu --arch=amd64 --enable-gpl --disable-stripping --disable-libmfx --disable-omx --enable-gnutls --enable-libaom --enable-libass --enable-libbs2b --enable-libcdio --enable-libcodec2 --enable-libdav1d --enable-libflite --enable-libfontconfig --enable-libfreetype --enable-libfribidi --enable-libglslang --enable-libgme --enable-libgsm --enable-libharfbuzz --enable-libmp3lame --enable-libmysofa --enable-libopenjpeg --enable-libopenmpt --enable-libopus --enable-librubberband --enable-libshine --enable-libsnappy --enable-libsoxr --enable-libspeex --enable-libtheora --enable-libtwolame --enable-libvidstab --enable-libvorbis --enable-libvpx --enable-libwebp --enable-libx265 --enable-libxml2 --enable-libxvid --enable-libzimg --enable-openal --enable-opencl --enable-opengl --disable-sndio --enable-libvpl --enable-libdc1394 --enable-libdrm --enable-libiec61883 --enable-chromaprint --enable-frei0r --enable-ladspa --enable-libbluray --enable-libcaca --enable-libdvdnav --enable-libdvdread --enable-libjack --enable-libpulse --enable-librabbitmq --enable-librist --enable-libsrt --enable-libssh --enable-libsvtav1 --enable-libx264 --enable-libzmq --enable-libzvbi --enable-lv2 --enable-sdl2 --enable-libplacebo --enable-librav1e --enable-pocketsphinx --enable-librsvg --enable-libjxl --enable-shared\nlibavutil      59. 39.100 / 59. 39.100\nlibavcodec     61. 19.101 / 61. 19.101\nlibavformat    61.  7.103 / 61.  7.103\nlibavdevice    61.  3.100 / 61.  3.100\nlibavfilter    10.  5.100 / 10.  5.100\nlibswscale      8.  3.100 /  8.  3.100\nlibswresample   5.  3.100 /  5.  3.100\nlibpostproc    58.  3.100 / 58.  3.100\n",
+  "nodeVersion": "v24.19.0",
+  "obsVersion": "32.2.0",
+  "obsCEF": "127.0.0-6533-fix-stutter-and-osr-extra-info.3042+g176b09c+chromium-127.0.6533.120",
+  "suiteCutChromium": "152.0.7977.83",
+  "transport": "Local RTMP receiver, no WAN/network-loss claim",
+  "experimentalDesign": "Serial separate record and stream; one fresh OBS trial per case versus prior sealed SuiteCut trial; not randomized/repeated; no trace or sanitizer in primary OBS captures"
+}

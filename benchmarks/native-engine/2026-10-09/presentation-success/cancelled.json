@@ -1,0 +1,109 @@
+{
+  "schemaVersion": 1,
+  "startedAt": "2026-10-09T17:17:03.104Z",
+  "endedAt": "2026-10-09T17:17:03.303Z",
+  "status": "failed",
+  "rootDirectory": "/workspace/suitecut",
+  "tests": [
+    {
+      "id": "2e24ab5d-60e8-431d-8574-6b5a3994d511",
+      "order": 0,
+      "title": "Expected cancellation",
+      "titlePath": [
+        "Expected cancellation"
+      ],
+      "projectName": "native-chromium",
+      "location": {
+        "file": "/workspace/suitecut/scripts/verify-native-recording.mjs",
+        "line": 1,
+        "column": 1
+      },
+      "attempts": [
+        {
+          "id": "e6b8d55f-7898-4284-86fe-c44dff3e8e85",
+          "retry": 0,
+          "status": "failed",
+          "clock": {
+            "originEpochMs": 1791566223104,
+            "originMonotonicMs": 15609.846038,
+            "startedAt": "2026-10-09T17:17:03.104Z"
+          },
+          "durationMs": 154.43841900000007,
+          "pages": [
+            {
+              "id": "77b6fd04-99d7-45e8-a4e2-1648282b2432",
+              "kind": "main",
+              "initialUrl": "http://127.0.0.1:44531/",
+              "createdAtMs": 1.670949000001201
+            }
+          ],
+          "events": [
+            {
+              "id": "f3605f91-90e0-4036-a0db-36dffa0ca673",
+              "atMs": 53.36730399999942,
+              "pageId": "77b6fd04-99d7-45e8-a4e2-1648282b2432",
+              "type": "hold",
+              "durationMs": 100,
+              "reason": "author"
+            }
+          ],
+          "steps": [],
+          "artifacts": [
+            {
+              "id": "6ef0f9c8-342f-44ad-817d-83eaf5b97938",
+              "name": "suitecut-source-e6b8d55f-7898-4284-86fe-c44dff3e8e85-6ef0f9c8-342f-44ad-817d-83eaf5b97938.webm",
+              "role": "source-video",
+              "contentType": "video/webm",
+              "path": "/workspace/suitecut/benchmarks/native-engine/2026-10-09/presentation-success/suitecut-source-e6b8d55f-7898-4284-86fe-c44dff3e8e85-6ef0f9c8-342f-44ad-817d-83eaf5b97938.webm",
+              "pathKind": "absolute",
+              "sizeBytes": 22476,
+              "pageId": "77b6fd04-99d7-45e8-a4e2-1648282b2432",
+              "createdAtMs": 1.658871999999974
+            }
+          ],
+          "media": [
+            {
+              "id": "media-47888e77-d8ed-47ff-96b0-865c1c7e8a69",
+              "artifactId": "6ef0f9c8-342f-44ad-817d-83eaf5b97938",
+              "formatName": "matroska,webm",
+              "durationMs": 133,
+              "streams": [
+                {
+                  "kind": "video",
+                  "codec": "vp9",
+                  "pixelFormat": "yuv420p",
+                  "colorRange": "limited",
+                  "colorSpace": "bt709",
+                  "colorTransfer": "iec61966-2-1",
+                  "colorPrimaries": "bt709",
+                  "width": 960,
+                  "height": 540,
+                  "durationMs": 133,
+                  "frameRate": 60,
+                  "timeBase": "1/1000",
+                  "hasVariableFrameRate": false
+                }
+              ]
+            }
+          ],
+          "videoTiming": [
+            {
+              "pageId": "77b6fd04-99d7-45e8-a4e2-1648282b2432",
+              "mediaId": "media-47888e77-d8ed-47ff-96b0-865c1c7e8a69",
+              "firstFrameEpochMs": 1791566223157,
+              "sourceStartedAtMs": 1.658871999999974
+            }
+          ],
+          "errors": [
+            {
+              "message": "Deliberate recording cancellation",
+              "name": "Error",
+              "stack": "Error: Deliberate recording cancellation\n    at assert.rejects.recordNative.source.source (file:///workspace/suitecut/scripts/verify-native-recording.mjs:275:31)"
+            }
+          ],
+          "diagnostics": []
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,282 @@
+
+Running 12 tests using 1 worker
+
+(node:341624) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   1 benchmarks/native-engine/engine.e2e.spec.ts:52:1 › real Playwright locators, auto-wait, input, scrolling, iframe and screenshot (1ms)
+(node:342644) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   2 benchmarks/native-engine/engine.e2e.spec.ts:68:1 › native engine records silent startup and accepts later sound (2ms)
+(node:343583) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   3 benchmarks/native-engine/engine.e2e.spec.ts:85:1 › streaming initializes silent audio and accepts later browser sound (3ms)
+(node:344741) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   4 benchmarks/native-engine/engine.e2e.spec.ts:148:1 › silent pages record a valid audio track with mandatory engine readiness (3ms)
+(node:346035) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   5 benchmarks/native-engine/engine.e2e.spec.ts:170:1 › native protocol rejects bypasses and requires audio readiness when audio is omitted (3ms)
+(node:346902) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   6 benchmarks/native-engine/engine.e2e.spec.ts:217:1 › network interception, init scripts and storage isolation (2ms)
+(node:347586) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   7 benchmarks/native-engine/engine.e2e.spec.ts:246:1 › popup, dialog, file upload, download and public CDP sessions (1ms)
+(node:348200) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   8 benchmarks/native-engine/engine.e2e.spec.ts:282:1 › explicit CDP sessions receive page events and tracing completion (1ms)
+(node:348995) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   9 benchmarks/native-engine/engine.e2e.spec.ts:311:1 › native recording survives blocked Node, pause and page switching (1ms)
+(node:349631) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  10 benchmarks/native-engine/engine.e2e.spec.ts:348:1 › pause drains pending media and resume captures a prepared static page (1ms)
+(node:350076) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  11 benchmarks/native-engine/engine.e2e.spec.ts:371:1 › repeated context/page shutdown keeps the engine usable (2ms)
+(node:351007) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  12 benchmarks/native-engine/engine.e2e.spec.ts:382:1 › permission and geolocation setup before page creation (1ms)
+
+
+  1) benchmarks/native-engine/engine.e2e.spec.ts:52:1 › real Playwright locators, auto-wait, input, scrolling, iframe and screenshot 
+
+    Error: Native browser exited unexpectedly (127)
+
+       at ../../src/native-browser.ts:276
+
+      274 |       if (!stopping) fail(new Error('Native browser output was truncated'))
+      275 |     }
+    > 276 |     if (!stopping) fail(new Error(`Native browser exited unexpectedly (${String(code)})`))
+          |                         ^
+      277 |     frames.clear()
+      278 |     audio.clear()
+      279 |     protocolEvents.clear()
+        at ChildProcess.<anonymous> (/workspace/suitecut/src/native-browser.ts:276:25)
+
+    Error Context: benchmarks/native-memory/2026-10-10/cef-asan/playwright-artifacts/engine.e2e-real-Playwright-3958d-lling-iframe-and-screenshot/error-context.md
+
+    Error Context: benchmarks/native-memory/2026-10-10/cef-asan/playwright-artifacts/engine.e2e-real-Playwright-3958d-lling-iframe-and-screenshot/error-context.md
+
+  2) benchmarks/native-engine/engine.e2e.spec.ts:68:1 › native engine records silent startup and accepts later sound 
+
+    Error: Native browser exited unexpectedly (127)
+
+       at ../../src/native-browser.ts:276
+
+      274 |       if (!stopping) fail(new Error('Native browser output was truncated'))
+      275 |     }
+    > 276 |     if (!stopping) fail(new Error(`Native browser exited unexpectedly (${String(code)})`))
+          |                         ^
+      277 |     frames.clear()
+      278 |     audio.clear()
+      279 |     protocolEvents.clear()
+        at ChildProcess.<anonymous> (/workspace/suitecut/src/native-browser.ts:276:25)
+
+    Error Context: benchmarks/native-memory/2026-10-10/cef-asan/playwright-artifacts/engine.e2e-native-engine-r-22c0c-tup-and-accepts-later-sound/error-context.md
+
+    Error Context: benchmarks/native-memory/2026-10-10/cef-asan/playwright-artifacts/engine.e2e-native-engine-r-22c0c-tup-and-accepts-later-sound/error-context.md
+
+  3) benchmarks/native-engine/engine.e2e.spec.ts:85:1 › streaming initializes silent audio and accepts later browser sound 
+
+    Error: Native browser exited unexpectedly (127)
+
+       at ../../src/native-browser.ts:276
+
+      274 |       if (!stopping) fail(new Error('Native browser output was truncated'))
+      275 |     }
+    > 276 |     if (!stopping) fail(new Error(`Native browser exited unexpectedly (${String(code)})`))
+          |                         ^
+      277 |     frames.clear()
+      278 |     audio.clear()
+      279 |     protocolEvents.clear()
+        at ChildProcess.<anonymous> (/workspace/suitecut/src/native-browser.ts:276:25)
+
+    Error Context: benchmarks/native-memory/2026-10-10/cef-asan/playwright-artifacts/engine.e2e-streaming-initi-b3d17-accepts-later-browser-sound/error-context.md
+
+    Error Context: benchmarks/native-memory/2026-10-10/cef-asan/playwright-artifacts/engine.e2e-streaming-initi-b3d17-accepts-later-browser-sound/error-context.md
+
+  4) benchmarks/native-engine/engine.e2e.spec.ts:148:1 › silent pages record a valid audio track with mandatory engine readiness 
+
+    Error: Native browser exited unexpectedly (127)
+
+       at ../../src/native-browser.ts:276
+
+      274 |       if (!stopping) fail(new Error('Native browser output was truncated'))
+      275 |     }
+    > 276 |     if (!stopping) fail(new Error(`Native browser exited unexpectedly (${String(code)})`))
+          |                         ^
+      277 |     frames.clear()
+      278 |     audio.clear()
+      279 |     protocolEvents.clear()
+        at ChildProcess.<anonymous> (/workspace/suitecut/src/native-browser.ts:276:25)
+
+    Error Context: benchmarks/native-memory/2026-10-10/cef-asan/playwright-artifacts/engine.e2e-silent-pages-re-95e0c--mandatory-engine-readiness/error-context.md
+
+    Error Context: benchmarks/native-memory/2026-10-10/cef-asan/playwright-artifacts/engine.e2e-silent-pages-re-95e0c--mandatory-engine-readiness/error-context.md
+
+  5) benchmarks/native-engine/engine.e2e.spec.ts:170:1 › native protocol rejects bypasses and requires audio readiness when audio is omitted 
+
+    Error: Native browser exited unexpectedly (127)
+
+       at ../../src/native-browser.ts:276
+
+      274 |       if (!stopping) fail(new Error('Native browser output was truncated'))
+      275 |     }
+    > 276 |     if (!stopping) fail(new Error(`Native browser exited unexpectedly (${String(code)})`))
+          |                         ^
+      277 |     frames.clear()
+      278 |     audio.clear()
+      279 |     protocolEvents.clear()
+        at ChildProcess.<anonymous> (/workspace/suitecut/src/native-browser.ts:276:25)
+
+    Error Context: benchmarks/native-memory/2026-10-10/cef-asan/playwright-artifacts/engine.e2e-native-protocol-6abb9-iness-when-audio-is-omitted/error-context.md
+
+    Error Context: benchmarks/native-memory/2026-10-10/cef-asan/playwright-artifacts/engine.e2e-native-protocol-6abb9-iness-when-audio-is-omitted/error-context.md
+
+  6) benchmarks/native-engine/engine.e2e.spec.ts:217:1 › network interception, init scripts and storage isolation 
+
+    Error: Native browser exited unexpectedly (127)
+
+       at ../../src/native-browser.ts:276
+
+      274 |       if (!stopping) fail(new Error('Native browser output was truncated'))
+      275 |     }
+    > 276 |     if (!stopping) fail(new Error(`Native browser exited unexpectedly (${String(code)})`))
+          |                         ^
+      277 |     frames.clear()
+      278 |     audio.clear()
+      279 |     protocolEvents.clear()
+        at ChildProcess.<anonymous> (/workspace/suitecut/src/native-browser.ts:276:25)
+
+    Error Context: benchmarks/native-memory/2026-10-10/cef-asan/playwright-artifacts/engine.e2e-network-interce-24565-ripts-and-storage-isolation/error-context.md
+
+    Error Context: benchmarks/native-memory/2026-10-10/cef-asan/playwright-artifacts/engine.e2e-network-interce-24565-ripts-and-storage-isolation/error-context.md
+
+  7) benchmarks/native-engine/engine.e2e.spec.ts:246:1 › popup, dialog, file upload, download and public CDP sessions 
+
+    Error: Native browser exited unexpectedly (127)
+
+       at ../../src/native-browser.ts:276
+
+      274 |       if (!stopping) fail(new Error('Native browser output was truncated'))
+      275 |     }
+    > 276 |     if (!stopping) fail(new Error(`Native browser exited unexpectedly (${String(code)})`))
+          |                         ^
+      277 |     frames.clear()
+      278 |     audio.clear()
+      279 |     protocolEvents.clear()
+        at ChildProcess.<anonymous> (/workspace/suitecut/src/native-browser.ts:276:25)
+
+    Error Context: benchmarks/native-memory/2026-10-10/cef-asan/playwright-artifacts/engine.e2e-popup-dialog-fi-b54b1-oad-and-public-CDP-sessions/error-context.md
+
+    Error Context: benchmarks/native-memory/2026-10-10/cef-asan/playwright-artifacts/engine.e2e-popup-dialog-fi-b54b1-oad-and-public-CDP-sessions/error-context.md
+
+  8) benchmarks/native-engine/engine.e2e.spec.ts:282:1 › explicit CDP sessions receive page events and tracing completion 
+
+    Error: Native browser exited unexpectedly (127)
+
+       at ../../src/native-browser.ts:276
+
+      274 |       if (!stopping) fail(new Error('Native browser output was truncated'))
+      275 |     }
+    > 276 |     if (!stopping) fail(new Error(`Native browser exited unexpectedly (${String(code)})`))
+          |                         ^
+      277 |     frames.clear()
+      278 |     audio.clear()
+      279 |     protocolEvents.clear()
+        at ChildProcess.<anonymous> (/workspace/suitecut/src/native-browser.ts:276:25)
+
+    Error Context: benchmarks/native-memory/2026-10-10/cef-asan/playwright-artifacts/engine.e2e-explicit-CDP-se-d8144-ents-and-tracing-completion/error-context.md
+
+    Error Context: benchmarks/native-memory/2026-10-10/cef-asan/playwright-artifacts/engine.e2e-explicit-CDP-se-d8144-ents-and-tracing-completion/error-context.md
+
+  9) benchmarks/native-engine/engine.e2e.spec.ts:311:1 › native recording survives blocked Node, pause and page switching 
+
+    Error: Native browser exited unexpectedly (127)
+
+       at ../../src/native-browser.ts:276
+
+      274 |       if (!stopping) fail(new Error('Native browser output was truncated'))
+      275 |     }
+    > 276 |     if (!stopping) fail(new Error(`Native browser exited unexpectedly (${String(code)})`))
+          |                         ^
+      277 |     frames.clear()
+      278 |     audio.clear()
+      279 |     protocolEvents.clear()
+        at ChildProcess.<anonymous> (/workspace/suitecut/src/native-browser.ts:276:25)
+
+    Error Context: benchmarks/native-memory/2026-10-10/cef-asan/playwright-artifacts/engine.e2e-native-recordin-5850c-de-pause-and-page-switching/error-context.md
+
+    Error Context: benchmarks/native-memory/2026-10-10/cef-asan/playwright-artifacts/engine.e2e-native-recordin-5850c-de-pause-and-page-switching/error-context.md
+
+  10) benchmarks/native-engine/engine.e2e.spec.ts:348:1 › pause drains pending media and resume captures a prepared static page 
+
+    Error: Native browser exited unexpectedly (127)
+
+       at ../../src/native-browser.ts:276
+
+      274 |       if (!stopping) fail(new Error('Native browser output was truncated'))
+      275 |     }
+    > 276 |     if (!stopping) fail(new Error(`Native browser exited unexpectedly (${String(code)})`))
+          |                         ^
+      277 |     frames.clear()
+      278 |     audio.clear()
+      279 |     protocolEvents.clear()
+        at ChildProcess.<anonymous> (/workspace/suitecut/src/native-browser.ts:276:25)
+
+    Error Context: benchmarks/native-memory/2026-10-10/cef-asan/playwright-artifacts/engine.e2e-pause-drains-pe-56492-ures-a-prepared-static-page/error-context.md
+
+    Error Context: benchmarks/native-memory/2026-10-10/cef-asan/playwright-artifacts/engine.e2e-pause-drains-pe-56492-ures-a-prepared-static-page/error-context.md
+
+  11) benchmarks/native-engine/engine.e2e.spec.ts:371:1 › repeated context/page shutdown keeps the engine usable 
+
+    Error: Native browser exited unexpectedly (127)
+
+       at ../../src/native-browser.ts:276
+
+      274 |       if (!stopping) fail(new Error('Native browser output was truncated'))
+      275 |     }
+    > 276 |     if (!stopping) fail(new Error(`Native browser exited unexpectedly (${String(code)})`))
+          |                         ^
+      277 |     frames.clear()
+      278 |     audio.clear()
+      279 |     protocolEvents.clear()
+        at ChildProcess.<anonymous> (/workspace/suitecut/src/native-browser.ts:276:25)
+
+    Error Context: benchmarks/native-memory/2026-10-10/cef-asan/playwright-artifacts/engine.e2e-repeated-contex-b7c1d-own-keeps-the-engine-usable/error-context.md
+
+    Error Context: benchmarks/native-memory/2026-10-10/cef-asan/playwright-artifacts/engine.e2e-repeated-contex-b7c1d-own-keeps-the-engine-usable/error-context.md
+
+  12) benchmarks/native-engine/engine.e2e.spec.ts:382:1 › permission and geolocation setup before page creation 
+
+    Error: Native browser exited unexpectedly (127)
+
+       at ../../src/native-browser.ts:276
+
+      274 |       if (!stopping) fail(new Error('Native browser output was truncated'))
+      275 |     }
+    > 276 |     if (!stopping) fail(new Error(`Native browser exited unexpectedly (${String(code)})`))
+          |                         ^
+      277 |     frames.clear()
+      278 |     audio.clear()
+      279 |     protocolEvents.clear()
+        at ChildProcess.<anonymous> (/workspace/suitecut/src/native-browser.ts:276:25)
+
+    Error Context: benchmarks/native-memory/2026-10-10/cef-asan/playwright-artifacts/engine.e2e-permission-and--bb30a--setup-before-page-creation/error-context.md
+
+    Error Context: benchmarks/native-memory/2026-10-10/cef-asan/playwright-artifacts/engine.e2e-permission-and--bb30a--setup-before-page-creation/error-context.md
+
+  12 failed
+    benchmarks/native-engine/engine.e2e.spec.ts:52:1 › real Playwright locators, auto-wait, input, scrolling, iframe and screenshot 
+    benchmarks/native-engine/engine.e2e.spec.ts:68:1 › native engine records silent startup and accepts later sound 
+    benchmarks/native-engine/engine.e2e.spec.ts:85:1 › streaming initializes silent audio and accepts later browser sound 
+    benchmarks/native-engine/engine.e2e.spec.ts:148:1 › silent pages record a valid audio track with mandatory engine readiness 
+    benchmarks/native-engine/engine.e2e.spec.ts:170:1 › native protocol rejects bypasses and requires audio readiness when audio is omitted 
+    benchmarks/native-engine/engine.e2e.spec.ts:217:1 › network interception, init scripts and storage isolation 
+    benchmarks/native-engine/engine.e2e.spec.ts:246:1 › popup, dialog, file upload, download and public CDP sessions 
+    benchmarks/native-engine/engine.e2e.spec.ts:282:1 › explicit CDP sessions receive page events and tracing completion 
+    benchmarks/native-engine/engine.e2e.spec.ts:311:1 › native recording survives blocked Node, pause and page switching 
+    benchmarks/native-engine/engine.e2e.spec.ts:348:1 › pause drains pending media and resume captures a prepared static page 
+    benchmarks/native-engine/engine.e2e.spec.ts:371:1 › repeated context/page shutdown keeps the engine usable 
+    benchmarks/native-engine/engine.e2e.spec.ts:382:1 › permission and geolocation setup before page creation 

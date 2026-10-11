@@ -1,0 +1,788 @@
+{
+  "caveat": "Live diagnostic estimates. Process and cgroup counters are read at different moments; delayed samples can distort per-second ownership/CPU estimates. Use cumulative throttling for robust totals. Not evidence of unrelated CPU activity.",
+  "samples": [
+    {
+      "atSeconds": 451.018036872003,
+      "ownedCPUCores": 1.4218734684571428,
+      "cgroupCPUCores": 1.473545145754565,
+      "unaccountedCPUCores": 0.051671677297422,
+      "throttledPeriods": 0,
+      "roles": [
+        {
+          "role": "suitecut-browser",
+          "cpuPercent": 211.10951632069083
+        },
+        {
+          "role": "cef-renderer",
+          "cpuPercent": 46.852785723431694
+        },
+        {
+          "role": "cef-gpu",
+          "cpuPercent": 25.557828192845534
+        }
+      ]
+    },
+    {
+      "atSeconds": 452.0183403139963,
+      "ownedCPUCores": 1.7994539701004597,
+      "cgroupCPUCores": 1.8458358958764318,
+      "unaccountedCPUCores": 0.04638192577597221,
+      "throttledPeriods": 1,
+      "roles": [
+        {
+          "role": "suitecut-browser",
+          "cpuPercent": 141.343420063231
+        }
+      ]
+    },
+    {
+      "atSeconds": 453.0212310969946,
+      "ownedCPUCores": 1.306223989898044,
+      "cgroupCPUCores": 1.3765088117300506,
+      "unaccountedCPUCores": 0.07028482183200678,
+      "throttledPeriods": 0,
+      "roles": [
+        {
+          "role": "suitecut-browser",
+          "cpuPercent": 91.57973088989235
+        }
+      ]
+    },
+    {
+      "atSeconds": 454.0250742180069,
+      "ownedCPUCores": 1.4643722402735668,
+      "cgroupCPUCores": 1.548133336245596,
+      "unaccountedCPUCores": 0.08376109597202924,
+      "throttledPeriods": 0,
+      "roles": [
+        {
+          "role": "suitecut-browser",
+          "cpuPercent": 97.90122670782351
+        },
+        {
+          "role": "cef-renderer",
+          "cpuPercent": 23.30176000571324
+        },
+        {
+          "role": "cef-gpu",
+          "cpuPercent": 21.27672866499686
+        }
+      ]
+    },
+    {
+      "atSeconds": 455.0253572270012,
+      "ownedCPUCores": 0.8497595104154915,
+      "cgroupCPUCores": 0.8381178051228657,
+      "unaccountedCPUCores": -0.011641705292625803,
+      "throttledPeriods": 0,
+      "roles": [
+        {
+          "role": "suitecut-browser",
+          "cpuPercent": 64.56706971611827
+        }
+      ]
+    },
+    {
+      "atSeconds": 456.0256430360023,
+      "ownedCPUCores": 0.8997428453961738,
+      "cgroupCPUCores": 0.956736556080619,
+      "unaccountedCPUCores": 0.05699371068444524,
+      "throttledPeriods": 0,
+      "roles": [
+        {
+          "role": "suitecut-browser",
+          "cpuPercent": 70.19587279392353
+        }
+      ]
+    },
+    {
+      "atSeconds": 457.0265754120046,
+      "ownedCPUCores": 1.1988821910155045,
+      "cgroupCPUCores": 1.1937170069092076,
+      "unaccountedCPUCores": -0.005165184106296776,
+      "throttledPeriods": 0,
+      "roles": [
+        {
+          "role": "suitecut-browser",
+          "cpuPercent": 92.89808596952182
+        }
+      ]
+    },
+    {
+      "atSeconds": 458.0268978660024,
+      "ownedCPUCores": 1.039664755943073,
+      "cgroupCPUCores": 1.0672218700414693,
+      "unaccountedCPUCores": 0.02755711409839655,
+      "throttledPeriods": 0,
+      "roles": [
+        {
+          "role": "suitecut-browser",
+          "cpuPercent": 82.92327432798592
+        }
+      ]
+    },
+    {
+      "atSeconds": 459.0271988690074,
+      "ownedCPUCores": 1.0196930693219464,
+      "cgroupCPUCores": 1.0604647969094267,
+      "unaccountedCPUCores": 0.04077172758748035,
+      "throttledPeriods": 0,
+      "roles": [
+        {
+          "role": "suitecut-browser",
+          "cpuPercent": 72.63833363728139
+        }
+      ]
+    },
+    {
+      "atSeconds": 460.0274582060083,
+      "ownedCPUCores": 1.0797199886562896,
+      "cgroupCPUCores": 1.1337729707180746,
+      "unaccountedCPUCores": 0.05405298206178499,
+      "throttledPeriods": 0,
+      "roles": [
+        {
+          "role": "suitecut-browser",
+          "cpuPercent": 88.0823914014489
+        }
+      ]
+    },
+    {
+      "atSeconds": 461.02770829500514,
+      "ownedCPUCores": 1.069732471679336,
+      "cgroupCPUCores": 1.0580014054898499,
+      "unaccountedCPUCores": -0.01173106618948605,
+      "throttledPeriods": 0,
+      "roles": [
+        {
+          "role": "suitecut-browser",
+          "cpuPercent": 80.80048993466613
+        }
+      ]
+    },
+    {
+      "atSeconds": 462.03089799800364,
+      "ownedCPUCores": 1.2659619573486431,
+      "cgroupCPUCores": 1.2729606336498775,
+      "unaccountedCPUCores": 0.00699867630123459,
+      "throttledPeriods": 0,
+      "roles": [
+        {
+          "role": "suitecut-browser",
+          "cpuPercent": 94.6808621080502
+        }
+      ]
+    },
+    {
+      "atSeconds": 463.03156003399636,
+      "ownedCPUCores": 0.9393780978884327,
+      "cgroupCPUCores": 0.9284473344472526,
+      "unaccountedCPUCores": -0.01093076344118016,
+      "throttledPeriods": 0,
+      "roles": [
+        {
+          "role": "suitecut-browser",
+          "cpuPercent": 68.5136006968619
+        }
+      ]
+    },
+    {
+      "atSeconds": 464.03185091800697,
+      "ownedCPUCores": 0.8497528204915797,
+      "cgroupCPUCores": 0.872805114947683,
+      "unaccountedCPUCores": 0.023052294456103253,
+      "throttledPeriods": 0,
+      "roles": [
+        {
+          "role": "suitecut-browser",
+          "cpuPercent": 65.29511642713726
+        }
+      ]
+    },
+    {
+      "atSeconds": 465.03224761100137,
+      "ownedCPUCores": 1.0995638107393504,
+      "cgroupCPUCores": 1.1044618677144957,
+      "unaccountedCPUCores": 0.004898056975145443,
+      "throttledPeriods": 0,
+      "roles": [
+        {
+          "role": "suitecut-browser",
+          "cpuPercent": 83.82911094153317
+        }
+      ]
+    },
+    {
+      "atSeconds": 466.03252334900026,
+      "ownedCPUCores": 0.9497381211110104,
+      "cgroupCPUCores": 0.9493152377160358,
+      "unaccountedCPUCores": -0.00042288339497463794,
+      "throttledPeriods": 0,
+      "roles": [
+        {
+          "role": "suitecut-browser",
+          "cpuPercent": 77.47937380738225
+        }
+      ]
+    },
+    {
+      "atSeconds": 467.0327816820063,
+      "ownedCPUCores": 0.8897701430042436,
+      "cgroupCPUCores": 0.8994766354968724,
+      "unaccountedCPUCores": 0.009706492492628827,
+      "throttledPeriods": 0,
+      "roles": [
+        {
+          "role": "suitecut-browser",
+          "cpuPercent": 70.00894763442169
+        }
+      ]
+    },
+    {
+      "atSeconds": 468.0330740710051,
+      "ownedCPUCores": 0.8097632341387131,
+      "cgroupCPUCores": 0.802607326447401,
+      "unaccountedCPUCores": -0.007155907691312169,
+      "throttledPeriods": 0,
+      "roles": [
+        {
+          "role": "suitecut-browser",
+          "cpuPercent": 62.0267612599942
+        }
+      ]
+    },
+    {
+      "atSeconds": 469.03333268400456,
+      "ownedCPUCores": 0.8197879921684121,
+      "cgroupCPUCores": 0.8141234570908312,
+      "unaccountedCPUCores": -0.00566453507758089,
+      "throttledPeriods": 0,
+      "roles": [
+        {
+          "role": "suitecut-browser",
+          "cpuPercent": 64.34608496702036
+        }
+      ]
+    },
+    {
+      "atSeconds": 470.0335808460077,
+      "ownedCPUCores": 0.7998015196528,
+      "cgroupCPUCores": 0.803195677351813,
+      "unaccountedCPUCores": 0.003394157699012897,
+      "throttledPeriods": 0,
+      "roles": [
+        {
+          "role": "suitecut-browser",
+          "cpuPercent": 61.94242674492186
+        }
+      ]
+    },
+    {
+      "atSeconds": 471.03401144100644,
+      "ownedCPUCores": 0.9395954149134882,
+      "cgroupCPUCores": 0.9389007140481976,
+      "unaccountedCPUCores": -0.0006947008652906538,
+      "throttledPeriods": 0,
+      "roles": [
+        {
+          "role": "suitecut-browser",
+          "cpuPercent": 73.56464392163502
+        }
+      ]
+    },
+    {
+      "atSeconds": 472.0357060810056,
+      "ownedCPUCores": 0.8685281574439873,
+      "cgroupCPUCores": 0.9027771177858497,
+      "unaccountedCPUCores": 0.03424896034186244,
+      "throttledPeriods": 0,
+      "roles": [
+        {
+          "role": "suitecut-browser",
+          "cpuPercent": 66.88532217268929
+        }
+      ]
+    },
+    {
+      "atSeconds": 473.03606444899924,
+      "ownedCPUCores": 0.9396632547647533,
+      "cgroupCPUCores": 0.9559844057865732,
+      "unaccountedCPUCores": 0.016321151021819868,
+      "throttledPeriods": 0,
+      "roles": [
+        {
+          "role": "suitecut-browser",
+          "cpuPercent": 70.2331730104109
+        }
+      ]
+    },
+    {
+      "atSeconds": 474.0402465130028,
+      "ownedCPUCores": 0.7269598075567816,
+      "cgroupCPUCores": 0.7525995803857863,
+      "unaccountedCPUCores": 0.02563977282900473,
+      "throttledPeriods": 0,
+      "roles": [
+        {
+          "role": "suitecut-browser",
+          "cpuPercent": 57.6571133200475
+        }
+      ]
+    },
+    {
+      "atSeconds": 475.0405348829954,
+      "ownedCPUCores": 0.7997693705124979,
+      "cgroupCPUCores": 0.7723912655364487,
+      "unaccountedCPUCores": -0.027378104976049165,
+      "throttledPeriods": 0,
+      "roles": [
+        {
+          "role": "suitecut-browser",
+          "cpuPercent": 59.29107768756825
+        }
+      ]
+    },
+    {
+      "atSeconds": 476.0409638340061,
+      "ownedCPUCores": 0.8496355479729691,
+      "cgroupCPUCores": 0.8608197504980019,
+      "unaccountedCPUCores": 0.011184202525032789,
+      "throttledPeriods": 0,
+      "roles": [
+        {
+          "role": "suitecut-browser",
+          "cpuPercent": 63.7435657542026
+        }
+      ]
+    },
+    {
+      "atSeconds": 477.0416331000015,
+      "ownedCPUCores": 0.9193846870922255,
+      "cgroupCPUCores": 0.9634611881888727,
+      "unaccountedCPUCores": 0.044076501096647236,
+      "throttledPeriods": 0,
+      "roles": [
+        {
+          "role": "suitecut-browser",
+          "cpuPercent": 72.22845636881708
+        }
+      ]
+    },
+    {
+      "atSeconds": 478.04190191300586,
+      "ownedCPUCores": 1.019725884421455,
+      "cgroupCPUCores": 1.0510664596671866,
+      "unaccountedCPUCores": 0.031340575245731486,
+      "throttledPeriods": 0,
+      "roles": [
+        {
+          "role": "suitecut-browser",
+          "cpuPercent": 77.73466627377637
+        }
+      ]
+    },
+    {
+      "atSeconds": 479.04215265599487,
+      "ownedCPUCores": 0.8397894286884745,
+      "cgroupCPUCores": 0.851106590989409,
+      "unaccountedCPUCores": 0.011317162300934517,
+      "throttledPeriods": 0,
+      "roles": [
+        {
+          "role": "suitecut-browser",
+          "cpuPercent": 65.93636261544503
+        }
+      ]
+    },
+    {
+      "atSeconds": 480.04247126399423,
+      "ownedCPUCores": 0.8297356395878697,
+      "cgroupCPUCores": 0.863176984907744,
+      "unaccountedCPUCores": 0.033441345319874284,
+      "throttledPeriods": 0,
+      "roles": [
+        {
+          "role": "suitecut-browser",
+          "cpuPercent": 63.69348193321962
+        }
+      ]
+    },
+    {
+      "atSeconds": 481.04275659400446,
+      "ownedCPUCores": 0.7997718011038093,
+      "cgroupCPUCores": 0.8582761080693054,
+      "unaccountedCPUCores": 0.058504306965496154,
+      "throttledPeriods": 0,
+      "roles": [
+        {
+          "role": "suitecut-browser",
+          "cpuPercent": 63.29723151939164
+        }
+      ]
+    },
+    {
+      "atSeconds": 482.043129305006,
+      "ownedCPUCores": 0.9096609593528026,
+      "cgroupCPUCores": 0.9210817027160749,
+      "unaccountedCPUCores": 0.011420743363272383,
+      "throttledPeriods": 0,
+      "roles": [
+        {
+          "role": "suitecut-browser",
+          "cpuPercent": 70.95806711729993
+        }
+      ]
+    },
+    {
+      "atSeconds": 483.04354319399863,
+      "ownedCPUCores": 0.7796773001476209,
+      "cgroupCPUCores": 0.7913734592361663,
+      "unaccountedCPUCores": 0.011696159088545401,
+      "throttledPeriods": 0,
+      "roles": [
+        {
+          "role": "suitecut-browser",
+          "cpuPercent": 61.049979114754315
+        }
+      ]
+    },
+    {
+      "atSeconds": 484.0439812520053,
+      "ownedCPUCores": 0.7296803576770045,
+      "cgroupCPUCores": 0.7431224692523901,
+      "unaccountedCPUCores": 0.013442111575385558,
+      "throttledPeriods": 0,
+      "roles": [
+        {
+          "role": "suitecut-browser",
+          "cpuPercent": 55.938145109426465
+        }
+      ]
+    },
+    {
+      "atSeconds": 485.0447621820058,
+      "ownedCPUCores": 0.8193601370877654,
+      "cgroupCPUCores": 0.8484024570687992,
+      "unaccountedCPUCores": 0.0290423199810338,
+      "throttledPeriods": 0,
+      "roles": [
+        {
+          "role": "suitecut-browser",
+          "cpuPercent": 61.757103999647654
+        }
+      ]
+    },
+    {
+      "atSeconds": 486.0451434580027,
+      "ownedCPUCores": 0.8296836615348122,
+      "cgroupCPUCores": 0.8321757113760366,
+      "unaccountedCPUCores": 0.002492049841224383,
+      "throttledPeriods": 0,
+      "roles": [
+        {
+          "role": "suitecut-browser",
+          "cpuPercent": 63.004255873623194
+        }
+      ]
+    },
+    {
+      "atSeconds": 487.0475174620078,
+      "ownedCPUCores": 1.4066605821441636,
+      "cgroupCPUCores": 1.4570798865136583,
+      "unaccountedCPUCores": 0.05041930436949475,
+      "throttledPeriods": 0,
+      "roles": [
+        {
+          "role": "suitecut-browser",
+          "cpuPercent": 108.30515386475798
+        }
+      ]
+    },
+    {
+      "atSeconds": 488.06396558000415,
+      "ownedCPUCores": 2.164399698369982,
+      "cgroupCPUCores": 2.1481667006322076,
+      "unaccountedCPUCores": -0.016232997737774174,
+      "throttledPeriods": 0,
+      "roles": [
+        {
+          "role": "suitecut-browser",
+          "cpuPercent": 183.06196714081045
+        }
+      ]
+    },
+    {
+      "atSeconds": 489.06600349499786,
+      "ownedCPUCores": 1.4370713707066234,
+      "cgroupCPUCores": 1.4800168514674554,
+      "unaccountedCPUCores": 0.04294548076083187,
+      "throttledPeriods": 0,
+      "roles": [
+        {
+          "role": "suitecut-browser",
+          "cpuPercent": 125.99614588793186
+        }
+      ]
+    },
+    {
+      "atSeconds": 490.0663901759981,
+      "ownedCPUCores": 1.169547758103041,
+      "cgroupCPUCores": 1.2077179983963766,
+      "unaccountedCPUCores": 0.03817024029333577,
+      "throttledPeriods": 0,
+      "roles": [
+        {
+          "role": "suitecut-browser",
+          "cpuPercent": 92.99936005707453
+        }
+      ]
+    },
+    {
+      "atSeconds": 491.06664238500525,
+      "ownedCPUCores": 0.8797781120358706,
+      "cgroupCPUCores": 0.9047648101655168,
+      "unaccountedCPUCores": 0.024986698129646077,
+      "throttledPeriods": 0,
+      "roles": [
+        {
+          "role": "suitecut-browser",
+          "cpuPercent": 65.04689061215785
+        }
+      ]
+    },
+    {
+      "atSeconds": 492.06697921799787,
+      "ownedCPUCores": 0.8297205227532328,
+      "cgroupCPUCores": 0.8532935825690032,
+      "unaccountedCPUCores": 0.02357305981577039,
+      "throttledPeriods": 0,
+      "roles": [
+        {
+          "role": "suitecut-browser",
+          "cpuPercent": 63.334543826963476
+        }
+      ]
+    },
+    {
+      "atSeconds": 493.06725589699636,
+      "ownedCPUCores": 1.0896985033095026,
+      "cgroupCPUCores": 1.1002735774085388,
+      "unaccountedCPUCores": 0.01057507409903624,
+      "throttledPeriods": 0,
+      "roles": [
+        {
+          "role": "suitecut-browser",
+          "cpuPercent": 85.98372584305062
+        }
+      ]
+    },
+    {
+      "atSeconds": 494.0678183150012,
+      "ownedCPUCores": 1.1893310987762822,
+      "cgroupCPUCores": 1.238878232576186,
+      "unaccountedCPUCores": 0.04954713379990381,
+      "throttledPeriods": 0,
+      "roles": [
+        {
+          "role": "suitecut-browser",
+          "cpuPercent": 98.75966546893265
+        }
+      ]
+    },
+    {
+      "atSeconds": 495.06868321499496,
+      "ownedCPUCores": 1.5486605634883424,
+      "cgroupCPUCores": 1.5394755076430493,
+      "unaccountedCPUCores": -0.009185055845292943,
+      "throttledPeriods": 0,
+      "roles": [
+        {
+          "role": "suitecut-browser",
+          "cpuPercent": 127.87161332129004
+        }
+      ]
+    },
+    {
+      "atSeconds": 496.06927034699765,
+      "ownedCPUCores": 1.6090552721556213,
+      "cgroupCPUCores": 1.6459246249786552,
+      "unaccountedCPUCores": 0.03686935282303393,
+      "throttledPeriods": 0,
+      "roles": [
+        {
+          "role": "suitecut-browser",
+          "cpuPercent": 123.5910551178716
+        }
+      ]
+    },
+    {
+      "atSeconds": 497.06961341599526,
+      "ownedCPUCores": 1.6694272712594171,
+      "cgroupCPUCores": 1.651319483480071,
+      "unaccountedCPUCores": -0.01810778777934608,
+      "throttledPeriods": 0,
+      "roles": [
+        {
+          "role": "suitecut-browser",
+          "cpuPercent": 137.37261704341668
+        }
+      ]
+    },
+    {
+      "atSeconds": 498.06990181400033,
+      "ownedCPUCores": 1.4795732940137123,
+      "cgroupCPUCores": 1.4845918466730788,
+      "unaccountedCPUCores": 0.005018552659366557,
+      "throttledPeriods": 0,
+      "roles": [
+        {
+          "role": "suitecut-browser",
+          "cpuPercent": 125.22015581691255
+        }
+      ]
+    },
+    {
+      "atSeconds": 499.070333044001,
+      "ownedCPUCores": 1.4793620547001631,
+      "cgroupCPUCores": 1.4725300008867077,
+      "unaccountedCPUCores": -0.006832053813455463,
+      "throttledPeriods": 0,
+      "roles": [
+        {
+          "role": "suitecut-browser",
+          "cpuPercent": 122.72140437194854
+        }
+      ]
+    },
+    {
+      "atSeconds": 500.0710203500057,
+      "ownedCPUCores": 1.0292925610421615,
+      "cgroupCPUCores": 1.0196331999790704,
+      "unaccountedCPUCores": -0.009659361063091166,
+      "throttledPeriods": 0,
+      "roles": [
+        {
+          "role": "suitecut-browser",
+          "cpuPercent": 78.43601142808029
+        }
+      ]
+    },
+    {
+      "atSeconds": 501.07127706600295,
+      "ownedCPUCores": 0.7897972464122848,
+      "cgroupCPUCores": 0.8071217989224966,
+      "unaccountedCPUCores": 0.01732455251021179,
+      "throttledPeriods": 0,
+      "roles": [
+        {
+          "role": "suitecut-browser",
+          "cpuPercent": 61.429862156400226
+        }
+      ]
+    },
+    {
+      "atSeconds": 502.07178053300595,
+      "ownedCPUCores": 0.9895018184849894,
+      "cgroupCPUCores": 0.9977666574112998,
+      "unaccountedCPUCores": 0.008264838926310357,
+      "throttledPeriods": 0,
+      "roles": [
+        {
+          "role": "suitecut-browser",
+          "cpuPercent": 74.76473019730267
+        }
+      ]
+    },
+    {
+      "atSeconds": 503.07215123300557,
+      "ownedCPUCores": 0.8196961386417447,
+      "cgroupCPUCores": 0.9023494990410474,
+      "unaccountedCPUCores": 0.08265336039930263,
+      "throttledPeriods": 0,
+      "roles": [
+        {
+          "role": "suitecut-browser",
+          "cpuPercent": 66.353277790388
+        }
+      ]
+    },
+    {
+      "atSeconds": 504.0728398689971,
+      "ownedCPUCores": 0.839421943837375,
+      "cgroupCPUCores": 0.831176621862861,
+      "unaccountedCPUCores": -0.008245321974514,
+      "throttledPeriods": 0,
+      "roles": [
+        {
+          "role": "suitecut-browser",
+          "cpuPercent": 62.77268941986215
+        }
+      ]
+    },
+    {
+      "atSeconds": 505.07308725900657,
+      "ownedCPUCores": 0.789804610229942,
+      "cgroupCPUCores": 0.8241421154742541,
+      "unaccountedCPUCores": 0.03433750524431217,
+      "throttledPeriods": 0,
+      "roles": [
+        {
+          "role": "suitecut-browser",
+          "cpuPercent": 62.92395646145721
+        }
+      ]
+    },
+    {
+      "atSeconds": 506.0733419820026,
+      "ownedCPUCores": 0.7798013666596466,
+      "cgroupCPUCores": 0.8003951209567798,
+      "unaccountedCPUCores": 0.020593754297133185,
+      "throttledPeriods": 0,
+      "roles": [
+        {
+          "role": "suitecut-browser",
+          "cpuPercent": 60.88778806897241
+        }
+      ]
+    },
+    {
+      "atSeconds": 507.0763613279996,
+      "ownedCPUCores": 0.9072606661394239,
+      "cgroupCPUCores": 0.8928102968042478,
+      "unaccountedCPUCores": -0.014450369335176095,
+      "throttledPeriods": 0,
+      "roles": [
+        {
+          "role": "suitecut-browser",
+          "cpuPercent": 64.91110508546227
+        }
+      ]
+    },
+    {
+      "atSeconds": 508.0769533410057,
+      "ownedCPUCores": 1.0493787541292185,
+      "cgroupCPUCores": 1.0528646904096155,
+      "unaccountedCPUCores": 0.0034859362803970543,
+      "throttledPeriods": 0,
+      "roles": [
+        {
+          "role": "suitecut-browser",
+          "cpuPercent": 83.06604780792942
+        }
+      ]
+    },
+    {
+      "atSeconds": 509.0777538389957,
+      "ownedCPUCores": 0.819344116681491,
+      "cgroupCPUCores": 0.8325015841552244,
+      "unaccountedCPUCores": 0.013157467473733272,
+      "throttledPeriods": 0,
+      "roles": [
+        {
+          "role": "suitecut-browser",
+          "cpuPercent": 61.76263919873857
+        }
+      ]
+    }
+  ]
+}

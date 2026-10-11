@@ -1,0 +1,27 @@
+
+ RUN  v4.1.11 /workspace/suitecut
+
+ ❯ tests/live-audio.test.ts (8 tests | 1 failed) 7163ms
+   × bounds the worklet queue during a stalled consumer and resumes with current audio 6765ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/live-audio.test.ts > bounds the worklet queue during a stalled consumer and resumes with current audio
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/live-audio.test.ts:125:1
+    123| })
+    124|
+    125| it('bounds the worklet queue during a stalled consumer and resumes wit…
+       | ^
+    126|   const messages: { time: number }[] = []
+    127|   let Processor: new () => {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 9 passed (10)
+      Tests  1 failed | 65 passed (66)
+   Start at  01:27:17
+   Duration  18.89s (transform 3.64s, setup 0ms, import 24.57s, tests 10.59s, environment 4ms)
+

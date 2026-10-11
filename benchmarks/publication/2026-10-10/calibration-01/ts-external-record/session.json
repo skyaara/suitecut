@@ -1,0 +1,28 @@
+{
+  "attemptId": "2c999e5c-8318-4d19-b967-dad8b24211ad",
+  "clock": {
+    "originEpochMs": 1791639685663,
+    "originMonotonicMs": 2471.420544,
+    "startedAt": "2026-10-10T13:41:25.663Z"
+  },
+  "endedAtMs": 7164.830549,
+  "pages": [
+    {
+      "id": "1e945110-c77c-40e2-aec0-9d6a8533b03d",
+      "kind": "main",
+      "initialUrl": "http://127.0.0.1:41255/",
+      "createdAtMs": 0
+    }
+  ],
+  "events": [],
+  "artifacts": [],
+  "videos": [
+    {
+      "artifactId": "bde9413e-89e7-4dd1-bca6-e95161dd6db4",
+      "pageId": "1e945110-c77c-40e2-aec0-9d6a8533b03d",
+      "attachmentName": "suitecut-source-2c999e5c-8318-4d19-b967-dad8b24211ad-bde9413e-89e7-4dd1-bca6-e95161dd6db4.webm",
+      "firstFrameEpochMs": 1791639685721.202,
+      "sourceStartedAtMs": 58.201904296875
+    }
+  ]
+}

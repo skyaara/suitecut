@@ -1,0 +1,401 @@
+{
+  "sourcePackets": 300,
+  "sourceFrames": 288000,
+  "sourceSilentPackets": 34,
+  "sourceTimelineGaps": [
+    {
+      "fromMs": 2479.853563,
+      "toMs": 2499.853563,
+      "durationMs": 20.0,
+      "followingCallbackDelayMs": -0.22232000000030894
+    },
+    {
+      "fromMs": 6739.853563,
+      "toMs": 6919.853563,
+      "durationMs": 180.0,
+      "followingCallbackDelayMs": 5.105847000000722
+    },
+    {
+      "fromMs": 6959.853563,
+      "toMs": 6979.853563,
+      "durationMs": 20.0,
+      "followingCallbackDelayMs": 153.71624800000063
+    },
+    {
+      "fromMs": 6999.853563,
+      "toMs": 7139.853563,
+      "durationMs": 140.0,
+      "followingCallbackDelayMs": 0.39717600000039965
+    },
+    {
+      "fromMs": 7439.853563,
+      "toMs": 7579.853563,
+      "durationMs": 140.0,
+      "followingCallbackDelayMs": 234.64383400000042
+    },
+    {
+      "fromMs": 7599.853563,
+      "toMs": 7819.853563,
+      "durationMs": 220.0,
+      "followingCallbackDelayMs": 6.683463000000302
+    },
+    {
+      "fromMs": 7919.853563,
+      "toMs": 7939.853563,
+      "durationMs": 20.0,
+      "followingCallbackDelayMs": 0.10204400000020541
+    },
+    {
+      "fromMs": 7999.853563,
+      "toMs": 8059.853563,
+      "durationMs": 60.0,
+      "followingCallbackDelayMs": 7.67138900000009
+    },
+    {
+      "fromMs": 8079.853563,
+      "toMs": 8089.853563,
+      "durationMs": 10.0,
+      "followingCallbackDelayMs": 277.94102699999985
+    },
+    {
+      "fromMs": 8109.853563,
+      "toMs": 8289.853563,
+      "durationMs": 180.0000000000009,
+      "followingCallbackDelayMs": 177.87756099999933
+    },
+    {
+      "fromMs": 8309.853563,
+      "toMs": 8389.853563,
+      "durationMs": 80.0,
+      "followingCallbackDelayMs": 89.88269899999977
+    },
+    {
+      "fromMs": 8469.853563,
+      "toMs": 8489.853563,
+      "durationMs": 20.0,
+      "followingCallbackDelayMs": 90.3460899999991
+    },
+    {
+      "fromMs": 8589.853563,
+      "toMs": 8669.853563,
+      "durationMs": 80.0,
+      "followingCallbackDelayMs": 92.00730199999998
+    },
+    {
+      "fromMs": 8709.853563,
+      "toMs": 8849.853563,
+      "durationMs": 140.0,
+      "followingCallbackDelayMs": 97.55914999999914
+    },
+    {
+      "fromMs": 8889.853563,
+      "toMs": 9049.853563,
+      "durationMs": 160.0,
+      "followingCallbackDelayMs": 90.40816599999926
+    },
+    {
+      "fromMs": 9209.853563,
+      "toMs": 9289.853563,
+      "durationMs": 80.0,
+      "followingCallbackDelayMs": 91.67409699999916
+    },
+    {
+      "fromMs": 9349.853563,
+      "toMs": 9469.853563,
+      "durationMs": 120.0,
+      "followingCallbackDelayMs": 166.16942500000005
+    },
+    {
+      "fromMs": 9509.853563,
+      "toMs": 9549.853563,
+      "durationMs": 40.0,
+      "followingCallbackDelayMs": 89.95384999999987
+    },
+    {
+      "fromMs": 9589.853563,
+      "toMs": 9889.853563,
+      "durationMs": 300.0,
+      "followingCallbackDelayMs": 92.02956199999971
+    },
+    {
+      "fromMs": 9989.853563,
+      "toMs": 10089.853563,
+      "durationMs": 100.0,
+      "followingCallbackDelayMs": 144.09473199999957
+    },
+    {
+      "fromMs": 10109.853563,
+      "toMs": 10149.853563,
+      "durationMs": 40.0,
+      "followingCallbackDelayMs": 452.38177499999983
+    },
+    {
+      "fromMs": 10169.853563,
+      "toMs": 10489.853563,
+      "durationMs": 320.0,
+      "followingCallbackDelayMs": 120.68698199999926
+    },
+    {
+      "fromMs": 10509.853563,
+      "toMs": 10529.853563,
+      "durationMs": 20.0,
+      "followingCallbackDelayMs": 89.86200899999858
+    },
+    {
+      "fromMs": 10609.853563,
+      "toMs": 10709.853563,
+      "durationMs": 100.0,
+      "followingCallbackDelayMs": 94.57762199999888
+    }
+  ],
+  "maxCallbackDelayMs": 452.38177499999983,
+  "cases": [
+    {
+      "audioCodec": "aac",
+      "originMs": 2393.978563,
+      "finishMs": 8964.645229333333,
+      "missingInputMs": 1404.7916666666667,
+      "eventuallyUncoveredInputMs": 1384.7916666666667,
+      "estimatedMissingAtEncodeMs": 1384.7916666666667,
+      "interiorMissingInputMs": 1254.125,
+      "interiorEventuallyUncoveredMs": 1254.125,
+      "interiorSourceCopyMismatchedFrames": 0,
+      "sourceGapsWithinOutput": [
+        {
+          "fromMs": 2479.853563,
+          "toMs": 2499.853563,
+          "durationMs": 20.0,
+          "followingCallbackDelayMs": -0.22232000000030894,
+          "outputStartMs": 85.875
+        },
+        {
+          "fromMs": 6739.853563,
+          "toMs": 6919.853563,
+          "durationMs": 180.0,
+          "followingCallbackDelayMs": 5.105847000000722,
+          "outputStartMs": 4345.875
+        },
+        {
+          "fromMs": 6959.853563,
+          "toMs": 6979.853563,
+          "durationMs": 20.0,
+          "followingCallbackDelayMs": 153.71624800000063,
+          "outputStartMs": 4565.875
+        },
+        {
+          "fromMs": 6999.853563,
+          "toMs": 7139.853563,
+          "durationMs": 140.0,
+          "followingCallbackDelayMs": 0.39717600000039965,
+          "outputStartMs": 4605.875
+        },
+        {
+          "fromMs": 7439.853563,
+          "toMs": 7579.853563,
+          "durationMs": 140.0,
+          "followingCallbackDelayMs": 234.64383400000042,
+          "outputStartMs": 5045.875
+        },
+        {
+          "fromMs": 7599.853563,
+          "toMs": 7819.853563,
+          "durationMs": 220.0,
+          "followingCallbackDelayMs": 6.683463000000302,
+          "outputStartMs": 5205.875
+        },
+        {
+          "fromMs": 7919.853563,
+          "toMs": 7939.853563,
+          "durationMs": 20.0,
+          "followingCallbackDelayMs": 0.10204400000020541,
+          "outputStartMs": 5525.875
+        },
+        {
+          "fromMs": 7999.853563,
+          "toMs": 8059.853563,
+          "durationMs": 60.0,
+          "followingCallbackDelayMs": 7.67138900000009,
+          "outputStartMs": 5605.875
+        },
+        {
+          "fromMs": 8079.853563,
+          "toMs": 8089.853563,
+          "durationMs": 10.0,
+          "followingCallbackDelayMs": 277.94102699999985,
+          "outputStartMs": 5685.875
+        },
+        {
+          "fromMs": 8109.853563,
+          "toMs": 8289.853563,
+          "durationMs": 180.0000000000009,
+          "followingCallbackDelayMs": 177.87756099999933,
+          "outputStartMs": 5715.875
+        },
+        {
+          "fromMs": 8309.853563,
+          "toMs": 8389.853563,
+          "durationMs": 80.0,
+          "followingCallbackDelayMs": 89.88269899999977,
+          "outputStartMs": 5915.875
+        },
+        {
+          "fromMs": 8469.853563,
+          "toMs": 8489.853563,
+          "durationMs": 20.0,
+          "followingCallbackDelayMs": 90.3460899999991,
+          "outputStartMs": 6075.875
+        },
+        {
+          "fromMs": 8589.853563,
+          "toMs": 8669.853563,
+          "durationMs": 80.0,
+          "followingCallbackDelayMs": 92.00730199999998,
+          "outputStartMs": 6195.875
+        },
+        {
+          "fromMs": 8709.853563,
+          "toMs": 8849.853563,
+          "durationMs": 140.0,
+          "followingCallbackDelayMs": 97.55914999999914,
+          "outputStartMs": 6315.875
+        },
+        {
+          "fromMs": 8889.853563,
+          "toMs": 9049.853563,
+          "durationMs": 160.0,
+          "followingCallbackDelayMs": 90.40816599999926,
+          "outputStartMs": 6495.875
+        }
+      ],
+      "decodedSilence10msWindows": [
+        {
+          "startMs": 0,
+          "endMs": 10,
+          "durationMs": 10
+        },
+        {
+          "startMs": 110,
+          "endMs": 120,
+          "durationMs": 10
+        },
+        {
+          "startMs": 130,
+          "endMs": 140,
+          "durationMs": 10
+        },
+        {
+          "startMs": 4370,
+          "endMs": 4540,
+          "durationMs": 170
+        },
+        {
+          "startMs": 4550,
+          "endMs": 4570,
+          "durationMs": 20
+        },
+        {
+          "startMs": 4590,
+          "endMs": 4600,
+          "durationMs": 10
+        },
+        {
+          "startMs": 4610,
+          "endMs": 4620,
+          "durationMs": 10
+        },
+        {
+          "startMs": 4630,
+          "endMs": 4760,
+          "durationMs": 130
+        },
+        {
+          "startMs": 4770,
+          "endMs": 4780,
+          "durationMs": 10
+        },
+        {
+          "startMs": 5070,
+          "endMs": 5200,
+          "durationMs": 130
+        },
+        {
+          "startMs": 5210,
+          "endMs": 5470,
+          "durationMs": 260
+        },
+        {
+          "startMs": 5530,
+          "endMs": 5560,
+          "durationMs": 30
+        },
+        {
+          "startMs": 5600,
+          "endMs": 5620,
+          "durationMs": 20
+        },
+        {
+          "startMs": 5630,
+          "endMs": 5680,
+          "durationMs": 50
+        },
+        {
+          "startMs": 5690,
+          "endMs": 6060,
+          "durationMs": 370
+        },
+        {
+          "startMs": 6090,
+          "endMs": 6170,
+          "durationMs": 80
+        },
+        {
+          "startMs": 6220,
+          "endMs": 6290,
+          "durationMs": 70
+        },
+        {
+          "startMs": 6340,
+          "endMs": 6470,
+          "durationMs": 130
+        },
+        {
+          "startMs": 6500,
+          "endMs": 6590,
+          "durationMs": 90
+        }
+      ],
+      "final": {
+        "ready": true,
+        "stopped": true,
+        "paused": false,
+        "videoFrames": 197,
+        "audioSamples": 315392,
+        "repeatedFrames": 73,
+        "droppedAudioSamples": 0,
+        "missingAudioSamples": 67430,
+        "lateAudioSamples": 0,
+        "queuedVideoBytes": 0,
+        "queuedAudioBytes": 0,
+        "startedMs": 2393.9785629957914,
+        "durationMs": 6566.666666666667,
+        "maximumEncodeMs": 462.1948160000011,
+        "error": ""
+      },
+      "decodedSamples": 316416,
+      "decodeErrors": false
+    }
+  ],
+  "hostCPUQuota": "400000 100000",
+  "hostCPUStatDelta": {
+    "usage_usec": 27225174,
+    "user_usec": 24031492,
+    "system_usec": 3193681,
+    "nice_usec": 0,
+    "nr_periods": 105,
+    "nr_throttled": 17,
+    "throttled_usec": 2872301,
+    "nr_bursts": 0,
+    "burst_usec": 0
+  },
+  "profileSamples": 11
+}

@@ -1,26 +1,71 @@
-# SuiteCut 2.0 embedded browser
+# SuiteCut 2.1 embedded browser
 
-The default Chromium Embedded Framework (CEF) capture backend for SuiteCut 2.0. Each source is a
+The default Chromium Embedded Framework (CEF) capture backend for SuiteCut 2.1. Each source is a
 separate sandboxed CEF browser process. Video comes from `CefRenderHandler::OnPaint`;
 audio comes from `CefAudioHandler::OnAudioStreamPacket`. No Playwright screenshot
 loop, browser extension, or exposed remote-debugging port participates in capture.
 
 The root `suitecut` API uses this backend. `suitecut/playwright` retains the explicit Playwright backend.
-The implementation transfers CPU BGRA or I420 buffers. It does **not** implement GPU
-texture sharing, hardware encoding, a desktop UI, or the complete Playwright API.
+The C++ media engine now captures, synchronizes and encodes without transporting raw
+media through TypeScript. See [the native engine guide](ENGINE.md) for the new
+Playwright adapter, direct FFmpeg-library backend, build requirements and tested limits.
+GPU texture sharing, hardware encoding and complete Playwright compatibility remain
+unimplemented or unverified.
 
 For the root API, migration from the beta, and a repeatable comparison with Playwright,
 see [the native-default guide](BETA.md).
 
+For a native foundation that SDKs in any language can build on, use the complete
+[native backend package](../engine/README.md). Its [v1 API](../engine/PROTOCOL.md)
+exposes CDP plus ready synchronized recording/streaming through the C++ engine.
+The optional [CEF-only component](../cef/README.md) exposes raw video/audio for
+applications that supply their own pipeline. The full build below enables media.
+
 ## Build
 
-Use CEF **152.0.8+g1ce985c+chromium-152.0.7977.134**, CMake 3.21+, Ninja, and a C++20
-compiler. Obtain the matching minimal binary SDK from
+The new native engine also requires FFmpeg 7.1+ development libraries; follow
+[ENGINE.md](ENGINE.md#build). The older examples and benchmark narrative below
+describe the previous API and are retained as migration history.
+
+
+Use CMake 3.21+, Ninja, a C++20 compiler and the platform's pinned CEF SDK.
+Linux x64 defaults to codec-enabled **152.0.6+g708dc14+chromium-152.0.7977.83**,
+pinned in [`cef-build-linux-codecs.json`](cef-build-linux-codecs.json). This
+third-party distribution publishes its build recipe and archive checksum; the
+installer verifies both the archive and extracted `libcef.so`. CMake also checks
+the exact version and library digest, so a stock SDK with the same version cannot
+silently replace it. The distribution was tested here, not independently rebuilt.
+It is older than the previously selected stock CEF 154 build, which cannot play
+H.264/AAC. Browser decoders and SuiteCut's FFmpeg output encoders are separate.
+
+Install on Linux x64 with Python 3.11+:
+
+```sh
+pnpm native:install:cef
+cmake -S native/browser -B .suitecut/native-build -G Ninja \
+  -DCEF_ROOT="$PWD/.suitecut/cef-codecs-sdk" \
+  -DLIBYUV_ROOT="$PWD/.suitecut/libyuv" \
+  -DSUITECUT_CEF_PIN_FILE=cef-build-linux-codecs.json \
+  -DCMAKE_BUILD_TYPE=Release
+cmake --build .suitecut/native-build --parallel 4
+ctest --test-dir .suitecut/native-build --output-on-failure
+export SUITECUT_NATIVE_EXECUTABLE="$PWD/.suitecut/native-build/suitecut-browser"
+pnpm test:native:playback
+```
+
+The playback check creates actual progressive and MSE H.264/AAC fixtures, checks
+decoded frames and native audio callbacks, and records through C++. It requires
+FFmpeg, a display and a working audio service. The [saved playback evidence](../../benchmarks/native-playback/2026-10-10/report.md)
+also includes a two-minute native GOFNS recording and the remaining audio gaps.
+The stock Linux 154 comparison pin remains [`cef-build-linux.json`](cef-build-linux.json);
+select it explicitly with `SUITECUT_CEF_PIN_FILE` and a matching SDK.
+
+macOS ARM64 remains pinned to stock **154.0.34+g14c5a08+chromium-154.0.8037.98**
+in [`cef-build.json`](cef-build.json), obtained from
 [CEF's build distribution](https://cef-builds.spotifycdn.com/index.html).
+Its upgrade and proprietary-codec playback have not been verified on macOS.
 Keep SDKs and outputs outside source control (for example under `.suitecut/`).
-The tested ARM64 archive URL, byte length, and SHA-256 checksum are pinned in
-[`cef-build.json`](cef-build.json); verify the archive against that checksum before
-extracting it. Builds do not silently fetch or update Chromium.
+Builds do not silently fetch or update Chromium.
 Fetch the exact [libyuv Git commit](libyuv-build.json) into `.suitecut/libyuv`.
 Gitiles-generated source archives vary in metadata between requests, so their
 compressed SHA-256 is not a stable pin. Git verifies the fetched objects; check
@@ -44,17 +89,33 @@ cmake -S native/browser -B .suitecut/native-build -G Ninja \
 cmake --build .suitecut/native-build --parallel 4
 ctest --test-dir .suitecut/native-build --output-on-failure
 export SUITECUT_NATIVE_EXECUTABLE="$PWD/.suitecut/native-build/suitecut-browser.app/Contents/MacOS/suitecut-browser"
-pnpm test:native
+pnpm test:native:recording
 ```
+
+`pnpm test:native` now also requires H.264/AAC browser playback. The stock macOS
+SDK has not passed that requirement; codec-enabled macOS packaging remains open.
 
 The CMake bundle includes the CEF framework, sandbox helper apps, CEF license, and
 Chromium credits. Keep the complete `.app` together. Distribution builds need
 platform signing/notarization; local compilation is not a signed release.
 
 The Linux CMake branch needs a matching CEF SDK and Chromium's runtime/display
-dependencies. It is not yet validated by this project's native integration test.
+dependencies. The native C++ checks and browser integration verifier passed on
+Debian 13 x86-64 with software graphics. See the saved
+[Linux CEF / OBS benchmark](../../benchmarks/obs-cef/README.md) for setup, exact
+versions, and recording/streaming evidence. That bounded cloud run does not
+establish hardware encoding support or sustained 4K recording throughput.
 Windows configuration deliberately fails until its sandbox and packaging are
 implemented. Do not work around platform problems by disabling the sandbox.
+
+For capture/backpressure investigations, the helper accepts the opt-in
+`--suitecut-diagnostics` switch. It writes one `SUITECUT_DIAGNOSTIC` JSON line per
+second to stderr, plus a final snapshot: native paint/audio callback counts and
+gaps, queued/replaced/dropped packets, queue ages and complete packet write times.
+It emits no page content, URLs, pixels or audio. Counters use bounded storage and
+the observer is absent by default. Redirect stderr to a local file with a helper
+wrapper when using the Node API, which normally drains diagnostics. These are
+timing observations, not a native allocation or leak audit.
 
 ## Node API
 
@@ -109,6 +170,8 @@ track and does not subscribe to CEF audio packets.
   frame is delivered immediately to a new subscriber when available. Callbacks
   must be synchronous and return promptly. Do not mutate buffers shared with
   other subscribers; copy before modifying. Unsubscribe using the returned function.
+  New native builds negotiate frame subscriptions: pixel conversion and transfer
+  stop when there are no frame subscribers, and resume with a fresh snapshot.
 - `pixelFormat: 'bgra'` (default) preserves full-resolution BGRA8 pixels. Use
   `pixelFormat: 'i420'` for streaming: native libyuv converts to contiguous Y, U,
   and V planes with BT.709 limited-range coefficients. I420 needs even CSS
@@ -132,6 +195,9 @@ track and does not subscribe to CEF audio packets.
   process closure. The user’s normal browser profile is never reused.
   `state` reports `running`, `closing`, `closed`, or `failed`; closed/failed sources
   reject new subscriptions and cannot be selected for a broadcast.
+  `onFailure(listener)` and `onClose(listener)` return removable subscriptions.
+  Use these for repeated sessions on a caller-owned source; unsubscribe at the
+  end of each session so pending lifecycle promises do not retain old sessions.
 - A broadcast owns its publisher, **not** its sources. `selectSource(next)` requires
   matching physical size, pixel format, and FPS and preserves the publisher connection. It clears
   previous audio. If a source fails, the publisher holds its last frame and emits
@@ -238,6 +304,12 @@ checks source-specific page tones, narration mixing, the default audio-off path,
 and callback-failure/cancellation cleanup. Its narration fixture is a
 repeatable tone, not a speech-model quality benchmark.
 
+Native source recording feeds timestamped raw Matroska to FFmpeg and produces
+variable-rate VP9 WebM. When encoding falls behind, the pending frame is replaced
+with the newest capture; missed time slots do not trigger stale-frame encoding.
+Capture timestamps preserve gaps and a final held frame preserves elapsed
+recording duration. Rendering still produces the requested constant-rate output.
+
 ## Memory and backpressure
 
 CEF callbacks never wait for pipe writes. The native writer retains one pending
@@ -245,6 +317,11 @@ video frame, up to 100 audio packets, and up to 128 control packets. A stalled
 consumer causes video replacement and old audio eviction. Node retains only the
 latest source frame unless the caller retains more. Commands are capped at 64 KiB
 and 64 outstanding requests; results at 1 MiB; packet headers at 16 KiB.
+Recording retains the latest and pending raw frame references, releases them on
+finalization, and caps queued PCM at 30 seconds. Closed packet decoders release
+partial frame allocations. These bounds exclude caller-retained buffers and
+CEF/FFmpeg internal allocations; measured long-run evidence is linked from
+`benchmarks/obs-cef/2026-10-09-optimization/`.
 
 The publisher retains enough raw video for its 150 ms audio delay plus three
 frames, with a minimum cap of 64 MiB. At 1080p60 the raw queue cap is about 95 MiB;
@@ -263,6 +340,7 @@ Every command has `version: 1`, a positive integer `id`, and `command`:
 ```json
 {"version":1,"id":1,"command":"navigate","url":"https://example.com"}
 {"version":1,"id":2,"command":"devtools","method":"Runtime.evaluate","params":{"expression":"document.title","returnByValue":true}}
+{"version":1,"id":3,"command":"frames","enabled":false}
 ```
 
 EOF requests graceful browser shutdown. Stdout is exclusively binary IPC:
@@ -271,16 +349,25 @@ payload bytes. All headers include `version`, `type`, and `bytes`.
 
 | Type | Header fields | Payload |
 | --- | --- | --- |
-| `ready` | `timestampMs`, `cefVersion` | none |
+| `ready` | `timestampMs`, `cefVersion`, optional `frameSubscriptions` | none |
 | `frame` | `timestampMs`, `width`, `height`, `pixelFormat`, `dropped` | tightly packed BGRA8 or contiguous I420 planes |
 | `audio` | `timestampMs`, `frames` | interleaved stereo PCM s16le |
 | `response` | `id`, `ok`, optional `error` | optional JSON DevTools result |
 | `error` | `error` | none; source is no longer reliable |
 
 Native timestamps are milliseconds from process start. Audio presentation time
-is anchored against callback receipt time. Unknown versions and malformed
+is anchored against callback receipt time, with at most 250 ms of native future
+presentation time. The Node consumer refines the handshake clock upper bound
+using capture receipt times; handshake transit delay must not place captured
+frames in the future. Live audio retains bounded history and accepts up to
+500 ms of future presentation time for native audio plus scheduling slack.
+Unknown versions and malformed
 lengths are fatal; consumers must not attempt to resynchronize a corrupt stream.
 Stderr is drained without forwarding page URLs or browser diagnostics into reports.
+
+The launcher supplies `--suitecut-frame-subscriptions` to opt into the optional
+capability. Older launchers receive the original handshake; newer launchers
+fall back to continuous transfer with older binaries that do not advertise it.
 
 ## Open-source distribution
 

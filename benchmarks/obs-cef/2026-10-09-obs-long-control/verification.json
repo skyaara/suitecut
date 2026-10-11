@@ -1,0 +1,16 @@
+{
+  "status": "OBS passes measured full-media continuity and sync; ordinary frame loss remains",
+  "obsStatus": "passed",
+  "suitecutReferenceStatus": "failed",
+  "activeSeconds": 1800.172378061,
+  "renderSkippedFrames": 2037,
+  "renderSkippedFraction": 0.037703370536953745,
+  "globalOutputSkippedFrames": 70,
+  "streamOutputSkippedFrames": 0,
+  "inputFixtureIdentical": true,
+  "syncWindowsChecked": 12,
+  "fullOutputsChecked": 4,
+  "noZeroDropClaim": true,
+  "observerGapsOver2Seconds": [],
+  "archiveVerification": "save-obs-long.py verifies every payload SHA256; archive checksum/metadata are saved separately after completion"
+}

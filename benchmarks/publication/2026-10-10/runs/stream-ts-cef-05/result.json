@@ -1,0 +1,174 @@
+{
+  "backend": "ts-cef",
+  "mode": "stream",
+  "durationRequestedMs": 30000,
+  "width": 1920,
+  "height": 1080,
+  "fps": 30,
+  "status": "completed; media validation pending",
+  "startedAt": "2026-10-10T14:51:38.872Z",
+  "profile": "performance",
+  "encoding": {
+    "video": "H264",
+    "preset": "veryfast",
+    "crf": null,
+    "bitrateKbps": 4500,
+    "encoderThreads": 1,
+    "audio": "AAC 48kHz stereo 128kbps"
+  },
+  "recordingPath": "/workspace/suitecut/benchmarks/publication/2026-10-10/runs/stream-ts-cef-05/recording.mkv",
+  "receiverPath": "/workspace/suitecut/benchmarks/publication/2026-10-10/runs/stream-ts-cef-05/receiver.flv",
+  "phases": [
+    {
+      "name": "static",
+      "atMs": 0.07775799999944866,
+      "monotonic": 153673.199139995
+    },
+    {
+      "name": "canvas",
+      "atMs": 10009.104764,
+      "monotonic": 153683.138742913
+    },
+    {
+      "name": "scroll",
+      "atMs": 20014.309694,
+      "monotonic": 153693.16737051
+    }
+  ],
+  "events": [
+    {
+      "name": "click, input and selection",
+      "atMs": 10544.288504
+    },
+    {
+      "name": "native browser failure",
+      "status": "completed; media validation pending",
+      "monotonic": 153703.972079775,
+      "error": "Error: Native browser: Native audio capture failed"
+    }
+  ],
+  "cefVersion": "152.0.6+g708dc14+chromium-152.0.7977.83",
+  "browserReadySeconds": 0.8223073040135205,
+  "sourceFrames": {
+    "count": 1005,
+    "firstTimestampMs": 1639.434948,
+    "lastTimestampMs": 38654.471651,
+    "nativeDroppedFrames": 66
+  },
+  "audioStarted": {
+    "generator": "frame-coded interpolated hash noise",
+    "sampleRate": 48000,
+    "quantum": 24,
+    "amplitude": 0.15,
+    "firstFrame": 640,
+    "currentFrame": 768
+  },
+  "beforeCapture": {
+    "marker": 100,
+    "rendered": 95,
+    "mode": "canvas",
+    "scrollY": 0,
+    "scrollEvents": 0,
+    "keyEvents": 0,
+    "clicks": 0,
+    "value": "",
+    "choice": "First",
+    "actionMask": 0,
+    "width": 1920,
+    "height": 1080,
+    "audio": {
+      "generator": "frame-coded interpolated hash noise",
+      "sampleRate": 48000,
+      "quantum": 24,
+      "amplitude": 0.15,
+      "firstFrame": 640,
+      "currentFrame": 94976
+    }
+  },
+  "outputReadySeconds": 1.619013454997912,
+  "activeBaseline": {
+    "marker": 183,
+    "rendered": 160,
+    "mode": "canvas",
+    "scrollY": 0,
+    "scrollEvents": 0,
+    "keyEvents": 0,
+    "clicks": 0,
+    "value": "",
+    "choice": "First",
+    "actionMask": 0,
+    "width": 1920,
+    "height": 1080,
+    "audio": {
+      "generator": "frame-coded interpolated hash noise",
+      "sampleRate": 48000,
+      "quantum": 24,
+      "amplitude": 0.15,
+      "firstFrame": 640,
+      "currentFrame": 208256
+    }
+  },
+  "activeStartMonotonic": 153673.095091224,
+  "nodeBefore": {
+    "rss": 238841856,
+    "heapTotal": 127320064,
+    "heapUsed": 53736400,
+    "external": 72186473,
+    "arrayBuffers": 68188733
+  },
+  "observedActiveMs": 25204.276572,
+  "scrollCommands": 19,
+  "activeEndMonotonic": 153703.160201688,
+  "activeMs": 30038.295994000004,
+  "afterCapture": {
+    "marker": 1090,
+    "rendered": 1049,
+    "mode": "scroll",
+    "scrollY": 540,
+    "scrollEvents": 19,
+    "keyEvents": 1,
+    "clicks": 1,
+    "value": "SuiteCut benchmark",
+    "choice": "Second",
+    "actionMask": 15,
+    "width": 1920,
+    "height": 1080,
+    "audio": {
+      "generator": "frame-coded interpolated hash noise",
+      "sampleRate": 48000,
+      "quantum": 24,
+      "amplitude": 0.15,
+      "firstFrame": 640,
+      "currentFrame": 1647872
+    }
+  },
+  "nodeAfter": {
+    "rss": 284037120,
+    "heapTotal": 128630784,
+    "heapUsed": 55137000,
+    "external": 88649306,
+    "arrayBuffers": 84651526
+  },
+  "finalHealth": {
+    "captureLagMs": 175.87603033333653,
+    "outputLagMs": 100,
+    "progressAgeMs": 100.38184000000183,
+    "networkBlockedMs": 0,
+    "networkQueuedBytes": 0
+  },
+  "finalizationSeconds": 0.7799043440027162,
+  "eventLoop": {
+    "meanMs": 22.198215503448278,
+    "p99Ms": 47.251455,
+    "maxMs": 199.753727
+  },
+  "cleanupFailure": "Error: Native browser: Native audio capture failed",
+  "nodeAfterCleanup": {
+    "rss": 284168192,
+    "heapTotal": 128630784,
+    "heapUsed": 55622928,
+    "external": 13890741,
+    "arrayBuffers": 9888885
+  },
+  "completedAt": "2026-10-10T14:52:17.548Z"
+}

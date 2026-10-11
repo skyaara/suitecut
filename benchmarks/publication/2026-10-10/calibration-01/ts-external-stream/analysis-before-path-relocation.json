@@ -1,0 +1,7 @@
+{
+  "backend": "ts-external",
+  "mode": "stream",
+  "workloadStatus": "completed; media validation pending",
+  "valid": false,
+  "error": "CalledProcessError(1, ['ffprobe', '-v', 'error', '-show_streams', '-show_format', '-of', 'json', '/workspace/suitecut/benchmarks/publication/2026-10-10/smoke/ts-external-stream/receiver.flv'])"
+}

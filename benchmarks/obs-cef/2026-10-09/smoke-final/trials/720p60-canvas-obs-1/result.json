@@ -1,0 +1,85 @@
+{
+  "id": "720p60-canvas-obs-1",
+  "backend": "obs",
+  "case": {
+    "name": "720p60-canvas",
+    "width": 1280,
+    "height": 720,
+    "fps": 60,
+    "workload": "canvas"
+  },
+  "trialNumber": 1,
+  "durationMs": 3000,
+  "status": "failed",
+  "startedAt": "2026-10-08T20:22:57.021Z",
+  "startupMs": 1563.6591010000002,
+  "browserVersion": "151.0.7922.34",
+  "obsBefore": {
+    "activeFps": 60.0000024000001,
+    "availableDiskSpace": 26197.55859375,
+    "averageFrameRenderTime": 4.246859,
+    "cpuUsage": 32.28002116028919,
+    "memoryUsage": 243.1640625,
+    "outputSkippedFrames": 0,
+    "outputTotalFrames": 0,
+    "renderSkippedFrames": 224,
+    "renderTotalFrames": 4932,
+    "webSocketSessionIncomingMessages": 14,
+    "webSocketSessionOutgoingMessages": 15
+  },
+  "recordStartMs": 0.46309100000007675,
+  "workload": {
+    "wallMs": 3008.813425,
+    "scrollCommands": 0,
+    "snapshot": {
+      "markerCount": 181,
+      "scrollY": 0,
+      "scrollEvents": 0,
+      "keyEvents": 0,
+      "clicks": 0,
+      "value": "",
+      "choice": "First",
+      "secondary": false
+    }
+  },
+  "obsAfter": {
+    "activeFps": 57.096776477419446,
+    "availableDiskSpace": 26197.55078125,
+    "averageFrameRenderTime": 13.560414,
+    "cpuUsage": 46.25352112676057,
+    "memoryUsage": 388.17578125,
+    "outputSkippedFrames": 0,
+    "outputTotalFrames": 208,
+    "renderSkippedFrames": 229,
+    "renderTotalFrames": 5145,
+    "webSocketSessionIncomingMessages": 16,
+    "webSocketSessionOutgoingMessages": 19
+  },
+  "finalizationMs": 6.704366999999365,
+  "mediaPath": "/workspace/suitecut/.suitecut/obs-cef-evidence/2026-10-09/2026-10-08 20-22-58.mkv",
+  "decoded": {
+    "width": 1280,
+    "height": 720,
+    "codec": "h264",
+    "containerFps": 60,
+    "durationSeconds": 3.567,
+    "bytes": 1078092,
+    "decodedFrames": 212,
+    "markerTransitions": 1,
+    "markerRegressions": 0,
+    "activeFrames": 212,
+    "distinctActiveFrames": 1,
+    "distinctActiveFps": 0.2830188679245283,
+    "repeatFraction": 0.9952830188679245,
+    "longestActiveHoldMs": 3533.333333333333,
+    "audioStreams": [
+      {
+        "codec": "aac",
+        "sampleRate": "48000",
+        "channels": 2
+      }
+    ]
+  },
+  "error": "Error: Decoded output does not contain the active motion marker\n    at trial (file:///workspace/suitecut/benchmarks/obs-cef/run.mjs:121:68)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async file:///workspace/suitecut/benchmarks/obs-cef/run.mjs:133:111",
+  "completedAt": "2026-10-08T20:23:03.378Z"
+}

@@ -1,0 +1,98 @@
+[
+  {
+    "connectionState": "new",
+    "iceConnectionState": "new",
+    "signalingState": "stable",
+    "iceTransportPolicy": "all",
+    "servers": [
+      {
+        "urls": [
+          "turns:meet-jit-si-turnrelay.jitsi.net:443?transport=tcp"
+        ]
+      }
+    ],
+    "stats": [
+      {
+        "id": "I+Qbzet+K",
+        "type": "local-candidate",
+        "candidateType": "host",
+        "protocol": "tcp"
+      },
+      {
+        "id": "IDnbP2Bvd",
+        "type": "local-candidate",
+        "candidateType": "host",
+        "protocol": "tcp"
+      },
+      {
+        "id": "IdZZptSm/",
+        "type": "local-candidate",
+        "candidateType": "host",
+        "protocol": "tcp"
+      },
+      {
+        "id": "IuFc9bXeD",
+        "type": "local-candidate",
+        "candidateType": "host",
+        "protocol": "tcp"
+      },
+      {
+        "id": "T01",
+        "type": "transport",
+        "bytesSent": 0,
+        "bytesReceived": 0,
+        "packetsSent": 0,
+        "packetsReceived": 0,
+        "dtlsState": "new",
+        "iceState": "new"
+      }
+    ]
+  },
+  {
+    "connectionState": "new",
+    "iceConnectionState": "new",
+    "signalingState": "stable",
+    "iceTransportPolicy": "all",
+    "servers": [
+      {
+        "urls": [
+          "turn:meet-jit-si-turnrelay.jitsi.net:443"
+        ]
+      },
+      {
+        "urls": [
+          "turns:meet-jit-si-turnrelay.jitsi.net:443?transport=tcp"
+        ]
+      },
+      {
+        "urls": [
+          "stun:meet-jit-si-turnrelay.jitsi.net:443"
+        ]
+      }
+    ],
+    "stats": [
+      {
+        "id": "INncEx93F",
+        "type": "local-candidate",
+        "candidateType": "host",
+        "protocol": "tcp"
+      },
+      {
+        "id": "IwGdyCwvC",
+        "type": "local-candidate",
+        "candidateType": "host",
+        "protocol": "tcp"
+      },
+      {
+        "id": "T01",
+        "type": "transport",
+        "bytesSent": 0,
+        "bytesReceived": 0,
+        "packetsSent": 0,
+        "packetsReceived": 0,
+        "dtlsState": "new",
+        "iceState": "new"
+      }
+    ]
+  }
+]

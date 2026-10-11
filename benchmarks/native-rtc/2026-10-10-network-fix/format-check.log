@@ -1,0 +1,3 @@
+$ prettier --check "{src,tests,examples}/**/*.ts" "plugins/**/*.{ts,json,mjs}" "scripts/**/*.mjs" "site/**/*.{astro,css,ts,json,mjs}" ".github/**/*.yml" "*.{js,json}"
+Checking formatting...
+All matched files use Prettier code style!

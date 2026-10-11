@@ -1,0 +1,90 @@
+{
+  "sourcePackets": 1011,
+  "sourceFrames": 970560,
+  "sourceSilentPackets": 2,
+  "sourceTimelineGaps": [
+    {
+      "fromMs": 14942.113197,
+      "toMs": 14982.113197,
+      "durationMs": 40.0,
+      "followingCallbackDelayMs": 1.3719339999988733
+    }
+  ],
+  "maxCallbackDelayMs": 46.513804000000164,
+  "cases": [
+    {
+      "audioCodec": "aac",
+      "originMs": 675.44653,
+      "finishMs": 20835.44653033333,
+      "missingInputMs": 53.333333333333336,
+      "eventuallyUncoveredInputMs": 40.0,
+      "estimatedMissingAtEncodeMs": 40.0,
+      "interiorMissingInputMs": 40.0,
+      "interiorEventuallyUncoveredMs": 40.0,
+      "interiorSourceCopyMismatchedFrames": 0,
+      "sourceGapsWithinOutput": [
+        {
+          "fromMs": 14942.113197,
+          "toMs": 14982.113197,
+          "durationMs": 40.0,
+          "followingCallbackDelayMs": 1.3719339999988733,
+          "outputStartMs": 14266.666667000001
+        }
+      ],
+      "decodedSilence10msWindows": [
+        {
+          "startMs": 0,
+          "endMs": 20,
+          "durationMs": 20
+        },
+        {
+          "startMs": 14290,
+          "endMs": 14320,
+          "durationMs": 30
+        },
+        {
+          "startMs": 14340,
+          "endMs": 14350,
+          "durationMs": 10
+        },
+        {
+          "startMs": 20170,
+          "endMs": 20180,
+          "durationMs": 10
+        }
+      ],
+      "final": {
+        "ready": true,
+        "stopped": true,
+        "paused": false,
+        "videoFrames": 605,
+        "audioSamples": 967680,
+        "repeatedFrames": 1,
+        "droppedAudioSamples": 0,
+        "missingAudioSamples": 2560,
+        "lateAudioSamples": 0,
+        "queuedVideoBytes": 0,
+        "queuedAudioBytes": 0,
+        "startedMs": 675.446530332168,
+        "durationMs": 20166.666666666668,
+        "maximumEncodeMs": 21.483780000000024,
+        "error": ""
+      },
+      "decodedSamples": 968704,
+      "decodeErrors": false
+    }
+  ],
+  "hostCPUQuota": "400000 100000",
+  "hostCPUStatDelta": {
+    "usage_usec": 11510708,
+    "user_usec": 10440225,
+    "system_usec": 1070483,
+    "nice_usec": 0,
+    "nr_periods": 200,
+    "nr_throttled": 0,
+    "throttled_usec": 0,
+    "nr_bursts": 0,
+    "burst_usec": 0
+  },
+  "profileSamples": 21
+}

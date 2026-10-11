@@ -1,0 +1,7 @@
+{
+  "backend": "obs-cef",
+  "mode": "record",
+  "workloadStatus": "completed; media validation pending",
+  "valid": false,
+  "error": "AssertionError('Recording must be video only for a matched comparison')"
+}

@@ -1,0 +1,165 @@
+{
+  "schemaVersion": 1,
+  "startedAt": "2026-10-09T03:22:13.611Z",
+  "endedAt": "2026-10-09T03:22:27.492Z",
+  "status": "passed",
+  "rootDirectory": "/workspace/suitecut",
+  "tests": [
+    {
+      "id": "b41c374f-bb1c-4900-8465-7f52de33418f",
+      "order": 0,
+      "title": "native-record-audio-true",
+      "titlePath": [
+        "native-record-audio-true"
+      ],
+      "projectName": "native-chromium",
+      "location": {
+        "file": "/workspace/suitecut/benchmarks/obs-cef/features.mjs",
+        "line": 1,
+        "column": 1
+      },
+      "attempts": [
+        {
+          "id": "3f86f2ca-c858-48fe-bcbb-ecd21555dd60",
+          "retry": 0,
+          "status": "passed",
+          "clock": {
+            "originEpochMs": 1791516133612,
+            "originMonotonicMs": 43447.798159,
+            "startedAt": "2026-10-09T03:22:13.612Z"
+          },
+          "durationMs": 12987.757768000003,
+          "pages": [
+            {
+              "id": "daaa45af-d37d-42ff-b474-784ceb44c673",
+              "kind": "main",
+              "initialUrl": "about:blank",
+              "createdAtMs": 10.857776000004378
+            },
+            {
+              "id": "57e2609f-7439-45ef-876a-c6c60c68c766",
+              "kind": "secondary",
+              "initialUrl": "http://127.0.0.1:32987/fixture.html?source=secondary",
+              "createdAtMs": 7906.729729999999
+            }
+          ],
+          "events": [
+            {
+              "id": "481515b7-abbf-4b0b-ba8a-a318773e3081",
+              "atMs": 8013.433728000004,
+              "pageId": "57e2609f-7439-45ef-876a-c6c60c68c766",
+              "type": "page-selected",
+              "reason": "author"
+            },
+            {
+              "id": "07100b48-af3a-4b68-8561-26d295d69d1b",
+              "atMs": 10816.055315000005,
+              "pageId": "daaa45af-d37d-42ff-b474-784ceb44c673",
+              "type": "page-selected",
+              "reason": "author"
+            }
+          ],
+          "steps": [],
+          "artifacts": [
+            {
+              "id": "93d40b8e-2a17-49f2-991b-caeab273d4d2",
+              "name": "suitecut-source-3f86f2ca-c858-48fe-bcbb-ecd21555dd60-93d40b8e-2a17-49f2-991b-caeab273d4d2.webm",
+              "role": "source-video",
+              "contentType": "video/webm",
+              "path": "/workspace/suitecut/.suitecut/obs-cef-optimization/features-record-final/native-record-audio-true/suitecut-source-3f86f2ca-c858-48fe-bcbb-ecd21555dd60-93d40b8e-2a17-49f2-991b-caeab273d4d2.webm",
+              "pathKind": "absolute",
+              "sizeBytes": 238590,
+              "pageId": "57e2609f-7439-45ef-876a-c6c60c68c766",
+              "createdAtMs": 7908.112171000008
+            },
+            {
+              "id": "42577931-67a4-4e2c-bf1a-b67f5d867e51",
+              "name": "suitecut-source-3f86f2ca-c858-48fe-bcbb-ecd21555dd60-42577931-67a4-4e2c-bf1a-b67f5d867e51.webm",
+              "role": "source-video",
+              "contentType": "video/webm",
+              "path": "/workspace/suitecut/.suitecut/obs-cef-optimization/features-record-final/native-record-audio-true/suitecut-source-3f86f2ca-c858-48fe-bcbb-ecd21555dd60-42577931-67a4-4e2c-bf1a-b67f5d867e51.webm",
+              "pathKind": "absolute",
+              "sizeBytes": 646768,
+              "pageId": "daaa45af-d37d-42ff-b474-784ceb44c673",
+              "createdAtMs": 84.58489800000098
+            }
+          ],
+          "media": [
+            {
+              "id": "media-406b71c5-3f9d-4aa3-ac6a-3061568aacbb",
+              "artifactId": "93d40b8e-2a17-49f2-991b-caeab273d4d2",
+              "formatName": "matroska,webm",
+              "durationMs": 5089,
+              "streams": [
+                {
+                  "kind": "video",
+                  "codec": "vp9",
+                  "pixelFormat": "yuv420p",
+                  "colorRange": "limited",
+                  "colorSpace": "bt709",
+                  "width": 1280,
+                  "height": 720,
+                  "durationMs": 5089,
+                  "frameRate": 30,
+                  "timeBase": "1/1000",
+                  "hasVariableFrameRate": false
+                },
+                {
+                  "kind": "audio",
+                  "codec": "opus",
+                  "channels": 2,
+                  "sampleRate": 48000,
+                  "durationMs": 5089
+                }
+              ]
+            },
+            {
+              "id": "media-3fba8ba8-2094-4cf4-a518-9d5a17ef2dab",
+              "artifactId": "42577931-67a4-4e2c-bf1a-b67f5d867e51",
+              "formatName": "matroska,webm",
+              "durationMs": 12936,
+              "streams": [
+                {
+                  "kind": "video",
+                  "codec": "vp9",
+                  "pixelFormat": "yuv420p",
+                  "colorRange": "limited",
+                  "colorSpace": "bt709",
+                  "width": 1280,
+                  "height": 720,
+                  "durationMs": 12936,
+                  "frameRate": 30,
+                  "timeBase": "1/1000",
+                  "hasVariableFrameRate": false
+                },
+                {
+                  "kind": "audio",
+                  "codec": "opus",
+                  "channels": 2,
+                  "sampleRate": 48000,
+                  "durationMs": 12936
+                }
+              ]
+            }
+          ],
+          "videoTiming": [
+            {
+              "pageId": "57e2609f-7439-45ef-876a-c6c60c68c766",
+              "mediaId": "media-406b71c5-3f9d-4aa3-ac6a-3061568aacbb",
+              "firstFrameEpochMs": 1791516141520.1123,
+              "sourceStartedAtMs": 7908.112171000008
+            },
+            {
+              "pageId": "daaa45af-d37d-42ff-b474-784ceb44c673",
+              "mediaId": "media-3fba8ba8-2094-4cf4-a518-9d5a17ef2dab",
+              "firstFrameEpochMs": 1791516133696.585,
+              "sourceStartedAtMs": 84.58489800000098
+            }
+          ],
+          "errors": [],
+          "diagnostics": []
+        }
+      ]
+    }
+  ]
+}

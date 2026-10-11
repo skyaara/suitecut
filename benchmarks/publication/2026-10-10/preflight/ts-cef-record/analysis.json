@@ -1,0 +1,9 @@
+{
+  "backend": "ts-cef",
+  "mode": "record",
+  "workloadStatus": "completed; media validation pending",
+  "valid": false,
+  "mediaDecoded": false,
+  "validationIssues": [],
+  "error": "AssertionError('No visible marker motion')"
+}

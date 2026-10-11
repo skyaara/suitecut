@@ -1,0 +1,46 @@
+{
+  "before": {
+    "recordEncoder.json": {
+      "rate_control": "CRF",
+      "crf": 18,
+      "preset": "veryfast",
+      "profile": "high",
+      "keyint_sec": 2
+    },
+    "streamEncoder.json": {
+      "rate_control": "CBR",
+      "bitrate": 4500,
+      "preset": "veryfast",
+      "profile": "high",
+      "keyint_sec": 2
+    }
+  },
+  "effectiveControlSettings": {
+    "recordEncoder.json": {
+      "rate_control": "CRF",
+      "crf": 18,
+      "preset": "veryfast",
+      "profile": "high",
+      "keyint_sec": 2,
+      "x264opts": "threads=4"
+    },
+    "streamEncoder.json": {
+      "rate_control": "CBR",
+      "bitrate": 4500,
+      "preset": "veryfast",
+      "profile": "high",
+      "keyint_sec": 2,
+      "x264opts": "threads=4"
+    }
+  },
+  "profileIsolation": ".suitecut/obs-long-control/2026-10-09/profile/obs-studio",
+  "requestedDurationMs": 1800000,
+  "width": 1920,
+  "height": 1080,
+  "targetFps": 30,
+  "syncPulseMs": 250,
+  "wheelEveryMs": 5000,
+  "cpuQuota": "400000 100000",
+  "referenceResult": "benchmarks/obs-cef/2026-10-09-optimization/soak/result.json",
+  "differences": "OBS external Chromium XSHM/Pulse; H264/AAC record and stream, separate encoders, threads=4 each. SuiteCut CEF/I420, VP9/Opus record and H264/AAC stream. Same fixture, target, pulse and input pattern; available production pipelines, not identical codecs."
+}

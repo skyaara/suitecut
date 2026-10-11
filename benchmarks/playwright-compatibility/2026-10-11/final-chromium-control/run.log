@@ -1,0 +1,82 @@
+[WARN] Your node_modules are out of sync with your lockfile. The workspace structure has changed since last install
+
+Running 25 tests using 1 worker
+
+(node:937848) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 benchmarks/playwright-compatibility/compatibility.spec.ts:192:1 › worker: dedicated Worker evaluation and messaging (596ms)
+  ✓   2 benchmarks/playwright-compatibility/compatibility.spec.ts:211:1 › worker: service worker website control and fetch (592ms)
+  ✓   3 benchmarks/playwright-compatibility/compatibility.spec.ts:215:1 › worker: context serviceworker event, enumeration and evaluation (245ms)
+  ✓   4 benchmarks/playwright-compatibility/compatibility.spec.ts:226:1 › worker: service worker console and close event on context disposal (255ms)
+  ✓   5 benchmarks/playwright-compatibility/compatibility.spec.ts:243:1 › worker: multiple pages expose one service worker identity (588ms)
+  ✓   6 benchmarks/playwright-compatibility/compatibility.spec.ts:256:1 › worker: worker remains automatable after its first page closes (523ms)
+  ✓   7 benchmarks/playwright-compatibility/compatibility.spec.ts:273:1 › worker: repeated worker contexts release browser target registrations (1.4s)
+  ✓   8 benchmarks/playwright-compatibility/compatibility.spec.ts:302:1 › worker: serviceWorkers block prevents registration (97ms)
+  ✓   9 benchmarks/playwright-compatibility/compatibility.spec.ts:315:1 › oopif: cross-site frame is a separate CDP target and remains interactive (242ms)
+  ✓  10 benchmarks/playwright-compatibility/compatibility.spec.ts:342:1 › oopif: cross-site navigation, detach and network routing (406ms)
+  ✓  11 benchmarks/playwright-compatibility/compatibility.spec.ts:366:1 › state: IndexedDB auth export to file and restore into a fresh context (326ms)
+  ✓  12 benchmarks/playwright-compatibility/compatibility.spec.ts:443:1 › state: empty IndexedDB export and restore (188ms)
+  ✓  13 benchmarks/playwright-compatibility/compatibility.spec.ts:465:3 › auth: http origin HTTP credentials (81ms)
+  ✓  14 benchmarks/playwright-compatibility/compatibility.spec.ts:478:3 › proxy: http through local proxy plus origin auth (87ms)
+  ✘  15 benchmarks/playwright-compatibility/compatibility.spec.ts:494:3 › proxy: http authenticated proxy plus origin auth (73ms)
+(node:938485) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  16 benchmarks/playwright-compatibility/compatibility.spec.ts:465:3 › auth: https origin HTTP credentials (170ms)
+  ✓  17 benchmarks/playwright-compatibility/compatibility.spec.ts:478:3 › proxy: https through local proxy plus origin auth (105ms)
+  ✘  18 benchmarks/playwright-compatibility/compatibility.spec.ts:494:3 › proxy: https authenticated proxy plus origin auth (79ms)
+(node:938595) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  19 benchmarks/playwright-compatibility/compatibility.spec.ts:511:1 › auth: wrong credentials fail and a fresh context does not inherit them (244ms)
+  ✓  20 benchmarks/playwright-compatibility/compatibility.spec.ts:532:1 › proxy: bypass uses the real origin without contacting the proxy (68ms)
+  ✓  21 benchmarks/playwright-compatibility/compatibility.spec.ts:544:3 › proxy: http authenticated proxy without origin auth (107ms)
+  ✓  22 benchmarks/playwright-compatibility/compatibility.spec.ts:544:3 › proxy: https authenticated proxy without origin auth (113ms)
+  ✓  23 benchmarks/playwright-compatibility/compatibility.spec.ts:560:3 › har: har captures and replays bodies, POST and redirects (239ms)
+  ✓  24 benchmarks/playwright-compatibility/compatibility.spec.ts:560:3 › har: har.zip captures and replays bodies, POST and redirects (219ms)
+
+  ✓  25 benchmarks/playwright-compatibility/compatibility.spec.ts:606:1 › video: Playwright recordVideo creates a decodable WebM after context close (1.5s)
+
+
+  1) benchmarks/playwright-compatibility/compatibility.spec.ts:494:3 › proxy: http authenticated proxy plus origin auth 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 200
+    Received: 401
+
+      501 |     try {
+      502 |       const p = await c.newPage()
+    > 503 |       expect((await p.goto(`${scheme}://auth-proxy.test/auth`))!.status()).toBe(200)
+          |                                                                            ^
+      504 |       await expect(p.getByRole('heading')).toHaveText('Authenticated')
+      505 |       expect(proxyRequests.some((r) => r.authenticated)).toBe(true)
+      506 |     } finally {
+        at /workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts:503:76
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/final-chromium-control/artifacts/compatibility-proxy-http-a-d59e1-ated-proxy-plus-origin-auth/error-context.md
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/final-chromium-control/artifacts/compatibility-proxy-http-a-d59e1-ated-proxy-plus-origin-auth/error-context.md
+
+  2) benchmarks/playwright-compatibility/compatibility.spec.ts:494:3 › proxy: https authenticated proxy plus origin auth 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 200
+    Received: 401
+
+      501 |     try {
+      502 |       const p = await c.newPage()
+    > 503 |       expect((await p.goto(`${scheme}://auth-proxy.test/auth`))!.status()).toBe(200)
+          |                                                                            ^
+      504 |       await expect(p.getByRole('heading')).toHaveText('Authenticated')
+      505 |       expect(proxyRequests.some((r) => r.authenticated)).toBe(true)
+      506 |     } finally {
+        at /workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts:503:76
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/final-chromium-control/artifacts/compatibility-proxy-https--00d57-ated-proxy-plus-origin-auth/error-context.md
+
+    Error Context: benchmarks/playwright-compatibility/2026-10-11/final-chromium-control/artifacts/compatibility-proxy-https--00d57-ated-proxy-plus-origin-auth/error-context.md
+
+  2 failed
+    benchmarks/playwright-compatibility/compatibility.spec.ts:494:3 › proxy: http authenticated proxy plus origin auth 
+    benchmarks/playwright-compatibility/compatibility.spec.ts:494:3 › proxy: https authenticated proxy plus origin auth 
+  23 passed (13.9s)

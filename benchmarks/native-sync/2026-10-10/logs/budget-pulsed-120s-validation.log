@@ -1,0 +1,66 @@
+{
+  "outputs": [
+    {
+      "path": "/workspace/suitecut/benchmarks/native-sync/2026-10-10/budget-pulsed-120s/recording.mp4",
+      "fullyDecodedVideoFrames": 3618,
+      "nativeVideoFrames": 3618,
+      "distinctImageFPS": 29.427860696517413,
+      "maximumImageHoldMs": 166.66666666666666,
+      "decodedInteriorSilenceMs": 86740,
+      "maximumInteriorSilenceMs": 880,
+      "decodedSilenceLongerThanExpectedPulseMs": [
+        {
+          "startMs": 18930,
+          "endMs": 19810,
+          "durationMs": 880
+        }
+      ],
+      "preEncoderPulseOnsets": 120,
+      "visualPulseOnsets": 120,
+      "pulseVisualMinusNativeAudioMs": {
+        "samples": 118,
+        "median": 16.666666666666288,
+        "p95Absolute": 23.333333333328483,
+        "maximumAbsolute": 56.66666666667152,
+        "unmatched": []
+      }
+    },
+    {
+      "path": "/workspace/suitecut/benchmarks/native-sync/2026-10-10/budget-pulsed-120s/receiver.flv",
+      "fullyDecodedVideoFrames": 3611,
+      "nativeVideoFrames": 3611,
+      "distinctImageFPS": 29.842148989199668,
+      "maximumImageHoldMs": 166.66666666666666,
+      "decodedInteriorSilenceMs": 86760,
+      "maximumInteriorSilenceMs": 890,
+      "decodedSilenceLongerThanExpectedPulseMs": [
+        {
+          "startMs": 18650,
+          "endMs": 19540,
+          "durationMs": 890
+        }
+      ],
+      "preEncoderPulseOnsets": 120,
+      "visualPulseOnsets": 120,
+      "pulseVisualMinusNativeAudioMs": {
+        "samples": 118,
+        "median": 26.666666666671517,
+        "p95Absolute": 30.0,
+        "maximumAbsolute": 30.0,
+        "unmatched": []
+      }
+    }
+  ],
+  "resources": {
+    "captureSamples": 121,
+    "nativeMeanCPUCores": 0.8951799111496725,
+    "nativeAggregateRSSPeakMiB": 1251.23046875,
+    "aggregateRSSFirstWindowMedianMiB": 1170.32421875,
+    "aggregateRSSLastWindowMedianMiB": 1241.99609375,
+    "rssWindowSeconds": 30.062445038,
+    "rssIsSummedNotPrivateMemory": true,
+    "wholeCEFLeakFreedomProven": false
+  },
+  "sourceGapCount": 2,
+  "maxCallbackDelayMs": 137.57542900000044
+}

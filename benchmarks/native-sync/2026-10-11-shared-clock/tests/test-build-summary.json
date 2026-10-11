@@ -1,0 +1,66 @@
+{
+  "savedAt": "2026-10-10T21:46:59.429187+00:00",
+  "nativeTestGroups": 8,
+  "sdkTests": 24,
+  "checks": {
+    "nearest-release": {
+      "log": "benchmarks/native-sync/2026-10-11-shared-clock/logs/tests-nearest-release.log",
+      "successEvidence": [
+        "100% tests passed out of 8"
+      ],
+      "asanScope": null
+    },
+    "nearest-asan": {
+      "log": "benchmarks/native-sync/2026-10-11-shared-clock/logs/tests-nearest-asan.log",
+      "successEvidence": [
+        "100% tests passed out of 8"
+      ],
+      "asanScope": "SuiteCut native test executable code and allocation leak inspection; prebuilt CEF/FFmpeg not recompiled"
+    },
+    "final-sdk": {
+      "log": "benchmarks/native-sync/2026-10-11-shared-clock/logs/tests-final-sdk.log",
+      "successEvidence": [
+        "Tests  24 passed (24)"
+      ],
+      "asanScope": null
+    }
+  },
+  ".suitecut/native-build": {
+    "CEF_ROOT": "/workspace/suitecut/.suitecut/cef-codecs-sdk",
+    "CMAKE_BUILD_TYPE": "Release",
+    "CMAKE_CXX_COMPILER": "/usr/bin/c++",
+    "CMAKE_CXX_FLAGS": "",
+    "CMAKE_CXX_FLAGS_DEBUG": "-g",
+    "CMAKE_CXX_FLAGS_MINSIZEREL": "-Os -DNDEBUG",
+    "CMAKE_CXX_FLAGS_RELEASE": "-O3 -DNDEBUG",
+    "CMAKE_CXX_FLAGS_RELWITHDEBINFO": "-O2 -g -DNDEBUG",
+    "LIBYUV_ROOT": "/workspace/suitecut/.suitecut/libyuv",
+    "SUITECUT_FFMPEG_ROOT": "/workspace/suitecut/.suitecut/native-media-deps/root",
+    "SUITECUT_FUZZ": "OFF",
+    "SUITECUT_SANITIZERS": "",
+    "CMAKE_CXX_FLAGS-ADVANCED": "1",
+    "CMAKE_CXX_FLAGS_DEBUG-ADVANCED": "1",
+    "CMAKE_CXX_FLAGS_MINSIZEREL-ADVANCED": "1",
+    "CMAKE_CXX_FLAGS_RELEASE-ADVANCED": "1",
+    "CMAKE_CXX_FLAGS_RELWITHDEBINFO-ADVANCED": "1"
+  },
+  ".suitecut/shared-clock-asan": {
+    "CEF_ROOT": "/workspace/suitecut/.suitecut/cef-codecs-sdk",
+    "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+    "CMAKE_CXX_COMPILER": "/workspace/suitecut/.suitecut/memory-tools/root/usr/bin/clang++-19",
+    "CMAKE_CXX_FLAGS": "",
+    "CMAKE_CXX_FLAGS_DEBUG": "-g",
+    "CMAKE_CXX_FLAGS_MINSIZEREL": "-Os -DNDEBUG",
+    "CMAKE_CXX_FLAGS_RELEASE": "-O3 -DNDEBUG",
+    "CMAKE_CXX_FLAGS_RELWITHDEBINFO": "-O2 -g",
+    "LIBYUV_ROOT": "/workspace/suitecut/.suitecut/libyuv",
+    "SUITECUT_FFMPEG_ROOT": "/workspace/suitecut/.suitecut/native-media-deps/root",
+    "SUITECUT_FUZZ": "ON",
+    "SUITECUT_SANITIZERS": "address,undefined",
+    "CMAKE_CXX_FLAGS-ADVANCED": "1",
+    "CMAKE_CXX_FLAGS_DEBUG-ADVANCED": "1",
+    "CMAKE_CXX_FLAGS_MINSIZEREL-ADVANCED": "1",
+    "CMAKE_CXX_FLAGS_RELEASE-ADVANCED": "1",
+    "CMAKE_CXX_FLAGS_RELWITHDEBINFO-ADVANCED": "1"
+  }
+}

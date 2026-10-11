@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "/workspace/suitecut/scripts/install-cef-codecs.py", line 48, in <module>
+    raise ValueError('CEF archive size or SHA-256 mismatch; nothing installed')
+ValueError: CEF archive size or SHA-256 mismatch; nothing installed

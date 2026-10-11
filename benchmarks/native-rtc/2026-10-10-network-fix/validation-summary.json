@@ -1,0 +1,13 @@
+{
+  "policyRegressionsPassed": 6,
+  "sdkTestsPassed": 30,
+  "nativeTestsPassed": 7,
+  "browserIntegrationTestsPassed": 16,
+  "functionalFeatureChecksPassed": 17,
+  "optionalUnavailable": [
+    "WebGPU adapter"
+  ],
+  "remoteRtcConnected": false,
+  "standaloneChromiumReproducesTurnFailure": true,
+  "networkAccessConfigurationStillRequired": true
+}

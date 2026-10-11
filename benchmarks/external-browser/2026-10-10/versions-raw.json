@@ -1,0 +1,85 @@
+{
+  "node": {
+    "command": [
+      "node",
+      "--version"
+    ],
+    "returncode": 0,
+    "stdout": "v24.19.0\n",
+    "stderr": ""
+  },
+  "pnpm": {
+    "command": [
+      "pnpm",
+      "--version"
+    ],
+    "returncode": 0,
+    "stdout": "11.19.0\n",
+    "stderr": ""
+  },
+  "ffmpeg": {
+    "command": [
+      "ffmpeg",
+      "-version"
+    ],
+    "returncode": 0,
+    "stdout": "ffmpeg version 7.1.5-0+deb13u1 Copyright (c) 2000-2026 the FFmpeg developers\nbuilt with gcc 14 (Debian 14.2.0-19)\nconfiguration: --prefix=/usr --extra-version=0+deb13u1 --toolchain=hardened --libdir=/usr/lib/x86_64-linux-gnu --incdir=/usr/include/x86_64-linux-gnu --arch=amd64 --enable-gpl --disable-stripping --disable-libmfx --disable-omx --enable-gnutls --enable-libaom --enable-libass --enable-libbs2b --enable-libcdio --enable-libcodec2 --enable-libdav1d --enable-libflite --enable-libfontconfig --enable-libfreetype --enable-libfribidi --enable-libglslang --enable-libgme --enable-libgsm --enable-libharfbuzz --enable-libmp3lame --enable-libmysofa --enable-libopenjpeg --enable-libopenmpt --enable-libopus --enable-librubberband --enable-libshine --enable-libsnappy --enable-libsoxr --enable-libspeex --enable-libtheora --enable-libtwolame --enable-libvidstab --enable-libvorbis --enable-libvpx --enable-libwebp --enable-libx265 --enable-libxml2 --enable-libxvid --enable-libzimg --enable-openal --enable-opencl --enable-opengl --disable-sndio --enable-libvpl --enable-libdc1394 --enable-libdrm --enable-libiec61883 --enable-chromaprint --enable-frei0r --enable-ladspa --enable-libbluray --enable-libcaca --enable-libdvdnav --enable-libdvdread --enable-libjack --enable-libpulse --enable-librabbitmq --enable-librist --enable-libsrt --enable-libssh --enable-libsvtav1 --enable-libx264 --enable-libzmq --enable-libzvbi --enable-lv2 --enable-sdl2 --enable-libplacebo --enable-librav1e --enable-pocketsphinx --enable-librsvg --enable-libjxl --enable-shared\nlibavutil      59. 39.100 / 59. 39.100\nlibavcodec     61. 19.101 / 61. 19.101\nlibavformat    61.  7.103 / 61.  7.103\nlibavdevice    61.  3.100 / 61.  3.100\nlibavfilter    10.  5.100 / 10.  5.100\nlibswscale      8.  3.100 /  8.  3.100\nlibswresample   5.  3.100 /  5.  3.100\nlibpostproc    58.  3.100 / 58.  3.100\n",
+    "stderr": ""
+  },
+  "cmake": {
+    "command": [
+      "cmake",
+      "--version"
+    ],
+    "returncode": 0,
+    "stdout": "cmake version 4.4.4\n\nCMake suite maintained and supported by Kitware (kitware.com/cmake).\n",
+    "stderr": ""
+  },
+  "gcc": {
+    "command": [
+      "g++",
+      "--version"
+    ],
+    "returncode": 0,
+    "stdout": "g++ (Debian 14.2.0-19) 14.2.0\nCopyright (C) 2024 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n",
+    "stderr": ""
+  },
+  "chromium": {
+    "command": [
+      "/home/agent/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome",
+      "--version"
+    ],
+    "returncode": 0,
+    "stdout": "Google Chrome for Testing 151.0.7922.34 \n",
+    "stderr": ""
+  },
+  "sdk-packages": {
+    "command": [
+      "node",
+      "--input-type=module",
+      "-e",
+      "import {createRequire} from 'node:module'; const r=createRequire(import.meta.url); console.log(JSON.stringify(Object.fromEntries(['./package.json','playwright/package.json','typescript/package.json'].map(p=>{const j=r(p);return [j.name,j.version]}))))"
+    ],
+    "returncode": 0,
+    "stdout": "{\"suitecut\":\"2.0.0\",\"playwright\":\"1.62.1\",\"typescript\":\"5.9.3\"}\n",
+    "stderr": ""
+  },
+  "obs-embedded-cef": {
+    "command": [
+      ".suitecut/obs-cef-profile/root/usr/bin/obs",
+      "--version"
+    ],
+    "returncode": 0,
+    "stdout": "OBS Studio - 32.2.0\n",
+    "stderr": ""
+  },
+  "obs-earlier-control": {
+    "command": [
+      ".suitecut/obs-deps/root/usr/bin/obs",
+      "--version"
+    ],
+    "returncode": 0,
+    "stdout": "OBS Studio - 32.2.0\n",
+    "stderr": ""
+  }
+}

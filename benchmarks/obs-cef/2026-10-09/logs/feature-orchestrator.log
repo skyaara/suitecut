@@ -1,0 +1,125 @@
+ConnectionRefusedError: [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "/home/agent/.local/lib/python3.12/site-packages/obsws_python/baseclient.py", line 41, in __init__
+    self.ws.connect(f"ws://{self.host}:{self.port}", timeout=self.timeout)
+  File "/home/agent/.local/lib/python3.12/site-packages/websocket/_core.py", line 279, in connect
+    self.sock, addrs = connect(
+                       ^^^^^^^^
+  File "/home/agent/.local/lib/python3.12/site-packages/websocket/_http.py", line 158, in connect
+    sock = _open_socket(addrinfo_list, options.sockopt, options.timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/agent/.local/lib/python3.12/site-packages/websocket/_http.py", line 247, in _open_socket
+    raise err
+  File "/home/agent/.local/lib/python3.12/site-packages/websocket/_http.py", line 227, in _open_socket
+    sock.connect(address)
+ConnectionRefusedError: [Errno 111] Connection refused
+ConnectionRefusedError: [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "/home/agent/.local/lib/python3.12/site-packages/obsws_python/baseclient.py", line 41, in __init__
+    self.ws.connect(f"ws://{self.host}:{self.port}", timeout=self.timeout)
+  File "/home/agent/.local/lib/python3.12/site-packages/websocket/_core.py", line 279, in connect
+    self.sock, addrs = connect(
+                       ^^^^^^^^
+  File "/home/agent/.local/lib/python3.12/site-packages/websocket/_http.py", line 158, in connect
+    sock = _open_socket(addrinfo_list, options.sockopt, options.timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/agent/.local/lib/python3.12/site-packages/websocket/_http.py", line 247, in _open_socket
+    raise err
+  File "/home/agent/.local/lib/python3.12/site-packages/websocket/_http.py", line 227, in _open_socket
+    sock.connect(address)
+ConnectionRefusedError: [Errno 111] Connection refused
+ConnectionRefusedError: [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "/home/agent/.local/lib/python3.12/site-packages/obsws_python/baseclient.py", line 41, in __init__
+    self.ws.connect(f"ws://{self.host}:{self.port}", timeout=self.timeout)
+  File "/home/agent/.local/lib/python3.12/site-packages/websocket/_core.py", line 279, in connect
+    self.sock, addrs = connect(
+                       ^^^^^^^^
+  File "/home/agent/.local/lib/python3.12/site-packages/websocket/_http.py", line 158, in connect
+    sock = _open_socket(addrinfo_list, options.sockopt, options.timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/agent/.local/lib/python3.12/site-packages/websocket/_http.py", line 247, in _open_socket
+    raise err
+  File "/home/agent/.local/lib/python3.12/site-packages/websocket/_http.py", line 227, in _open_socket
+    sock.connect(address)
+ConnectionRefusedError: [Errno 111] Connection refused
+ConnectionRefusedError: [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "/home/agent/.local/lib/python3.12/site-packages/obsws_python/baseclient.py", line 41, in __init__
+    self.ws.connect(f"ws://{self.host}:{self.port}", timeout=self.timeout)
+  File "/home/agent/.local/lib/python3.12/site-packages/websocket/_core.py", line 279, in connect
+    self.sock, addrs = connect(
+                       ^^^^^^^^
+  File "/home/agent/.local/lib/python3.12/site-packages/websocket/_http.py", line 158, in connect
+    sock = _open_socket(addrinfo_list, options.sockopt, options.timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/agent/.local/lib/python3.12/site-packages/websocket/_http.py", line 247, in _open_socket
+    raise err
+  File "/home/agent/.local/lib/python3.12/site-packages/websocket/_http.py", line 227, in _open_socket
+    sock.connect(address)
+ConnectionRefusedError: [Errno 111] Connection refused
+ConnectionRefusedError: [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "/home/agent/.local/lib/python3.12/site-packages/obsws_python/baseclient.py", line 41, in __init__
+    self.ws.connect(f"ws://{self.host}:{self.port}", timeout=self.timeout)
+  File "/home/agent/.local/lib/python3.12/site-packages/websocket/_core.py", line 279, in connect
+    self.sock, addrs = connect(
+                       ^^^^^^^^
+  File "/home/agent/.local/lib/python3.12/site-packages/websocket/_http.py", line 158, in connect
+    sock = _open_socket(addrinfo_list, options.sockopt, options.timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/agent/.local/lib/python3.12/site-packages/websocket/_http.py", line 247, in _open_socket
+    raise err
+  File "/home/agent/.local/lib/python3.12/site-packages/websocket/_http.py", line 227, in _open_socket
+    sock.connect(address)
+ConnectionRefusedError: [Errno 111] Connection refused
+ConnectionRefusedError: [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "/home/agent/.local/lib/python3.12/site-packages/obsws_python/baseclient.py", line 41, in __init__
+    self.ws.connect(f"ws://{self.host}:{self.port}", timeout=self.timeout)
+  File "/home/agent/.local/lib/python3.12/site-packages/websocket/_core.py", line 279, in connect
+    self.sock, addrs = connect(
+                       ^^^^^^^^
+  File "/home/agent/.local/lib/python3.12/site-packages/websocket/_http.py", line 158, in connect
+    sock = _open_socket(addrinfo_list, options.sockopt, options.timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/agent/.local/lib/python3.12/site-packages/websocket/_http.py", line 247, in _open_socket
+    raise err
+  File "/home/agent/.local/lib/python3.12/site-packages/websocket/_http.py", line 227, in _open_socket
+    sock.connect(address)
+ConnectionRefusedError: [Errno 111] Connection refused
+ConnectionRefusedError: [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "/home/agent/.local/lib/python3.12/site-packages/obsws_python/baseclient.py", line 41, in __init__
+    self.ws.connect(f"ws://{self.host}:{self.port}", timeout=self.timeout)
+  File "/home/agent/.local/lib/python3.12/site-packages/websocket/_core.py", line 279, in connect
+    self.sock, addrs = connect(
+                       ^^^^^^^^
+  File "/home/agent/.local/lib/python3.12/site-packages/websocket/_http.py", line 158, in connect
+    sock = _open_socket(addrinfo_list, options.sockopt, options.timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/agent/.local/lib/python3.12/site-packages/websocket/_http.py", line 247, in _open_socket
+    raise err
+  File "/home/agent/.local/lib/python3.12/site-packages/websocket/_http.py", line 227, in _open_socket
+    sock.connect(address)
+ConnectionRefusedError: [Errno 111] Connection refused
+ConnectionRefusedError: [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "/home/agent/.local/lib/python3.12/site-packages/obsws_python/baseclient.py", line 41, in __init__
+    self.ws.connect(f"ws://{self.host}:{self.port}", timeout=self.timeout)
+  File "/home/agent/.local/lib/python3.12/site-packages/websocket/_core.py", line 279, in connect
+    self.sock, addrs = connect(
+                       ^^^^^^^^
+  File "/home/agent/.local/lib/python3.12/site-packages/websocket/_http.py", line 158, in connect
+    sock = _open_socket(addrinfo_list, options.sockopt, options.timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/agent/.local/lib/python3.12/site-packages/websocket/_http.py", line 247, in _open_socket
+    raise err
+  File "/home/agent/.local/lib/python3.12/site-packages/websocket/_http.py", line 227, in _open_socket
+    sock.connect(address)
+ConnectionRefusedError: [Errno 111] Connection refused
+OBSSDKRequestError: Request GetVersion returned code 207. With message: OBS is not ready to perform the request.
+Traceback (most recent call last):
+  File "/home/agent/.local/lib/python3.12/site-packages/obsws_python/reqs.py", line 53, in send
+    raise OBSSDKRequestError(
+obsws_python.error.OBSSDKRequestError: Request GetVersion returned code 207. With message: OBS is not ready to perform the request.

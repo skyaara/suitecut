@@ -1,0 +1,4854 @@
+{
+  "directory": "benchmarks/obs-cef/2026-10-10-native-audio-profile/suitecut-baseline-traced",
+  "summary": {
+    "traces": {
+      "cef-07EB30234B227CA47BE609F6F8CA0E14": {
+        "positiveJumpTotalMs": 5493.270833333333,
+        "negativeJumpTotalMs": 7645.270833333333,
+        "matchedWindows": 4915,
+        "windowCount": 5899,
+        "silence": {
+          "resolutionMs": 5,
+          "segments": [
+            {
+              "fromMs": 0,
+              "durationMs": 50,
+              "interior": false
+            },
+            {
+              "fromMs": 305,
+              "durationMs": 25,
+              "interior": true
+            },
+            {
+              "fromMs": 350,
+              "durationMs": 460,
+              "interior": true
+            },
+            {
+              "fromMs": 1220,
+              "durationMs": 10,
+              "interior": true
+            },
+            {
+              "fromMs": 1250,
+              "durationMs": 20,
+              "interior": true
+            },
+            {
+              "fromMs": 1340,
+              "durationMs": 120,
+              "interior": true
+            },
+            {
+              "fromMs": 1645,
+              "durationMs": 115,
+              "interior": true
+            },
+            {
+              "fromMs": 1875,
+              "durationMs": 235,
+              "interior": true
+            },
+            {
+              "fromMs": 2125,
+              "durationMs": 130,
+              "interior": true
+            },
+            {
+              "fromMs": 2865,
+              "durationMs": 95,
+              "interior": true
+            },
+            {
+              "fromMs": 3000,
+              "durationMs": 10,
+              "interior": true
+            },
+            {
+              "fromMs": 3085,
+              "durationMs": 235,
+              "interior": true
+            },
+            {
+              "fromMs": 3475,
+              "durationMs": 290,
+              "interior": true
+            },
+            {
+              "fromMs": 3850,
+              "durationMs": 10,
+              "interior": true
+            },
+            {
+              "fromMs": 4060,
+              "durationMs": 45,
+              "interior": true
+            },
+            {
+              "fromMs": 4790,
+              "durationMs": 55,
+              "interior": true
+            },
+            {
+              "fromMs": 4875,
+              "durationMs": 135,
+              "interior": true
+            },
+            {
+              "fromMs": 5025,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 5115,
+              "durationMs": 20,
+              "interior": true
+            },
+            {
+              "fromMs": 5210,
+              "durationMs": 105,
+              "interior": true
+            },
+            {
+              "fromMs": 6655,
+              "durationMs": 255,
+              "interior": true
+            },
+            {
+              "fromMs": 6970,
+              "durationMs": 25,
+              "interior": true
+            },
+            {
+              "fromMs": 7025,
+              "durationMs": 35,
+              "interior": true
+            },
+            {
+              "fromMs": 7075,
+              "durationMs": 30,
+              "interior": true
+            },
+            {
+              "fromMs": 7120,
+              "durationMs": 45,
+              "interior": true
+            },
+            {
+              "fromMs": 7185,
+              "durationMs": 30,
+              "interior": true
+            },
+            {
+              "fromMs": 7310,
+              "durationMs": 160,
+              "interior": true
+            },
+            {
+              "fromMs": 7505,
+              "durationMs": 375,
+              "interior": true
+            },
+            {
+              "fromMs": 7905,
+              "durationMs": 60,
+              "interior": true
+            },
+            {
+              "fromMs": 8005,
+              "durationMs": 5,
+              "interior": true
+            },
+            {
+              "fromMs": 8040,
+              "durationMs": 30,
+              "interior": true
+            },
+            {
+              "fromMs": 8085,
+              "durationMs": 5,
+              "interior": true
+            },
+            {
+              "fromMs": 8155,
+              "durationMs": 5,
+              "interior": true
+            },
+            {
+              "fromMs": 8505,
+              "durationMs": 95,
+              "interior": true
+            },
+            {
+              "fromMs": 8735,
+              "durationMs": 195,
+              "interior": true
+            },
+            {
+              "fromMs": 8970,
+              "durationMs": 155,
+              "interior": true
+            },
+            {
+              "fromMs": 9140,
+              "durationMs": 10,
+              "interior": true
+            },
+            {
+              "fromMs": 9220,
+              "durationMs": 30,
+              "interior": true
+            },
+            {
+              "fromMs": 9415,
+              "durationMs": 25,
+              "interior": true
+            },
+            {
+              "fromMs": 9925,
+              "durationMs": 135,
+              "interior": true
+            },
+            {
+              "fromMs": 10145,
+              "durationMs": 95,
+              "interior": true
+            },
+            {
+              "fromMs": 10335,
+              "durationMs": 5,
+              "interior": true
+            },
+            {
+              "fromMs": 10390,
+              "durationMs": 110,
+              "interior": true
+            },
+            {
+              "fromMs": 10800,
+              "durationMs": 20,
+              "interior": true
+            },
+            {
+              "fromMs": 10870,
+              "durationMs": 50,
+              "interior": true
+            },
+            {
+              "fromMs": 10965,
+              "durationMs": 380,
+              "interior": true
+            },
+            {
+              "fromMs": 11395,
+              "durationMs": 50,
+              "interior": true
+            },
+            {
+              "fromMs": 11530,
+              "durationMs": 20,
+              "interior": true
+            },
+            {
+              "fromMs": 12555,
+              "durationMs": 45,
+              "interior": true
+            },
+            {
+              "fromMs": 12695,
+              "durationMs": 10,
+              "interior": true
+            },
+            {
+              "fromMs": 12855,
+              "durationMs": 325,
+              "interior": true
+            },
+            {
+              "fromMs": 13220,
+              "durationMs": 190,
+              "interior": true
+            },
+            {
+              "fromMs": 13425,
+              "durationMs": 35,
+              "interior": true
+            },
+            {
+              "fromMs": 13485,
+              "durationMs": 110,
+              "interior": true
+            },
+            {
+              "fromMs": 13630,
+              "durationMs": 55,
+              "interior": true
+            },
+            {
+              "fromMs": 13825,
+              "durationMs": 225,
+              "interior": true
+            },
+            {
+              "fromMs": 14080,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 14130,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 14175,
+              "durationMs": 125,
+              "interior": true
+            },
+            {
+              "fromMs": 15225,
+              "durationMs": 100,
+              "interior": true
+            },
+            {
+              "fromMs": 15440,
+              "durationMs": 115,
+              "interior": true
+            },
+            {
+              "fromMs": 15705,
+              "durationMs": 5,
+              "interior": true
+            },
+            {
+              "fromMs": 15740,
+              "durationMs": 10,
+              "interior": true
+            },
+            {
+              "fromMs": 15790,
+              "durationMs": 10,
+              "interior": true
+            },
+            {
+              "fromMs": 15825,
+              "durationMs": 190,
+              "interior": true
+            },
+            {
+              "fromMs": 16040,
+              "durationMs": 35,
+              "interior": true
+            },
+            {
+              "fromMs": 16090,
+              "durationMs": 65,
+              "interior": true
+            },
+            {
+              "fromMs": 16180,
+              "durationMs": 150,
+              "interior": true
+            },
+            {
+              "fromMs": 16405,
+              "durationMs": 60,
+              "interior": true
+            },
+            {
+              "fromMs": 16745,
+              "durationMs": 20,
+              "interior": true
+            },
+            {
+              "fromMs": 16920,
+              "durationMs": 165,
+              "interior": true
+            },
+            {
+              "fromMs": 17190,
+              "durationMs": 200,
+              "interior": true
+            },
+            {
+              "fromMs": 17565,
+              "durationMs": 365,
+              "interior": true
+            },
+            {
+              "fromMs": 18025,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 18045,
+              "durationMs": 195,
+              "interior": true
+            },
+            {
+              "fromMs": 18310,
+              "durationMs": 20,
+              "interior": true
+            },
+            {
+              "fromMs": 18415,
+              "durationMs": 25,
+              "interior": true
+            },
+            {
+              "fromMs": 18460,
+              "durationMs": 75,
+              "interior": true
+            },
+            {
+              "fromMs": 18610,
+              "durationMs": 55,
+              "interior": true
+            },
+            {
+              "fromMs": 19705,
+              "durationMs": 270,
+              "interior": true
+            },
+            {
+              "fromMs": 19995,
+              "durationMs": 75,
+              "interior": true
+            },
+            {
+              "fromMs": 20130,
+              "durationMs": 90,
+              "interior": true
+            },
+            {
+              "fromMs": 20310,
+              "durationMs": 365,
+              "interior": true
+            },
+            {
+              "fromMs": 20895,
+              "durationMs": 50,
+              "interior": true
+            },
+            {
+              "fromMs": 20980,
+              "durationMs": 180,
+              "interior": true
+            },
+            {
+              "fromMs": 21220,
+              "durationMs": 10,
+              "interior": true
+            },
+            {
+              "fromMs": 21250,
+              "durationMs": 10,
+              "interior": true
+            },
+            {
+              "fromMs": 21290,
+              "durationMs": 35,
+              "interior": true
+            },
+            {
+              "fromMs": 22005,
+              "durationMs": 5,
+              "interior": true
+            },
+            {
+              "fromMs": 22070,
+              "durationMs": 10,
+              "interior": true
+            },
+            {
+              "fromMs": 22095,
+              "durationMs": 10,
+              "interior": true
+            },
+            {
+              "fromMs": 22245,
+              "durationMs": 280,
+              "interior": true
+            },
+            {
+              "fromMs": 22585,
+              "durationMs": 20,
+              "interior": true
+            },
+            {
+              "fromMs": 22680,
+              "durationMs": 70,
+              "interior": true
+            },
+            {
+              "fromMs": 23060,
+              "durationMs": 95,
+              "interior": true
+            },
+            {
+              "fromMs": 23455,
+              "durationMs": 140,
+              "interior": true
+            },
+            {
+              "fromMs": 24205,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 24355,
+              "durationMs": 140,
+              "interior": true
+            },
+            {
+              "fromMs": 24565,
+              "durationMs": 135,
+              "interior": true
+            },
+            {
+              "fromMs": 24785,
+              "durationMs": 130,
+              "interior": true
+            },
+            {
+              "fromMs": 24965,
+              "durationMs": 30,
+              "interior": true
+            },
+            {
+              "fromMs": 25080,
+              "durationMs": 35,
+              "interior": true
+            },
+            {
+              "fromMs": 25155,
+              "durationMs": 25,
+              "interior": true
+            },
+            {
+              "fromMs": 26145,
+              "durationMs": 55,
+              "interior": true
+            },
+            {
+              "fromMs": 26425,
+              "durationMs": 45,
+              "interior": true
+            },
+            {
+              "fromMs": 26520,
+              "durationMs": 115,
+              "interior": true
+            },
+            {
+              "fromMs": 26800,
+              "durationMs": 160,
+              "interior": true
+            },
+            {
+              "fromMs": 27000,
+              "durationMs": 50,
+              "interior": true
+            },
+            {
+              "fromMs": 27865,
+              "durationMs": 50,
+              "interior": true
+            },
+            {
+              "fromMs": 27965,
+              "durationMs": 70,
+              "interior": true
+            },
+            {
+              "fromMs": 28060,
+              "durationMs": 45,
+              "interior": true
+            },
+            {
+              "fromMs": 28120,
+              "durationMs": 140,
+              "interior": true
+            },
+            {
+              "fromMs": 28290,
+              "durationMs": 270,
+              "interior": true
+            },
+            {
+              "fromMs": 28590,
+              "durationMs": 50,
+              "interior": true
+            },
+            {
+              "fromMs": 28685,
+              "durationMs": 10,
+              "interior": true
+            },
+            {
+              "fromMs": 28725,
+              "durationMs": 20,
+              "interior": true
+            },
+            {
+              "fromMs": 28770,
+              "durationMs": 90,
+              "interior": true
+            },
+            {
+              "fromMs": 28890,
+              "durationMs": 10,
+              "interior": true
+            },
+            {
+              "fromMs": 29090,
+              "durationMs": 135,
+              "interior": true
+            },
+            {
+              "fromMs": 29240,
+              "durationMs": 75,
+              "interior": true
+            },
+            {
+              "fromMs": 29365,
+              "durationMs": 5,
+              "interior": true
+            },
+            {
+              "fromMs": 29390,
+              "durationMs": 120,
+              "interior": true
+            },
+            {
+              "fromMs": 29525,
+              "durationMs": 5,
+              "interior": true
+            },
+            {
+              "fromMs": 29595,
+              "durationMs": 25,
+              "interior": true
+            },
+            {
+              "fromMs": 32370,
+              "durationMs": 60,
+              "interior": true
+            },
+            {
+              "fromMs": 53530,
+              "durationMs": 580,
+              "interior": true
+            },
+            {
+              "fromMs": 54205,
+              "durationMs": 105,
+              "interior": true
+            },
+            {
+              "fromMs": 54515,
+              "durationMs": 5,
+              "interior": true
+            },
+            {
+              "fromMs": 73300,
+              "durationMs": 45,
+              "interior": true
+            },
+            {
+              "fromMs": 105000,
+              "durationMs": 40,
+              "interior": true
+            },
+            {
+              "fromMs": 117940,
+              "durationMs": 40,
+              "interior": false
+            }
+          ],
+          "interiorTotalMs": 12195,
+          "interiorMaximumMs": 580
+        }
+      },
+      "recording.mkv": {
+        "positiveJumpTotalMs": 3.25,
+        "negativeJumpTotalMs": 20581.0625,
+        "matchedWindows": 1862,
+        "windowCount": 3035,
+        "silence": {
+          "resolutionMs": 5,
+          "segments": [
+            {
+              "fromMs": 215,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 235,
+              "durationMs": 30,
+              "interior": true
+            },
+            {
+              "fromMs": 275,
+              "durationMs": 460,
+              "interior": true
+            },
+            {
+              "fromMs": 830,
+              "durationMs": 35,
+              "interior": true
+            },
+            {
+              "fromMs": 1050,
+              "durationMs": 75,
+              "interior": true
+            },
+            {
+              "fromMs": 1150,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 1285,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 1315,
+              "durationMs": 20,
+              "interior": true
+            },
+            {
+              "fromMs": 1350,
+              "durationMs": 75,
+              "interior": true
+            },
+            {
+              "fromMs": 1450,
+              "durationMs": 35,
+              "interior": true
+            },
+            {
+              "fromMs": 1525,
+              "durationMs": 125,
+              "interior": true
+            },
+            {
+              "fromMs": 1830,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 1850,
+              "durationMs": 375,
+              "interior": true
+            },
+            {
+              "fromMs": 2250,
+              "durationMs": 95,
+              "interior": true
+            },
+            {
+              "fromMs": 2440,
+              "durationMs": 235,
+              "interior": true
+            },
+            {
+              "fromMs": 2695,
+              "durationMs": 125,
+              "interior": true
+            },
+            {
+              "fromMs": 2850,
+              "durationMs": 35,
+              "interior": true
+            },
+            {
+              "fromMs": 3310,
+              "durationMs": 95,
+              "interior": true
+            },
+            {
+              "fromMs": 3550,
+              "durationMs": 35,
+              "interior": true
+            },
+            {
+              "fromMs": 3610,
+              "durationMs": 175,
+              "interior": true
+            },
+            {
+              "fromMs": 3795,
+              "durationMs": 90,
+              "interior": true
+            },
+            {
+              "fromMs": 3925,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 4010,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 4030,
+              "durationMs": 535,
+              "interior": true
+            },
+            {
+              "fromMs": 4720,
+              "durationMs": 330,
+              "interior": true
+            },
+            {
+              "fromMs": 5135,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 5350,
+              "durationMs": 45,
+              "interior": true
+            },
+            {
+              "fromMs": 5830,
+              "durationMs": 75,
+              "interior": true
+            },
+            {
+              "fromMs": 6005,
+              "durationMs": 140,
+              "interior": true
+            },
+            {
+              "fromMs": 6295,
+              "durationMs": 155,
+              "interior": true
+            },
+            {
+              "fromMs": 6480,
+              "durationMs": 135,
+              "interior": true
+            },
+            {
+              "fromMs": 6635,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 6720,
+              "durationMs": 25,
+              "interior": true
+            },
+            {
+              "fromMs": 6815,
+              "durationMs": 110,
+              "interior": true
+            },
+            {
+              "fromMs": 8090,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 8130,
+              "durationMs": 75,
+              "interior": true
+            },
+            {
+              "fromMs": 8330,
+              "durationMs": 435,
+              "interior": true
+            },
+            {
+              "fromMs": 8805,
+              "durationMs": 570,
+              "interior": true
+            },
+            {
+              "fromMs": 9440,
+              "durationMs": 20,
+              "interior": true
+            },
+            {
+              "fromMs": 9490,
+              "durationMs": 35,
+              "interior": true
+            },
+            {
+              "fromMs": 9545,
+              "durationMs": 65,
+              "interior": true
+            },
+            {
+              "fromMs": 9630,
+              "durationMs": 40,
+              "interior": true
+            },
+            {
+              "fromMs": 9690,
+              "durationMs": 135,
+              "interior": true
+            },
+            {
+              "fromMs": 9830,
+              "durationMs": 255,
+              "interior": true
+            },
+            {
+              "fromMs": 10180,
+              "durationMs": 795,
+              "interior": true
+            },
+            {
+              "fromMs": 11010,
+              "durationMs": 75,
+              "interior": true
+            },
+            {
+              "fromMs": 11090,
+              "durationMs": 395,
+              "interior": true
+            },
+            {
+              "fromMs": 11515,
+              "durationMs": 60,
+              "interior": true
+            },
+            {
+              "fromMs": 11610,
+              "durationMs": 10,
+              "interior": true
+            },
+            {
+              "fromMs": 11645,
+              "durationMs": 30,
+              "interior": true
+            },
+            {
+              "fromMs": 11690,
+              "durationMs": 10,
+              "interior": true
+            },
+            {
+              "fromMs": 11760,
+              "durationMs": 5,
+              "interior": true
+            },
+            {
+              "fromMs": 11850,
+              "durationMs": 235,
+              "interior": true
+            },
+            {
+              "fromMs": 12350,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 12370,
+              "durationMs": 235,
+              "interior": true
+            },
+            {
+              "fromMs": 12650,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 12710,
+              "durationMs": 195,
+              "interior": true
+            },
+            {
+              "fromMs": 12965,
+              "durationMs": 190,
+              "interior": true
+            },
+            {
+              "fromMs": 13195,
+              "durationMs": 235,
+              "interior": true
+            },
+            {
+              "fromMs": 13450,
+              "durationMs": 5,
+              "interior": true
+            },
+            {
+              "fromMs": 13530,
+              "durationMs": 30,
+              "interior": true
+            },
+            {
+              "fromMs": 13725,
+              "durationMs": 100,
+              "interior": true
+            },
+            {
+              "fromMs": 14110,
+              "durationMs": 255,
+              "interior": true
+            },
+            {
+              "fromMs": 14570,
+              "durationMs": 95,
+              "interior": true
+            },
+            {
+              "fromMs": 14670,
+              "durationMs": 300,
+              "interior": true
+            },
+            {
+              "fromMs": 15055,
+              "durationMs": 90,
+              "interior": true
+            },
+            {
+              "fromMs": 15240,
+              "durationMs": 10,
+              "interior": true
+            },
+            {
+              "fromMs": 15300,
+              "durationMs": 185,
+              "interior": true
+            },
+            {
+              "fromMs": 15530,
+              "durationMs": 35,
+              "interior": true
+            },
+            {
+              "fromMs": 15650,
+              "durationMs": 55,
+              "interior": true
+            },
+            {
+              "fromMs": 15890,
+              "durationMs": 75,
+              "interior": true
+            },
+            {
+              "fromMs": 16015,
+              "durationMs": 470,
+              "interior": true
+            },
+            {
+              "fromMs": 16530,
+              "durationMs": 35,
+              "interior": true
+            },
+            {
+              "fromMs": 16570,
+              "durationMs": 405,
+              "interior": true
+            },
+            {
+              "fromMs": 17025,
+              "durationMs": 45,
+              "interior": true
+            },
+            {
+              "fromMs": 17155,
+              "durationMs": 25,
+              "interior": true
+            },
+            {
+              "fromMs": 17850,
+              "durationMs": 115,
+              "interior": true
+            },
+            {
+              "fromMs": 18050,
+              "durationMs": 35,
+              "interior": true
+            },
+            {
+              "fromMs": 18340,
+              "durationMs": 105,
+              "interior": true
+            },
+            {
+              "fromMs": 18540,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 18670,
+              "durationMs": 255,
+              "interior": true
+            },
+            {
+              "fromMs": 18950,
+              "durationMs": 175,
+              "interior": true
+            },
+            {
+              "fromMs": 19145,
+              "durationMs": 1160,
+              "interior": true
+            },
+            {
+              "fromMs": 20345,
+              "durationMs": 270,
+              "interior": true
+            },
+            {
+              "fromMs": 20635,
+              "durationMs": 170,
+              "interior": true
+            },
+            {
+              "fromMs": 20830,
+              "durationMs": 155,
+              "interior": true
+            },
+            {
+              "fromMs": 20995,
+              "durationMs": 105,
+              "interior": true
+            },
+            {
+              "fromMs": 21140,
+              "durationMs": 330,
+              "interior": true
+            },
+            {
+              "fromMs": 21610,
+              "durationMs": 115,
+              "interior": true
+            },
+            {
+              "fromMs": 21730,
+              "durationMs": 225,
+              "interior": true
+            },
+            {
+              "fromMs": 21985,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 22040,
+              "durationMs": 10,
+              "interior": true
+            },
+            {
+              "fromMs": 22080,
+              "durationMs": 125,
+              "interior": true
+            },
+            {
+              "fromMs": 22850,
+              "durationMs": 55,
+              "interior": true
+            },
+            {
+              "fromMs": 23050,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 23090,
+              "durationMs": 95,
+              "interior": true
+            },
+            {
+              "fromMs": 23310,
+              "durationMs": 120,
+              "interior": true
+            },
+            {
+              "fromMs": 23450,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 23565,
+              "durationMs": 120,
+              "interior": true
+            },
+            {
+              "fromMs": 23830,
+              "durationMs": 55,
+              "interior": true
+            },
+            {
+              "fromMs": 23890,
+              "durationMs": 5,
+              "interior": true
+            },
+            {
+              "fromMs": 23925,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 23950,
+              "durationMs": 315,
+              "interior": true
+            },
+            {
+              "fromMs": 24295,
+              "durationMs": 70,
+              "interior": true
+            },
+            {
+              "fromMs": 24390,
+              "durationMs": 455,
+              "interior": true
+            },
+            {
+              "fromMs": 24850,
+              "durationMs": 95,
+              "interior": true
+            },
+            {
+              "fromMs": 24965,
+              "durationMs": 35,
+              "interior": true
+            },
+            {
+              "fromMs": 25020,
+              "durationMs": 60,
+              "interior": true
+            },
+            {
+              "fromMs": 25110,
+              "durationMs": 150,
+              "interior": true
+            },
+            {
+              "fromMs": 25330,
+              "durationMs": 80,
+              "interior": true
+            },
+            {
+              "fromMs": 25690,
+              "durationMs": 135,
+              "interior": true
+            },
+            {
+              "fromMs": 25830,
+              "durationMs": 20,
+              "interior": true
+            },
+            {
+              "fromMs": 25950,
+              "durationMs": 155,
+              "interior": true
+            },
+            {
+              "fromMs": 26170,
+              "durationMs": 160,
+              "interior": true
+            },
+            {
+              "fromMs": 26435,
+              "durationMs": 245,
+              "interior": true
+            },
+            {
+              "fromMs": 26750,
+              "durationMs": 335,
+              "interior": true
+            },
+            {
+              "fromMs": 27130,
+              "durationMs": 35,
+              "interior": true
+            },
+            {
+              "fromMs": 27230,
+              "durationMs": 1225,
+              "interior": true
+            },
+            {
+              "fromMs": 28550,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 28575,
+              "durationMs": 30,
+              "interior": true
+            },
+            {
+              "fromMs": 28615,
+              "durationMs": 250,
+              "interior": true
+            },
+            {
+              "fromMs": 28940,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 29040,
+              "durationMs": 30,
+              "interior": true
+            },
+            {
+              "fromMs": 29085,
+              "durationMs": 75,
+              "interior": true
+            },
+            {
+              "fromMs": 29235,
+              "durationMs": 60,
+              "interior": true
+            },
+            {
+              "fromMs": 30290,
+              "durationMs": 435,
+              "interior": true
+            },
+            {
+              "fromMs": 30770,
+              "durationMs": 55,
+              "interior": true
+            },
+            {
+              "fromMs": 30830,
+              "durationMs": 535,
+              "interior": true
+            },
+            {
+              "fromMs": 31380,
+              "durationMs": 80,
+              "interior": true
+            },
+            {
+              "fromMs": 31520,
+              "durationMs": 610,
+              "interior": true
+            },
+            {
+              "fromMs": 32220,
+              "durationMs": 525,
+              "interior": true
+            },
+            {
+              "fromMs": 32790,
+              "durationMs": 35,
+              "interior": true
+            },
+            {
+              "fromMs": 33005,
+              "durationMs": 45,
+              "interior": true
+            },
+            {
+              "fromMs": 33090,
+              "durationMs": 175,
+              "interior": true
+            },
+            {
+              "fromMs": 33330,
+              "durationMs": 10,
+              "interior": true
+            },
+            {
+              "fromMs": 33355,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 33400,
+              "durationMs": 35,
+              "interior": true
+            },
+            {
+              "fromMs": 33910,
+              "durationMs": 55,
+              "interior": true
+            },
+            {
+              "fromMs": 34170,
+              "durationMs": 275,
+              "interior": true
+            },
+            {
+              "fromMs": 34520,
+              "durationMs": 30,
+              "interior": true
+            },
+            {
+              "fromMs": 34560,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 34710,
+              "durationMs": 75,
+              "interior": true
+            },
+            {
+              "fromMs": 34795,
+              "durationMs": 280,
+              "interior": true
+            },
+            {
+              "fromMs": 35135,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 35210,
+              "durationMs": 95,
+              "interior": true
+            },
+            {
+              "fromMs": 35330,
+              "durationMs": 70,
+              "interior": true
+            },
+            {
+              "fromMs": 35610,
+              "durationMs": 115,
+              "interior": true
+            },
+            {
+              "fromMs": 35830,
+              "durationMs": 90,
+              "interior": true
+            },
+            {
+              "fromMs": 36225,
+              "durationMs": 135,
+              "interior": true
+            },
+            {
+              "fromMs": 36910,
+              "durationMs": 135,
+              "interior": true
+            },
+            {
+              "fromMs": 37070,
+              "durationMs": 135,
+              "interior": true
+            },
+            {
+              "fromMs": 37255,
+              "durationMs": 10,
+              "interior": true
+            },
+            {
+              "fromMs": 37290,
+              "durationMs": 135,
+              "interior": true
+            },
+            {
+              "fromMs": 37525,
+              "durationMs": 145,
+              "interior": true
+            },
+            {
+              "fromMs": 37685,
+              "durationMs": 135,
+              "interior": true
+            },
+            {
+              "fromMs": 37850,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 37910,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 37935,
+              "durationMs": 135,
+              "interior": true
+            },
+            {
+              "fromMs": 38155,
+              "durationMs": 130,
+              "interior": true
+            },
+            {
+              "fromMs": 38335,
+              "durationMs": 30,
+              "interior": true
+            },
+            {
+              "fromMs": 38450,
+              "durationMs": 35,
+              "interior": true
+            },
+            {
+              "fromMs": 38525,
+              "durationMs": 20,
+              "interior": true
+            },
+            {
+              "fromMs": 39090,
+              "durationMs": 115,
+              "interior": true
+            },
+            {
+              "fromMs": 39610,
+              "durationMs": 55,
+              "interior": true
+            },
+            {
+              "fromMs": 39690,
+              "durationMs": 55,
+              "interior": true
+            },
+            {
+              "fromMs": 39755,
+              "durationMs": 110,
+              "interior": true
+            },
+            {
+              "fromMs": 40090,
+              "durationMs": 235,
+              "interior": true
+            },
+            {
+              "fromMs": 40335,
+              "durationMs": 40,
+              "interior": true
+            },
+            {
+              "fromMs": 40425,
+              "durationMs": 120,
+              "interior": true
+            },
+            {
+              "fromMs": 40710,
+              "durationMs": 160,
+              "interior": true
+            },
+            {
+              "fromMs": 40910,
+              "durationMs": 50,
+              "interior": true
+            },
+            {
+              "fromMs": 41490,
+              "durationMs": 115,
+              "interior": true
+            },
+            {
+              "fromMs": 41790,
+              "durationMs": 115,
+              "interior": true
+            },
+            {
+              "fromMs": 42010,
+              "durationMs": 155,
+              "interior": true
+            },
+            {
+              "fromMs": 42170,
+              "durationMs": 50,
+              "interior": true
+            },
+            {
+              "fromMs": 42270,
+              "durationMs": 115,
+              "interior": true
+            },
+            {
+              "fromMs": 42390,
+              "durationMs": 435,
+              "interior": true
+            },
+            {
+              "fromMs": 42850,
+              "durationMs": 145,
+              "interior": true
+            },
+            {
+              "fromMs": 43010,
+              "durationMs": 440,
+              "interior": true
+            },
+            {
+              "fromMs": 43475,
+              "durationMs": 515,
+              "interior": true
+            },
+            {
+              "fromMs": 44020,
+              "durationMs": 50,
+              "interior": true
+            },
+            {
+              "fromMs": 44110,
+              "durationMs": 115,
+              "interior": true
+            },
+            {
+              "fromMs": 44235,
+              "durationMs": 10,
+              "interior": true
+            },
+            {
+              "fromMs": 44275,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 44320,
+              "durationMs": 230,
+              "interior": true
+            },
+            {
+              "fromMs": 44570,
+              "durationMs": 55,
+              "interior": true
+            },
+            {
+              "fromMs": 44640,
+              "durationMs": 5,
+              "interior": true
+            },
+            {
+              "fromMs": 44670,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 44710,
+              "durationMs": 140,
+              "interior": true
+            },
+            {
+              "fromMs": 44910,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 45015,
+              "durationMs": 135,
+              "interior": true
+            },
+            {
+              "fromMs": 45170,
+              "durationMs": 75,
+              "interior": true
+            },
+            {
+              "fromMs": 45295,
+              "durationMs": 5,
+              "interior": true
+            },
+            {
+              "fromMs": 45315,
+              "durationMs": 120,
+              "interior": true
+            },
+            {
+              "fromMs": 45455,
+              "durationMs": 5,
+              "interior": true
+            },
+            {
+              "fromMs": 45520,
+              "durationMs": 30,
+              "interior": true
+            },
+            {
+              "fromMs": 47750,
+              "durationMs": 35,
+              "interior": true
+            },
+            {
+              "fromMs": 48340,
+              "durationMs": 55,
+              "interior": true
+            },
+            {
+              "fromMs": 69250,
+              "durationMs": 75,
+              "interior": true
+            },
+            {
+              "fromMs": 69510,
+              "durationMs": 115,
+              "interior": true
+            },
+            {
+              "fromMs": 69670,
+              "durationMs": 155,
+              "interior": true
+            },
+            {
+              "fromMs": 69850,
+              "durationMs": 415,
+              "interior": true
+            },
+            {
+              "fromMs": 70280,
+              "durationMs": 2255,
+              "interior": true
+            },
+            {
+              "fromMs": 72635,
+              "durationMs": 105,
+              "interior": true
+            },
+            {
+              "fromMs": 72940,
+              "durationMs": 10,
+              "interior": true
+            },
+            {
+              "fromMs": 91170,
+              "durationMs": 35,
+              "interior": true
+            },
+            {
+              "fromMs": 91770,
+              "durationMs": 45,
+              "interior": true
+            }
+          ],
+          "interiorTotalMs": 30290,
+          "interiorMaximumMs": 2255
+        }
+      },
+      "profile": {
+        "positiveJumpTotalMs": 0,
+        "negativeJumpTotalMs": 20085.208333333332,
+        "matchedWindows": 1842,
+        "windowCount": 3002,
+        "silence": {
+          "resolutionMs": 5,
+          "segments": [
+            {
+              "fromMs": 0,
+              "durationMs": 10,
+              "interior": false
+            },
+            {
+              "fromMs": 105,
+              "durationMs": 35,
+              "interior": true
+            },
+            {
+              "fromMs": 325,
+              "durationMs": 75,
+              "interior": true
+            },
+            {
+              "fromMs": 425,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 565,
+              "durationMs": 10,
+              "interior": true
+            },
+            {
+              "fromMs": 590,
+              "durationMs": 20,
+              "interior": true
+            },
+            {
+              "fromMs": 625,
+              "durationMs": 75,
+              "interior": true
+            },
+            {
+              "fromMs": 725,
+              "durationMs": 35,
+              "interior": true
+            },
+            {
+              "fromMs": 805,
+              "durationMs": 120,
+              "interior": true
+            },
+            {
+              "fromMs": 1105,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 1125,
+              "durationMs": 375,
+              "interior": true
+            },
+            {
+              "fromMs": 1525,
+              "durationMs": 95,
+              "interior": true
+            },
+            {
+              "fromMs": 1715,
+              "durationMs": 235,
+              "interior": true
+            },
+            {
+              "fromMs": 1970,
+              "durationMs": 125,
+              "interior": true
+            },
+            {
+              "fromMs": 2125,
+              "durationMs": 35,
+              "interior": true
+            },
+            {
+              "fromMs": 2585,
+              "durationMs": 95,
+              "interior": true
+            },
+            {
+              "fromMs": 2825,
+              "durationMs": 35,
+              "interior": true
+            },
+            {
+              "fromMs": 2885,
+              "durationMs": 175,
+              "interior": true
+            },
+            {
+              "fromMs": 3070,
+              "durationMs": 90,
+              "interior": true
+            },
+            {
+              "fromMs": 3200,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 3285,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 3305,
+              "durationMs": 535,
+              "interior": true
+            },
+            {
+              "fromMs": 3995,
+              "durationMs": 330,
+              "interior": true
+            },
+            {
+              "fromMs": 4410,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 4625,
+              "durationMs": 45,
+              "interior": true
+            },
+            {
+              "fromMs": 5105,
+              "durationMs": 75,
+              "interior": true
+            },
+            {
+              "fromMs": 5280,
+              "durationMs": 145,
+              "interior": true
+            },
+            {
+              "fromMs": 5570,
+              "durationMs": 155,
+              "interior": true
+            },
+            {
+              "fromMs": 5755,
+              "durationMs": 135,
+              "interior": true
+            },
+            {
+              "fromMs": 5910,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 5995,
+              "durationMs": 25,
+              "interior": true
+            },
+            {
+              "fromMs": 6090,
+              "durationMs": 110,
+              "interior": true
+            },
+            {
+              "fromMs": 7365,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 7405,
+              "durationMs": 75,
+              "interior": true
+            },
+            {
+              "fromMs": 7605,
+              "durationMs": 435,
+              "interior": true
+            },
+            {
+              "fromMs": 8080,
+              "durationMs": 570,
+              "interior": true
+            },
+            {
+              "fromMs": 8715,
+              "durationMs": 25,
+              "interior": true
+            },
+            {
+              "fromMs": 8765,
+              "durationMs": 35,
+              "interior": true
+            },
+            {
+              "fromMs": 8820,
+              "durationMs": 70,
+              "interior": true
+            },
+            {
+              "fromMs": 8905,
+              "durationMs": 40,
+              "interior": true
+            },
+            {
+              "fromMs": 8965,
+              "durationMs": 135,
+              "interior": true
+            },
+            {
+              "fromMs": 9105,
+              "durationMs": 255,
+              "interior": true
+            },
+            {
+              "fromMs": 9455,
+              "durationMs": 795,
+              "interior": true
+            },
+            {
+              "fromMs": 10285,
+              "durationMs": 75,
+              "interior": true
+            },
+            {
+              "fromMs": 10365,
+              "durationMs": 395,
+              "interior": true
+            },
+            {
+              "fromMs": 10790,
+              "durationMs": 60,
+              "interior": true
+            },
+            {
+              "fromMs": 10885,
+              "durationMs": 10,
+              "interior": true
+            },
+            {
+              "fromMs": 10920,
+              "durationMs": 30,
+              "interior": true
+            },
+            {
+              "fromMs": 10965,
+              "durationMs": 10,
+              "interior": true
+            },
+            {
+              "fromMs": 11035,
+              "durationMs": 5,
+              "interior": true
+            },
+            {
+              "fromMs": 11125,
+              "durationMs": 235,
+              "interior": true
+            },
+            {
+              "fromMs": 11625,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 11645,
+              "durationMs": 235,
+              "interior": true
+            },
+            {
+              "fromMs": 11925,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 11985,
+              "durationMs": 195,
+              "interior": true
+            },
+            {
+              "fromMs": 12240,
+              "durationMs": 190,
+              "interior": true
+            },
+            {
+              "fromMs": 12470,
+              "durationMs": 240,
+              "interior": true
+            },
+            {
+              "fromMs": 12725,
+              "durationMs": 5,
+              "interior": true
+            },
+            {
+              "fromMs": 12805,
+              "durationMs": 30,
+              "interior": true
+            },
+            {
+              "fromMs": 13000,
+              "durationMs": 100,
+              "interior": true
+            },
+            {
+              "fromMs": 13385,
+              "durationMs": 255,
+              "interior": true
+            },
+            {
+              "fromMs": 13845,
+              "durationMs": 95,
+              "interior": true
+            },
+            {
+              "fromMs": 13945,
+              "durationMs": 300,
+              "interior": true
+            },
+            {
+              "fromMs": 14330,
+              "durationMs": 90,
+              "interior": true
+            },
+            {
+              "fromMs": 14515,
+              "durationMs": 10,
+              "interior": true
+            },
+            {
+              "fromMs": 14575,
+              "durationMs": 185,
+              "interior": true
+            },
+            {
+              "fromMs": 14805,
+              "durationMs": 35,
+              "interior": true
+            },
+            {
+              "fromMs": 14925,
+              "durationMs": 55,
+              "interior": true
+            },
+            {
+              "fromMs": 15165,
+              "durationMs": 75,
+              "interior": true
+            },
+            {
+              "fromMs": 15295,
+              "durationMs": 465,
+              "interior": true
+            },
+            {
+              "fromMs": 15805,
+              "durationMs": 35,
+              "interior": true
+            },
+            {
+              "fromMs": 15845,
+              "durationMs": 405,
+              "interior": true
+            },
+            {
+              "fromMs": 16300,
+              "durationMs": 45,
+              "interior": true
+            },
+            {
+              "fromMs": 16430,
+              "durationMs": 25,
+              "interior": true
+            },
+            {
+              "fromMs": 17125,
+              "durationMs": 115,
+              "interior": true
+            },
+            {
+              "fromMs": 17325,
+              "durationMs": 35,
+              "interior": true
+            },
+            {
+              "fromMs": 17615,
+              "durationMs": 105,
+              "interior": true
+            },
+            {
+              "fromMs": 17815,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 17945,
+              "durationMs": 255,
+              "interior": true
+            },
+            {
+              "fromMs": 18225,
+              "durationMs": 175,
+              "interior": true
+            },
+            {
+              "fromMs": 18420,
+              "durationMs": 1160,
+              "interior": true
+            },
+            {
+              "fromMs": 19625,
+              "durationMs": 265,
+              "interior": true
+            },
+            {
+              "fromMs": 19910,
+              "durationMs": 170,
+              "interior": true
+            },
+            {
+              "fromMs": 20105,
+              "durationMs": 155,
+              "interior": true
+            },
+            {
+              "fromMs": 20270,
+              "durationMs": 105,
+              "interior": true
+            },
+            {
+              "fromMs": 20415,
+              "durationMs": 330,
+              "interior": true
+            },
+            {
+              "fromMs": 20885,
+              "durationMs": 115,
+              "interior": true
+            },
+            {
+              "fromMs": 21005,
+              "durationMs": 225,
+              "interior": true
+            },
+            {
+              "fromMs": 21260,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 21315,
+              "durationMs": 10,
+              "interior": true
+            },
+            {
+              "fromMs": 21355,
+              "durationMs": 125,
+              "interior": true
+            },
+            {
+              "fromMs": 22125,
+              "durationMs": 55,
+              "interior": true
+            },
+            {
+              "fromMs": 22325,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 22365,
+              "durationMs": 95,
+              "interior": true
+            },
+            {
+              "fromMs": 22585,
+              "durationMs": 125,
+              "interior": true
+            },
+            {
+              "fromMs": 22725,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 22840,
+              "durationMs": 120,
+              "interior": true
+            },
+            {
+              "fromMs": 23105,
+              "durationMs": 55,
+              "interior": true
+            },
+            {
+              "fromMs": 23165,
+              "durationMs": 5,
+              "interior": true
+            },
+            {
+              "fromMs": 23200,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 23225,
+              "durationMs": 315,
+              "interior": true
+            },
+            {
+              "fromMs": 23570,
+              "durationMs": 70,
+              "interior": true
+            },
+            {
+              "fromMs": 23665,
+              "durationMs": 455,
+              "interior": true
+            },
+            {
+              "fromMs": 24125,
+              "durationMs": 95,
+              "interior": true
+            },
+            {
+              "fromMs": 24240,
+              "durationMs": 35,
+              "interior": true
+            },
+            {
+              "fromMs": 24295,
+              "durationMs": 60,
+              "interior": true
+            },
+            {
+              "fromMs": 24385,
+              "durationMs": 150,
+              "interior": true
+            },
+            {
+              "fromMs": 24610,
+              "durationMs": 75,
+              "interior": true
+            },
+            {
+              "fromMs": 24965,
+              "durationMs": 135,
+              "interior": true
+            },
+            {
+              "fromMs": 25105,
+              "durationMs": 20,
+              "interior": true
+            },
+            {
+              "fromMs": 25225,
+              "durationMs": 155,
+              "interior": true
+            },
+            {
+              "fromMs": 25445,
+              "durationMs": 160,
+              "interior": true
+            },
+            {
+              "fromMs": 25710,
+              "durationMs": 245,
+              "interior": true
+            },
+            {
+              "fromMs": 26025,
+              "durationMs": 335,
+              "interior": true
+            },
+            {
+              "fromMs": 26405,
+              "durationMs": 35,
+              "interior": true
+            },
+            {
+              "fromMs": 26505,
+              "durationMs": 1225,
+              "interior": true
+            },
+            {
+              "fromMs": 27825,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 27850,
+              "durationMs": 30,
+              "interior": true
+            },
+            {
+              "fromMs": 27890,
+              "durationMs": 250,
+              "interior": true
+            },
+            {
+              "fromMs": 28215,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 28315,
+              "durationMs": 30,
+              "interior": true
+            },
+            {
+              "fromMs": 28360,
+              "durationMs": 75,
+              "interior": true
+            },
+            {
+              "fromMs": 28510,
+              "durationMs": 60,
+              "interior": true
+            },
+            {
+              "fromMs": 29565,
+              "durationMs": 435,
+              "interior": true
+            },
+            {
+              "fromMs": 30045,
+              "durationMs": 55,
+              "interior": true
+            },
+            {
+              "fromMs": 30105,
+              "durationMs": 535,
+              "interior": true
+            },
+            {
+              "fromMs": 30655,
+              "durationMs": 80,
+              "interior": true
+            },
+            {
+              "fromMs": 30795,
+              "durationMs": 610,
+              "interior": true
+            },
+            {
+              "fromMs": 31495,
+              "durationMs": 525,
+              "interior": true
+            },
+            {
+              "fromMs": 32065,
+              "durationMs": 35,
+              "interior": true
+            },
+            {
+              "fromMs": 32280,
+              "durationMs": 45,
+              "interior": true
+            },
+            {
+              "fromMs": 32365,
+              "durationMs": 175,
+              "interior": true
+            },
+            {
+              "fromMs": 32605,
+              "durationMs": 10,
+              "interior": true
+            },
+            {
+              "fromMs": 32630,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 32675,
+              "durationMs": 35,
+              "interior": true
+            },
+            {
+              "fromMs": 33185,
+              "durationMs": 55,
+              "interior": true
+            },
+            {
+              "fromMs": 33445,
+              "durationMs": 275,
+              "interior": true
+            },
+            {
+              "fromMs": 33795,
+              "durationMs": 30,
+              "interior": true
+            },
+            {
+              "fromMs": 33835,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 33985,
+              "durationMs": 75,
+              "interior": true
+            },
+            {
+              "fromMs": 34070,
+              "durationMs": 280,
+              "interior": true
+            },
+            {
+              "fromMs": 34410,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 34485,
+              "durationMs": 95,
+              "interior": true
+            },
+            {
+              "fromMs": 34605,
+              "durationMs": 70,
+              "interior": true
+            },
+            {
+              "fromMs": 34885,
+              "durationMs": 115,
+              "interior": true
+            },
+            {
+              "fromMs": 35105,
+              "durationMs": 95,
+              "interior": true
+            },
+            {
+              "fromMs": 35500,
+              "durationMs": 135,
+              "interior": true
+            },
+            {
+              "fromMs": 36185,
+              "durationMs": 135,
+              "interior": true
+            },
+            {
+              "fromMs": 36345,
+              "durationMs": 135,
+              "interior": true
+            },
+            {
+              "fromMs": 36530,
+              "durationMs": 10,
+              "interior": true
+            },
+            {
+              "fromMs": 36565,
+              "durationMs": 135,
+              "interior": true
+            },
+            {
+              "fromMs": 36800,
+              "durationMs": 145,
+              "interior": true
+            },
+            {
+              "fromMs": 36960,
+              "durationMs": 135,
+              "interior": true
+            },
+            {
+              "fromMs": 37125,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 37185,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 37210,
+              "durationMs": 135,
+              "interior": true
+            },
+            {
+              "fromMs": 37430,
+              "durationMs": 130,
+              "interior": true
+            },
+            {
+              "fromMs": 37610,
+              "durationMs": 30,
+              "interior": true
+            },
+            {
+              "fromMs": 37725,
+              "durationMs": 35,
+              "interior": true
+            },
+            {
+              "fromMs": 37800,
+              "durationMs": 20,
+              "interior": true
+            },
+            {
+              "fromMs": 38365,
+              "durationMs": 115,
+              "interior": true
+            },
+            {
+              "fromMs": 38885,
+              "durationMs": 55,
+              "interior": true
+            },
+            {
+              "fromMs": 38965,
+              "durationMs": 55,
+              "interior": true
+            },
+            {
+              "fromMs": 39030,
+              "durationMs": 115,
+              "interior": true
+            },
+            {
+              "fromMs": 39365,
+              "durationMs": 235,
+              "interior": true
+            },
+            {
+              "fromMs": 39610,
+              "durationMs": 40,
+              "interior": true
+            },
+            {
+              "fromMs": 39700,
+              "durationMs": 120,
+              "interior": true
+            },
+            {
+              "fromMs": 39985,
+              "durationMs": 160,
+              "interior": true
+            },
+            {
+              "fromMs": 40185,
+              "durationMs": 50,
+              "interior": true
+            },
+            {
+              "fromMs": 40765,
+              "durationMs": 115,
+              "interior": true
+            },
+            {
+              "fromMs": 41065,
+              "durationMs": 115,
+              "interior": true
+            },
+            {
+              "fromMs": 41285,
+              "durationMs": 155,
+              "interior": true
+            },
+            {
+              "fromMs": 41450,
+              "durationMs": 45,
+              "interior": true
+            },
+            {
+              "fromMs": 41545,
+              "durationMs": 115,
+              "interior": true
+            },
+            {
+              "fromMs": 41665,
+              "durationMs": 435,
+              "interior": true
+            },
+            {
+              "fromMs": 42125,
+              "durationMs": 145,
+              "interior": true
+            },
+            {
+              "fromMs": 42285,
+              "durationMs": 440,
+              "interior": true
+            },
+            {
+              "fromMs": 42750,
+              "durationMs": 515,
+              "interior": true
+            },
+            {
+              "fromMs": 43295,
+              "durationMs": 50,
+              "interior": true
+            },
+            {
+              "fromMs": 43385,
+              "durationMs": 115,
+              "interior": true
+            },
+            {
+              "fromMs": 43510,
+              "durationMs": 10,
+              "interior": true
+            },
+            {
+              "fromMs": 43550,
+              "durationMs": 20,
+              "interior": true
+            },
+            {
+              "fromMs": 43595,
+              "durationMs": 230,
+              "interior": true
+            },
+            {
+              "fromMs": 43845,
+              "durationMs": 55,
+              "interior": true
+            },
+            {
+              "fromMs": 43915,
+              "durationMs": 5,
+              "interior": true
+            },
+            {
+              "fromMs": 43945,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 43985,
+              "durationMs": 140,
+              "interior": true
+            },
+            {
+              "fromMs": 44185,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 44290,
+              "durationMs": 135,
+              "interior": true
+            },
+            {
+              "fromMs": 44445,
+              "durationMs": 75,
+              "interior": true
+            },
+            {
+              "fromMs": 44570,
+              "durationMs": 5,
+              "interior": true
+            },
+            {
+              "fromMs": 44590,
+              "durationMs": 120,
+              "interior": true
+            },
+            {
+              "fromMs": 44730,
+              "durationMs": 5,
+              "interior": true
+            },
+            {
+              "fromMs": 44795,
+              "durationMs": 30,
+              "interior": true
+            },
+            {
+              "fromMs": 47025,
+              "durationMs": 35,
+              "interior": true
+            },
+            {
+              "fromMs": 47615,
+              "durationMs": 55,
+              "interior": true
+            },
+            {
+              "fromMs": 68525,
+              "durationMs": 75,
+              "interior": true
+            },
+            {
+              "fromMs": 68785,
+              "durationMs": 115,
+              "interior": true
+            },
+            {
+              "fromMs": 68945,
+              "durationMs": 155,
+              "interior": true
+            },
+            {
+              "fromMs": 69125,
+              "durationMs": 415,
+              "interior": true
+            },
+            {
+              "fromMs": 69555,
+              "durationMs": 2255,
+              "interior": true
+            },
+            {
+              "fromMs": 71910,
+              "durationMs": 105,
+              "interior": true
+            },
+            {
+              "fromMs": 72215,
+              "durationMs": 10,
+              "interior": true
+            },
+            {
+              "fromMs": 90445,
+              "durationMs": 35,
+              "interior": true
+            },
+            {
+              "fromMs": 91045,
+              "durationMs": 45,
+              "interior": true
+            }
+          ],
+          "interiorTotalMs": 29795,
+          "interiorMaximumMs": 2255
+        }
+      }
+    },
+    "media": {
+      "recording.mkv": {
+        "positiveJumpTotalMs": 3.770833333333333,
+        "negativeJumpTotalMs": 20583.729166666664,
+        "matchedWindows": 1865,
+        "windowCount": 3035,
+        "silence": {
+          "resolutionMs": 5,
+          "segments": [
+            {
+              "fromMs": 0,
+              "durationMs": 10,
+              "interior": false
+            },
+            {
+              "fromMs": 235,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 255,
+              "durationMs": 30,
+              "interior": true
+            },
+            {
+              "fromMs": 295,
+              "durationMs": 460,
+              "interior": true
+            },
+            {
+              "fromMs": 850,
+              "durationMs": 35,
+              "interior": true
+            },
+            {
+              "fromMs": 1070,
+              "durationMs": 75,
+              "interior": true
+            },
+            {
+              "fromMs": 1170,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 1310,
+              "durationMs": 5,
+              "interior": true
+            },
+            {
+              "fromMs": 1335,
+              "durationMs": 25,
+              "interior": true
+            },
+            {
+              "fromMs": 1370,
+              "durationMs": 75,
+              "interior": true
+            },
+            {
+              "fromMs": 1470,
+              "durationMs": 35,
+              "interior": true
+            },
+            {
+              "fromMs": 1550,
+              "durationMs": 120,
+              "interior": true
+            },
+            {
+              "fromMs": 1850,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 1875,
+              "durationMs": 370,
+              "interior": true
+            },
+            {
+              "fromMs": 2270,
+              "durationMs": 95,
+              "interior": true
+            },
+            {
+              "fromMs": 2460,
+              "durationMs": 240,
+              "interior": true
+            },
+            {
+              "fromMs": 2715,
+              "durationMs": 130,
+              "interior": true
+            },
+            {
+              "fromMs": 2870,
+              "durationMs": 35,
+              "interior": true
+            },
+            {
+              "fromMs": 3330,
+              "durationMs": 95,
+              "interior": true
+            },
+            {
+              "fromMs": 3570,
+              "durationMs": 35,
+              "interior": true
+            },
+            {
+              "fromMs": 3630,
+              "durationMs": 175,
+              "interior": true
+            },
+            {
+              "fromMs": 3815,
+              "durationMs": 95,
+              "interior": true
+            },
+            {
+              "fromMs": 3950,
+              "durationMs": 10,
+              "interior": true
+            },
+            {
+              "fromMs": 4030,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 4055,
+              "durationMs": 535,
+              "interior": true
+            },
+            {
+              "fromMs": 4745,
+              "durationMs": 325,
+              "interior": true
+            },
+            {
+              "fromMs": 5155,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 5370,
+              "durationMs": 45,
+              "interior": true
+            },
+            {
+              "fromMs": 5850,
+              "durationMs": 75,
+              "interior": true
+            },
+            {
+              "fromMs": 6030,
+              "durationMs": 140,
+              "interior": true
+            },
+            {
+              "fromMs": 6315,
+              "durationMs": 160,
+              "interior": true
+            },
+            {
+              "fromMs": 6500,
+              "durationMs": 140,
+              "interior": true
+            },
+            {
+              "fromMs": 6655,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 6745,
+              "durationMs": 20,
+              "interior": true
+            },
+            {
+              "fromMs": 6840,
+              "durationMs": 105,
+              "interior": true
+            },
+            {
+              "fromMs": 8110,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 8150,
+              "durationMs": 75,
+              "interior": true
+            },
+            {
+              "fromMs": 8350,
+              "durationMs": 435,
+              "interior": true
+            },
+            {
+              "fromMs": 8825,
+              "durationMs": 575,
+              "interior": true
+            },
+            {
+              "fromMs": 9460,
+              "durationMs": 25,
+              "interior": true
+            },
+            {
+              "fromMs": 9510,
+              "durationMs": 40,
+              "interior": true
+            },
+            {
+              "fromMs": 9565,
+              "durationMs": 70,
+              "interior": true
+            },
+            {
+              "fromMs": 9650,
+              "durationMs": 40,
+              "interior": true
+            },
+            {
+              "fromMs": 9710,
+              "durationMs": 135,
+              "interior": true
+            },
+            {
+              "fromMs": 9850,
+              "durationMs": 255,
+              "interior": true
+            },
+            {
+              "fromMs": 10200,
+              "durationMs": 800,
+              "interior": true
+            },
+            {
+              "fromMs": 11030,
+              "durationMs": 75,
+              "interior": true
+            },
+            {
+              "fromMs": 11110,
+              "durationMs": 395,
+              "interior": true
+            },
+            {
+              "fromMs": 11535,
+              "durationMs": 60,
+              "interior": true
+            },
+            {
+              "fromMs": 11635,
+              "durationMs": 5,
+              "interior": true
+            },
+            {
+              "fromMs": 11665,
+              "durationMs": 30,
+              "interior": true
+            },
+            {
+              "fromMs": 11710,
+              "durationMs": 10,
+              "interior": true
+            },
+            {
+              "fromMs": 11780,
+              "durationMs": 5,
+              "interior": true
+            },
+            {
+              "fromMs": 11870,
+              "durationMs": 235,
+              "interior": true
+            },
+            {
+              "fromMs": 12370,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 12395,
+              "durationMs": 230,
+              "interior": true
+            },
+            {
+              "fromMs": 12670,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 12730,
+              "durationMs": 195,
+              "interior": true
+            },
+            {
+              "fromMs": 12985,
+              "durationMs": 195,
+              "interior": true
+            },
+            {
+              "fromMs": 13215,
+              "durationMs": 240,
+              "interior": true
+            },
+            {
+              "fromMs": 13470,
+              "durationMs": 5,
+              "interior": true
+            },
+            {
+              "fromMs": 13550,
+              "durationMs": 30,
+              "interior": true
+            },
+            {
+              "fromMs": 13750,
+              "durationMs": 95,
+              "interior": true
+            },
+            {
+              "fromMs": 14130,
+              "durationMs": 255,
+              "interior": true
+            },
+            {
+              "fromMs": 14590,
+              "durationMs": 95,
+              "interior": true
+            },
+            {
+              "fromMs": 14690,
+              "durationMs": 300,
+              "interior": true
+            },
+            {
+              "fromMs": 15075,
+              "durationMs": 90,
+              "interior": true
+            },
+            {
+              "fromMs": 15260,
+              "durationMs": 10,
+              "interior": true
+            },
+            {
+              "fromMs": 15320,
+              "durationMs": 185,
+              "interior": true
+            },
+            {
+              "fromMs": 15550,
+              "durationMs": 35,
+              "interior": true
+            },
+            {
+              "fromMs": 15670,
+              "durationMs": 55,
+              "interior": true
+            },
+            {
+              "fromMs": 15910,
+              "durationMs": 80,
+              "interior": true
+            },
+            {
+              "fromMs": 16040,
+              "durationMs": 465,
+              "interior": true
+            },
+            {
+              "fromMs": 16550,
+              "durationMs": 35,
+              "interior": true
+            },
+            {
+              "fromMs": 16595,
+              "durationMs": 400,
+              "interior": true
+            },
+            {
+              "fromMs": 17045,
+              "durationMs": 45,
+              "interior": true
+            },
+            {
+              "fromMs": 17175,
+              "durationMs": 25,
+              "interior": true
+            },
+            {
+              "fromMs": 17870,
+              "durationMs": 115,
+              "interior": true
+            },
+            {
+              "fromMs": 18070,
+              "durationMs": 35,
+              "interior": true
+            },
+            {
+              "fromMs": 18360,
+              "durationMs": 105,
+              "interior": true
+            },
+            {
+              "fromMs": 18560,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 18690,
+              "durationMs": 255,
+              "interior": true
+            },
+            {
+              "fromMs": 18970,
+              "durationMs": 175,
+              "interior": true
+            },
+            {
+              "fromMs": 19165,
+              "durationMs": 1165,
+              "interior": true
+            },
+            {
+              "fromMs": 20370,
+              "durationMs": 270,
+              "interior": true
+            },
+            {
+              "fromMs": 20655,
+              "durationMs": 170,
+              "interior": true
+            },
+            {
+              "fromMs": 20850,
+              "durationMs": 155,
+              "interior": true
+            },
+            {
+              "fromMs": 21015,
+              "durationMs": 105,
+              "interior": true
+            },
+            {
+              "fromMs": 21160,
+              "durationMs": 330,
+              "interior": true
+            },
+            {
+              "fromMs": 21630,
+              "durationMs": 115,
+              "interior": true
+            },
+            {
+              "fromMs": 21750,
+              "durationMs": 230,
+              "interior": true
+            },
+            {
+              "fromMs": 22005,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 22060,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 22100,
+              "durationMs": 125,
+              "interior": true
+            },
+            {
+              "fromMs": 22870,
+              "durationMs": 55,
+              "interior": true
+            },
+            {
+              "fromMs": 23070,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 23110,
+              "durationMs": 95,
+              "interior": true
+            },
+            {
+              "fromMs": 23335,
+              "durationMs": 120,
+              "interior": true
+            },
+            {
+              "fromMs": 23470,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 23585,
+              "durationMs": 120,
+              "interior": true
+            },
+            {
+              "fromMs": 23850,
+              "durationMs": 55,
+              "interior": true
+            },
+            {
+              "fromMs": 23945,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 23970,
+              "durationMs": 315,
+              "interior": true
+            },
+            {
+              "fromMs": 24315,
+              "durationMs": 70,
+              "interior": true
+            },
+            {
+              "fromMs": 24410,
+              "durationMs": 455,
+              "interior": true
+            },
+            {
+              "fromMs": 24870,
+              "durationMs": 95,
+              "interior": true
+            },
+            {
+              "fromMs": 24985,
+              "durationMs": 40,
+              "interior": true
+            },
+            {
+              "fromMs": 25040,
+              "durationMs": 60,
+              "interior": true
+            },
+            {
+              "fromMs": 25130,
+              "durationMs": 150,
+              "interior": true
+            },
+            {
+              "fromMs": 25355,
+              "durationMs": 75,
+              "interior": true
+            },
+            {
+              "fromMs": 25710,
+              "durationMs": 135,
+              "interior": true
+            },
+            {
+              "fromMs": 25850,
+              "durationMs": 20,
+              "interior": true
+            },
+            {
+              "fromMs": 25970,
+              "durationMs": 155,
+              "interior": true
+            },
+            {
+              "fromMs": 26190,
+              "durationMs": 160,
+              "interior": true
+            },
+            {
+              "fromMs": 26460,
+              "durationMs": 240,
+              "interior": true
+            },
+            {
+              "fromMs": 26770,
+              "durationMs": 335,
+              "interior": true
+            },
+            {
+              "fromMs": 27150,
+              "durationMs": 35,
+              "interior": true
+            },
+            {
+              "fromMs": 27250,
+              "durationMs": 1225,
+              "interior": true
+            },
+            {
+              "fromMs": 28570,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 28595,
+              "durationMs": 30,
+              "interior": true
+            },
+            {
+              "fromMs": 28635,
+              "durationMs": 250,
+              "interior": true
+            },
+            {
+              "fromMs": 28960,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 29060,
+              "durationMs": 30,
+              "interior": true
+            },
+            {
+              "fromMs": 29105,
+              "durationMs": 80,
+              "interior": true
+            },
+            {
+              "fromMs": 29255,
+              "durationMs": 60,
+              "interior": true
+            },
+            {
+              "fromMs": 30310,
+              "durationMs": 440,
+              "interior": true
+            },
+            {
+              "fromMs": 30795,
+              "durationMs": 50,
+              "interior": true
+            },
+            {
+              "fromMs": 30855,
+              "durationMs": 530,
+              "interior": true
+            },
+            {
+              "fromMs": 31405,
+              "durationMs": 75,
+              "interior": true
+            },
+            {
+              "fromMs": 31545,
+              "durationMs": 605,
+              "interior": true
+            },
+            {
+              "fromMs": 32240,
+              "durationMs": 525,
+              "interior": true
+            },
+            {
+              "fromMs": 32810,
+              "durationMs": 35,
+              "interior": true
+            },
+            {
+              "fromMs": 33025,
+              "durationMs": 50,
+              "interior": true
+            },
+            {
+              "fromMs": 33110,
+              "durationMs": 180,
+              "interior": true
+            },
+            {
+              "fromMs": 33350,
+              "durationMs": 10,
+              "interior": true
+            },
+            {
+              "fromMs": 33380,
+              "durationMs": 10,
+              "interior": true
+            },
+            {
+              "fromMs": 33420,
+              "durationMs": 35,
+              "interior": true
+            },
+            {
+              "fromMs": 33935,
+              "durationMs": 50,
+              "interior": true
+            },
+            {
+              "fromMs": 34190,
+              "durationMs": 280,
+              "interior": true
+            },
+            {
+              "fromMs": 34475,
+              "durationMs": 5,
+              "interior": true
+            },
+            {
+              "fromMs": 34540,
+              "durationMs": 30,
+              "interior": true
+            },
+            {
+              "fromMs": 34585,
+              "durationMs": 10,
+              "interior": true
+            },
+            {
+              "fromMs": 34735,
+              "durationMs": 75,
+              "interior": true
+            },
+            {
+              "fromMs": 34815,
+              "durationMs": 280,
+              "interior": true
+            },
+            {
+              "fromMs": 35155,
+              "durationMs": 20,
+              "interior": true
+            },
+            {
+              "fromMs": 35235,
+              "durationMs": 90,
+              "interior": true
+            },
+            {
+              "fromMs": 35350,
+              "durationMs": 70,
+              "interior": true
+            },
+            {
+              "fromMs": 35635,
+              "durationMs": 110,
+              "interior": true
+            },
+            {
+              "fromMs": 35850,
+              "durationMs": 95,
+              "interior": true
+            },
+            {
+              "fromMs": 36245,
+              "durationMs": 140,
+              "interior": true
+            },
+            {
+              "fromMs": 36935,
+              "durationMs": 130,
+              "interior": true
+            },
+            {
+              "fromMs": 37090,
+              "durationMs": 135,
+              "interior": true
+            },
+            {
+              "fromMs": 37275,
+              "durationMs": 10,
+              "interior": true
+            },
+            {
+              "fromMs": 37325,
+              "durationMs": 120,
+              "interior": true
+            },
+            {
+              "fromMs": 37550,
+              "durationMs": 140,
+              "interior": true
+            },
+            {
+              "fromMs": 37705,
+              "durationMs": 140,
+              "interior": true
+            },
+            {
+              "fromMs": 37870,
+              "durationMs": 20,
+              "interior": true
+            },
+            {
+              "fromMs": 37930,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 37955,
+              "durationMs": 135,
+              "interior": true
+            },
+            {
+              "fromMs": 38175,
+              "durationMs": 130,
+              "interior": true
+            },
+            {
+              "fromMs": 38355,
+              "durationMs": 30,
+              "interior": true
+            },
+            {
+              "fromMs": 38470,
+              "durationMs": 35,
+              "interior": true
+            },
+            {
+              "fromMs": 38545,
+              "durationMs": 25,
+              "interior": true
+            },
+            {
+              "fromMs": 39120,
+              "durationMs": 105,
+              "interior": true
+            },
+            {
+              "fromMs": 39630,
+              "durationMs": 55,
+              "interior": true
+            },
+            {
+              "fromMs": 39710,
+              "durationMs": 60,
+              "interior": true
+            },
+            {
+              "fromMs": 39775,
+              "durationMs": 115,
+              "interior": true
+            },
+            {
+              "fromMs": 40110,
+              "durationMs": 235,
+              "interior": true
+            },
+            {
+              "fromMs": 40355,
+              "durationMs": 45,
+              "interior": true
+            },
+            {
+              "fromMs": 40450,
+              "durationMs": 115,
+              "interior": true
+            },
+            {
+              "fromMs": 40730,
+              "durationMs": 160,
+              "interior": true
+            },
+            {
+              "fromMs": 40930,
+              "durationMs": 50,
+              "interior": true
+            },
+            {
+              "fromMs": 41525,
+              "durationMs": 100,
+              "interior": true
+            },
+            {
+              "fromMs": 41810,
+              "durationMs": 115,
+              "interior": true
+            },
+            {
+              "fromMs": 42030,
+              "durationMs": 160,
+              "interior": true
+            },
+            {
+              "fromMs": 42195,
+              "durationMs": 50,
+              "interior": true
+            },
+            {
+              "fromMs": 42290,
+              "durationMs": 115,
+              "interior": true
+            },
+            {
+              "fromMs": 42415,
+              "durationMs": 430,
+              "interior": true
+            },
+            {
+              "fromMs": 42870,
+              "durationMs": 145,
+              "interior": true
+            },
+            {
+              "fromMs": 43030,
+              "durationMs": 440,
+              "interior": true
+            },
+            {
+              "fromMs": 43500,
+              "durationMs": 510,
+              "interior": true
+            },
+            {
+              "fromMs": 44040,
+              "durationMs": 50,
+              "interior": true
+            },
+            {
+              "fromMs": 44130,
+              "durationMs": 115,
+              "interior": true
+            },
+            {
+              "fromMs": 44255,
+              "durationMs": 10,
+              "interior": true
+            },
+            {
+              "fromMs": 44295,
+              "durationMs": 20,
+              "interior": true
+            },
+            {
+              "fromMs": 44340,
+              "durationMs": 230,
+              "interior": true
+            },
+            {
+              "fromMs": 44590,
+              "durationMs": 60,
+              "interior": true
+            },
+            {
+              "fromMs": 44660,
+              "durationMs": 10,
+              "interior": true
+            },
+            {
+              "fromMs": 44690,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 44730,
+              "durationMs": 140,
+              "interior": true
+            },
+            {
+              "fromMs": 44930,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 45040,
+              "durationMs": 135,
+              "interior": true
+            },
+            {
+              "fromMs": 45190,
+              "durationMs": 75,
+              "interior": true
+            },
+            {
+              "fromMs": 45315,
+              "durationMs": 5,
+              "interior": true
+            },
+            {
+              "fromMs": 45340,
+              "durationMs": 120,
+              "interior": true
+            },
+            {
+              "fromMs": 45475,
+              "durationMs": 5,
+              "interior": true
+            },
+            {
+              "fromMs": 45545,
+              "durationMs": 25,
+              "interior": true
+            },
+            {
+              "fromMs": 47775,
+              "durationMs": 30,
+              "interior": true
+            },
+            {
+              "fromMs": 48360,
+              "durationMs": 60,
+              "interior": true
+            },
+            {
+              "fromMs": 69270,
+              "durationMs": 75,
+              "interior": true
+            },
+            {
+              "fromMs": 69535,
+              "durationMs": 110,
+              "interior": true
+            },
+            {
+              "fromMs": 69690,
+              "durationMs": 155,
+              "interior": true
+            },
+            {
+              "fromMs": 69870,
+              "durationMs": 415,
+              "interior": true
+            },
+            {
+              "fromMs": 70300,
+              "durationMs": 2260,
+              "interior": true
+            },
+            {
+              "fromMs": 72655,
+              "durationMs": 105,
+              "interior": true
+            },
+            {
+              "fromMs": 72965,
+              "durationMs": 5,
+              "interior": true
+            },
+            {
+              "fromMs": 91190,
+              "durationMs": 35,
+              "interior": true
+            },
+            {
+              "fromMs": 91790,
+              "durationMs": 45,
+              "interior": true
+            }
+          ],
+          "interiorTotalMs": 30275,
+          "interiorMaximumMs": 2260
+        }
+      },
+      "receiver.flv": {
+        "positiveJumpTotalMs": 4.9375,
+        "negativeJumpTotalMs": 20093.791666666668,
+        "matchedWindows": 1857,
+        "windowCount": 3002,
+        "silence": {
+          "resolutionMs": 5,
+          "segments": [
+            {
+              "fromMs": 0,
+              "durationMs": 30,
+              "interior": false
+            },
+            {
+              "fromMs": 125,
+              "durationMs": 35,
+              "interior": true
+            },
+            {
+              "fromMs": 345,
+              "durationMs": 75,
+              "interior": true
+            },
+            {
+              "fromMs": 445,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 585,
+              "durationMs": 10,
+              "interior": true
+            },
+            {
+              "fromMs": 610,
+              "durationMs": 25,
+              "interior": true
+            },
+            {
+              "fromMs": 645,
+              "durationMs": 75,
+              "interior": true
+            },
+            {
+              "fromMs": 745,
+              "durationMs": 35,
+              "interior": true
+            },
+            {
+              "fromMs": 825,
+              "durationMs": 120,
+              "interior": true
+            },
+            {
+              "fromMs": 1125,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 1150,
+              "durationMs": 370,
+              "interior": true
+            },
+            {
+              "fromMs": 1545,
+              "durationMs": 95,
+              "interior": true
+            },
+            {
+              "fromMs": 1735,
+              "durationMs": 240,
+              "interior": true
+            },
+            {
+              "fromMs": 1990,
+              "durationMs": 130,
+              "interior": true
+            },
+            {
+              "fromMs": 2145,
+              "durationMs": 35,
+              "interior": true
+            },
+            {
+              "fromMs": 2605,
+              "durationMs": 95,
+              "interior": true
+            },
+            {
+              "fromMs": 2845,
+              "durationMs": 35,
+              "interior": true
+            },
+            {
+              "fromMs": 2905,
+              "durationMs": 175,
+              "interior": true
+            },
+            {
+              "fromMs": 3090,
+              "durationMs": 95,
+              "interior": true
+            },
+            {
+              "fromMs": 3225,
+              "durationMs": 10,
+              "interior": true
+            },
+            {
+              "fromMs": 3305,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 3330,
+              "durationMs": 535,
+              "interior": true
+            },
+            {
+              "fromMs": 4020,
+              "durationMs": 325,
+              "interior": true
+            },
+            {
+              "fromMs": 4430,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 4645,
+              "durationMs": 45,
+              "interior": true
+            },
+            {
+              "fromMs": 5125,
+              "durationMs": 75,
+              "interior": true
+            },
+            {
+              "fromMs": 5305,
+              "durationMs": 140,
+              "interior": true
+            },
+            {
+              "fromMs": 5590,
+              "durationMs": 160,
+              "interior": true
+            },
+            {
+              "fromMs": 5775,
+              "durationMs": 140,
+              "interior": true
+            },
+            {
+              "fromMs": 5930,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 6020,
+              "durationMs": 20,
+              "interior": true
+            },
+            {
+              "fromMs": 6115,
+              "durationMs": 105,
+              "interior": true
+            },
+            {
+              "fromMs": 7385,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 7425,
+              "durationMs": 75,
+              "interior": true
+            },
+            {
+              "fromMs": 7625,
+              "durationMs": 435,
+              "interior": true
+            },
+            {
+              "fromMs": 8100,
+              "durationMs": 575,
+              "interior": true
+            },
+            {
+              "fromMs": 8735,
+              "durationMs": 25,
+              "interior": true
+            },
+            {
+              "fromMs": 8785,
+              "durationMs": 40,
+              "interior": true
+            },
+            {
+              "fromMs": 8840,
+              "durationMs": 70,
+              "interior": true
+            },
+            {
+              "fromMs": 8925,
+              "durationMs": 40,
+              "interior": true
+            },
+            {
+              "fromMs": 8985,
+              "durationMs": 135,
+              "interior": true
+            },
+            {
+              "fromMs": 9125,
+              "durationMs": 255,
+              "interior": true
+            },
+            {
+              "fromMs": 9475,
+              "durationMs": 800,
+              "interior": true
+            },
+            {
+              "fromMs": 10305,
+              "durationMs": 75,
+              "interior": true
+            },
+            {
+              "fromMs": 10385,
+              "durationMs": 395,
+              "interior": true
+            },
+            {
+              "fromMs": 10810,
+              "durationMs": 60,
+              "interior": true
+            },
+            {
+              "fromMs": 10940,
+              "durationMs": 30,
+              "interior": true
+            },
+            {
+              "fromMs": 10990,
+              "durationMs": 5,
+              "interior": true
+            },
+            {
+              "fromMs": 11055,
+              "durationMs": 5,
+              "interior": true
+            },
+            {
+              "fromMs": 11145,
+              "durationMs": 235,
+              "interior": true
+            },
+            {
+              "fromMs": 11645,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 11670,
+              "durationMs": 235,
+              "interior": true
+            },
+            {
+              "fromMs": 11945,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 12005,
+              "durationMs": 195,
+              "interior": true
+            },
+            {
+              "fromMs": 12260,
+              "durationMs": 195,
+              "interior": true
+            },
+            {
+              "fromMs": 12490,
+              "durationMs": 240,
+              "interior": true
+            },
+            {
+              "fromMs": 12745,
+              "durationMs": 5,
+              "interior": true
+            },
+            {
+              "fromMs": 12825,
+              "durationMs": 30,
+              "interior": true
+            },
+            {
+              "fromMs": 13020,
+              "durationMs": 100,
+              "interior": true
+            },
+            {
+              "fromMs": 13405,
+              "durationMs": 255,
+              "interior": true
+            },
+            {
+              "fromMs": 13865,
+              "durationMs": 95,
+              "interior": true
+            },
+            {
+              "fromMs": 13965,
+              "durationMs": 300,
+              "interior": true
+            },
+            {
+              "fromMs": 14350,
+              "durationMs": 90,
+              "interior": true
+            },
+            {
+              "fromMs": 14535,
+              "durationMs": 10,
+              "interior": true
+            },
+            {
+              "fromMs": 14605,
+              "durationMs": 175,
+              "interior": true
+            },
+            {
+              "fromMs": 14825,
+              "durationMs": 35,
+              "interior": true
+            },
+            {
+              "fromMs": 14945,
+              "durationMs": 55,
+              "interior": true
+            },
+            {
+              "fromMs": 15185,
+              "durationMs": 80,
+              "interior": true
+            },
+            {
+              "fromMs": 15315,
+              "durationMs": 465,
+              "interior": true
+            },
+            {
+              "fromMs": 15825,
+              "durationMs": 35,
+              "interior": true
+            },
+            {
+              "fromMs": 15870,
+              "durationMs": 400,
+              "interior": true
+            },
+            {
+              "fromMs": 16320,
+              "durationMs": 45,
+              "interior": true
+            },
+            {
+              "fromMs": 16450,
+              "durationMs": 25,
+              "interior": true
+            },
+            {
+              "fromMs": 17145,
+              "durationMs": 115,
+              "interior": true
+            },
+            {
+              "fromMs": 17345,
+              "durationMs": 35,
+              "interior": true
+            },
+            {
+              "fromMs": 17640,
+              "durationMs": 100,
+              "interior": true
+            },
+            {
+              "fromMs": 17835,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 17965,
+              "durationMs": 255,
+              "interior": true
+            },
+            {
+              "fromMs": 18245,
+              "durationMs": 175,
+              "interior": true
+            },
+            {
+              "fromMs": 18440,
+              "durationMs": 1165,
+              "interior": true
+            },
+            {
+              "fromMs": 19645,
+              "durationMs": 270,
+              "interior": true
+            },
+            {
+              "fromMs": 19930,
+              "durationMs": 170,
+              "interior": true
+            },
+            {
+              "fromMs": 20125,
+              "durationMs": 155,
+              "interior": true
+            },
+            {
+              "fromMs": 20290,
+              "durationMs": 105,
+              "interior": true
+            },
+            {
+              "fromMs": 20435,
+              "durationMs": 330,
+              "interior": true
+            },
+            {
+              "fromMs": 20905,
+              "durationMs": 115,
+              "interior": true
+            },
+            {
+              "fromMs": 21025,
+              "durationMs": 230,
+              "interior": true
+            },
+            {
+              "fromMs": 21280,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 21335,
+              "durationMs": 10,
+              "interior": true
+            },
+            {
+              "fromMs": 21385,
+              "durationMs": 115,
+              "interior": true
+            },
+            {
+              "fromMs": 22145,
+              "durationMs": 55,
+              "interior": true
+            },
+            {
+              "fromMs": 22345,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 22385,
+              "durationMs": 95,
+              "interior": true
+            },
+            {
+              "fromMs": 22610,
+              "durationMs": 120,
+              "interior": true
+            },
+            {
+              "fromMs": 22745,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 22860,
+              "durationMs": 120,
+              "interior": true
+            },
+            {
+              "fromMs": 23125,
+              "durationMs": 55,
+              "interior": true
+            },
+            {
+              "fromMs": 23190,
+              "durationMs": 5,
+              "interior": true
+            },
+            {
+              "fromMs": 23220,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 23245,
+              "durationMs": 315,
+              "interior": true
+            },
+            {
+              "fromMs": 23590,
+              "durationMs": 75,
+              "interior": true
+            },
+            {
+              "fromMs": 23685,
+              "durationMs": 455,
+              "interior": true
+            },
+            {
+              "fromMs": 24145,
+              "durationMs": 95,
+              "interior": true
+            },
+            {
+              "fromMs": 24260,
+              "durationMs": 40,
+              "interior": true
+            },
+            {
+              "fromMs": 24315,
+              "durationMs": 60,
+              "interior": true
+            },
+            {
+              "fromMs": 24405,
+              "durationMs": 150,
+              "interior": true
+            },
+            {
+              "fromMs": 24630,
+              "durationMs": 75,
+              "interior": true
+            },
+            {
+              "fromMs": 24985,
+              "durationMs": 135,
+              "interior": true
+            },
+            {
+              "fromMs": 25125,
+              "durationMs": 20,
+              "interior": true
+            },
+            {
+              "fromMs": 25245,
+              "durationMs": 155,
+              "interior": true
+            },
+            {
+              "fromMs": 25465,
+              "durationMs": 160,
+              "interior": true
+            },
+            {
+              "fromMs": 25735,
+              "durationMs": 240,
+              "interior": true
+            },
+            {
+              "fromMs": 26045,
+              "durationMs": 335,
+              "interior": true
+            },
+            {
+              "fromMs": 26425,
+              "durationMs": 35,
+              "interior": true
+            },
+            {
+              "fromMs": 26530,
+              "durationMs": 1220,
+              "interior": true
+            },
+            {
+              "fromMs": 27845,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 27870,
+              "durationMs": 35,
+              "interior": true
+            },
+            {
+              "fromMs": 27910,
+              "durationMs": 255,
+              "interior": true
+            },
+            {
+              "fromMs": 28235,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 28335,
+              "durationMs": 30,
+              "interior": true
+            },
+            {
+              "fromMs": 28380,
+              "durationMs": 80,
+              "interior": true
+            },
+            {
+              "fromMs": 28535,
+              "durationMs": 55,
+              "interior": true
+            },
+            {
+              "fromMs": 29585,
+              "durationMs": 440,
+              "interior": true
+            },
+            {
+              "fromMs": 30070,
+              "durationMs": 55,
+              "interior": true
+            },
+            {
+              "fromMs": 30130,
+              "durationMs": 530,
+              "interior": true
+            },
+            {
+              "fromMs": 30680,
+              "durationMs": 75,
+              "interior": true
+            },
+            {
+              "fromMs": 30815,
+              "durationMs": 610,
+              "interior": true
+            },
+            {
+              "fromMs": 31515,
+              "durationMs": 525,
+              "interior": true
+            },
+            {
+              "fromMs": 32090,
+              "durationMs": 35,
+              "interior": true
+            },
+            {
+              "fromMs": 32300,
+              "durationMs": 50,
+              "interior": true
+            },
+            {
+              "fromMs": 32390,
+              "durationMs": 175,
+              "interior": true
+            },
+            {
+              "fromMs": 32625,
+              "durationMs": 10,
+              "interior": true
+            },
+            {
+              "fromMs": 32655,
+              "durationMs": 10,
+              "interior": true
+            },
+            {
+              "fromMs": 32695,
+              "durationMs": 35,
+              "interior": true
+            },
+            {
+              "fromMs": 33210,
+              "durationMs": 55,
+              "interior": true
+            },
+            {
+              "fromMs": 33470,
+              "durationMs": 275,
+              "interior": true
+            },
+            {
+              "fromMs": 33750,
+              "durationMs": 5,
+              "interior": true
+            },
+            {
+              "fromMs": 33815,
+              "durationMs": 30,
+              "interior": true
+            },
+            {
+              "fromMs": 33860,
+              "durationMs": 10,
+              "interior": true
+            },
+            {
+              "fromMs": 34010,
+              "durationMs": 75,
+              "interior": true
+            },
+            {
+              "fromMs": 34090,
+              "durationMs": 280,
+              "interior": true
+            },
+            {
+              "fromMs": 34430,
+              "durationMs": 20,
+              "interior": true
+            },
+            {
+              "fromMs": 34510,
+              "durationMs": 95,
+              "interior": true
+            },
+            {
+              "fromMs": 34625,
+              "durationMs": 70,
+              "interior": true
+            },
+            {
+              "fromMs": 34910,
+              "durationMs": 115,
+              "interior": true
+            },
+            {
+              "fromMs": 35130,
+              "durationMs": 90,
+              "interior": true
+            },
+            {
+              "fromMs": 35520,
+              "durationMs": 140,
+              "interior": true
+            },
+            {
+              "fromMs": 36210,
+              "durationMs": 135,
+              "interior": true
+            },
+            {
+              "fromMs": 36370,
+              "durationMs": 135,
+              "interior": true
+            },
+            {
+              "fromMs": 36550,
+              "durationMs": 10,
+              "interior": true
+            },
+            {
+              "fromMs": 36590,
+              "durationMs": 135,
+              "interior": true
+            },
+            {
+              "fromMs": 36825,
+              "durationMs": 140,
+              "interior": true
+            },
+            {
+              "fromMs": 36980,
+              "durationMs": 140,
+              "interior": true
+            },
+            {
+              "fromMs": 37150,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 37210,
+              "durationMs": 10,
+              "interior": true
+            },
+            {
+              "fromMs": 37230,
+              "durationMs": 135,
+              "interior": true
+            },
+            {
+              "fromMs": 37450,
+              "durationMs": 130,
+              "interior": true
+            },
+            {
+              "fromMs": 37635,
+              "durationMs": 25,
+              "interior": true
+            },
+            {
+              "fromMs": 37745,
+              "durationMs": 35,
+              "interior": true
+            },
+            {
+              "fromMs": 37820,
+              "durationMs": 25,
+              "interior": true
+            },
+            {
+              "fromMs": 38390,
+              "durationMs": 115,
+              "interior": true
+            },
+            {
+              "fromMs": 38910,
+              "durationMs": 55,
+              "interior": true
+            },
+            {
+              "fromMs": 38990,
+              "durationMs": 55,
+              "interior": true
+            },
+            {
+              "fromMs": 39050,
+              "durationMs": 115,
+              "interior": true
+            },
+            {
+              "fromMs": 39390,
+              "durationMs": 235,
+              "interior": true
+            },
+            {
+              "fromMs": 39630,
+              "durationMs": 45,
+              "interior": true
+            },
+            {
+              "fromMs": 39725,
+              "durationMs": 115,
+              "interior": true
+            },
+            {
+              "fromMs": 40005,
+              "durationMs": 160,
+              "interior": true
+            },
+            {
+              "fromMs": 40205,
+              "durationMs": 50,
+              "interior": true
+            },
+            {
+              "fromMs": 40790,
+              "durationMs": 115,
+              "interior": true
+            },
+            {
+              "fromMs": 41090,
+              "durationMs": 115,
+              "interior": true
+            },
+            {
+              "fromMs": 41310,
+              "durationMs": 155,
+              "interior": true
+            },
+            {
+              "fromMs": 41470,
+              "durationMs": 50,
+              "interior": true
+            },
+            {
+              "fromMs": 41570,
+              "durationMs": 115,
+              "interior": true
+            },
+            {
+              "fromMs": 41690,
+              "durationMs": 430,
+              "interior": true
+            },
+            {
+              "fromMs": 42145,
+              "durationMs": 145,
+              "interior": true
+            },
+            {
+              "fromMs": 42305,
+              "durationMs": 440,
+              "interior": true
+            },
+            {
+              "fromMs": 42775,
+              "durationMs": 510,
+              "interior": true
+            },
+            {
+              "fromMs": 43315,
+              "durationMs": 50,
+              "interior": true
+            },
+            {
+              "fromMs": 43410,
+              "durationMs": 115,
+              "interior": true
+            },
+            {
+              "fromMs": 43530,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 43570,
+              "durationMs": 20,
+              "interior": true
+            },
+            {
+              "fromMs": 43615,
+              "durationMs": 230,
+              "interior": true
+            },
+            {
+              "fromMs": 43870,
+              "durationMs": 55,
+              "interior": true
+            },
+            {
+              "fromMs": 43935,
+              "durationMs": 10,
+              "interior": true
+            },
+            {
+              "fromMs": 43970,
+              "durationMs": 10,
+              "interior": true
+            },
+            {
+              "fromMs": 44005,
+              "durationMs": 140,
+              "interior": true
+            },
+            {
+              "fromMs": 44210,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 44315,
+              "durationMs": 135,
+              "interior": true
+            },
+            {
+              "fromMs": 44465,
+              "durationMs": 75,
+              "interior": true
+            },
+            {
+              "fromMs": 44590,
+              "durationMs": 5,
+              "interior": true
+            },
+            {
+              "fromMs": 44615,
+              "durationMs": 120,
+              "interior": true
+            },
+            {
+              "fromMs": 44750,
+              "durationMs": 5,
+              "interior": true
+            },
+            {
+              "fromMs": 44820,
+              "durationMs": 25,
+              "interior": true
+            },
+            {
+              "fromMs": 47050,
+              "durationMs": 35,
+              "interior": true
+            },
+            {
+              "fromMs": 47635,
+              "durationMs": 60,
+              "interior": true
+            },
+            {
+              "fromMs": 68550,
+              "durationMs": 75,
+              "interior": true
+            },
+            {
+              "fromMs": 68810,
+              "durationMs": 115,
+              "interior": true
+            },
+            {
+              "fromMs": 68970,
+              "durationMs": 155,
+              "interior": true
+            },
+            {
+              "fromMs": 69150,
+              "durationMs": 415,
+              "interior": true
+            },
+            {
+              "fromMs": 69580,
+              "durationMs": 2255,
+              "interior": true
+            },
+            {
+              "fromMs": 71930,
+              "durationMs": 105,
+              "interior": true
+            },
+            {
+              "fromMs": 72240,
+              "durationMs": 5,
+              "interior": true
+            },
+            {
+              "fromMs": 90470,
+              "durationMs": 35,
+              "interior": true
+            },
+            {
+              "fromMs": 91085,
+              "durationMs": 25,
+              "interior": true
+            }
+          ],
+          "interiorTotalMs": 29765,
+          "interiorMaximumMs": 2255
+        }
+      }
+    }
+  }
+}

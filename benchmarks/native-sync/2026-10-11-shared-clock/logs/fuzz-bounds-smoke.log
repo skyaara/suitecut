@@ -1,0 +1,18 @@
+INFO: Running with entropic power schedule (0xFF, 100).
+INFO: Seed: 3644978394
+INFO: Loaded 1 modules   (117 inline 8-bit counters): 117 [0x558edfab4298, 0x558edfab430d), 
+INFO: Loaded 1 PC tables (117 PCs): 117 [0x558edfab4310,0x558edfab4a60), 
+INFO:        8 files found in benchmarks/native-sync/2026-10-11-shared-clock/fuzz/bounds-corpus
+INFO: -max_len is not provided; libFuzzer will not generate inputs larger than 4096 bytes
+INFO: seed corpus: files: 8 min: 40b max: 40b total: 320b rss: 55Mb
+#9	INITED cov: 37 ft: 39 corp: 5/200b exec/s: 0 rss: 55Mb
+#16	NEW    cov: 39 ft: 41 corp: 6/240b lim: 40 exec/s: 0 rss: 56Mb L: 40/40 MS: 2 ChangeByte-ShuffleBytes-
+#21	NEW    cov: 40 ft: 42 corp: 7/280b lim: 40 exec/s: 0 rss: 56Mb L: 40/40 MS: 5 ChangeByte-ChangeBit-CrossOver-ChangeByte-ChangeBit-
+#23	NEW    cov: 42 ft: 44 corp: 8/320b lim: 40 exec/s: 0 rss: 56Mb L: 40/40 MS: 2 ChangeBit-ChangeBinInt-
+#26	NEW    cov: 43 ft: 45 corp: 9/337b lim: 40 exec/s: 0 rss: 56Mb L: 17/40 MS: 3 CopyPart-ChangeBinInt-CrossOver-
+#57	REDUCE cov: 43 ft: 45 corp: 9/333b lim: 40 exec/s: 0 rss: 56Mb L: 13/40 MS: 1 EraseBytes-
+#66	NEW    cov: 44 ft: 47 corp: 10/373b lim: 40 exec/s: 0 rss: 56Mb L: 40/40 MS: 4 ChangeBinInt-CrossOver-ShuffleBytes-ShuffleBytes-
+#77	NEW    cov: 46 ft: 51 corp: 11/413b lim: 40 exec/s: 0 rss: 56Mb L: 40/40 MS: 1 CrossOver-
+#92	NEW    cov: 46 ft: 52 corp: 12/453b lim: 40 exec/s: 0 rss: 57Mb L: 40/40 MS: 5 ChangeByte-CrossOver-CopyPart-ChangeBinInt-CrossOver-
+#100	DONE   cov: 46 ft: 52 corp: 12/453b lim: 40 exec/s: 0 rss: 57Mb
+Done 100 runs in 0 second(s)

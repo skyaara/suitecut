@@ -1,0 +1,60 @@
+{
+  "nativeMedia": false,
+  "cases": [
+    {
+      "case": "bgra",
+      "ready": {
+        "audioSubscriptions": true,
+        "bytes": 0,
+        "cefVersion": "152.0.6+g708dc14+chromium-152.0.7977.83",
+        "frameSubscriptions": true,
+        "nativeMedia": false,
+        "timestampMs": 497.395182,
+        "type": "ready",
+        "version": 1
+      },
+      "browser": {
+        "jsVersion": "",
+        "product": "Chrome/152.0.7977.83",
+        "protocolVersion": "1.3",
+        "revision": "152.0.6+g708dc14+chromium-152.0.7977.83",
+        "userAgent": "Mozilla/5.0 HeadlessChrome/152.0.7977.83"
+      },
+      "distinctFrames": 42,
+      "audioPackets": 12,
+      "peakAudioSample": 6553,
+      "cdpContextSessionRoundTrip": true,
+      "mediaRejected": true
+    },
+    {
+      "case": "i420",
+      "ready": {
+        "audioSubscriptions": true,
+        "bytes": 0,
+        "cefVersion": "152.0.6+g708dc14+chromium-152.0.7977.83",
+        "frameSubscriptions": true,
+        "nativeMedia": false,
+        "timestampMs": 3856.226052,
+        "type": "ready",
+        "version": 1
+      },
+      "browser": {
+        "jsVersion": "",
+        "product": "Chrome/152.0.7977.83",
+        "protocolVersion": "1.3",
+        "revision": "152.0.6+g708dc14+chromium-152.0.7977.83",
+        "userAgent": "Mozilla/5.0 HeadlessChrome/152.0.7977.83"
+      },
+      "distinctFrames": 4,
+      "audioPackets": 12,
+      "peakAudioSample": 6863,
+      "cdpContextSessionRoundTrip": true,
+      "mediaRejected": true
+    },
+    {
+      "case": "malformed-command",
+      "terminalProtocolError": true
+    }
+  ],
+  "allPassed": true
+}

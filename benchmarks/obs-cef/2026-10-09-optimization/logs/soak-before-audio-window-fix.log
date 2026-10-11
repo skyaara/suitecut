@@ -1,0 +1,135 @@
+{
+  "startedAt": "2026-10-09T00:22:42.006Z",
+  "requestedMs": 1800000,
+  "width": 1920,
+  "height": 1080,
+  "targetFps": 60,
+  "audio": true,
+  "mode": "simultaneous recording and RTMP streaming on one caller-owned CEF source",
+  "gcDuringRun": false,
+  "receiverPath": "/workspace/suitecut/.suitecut/obs-cef-optimization/soak/receiver.flv",
+  "readyAt": "2026-10-09T00:22:44.664Z",
+  "baseline": {
+    "rss": 226553856,
+    "heapTotal": 124174336,
+    "heapUsed": 50315520,
+    "external": 74554562,
+    "arrayBuffers": 70556822
+  },
+  "activeMs": 1800156.882698,
+  "snapshot": {
+    "markerCount": 91900,
+    "scrollY": 2340,
+    "scrollEvents": 347,
+    "keyEvents": 0,
+    "clicks": 0,
+    "value": "",
+    "choice": "First",
+    "secondary": false
+  },
+  "scrollCommands": 347,
+  "beforeStop": {
+    "rss": 324059136,
+    "heapTotal": 124960768,
+    "heapUsed": 51157560,
+    "external": 47965196,
+    "arrayBuffers": 43967416
+  },
+  "frames": 69697,
+  "audioPackets": 83991,
+  "recordingPath": "/workspace/suitecut/.suitecut/obs-cef-optimization/soak/suitecut-source-e158512d-01d8-4cd0-bcf4-0cd47499357d-49294ae2-0617-49b5-9475-3d48fb2017cd.webm",
+  "sourceStateAfterRecording": "running",
+  "recording": {
+    "durationSeconds": 1803.601,
+    "bytes": 43824731,
+    "windows": [
+      {
+        "offset": 5,
+        "matchedFlashes": 8,
+        "audioBursts": 28,
+        "medianAudioMinusVideoMs": 11.666666666666714,
+        "p95AbsoluteOffsetMs": 38.66666666666653,
+        "firstThirdMedianMs": 4.999999999999893,
+        "lastThirdMedianMs": 3.333333333332966,
+        "offsetsMs": [
+          23.333333333333428,
+          -13.333333333333641,
+          30.00000000000025,
+          0,
+          43.333333333333,
+          -16.66666666666572,
+          23.333333333333428,
+          -16.666666666667496
+        ]
+      },
+      {
+        "offset": 900,
+        "matchedFlashes": 11,
+        "audioBursts": 19,
+        "medianAudioMinusVideoMs": 9.999999999999787,
+        "p95AbsoluteOffsetMs": 69.99999999999962,
+        "firstThirdMedianMs": 16.666666666666607,
+        "lastThirdMedianMs": 46.666666666666856,
+        "offsetsMs": [
+          30.00000000000025,
+          -53.33333333333323,
+          16.666666666666607,
+          9.999999999999787,
+          3.333333333332966,
+          -86.666666666666,
+          -33.33333333333144,
+          -9.999999999999787,
+          50.00000000000071,
+          9.999999999999787,
+          46.666666666666856
+        ]
+      },
+      {
+        "offset": 1780,
+        "matchedFlashes": 11,
+        "audioBursts": 25,
+        "medianAudioMinusVideoMs": 26.66666666666684,
+        "p95AbsoluteOffsetMs": 50.00000000000071,
+        "firstThirdMedianMs": 26.666666666667282,
+        "lastThirdMedianMs": 1.7763568394002505e-12,
+        "offsetsMs": [
+          26.66666666666684,
+          26.666666666667282,
+          36.66666666666618,
+          13.333333333333641,
+          26.666666666667282,
+          53.333333333334565,
+          46.666666666666856,
+          -43.333333333333,
+          -6.666666666665932,
+          1.7763568394002505e-12,
+          16.666666666667496
+        ]
+      }
+    ]
+  },
+  "status": "failed",
+  "error": "AssertionError [ERR_ASSERTION]: receiver 900: missing flash/tone matches\n    at file:///workspace/suitecut/benchmarks/obs-cef/soak.mjs:63:4",
+  "afterCleanup": {
+    "rss": 324190208,
+    "heapTotal": 125222912,
+    "heapUsed": 52476760,
+    "external": 4418696,
+    "arrayBuffers": 416840
+  },
+  "afterCleanupGc": {
+    "rss": 324321280,
+    "heapTotal": 125222912,
+    "heapUsed": 50749232,
+    "external": 4346389,
+    "arrayBuffers": 344533
+  },
+  "nodeCpuMs": 1201303.265,
+  "elapsedMs": 1845552.4029390002,
+  "eventLoopDelay": {
+    "meanMs": 24.78521948043785,
+    "p99Ms": 52.461567,
+    "maxMs": 5955.911679
+  },
+  "completedAt": "2026-10-09T00:53:27.560Z"
+}

@@ -1,0 +1,41 @@
+{
+  "asset": {
+    "url": "https://api.github.com/repos/tobagin/karere/releases/assets/570845604",
+    "id": 570845604,
+    "node_id": "RA_kwDOKmlVyc4iBmmk",
+    "name": "cef_binary_152.0.6+g708dc14+chromium-152.0.7977.83_linux64_minimal.zip",
+    "label": "",
+    "uploader": {
+      "login": "tobagin",
+      "id": 140509353,
+      "node_id": "U_kgDOCGAAqQ",
+      "avatar_url": "https://avatars.githubusercontent.com/u/140509353?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/tobagin",
+      "html_url": "https://github.com/tobagin",
+      "followers_url": "https://api.github.com/users/tobagin/followers",
+      "following_url": "https://api.github.com/users/tobagin/following{/other_user}",
+      "gists_url": "https://api.github.com/users/tobagin/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/tobagin/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/tobagin/subscriptions",
+      "organizations_url": "https://api.github.com/users/tobagin/orgs",
+      "repos_url": "https://api.github.com/users/tobagin/repos",
+      "events_url": "https://api.github.com/users/tobagin/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/tobagin/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "content_type": "application/zip",
+    "state": "uploaded",
+    "size": 183510343,
+    "digest": "sha256:3d64f6fac8911a368ffa415e3ee53d002cbd792866f08ed6578dae1e252cbac8",
+    "download_count": 76,
+    "created_at": "2026-09-17T18:33:50Z",
+    "updated_at": "2026-09-17T18:34:23Z",
+    "browser_download_url": "https://github.com/tobagin/karere/releases/download/cef-152.0.6-proprietary-codecs/cef_binary_152.0.6%2Bg708dc14%2Bchromium-152.0.7977.83_linux64_minimal.zip"
+  },
+  "downloadSha256": "3d64f6fac8911a368ffa415e3ee53d002cbd792866f08ed6578dae1e252cbac8",
+  "verified": true,
+  "release": "https://github.com/tobagin/karere/releases/tag/cef-152.0.6-proprietary-codecs"
+}

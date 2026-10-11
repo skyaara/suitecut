@@ -1,0 +1,154 @@
+{
+  "backend": "ts-external",
+  "mode": "stream",
+  "durationRequestedMs": 30000,
+  "width": 1920,
+  "height": 1080,
+  "fps": 30,
+  "status": "completed; media validation pending",
+  "startedAt": "2026-10-10T14:21:19.520Z",
+  "profile": "performance",
+  "encoding": {
+    "video": "H264",
+    "preset": "veryfast",
+    "crf": null,
+    "bitrateKbps": 4500,
+    "encoderThreads": 1,
+    "audio": "AAC 48kHz stereo 128kbps"
+  },
+  "recordingPath": "/workspace/suitecut/benchmarks/publication/2026-10-10/runs/stream-ts-external-01/recording.mkv",
+  "receiverPath": "/workspace/suitecut/benchmarks/publication/2026-10-10/runs/stream-ts-external-01/receiver.flv",
+  "phases": [
+    {
+      "name": "static",
+      "atMs": 0.1582140000000436,
+      "monotonic": 151853.746976023
+    },
+    {
+      "name": "canvas",
+      "atMs": 10001.194375,
+      "monotonic": 151863.739007979
+    },
+    {
+      "name": "scroll",
+      "atMs": 20008.736377,
+      "monotonic": 151873.741356571
+    }
+  ],
+  "events": [
+    {
+      "name": "click, input and selection",
+      "atMs": 11018.993025
+    }
+  ],
+  "browserVersion": "151.0.7922.34",
+  "browserReadySeconds": 0.8079910140077118,
+  "audioStarted": {
+    "generator": "frame-coded interpolated hash noise",
+    "sampleRate": 48000,
+    "quantum": 24,
+    "amplitude": 0.15,
+    "firstFrame": 0,
+    "currentFrame": 1152
+  },
+  "beforeCapture": {
+    "marker": 95,
+    "rendered": 92,
+    "mode": "canvas",
+    "scrollY": 0,
+    "scrollEvents": 0,
+    "keyEvents": 0,
+    "clicks": 0,
+    "value": "",
+    "choice": "First",
+    "actionMask": 0,
+    "width": 1920,
+    "height": 1080,
+    "audio": {
+      "generator": "frame-coded interpolated hash noise",
+      "sampleRate": 48000,
+      "quantum": 24,
+      "amplitude": 0.15,
+      "firstFrame": 0,
+      "currentFrame": 86528
+    }
+  },
+  "outputReadySeconds": 1.8753778370155487,
+  "activeBaseline": {
+    "marker": 186,
+    "rendered": 178,
+    "mode": "canvas",
+    "scrollY": 0,
+    "scrollEvents": 0,
+    "keyEvents": 0,
+    "clicks": 0,
+    "value": "",
+    "choice": "First",
+    "actionMask": 0,
+    "width": 1920,
+    "height": 1080,
+    "audio": {
+      "generator": "frame-coded interpolated hash noise",
+      "sampleRate": 48000,
+      "quantum": 24,
+      "amplitude": 0.15,
+      "firstFrame": 0,
+      "currentFrame": 231040
+    }
+  },
+  "activeStartMonotonic": 151853.718689437,
+  "nodeBefore": {
+    "rss": 159670272,
+    "heapTotal": 129495040,
+    "heapUsed": 61121248,
+    "external": 5784932,
+    "arrayBuffers": 1778776
+  },
+  "observedActiveMs": 26194.597562000003,
+  "scrollCommands": 19,
+  "activeEndMonotonic": 151883.749536762,
+  "activeMs": 30023.857575,
+  "afterCapture": {
+    "marker": 1087,
+    "rendered": 959,
+    "mode": "scroll",
+    "scrollY": 540,
+    "scrollEvents": 19,
+    "keyEvents": 1,
+    "clicks": 1,
+    "value": "SuiteCut benchmark",
+    "choice": "Second",
+    "actionMask": 15,
+    "width": 1920,
+    "height": 1080,
+    "audio": {
+      "generator": "frame-coded interpolated hash noise",
+      "sampleRate": 48000,
+      "quantum": 24,
+      "amplitude": 0.15,
+      "firstFrame": 0,
+      "currentFrame": 1619968
+    }
+  },
+  "nodeAfter": {
+    "rss": 203255808,
+    "heapTotal": 131911680,
+    "heapUsed": 83488520,
+    "external": 22134797,
+    "arrayBuffers": 18128601
+  },
+  "finalizationSeconds": 0.08388818701496348,
+  "eventLoop": {
+    "meanMs": 21.836861487297924,
+    "p99Ms": 54.755327,
+    "maxMs": 181.796863
+  },
+  "nodeAfterCleanup": {
+    "rss": 203517952,
+    "heapTotal": 132435968,
+    "heapUsed": 85803728,
+    "external": 22627954,
+    "arrayBuffers": 18617682
+  },
+  "completedAt": "2026-10-10T14:21:57.383Z"
+}

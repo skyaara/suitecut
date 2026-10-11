@@ -1,0 +1,2 @@
+import { defineConfig } from '@playwright/test';
+export default defineConfig({testDir: './tests', testMatch: ['library/**/*.spec.ts','page/**/*.spec.ts'],testIgnore: ['**/firefox/**','**/webkit/**','**/inspector/**'],workers:1,retries:0,timeout:30000,globalTimeout:2400000,maxFailures:100,outputDir:process.env.COMPAT_DIRECTORY+'/artifacts',expect:{timeout:10000},reporter:[['list'],['json',{outputFile:process.env.COMPAT_DIRECTORY+'/results.json'}]],use:{browserName:'chromium',headless:true,viewport:{width:1280,height:720},actionTimeout:0}});

@@ -1,0 +1,16 @@
+{"name":"DOM, shadow DOM and CSS layout","required":true,"status":"passed","detail":true}
+{"name":"Canvas 2D pixels","required":true,"status":"passed","detail":true}
+{"name":"WebAssembly execution","required":true,"status":"passed","detail":true}
+{"name":"Dedicated worker messaging","required":true,"status":"passed","detail":true}
+{"name":"Shared worker messaging","required":true,"status":"passed","detail":true}
+{"name":"IndexedDB write/read","required":true,"status":"passed","detail":true}
+{"name":"Service worker registration and fetch interception","required":true,"status":"passed","detail":true}
+{"name":"CacheStorage write/read","required":true,"status":"passed","detail":true}
+{"name":"WebSocket round trip","required":true,"status":"passed","detail":true}
+{"name":"WebRTC data-channel round trip","required":true,"status":"passed","detail":true}
+{"name":"IndexedDB survives document reload","required":true,"status":"passed","detail":true}
+{"name":"WebRTC canvas video loopback","required":true,"status":"passed","detail":{"pixel":[20,180,41,255],"width":64,"height":64}}
+{"name":"webgl shader rendering on this host","required":true,"status":"passed","detail":{"version":"WebGL 1.0 (OpenGL ES 2.0 Chromium)","renderer":"WebKit WebGL","unmaskedRenderer":"ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)","pixel":[255,0,0,255]}}
+{"name":"webgl2 shader rendering on this host","required":true,"status":"passed","detail":{"version":"WebGL 2.0 (OpenGL ES 3.0 Chromium)","renderer":"WebKit WebGL","unmaskedRenderer":"ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)","pixel":[0,255,0,255]}}
+{"name":"WebGPU adapter on this host","required":false,"status":"unavailable","detail":false}
+{"name":"Clipboard write/read in owned display","required":false,"status":"passed","detail":true}

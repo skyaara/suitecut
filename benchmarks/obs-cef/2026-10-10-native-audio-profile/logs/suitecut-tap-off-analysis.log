@@ -1,0 +1,184 @@
+{
+  "directory": "benchmarks/obs-cef/2026-10-10-native-audio-profile/suitecut-tap-off",
+  "summary": {
+    "traces": {},
+    "media": {
+      "recording.mkv": {
+        "positiveJumpTotalMs": 23.145833333333332,
+        "negativeJumpTotalMs": 995.5625,
+        "matchedWindows": 1465,
+        "windowCount": 1514,
+        "silence": {
+          "resolutionMs": 5,
+          "segments": [
+            {
+              "fromMs": 0,
+              "durationMs": 5,
+              "interior": false
+            },
+            {
+              "fromMs": 1765,
+              "durationMs": 155,
+              "interior": true
+            },
+            {
+              "fromMs": 1925,
+              "durationMs": 10,
+              "interior": true
+            },
+            {
+              "fromMs": 1965,
+              "durationMs": 75,
+              "interior": true
+            },
+            {
+              "fromMs": 2045,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 2075,
+              "durationMs": 25,
+              "interior": true
+            },
+            {
+              "fromMs": 6155,
+              "durationMs": 5,
+              "interior": true
+            },
+            {
+              "fromMs": 9060,
+              "durationMs": 180,
+              "interior": true
+            },
+            {
+              "fromMs": 9250,
+              "durationMs": 25,
+              "interior": true
+            },
+            {
+              "fromMs": 9365,
+              "durationMs": 165,
+              "interior": true
+            },
+            {
+              "fromMs": 29265,
+              "durationMs": 195,
+              "interior": true
+            },
+            {
+              "fromMs": 29465,
+              "durationMs": 170,
+              "interior": true
+            },
+            {
+              "fromMs": 29685,
+              "durationMs": 20,
+              "interior": true
+            },
+            {
+              "fromMs": 43370,
+              "durationMs": 30,
+              "interior": true
+            },
+            {
+              "fromMs": 43570,
+              "durationMs": 25,
+              "interior": true
+            }
+          ],
+          "interiorTotalMs": 1095,
+          "interiorMaximumMs": 195
+        }
+      },
+      "receiver.flv": {
+        "positiveJumpTotalMs": 23.041666666666668,
+        "negativeJumpTotalMs": 995.0625,
+        "matchedWindows": 1450,
+        "windowCount": 1504,
+        "silence": {
+          "resolutionMs": 5,
+          "segments": [
+            {
+              "fromMs": 0,
+              "durationMs": 5,
+              "interior": false
+            },
+            {
+              "fromMs": 1460,
+              "durationMs": 155,
+              "interior": true
+            },
+            {
+              "fromMs": 1620,
+              "durationMs": 10,
+              "interior": true
+            },
+            {
+              "fromMs": 1660,
+              "durationMs": 75,
+              "interior": true
+            },
+            {
+              "fromMs": 1740,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 1770,
+              "durationMs": 20,
+              "interior": true
+            },
+            {
+              "fromMs": 5845,
+              "durationMs": 10,
+              "interior": true
+            },
+            {
+              "fromMs": 8755,
+              "durationMs": 180,
+              "interior": true
+            },
+            {
+              "fromMs": 8940,
+              "durationMs": 30,
+              "interior": true
+            },
+            {
+              "fromMs": 9060,
+              "durationMs": 165,
+              "interior": true
+            },
+            {
+              "fromMs": 28960,
+              "durationMs": 195,
+              "interior": true
+            },
+            {
+              "fromMs": 29160,
+              "durationMs": 170,
+              "interior": true
+            },
+            {
+              "fromMs": 29380,
+              "durationMs": 15,
+              "interior": true
+            },
+            {
+              "fromMs": 43065,
+              "durationMs": 30,
+              "interior": true
+            },
+            {
+              "fromMs": 43265,
+              "durationMs": 25,
+              "interior": true
+            }
+          ],
+          "interiorTotalMs": 1095,
+          "interiorMaximumMs": 195
+        }
+      }
+    }
+  }
+}

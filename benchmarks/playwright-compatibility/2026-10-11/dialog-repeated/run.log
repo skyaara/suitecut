@@ -1,0 +1,15 @@
+[WARN] Your node_modules are out of sync with your lockfile. The workspace structure has changed since last install
+
+Running 3 tests using 1 worker
+
+(node:996785) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 benchmarks/native-engine/engine.e2e.spec.ts:295:1 › popup, dialog, file upload, download and public CDP sessions (1.3s)
+(node:996932) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  2 benchmarks/native-engine/engine.e2e.spec.ts:295:1 › popup, dialog, file upload, download and public CDP sessions (1.2s)
+(node:997077) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  3 benchmarks/native-engine/engine.e2e.spec.ts:295:1 › popup, dialog, file upload, download and public CDP sessions (1.1s)
+
+  3 passed (7.7s)

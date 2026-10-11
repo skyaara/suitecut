@@ -1,0 +1,64 @@
+{
+  "startedAt": "2026-10-09T22:21:44.792Z",
+  "requestedMs": 1800000,
+  "width": 1920,
+  "height": 1080,
+  "targetFps": 30,
+  "audio": true,
+  "audioPattern": "250 ms pulse every second",
+  "recordingPath": "/workspace/suitecut/benchmarks/native-sync/2026-10-10/pulsed-30min/recording.mp4",
+  "receiverPath": "/workspace/suitecut/benchmarks/native-sync/2026-10-10/pulsed-30min/receiver.flv",
+  "mode": "C++ libav simultaneous H264 recording + RTMP; Playwright automation over private IPC; no raw media subscribers",
+  "status": "running",
+  "readyAt": "2026-10-09T22:21:48.137Z",
+  "baseline": {
+    "rss": 126189568,
+    "heapTotal": 84930560,
+    "heapUsed": 59056648,
+    "external": 6688489,
+    "arrayBuffers": 2700024
+  },
+  "runStartMonotonicSeconds": 94275.32,
+  "injection": {
+    "atMs": 40191.245092,
+    "durationMs": 4000
+  },
+  "latest": {
+    "record": {
+      "ready": true,
+      "stopped": false,
+      "paused": false,
+      "videoFrames": 5774,
+      "audioSamples": 9239552,
+      "repeatedFrames": 121,
+      "droppedAudioSamples": 0,
+      "missingAudioSamples": 8843683,
+      "lateAudioSamples": 8712960,
+      "queuedVideoBytes": 15552000,
+      "queuedAudioBytes": 0,
+      "startedMs": 2783.277221,
+      "durationMs": 192466.66666666666,
+      "maximumEncodeMs": 1960.4201699999994,
+      "error": ""
+    },
+    "stream": {
+      "ready": true,
+      "stopped": false,
+      "paused": false,
+      "videoFrames": 5764,
+      "audioSamples": 9223168,
+      "repeatedFrames": 129,
+      "droppedAudioSamples": 0,
+      "missingAudioSamples": 8837403,
+      "lateAudioSamples": 8707200,
+      "queuedVideoBytes": 15552000,
+      "queuedAudioBytes": 0,
+      "startedMs": 3113.782097,
+      "durationMs": 192133.33333333334,
+      "maximumEncodeMs": 2258.6168400000006,
+      "error": ""
+    }
+  },
+  "activeMs": 192273.102487,
+  "scrollCommands": 36
+}

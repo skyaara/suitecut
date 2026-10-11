@@ -1,0 +1,47 @@
+{
+  "package": "suitecut-native",
+  "version": "2.1.0",
+  "nativeMedia": true,
+  "allPassed": true,
+  "published": false,
+  "binarySha256": "6f2475a8070870fd491255bc074bffd2d0e61986dba44ea632591c68f9a89193",
+  "binaryBytes": 2495648,
+  "tests": {
+    "nativeCTest": 8,
+    "stagedPlaywright": 16,
+    "directIPCOutputs": 4,
+    "pauseResume": true,
+    "incompatibleOptionsRejected": true
+  },
+  "nativeOutputSkews": [
+    {
+      "file": "recording.mp4",
+      "initialSkewMs": 0.0,
+      "endSkewMs": 7.98000000000032
+    },
+    {
+      "file": "lossless.mkv",
+      "initialSkewMs": 0.0,
+      "endSkewMs": 13.99999999999979
+    },
+    {
+      "file": "recording.webm",
+      "initialSkewMs": 7.0,
+      "endSkewMs": 8.000000000000451
+    },
+    {
+      "file": "stream.flv",
+      "initialSkewMs": 21.0,
+      "endSkewMs": 24.00000000000002
+    }
+  ],
+  "bundledMediaLibraries": 125,
+  "mediaLibraryBytes": 190388536,
+  "verifiedPlatform": "Debian 13 x86-64",
+  "rpath": "$ORIGIN:$ORIGIN/lib",
+  "limits": [
+    "Short functional capture verification",
+    "No new full-Chromium leak audit or long-duration quietness fix",
+    "GPU encoders unverified"
+  ]
+}

@@ -1,0 +1,67 @@
+==================
+WARNING: ThreadSanitizer: data race (pid=369193)
+  Write of size 8 at 0x726000000780 by thread T1:
+    #0 suitecut::MediaOutput::Impl::Codec(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char>> const&, bool) /workspace/suitecut/benchmarks/native-memory/2026-10-10/tested-sources-before/media_engine.cc:184:41 (baseline-tsan+0xfacd1) (BuildId: a564b21c219ad4b91783d69770c5d700d9430690)
+    #1 suitecut::MediaOutput::Impl::Open() /workspace/suitecut/benchmarks/native-memory/2026-10-10/tested-sources-before/media_engine.cc:260:21 (baseline-tsan+0xf9118) (BuildId: a564b21c219ad4b91783d69770c5d700d9430690)
+    #2 suitecut::MediaOutput::Impl::Run() /workspace/suitecut/benchmarks/native-memory/2026-10-10/tested-sources-before/media_engine.cc:423:7 (baseline-tsan+0xf82a8) (BuildId: a564b21c219ad4b91783d69770c5d700d9430690)
+    #3 suitecut::MediaOutput::Impl::Impl(suitecut::MediaOptions, std::function<double ()>)::'lambda'()::operator()() const /workspace/suitecut/benchmarks/native-memory/2026-10-10/tested-sources-before/media_engine.cc:169:35 (baseline-tsan+0xf8263) (BuildId: a564b21c219ad4b91783d69770c5d700d9430690)
+    #4 void std::__invoke_impl<void, suitecut::MediaOutput::Impl::Impl(suitecut::MediaOptions, std::function<double ()>)::'lambda'()>(std::__invoke_other, suitecut::MediaOutput::Impl::Impl(suitecut::MediaOptions, std::function<double ()>)::'lambda'()&&) /usr/lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/invoke.h:61:14 (baseline-tsan+0xf8263)
+    #5 std::__invoke_result<suitecut::MediaOutput::Impl::Impl(suitecut::MediaOptions, std::function<double ()>)::'lambda'()>::type std::__invoke<suitecut::MediaOutput::Impl::Impl(suitecut::MediaOptions, std::function<double ()>)::'lambda'()>(suitecut::MediaOutput::Impl::Impl(suitecut::MediaOptions, std::function<double ()>)::'lambda'()&&) /usr/lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/invoke.h:96:14 (baseline-tsan+0xf8263)
+    #6 void std::thread::_Invoker<std::tuple<suitecut::MediaOutput::Impl::Impl(suitecut::MediaOptions, std::function<double ()>)::'lambda'()>>::_M_invoke<0ul>(std::_Index_tuple<0ul>) /usr/lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/std_thread.h:301:13 (baseline-tsan+0xf8263)
+    #7 std::thread::_Invoker<std::tuple<suitecut::MediaOutput::Impl::Impl(suitecut::MediaOptions, std::function<double ()>)::'lambda'()>>::operator()() /usr/lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/std_thread.h:308:11 (baseline-tsan+0xf8263)
+    #8 std::thread::_State_impl<std::thread::_Invoker<std::tuple<suitecut::MediaOutput::Impl::Impl(suitecut::MediaOptions, std::function<double ()>)::'lambda'()>>>::_M_run() /usr/lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/std_thread.h:253:13 (baseline-tsan+0xf8263)
+    #9 <null> <null> (libstdc++.so.6+0xe1223) (BuildId: 133b71e0013695cc7832680a74edb51008c4fc4c)
+
+  Previous read of size 8 at 0x726000000780 by thread T2 (mutexes: write M0, write M1):
+    #0 suitecut::MediaOutput::Pause(bool) /workspace/suitecut/benchmarks/native-memory/2026-10-10/tested-sources-before/media_engine.cc:516:16 (baseline-tsan+0xf037c) (BuildId: a564b21c219ad4b91783d69770c5d700d9430690)
+    #1 main::$_1::operator()() const /workspace/suitecut/native/browser/memory_test.cc:40:37 (baseline-tsan+0x10fa0c) (BuildId: a564b21c219ad4b91783d69770c5d700d9430690)
+    #2 void std::__invoke_impl<void, main::$_1>(std::__invoke_other, main::$_1&&) /usr/lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/invoke.h:61:14 (baseline-tsan+0x10fa0c)
+    #3 std::__invoke_result<main::$_1>::type std::__invoke<main::$_1>(main::$_1&&) /usr/lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/invoke.h:96:14 (baseline-tsan+0x10fa0c)
+    #4 void std::thread::_Invoker<std::tuple<main::$_1>>::_M_invoke<0ul>(std::_Index_tuple<0ul>) /usr/lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/std_thread.h:301:13 (baseline-tsan+0x10fa0c)
+    #5 std::thread::_Invoker<std::tuple<main::$_1>>::operator()() /usr/lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/std_thread.h:308:11 (baseline-tsan+0x10fa0c)
+    #6 std::thread::_State_impl<std::thread::_Invoker<std::tuple<main::$_1>>>::_M_run() /usr/lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/std_thread.h:253:13 (baseline-tsan+0x10fa0c)
+    #7 <null> <null> (libstdc++.so.6+0xe1223) (BuildId: 133b71e0013695cc7832680a74edb51008c4fc4c)
+
+  Location is heap block of size 1016 at 0x726000000400 allocated by main thread:
+    #0 operator new(unsigned long) <null> (baseline-tsan+0xece86) (BuildId: a564b21c219ad4b91783d69770c5d700d9430690)
+    #1 std::__detail::_MakeUniq<suitecut::MediaOutput::Impl>::__single_object std::make_unique<suitecut::MediaOutput::Impl, suitecut::MediaOptions, std::function<double ()>>(suitecut::MediaOptions&&, std::function<double ()>&&) /usr/lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/unique_ptr.h:1077:30 (baseline-tsan+0xf1f60) (BuildId: a564b21c219ad4b91783d69770c5d700d9430690)
+    #2 suitecut::MediaOutput::MediaOutput(suitecut::MediaOptions, std::function<double ()>) /workspace/suitecut/benchmarks/native-memory/2026-10-10/tested-sources-before/media_engine.cc:471:86 (baseline-tsan+0xef449) (BuildId: a564b21c219ad4b91783d69770c5d700d9430690)
+    #3 main /workspace/suitecut/native/browser/memory_test.cc:34:58 (baseline-tsan+0x10dcec) (BuildId: a564b21c219ad4b91783d69770c5d700d9430690)
+
+  Mutex M0 (0x726000000718) created at:
+    #0 pthread_mutex_lock <null> (baseline-tsan+0x6a382) (BuildId: a564b21c219ad4b91783d69770c5d700d9430690)
+    #1 __gthread_mutex_lock(pthread_mutex_t*) /usr/lib/gcc/x86_64-linux-gnu/14/../../../../include/x86_64-linux-gnu/c++/14/bits/gthr-default.h:762:12 (baseline-tsan+0xf0267) (BuildId: a564b21c219ad4b91783d69770c5d700d9430690)
+    #2 std::mutex::lock() /usr/lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/std_mutex.h:113:17 (baseline-tsan+0xf0267)
+    #3 std::lock_guard<std::mutex>::lock_guard(std::mutex&) /usr/lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/std_mutex.h:250:19 (baseline-tsan+0xf0267)
+    #4 suitecut::MediaOutput::Pause(bool) /workspace/suitecut/benchmarks/native-memory/2026-10-10/tested-sources-before/media_engine.cc:508:19 (baseline-tsan+0xf0267)
+    #5 main::$_1::operator()() const /workspace/suitecut/native/browser/memory_test.cc:40:37 (baseline-tsan+0x10fa0c) (BuildId: a564b21c219ad4b91783d69770c5d700d9430690)
+    #6 void std::__invoke_impl<void, main::$_1>(std::__invoke_other, main::$_1&&) /usr/lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/invoke.h:61:14 (baseline-tsan+0x10fa0c)
+    #7 std::__invoke_result<main::$_1>::type std::__invoke<main::$_1>(main::$_1&&) /usr/lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/invoke.h:96:14 (baseline-tsan+0x10fa0c)
+    #8 void std::thread::_Invoker<std::tuple<main::$_1>>::_M_invoke<0ul>(std::_Index_tuple<0ul>) /usr/lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/std_thread.h:301:13 (baseline-tsan+0x10fa0c)
+    #9 std::thread::_Invoker<std::tuple<main::$_1>>::operator()() /usr/lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/std_thread.h:308:11 (baseline-tsan+0x10fa0c)
+    #10 std::thread::_State_impl<std::thread::_Invoker<std::tuple<main::$_1>>>::_M_run() /usr/lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/std_thread.h:253:13 (baseline-tsan+0x10fa0c)
+    #11 <null> <null> (libstdc++.so.6+0xe1223) (BuildId: 133b71e0013695cc7832680a74edb51008c4fc4c)
+
+  Mutex M1 (0x7260000004c8) created at:
+    #0 pthread_mutex_lock <null> (baseline-tsan+0x6a382) (BuildId: a564b21c219ad4b91783d69770c5d700d9430690)
+    #1 __gthread_mutex_lock(pthread_mutex_t*) /usr/lib/gcc/x86_64-linux-gnu/14/../../../../include/x86_64-linux-gnu/c++/14/bits/gthr-default.h:762:12 (baseline-tsan+0xef5b3) (BuildId: a564b21c219ad4b91783d69770c5d700d9430690)
+    #2 std::mutex::lock() /usr/lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/std_mutex.h:113:17 (baseline-tsan+0xef5b3)
+    #3 std::unique_lock<std::mutex>::lock() /usr/lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/unique_lock.h:147:17 (baseline-tsan+0xef5b3)
+    #4 std::unique_lock<std::mutex>::unique_lock(std::mutex&) /usr/lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/unique_lock.h:73:2 (baseline-tsan+0xef5b3)
+    #5 suitecut::MediaOutput::Video(std::shared_ptr<std::vector<unsigned char, std::allocator<unsigned char>> const>, int, int, double) /workspace/suitecut/benchmarks/native-memory/2026-10-10/tested-sources-before/media_engine.cc:475:20 (baseline-tsan+0xef5b3)
+    #6 main /workspace/suitecut/native/browser/memory_test.cc:39:14 (baseline-tsan+0x10deb8) (BuildId: a564b21c219ad4b91783d69770c5d700d9430690)
+
+  Thread T1 (tid=369388, running) created by main thread at:
+    #0 pthread_create <null> (baseline-tsan+0x68605) (BuildId: a564b21c219ad4b91783d69770c5d700d9430690)
+    #1 std::thread::_M_start_thread(std::unique_ptr<std::thread::_State, std::default_delete<std::thread::_State>>, void (*)()) <null> (libstdc++.so.6+0xe12f8) (BuildId: 133b71e0013695cc7832680a74edb51008c4fc4c)
+    #2 std::__detail::_MakeUniq<suitecut::MediaOutput::Impl>::__single_object std::make_unique<suitecut::MediaOutput::Impl, suitecut::MediaOptions, std::function<double ()>>(suitecut::MediaOptions&&, std::function<double ()>&&) /usr/lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/unique_ptr.h:1077:34 (baseline-tsan+0xf2284) (BuildId: a564b21c219ad4b91783d69770c5d700d9430690)
+    #3 suitecut::MediaOutput::MediaOutput(suitecut::MediaOptions, std::function<double ()>) /workspace/suitecut/benchmarks/native-memory/2026-10-10/tested-sources-before/media_engine.cc:471:86 (baseline-tsan+0xef449) (BuildId: a564b21c219ad4b91783d69770c5d700d9430690)
+    #4 main /workspace/suitecut/native/browser/memory_test.cc:34:58 (baseline-tsan+0x10dcec) (BuildId: a564b21c219ad4b91783d69770c5d700d9430690)
+
+  Thread T2 (tid=369390, finished) created by main thread at:
+    #0 pthread_create <null> (baseline-tsan+0x68605) (BuildId: a564b21c219ad4b91783d69770c5d700d9430690)
+    #1 std::thread::_M_start_thread(std::unique_ptr<std::thread::_State, std::default_delete<std::thread::_State>>, void (*)()) <null> (libstdc++.so.6+0xe12f8) (BuildId: 133b71e0013695cc7832680a74edb51008c4fc4c)
+    #2 main /workspace/suitecut/native/browser/memory_test.cc:40:20 (baseline-tsan+0x10df73) (BuildId: a564b21c219ad4b91783d69770c5d700d9430690)
+
+SUMMARY: ThreadSanitizer: data race /workspace/suitecut/benchmarks/native-memory/2026-10-10/tested-sources-before/media_engine.cc:184:41 in suitecut::MediaOutput::Impl::Codec(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char>> const&, bool)
+==================

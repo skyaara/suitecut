@@ -1,0 +1,1543 @@
+[
+  {
+    "feature": "typing",
+    "backends": {
+      "obs": {
+        "status": "passed",
+        "evidence": [
+          {
+            "run": "obs-record-audio-false",
+            "name": "typing",
+            "status": "passed",
+            "durationMs": 623.4755140000002,
+            "details": {
+              "markerCount": 0,
+              "scrollY": 0,
+              "scrollEvents": 0,
+              "keyEvents": 18,
+              "clicks": 0,
+              "value": "SuiteCut OBS input",
+              "choice": "First",
+              "secondary": false
+            }
+          },
+          {
+            "run": "obs-record-audio-true",
+            "name": "typing",
+            "status": "passed",
+            "durationMs": 646.0618690000047,
+            "details": {
+              "markerCount": 0,
+              "scrollY": 0,
+              "scrollEvents": 0,
+              "keyEvents": 18,
+              "clicks": 0,
+              "value": "SuiteCut OBS input",
+              "choice": "First",
+              "secondary": false
+            }
+          }
+        ]
+      },
+      "native": {
+        "status": "passed",
+        "evidence": [
+          {
+            "run": "native-record-audio-false",
+            "name": "typing",
+            "status": "passed",
+            "durationMs": 870.8187050000015,
+            "details": {
+              "markerCount": 0,
+              "scrollY": 0,
+              "scrollEvents": 0,
+              "keyEvents": 18,
+              "clicks": 0,
+              "value": "SuiteCut OBS input",
+              "choice": "First",
+              "secondary": false
+            }
+          },
+          {
+            "run": "native-record-audio-true",
+            "name": "typing",
+            "status": "passed",
+            "durationMs": 850.0650810000006,
+            "details": {
+              "markerCount": 0,
+              "scrollY": 0,
+              "scrollEvents": 0,
+              "keyEvents": 18,
+              "clicks": 0,
+              "value": "SuiteCut OBS input",
+              "choice": "First",
+              "secondary": false
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "feature": "click",
+    "backends": {
+      "obs": {
+        "status": "passed",
+        "evidence": [
+          {
+            "run": "obs-record-audio-false",
+            "name": "click",
+            "status": "passed",
+            "durationMs": 493.5282059999995,
+            "details": {
+              "markerCount": 0,
+              "scrollY": 0,
+              "scrollEvents": 0,
+              "keyEvents": 18,
+              "clicks": 1,
+              "value": "SuiteCut OBS input",
+              "choice": "First",
+              "secondary": false
+            }
+          },
+          {
+            "run": "obs-record-audio-true",
+            "name": "click",
+            "status": "passed",
+            "durationMs": 470.9220950000017,
+            "details": {
+              "markerCount": 0,
+              "scrollY": 0,
+              "scrollEvents": 0,
+              "keyEvents": 18,
+              "clicks": 1,
+              "value": "SuiteCut OBS input",
+              "choice": "First",
+              "secondary": false
+            }
+          }
+        ]
+      },
+      "native": {
+        "status": "passed",
+        "evidence": [
+          {
+            "run": "native-record-audio-false",
+            "name": "click",
+            "status": "passed",
+            "durationMs": 1210.6444150000025,
+            "details": {
+              "markerCount": 0,
+              "scrollY": 0,
+              "scrollEvents": 0,
+              "keyEvents": 18,
+              "clicks": 1,
+              "value": "SuiteCut OBS input",
+              "choice": "First",
+              "secondary": false
+            }
+          },
+          {
+            "run": "native-record-audio-true",
+            "name": "click",
+            "status": "passed",
+            "durationMs": 1369.5876639999988,
+            "details": {
+              "markerCount": 0,
+              "scrollY": 0,
+              "scrollEvents": 0,
+              "keyEvents": 18,
+              "clicks": 1,
+              "value": "SuiteCut OBS input",
+              "choice": "First",
+              "secondary": false
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "feature": "in-page select control",
+    "backends": {
+      "obs": {
+        "status": "passed",
+        "evidence": [
+          {
+            "run": "obs-record-audio-false",
+            "name": "in-page select control",
+            "status": "passed",
+            "durationMs": 838.7055700000001,
+            "details": {
+              "markerCount": 0,
+              "scrollY": 0,
+              "scrollEvents": 0,
+              "keyEvents": 18,
+              "clicks": 1,
+              "value": "SuiteCut OBS input",
+              "choice": "Second",
+              "secondary": false
+            }
+          },
+          {
+            "run": "obs-record-audio-true",
+            "name": "in-page select control",
+            "status": "passed",
+            "durationMs": 835.4264269999985,
+            "details": {
+              "markerCount": 0,
+              "scrollY": 0,
+              "scrollEvents": 0,
+              "keyEvents": 18,
+              "clicks": 1,
+              "value": "SuiteCut OBS input",
+              "choice": "Second",
+              "secondary": false
+            }
+          }
+        ]
+      },
+      "native": {
+        "status": "passed",
+        "evidence": [
+          {
+            "run": "native-record-audio-false",
+            "name": "in-page select control",
+            "status": "passed",
+            "durationMs": 968.1247250000015,
+            "details": {
+              "markerCount": 0,
+              "scrollY": 0,
+              "scrollEvents": 0,
+              "keyEvents": 18,
+              "clicks": 1,
+              "value": "SuiteCut OBS input",
+              "choice": "Second",
+              "secondary": false
+            }
+          },
+          {
+            "run": "native-record-audio-true",
+            "name": "in-page select control",
+            "status": "passed",
+            "durationMs": 1036.7706550000003,
+            "details": {
+              "markerCount": 0,
+              "scrollY": 0,
+              "scrollEvents": 0,
+              "keyEvents": 18,
+              "clicks": 1,
+              "value": "SuiteCut OBS input",
+              "choice": "Second",
+              "secondary": false
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "feature": "wheel scrolling",
+    "backends": {
+      "obs": {
+        "status": "passed",
+        "evidence": [
+          {
+            "run": "obs-record-audio-false",
+            "name": "wheel scrolling",
+            "status": "passed",
+            "durationMs": 1585.469596,
+            "details": {
+              "markerCount": 0,
+              "scrollY": 1800,
+              "scrollEvents": 10,
+              "keyEvents": 18,
+              "clicks": 1,
+              "value": "SuiteCut OBS input",
+              "choice": "Second",
+              "secondary": false
+            }
+          },
+          {
+            "run": "obs-record-audio-true",
+            "name": "wheel scrolling",
+            "status": "passed",
+            "durationMs": 1574.7616780000026,
+            "details": {
+              "markerCount": 0,
+              "scrollY": 1800,
+              "scrollEvents": 10,
+              "keyEvents": 18,
+              "clicks": 1,
+              "value": "SuiteCut OBS input",
+              "choice": "Second",
+              "secondary": false
+            }
+          }
+        ]
+      },
+      "native": {
+        "status": "passed",
+        "evidence": [
+          {
+            "run": "native-record-audio-false",
+            "name": "wheel scrolling",
+            "status": "passed",
+            "durationMs": 1983.2198879999996,
+            "details": {
+              "markerCount": 0,
+              "scrollY": 1800,
+              "scrollEvents": 10,
+              "keyEvents": 18,
+              "clicks": 1,
+              "value": "SuiteCut OBS input",
+              "choice": "Second",
+              "secondary": false
+            }
+          },
+          {
+            "run": "native-record-audio-true",
+            "name": "wheel scrolling",
+            "status": "passed",
+            "durationMs": 2022.1254489999992,
+            "details": {
+              "markerCount": 0,
+              "scrollY": 1800,
+              "scrollEvents": 10,
+              "keyEvents": 18,
+              "clicks": 1,
+              "value": "SuiteCut OBS input",
+              "choice": "Second",
+              "secondary": false
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "feature": "scroll to element and back to top",
+    "backends": {
+      "obs": {
+        "status": "passed",
+        "evidence": [
+          {
+            "run": "obs-record-audio-false",
+            "name": "scroll to element and back to top",
+            "status": "passed",
+            "durationMs": 384.06376100000034
+          },
+          {
+            "run": "obs-record-audio-true",
+            "name": "scroll to element and back to top",
+            "status": "passed",
+            "durationMs": 382.2846700000009
+          }
+        ]
+      },
+      "native": {
+        "status": "passed",
+        "evidence": [
+          {
+            "run": "native-record-audio-false",
+            "name": "scroll to element and back to top",
+            "status": "passed",
+            "durationMs": 491.4850149999984
+          },
+          {
+            "run": "native-record-audio-true",
+            "name": "scroll to element and back to top",
+            "status": "passed",
+            "durationMs": 557.0096669999984
+          }
+        ]
+      }
+    }
+  },
+  {
+    "feature": "navigation and return",
+    "backends": {
+      "obs": {
+        "status": "passed",
+        "evidence": [
+          {
+            "run": "obs-record-audio-false",
+            "name": "navigation and return",
+            "status": "passed",
+            "durationMs": 1599.0063199999995
+          },
+          {
+            "run": "obs-record-audio-true",
+            "name": "navigation and return",
+            "status": "passed",
+            "durationMs": 1639.825874999995
+          }
+        ]
+      },
+      "native": {
+        "status": "passed",
+        "evidence": [
+          {
+            "run": "native-record-audio-false",
+            "name": "navigation and return",
+            "status": "passed",
+            "durationMs": 1645.575581000001
+          },
+          {
+            "run": "native-record-audio-true",
+            "name": "navigation and return",
+            "status": "passed",
+            "durationMs": 2024.0042929999909
+          }
+        ]
+      }
+    }
+  },
+  {
+    "feature": "source switching",
+    "backends": {
+      "obs": {
+        "status": "passed",
+        "evidence": [
+          {
+            "run": "obs-record-audio-false",
+            "name": "source switching",
+            "status": "passed",
+            "durationMs": 4414.650165999999
+          },
+          {
+            "run": "obs-record-audio-true",
+            "name": "source switching",
+            "status": "passed",
+            "durationMs": 4365.283306000005
+          }
+        ]
+      },
+      "native": {
+        "status": "passed",
+        "evidence": [
+          {
+            "run": "native-record-audio-false",
+            "name": "source switching",
+            "status": "passed",
+            "durationMs": 6384.615635000002
+          },
+          {
+            "run": "native-record-audio-true",
+            "name": "source switching",
+            "status": "passed",
+            "durationMs": 6402.303017999991
+          }
+        ]
+      }
+    }
+  },
+  {
+    "feature": "encoded audio tones",
+    "backends": {
+      "obs": {
+        "status": "passed",
+        "evidence": [
+          {
+            "run": "obs-record-audio-true",
+            "name": "encoded audio tones",
+            "status": "passed",
+            "durationMs": 425.29634700000315,
+            "details": {
+              "samples": 508928,
+              "seconds": 10.602666666666666,
+              "rms": 0.07424821704626083,
+              "peak": 0.12453900277614594,
+              "tone440": 0.11312692612409592,
+              "tone880": 0.1131206527352333
+            }
+          }
+        ]
+      },
+      "native": {
+        "status": "passed",
+        "evidence": [
+          {
+            "run": "native-record-audio-true",
+            "name": "encoded audio tones",
+            "status": "passed",
+            "durationMs": 465.6857239999954,
+            "details": {
+              "samples": 718848,
+              "seconds": 14.976,
+              "rms": 0.07375441491603851,
+              "peak": 0.12699690461158752,
+              "tone440": 0.11277654021978378,
+              "tone880": 0.033380478620529175
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "feature": "encoded audio disabled",
+    "backends": {
+      "obs": {
+        "status": "passed",
+        "evidence": [
+          {
+            "run": "obs-record-audio-false",
+            "name": "encoded audio disabled",
+            "status": "passed",
+            "durationMs": 444.9748099999997,
+            "details": {
+              "samples": 504832,
+              "seconds": 10.517333333333333,
+              "rms": 0,
+              "peak": 0,
+              "tone440": 0,
+              "tone880": 0
+            }
+          }
+        ]
+      },
+      "native": {
+        "status": "passed",
+        "evidence": [
+          {
+            "run": "native-record-audio-false",
+            "name": "encoded audio disabled",
+            "status": "passed",
+            "durationMs": 105.43545699999959,
+            "details": {
+              "audioStream": false,
+              "rms": 0,
+              "peak": 0,
+              "tone440": 0,
+              "tone880": 0
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "feature": "decoded source identity",
+    "backends": {
+      "obs": {
+        "status": "passed",
+        "evidence": [
+          {
+            "run": "obs-record-audio-false",
+            "name": "decoded source identity",
+            "status": "passed",
+            "durationMs": 673.3838290000003,
+            "details": {
+              "red": 240,
+              "green": 2,
+              "blue": 67,
+              "changes": [
+                {
+                  "frame": 0,
+                  "identity": "other"
+                },
+                {
+                  "frame": 3,
+                  "identity": "primary"
+                },
+                {
+                  "frame": 139,
+                  "identity": "navigation-secondary"
+                },
+                {
+                  "frame": 140,
+                  "identity": "primary"
+                },
+                {
+                  "frame": 187,
+                  "identity": "other"
+                },
+                {
+                  "frame": 190,
+                  "identity": "navigation-secondary"
+                },
+                {
+                  "frame": 191,
+                  "identity": "second-source"
+                },
+                {
+                  "frame": 258,
+                  "identity": "other"
+                },
+                {
+                  "frame": 260,
+                  "identity": "primary"
+                }
+              ]
+            }
+          },
+          {
+            "run": "obs-record-audio-true",
+            "name": "decoded source identity",
+            "status": "passed",
+            "durationMs": 352.729382000005,
+            "details": {
+              "red": 241,
+              "green": 2,
+              "blue": 68,
+              "changes": [
+                {
+                  "frame": 0,
+                  "identity": "other"
+                },
+                {
+                  "frame": 6,
+                  "identity": "primary"
+                },
+                {
+                  "frame": 142,
+                  "identity": "navigation-secondary"
+                },
+                {
+                  "frame": 144,
+                  "identity": "primary"
+                },
+                {
+                  "frame": 192,
+                  "identity": "other"
+                },
+                {
+                  "frame": 193,
+                  "identity": "second-source"
+                },
+                {
+                  "frame": 261,
+                  "identity": "other"
+                },
+                {
+                  "frame": 263,
+                  "identity": "primary"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "native": {
+        "status": "passed",
+        "evidence": [
+          {
+            "run": "native-record-audio-false",
+            "name": "decoded source identity",
+            "status": "passed",
+            "durationMs": 706.2487970000002,
+            "details": {
+              "red": 342,
+              "green": 1,
+              "blue": 83,
+              "changes": [
+                {
+                  "frame": 0,
+                  "identity": "other"
+                },
+                {
+                  "frame": 2,
+                  "identity": "primary"
+                },
+                {
+                  "frame": 190,
+                  "identity": "navigation-secondary"
+                },
+                {
+                  "frame": 191,
+                  "identity": "primary"
+                },
+                {
+                  "frame": 270,
+                  "identity": "other"
+                },
+                {
+                  "frame": 271,
+                  "identity": "second-source"
+                },
+                {
+                  "frame": 354,
+                  "identity": "primary"
+                }
+              ]
+            }
+          },
+          {
+            "run": "native-record-audio-true",
+            "name": "decoded source identity",
+            "status": "passed",
+            "durationMs": 479.07778900000267,
+            "details": {
+              "red": 362,
+              "green": 2,
+              "blue": 82,
+              "changes": [
+                {
+                  "frame": 0,
+                  "identity": "other"
+                },
+                {
+                  "frame": 3,
+                  "identity": "primary"
+                },
+                {
+                  "frame": 208,
+                  "identity": "navigation-secondary"
+                },
+                {
+                  "frame": 210,
+                  "identity": "primary"
+                },
+                {
+                  "frame": 291,
+                  "identity": "second-source"
+                },
+                {
+                  "frame": 373,
+                  "identity": "primary"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "feature": "recorded input and scrolling states",
+    "backends": {
+      "obs": {
+        "status": "passed",
+        "evidence": [
+          {
+            "run": "obs-record-audio-false",
+            "name": "recorded input and scrolling states",
+            "status": "passed",
+            "durationMs": 1238.0597730000009,
+            "details": {
+              "observedMask": 15,
+              "typedComplete": true,
+              "clicked": true,
+              "selected": true,
+              "scrolled": true
+            }
+          },
+          {
+            "run": "obs-record-audio-true",
+            "name": "recorded input and scrolling states",
+            "status": "passed",
+            "durationMs": 356.7950670000064,
+            "details": {
+              "observedMask": 15,
+              "typedComplete": true,
+              "clicked": true,
+              "selected": true,
+              "scrolled": true
+            }
+          }
+        ]
+      },
+      "native": {
+        "status": "passed",
+        "evidence": [
+          {
+            "run": "native-record-audio-false",
+            "name": "recorded input and scrolling states",
+            "status": "passed",
+            "durationMs": 838.5548689999996,
+            "details": {
+              "observedMask": 15,
+              "typedComplete": true,
+              "clicked": true,
+              "selected": true,
+              "scrolled": true
+            }
+          },
+          {
+            "run": "native-record-audio-true",
+            "name": "recorded input and scrolling states",
+            "status": "passed",
+            "durationMs": 500.3531319999893,
+            "details": {
+              "observedMask": 15,
+              "typedComplete": true,
+              "clicked": true,
+              "selected": true,
+              "scrolled": true
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "feature": "receiver media and timestamps",
+    "backends": {
+      "obs": {
+        "status": "passed",
+        "evidence": [
+          {
+            "run": "obs-stream-20000",
+            "name": "receiver media and timestamps",
+            "status": "passed",
+            "durationMs": 292.5259299999889,
+            "details": {
+              "durationSeconds": 20.448,
+              "bytes": 11529353,
+              "averageMuxedKbps": 4510.701486697965,
+              "encodedPackets": 1224,
+              "encodedFps": 60.09828009828011,
+              "presentationReorders": 601,
+              "duplicatePresentationTimes": 0,
+              "nonIncreasingDecodeTimes": 0
+            }
+          },
+          {
+            "run": "obs-stream-300000",
+            "name": "receiver media and timestamps",
+            "status": "passed",
+            "durationMs": 1282.6152369999909,
+            "details": {
+              "durationSeconds": 300.382,
+              "bytes": 170502620,
+              "averageMuxedKbps": 4540.9543847500845,
+              "encodedPackets": 18020,
+              "encodedFps": 60.00672698754176,
+              "presentationReorders": 8855,
+              "duplicatePresentationTimes": 0,
+              "nonIncreasingDecodeTimes": 0
+            }
+          }
+        ]
+      },
+      "native": {
+        "status": "passed",
+        "evidence": [
+          {
+            "run": "native-stream-20000",
+            "name": "receiver media and timestamps",
+            "status": "passed",
+            "durationMs": 211.61324899998726,
+            "details": {
+              "durationSeconds": 21.631,
+              "bytes": 378317,
+              "averageMuxedKbps": 139.91660117424067,
+              "encodedPackets": 192,
+              "encodedFps": 10.342773596144475,
+              "presentationReorders": 0,
+              "duplicatePresentationTimes": 0,
+              "nonIncreasingDecodeTimes": 0
+            }
+          },
+          {
+            "run": "native-stream-300000",
+            "name": "receiver media and timestamps",
+            "status": "passed",
+            "durationMs": 436.5540409999667,
+            "details": {
+              "durationSeconds": 301.781,
+              "bytes": 4664616,
+              "averageMuxedKbps": 123.65565757950301,
+              "encodedPackets": 2883,
+              "encodedFps": 9.622158341596638,
+              "presentationReorders": 0,
+              "duplicatePresentationTimes": 0,
+              "nonIncreasingDecodeTimes": 0
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "feature": "decoded receiver motion",
+    "backends": {
+      "obs": {
+        "status": "passed",
+        "evidence": [
+          {
+            "run": "obs-stream-20000",
+            "name": "decoded receiver motion",
+            "status": "passed",
+            "durationMs": 3780.979873999997,
+            "details": {
+              "decodedFrames": 1224,
+              "markerTransitions": 558,
+              "distinctFps": 27.288732394366196,
+              "targetMotionStatus": "below target",
+              "repeatFraction": 0.5441176470588236,
+              "longestHoldMs": 267.2941176470588,
+              "originalWallDurationDistinctFps": 27.706695336438788,
+              "originalWallDurationLongestHoldMs": 263.26191407843135,
+              "mediaSeconds": 20.448,
+              "denominatorCorrection": "Playback rate uses received media duration, including drained output; original wall-duration calculation retained."
+            }
+          },
+          {
+            "run": "obs-stream-300000",
+            "name": "decoded receiver motion",
+            "status": "passed",
+            "durationMs": 53057.17823600001,
+            "details": {
+              "decodedFrames": 18020,
+              "markerTransitions": 6377,
+              "distinctFps": 21.229634265701673,
+              "targetMotionStatus": "below target",
+              "repeatFraction": 0.6461154273029966,
+              "longestHoldMs": 666.7746947835738,
+              "originalWallDurationDistinctFps": 21.23918452064677,
+              "originalWallDurationLongestHoldMs": 666.4748777957826,
+              "mediaSeconds": 300.382,
+              "denominatorCorrection": "Playback rate uses received media duration, including drained output; original wall-duration calculation retained."
+            }
+          }
+        ]
+      },
+      "native": {
+        "status": "passed",
+        "evidence": [
+          {
+            "run": "native-stream-20000",
+            "name": "decoded receiver motion",
+            "status": "passed",
+            "durationMs": 494.79419600000256,
+            "details": {
+              "decodedFrames": 192,
+              "markerTransitions": 143,
+              "distinctFps": 6.610882529702741,
+              "targetMotionStatus": "below target",
+              "repeatFraction": 0.25520833333333337,
+              "longestHoldMs": 563.3072916666666,
+              "originalWallDurationDistinctFps": 7.113466158293527,
+              "originalWallDurationLongestHoldMs": 523.5082659374999,
+              "mediaSeconds": 21.631,
+              "denominatorCorrection": "Playback rate uses received media duration, including drained output; original wall-duration calculation retained."
+            }
+          },
+          {
+            "run": "native-stream-300000",
+            "name": "decoded receiver motion",
+            "status": "passed",
+            "durationMs": 4544.9835789999925,
+            "details": {
+              "decodedFrames": 2883,
+              "markerTransitions": 2121,
+              "distinctFps": 7.028275471285468,
+              "targetMotionStatus": "below target",
+              "repeatFraction": 0.26430801248699276,
+              "longestHoldMs": 1256.1123829344433,
+              "originalWallDurationDistinctFps": 7.06304691617802,
+              "originalWallDurationLongestHoldMs": 1249.928530126951,
+              "mediaSeconds": 301.781,
+              "denominatorCorrection": "Playback rate uses received media duration, including drained output; original wall-duration calculation retained."
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "feature": "receiver audible page tone",
+    "backends": {
+      "obs": {
+        "status": "passed",
+        "evidence": [
+          {
+            "run": "obs-stream-20000",
+            "name": "receiver audible page tone",
+            "status": "passed",
+            "durationMs": 738.9210319999984,
+            "details": {
+              "samples": 977920,
+              "seconds": 20.373333333333335,
+              "rms": 0.051480405032634735,
+              "peak": 0.2305591106414795,
+              "tone440": 0.025473657995462418,
+              "tone880": 0.0001481200015405193
+            }
+          },
+          {
+            "run": "obs-stream-300000",
+            "name": "receiver audible page tone",
+            "status": "passed",
+            "durationMs": 3178.0741999999736,
+            "details": {
+              "samples": 14414848,
+              "seconds": 300.3093333333333,
+              "rms": 0.0514666773378849,
+              "peak": 0.23149748146533966,
+              "tone440": 0.025488046929240227,
+              "tone880": 0.0002645560016389936
+            }
+          }
+        ]
+      },
+      "native": {
+        "status": "passed",
+        "evidence": [
+          {
+            "run": "native-stream-20000",
+            "name": "receiver audible page tone",
+            "status": "passed",
+            "durationMs": 630.3883789999818,
+            "details": {
+              "samples": 1038336,
+              "seconds": 21.632,
+              "rms": 0.04845216125249863,
+              "peak": 0.23115839064121246,
+              "tone440": 0.025354571640491486,
+              "tone880": 0.00019941528444178402
+            }
+          },
+          {
+            "run": "native-stream-300000",
+            "name": "receiver audible page tone",
+            "status": "passed",
+            "durationMs": 2077.2827220000327,
+            "details": {
+              "samples": 14485504,
+              "seconds": 301.78133333333335,
+              "rms": 0.04999229684472084,
+              "peak": 0.24225226044654846,
+              "tone440": 0.025571215897798538,
+              "tone880": 0.0005869395099580288
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "feature": "decoded audio and video sync",
+    "backends": {
+      "obs": {
+        "status": "passed",
+        "evidence": [
+          {
+            "run": "obs-stream-20000",
+            "name": "decoded audio and video sync",
+            "status": "passed",
+            "durationMs": 3461.8950659999973,
+            "details": {
+              "matchedFlashes": 18,
+              "audioBursts": 18,
+              "medianAudioMinusVideoMs": 33.333333333333215,
+              "p95AbsoluteOffsetMs": 39.16666666666717,
+              "firstThirdMedianMs": 28.333333333333545,
+              "lastThirdMedianMs": 36.66666666666618,
+              "offsetsMs": [
+                36.66666666666663,
+                20.000000000000018,
+                36.66666666666707,
+                20.000000000000462,
+                36.66666666666707,
+                3.3333333333338544,
+                20.00000000000135,
+                36.66666666666707,
+                -13.333333333331865,
+                -19.999999999999574,
+                30.000000000001137,
+                30.000000000001137,
+                36.66666666666707,
+                36.66666666666707,
+                19.999999999999574,
+                36.66666666666529,
+                53.333333333334565,
+                36.66666666666529
+              ]
+            }
+          },
+          {
+            "run": "obs-stream-300000",
+            "name": "decoded audio and video sync",
+            "status": "passed",
+            "durationMs": 39311.65045399999,
+            "details": {
+              "matchedFlashes": 284,
+              "audioBursts": 303,
+              "medianAudioMinusVideoMs": 23.333333333340533,
+              "p95AbsoluteOffsetMs": 73.33333333333209,
+              "firstThirdMedianMs": 39.99999999999915,
+              "lastThirdMedianMs": 16.66666666665151,
+              "offsetsMs": [
+                -33.333333333333215,
+                -43.333333333333,
+                43.333333333333,
+                -73.33333333333236,
+                -56.66666666666664,
+                9.999999999999787,
+                26.666666666667282,
+                -40.000000000000924,
+                60.0000000000005,
+                26.666666666667282,
+                59.99999999999872,
+                -23.333333333333428,
+                10.000000000001563,
+                43.333333333336554,
+                10.000000000001563,
+                -73.33333333333059,
+                -30.000000000001137,
+                -30.000000000001137,
+                19.999999999999574,
+                70.00000000000028,
+                70.00000000000028,
+                -13.333333333335418,
+                13.333333333335418,
+                46.666666666666856,
+                30.000000000001137,
+                13.333333333335418,
+                13.333333333335418,
+                63.333333333332575,
+                46.666666666666856,
+                46.666666666666856,
+                30.000000000001137,
+                30.000000000001137,
+                46.666666666666856,
+                30.000000000001137,
+                39.99999999999915,
+                53.33333333332746,
+                53.33333333332746,
+                53.33333333332746,
+                36.66666666666174,
+                23.333333333333428,
+                39.99999999999915,
+                56.66666666666487,
+                39.99999999999915,
+                39.99999999999915,
+                56.66666666666487,
+                39.99999999999915,
+                39.99999999999915,
+                56.66666666666487,
+                39.99999999999915,
+                -9.99999999999801,
+                39.99999999999915,
+                39.99999999999915,
+                39.99999999999915,
+                56.66666666666487,
+                6.666666666667709,
+                -26.66666666666373,
+                -10.000000000005116,
+                -13.333333333335418,
+                13.333333333335418,
+                -10.000000000005116,
+                23.333333333326323,
+                -43.333333333336554,
+                23.333333333326323,
+                56.66666666665776,
+                23.333333333326323,
+                56.66666666665776,
+                39.99999999999204,
+                39.99999999999204,
+                39.99999999999204,
+                39.99999999999204,
+                39.99999999999204,
+                23.333333333326323,
+                39.99999999999204,
+                43.333333333336554,
+                53.33333333334167,
+                56.66666666665776,
+                73.33333333332348,
+                73.33333333332348,
+                56.66666666665776,
+                73.33333333332348,
+                39.99999999999204,
+                73.33333333332348,
+                6.666666666660603,
+                69.99999999999318,
+                86.6666666666589,
+                69.99999999999318,
+                69.99999999999318,
+                103.33333333332462,
+                86.6666666666589,
+                86.6666666666589,
+                86.6666666666589,
+                86.6666666666589,
+                69.99999999999318,
+                86.6666666666589,
+                69.99999999999318,
+                69.99999999999318,
+                69.99999999999318,
+                86.6666666666589,
+                53.33333333332746,
+                86.6666666666589,
+                53.33333333332746,
+                86.6666666666589,
+                69.99999999999318,
+                86.6666666666589,
+                69.99999999999318,
+                69.99999999999318,
+                69.99999999999318,
+                69.99999999999318,
+                19.99999999999602,
+                53.33333333332746,
+                53.33333333332746,
+                53.33333333332746,
+                53.33333333332746,
+                36.66666666666174,
+                69.99999999999318,
+                69.99999999999318,
+                36.66666666666174,
+                53.33333333332746,
+                53.33333333334167,
+                70.0000000000216,
+                3.3333333333303017,
+                -10.000000000019327,
+                23.333333333312112,
+                6.666666666660603,
+                -26.666666666670835,
+                40.000000000020464,
+                23.333333333340533,
+                56.66666666667197,
+                23.333333333340533,
+                40.000000000020464,
+                40.000000000020464,
+                56.66666666667197,
+                40.000000000020464,
+                40.000000000020464,
+                23.333333333340533,
+                23.333333333340533,
+                6.666666666689025,
+                56.66666666667197,
+                23.333333333340533,
+                56.66666666667197,
+                6.666666666689025,
+                40.000000000020464,
+                23.333333333340533,
+                40.000000000020464,
+                6.666666666689025,
+                -26.666666666670835,
+                23.333333333340533,
+                23.333333333340533,
+                40.000000000020464,
+                40.000000000020464,
+                40.000000000020464,
+                56.66666666667197,
+                6.666666666689025,
+                40.000000000020464,
+                23.333333333340533,
+                26.666666666670835,
+                30.000000000001137,
+                -50.00000000001137,
+                -36.66666666666174,
+                -53.33333333334167,
+                -20.000000000010232,
+                -20.000000000010232,
+                -36.66666666666174,
+                -20.000000000010232,
+                -3.3333333333303017,
+                -3.3333333333303017,
+                13.333333333321207,
+                13.333333333321207,
+                -20.000000000010232,
+                -36.66666666666174,
+                -36.66666666666174,
+                -20.000000000010232,
+                30.000000000001137,
+                -6.666666666660603,
+                26.666666666670835,
+                -6.666666666660603,
+                -39.99999999999204,
+                -23.333333333340533,
+                9.999999999990905,
+                26.666666666670835,
+                9.999999999990905,
+                26.666666666670835,
+                26.666666666670835,
+                26.666666666670835,
+                53.33333333334167,
+                3.3333333333587234,
+                36.66666666669016,
+                3.3333333333587234,
+                36.66666666669016,
+                -13.333333333321207,
+                20.000000000010232,
+                20.000000000010232,
+                36.66666666669016,
+                6.666666666660603,
+                23.333333333340533,
+                23.333333333340533,
+                23.333333333340533,
+                6.666666666660603,
+                39.99999999999204,
+                23.333333333340533,
+                6.666666666660603,
+                16.66666666667993,
+                16.66666666667993,
+                50.00000000001137,
+                33.33333333333144,
+                66.66666666666288,
+                33.33333333333144,
+                50.00000000001137,
+                16.66666666667993,
+                0,
+                33.33333333333144,
+                50.00000000001137,
+                33.33333333333144,
+                33.33333333333144,
+                33.33333333333144,
+                0,
+                33.33333333333144,
+                16.66666666667993,
+                9.999999999990905,
+                9.999999999990905,
+                40.000000000020464,
+                -83.33333333331439,
+                3.3333333333303017,
+                -96.66666666666401,
+                -13.333333333321207,
+                -26.666666666642413,
+                -43.333333333322344,
+                -60.000000000002274,
+                -106.66666666668334,
+                33.33333333333144,
+                -39.99999999999204,
+                26.666666666670835,
+                -39.99999999999204,
+                -23.333333333340533,
+                9.999999999990905,
+                -6.666666666660603,
+                16.66666666667993,
+                16.66666666667993,
+                0,
+                16.66666666667993,
+                16.66666666665151,
+                33.33333333330302,
+                16.66666666665151,
+                -16.66666666665151,
+                16.66666666665151,
+                16.66666666665151,
+                0,
+                16.66666666665151,
+                0,
+                16.66666666665151,
+                0,
+                16.66666666665151,
+                0,
+                0,
+                0,
+                33.33333333330302,
+                16.66666666665151,
+                16.66666666665151,
+                0,
+                33.33333333330302,
+                0,
+                33.33333333330302,
+                16.66666666665151,
+                16.66666666665151,
+                33.33333333330302,
+                16.66666666665151,
+                16.66666666665151,
+                16.66666666665151,
+                -16.66666666665151,
+                33.33333333330302,
+                0,
+                33.33333333330302,
+                0,
+                16.66666666665151,
+                0,
+                0,
+                16.66666666665151,
+                0,
+                16.66666666665151,
+                0,
+                16.66666666665151,
+                33.33333333330302,
+                33.33333333330302,
+                -16.66666666665151
+              ]
+            }
+          }
+        ]
+      },
+      "native": {
+        "status": "passed",
+        "evidence": [
+          {
+            "run": "native-stream-20000",
+            "name": "decoded audio and video sync",
+            "status": "passed",
+            "durationMs": 820.8275129999965,
+            "details": {
+              "matchedFlashes": 7,
+              "audioBursts": 23,
+              "medianAudioMinusVideoMs": 6.666666666667709,
+              "p95AbsoluteOffsetMs": 70.6666666666651,
+              "firstThirdMedianMs": -16.666666666666607,
+              "lastThirdMedianMs": 16.66666666666572,
+              "offsetsMs": [
+                23.333333333333428,
+                -56.66666666666664,
+                23.333333333333428,
+                6.666666666667709,
+                -13.333333333331865,
+                -43.333333333333,
+                76.66666666666444
+              ]
+            }
+          },
+          {
+            "run": "native-stream-300000",
+            "name": "decoded audio and video sync",
+            "status": "passed",
+            "durationMs": 4765.120652000071,
+            "details": {
+              "matchedFlashes": 114,
+              "audioBursts": 362,
+              "medianAudioMinusVideoMs": 6.666666666664156,
+              "p95AbsoluteOffsetMs": 85.66666666667398,
+              "firstThirdMedianMs": 10.00000000000334,
+              "lastThirdMedianMs": -13.333333333321207,
+              "offsetsMs": [
+                10.000000000000231,
+                19.999999999999574,
+                16.666666666667496,
+                50.00000000000071,
+                33.33333333333499,
+                10.000000000001563,
+                -63.33333333333613,
+                -93.33333333333016,
+                26.66666666666373,
+                -23.333333333333428,
+                53.33333333332746,
+                -6.666666666660603,
+                -63.333333333332575,
+                39.99999999999915,
+                26.666666666670835,
+                6.666666666667709,
+                23.333333333333428,
+                -59.99999999999517,
+                46.666666666666856,
+                -53.333333333334565,
+                0,
+                0,
+                23.333333333333428,
+                10.000000000005116,
+                33.33333333333144,
+                30.000000000001137,
+                -53.33333333332746,
+                13.333333333335418,
+                -33.33333333333144,
+                6.666666666674814,
+                46.666666666666856,
+                33.33333333334565,
+                -23.333333333326323,
+                -60.000000000002274,
+                56.66666666667197,
+                -30.000000000001137,
+                30.000000000001137,
+                -30.000000000001137,
+                -70.00000000000739,
+                -10.000000000005116,
+                16.66666666666572,
+                -30.000000000001137,
+                -49.99999999999716,
+                -29.999999999986926,
+                -6.666666666660603,
+                30.000000000001137,
+                56.66666666667197,
+                23.333333333340533,
+                16.66666666666572,
+                43.333333333336554,
+                -60.000000000002274,
+                23.333333333340533,
+                46.66666666668107,
+                -90.00000000000341,
+                10.000000000019327,
+                39.99999999999204,
+                -66.66666666666288,
+                30.000000000001137,
+                -66.66666666666288,
+                19.99999999998181,
+                36.66666666666174,
+                -106.66666666665492,
+                33.33333333335986,
+                -83.33333333334281,
+                -69.99999999999318,
+                30.000000000001137,
+                -96.66666666666401,
+                73.33333333332348,
+                13.333333333349628,
+                10.000000000019327,
+                30.000000000001137,
+                -6.666666666660603,
+                43.333333333350765,
+                40.000000000020464,
+                40.000000000020464,
+                33.33333333333144,
+                33.33333333333144,
+                56.66666666667197,
+                6.666666666660603,
+                39.99999999999204,
+                0,
+                -90.00000000000341,
+                60.000000000002274,
+                33.33333333333144,
+                2.8421709430404007e-11,
+                20.000000000010232,
+                -26.666666666642413,
+                -120.00000000000455,
+                -66.66666666666288,
+                -69.99999999999318,
+                -30.000000000001137,
+                -33.33333333333144,
+                -9.999999999990905,
+                -9.999999999990905,
+                -63.333333333332575,
+                60.000000000002274,
+                -79.99999999998408,
+                53.33333333334167,
+                -26.666666666670835,
+                -20.000000000010232,
+                16.66666666665151,
+                6.666666666717447,
+                -46.666666666624224,
+                -26.666666666642413,
+                -69.99999999999318,
+                -76.66666666665378,
+                33.33333333335986,
+                -53.33333333334167,
+                -23.333333333368955,
+                0,
+                -36.66666666669016,
+                -6.666666666660603,
+                6.666666666660603,
+                -16.66666666665151
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "feature": "OBS embedded browser source",
+    "status": "not tested / unavailable / excluded as described",
+    "detail": "unavailable in installed OBS package; external Chromium/XSHM was measured"
+  },
+  {
+    "feature": "hardware encoding and GPU texture sharing",
+    "status": "not tested / unavailable / excluded as described",
+    "detail": "hardware encoder unavailable in this host; SuiteCut GPU texture sharing is not implemented"
+  },
+  {
+    "feature": "zoom transforms, highlight overlays, cursor animation, and captions",
+    "status": "not tested / unavailable / excluded as described",
+    "detail": "not tested; separate fixtures would be required to compare these with OBS transforms/overlays"
+  },
+  {
+    "feature": "real speech-model synthesis",
+    "status": "not tested / unavailable / excluded as described",
+    "detail": "outside OBS capture comparison; tone fixtures do not establish narration-model quality"
+  },
+  {
+    "feature": "automatic RTMP reconnection and streaming source switches",
+    "status": "not tested / unavailable / excluded as described",
+    "detail": "not tested; recording source switches and normal RTMP start/stop were tested"
+  },
+  {
+    "feature": "SuiteCut runner checkpoints, retries, and test-report semantics",
+    "status": "not tested / unavailable / excluded as described",
+    "detail": "not a direct OBS operation; excluded from comparable timed workloads"
+  }
+]

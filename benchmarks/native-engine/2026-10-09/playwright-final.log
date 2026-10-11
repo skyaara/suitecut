@@ -1,0 +1,27 @@
+
+Running 6 tests using 1 worker
+
+(node:97182) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 benchmarks/native-engine/engine.e2e.spec.ts:38:1 › real Playwright locators, auto-wait, input, scrolling, iframe and screenshot (1.1s)
+  ✓  2 benchmarks/native-engine/engine.e2e.spec.ts:54:1 › network interception, init scripts and storage isolation (441ms)
+  ✓  3 benchmarks/native-engine/engine.e2e.spec.ts:83:1 › popup, dialog, file upload, download and public CDP sessions (1.2s)
+  ✓  4 benchmarks/native-engine/engine.e2e.spec.ts:119:1 › native recording survives blocked Node, pause and page switching (6.4s)
+  ✓  5 benchmarks/native-engine/engine.e2e.spec.ts:156:1 › repeated context/page shutdown keeps the engine usable (1.8s)
+  ✘  6 benchmarks/native-engine/engine.e2e.spec.ts:167:1 › permission and geolocation setup before page creation (5.2s)
+
+
+  1) benchmarks/native-engine/engine.e2e.spec.ts:167:1 › permission and geolocation setup before page creation 
+
+    Error: page.evaluate: Error: Timeout expired
+        at navigator.geolocation.getCurrentPosition.timeout (eval at evaluate (:311:30), <anonymous>:5:27)
+        at navigator.geolocation.getCurrentPosition.timeout (eval at evaluate (:311:30), <anonymous>:5:27)
+        at /workspace/suitecut/benchmarks/native-engine/engine.e2e.spec.ts:175:33
+
+    Error Context: benchmarks/native-engine/2026-10-09/playwright-artifacts/engine.e2e-permission-and--bb30a--setup-before-page-creation/error-context.md
+
+    Error Context: benchmarks/native-engine/2026-10-09/playwright-artifacts/engine.e2e-permission-and--bb30a--setup-before-page-creation/error-context.md
+
+  1 failed
+    benchmarks/native-engine/engine.e2e.spec.ts:167:1 › permission and geolocation setup before page creation 
+  5 passed (18.7s)

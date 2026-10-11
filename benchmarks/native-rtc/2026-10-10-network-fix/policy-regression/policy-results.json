@@ -1,0 +1,59 @@
+[
+  {
+    "policy": "default",
+    "context": "root",
+    "candidates": [
+      {
+        "type": "host",
+        "protocol": "udp"
+      }
+    ],
+    "gatheringState": "complete",
+    "status": "passed"
+  },
+  {
+    "policy": "default",
+    "context": "isolated",
+    "candidates": [
+      {
+        "type": "host",
+        "protocol": "udp"
+      }
+    ],
+    "gatheringState": "complete",
+    "status": "passed"
+  },
+  {
+    "policy": "default",
+    "context": "proxied",
+    "candidates": [
+      {
+        "type": "host",
+        "protocol": "udp"
+      }
+    ],
+    "gatheringState": "complete",
+    "status": "passed"
+  },
+  {
+    "policy": "disable-non-proxied-udp",
+    "context": "root",
+    "candidates": [],
+    "gatheringState": "complete",
+    "status": "passed"
+  },
+  {
+    "policy": "disable-non-proxied-udp",
+    "context": "isolated",
+    "candidates": [],
+    "gatheringState": "complete",
+    "status": "passed"
+  },
+  {
+    "policy": "disable-non-proxied-udp",
+    "context": "proxied",
+    "candidates": [],
+    "gatheringState": "complete",
+    "status": "passed"
+  }
+]

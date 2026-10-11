@@ -1,0 +1,106 @@
+install prefix            /workspace/suitecut/.suitecut/memory-tools/ffmpeg-tsan
+source path               src
+C compiler                /workspace/suitecut/.suitecut/memory-tools/root/usr/bin/clang-19
+C library                 glibc
+ARCH                      x86 (generic)
+big-endian                no
+runtime cpu detection     yes
+standalone assembly       no
+x86 assembler             nasm
+MMX enabled               yes
+MMXEXT enabled            yes
+3DNow! enabled            yes
+3DNow! extended enabled   yes
+SSE enabled               yes
+SSSE3 enabled             yes
+AESNI enabled             yes
+AVX enabled               yes
+AVX2 enabled              yes
+AVX-512 enabled           yes
+AVX-512ICL enabled        yes
+XOP enabled               yes
+FMA3 enabled              yes
+FMA4 enabled              yes
+i686 features enabled     yes
+CMOV is fast              yes
+EBX available             yes
+EBP available             yes
+debug symbols             yes
+strip symbols             yes
+optimize for size         no
+optimizations             yes
+static                    no
+shared                    yes
+postprocessing support    yes
+network support           yes
+threading support         pthreads
+safe bitstream reader     yes
+texi2html enabled         no
+perl enabled              yes
+pod2man enabled           yes
+makeinfo enabled          no
+makeinfo supports HTML    no
+xmllint enabled           no
+
+External libraries:
+iconv                   libx264
+libvpx                  zlib
+
+External libraries providing hardware acceleration:
+v4l2_m2m
+
+Libraries:
+avcodec                 avformat                swresample
+avdevice                avutil                  swscale
+avfilter                postproc
+
+Programs:
+
+Enabled decoders:
+aac                     flac                    pcm_s16le
+ffv1                    h264                    vp9
+
+Enabled encoders:
+aac                     flac                    libx264
+ffv1                    libvpx_vp9              pcm_s16le
+
+Enabled hwaccels:
+
+Enabled parsers:
+aac                     flac                    vp9
+ac3                     h264
+
+Enabled demuxers:
+matroska                mov
+
+Enabled muxers:
+matroska                mp4
+mov                     webm
+
+Enabled protocols:
+file
+
+Enabled filters:
+aformat                 concat                  setpts
+aresample               format                  split
+asetpts                 fps                     trim
+asplit                  loop
+atrim                   scale
+
+Enabled bsfs:
+aac_adtstoasc           vp9_superframe
+pgs_frame_merge         vp9_superframe_split
+
+Enabled indevs:
+
+Enabled outdevs:
+
+License: GPL version 2 or later
+libavutil/avconfig.h is unchanged
+libavfilter/filter_list.c is unchanged
+libavcodec/bsf_list.c is unchanged
+libavformat/demuxer_list.c is unchanged
+libavformat/muxer_list.c is unchanged
+libavdevice/indev_list.c is unchanged
+libavdevice/outdev_list.c is unchanged
+libavformat/protocol_list.c is unchanged

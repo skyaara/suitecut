@@ -1,0 +1,83 @@
+[
+  {
+    "name": "build-asan",
+    "args": [
+      "cmake",
+      "--build",
+      ".suitecut/shared-clock-asan",
+      "--parallel",
+      "2",
+      "--target",
+      "suitecut-media-test",
+      "suitecut-audio-startup-test",
+      "suitecut-codec-test",
+      "suitecut-audio-clock-test",
+      "suitecut-pixel-test",
+      "suitecut-memory-test",
+      "suitecut-sync-test",
+      "suitecut-scaler-failure-test",
+      "suitecut-fuzz-bounds",
+      "suitecut-fuzz-media"
+    ],
+    "exitCode": 0,
+    "wallSeconds": 0.6779766189865768
+  },
+  {
+    "name": "ctest-asan",
+    "args": [
+      "ctest",
+      "--test-dir",
+      ".suitecut/shared-clock-asan",
+      "--output-on-failure",
+      "-j",
+      "1"
+    ],
+    "exitCode": 0,
+    "wallSeconds": 12.419851616985397
+  },
+  {
+    "name": "build-release",
+    "args": [
+      "cmake",
+      "--build",
+      ".suitecut/native-build",
+      "--parallel",
+      "2",
+      "--target",
+      "suitecut-media-test",
+      "suitecut-audio-startup-test",
+      "suitecut-codec-test",
+      "suitecut-audio-clock-test",
+      "suitecut-pixel-test",
+      "suitecut-memory-test",
+      "suitecut-sync-test",
+      "suitecut-scaler-failure-test"
+    ],
+    "exitCode": 0,
+    "wallSeconds": 0.12691367001389153
+  },
+  {
+    "name": "ctest-release",
+    "args": [
+      "ctest",
+      "--test-dir",
+      ".suitecut/native-build",
+      "--output-on-failure",
+      "-j",
+      "1"
+    ],
+    "exitCode": 0,
+    "wallSeconds": 8.987670688977232
+  },
+  {
+    "name": "fuzz",
+    "args": [
+      "python3",
+      "benchmarks/native-sync/fuzz-shared-clock.py",
+      "/workspace/suitecut/benchmarks/release/2026-10-11-suitecut-2.1",
+      "600"
+    ],
+    "exitCode": 0,
+    "wallSeconds": 1203.3358867439965
+  }
+]

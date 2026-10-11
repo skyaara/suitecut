@@ -1,0 +1,15 @@
+{
+  "name": "suitecut-cef",
+  "version": "0.1.0",
+  "protocolVersion": 1,
+  "license": "MIT",
+  "artifactType": "native-process",
+  "executable": "suitecut-browser",
+  "transport": "private-stdio",
+  "capabilities": ["cdp", "frames", "audio"],
+  "nativeMedia": false,
+  "verifiedPlatform": "linux-x86_64",
+  "repository": "https://github.com/skyaara/suitecut",
+  "cefPin": "native/browser/cef-build-linux-codecs.json",
+  "libyuvPin": "native/browser/libyuv-build.json"
+}

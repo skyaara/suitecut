@@ -1,0 +1,173 @@
+{
+  "backend": "cpp-cef",
+  "mode": "stream",
+  "durationRequestedMs": 30000,
+  "width": 1920,
+  "height": 1080,
+  "fps": 30,
+  "status": "completed; media validation pending",
+  "startedAt": "2026-10-10T14:25:06.840Z",
+  "profile": "performance",
+  "encoding": {
+    "video": "H264",
+    "preset": "veryfast",
+    "crf": null,
+    "bitrateKbps": 4500,
+    "encoderThreads": 1,
+    "audio": "AAC 48kHz stereo 128kbps"
+  },
+  "recordingPath": "/workspace/suitecut/benchmarks/publication/2026-10-10/runs/stream-cpp-cef-02/recording.mkv",
+  "receiverPath": "/workspace/suitecut/benchmarks/publication/2026-10-10/runs/stream-cpp-cef-02/receiver.flv",
+  "phases": [
+    {
+      "name": "static",
+      "atMs": 0.1576260000001639,
+      "monotonic": 152079.947159795
+    },
+    {
+      "name": "canvas",
+      "atMs": 10047.215054,
+      "monotonic": 152089.993944747
+    },
+    {
+      "name": "scroll",
+      "atMs": 20000.994163,
+      "monotonic": 152099.946022963
+    }
+  ],
+  "events": [
+    {
+      "name": "click, input and selection",
+      "atMs": 10676.237466999999
+    }
+  ],
+  "browserVersion": "152.0.7977.83",
+  "cefVersion": "152.0.6+g708dc14+chromium-152.0.7977.83",
+  "browserReadySeconds": 1.0639236609858926,
+  "audioStarted": {
+    "generator": "frame-coded interpolated hash noise",
+    "sampleRate": 48000,
+    "quantum": 24,
+    "amplitude": 0.15,
+    "firstFrame": 0,
+    "currentFrame": 768
+  },
+  "beforeCapture": {
+    "marker": 97,
+    "rendered": 94,
+    "mode": "canvas",
+    "scrollY": 0,
+    "scrollEvents": 0,
+    "keyEvents": 0,
+    "clicks": 0,
+    "value": "",
+    "choice": "First",
+    "actionMask": 0,
+    "width": 1920,
+    "height": 1080,
+    "audio": {
+      "generator": "frame-coded interpolated hash noise",
+      "sampleRate": 48000,
+      "quantum": 24,
+      "amplitude": 0.15,
+      "firstFrame": 0,
+      "currentFrame": 103296
+    }
+  },
+  "outputReadySeconds": 0.32033477901131846,
+  "activeBaseline": {
+    "marker": 145,
+    "rendered": 142,
+    "mode": "canvas",
+    "scrollY": 0,
+    "scrollEvents": 0,
+    "keyEvents": 0,
+    "clicks": 0,
+    "value": "",
+    "choice": "First",
+    "actionMask": 0,
+    "width": 1920,
+    "height": 1080,
+    "audio": {
+      "generator": "frame-coded interpolated hash noise",
+      "sampleRate": 48000,
+      "quantum": 24,
+      "amplitude": 0.15,
+      "firstFrame": 0,
+      "currentFrame": 180352
+    }
+  },
+  "activeStartMonotonic": 152079.934636958,
+  "nodeBefore": {
+    "rss": 144011264,
+    "heapTotal": 122613760,
+    "heapUsed": 78226432,
+    "external": 11460665,
+    "arrayBuffers": 7456557
+  },
+  "observedActiveMs": 25128.860935,
+  "scrollCommands": 19,
+  "activeEndMonotonic": 152109.943107207,
+  "activeMs": 30002.465055000004,
+  "afterCapture": {
+    "marker": 1046,
+    "rendered": 1035,
+    "mode": "scroll",
+    "scrollY": 540,
+    "scrollEvents": 19,
+    "keyEvents": 1,
+    "clicks": 1,
+    "value": "SuiteCut benchmark",
+    "choice": "Second",
+    "actionMask": 15,
+    "width": 1920,
+    "height": 1080,
+    "audio": {
+      "generator": "frame-coded interpolated hash noise",
+      "sampleRate": 48000,
+      "quantum": 24,
+      "amplitude": 0.15,
+      "firstFrame": 0,
+      "currentFrame": 1609856
+    }
+  },
+  "nodeAfter": {
+    "rss": 149684224,
+    "heapTotal": 130670592,
+    "heapUsed": 62049192,
+    "external": 4480693,
+    "arrayBuffers": 476545
+  },
+  "finalOutput": {
+    "ready": true,
+    "stopped": true,
+    "paused": false,
+    "videoFrames": 933,
+    "audioSamples": 1492992,
+    "repeatedFrames": 135,
+    "droppedAudioSamples": 0,
+    "missingAudioSamples": 8797,
+    "lateAudioSamples": 0,
+    "queuedVideoBytes": 0,
+    "queuedAudioBytes": 0,
+    "startedMs": 4589.180685,
+    "durationMs": 31100,
+    "maximumEncodeMs": 140.04751499999838,
+    "bufferedDelayMs": 150,
+    "error": ""
+  },
+  "finalizationSeconds": 0.15321971097728238,
+  "eventLoop": {
+    "meanMs": 20.37768547391543,
+    "p99Ms": 23.166975,
+    "maxMs": 131.661823
+  },
+  "nodeAfterCleanup": {
+    "rss": 149946368,
+    "heapTotal": 130670592,
+    "heapUsed": 63241352,
+    "external": 4490738,
+    "arrayBuffers": 482514
+  },
+  "completedAt": "2026-10-10T14:25:44.010Z"
+}

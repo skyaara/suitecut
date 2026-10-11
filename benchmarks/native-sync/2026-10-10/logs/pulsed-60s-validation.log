@@ -1,0 +1,76 @@
+{
+  "outputs": [
+    {
+      "path": "/workspace/suitecut/benchmarks/native-sync/2026-10-10/pulsed-60s/recording.mp4",
+      "fullyDecodedVideoFrames": 1814,
+      "nativeVideoFrames": 1814,
+      "distinctImageFPS": 29.10694597574421,
+      "maximumImageHoldMs": 266.6666666666667,
+      "decodedInteriorSilenceMs": 42750,
+      "maximumInteriorSilenceMs": 900,
+      "decodedSilenceLongerThanExpectedPulseMs": [
+        {
+          "startMs": 56050,
+          "endMs": 56950,
+          "durationMs": 900
+        }
+      ],
+      "preEncoderPulseOnsets": 65,
+      "visualPulseOnsets": 60,
+      "pulseVisualMinusNativeAudioMs": {
+        "samples": 62,
+        "median": 4.999999999998181,
+        "p95Absolute": 42.33333333333567,
+        "maximumAbsolute": 203.33333333333212,
+        "unmatched": [
+          {
+            "audioMs": 56920,
+            "nearestVideoMinusAudioMs": 280.0
+          }
+        ]
+      }
+    },
+    {
+      "path": "/workspace/suitecut/benchmarks/native-sync/2026-10-10/pulsed-60s/receiver.flv",
+      "fullyDecodedVideoFrames": 1806,
+      "nativeVideoFrames": 1806,
+      "distinctImageFPS": 28.98671096345515,
+      "maximumImageHoldMs": 266.6666666666667,
+      "decodedInteriorSilenceMs": 42750,
+      "maximumInteriorSilenceMs": 900,
+      "decodedSilenceLongerThanExpectedPulseMs": [
+        {
+          "startMs": 55720,
+          "endMs": 56620,
+          "durationMs": 900
+        }
+      ],
+      "preEncoderPulseOnsets": 65,
+      "visualPulseOnsets": 60,
+      "pulseVisualMinusNativeAudioMs": {
+        "samples": 62,
+        "median": 33.33333333333212,
+        "p95Absolute": 71.83333333333563,
+        "maximumAbsolute": 183.33333333333212,
+        "unmatched": [
+          {
+            "audioMs": 56600,
+            "nearestVideoMinusAudioMs": 266.66666666666424
+          }
+        ]
+      }
+    }
+  ],
+  "resources": {
+    "captureSamples": 60,
+    "nativeMeanCPUCores": 1.1837208749549217,
+    "nativeAggregateRSSPeakMiB": 1207.2734375,
+    "aggregateRSSFirstWindowMedianMiB": 1175.5859375,
+    "aggregateRSSLastWindowMedianMiB": 1197.0703125,
+    "rssWindowSeconds": 15.01751301925,
+    "rssIsSummedNotPrivateMemory": true,
+    "wholeCEFLeakFreedomProven": false
+  },
+  "sourceGapCount": 6,
+  "maxCallbackDelayMs": 181.21410800000012
+}

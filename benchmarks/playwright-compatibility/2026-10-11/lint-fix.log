@@ -1,0 +1,12 @@
+[WARN] Your node_modules are out of sync with your lockfile. The workspace structure has changed since last install
+
+/workspace/suitecut/benchmarks/playwright-compatibility/compatibility.spec.ts
+  170:25  error  Forbidden non-null assertion                                                                        @typescript-eslint/no-non-null-assertion
+  233:47  error  Don't use `unknown` as a type. Use UntrustedInput at runtime boundaries and validate it before use  @typescript-eslint/no-restricted-types
+  257:47  error  Don't use `unknown` as a type. Use UntrustedInput at runtime boundaries and validate it before use  @typescript-eslint/no-restricted-types
+  286:47  error  Don't use `unknown` as a type. Use UntrustedInput at runtime boundaries and validate it before use  @typescript-eslint/no-restricted-types
+  305:22  error  Don't use `unknown` as a type. Use UntrustedInput at runtime boundaries and validate it before use  @typescript-eslint/no-restricted-types
+  327:55  error  Don't use `unknown` as a type. Use UntrustedInput at runtime boundaries and validate it before use  @typescript-eslint/no-restricted-types
+
+✖ 6 problems (6 errors, 0 warnings)
+

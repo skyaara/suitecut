@@ -1,0 +1,106 @@
+{
+  "outputs": [
+    {
+      "path": "/workspace/suitecut/benchmarks/native-sync/2026-10-10/worklet-pulsed-60s/recording.mp4",
+      "fullyDecodedVideoFrames": 1819,
+      "nativeVideoFrames": 1819,
+      "distinctImageFPS": 28.58163826278175,
+      "maximumImageHoldMs": 466.6666666666667,
+      "decodedInteriorSilenceMs": 42970,
+      "maximumInteriorSilenceMs": 1110,
+      "decodedSilenceLongerThanExpectedPulseMs": [
+        {
+          "startMs": 2800,
+          "endMs": 3870,
+          "durationMs": 1070
+        },
+        {
+          "startMs": 17160,
+          "endMs": 18030,
+          "durationMs": 870
+        },
+        {
+          "startMs": 24490,
+          "endMs": 25600,
+          "durationMs": 1110
+        },
+        {
+          "startMs": 32880,
+          "endMs": 33740,
+          "durationMs": 860
+        },
+        {
+          "startMs": 42010,
+          "endMs": 42950,
+          "durationMs": 940
+        }
+      ],
+      "preEncoderPulseOnsets": 66,
+      "visualPulseOnsets": 59,
+      "pulseVisualMinusNativeAudioMs": {
+        "samples": 64,
+        "median": 63.33333333333576,
+        "p95Absolute": 114.66666666666744,
+        "maximumAbsolute": 216.66666666666788,
+        "unmatched": []
+      }
+    },
+    {
+      "path": "/workspace/suitecut/benchmarks/native-sync/2026-10-10/worklet-pulsed-60s/receiver.flv",
+      "fullyDecodedVideoFrames": 1814,
+      "nativeVideoFrames": 1814,
+      "distinctImageFPS": 28.44542447629548,
+      "maximumImageHoldMs": 466.6666666666667,
+      "decodedInteriorSilenceMs": 42890,
+      "maximumInteriorSilenceMs": 1100,
+      "decodedSilenceLongerThanExpectedPulseMs": [
+        {
+          "startMs": 2470,
+          "endMs": 3540,
+          "durationMs": 1070
+        },
+        {
+          "startMs": 16830,
+          "endMs": 17700,
+          "durationMs": 870
+        },
+        {
+          "startMs": 24160,
+          "endMs": 25260,
+          "durationMs": 1100
+        },
+        {
+          "startMs": 32550,
+          "endMs": 33410,
+          "durationMs": 860
+        },
+        {
+          "startMs": 41680,
+          "endMs": 42620,
+          "durationMs": 940
+        }
+      ],
+      "preEncoderPulseOnsets": 66,
+      "visualPulseOnsets": 59,
+      "pulseVisualMinusNativeAudioMs": {
+        "samples": 64,
+        "median": 60.0,
+        "p95Absolute": 114.16666666666761,
+        "maximumAbsolute": 220.0,
+        "unmatched": []
+      }
+    }
+  ],
+  "resources": {
+    "captureSamples": 60,
+    "nativeMeanCPUCores": 1.4028860186011318,
+    "nativeAggregateRSSPeakMiB": 1343.74609375,
+    "aggregateRSSFirstWindowMedianMiB": 1183.95703125,
+    "aggregateRSSLastWindowMedianMiB": 1227.96875,
+    "rssWindowSeconds": 15.0607001605,
+    "rssIsSummedNotPrivateMemory": true,
+    "wholeCEFLeakFreedomProven": false
+  },
+  "sourceGapCount": 14,
+  "maxCallbackDelayMs": 552.1772000000019
+}

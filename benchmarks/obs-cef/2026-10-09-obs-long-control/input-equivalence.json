@@ -1,0 +1,12 @@
+{
+  "fixtureSha256": "09b5de97645d3c85a9b68740d5c8e2122e1dbd35040ee394af64b062f180bbb5",
+  "referenceBundleFixtureSha256": "09b5de97645d3c85a9b68740d5c8e2122e1dbd35040ee394af64b062f180bbb5",
+  "fixtureIdentical": true,
+  "width": 1920,
+  "height": 1080,
+  "targetFps": 30,
+  "durationMs": 1800000,
+  "syncPulseMs": 250,
+  "wheelPattern": "every >5000 ms; deltaY +180 for 20 commands, -180 for 20; x600,y400",
+  "limits": "Requested pattern matches; actual command/scroll counts are observed separately. Capture architecture/browser/codec and run time differ."
+}

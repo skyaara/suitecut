@@ -1,0 +1,852 @@
+{
+  "requestedMs": 1800000,
+  "injection": null,
+  "thresholds": {
+    "audibleRms": 0.015,
+    "rmsBlockMs": 20,
+    "silenceFailureSeconds": 5,
+    "videoContentHoldFailureSeconds": 5,
+    "syncP95Ms": 200
+  },
+  "outputs": {
+    "recording": {
+      "mediaPath": "/workspace/suitecut/.suitecut/dropout-investigation/clean-30-minute/suitecut-source-a8fb5145-a5b4-4883-a54a-033ad05f0ecc-fe5cd60c-ebdf-47fd-9fd6-fc20e9ab18db.webm",
+      "durationSeconds": 1803.0,
+      "audio": {
+        "status": "passed",
+        "decodedSeconds": 1802.967125,
+        "pcmPath": "benchmarks/obs-cef/2026-10-09-dropout-investigation/clean-30-minute/analysis/recording/full-audio-8k.f32",
+        "longestSilentInterval": {
+          "startSeconds": 75.5,
+          "endSeconds": 77.60000000000001,
+          "durationSeconds": 2.1
+        },
+        "silentIntervalsOver2Seconds": [
+          {
+            "startSeconds": 75.5,
+            "endSeconds": 77.60000000000001,
+            "durationSeconds": 2.1
+          }
+        ],
+        "silentIntervalsOver5Seconds": []
+      },
+      "video": {
+        "status": "passed",
+        "decodedFrames": 30664,
+        "activeFrames": 30479,
+        "distinctActiveFps": 16.791294642857142,
+        "repeatFraction": 0.012762885921454137,
+        "longestContentHold": {
+          "startSeconds": 75.594,
+          "endSeconds": 77.296,
+          "durationSeconds": 1.7020000000000124,
+          "marker": 2190,
+          "encodedFrames": 2
+        },
+        "contentHoldsOver1Second": [
+          {
+            "startSeconds": 75.594,
+            "endSeconds": 77.296,
+            "durationSeconds": 1.7020000000000124,
+            "marker": 2190,
+            "encodedFrames": 2
+          },
+          {
+            "startSeconds": 1132.557,
+            "endSeconds": 1133.643,
+            "durationSeconds": 1.0860000000000127,
+            "marker": 32115,
+            "encodedFrames": 4
+          },
+          {
+            "startSeconds": 1577.511,
+            "endSeconds": 1578.656,
+            "durationSeconds": 1.1449999999999818,
+            "marker": 44485,
+            "encodedFrames": 4
+          }
+        ],
+        "contentHoldsOver5Seconds": [],
+        "maximumPresentationGapSeconds": 1.656000000000006,
+        "markerRange": [
+          0,
+          50958
+        ]
+      },
+      "syncWindows": [
+        {
+          "matchedFlashes": 12,
+          "audioBursts": 28,
+          "medianAudioMinusVideoMs": 10.000000000000675,
+          "p95AbsoluteOffsetMs": 41.49999999999938,
+          "firstThirdMedianMs": 23.333333333333208,
+          "lastThirdMedianMs": -13.333333333332753,
+          "offsetsMs": [
+            23.333333333332984,
+            13.333333333333641,
+            23.333333333333428,
+            30.00000000000025,
+            3.333333333332966,
+            43.333333333333,
+            16.666666666667496,
+            6.666666666665932,
+            -6.666666666665932,
+            -39.99999999999915,
+            -19.999999999999574,
+            6.666666666667709
+          ],
+          "offsetSeconds": 5,
+          "status": "passed"
+        },
+        {
+          "matchedFlashes": 12,
+          "audioBursts": 16,
+          "medianAudioMinusVideoMs": -19.999999999999574,
+          "p95AbsoluteOffsetMs": 81.4999999999995,
+          "firstThirdMedianMs": -8.333333333333304,
+          "lastThirdMedianMs": -13.333333333332753,
+          "offsetsMs": [
+            0.0,
+            0.0,
+            -16.666666666666607,
+            -69.9999999999994,
+            -66.66666666666643,
+            -83.33333333333215,
+            -80.00000000000007,
+            -19.999999999999574,
+            63.333333333332575,
+            -6.666666666665932,
+            -56.66666666666664,
+            -19.999999999999574
+          ],
+          "offsetSeconds": 900,
+          "status": "passed"
+        },
+        {
+          "matchedFlashes": 13,
+          "audioBursts": 19,
+          "medianAudioMinusVideoMs": -13.333333333333641,
+          "p95AbsoluteOffsetMs": 59.333333333333364,
+          "firstThirdMedianMs": -18.333333333333314,
+          "lastThirdMedianMs": 0.0,
+          "offsetsMs": [
+            3.3333333333334103,
+            -56.66666666666664,
+            -40.000000000000036,
+            43.333333333333,
+            -63.333333333333464,
+            -53.33333333333279,
+            -6.666666666665932,
+            -26.666666666665506,
+            -13.333333333333641,
+            -23.333333333333428,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "offsetSeconds": 1780,
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    "receiver": {
+      "mediaPath": "/workspace/suitecut/.suitecut/dropout-investigation/clean-30-minute/receiver.flv",
+      "durationSeconds": 1801.429,
+      "audio": {
+        "status": "passed",
+        "decodedSeconds": 1801.429375,
+        "pcmPath": "benchmarks/obs-cef/2026-10-09-dropout-investigation/clean-30-minute/analysis/receiver/full-audio-8k.f32",
+        "longestSilentInterval": {
+          "startSeconds": 1037.64,
+          "endSeconds": 1040.74,
+          "durationSeconds": 3.1
+        },
+        "silentIntervalsOver2Seconds": [
+          {
+            "startSeconds": 75.5,
+            "endSeconds": 77.62,
+            "durationSeconds": 2.12
+          },
+          {
+            "startSeconds": 460.82,
+            "endSeconds": 463.44,
+            "durationSeconds": 2.62
+          },
+          {
+            "startSeconds": 633.54,
+            "endSeconds": 635.66,
+            "durationSeconds": 2.12
+          },
+          {
+            "startSeconds": 880.74,
+            "endSeconds": 882.78,
+            "durationSeconds": 2.04
+          },
+          {
+            "startSeconds": 984.98,
+            "endSeconds": 987.4200000000001,
+            "durationSeconds": 2.44
+          },
+          {
+            "startSeconds": 1037.64,
+            "endSeconds": 1040.74,
+            "durationSeconds": 3.1
+          },
+          {
+            "startSeconds": 1044.96,
+            "endSeconds": 1047.04,
+            "durationSeconds": 2.08
+          },
+          {
+            "startSeconds": 1180.32,
+            "endSeconds": 1182.84,
+            "durationSeconds": 2.52
+          },
+          {
+            "startSeconds": 1389.26,
+            "endSeconds": 1391.8600000000001,
+            "durationSeconds": 2.6
+          },
+          {
+            "startSeconds": 1423.74,
+            "endSeconds": 1426.1000000000001,
+            "durationSeconds": 2.36
+          }
+        ],
+        "silentIntervalsOver5Seconds": []
+      },
+      "video": {
+        "status": "passed",
+        "decodedFrames": 30397,
+        "activeFrames": 30259,
+        "distinctActiveFps": 14.083147321428571,
+        "repeatFraction": 0.1659671502693414,
+        "longestContentHold": {
+          "startSeconds": 75.584,
+          "endSeconds": 77.227,
+          "durationSeconds": 1.6430000000000007,
+          "marker": 2190,
+          "encodedFrames": 3
+        },
+        "contentHoldsOver1Second": [
+          {
+            "startSeconds": 61.105,
+            "endSeconds": 62.195,
+            "durationSeconds": 1.0900000000000034,
+            "marker": 1772,
+            "encodedFrames": 4
+          },
+          {
+            "startSeconds": 62.462,
+            "endSeconds": 63.606,
+            "durationSeconds": 1.1439999999999984,
+            "marker": 1809,
+            "encodedFrames": 1
+          },
+          {
+            "startSeconds": 75.584,
+            "endSeconds": 77.227,
+            "durationSeconds": 1.6430000000000007,
+            "marker": 2190,
+            "encodedFrames": 3
+          },
+          {
+            "startSeconds": 138.361,
+            "endSeconds": 139.399,
+            "durationSeconds": 1.038000000000011,
+            "marker": 3973,
+            "encodedFrames": 1
+          },
+          {
+            "startSeconds": 165.888,
+            "endSeconds": 167.018,
+            "durationSeconds": 1.1299999999999955,
+            "marker": 4749,
+            "encodedFrames": 1
+          },
+          {
+            "startSeconds": 172.657,
+            "endSeconds": 173.718,
+            "durationSeconds": 1.0609999999999786,
+            "marker": 4916,
+            "encodedFrames": 1
+          },
+          {
+            "startSeconds": 180.452,
+            "endSeconds": 181.554,
+            "durationSeconds": 1.1020000000000039,
+            "marker": 5136,
+            "encodedFrames": 1
+          },
+          {
+            "startSeconds": 198.787,
+            "endSeconds": 199.802,
+            "durationSeconds": 1.0149999999999864,
+            "marker": 5640,
+            "encodedFrames": 1
+          },
+          {
+            "startSeconds": 202.688,
+            "endSeconds": 203.84,
+            "durationSeconds": 1.1520000000000152,
+            "marker": 5727,
+            "encodedFrames": 1
+          },
+          {
+            "startSeconds": 251.593,
+            "endSeconds": 252.623,
+            "durationSeconds": 1.0300000000000011,
+            "marker": 7147,
+            "encodedFrames": 1
+          },
+          {
+            "startSeconds": 253.236,
+            "endSeconds": 254.32,
+            "durationSeconds": 1.0840000000000032,
+            "marker": 7185,
+            "encodedFrames": 1
+          },
+          {
+            "startSeconds": 254.354,
+            "endSeconds": 255.432,
+            "durationSeconds": 1.0779999999999745,
+            "marker": 7205,
+            "encodedFrames": 9
+          },
+          {
+            "startSeconds": 280.316,
+            "endSeconds": 281.482,
+            "durationSeconds": 1.1660000000000537,
+            "marker": 7959,
+            "encodedFrames": 2
+          },
+          {
+            "startSeconds": 386.519,
+            "endSeconds": 387.681,
+            "durationSeconds": 1.1619999999999777,
+            "marker": 10949,
+            "encodedFrames": 1
+          },
+          {
+            "startSeconds": 388.037,
+            "endSeconds": 389.049,
+            "durationSeconds": 1.0120000000000005,
+            "marker": 10981,
+            "encodedFrames": 2
+          },
+          {
+            "startSeconds": 389.416,
+            "endSeconds": 390.593,
+            "durationSeconds": 1.177000000000021,
+            "marker": 11011,
+            "encodedFrames": 4
+          },
+          {
+            "startSeconds": 400.014,
+            "endSeconds": 401.087,
+            "durationSeconds": 1.072999999999979,
+            "marker": 11307,
+            "encodedFrames": 1
+          },
+          {
+            "startSeconds": 453.691,
+            "endSeconds": 455.148,
+            "durationSeconds": 1.4570000000000505,
+            "marker": 12879,
+            "encodedFrames": 15
+          },
+          {
+            "startSeconds": 456.064,
+            "endSeconds": 457.082,
+            "durationSeconds": 1.0179999999999723,
+            "marker": 12927,
+            "encodedFrames": 2
+          },
+          {
+            "startSeconds": 462.984,
+            "endSeconds": 464.608,
+            "durationSeconds": 1.6240000000000236,
+            "marker": 13089,
+            "encodedFrames": 19
+          },
+          {
+            "startSeconds": 466.768,
+            "endSeconds": 467.841,
+            "durationSeconds": 1.073000000000036,
+            "marker": 13163,
+            "encodedFrames": 2
+          },
+          {
+            "startSeconds": 585.383,
+            "endSeconds": 586.393,
+            "durationSeconds": 1.009999999999991,
+            "marker": 16674,
+            "encodedFrames": 1
+          },
+          {
+            "startSeconds": 589.047,
+            "endSeconds": 590.078,
+            "durationSeconds": 1.030999999999949,
+            "marker": 16759,
+            "encodedFrames": 1
+          },
+          {
+            "startSeconds": 590.263,
+            "endSeconds": 591.45,
+            "durationSeconds": 1.1870000000000118,
+            "marker": 16785,
+            "encodedFrames": 10
+          },
+          {
+            "startSeconds": 635.09,
+            "endSeconds": 636.212,
+            "durationSeconds": 1.1219999999999573,
+            "marker": 18079,
+            "encodedFrames": 6
+          },
+          {
+            "startSeconds": 654.881,
+            "endSeconds": 655.948,
+            "durationSeconds": 1.0670000000000073,
+            "marker": 18628,
+            "encodedFrames": 2
+          },
+          {
+            "startSeconds": 672.488,
+            "endSeconds": 673.52,
+            "durationSeconds": 1.0319999999999254,
+            "marker": 19132,
+            "encodedFrames": 3
+          },
+          {
+            "startSeconds": 680.284,
+            "endSeconds": 681.304,
+            "durationSeconds": 1.0199999999999818,
+            "marker": 19318,
+            "encodedFrames": 2
+          },
+          {
+            "startSeconds": 703.25,
+            "endSeconds": 704.262,
+            "durationSeconds": 1.0119999999999436,
+            "marker": 19980,
+            "encodedFrames": 1
+          },
+          {
+            "startSeconds": 743.881,
+            "endSeconds": 744.944,
+            "durationSeconds": 1.0629999999999882,
+            "marker": 21159,
+            "encodedFrames": 2
+          },
+          {
+            "startSeconds": 760.591,
+            "endSeconds": 761.651,
+            "durationSeconds": 1.0599999999999454,
+            "marker": 21603,
+            "encodedFrames": 2
+          },
+          {
+            "startSeconds": 764.777,
+            "endSeconds": 765.891,
+            "durationSeconds": 1.113999999999919,
+            "marker": 21722,
+            "encodedFrames": 1
+          },
+          {
+            "startSeconds": 792.78,
+            "endSeconds": 794.005,
+            "durationSeconds": 1.2250000000000227,
+            "marker": 22547,
+            "encodedFrames": 2
+          },
+          {
+            "startSeconds": 872.744,
+            "endSeconds": 873.791,
+            "durationSeconds": 1.0470000000000255,
+            "marker": 24920,
+            "encodedFrames": 1
+          },
+          {
+            "startSeconds": 880.811,
+            "endSeconds": 881.845,
+            "durationSeconds": 1.0339999999999918,
+            "marker": 25155,
+            "encodedFrames": 4
+          },
+          {
+            "startSeconds": 894.091,
+            "endSeconds": 895.309,
+            "durationSeconds": 1.217999999999961,
+            "marker": 25473,
+            "encodedFrames": 1
+          },
+          {
+            "startSeconds": 953.776,
+            "endSeconds": 954.808,
+            "durationSeconds": 1.032000000000039,
+            "marker": 27163,
+            "encodedFrames": 9
+          },
+          {
+            "startSeconds": 957.854,
+            "endSeconds": 959.195,
+            "durationSeconds": 1.3410000000000082,
+            "marker": 27284,
+            "encodedFrames": 1
+          },
+          {
+            "startSeconds": 992.181,
+            "endSeconds": 993.232,
+            "durationSeconds": 1.0509999999999309,
+            "marker": 28220,
+            "encodedFrames": 2
+          },
+          {
+            "startSeconds": 994.377,
+            "endSeconds": 995.444,
+            "durationSeconds": 1.0670000000000073,
+            "marker": 28270,
+            "encodedFrames": 1
+          },
+          {
+            "startSeconds": 996.483,
+            "endSeconds": 997.583,
+            "durationSeconds": 1.1000000000000227,
+            "marker": 28313,
+            "encodedFrames": 2
+          },
+          {
+            "startSeconds": 1000.128,
+            "endSeconds": 1001.145,
+            "durationSeconds": 1.016999999999939,
+            "marker": 28414,
+            "encodedFrames": 1
+          },
+          {
+            "startSeconds": 1029.244,
+            "endSeconds": 1030.315,
+            "durationSeconds": 1.07100000000014,
+            "marker": 29268,
+            "encodedFrames": 1
+          },
+          {
+            "startSeconds": 1041.314,
+            "endSeconds": 1042.407,
+            "durationSeconds": 1.0929999999998472,
+            "marker": 29528,
+            "encodedFrames": 1
+          },
+          {
+            "startSeconds": 1045.214,
+            "endSeconds": 1046.277,
+            "durationSeconds": 1.0630000000001019,
+            "marker": 29634,
+            "encodedFrames": 1
+          },
+          {
+            "startSeconds": 1061.675,
+            "endSeconds": 1062.848,
+            "durationSeconds": 1.1730000000000018,
+            "marker": 30087,
+            "encodedFrames": 12
+          },
+          {
+            "startSeconds": 1084.209,
+            "endSeconds": 1085.247,
+            "durationSeconds": 1.038000000000011,
+            "marker": 30744,
+            "encodedFrames": 1
+          },
+          {
+            "startSeconds": 1089.291,
+            "endSeconds": 1090.357,
+            "durationSeconds": 1.066000000000031,
+            "marker": 30880,
+            "encodedFrames": 2
+          },
+          {
+            "startSeconds": 1132.699,
+            "endSeconds": 1133.814,
+            "durationSeconds": 1.115000000000009,
+            "marker": 32116,
+            "encodedFrames": 6
+          },
+          {
+            "startSeconds": 1135.433,
+            "endSeconds": 1136.595,
+            "durationSeconds": 1.1620000000000346,
+            "marker": 32153,
+            "encodedFrames": 4
+          },
+          {
+            "startSeconds": 1138.999,
+            "endSeconds": 1140.037,
+            "durationSeconds": 1.038000000000011,
+            "marker": 32239,
+            "encodedFrames": 2
+          },
+          {
+            "startSeconds": 1140.949,
+            "endSeconds": 1142.262,
+            "durationSeconds": 1.3129999999998745,
+            "marker": 32288,
+            "encodedFrames": 10
+          },
+          {
+            "startSeconds": 1142.441,
+            "endSeconds": 1143.546,
+            "durationSeconds": 1.1050000000000182,
+            "marker": 32319,
+            "encodedFrames": 2
+          },
+          {
+            "startSeconds": 1180.392,
+            "endSeconds": 1181.502,
+            "durationSeconds": 1.1099999999999,
+            "marker": 33405,
+            "encodedFrames": 3
+          },
+          {
+            "startSeconds": 1188.376,
+            "endSeconds": 1189.62,
+            "durationSeconds": 1.2439999999999145,
+            "marker": 33587,
+            "encodedFrames": 12
+          },
+          {
+            "startSeconds": 1200.309,
+            "endSeconds": 1201.317,
+            "durationSeconds": 1.0080000000000382,
+            "marker": 33891,
+            "encodedFrames": 1
+          },
+          {
+            "startSeconds": 1217.977,
+            "endSeconds": 1218.986,
+            "durationSeconds": 1.0090000000000146,
+            "marker": 34397,
+            "encodedFrames": 2
+          },
+          {
+            "startSeconds": 1223.24,
+            "endSeconds": 1224.255,
+            "durationSeconds": 1.0150000000001,
+            "marker": 34537,
+            "encodedFrames": 1
+          },
+          {
+            "startSeconds": 1224.72,
+            "endSeconds": 1225.839,
+            "durationSeconds": 1.1189999999999145,
+            "marker": 34563,
+            "encodedFrames": 2
+          },
+          {
+            "startSeconds": 1234.046,
+            "endSeconds": 1235.113,
+            "durationSeconds": 1.0670000000000073,
+            "marker": 34775,
+            "encodedFrames": 3
+          },
+          {
+            "startSeconds": 1243.874,
+            "endSeconds": 1245.07,
+            "durationSeconds": 1.1959999999999127,
+            "marker": 35025,
+            "encodedFrames": 4
+          },
+          {
+            "startSeconds": 1282.613,
+            "endSeconds": 1283.645,
+            "durationSeconds": 1.0319999999999254,
+            "marker": 36120,
+            "encodedFrames": 1
+          },
+          {
+            "startSeconds": 1363.409,
+            "endSeconds": 1364.493,
+            "durationSeconds": 1.0839999999998327,
+            "marker": 38484,
+            "encodedFrames": 1
+          },
+          {
+            "startSeconds": 1365.463,
+            "endSeconds": 1366.577,
+            "durationSeconds": 1.1140000000000327,
+            "marker": 38515,
+            "encodedFrames": 3
+          },
+          {
+            "startSeconds": 1385.507,
+            "endSeconds": 1386.55,
+            "durationSeconds": 1.0429999999998927,
+            "marker": 39061,
+            "encodedFrames": 1
+          },
+          {
+            "startSeconds": 1387.046,
+            "endSeconds": 1388.092,
+            "durationSeconds": 1.0460000000000491,
+            "marker": 39091,
+            "encodedFrames": 2
+          },
+          {
+            "startSeconds": 1392.748,
+            "endSeconds": 1393.798,
+            "durationSeconds": 1.0499999999999545,
+            "marker": 39203,
+            "encodedFrames": 2
+          },
+          {
+            "startSeconds": 1398.163,
+            "endSeconds": 1399.213,
+            "durationSeconds": 1.0499999999999545,
+            "marker": 39319,
+            "encodedFrames": 2
+          },
+          {
+            "startSeconds": 1425.289,
+            "endSeconds": 1426.605,
+            "durationSeconds": 1.316000000000031,
+            "marker": 40061,
+            "encodedFrames": 7
+          },
+          {
+            "startSeconds": 1427.137,
+            "endSeconds": 1428.175,
+            "durationSeconds": 1.038000000000011,
+            "marker": 40096,
+            "encodedFrames": 1
+          },
+          {
+            "startSeconds": 1428.352,
+            "endSeconds": 1429.408,
+            "durationSeconds": 1.0559999999998126,
+            "marker": 40115,
+            "encodedFrames": 12
+          },
+          {
+            "startSeconds": 1550.941,
+            "endSeconds": 1552.011,
+            "durationSeconds": 1.0699999999999363,
+            "marker": 43747,
+            "encodedFrames": 1
+          },
+          {
+            "startSeconds": 1577.714,
+            "endSeconds": 1578.902,
+            "durationSeconds": 1.1880000000001019,
+            "marker": 44486,
+            "encodedFrames": 4
+          },
+          {
+            "startSeconds": 1579.778,
+            "endSeconds": 1580.802,
+            "durationSeconds": 1.0239999999998872,
+            "marker": 44499,
+            "encodedFrames": 1
+          },
+          {
+            "startSeconds": 1695.955,
+            "endSeconds": 1696.965,
+            "durationSeconds": 1.009999999999991,
+            "marker": 47951,
+            "encodedFrames": 1
+          },
+          {
+            "startSeconds": 1706.133,
+            "endSeconds": 1707.267,
+            "durationSeconds": 1.1340000000000146,
+            "marker": 48201,
+            "encodedFrames": 2
+          },
+          {
+            "startSeconds": 1750.348,
+            "endSeconds": 1751.368,
+            "durationSeconds": 1.0199999999999818,
+            "marker": 49444,
+            "encodedFrames": 1
+          },
+          {
+            "startSeconds": 1752.111,
+            "endSeconds": 1753.207,
+            "durationSeconds": 1.0960000000000036,
+            "marker": 49490,
+            "encodedFrames": 2
+          }
+        ],
+        "contentHoldsOver5Seconds": [],
+        "maximumPresentationGapSeconds": 1.6410000000000053,
+        "markerRange": [
+          0,
+          50874
+        ]
+      },
+      "syncWindows": [
+        {
+          "matchedFlashes": 8,
+          "audioBursts": 27,
+          "medianAudioMinusVideoMs": 5.000000000000782,
+          "p95AbsoluteOffsetMs": 174.66666666666552,
+          "firstThirdMedianMs": -3.3333333333331865,
+          "lastThirdMedianMs": -1.666666666666039,
+          "offsetsMs": [
+            -53.33333333333323,
+            46.666666666666856,
+            19.999999999999574,
+            43.333333333333,
+            3.3333333333338544,
+            -239.99999999999844,
+            -9.999999999999787,
+            6.666666666667709
+          ],
+          "offsetSeconds": 5,
+          "status": "passed"
+        },
+        {
+          "matchedFlashes": 7,
+          "audioBursts": 112,
+          "medianAudioMinusVideoMs": 23.333333333333428,
+          "p95AbsoluteOffsetMs": 64.66666666666707,
+          "firstThirdMedianMs": 56.66666666666687,
+          "lastThirdMedianMs": 16.666666666667496,
+          "offsetsMs": [
+            36.66666666666663,
+            76.66666666666711,
+            20.000000000000462,
+            23.333333333333428,
+            -6.666666666665932,
+            36.66666666666707,
+            -3.333333333332078
+          ],
+          "offsetSeconds": 900,
+          "status": "passed"
+        },
+        {
+          "matchedFlashes": 8,
+          "audioBursts": 138,
+          "medianAudioMinusVideoMs": 9.999999999999787,
+          "p95AbsoluteOffsetMs": 26.666666666665506,
+          "firstThirdMedianMs": 9.999999999999787,
+          "lastThirdMedianMs": 26.666666666665506,
+          "offsetsMs": [
+            0.0,
+            19.999999999999574,
+            -13.333333333333641,
+            -6.666666666666821,
+            -9.999999999999787,
+            26.666666666665506,
+            26.666666666665506,
+            26.666666666665506
+          ],
+          "offsetSeconds": 1780,
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    }
+  },
+  "status": "passed"
+}

@@ -1,0 +1,7 @@
+[rawvideo @ 0x55b9d6d23d80] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 271 >= 271
+[rawvideo @ 0x55b9d6d23d80] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 273 >= 273
+[rawvideo @ 0x55b9d6d23d80] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 276 >= 276
+[rawvideo @ 0x55b9d6d23d80] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 902 >= 902
+[rawvideo @ 0x55b9d6d23d80] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 905 >= 905
+[rawvideo @ 0x55b9d6d23d80] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 907 >= 907
+{"valid": false, "error": null, "backend": "ts-cef", "mode": "stream"}

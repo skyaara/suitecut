@@ -1,0 +1,173 @@
+{
+  "backend": "cpp-cef",
+  "mode": "stream",
+  "profile": "performance",
+  "width": 3840,
+  "height": 2160,
+  "fps": 30,
+  "durationRequestedMs": 120000,
+  "startedAt": "2026-10-10T20:32:34.758Z",
+  "status": "failed",
+  "recordingPath": "/workspace/suitecut/benchmarks/native-sync/2026-10-11-shared-clock/runs/4k30-stream/recording.mkv",
+  "receiverPath": "/workspace/suitecut/benchmarks/native-sync/2026-10-11-shared-clock/runs/4k30-stream/receiver.flv",
+  "phases": [
+    {
+      "name": "static",
+      "atMs": 1.0969700000000557,
+      "monotonic": 174124.623240838
+    },
+    {
+      "name": "canvas",
+      "atMs": 10047.761018,
+      "monotonic": 174134.671471537
+    },
+    {
+      "name": "scroll",
+      "atMs": 20045.453716000004,
+      "monotonic": 174144.667064793
+    },
+    {
+      "name": "static",
+      "atMs": 30092.905703000004,
+      "monotonic": 174154.716640905
+    },
+    {
+      "name": "canvas",
+      "atMs": 40021.746625,
+      "monotonic": 174164.645059749
+    },
+    {
+      "name": "scroll",
+      "atMs": 50014.050218000004,
+      "monotonic": 174174.664792177
+    },
+    {
+      "name": "static",
+      "atMs": 60091.248333,
+      "monotonic": 174184.713510274
+    },
+    {
+      "name": "canvas",
+      "atMs": 70008.083891,
+      "monotonic": 174194.640445274
+    },
+    {
+      "name": "scroll",
+      "atMs": 80020.361114,
+      "monotonic": 174204.650062191
+    },
+    {
+      "name": "static",
+      "atMs": 90030.315569,
+      "monotonic": 174214.657872817
+    },
+    {
+      "name": "canvas",
+      "atMs": 100018.657962,
+      "monotonic": 174224.64598747
+    },
+    {
+      "name": "scroll",
+      "atMs": 110048.945951,
+      "monotonic": 174234.68238303
+    }
+  ],
+  "encoding": {
+    "video": "H264 veryfast zerolatency, one thread, GOP 2 seconds",
+    "audio": "AAC 48kHz stereo 128kbps",
+    "recordCrf": 18,
+    "streamBitrateKbps": 12000
+  },
+  "cefVersion": "152.0.6+g708dc14+chromium-152.0.7977.83",
+  "browserVersion": "152.0.7977.83",
+  "audioStarted": {
+    "generator": "frame-coded interpolated hash noise",
+    "sampleRate": 48000,
+    "quantum": 24,
+    "amplitude": 0.15,
+    "firstFrame": 640,
+    "currentFrame": 640
+  },
+  "captureAudioReadiness": {
+    "waitMs": 81.24155799999971,
+    "active": true,
+    "lastPacketMs": 1841.386109,
+    "packets": 8,
+    "requested": true
+  },
+  "beforeCapture": {
+    "marker": 35,
+    "rendered": 30,
+    "mode": "static",
+    "scrollY": 0,
+    "scrollEvents": 0,
+    "keyEvents": 0,
+    "clicks": 0,
+    "value": "",
+    "choice": "First",
+    "actionMask": 0,
+    "width": 3840,
+    "height": 2160,
+    "audio": {
+      "generator": "frame-coded interpolated hash noise",
+      "sampleRate": 48000,
+      "quantum": 24,
+      "amplitude": 0.15,
+      "firstFrame": 640,
+      "currentFrame": 10624
+    }
+  },
+  "activeBaseline": {
+    "marker": 45,
+    "rendered": 39,
+    "mode": "static",
+    "scrollY": 0,
+    "scrollEvents": 0,
+    "keyEvents": 0,
+    "clicks": 0,
+    "value": "",
+    "choice": "First",
+    "actionMask": 0,
+    "width": 3840,
+    "height": 2160,
+    "audio": {
+      "generator": "frame-coded interpolated hash noise",
+      "sampleRate": 48000,
+      "quantum": 24,
+      "amplitude": 0.15,
+      "firstFrame": 640,
+      "currentFrame": 26880
+    }
+  },
+  "activeStartMonotonic": 174124.619174546,
+  "inputDwellMs": 200,
+  "activeEndMonotonic": 174244.648231143,
+  "activeMs": 120029.05659697717,
+  "afterCapture": {
+    "marker": 3646,
+    "rendered": 3530,
+    "mode": "scroll",
+    "scrollY": 180,
+    "scrollEvents": 79,
+    "keyEvents": 1,
+    "clicks": 1,
+    "value": "SuiteCut benchmark",
+    "choice": "Second",
+    "actionMask": 15,
+    "width": 3840,
+    "height": 2160,
+    "audio": {
+      "generator": "frame-coded interpolated hash noise",
+      "sampleRate": 48000,
+      "quantum": 24,
+      "amplitude": 0.15,
+      "firstFrame": 640,
+      "currentFrame": 5743616
+    }
+  },
+  "scrollCommands": 79,
+  "error": "Error: Native browser command timed out",
+  "stopError": "Error: Native browser command timed out",
+  "receiverExitCode": 0,
+  "finishedAt": "2026-10-10T20:35:22.996Z"
+}

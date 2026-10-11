@@ -1,0 +1,28 @@
+{
+  "reason": "Launcher, persistent profile, remote server or reconnection harness; excludes entire files if those fixtures are used. These features are not certified.",
+  "files": [
+    "library/browser.spec.ts",
+    "library/browsercontext-base-url.spec.ts",
+    "library/browsercontext-basic.spec.ts",
+    "library/browsercontext-cookies-third-party.spec.ts",
+    "library/browsercontext-reuse.spec.ts",
+    "library/browsertype-connect.spec.ts",
+    "library/browsertype-launch-server.spec.ts",
+    "library/browsertype-launch.spec.ts",
+    "library/chromium/chromium.spec.ts",
+    "library/chromium/connect-over-cdp.spec.ts",
+    "library/chromium/connect-to-worker.spec.ts",
+    "library/chromium/extensions.spec.ts",
+    "library/chromium/launcher.spec.ts",
+    "library/client-certificates.spec.ts",
+    "library/defaultbrowsercontext-1.spec.ts",
+    "library/defaultbrowsercontext-2.spec.ts",
+    "library/downloads-path.spec.ts",
+    "library/firefox/launcher.spec.ts",
+    "library/har.spec.ts",
+    "library/headful.spec.ts",
+    "library/multiclient.spec.ts",
+    "library/signals.spec.ts",
+    "library/video.spec.ts"
+  ]
+}

@@ -1,0 +1,93 @@
+{
+  "startedAt": "2026-10-09T21:35:31.517Z",
+  "requestedMs": 60000,
+  "width": 1920,
+  "height": 1080,
+  "targetFps": 30,
+  "audio": true,
+  "recordingPath": "/workspace/suitecut/benchmarks/native-startup/2026-10-09-default/simultaneous/recording.mp4",
+  "receiverPath": "/workspace/suitecut/benchmarks/native-startup/2026-10-09-default/simultaneous/receiver.flv",
+  "mode": "C++ libav simultaneous H264 recording + RTMP; Playwright automation over private IPC; no raw media subscribers",
+  "status": "passed",
+  "readyAt": "2026-10-09T21:35:35.287Z",
+  "baseline": {
+    "rss": 133361664,
+    "heapTotal": 122941440,
+    "heapUsed": 56974616,
+    "external": 6691271,
+    "arrayBuffers": 2702806
+  },
+  "runStartMonotonicSeconds": 91502.47,
+  "injection": {
+    "atMs": 40057.509525999994,
+    "durationMs": 4000
+  },
+  "activeMs": 60246.960874,
+  "scrollCommands": 10,
+  "snapshot": {
+    "markerCount": 1227,
+    "scrollY": 1800,
+    "scrollEvents": 10,
+    "keyEvents": 0,
+    "clicks": 0,
+    "value": "",
+    "choice": "First",
+    "secondary": false
+  },
+  "beforeStop": {
+    "rss": 133754880,
+    "heapTotal": 122941440,
+    "heapUsed": 60087496,
+    "external": 6871573,
+    "arrayBuffers": 2883072
+  },
+  "recordStatus": {
+    "ready": true,
+    "stopped": true,
+    "paused": false,
+    "videoFrames": 1818,
+    "audioSamples": 2909184,
+    "repeatedFrames": 677,
+    "droppedAudioSamples": 0,
+    "missingAudioSamples": 945262,
+    "lateAudioSamples": 0,
+    "queuedVideoBytes": 0,
+    "queuedAudioBytes": 0,
+    "startedMs": 3303.0920023371777,
+    "durationMs": 60600,
+    "maximumEncodeMs": 1944.3350510000018,
+    "error": ""
+  },
+  "streamStatus": {
+    "ready": true,
+    "stopped": true,
+    "paused": false,
+    "videoFrames": 1818,
+    "audioSamples": 2908160,
+    "repeatedFrames": 687,
+    "droppedAudioSamples": 0,
+    "missingAudioSamples": 945146,
+    "lateAudioSamples": 0,
+    "queuedVideoBytes": 0,
+    "queuedAudioBytes": 0,
+    "startedMs": 3362.0086690038443,
+    "durationMs": 60600,
+    "maximumEncodeMs": 2049.184867,
+    "error": ""
+  },
+  "afterCleanup": {
+    "rss": 133754880,
+    "heapTotal": 122941440,
+    "heapUsed": 61281160,
+    "external": 6947357,
+    "arrayBuffers": 2954780
+  },
+  "afterCleanupGc": {
+    "rss": 133885952,
+    "heapTotal": 58191872,
+    "heapUsed": 51464248,
+    "external": 4337252,
+    "arrayBuffers": 344463
+  },
+  "completedAt": "2026-10-09T21:36:35.979Z"
+}

@@ -1,0 +1,19 @@
+{
+  "runs": 55,
+  "shortAttempts": 50,
+  "sustainedProfiles": 5,
+  "decodedCompletedWorkloads": 54,
+  "retainedStartupFailures": 1,
+  "htmlFigures": [
+    "figures/record-comparison.png",
+    "figures/stream-comparison.png",
+    "figures/memory-profiles.png",
+    "figures/audio-continuity.png"
+  ],
+  "htmlTables": 14,
+  "csvRows": 55,
+  "sanitizerTestsPassed": 7,
+  "analyzerRegressionTestsPassed": 8,
+  "audioOracleDatasetsMatched": 29,
+  "noMemoryGuardExceeded": true
+}

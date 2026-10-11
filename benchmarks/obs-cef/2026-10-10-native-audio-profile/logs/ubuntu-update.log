@@ -1,0 +1,13 @@
+Get:1 https://archive.ubuntu.com/ubuntu noble InRelease [256 kB]
+Err:1 https://archive.ubuntu.com/ubuntu noble InRelease
+  Sub-process /usr/bin/sqv returned an error code (1), error message is: Missing key F6ECB3762474EDA9D21B7022871920D1991BC93C, which is needed to verify signature.
+Get:2 https://archive.ubuntu.com/ubuntu noble-updates InRelease [126 kB]
+Err:2 https://archive.ubuntu.com/ubuntu noble-updates InRelease
+  Sub-process /usr/bin/sqv returned an error code (1), error message is: Missing key F6ECB3762474EDA9D21B7022871920D1991BC93C, which is needed to verify signature.
+rm: cannot remove '/var/cache/apt/archives/partial/*.deb': Permission denied
+Reading package lists...
+W: Unable to read /etc/apt/apt.conf.d/80-applied-apt-retries - open (13: Permission denied)
+W: OpenPGP signature verification failed: https://archive.ubuntu.com/ubuntu noble InRelease: Sub-process /usr/bin/sqv returned an error code (1), error message is: Missing key F6ECB3762474EDA9D21B7022871920D1991BC93C, which is needed to verify signature.
+E: The repository 'https://archive.ubuntu.com/ubuntu noble InRelease' is not signed.
+W: OpenPGP signature verification failed: https://archive.ubuntu.com/ubuntu noble-updates InRelease: Sub-process /usr/bin/sqv returned an error code (1), error message is: Missing key F6ECB3762474EDA9D21B7022871920D1991BC93C, which is needed to verify signature.
+E: The repository 'https://archive.ubuntu.com/ubuntu noble-updates InRelease' is not signed.

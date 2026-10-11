@@ -1,0 +1,30 @@
+{
+  "savedAt": "2026-10-11T07:27:27.569520+00:00",
+  "platform": "Linux-6.18.44-x86_64-with-glibc2.41",
+  "cpuQuota": "400000 100000",
+  "hostMemoryLimitBytes": 17179869184,
+  "campaignCpuAffinity": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "fuzzerRssLimitMiB": 1024,
+  "fuzzerSingleAllocationLimitMiB": 128,
+  "fuzzerMaxInputBytes": 512,
+  "fuzzerPerInputTimeoutSeconds": 5,
+  "secondsPerTarget": 600,
+  "sanitizers": [
+    "address",
+    "undefined",
+    "leak"
+  ],
+  "instrumentedScope": "SuiteCut native code and allocation leak checks; prebuilt Chromium/FFmpeg dependencies not fully ASan-instrumented",
+  "versions": {
+    "node": "v24.19.0",
+    "pnpm": "11.19.0",
+    "cmake": "cmake version 4.4.4"
+  },
+  "browserExecutableSha256": "757a03fa49ed82dcd119c2888bdc0ebe1c355b4b9d9964bda38b99427a38f0b3",
+  "releasePublished": false
+}
