@@ -1,0 +1,15 @@
+# Replay notes
+
+Start from the checkpoint, apply the report commit, and install the pinned patch/dependencies. The full audit's reproduction folder has the official-source preparation, fixture assets, environment wrapper and prior immutable results. This folder saves the **exact tested fixture**, not a replacement for unmodified upstream test bodies.
+
+Build a replacement native helper against the same CEF SDK and existing media objects. `build.py` records the exact compile/link arguments used here; its paths must be adjusted elsewhere. The tested binary needs the full matching CEF resources and media libraries beside it or configured with the runtime's library search path.
+
+In fresh upstream staging, install `browserTest.tested.ts` as `tests/config/browserTest.ts` and the saved config in the staging root. Update its absolute SDK path for your checkout. Start a display and audio service using the runtime wrapper. Save its selected `DISPLAY`, `PULSE_SERVER` and `LD_LIBRARY_PATH` as `runtime-env.json` in your diagnostic directory; do not dump the complete environment. Update paths in `direct.py`/`check-suites.py` and set `SUITECUT_DEEP_HELPER` to the matching helper. Their native default is explicit; `COMPAT_BACKEND=chromium` selects the stock control. Runners save a child exit file and return zero themselves, so inspect `exit.txt` and JSON test outcomes.
+
+For example, `direct.py new-crash-run library/page-event-crash.spec.ts` runs the untouched crash spec. `check-suites.py new-engine-run engine` runs the committed SDK/media regression tests. `check-suites.py new-cef-matrix cef` runs the focused matrix. A failed case does not authorize replacing a real assertion with a skip or stock Chromium.
+
+`build-client.cjs` copies the official browser-targeted esbuild recipe for the previously missing generated in-page client. `local-cert-controls.py` removes inherited proxy variables **only from its local certificate-test subprocesses**. Normal network policy remains inherited in other probes. Upstream fixtures use fixed ports, so run native and stock upstream controls sequentially.
+
+`cef-control.cc` is an independent generic embedder, not SuiteCut. `run-cef-control.py` starts it with an owned local debugging endpoint, a diagnostic profile and a bounded timeout; production SuiteCut uses private IPC. Its diagnostic flags include disabled GPU and no sandbox; it is not a security/performance comparison. `raw-frame-race.mjs` and `raw-network.mjs` use direct page WebSocket commands. `cef-control.mjs` uses Playwright directly against the standalone CEF browser for handles, GC and directory upload.
+
+`ledger.py` rebuilds the 438-case inventory from the previous full audit and the named valid targeted reports. The archive retains rejected experimental runs too. Its 35-line source excerpts stop at the next same-level test declaration; `sourceAPIs` identifies names in those excerpts, not proof that each command executed. Historical failed/blocked/skipped results are never rewritten as passes.

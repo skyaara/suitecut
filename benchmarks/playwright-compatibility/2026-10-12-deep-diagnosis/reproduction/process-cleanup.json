@@ -1,0 +1,221 @@
+{
+  "capturedUTC": "2026-10-11T21:12:06Z",
+  "note": "Browser comm names truncate; snapshot includes pre-existing workers. Z states have no RSS and require host init reaping. Task runtime wrapper exited.",
+  "totalMatchingCommNames": 3905,
+  "zombieEntries": 3905,
+  "liveMatchingProcesses": 0,
+  "liveRSSKiB": 0,
+  "sample": [
+    {
+      "pid": 2845,
+      "ppid": 1,
+      "state": "Z",
+      "rssKiB": 0,
+      "name": "suitecut-browse"
+    },
+    {
+      "pid": 2846,
+      "ppid": 1,
+      "state": "Z",
+      "rssKiB": 0,
+      "name": "suitecut-browse"
+    },
+    {
+      "pid": 2868,
+      "ppid": 1,
+      "state": "Z",
+      "rssKiB": 0,
+      "name": "suitecut-browse"
+    },
+    {
+      "pid": 2887,
+      "ppid": 1,
+      "state": "Z",
+      "rssKiB": 0,
+      "name": "suitecut-browse"
+    },
+    {
+      "pid": 2929,
+      "ppid": 1,
+      "state": "Z",
+      "rssKiB": 0,
+      "name": "suitecut-browse"
+    },
+    {
+      "pid": 2954,
+      "ppid": 1,
+      "state": "Z",
+      "rssKiB": 0,
+      "name": "suitecut-browse"
+    },
+    {
+      "pid": 2961,
+      "ppid": 1,
+      "state": "Z",
+      "rssKiB": 0,
+      "name": "suitecut-browse"
+    },
+    {
+      "pid": 3024,
+      "ppid": 1,
+      "state": "Z",
+      "rssKiB": 0,
+      "name": "suitecut-browse"
+    },
+    {
+      "pid": 3047,
+      "ppid": 1,
+      "state": "Z",
+      "rssKiB": 0,
+      "name": "suitecut-browse"
+    },
+    {
+      "pid": 3054,
+      "ppid": 1,
+      "state": "Z",
+      "rssKiB": 0,
+      "name": "suitecut-browse"
+    },
+    {
+      "pid": 3466,
+      "ppid": 1,
+      "state": "Z",
+      "rssKiB": 0,
+      "name": "suitecut-browse"
+    },
+    {
+      "pid": 3467,
+      "ppid": 1,
+      "state": "Z",
+      "rssKiB": 0,
+      "name": "suitecut-browse"
+    },
+    {
+      "pid": 3489,
+      "ppid": 1,
+      "state": "Z",
+      "rssKiB": 0,
+      "name": "suitecut-browse"
+    },
+    {
+      "pid": 3497,
+      "ppid": 1,
+      "state": "Z",
+      "rssKiB": 0,
+      "name": "suitecut-browse"
+    },
+    {
+      "pid": 3671,
+      "ppid": 1,
+      "state": "Z",
+      "rssKiB": 0,
+      "name": "suitecut-browse"
+    },
+    {
+      "pid": 3672,
+      "ppid": 1,
+      "state": "Z",
+      "rssKiB": 0,
+      "name": "suitecut-browse"
+    },
+    {
+      "pid": 3694,
+      "ppid": 1,
+      "state": "Z",
+      "rssKiB": 0,
+      "name": "suitecut-browse"
+    },
+    {
+      "pid": 3727,
+      "ppid": 1,
+      "state": "Z",
+      "rssKiB": 0,
+      "name": "suitecut-browse"
+    },
+    {
+      "pid": 3926,
+      "ppid": 1,
+      "state": "Z",
+      "rssKiB": 0,
+      "name": "suitecut-browse"
+    },
+    {
+      "pid": 3949,
+      "ppid": 1,
+      "state": "Z",
+      "rssKiB": 0,
+      "name": "suitecut-browse"
+    },
+    {
+      "pid": 3956,
+      "ppid": 1,
+      "state": "Z",
+      "rssKiB": 0,
+      "name": "suitecut-browse"
+    },
+    {
+      "pid": 3964,
+      "ppid": 1,
+      "state": "Z",
+      "rssKiB": 0,
+      "name": "suitecut-browse"
+    },
+    {
+      "pid": 4091,
+      "ppid": 1,
+      "state": "Z",
+      "rssKiB": 0,
+      "name": "suitecut-browse"
+    },
+    {
+      "pid": 4119,
+      "ppid": 1,
+      "state": "Z",
+      "rssKiB": 0,
+      "name": "suitecut-browse"
+    },
+    {
+      "pid": 4123,
+      "ppid": 1,
+      "state": "Z",
+      "rssKiB": 0,
+      "name": "suitecut-browse"
+    },
+    {
+      "pid": 4665,
+      "ppid": 1,
+      "state": "Z",
+      "rssKiB": 0,
+      "name": "suitecut-browse"
+    },
+    {
+      "pid": 4688,
+      "ppid": 1,
+      "state": "Z",
+      "rssKiB": 0,
+      "name": "suitecut-browse"
+    },
+    {
+      "pid": 4695,
+      "ppid": 1,
+      "state": "Z",
+      "rssKiB": 0,
+      "name": "suitecut-browse"
+    },
+    {
+      "pid": 4755,
+      "ppid": 1,
+      "state": "Z",
+      "rssKiB": 0,
+      "name": "suitecut-browse"
+    },
+    {
+      "pid": 4756,
+      "ppid": 1,
+      "state": "Z",
+      "rssKiB": 0,
+      "name": "suitecut-browse"
+    }
+  ],
+  "fullSnapshot": "evidence.tar.gz:deep-audit/process-cleanup-full.json"
+}

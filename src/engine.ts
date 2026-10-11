@@ -2,7 +2,12 @@ import { randomUUID } from 'node:crypto'
 import { resolve } from 'node:path'
 import { setTimeout as delay } from 'node:timers/promises'
 
-import { type Browser, type Page, type ConnectOverCDPTransport } from 'playwright'
+import {
+  type Browser,
+  type Page,
+  type ConnectOverCDPTransport,
+  type ConnectOverCDPOptions,
+} from 'playwright'
 import * as z from 'zod'
 
 import { CDPCommandQueue } from './cdp-command-queue.js'
@@ -102,8 +107,16 @@ export interface SuiteCutEngine {
   close(): Promise<void>
 }
 
+export interface SuiteCutEngineOptions extends NativeBrowserOptions {
+  /** Directory for Playwright traces, downloads and video artifacts; caller owns its cleanup. */
+  artifactsDir?: string
+}
+
 /** Public Playwright transport over private IPC. No debugging TCP port or raw media. */
-export async function connectCEF(source: NativeBrowser): Promise<Browser> {
+export async function connectCEF(
+  source: NativeBrowser,
+  options: Pick<ConnectOverCDPOptions, 'artifactsDir'> = {},
+): Promise<Browser> {
   const { chromium } = await import('playwright')
   if (!source.command || !source.onProtocolEvent)
     throw new Error('CEF protocol adapter is unavailable')
@@ -139,7 +152,9 @@ export async function connectCEF(source: NativeBrowser): Promise<Browser> {
   )
   const unsubscribeClose = source.onClose?.(() => delivery.end('CEF transport closed'))
   try {
-    const browser = await chromium.connectOverCDP(transport)
+    const browser = await chromium.connectOverCDP(transport, {
+      ...(options.artifactsDir ? { artifactsDir: resolve(options.artifactsDir) } : {}),
+    })
     browser.on('disconnected', () => {
       delivery.close('CEF transport disconnected')
       unsubscribe()
@@ -284,10 +299,11 @@ export async function createNativeOutput(
 }
 
 /** C++ owns CEF, encoding, audio timelines and muxing; TypeScript sends commands. */
-export async function launchEngine(options: NativeBrowserOptions): Promise<SuiteCutEngine> {
-  const source = await launchNativeBrowser({ ...options, pixelFormat: 'i420' })
+export async function launchEngine(options: SuiteCutEngineOptions): Promise<SuiteCutEngine> {
+  const { artifactsDir, ...nativeOptions } = options
+  const source = await launchNativeBrowser({ ...nativeOptions, pixelFormat: 'i420' })
   try {
-    const browser = await connectCEF(source)
+    const browser = await connectCEF(source, artifactsDir === undefined ? {} : { artifactsDir })
     const output = async (page: Page, config: NativeOutputOptions, streaming: boolean) => {
       if (page.context().browser() !== browser) throw new Error('Page belongs to another engine')
       const session = await page.context().newCDPSession(page)

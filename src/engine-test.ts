@@ -1,14 +1,13 @@
 import { test as base, expect } from '@playwright/test'
 
-import { launchEngine, type SuiteCutEngine } from './engine.js'
-import { type NativeBrowserOptions } from './native-browser.js'
+import { launchEngine, type SuiteCutEngine, type SuiteCutEngineOptions } from './engine.js'
 
 /** Runs ordinary Playwright tests against SuiteCut's embedded Chromium. */
 export const test = base.extend<
   object,
   {
     suitecutEngine: SuiteCutEngine
-    suitecutNativeOptions: NativeBrowserOptions
+    suitecutNativeOptions: SuiteCutEngineOptions
   }
 >({
   suitecutNativeOptions: [

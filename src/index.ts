@@ -99,6 +99,7 @@ export type SuiteCutFixture = NativeRecordingContext['suitecut']
 export { launchEngine } from './engine.js'
 export type {
   SuiteCutEngine,
+  SuiteCutEngineOptions,
   NativeOutput,
   NativeOutputOptions,
   NativeOutputStatus,

@@ -1,0 +1,23 @@
+{
+  "checkpoint": "a0af11ef78cdf94f93b5a4da10c44b13cfb6114a",
+  "node": "v24.19.0",
+  "pnpm": "11.19.0",
+  "testedSourceHashes": {
+    "native/browser/browser.cc": "b3b2d12464d8f699c1a78de86a6a371fd06061eb01239ef3e790155e9ce74387",
+    "src/engine.ts": "90c72f1b439eaca317dcba29b9371c4aeb92606025eee754f549198956b989bb",
+    "src/engine-test.ts": "532a53eed841d9d04c712122e56c7e63a3987c83a292bb8387cad6a5f22b4093",
+    "src/index.ts": "1de9f1ca787959faae224022c4126288730120b15b6981fb64f22c52eb0e5a62",
+    "src/cdp-command-queue.ts": "c1bb38786976e6e77c76941c3074bbddba413e251d4e132a64deb90e2f2ed2ce",
+    "tests/cdp-command-queue.test.ts": "815cbb62f3c4fbe99670f50fa2fbdde4ceb6f87a56311bf45bf91190f0a931c5",
+    "benchmarks/native-engine/engine.e2e.spec.ts": "01248856ab3ba29e2a39e7f87927dfdeda204d1ad93587c7d91a6d4903de4dee",
+    "patches/playwright-core@1.62.1.patch": "fc2bc3ea675bcf6bb922c8b4b485c4241a409be008313bde9a25315980877354",
+    "pnpm-lock.yaml": "88ae5760dfb9a8f73bb10053021cf2c2d294171e22599ac92bf43ab79211771b"
+  },
+  "nativeHelperSHA256": "b96e75b9a4c2c068f6e6a0f4f12d8249a5fd05e223d8f6f76c76d323659678bd",
+  "localDiagnosticFiles": [
+    "suitecut-input-diagnostic.spec.ts",
+    "suitecut-download-delay.spec.ts",
+    "suitecut-deep-diagnostic.spec.ts",
+    "suitecut-diagnostic.spec.ts"
+  ]
+}

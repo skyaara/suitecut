@@ -7,8 +7,9 @@ import { resolve } from 'node:path'
 import { setTimeout as delay } from 'node:timers/promises'
 
 import { test, expect } from '../../src/engine-test.js'
-import { launchEngine } from '../../src/engine.js'
-import { launchNativeBrowser } from '../../src/native-browser.js'
+import { connectCEF, launchEngine } from '../../src/engine.js'
+import { launchNativeBrowser, type NativeBrowser } from '../../src/native-browser.js'
+import { type UntrustedInput } from '../../src/untrusted.js'
 
 let server: ReturnType<typeof createServer>, url: string
 const artifactDirectory = resolve(
@@ -540,6 +541,122 @@ test('native shutdown joins a pending pause and releases active outputs', async 
     expect(engine.source.state).toBe('closed')
   } finally {
     await engine.close()
+  }
+})
+
+test('a crashed automation page fails its recording and preserves sibling pages', async ({
+  browser,
+  suitecutEngine,
+}) => {
+  const context = await browser.newContext()
+  const page = await context.newPage()
+  const sibling = await context.newPage()
+  await page.goto(url)
+  await sibling.goto(url)
+  const output = await suitecutEngine.record(page, {
+    destination: resolve(artifactDirectory, 'crashed-page.mp4'),
+  })
+  const crash = page.waitForEvent('crash')
+  void page.goto('chrome://crash').catch(() => undefined)
+  await crash
+  await expect(output.failure).rejects.toThrow(/crashed|renderer terminated/)
+  await expect(sibling.getByRole('button', { name: 'Click', exact: true })).toBeVisible()
+  expect(browser.isConnected()).toBe(true)
+  expect(suitecutEngine.source.state).toBe('running')
+  await page.close()
+  const healthy = await suitecutEngine.record(sibling, {
+    destination: resolve(artifactDirectory, 'sibling-after-crash.mp4'),
+  })
+  expect((await healthy.stop()).error).toBe('')
+  await context.close()
+})
+
+test('CDP preserves user object and console argument property insertion order', async ({
+  page,
+}) => {
+  await page.goto(url)
+  const result = await page.evaluate(() => ({ z: 1, a: 2, nested: { y: 3, b: 4 } }))
+  expect(Object.keys(result)).toEqual(['z', 'a', 'nested'])
+  expect(Object.keys(result.nested)).toEqual(['y', 'b'])
+  const consoleEvent = page.waitForEvent('console')
+  await page.evaluate(() => console.log({ z: 1, a: 2 }))
+  const message = await consoleEvent
+  const argument = message.args()[0]
+  if (!argument) throw new Error('Missing console argument')
+  const value = (await argument.jsonValue()) as UntrustedInput
+  if (!value || typeof value !== 'object') throw new Error('Console argument is not an object')
+  expect(Object.keys(value)).toEqual(['z', 'a'])
+})
+
+test('modifier-created tabs inherit routing and survive rapid context teardown', async ({
+  browser,
+}) => {
+  for (let i = 0; i < 12; i++) {
+    const context = await browser.newContext()
+    const page = await context.newPage()
+    await page.goto(url)
+    await page.setContent('<a href="/modifier-target">New tab</a>')
+    await context.route('**/modifier-target', (route) =>
+      route.fulfill({ body: '<h1>Intercepted new tab</h1>', contentType: 'text/html' }),
+    )
+    const created = context.waitForEvent('page')
+    await page.getByRole('link').click({ modifiers: [i % 2 ? 'Shift' : 'ControlOrMeta'] })
+    const tab = await created
+    expect(await tab.opener()).toBe(null)
+    await expect(tab.getByRole('heading')).toHaveText('Intercepted new tab')
+    await context.close()
+  }
+  const context = await browser.newContext()
+  const page = await context.newPage()
+  await page.goto(url)
+  await expect(page.getByRole('button', { name: 'Click', exact: true })).toBeVisible()
+  await context.close()
+})
+
+test('popup downloads survive delayed frame-tree initialization', async () => {
+  const source = await launchNativeBrowser({
+    executablePath: process.env.SUITECUT_NATIVE_EXECUTABLE ?? '',
+    width: 640,
+    height: 360,
+    framesPerSecond: 30,
+    pixelFormat: 'i420',
+  })
+  let browser: Awaited<ReturnType<typeof connectCEF>> | undefined
+  try {
+    if (!source.command) throw new Error('Missing native command interface')
+    const command = source.command.bind(source)
+    let hold = false
+    const delayed: NativeBrowser = {
+      ...source,
+      command: async (name, fields) => {
+        const message = fields?.message
+        if (
+          hold &&
+          name === 'cdp' &&
+          message &&
+          typeof message === 'object' &&
+          'method' in message &&
+          message.method === 'Page.getFrameTree'
+        )
+          await delay(300)
+        return await command(name, fields)
+      },
+    }
+    browser = await connectCEF(delayed)
+    const page = await browser.newPage()
+    await page.goto(url)
+    await page.setContent('<a target=_blank href="/download">Download</a>')
+    hold = true
+    const downloaded = page.waitForEvent('download', { timeout: 5000 })
+    void downloaded.catch(() => undefined)
+    await page.getByRole('link').click()
+    const download = await downloaded
+    const path = await download.path()
+    if (!path) throw new Error('Download has no local path')
+    expect(await readFile(path, 'utf8')).toBe('native download')
+  } finally {
+    await browser?.close()
+    await source.close()
   }
 })
 

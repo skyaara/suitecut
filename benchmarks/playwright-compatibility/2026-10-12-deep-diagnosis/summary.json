@@ -1,0 +1,240 @@
+{
+  "originalUnexpected": 431,
+  "originalSerialBlocked": 7,
+  "reviewedUniqueCases": 438,
+  "decisionCounts": {
+    "Outside this harness; feature body not established": 343,
+    "Harness identity failure": 1,
+    "Documented architecture difference": 10,
+    "Documented behavior difference": 5,
+    "Unresolved": 49,
+    "Resolved by runtime/adapter/configuration fix": 15,
+    "Outside native harness; stock timeout unresolved": 1,
+    "Documented host/configuration difference": 3,
+    "Retained documented policy": 1,
+    "Resolved harness environment": 2,
+    "Resolved harness build artifact": 1,
+    "Retained documented limit": 4,
+    "Passed isolated follow-up; no new fix claimed": 3
+  },
+  "causeCounts": {
+    "Upstream independent-launch/connection fixture unavailable": 343,
+    "Proxy fixture identity / assertion inspection watchdog": 1,
+    "Existing CDP attachment/bootstrap semantics": 10,
+    "CEF full-runtime / stock headless-shell HTTP 401 policy": 5,
+    "SuiteCut\u2013CEF early-popup lifecycle architecture": 23,
+    "SuiteCut tab ownership": 3,
+    "Remote launchServer/connect fixture / shared control timeout": 1,
+    "Host default graphics availability": 3,
+    "Intentional automatic audio capture autoplay policy": 1,
+    "CEF detach ordering / driver integration": 1,
+    "Inherited HTTP proxy / NO_PROXY test environment": 2,
+    "SuiteCut download ownership": 1,
+    "CEF blank-origin srcdoc renderer crash family": 20,
+    "SuiteCut crash failure boundary": 6,
+    "SuiteCut\u2013CEF permission-controller integration": 2,
+    "Missing generated upstream browser-client bundle": 1,
+    "Intentional bounded capture/IPC policy": 4,
+    "SuiteCut JSON serialization": 1,
+    "Shared upstream trace-viewer stdin workflow": 1,
+    "SuiteCut harness artifact configuration": 1,
+    "CEF/V8 DevTools promise-collection difference": 1,
+    "CEF iframe-abort renderer crash": 1,
+    "CEF 152 / stock Chromium 151 network difference": 1,
+    "CEF directory-upload embedding path": 1,
+    "Originally blocked serial heap case": 3,
+    "SuiteCut command admission": 1
+  },
+  "runs": {
+    "baseline": {
+      "executionCounts": {
+        "failed": 67,
+        "timedOut": 14,
+        "passed": 4
+      },
+      "exit": "1",
+      "durationMs": 385437.71599999996
+    },
+    "final-selected": {
+      "executionCounts": {
+        "failed": 58,
+        "timedOut": 12,
+        "passed": 15
+      },
+      "exit": "1",
+      "durationMs": 353680.494
+    },
+    "final-confirmed": {
+      "executionCounts": {
+        "passed": 42,
+        "skipped": 3
+      },
+      "exit": "0",
+      "durationMs": 34561.298
+    },
+    "codegen-confirmed": {
+      "executionCounts": {
+        "passed": 5
+      },
+      "exit": "0",
+      "durationMs": 14961.01
+    },
+    "redirect-fixed": {
+      "executionCounts": {
+        "passed": 39
+      },
+      "exit": "0",
+      "durationMs": 8916.971000000001
+    },
+    "bulk-admission": {
+      "executionCounts": {
+        "passed": 1
+      },
+      "exit": "0",
+      "durationMs": 34574.528
+    },
+    "oopif-repeated": {
+      "executionCounts": {
+        "passed": 19,
+        "failed": 1
+      },
+      "exit": "1",
+      "durationMs": 33383.272000000004
+    },
+    "oopif-patched": {
+      "executionCounts": {
+        "passed": 30
+      },
+      "exit": "0",
+      "durationMs": 47040.831
+    },
+    "download-baseline-repeat": {
+      "executionCounts": {
+        "passed": 11,
+        "timedOut": 9
+      },
+      "exit": "1",
+      "durationMs": 304038.68100000004
+    },
+    "download-delay-before": {
+      "executionCounts": {
+        "failed": 1
+      },
+      "exit": "1",
+      "durationMs": 4987.061
+    },
+    "download-delay-after": {
+      "executionCounts": {
+        "passed": 5
+      },
+      "exit": "0",
+      "durationMs": 7953.789
+    },
+    "browser-bootstrap-final": {
+      "executionCounts": {
+        "failed": 1
+      },
+      "exit": "1",
+      "durationMs": 1876.533
+    },
+    "browser-client-built-cef": {
+      "executionCounts": {
+        "passed": 1
+      },
+      "exit": "0",
+      "durationMs": 4252.187
+    },
+    "local-certs-cef": {
+      "executionCounts": {
+        "passed": 2
+      },
+      "exit": "0",
+      "durationMs": 7000.918
+    },
+    "local-certs-chromium": {
+      "executionCounts": {
+        "passed": 2
+      },
+      "exit": "0",
+      "durationMs": 5483.09
+    },
+    "stdin-isolated-cef": {
+      "executionCounts": {
+        "failed": 1
+      },
+      "exit": "1",
+      "durationMs": 14774.877999999999
+    },
+    "stdin-isolated-stock": {
+      "executionCounts": {
+        "failed": 1
+      },
+      "exit": "1",
+      "durationMs": 12738.627
+    },
+    "shared-followups-stock": {
+      "executionCounts": {
+        "failed": 3,
+        "passed": 1
+      },
+      "exit": "1",
+      "durationMs": 20053.086
+    },
+    "final-heap-172": {
+      "executionCounts": {
+        "failed": 1
+      },
+      "exit": "1",
+      "durationMs": 2343.8779999999997
+    },
+    "final-heap-178": {
+      "executionCounts": {
+        "failed": 1
+      },
+      "exit": "1",
+      "durationMs": 2487.273
+    },
+    "final-heap-184": {
+      "executionCounts": {
+        "failed": 1
+      },
+      "exit": "1",
+      "durationMs": 2760.825
+    },
+    "final-heap-191": {
+      "executionCounts": {
+        "failed": 1
+      },
+      "exit": "1",
+      "durationMs": 3295.2479999999996
+    },
+    "final-heap-223": {
+      "executionCounts": {
+        "passed": 1
+      },
+      "exit": "0",
+      "durationMs": 4726.222
+    },
+    "final-heap-244": {
+      "executionCounts": {
+        "passed": 1
+      },
+      "exit": "0",
+      "durationMs": 8587.127999999999
+    },
+    "final-heap-270": {
+      "executionCounts": {
+        "passed": 1
+      },
+      "exit": "0",
+      "durationMs": 6998.241
+    },
+    "final-heap-304": {
+      "executionCounts": {
+        "passed": 1
+      },
+      "exit": "0",
+      "durationMs": 28474.176
+    }
+  }
+}

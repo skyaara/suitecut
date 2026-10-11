@@ -1,0 +1,32 @@
+{
+  "case": "benchmarks/playwright-compatibility/compatibility.spec.ts:410",
+  "finding": "Intermittent cross-site iframe click completion without button update",
+  "checkpoint": {
+    "passed": 17,
+    "failed": 3,
+    "attempts": 20
+  },
+  "updated": {
+    "passed": 18,
+    "failed": 2,
+    "attempts": 20
+  },
+  "standaloneCEFSingleBrowser": {
+    "missed": 0,
+    "attempts": 30
+  },
+  "standaloneCEFFreshBrowser": {
+    "missed": 0,
+    "attempts": 20
+  },
+  "stockReduction": {
+    "missed": 0,
+    "attempts": 30
+  },
+  "nativeInstrumentedReduction": {
+    "missed": 0,
+    "attempts": 35
+  },
+  "layer": "SuiteCut\u2013CEF integration; exact attribution unproven",
+  "decision": "Unresolved; preserve assertion and investigate exact input/attachment/compositor timing"
+}

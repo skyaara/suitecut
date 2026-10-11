@@ -19,6 +19,18 @@ to `Target.createBrowserContext`; the backend installs the context language
 before a popup's first script can run. Ordinary Chromium connections send no
 SuiteCut context extension and retain their usual headful detection.
 
+Two additional workarounds require that same explicit CEF capability. A precise
+missing-session error from an already detaching non-main frame is treated as a
+closed session; main-frame and unrelated errors still propagate. Intercepted
+redirects that change method to GET/HEAD drop body headers (`content-length`,
+`content-type`, `content-encoding`, `content-language`, `content-location`).
+Same-method redirects retain their headers/body. Raw standalone CEF 152 and
+stock Chromium 151 controls reproduced the redirect difference; matching-version
+attribution remains open. Ordinary Chromium connections do not enable either
+workaround. The [deep audit](../benchmarks/playwright-compatibility/2026-10-12-deep-diagnosis/report.md)
+records repetitions, all 39 request-continuation tests and clean consumer install
+verification for this exact patch.
+
 The SuiteCut repository configures the patch through `pnpm-workspace.yaml` and
 records it in `pnpm-lock.yaml`. A fresh `pnpm install --frozen-lockfile` applies it.
 The SDK package includes the patch for downstream projects, but importing

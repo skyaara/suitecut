@@ -1,0 +1,71 @@
+{
+  "runs": {
+    "engine-final": {
+      "stats": {
+        "startTime": "2026-10-11T20:58:59.955Z",
+        "duration": 51829.284,
+        "expected": 22,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "exit": "0"
+    },
+    "compatibility-final-cef": {
+      "stats": {
+        "startTime": "2026-10-11T20:59:01.907Z",
+        "duration": 80832.33099999999,
+        "expected": 52,
+        "skipped": 0,
+        "unexpected": 1,
+        "flaky": 0
+      },
+      "exit": "1"
+    },
+    "compatibility-final-stock": {
+      "stats": {
+        "startTime": "2026-10-11T20:59:04.222Z",
+        "duration": 48165.997,
+        "expected": 49,
+        "skipped": 4,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "exit": "0"
+    },
+    "compatibility-isolated": {
+      "stats": {
+        "startTime": "2026-10-11T21:00:43.349Z",
+        "duration": 57909.676,
+        "expected": 53,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "exit": "0"
+    },
+    "oopif-click-baseline": {
+      "stats": {
+        "startTime": "2026-10-11T21:03:27.921Z",
+        "duration": 50419.592000000004,
+        "expected": 17,
+        "skipped": 0,
+        "unexpected": 3,
+        "flaky": 0
+      },
+      "exit": "1"
+    },
+    "oopif-click-repeated": {
+      "stats": {
+        "startTime": "2026-10-11T21:02:18.392Z",
+        "duration": 59053.943,
+        "expected": 18,
+        "skipped": 0,
+        "unexpected": 2,
+        "flaky": 0
+      },
+      "exit": "1"
+    }
+  },
+  "limits": "Focused tests, not whole-suite certification, a leak-proof claim, or a matched performance benchmark"
+}

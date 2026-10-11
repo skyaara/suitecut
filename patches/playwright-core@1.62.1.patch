@@ -48,19 +48,37 @@ diff --git a/lib/coreBundle.js b/lib/coreBundle.js
          } else if (shouldProvideCredentials) {
            response2 = "ProvideCredentials";
 -          this._attemptedAuthentications.add(event.requestId);
--        }
--        const { username, password } = shouldProvideCredentials && this._credentials ? this._credentials : { username: void 0, password: void 0 };
 +          if (!attempts) {
 +            attempts = new Set();
 +            this._attemptedAuthentications.set(event.requestId, attempts);
 +          }
 +          attempts.add(key);
-+        }
+         }
+-        const { username, password } = shouldProvideCredentials && this._credentials ? this._credentials : { username: void 0, password: void 0 };
 +        const { username, password } = response2 === "ProvideCredentials" ? credentials : { username: void 0, password: void 0 };
          sessionInfo.session._sendMayFail("Fetch.continueWithAuth", {
            requestId: event.requestId,
            authChallengeResponse: { response: response2, username, password }
-@@ -37121,7 +37131,7 @@
+@@ -36044,6 +36054,9 @@
+             if (headersOverride) {
+               const originalHeaders = Object.entries(requestPausedEvent.request.headers).map(([name, value2]) => ({ name, value: value2 }));
+               headersOverride = removeCookieHeader(applyHeadersOverrides(originalHeaders, headersOverride));
++              const context2 = this._page?.browserContext || this._serviceWorker?.browserContext;
++              if (context2?._browser._suitecutWindowless && redirectedFrom && redirectedFrom.request.method() !== requestPausedEvent.request.method && ["GET", "HEAD"].includes(requestPausedEvent.request.method))
++                headersOverride = headersOverride.filter((header) => !["content-length", "content-type", "content-encoding", "content-language", "content-location"].includes(header.name.toLowerCase()));
+             }
+             requestPausedSessionInfo.session._sendMayFail("Fetch.continueRequest", { requestId: requestPausedEvent.requestId, headers: headersOverride });
+           } else {
+@@ -37077,7 +37090,7 @@
+           if (frameSession._isMainFrame())
+             return cb(frameSession);
+           return cb(frameSession).catch((e) => {
+-            if (isSessionClosedError(e))
++            if (isSessionClosedError(e) || (this._browserContext._browser._suitecutWindowless && isProtocolError(e) && e.message.includes("Session with given id not found.")))
+               return;
+             throw e;
+           });
+@@ -37121,7 +37134,7 @@
          await this._networkManager.setOffline(!!this._browserContext._options.offline);
        }
        async updateHttpCredentials() {
@@ -69,7 +87,7 @@ diff --git a/lib/coreBundle.js b/lib/coreBundle.js
        }
        async updateEmulatedViewportSize(preserveWindowBoundaries) {
          await this._mainFrameSession._updateViewport(preserveWindowBoundaries);
-@@ -37993,7 +38003,7 @@
+@@ -37993,7 +38006,7 @@
        async updateHttpCredentials() {
          if (!this._isNetworkInspectionEnabled())
            return;
@@ -78,7 +96,7 @@ diff --git a/lib/coreBundle.js b/lib/coreBundle.js
          });
        }
        async updateExtraHTTPHeaders() {
-@@ -38103,8 +38113,9 @@
+@@ -38103,8 +38116,9 @@
            browser._majorVersion = +browser._version.split(".")[0];
          } catch {
          }
@@ -89,7 +107,7 @@ diff --git a/lib/coreBundle.js b/lib/coreBundle.js
          if (!options.persistent) {
            await session2.send("Target.setAutoAttach", { autoAttach: true, waitForDebuggerOnStart: true, flatten: true });
            return browser;
-@@ -38131,7 +38142,8 @@
+@@ -38131,7 +38145,8 @@
          const { browserContextId } = await this._session.send("Target.createBrowserContext", {
            disposeOnDetach: true,
            proxyServer: proxy ? proxy.server : void 0,
@@ -99,7 +117,7 @@ diff --git a/lib/coreBundle.js b/lib/coreBundle.js
          });
          const context2 = new CRBrowserContext(this, browserContextId, options);
          await context2.initialize();
-@@ -51541,7 +51553,7 @@
+@@ -51541,7 +51556,7 @@
            return;
          const { username, password } = proxy;
          if (username)

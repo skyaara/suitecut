@@ -11,7 +11,9 @@ export class CDPCommandQueue {
     private readonly send: (message: object) => Promise<void>,
     private readonly onError: (reason: string) => void,
     private readonly concurrency = 16,
-    private readonly maxMessages = 1024,
+    // Playwright adopts querySelectorAll handles concurrently. A normal page
+    // with 2,000 matches can submit several thousand small protocol commands.
+    private readonly maxMessages = 8192,
     private readonly maxBytes = 64 * 1024 * 1024,
   ) {}
 

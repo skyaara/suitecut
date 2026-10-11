@@ -4,7 +4,14 @@ These are functional tests against the actual SuiteCut native browser, with a
 stock Playwright Chromium control. They do not measure recording performance or
 prove complete upstream compatibility.
 
-The [remaining-fixes report](2026-10-11-remaining-fixes/report.md) records the latest
+The latest [deep diagnosis](2026-10-12-deep-diagnosis/report.md) reviews all 431
+unexpected cases and seven serial-blocked heap cases from the
+[4,945-case full audit](2026-10-12-upstream-audit/report.md). Its searchable
+[case ledger](2026-10-12-deep-diagnosis/cases.csv) preserves original outcomes,
+targeted reruns, layer attribution, evidence, uncertainty and next steps.
+Targeted results are not a replacement full-suite score.
+
+The [remaining-fixes report](2026-10-11-remaining-fixes/report.md) records earlier
 locale, request-header and concurrent-page corrections. The preceding
 [follow-up report](2026-10-11-followup/report.md) preserves its earlier results. The [fallback report](2026-10-11/report.md) preserves the
 preceding baseline, harness limits and exact versions. Raw JSON reports, logs,

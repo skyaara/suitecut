@@ -297,12 +297,29 @@ hyphens. CEF receives the language in its request-context settings before any
 page or popup is created. Target-scoped CDP emulation keeps its own scope.
 
 The thin SDK submits at most 16 CDP IPC commands concurrently, leaving room
-within the native client's 64-command limit. Its FIFO is bounded to 1,024
+within the native client's 64-command limit. Its FIFO is bounded to 8,192
 queued/in-flight commands and 64 MiB of serialized CDP payload; overflow closes
 the transport. Native acknowledgement frees a slot; it does not wait for the
 renderer response, which could depend on another command. Disconnect/failure
 clears queued commands. Incoming packets continue to yield between deliveries
 so frame registration promise continuations run before execution-context events.
+
+The command count accommodates Playwright adopting thousands of element handles
+at once; concurrency and the byte limit remain bounded. Incoming delivery has a
+separate 1,024-message / 64 MiB limit. CDP forwarding preserves the original JSON
+property order and rewrites only bridge metadata.
+
+`launchEngine({ ..., artifactsDir: '/absolute/worker-artifacts' })` and
+`connectCEF(source, { artifactsDir })` pass the directory to Playwright's public
+transport API. The caller owns its cleanup. This configures Playwright artifact
+storage; it is not a native capture setting.
+
+Automation-page renderer crashes emit a page `crash` event, fail that page's
+active media outputs and pending commands, and preserve healthy sibling pages.
+The primary capture/control source remains a fatal runtime boundary. Modifier
+clicks create independent tabs in the same request context, with no JavaScript
+opener; managed tab navigation waits for automation initialization. Ordinary
+`window.open` first-script timing still has separate limitations.
 
 ## Build
 
@@ -506,5 +523,7 @@ an encoded screenshot would exceed this limit.
 
 These verified workflows do not establish full upstream Playwright compatibility.
 Early popup initialization, initial blank-origin srcdoc frames and some permission
-overrides remain unresolved. See the [final compatibility investigation](../../benchmarks/playwright-compatibility/2026-10-11-final-bridge-fixes/report.md)
-for raw results, reproductions and memory-profile limits.
+overrides remain unresolved. Directory upload, DevTools promise-collection
+behavior and an intermittent cross-site iframe click also need investigation.
+See the [deep compatibility investigation](../../benchmarks/playwright-compatibility/2026-10-12-deep-diagnosis/report.md)
+for every original failing case, independent CEF controls, fixes and retained limits.
