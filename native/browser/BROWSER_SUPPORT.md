@@ -44,6 +44,8 @@ style is an architectural change, not a codec switch.
 | Partitioned cookies (CHIPS)                           | Chromium Network cookie commands preserve partition keys; context isolation, filtered clearing, state round trips and cross-site delivery verified, including contexts with no pages |
 | Windowless page resize                                | Per-target window IDs, applied bounds, physical screenshot width and sibling isolation passed                                                   |
 | Native recording/streaming lifecycle                  | Readiness, silent pages, pause, selection and shutdown regression checks passed                                                                 |
+| Automation renderer crash isolation                  | Page crash events and pending-command failure passed; affected recording fails explicitly while a healthy sibling remains recordable |
+| Modifier-click tabs and initial popup downloads      | Shift/Ctrl tabs inherit context routing; early downloads survive deliberately delayed frame-tree initialization. Ordinary popup first-script limitations remain |
 
 The ordinary web-platform checks can be rerun with `pnpm test:native:features`
 after building the native executable and SDK. They require a working display and
@@ -123,11 +125,23 @@ these functional checks do not establish GPU performance or a leak-free browser.
   about:blank document crashes the renderer in a minimal CEF client, without
   SuiteCut media or DevTools code. HTTP-origin srcdoc frames work.
 - **Permission breadth:** storage-access and screen-wake-lock overrides remain
-  unsupported; CEF contexts are not registered with Chromium’s browser CDP
-  context manager. Existing permission grants retain their verified scope.
+  unsupported. CEF exposes related permission/content-setting APIs, but simple
+  mappings did not supply safe, context-scoped query/request/reset semantics.
+  CEF contexts are not registered with Chromium’s browser CDP context manager.
+  Failed storage/wake-lock experiments were reverted. Existing grants retain
+  their verified scope.
 - **Early popup events:** javascript-URL console events and prompts during popup
   initialization still fail selected upstream cases; see the
-  [latest report](../../benchmarks/playwright-compatibility/2026-10-11-remaining-fixes/report.md).
+  [deep case diagnosis](../../benchmarks/playwright-compatibility/2026-10-12-deep-diagnosis/report.md).
+- **Directory upload and promise collection:** ordinary file upload works, but
+  `webkitdirectory` completion times out in standalone CEF too. An unreferenced,
+  never-resolving evaluated promise does not receive stock Chromium's GC error
+  in the CEF control. Exact runtime/version attribution remains unresolved;
+  neither observation establishes a general memory leak.
+- **Intermittent cross-site iframe input:** one focused click can return before
+  the button changes. Both checkpoint and updated helpers reproduced it in
+  repeated runs; a passing reduced standalone CEF control is inconclusive.
+  Keep this as an integration investigation, not a proven CEF-only defect.
 - **Graphics coverage:** WebGL 1/2 are verified with explicit software rendering.
   Chromium's default graphics selection and a Mesa/ANGLE OpenGL trial could not
   create a WebGL context on this CPU-only Xvfb host. Hardware GPU rendering,

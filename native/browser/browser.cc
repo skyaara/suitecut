@@ -402,6 +402,7 @@ class Source : public CefClient, public CefLifeSpanHandler, public CefRenderHand
     const auto granted=Granted(origin);bool overridden=false;auto found=root_->pending_permissions_.find(context_id_);
     if(found!=root_->pending_permissions_.end()) for(auto& policy:found->second) if(policy->GetString("origin").empty() || policy->GetString("origin").ToString()==origin) overridden=true;
     for(const auto& [bit,type]:types) browser_->GetHost()->GetRequestContext()->SetContentSetting(origin,origin,type,!overridden ? CEF_CONTENT_SETTING_VALUE_DEFAULT : (granted&bit) ? CEF_CONTENT_SETTING_VALUE_ALLOW : CEF_CONTENT_SETTING_VALUE_BLOCK);
+
   }
   void RefreshPermissions(const std::string& key) {
     for(auto& [target,source]:targets_) if(source->context_id_==key) for(auto& origin:source->permission_origins_) source->ApplyPermissions(origin);
@@ -412,6 +413,26 @@ class Source : public CefClient, public CefLifeSpanHandler, public CefRenderHand
       ApplyPermissions(origin);
     }
     return false;
+  }
+  bool OnOpenURLFromTab(CefRefPtr<CefBrowser>,CefRefPtr<CefFrame>,const CefString& url,
+                       CefRequestHandler::WindowOpenDisposition disposition,bool) override {
+    if(disposition!=CEF_WOD_NEW_FOREGROUND_TAB && disposition!=CEF_WOD_NEW_BACKGROUND_TAB &&
+       disposition!=CEF_WOD_NEW_WINDOW)return false;
+    // Windowless CEF has no tab strip to own modifier-click navigations. These
+    // are independent tabs (no JavaScript opener), not window.open popups.
+    if(root_->children_.size()>=64 || closing_ || stopped_)return true;
+    CefWindowInfo window;window.SetAsWindowless(0);CefBrowserSettings settings;
+    settings.windowless_frame_rate=browser_->GetHost()->GetWindowlessFrameRate();settings.background_color=CefColorSetARGB(255,255,255,255);
+    CefRefPtr<Source> child=new Source(writer_,width_,height_,scale_,i420_,true,root_,context_id_);
+    const bool managed=root_->auto_attach_;
+    if(managed)child->initial_navigation_=url.ToString();
+    child->pending_tab_creation_=true;++root_->pending_tab_creations_;
+    root_->children_.push_back(child);
+    if(!CefBrowserHost::CreateBrowser(window,child,managed ? CefString("about:blank") : url,settings,nullptr,browser_->GetHost()->GetRequestContext())) {
+      --root_->pending_tab_creations_;
+      std::erase_if(root_->children_,[&](const auto& item){return item==child;});
+    }
+    return true;
   }
   bool OnShowPermissionPrompt(CefRefPtr<CefBrowser>,uint64_t,const CefString& origin,uint32_t requested,CefRefPtr<CefPermissionPromptCallback> callback) override {
     callback->Continue(requested && !(requested & ~Granted(origin.ToString())) ? CEF_PERMISSION_RESULT_ACCEPT : CEF_PERMISSION_RESULT_DENY);return true;
@@ -436,7 +457,16 @@ class Source : public CefClient, public CefLifeSpanHandler, public CefRenderHand
   bool OnBeforeDownload(CefRefPtr<CefBrowser>, CefRefPtr<CefDownloadItem> item,const CefString& name,CefRefPtr<CefBeforeDownloadCallback> callback) override {
     if(download_ids_.size()>=64) return true;  // Dropping the callback cancels.
     const auto guid="cef-"+target_id_+"-"+std::to_string(item->GetId());download_ids_[item->GetId()]=guid;
-    auto params=CefDictionaryValue::Create();params->SetString("guid",guid);params->SetString("frameId",target_id_);params->SetString("url",item->GetURL());params->SetString("suggestedFilename",name);
+    auto frame=main_frame_id_.empty() ? target_id_ : main_frame_id_;
+    // A download can start before the popup's frame tree reaches the client.
+    // Attribute that initial download to its live opener, as Chromium does,
+    // instead of emitting an event for a frame Playwright cannot yet find.
+    if(main_frame_id_.empty() && !opener_id_.empty()) {
+      auto opener=root_->targets_.find(opener_id_);
+      if(opener!=root_->targets_.end() && !opener->second->closing_ && !opener->second->main_frame_id_.empty())
+        frame=opener->second->main_frame_id_;
+    }
+    auto params=CefDictionaryValue::Create();params->SetString("guid",guid);params->SetString("frameId",frame);params->SetString("url",item->GetURL());params->SetString("suggestedFilename",name);
     root_->Event("Browser.downloadWillBegin",params);
     auto found=root_->download_paths_.find(context_id_);
     // Even denied downloads must be observable. Returning handled without
@@ -493,11 +523,16 @@ class Source : public CefClient, public CefLifeSpanHandler, public CefRenderHand
   }
   void OnAfterCreated(CefRefPtr<CefBrowser> browser) override {
     browser_ = browser;
+    if(pending_tab_creation_) {pending_tab_creation_=false;--root_->pending_tab_creations_;}
     browser_->GetHost()->WasHidden(false);
     std::erase_if(root_->pending_popups_,[this](const auto& entry){return entry.second.get()==this;});
     observer_ = browser->GetHost()->AddDevToolsMessageObserver(this);
     { std::lock_guard lock(audio_mutex_); target_id_ = "page-"+std::to_string(browser->GetIdentifier()); }
     root_->targets_[target_id_] = this;
+    if(this!=root_ && (root_->closing_ || root_->stopped_ ||
+       (context_id_!="default" && !root_->contexts_.contains(context_id_)))) {
+      closing_=true;browser_->GetHost()->CloseBrowser(true);return;
+    }
     root_->RetireContextAgent(context_id_);
     DispatchCDP(-1,"Target.getTargetInfo",CefDictionaryValue::Create(),"",true);
   }
@@ -557,7 +592,7 @@ class Source : public CefClient, public CefLifeSpanHandler, public CefRenderHand
     view_.clear();view_.shrink_to_fit();popup_.clear();popup_.shrink_to_fit();
     if(this!=root_) std::erase_if(root_->children_,[this](const auto& child) {return child.get()==this;});
     if (root_->auto_attach_) {auto params=CefDictionaryValue::Create();params->SetString("sessionId",Session());params->SetString("targetId",target_id_);root_->Event("Target.detachedFromTarget",params);}
-    if (root_->targets_.empty() && !root_->context_agent_count_) CefQuitMessageLoop();
+    if (root_->targets_.empty() && !root_->context_agent_count_ && !root_->pending_tab_creations_) CefQuitMessageLoop();
   }
   bool OnBeforePopup(CefRefPtr<CefBrowser>, CefRefPtr<CefFrame>, int popup_id, const CefString&,
                      const CefString&, CefLifeSpanHandler::WindowOpenDisposition, bool, const CefPopupFeatures&,
@@ -712,7 +747,25 @@ class Source : public CefClient, public CefLifeSpanHandler, public CefRenderHand
     }
   }
   void OnRenderProcessTerminated(CefRefPtr<CefBrowser>, TerminationStatus status, int code, const CefString&) override {
-    writer_.Error(("Browser renderer terminated (status "+std::to_string(int(status))+", exit "+std::to_string(code)+")").c_str());
+    RendererCrashed("Browser renderer terminated (status "+std::to_string(int(status))+", exit "+std::to_string(code)+")");
+  }
+  void RendererCrashed(const std::string& reason) {
+    if(renderer_crashed_)return;
+    renderer_crashed_=true;
+    // An automation page is a separate failure boundary. Killing the helper
+    // here discards its crash event and also destroys unrelated contexts.
+    // The primary capture/control agent remains a runtime failure boundary.
+    if(this==root_ || !root_->auto_attach_) {writer_.Error(reason.c_str());return;}
+    PageEvent("Inspector.targetCrashed",CefDictionaryValue::Create());
+#if SUITECUT_WITH_MEDIA
+    {std::lock_guard lock(outputs_mutex_);for(auto& [key,output]:outputs_)output->Fail(reason);}
+#endif
+    if(navigation_) {writer_.Reply(navigation_,false,"Page crashed");navigation_=0;}
+    const auto pending=std::move(devtools_pending_);devtools_pending_.clear();
+    for(const auto& [key,request]:pending) if(request.id>0) CDPError(request.id,request.session,request.native,"Page crashed",-32001);
+    const auto screenshots=std::move(screenshot_jobs_);screenshot_jobs_.clear();
+    for(const auto& job:screenshots) CDPError(job.id,job.session,job.native,"Page crashed",-32001);
+    FinishScreenshot();
   }
   bool OnDevToolsMessage(CefRefPtr<CefBrowser>, const void* data, size_t size) override {
     if(size>16777216) {
@@ -723,7 +776,10 @@ class Source : public CefClient, public CefLifeSpanHandler, public CefRenderHand
     }
     auto value=CefParseJSON(static_cast<const char*>(data),size,JSON_PARSER_RFC);
     const bool opaque=!value;
-    const std::string raw=opaque ? std::string(static_cast<const char*>(data),size) : std::string();
+    // CEF dictionaries sort object keys when re-serialized. CDP carries user
+    // objects and DOM attribute maps whose insertion order is observable.
+    // Parse metadata for routing, but forward original JSON for payloads.
+    std::string raw(static_cast<const char*>(data),size);
     if(opaque)value=CefParseJSON(suitecut::CDPMetadataJSON(raw),JSON_PARSER_RFC);
     auto message=value ? value->GetDictionary() : nullptr;
     if(!message) return false;
@@ -733,6 +789,13 @@ class Source : public CefClient, public CefLifeSpanHandler, public CefRenderHand
       const auto pending=found->second;devtools_pending_.erase(found);
       if(screenshot_command_==message->GetInt("id")) FinishScreenshot();
       TraceCDP(message->HasKey("error") ? "agent-error" : "agent-reply",pending.id,pending.session,pending.method,target_id_);
+      if(pending.method=="Runtime.runIfWaitingForDebugger" && pending.session==Session() &&
+         !message->HasKey("error") && !initial_navigation_.empty()) {
+        const auto url=std::move(initial_navigation_);initial_navigation_.clear();
+        CefPostTask(TID_UI,new Task([self=CefRefPtr<Source>(this),url] {
+          if(self->browser_ && !self->closing_ && !self->stopped_)self->browser_->GetMainFrame()->LoadURL(url);
+        }));
+      }
       if(!pending.native && pending.method=="Target.attachToTarget" && !message->HasKey("error")) {
         auto result=message->GetDictionary("result");
         const auto nested=result ? result->GetString("sessionId").ToString() : "";
@@ -741,15 +804,17 @@ class Source : public CefClient, public CefLifeSpanHandler, public CefRenderHand
           root_->sessions_[alias]=this;root_->session_parents_[alias]=pending.session;
           root_->nested_aliases_[alias]=nested;root_->raw_aliases_.insert(alias);
           result->SetString("sessionId",alias+"::"+nested);
+          raw=suitecut::CDPReplaceField(std::move(raw),"result",Json(result));
           DeferCDP(-4,"Runtime.runIfWaitingForDebugger",CefDictionaryValue::Create(),alias+"::"+nested,true);
         }
       }
       if(pending.method=="Browser.getVersion") {
-        if(auto result=message->GetDictionary("result")) result->SetBool("suitecutWindowless",true);
+        if(auto result=message->GetDictionary("result")) {result->SetBool("suitecutWindowless",true);raw=suitecut::CDPReplaceField(std::move(raw),"result",Json(result));}
       }
       if(pending.method=="Page.getFrameTree") {
         auto result=message->GetDictionary("result");auto tree=result ? result->GetDictionary("frameTree") : nullptr;
         auto frame=tree ? tree->GetDictionary("frame") : nullptr;
+        if(frame && !pending.native && pending.session==Session())main_frame_id_=frame->GetString("id").ToString();
         if(frame) {auto state=CefDictionaryValue::Create();state->SetString("frameId",frame->GetString("id"));state->SetString("targetId",frame->GetString("url").empty() ? "empty-url" : frame->GetString("url")=="about:blank" ? "blank-url" : frame->GetString("url")==":" ? "initial-url" : "other-url");TraceCDP("frame-tree",pending.id,pending.session,pending.method,target_id_,state);}
       }
       if(pending.id==-1) {
@@ -767,21 +832,21 @@ class Source : public CefClient, public CefLifeSpanHandler, public CefRenderHand
       } else if(pending.id==-4) { /* A disappearing target can invalidate best-effort debugger cleanup. */
       } else if(pending.native) {
         auto result=message->GetDictionary("result");auto error=message->GetDictionary("error");
-        writer_.Reply(pending.id,!error,error ? error->GetString("message").ToString() : "",result ? Bytes(opaque ? suitecut::CDPRawField(raw,"result") : Json(result)) : std::vector<uint8_t>{});
-      } else if(opaque) {
+        writer_.Reply(pending.id,!error,error ? error->GetString("message").ToString() : "",result ? Bytes(suitecut::CDPRawField(raw,"result")) : std::vector<uint8_t>{});
+      } else {
         root_->CDPRawMessage(RawCDPSession(suitecut::CDPReplaceField(raw,"id",std::to_string(pending.id)),pending.session));
-      } else {message->SetInt("id",pending.id);message->SetString("sessionId",pending.session);root_->CDPMessage(message);}
+      }
     } else {
       const auto method=message->GetString("method").ToString();
       auto params=message->GetDictionary("params");
+      if(method=="Inspector.targetCrashed" && !message->HasKey("sessionId")) {RendererCrashed("Page crashed");return true;}
       // The CEF JS-dialog callback owns acceptance and emits this event once.
       // Also forwarding Chromium's notification races two Dialog objects and
       // makes the second dismissal fail after the first has closed the dialog.
       const auto agent=message->GetString("sessionId").ToString();
       if(!agent.empty()) for(const auto& alias:root_->raw_aliases_) {
         if(root_->sessions_.at(alias)==this && root_->nested_aliases_.at(alias)==agent) {
-          if(opaque) root_->CDPRawMessage(RawCDPSession(raw,alias+"::"+agent));
-          else {message->SetString("sessionId",alias+"::"+agent);root_->CDPMessage(message);}
+          root_->CDPRawMessage(RawCDPSession(raw,alias+"::"+agent));
           return true;
         }
       }
@@ -889,8 +954,10 @@ class Source : public CefClient, public CefLifeSpanHandler, public CefRenderHand
         const auto method=event->GetString("method").ToString();
         if(params && (method=="Target.attachedToTarget" || method=="Target.detachedFromTarget"))
           params->SetString("sessionId",recipient+"::"+params->GetString("sessionId").ToString());
-        if(opaque)root_->CDPRawMessage(RawCDPSession(raw,event->GetString("sessionId").ToString()));
-        else root_->CDPMessage(event);
+        auto forwarded=raw;
+        if(params && (method=="Target.attachedToTarget" || method=="Target.detachedFromTarget"))
+          forwarded=suitecut::CDPReplaceField(std::move(forwarded),"params",Json(params));
+        root_->CDPRawMessage(RawCDPSession(std::move(forwarded),event->GetString("sessionId").ToString()));
       }
     }
     return true;
@@ -962,7 +1029,7 @@ class Source : public CefClient, public CefLifeSpanHandler, public CefRenderHand
     auto message=CefDictionaryValue::Create();message->SetString("method","Target.detachedFromTarget");if(!parent.empty())message->SetString("sessionId",parent);
     auto params=CefDictionaryValue::Create();params->SetString("sessionId",key);message->SetDictionary("params",params);CDPMessage(message);
   }
-  void Attach() {auto params=CefDictionaryValue::Create();params->SetString("sessionId",Session());params->SetDictionary("targetInfo",TargetInfo());params->SetBool("waitingForDebugger",false);root_->Event("Target.attachedToTarget",params);}
+  void Attach() {auto params=CefDictionaryValue::Create();params->SetString("sessionId",Session());params->SetDictionary("targetInfo",TargetInfo());params->SetBool("waitingForDebugger",!initial_navigation_.empty());root_->Event("Target.attachedToTarget",params);}
   void CDP(Dict message,const std::string& raw_params="") {
     if(!message || message->GetInt("id")<1 || message->GetString("method").empty()) {writer_.Error("Invalid CEF protocol command");return;}
     const int id=message->GetInt("id");const auto method=message->GetString("method").ToString();
@@ -1115,7 +1182,7 @@ class Source : public CefClient, public CefLifeSpanHandler, public CefRenderHand
           CefWindowInfo window;window.SetAsWindowless(0);CefBrowserSettings settings;settings.windowless_frame_rate=1;
           ++context_agent_count_;
           CefRefPtr<ContextAgent> agent=new ContextAgent([self=CefRefPtr<Source>(this)] {
-            --self->context_agent_count_;if(self->targets_.empty() && !self->context_agent_count_)CefQuitMessageLoop();
+            --self->context_agent_count_;if(self->targets_.empty() && !self->context_agent_count_ && !self->pending_tab_creations_)CefQuitMessageLoop();
           });context_agents_[key]=agent;
           if(!CefBrowserHost::CreateBrowserSync(window,agent,"about:blank",settings,nullptr,contexts_.at(key))) {agent->Close();context_agents_.erase(key);reply(nullptr,"CEF cookie agent initialization failed");return;}
         }
@@ -1187,10 +1254,10 @@ class Source : public CefClient, public CefLifeSpanHandler, public CefRenderHand
     }
   }
   struct ScreenshotJob {int id;std::string method;Dict params;std::string session;bool native;std::string raw_params;};
-  void CDPError(int id,const std::string& session,bool native,const char* text) {
+  void CDPError(int id,const std::string& session,bool native,const char* text,int code=-32000) {
     if(native) {writer_.Reply(id,false,text);return;}
     auto response=CefDictionaryValue::Create();response->SetInt("id",id);if(!session.empty())response->SetString("sessionId",session);
-    auto error=CefDictionaryValue::Create();error->SetInt("code",-32000);error->SetString("message",text);response->SetDictionary("error",error);root_->CDPMessage(response);
+    auto error=CefDictionaryValue::Create();error->SetInt("code",code);error->SetString("message",text);response->SetDictionary("error",error);root_->CDPMessage(response);
   }
   void FinishScreenshot() {
     const bool resized=screenshot_width_ || screenshot_height_;
@@ -1205,6 +1272,7 @@ class Source : public CefClient, public CefLifeSpanHandler, public CefRenderHand
     }));
   }
   void DispatchCDP(int id,const std::string& method,Dict params,const std::string& session,bool native,const std::string& raw_params="") {
+    if(renderer_crashed_) {CDPError(id,session,native,"Page crashed",-32001);return;}
     if(method=="Page.captureScreenshot") {
       if(Json(params).size()>4096 || raw_params.size()>4096) {CDPError(id,session,native,"CEF screenshot argument limit exceeded");return;}
       if(screenshot_command_ || screenshot_draining_) {
@@ -1575,6 +1643,7 @@ class Source : public CefClient, public CefLifeSpanHandler, public CefRenderHand
   std::map<std::string,CefRefPtr<CefRequestContext>> contexts_;
   std::map<std::string,CefRefPtr<ContextAgent>> context_agents_;
   size_t context_agent_count_=0;
+  size_t pending_tab_creations_=0;
   std::vector<CefRefPtr<Source>> children_;
   std::map<std::pair<Source*,int>,CefRefPtr<Source>> pending_popups_;
   std::map<int,PendingDevTools> devtools_pending_;
@@ -1597,6 +1666,10 @@ class Source : public CefClient, public CefLifeSpanHandler, public CefRenderHand
   int frame_width_ = 0, frame_height_ = 0, popup_width_ = 0, popup_height_ = 0, navigation_ = 0;
   bool show_popup_ = false, ready_ = false, emit_frames_ = true;
   bool screencast_active_=false,screencast_pulse_pending_=false;
+  bool renderer_crashed_=false;
+  std::string initial_navigation_;
+  std::string main_frame_id_;
+  bool pending_tab_creation_=false;
   std::deque<ScreenshotJob> screenshot_jobs_;
   bool screenshot_draining_=false;
   int screenshot_command_=0,screenshot_width_=0,screenshot_height_=0;

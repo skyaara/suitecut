@@ -18,13 +18,13 @@ describe('CDP native command backpressure', () => {
         maximum = Math.max(maximum, ++active)
         await new Promise<void>((resolve) => setImmediate(resolve))
         active--
-        if (sent.length === 250 && active === 0) finish()
+        if (sent.length === 4000 && active === 0) finish()
       },
       (error) => errors.push(error),
     )
-    for (let id = 0; id < 250; id++) queue.enqueue({ id }, 20)
+    for (let id = 0; id < 4000; id++) queue.enqueue({ id }, 20)
     await completed
-    expect(sent).toEqual(Array.from({ length: 250 }, (_, id) => id))
+    expect(sent).toEqual(Array.from({ length: 4000 }, (_, id) => id))
     expect(maximum).toBe(16)
     expect(errors).toEqual([])
     queue.close()
