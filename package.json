@@ -144,6 +144,7 @@
     "test:native": "pnpm build && node scripts/verify-native-browser.mjs && node scripts/verify-native-stream.mjs && node scripts/verify-native-recording.mjs",
     "test:native:stream": "pnpm build && node scripts/verify-native-stream.mjs",
     "test:native:recording": "pnpm build && node scripts/verify-native-recording.mjs",
+    "test:native:cadence": "pnpm build && node scripts/verify-native-cadence.mjs",
     "benchmark:beta": "pnpm build && node scripts/benchmark-beta.mjs",
     "benchmark:suite": "pnpm build && node scripts/benchmark-suite.mjs",
     "pack:beta": "pnpm build && node scripts/pack-beta.mjs",

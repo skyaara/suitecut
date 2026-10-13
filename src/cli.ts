@@ -29,7 +29,7 @@ Render options:
   --color-range <range>   auto, full, or limited. Default auto.
   --width <pixels>        Output width. Default 1920.
   --height <pixels>       Output height. Default 1080.
-  --fps <30|60>           Output frame rate. Default 30.
+  --fps <1..120>          Output frame rate. Default 30.
   --quality <profile>     standard, high, or master. Default standard.
   --result-hold-ms <ms>   Freeze the final frame for this duration. Default 0.
   --background-color <c>  Hex or basic named letterbox color. Default #0B1020.
@@ -140,7 +140,7 @@ function parseRenderArguments(args: readonly string[]): ParsedRenderArguments {
         break
       case '--fps': {
         const value = positiveInteger(requiredValue(args, index, argument), argument)
-        if (value !== 30 && value !== 60) throw new Error('--fps must be 30 or 60')
+        if (value > 120) throw new Error('--fps must be an integer from 1 to 120')
         output.framesPerSecond = value
         index += 1
         break

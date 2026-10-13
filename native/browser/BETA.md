@@ -33,8 +33,11 @@ with `addSource` remain caller-owned. Recording audio is disabled by default; se
 
 `defineSuiteCut({ native, capture, output, audioPlugins, signal })` creates a
 native-default recorder with reusable settings. Its returned function accepts
-per-recording overrides. Native dimensions/FPS belong in `native`; recording
-`capture` accepts output `size`, `narrationTailMs`, and the boolean `audio` flag.
+per-recording overrides. Native dimensions and capture FPS belong in `native`;
+recording `capture` accepts output `size`, output `framesPerSecond`,
+`narrationTailMs`, and the boolean `audio` flag. Capture and output FPS accept
+integers from 1 through 120. See
+[frame rates and resampling](README.md#frame-rates-and-resampling).
 
 Choose the old implementation explicitly for comparison or compatibility:
 

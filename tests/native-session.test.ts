@@ -93,7 +93,7 @@ describe('native recording clock and ownership', () => {
     const { session } = await createNativeRecordingSession({
       source: live.browser,
       ffmpegPath: '/unused',
-      capture: { audio: true },
+      capture: { audio: true, framesPerSecond: 47 },
       output: { pathFor: (name) => join(directory, name), attach: () => Promise.resolve() },
     })
     try {
@@ -146,6 +146,9 @@ describe('native recording clock and ownership', () => {
       })
       await vi.advanceTimersByTimeAsync(500)
       const next = await addSource(second.browser)
+      expect(createNativeVideoRecorder).toHaveBeenCalledWith(
+        expect.objectContaining({ framesPerSecond: 47 }),
+      )
       session.selectPage(next)
       expect(session.now()).toBe(1000)
       await vi.advanceTimersByTimeAsync(500)

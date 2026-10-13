@@ -90,6 +90,7 @@ export async function createNativeRecordingSession(options: {
     const initialUrl = await page.evaluate(() => location.href)
     const recorder = createNativeVideoRecorder({
       source,
+      framesPerSecond: capture.framesPerSecond,
       outputPath,
       ffmpegPath: options.ffmpegPath,
       size: capture.size ?? {
@@ -130,7 +131,7 @@ export async function createNativeRecordingSession(options: {
       )
       entry.lastReceivedAtMs = performance.now()
       entry.latest = frame.data
-      recorder.push(frame.data, Math.max(entry.startedAtMs, frameTime(frame.timestampMs)))
+      void recorder.push(frame.data, Math.max(entry.startedAtMs, frameTime(frame.timestampMs)))
       received()
     })
     if (capture.audio) {
@@ -167,7 +168,7 @@ export async function createNativeRecordingSession(options: {
     if (!active || pauseDepth) return
     for (const entry of entries.values())
       if (entry.latest && performance.now() - entry.lastReceivedAtMs > 100)
-        entry.recorder.push(entry.latest, now())
+        void entry.recorder.push(entry.latest, now())
   }, 100)
   const endRecording = (): Promise<void> =>
     (ending ??= (async () => {
@@ -254,7 +255,7 @@ export async function createNativeRecordingSession(options: {
       if (++pauseDepth === 1) {
         pausedAt = performance.now()
         for (const entry of entries.values())
-          if (entry.latest) entry.recorder.push(entry.latest, now())
+          if (entry.latest) void entry.recorder.push(entry.latest, now())
       }
       try {
         return await operation()

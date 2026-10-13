@@ -1,5 +1,6 @@
 import * as z from 'zod'
 
+import { FrameRateSchema } from './frame-rate.js'
 import { createLiveAudioTransport } from './live-audio.js'
 import { createLiveStream, type SuiteCutLiveStream } from './live-stream.js'
 import { NativeAudioAssembler } from './native-audio.js'
@@ -17,7 +18,7 @@ export type {
 } from './native-browser.js'
 
 export interface NativeBroadcast extends Omit<SuiteCutLiveStream, 'update'> {
-  /** Switches sources without restarting the publisher; dimensions and frame rate must match. */
+  /** Switches sources without restarting the publisher; dimensions and pixel format must match. */
   selectSource(source: NativeBrowser): void
 }
 
@@ -29,6 +30,8 @@ export interface NativeBroadcastOptions {
 }
 
 const NativeStreamOptionsSchema = SuiteCutStreamOptionsSchema.omit({ audio: true }).extend({
+  /** Constant output cadence; defaults to the first source's requested capture rate. */
+  framesPerSecond: FrameRateSchema.exactOptional(),
   /** Includes CEF page audio in the broadcast when explicitly enabled. */
   audio: z.boolean().default(false),
 })
@@ -42,8 +45,9 @@ export async function createNativeBroadcast(
   options.signal?.throwIfAborted()
   const nativeConfig = NativeStreamOptionsSchema.parse(options.stream)
   const audioEnabled = nativeConfig.audio
+  const { framesPerSecond, ...streamConfig } = nativeConfig
   const config: SuiteCutStreamOptions = SuiteCutStreamOptionsSchema.parse({
-    ...nativeConfig,
+    ...streamConfig,
     audio: audioEnabled,
   })
   const initial = options.source
@@ -64,7 +68,7 @@ export async function createNativeBroadcast(
     stream = createLiveStream(
       options.ffmpegPath,
       config,
-      initial.framesPerSecond,
+      framesPerSecond ?? initial.framesPerSecond,
       { width: initial.width, height: initial.height },
       signal,
       undefined,
@@ -86,12 +90,9 @@ export async function createNativeBroadcast(
     if (
       source.width !== initial.width ||
       source.pixelFormat !== initial.pixelFormat ||
-      source.height !== initial.height ||
-      source.framesPerSecond !== initial.framesPerSecond
+      source.height !== initial.height
     )
-      throw new Error(
-        'Native broadcast sources must have matching dimensions, pixel format, and frame rate',
-      )
+      throw new Error('Native broadcast sources must have matching dimensions and pixel format')
     unsubscribeFrame()
     unsubscribeAudio()
     assembler.clear()

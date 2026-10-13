@@ -69,11 +69,11 @@ describe('native broadcast source ownership', () => {
       health: () => ({ captureLagMs: 0, outputLagMs: 0, progressAgeMs: 0 }),
     })
     const first = source()
-    const second = source()
+    const second = { ...source(), framesPerSecond: 47 }
     const broadcast = await createNativeBroadcast({
       source: first,
       ffmpegPath: '/ffmpeg',
-      stream: { url: 'rtmp://localhost/live/test' },
+      stream: { url: 'rtmp://localhost/live/test', framesPerSecond: 120 },
     })
     const frame = {
       data: Buffer.alloc(16),
@@ -96,7 +96,7 @@ describe('native broadcast source ownership', () => {
     expect(createLiveStream).toHaveBeenCalledWith(
       '/ffmpeg',
       expect.objectContaining({ audio: false }),
-      expect.anything(),
+      120,
       expect.anything(),
       expect.anything(),
       undefined,

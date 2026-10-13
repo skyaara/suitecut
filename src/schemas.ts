@@ -1,6 +1,7 @@
 import * as z from 'zod'
 
 import { MAX_SUITE_CUT_ZOOM_SCALE } from './constants.js'
+import { FrameRateSchema } from './frame-rate.js'
 import { type LiveStreamDiagnostic } from './live-congestion.js'
 
 const NonEmptyStringSchema = z
@@ -91,7 +92,7 @@ export const SuiteCutCaptureOptionsSchema = z.strictObject({
   viewport: SuiteCutCaptureViewportSchema.exactOptional(),
   size: SuiteCutCaptureSizeSchema.exactOptional(),
   deviceScaleFactor: z.number().min(1).max(4).exactOptional(),
-  framesPerSecond: z.union([z.literal(30), z.literal(60)]).exactOptional(),
+  framesPerSecond: FrameRateSchema.exactOptional(),
   quality: z.number().int().min(1).max(100).exactOptional(),
   narrationTailMs: NonNegativeNumberSchema.exactOptional(),
   stream: SuiteCutStreamOptionsSchema.exactOptional(),

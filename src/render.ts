@@ -7,6 +7,7 @@ import * as z from 'zod'
 
 import { raceWithAbort } from './abort.js'
 import { formattedJson, writeTextFileAtomic } from './atomic-file.js'
+import { FrameRateSchema } from './frame-rate.js'
 import { decodeManifest } from './manifest.js'
 import { resolveFfmpeg, runProcess, type SuiteCutProcessResult } from './process.js'
 import { createSuiteCutReportRedactor } from './report-redaction.js'
@@ -48,7 +49,7 @@ const OutputSchema = z
     colorRange: ColorRangeSchema.exactOptional(),
     width: z.number().int().positive().max(7680).multipleOf(2).exactOptional(),
     height: z.number().int().positive().max(4320).multipleOf(2).exactOptional(),
-    framesPerSecond: z.union([z.literal(30), z.literal(60)]).exactOptional(),
+    framesPerSecond: FrameRateSchema.exactOptional(),
     quality: RenderQualitySchema.exactOptional(),
   })
   .superRefine((output, context) => {
@@ -615,10 +616,15 @@ function sourceTrimFilter(
   item: SuiteCutSequenceItem,
   sourceStartedAtMs: number,
   framesPerSecond: number,
+  sourceFrameRate?: number,
 ): string {
+  // WebM rounds 120 FPS timestamps to milliseconds. Restore a known CFR clock
+  // before trimming/resampling, so those container ticks cannot change frame selection.
+  const sourceClock =
+    sourceFrameRate === undefined ? '' : `settb=AVTB,setpts=N/${sourceFrameRate}/TB,`
   const sourceAtMs = Math.max(0, item.executionStartMs - sourceStartedAtMs)
   if (item.kind === 'hold') {
-    return `trim=start=${seconds(sourceAtMs)}:duration=${seconds(1_000 / framesPerSecond)},setpts=PTS-STARTPTS,tpad=stop_mode=clone:stop_duration=${seconds(item.durationMs)},trim=duration=${seconds(item.durationMs)},fps=${framesPerSecond}`
+    return `${sourceClock}trim=start=${seconds(sourceAtMs)}:duration=${seconds(1_000 / framesPerSecond)},setpts=PTS-STARTPTS,tpad=stop_mode=clone:stop_duration=${seconds(item.durationMs)},trim=duration=${seconds(item.durationMs)},fps=${framesPerSecond}:round=up`
   }
 
   const leadingHoldMs = Math.min(
@@ -628,7 +634,7 @@ function sourceTrimFilter(
   const sourceDurationMs = Math.max(40, item.durationMs - leadingHoldMs)
   const leadingPad =
     leadingHoldMs > 0 ? `,tpad=start_mode=clone:start_duration=${seconds(leadingHoldMs)}` : ''
-  return `trim=start=${seconds(sourceAtMs)}:duration=${seconds(sourceDurationMs)},setpts=PTS-STARTPTS${leadingPad},tpad=stop_mode=clone:stop_duration=${seconds(item.durationMs)},trim=duration=${seconds(item.durationMs)},fps=${framesPerSecond}`
+  return `${sourceClock}trim=start=${seconds(sourceAtMs)}:duration=${seconds(sourceDurationMs)},setpts=PTS-STARTPTS${leadingPad},tpad=stop_mode=clone:stop_duration=${seconds(item.durationMs)},trim=duration=${seconds(item.durationMs)},fps=${framesPerSecond}:round=up`
 }
 
 function sourceAudioTrimFilter(
@@ -852,7 +858,6 @@ export async function renderSuiteCut(input: SuiteCutRenderRequest): Promise<Suit
       const timing = timingByPage.get(item.pageId)
       const sourceStartMs = timing?.sourceStartedAtMs ?? 0
       const label = `segment${index}`
-      const trim = sourceTrimFilter(item, sourceStartMs, fps)
       const sourceArtifact = sourceArtifacts[inputIndex]?.artifact
       const sourceMedia =
         sourceArtifact === undefined ? undefined : mediaByArtifactId.get(sourceArtifact.id)
@@ -860,6 +865,12 @@ export async function renderSuiteCut(input: SuiteCutRenderRequest): Promise<Suit
       if (sourceVideo === undefined) {
         throw new Error(`Missing video stream metadata for page ${item.pageId}`)
       }
+      const trim = sourceTrimFilter(
+        item,
+        sourceStartMs,
+        fps,
+        sourceVideo.hasVariableFrameRate ? undefined : sourceVideo.frameRate,
+      )
       let visual = trim
       visual += cameraVisualFilter(
         cameraRunsByPage.get(item.pageId) ?? [],

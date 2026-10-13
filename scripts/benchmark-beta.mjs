@@ -29,7 +29,7 @@ const config = z
     trials: z.coerce.number().int().min(1).max(10),
     width: z.coerce.number().int().min(320).max(3840).multipleOf(2),
     height: z.coerce.number().int().min(320).max(2160).multipleOf(2),
-    fps: z.coerce.number().pipe(z.union([z.literal(30), z.literal(60)])),
+    fps: z.coerce.number().int().min(1).max(120),
     workload: z.enum(['static', 'canvas', 'dom', 'multi-page']),
     scenario: z.string().trim().min(1),
   })

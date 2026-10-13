@@ -6,6 +6,7 @@ import { isAbsolute, join } from 'node:path'
 import * as z from 'zod'
 
 import { raceWithAbort } from './abort.js'
+import { FrameRateSchema } from './frame-rate.js'
 import { NativePacketDecoder, NATIVE_PROTOCOL_VERSION } from './native-protocol.js'
 import { type UntrustedInput } from './untrusted.js'
 
@@ -20,7 +21,7 @@ const LaunchSchema = z
     width: z.number().int().min(2).max(3840).default(1920),
     height: z.number().int().min(2).max(2160).default(1080),
     deviceScaleFactor: z.union([z.literal(1), z.literal(2)]).default(1),
-    framesPerSecond: z.union([z.literal(30), z.literal(60)]).default(60),
+    framesPerSecond: FrameRateSchema.default(60),
     pixelFormat: z.enum(['bgra', 'i420']).default('bgra'),
     startupTimeoutMs: z.number().int().min(100).max(120_000).default(30_000),
     signal: z.instanceof(AbortSignal).optional(),
@@ -41,7 +42,8 @@ export interface NativeBrowserOptions {
   width?: number
   height?: number
   deviceScaleFactor?: 1 | 2
-  framesPerSecond?: 30 | 60
+  /** Requested CEF capture rate, any integer from 1 through 120; actual delivery can be lower. */
+  framesPerSecond?: number
   /** BGRA8 for exact pixels; planar BT.709 limited-range I420 for lower-bandwidth streaming. */
   pixelFormat?: NativePixelFormat
   startupTimeoutMs?: number
@@ -73,7 +75,7 @@ export interface NativeBrowser {
   readonly pixelFormat: NativePixelFormat
   readonly width: number
   readonly height: number
-  readonly framesPerSecond: 30 | 60
+  readonly framesPerSecond: number
   readonly cefVersion: string
   /** Rejects on runtime, renderer, audio, protocol, or subscriber failure. */
   readonly failure: Promise<never>

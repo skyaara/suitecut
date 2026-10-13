@@ -6,6 +6,7 @@ import { finished } from 'node:stream/promises'
 
 import { raceWithAbort } from './abort.js'
 import { createCaptureScaleFilter } from './capture.js'
+import { FrameRateSchema, videoFramePosition } from './frame-rate.js'
 import { type NativeBrowser } from './native-browser.js'
 import { runProcess, waitForProcessExit } from './process.js'
 import { type SuiteCutCaptureSize } from './schemas.js'
@@ -13,12 +14,14 @@ import { type SuiteCutCaptureSize } from './schemas.js'
 /** Bounded latest-frame encoder; repeats held frames to preserve wall-clock timing. */
 export function createNativeVideoRecorder(options: {
   source: Pick<NativeBrowser, 'width' | 'height' | 'pixelFormat' | 'framesPerSecond'>
+  framesPerSecond?: number | undefined
   ffmpegPath: string
   outputPath: string
   size: SuiteCutCaptureSize
   audio?: boolean
 }) {
   const { source } = options
+  const framesPerSecond = FrameRateSchema.parse(options.framesPerSecond ?? source.framesPerSecond)
   const videoOutputPath = options.audio ? `${options.outputPath}.video.webm` : options.outputPath
   const audioOutputPath = `${options.outputPath}.audio.pcm`
   const child = spawn(
@@ -34,7 +37,7 @@ export function createNativeVideoRecorder(options: {
       '-video_size',
       `${source.width}x${source.height}`,
       '-framerate',
-      String(source.framesPerSecond),
+      String(framesPerSecond),
       '-i',
       'pipe:0',
       '-an',
@@ -108,8 +111,8 @@ export function createNativeVideoRecorder(options: {
   child.stdin.on('error', fail)
   let pending: { data: Buffer; atMs: number } | undefined
   let last: Buffer | undefined
-  let latest: Buffer | undefined
   let firstAtMs: number | undefined
+  let latestAtMs = -Infinity
   let lastNumber = -1
   let work: Promise<void> | undefined
   const audioOutput = options.audio ? createWriteStream(audioOutputPath, { flags: 'w' }) : undefined
@@ -131,15 +134,16 @@ export function createNativeVideoRecorder(options: {
         firstAtMs = frame.atMs
         startAudioWork()
       }
-      const number = Math.max(
-        0,
-        Math.floor(((frame.atMs - firstAtMs) * source.framesPerSecond) / 1000),
-      )
+      // A tick sees the newest captured frame at or before its timestamp.
+      // Frames between ticks update the held image, never an earlier output tick.
+      const position = videoFramePosition(frame.atMs - firstAtMs, framesPerSecond, firstAtMs)
+      const number = Math.ceil(position)
       while (last && lastNumber + 1 < number) {
         await write(last)
         lastNumber++
       }
-      if (number > lastNumber) {
+      // Keep boundary frames until the next capture or stop establishes their duration.
+      if (lastNumber < 0) {
         await write(frame.data)
         lastNumber = number
       }
@@ -156,11 +160,17 @@ export function createNativeVideoRecorder(options: {
         if (pending && !failed) startWork()
       })
   }
-  const push = (data: Buffer, atMs: number) => {
+  const push = (data: Buffer, atMs: number): Promise<void> | void => {
     if (ending || failed) return
-    latest = data
+    if (!Number.isFinite(atMs) || atMs < 0) {
+      fail(new Error('Native recording received an invalid capture timestamp'))
+      return
+    }
+    if (atMs < latestAtMs) return // A delayed capture cannot replace a newer held frame.
+    latestAtMs = atMs
     pending = { data, atMs }
     startWork()
+    return work
   }
   const writeAudio = async (data: Buffer): Promise<void> => {
     if (!audioOutput) return
@@ -229,8 +239,6 @@ export function createNativeVideoRecorder(options: {
     },
     stop(atMs: number): Promise<void> {
       stopping ??= (async () => {
-        const finalFrame = latest
-        if (finalFrame) pending = { data: finalFrame, atMs }
         ending = true
         startWork()
         const deadline = AbortSignal.timeout(60_000)
@@ -238,6 +246,19 @@ export function createNativeVideoRecorder(options: {
           while (work || pending) {
             if (!work) startWork()
             await raceWithAbort(Promise.race([work, failure]), deadline)
+          }
+          // Emit slots in [firstAtMs, atMs); do not append a frame at the end boundary.
+          if (firstAtMs !== undefined && last) {
+            const count = Math.max(
+              1,
+              Math.ceil(
+                videoFramePosition(Math.max(0, atMs - firstAtMs), framesPerSecond, firstAtMs),
+              ),
+            )
+            while (lastNumber + 1 < count) {
+              await raceWithAbort(write(last), deadline)
+              lastNumber++
+            }
           }
           startAudioWork()
           while (audioWork || audioPackets.length > 0) {

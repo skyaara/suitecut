@@ -22,8 +22,13 @@ describe('native browser lifecycle', () => {
     prefix.writeUInt32LE(json.length)
     output.write(Buffer.concat([prefix, json, data]))
   }
-  const launch = async () => {
-    const promise = launchNativeBrowser({ executablePath: path, width: 2, height: 2 })
+  const launch = async (framesPerSecond = 60) => {
+    const promise = launchNativeBrowser({
+      executablePath: path,
+      width: 2,
+      height: 2,
+      framesPerSecond,
+    })
     await vi.waitFor(() => expect(spawn).toHaveBeenCalled())
     emit({ type: 'ready', timestampMs: 1, cefVersion: 'test' })
     return promise
@@ -64,6 +69,27 @@ describe('native browser lifecycle', () => {
     expect(browser.state).toBe('closed')
     expect(() => browser.onFrame(() => undefined)).toThrow('not running')
   })
+
+  it.each([1, 24, 47, 59, 90, 120])('requests %i FPS from the native executable', async (fps) => {
+    const browser = await launch(fps)
+    expect(browser.framesPerSecond).toBe(fps)
+    expect(spawn).toHaveBeenCalledWith(
+      path,
+      expect.arrayContaining([`--suitecut-fps=${fps}`]),
+      expect.anything(),
+    )
+    await browser.close()
+  })
+
+  it.each([0, -1, 121, 29.97, Number.NaN, Number.POSITIVE_INFINITY])(
+    'rejects invalid capture FPS %s before spawning',
+    async (fps) => {
+      await expect(
+        launchNativeBrowser({ executablePath: path, framesPerSecond: fps }),
+      ).rejects.toThrow()
+      expect(spawn).not.toHaveBeenCalled()
+    },
+  )
 
   it('correlates concurrent commands by ID and rejects unsupported navigation', async () => {
     const browser = await launch()

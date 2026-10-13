@@ -476,7 +476,7 @@ Set `suitecutCapture` with `test.use()` or in Playwright configuration:
   `1920x1080` viewport at `2` renders `3840x2160` pixels without changing page layout.
 - `size`: encoded source size, defaulting to the viewport. Larger sizes must preserve the viewport
   aspect ratio. Width and height must be even and no larger than `7680x4320`.
-- `framesPerSecond`: `30` or `60`; default `30`.
+- `framesPerSecond`: any integer from `1` through `120`; default `30`.
 - `quality`: capture JPEG quality from `1` through `100`; default `100`
   when recording, or `90` in streaming-only mode.
 - `narrationTailMs`: non-negative pause after every narration clip; default `350`.

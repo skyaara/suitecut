@@ -24,6 +24,7 @@
 #include "include/cef_task.h"
 #include "include/cef_version.h"
 #include "audio_clock.h"
+#include "frame_rate.h"
 #include "libyuv/convert_from_argb.h"
 #include "libyuv/convert.h"
 
@@ -392,11 +393,15 @@ class App : public CefApp, public CefBrowserProcessHandler {
     auto command = CefCommandLine::GetGlobalCommandLine();
     const int width = std::atoi(command->GetSwitchValue("suitecut-width").ToString().c_str());
     const int height = std::atoi(command->GetSwitchValue("suitecut-height").ToString().c_str());
-    const int fps = std::atoi(command->GetSwitchValue("suitecut-fps").ToString().c_str());
+    const auto parsed_fps = ParseSuiteCutFrameRate(command->GetSwitchValue("suitecut-fps").ToString());
+    if (!parsed_fps) {
+      CefQuitMessageLoop(); return;
+    }
+    const int fps = *parsed_fps;
     const double scale = std::atof(command->GetSwitchValue("suitecut-scale").ToString().c_str());
     const auto pixel_format = command->GetSwitchValue("suitecut-pixel-format").ToString();
     if (width < 2 || height < 2 || (scale != 1 && scale != 2) ||
-        width * scale > 3840 || height * scale > 2160 || (fps != 30 && fps != 60)) {
+        width * scale > 3840 || height * scale > 2160) {
       CefQuitMessageLoop(); return;
     }
     if ((pixel_format != "bgra" && pixel_format != "i420") ||

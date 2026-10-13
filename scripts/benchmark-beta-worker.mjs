@@ -24,7 +24,7 @@ const config = z
     durationMs: z.number(),
     width: z.number(),
     height: z.number(),
-    fps: z.union([z.literal(30), z.literal(60)]),
+    fps: z.number().int().min(1).max(120),
     directory: z.string(),
   })
   .parse(JSON.parse(process.argv[2] ?? '{}'))

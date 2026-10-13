@@ -133,13 +133,56 @@ track and does not subscribe to CEF audio packets.
   `state` reports `running`, `closing`, `closed`, or `failed`; closed/failed sources
   reject new subscriptions and cannot be selected for a broadcast.
 - A broadcast owns its publisher, **not** its sources. `selectSource(next)` requires
-  matching physical size, pixel format, and FPS and preserves the publisher connection. It clears
+  matching physical size and pixel format and preserves the publisher connection. It clears
   previous audio. If a source fails, the publisher holds its last frame and emits
   silence; observe `source.failure` and switch to a prewarmed fallback or stop.
   Automatic browser restart and game scheduling remain application responsibilities.
 - `deviceScaleFactor` (1 or 2) preserves CSS dimensions while increasing physical capture
   dimensions, up to 3840×2160. Dimensions are immutable for each source. Broadcasts
   require even physical dimensions. Use a replacement source to change layouts.
+
+### Frame rates and resampling
+
+`framesPerSecond` accepts any integer from **1 through 120** (default 60).
+The pinned CEF revision accepts this range without a 60 FPS clamp. This sets its
+maximum offscreen paint rate; actual callbacks depend on page activity and host
+capacity. Capture timestamps and native drop counts remain attached to frames.
+Do not interpret a 120 FPS file as proof of 120 distinct captured frames.
+
+Recording `capture.framesPerSecond` and native broadcast
+`stream.framesPerSecond` independently select the constant output rate, also
+1–120. Omitted recording cadence uses each source's requested rate; omitted
+broadcast cadence uses the first source's rate and stays fixed across switches.
+Sources with different capture FPS can feed the same broadcast if physical
+dimensions and pixel format match.
+
+Recording samples the newest captured image at or before each output tick on a
+timeline anchored at the first accepted capture. Faster input drops intermediate
+images; slower or idle input holds the previous image. Frames are not blended or
+motion-interpolated. Obsolete callbacks cannot replace newer held images.
+Encoder backpressure replaces the pending capture rather than growing a queue.
+Finalization fills ticks before the end time, without adding an extra tick at
+the end boundary. Duration is quantized to output frame intervals.
+
+Streaming paces ticks against an absolute monotonic timeline. With audio enabled,
+timestamped video is selected on its existing 150 ms delayed media timeline;
+congestion can skip video and audio capture time together. The 48 kHz audio
+sample boundary at video tick `n` is `floor(n * 48000 / outputFPS)`, so rates such
+as 37 or 59 emit alternating whole-sample counts without cumulative rounding
+drift. The persistent publisher's independent audio pump remains at 48 kHz.
+
+Final rendering can resample again using `config.output.framesPerSecond` or CLI
+`--fps`; known constant-rate sources first recover their frame-index clock to
+avoid WebM millisecond timestamp rounding changing selection. Its FFmpeg `fps`
+filter then rounds forward to the next output tick, holding/dropping frames
+without interpolation. Variable-rate sources retain their captured timing.
+Source recording settings and final output settings are separate.
+
+Run `pnpm test:native:cadence` without CEF to decode frame IDs and page-tone audio
+through the real recorder/FFmpeg pipeline at 24→120, 120→24, 120→120 and 59→37,
+plus final rendering at 120→60. Reports and media go under
+`.suitecut/native-cadence-verification/`. This verifies resampling, decoded
+pixels and audio continuity; it does not establish real CEF throughput at 120 FPS.
 
 The existing `suitecut/playwright` and `suitecut/test` APIs keep their existing
 backend. This API does not claim Playwright `Page` compatibility with CEF.
@@ -202,6 +245,7 @@ The callback receives `{ source, page, suitecut, signal, addSource }`:
   own clip and the renderer composes the selected intervals. Selection is explicit;
   this does not enable popup windows in CEF.
 - `capture.size` optionally scales recorded video while leaving CSS layout alone.
+  `capture.framesPerSecond` optionally resamples source clips to a chosen 1–120 FPS cadence.
   `capture.narrationTailMs` controls the pause after speech. Set CSS dimensions,
   device scale, and capture FPS when launching the source. Unsupported capture
   options are rejected instead of silently ignored.

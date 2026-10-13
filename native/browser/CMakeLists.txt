@@ -20,6 +20,8 @@ set(LIBYUV_DISABLE_JPEG ON CACHE BOOL "Only raw pixel conversion is needed" FORC
 add_subdirectory("${LIBYUV_ROOT}" libyuv EXCLUDE_FROM_ALL)
 set(CMAKE_CXX_STANDARD 20)
 enable_testing()
+add_executable(suitecut-frame-rate-test frame_rate_test.cc)
+add_test(NAME native-frame-rate COMMAND suitecut-frame-rate-test)
 add_executable(suitecut-audio-clock-test audio_clock_test.cc)
 add_test(NAME native-audio-clock COMMAND suitecut-audio-clock-test)
 add_executable(suitecut-pixel-test pixel_test.cc)

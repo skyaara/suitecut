@@ -51,6 +51,54 @@ describe('live stream publishing', () => {
     vi.clearAllMocks()
   })
 
+  it.each([37, 59, 120])(
+    'writes exactly 48000 contiguous audio samples per second at %i FPS',
+    async (fps) => {
+      const origin = Date.now()
+      const clock = vi.spyOn(performance, 'now').mockImplementation(() => Date.now() - origin)
+      const writes: { at: number; samples: number }[] = []
+      const stream = createLiveStream(
+        'ffmpeg',
+        { url: 'rtmp://localhost/live/key' },
+        fps,
+        { width: 2, height: 2 },
+        undefined,
+        undefined,
+        {
+          url: '',
+          buffer: new LiveAudioBuffer(),
+          activate: () => Promise.resolve(),
+          createInput: () => ({
+            url: 'http://localhost/audio',
+            write: (at, samples) => {
+              writes.push({ at, samples })
+              return Promise.resolve()
+            },
+            close: () => undefined,
+          }),
+          close: () => Promise.resolve(),
+        },
+      )
+      try {
+        stream.update(Buffer.from('frame'), performance.now() - 150)
+        await vi.advanceTimersByTimeAsync(999)
+        expect(frames).toHaveLength(fps)
+        expect(writes).toHaveLength(fps)
+        expect(writes.reduce((sum, write) => sum + write.samples, 0)).toBe(48_000)
+        for (let index = 0; index < writes.length - 1; index++) {
+          const current = writes[index]
+          const next = writes[index + 1]
+          if (!current || !next) throw new Error('Missing audio interval')
+          expect(Number.isInteger(current.samples)).toBe(true)
+          expect(next.at).toBeCloseTo(current.at + current.samples / 48, 8)
+        }
+      } finally {
+        await stream.stop()
+        clock.mockRestore()
+      }
+    },
+  )
+
   it('encodes raw native BGRA with explicit dimensions and rejects partial frames', async () => {
     const stream = createLiveStream(
       'ffmpeg',

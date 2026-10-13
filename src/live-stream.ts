@@ -4,6 +4,12 @@ import { setTimeout as delay } from 'node:timers/promises'
 
 import { raceWithAbort } from './abort.js'
 import { createCaptureScaleFilter } from './capture.js'
+import {
+  audioSampleBoundary,
+  audioSamplesForVideoFrame,
+  FrameRateSchema,
+  MAX_FRAMES_PER_SECOND,
+} from './frame-rate.js'
 import { LIVE_AUDIO_DELAY_MS, type LiveAudioTransport } from './live-audio.js'
 import {
   LiveCongestion,
@@ -54,6 +60,7 @@ export function createLiveStreamAttempt(
   inputSize?: SuiteCutCaptureViewport,
   inputFormat: 'mjpeg' | 'bgra' | 'i420' = 'mjpeg',
 ): SuiteCutLiveStream {
+  FrameRateSchema.parse(framesPerSecond)
   if (inputFormat !== 'mjpeg' && inputSize === undefined)
     throw new Error('Raw capture requires explicit input dimensions')
   const rawFrameBytes =
@@ -377,7 +384,13 @@ export function createLiveStreamAttempt(
       })(),
       (async () => {
         try {
-          await audioInput?.write(mediaAt, 48000 / framesPerSecond, writeSignal)
+          await audioInput?.write(
+            firstWriteAt -
+              LIVE_AUDIO_DELAY_MS +
+              audioSampleBoundary(writtenFrames, framesPerSecond) / 48,
+            audioSamplesForVideoFrame(writtenFrames, framesPerSecond),
+            writeSignal,
+          )
         } finally {
           audioPending = false
           congestion.measure({ audioWriteMs: performance.now() - pendingAt })
@@ -389,7 +402,7 @@ export function createLiveStreamAttempt(
     const nextFrameAt = firstWriteAt + (writtenFrames * 1000) / framesPerSecond
 
     if (!closing && failure === undefined) {
-      timer = setTimeout(schedule, Math.max(0, nextFrameAt - performance.now()))
+      timer = setTimeout(schedule, Math.max(0, Math.ceil(nextFrameAt - performance.now())))
     }
   }
   const schedule = (): void => {
@@ -439,7 +452,11 @@ export function createLiveStreamAttempt(
         frameBytes += frame.length
         while (
           frames.length > 1 &&
-          (frames.length > 610 ||
+          (frames.length >
+            Math.ceil(
+              (MAX_FRAMES_PER_SECOND * (LIVE_RECOVERY_WINDOW_MS + LIVE_AUDIO_DELAY_MS)) / 1000,
+            ) +
+              3 ||
             frameBytes > frameBufferBytes ||
             (frames[0]?.at ?? now) < now - LIVE_RECOVERY_WINDOW_MS - LIVE_AUDIO_DELAY_MS)
         )
@@ -483,6 +500,7 @@ export function createLiveStream(
   inputSize?: SuiteCutCaptureViewport,
   inputFormat: 'mjpeg' | 'bgra' | 'i420' = 'mjpeg',
 ): SuiteCutLiveStream {
+  FrameRateSchema.parse(framesPerSecond)
   if (options.adaptiveBitrate !== false)
     return createPersistentLiveStream(
       ffmpegPath,
