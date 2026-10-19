@@ -1,90 +1,49 @@
 # Contributing to SuiteCut
 
-SuiteCut owns its Playwright capture, timing, manifest, and rendering code. Keep changes inside those
-boundaries. Do not add hosted speech services or `playwright-recast`.
+SuiteCut owns its CEF capture, private transport, timing, narration, manifests,
+recording and publishing. Preserve source ownership, failure propagation and
+sandboxing when changing these boundaries.
 
-## Set up the repository
+## Setup and checks
 
-You need Node.js 22, pnpm 11, FFmpeg, FFprobe, and the Playwright browsers used by the tests.
+Use Node.js 22, pnpm 11, FFmpeg and FFprobe. Real browser checks require the pinned
+CEF executable described in [native/browser/README.md](native/browser/README.md).
 
 ```sh
-git clone https://github.com/skyaara/suitecut.git
-cd suitecut
 pnpm install --frozen-lockfile
-pnpm exec playwright install chromium firefox webkit
-pnpm check
-```
-
-On macOS, `brew install ffmpeg` provides FFmpeg and FFprobe. On Linux, use your distribution's
-FFmpeg package.
-
-## Make a change
-
-- Keep TypeScript strict. Validate JSON-shaped runtime input with Zod.
-- Use NodeNext ESM imports with emitted `.js` relative specifiers.
-- Add or update a focused test for behavior changes.
-- Keep fixture methods small and Playwright-native. Recording lifecycle and FFmpeg process cleanup
-  stay inside SuiteCut.
-- Do not commit `.suitecut`, `dist`, Playwright results, or generated video files.
-- Do not replace the bundled Kokoro files without updating `assets/kokoro/NOTICE.md`, including the
-  pinned upstream revision and SHA-256 hashes.
-
-The durable public entries are `suitecut`, `suitecut/test`, `suitecut/audio-plugin`, `suitecut/playwright`,
-`suitecut/reporter`, `suitecut/render`, and `suitecut/types`. Treat changes to their exports, option
-schemas, manifest fields, or CLI flags as public API changes.
-
-Keep optional model runtimes in `plugins/`. Audio plugins run in the narration worker and must write
-mono PCM WAV to the requested output path. Do not add their model runtime dependencies to the core
-`suitecut` package.
-
-## Run the checks
-
-For most changes:
-
-```sh
-pnpm check
+pnpm build
+pnpm typecheck
+pnpm test
+pnpm test:native:cadence
 pnpm site:check
 pnpm site:build
 ```
 
-For recording, page lifecycle, timing, or reporter work:
+Run `pnpm test:native` for browser/capture/lifecycle changes on a supported CEF
+host. Report missing runtime evidence as blocked, not passing. Use native CTest
+checks for frame-rate parsing, audio-clock and libyuv pixel changes.
 
-```sh
-pnpm test:stream
-pnpm test:browsers
-pnpm test:retry-parallel
-```
+## Code and package boundaries
 
-For Kokoro inference changes:
+- Keep TypeScript strict and validate runtime JSON input with Zod.
+- Use NodeNext ESM imports with emitted `.js` relative specifiers.
+- Keep renderer DOM logic independent of host orchestration.
+- Preserve bounded capture queues, capture timestamps and observable failures.
+- Keep model runtimes in `plugins/` and retain upstream license notices.
+- Do not commit `.suitecut`, `dist`, browser profiles or generated media.
+- Do not replace Kokoro assets without updating their pin and notices.
 
-```sh
-pnpm test:kokoro
-```
+Public entries are `suitecut`, `suitecut/native`, `suitecut/beta`,
+`suitecut/audio-plugin`, `suitecut/render` and `suitecut/types`. Treat export,
+option, manifest and CLI changes as public API changes. Audio plugins run in the
+narration worker and write mono PCM WAV to the requested path.
 
-For the external audio plugin contract or Sherpa family adapters:
+Run `pnpm test:package` for package changes, `pnpm test:audio-plugin` for audio
+contracts and `pnpm test:sherpa` with an explicit local model when exercising
+Sherpa integrations. These checks do not publish anything.
 
-```sh
-pnpm test:audio-plugin
-pnpm test:sherpa
-```
+## Review
 
-Set `SUITECUT_SHERPA_VITS_MODEL_DIR` to run the Sherpa-ONNX integration test against a local Piper
-or VITS model. The plugin never downloads model files.
-
-For package metadata, exports, bundled assets, or release work:
-
-```sh
-pnpm test:package
-```
-
-`test:package` builds the project once, packs with lifecycle scripts disabled, inspects every npm
-tarball, installs the core and two representative audio packages in a temporary consumer project,
-imports every public entry, and runs the installed CLI help command.
-
-## Open a pull request
-
-Explain the observed problem, the chosen fix, and the commands you ran. Include a small reproduction
-for bugs. Keep unrelated cleanup out of the same pull request. Run the relevant checks listed above
-and include their results before the pull request is ready to merge.
-
-By submitting a contribution, you agree that the project may distribute it under the MIT license.
+Describe the concrete problem, resulting behavior, validation and remaining
+limitations. Preserve unrelated work. Publishing, pushing, deployment and release
+require explicit authorization. Contributions retain the repository MIT license.

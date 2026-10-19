@@ -1,0 +1,7 @@
+# SPDX-License-Identifier: MIT
+import argparse,json,pathlib,subprocess,xml.etree.ElementTree as ET
+p=argparse.ArgumentParser();p.add_argument('--executable',required=True);p.add_argument('--directory',type=pathlib.Path,required=True);a=p.parse_args();a.directory.mkdir(parents=True,exist_ok=True)
+r=subprocess.run([a.executable,str(a.directory)],capture_output=True,timeout=20);assert r.returncode==0,(r.stdout,r.stderr);assert not r.stderr
+v=json.loads((a.directory/'skip.json').read_text());s=v['steps'][0];assert v['summary']['skipped']==1 and v['summary']['expected']==0 and s['status']=='skipped' and s['testSkip']=={'requestId':'7','reason':'reason\ud800<&'} and s['receiptTestSkipRequestId']=='7' and s['receiptOK'] and not s['receiptError']
+x=ET.parse(a.directory/'skip.xml');assert x.find(".//property[@name='native.step1.testSkipRequestId']").attrib['value']=='7';assert x.find(".//property[@name='native.step1.receiptTestSkipRequestId']").attrib['value']=='7';assert x.find(".//property[@name='native.step1.testSkipReason']").attrib['value']=='reason\ufffd<&';assert x.find(".//property[@name='native.step1.testSkipReasonXmlSanitizedUnits']").attrib['value']=='1';h=(a.directory/'skip.html').read_text();assert 'Accepted native test-skip request' in h and 'Raw receipt test-skip request' in h and 'Original UTF16 JSON string' in h
+print('PASS8 independently decoded native test-skip step report groups')

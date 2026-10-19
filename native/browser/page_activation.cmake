@@ -1,0 +1,7 @@
+add_executable(suitecut-page-activation-source-test page_activation_source_test.cc)
+SET_EXECUTABLE_TARGET_PROPERTIES(suitecut-page-activation-source-test)
+target_compile_features(suitecut-page-activation-source-test PRIVATE cxx_std_20)
+target_compile_options(suitecut-page-activation-source-test PRIVATE -UNDEBUG -fexceptions -Wall -Wextra -Werror)
+target_include_directories(suitecut-page-activation-source-test SYSTEM PRIVATE "${CEF_ROOT}")
+target_link_libraries(suitecut-page-activation-source-test PRIVATE libcef_lib libcef_dll_wrapper)
+add_test(NAME native-page-activation-source COMMAND suitecut-page-activation-source-test)

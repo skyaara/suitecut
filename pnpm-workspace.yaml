@@ -1,8 +1,17 @@
 packages:
   - 'site'
   - 'plugins/*'
+  - 'packages/*'
 allowBuilds:
   esbuild: true
   protobufjs: true
   unrs-resolver: true
 linkWorkspacePackages: true
+overrides:
+  sharp: '^0.35.5'
+  devalue: '^5.9.3'
+  http-cache-semantics: '^4.2.1'
+  smol-toml: '^1.8.1'
+  source-map-js: '^1.2.2'
+  fast-uri: '^3.1.8'
+  brace-expansion: '^5.0.12'

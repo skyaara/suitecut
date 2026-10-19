@@ -1,0 +1,52 @@
+{
+  "name": "@suitecut/browser-control",
+  "version": "2.0.0",
+  "description": "Browser control SDK for native CEF, Chromium CDP and Firefox WebDriver BiDi, with a native browser viewer.",
+  "type": "module",
+  "license": "MIT",
+  "author": "skyaara",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/skyaara/suitecut.git",
+    "directory": "packages/browser-control"
+  },
+  "main": "./dist/browser.js",
+  "types": "./dist/browser.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/browser.d.ts",
+      "default": "./dist/browser.js"
+    },
+    "./package.json": "./package.json",
+    "./remote": {
+      "types": "./dist/remote-browser.d.ts",
+      "default": "./dist/remote-browser.js"
+    }
+  },
+  "bin": {
+    "browser-control": "dist/browser-control-cli.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "clean:dist": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\"",
+    "build": "node scripts/build.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "prepack": "pnpm build",
+    "size:audit": "node scripts/audit.mjs"
+  },
+  "dependencies": {
+    "sharp": "^0.35.5",
+    "yaml": "2.9.0",
+    "zod": "^4.4.3"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

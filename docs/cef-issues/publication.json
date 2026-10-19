@@ -1,0 +1,45 @@
+{
+  "status": "PREPARED; PUBLICATION_BLOCKED_BY_GITHUB_INTEGRATION_ACCESS",
+  "repository": "chromiumembedded/cef",
+  "time": "2026-10-17T13:23:15.632828+00:00",
+  "reports": [
+    {
+      "path": "alloy-directory-enumeration.md",
+      "title": "alloy: DOM.setFileInputFiles cancels webkitdirectory enumeration",
+      "bodySHA256": "6fd121b9fbdad0155f3972a9b4a2c6e12952dbbfcb3d0ef85e634019b9c41085",
+      "published": false,
+      "issueURL": null
+    },
+    {
+      "path": "midi-content-setting-trap.md",
+      "title": "SetContentSetting with public MIDI enum raises SIGTRAP",
+      "bodySHA256": "91c780c594c908799076a8965d14ca6175077b1740edf9766e90adf7c244d881",
+      "published": false,
+      "issueURL": null
+    }
+  ],
+  "connectorAttempt": {
+    "httpStatus": 403,
+    "error": "Resource not accessible by integration"
+  },
+  "existingCLIAccountAttempt": {
+    "mechanism": "existing authenticated gh CLI",
+    "exit": 1,
+    "stdout": "",
+    "stderr": "GraphQL: Resource not accessible by integration (createIssue)\n"
+  },
+  "retryCondition": "Issue-write access enabled for the connected GitHub integration; user asked asynchronously",
+  "authorization": "User explicitly requested reporting CEF issues; no additional consent requested",
+  "retryAfterUserAccessUpdateIntent": {
+    "time": "2026-10-17T13:41:30.106702+00:00",
+    "httpStatus": 403,
+    "error": "Resource not accessible by integration",
+    "result": "Not published; no issue URL returned"
+  },
+  "latestRetry": {
+    "time": "2026-10-17T14:07:03.141677+00:00",
+    "httpStatus": 403,
+    "error": "Resource not accessible by integration",
+    "result": "No issue created; implementation work continued"
+  }
+}

@@ -1,0 +1,163 @@
+diff --git a/native/browser/virtual_time.h b/native/browser/virtual_time.h
+--- a/native/browser/virtual_time.h
++++ b/native/browser/virtual_time.h
+@@ -15,8 +15,8 @@
+ // than a fake-JavaScript clock: no Date/timer implementation is replaced.
+ class NativeVirtualTime {
+  public:
+-  enum class Action { InstallPaused, Pause, Advance, RunFor };
+-  enum class Kind { EnableMetrics, Pause, Advance, ObservePerformance };
++  enum class Action { InstallPaused, Pause, Advance, RunFor, SetProcessFixedTime, SetProcessSystemTime, ClearProcessWallTime };
++  enum class Kind { EnableMetrics, Pause, Advance, ObservePerformance, ProbeProcessWallTime, SetProcessFixedTime, SetProcessSystemTime, ClearProcessWallTime };
+   struct Dispatch { uint64_t token; int owner; uint64_t generation; Kind kind; double budget=0;std::optional<double> epoch_ms; };
+   struct Request {int id;uint64_t generation;Action action;double value;double deadline;int context=0;};
+   struct ExceptionReceipt {uint64_t sequence;int context;bool synchronous;std::string error;};
+@@ -45,11 +45,12 @@
+   // Ownership begins before install ACK and lasts through actual target close.
+   bool OwnsTarget()const;
+  private:
+-  enum class Phase {None,Enable,Install,Pause,StartObservation,Advance,AwaitBudget,EndObservation,Fence};
++  enum class Phase {None,Enable,Install,Pause,StartObservation,Advance,AwaitBudget,EndObservation,Fence,WallProbe,WallMutation,WallCleanup};
+   struct Work {Request request;Phase phase=Phase::None;bool logical=true;bool physical=false;bool hint=false;uint64_t token=0;double cleanup_deadline=0;double target=0;uint64_t receipt_begin=0;std::string exception{};};
+   void Start(double now);
+   void Send(Kind kind,Phase phase,double now,double budget=0,std::optional<double> epoch=std::nullopt);
+   void Fence(double now);
++  void CanceledAcknowledgement(double now);
+   void Retire(double now,bool success,const std::string& error={});
+   void FailClosed(const std::string& error);
+   Hooks hooks_;
+diff --git a/native/browser/virtual_time.cc b/native/browser/virtual_time.cc
+--- a/native/browser/virtual_time.cc
++++ b/native/browser/virtual_time.cc
+@@ -69,7 +69,8 @@
+   if((request.action==Action::Advance||request.action==Action::RunFor)&&
+      (request.value<1||request.value>(request.action==Action::RunFor?kMaximumRunForMilliseconds:86400000.)||std::floor(request.value)!=request.value))return false;
+   if(request.action==Action::RunFor&&request.context<=0)return false;
+-  if(request.action==Action::InstallPaused&&std::abs(request.value)>8640000000000000.)return false;
++  if((request.action==Action::InstallPaused||request.action==Action::SetProcessFixedTime||
++      request.action==Action::SetProcessSystemTime)&&std::abs(request.value)>8640000000000000.)return false;
+   if(queue_.size()+(active_?1:0)>=64)return false;
+   if((active_&&active_->request.id==request.id)||std::any_of(queue_.begin(),queue_.end(),[&](const Request& item){return item.id==request.id;}))return false;
+   queue_.push_back(request);Start(now);return true;
+@@ -92,6 +93,8 @@
+     active_=Work{request};
+     if(request.action==Action::InstallPaused)Send(Kind::EnableMetrics,Phase::Enable,now);
+     else if(request.action==Action::Pause)Send(Kind::Pause,Phase::Pause,now);
++    else if(request.action==Action::SetProcessFixedTime||request.action==Action::SetProcessSystemTime||
++            request.action==Action::ClearProcessWallTime)Send(Kind::ProbeProcessWallTime,Phase::WallProbe,now);
+     else Send(Kind::ObservePerformance,Phase::StartObservation,now);
+     return;
+   }
+@@ -108,6 +111,17 @@
+   if(!active_||active_->physical)return;
+   Send(Kind::Pause,Phase::Fence,now);
+ }
++void NativeVirtualTime::CanceledAcknowledgement(double now){
++  if(!active_||active_->physical)return;
++  const auto phase=active_->phase;
++  // A rejected/read-only probe never mutated the process clock. Once a setter
++  // has physically completed, clear the custom wall override before this owner
++  // can retire. Do not infer cleanup from logical cancellation or a timer.
++  if(phase==Phase::WallProbe||phase==Phase::WallCleanup||phase==Phase::Enable){Retire(now,false);return;}
++  if(phase==Phase::WallMutation){Send(Kind::ClearProcessWallTime,Phase::WallCleanup,now);return;}
++  if(phase==Phase::Fence){paused_=true;Retire(now,false);return;}
++  Fence(now);
++}
+ void NativeVirtualTime::Retire(double now,bool success,const std::string& error){
+   if(!active_)return;
+   const auto work=std::move(*active_);active_.reset();
+@@ -126,20 +140,30 @@
+ void NativeVirtualTime::Acknowledge(uint64_t token,bool ok,double now,std::optional<double> performance,uint64_t receipt_sequence){
+   if(!active_||!active_->physical||active_->token!=token||closing_)return;
+   auto& work=*active_;work.physical=false;
+-  if(!ok){FailClosed("Native virtual-time physical command failed");return;}
++  if(!ok){
++    if(work.phase==Phase::WallProbe){Retire(now,false,"Custom native process wall-time protocol revision/scope unavailable");return;}
++    FailClosed("Native virtual-time physical command failed");return;
++  }
+   if(work.phase==Phase::Install){installed_=true;paused_=true;}
+   if(!work.logical){
+-    if(work.phase==Phase::Fence||work.phase==Phase::Enable){if(work.phase==Phase::Fence)paused_=true;Retire(now,false);}
+-    else Fence(now);
++    CanceledAcknowledgement(now);
+     return;
+   }
+   if(now>=work.request.deadline){
+     const auto request=work.request;work.logical=false;work.cleanup_deadline=now+1000;
+     hooks_.complete(request.id,request.generation,false,"Native virtual-time operation timed out (Timeout exceeded)");
+-    if(active_){if(active_->phase==Phase::Enable)Retire(now,false);else Fence(now);}
++    if(active_)CanceledAcknowledgement(now);
+     return;
+   }
+   switch(work.phase){
++    case Phase::WallProbe:{
++      const auto action=work.request.action;
++      const auto kind=action==Action::SetProcessFixedTime?Kind::SetProcessFixedTime:
++          action==Action::SetProcessSystemTime?Kind::SetProcessSystemTime:Kind::ClearProcessWallTime;
++      Send(kind,Phase::WallMutation,now,0,kind==Kind::ClearProcessWallTime?std::nullopt:std::optional<double>(work.request.value));
++      break;}
++    case Phase::WallMutation:Retire(now,true);break;
++    case Phase::WallCleanup:FailClosed("Unexpected logical process wall-time cleanup owner");break;
+     case Phase::Enable:Send(Kind::Pause,Phase::Install,now,0,work.request.value);break;
+     case Phase::Install:case Phase::Pause:paused_=true;Retire(now,true);break;
+     case Phase::StartObservation:
+@@ -203,7 +227,7 @@
+   queue_.erase(std::remove_if(queue_.begin(),queue_.end(),[&](const Request& item){return item.id==id;}),queue_.end());
+   if(!active_||active_->request.id!=id||!active_->logical)return;
+   active_->logical=false;active_->cleanup_deadline=now+1000;
+-  if(!active_->physical)Fence(now);
++  if(!active_->physical)CanceledAcknowledgement(now);
+ }
+ void NativeVirtualTime::Tick(double now){
+   std::vector<Request> expired;
+diff --git a/native/browser/virtual_time_source.inc b/native/browser/virtual_time_source.inc
+--- a/native/browser/virtual_time_source.inc
++++ b/native/browser/virtual_time_source.inc
+@@ -81,6 +81,13 @@
+   using Kind=suitecut::NativeVirtualTime::Kind;
+   if(call.kind==Kind::EnableMetrics)method="Performance.enable";
+   else if(call.kind==Kind::ObservePerformance)method="Performance.getMetrics";
++  else if(call.kind==Kind::ProbeProcessWallTime)method="Emulation.suiteCutClockCapabilitiesV1";
++  else if(call.kind==Kind::ClearProcessWallTime)method="Emulation.suiteCutClearWallTimeV1";
++  else if(call.kind==Kind::SetProcessFixedTime||call.kind==Kind::SetProcessSystemTime){
++    method="Emulation.suiteCutSetWallTimeV1";
++    params->SetDouble("timeMs",*call.epoch_ms);
++    params->SetBool("fixed",call.kind==Kind::SetProcessFixedTime);
++  }
+   else{
+     method="Emulation.setVirtualTimePolicy";
+     params->SetString("policy",call.kind==Kind::Advance?"advance":"pause");
+@@ -91,6 +98,12 @@
+     if(!self->native_virtual_time_)return;
+     if(!self->NativeVirtualTimeDocumentCurrent()){self->native_virtual_time_->TargetChanged();return;}
+     std::optional<double> ticks;
++    if(ok&&(call.kind==Kind::ProbeProcessWallTime||call.kind==Kind::SetProcessFixedTime||
++            call.kind==Kind::SetProcessSystemTime||call.kind==Kind::ClearProcessWallTime)){
++      auto value=CefParseJSON(json,JSON_PARSER_RFC);auto data=value?value->GetDictionary():nullptr;
++      ok=data&&data->GetType("scope")==VTYPE_STRING&&data->GetString("scope")=="rendererProcess";
++      if(call.kind==Kind::ProbeProcessWallTime)ok=ok&&data->GetType("revision")==VTYPE_INT&&data->GetInt("revision")==1;
++    }
+     if(ok&&call.kind==Kind::ObservePerformance){
+       auto value=CefParseJSON(json,JSON_PARSER_RFC);auto data=value?value->GetDictionary():nullptr;
+       auto metrics=data?data->GetList("metrics"):nullptr;
+@@ -162,6 +175,20 @@
+     if(frame==frame_states_.end()||!frame->second.context||!navigations_.empty()){
+       Complete(id,false,"Native virtual time requires a ready current document");return;
+     }
++  }else if(action=="setRendererProcessFixedTime"||action=="setRendererProcessSystemTime"||action=="clearRendererProcessWallTime"){
++#if !defined(SUITECUT_VERIFIED_CEF156_PROCESS_WALL_TIME)
++    Complete(id,false,"Custom renderer-process wall-time adapter is not enabled in this build");return;
++#else
++    if(message->GetType("acknowledgeRendererProcessScope")!=VTYPE_BOOL||!message->GetBool("acknowledgeRendererProcessScope")){
++      Complete(id,false,"This custom clock changes every participating page/context sharing the renderer process; explicit renderer-process scope acknowledgement is required");return;
++    }
++    if(action=="clearRendererProcessWallTime")kind=Action::ClearProcessWallTime;
++    else{
++      kind=action=="setRendererProcessFixedTime"?Action::SetProcessFixedTime:Action::SetProcessSystemTime;
++      if(message->GetType("timeMs")!=VTYPE_INT&&message->GetType("timeMs")!=VTYPE_DOUBLE){Complete(id,false,"Native process wall time must be a finite ECMAScript epoch millisecond number");return;}
++      value=message->GetType("timeMs")==VTYPE_INT?message->GetInt("timeMs"):message->GetDouble("timeMs");
++    }
++#endif
+   }else if(action=="pause")kind=Action::Pause;
+   else if(action=="advance"||action=="runFor"){
+     kind=action=="runFor"?Action::RunFor:Action::Advance;

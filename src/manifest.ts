@@ -182,12 +182,27 @@ const CapturedArtifactSchema = z.discriminatedUnion('role', [
   CapturedCaptionArtifactSchema,
 ])
 
+const NativeRecordingTimingSchema = z.strictObject({
+  durationMs: NonNegativeNumberSchema,
+  encodedDurationMs: NonNegativeNumberSchema,
+  framesPerSecond: PositiveNumberSchema.max(120),
+  inputFrames: NonNegativeIntegerSchema,
+  outputFrames: NonNegativeIntegerSchema,
+  heldFrames: NonNegativeIntegerSchema,
+  supersededFrames: NonNegativeIntegerSchema,
+  audioInputFrames: NonNegativeIntegerSchema,
+  audioOutputFrames: NonNegativeIntegerSchema,
+  audioOverlapFrames: NonNegativeIntegerSchema,
+  audioGapFrames: NonNegativeIntegerSchema,
+})
+
 const CapturedVideoSchema = z.strictObject({
   artifactId: NonEmptyStringSchema,
   pageId: NonEmptyStringSchema,
   attachmentName: NonEmptyStringSchema,
   firstFrameEpochMs: NonNegativeNumberSchema,
   sourceStartedAtMs: FiniteNumberSchema,
+  nativeRecording: NativeRecordingTimingSchema.exactOptional(),
 })
 
 const EventAttachmentSchema = z
@@ -282,7 +297,6 @@ const ArtifactSchema = z.strictObject({
   role: z.enum([
     'checkpoint',
     'source-video',
-    'playwright-trace',
     'narration-audio',
     'captions',
     'rendered-video',
@@ -337,6 +351,7 @@ const VideoTimingSchema = z.strictObject({
   mediaId: NonEmptyStringSchema,
   firstFrameEpochMs: NonNegativeNumberSchema,
   sourceStartedAtMs: FiniteNumberSchema,
+  nativeRecording: NativeRecordingTimingSchema.exactOptional(),
 })
 
 const DiagnosticSchema = z.strictObject({
@@ -346,7 +361,6 @@ const DiagnosticSchema = z.strictObject({
     'MISSING_ATTACHMENT',
     'MISSING_SOURCE_VIDEO',
     'MEDIA_PROBE_FAILED',
-    'SCREENCAST_START_FAILED',
     'FIRST_FRAME_TIMESTAMP_MISSING',
     'VIDEO_TIMING_INVALID',
     'POINTER_OUTSIDE_VIEWPORT',
@@ -794,7 +808,7 @@ export function decodeManifest(input: UntrustedInput): SuiteCutManifest {
   return result.data
 }
 
-/** Decodes the fixture attachment consumed by the SuiteCut reporter. */
+/** Decodes captured session events and media references. */
 export function decodeEventAttachment(input: UntrustedInput): SuiteCutEventAttachment {
   const result = EventAttachmentSchema.safeParse(input)
   if (!result.success) {

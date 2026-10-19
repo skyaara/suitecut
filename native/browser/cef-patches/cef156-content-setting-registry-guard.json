@@ -1,0 +1,21 @@
+{
+  "status": "ISOLATED CEF robustness candidate; uncompiled and inactive",
+  "cefSource": "47dbc1df023e99f006fb9e850a8d83cc19b4fdd9",
+  "upstreamBlob": "40dc0900a1949564f226c68708c1748d3ff8f646",
+  "patchSHA256": "77ab00c34919c58f3709b593e48d8019366d583f0c3e15c1fee4d2774676508d",
+  "base": {
+    "libcef/browser/request_context_impl.cc": "b2483b97408e978a914d75623162ebb57525e57f0f55676b92e59ee668b282e8"
+  },
+  "output": {
+    "libcef/browser/request_context_impl.cc": "77c5366e1fc31d98cf6967be315edefc7260ed11b69250fc50a4e09d5cf4ac6c"
+  },
+  "scope": [
+    "Validate registered Chromium content-setting types before public GetContentSetting/SetContentSetting forwarding",
+    "Validate registered website-setting types before public GetWebsiteSetting/SetWebsiteSetting forwarding",
+    "Unregistered getters return existing default/null sentinel; void setters do nothing",
+    "Does not add ordinary MIDI override support or change registered settings"
+  ],
+  "vendorCompilation": "UNRUN",
+  "runtimeVerification": "UNRUN",
+  "productionActivation": "NONE"
+}

@@ -1,0 +1,50 @@
+diff --git a/content/browser/devtools/protocol/input_handler.h b/content/browser/devtools/protocol/input_handler.h
+--- a/content/browser/devtools/protocol/input_handler.h
++++ b/content/browser/devtools/protocol/input_handler.h
+@@ -107,6 +107,10 @@
+       std::optional<int> replacement_end,
+       std::unique_ptr<ImeSetCompositionCallback> callback) override;
+ 
++  Response GetMouseWidgetReceiptCapabilities(int* schema_version,
++                                             std::string* protocol,
++                                             int* max_leases,
++                                             int* max_pending) override;
+   Response AcquireMouseWidget(const std::string& frame_id,
+                               const std::string& loader_id,
+                               std::string* lease,
+diff --git a/content/browser/devtools/protocol/input_handler.cc b/content/browser/devtools/protocol/input_handler.cc
+--- a/content/browser/devtools/protocol/input_handler.cc
++++ b/content/browser/devtools/protocol/input_handler.cc
+@@ -1443,6 +1443,16 @@
+       text16, std::vector<ui::ImeTextSpan>(), replacement_range,
+       selection_start, selection_end, blink::mojom::ImeState::kNone,
+       /*target_dom_node_id=*/blink::DOMNodeIdType(), std::move(closure));
++}
++
++Response InputHandler::GetMouseWidgetReceiptCapabilities(
++    int* schema_version, std::string* protocol, int* max_leases,
++    int* max_pending) {
++  *schema_version = 1;
++  *protocol = "suitecut-widget-mouse-v1";
++  *max_leases = 64;
++  *max_pending = 64;
++  return Response::Success();
+ }
+ 
+ Response InputHandler::AcquireMouseWidget(
+diff --git a/third_party/blink/public/devtools_protocol/domains/Input.pdl b/third_party/blink/public/devtools_protocol/domains/Input.pdl
+--- a/third_party/blink/public/devtools_protocol/domains/Input.pdl
++++ b/third_party/blink/public/devtools_protocol/domains/Input.pdl
+@@ -393,3 +393,12 @@
+   experimental command releaseMouseWidget
+     parameters
+       string lease
++
++  # Read-only exact revision probe for the native lease/receipt implementation.
++  # No lease or event is allocated by this method.
++  experimental command getMouseWidgetReceiptCapabilities
++    returns
++      integer schemaVersion
++      string protocol
++      integer maxLeases
++      integer maxPending

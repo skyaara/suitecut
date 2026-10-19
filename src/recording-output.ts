@@ -116,6 +116,7 @@ export async function createAttempt(
       mediaId: probed.id,
       firstFrameEpochMs: video.firstFrameEpochMs,
       sourceStartedAtMs: video.sourceStartedAtMs,
+      ...(video.nativeRecording ? { nativeRecording: video.nativeRecording } : {}),
     }
   })
 

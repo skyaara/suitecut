@@ -55,6 +55,7 @@ const sources = []
 try {
   const source = await launchNativeBrowser({
     executablePath,
+    headless: process.env.SUITECUT_NATIVE_HEADLESS === '1',
     width: 960,
     height: 540,
     framesPerSecond: 60,
@@ -63,6 +64,7 @@ try {
   sources.push(source)
   const second = await launchNativeBrowser({
     executablePath,
+    headless: process.env.SUITECUT_NATIVE_HEADLESS === '1',
     width: 640,
     height: 360,
     framesPerSecond: 30,

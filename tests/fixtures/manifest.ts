@@ -62,8 +62,8 @@ export function createManifest(): SuiteCutManifest {
             steps: [
               {
                 id: 'step-1',
-                title: 'page.goto',
-                category: 'pw:api',
+                title: 'Navigate page',
+                category: 'automation',
                 atMs: 100,
                 durationMs: 80,
                 outcome: 'passed',

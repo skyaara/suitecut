@@ -9,13 +9,12 @@ import { formattedJson, writeTextFileAtomic } from './atomic-file.js'
 import { resolveAudioPluginReferences } from './audio-plugin-loader.js'
 import { SUITECUT_MANIFEST_SCHEMA_VERSION } from './constants.js'
 import { type SuiteCutFixture } from './fixtures.js'
-import { FrameRateSchema } from './frame-rate.js'
+import { OutputFrameRateSchema } from './frame-rate.js'
 import { decodeManifest } from './manifest.js'
 import { createNarrationPipeline } from './narration.js'
 import { type NativeBrowser } from './native-browser.js'
 import { type NativeLocator, type NativePage } from './native-page.js'
 import { createNativeRecordingSession } from './native-session.js'
-import { type SuiteCutRecordResult } from './playwright.js'
 import { resolveFfmpeg } from './process.js'
 import { createAttempt, rawArtifactSink } from './recording-output.js'
 import {
@@ -25,19 +24,27 @@ import {
   SuiteCutOutputOptionsSchema,
 } from './schemas.js'
 import { createSuiteCutFixture } from './suitecut.js'
-import { type SuiteCutEventAttachment } from './types.js'
+import { type SuiteCutEventAttachment, type SuiteCutManifest } from './types.js'
 import { toError, type UntrustedInput } from './untrusted.js'
 
 const NativeRecordingCaptureSchema = z.strictObject({
   size: SuiteCutCaptureSizeSchema.exactOptional(),
   /** Constant output cadence; defaults to the source's requested capture rate. */
-  framesPerSecond: FrameRateSchema.exactOptional(),
+  framesPerSecond: OutputFrameRateSchema.exactOptional(),
   narrationTailMs: z.number().min(0).max(10_000).exactOptional(),
   /** Includes CEF page audio in source clips when explicitly enabled. */
   audio: z.boolean().default(false),
 })
 
 export type NativeRecordingCaptureOptions = z.input<typeof NativeRecordingCaptureSchema>
+
+export interface SuiteCutRecordResult {
+  attemptId: string
+  manifest: SuiteCutManifest
+  manifestPath: string
+  outputDirectory: string
+  testId: string
+}
 
 export interface NativeRecordingOptions {
   /** Caller-owned source; it can also supply a native broadcast. */

@@ -1,0 +1,10 @@
+--- a/native/browser/form_controller.inc
++++ b/native/browser/form_controller.inc
+@@ -595,5 +595,5 @@
+ void FormUploadFolder(int id,uint64_t generation,Dict config) {
+   const auto path=config->GetList("files")->GetDictionary(0)->GetString("path").ToString();std::error_code error;
+   if(path.find('\0')!=std::string::npos||!std::filesystem::path(path).is_absolute()||!std::filesystem::is_directory(path,error)){Complete(id,false,"Upload directory must be an absolute directory path");return;}
+-  Complete(id,false,"Pinned stock CEF Alloy does not implement native directory enumeration; the isolated directory adapter requires a verified custom CEF build");
+-}
++  FormNativeSelection(id,generation,config,true);
++}

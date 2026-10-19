@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "../../src",
+    "outDir": "./dist",
+    "allowJs": false,
+    "declaration": true,
+    "declarationMap": false,
+    "sourceMap": false,
+    "noEmitOnError": true
+  },
+  "include": ["../../src/browser.ts", "../../src/remote-browser.ts", "../../src/browser-control-cli.ts"],
+  "exclude": []
+}

@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "component": "chromium",
+  "chromium_revision": "refs/tags/156.0.8078.17",
+  "cef_revision": "47dbc1df023e99f006fb9e850a8d83cc19b4fdd9",
+  "cef_version": "156.0.7+g47dbc1d+chromium-156.0.8078.17",
+  "patch": "chromium156-widget-input-receipts.patch",
+  "patch_sha256": "c4218ea875cc53d0dc5f7001245e6afc68470799dd28f130be178c473c01fcc7",
+  "status": "isolated-candidate-source-patch-custom-cef-build-required",
+  "compiled": false,
+  "runtime_verified": false,
+  "production_sdk_wired": false,
+  "source_cache": "/workspace/suitecut-widget-input-vendor-source-20261017",
+  "patched_source_cache": "/workspace/suitecut-widget-input-vendor-modified-20261017",
+  "files": [
+    {
+      "path": "content/browser/devtools/protocol/input_handler.h",
+      "original_sha256": "345707b12770a5e2ff04d51deb3805250a865722276ed9e38c45fbd7e652760c",
+      "patched_sha256": "734336eb3a1a6670a945bbb7eb526f290daf8c14d5247dd03011e79390dd535e"
+    },
+    {
+      "path": "content/browser/devtools/protocol/input_handler.cc",
+      "original_sha256": "5008fb8d8eb67bb584c99e304eb8f2456c1d8c07b6afeed8214e215df77671f7",
+      "patched_sha256": "7bb9776346d851f7f923456d4a313bc4f2478b365a50ef323d90c43e11b80065"
+    },
+    {
+      "path": "content/browser/renderer_host/render_widget_host_impl.h",
+      "original_sha256": "a8e9d644b7209cd6153d55df125ef491fc31a25ff1786d61684cbded2dc4216a",
+      "patched_sha256": "acf979fe61d96255b464cf442c50bd5d5ab766c76ed1c03cb6eb0f7bb7baac04"
+    },
+    {
+      "path": "content/browser/renderer_host/render_widget_host_impl.cc",
+      "original_sha256": "20e6b9c92046d35223b5b0e870b9f9aa67d99aa1b9b460a0a229cc80344a6ee1",
+      "patched_sha256": "b67bdc611bb4a07ed3a616a18bc8594d47ec3b1f7b2a8c886aa2df03227259d5"
+    },
+    {
+      "path": "content/browser/devtools/protocol_config.json",
+      "original_sha256": "1b613ae8f136895502117c37e8ae298d8c5aa465451dc1088483df35d4e7d4ef",
+      "patched_sha256": "ba38fdaace7cd9d5441f9ad53c679abd780271a6b54a20df5567af6166b8a56f"
+    },
+    {
+      "path": "third_party/blink/public/devtools_protocol/domains/Input.pdl",
+      "original_sha256": "5bbc6e23eb17a009da540792bd5f647567e9c81f919081059dff5274a1c66e3d",
+      "patched_sha256": "c068724bb6c91a1dd5ce700451d6c6817addd0653a5efcdcf73ca235590ed915"
+    }
+  ],
+  "limits": [
+    "Protocol PDL parsed and pinned browser backend declarations generated; full Chromium C++ compilation unrun",
+    "Native controller/SDK hookup remains isolated until custom backend compilation and runtime verification",
+    "Raw original-widget mouse dispatch only; legacy synthetic drag controller, wheel, keyboard and touch are not added to this receipt API",
+    "Cross-process frames require their own attached target session; this API intentionally performs no hit-testing or fallback to another widget",
+    "No E2E, fuzz or actual renderer-ack runtime acceptance claimed"
+  ]
+}

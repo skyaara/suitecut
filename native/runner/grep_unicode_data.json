@@ -1,0 +1,13 @@
+{
+  "version": "17.0.0",
+  "standard": "https://tc39.es/ecma262/#sec-runtime-semantics-canonicalize-ch",
+  "legacyMappings": 1169,
+  "simpleMappings": 1512,
+  "inputs": {
+    "/tmp/suitecut-native-grep-complete-research-v1/UnicodeData-17.0.0.txt": "2e1efc1dcb59c575eedf5ccae60f95229f706ee6d031835247d843c11d96470c",
+    "/tmp/suitecut-native-grep-complete-research-v1/SpecialCasing-17.0.0.txt": "efc25faf19de21b92c1194c111c932e03d2a5eaf18194e33f1156e96de4c9588",
+    "/tmp/suitecut-native-grep-complete-research-v1/CaseFolding-17.0.0.txt": "ff8d8fefbf123574205085d6714c36149eb946d717a0c585c27f0f4ef58c4183"
+  },
+  "generatorSHA256": "d520e52ac8aba3d55cb63060578ee085b16b32bcd7a3f77b7790223262f1393b",
+  "outputSHA256": "453733897e33cd16fa0ecadd58de11fa2f7dc54ebc23274374b59fb6b5ea813e"
+}

@@ -1,0 +1,554 @@
+diff --git a/content/browser/devtools/protocol/input_handler.h b/content/browser/devtools/protocol/input_handler.h
+--- a/content/browser/devtools/protocol/input_handler.h
++++ b/content/browser/devtools/protocol/input_handler.h
+@@ -23,6 +23,7 @@
+ #include "content/common/input/synthetic_pointer_action_list_params.h"
+ #include "content/common/input/synthetic_smooth_scroll_gesture_params.h"
+ #include "content/public/browser/render_widget_host.h"
++#include "content/public/browser/weak_document_ptr.h"
+ #include "content/public/browser/web_contents.h"
+ #include "third_party/blink/public/common/input/pointer_id.h"
+ #include "third_party/blink/public/common/input/web_input_event.h"
+@@ -105,6 +106,17 @@
+       std::optional<int> replacement_start,
+       std::optional<int> replacement_end,
+       std::unique_ptr<ImeSetCompositionCallback> callback) override;
++
++  Response AcquireMouseWidget(const std::string& frame_id,
++                              const std::string& loader_id,
++                              std::string* lease,
++                              std::string* document_token) override;
++  void DispatchMouseEventToWidget(
++      const std::string& lease, int sequence, const std::string& type,
++      double x, double y, const std::string& button,
++      std::optional<int> modifiers, std::optional<int> click_count,
++      std::unique_ptr<DispatchMouseEventToWidgetCallback> callback) override;
++  Response ReleaseMouseWidget(const std::string& lease) override;
+ 
+   void DispatchMouseEvent(
+       const std::string& event_type,
+@@ -348,6 +360,9 @@
+ 
+   float ScaleFactor();
+ 
++  struct MouseWidgetLease;
++  base::flat_map<std::string, std::shared_ptr<MouseWidgetLease>> mouse_widgets_;
++
+   raw_ptr<RenderFrameHostImpl> host_ = nullptr;
+   // WebContents associated with the |host_|.
+   raw_ptr<WebContentsImpl> web_contents_ = nullptr;
+diff --git a/content/browser/devtools/protocol/input_handler.cc b/content/browser/devtools/protocol/input_handler.cc
+--- a/content/browser/devtools/protocol/input_handler.cc
++++ b/content/browser/devtools/protocol/input_handler.cc
+@@ -5,6 +5,11 @@
+ #include "content/browser/devtools/protocol/input_handler.h"
+ 
+ #include <stddef.h>
++#include <stdint.h>
++
++#include <cmath>
++#include <limits>
++#include <map>
+ 
+ #include <memory>
+ #include <tuple>
+@@ -17,6 +22,8 @@
+ #include "base/functional/callback.h"
+ #include "base/functional/callback_helpers.h"
+ #include "base/memory/raw_ptr.h"
++#include "base/no_destructor.h"
++#include "base/unguessable_token.h"
+ #include "base/strings/string_split.h"
+ #include "base/strings/stringprintf.h"
+ #include "base/strings/utf_string_conversions.h"
+@@ -889,6 +896,81 @@
+   base::WeakPtrFactory<InputHandler::InputInjector> weak_ptr_factory_{this};
+ };
+ 
++// UI-thread-only process bounds. The shared lease is captured by the real
++// InputRouter callback, so session detachment cannot release a pending slot.
++namespace {
++struct MouseWidgetLeaseRegistry {
++  struct Entry {
++    base::WeakPtr<RenderWidgetHostImpl> widget;
++    std::string token;
++    // A detached session must not forget held or uncertain native input.
++    // Type erasure avoids exposing InputHandler's private lease type here.
++    std::shared_ptr<void> orphan;
++    bool pending = false;
++  };
++  std::map<uintptr_t, Entry> widgets;
++  size_t pending = 0;
++};
++MouseWidgetLeaseRegistry& MouseWidgetLeases() {
++  static base::NoDestructor<MouseWidgetLeaseRegistry> registry;
++  return *registry;
++}
++void PruneDestroyedMouseWidgetOrphans() {
++  auto& entries = MouseWidgetLeases().widgets;
++  for (auto it = entries.begin(); it != entries.end();) {
++    if (!it->second.orphan || it->second.widget || it->second.pending) {
++      ++it;
++      continue;
++    }
++    // Remove the registry entry before releasing its strong orphan owner: its
++    // destructor checks the registry and must not re-enter an erasing entry.
++    auto retired = std::move(it->second.orphan);
++    it = entries.erase(it);
++    retired.reset();
++  }
++}
++}  // namespace
++
++struct InputHandler::MouseWidgetLease {
++  explicit MouseWidgetLease(RenderWidgetHostImpl* host)
++      : widget(host->GetWeakPtr()), key(reinterpret_cast<uintptr_t>(host)),
++        token(base::UnguessableToken::Create().ToString()) {
++    MouseWidgetLeases().widgets.emplace(key,
++        MouseWidgetLeaseRegistry::Entry{widget, token, nullptr, false});
++  }
++  ~MouseWidgetLease() {
++    auto& entries = MouseWidgetLeases().widgets;
++    const auto found = entries.find(key);
++    // A later native allocation may reuse the same address. An old callback's
++    // last owner can retire only its own immutable token, never a newer lease.
++    if (found != entries.end() && found->second.token == token &&
++        !found->second.orphan)
++      entries.erase(found);
++  }
++  void RetainDetached(std::shared_ptr<MouseWidgetLease> self) {
++    if (!widget || (!buttons && !uncertain))
++      return;
++    auto& entries = MouseWidgetLeases().widgets;
++    const auto found = entries.find(key);
++    if (found != entries.end() && found->second.token == token)
++      found->second.orphan = std::move(self);
++  }
++  void SetPending(bool value) {
++    pending = value;
++    auto& entries = MouseWidgetLeases().widgets;
++    const auto found = entries.find(key);
++    if (found != entries.end() && found->second.token == token)
++      found->second.pending = value;
++  }
++  base::WeakPtr<RenderWidgetHostImpl> widget;
++  const uintptr_t key;
++  WeakDocumentPtr document;
++  const std::string token;
++  std::string document_token;
++  int sequence = 0, buttons = 0;
++  bool pending = false, uncertain = false;
++};
++
+ struct InputHandler::DragController::DragState {
+   DropData data;
+   blink::DragOperationsMask mask;
+@@ -1141,7 +1223,12 @@
+       allow_file_access_(allow_file_access),
+       allow_sending_input_to_browser_(allow_sending_input_to_browser) {}
+ 
+-InputHandler::~InputHandler() = default;
++InputHandler::~InputHandler() {
++  // Pending callbacks retain their own lease. Held/uncertain input also needs
++  // a bounded process orphan after this session's map and callbacks disappear.
++  for (const auto& [token, owner] : mouse_widgets_)
++    owner->RetainDetached(owner);
++}
+ 
+ // static
+ std::vector<InputHandler*> InputHandler::ForAgentHost(
+@@ -1356,6 +1443,182 @@
+       text16, std::vector<ui::ImeTextSpan>(), replacement_range,
+       selection_start, selection_end, blink::mojom::ImeState::kNone,
+       /*target_dom_node_id=*/blink::DOMNodeIdType(), std::move(closure));
++}
++
++Response InputHandler::AcquireMouseWidget(
++    const std::string& frame_id, const std::string& loader_id,
++    std::string* lease, std::string* document_token) {
++  if (!host_ || !host_->IsActive() || !host_->GetView())
++    return Response::ServerError("Native mouse document is unavailable");
++  const auto& navigation = host_->GetDevToolsNavigationToken();
++  const std::string current_loader = navigation ? navigation->ToString() : "";
++  if (frame_id != host_->GetDevToolsFrameToken().ToString() ||
++      loader_id != current_loader)
++    return Response::ServerError("Native mouse document identity changed");
++  auto* widget = host_->GetRenderWidgetHost();
++  if (!widget || !widget->GetView() || !widget->IsInitializedAndNotDead())
++    return Response::ServerError("Native mouse widget is unavailable");
++  PruneDestroyedMouseWidgetOrphans();
++  auto& registry = MouseWidgetLeases();
++  if (registry.widgets.size() >= 64 || registry.widgets.contains(reinterpret_cast<uintptr_t>(widget)))
++    return Response::ServerError("Native mouse widget is already leased or capacity exceeded");
++  auto owner = std::make_shared<MouseWidgetLease>(widget);
++  owner->document = host_->GetWeakDocumentPtr();
++  owner->document_token = host_->GetDocumentToken().ToString();
++  *lease = owner->token;
++  *document_token = owner->document_token;
++  mouse_widgets_.emplace(owner->token, std::move(owner));
++  return Response::Success();
++}
++
++void InputHandler::DispatchMouseEventToWidget(
++    const std::string& lease, int sequence, const std::string& type,
++    double x, double y, const std::string& button,
++    std::optional<int> modifiers, std::optional<int> click_count,
++    std::unique_ptr<DispatchMouseEventToWidgetCallback> callback) {
++  const auto found = mouse_widgets_.find(lease);
++  if (found == mouse_widgets_.end()) {
++    callback->sendFailure(Response::InvalidParams("Unknown native mouse lease"));
++    return;
++  }
++  const auto owner = found->second;
++  if (owner->pending || owner->uncertain || sequence <= 0 ||
++      owner->sequence == std::numeric_limits<int>::max() ||
++      sequence != owner->sequence + 1 ||
++      MouseWidgetLeases().pending >= 64 || !std::isfinite(x) ||
++      !std::isfinite(y) || std::abs(x) > 1000000 || std::abs(y) > 1000000 ||
++      (type != "mousePressed" && type != "mouseReleased" && type != "mouseMoved") ||
++      (button != "left" && button != "right" && button != "middle" && button != "none") ||
++      (type != "mouseMoved" && button == "none") ||
++      (modifiers && (*modifiers < 0 || *modifiers > 15)) ||
++      (click_count && (*click_count < 0 || *click_count > 1000))) {
++    callback->sendFailure(Response::InvalidParams("Invalid, busy or retired native mouse sequence"));
++    return;
++  }
++  auto receipt = Input::MouseWidgetReceipt::Create()
++      .SetLease(lease).SetSequence(sequence)
++      .SetDocumentToken(owner->document_token)
++      .SetOutcome("dispatchRefused").SetAckObserved(false)
++      .SetAckSource(static_cast<int>(blink::mojom::InputEventResultSource::kBrowser))
++      .SetAckState(static_cast<int>(blink::mojom::InputEventResultState::kUnknown))
++      .Build();
++  if (!owner->widget) {
++    receipt->SetOutcome("widgetDestroyed");
++    callback->sendSuccess(std::move(receipt));
++    return;
++  }
++  if (!host_ || owner->document.AsRenderFrameHostIfValid() != host_ ||
++      !host_->IsActive() || host_->GetRenderWidgetHost() != owner->widget.get()) {
++    receipt->SetOutcome("documentChanged");
++    callback->sendSuccess(std::move(receipt));
++    return;
++  }
++  if (!owner->widget->GetView() || !owner->widget->IsInitializedAndNotDead()) {
++    callback->sendSuccess(std::move(receipt));
++    return;
++  }
++  const int bit = button == "left" ? 1 : button == "right" ? 2 : button == "middle" ? 4 : 0;
++  const int buttons = type == "mousePressed" ? owner->buttons | bit :
++      type == "mouseReleased" ? owner->buttons & ~bit : owner->buttons;
++  if ((type == "mousePressed" && (owner->buttons & bit)) ||
++      (type == "mouseReleased" && !(owner->buttons & bit)) ||
++      (type == "mouseMoved" && bit && !(owner->buttons & bit))) {
++    callback->sendFailure(Response::InvalidParams("Native mouse button state mismatch"));
++    return;
++  }
++  auto result = CreateWebMouseEvent(type, x, y, ScaleFactor(), modifiers,
++      std::nullopt, button, buttons, click_count, std::nullopt, std::nullopt,
++      std::nullopt, std::nullopt, std::nullopt, std::nullopt, std::nullopt,
++      std::nullopt);
++  if (!result.has_value()) {
++    callback->sendFailure(std::move(result).error());
++    return;
++  }
++  auto event = std::move(result).value();
++  event->SetPositionInScreen(ConvertWidgetPointToScreenPoint(
++      CHECK_DEREF(owner->widget->GetView()), event->PositionInWidget()));
++  // No hit-test or current-widget fallback after acquisition. Recheck directly
++  // before forwarding, after all native event preparation is complete.
++  if (owner->document.AsRenderFrameHostIfValid() != host_ ||
++      host_->GetRenderWidgetHost() != owner->widget.get()) {
++    receipt->SetOutcome("documentChanged");
++    callback->sendSuccess(std::move(receipt));
++    return;
++  }
++  owner->sequence = sequence;
++  owner->SetPending(true);
++  ++MouseWidgetLeases().pending;
++  auto completion = base::BindOnce(
++      [](base::WeakPtr<InputHandler> self,
++         std::shared_ptr<MouseWidgetLease> owner, int buttons,
++         std::unique_ptr<Input::MouseWidgetReceipt> receipt,
++         std::unique_ptr<DispatchMouseEventToWidgetCallback> callback,
++         bool observed, blink::mojom::InputEventResultSource source,
++         blink::mojom::InputEventResultState state) {
++        owner->SetPending(false);
++        --MouseWidgetLeases().pending;
++        const bool renderer_ack = observed &&
++            (source == blink::mojom::InputEventResultSource::kCompositorThread ||
++             source == blink::mojom::InputEventResultSource::kMainThread);
++        if (renderer_ack)
++          owner->buttons = buttons;
++        if ((!observed && state == blink::mojom::InputEventResultState::kUnknown) ||
++            (observed && source == blink::mojom::InputEventResultSource::kUnknown))
++          owner->uncertain = true;
++        // A detached session drops its protocol callback. Physical ownership
++        // remains in this exact closure until native callback completion/drop.
++        if (!self) {
++          owner->RetainDetached(owner);
++          return;
++        }
++        receipt->SetAckObserved(observed);
++        receipt->SetAckSource(static_cast<int>(source));
++        receipt->SetAckState(static_cast<int>(state));
++        if (!owner->widget)
++          receipt->SetOutcome("widgetDestroyed");
++        else if (owner->document.AsRenderFrameHostIfValid() != self->host_ ||
++                 !self->host_ || !self->host_->IsActive())
++          receipt->SetOutcome("documentChanged");
++        else if (renderer_ack)
++          receipt->SetOutcome("rendererAck");
++        else if (observed && source == blink::mojom::InputEventResultSource::kBrowser)
++          receipt->SetOutcome("browserAck");
++        else if (state == blink::mojom::InputEventResultState::kUnknown ||
++                 source == blink::mojom::InputEventResultSource::kUnknown)
++          receipt->SetOutcome("dispatchRetired");
++        callback->sendSuccess(std::move(receipt));
++      }, weak_factory_.GetWeakPtr(), owner, buttons, std::move(receipt),
++      std::move(callback));
++  const auto weak_self = weak_factory_.GetWeakPtr();
++  owner->widget->Focus();
++  if (!weak_self || !owner->widget) {
++    std::move(completion).Run(false,
++        blink::mojom::InputEventResultSource::kBrowser,
++        blink::mojom::InputEventResultState::kUnknown);
++    return;
++  }
++  if (owner->document.AsRenderFrameHostIfValid() != weak_self->host_ ||
++      !weak_self->host_ || !owner->widget->GetView() ||
++      !weak_self->host_->IsActive() ||
++      weak_self->host_->GetRenderWidgetHost() != owner->widget.get()) {
++    std::move(completion).Run(false,
++        blink::mojom::InputEventResultSource::kBrowser,
++        blink::mojom::InputEventResultState::kNoConsumerExists);
++    return;
++  }
++  owner->widget->ForwardMouseEventWithReceipt(*event, owner->document,
++                                              std::move(completion));
++}
++
++Response InputHandler::ReleaseMouseWidget(const std::string& lease) {
++  const auto found = mouse_widgets_.find(lease);
++  if (found == mouse_widgets_.end())
++    return Response::InvalidParams("Unknown native mouse lease");
++  const auto& owner = found->second;
++  if (owner->pending || (owner->widget && (owner->buttons || owner->uncertain)))
++    return Response::ServerError("Native mouse lease still owns input; release buttons or close the original widget");
++  mouse_widgets_.erase(found);
++  return Response::Success();
+ }
+ 
+ void InputHandler::DispatchMouseEvent(
+diff --git a/content/browser/renderer_host/render_widget_host_impl.h b/content/browser/renderer_host/render_widget_host_impl.h
+--- a/content/browser/renderer_host/render_widget_host_impl.h
++++ b/content/browser/renderer_host/render_widget_host_impl.h
+@@ -57,6 +57,7 @@
+ #include "content/public/browser/render_process_host_priority_client.h"
+ #include "content/public/browser/render_widget_host.h"
+ #include "content/public/browser/render_widget_host_view.h"
++#include "content/public/browser/weak_document_ptr.h"
+ #include "mojo/public/cpp/bindings/associated_remote.h"
+ #include "mojo/public/cpp/bindings/pending_receiver.h"
+ #include "mojo/public/cpp/bindings/pending_remote.h"
+@@ -638,6 +639,16 @@
+   void ForwardKeyboardEventWithLatencyInfo(
+       const input::NativeWebKeyboardEvent& key_event,
+       const ui::LatencyInfo& latency) override;
++  // Opt-in exact native callback. A false ack_observed means refusal or
++  // callback retirement, never a renderer acknowledgment. Legacy CDP observer
++  // FIFOs are deliberately not notified of this independently owned event ACK.
++  using MouseEventReceipt = base::OnceCallback<void(
++      bool ack_observed, blink::mojom::InputEventResultSource,
++      blink::mojom::InputEventResultState)>;
++  void ForwardMouseEventWithReceipt(const blink::WebMouseEvent& mouse_event,
++                                   WeakDocumentPtr expected_document,
++                                   MouseEventReceipt receipt);
++
+   void ForwardMouseEventWithLatencyInfo(const blink::WebMouseEvent& mouse_event,
+                                         const ui::LatencyInfo& latency);
+   void ForwardWheelEventWithLatencyInfo(
+diff --git a/content/browser/renderer_host/render_widget_host_impl.cc b/content/browser/renderer_host/render_widget_host_impl.cc
+--- a/content/browser/renderer_host/render_widget_host_impl.cc
++++ b/content/browser/renderer_host/render_widget_host_impl.cc
+@@ -1764,6 +1764,102 @@
+   }
+ }
+ 
++void RenderWidgetHostImpl::ForwardMouseEventWithReceipt(
++    const WebMouseEvent& mouse_event, WeakDocumentPtr expected_document,
++    MouseEventReceipt receipt) {
++  auto completion = mojo::WrapCallbackWithDefaultInvokeIfNotRun(
++      std::move(receipt), false,
++      blink::mojom::InputEventResultSource::kBrowser,
++      blink::mojom::InputEventResultState::kUnknown);
++  CHECK(WebInputEvent::IsMouseEventType(mouse_event.GetType()));
++  const auto weak_self = weak_factory_.GetWeakPtr();
++  // Preserve the normal browser policy/observer filtering and touch-emulator
++  // admission. A browser refusal does not become a successful renderer ACK.
++  for (auto& mouse_event_callback : mouse_event_callbacks_) {
++    if (mouse_event_callback.Run(mouse_event)) {
++      std::move(completion).Run(false,
++          blink::mojom::InputEventResultSource::kBrowser,
++          blink::mojom::InputEventResultState::kNoConsumerExists);
++      return;
++    }
++    if (!weak_self)
++      return;
++  }
++  if (IsIgnoringWebInputEvents(mouse_event)) {
++    std::move(completion).Run(false,
++        blink::mojom::InputEventResultSource::kBrowser,
++        blink::mojom::InputEventResultState::kNoConsumerExists);
++    return;
++  }
++  // Dismiss any active unbounded surface if a mouse click occurs outside of
++  // its window bounds.
++  if (mouse_event.GetType() == WebInputEvent::Type::kMouseDown && GetView()) {
++    if (auto* root_view = GetView()->GetRootView()) {
++      if (root_view->HasActiveUnboundedSurface()) {
++        if (UnboundedSurfaceWindow* unbounded_window =
++                root_view->GetUnboundedSurfaceWindow()) {
++          gfx::PointF screen_point = mouse_event.PositionInScreen();
++          if (!unbounded_window->GetBounds().Contains(
++                  gfx::ToFlooredPoint(screen_point))) {
++            root_view->DismissUnboundedSurface();
++          }
++        }
++      }
++    }
++  }
++
++  if (!weak_self)
++    return;
++  auto* touch_emulator = GetTouchEmulator(/*create_if_necessary=*/false);
++  if (touch_emulator && touch_emulator->HandleMouseEvent(mouse_event, GetView())) {
++    std::move(completion).Run(false,
++        blink::mojom::InputEventResultSource::kBrowser,
++        blink::mojom::InputEventResultState::kNoConsumerExists);
++    return;
++  }
++  if (!weak_self)
++    return;
++  input::MouseEventWithLatencyInfo mouse_with_latency(mouse_event,
++                                                      ui::LatencyInfo());
++  GetRenderInputRouter()->DispatchInputEventWithLatencyInfo(
++      mouse_with_latency.event, &mouse_with_latency.latency,
++      &mouse_with_latency.event.GetModifiableEventLatencyMetadata());
++  if (!weak_self)
++    return;
++  input::ScopedDispatchToRendererCallback dispatch_callback(
++      GetRenderInputRouter()->GetDispatchToRendererCallback());
++  auto* document = expected_document.AsRenderFrameHostIfValid();
++  if (!document || !document->IsActive() ||
++      document->GetRenderWidgetHost() != this) {
++    std::move(completion).Run(false,
++        blink::mojom::InputEventResultSource::kBrowser,
++        blink::mojom::InputEventResultState::kNoConsumerExists);
++    return;
++  }
++  input_router()->SendMouseEvent(mouse_with_latency,
++      base::BindOnce(
++          [](base::WeakPtr<RenderWidgetHostImpl> self,
++             MouseEventReceipt completion,
++             const input::MouseEventWithLatencyInfo& event,
++             blink::mojom::InputEventResultSource source,
++             blink::mojom::InputEventResultState state) {
++            if (self) {
++              self->GetRenderInputRouter()->GetLatencyTracker()->OnInputEventAck(
++                  event.event, &event.latency, state);
++              // Do not call OnMouseEventAck here: its legacy InputInjector
++              // observer FIFO cannot attribute an independent lease's event.
++              if (self->delegate_ &&
++                  state != blink::mojom::InputEventResultState::kConsumed &&
++                  !self->IsHidden())
++                self->delegate_->HandleMouseEvent(event.event);
++            }
++            std::move(completion).Run(true, source, state);
++          }, weak_factory_.GetWeakPtr(), std::move(completion)),
++      dispatch_callback.callback);
++  if (weak_self && weak_self->owner_delegate_)
++    weak_self->owner_delegate_->RenderWidgetDidForwardMouseEvent(mouse_event);
++}
++
+ void RenderWidgetHostImpl::ForwardWheelEvent(
+     const WebMouseWheelEvent& wheel_event) {
+   ForwardWheelEventWithLatencyInfo(wheel_event, ui::LatencyInfo());
+diff --git a/content/browser/devtools/protocol_config.json b/content/browser/devtools/protocol_config.json
+--- a/content/browser/devtools/protocol_config.json
++++ b/content/browser/devtools/protocol_config.json
+@@ -80,7 +80,7 @@
+             },
+             {
+                 "domain": "Input",
+-                "async": ["dispatchKeyEvent", "insertText", "imeSetComposition", "dispatchMouseEvent", "dispatchDragEvent", "dispatchTouchEvent", "cancelDragging", "synthesizePinchGesture", "synthesizeScrollGesture", "synthesizeTapGesture"]
++                "async": ["dispatchKeyEvent", "insertText", "imeSetComposition", "dispatchMouseEvent", "dispatchMouseEventToWidget", "dispatchDragEvent", "dispatchTouchEvent", "cancelDragging", "synthesizePinchGesture", "synthesizeScrollGesture", "synthesizeTapGesture"]
+             },
+             {
+                 "domain": "Inspector"
+diff --git a/third_party/blink/public/devtools_protocol/domains/Input.pdl b/third_party/blink/public/devtools_protocol/domains/Input.pdl
+--- a/third_party/blink/public/devtools_protocol/domains/Input.pdl
++++ b/third_party/blink/public/devtools_protocol/domains/Input.pdl
+@@ -334,3 +334,62 @@
+   experimental event dragIntercepted
+     parameters
+       DragData data
++
++  # Exact original-widget delivery observations. These commands never retarget a
++  # replacement widget and never infer a renderer acknowledgment from cleanup.
++  experimental type MouseWidgetReceipt extends object
++    properties
++      string lease
++      integer sequence
++      string documentToken
++      enum outcome
++        rendererAck
++        browserAck
++        widgetDestroyed
++        documentChanged
++        dispatchRefused
++        dispatchRetired
++      boolean ackObserved
++      # Native InputEventResultSource and InputEventResultState enum values.
++      integer ackSource
++      integer ackState
++
++  # Leases this session's actual frame widget and immutable document. OOPIFs
++  # require their own attached native target session; coordinates are relative
++  # to that leased widget's viewport. Empty loaderId is only the initial document.
++  experimental command acquireMouseWidget
++    parameters
++      string frameId
++      string loaderId
++    returns
++      string lease
++      string documentToken
++
++  # Only one physical event may be pending for a lease. Sequence starts at one.
++  # Mouse movement may produce browserAck when Chromium sends it nonblocking;
++  # that outcome explicitly does not establish a renderer acknowledgment.
++  experimental command dispatchMouseEventToWidget
++    parameters
++      string lease
++      integer sequence
++      enum type
++        mousePressed
++        mouseReleased
++        mouseMoved
++      number x
++      number y
++      enum button
++        left
++        right
++        middle
++        none
++      optional integer modifiers
++      optional integer clickCount
++    returns
++      MouseWidgetReceipt receipt
++
++  # Refuses retirement while input is physically pending, a button is held, or
++  # dispatch retirement left delivery uncertain on the original live widget.
++  experimental command releaseMouseWidget
++    parameters
++      string lease

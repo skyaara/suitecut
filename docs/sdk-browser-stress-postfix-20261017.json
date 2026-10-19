@@ -1,0 +1,238 @@
+{
+  "status": "LIVE_SDK_STRESS_AND_POSTFIX_COMPARISON_PASS",
+  "sourceHeadUnderTest": "68b3e4a",
+  "binarySHA256": "a5e8f8a376e8d710bcbbbc0a9e65d5fcdd969a723bfc34f76103ae417d5bf6b6",
+  "sdkFrozenForAllLiveRuns": true,
+  "postfixInstalledSDKAfterTheseRuns": "Final narrow serialization-guard SDK reemit verified separately against native unchanged a5e8f8a; all fourteen real families reran successfully with frozen final SDK artifacts.",
+  "exactComparison": {
+    "seed": 123456789,
+    "batches": 8,
+    "cyclesPerBatch": 16,
+    "contextPageCreateNavigateCloseCyclesPerRun": 128,
+    "measuredSDKOperationsPerRun": 1966,
+    "countsExactlyMatchBeforeAfter": true,
+    "framesPerSecond": 5,
+    "nativeSandboxEnabled": true,
+    "nodeMaxOldSpaceMiB": 512,
+    "supervisorPSSBudgetMiB": 1536,
+    "allActualOperationsAndAssertionsPassed": true
+  },
+  "measuredMemory": {
+    "rendererPSSKiBPerBatchSlopeBefore": 12212.17857142857,
+    "rendererPSSKiBPerBatchSlopeAfter": 264.85714285714283,
+    "rendererMeasuredGrowthRateReductionPercent": 97.83120479848863,
+    "rendererAggregatePSSKiBBatch1Before": 142263,
+    "rendererAggregatePSSKiBBatch8Before": 227082,
+    "rendererAggregatePSSKiBBatch1After": 139230,
+    "rendererAggregatePSSKiBBatch8After": 141013,
+    "postfixHeapBytesPerBatchSlope": -58485.42857142857,
+    "actualFactoryCacheSessionsEachSample": [
+      {
+        "nativeDebuggerFactoryScriptCacheSessions": 1,
+        "nativeDebuggerHistoricalScriptCacheSessions": 0
+      },
+      {
+        "nativeDebuggerFactoryScriptCacheSessions": 1,
+        "nativeDebuggerHistoricalScriptCacheSessions": 0
+      },
+      {
+        "nativeDebuggerFactoryScriptCacheSessions": 1,
+        "nativeDebuggerHistoricalScriptCacheSessions": 0
+      },
+      {
+        "nativeDebuggerFactoryScriptCacheSessions": 1,
+        "nativeDebuggerHistoricalScriptCacheSessions": 0
+      },
+      {
+        "nativeDebuggerFactoryScriptCacheSessions": 1,
+        "nativeDebuggerHistoricalScriptCacheSessions": 0
+      },
+      {
+        "nativeDebuggerFactoryScriptCacheSessions": 1,
+        "nativeDebuggerHistoricalScriptCacheSessions": 0
+      },
+      {
+        "nativeDebuggerFactoryScriptCacheSessions": 1,
+        "nativeDebuggerHistoricalScriptCacheSessions": 0
+      },
+      {
+        "nativeDebuggerFactoryScriptCacheSessions": 1,
+        "nativeDebuggerHistoricalScriptCacheSessions": 0
+      },
+      {
+        "nativeDebuggerFactoryScriptCacheSessions": 1,
+        "nativeDebuggerHistoricalScriptCacheSessions": 0
+      }
+    ],
+    "helperInterpretation": "The mixed-workload helper PSS still grows and includes a roughly 25 MiB step. A separate simple-context-only workload plateaus after warmup. PSS alone does not prove live-object leakage or that a native ownership fix reduced OS allocator high-water. No helper-memory improvement claim.",
+    "helperOnlyContextCycles": 128,
+    "helperOnlyLastBatchesPSSKiB": [
+      {
+        "label": "batch-6",
+        "helperPSSKiB": 126374
+      },
+      {
+        "label": "batch-7",
+        "helperPSSKiB": 126394
+      },
+      {
+        "label": "batch-8",
+        "helperPSSKiB": 126410
+      },
+      {
+        "label": "settled-30s",
+        "helperPSSKiB": 127678
+      },
+      {
+        "label": "after-memory-pressure-probe",
+        "helperPSSKiB": 127619
+      }
+    ],
+    "memoryPressureActualReceipt": {
+      "supported": true,
+      "receipt": {}
+    }
+  },
+  "retentionPhases": {
+    "operationsPerPhase": 192,
+    "phases": [
+      "evaluate",
+      "handle-create-json-dispose",
+      "fill",
+      "click"
+    ],
+    "postGCJavaScriptHeap": "Stable after first measured batch in each phase.",
+    "result": "Native renderer growth arrests after factory cache warmup, while old unbounded collected-script cache kept increasing.",
+    "proof": "/workspace/suitecut-hardening-live-proof-20261017/postfix/COMPARISON.json"
+  },
+  "broadFamilies": {
+    "beforeAndAfterSevenFamilies": [
+      "forms-checkbox-select",
+      "pdf",
+      "current-document-js-coverage",
+      "current-document-css-coverage",
+      "tracing",
+      "har-record-replay",
+      "renderer-crash-recovery"
+    ],
+    "postfixExtendedFamilies": [
+      {
+        "name": "single-file-upload-stock-reset-boundary",
+        "status": "PASS",
+        "evidence": {
+          "uploadBytes": 65536,
+          "populatedResetUnsupported": true,
+          "resetError": "Error: Pinned CEF backend does not implement genuine native empty file selection"
+        }
+      },
+      {
+        "name": "actual-download-save-delete",
+        "status": "PASS",
+        "evidence": {
+          "bytes": 65536,
+          "url": "http://127.0.0.1:38867/download",
+          "suggestedFilename": "native-download.bin",
+          "nativeState": "complete"
+        }
+      },
+      {
+        "name": "http-streaming-multipart-churn",
+        "status": "PASS",
+        "evidence": {
+          "requests": 12,
+          "wireBytes": 790082,
+          "allExactPayloads": true
+        }
+      },
+      {
+        "name": "websocket-observation-echo-close",
+        "status": "PASS",
+        "evidence": {
+          "actualEchoMessages": 20,
+          "isClosed": true,
+          "routingUnsupported": true
+        }
+      },
+      {
+        "name": "keyboard-mouse-touch-accessibility",
+        "status": "PASS",
+        "evidence": {
+          "trustedInputEvents": 17,
+          "ariaBytes": 156,
+          "ariaRootNodes": 5
+        }
+      },
+      {
+        "name": "native-current-document-timer-budget",
+        "status": "PASS",
+        "evidence": {
+          "installed": true,
+          "paused": true,
+          "scope": {
+            "controller": "currentDocument",
+            "nativeWallClock": "rendererProcess",
+            "isolatedContext": false
+          },
+          "fullClockUnsupported": true
+        }
+      },
+      {
+        "name": "native-context-video-finalization",
+        "status": "PASS",
+        "evidence": {
+          "path": "/workspace/suitecut-hardening-live-proof-20261017/postfix/extended/video/.suitecut-video-TI7hSy/page-4.webm",
+          "bytes": 90790,
+          "finalizedAfterNativeContextClose": true
+        }
+      }
+    ]
+  },
+  "actualVideo": {
+    "codec": "vp9",
+    "width": 320,
+    "height": 240,
+    "frameRate": "60/1",
+    "decodedFrameCount": 125,
+    "fileBytes": "90790",
+    "finalizedBeforeProbe": true
+  },
+  "shutdown": {
+    "postfixSuitesSupervised": 5,
+    "allActualHelperExitCodesZero": true,
+    "allSupervisorWaitpidReceiptsRetired": true,
+    "allMemoryBudgetsRespected": true,
+    "proofDirectory": "/workspace/suitecut-hardening-live-proof-20261017/postfix",
+    "initialUnsupervisedBaselineCleanupFailurePreserved": true
+  },
+  "performanceInterpretation": "Shared cloud-host timings are descriptive. Low-FPS clicks wait for real RAF actionability samples; paired warmed click p50 was approximately 600 ms at 5 FPS, 50 ms at 60 FPS, 30 ms at 120 FPS. No actionability checks were removed.",
+  "limitations": [
+    "Finite seeded integration stress does not exhaust every SDK input or prove absence of every leak.",
+    "Stock-CEF false capabilities remain unavailable and were not activated by candidate patches.",
+    "Current-document clocks and ordinary WebSocket observation were exercised; full clocks and WebSocket interception remain gated.",
+    "Video probe is a two-second actual recording, not a long-duration encoder soak or a 120 FPS recording.",
+    "Shared/service-worker long-duration lifecycle and custom CEF builds are outside these live measurements."
+  ],
+  "proofFiles": {
+    "inputs": "/workspace/suitecut-hardening-live-proof-20261017/postfix/inputs.json",
+    "comparison": "/workspace/suitecut-hardening-live-proof-20261017/postfix/COMPARISON.json",
+    "mainResults": "/workspace/suitecut-hardening-live-proof-20261017/postfix/results.json",
+    "extended": "/workspace/suitecut-hardening-live-proof-20261017/postfix/extended/result.json",
+    "helperChurn": "/workspace/suitecut-hardening-live-proof-20261017/postfix/helper-churn/result.json",
+    "videoFFprobe": "/workspace/suitecut-hardening-live-proof-20261017/postfix/extended/video.ffprobe.json"
+  },
+  "finalSDKVerification": {
+    "status": "FINAL_SDK_FAMILIES_AND_EXTENDED_REAL_BROWSER_PASS",
+    "sourceHead": "87d3e513",
+    "binarySHA256": "a5e8f8a376e8d710bcbbbc0a9e65d5fcdd969a723bfc34f76103ae417d5bf6b6",
+    "sourcePinsUnchanged": 180,
+    "actualFamilyCount": 14,
+    "nativeBrowserJS_SHA256": "f6b8d5a90197ad0a06cfa95c6927449dc17d410136420e41740ce8e5620ad22a",
+    "browserEntrySHA256": "c80f5f379c815710f3acb2102c0247629a56d41251961437d188ec45c8c3d203",
+    "familiesProof": "/workspace/suitecut-hardening-live-proof-20261017/final-sdk/families/result.json",
+    "extendedProof": "/workspace/suitecut-hardening-live-proof-20261017/final-sdk/extended/result.json",
+    "actualSupervisorReceipts": "/workspace/suitecut-hardening-live-proof-20261017/final-sdk/results.json",
+    "allHelperExitCodesZero": true,
+    "allDescendantsActuallyRetired": true,
+    "allMemoryBudgetsRespected": true
+  }
+}

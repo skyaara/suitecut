@@ -32,9 +32,8 @@
     "plugins/**/*.ts",
     "tests/**/*.ts",
     "examples/**/*.ts",
-    "benchmarks/**/*.ts",
     "scripts/**/*.mjs",
-    "playwright.config.ts",
+    "docs/cef-issues/repro/**/*.mjs",
     "vitest.config.ts"
   ]
 }

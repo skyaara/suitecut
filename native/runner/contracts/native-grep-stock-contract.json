@@ -1,0 +1,710 @@
+{
+  "scope": "Authored genuine Playwright public CLI observations for independent native UTF16 boolean regex controls; no external implementation bytes",
+  "stockVersion": "1.64.0",
+  "publicSourceCommit": "606ecd8b34bac100db32561b6278ffd76e5eb3cd",
+  "oracleContractSHA256": "10c3d34b5223e1e6fdf9fef2f021f8c14580f86d5563be178c6fd9dc7b50b30c",
+  "titleComposition": "Tags attached to declaring suite/test component, preserving duplicates; public observer titlePath plus own immutable declared tag fixture",
+  "titles": [
+    {
+      "stockId": "0b19296fe8f3584e5e5f-a8ebcae00e70e4e98ff0",
+      "title": "Project One beta.spec.mjs plain TEST aa"
+    },
+    {
+      "stockId": "56901733b5442d9c69be-d8cb3890cb590c4f492a",
+      "title": "Project One nested/alpha.spec.mjs outer suite @inherited @same test AA @leaf @same"
+    },
+    {
+      "stockId": "56901733b5442d9c69be-d9789ca456adbf367691",
+      "title": "Project One nested/alpha.spec.mjs outer suite @inherited @same test BB @leaf @same"
+    },
+    {
+      "stockId": "56901733b5442d9c69be-56a35559f9bed4f5fdfd",
+      "title": "Project One nested/alpha.spec.mjs outer suite @inherited @same test CC @leaf @same"
+    },
+    {
+      "stockId": "56901733b5442d9c69be-6a5fb9662840a83aaf01",
+      "title": "Project One nested/alpha.spec.mjs outer suite @inherited @same slash a/b @leaf @same"
+    },
+    {
+      "stockId": "56901733b5442d9c69be-05525d403ad8536d435d",
+      "title": "Project One nested/alpha.spec.mjs outer suite @inherited @same unicode \u03c0 \u03a0 \u017f S \u212a K @leaf @same"
+    },
+    {
+      "stockId": "56901733b5442d9c69be-b78339ff986f7d3dc389",
+      "title": "Project One nested/alpha.spec.mjs outer suite @inherited @same emoji \ud83d\ude00 @leaf @same"
+    },
+    {
+      "stockId": "56901733b5442d9c69be-917ed49f719868c7eebd",
+      "title": "Project One nested/alpha.spec.mjs outer suite @inherited @same lone \ud800 @leaf @same"
+    },
+    {
+      "stockId": "56901733b5442d9c69be-d33958a19baf11b715fe",
+      "title": "Project One nested/alpha.spec.mjs outer suite @inherited @same line x\ny @leaf @same"
+    },
+    {
+      "stockId": "56901733b5442d9c69be-289726d8acc1bdcdff35",
+      "title": "Project One nested/alpha.spec.mjs outer suite @inherited @same at @inline @leaf @same"
+    },
+    {
+      "stockId": "0b19296fe8f3584e5e5f-7c2cec7243824b6ca31c",
+      "title": "other beta.spec.mjs plain TEST aa"
+    },
+    {
+      "stockId": "56901733b5442d9c69be-d844230295c1094a7b60",
+      "title": "other nested/alpha.spec.mjs outer suite @inherited @same test AA @leaf @same"
+    },
+    {
+      "stockId": "56901733b5442d9c69be-3a19f7dbf6976e9e0100",
+      "title": "other nested/alpha.spec.mjs outer suite @inherited @same test BB @leaf @same"
+    },
+    {
+      "stockId": "56901733b5442d9c69be-a5e2ad17135daf48f645",
+      "title": "other nested/alpha.spec.mjs outer suite @inherited @same test CC @leaf @same"
+    },
+    {
+      "stockId": "56901733b5442d9c69be-cd6a3fa9c68f07e21f47",
+      "title": "other nested/alpha.spec.mjs outer suite @inherited @same slash a/b @leaf @same"
+    },
+    {
+      "stockId": "56901733b5442d9c69be-24ba1000675095ed01f0",
+      "title": "other nested/alpha.spec.mjs outer suite @inherited @same unicode \u03c0 \u03a0 \u017f S \u212a K @leaf @same"
+    },
+    {
+      "stockId": "56901733b5442d9c69be-2ec96cbc043edda39b8d",
+      "title": "other nested/alpha.spec.mjs outer suite @inherited @same emoji \ud83d\ude00 @leaf @same"
+    },
+    {
+      "stockId": "56901733b5442d9c69be-dac571acf513a9ad74cf",
+      "title": "other nested/alpha.spec.mjs outer suite @inherited @same lone \ud800 @leaf @same"
+    },
+    {
+      "stockId": "56901733b5442d9c69be-4d22dcb745c85c959ddd",
+      "title": "other nested/alpha.spec.mjs outer suite @inherited @same line x\ny @leaf @same"
+    },
+    {
+      "stockId": "56901733b5442d9c69be-280710f1f53d584166ac",
+      "title": "other nested/alpha.spec.mjs outer suite @inherited @same at @inline @leaf @same"
+    }
+  ],
+  "cases": [
+    {
+      "name": "baseline-list",
+      "include": null,
+      "exclude": null,
+      "expectedCompileFailure": false,
+      "explicitNativeSubsetLimit": false,
+      "stockSelectedIds": [
+        "0b19296fe8f3584e5e5f-a8ebcae00e70e4e98ff0",
+        "56901733b5442d9c69be-d8cb3890cb590c4f492a",
+        "56901733b5442d9c69be-d9789ca456adbf367691",
+        "56901733b5442d9c69be-56a35559f9bed4f5fdfd",
+        "56901733b5442d9c69be-6a5fb9662840a83aaf01",
+        "56901733b5442d9c69be-05525d403ad8536d435d",
+        "56901733b5442d9c69be-b78339ff986f7d3dc389",
+        "56901733b5442d9c69be-917ed49f719868c7eebd",
+        "56901733b5442d9c69be-d33958a19baf11b715fe",
+        "56901733b5442d9c69be-289726d8acc1bdcdff35",
+        "0b19296fe8f3584e5e5f-7c2cec7243824b6ca31c",
+        "56901733b5442d9c69be-d844230295c1094a7b60",
+        "56901733b5442d9c69be-3a19f7dbf6976e9e0100",
+        "56901733b5442d9c69be-a5e2ad17135daf48f645",
+        "56901733b5442d9c69be-cd6a3fa9c68f07e21f47",
+        "56901733b5442d9c69be-24ba1000675095ed01f0",
+        "56901733b5442d9c69be-2ec96cbc043edda39b8d",
+        "56901733b5442d9c69be-dac571acf513a9ad74cf",
+        "56901733b5442d9c69be-4d22dcb745c85c959ddd",
+        "56901733b5442d9c69be-280710f1f53d584166ac"
+      ]
+    },
+    {
+      "name": "baseline-run",
+      "include": null,
+      "exclude": null,
+      "expectedCompileFailure": false,
+      "explicitNativeSubsetLimit": false,
+      "stockSelectedIds": [
+        "0b19296fe8f3584e5e5f-a8ebcae00e70e4e98ff0",
+        "56901733b5442d9c69be-d8cb3890cb590c4f492a",
+        "56901733b5442d9c69be-d9789ca456adbf367691",
+        "56901733b5442d9c69be-56a35559f9bed4f5fdfd",
+        "56901733b5442d9c69be-6a5fb9662840a83aaf01",
+        "56901733b5442d9c69be-05525d403ad8536d435d",
+        "56901733b5442d9c69be-b78339ff986f7d3dc389",
+        "56901733b5442d9c69be-917ed49f719868c7eebd",
+        "56901733b5442d9c69be-d33958a19baf11b715fe",
+        "56901733b5442d9c69be-289726d8acc1bdcdff35",
+        "0b19296fe8f3584e5e5f-7c2cec7243824b6ca31c",
+        "56901733b5442d9c69be-d844230295c1094a7b60",
+        "56901733b5442d9c69be-3a19f7dbf6976e9e0100",
+        "56901733b5442d9c69be-a5e2ad17135daf48f645",
+        "56901733b5442d9c69be-cd6a3fa9c68f07e21f47",
+        "56901733b5442d9c69be-24ba1000675095ed01f0",
+        "56901733b5442d9c69be-2ec96cbc043edda39b8d",
+        "56901733b5442d9c69be-dac571acf513a9ad74cf",
+        "56901733b5442d9c69be-4d22dcb745c85c959ddd",
+        "56901733b5442d9c69be-280710f1f53d584166ac"
+      ]
+    },
+    {
+      "name": "bare-case-list",
+      "include": "TesT Aa",
+      "exclude": null,
+      "expectedCompileFailure": false,
+      "explicitNativeSubsetLimit": false,
+      "stockSelectedIds": [
+        "0b19296fe8f3584e5e5f-a8ebcae00e70e4e98ff0",
+        "56901733b5442d9c69be-d8cb3890cb590c4f492a",
+        "0b19296fe8f3584e5e5f-7c2cec7243824b6ca31c",
+        "56901733b5442d9c69be-d844230295c1094a7b60"
+      ]
+    },
+    {
+      "name": "bare-case-run",
+      "include": "TesT Aa",
+      "exclude": null,
+      "expectedCompileFailure": false,
+      "explicitNativeSubsetLimit": false,
+      "stockSelectedIds": [
+        "0b19296fe8f3584e5e5f-a8ebcae00e70e4e98ff0",
+        "56901733b5442d9c69be-d8cb3890cb590c4f492a",
+        "0b19296fe8f3584e5e5f-7c2cec7243824b6ca31c",
+        "56901733b5442d9c69be-d844230295c1094a7b60"
+      ]
+    },
+    {
+      "name": "literal-case-list",
+      "include": "/TesT Aa/",
+      "exclude": null,
+      "expectedCompileFailure": false,
+      "explicitNativeSubsetLimit": false,
+      "stockSelectedIds": []
+    },
+    {
+      "name": "literal-i-list",
+      "include": "/TesT Aa/i",
+      "exclude": null,
+      "expectedCompileFailure": false,
+      "explicitNativeSubsetLimit": false,
+      "stockSelectedIds": [
+        "0b19296fe8f3584e5e5f-a8ebcae00e70e4e98ff0",
+        "56901733b5442d9c69be-d8cb3890cb590c4f492a",
+        "0b19296fe8f3584e5e5f-7c2cec7243824b6ca31c",
+        "56901733b5442d9c69be-d844230295c1094a7b60"
+      ]
+    },
+    {
+      "name": "literal-i-run",
+      "include": "/TesT Aa/i",
+      "exclude": null,
+      "expectedCompileFailure": false,
+      "explicitNativeSubsetLimit": false,
+      "stockSelectedIds": [
+        "0b19296fe8f3584e5e5f-a8ebcae00e70e4e98ff0",
+        "56901733b5442d9c69be-d8cb3890cb590c4f492a",
+        "0b19296fe8f3584e5e5f-7c2cec7243824b6ca31c",
+        "56901733b5442d9c69be-d844230295c1094a7b60"
+      ]
+    },
+    {
+      "name": "class-list",
+      "include": "test [A-B]",
+      "exclude": null,
+      "expectedCompileFailure": false,
+      "explicitNativeSubsetLimit": false,
+      "stockSelectedIds": [
+        "0b19296fe8f3584e5e5f-a8ebcae00e70e4e98ff0",
+        "56901733b5442d9c69be-d8cb3890cb590c4f492a",
+        "56901733b5442d9c69be-d9789ca456adbf367691",
+        "0b19296fe8f3584e5e5f-7c2cec7243824b6ca31c",
+        "56901733b5442d9c69be-d844230295c1094a7b60",
+        "56901733b5442d9c69be-3a19f7dbf6976e9e0100"
+      ]
+    },
+    {
+      "name": "invert-list",
+      "include": null,
+      "exclude": "BB",
+      "expectedCompileFailure": false,
+      "explicitNativeSubsetLimit": false,
+      "stockSelectedIds": [
+        "0b19296fe8f3584e5e5f-a8ebcae00e70e4e98ff0",
+        "56901733b5442d9c69be-d8cb3890cb590c4f492a",
+        "56901733b5442d9c69be-56a35559f9bed4f5fdfd",
+        "56901733b5442d9c69be-6a5fb9662840a83aaf01",
+        "56901733b5442d9c69be-05525d403ad8536d435d",
+        "56901733b5442d9c69be-b78339ff986f7d3dc389",
+        "56901733b5442d9c69be-917ed49f719868c7eebd",
+        "56901733b5442d9c69be-d33958a19baf11b715fe",
+        "56901733b5442d9c69be-289726d8acc1bdcdff35",
+        "0b19296fe8f3584e5e5f-7c2cec7243824b6ca31c",
+        "56901733b5442d9c69be-d844230295c1094a7b60",
+        "56901733b5442d9c69be-a5e2ad17135daf48f645",
+        "56901733b5442d9c69be-cd6a3fa9c68f07e21f47",
+        "56901733b5442d9c69be-24ba1000675095ed01f0",
+        "56901733b5442d9c69be-2ec96cbc043edda39b8d",
+        "56901733b5442d9c69be-dac571acf513a9ad74cf",
+        "56901733b5442d9c69be-4d22dcb745c85c959ddd",
+        "56901733b5442d9c69be-280710f1f53d584166ac"
+      ]
+    },
+    {
+      "name": "include-invert-list",
+      "include": "test [A-C]",
+      "exclude": "BB",
+      "expectedCompileFailure": false,
+      "explicitNativeSubsetLimit": false,
+      "stockSelectedIds": [
+        "0b19296fe8f3584e5e5f-a8ebcae00e70e4e98ff0",
+        "56901733b5442d9c69be-d8cb3890cb590c4f492a",
+        "56901733b5442d9c69be-56a35559f9bed4f5fdfd",
+        "0b19296fe8f3584e5e5f-7c2cec7243824b6ca31c",
+        "56901733b5442d9c69be-d844230295c1094a7b60",
+        "56901733b5442d9c69be-a5e2ad17135daf48f645"
+      ]
+    },
+    {
+      "name": "title-composition-list",
+      "include": "/^Project One nested/alpha.spec.mjs outer suite test AA @inherited @same @leaf$/",
+      "exclude": null,
+      "expectedCompileFailure": false,
+      "explicitNativeSubsetLimit": false,
+      "stockSelectedIds": []
+    },
+    {
+      "name": "title-composition-run",
+      "include": "/^Project One nested/alpha.spec.mjs outer suite test AA @inherited @same @leaf$/",
+      "exclude": null,
+      "expectedCompileFailure": false,
+      "explicitNativeSubsetLimit": false,
+      "stockSelectedIds": []
+    },
+    {
+      "name": "file-list",
+      "include": "nested/alpha.spec.mjs",
+      "exclude": null,
+      "expectedCompileFailure": false,
+      "explicitNativeSubsetLimit": false,
+      "stockSelectedIds": [
+        "56901733b5442d9c69be-d8cb3890cb590c4f492a",
+        "56901733b5442d9c69be-d9789ca456adbf367691",
+        "56901733b5442d9c69be-56a35559f9bed4f5fdfd",
+        "56901733b5442d9c69be-6a5fb9662840a83aaf01",
+        "56901733b5442d9c69be-05525d403ad8536d435d",
+        "56901733b5442d9c69be-b78339ff986f7d3dc389",
+        "56901733b5442d9c69be-917ed49f719868c7eebd",
+        "56901733b5442d9c69be-d33958a19baf11b715fe",
+        "56901733b5442d9c69be-289726d8acc1bdcdff35",
+        "56901733b5442d9c69be-d844230295c1094a7b60",
+        "56901733b5442d9c69be-3a19f7dbf6976e9e0100",
+        "56901733b5442d9c69be-a5e2ad17135daf48f645",
+        "56901733b5442d9c69be-cd6a3fa9c68f07e21f47",
+        "56901733b5442d9c69be-24ba1000675095ed01f0",
+        "56901733b5442d9c69be-2ec96cbc043edda39b8d",
+        "56901733b5442d9c69be-dac571acf513a9ad74cf",
+        "56901733b5442d9c69be-4d22dcb745c85c959ddd",
+        "56901733b5442d9c69be-280710f1f53d584166ac"
+      ]
+    },
+    {
+      "name": "project-list",
+      "include": "/^other /",
+      "exclude": null,
+      "expectedCompileFailure": false,
+      "explicitNativeSubsetLimit": false,
+      "stockSelectedIds": [
+        "0b19296fe8f3584e5e5f-7c2cec7243824b6ca31c",
+        "56901733b5442d9c69be-d844230295c1094a7b60",
+        "56901733b5442d9c69be-3a19f7dbf6976e9e0100",
+        "56901733b5442d9c69be-a5e2ad17135daf48f645",
+        "56901733b5442d9c69be-cd6a3fa9c68f07e21f47",
+        "56901733b5442d9c69be-24ba1000675095ed01f0",
+        "56901733b5442d9c69be-2ec96cbc043edda39b8d",
+        "56901733b5442d9c69be-dac571acf513a9ad74cf",
+        "56901733b5442d9c69be-4d22dcb745c85c959ddd",
+        "56901733b5442d9c69be-280710f1f53d584166ac"
+      ]
+    },
+    {
+      "name": "tags-list",
+      "include": "@inherited.*@leaf",
+      "exclude": null,
+      "expectedCompileFailure": false,
+      "explicitNativeSubsetLimit": false,
+      "stockSelectedIds": [
+        "56901733b5442d9c69be-d8cb3890cb590c4f492a",
+        "56901733b5442d9c69be-d9789ca456adbf367691",
+        "56901733b5442d9c69be-56a35559f9bed4f5fdfd",
+        "56901733b5442d9c69be-6a5fb9662840a83aaf01",
+        "56901733b5442d9c69be-05525d403ad8536d435d",
+        "56901733b5442d9c69be-b78339ff986f7d3dc389",
+        "56901733b5442d9c69be-917ed49f719868c7eebd",
+        "56901733b5442d9c69be-289726d8acc1bdcdff35",
+        "56901733b5442d9c69be-d844230295c1094a7b60",
+        "56901733b5442d9c69be-3a19f7dbf6976e9e0100",
+        "56901733b5442d9c69be-a5e2ad17135daf48f645",
+        "56901733b5442d9c69be-cd6a3fa9c68f07e21f47",
+        "56901733b5442d9c69be-24ba1000675095ed01f0",
+        "56901733b5442d9c69be-2ec96cbc043edda39b8d",
+        "56901733b5442d9c69be-dac571acf513a9ad74cf",
+        "56901733b5442d9c69be-280710f1f53d584166ac"
+      ]
+    },
+    {
+      "name": "escaped-slash-list",
+      "include": "/slash a\\/b/",
+      "exclude": null,
+      "expectedCompileFailure": false,
+      "explicitNativeSubsetLimit": false,
+      "stockSelectedIds": [
+        "56901733b5442d9c69be-6a5fb9662840a83aaf01",
+        "56901733b5442d9c69be-cd6a3fa9c68f07e21f47"
+      ]
+    },
+    {
+      "name": "slash-no-delimiter-list",
+      "include": "slash a/b",
+      "exclude": null,
+      "expectedCompileFailure": false,
+      "explicitNativeSubsetLimit": false,
+      "stockSelectedIds": [
+        "56901733b5442d9c69be-6a5fb9662840a83aaf01",
+        "56901733b5442d9c69be-cd6a3fa9c68f07e21f47"
+      ]
+    },
+    {
+      "name": "two-positive-list",
+      "include": "test BB",
+      "exclude": null,
+      "expectedCompileFailure": false,
+      "explicitNativeSubsetLimit": false,
+      "stockSelectedIds": [
+        "56901733b5442d9c69be-d9789ca456adbf367691",
+        "56901733b5442d9c69be-3a19f7dbf6976e9e0100"
+      ]
+    },
+    {
+      "name": "two-invert-list",
+      "include": null,
+      "exclude": "test BB",
+      "expectedCompileFailure": false,
+      "explicitNativeSubsetLimit": false,
+      "stockSelectedIds": [
+        "0b19296fe8f3584e5e5f-a8ebcae00e70e4e98ff0",
+        "56901733b5442d9c69be-d8cb3890cb590c4f492a",
+        "56901733b5442d9c69be-56a35559f9bed4f5fdfd",
+        "56901733b5442d9c69be-6a5fb9662840a83aaf01",
+        "56901733b5442d9c69be-05525d403ad8536d435d",
+        "56901733b5442d9c69be-b78339ff986f7d3dc389",
+        "56901733b5442d9c69be-917ed49f719868c7eebd",
+        "56901733b5442d9c69be-d33958a19baf11b715fe",
+        "56901733b5442d9c69be-289726d8acc1bdcdff35",
+        "0b19296fe8f3584e5e5f-7c2cec7243824b6ca31c",
+        "56901733b5442d9c69be-d844230295c1094a7b60",
+        "56901733b5442d9c69be-a5e2ad17135daf48f645",
+        "56901733b5442d9c69be-cd6a3fa9c68f07e21f47",
+        "56901733b5442d9c69be-24ba1000675095ed01f0",
+        "56901733b5442d9c69be-2ec96cbc043edda39b8d",
+        "56901733b5442d9c69be-dac571acf513a9ad74cf",
+        "56901733b5442d9c69be-4d22dcb745c85c959ddd",
+        "56901733b5442d9c69be-280710f1f53d584166ac"
+      ]
+    },
+    {
+      "name": "flag-g-list",
+      "include": "/test AA/g",
+      "exclude": null,
+      "expectedCompileFailure": false,
+      "explicitNativeSubsetLimit": false,
+      "stockSelectedIds": [
+        "56901733b5442d9c69be-d8cb3890cb590c4f492a",
+        "56901733b5442d9c69be-d844230295c1094a7b60"
+      ]
+    },
+    {
+      "name": "flag-y-list",
+      "include": "/Project One/y",
+      "exclude": null,
+      "expectedCompileFailure": false,
+      "explicitNativeSubsetLimit": false,
+      "stockSelectedIds": []
+    },
+    {
+      "name": "flag-m-list",
+      "include": "/^y/m",
+      "exclude": null,
+      "expectedCompileFailure": false,
+      "explicitNativeSubsetLimit": false,
+      "stockSelectedIds": []
+    },
+    {
+      "name": "flag-s-list",
+      "include": "/line x.y/s",
+      "exclude": null,
+      "expectedCompileFailure": false,
+      "explicitNativeSubsetLimit": false,
+      "stockSelectedIds": []
+    },
+    {
+      "name": "flag-u-list",
+      "include": "/emoji .$ /u",
+      "exclude": null,
+      "expectedCompileFailure": false,
+      "explicitNativeSubsetLimit": false,
+      "stockSelectedIds": []
+    },
+    {
+      "name": "emoji-unit2-list",
+      "include": "/emoji .. @/",
+      "exclude": null,
+      "expectedCompileFailure": false,
+      "explicitNativeSubsetLimit": false,
+      "stockSelectedIds": [
+        "56901733b5442d9c69be-b78339ff986f7d3dc389",
+        "56901733b5442d9c69be-2ec96cbc043edda39b8d"
+      ]
+    },
+    {
+      "name": "emoji-u1-list",
+      "include": "/emoji . @/u",
+      "exclude": null,
+      "expectedCompileFailure": false,
+      "explicitNativeSubsetLimit": false,
+      "stockSelectedIds": []
+    },
+    {
+      "name": "unicode-case-list",
+      "include": "/\u03c0 \u03c0/i",
+      "exclude": null,
+      "expectedCompileFailure": false,
+      "explicitNativeSubsetLimit": false,
+      "stockSelectedIds": [
+        "56901733b5442d9c69be-05525d403ad8536d435d",
+        "56901733b5442d9c69be-24ba1000675095ed01f0"
+      ]
+    },
+    {
+      "name": "long-s-nonu-list",
+      "include": "/unicode \u03c0 \u03a0 S S/i",
+      "exclude": null,
+      "expectedCompileFailure": false,
+      "explicitNativeSubsetLimit": false,
+      "stockSelectedIds": []
+    },
+    {
+      "name": "long-s-u-list",
+      "include": "/unicode \u03c0 \u03a0 S S/iu",
+      "exclude": null,
+      "expectedCompileFailure": false,
+      "explicitNativeSubsetLimit": false,
+      "stockSelectedIds": []
+    },
+    {
+      "name": "lone-list",
+      "include": "/lone \\ud800/",
+      "exclude": null,
+      "expectedCompileFailure": false,
+      "explicitNativeSubsetLimit": false,
+      "stockSelectedIds": [
+        "56901733b5442d9c69be-917ed49f719868c7eebd",
+        "56901733b5442d9c69be-dac571acf513a9ad74cf"
+      ]
+    },
+    {
+      "name": "unknown-flags-list",
+      "include": "/test AA/z",
+      "exclude": null,
+      "expectedCompileFailure": false,
+      "explicitNativeSubsetLimit": false,
+      "stockSelectedIds": []
+    },
+    {
+      "name": "bad-flags-list",
+      "include": "/test AA/ii",
+      "exclude": null,
+      "expectedCompileFailure": true,
+      "explicitNativeSubsetLimit": false,
+      "stockSelectedIds": []
+    },
+    {
+      "name": "inline-flags-list",
+      "include": "(?i)test AA",
+      "exclude": null,
+      "expectedCompileFailure": true,
+      "explicitNativeSubsetLimit": false,
+      "stockSelectedIds": []
+    },
+    {
+      "name": "bad-regex-list",
+      "include": "[",
+      "exclude": null,
+      "expectedCompileFailure": true,
+      "explicitNativeSubsetLimit": false,
+      "stockSelectedIds": []
+    },
+    {
+      "name": "exact-duplicate-tags-list",
+      "include": "/^Project One nested/alpha.spec.mjs outer suite test AA @inherited @same @leaf @same$/",
+      "exclude": null,
+      "expectedCompileFailure": false,
+      "explicitNativeSubsetLimit": false,
+      "stockSelectedIds": []
+    },
+    {
+      "name": "title-leading-space-list",
+      "include": "/^ Project One nested/alpha.spec.mjs outer suite test AA/",
+      "exclude": null,
+      "expectedCompileFailure": false,
+      "explicitNativeSubsetLimit": false,
+      "stockSelectedIds": []
+    },
+    {
+      "name": "title-no-tags-list",
+      "include": "/^Project One nested/alpha.spec.mjs outer suite test AA$/",
+      "exclude": null,
+      "expectedCompileFailure": false,
+      "explicitNativeSubsetLimit": false,
+      "stockSelectedIds": []
+    },
+    {
+      "name": "literal-gi-list",
+      "include": "/TesT Aa/gi",
+      "exclude": null,
+      "expectedCompileFailure": false,
+      "explicitNativeSubsetLimit": false,
+      "stockSelectedIds": [
+        "0b19296fe8f3584e5e5f-a8ebcae00e70e4e98ff0",
+        "56901733b5442d9c69be-d8cb3890cb590c4f492a",
+        "0b19296fe8f3584e5e5f-7c2cec7243824b6ca31c",
+        "56901733b5442d9c69be-d844230295c1094a7b60"
+      ]
+    },
+    {
+      "name": "literal-ig-list",
+      "include": "/TesT Aa/ig",
+      "exclude": null,
+      "expectedCompileFailure": false,
+      "explicitNativeSubsetLimit": false,
+      "stockSelectedIds": [
+        "0b19296fe8f3584e5e5f-a8ebcae00e70e4e98ff0",
+        "56901733b5442d9c69be-d8cb3890cb590c4f492a",
+        "0b19296fe8f3584e5e5f-7c2cec7243824b6ca31c",
+        "56901733b5442d9c69be-d844230295c1094a7b60"
+      ]
+    },
+    {
+      "name": "global-reset-list",
+      "include": "/test [ABC]/g",
+      "exclude": null,
+      "expectedCompileFailure": false,
+      "explicitNativeSubsetLimit": false,
+      "stockSelectedIds": [
+        "56901733b5442d9c69be-d8cb3890cb590c4f492a",
+        "56901733b5442d9c69be-d9789ca456adbf367691",
+        "56901733b5442d9c69be-56a35559f9bed4f5fdfd",
+        "56901733b5442d9c69be-d844230295c1094a7b60",
+        "56901733b5442d9c69be-3a19f7dbf6976e9e0100",
+        "56901733b5442d9c69be-a5e2ad17135daf48f645"
+      ]
+    },
+    {
+      "name": "composition-suite-tags-list",
+      "include": "/^Project One nested/alpha.spec.mjs outer suite @inherited @same test AA @leaf @same$/",
+      "exclude": null,
+      "expectedCompileFailure": false,
+      "explicitNativeSubsetLimit": false,
+      "stockSelectedIds": [
+        "56901733b5442d9c69be-d8cb3890cb590c4f492a"
+      ]
+    },
+    {
+      "name": "composition-prefix-list",
+      "include": "/^Project One nested/alpha.spec.mjs outer suite test AA/",
+      "exclude": null,
+      "expectedCompileFailure": false,
+      "explicitNativeSubsetLimit": false,
+      "stockSelectedIds": []
+    },
+    {
+      "name": "composition-suite-prefix-list",
+      "include": "/outer suite @/",
+      "exclude": null,
+      "expectedCompileFailure": false,
+      "explicitNativeSubsetLimit": false,
+      "stockSelectedIds": [
+        "56901733b5442d9c69be-d8cb3890cb590c4f492a",
+        "56901733b5442d9c69be-d9789ca456adbf367691",
+        "56901733b5442d9c69be-56a35559f9bed4f5fdfd",
+        "56901733b5442d9c69be-6a5fb9662840a83aaf01",
+        "56901733b5442d9c69be-05525d403ad8536d435d",
+        "56901733b5442d9c69be-b78339ff986f7d3dc389",
+        "56901733b5442d9c69be-917ed49f719868c7eebd",
+        "56901733b5442d9c69be-d33958a19baf11b715fe",
+        "56901733b5442d9c69be-289726d8acc1bdcdff35",
+        "56901733b5442d9c69be-d844230295c1094a7b60",
+        "56901733b5442d9c69be-3a19f7dbf6976e9e0100",
+        "56901733b5442d9c69be-a5e2ad17135daf48f645",
+        "56901733b5442d9c69be-cd6a3fa9c68f07e21f47",
+        "56901733b5442d9c69be-24ba1000675095ed01f0",
+        "56901733b5442d9c69be-2ec96cbc043edda39b8d",
+        "56901733b5442d9c69be-dac571acf513a9ad74cf",
+        "56901733b5442d9c69be-4d22dcb745c85c959ddd",
+        "56901733b5442d9c69be-280710f1f53d584166ac"
+      ]
+    },
+    {
+      "name": "composition-test-suffix-list",
+      "include": "/test AA @/",
+      "exclude": null,
+      "expectedCompileFailure": false,
+      "explicitNativeSubsetLimit": false,
+      "stockSelectedIds": [
+        "56901733b5442d9c69be-d8cb3890cb590c4f492a",
+        "56901733b5442d9c69be-d844230295c1094a7b60"
+      ]
+    },
+    {
+      "name": "composition-project-file-list",
+      "include": "/^Project One .*alpha.spec.mjs/",
+      "exclude": null,
+      "expectedCompileFailure": false,
+      "explicitNativeSubsetLimit": false,
+      "stockSelectedIds": [
+        "56901733b5442d9c69be-d8cb3890cb590c4f492a",
+        "56901733b5442d9c69be-d9789ca456adbf367691",
+        "56901733b5442d9c69be-56a35559f9bed4f5fdfd",
+        "56901733b5442d9c69be-6a5fb9662840a83aaf01",
+        "56901733b5442d9c69be-05525d403ad8536d435d",
+        "56901733b5442d9c69be-b78339ff986f7d3dc389",
+        "56901733b5442d9c69be-917ed49f719868c7eebd",
+        "56901733b5442d9c69be-d33958a19baf11b715fe",
+        "56901733b5442d9c69be-289726d8acc1bdcdff35"
+      ]
+    },
+    {
+      "name": "composition-path-space-list",
+      "include": "/^Project One nested alpha.spec.mjs/",
+      "exclude": null,
+      "expectedCompileFailure": false,
+      "explicitNativeSubsetLimit": false,
+      "stockSelectedIds": []
+    },
+    {
+      "name": "composition-dup-escaped-list",
+      "include": "/^Project One nested\\/alpha.spec.mjs outer suite test AA @inherited @same @leaf @same$/",
+      "exclude": null,
+      "expectedCompileFailure": false,
+      "explicitNativeSubsetLimit": false,
+      "stockSelectedIds": []
+    },
+    {
+      "name": "composition-suite-escaped-list",
+      "include": "/^Project One nested\\/alpha.spec.mjs outer suite @inherited @same test AA @leaf @same$/",
+      "exclude": null,
+      "expectedCompileFailure": false,
+      "explicitNativeSubsetLimit": false,
+      "stockSelectedIds": [
+        "56901733b5442d9c69be-d8cb3890cb590c4f492a"
+      ]
+    }
+  ]
+}

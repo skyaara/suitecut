@@ -48,6 +48,7 @@ const evaluation = z.object({ result: z.object({ value: z.json() }) })
 try {
   const source = await launchNativeBrowser({
     executablePath,
+    headless: process.env.SUITECUT_NATIVE_HEADLESS === '1',
     width: 1280,
     height: 720,
     framesPerSecond: 60,
@@ -144,6 +145,7 @@ try {
   assert(frameCount > before, 'Capture did not survive navigation')
   const scaled = await launchNativeBrowser({
     executablePath,
+    headless: process.env.SUITECUT_NATIVE_HEADLESS === '1',
     width: 640,
     height: 360,
     deviceScaleFactor: 2,
@@ -169,6 +171,7 @@ try {
   await source.close()
   const highResolution = await launchNativeBrowser({
     executablePath,
+    headless: process.env.SUITECUT_NATIVE_HEADLESS === '1',
     width: 1920,
     height: 1080,
     deviceScaleFactor: 2,

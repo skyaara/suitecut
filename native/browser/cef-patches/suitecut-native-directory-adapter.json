@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "status": "ISOLATED NATIVE ADAPTER ACTIVATION; UNAPPLIED",
+  "root": "suitecut",
+  "patch": "suitecut-native-directory-adapter.patch",
+  "patch_sha256": "ba4a018b43ac1f1933078a0e6579d2b362415969576f6ad674f45ab8a4f07b7e",
+  "path": "native/browser/form_controller.inc",
+  "original_sha256": "7f2a1bafe49bb22053e0955dc186af77747c2f2b5770b9c133cc06111f31cfdb",
+  "patched_sha256": "564785d1008d8f8ae1e99bf1b47abbfc778392fbd781cb2e8119cf9845fe1545",
+  "requires": [
+    "CEF 156 Alloy directory enumeration candidate compiled into actual custom libcef.so",
+    "Genuine native directory enumeration verified for nested/unicode/empty directories and native cancellation on exact runtime library digest",
+    "Actual asynchronous enumeration retirement, navigation and page-close verified",
+    "Public readiness capability must remain false until the exact runtime and controller adapter combination is verified",
+    "Command/event attribution reviewed against out-of-band native chooser/drop/raw CDP producers; trusted event brand alone does not identify initiating command"
+  ],
+  "notPartOfVendorBundle": true,
+  "automaticActivation": false
+}

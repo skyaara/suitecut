@@ -9,11 +9,14 @@ const baseRequest = {
 } as const
 
 describe('render request schema validation', () => {
-  it.each([1, 24, 47, 59, 90, 120])('accepts %i FPS output', async (framesPerSecond) => {
-    await expect(
-      renderSuiteCut({ ...baseRequest, config: { output: { framesPerSecond } } }),
-    ).rejects.toMatchObject({ code: 'ENOENT' })
-  })
+  it.each([1, 24, 29.97, 47, 59, 59.94, 90, 120])(
+    'accepts %s FPS output',
+    async (framesPerSecond) => {
+      await expect(
+        renderSuiteCut({ ...baseRequest, config: { output: { framesPerSecond } } }),
+      ).rejects.toMatchObject({ code: 'ENOENT' })
+    },
+  )
   it('accepts the typed 4K quality profiles', async () => {
     const request = {
       ...baseRequest,
@@ -72,7 +75,7 @@ describe('render request schema validation', () => {
   it.each([
     { output: { framesPerSecond: 0 } },
     { output: { framesPerSecond: 121 } },
-    { output: { framesPerSecond: 29.97 } },
+    { output: { framesPerSecond: 0.5 } },
     { output: { width: 3840 } },
     { output: { width: 3839, height: 2160 } },
     { output: { width: 3840, height: 2159 } },

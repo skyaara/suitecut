@@ -1,0 +1,36 @@
+{
+  "status": "UNCOMPILED PINNED VENDOR CANDIDATE; stock browser behavior unchanged",
+  "chromium": "156.0.8078.17",
+  "cefSource": "47dbc1df023e99f006fb9e850a8d83cc19b4fdd9",
+  "patchSHA256": "cf28c83bd8d4a7f337f9417b76e7fe6cf730941fd5e6ea8d135d0b1c9f78b7e8",
+  "base": {
+    "third_party/blink/renderer/core/frame/local_frame_view.cc": "f43bd7fa49d6b7ca1729d5e2df7ea08864a87a913fd4ad60bec26c96d74110fe",
+    "third_party/blink/renderer/core/frame/remote_frame_view.cc": "98d835f595df40bb8cbbd91b4dcca8be1654486e63c36baec510fca42d2f707d"
+  },
+  "output": {
+    "third_party/blink/renderer/core/frame/local_frame_view.cc": "1b43bd086a52d499fa020aa1ee9bcdaa1081523da39f4e43edaba21e2dc42fc9",
+    "third_party/blink/renderer/core/frame/remote_frame_view.cc": "f1701b70d99d735648087d9ec536dd269d0c653a44b3bee56d8000dac570648d"
+  },
+  "upstreamURLs": {
+    "third_party/blink/renderer/core/frame/local_frame_view.cc": "https://raw.githubusercontent.com/chromium/chromium/156.0.8078.17/third_party/blink/renderer/core/frame/local_frame_view.cc",
+    "third_party/blink/renderer/core/frame/remote_frame_view.cc": "https://raw.githubusercontent.com/chromium/chromium/156.0.8078.17/third_party/blink/renderer/core/frame/remote_frame_view.cc"
+  },
+  "inspection": {
+    "content/browser/devtools/protocol/page_handler.cc": "008a11651f5048ea8630f4a2d0f710904d1595c890287b55aa1a0517d8fd4dab",
+    "content/browser/web_contents/web_contents_impl.cc": "e7fb62fc5e7d51fd5d8455718e93d16724ab199628fac2cc465e9368c5d51341",
+    "third_party/blink/renderer/core/exported/web_view_impl.cc": "908c834c6db510e9d7c72383b7930236e86819f04d1c8ced0107ed8e940fa034",
+    "third_party/blink/renderer/core/frame/web_frame_widget_impl.cc": "fc7f2035ad48120dfbb05910f51898f2e23b6c4f8837361fc2009cc4cc768d5b"
+  },
+  "checks": [
+    "git diff --check",
+    "git apply --reverse --check against candidate files",
+    "git apply --check against exact pinned preimages",
+    "patch reapplied and output hashes recorded"
+  ],
+  "notRun": [
+    "Chromium/CEF compilation",
+    "Rebuilt vendor artifact creation",
+    "Real raster acceptance, child-before-root surface timing, viewport/event restoration, sanitizer/E2E/fuzz"
+  ],
+  "nativeActivation": "NONE; existing full-page capture already requests the scoped record_whole_document policy. No guessed CDP command, browser.cc hook, or capability claim added."
+}

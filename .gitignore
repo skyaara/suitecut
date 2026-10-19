@@ -1,9 +1,13 @@
 node_modules/
 dist/
+__pycache__/
+*.py[cod]
+*.orig
+/a.out
 site/.astro/
 .suitecut/
+/build/
 test-results/
-playwright-report/
 *.mp4
 !site/public/demo/*.mp4
 *.webm

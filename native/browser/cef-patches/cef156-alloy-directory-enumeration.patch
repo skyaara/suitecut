@@ -1,0 +1,32 @@
+--- a/libcef/browser/alloy/alloy_browser_host_impl.h
++++ b/libcef/browser/alloy/alloy_browser_host_impl.h
+@@ -230,6 +230,10 @@
+       content::RenderWidgetHost* render_widget_host) override;
+   content::JavaScriptDialogManager* GetJavaScriptDialogManager(
+       content::WebContents* source) override;
++  void EnumerateDirectory(
++      content::WebContents* web_contents,
++      scoped_refptr<content::FileSelectListener> listener,
++      const base::FilePath& path) override;
+   void RunFileChooser(content::RenderFrameHost* render_frame_host,
+                       scoped_refptr<content::FileSelectListener> listener,
+                       const blink::mojom::FileChooserParams& params) override;
+--- a/libcef/browser/alloy/alloy_browser_host_impl.cc
++++ b/libcef/browser/alloy/alloy_browser_host_impl.cc
+@@ -1086,6 +1086,16 @@
+   return CefBrowserHostBase::GetJavaScriptDialogManager();
+ }
+ 
++void AlloyBrowserHostImpl::EnumerateDirectory(
++    content::WebContents* web_contents,
++    scoped_refptr<content::FileSelectListener> listener,
++    const base::FilePath& path) {
++  CEF_REQUIRE_UIT();
++  // Directory selection already occurred through the renderer's file-input
++  // enumeration request. Preserve its real listener and native relative paths.
++  FileSelectHelper::EnumerateDirectory(web_contents, std::move(listener), path);
++}
++
+ void AlloyBrowserHostImpl::RunFileChooser(
+     content::RenderFrameHost* render_frame_host,
+     scoped_refptr<content::FileSelectListener> listener,

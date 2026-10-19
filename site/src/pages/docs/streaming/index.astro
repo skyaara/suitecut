@@ -1,224 +1,48 @@
 ---
 import CodeBlock from '../../../components/CodeBlock.astro'
 import DocsLayout from '../../../layouts/DocsLayout.astro'
-import { sitePath } from '../../../lib/paths.js'
-
-const nativeExample = `import { launchBrowser, createBroadcast } from 'suitecut'
-
-const url = process.env.SUITECUT_STREAM_URL
-if (!url) throw new Error('Set SUITECUT_STREAM_URL')
-const source = await launchBrowser({ width: 1920, height: 1080, framesPerSecond: 60 })
-let broadcast
-try {
-  await source.navigate('https://example.com')
-  broadcast = await createBroadcast({ source, stream: { url, audio: true } })
-  await broadcast.ready()
-  await Promise.race([
-    source.failure, broadcast.failure,
-    new Promise(resolve => setTimeout(resolve, 30_000)),
-  ])
-} finally {
-  await broadcast?.stop()
-  await source.close()
-}`
-
-const example = `import { record } from 'suitecut/playwright'
-
-const url = process.env.SUITECUT_STREAM_URL
-if (!url) throw new Error('Set SUITECUT_STREAM_URL')
-
-const controller = new AbortController()
-process.once('SIGINT', () => controller.abort())
-
-await record('live website tour', async ({ page, suitecut }) => {
-  await page.goto('https://example.com')
-  await suitecut.hold(30_000)
-}, {
-  signal: controller.signal,
-  capture: {
-    viewport: { width: 1280, height: 720 },
-    deviceScaleFactor: 2,
-    framesPerSecond: 30,
-    stream: {
-      url,
-      size: { width: 1280, height: 720 },
-      bitrateKbps: 4500,
-      audio: true,
-      onDiagnostic: (event) => console.log(event.event, event.bottleneck),
-      reconnect: { initialDelayMs: 1000, maxDelayMs: 30_000, maxAttempts: 10 },
-    },
-  },
-})`
+import { streamExample } from '../../../lib/api-reference.js'
 ---
 
 <DocsLayout
   title="Live streaming"
-  description="Publish a browser page over RTMP or RTMPS, recover from disconnects, and control live visual effects."
+  description="Publish native CEF video and page audio to RTMP or RTMPS."
   section="streaming"
 >
-  <h1>Live streaming</h1>
-  <p>
-    Publish an embedded CEF browser to RTMP or RTMPS with SuiteCut 2.0. Native broadcasts use
-    <code>launchBrowser</code> and <code>createBroadcast</code> from the root package. Existing Playwright
-    streams use <code>capture.stream</code> through <code>suitecut/playwright</code>.
-  </p>
-
+  <h1>Native live streaming</h1>
   <h2 id="publish-a-page">Publish a page</h2>
-  <p>
-    Build the pinned CEF browser and set <code>SUITECUT_NATIVE_EXECUTABLE</code> as described in
-    <a href={sitePath('/docs#install')}>Getting started</a>. Native support is verified on macOS
-    Apple Silicon. Set <code>SUITECUT_STREAM_URL</code> to your ingest URL, including its stream key.
-  </p>
-  <CodeBlock code={nativeExample} lang="typescript" />
-  <p>
-    The broadcast owns the publisher; the caller owns the source. Always stop and close both.
-    Observe both failure promises. <code>stream.audio: true</code> sends CEF page audio directly. Native
-    streaming does not mix synthesized narration or apply the final renderer's zoom transforms.
-  </p>
-  <h3>Existing Playwright streams</h3>
-  <p>
-    Run <code>npx playwright install chromium</code>, <code>npx suitecut install</code>, and
-    <code>npx suitecut doctor</code> to prepare the browser and media tools. Set <code
-      >SUITECUT_STREAM_URL</code
-    > to the complete publish URL from your streaming service, including its stream key.
-  </p>
-  <CodeBlock code={example} lang="typescript" />
-  <p>
-    Publishing starts before the callback and stops when it returns or the session is aborted. The
-    capture options also work in Playwright Test through <code>suitecutCapture</code>, except tab
-    audio. Use one publisher per stream key. Disable parallel tests and retries that target the same
-    key. RTMP is an ingest protocol; browser playback needs a media server or streaming service.
-  </p>
-
+  <CodeBlock code={streamExample} />
   <h2 id="stream-options">Stream options</h2>
   <p>
-    Pass shared publisher options in <code>stream</code> for native broadcasts or
-    <code>capture.stream</code> for Playwright. Native browser dimensions and frame rate belong in
-    <code>launchBrowser()</code>; the <code>capture.*</code> fields below are Playwright options.
+    Set an RTMP/RTMPS URL, output size, output FPS 1–120, boolean audio, bitrate, adaptive bitrate
+    and reconnect policy. Source switching requires matching dimensions and pixel format; capture
+    rates may differ.
   </p>
-  <ul>
-    <li><code>url</code>: required RTMP or RTMPS publish URL.</li>
-    <li><code>bitrateKbps</code>: 100 through 50,000, default 4500.</li>
-    <li>
-      <code>audio</code>: boolean, default <code>false</code>. Set <code>true</code> for Chromium tab
-      audio.
-    </li>
-    <li>
-      <code>adaptiveBitrate</code>: enabled by default. Set <code>false</code> for fixed bitrate.
-    </li>
-    <li>
-      <code>onDiagnostic</code>: receives a <code>LiveStreamDiagnostic</code> for congestion and bitrate
-      changes.
-    </li>
-    <li>
-      <code>size</code>: fixed output width and height, defaulting to the capture size. Both must be
-      even, with a maximum of 7680 by 4320. Pages are letterboxed to fit.
-    </li>
-    <li><code>capture.framesPerSecond</code>: 30 or 60, default 30.</li>
-    <li><code>capture.quality</code>: JPEG quality 1 through 100, default 90 for streaming.</li>
-    <li>
-      <code>capture.deviceScaleFactor</code>: 1 through 4. The browser preserves its CSS viewport
-      and renders at the requested device-pixel density before the stream encoder downsamples with
-      Lanczos.
-    </li>
-  </ul>
+  <h2 id="page-audio">Page audio</h2>
   <p>
-    The output is H.264 video with stereo AAC at 48 kHz. Keep stream keys in environment variables.
-    SuiteCut omits publish URLs and encoder stderr from manifests and diagnostic events.
-    Fixed-bitrate publishing passes the URL to FFmpeg's local process arguments.
+    Audio comes from CEF callbacks as 48 kHz stereo PCM. It is disabled by default. Timestamped
+    buffering aligns it with the video timeline; missing audio contributes silence.
   </p>
-
-  <h2 id="tab-audio">Capture tab audio</h2>
+  <h2 id="adaptive-bitrate">Adaptive bitrate</h2>
   <p>
-    Native broadcasts capture CEF page audio directly with <code>stream.audio: true</code>. Switch
-    native sources with <code>broadcast.selectSource()</code>; queued audio from the old source is
-    discarded. No browser extension is required.
+    The persistent publisher supports bitrate changes and monitors congestion. Health reports expose
+    capture/output lag and progress age.
   </p>
-  <p>
-    For Playwright, <code>audio: true</code> captures the selected page through an isolated Chromium profile
-    and bundled extension. Use the standalone <code>record()</code> API with current Playwright Chromium.
-    Headed and headless modes work. Firefox, WebKit, custom executables, blocked service workers, and
-    the Playwright Test fixture reject tab audio. Separate popup windows are unsupported; popups opened
-    as tabs work.
-  </p>
-  <p>
-    Audio follows page selection and navigation. Switching pages discards queued sound from the old
-    page. Pausing capture sends silence, and resuming uses current audio. The isolated browser
-    enables autoplay. Microphone input and synthesized narration are not mixed into the stream.
-  </p>
-
-  <h2 id="adaptive-bitrate">Adaptive bitrate and diagnostics</h2>
-  <p>
-    SuiteCut measures socket backpressure and lowers video bitrate during sustained network
-    congestion. It prepares a replacement H.264 encoder and switches at a keyframe while keeping the
-    RTMP publisher and AAC encoder alive. Audio timestamps continue across the handoff. Failed
-    replacements leave the previous encoder running. Bitrate recovers gradually after five healthy
-    minutes, up to the configured maximum.
-  </p>
-  <p>
-    Temporary congestion discards stale capture data with bounded audio and video buffers. Twenty
-    seconds without output progress triggers reconnection. Set
-    <code>adaptiveBitrate: false</code> to use the fixed-bitrate FFmpeg path.
-    <code>reconnect: false</code> disables reconnection, but does not disable bitrate handoffs.
-  </p>
-  <p>
-    <code>onDiagnostic</code> reports capture lag, processing and write durations, output progress, socket
-    backlog, and the current bottleneck. <code>bitrate-changing</code> announces preparation,
-    <code>bitrate-adjusted</code> confirms the handoff, and <code>bitrate-change-failed</code> reports
-    a failed replacement. Keep handlers short. Exceptions in the handler do not stop the stream.
-  </p>
-
   <h2 id="reconnect-and-stop">Reconnect and stop</h2>
   <p>
-    Disconnected or stalled encoders retry with exponential backoff. The default delay starts at one
-    second and reaches a maximum of 30 seconds. Set <code>reconnect.initialDelayMs</code> and
-    <code>reconnect.maxDelayMs</code> to change those delays. Set <code>reconnect.maxAttempts</code>
-    to limit consecutive retries; its default of zero retries indefinitely. A connection lasting at least
-    30 seconds resets the budget. Set <code>reconnect: false</code> to disable retries.
+    The publisher supervises reconnects. The application owns its source and observes both source
+    and publisher failure. A failed source holds its last frame until replacement or stop.
   </p>
+  <h2 id="live-effects">Live effects</h2>
   <p>
-    For native broadcasts, await <code>broadcast.ready()</code>, observe
-    <code>broadcast.failure</code>, and call <code>broadcast.stop()</code> before closing the source.
-    For Playwright, the callback waits for the first successful publish. After that, the browser script
-    keeps running during reconnection. Only the latest frame is retained, so missed frames are discarded.
-    Pass an <code>AbortSignal</code> to stop startup waits or a running session. Exhausting the retry
-    budget rejects <code>record()</code> and fails Playwright Test fixture teardown.
+    Browser-rendered highlights and captions reach captured frames. Offline zoom and the renderer's
+    narration mix do not transform a concurrent broadcast.
   </p>
-
-  <h2 id="live-effects">Playwright live effects</h2>
-  <p>
-    The stream follows <code>suitecut.selectPage()</code>, popup selection, and page closure. Idle
-    pages repeat their latest frame. Capture pauses freeze the image while the broadcast clock
-    continues. Zoom crops the encoded frames without changing website layout or mouse coordinates.
-    Highlights, cursor movement, click pulses, typing, scrolling, and captions also appear live.
-  </p>
-  <p>
-    <code>checkpoint()</code> holds the view without saving a clip. Final-render editing, result cards,
-    and audio mixing are offline operations. The returned manifest is a session summary with no replay
-    timeline. Closed-page history and completed events are discarded. Narration synthesis uses temporary
-    files that are removed when synthesis completes.
-  </p>
-
   <h2 id="verify-locally">Verify locally</h2>
+  <CodeBlock label="Terminal" code={'pnpm test:native:cadence\npnpm test:native:stream'} />
   <p>
-    After building CEF and setting <code>SUITECUT_NATIVE_EXECUTABLE</code>, verify native capture,
-    streaming, and recording:
-  </p>
-  <CodeBlock code="pnpm test:native" label="Terminal" lang="bash" />
-  <p>Verify the explicit Playwright backend separately:</p>
-  <CodeBlock
-    code={`pnpm install --frozen-lockfile
-pnpm exec playwright install chromium
-pnpm test:stream:audio
-pnpm test:stream:bitrate
-pnpm test:stream:congestion`}
-    label="Terminal"
-    lang="bash"
-  />
-  <p>
-    From the repository, this check starts a local RTMP receiver, exercises live effects and page
-    switching, interrupts the receiver, and verifies sustained recovery. It also checks that no
-    source artifacts remain. Receiver footage and screenshots are saved under
-    <code>.suitecut/live-verification/</code>. Nothing is published externally.
+    The stream verifier needs the built native browser and checks decoded received media, source
+    replacement and receiver reconnection. Actual 120 FPS browser throughput remains unverified
+    here.
   </p>
 </DocsLayout>

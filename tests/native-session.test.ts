@@ -1,143 +1,207 @@
+// SPDX-License-Identifier: MIT
 import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import {
-  type NativeAudioPacket,
-  type NativeVideoFrame,
-  type NativeBrowser,
-} from '../src/native-browser.js'
-import { createNativeVideoRecorder } from '../src/native-recorder.js'
+import { type NativeBrowser } from '../src/native-browser.js'
+import { createNativeRecordingPipeline } from '../src/native-recording-pipeline.js'
+import { type NativeRecordingInfo } from '../src/native-recording-protocol.js'
 import { createNativeRecordingSession } from '../src/native-session.js'
+import { type UntrustedInput } from '../src/untrusted.js'
 
-vi.mock('../src/native-recorder.js', () => ({ createNativeVideoRecorder: vi.fn() }))
+vi.mock('../src/native-recording-pipeline.js', () => ({ createNativeRecordingPipeline: vi.fn() }))
 
 function source() {
-  let deliver: ((frame: NativeVideoFrame) => void) | undefined
-  let deliverAudio: ((packet: NativeAudioPacket) => void) | undefined
+  const lifecycle = new AbortController()
+  let state: NativeBrowser['state'] = 'running'
+  let resolveClosed: () => void = () => undefined
+  const closed = new Promise<void>((resolve) => {
+    resolveClosed = resolve
+  })
   const close = vi.fn(() => Promise.resolve())
-  const unsubscribe = vi.fn()
-  const unsubscribeAudio = vi.fn()
+  const onFrame = vi.fn(() => () => undefined)
+  const onAudio = vi.fn(() => () => undefined)
   const browser: NativeBrowser = {
-    state: 'running',
+    get state() {
+      return state
+    },
+    url: 'http://fixture/',
+    signal: lifecycle.signal,
     width: 2,
     height: 2,
     pixelFormat: 'bgra',
     framesPerSecond: 30,
     cefVersion: 'test',
     failure: new Promise<never>(() => undefined),
-    closed: new Promise<void>(() => undefined),
+    closed,
     close,
     navigate: () => Promise.resolve(),
     sendDevToolsCommand: () => Promise.resolve({ result: { value: 'http://fixture/' } }),
-    onFrame(listener) {
-      deliver = listener
-      listener({
-        data: Buffer.alloc(16),
-        timestampMs: -1000,
-        width: 2,
-        height: 2,
-        pixelFormat: 'bgra',
-        droppedFrames: 0,
-      })
-      return unsubscribe
-    },
-    onAudio(listener) {
-      deliverAudio = listener
-      return unsubscribeAudio
-    },
+    runAutomation: () => Promise.resolve({ result: { value: ['primitive', 'http://fixture/'] } }),
+    onFrame,
+    onAudio,
   }
   return {
     browser,
     close,
-    unsubscribe,
-    unsubscribeAudio,
-    emit: () =>
-      deliver?.({
-        data: Buffer.alloc(16),
-        timestampMs: performance.now(),
-        width: 2,
-        height: 2,
-        pixelFormat: 'bgra',
-        droppedFrames: 0,
-      }),
-    emitAudio: () =>
-      deliverAudio?.({
-        data: Buffer.alloc(3_840, 1),
-        frames: 960,
-        timestampMs: performance.now(),
-      }),
+    onFrame,
+    onAudio,
+    beginClosing() {
+      state = 'closing'
+      lifecycle.abort(new Error('Native browser is closing'))
+    },
+    physicallyClosed() {
+      state = 'closed'
+      resolveClosed()
+    },
+    fail(error: Error) {
+      state = 'failed'
+      lifecycle.abort(error)
+      resolveClosed()
+    },
   }
 }
-
-describe('native recording clock and ownership', () => {
+function recorder(firstTimestampMs = performance.now(), durationMs = 300) {
+  const info: NativeRecordingInfo = {
+    id: 'recording-test',
+    phase: 'complete',
+    outputPath: '/native.webm',
+    failure: '',
+    diagnostics: '',
+    firstTimestampMs,
+    durationMs,
+    encodedDurationMs: durationMs,
+    framesPerSecond: 120,
+    inputFrames: 2,
+    outputFrames: 36,
+    heldFrames: 34,
+    supersededFrames: 0,
+    audioInputFrames: 960,
+    audioOutputFrames: 14400,
+    audioOverlapFrames: 0,
+    audioGapFrames: 13440,
+    outputBytes: 2048,
+  }
+  return {
+    failure: new Promise<never>(() => undefined),
+    firstTimestampMs,
+    complete: false,
+    pause: vi.fn(() => Promise.resolve(info)),
+    resume: vi.fn(() => Promise.resolve(info)),
+    cancel: vi.fn(() => Promise.resolve()),
+    stop: vi.fn(() => Promise.resolve(info)),
+  }
+}
+async function directory() {
+  return mkdtemp(join(tmpdir(), 'suitecut-native-session-'))
+}
+describe('native recording session clock and ownership', () => {
   afterEach(() => {
     vi.useRealTimers()
     vi.restoreAllMocks()
+    vi.mocked(createNativeRecordingPipeline).mockReset()
   })
-
-  it('only repeats idle frames and does not steal cadence from active native capture', async () => {
-    vi.useFakeTimers()
-    const directory = await mkdtemp(join(tmpdir(), 'suitecut-idle-test-'))
-    const push = vi.fn()
-    vi.mocked(createNativeVideoRecorder).mockReturnValue({
-      failure: new Promise<never>(() => undefined),
-      push,
-      pushAudio: vi.fn(),
-      firstAtMs: 0,
-      stop: () => Promise.resolve(),
-    })
+  it('leaves frame cadence and page audio ingestion in the native pipeline', async () => {
+    const path = await directory()
     const live = source()
+    vi.mocked(createNativeRecordingPipeline).mockImplementation(() => Promise.resolve(recorder()))
     const { session } = await createNativeRecordingSession({
       source: live.browser,
       ffmpegPath: '/unused',
       capture: { audio: true, framesPerSecond: 47 },
-      output: { pathFor: (name) => join(directory, name), attach: () => Promise.resolve() },
+      output: { pathFor: (name) => join(path, name), attach: () => Promise.resolve() },
     })
     try {
-      for (let i = 0; i < 10; i++) {
-        await vi.advanceTimersByTimeAsync(16)
-        live.emit()
-      }
-      expect(push).toHaveBeenCalledTimes(11)
-      await vi.advanceTimersByTimeAsync(200)
-      expect(push).toHaveBeenCalledTimes(12)
+      const captured = await session.seal()
+      expect(live.onFrame).not.toHaveBeenCalled()
+      expect(live.onAudio).not.toHaveBeenCalled()
+      expect(createNativeRecordingPipeline).toHaveBeenCalledWith(
+        expect.objectContaining({ framesPerSecond: 47, audio: true }),
+      )
+      expect(captured.videos[0]?.nativeRecording).toMatchObject({
+        outputFrames: 36,
+        heldFrames: 34,
+        audioInputFrames: 960,
+        durationMs: 300,
+      })
+      expect(live.close).not.toHaveBeenCalled()
     } finally {
       await session.endRecording()
-      await rm(directory, { recursive: true, force: true })
+      await rm(path, { recursive: true, force: true })
     }
   })
-
-  it('excludes nested preparation pauses and anchors late sources at registration', async () => {
-    vi.useFakeTimers()
-    const directory = await mkdtemp(join(tmpdir(), 'suitecut-recording-test-'))
-    vi.mocked(createNativeVideoRecorder).mockImplementation(() => {
-      let firstAtMs: number | undefined
-      return {
-        failure: new Promise<never>(() => undefined),
-        push(_data, atMs) {
-          firstAtMs ??= atMs
-        },
-        pushAudio: vi.fn(),
-        get firstAtMs() {
-          return firstAtMs
-        },
-        stop: () => Promise.resolve(),
-      }
+  it('allows real native completion after the graceful closing signal before physical source closure', async () => {
+    const path = await directory()
+    const live = source()
+    const pipeline = recorder()
+    vi.mocked(createNativeRecordingPipeline).mockResolvedValue(pipeline)
+    const { session } = await createNativeRecordingSession({
+      source: live.browser,
+      ffmpegPath: '/unused',
+      capture: { audio: true },
+      output: { pathFor: (name) => join(path, name), attach: () => Promise.resolve() },
     })
+    let failure: UntrustedInput
+    void session.streamFailure?.catch((error: UntrustedInput) => {
+      failure = error
+    })
+    try {
+      live.beginClosing()
+      await Promise.resolve()
+      expect(failure).toBeUndefined()
+      pipeline.complete = true
+      live.physicallyClosed()
+      await Promise.resolve()
+      expect(failure).toBeUndefined()
+      expect((await session.seal()).videos[0]?.nativeRecording?.outputFrames).toBe(36)
+    } finally {
+      await session.endRecording()
+      await rm(path, { recursive: true, force: true })
+    }
+  })
+  it('preserves the original unexpected source failure instead of treating it as graceful close', async () => {
+    const path = await directory()
+    const live = source()
+    vi.mocked(createNativeRecordingPipeline).mockResolvedValue(recorder())
+    const { session } = await createNativeRecordingSession({
+      source: live.browser,
+      ffmpegPath: '/unused',
+      capture: { audio: false },
+      output: { pathFor: (name) => join(path, name), attach: () => Promise.resolve() },
+    })
+    try {
+      const error = new Error('Native browser exited with signal SIGKILL')
+      live.fail(error)
+      await expect(session.streamFailure).rejects.toBe(error)
+    } finally {
+      await session.endRecording()
+      await rm(path, { recursive: true, force: true })
+    }
+  })
+  it('preserves first capture timing across future nested pauses and late source registration', async () => {
+    vi.useFakeTimers()
+    const path = await directory()
     const first = source()
     const second = source()
-    const { session, addSource, page } = await createNativeRecordingSession({
+    const recordings: ReturnType<typeof recorder>[] = []
+    vi.mocked(createNativeRecordingPipeline).mockImplementation(() => {
+      const value = recorder()
+      recordings.push(value)
+      return Promise.resolve(value)
+    })
+    const { session, addSource } = await createNativeRecordingSession({
       source: first.browser,
       ffmpegPath: '/unused',
       capture: { audio: true },
-      output: { pathFor: (name) => join(directory, name), attach: () => Promise.resolve() },
+      output: { pathFor: (name) => join(path, name), attach: () => Promise.resolve() },
     })
     try {
       await vi.advanceTimersByTimeAsync(500)
       await session.withCapturePaused(async () => {
+        expect(() => addSource(second.browser)).toThrow('paused')
+        expect(createNativeRecordingPipeline).toHaveBeenCalledTimes(1)
         await vi.advanceTimersByTimeAsync(1000)
         await session.withCapturePaused(async () => {
           await vi.advanceTimersByTimeAsync(1000)
@@ -145,91 +209,46 @@ describe('native recording clock and ownership', () => {
         expect(session.now()).toBe(500)
       })
       await vi.advanceTimersByTimeAsync(500)
-      const next = await addSource(second.browser)
-      expect(createNativeVideoRecorder).toHaveBeenCalledWith(
-        expect.objectContaining({ framesPerSecond: 47 }),
-      )
-      session.selectPage(next)
-      expect(session.now()).toBe(1000)
-      await vi.advanceTimersByTimeAsync(500)
-      session.selectPage(page)
+      const late = await addSource(second.browser)
       const captured = await session.seal()
-      expect(captured.endedAtMs).toBe(1500)
-      const late = captured.videos.find((video) => video.pageId === session.pageIdFor(next))
-      expect(late?.sourceStartedAtMs).toBe(1000)
-      expect(late?.firstFrameEpochMs).toBe(session.clock.originEpochMs + 3000)
+      const firstVideo = captured.videos.find((video) => video.pageId === captured.pages[0]?.id)
+      const lateVideo = captured.videos.find((video) => video.pageId === session.pageIdFor(late))
+      expect(firstVideo?.sourceStartedAtMs).toBe(0)
+      expect(lateVideo?.sourceStartedAtMs).toBe(1000)
+      expect(lateVideo?.firstFrameEpochMs).toBe(session.clock.originEpochMs + 3000)
+      expect(recordings[0]?.pause).toHaveBeenCalledTimes(1)
+      expect(recordings[0]?.resume).toHaveBeenCalledTimes(1)
       expect(first.close).not.toHaveBeenCalled()
       expect(second.close).not.toHaveBeenCalled()
-      expect(first.unsubscribe).toHaveBeenCalledTimes(1)
-      expect(second.unsubscribe).toHaveBeenCalledTimes(1)
-      expect(first.unsubscribeAudio).toHaveBeenCalledTimes(1)
-      expect(second.unsubscribeAudio).toHaveBeenCalledTimes(1)
-      expect(() => session.selectPage(page)).toThrow('ended')
     } finally {
       await session.endRecording()
-      await rm(directory, { recursive: true, force: true })
+      await rm(path, { recursive: true, force: true })
     }
   })
-
-  it('uses the pause-adjusted recording clock for native page audio', async () => {
+  it('registers before waiting for native first-frame admission and retains native clip duration', async () => {
     vi.useFakeTimers()
-    const directory = await mkdtemp(join(tmpdir(), 'suitecut-audio-clock-test-'))
-    const pushAudio = vi.fn<(data: Buffer, atMs: number) => void>()
-    vi.mocked(createNativeVideoRecorder).mockReturnValue({
-      failure: new Promise<never>(() => undefined),
-      push: vi.fn(),
-      pushAudio,
-      firstAtMs: 0,
-      stop: () => Promise.resolve(),
-    })
+    const path = await directory()
     const live = source()
-    const { session } = await createNativeRecordingSession({
-      source: live.browser,
-      ffmpegPath: '/unused',
-      capture: { audio: true },
-      output: { pathFor: (name) => join(directory, name), attach: () => Promise.resolve() },
-    })
-    try {
-      await vi.advanceTimersByTimeAsync(500)
-      live.emitAudio()
-      await session.withCapturePaused(async () => {
-        await vi.advanceTimersByTimeAsync(1_000)
-        live.emitAudio()
-      })
-      await vi.advanceTimersByTimeAsync(250)
-      live.emitAudio()
-      expect(pushAudio).toHaveBeenCalledTimes(2)
-      expect(pushAudio.mock.calls.map((call) => call[1])).toEqual([500, 750])
-    } finally {
-      await session.endRecording()
-      await rm(directory, { recursive: true, force: true })
-    }
-  })
-
-  it('does not subscribe to page audio when capture audio is silent', async () => {
-    const directory = await mkdtemp(join(tmpdir(), 'suitecut-silent-audio-test-'))
-    const live = source()
-    vi.mocked(createNativeVideoRecorder).mockReturnValue({
-      failure: new Promise<never>(() => undefined),
-      push: vi.fn(),
-      pushAudio: vi.fn(),
-      firstAtMs: 0,
-      stop: () => Promise.resolve(),
+    vi.mocked(createNativeRecordingPipeline).mockImplementation(async () => {
+      const value = recorder(performance.now() + 10, 300)
+      await vi.advanceTimersByTimeAsync(100)
+      return value
     })
     const { session } = await createNativeRecordingSession({
       source: live.browser,
       ffmpegPath: '/unused',
       capture: { audio: false },
-      output: { pathFor: (name) => join(directory, name), attach: () => Promise.resolve() },
+      output: { pathFor: (name) => join(path, name), attach: () => Promise.resolve() },
     })
     try {
-      expect(createNativeVideoRecorder).toHaveBeenCalledWith(
-        expect.objectContaining({ audio: false }),
-      )
-      expect(live.unsubscribeAudio).not.toHaveBeenCalled()
+      const captured = await session.seal()
+      expect(captured.pages[0]?.createdAtMs).toBe(0)
+      expect(captured.videos[0]?.sourceStartedAtMs).toBe(10)
+      expect(captured.videos[0]?.nativeRecording?.durationMs).toBe(300)
+      expect(captured.endedAtMs).toBe(310)
     } finally {
       await session.endRecording()
-      await rm(directory, { recursive: true, force: true })
+      await rm(path, { recursive: true, force: true })
     }
   })
 })

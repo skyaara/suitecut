@@ -1,0 +1,44 @@
+// SPDX-License-Identifier: MIT
+#include "retained_source_endpoint.h"
+#include <cassert>
+#include <iostream>
+#include <spawn.h>
+#include <sys/wait.h>
+#include <vector>
+extern char** environ;
+using namespace suitecut::runner;
+using Endpoint=RetainedSourceEndpoint;using Native=RetainedSourceProcess;
+constexpr int kChannel=7;
+static void Wait(pid_t pid){int status=0;assert(waitpid(pid,&status,0)==pid&&WIFEXITED(status)&&WEXITSTATUS(status)==0);}
+static std::string Executable(){std::array<char,4096> bytes{};const auto size=readlink("/proc/self/exe",bytes.data(),bytes.size());assert(size>0&&static_cast<size_t>(size)<bytes.size());return {bytes.data(),static_cast<size_t>(size)};}
+static Endpoint::Config Prepare(std::vector<std::string> args){std::vector<char*> actual;for(auto& arg:args)actual.push_back(arg.data());return Endpoint::Prepare(static_cast<int>(actual.size()),actual.data());}
+static std::vector<std::string> Args(int fd,uint64_t cookie){return {"native-component","--suitecut-runner-source-fd="+std::to_string(fd),"--suitecut-runner-source-ticket=19","--suitecut-runner-source-cookie="+std::to_string(cookie)};}
+static void Rejected(auto action){bool rejected=false;try{action();}catch(const std::runtime_error&){rejected=true;}assert(rejected);}
+struct Channel {
+ int pair[2];Channel(){assert(socketpair(AF_UNIX,SOCK_SEQPACKET|SOCK_CLOEXEC,0,pair)==0);Native::ReceiveCredentials(pair[0]);}
+ ~Channel(){if(pair[0]>=0)close(pair[0]);if(pair[1]>=0)close(pair[1]);}
+ Endpoint::Config Prepared(){const auto config=Prepare(Args(pair[1],Endpoint::SocketCookie(pair[1])));pair[1]=-1;return config;}
+ std::string Receive(pid_t expected){pollfd item{pair[0],POLLIN,0};assert(poll(&item,1,5000)==1&&item.revents&POLLIN);std::array<char,512> bytes{};alignas(cmsghdr) std::array<char,CMSG_SPACE(sizeof(ucred))> control{};iovec io{bytes.data(),bytes.size()};msghdr message{};message.msg_iov=&io;message.msg_iovlen=1;message.msg_control=control.data();message.msg_controllen=control.size();const auto size=recvmsg(pair[0],&message,MSG_DONTWAIT);assert(size>0&&!(message.msg_flags&(MSG_TRUNC|MSG_CTRUNC)));const auto* header=CMSG_FIRSTHDR(&message);assert(header&&header->cmsg_type==SCM_CREDENTIALS&&header->cmsg_len==CMSG_LEN(sizeof(ucred)));ucred credentials{};__builtin_memcpy(&credentials,CMSG_DATA(header),sizeof(credentials));assert(credentials.pid==expected&&credentials.uid==getuid());return {bytes.data(),static_cast<size_t>(size)};}
+};
+int main(int argc,char** argv){
+ if(argc==2&&std::string_view(argv[1])=="--descriptor-closed"){assert(fcntl(kChannel,F_GETFD)==-1&&errno==EBADF);return 0;}
+ if(argc>1&&std::string_view(argv[1])=="--endpoint-child"){
+  const auto config=Endpoint::Prepare(argc,argv);assert(config.enabled&&fcntl(kChannel,F_GETFD)&FD_CLOEXEC);Endpoint endpoint(config);assert(endpoint.WriteStartup());
+  const auto executable=Executable();std::array<char*,3> args{const_cast<char*>(executable.c_str()),const_cast<char*>("--descriptor-closed"),nullptr};pid_t child=-1;assert(posix_spawn(&child,executable.c_str(),nullptr,nullptr,args.data(),environ)==0);Wait(child);
+  pollfd item{kChannel,POLLIN,0};assert(poll(&item,1,5000)==1);char go=0;assert(recv(kChannel,&go,1,0)==1&&go=='G');assert(endpoint.WriteShutdownReached(0));return 0;
+ }
+ assert(argc==1);size_t groups=0;
+ {const auto config=Prepare({"native-component"});Endpoint endpoint(config);assert(!endpoint.Enabled()&&!endpoint.WriteStartup()&&!endpoint.WriteShutdownReached(0));++groups;}
+ {Channel channel;const auto base=Args(channel.pair[1],Endpoint::SocketCookie(channel.pair[1]));for(const auto& bad:std::vector<std::vector<std::string>>{{"native-component","--suitecut-runner-source-fd"},{"native-component","--suitecut-runner-source-ticket=0"},{"native-component","--suitecut-runner-source-fd=03"}})Rejected([&]{Prepare(bad);});auto duplicated=base;duplicated.push_back(base[1]);Rejected([&]{Prepare(duplicated);});auto wrong=base;wrong[3]="--suitecut-runner-source-cookie="+std::to_string(Endpoint::SocketCookie(channel.pair[1])+1);Rejected([&]{Prepare(wrong);});assert(fcntl(channel.pair[1],F_GETFD)>=0);++groups;}
+ {int pair[2];assert(socketpair(AF_UNIX,SOCK_STREAM|SOCK_CLOEXEC,0,pair)==0);Rejected([&]{Endpoint::SocketCookie(pair[0]);});close(pair[0]);close(pair[1]);++groups;}
+ {Channel channel;auto args=Args(channel.pair[1],Endpoint::SocketCookie(channel.pair[1]));args.push_back("--type=renderer");assert(!Prepare(args).enabled&&fcntl(channel.pair[1],F_GETFD)==-1&&errno==EBADF);channel.pair[1]=-1;++groups;}
+ {Channel original,unrelated;auto args=Args(unrelated.pair[1],Endpoint::SocketCookie(original.pair[1]));args.push_back("--type=utility");assert(!Prepare(args).enabled&&fcntl(unrelated.pair[1],F_GETFD)>=0&&fcntl(original.pair[1],F_GETFD)>=0);++groups;}
+ {Channel channel,unrelated;const auto config=channel.Prepared();assert(close(config.fd)==0&&dup2(unrelated.pair[1],config.fd)==config.fd);Rejected([&]{Endpoint endpoint(config);});assert(Endpoint::SocketCookie(config.fd)==Endpoint::SocketCookie(unrelated.pair[1]));close(config.fd);++groups;}
+ {Channel channel,unrelated;const auto config=channel.Prepared();{Endpoint endpoint(config);assert(close(config.fd)==0&&dup2(unrelated.pair[1],config.fd)==config.fd);Rejected([&]{endpoint.WriteStartup();});assert(!endpoint.StartupWritten());}assert(Endpoint::SocketCookie(config.fd)==Endpoint::SocketCookie(unrelated.pair[1]));close(config.fd);++groups;}
+ {Channel channel;Endpoint endpoint(channel.Prepared());assert(endpoint.Enabled()&&!endpoint.WriteShutdownReached(0)&&endpoint.WriteStartup()&&!endpoint.WriteStartup());const auto process=Native::Observe(getpid());assert(channel.Receive(getpid())==Native::StartupPacket(19,process));assert(!endpoint.WriteShutdownReached(-1)&&!endpoint.WriteShutdownReached(256));assert(endpoint.WriteShutdownReached(0)&&!endpoint.WriteShutdownReached(0));const auto shutdown=channel.Receive(getpid());assert(shutdown=="SOURCE_SHUTDOWN_REACHED 1 19 "+std::to_string(process.pid)+" "+std::to_string(process.parent)+" "+std::to_string(process.start)+" "+std::to_string(process.parent)+" 0\n");assert(endpoint.StartupWritten()&&endpoint.ShutdownBoundaryWritten());++groups;}
+ {Channel channel;const auto cookie=Endpoint::SocketCookie(channel.pair[1]);posix_spawn_file_actions_t actions;assert(posix_spawn_file_actions_init(&actions)==0&&posix_spawn_file_actions_adddup2(&actions,channel.pair[1],kChannel)==0);if(channel.pair[0]!=kChannel)assert(posix_spawn_file_actions_addclose(&actions,channel.pair[0])==0);if(channel.pair[1]!=kChannel)assert(posix_spawn_file_actions_addclose(&actions,channel.pair[1])==0);
+  auto args=Args(kChannel,cookie);args[0]=Executable();args.insert(args.begin()+1,"--endpoint-child");std::vector<char*> raw;for(auto& arg:args)raw.push_back(arg.data());raw.push_back(nullptr);pid_t child=-1;assert(posix_spawn(&child,args[0].c_str(),&actions,nullptr,raw.data(),environ)==0&&posix_spawn_file_actions_destroy(&actions)==0);close(channel.pair[1]);channel.pair[1]=-1;Native::PidHandle handle(child);const auto startup=channel.Receive(child);assert(startup.starts_with("SOURCE_START 1 19 "+std::to_string(child)+" "+std::to_string(getpid())+" "));assert(!handle.Exited());assert(send(channel.pair[0],"G",1,MSG_NOSIGNAL)==1);const auto shutdown=channel.Receive(child);assert(shutdown.starts_with("SOURCE_SHUTDOWN_REACHED 1 19 "+std::to_string(child)+" "+std::to_string(getpid())+" "));Wait(child);assert(handle.Exited());++groups;}
+ {Channel channel;const int emitter=channel.pair[1];Endpoint endpoint(channel.Prepared());int size=1024;assert(setsockopt(emitter,SOL_SOCKET,SO_SNDBUF,&size,sizeof(size))==0);const auto fill=[&]{size_t count=0;const std::string bytes(128,'x');while(send(emitter,bytes.data(),bytes.size(),MSG_DONTWAIT|MSG_NOSIGNAL)==static_cast<ssize_t>(bytes.size()))assert(++count<4096);assert(errno==EAGAIN||errno==EWOULDBLOCK);};const auto drain=[&]{std::array<char,512> bytes{};size_t count=0;while(recv(channel.pair[0],bytes.data(),bytes.size(),MSG_DONTWAIT)>0)assert(++count<4096);assert(errno==EAGAIN||errno==EWOULDBLOCK);};fill();assert(!endpoint.WriteStartup()&&!endpoint.StartupWritten());drain();assert(endpoint.WriteStartup());channel.Receive(getpid());fill();assert(!endpoint.WriteShutdownReached(0)&&!endpoint.ShutdownBoundaryWritten());drain();assert(endpoint.WriteShutdownReached(0));channel.Receive(getpid());++groups;}
+ {Channel channel;Endpoint endpoint(channel.Prepared());close(channel.pair[0]);channel.pair[0]=-1;assert(!endpoint.WriteStartup()&&!endpoint.StartupWritten()&&!endpoint.WriteShutdownReached(0));++groups;}
+ assert(groups==11);std::cout<<"Native process endpoint: "<<groups<<" native config/cookie/CLOEXEC/credential/exec/backpressure/shutdown-label controls passed; no actual CEF shutdown, idle, close ACK or process-retirement claim\n";
+}

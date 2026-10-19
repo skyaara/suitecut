@@ -1,0 +1,1956 @@
+{
+  "scope": "Genuine public stock Playwright1.64 Node24.19 no-browser CLI observations. Effective config RegExp fields and exact reporter-selected titles; native matcher never invokes JS matching. Title corpus has no tags.",
+  "observationSHA256": "cfab2c5927e6d3438dc0e2851b59849d7fa9911d43c2b85ecccf7c687dcd4445",
+  "physicalSummarySHA256": "f27a5f4479454cf380d19dd5a80e25206363c05181b0b80b85a512d80b5dc3db",
+  "file": "normal.spec.mjs",
+  "titles": [
+    "AA",
+    "BB",
+    "CC",
+    "case aa",
+    "Greek \u03c0 \u03a0",
+    "long \u017f S \u212a K",
+    "emoji \ud83d\ude00",
+    "line M1\nM2",
+    "lone \ud800",
+    "ab",
+    "abc",
+    "aab",
+    "aaab",
+    "abab",
+    "xyxy",
+    "unset aa",
+    "abcc",
+    "abcabc"
+  ],
+  "cases": [
+    {
+      "name": "baseline",
+      "effectiveProjects": [
+        {
+          "name": "p1",
+          "grep": {
+            "source": ".*",
+            "flags": ""
+          },
+          "grepInvert": null
+        },
+        {
+          "name": "p2",
+          "grep": {
+            "source": ".*",
+            "flags": ""
+          },
+          "grepInvert": null
+        }
+      ],
+      "includeCLI": null,
+      "excludeCLI": null,
+      "expectedSelected": [
+        [
+          "p1",
+          "AA"
+        ],
+        [
+          "p1",
+          "BB"
+        ],
+        [
+          "p1",
+          "CC"
+        ],
+        [
+          "p1",
+          "case aa"
+        ],
+        [
+          "p1",
+          "Greek \u03c0 \u03a0"
+        ],
+        [
+          "p1",
+          "long \u017f S \u212a K"
+        ],
+        [
+          "p1",
+          "emoji \ud83d\ude00"
+        ],
+        [
+          "p1",
+          "line M1\nM2"
+        ],
+        [
+          "p1",
+          "lone \ud800"
+        ],
+        [
+          "p1",
+          "ab"
+        ],
+        [
+          "p1",
+          "abc"
+        ],
+        [
+          "p1",
+          "aab"
+        ],
+        [
+          "p1",
+          "aaab"
+        ],
+        [
+          "p1",
+          "abab"
+        ],
+        [
+          "p1",
+          "xyxy"
+        ],
+        [
+          "p1",
+          "unset aa"
+        ],
+        [
+          "p1",
+          "abcc"
+        ],
+        [
+          "p1",
+          "abcabc"
+        ],
+        [
+          "p2",
+          "AA"
+        ],
+        [
+          "p2",
+          "BB"
+        ],
+        [
+          "p2",
+          "CC"
+        ],
+        [
+          "p2",
+          "case aa"
+        ],
+        [
+          "p2",
+          "Greek \u03c0 \u03a0"
+        ],
+        [
+          "p2",
+          "long \u017f S \u212a K"
+        ],
+        [
+          "p2",
+          "emoji \ud83d\ude00"
+        ],
+        [
+          "p2",
+          "line M1\nM2"
+        ],
+        [
+          "p2",
+          "lone \ud800"
+        ],
+        [
+          "p2",
+          "ab"
+        ],
+        [
+          "p2",
+          "abc"
+        ],
+        [
+          "p2",
+          "aab"
+        ],
+        [
+          "p2",
+          "aaab"
+        ],
+        [
+          "p2",
+          "abab"
+        ],
+        [
+          "p2",
+          "xyxy"
+        ],
+        [
+          "p2",
+          "unset aa"
+        ],
+        [
+          "p2",
+          "abcc"
+        ],
+        [
+          "p2",
+          "abcabc"
+        ]
+      ]
+    },
+    {
+      "name": "root-grep",
+      "effectiveProjects": [
+        {
+          "name": "p1",
+          "grep": {
+            "source": "AA",
+            "flags": ""
+          },
+          "grepInvert": null
+        },
+        {
+          "name": "p2",
+          "grep": {
+            "source": "AA",
+            "flags": ""
+          },
+          "grepInvert": null
+        }
+      ],
+      "includeCLI": null,
+      "excludeCLI": null,
+      "expectedSelected": [
+        [
+          "p1",
+          "AA"
+        ],
+        [
+          "p2",
+          "AA"
+        ]
+      ]
+    },
+    {
+      "name": "root-array-or",
+      "effectiveProjects": [
+        {
+          "name": "p1",
+          "grep": [
+            {
+              "source": "AA",
+              "flags": ""
+            },
+            {
+              "source": "BB",
+              "flags": ""
+            }
+          ],
+          "grepInvert": null
+        },
+        {
+          "name": "p2",
+          "grep": [
+            {
+              "source": "AA",
+              "flags": ""
+            },
+            {
+              "source": "BB",
+              "flags": ""
+            }
+          ],
+          "grepInvert": null
+        }
+      ],
+      "includeCLI": null,
+      "excludeCLI": null,
+      "expectedSelected": [
+        [
+          "p1",
+          "AA"
+        ],
+        [
+          "p1",
+          "BB"
+        ],
+        [
+          "p2",
+          "AA"
+        ],
+        [
+          "p2",
+          "BB"
+        ]
+      ]
+    },
+    {
+      "name": "root-empty-array",
+      "effectiveProjects": [
+        {
+          "name": "p1",
+          "grep": [],
+          "grepInvert": null
+        },
+        {
+          "name": "p2",
+          "grep": [],
+          "grepInvert": null
+        }
+      ],
+      "includeCLI": null,
+      "excludeCLI": null,
+      "expectedSelected": []
+    },
+    {
+      "name": "root-invert-array",
+      "effectiveProjects": [
+        {
+          "name": "p1",
+          "grep": {
+            "source": ".*",
+            "flags": ""
+          },
+          "grepInvert": [
+            {
+              "source": "AA",
+              "flags": ""
+            },
+            {
+              "source": "BB",
+              "flags": ""
+            }
+          ]
+        },
+        {
+          "name": "p2",
+          "grep": {
+            "source": ".*",
+            "flags": ""
+          },
+          "grepInvert": [
+            {
+              "source": "AA",
+              "flags": ""
+            },
+            {
+              "source": "BB",
+              "flags": ""
+            }
+          ]
+        }
+      ],
+      "includeCLI": null,
+      "excludeCLI": null,
+      "expectedSelected": [
+        [
+          "p1",
+          "CC"
+        ],
+        [
+          "p1",
+          "case aa"
+        ],
+        [
+          "p1",
+          "Greek \u03c0 \u03a0"
+        ],
+        [
+          "p1",
+          "long \u017f S \u212a K"
+        ],
+        [
+          "p1",
+          "emoji \ud83d\ude00"
+        ],
+        [
+          "p1",
+          "line M1\nM2"
+        ],
+        [
+          "p1",
+          "lone \ud800"
+        ],
+        [
+          "p1",
+          "ab"
+        ],
+        [
+          "p1",
+          "abc"
+        ],
+        [
+          "p1",
+          "aab"
+        ],
+        [
+          "p1",
+          "aaab"
+        ],
+        [
+          "p1",
+          "abab"
+        ],
+        [
+          "p1",
+          "xyxy"
+        ],
+        [
+          "p1",
+          "unset aa"
+        ],
+        [
+          "p1",
+          "abcc"
+        ],
+        [
+          "p1",
+          "abcabc"
+        ],
+        [
+          "p2",
+          "CC"
+        ],
+        [
+          "p2",
+          "case aa"
+        ],
+        [
+          "p2",
+          "Greek \u03c0 \u03a0"
+        ],
+        [
+          "p2",
+          "long \u017f S \u212a K"
+        ],
+        [
+          "p2",
+          "emoji \ud83d\ude00"
+        ],
+        [
+          "p2",
+          "line M1\nM2"
+        ],
+        [
+          "p2",
+          "lone \ud800"
+        ],
+        [
+          "p2",
+          "ab"
+        ],
+        [
+          "p2",
+          "abc"
+        ],
+        [
+          "p2",
+          "aab"
+        ],
+        [
+          "p2",
+          "aaab"
+        ],
+        [
+          "p2",
+          "abab"
+        ],
+        [
+          "p2",
+          "xyxy"
+        ],
+        [
+          "p2",
+          "unset aa"
+        ],
+        [
+          "p2",
+          "abcc"
+        ],
+        [
+          "p2",
+          "abcabc"
+        ]
+      ]
+    },
+    {
+      "name": "root-empty-invert",
+      "effectiveProjects": [
+        {
+          "name": "p1",
+          "grep": {
+            "source": ".*",
+            "flags": ""
+          },
+          "grepInvert": []
+        },
+        {
+          "name": "p2",
+          "grep": {
+            "source": ".*",
+            "flags": ""
+          },
+          "grepInvert": []
+        }
+      ],
+      "includeCLI": null,
+      "excludeCLI": null,
+      "expectedSelected": [
+        [
+          "p1",
+          "AA"
+        ],
+        [
+          "p1",
+          "BB"
+        ],
+        [
+          "p1",
+          "CC"
+        ],
+        [
+          "p1",
+          "case aa"
+        ],
+        [
+          "p1",
+          "Greek \u03c0 \u03a0"
+        ],
+        [
+          "p1",
+          "long \u017f S \u212a K"
+        ],
+        [
+          "p1",
+          "emoji \ud83d\ude00"
+        ],
+        [
+          "p1",
+          "line M1\nM2"
+        ],
+        [
+          "p1",
+          "lone \ud800"
+        ],
+        [
+          "p1",
+          "ab"
+        ],
+        [
+          "p1",
+          "abc"
+        ],
+        [
+          "p1",
+          "aab"
+        ],
+        [
+          "p1",
+          "aaab"
+        ],
+        [
+          "p1",
+          "abab"
+        ],
+        [
+          "p1",
+          "xyxy"
+        ],
+        [
+          "p1",
+          "unset aa"
+        ],
+        [
+          "p1",
+          "abcc"
+        ],
+        [
+          "p1",
+          "abcabc"
+        ],
+        [
+          "p2",
+          "AA"
+        ],
+        [
+          "p2",
+          "BB"
+        ],
+        [
+          "p2",
+          "CC"
+        ],
+        [
+          "p2",
+          "case aa"
+        ],
+        [
+          "p2",
+          "Greek \u03c0 \u03a0"
+        ],
+        [
+          "p2",
+          "long \u017f S \u212a K"
+        ],
+        [
+          "p2",
+          "emoji \ud83d\ude00"
+        ],
+        [
+          "p2",
+          "line M1\nM2"
+        ],
+        [
+          "p2",
+          "lone \ud800"
+        ],
+        [
+          "p2",
+          "ab"
+        ],
+        [
+          "p2",
+          "abc"
+        ],
+        [
+          "p2",
+          "aab"
+        ],
+        [
+          "p2",
+          "aaab"
+        ],
+        [
+          "p2",
+          "abab"
+        ],
+        [
+          "p2",
+          "xyxy"
+        ],
+        [
+          "p2",
+          "unset aa"
+        ],
+        [
+          "p2",
+          "abcc"
+        ],
+        [
+          "p2",
+          "abcabc"
+        ]
+      ]
+    },
+    {
+      "name": "project-replaces-root",
+      "effectiveProjects": [
+        {
+          "name": "p1",
+          "grep": {
+            "source": "AA",
+            "flags": ""
+          },
+          "grepInvert": null
+        },
+        {
+          "name": "p2",
+          "grep": {
+            "source": "CC",
+            "flags": ""
+          },
+          "grepInvert": null
+        }
+      ],
+      "includeCLI": null,
+      "excludeCLI": null,
+      "expectedSelected": [
+        [
+          "p1",
+          "AA"
+        ],
+        [
+          "p2",
+          "CC"
+        ]
+      ]
+    },
+    {
+      "name": "project-empty-clears-invert",
+      "effectiveProjects": [
+        {
+          "name": "p1",
+          "grep": {
+            "source": ".*",
+            "flags": ""
+          },
+          "grepInvert": {
+            "source": "AA",
+            "flags": ""
+          }
+        },
+        {
+          "name": "p2",
+          "grep": {
+            "source": ".*",
+            "flags": ""
+          },
+          "grepInvert": []
+        }
+      ],
+      "includeCLI": null,
+      "excludeCLI": null,
+      "expectedSelected": [
+        [
+          "p1",
+          "BB"
+        ],
+        [
+          "p1",
+          "CC"
+        ],
+        [
+          "p1",
+          "case aa"
+        ],
+        [
+          "p1",
+          "Greek \u03c0 \u03a0"
+        ],
+        [
+          "p1",
+          "long \u017f S \u212a K"
+        ],
+        [
+          "p1",
+          "emoji \ud83d\ude00"
+        ],
+        [
+          "p1",
+          "line M1\nM2"
+        ],
+        [
+          "p1",
+          "lone \ud800"
+        ],
+        [
+          "p1",
+          "ab"
+        ],
+        [
+          "p1",
+          "abc"
+        ],
+        [
+          "p1",
+          "aab"
+        ],
+        [
+          "p1",
+          "aaab"
+        ],
+        [
+          "p1",
+          "abab"
+        ],
+        [
+          "p1",
+          "xyxy"
+        ],
+        [
+          "p1",
+          "unset aa"
+        ],
+        [
+          "p1",
+          "abcc"
+        ],
+        [
+          "p1",
+          "abcabc"
+        ],
+        [
+          "p2",
+          "AA"
+        ],
+        [
+          "p2",
+          "BB"
+        ],
+        [
+          "p2",
+          "CC"
+        ],
+        [
+          "p2",
+          "case aa"
+        ],
+        [
+          "p2",
+          "Greek \u03c0 \u03a0"
+        ],
+        [
+          "p2",
+          "long \u017f S \u212a K"
+        ],
+        [
+          "p2",
+          "emoji \ud83d\ude00"
+        ],
+        [
+          "p2",
+          "line M1\nM2"
+        ],
+        [
+          "p2",
+          "lone \ud800"
+        ],
+        [
+          "p2",
+          "ab"
+        ],
+        [
+          "p2",
+          "abc"
+        ],
+        [
+          "p2",
+          "aab"
+        ],
+        [
+          "p2",
+          "aaab"
+        ],
+        [
+          "p2",
+          "abab"
+        ],
+        [
+          "p2",
+          "xyxy"
+        ],
+        [
+          "p2",
+          "unset aa"
+        ],
+        [
+          "p2",
+          "abcc"
+        ],
+        [
+          "p2",
+          "abcabc"
+        ]
+      ]
+    },
+    {
+      "name": "project-override-empty-root",
+      "effectiveProjects": [
+        {
+          "name": "p1",
+          "grep": [],
+          "grepInvert": null
+        },
+        {
+          "name": "p2",
+          "grep": {
+            "source": "CC",
+            "flags": ""
+          },
+          "grepInvert": null
+        }
+      ],
+      "includeCLI": null,
+      "excludeCLI": null,
+      "expectedSelected": [
+        [
+          "p2",
+          "CC"
+        ]
+      ]
+    },
+    {
+      "name": "cli-intersection",
+      "effectiveProjects": [
+        {
+          "name": "p1",
+          "grep": [
+            {
+              "source": "AA",
+              "flags": ""
+            },
+            {
+              "source": "BB",
+              "flags": ""
+            }
+          ],
+          "grepInvert": null
+        },
+        {
+          "name": "p2",
+          "grep": [
+            {
+              "source": "AA",
+              "flags": ""
+            },
+            {
+              "source": "BB",
+              "flags": ""
+            }
+          ],
+          "grepInvert": null
+        }
+      ],
+      "includeCLI": "BB|CC",
+      "excludeCLI": null,
+      "expectedSelected": [
+        [
+          "p1",
+          "BB"
+        ],
+        [
+          "p2",
+          "BB"
+        ]
+      ]
+    },
+    {
+      "name": "project-and-cli-intersection",
+      "effectiveProjects": [
+        {
+          "name": "p1",
+          "grep": {
+            "source": "AA",
+            "flags": ""
+          },
+          "grepInvert": null
+        },
+        {
+          "name": "p2",
+          "grep": {
+            "source": "CC",
+            "flags": ""
+          },
+          "grepInvert": null
+        }
+      ],
+      "includeCLI": "CC",
+      "excludeCLI": null,
+      "expectedSelected": [
+        [
+          "p2",
+          "CC"
+        ]
+      ]
+    },
+    {
+      "name": "config-g",
+      "effectiveProjects": [
+        {
+          "name": "p1",
+          "grep": {
+            "source": "AA",
+            "flags": "g"
+          },
+          "grepInvert": null
+        },
+        {
+          "name": "p2",
+          "grep": {
+            "source": "AA",
+            "flags": "g"
+          },
+          "grepInvert": null
+        }
+      ],
+      "includeCLI": null,
+      "excludeCLI": null,
+      "expectedSelected": [
+        [
+          "p1",
+          "AA"
+        ],
+        [
+          "p2",
+          "AA"
+        ]
+      ]
+    },
+    {
+      "name": "config-y-prefix",
+      "effectiveProjects": [
+        {
+          "name": "p1",
+          "grep": {
+            "source": "p1 ",
+            "flags": "y"
+          },
+          "grepInvert": null
+        },
+        {
+          "name": "p2",
+          "grep": {
+            "source": "p1 ",
+            "flags": "y"
+          },
+          "grepInvert": null
+        }
+      ],
+      "includeCLI": null,
+      "excludeCLI": null,
+      "expectedSelected": [
+        [
+          "p1",
+          "AA"
+        ],
+        [
+          "p1",
+          "BB"
+        ],
+        [
+          "p1",
+          "CC"
+        ],
+        [
+          "p1",
+          "case aa"
+        ],
+        [
+          "p1",
+          "Greek \u03c0 \u03a0"
+        ],
+        [
+          "p1",
+          "long \u017f S \u212a K"
+        ],
+        [
+          "p1",
+          "emoji \ud83d\ude00"
+        ],
+        [
+          "p1",
+          "line M1\nM2"
+        ],
+        [
+          "p1",
+          "lone \ud800"
+        ],
+        [
+          "p1",
+          "ab"
+        ],
+        [
+          "p1",
+          "abc"
+        ],
+        [
+          "p1",
+          "aab"
+        ],
+        [
+          "p1",
+          "aaab"
+        ],
+        [
+          "p1",
+          "abab"
+        ],
+        [
+          "p1",
+          "xyxy"
+        ],
+        [
+          "p1",
+          "unset aa"
+        ],
+        [
+          "p1",
+          "abcc"
+        ],
+        [
+          "p1",
+          "abcabc"
+        ]
+      ]
+    },
+    {
+      "name": "config-y-middle",
+      "effectiveProjects": [
+        {
+          "name": "p1",
+          "grep": {
+            "source": "AA",
+            "flags": "y"
+          },
+          "grepInvert": null
+        },
+        {
+          "name": "p2",
+          "grep": {
+            "source": "AA",
+            "flags": "y"
+          },
+          "grepInvert": null
+        }
+      ],
+      "includeCLI": null,
+      "excludeCLI": null,
+      "expectedSelected": []
+    },
+    {
+      "name": "config-m",
+      "effectiveProjects": [
+        {
+          "name": "p1",
+          "grep": {
+            "source": "^M2",
+            "flags": "m"
+          },
+          "grepInvert": null
+        },
+        {
+          "name": "p2",
+          "grep": {
+            "source": "^M2",
+            "flags": "m"
+          },
+          "grepInvert": null
+        }
+      ],
+      "includeCLI": null,
+      "excludeCLI": null,
+      "expectedSelected": [
+        [
+          "p1",
+          "line M1\nM2"
+        ],
+        [
+          "p2",
+          "line M1\nM2"
+        ]
+      ]
+    },
+    {
+      "name": "config-s",
+      "effectiveProjects": [
+        {
+          "name": "p1",
+          "grep": {
+            "source": "M1.M2",
+            "flags": "s"
+          },
+          "grepInvert": null
+        },
+        {
+          "name": "p2",
+          "grep": {
+            "source": "M1.M2",
+            "flags": "s"
+          },
+          "grepInvert": null
+        }
+      ],
+      "includeCLI": null,
+      "excludeCLI": null,
+      "expectedSelected": [
+        [
+          "p1",
+          "line M1\nM2"
+        ],
+        [
+          "p2",
+          "line M1\nM2"
+        ]
+      ]
+    },
+    {
+      "name": "config-u",
+      "effectiveProjects": [
+        {
+          "name": "p1",
+          "grep": {
+            "source": "emoji .$",
+            "flags": "u"
+          },
+          "grepInvert": null
+        },
+        {
+          "name": "p2",
+          "grep": {
+            "source": "emoji .$",
+            "flags": "u"
+          },
+          "grepInvert": null
+        }
+      ],
+      "includeCLI": null,
+      "excludeCLI": null,
+      "expectedSelected": [
+        [
+          "p1",
+          "emoji \ud83d\ude00"
+        ],
+        [
+          "p2",
+          "emoji \ud83d\ude00"
+        ]
+      ]
+    },
+    {
+      "name": "config-v",
+      "effectiveProjects": [
+        {
+          "name": "p1",
+          "grep": {
+            "source": "[\\q{abc|xyxy}]$",
+            "flags": "v"
+          },
+          "grepInvert": null
+        },
+        {
+          "name": "p2",
+          "grep": {
+            "source": "[\\q{abc|xyxy}]$",
+            "flags": "v"
+          },
+          "grepInvert": null
+        }
+      ],
+      "includeCLI": null,
+      "excludeCLI": null,
+      "expectedSelected": [
+        [
+          "p1",
+          "abc"
+        ],
+        [
+          "p1",
+          "xyxy"
+        ],
+        [
+          "p1",
+          "abcabc"
+        ],
+        [
+          "p2",
+          "abc"
+        ],
+        [
+          "p2",
+          "xyxy"
+        ],
+        [
+          "p2",
+          "abcabc"
+        ]
+      ]
+    },
+    {
+      "name": "config-i-greek",
+      "effectiveProjects": [
+        {
+          "name": "p1",
+          "grep": {
+            "source": "\u03c0 \u03c0",
+            "flags": "i"
+          },
+          "grepInvert": null
+        },
+        {
+          "name": "p2",
+          "grep": {
+            "source": "\u03c0 \u03c0",
+            "flags": "i"
+          },
+          "grepInvert": null
+        }
+      ],
+      "includeCLI": null,
+      "excludeCLI": null,
+      "expectedSelected": [
+        [
+          "p1",
+          "Greek \u03c0 \u03a0"
+        ],
+        [
+          "p2",
+          "Greek \u03c0 \u03a0"
+        ]
+      ]
+    },
+    {
+      "name": "config-iu-long-s",
+      "effectiveProjects": [
+        {
+          "name": "p1",
+          "grep": {
+            "source": "S S",
+            "flags": "iu"
+          },
+          "grepInvert": null
+        },
+        {
+          "name": "p2",
+          "grep": {
+            "source": "S S",
+            "flags": "iu"
+          },
+          "grepInvert": null
+        }
+      ],
+      "includeCLI": null,
+      "excludeCLI": null,
+      "expectedSelected": [
+        [
+          "p1",
+          "long \u017f S \u212a K"
+        ],
+        [
+          "p2",
+          "long \u017f S \u212a K"
+        ]
+      ]
+    },
+    {
+      "name": "config-i-long-s",
+      "effectiveProjects": [
+        {
+          "name": "p1",
+          "grep": {
+            "source": "S S",
+            "flags": "i"
+          },
+          "grepInvert": null
+        },
+        {
+          "name": "p2",
+          "grep": {
+            "source": "S S",
+            "flags": "i"
+          },
+          "grepInvert": null
+        }
+      ],
+      "includeCLI": null,
+      "excludeCLI": null,
+      "expectedSelected": []
+    },
+    {
+      "name": "config-iu-kelvin",
+      "effectiveProjects": [
+        {
+          "name": "p1",
+          "grep": {
+            "source": "K K",
+            "flags": "iu"
+          },
+          "grepInvert": null
+        },
+        {
+          "name": "p2",
+          "grep": {
+            "source": "K K",
+            "flags": "iu"
+          },
+          "grepInvert": null
+        }
+      ],
+      "includeCLI": null,
+      "excludeCLI": null,
+      "expectedSelected": [
+        [
+          "p1",
+          "long \u017f S \u212a K"
+        ],
+        [
+          "p2",
+          "long \u017f S \u212a K"
+        ]
+      ]
+    },
+    {
+      "name": "config-i-kelvin",
+      "effectiveProjects": [
+        {
+          "name": "p1",
+          "grep": {
+            "source": "K K",
+            "flags": "i"
+          },
+          "grepInvert": null
+        },
+        {
+          "name": "p2",
+          "grep": {
+            "source": "K K",
+            "flags": "i"
+          },
+          "grepInvert": null
+        }
+      ],
+      "includeCLI": null,
+      "excludeCLI": null,
+      "expectedSelected": []
+    },
+    {
+      "name": "grammar-projects",
+      "effectiveProjects": [
+        {
+          "name": "rx0",
+          "grep": {
+            "source": "(?=AA)AA",
+            "flags": ""
+          },
+          "grepInvert": null
+        },
+        {
+          "name": "rx1",
+          "grep": {
+            "source": "(?!AA)BB",
+            "flags": ""
+          },
+          "grepInvert": null
+        },
+        {
+          "name": "rx2",
+          "grep": {
+            "source": "(?<=case )aa",
+            "flags": ""
+          },
+          "grepInvert": null
+        },
+        {
+          "name": "rx3",
+          "grep": {
+            "source": "(?<!case )AA",
+            "flags": ""
+          },
+          "grepInvert": null
+        },
+        {
+          "name": "rx4",
+          "grep": {
+            "source": "(a+)b\\1",
+            "flags": ""
+          },
+          "grepInvert": null
+        },
+        {
+          "name": "rx5",
+          "grep": {
+            "source": "(a|b)+\\1",
+            "flags": ""
+          },
+          "grepInvert": null
+        },
+        {
+          "name": "rx6",
+          "grep": {
+            "source": "(?<word>ab)\\k<word>",
+            "flags": ""
+          },
+          "grepInvert": null
+        },
+        {
+          "name": "rx7",
+          "grep": {
+            "source": "(?:(a)|b)+\\1",
+            "flags": ""
+          },
+          "grepInvert": null
+        },
+        {
+          "name": "rx8",
+          "grep": {
+            "source": "\\1(a)",
+            "flags": ""
+          },
+          "grepInvert": null
+        },
+        {
+          "name": "rx9",
+          "grep": {
+            "source": "(?<=([ab]+)([bc]+))$",
+            "flags": ""
+          },
+          "grepInvert": null
+        },
+        {
+          "name": "rx10",
+          "grep": {
+            "source": "(?<=(a+))b\\1",
+            "flags": ""
+          },
+          "grepInvert": null
+        },
+        {
+          "name": "rx11",
+          "grep": {
+            "source": "(?:a?)*b",
+            "flags": ""
+          },
+          "grepInvert": null
+        },
+        {
+          "name": "rx12",
+          "grep": {
+            "source": "(?:a+?)+b",
+            "flags": ""
+          },
+          "grepInvert": null
+        },
+        {
+          "name": "rx13",
+          "grep": {
+            "source": "(?i:aa)",
+            "flags": ""
+          },
+          "grepInvert": null
+        },
+        {
+          "name": "rx14",
+          "grep": {
+            "source": "(?i:aa)(?-i:BB)",
+            "flags": ""
+          },
+          "grepInvert": null
+        },
+        {
+          "name": "rx15",
+          "grep": {
+            "source": "\\8",
+            "flags": ""
+          },
+          "grepInvert": null
+        },
+        {
+          "name": "rx16",
+          "grep": {
+            "source": "\\141b",
+            "flags": ""
+          },
+          "grepInvert": null
+        },
+        {
+          "name": "rx17",
+          "grep": {
+            "source": "\\cA",
+            "flags": ""
+          },
+          "grepInvert": null
+        },
+        {
+          "name": "rx18",
+          "grep": {
+            "source": "\\p{Script=Greek}+",
+            "flags": "u"
+          },
+          "grepInvert": null
+        },
+        {
+          "name": "rx19",
+          "grep": {
+            "source": "[\\p{ASCII}&&\\p{Letter}]+$",
+            "flags": "v"
+          },
+          "grepInvert": null
+        },
+        {
+          "name": "rx20",
+          "grep": {
+            "source": "[\\p{Letter}--[A-Z]]+$",
+            "flags": "v"
+          },
+          "grepInvert": null
+        }
+      ],
+      "includeCLI": null,
+      "excludeCLI": null,
+      "expectedSelected": [
+        [
+          "rx0",
+          "AA"
+        ],
+        [
+          "rx1",
+          "BB"
+        ],
+        [
+          "rx2",
+          "case aa"
+        ],
+        [
+          "rx3",
+          "AA"
+        ],
+        [
+          "rx4",
+          "abab"
+        ],
+        [
+          "rx5",
+          "case aa"
+        ],
+        [
+          "rx5",
+          "aab"
+        ],
+        [
+          "rx5",
+          "aaab"
+        ],
+        [
+          "rx5",
+          "unset aa"
+        ],
+        [
+          "rx6",
+          "abab"
+        ],
+        [
+          "rx7",
+          "case aa"
+        ],
+        [
+          "rx7",
+          "ab"
+        ],
+        [
+          "rx7",
+          "abc"
+        ],
+        [
+          "rx7",
+          "aab"
+        ],
+        [
+          "rx7",
+          "aaab"
+        ],
+        [
+          "rx7",
+          "abab"
+        ],
+        [
+          "rx7",
+          "unset aa"
+        ],
+        [
+          "rx7",
+          "abcc"
+        ],
+        [
+          "rx7",
+          "abcabc"
+        ],
+        [
+          "rx8",
+          "AA"
+        ],
+        [
+          "rx8",
+          "BB"
+        ],
+        [
+          "rx8",
+          "CC"
+        ],
+        [
+          "rx8",
+          "case aa"
+        ],
+        [
+          "rx8",
+          "Greek \u03c0 \u03a0"
+        ],
+        [
+          "rx8",
+          "long \u017f S \u212a K"
+        ],
+        [
+          "rx8",
+          "emoji \ud83d\ude00"
+        ],
+        [
+          "rx8",
+          "line M1\nM2"
+        ],
+        [
+          "rx8",
+          "lone \ud800"
+        ],
+        [
+          "rx8",
+          "ab"
+        ],
+        [
+          "rx8",
+          "abc"
+        ],
+        [
+          "rx8",
+          "aab"
+        ],
+        [
+          "rx8",
+          "aaab"
+        ],
+        [
+          "rx8",
+          "abab"
+        ],
+        [
+          "rx8",
+          "xyxy"
+        ],
+        [
+          "rx8",
+          "unset aa"
+        ],
+        [
+          "rx8",
+          "abcc"
+        ],
+        [
+          "rx8",
+          "abcabc"
+        ],
+        [
+          "rx9",
+          "ab"
+        ],
+        [
+          "rx9",
+          "abc"
+        ],
+        [
+          "rx9",
+          "aab"
+        ],
+        [
+          "rx9",
+          "aaab"
+        ],
+        [
+          "rx9",
+          "abab"
+        ],
+        [
+          "rx9",
+          "abcc"
+        ],
+        [
+          "rx9",
+          "abcabc"
+        ],
+        [
+          "rx10",
+          "abab"
+        ],
+        [
+          "rx11",
+          "ab"
+        ],
+        [
+          "rx11",
+          "abc"
+        ],
+        [
+          "rx11",
+          "aab"
+        ],
+        [
+          "rx11",
+          "aaab"
+        ],
+        [
+          "rx11",
+          "abab"
+        ],
+        [
+          "rx11",
+          "abcc"
+        ],
+        [
+          "rx11",
+          "abcabc"
+        ],
+        [
+          "rx12",
+          "ab"
+        ],
+        [
+          "rx12",
+          "abc"
+        ],
+        [
+          "rx12",
+          "aab"
+        ],
+        [
+          "rx12",
+          "aaab"
+        ],
+        [
+          "rx12",
+          "abab"
+        ],
+        [
+          "rx12",
+          "abcc"
+        ],
+        [
+          "rx12",
+          "abcabc"
+        ],
+        [
+          "rx13",
+          "AA"
+        ],
+        [
+          "rx13",
+          "case aa"
+        ],
+        [
+          "rx13",
+          "aab"
+        ],
+        [
+          "rx13",
+          "aaab"
+        ],
+        [
+          "rx13",
+          "unset aa"
+        ],
+        [
+          "rx16",
+          "ab"
+        ],
+        [
+          "rx16",
+          "abc"
+        ],
+        [
+          "rx16",
+          "aab"
+        ],
+        [
+          "rx16",
+          "aaab"
+        ],
+        [
+          "rx16",
+          "abab"
+        ],
+        [
+          "rx16",
+          "abcc"
+        ],
+        [
+          "rx16",
+          "abcabc"
+        ],
+        [
+          "rx18",
+          "Greek \u03c0 \u03a0"
+        ],
+        [
+          "rx19",
+          "AA"
+        ],
+        [
+          "rx19",
+          "BB"
+        ],
+        [
+          "rx19",
+          "CC"
+        ],
+        [
+          "rx19",
+          "case aa"
+        ],
+        [
+          "rx19",
+          "long \u017f S \u212a K"
+        ],
+        [
+          "rx19",
+          "ab"
+        ],
+        [
+          "rx19",
+          "abc"
+        ],
+        [
+          "rx19",
+          "aab"
+        ],
+        [
+          "rx19",
+          "aaab"
+        ],
+        [
+          "rx19",
+          "abab"
+        ],
+        [
+          "rx19",
+          "xyxy"
+        ],
+        [
+          "rx19",
+          "unset aa"
+        ],
+        [
+          "rx19",
+          "abcc"
+        ],
+        [
+          "rx19",
+          "abcabc"
+        ],
+        [
+          "rx20",
+          "case aa"
+        ],
+        [
+          "rx20",
+          "Greek \u03c0 \u03a0"
+        ],
+        [
+          "rx20",
+          "ab"
+        ],
+        [
+          "rx20",
+          "abc"
+        ],
+        [
+          "rx20",
+          "aab"
+        ],
+        [
+          "rx20",
+          "aaab"
+        ],
+        [
+          "rx20",
+          "abab"
+        ],
+        [
+          "rx20",
+          "xyxy"
+        ],
+        [
+          "rx20",
+          "unset aa"
+        ],
+        [
+          "rx20",
+          "abcc"
+        ],
+        [
+          "rx20",
+          "abcabc"
+        ]
+      ]
+    }
+  ]
+}

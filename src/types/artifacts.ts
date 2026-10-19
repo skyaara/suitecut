@@ -14,7 +14,6 @@ export type { SuiteCutPathKind } from '../schemas.js'
 export type SuiteCutArtifactRole =
   | 'checkpoint'
   | 'source-video'
-  | 'playwright-trace'
   | 'narration-audio'
   | 'captions'
   | 'rendered-video'

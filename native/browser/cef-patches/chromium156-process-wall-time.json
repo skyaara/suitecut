@@ -1,0 +1,39 @@
+{
+  "status": "UNCOMPILED PINNED VENDOR PATCH; no public capability claim",
+  "chromium": "156.0.8078.17",
+  "cefSource": "47dbc1df023e99f006fb9e850a8d83cc19b4fdd9",
+  "scope": "Renderer-process-wide native Time::Now fixed/rebased wall clock only, after actual virtual-time installation. Not page/context isolation, timer resume, fast-forward or worker/OOPIF barriers.",
+  "base": {
+    "third_party/blink/renderer/platform/scheduler/common/process_time_override_coordinator.h": "fea9f3212eb7db03a3418095a1c1d5ebf7d6e3128da9426869f5c4b24bca70f2",
+    "third_party/blink/renderer/platform/scheduler/common/process_time_override_coordinator.cc": "81acc0e85536a363c023a3d211f599775bf3350617f3825a2e0b85328d45d02e",
+    "third_party/blink/renderer/core/inspector/inspector_emulation_agent.h": "f5c9da997201d0a813a5953837b835725d5a533f26125e5489e305150fc8990f",
+    "third_party/blink/renderer/core/inspector/inspector_emulation_agent.cc": "72c9dfeb21bf39146f129f58a5a4a93c1ec7ff9ad41498ba42d64af1b2d51d73",
+    "third_party/blink/public/devtools_protocol/domains/Emulation.pdl": "bbb4e8575a117d322cffbfcf6227a2831106acbf7872fb92d5144bcf661d9684"
+  },
+  "output": {
+    "third_party/blink/renderer/platform/scheduler/common/process_time_override_coordinator.h": "3cef8de660c741995191c05dedc039ba77922b6149f38e42dda9a4d66d0f7d8c",
+    "third_party/blink/renderer/platform/scheduler/common/process_time_override_coordinator.cc": "e9ee00cac62437ce6802163c8df8c4fef426fbec0b7a7a4a1ba882e7ce6cb39e",
+    "third_party/blink/renderer/core/inspector/inspector_emulation_agent.h": "e531f75b560b597f374e7e2dab6fa5ea95397d5ec1fc895633561100d6d0690b",
+    "third_party/blink/renderer/core/inspector/inspector_emulation_agent.cc": "12a4c74444fc1a070f62fff3babf9491ef7a28369217c67912c07134772c3c84",
+    "third_party/blink/public/devtools_protocol/domains/Emulation.pdl": "69d597474c86078e4046206b947a336dc8530b1ac735c15abca998742004739d"
+  },
+  "patchSHA256": "1dec1804306b8567caf141bded0c13117fb05faef1e154a50aecd183fd37a536",
+  "verification": [
+    "git apply --check and exact output hashes PASS against five fetched pinned Chromium files",
+    "No Chromium or generated protocol compilation, rebuilt libcef or runtime acceptance"
+  ],
+  "nativeActivation": "NONE; stock NativeVirtualTime capabilities and methods unchanged",
+  "upstreamURLs": {
+    "third_party/blink/renderer/platform/scheduler/common/process_time_override_coordinator.h": "https://raw.githubusercontent.com/chromium/chromium/156.0.8078.17/third_party/blink/renderer/platform/scheduler/common/process_time_override_coordinator.h",
+    "third_party/blink/renderer/platform/scheduler/common/process_time_override_coordinator.cc": "https://raw.githubusercontent.com/chromium/chromium/156.0.8078.17/third_party/blink/renderer/platform/scheduler/common/process_time_override_coordinator.cc",
+    "third_party/blink/renderer/core/inspector/inspector_emulation_agent.h": "https://raw.githubusercontent.com/chromium/chromium/156.0.8078.17/third_party/blink/renderer/core/inspector/inspector_emulation_agent.h",
+    "third_party/blink/renderer/core/inspector/inspector_emulation_agent.cc": "https://raw.githubusercontent.com/chromium/chromium/156.0.8078.17/third_party/blink/renderer/core/inspector/inspector_emulation_agent.cc",
+    "third_party/blink/public/devtools_protocol/domains/Emulation.pdl": "https://raw.githubusercontent.com/chromium/chromium/156.0.8078.17/third_party/blink/public/devtools_protocol/domains/Emulation.pdl"
+  },
+  "inspectedAuxiliarySources": {
+    "base/time/time.h": {
+      "url": "https://raw.githubusercontent.com/chromium/chromium/156.0.8078.17/base/time/time.h",
+      "sha256": "e66bef19df9d66cb48f6e6cc7eff68faf35dd46b29ac469206b6e7d122c1bb80"
+    }
+  }
+}

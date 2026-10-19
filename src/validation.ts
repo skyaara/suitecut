@@ -68,7 +68,7 @@ export function parseCapturedViewport(viewport: SuiteCutViewport) {
   return SuiteCutViewportSchema.parse(viewport)
 }
 
-/** Validates the CSS viewport, physical source size, cadence, and JPEG capture quality. */
+/** Validates native output dimensions, frame cadence and narration timing. */
 export function parseCaptureOptions(options: SuiteCutCaptureOptions): SuiteCutCaptureOptions {
   return SuiteCutCaptureOptionsSchema.parse(options)
 }

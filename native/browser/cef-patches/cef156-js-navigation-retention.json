@@ -1,0 +1,52 @@
+{
+  "status": "UNCOMPILED PINNED VENDOR CANDIDATE; no public capability claim",
+  "chromium": "156.0.8078.17",
+  "v8": "4b33f15d4d172248a95629d6aa9917b20a79ad76",
+  "cefSource": "47dbc1df023e99f006fb9e850a8d83cc19b4fdd9",
+  "scope": "Opt-in same-agent final V8 contextDestroyed collection before contextCollected, exclusive isolate precise owner, immutable actual-context/source/script chunks; no renderer/agent replacement or Blink unload-order runtime claim",
+  "capabilityRevision": 1,
+  "base": {
+    "v8/src/inspector/v8-profiler-agent-impl.cc": "4db6678ad50265752e74d1c918a3a4c751209e13f58b86b7771b314d032bb315",
+    "v8/src/inspector/v8-profiler-agent-impl.h": "f2b6115ef9fd6382b5fdebdfb61a1d3ec49f8edd0fbba105528bb7bd2b016c66",
+    "v8/src/inspector/v8-inspector-impl.cc": "8ce6e15c078959e51e07891fd823ab9cc3479939bc4ff7b2c5fc39e8d46d611a",
+    "v8/src/inspector/v8-inspector-impl.h": "2d00bd23601082b99cb1d8ca0a06d504f8af2ef4a332d47b6a8a83b04c2cb4a0",
+    "v8/include/js_protocol.pdl": "784d67464dc055f26cf59798cfdcf2989fad2fdd5dd6f4d027dcd322f79fad82"
+  },
+  "output": {
+    "v8/src/inspector/v8-profiler-agent-impl.cc": "c05daa7db6d759d3fd34ed6860a093f578a0c6ed24dee01c132676044b2055f5",
+    "v8/src/inspector/v8-profiler-agent-impl.h": "1598dd51873a447ff711226a45fae4552a1a76be52d1bed4eedb51c125937352",
+    "v8/src/inspector/v8-inspector-impl.cc": "5a739f36a7070620b25eae45e89887cbbc8080ed2c4b321fe7105ca648ae8f6a",
+    "v8/src/inspector/v8-inspector-impl.h": "379920e88d14c313c35b86ae96f704f398e3d6e28a678807597eb58ceab3dcb8",
+    "v8/include/js_protocol.pdl": "8018eaa090a2cbfac9d702417aa4fe45cb5773c92fc1f68a814cfb983df53161"
+  },
+  "patchSHA256": "4447fd4c0b38f1ea713f6afcfdb7e0491f19e790ddd0687d31595d8847442170",
+  "nativeActivation": "NONE; stock resetOnNavigation:false remains unsupported; no production Source/SDK activation",
+  "upstreamURLs": {
+    "v8/src/inspector/v8-profiler-agent-impl.cc": "https://raw.githubusercontent.com/v8/v8/4b33f15d4d172248a95629d6aa9917b20a79ad76/src/inspector/v8-profiler-agent-impl.cc",
+    "v8/src/inspector/v8-profiler-agent-impl.h": "https://raw.githubusercontent.com/v8/v8/4b33f15d4d172248a95629d6aa9917b20a79ad76/src/inspector/v8-profiler-agent-impl.h",
+    "v8/src/inspector/v8-inspector-impl.cc": "https://raw.githubusercontent.com/v8/v8/4b33f15d4d172248a95629d6aa9917b20a79ad76/src/inspector/v8-inspector-impl.cc",
+    "v8/src/inspector/v8-inspector-impl.h": "https://raw.githubusercontent.com/v8/v8/4b33f15d4d172248a95629d6aa9917b20a79ad76/src/inspector/v8-inspector-impl.h",
+    "v8/include/js_protocol.pdl": "https://raw.githubusercontent.com/v8/v8/4b33f15d4d172248a95629d6aa9917b20a79ad76/include/js_protocol.pdl"
+  },
+  "verification": [
+    "git apply --check against every exact pinned base file PASS",
+    "Pinned Chromium PDL parser accepts candidate domain syntax; local extension references checked",
+    "No generated protocol C++ compile, Chromium/V8 compile, rebuilt libcef, or candidate runtime proof"
+  ],
+  "sourceComponent": "v8",
+  "patchRoot": "chromium",
+  "componentBase": {
+    "src/inspector/v8-profiler-agent-impl.cc": "4db6678ad50265752e74d1c918a3a4c751209e13f58b86b7771b314d032bb315",
+    "src/inspector/v8-profiler-agent-impl.h": "f2b6115ef9fd6382b5fdebdfb61a1d3ec49f8edd0fbba105528bb7bd2b016c66",
+    "src/inspector/v8-inspector-impl.cc": "8ce6e15c078959e51e07891fd823ab9cc3479939bc4ff7b2c5fc39e8d46d611a",
+    "src/inspector/v8-inspector-impl.h": "2d00bd23601082b99cb1d8ca0a06d504f8af2ef4a332d47b6a8a83b04c2cb4a0",
+    "include/js_protocol.pdl": "784d67464dc055f26cf59798cfdcf2989fad2fdd5dd6f4d027dcd322f79fad82"
+  },
+  "componentOutput": {
+    "src/inspector/v8-profiler-agent-impl.cc": "c05daa7db6d759d3fd34ed6860a093f578a0c6ed24dee01c132676044b2055f5",
+    "src/inspector/v8-profiler-agent-impl.h": "1598dd51873a447ff711226a45fae4552a1a76be52d1bed4eedb51c125937352",
+    "src/inspector/v8-inspector-impl.cc": "5a739f36a7070620b25eae45e89887cbbc8080ed2c4b321fe7105ca648ae8f6a",
+    "src/inspector/v8-inspector-impl.h": "379920e88d14c313c35b86ae96f704f398e3d6e28a678807597eb58ceab3dcb8",
+    "include/js_protocol.pdl": "8018eaa090a2cbfac9d702417aa4fe45cb5773c92fc1f68a814cfb983df53161"
+  }
+}

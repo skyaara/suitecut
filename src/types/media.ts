@@ -40,9 +40,24 @@ export interface SuiteCutMedia {
   streams: SuiteCutMediaStream[]
 }
 
+export interface SuiteCutNativeRecordingTiming {
+  durationMs: Milliseconds
+  encodedDurationMs: Milliseconds
+  framesPerSecond: number
+  inputFrames: number
+  outputFrames: number
+  heldFrames: number
+  supersededFrames: number
+  audioInputFrames: number
+  audioOutputFrames: number
+  audioOverlapFrames: number
+  audioGapFrames: number
+}
+
 export interface SuiteCutVideoTiming {
   pageId: SuiteCutPageId
   mediaId: SuiteCutMediaId
   firstFrameEpochMs: EpochMilliseconds
   sourceStartedAtMs: Milliseconds
+  nativeRecording?: SuiteCutNativeRecordingTiming
 }

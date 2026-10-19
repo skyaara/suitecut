@@ -1,0 +1,795 @@
+--- a/third_party/blink/public/devtools_protocol/domains/Network.pdl
++++ b/third_party/blink/public/devtools_protocol/domains/Network.pdl
+@@ -2260,3 +2260,36 @@
+     parameters
+       # Whether 3pc restriction is enabled.
+       boolean enableThirdPartyCookieRestriction
++
++  # SuiteCut native WebSocket transport extension. Requires the pinned rebuilt
++  # CEF library; stock Network observation does not implement these commands.
++  experimental command suiteCutWebSocketConfigureV1
++    parameters
++      boolean enabled
++    returns
++      integer revision
++      integer maxSockets
++      integer maxPendingMessages
++      integer maxPendingBytes
++
++  # All identities belong to this exact target/session. A successful command
++  # means native acceptance, not remote server delivery or a close handshake.
++  experimental command suiteCutWebSocketCommandV1
++    parameters
++      RequestId requestId
++      string action
++      string messageId
++      integer opcode
++      string payloadBase64
++      integer code
++      string reason
++
++  experimental event suiteCutWebSocketRoutedV1
++    parameters
++      RequestId requestId
++      string stage
++      string url
++      string messageId
++      boolean outgoing
++      integer opcode
++      string payloadBase64
+--- a/third_party/blink/renderer/core/inspector/build.gni
++++ b/third_party/blink/renderer/core/inspector/build.gni
+@@ -171,4 +171,5 @@
+   "network_resources_data_test.cc",
+   "protocol_parser_test.cc",
+   "protocol_unittest.cc",
++  "suitecut_websocket_route.h",
+ ]
+--- a/third_party/blink/renderer/core/inspector/inspector_network_agent.cc
++++ b/third_party/blink/renderer/core/inspector/inspector_network_agent.cc
+@@ -2029,6 +2029,81 @@
+   *devtools_throttling_token = devtools_throttling_token_;
+ }
+ 
++protocol::Response InspectorNetworkAgent::suiteCutWebSocketConfigureV1(
++    bool enabled, int* revision, int* sockets, int* messages, int* bytes) {
++  *revision = 1; *sockets = 128; *messages = 64; *bytes = 2097152;
++  if (enabled && !enabled_.Get())
++    return protocol::Response::ServerError("Enable Network before native WebSocket routing");
++  suitecut_websocket_enabled_ = enabled;
++  if (!enabled) {
++    // Disposal emits real close probes and can erase the registry reentrantly.
++    auto previous = std::move(suitecut_websockets_);
++    suitecut_websockets_.clear();
++    for (auto& entry : previous) if (entry.value)
++      entry.value->SuiteCutRouteCommand("abort", String(), 0, {}, 1001,
++                                        "Native routing disabled");
++  }
++  return protocol::Response::Success();
++}
++
++protocol::Response InspectorNetworkAgent::suiteCutWebSocketCommandV1(
++    const String& request_id, const String& action, const String& message_id,
++    int opcode, const String& payload_base64, int code, const String& reason) {
++  auto found = suitecut_websockets_.find(request_id);
++  if (found == suitecut_websockets_.end() || !found->value)
++    return protocol::Response::ServerError("Native WebSocket channel is no longer owned");
++  if (payload_base64.length() > 2796204 || reason.length() > 123 ||
++      message_id.length() > 32)
++    return protocol::Response::InvalidParams("Native WebSocket command exceeds limit");
++  Vector<uint8_t> bytes;
++  if (!Base64Decode(payload_base64, bytes) || bytes.size() > 2097152 ||
++      Base64Encode(bytes) != payload_base64)
++    return protocol::Response::InvalidParams("Invalid canonical native WebSocket payload");
++  const auto error = found->value->SuiteCutRouteCommand(
++      action, message_id, opcode, bytes, code, reason);
++  return error.empty() ? protocol::Response::Success()
++                       : protocol::Response::ServerError(error);
++}
++
++void InspectorNetworkAgent::SuiteCutInterceptWebSocket(
++    ExecutionContext*, uint64_t identifier, const KURL& url,
++    SuiteCutWebSocketRoute* channel, bool* intercepted) {
++  if (!suitecut_websocket_enabled_ || *intercepted) return;
++  // Weak expired entries do not consume the live-channel budget indefinitely.
++  Vector<String> expired;
++  for (const auto& entry : suitecut_websockets_) if (!entry.value)
++    expired.push_back(entry.key);
++  for (const auto& id : expired) suitecut_websockets_.erase(id);
++  if (suitecut_websockets_.size() >= 128) {
++    channel->SuiteCutRouteCommand("abort", String(), 0, {}, 1001,
++                                  "Native routing socket capacity exceeded");
++    *intercepted = true;
++    return;
++  }
++  const auto id = IdentifiersFactory::SubresourceRequestId(identifier);
++  suitecut_websockets_.Set(id, channel->SuiteCutWeakRoute());
++  *intercepted = true;
++  GetFrontend()->suiteCutWebSocketRoutedV1(id, "created", url.GetString(),
++                                          String(), false, 0, String());
++}
++
++void InspectorNetworkAgent::SuiteCutWebSocketRetired(uint64_t identifier) {
++  const auto id = IdentifiersFactory::SubresourceRequestId(identifier);
++  if (!suitecut_websockets_.Contains(id)) return;
++  suitecut_websockets_.erase(id);
++  GetFrontend()->suiteCutWebSocketRoutedV1(id, "closed", String(), String(),
++                                          false, 0, String());
++}
++
++void InspectorNetworkAgent::SuiteCutWebSocketMessage(
++    uint64_t identifier, const String& message_id, bool outgoing,
++    int opcode, base::span<const uint8_t> bytes) {
++  const auto id = IdentifiersFactory::SubresourceRequestId(identifier);
++  if (!suitecut_websockets_.Contains(id)) return;
++  GetFrontend()->suiteCutWebSocketRoutedV1(id, "message", String(), message_id,
++                                          outgoing, opcode, Base64Encode(bytes));
++}
++
+ void InspectorNetworkAgent::WillCreateWebSocket(
+     ExecutionContext* execution_context,
+     uint64_t identifier,
+@@ -2120,6 +2195,7 @@
+ 
+ void InspectorNetworkAgent::DidCloseWebSocket(ExecutionContext*,
+                                               uint64_t identifier) {
++
+   GetFrontend()->webSocketClosed(
+       IdentifiersFactory::SubresourceRequestId(identifier),
+       base::TimeTicks::Now().since_origin().InSecondsF());
+@@ -2423,6 +2499,8 @@
+ }
+ 
+ protocol::Response InspectorNetworkAgent::disable() {
++  int revision, sockets, messages, bytes;
++  suiteCutWebSocketConfigureV1(false, &revision, &sockets, &messages, &bytes);
+   DCHECK(!pending_request_type_);
+   if (IsMainThread())
+     GetNetworkStateNotifier().ClearOverride();
+--- a/third_party/blink/renderer/core/inspector/inspector_network_agent.h
++++ b/third_party/blink/renderer/core/inspector/inspector_network_agent.h
+@@ -31,6 +31,7 @@
+ #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_INSPECTOR_NETWORK_AGENT_H_
+ #define THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_INSPECTOR_NETWORK_AGENT_H_
+ 
++#include "third_party/blink/renderer/core/inspector/suitecut_websocket_route.h"
+ #include <memory>
+ #include <optional>
+ 
+@@ -190,6 +191,16 @@
+   void FrameClearedScheduledNavigation(LocalFrame*);
+ 
+   void WillCreateP2PSocketUdp(std::optional<base::UnguessableToken>*);
++  void SuiteCutInterceptWebSocket(ExecutionContext*, uint64_t identifier,
++      const KURL&, SuiteCutWebSocketRoute*, bool* intercepted);
++  void SuiteCutWebSocketRetired(uint64_t identifier);
++  void SuiteCutWebSocketMessage(uint64_t identifier, const String& message_id,
++      bool outgoing, int opcode, base::span<const uint8_t> payload);
++  protocol::Response suiteCutWebSocketConfigureV1(bool enabled, int* revision,
++      int* max_sockets, int* max_messages, int* max_bytes) override;
++  protocol::Response suiteCutWebSocketCommandV1(const String& request_id,
++      const String& action, const String& message_id, int opcode,
++      const String& payload_base64, int code, const String& reason) override;
+   void WillCreateWebSocket(ExecutionContext*,
+                            uint64_t identifier,
+                            const KURL& request_url,
+@@ -401,6 +412,9 @@
+       frame_navigation_initiator_map_;
+ 
+   HashSet<String> streaming_request_ids_;
++  bool suitecut_websocket_enabled_ = false;
++  HashMap<String, base::WeakPtr<SuiteCutWebSocketRoute>> suitecut_websockets_;
++
+ 
+   struct URLPatternMatcher {
+     std::unique_ptr<::url_pattern::SimpleUrlPatternMatcher> matcher;
+--- /dev/null
++++ b/third_party/blink/renderer/core/inspector/suitecut_websocket_route.h
+@@ -0,0 +1,22 @@
++// Copyright 2026 The Chromium Authors
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_SUITECUT_WEBSOCKET_ROUTE_H_
++#define THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_SUITECUT_WEBSOCKET_ROUTE_H_
++#include "base/containers/span.h"
++#include "base/memory/weak_ptr.h"
++#include "third_party/blink/renderer/core/core_export.h"
++#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
++namespace blink {
++// Execution-context-thread-only native channel control, revision 1. Weak handles
++// are invalidated on real channel disposal, never reconstructed by URL.
++class CORE_EXPORT SuiteCutWebSocketRoute {
++ public:
++  virtual ~SuiteCutWebSocketRoute() = default;
++  virtual base::WeakPtr<SuiteCutWebSocketRoute> SuiteCutWeakRoute() = 0;
++  virtual String SuiteCutRouteCommand(const String& action,
++      const String& message_id, int opcode, base::span<const uint8_t> payload,
++      int code, const String& reason) = 0;
++};
++}  // namespace blink
++#endif
+--- a/third_party/blink/renderer/core/probe/core_probes.json5
++++ b/third_party/blink/renderer/core/probe/core_probes.json5
+@@ -239,6 +239,9 @@
+         "DirectUDPSocketLeftMulticastGroup",
+         "WillCreateP2PSocketUdp",
+         "WillCreateWebSocket",
++        "SuiteCutInterceptWebSocket",
++        "SuiteCutWebSocketMessage",
++        "SuiteCutWebSocketRetired",
+         "WillDispatchEventSourceEvent",
+         "WillLoadXHR",
+         "WillSendEventSourceRequest",
+--- a/third_party/blink/renderer/core/probe/core_probes.pidl
++++ b/third_party/blink/renderer/core/probe/core_probes.pidl
+@@ -68,6 +68,7 @@
+   class SpeculationCandidate;
+   class ToolData;
+   class XMLHttpRequest;
++  class SuiteCutWebSocketRoute;
+   using PropertyName = std::variant<const char*, String>;
+   using ScriptException = std::optional<std::pair<ScriptValue, ScriptState*>>;
+ 
+@@ -146,6 +147,9 @@
+   void FrameRequestedNavigation(LocalFrame*, Frame* target_frame, const KURL& url, ClientNavigationReason reason, NavigationPolicy policy);
+   void FrameScheduledNavigation([Keep] LocalFrame*, const KURL& url, base::TimeDelta delay, ClientNavigationReason reason);
+   void FrameClearedScheduledNavigation([Keep] LocalFrame*);
++  void SuiteCutInterceptWebSocket([Keep] ExecutionContext*, uint64_t identifier, const KURL& request_url, SuiteCutWebSocketRoute* channel, bool* intercepted);
++  void SuiteCutWebSocketRetired(ExecutionContext*, uint64_t identifier);
++  void SuiteCutWebSocketMessage(ExecutionContext*, uint64_t identifier, const String& message_id, bool outgoing, int opcode, base::span<const uint8_t> payload);
+   void WillCreateWebSocket([Keep] ExecutionContext*, uint64_t identifier, const KURL& request_url, const String& protocol, std::optional<base::UnguessableToken>* devtools_token);
+   void WillSendWebSocketHandshakeRequest([Keep] ExecutionContext*, uint64_t identifier, network::mojom::blink::WebSocketHandshakeRequest* request);
+   void DidReceiveWebSocketHandshakeResponse([Keep] ExecutionContext*, uint64_t identifier, network::mojom::blink::WebSocketHandshakeRequest* request, network::mojom::blink::WebSocketHandshakeResponse* response);
+--- a/third_party/blink/renderer/modules/websockets/websocket_channel_impl.cc
++++ b/third_party/blink/renderer/modules/websockets/websocket_channel_impl.cc
+@@ -38,6 +38,7 @@
+ #include <memory>
+ 
+ #include "base/command_line.h"
++#include "base/auto_reset.h"
+ #include "base/compiler_specific.h"
+ #include "base/containers/span.h"
+ #include "base/feature_list.h"
+@@ -326,14 +327,6 @@
+   }
+ 
+   url_ = url;
+-  Vector<String> protocols;
+-  // Avoid placing an empty token in the Vector when the protocol string is
+-  // empty.
+-  if (!protocol.empty()) {
+-    // Since protocol is already verified and escaped, we can simply split
+-    // it.
+-    protocols = protocol.Split(", ");
+-  }
+ 
+   // If the connection needs to be filtered, asynchronously fail. Synchronous
+   // failure blocks the worker thread which should be avoided. Note that
+@@ -363,21 +356,239 @@
+     return true;
+   }
+ 
++  probe::WillCreateWebSocket(execution_context_, identifier_, url, protocol,
++                             &suitecut_throttling_token_);
++  suitecut_protocol_ = protocol;
++  suitecut_address_space_ = target_address_space;
++  suitecut_pending_connect_ = true;
++  suitecut_routed_ = true;
++  bool intercepted = false;
++  probe::SuiteCutInterceptWebSocket(execution_context_, identifier_, url, this,
++                                     &intercepted);
++  if (intercepted) {
++    suitecut_registered_ = true;
++    suitecut_connect_deadline_ = base::TimeTicks::Now() + base::Seconds(30);
++    SuiteCutEnsureTimer(base::Seconds(30));
++    return true;
++  }
++  suitecut_routed_ = false;
++  suitecut_pending_connect_ = false;
++  SuiteCutStartTransport();
++  return true;
++}
++
++void WebSocketChannelImpl::SuiteCutMaybeClose() {
++  if (!suitecut_client_close_pending_ || !messages_.empty() || blob_loader_)
++    return;
++  for (const auto& message : suitecut_pending_) if (message.outgoing) return;
++  suitecut_client_close_pending_ = false;
++  base::AutoReset<bool> bypass(&suitecut_bypass_, true);
++  Close(suitecut_client_close_code_, suitecut_client_close_reason_);
++}
++
++void WebSocketChannelImpl::SuiteCutAbort() {
++  if (!identifier_ || execution_context_->IsContextDestroyed()) return;
++  client_->DidError();
++  if (identifier_) SuiteCutClose(1006, String(), false);
++}
++
++bool WebSocketChannelImpl::SuiteCutCanQueue(size_t bytes) {
++  if (messages_.size() + suitecut_pending_.size() >= 64 || bytes > 2097152)
++    return false;
++  size_t pending = bytes;
++  for (auto& message : messages_) {
++    if (message.Type() == kMessageTypeClose) return false;
++    const auto size = message.Type() == kMessageTypeBlob
++        ? message.GetBlobDataHandle()->size() : message.PendingPayload().size();
++    if (size > 2097152 - pending) return false;
++    pending += size;
++  }
++  return true;
++}
++
++bool WebSocketChannelImpl::SuiteCutCanSend(size_t bytes) const {
++  if (messages_.size() >= 64 || bytes > 2097152) return false;
++  size_t pending = bytes;
++  for (const auto& message : messages_) {
++    // No original Blob read may be bypassed by a newly injected server frame.
++    if (message.Type() == kMessageTypeBlob || message.Type() == kMessageTypeClose)
++      return false;
++    const auto size = message.PendingPayload().size();
++    if (size > 2097152 - pending) return false;
++    pending += size;
++  }
++  return true;
++}
++
++bool WebSocketChannelImpl::SuiteCutHoldMessage(
++    bool outgoing, int opcode, base::span<const uint8_t> bytes) {
++  if (bytes.size() > 2097152 || suitecut_pending_.size() >= 64 ||
++      bytes.size() > 2097152 - suitecut_pending_bytes_ ||
++      suitecut_message_serial_ == std::numeric_limits<uint64_t>::max()) {
++    FailAsError("Native WebSocket route message capacity exceeded");
++    return false;
++  }
++  auto id = String::Number(++suitecut_message_serial_);
++  SuiteCutMessage message{id, base::TimeTicks::Now() + base::Seconds(30),
++                          outgoing, opcode, {}};
++  message.bytes.append_range(bytes);
++  suitecut_pending_bytes_ += bytes.size();
++  suitecut_pending_.push_back(std::move(message));
++  probe::SuiteCutWebSocketMessage(execution_context_, identifier_, id,
++                                  outgoing, opcode, bytes);
++  SuiteCutEnsureTimer(base::Seconds(30));
++  return true;
++}
++
++void WebSocketChannelImpl::SuiteCutEnsureTimer(base::TimeDelta delay) {
++  if (suitecut_expiry_scheduled_) return;
++  suitecut_expiry_scheduled_ = true;
++  execution_context_->GetTaskRunner(TaskType::kNetworking)->PostDelayedTask(
++      FROM_HERE, BindOnce(&WebSocketChannelImpl::SuiteCutExpire,
++                          WrapWeakPersistent(this)), delay);
++}
++
++void WebSocketChannelImpl::SuiteCutExpire() {
++  suitecut_expiry_scheduled_ = false;
++  if (!suitecut_routed_) return;
++  auto deadline = suitecut_pending_connect_ ? suitecut_connect_deadline_
++                                           : base::TimeTicks::Max();
++  for (const auto& message : suitecut_pending_)
++    deadline = std::min(deadline, message.deadline);
++  if (deadline == base::TimeTicks::Max()) return;
++  const auto now = base::TimeTicks::Now();
++  if (now >= deadline) {
++    FailAsError("Native WebSocket route original decision deadline exceeded");
++    return;
++  }
++  // Exactly one timer per channel, even at high message throughput. Decisions
++  // never renew another retained message's original deadline.
++  SuiteCutEnsureTimer(deadline - now);
++}
++
++void WebSocketChannelImpl::SuiteCutDeliver(
++    int opcode, base::span<const uint8_t> bytes) {
++  if (opcode == 1) {
++    client_->DidReceiveTextMessage(String::FromUtf8(bytes));
++  } else {
++    Vector<base::span<const uint8_t>> chunks;
++    if (!bytes.empty()) chunks.push_back(bytes);
++    client_->DidReceiveBinaryMessage(chunks);
++  }
++}
++
++void WebSocketChannelImpl::SuiteCutClose(
++    int code, const String& reason, bool clean) {
++  if (identifier_) probe::DidCloseWebSocket(execution_context_, identifier_);
++  client_->DidStartClosingHandshake();
++  HandleDidClose(clean, static_cast<uint16_t>(code), reason);
++}
++
++String WebSocketChannelImpl::SuiteCutRouteCommand(
++    const String& action, const String& message_id, int opcode,
++    base::span<const uint8_t> payload, int code, const String& reason) {
++  if (!suitecut_routed_ || !identifier_ || execution_context_->IsContextDestroyed())
++    return "Native WebSocket route owner is unavailable";
++  if (action == "abort") {
++    execution_context_->GetTaskRunner(TaskType::kNetworking)->PostTask(
++        FROM_HERE, BindOnce(&WebSocketChannelImpl::SuiteCutAbort,
++                            WrapWeakPersistent(this)));
++    return String();
++  }
++  if (action == "connect" || action == "continue" || action == "mock") {
++    if (!suitecut_pending_connect_)
++      return "Native WebSocket connect decision already consumed";
++    suitecut_pending_connect_ = false;
++    if (action == "mock") {
++      suitecut_mock_open_ = true;
++      has_initiated_opening_handshake_ = true;
++      throttle_passed_ = true;
++      handshake_throttle_.reset();
++      client_->DidConnect(String(), String());
++    } else {
++      if (action == "continue") suitecut_routed_ = false;
++      SuiteCutStartTransport();
++    }
++    return String();
++  }
++  if (GetState() != State::kOpen) return "Native WebSocket is not open";
++  if (action == "close") {
++    const auto encoded_reason = reason.Utf8();
++    if (!((code == 1000) || (code >= 3000 && code <= 4999)) ||
++        encoded_reason.length() > 123)
++      return "Invalid native WebSocket close code or reason";
++    base::AutoReset<bool> bypass(&suitecut_bypass_, true);
++    if (suitecut_mock_open_) SuiteCutClose(code, reason, true);
++    else Close(code, reason);
++    return String();
++  }
++  if (action == "drop" || action == "forward" || action == "replace") {
++    auto found = std::find_if(suitecut_pending_.begin(), suitecut_pending_.end(),
++        [&](const SuiteCutMessage& entry) { return entry.id == message_id; });
++    if (found == suitecut_pending_.end())
++      return "Native WebSocket message decision already consumed";
++    // Preserve message order independently in each native direction.
++    for (auto it = suitecut_pending_.begin(); it != found; ++it)
++      if (it->outgoing == found->outgoing)
++        return "Earlier native WebSocket message decision is pending";
++    const bool outgoing = found->outgoing;
++    const int actual_opcode = action == "replace" ? opcode : found->opcode;
++    if (action != "drop" &&
++        ((actual_opcode != 1 && actual_opcode != 2) ||
++         (actual_opcode == 1 && String::FromUtf8(
++             action == "replace" ? payload : base::span<const uint8_t>(found->bytes)).IsNull())))
++      return "Invalid native WebSocket message replacement";
++    if (action != "drop" && outgoing &&
++        (suitecut_mock_open_ || !SuiteCutCanSend(
++            action == "replace" ? payload.size() : found->bytes.size())))
++      return "Native WebSocket server transport unavailable or backpressured";
++    auto bytes = std::move(found->bytes);
++    suitecut_pending_bytes_ -= bytes.size();
++    suitecut_pending_.erase(found);
++    if (action == "drop") { SuiteCutMaybeClose(); return String(); }
++    const auto actual = action == "replace" ? payload : base::span<const uint8_t>(bytes);
++    if (outgoing) {
++      if (suitecut_mock_open_) return "Mock WebSocket has no server transport";
++      base::AutoReset<bool> bypass(&suitecut_bypass_, true);
++      SendFromMemory(actual_opcode == 1 ? kMessageTypeText : kMessageTypeArrayBuffer,
++                     actual, nullptr);
++    } else {
++      SuiteCutDeliver(actual_opcode, actual);
++    }
++    SuiteCutMaybeClose();
++    return String();
++  }
++  if (action == "client" || action == "server") {
++    if ((opcode != 1 && opcode != 2) ||
++        (opcode == 1 && String::FromUtf8(payload).IsNull()))
++      return "Invalid native WebSocket message";
++    if (action == "client") SuiteCutDeliver(opcode, payload);
++    else {
++      if (suitecut_mock_open_ || !SuiteCutCanSend(payload.size()))
++        return "Native WebSocket server transport unavailable or backpressured";
++      base::AutoReset<bool> bypass(&suitecut_bypass_, true);
++      SendFromMemory(opcode == 1 ? kMessageTypeText : kMessageTypeArrayBuffer,
++                     payload, nullptr);
++    }
++    return String();
++  }
++  return "Unsupported native WebSocket route command";
++}
++
++void WebSocketChannelImpl::SuiteCutStartTransport() {
++  Vector<String> protocols;
++  if (!suitecut_protocol_.empty()) protocols = suitecut_protocol_.Split(", ");
+   mojo::Remote<mojom::blink::WebSocketConnector> connector;
+   execution_context_->GetBrowserInterfaceBroker().GetInterface(
+       connector.BindNewPipeAndPassReceiver(
+           execution_context_->GetTaskRunner(TaskType::kWebSocket)));
+ 
+-  std::optional<base::UnguessableToken> devtools_throttling_token;
+-  probe::WillCreateWebSocket(execution_context_, identifier_, url, protocol,
+-                             &devtools_throttling_token);
+-
+   connector->Connect(
+-      url, protocols, execution_context_->UserAgent(),
++      url_, protocols, execution_context_->UserAgent(),
+       handshake_client_receiver_.BindNewPipeAndPassRemote(
+           execution_context_->GetTaskRunner(TaskType::kWebSocket)),
+-      /*throttling_profile_id=*/devtools_throttling_token,
+-      target_address_space);
++      /*throttling_profile_id=*/suitecut_throttling_token_,
++      suitecut_address_space_);
+   handshake_client_receiver_.set_disconnect_with_reason_handler(
+       blink::BindOnce(&WebSocketChannelImpl::OnConnectionError,
+                       WrapWeakPersistent(this), FROM_HERE));
+@@ -396,7 +607,7 @@
+     // the WebSocket is no longer referenced, there's no point in keeping it
+     // alive just to receive the throttling result.
+     handshake_throttle_->ThrottleHandshake(
+-        url, WebSecurityOrigin(execution_context_->GetSecurityOrigin()),
++        url_, WebSecurityOrigin(execution_context_->GetSecurityOrigin()),
+         isolated_security_origin ? WebSecurityOrigin(isolated_security_origin)
+                                  : WebSecurityOrigin(),
+         BindOnce(&WebSocketChannelImpl::OnCompletion,
+@@ -408,8 +619,7 @@
+ 
+   DEVTOOLS_TIMELINE_TRACE_EVENT_INSTANT(
+       "WebSocketCreate", InspectorWebSocketCreateEvent::Data,
+-      execution_context_.Get(), identifier_, url, protocol);
+-  return true;
++      execution_context_.Get(), identifier_, url_, suitecut_protocol_);
+ }
+ 
+ void WebSocketChannelImpl::Send(
+@@ -433,6 +643,10 @@
+            << blob_data_handle->GetType() << ", " << blob_data_handle->size()
+            << ") "
+            << "(BlobDataHandle argument)";
++  if (suitecut_routed_ && !SuiteCutCanQueue(blob_data_handle->size())) {
++    FailAsError("Native WebSocket route blob exceeds byte limit");
++    return;
++  }
+   // FIXME: We can't access the data here.
+   // Since Binary data are not displayed in Inspector, this does not
+   // affect actual behavior.
+@@ -465,6 +679,19 @@
+ }
+ 
+ void WebSocketChannelImpl::Close(int code, const String& reason) {
++  if (suitecut_routed_ && !suitecut_bypass_) {
++    // Author close retains the original send-before-close ordering, including
++    // messages held by the route and an asynchronous original Blob read.
++    suitecut_client_close_pending_ = true;
++    suitecut_client_close_code_ = code;
++    suitecut_client_close_reason_ = reason;
++    SuiteCutMaybeClose();
++    return;
++  }
++  if (suitecut_mock_open_) {
++    SuiteCutClose(code == kCloseEventCodeNotSpecified ? 1000 : code, reason, true);
++    return;
++  }
+   DCHECK_EQ(GetState(), State::kOpen);
+   DCHECK(!execution_context_->IsContextDestroyed());
+   DVLOG(1) << this << " Close(" << code << ", " << reason << ")";
+@@ -713,6 +940,8 @@
+     Message&&) = default;
+ 
+ WebSocketChannelImpl::State WebSocketChannelImpl::GetState() const {
++  if (suitecut_pending_connect_) return State::kConnecting;
++  if (suitecut_mock_open_) return State::kOpen;
+   if (!has_initiated_opening_handshake_) {
+     return State::kConnecting;
+   }
+@@ -793,6 +1022,27 @@
+     MessageType type,
+     base::span<const uint8_t> data,
+     std::unique_ptr<SendCompletionWatcher> watcher) {
++  if (suitecut_routed_ && !suitecut_bypass_) {
++    // A text/ArrayBuffer send behind a real asynchronous Blob read must retain
++    // the original WebSocket send order, not overtake it in the route stream.
++    if (!messages_.empty() || blob_loader_ || wait_for_writable_) {
++      if (!SuiteCutCanQueue(data.size())) {
++        FailAsError("Native WebSocket route send queue capacity exceeded");
++        return;
++      }
++      messages_.push_back(Message(type, execution_context_->GetIsolate(), data,
++          std::move(watcher), Message::DidCallSendMessage(false)));
++      ProcessSendQueue();
++      return;
++    }
++    const bool retained = SuiteCutHoldMessage(true,
++        type == kMessageTypeText ? 1 : 2, data);
++    if (retained) {
++      client_->DidConsumeBufferedAmount(data.size());
++      if (watcher) watcher->OnMessageSent(/*synchronously=*/true);
++    }
++    return;
++  }
+   bool did_attempt_to_send = false;
+   if (messages_.empty() && !wait_for_writable_) {
+     did_attempt_to_send = true;
+@@ -810,6 +1060,7 @@
+   messages_.push_back(
+       Message(type, execution_context_->GetIsolate(), data, std::move(watcher),
+               Message::DidCallSendMessage(did_attempt_to_send)));
++  messages_.back().SetSuiteCutInjected(suitecut_bypass_);
+ 
+   // If MaybeSendSynchronously() was called and didn't manage to write the whole
+   // message, we cannot do anything until we are notified the data pipe has
+@@ -848,6 +1099,21 @@
+         [[fallthrough]];
+       case kMessageTypeArrayBuffer: {
+         base::span<const uint8_t> data_frame = message.PendingPayload();
++        // BlobLoader produces real bytes into this same original queue. An
++        // intercepted blob cannot accidentally reach the network data pipe.
++        if (suitecut_routed_ && !suitecut_bypass_ && !message.SuiteCutInjected()) {
++          if (!SuiteCutHoldMessage(true,
++                  message_type == MessageTypeForMojo::TEXT ? 1 : 2, data_frame))
++            return;
++          client_->DidConsumeBufferedAmount(data_frame.size());
++          auto watcher = message.TakeSendCompletionWatcher();
++          messages_.pop_front();
++          if (watcher) watcher->OnMessageSent(/*synchronously=*/false);
++          break;
++        }
++        // Forwarded/injected bytes already settled their original JS buffer
++        // receipt (or never had one), including asynchronous partial writes.
++        base::AutoReset<bool> bypass(&suitecut_bypass_, message.SuiteCutInjected());
+         if (!message.GetDidCallSendMessage()) {
+           websocket_->SendMessage(message_type, data_frame.size());
+           message.SetDidCallSendMessage(Message::DidCallSendMessage(true));
+@@ -883,6 +1149,7 @@
+       }
+     }
+   }
++  SuiteCutMaybeClose();
+ }
+ 
+ std::pair<bool, size_t> WebSocketChannelImpl::SendMessageData(
+@@ -890,7 +1157,7 @@
+   size_t consumed_buffered_amount = 0;
+   if (!data.empty()) {
+     data = ProduceData(data, &consumed_buffered_amount);
+-    if (client_ && consumed_buffered_amount > 0) {
++    if (client_ && !suitecut_bypass_ && consumed_buffered_amount > 0) {
+       client_->DidConsumeBufferedAmount(consumed_buffered_amount);
+     }
+     if (!data.empty()) {
+@@ -909,7 +1176,7 @@
+         // https://bugs.chromium.org/p/chromium/issues/detail?id=937790
+         // The corresponding test case is
+         // browser_tests WebRequestApiTest.WebSocketCleanClose.
+-        if (client_) {
++        if (client_ && !suitecut_bypass_) {
+           client_->DidConsumeBufferedAmount(data.size());
+         }
+       }
+@@ -1118,7 +1385,7 @@
+       base::ValueOrDieForType<size_t>(base::CheckMul(
+           v8::String::kMaxLength, kMaxUtf8BytesPerUtf16CodeUnit)));
+   const size_t max_size = std::min(
+-      max_message_size_,
++      suitecut_routed_ ? std::min<size_t>(max_message_size_, 2097152) : max_message_size_,
+       receiving_message_type_is_text_ ? kMaxStringBytes : kMaxWtfSizeT);
+   if (message_size > max_size) {
+     message_chunks_->Clear();
+@@ -1156,6 +1423,19 @@
+   DEVTOOLS_TIMELINE_TRACE_EVENT_INSTANT(
+       "WebSocketReceive", InspectorWebSocketTransferEvent::Data,
+       execution_context_.Get(), identifier_, data.size());
++  if (suitecut_routed_) {
++    Vector<uint8_t> complete;
++    complete.ReserveInitialCapacity(base::checked_cast<wtf_size_t>(message_size));
++    for (const auto& chunk : chunks) complete.append_range(chunk);
++    if (receiving_message_type_is_text_ && String::FromUtf8(complete).IsNull())
++      FailAsError("Could not decode a text frame as UTF-8.");
++    else
++      SuiteCutHoldMessage(false, receiving_message_type_is_text_ ? 1 : 2,
++                          complete);
++    message_chunks_->Clear();
++    received_text_is_all_ascii_ = true;
++    return;
++  }
+   if (receiving_message_type_is_text_) {
+     // This checked_cast cannot fail as long as `max_message_size_` is less than
+     // or equal to `wtf_size_t` max value, due to the check earlier in this
+@@ -1270,6 +1550,14 @@
+ }
+ 
+ void WebSocketChannelImpl::Dispose() {
++  if (suitecut_registered_ && identifier_)
++    probe::SuiteCutWebSocketRetired(execution_context_, identifier_);
++  suitecut_registered_ = false;
++  suitecut_client_close_pending_ = false;
++  suitecut_weak_factory_.InvalidateWeakPtrs();
++  suitecut_routed_ = suitecut_pending_connect_ = suitecut_mock_open_ = false;
++  suitecut_pending_.clear();
++  suitecut_pending_bytes_ = 0;
+   connection_count_tracker_handle_.Decrement();
+   message_chunks_->Reset();
+   has_initiated_opening_handshake_ = true;
+--- a/third_party/blink/renderer/modules/websockets/websocket_channel_impl.h
++++ b/third_party/blink/renderer/modules/websockets/websocket_channel_impl.h
+@@ -35,6 +35,10 @@
+ 
+ #include <limits>
+ #include <memory>
++#include <deque>
++#include "base/memory/weak_ptr.h"
++#include "base/time/time.h"
++#include "third_party/blink/renderer/core/inspector/suitecut_websocket_route.h"
+ #include <utility>
+ 
+ #include "base/containers/heap_array.h"
+@@ -85,6 +89,7 @@
+ // functions must be called on the execution context's thread.
+ class MODULES_EXPORT WebSocketChannelImpl final
+     : public WebSocketChannel,
++      public SuiteCutWebSocketRoute,
+       public network::mojom::blink::WebSocketHandshakeClient,
+       public network::mojom::blink::WebSocketClient {
+   USING_PRE_FINALIZER(WebSocketChannelImpl, Dispose);
+@@ -112,6 +117,13 @@
+                        WebSocketChannelClient*,
+                        SourceLocation*);
+   ~WebSocketChannelImpl() override;
++
++  base::WeakPtr<SuiteCutWebSocketRoute> SuiteCutWeakRoute() override {
++    return suitecut_weak_factory_.GetWeakPtr();
++  }
++  String SuiteCutRouteCommand(const String& action, const String& message_id,
++      int opcode, base::span<const uint8_t> payload, int code,
++      const String& reason) override;
+ 
+   // WebSocketChannel functions.
+   bool Connect(
+@@ -164,6 +176,41 @@
+   void Trace(Visitor*) const override;
+ 
+  private:
++  struct SuiteCutMessage {
++    String id;
++    base::TimeTicks deadline;
++    bool outgoing;
++    int opcode;
++    Vector<uint8_t> bytes;
++  };
++  void SuiteCutStartTransport();
++  void SuiteCutAbort();
++  void SuiteCutMaybeClose();
++  bool SuiteCutCanSend(size_t bytes) const;
++  bool SuiteCutCanQueue(size_t bytes);
++  bool SuiteCutHoldMessage(bool outgoing, int opcode,
++      base::span<const uint8_t> bytes);
++  void SuiteCutExpire();
++  void SuiteCutEnsureTimer(base::TimeDelta delay);
++  void SuiteCutDeliver(int opcode, base::span<const uint8_t> bytes);
++  void SuiteCutClose(int code, const String& reason, bool clean);
++  bool suitecut_routed_ = false;
++  bool suitecut_registered_ = false;
++  bool suitecut_expiry_scheduled_ = false;
++  base::TimeTicks suitecut_connect_deadline_;
++  bool suitecut_pending_connect_ = false;
++  bool suitecut_mock_open_ = false;
++  bool suitecut_client_close_pending_ = false;
++  int suitecut_client_close_code_ = 1000;
++  String suitecut_client_close_reason_;
++  bool suitecut_bypass_ = false;
++  String suitecut_protocol_;
++  network::mojom::blink::IPAddressSpace suitecut_address_space_{};
++  std::optional<base::UnguessableToken> suitecut_throttling_token_;
++  uint64_t suitecut_message_serial_ = 0;
++  size_t suitecut_pending_bytes_ = 0;
++  std::deque<SuiteCutMessage> suitecut_pending_;
++  base::WeakPtrFactory<WebSocketChannelImpl> suitecut_weak_factory_{this};
+   struct DataFrame final {
+     DataFrame(bool fin, MessageTypeForMojo type, size_t data_length)
+         : fin(fin), type(type), data_length(data_length) {}
+@@ -253,6 +300,8 @@
+     Message(Message&&);
+     Message& operator=(Message&&);
+ 
++    bool SuiteCutInjected() const { return suitecut_injected_; }
++    void SetSuiteCutInjected(bool injected) { suitecut_injected_ = injected; }
+     MessageType Type() const;
+     scoped_refptr<BlobDataHandle> GetBlobDataHandle();
+     DidCallSendMessage GetDidCallSendMessage() const;
+@@ -271,6 +320,7 @@
+     void SetDidCallSendMessage(DidCallSendMessage did_call_send_message);
+ 
+    private:
++    bool suitecut_injected_ = false;
+     MessageData message_data_;
+     MessageType type_;
+ 

@@ -18,7 +18,7 @@ const categories = [
     subcategories: [
       { label: 'Publish a page', hash: 'publish-a-page' },
       { label: 'Stream options', hash: 'stream-options' },
-      { label: 'Tab audio', hash: 'tab-audio' },
+      { label: 'Page audio', hash: 'page-audio' },
       { label: 'Adaptive bitrate', hash: 'adaptive-bitrate' },
       { label: 'Reconnect and stop', hash: 'reconnect-and-stop' },
       { label: 'Live effects', hash: 'live-effects' },
@@ -34,7 +34,6 @@ const categories = [
       { label: 'Install', hash: 'install' },
       { label: 'Record a flow', hash: 'record-a-flow' },
       { label: 'Run and render', hash: 'run-and-render' },
-      { label: 'Playwright Test', hash: 'playwright-test' },
       { label: 'Render quality', hash: 'render-quality' },
     ],
   },
@@ -48,8 +47,6 @@ const categories = [
       { label: 'Fixture methods', hash: 'fixture-methods' },
       { label: 'Capture options', hash: 'capture-options' },
       { label: 'Renderer', hash: 'render-api' },
-      { label: 'Playwright Test', hash: 'playwright-test-api' },
-      { label: 'Reporter options', hash: 'reporter-options' },
       { label: 'Audio plugins', hash: 'audio-plugin-api' },
       { label: 'Action zoom', hash: 'action-zoom' },
       { label: 'Streaming API', hash: 'stream-options' },
@@ -78,7 +75,6 @@ const categories = [
     subcategories: [
       { label: 'Install a family', hash: 'install-a-family' },
       { label: 'Set a voice', hash: 'set-a-voice' },
-      { label: 'Playwright Test', hash: 'playwright-test' },
       { label: 'Write a plugin', hash: 'write-a-plugin' },
     ],
   },
@@ -133,7 +129,7 @@ const headings = [...content.matchAll(/<h2[^>]*id="([^"]+)"[^>]*>([\s\S]*?)<\/h2
       <Fragment set:html={content} />
       <div class="docs-page-bottom">
         <a href="https://github.com/skyaara/suitecut/issues">Report an issue ↗</a><span
-          >MIT licensed · CEF + Playwright</span
+          >MIT licensed · CEF</span
         >
       </div>
     </article>

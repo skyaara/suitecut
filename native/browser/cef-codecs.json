@@ -1,0 +1,76 @@
+{
+  "formatVersion": 1,
+  "profile": "linux-web",
+  "platform": "linux64",
+  "cefCommit": "47dbc1df023e99f006fb9e850a8d83cc19b4fdd9",
+  "cefBranch": "8078",
+  "chromiumRef": "refs/tags/156.0.8078.17",
+  "automateScript": {
+    "url": "https://raw.githubusercontent.com/chromiumembedded/cef/47dbc1df023e99f006fb9e850a8d83cc19b4fdd9/tools/automate/automate-git.py",
+    "sha256": "94d3ddd1e0d35482132f45dc101a593c9371b6eb2d8ff4af6cfe2734d2e48c6a"
+  },
+  "gnArgs": {
+    "is_official_build": true,
+    "is_component_build": false,
+    "use_sysroot": true,
+    "use_thin_lto": false,
+    "symbol_level": 1,
+    "proprietary_codecs": true,
+    "ffmpeg_branding": "Chrome",
+    "media_use_ffmpeg": true,
+    "enable_ffmpeg_video_decoders": true,
+    "media_use_libvpx": true,
+    "enable_dav1d_decoder": true,
+    "enable_av1_decoder": true,
+    "enable_hls_demuxer": true,
+    "enable_mse_mpeg2ts_stream_parser": true
+  },
+  "sourcePins": [
+    {
+      "path": "media/media_options.gni",
+      "sha256": "1bcb71de32c1b658b6a95d0a50887c06c874e58e540defe626a0c039a586241b"
+    },
+    {
+      "path": "cef/tools/gn_args.py",
+      "sha256": "ab94e3b3c214198b396c8b4858b5d5e9cb42be956bbc294d651dd86eac44df6e"
+    },
+    {
+      "path": "media/filters/ffmpeg_video_decoder.cc",
+      "sha256": "89e08aa6858c160f29415f3cd6e2d84931aff61059961ac68703225777f0d41d"
+    },
+    {
+      "path": "media/base/supported_types.cc",
+      "sha256": "5977e7a088795b5fc1040c8fa65d88ddfe6f7395e5ebcdfa384a3446113fc4c1"
+    },
+    {
+      "path": "third_party/ffmpeg/ffmpeg_options.gni",
+      "sha256": "5e4192356f0efac34f8ebfa0e789bc5a862ddf631acf22e57e3455de9876a736"
+    },
+    {
+      "path": "media/ffmpeg/ffmpeg_common.cc",
+      "sha256": "549bb4dfd04bfbc09b1e29b00d9dccf6d86d41a37267ab3a97372722ec2cbb45"
+    },
+    {
+      "path": "third_party/ffmpeg/chromium/config/Chrome/linux/x64/config_components.h",
+      "sha256": "cdafb52edaa3be94c1d9165eb49656d6bf9528470a1022d2a16f59534493b76b"
+    }
+  ],
+  "buildBudget": {
+    "freeDiskGiB": 500,
+    "memoryGiB": 64,
+    "note": "Conservative provisioning budget, not a measured minimum; no download is started below this configured budget."
+  },
+  "acceptanceProfile": "web",
+  "scope": [
+    "Enable upstream software H264/AAC alongside existing VP8/VP9/AV1 and common audio decoders",
+    "Compile HLS and MPEG2TS parsers; actual HLS playback is a separate acceptance task"
+  ],
+  "notProvided": [
+    "Software HEVC on this Chromium pin",
+    "AC3/EAC3/DTS/ALAC/legacy codecs excluded by Chromium decoder adapters and allowlists",
+    "Widevine or other licensed DRM components",
+    "All codec profiles, HDR and hardware decode guarantees"
+  ],
+  "experimentalVendorPatchesApplied": false,
+  "ffmpegCommit": "9db86ce5b5b454dfc96c435f9f0723012980c37f"
+}

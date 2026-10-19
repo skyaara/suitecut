@@ -130,7 +130,7 @@ describe('manifest decoding', () => {
         id: 'step-2',
         parentStepId: 'step-1',
         title: 'second',
-        category: 'pw:api',
+        category: 'automation',
         atMs: 11,
         durationMs: 5,
         outcome: 'passed',

@@ -1,0 +1,332 @@
+{
+  "date": "2026-10-17",
+  "cefVersion": "156.0.7+g47dbc1d+chromium-156.0.8078.17",
+  "cefCommit": "47dbc1df023e99f006fb9e850a8d83cc19b4fdd9",
+  "platform": "Debian GNU/Linux 13.6 (trixie), x86-64",
+  "compiler": "GCC (Debian 14.2.0-19) 14.2.0",
+  "cefSHA256": "d6ae34b71b65685b9fc84f24b53214cdb71a17ceecca0034c3a95a9d4358d86f",
+  "midi": {
+    "sourceSHA256": "a824b6eb87b999fb87262dc242f627866d50d84469c21547f4f34cd09e0d1357",
+    "binarySHA256": "04f4eed158dda5b0c217bfe7887c14021a3652549767425d721d00a82a0f378f",
+    "standalonePublicCEFRun": true,
+    "suitecutBrowserCodeUsed": false,
+    "shimUsed": false,
+    "sandboxDisabled": false,
+    "ordinary": {
+      "scope": "isolated native supervisor; inherited child argv/environment/stdin/stdout/stderr",
+      "supervisorPID": 2378708,
+      "childPID": 2378709,
+      "childStart": 32655356,
+      "childExit": {
+        "signaled": true,
+        "code": 5,
+        "rawWaitpidStatus": 5
+      },
+      "cleanupFailed": true,
+      "timeout": false,
+      "interruption": 0,
+      "descendantsRetired": true,
+      "error": "",
+      "descendants": [
+        {
+          "pid": 2378712,
+          "parentAtObservation": 2378708,
+          "start": 32655367,
+          "stateBeforeWait": "Z",
+          "signaled": false,
+          "code": 0,
+          "killRequested": false
+        },
+        {
+          "pid": 2378713,
+          "parentAtObservation": 2378708,
+          "start": 32655367,
+          "stateBeforeWait": "Z",
+          "signaled": false,
+          "code": 0,
+          "killRequested": false
+        },
+        {
+          "pid": 2378736,
+          "parentAtObservation": 2378708,
+          "start": 32655371,
+          "stateBeforeWait": "Z",
+          "signaled": false,
+          "code": 0,
+          "killRequested": false
+        },
+        {
+          "pid": 2378738,
+          "parentAtObservation": 2378708,
+          "start": 32655371,
+          "stateBeforeWait": "Z",
+          "signaled": false,
+          "code": 0,
+          "killRequested": false
+        },
+        {
+          "pid": 2378740,
+          "parentAtObservation": 2378708,
+          "start": 32655371,
+          "stateBeforeWait": "Z",
+          "signaled": false,
+          "code": 1,
+          "killRequested": false
+        }
+      ],
+      "observedIdentities": [
+        {
+          "pid": 2378712,
+          "parent": 2378708,
+          "start": 32655367
+        },
+        {
+          "pid": 2378713,
+          "parent": 2378708,
+          "start": 32655367
+        },
+        {
+          "pid": 2378736,
+          "parent": 2378708,
+          "start": 32655371
+        },
+        {
+          "pid": 2378738,
+          "parent": 2378708,
+          "start": 32655371
+        },
+        {
+          "pid": 2378740,
+          "parent": 2378708,
+          "start": 32655371
+        }
+      ]
+    },
+    "sysexControl": {
+      "scope": "isolated native supervisor; inherited child argv/environment/stdin/stdout/stderr",
+      "supervisorPID": 2378634,
+      "childPID": 2378635,
+      "childStart": 32655201,
+      "childExit": {
+        "signaled": false,
+        "code": 0,
+        "rawWaitpidStatus": 0
+      },
+      "cleanupFailed": true,
+      "timeout": false,
+      "interruption": 0,
+      "descendantsRetired": true,
+      "error": "",
+      "descendants": [
+        {
+          "pid": 2378638,
+          "parentAtObservation": 2378634,
+          "start": 32655217,
+          "stateBeforeWait": "Z",
+          "signaled": false,
+          "code": 0,
+          "killRequested": false
+        },
+        {
+          "pid": 2378639,
+          "parentAtObservation": 2378634,
+          "start": 32655218,
+          "stateBeforeWait": "Z",
+          "signaled": false,
+          "code": 0,
+          "killRequested": false
+        },
+        {
+          "pid": 2378668,
+          "parentAtObservation": 2378634,
+          "start": 32655223,
+          "stateBeforeWait": "Z",
+          "signaled": false,
+          "code": 1,
+          "killRequested": false
+        }
+      ],
+      "observedIdentities": [
+        {
+          "pid": 2378638,
+          "parent": 2378634,
+          "start": 32655217
+        },
+        {
+          "pid": 2378639,
+          "parent": 2378634,
+          "start": 32655218
+        },
+        {
+          "pid": 2378668,
+          "parent": 2378634,
+          "start": 32655223
+        }
+      ]
+    },
+    "qualification": "MIDI API call raises SIGTRAP; SysEx API call returns and direct child exits0. Both supervisor runs report cleanupFailed because an adopted Chromium startup utility exits1; all descendants retired. Initial resources-path setup failure and prior early-shutdown timeout preserved separately, not successful runs."
+  },
+  "directory": {
+    "standaloneScriptSyntax": "PASS",
+    "standaloneScriptRuntime": "UNRUN",
+    "historicalProtocol": {
+      "binarySHA256": "e0bd1b8f3405459ec2ebd317657851aa1e67fecb54d65c8c40284430927044d7",
+      "cefSHA256": "d6ae34b71b65685b9fc84f24b53214cdb71a17ceecca0034c3a95a9d4358d86f",
+      "cefVersion": "156.0.7+g47dbc1d+chromium-156.0.8078.17",
+      "directoryVerified": false,
+      "expected": [
+        {
+          "path": "suitecut-folder-\u6e2c\u8a66-lieZDG/\u00e9-first.txt",
+          "text": "native first"
+        },
+        {
+          "path": "suitecut-folder-\u6e2c\u8a66-lieZDG/nested-\u4e2d\u6587/\u7b2c\u4e8c.txt",
+          "text": "native nested"
+        }
+      ],
+      "results": [
+        {
+          "mode": "regular",
+          "protocolResult": {},
+          "pickerResult": null,
+          "waitError": null,
+          "observed": {
+            "directory": false,
+            "multiple": false,
+            "files": [
+              {
+                "name": "\u00e9-first.txt",
+                "relativePath": "",
+                "text": "native first"
+              }
+            ]
+          }
+        },
+        {
+          "mode": "directory",
+          "protocolResult": {},
+          "pickerResult": null,
+          "waitError": "Native operation timed out",
+          "observed": {
+            "directory": true,
+            "multiple": false,
+            "files": []
+          }
+        },
+        {
+          "mode": "directory-slash",
+          "protocolResult": {},
+          "pickerResult": null,
+          "waitError": "Native operation timed out",
+          "observed": {
+            "directory": true,
+            "multiple": false,
+            "files": []
+          }
+        },
+        {
+          "mode": "enumerated-files",
+          "protocolResult": {},
+          "pickerResult": null,
+          "waitError": "Native operation timed out",
+          "observed": {
+            "directory": true,
+            "multiple": false,
+            "files": []
+          }
+        },
+        {
+          "mode": "directory-multiple",
+          "protocolResult": {},
+          "pickerResult": null,
+          "waitError": "Native operation timed out",
+          "observed": {
+            "directory": true,
+            "multiple": true,
+            "files": []
+          }
+        },
+        {
+          "mode": "intercepted-directory",
+          "protocolResult": {},
+          "pickerResult": {
+            "result": {
+              "type": "undefined"
+            }
+          },
+          "waitError": "Native operation timed out",
+          "observed": {
+            "directory": true,
+            "multiple": false,
+            "files": []
+          }
+        }
+      ]
+    },
+    "historicalNativeTrace": {
+      "nativeBinarySHA256": "e0bd1b8f3405459ec2ebd317657851aa1e67fecb54d65c8c40284430927044d7",
+      "cefSHA256": "d6ae34b71b65685b9fc84f24b53214cdb71a17ceecca0034c3a95a9d4358d86f",
+      "cefVersion": "156.0.7+g47dbc1d+chromium-156.0.8078.17",
+      "sandboxEnabled": true,
+      "actualResult": {
+        "directoryFiles": [],
+        "directoryVerified": false
+      },
+      "observedPath": [
+        "content::FileChooserImpl::EnumerateChosenDirectory",
+        "content::WebContentsImpl::EnumerateDirectory",
+        "content::WebContentsDelegate::EnumerateDirectory (default implementation)",
+        "content::FileChooserImpl::FileSelectionCanceled"
+      ],
+      "notObserved": [
+        "FileSelectHelper::EnumerateDirectoryImpl"
+      ],
+      "trace": ".suitecut/diagnostics/cef-directory-enumeration-gdb.log",
+      "traceMarkerLines": {
+        "rendererRequest": 37782,
+        "browserDelegateRequest": 37796,
+        "defaultDelegateCancellation": 37805
+      },
+      "distinction": "Direct protocol enumeration is canceled by the pinned CEF default WebContentsDelegate; native picker directory enumeration reaches Chrome listing but offscreen confirmation crashes separately."
+    },
+    "nativeTraceSHA256": "aa21c35a3f7064dd0b8a32196b1416cd135e93f91b1f8d76c10906002990e75e"
+  },
+  "upstreamPosted": false,
+  "duplicates": [
+    {
+      "url": "https://github.com/chromiumembedded/cef/issues/958",
+      "status": "closed completed",
+      "relation": "Historical webkitdirectory picker support, not a direct CDP EnumerateDirectory reproduction"
+    },
+    {
+      "url": "https://github.com/chromiumembedded/cef/issues/3314",
+      "relation": "Sharing native file dialogs, not direct CDP enumeration"
+    },
+    {
+      "url": "https://github.com/chromiumembedded/cef/issues/3316",
+      "relation": "JS/dialog unification, mentions directory confirmation; direct enumeration bypasses picker"
+    },
+    {
+      "url": "https://github.com/chromiumembedded/cef/issues/1028",
+      "relation": "Historical SysEx permission support; not missing ordinary-MIDI registry guard"
+    }
+  ],
+  "searches": [
+    {
+      "query": "repo:chromiumembedded/cef EnumerateDirectory in:title,body",
+      "exactResults": 0
+    },
+    {
+      "query": "repo:chromiumembedded/cef SetContentSetting in:title,body",
+      "exactResults": 0
+    }
+  ],
+  "upstreamRules": {
+    "contributing": "https://github.com/chromiumembedded/cef/blob/master/CONTRIBUTING.md",
+    "ai": "https://github.com/chromiumembedded/cef/blob/master/AI_POLICY.md",
+    "humanReviewRequired": true,
+    "issueTemplate": "https://github.com/chromiumembedded/cef/blob/master/.github/ISSUE_TEMPLATE/bug_report.md"
+  },
+  "publicationReceipt": "publication.json",
+  "publicationStatus": "PREPARED; PUBLICATION_BLOCKED_BY_GITHUB_INTEGRATION_ACCESS"
+}

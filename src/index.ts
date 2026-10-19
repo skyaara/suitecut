@@ -1,8 +1,4 @@
-import {
-  type defineSuiteCut,
-  type SuiteCutNativeRecordOptions,
-  type SuiteCutPlaywrightRecordOptions,
-} from './native-default.js'
+import { type defineSuiteCut, type SuiteCutNativeRecordOptions } from './native-default.js'
 import { type NativeRecordingContext } from './native-recording.js'
 
 export type { LiveStreamDiagnostic } from './live-congestion.js'
@@ -21,17 +17,11 @@ export type { NativeBroadcast, NativeBroadcastOptions, NativeStreamOptions } fro
 export type {
   SuiteCutBrowserOptions,
   SuiteCutNativeRecordOptions,
-  SuiteCutPlaywrightRecordOptions,
   SuiteCutRecordingResult,
   SuiteCutNativeRecordingCallback,
 } from './native-default.js'
 export type { SuiteCutStreamOptions, SuiteCutReconnectOptions } from './schemas.js'
-export type {
-  SuiteCutBrowserName,
-  SuiteCutCleanup,
-  SuiteCutOutputOptions,
-  SuiteCutSetupContext,
-} from './playwright.js'
+export type { SuiteCutOutputOptions } from './schemas.js'
 export { decodeWordTimingArtifact } from './captions.js'
 export type {
   SuiteCutAudioPlugin,
@@ -83,9 +73,13 @@ export type {
   SuiteCutNativeRecordingCallback as SuiteCutRecordingCallback,
 } from './native-default.js'
 export type { NativeRecordingContext as SuiteCutRecordingContext } from './native-recording.js'
-export type SuiteCutRecordOptions = SuiteCutNativeRecordOptions | SuiteCutPlaywrightRecordOptions
+export type SuiteCutRecordOptions = SuiteCutNativeRecordOptions
 export type SuiteCutRecorder = ReturnType<typeof defineSuiteCut>
 
 export type { NativeRecordingCaptureOptions as SuiteCutCaptureOptions } from './native-recording.js'
 export type { NativeRecordingContext as SuiteCutNativeRecordingContext } from './native-recording.js'
 export type SuiteCutFixture = NativeRecordingContext['suitecut']
+
+export { createNativePublisher } from './native-streaming.js'
+export type { NativePublisher, NativePublisherConfig } from './native-streaming.js'
+export type { NativeStreamingInfo } from './native-streaming-protocol.js'

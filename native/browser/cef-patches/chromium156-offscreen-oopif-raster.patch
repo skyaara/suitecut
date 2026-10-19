@@ -1,0 +1,61 @@
+diff --git a/third_party/blink/renderer/core/frame/local_frame_view.cc b/third_party/blink/renderer/core/frame/local_frame_view.cc
+index 52c020a4544d3a180eaf04a046ae0917582462b1..eeb11bad25cd7c074a5bad17e53547ae2f1ecfe0 100644
+--- a/third_party/blink/renderer/core/frame/local_frame_view.cc
++++ b/third_party/blink/renderer/core/frame/local_frame_view.cc
+@@ -5061,8 +5061,19 @@ bool LocalFrameView::ShouldThrottleRenderingForTest() const {
+ }
+ 
+ bool LocalFrameView::CanThrottleRendering() const {
+-  if (lifecycle_updates_throttled_ || IsSubtreeThrottled() ||
+-      IsDisplayLocked() || throttled_for_view_transition_) {
++  if (lifecycle_updates_throttled_ || IsDisplayLocked() ||
++      throttled_for_view_transition_) {
++    return true;
++  }
++  // Page.captureScreenshot's record_whole_document preference is scoped and
++  // restored by PageHandler. An offscreen OOPIF must produce its real paint
++  // during that scope without changing author-visible viewport intersection,
++  // CSS viewport size, scroll position, or media-playback visibility. Keep
++  // explicit lifecycle/display-lock/view-transition suppression above.
++  if (!frame_->GetSettings()->GetMainFrameClipsContent()) {
++    return false;
++  }
++  if (IsSubtreeThrottled()) {
+     return true;
+   }
+   // We only throttle hidden cross-origin frames. This is to avoid a situation
+diff --git a/third_party/blink/renderer/core/frame/remote_frame_view.cc b/third_party/blink/renderer/core/frame/remote_frame_view.cc
+index 935f80906190cad1a473b0c887cf498d067b64db..3d8e13e75965abdb6661c565322de756d1d44275 100644
+--- a/third_party/blink/renderer/core/frame/remote_frame_view.cc
++++ b/third_party/blink/renderer/core/frame/remote_frame_view.cc
+@@ -19,6 +19,7 @@
+ #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+ #include "third_party/blink/renderer/core/frame/remote_frame.h"
+ #include "third_party/blink/renderer/core/frame/remote_frame_client.h"
++#include "third_party/blink/renderer/core/frame/settings.h"
+ #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
+ #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
+ #include "third_party/blink/renderer/core/layout/layout_view.h"
+@@ -183,7 +184,21 @@ gfx::Rect RemoteFrameView::ComputeCompositingRect() const {
+   // intersection rect. This represents a conservative maximum for the area
+   // that needs to be rastered by the OOPIF compositor.
+   gfx::Rect viewport_rect(gfx::Point(), local_root_view->Size());
+-  if (local_root_view->GetPage()->MainFrame() != local_root_view->GetFrame()) {
++  const bool record_whole_document =
++      !local_root_view->GetFrame().GetSettings()->GetMainFrameClipsContent();
++  if (record_whole_document) {
++    // Do not unconditionally raster the entire child: a transformed iframe
++    // may have a huge local viewport. Preserve the existing coordinate/scale
++    // mapping and child-size clamp below. Only expand the outermost root's
++    // capture area to its actual document. A nested OOPIF still clips to its
++    // own unchanged iframe viewport instead of the remote ancestor's ordinary
++    // on-screen intersection. Actual author intersection state is untouched.
++    if (local_root_view->GetFrame().IsOutermostMainFrame()) {
++      viewport_rect =
++          ToEnclosingRect(local_root_view->GetLayoutView()->DocumentRect());
++    }
++  } else if (local_root_view->GetPage()->MainFrame() !=
++             local_root_view->GetFrame()) {
+     viewport_rect = local_root_view->GetFrame().RemoteViewportIntersection();
+   }
+ 

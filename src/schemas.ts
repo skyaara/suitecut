@@ -1,7 +1,7 @@
 import * as z from 'zod'
 
 import { MAX_SUITE_CUT_ZOOM_SCALE } from './constants.js'
-import { FrameRateSchema } from './frame-rate.js'
+import { OutputFrameRateSchema } from './frame-rate.js'
 import { type LiveStreamDiagnostic } from './live-congestion.js'
 
 const NonEmptyStringSchema = z
@@ -56,9 +56,7 @@ export const SuiteCutReconnectOptionsSchema = z.strictObject({
   maxDelayMs: z.number().int().min(100).max(300_000).exactOptional(),
 })
 
-const SuiteCutStreamAudioSchema = z
-  .union([z.boolean(), z.enum(['silent', 'tab'])])
-  .transform((value) => value === true || value === 'tab')
+const SuiteCutStreamAudioSchema = z.boolean()
 
 export const SuiteCutStreamOptionsSchema = z.strictObject({
   url: z.string().refine(
@@ -89,11 +87,8 @@ export const SuiteCutStreamOptionsSchema = z.strictObject({
 })
 
 export const SuiteCutCaptureOptionsSchema = z.strictObject({
-  viewport: SuiteCutCaptureViewportSchema.exactOptional(),
   size: SuiteCutCaptureSizeSchema.exactOptional(),
-  deviceScaleFactor: z.number().min(1).max(4).exactOptional(),
-  framesPerSecond: FrameRateSchema.exactOptional(),
-  quality: z.number().int().min(1).max(100).exactOptional(),
+  framesPerSecond: OutputFrameRateSchema.exactOptional(),
   narrationTailMs: NonNegativeNumberSchema.exactOptional(),
   stream: SuiteCutStreamOptionsSchema.exactOptional(),
 })
@@ -224,8 +219,6 @@ export const SuiteCutCapturedGeometrySchema = z.strictObject({
 
 export const SuiteCutPathKindSchema = z.enum(['absolute', 'manifest-relative'])
 
-export const SuiteCutBrowserNameSchema = z.enum(['chromium', 'firefox', 'webkit'])
-
 export const SuiteCutOutputOptionsSchema = z.strictObject({
   directory: NonEmptyStringSchema.exactOptional(),
   manifestPath: NonEmptyStringSchema.exactOptional(),
@@ -235,18 +228,12 @@ export const SuiteCutOutputOptionsSchema = z.strictObject({
 export const SuiteCutStepCategorySchema = z.enum([
   'hook',
   'fixture',
-  'pw:api',
+  'automation',
   'expect',
   'test.step',
   'test.attach',
   'unknown',
 ])
-
-export const SuiteCutReporterOptionsSchema = z.strictObject({
-  outputFile: NonEmptyStringSchema.exactOptional(),
-  pathKind: SuiteCutPathKindSchema.exactOptional(),
-  includeStepCategories: z.array(SuiteCutStepCategorySchema).exactOptional(),
-})
 
 export type SuiteCutNarrationVoice = z.infer<typeof SuiteCutNarrationVoiceSchema>
 export type SuiteCutNarrationProvider = z.infer<typeof SuiteCutNarrationProviderSchema>
@@ -277,7 +264,5 @@ export type SuiteCutSize = z.infer<typeof SuiteCutSizeSchema>
 export type SuiteCutRect = z.infer<typeof SuiteCutRectSchema>
 export type SuiteCutViewport = z.infer<typeof SuiteCutViewportSchema>
 export type SuiteCutPathKind = z.infer<typeof SuiteCutPathKindSchema>
-export type SuiteCutBrowserName = z.infer<typeof SuiteCutBrowserNameSchema>
 export type SuiteCutOutputOptions = z.infer<typeof SuiteCutOutputOptionsSchema>
 export type SuiteCutStepCategory = z.infer<typeof SuiteCutStepCategorySchema>
-export type SuiteCutReporterOptions = z.infer<typeof SuiteCutReporterOptionsSchema>

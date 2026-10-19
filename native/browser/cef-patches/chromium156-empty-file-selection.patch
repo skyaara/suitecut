@@ -1,0 +1,161 @@
+--- a/third_party/blink/renderer/core/html/forms/file_input_type.cc
++++ b/third_party/blink/renderer/core/html/forms/file_input_type.cc
+@@ -531,8 +531,13 @@
+ }
+ 
+ void FileInputType::SetFilesFromPaths(const Vector<String>& paths) {
+-  if (paths.empty())
+-    return;
++  if (paths.empty()) {
++    // An explicit empty selection clears the input through the same native
++    // FileList, validity and event path as a non-empty selection. Chooser
++    // cancellation remains a separate FileChooserCanceled() operation.
++    FilesChosen(FileChooserFileInfoList(), base::FilePath());
++    return;
++  }
+ 
+   HTMLInputElement& input = GetElement();
+   if (input.FastHasAttribute(html_names::kWebkitdirectoryAttr)) {
+--- a/third_party/blink/renderer/core/html/forms/file_input_type_test.cc
++++ b/third_party/blink/renderer/core/html/forms/file_input_type_test.cc
+@@ -8,6 +8,7 @@
+ #include "testing/gtest/include/gtest/gtest.h"
+ #include "third_party/blink/renderer/core/clipboard/data_object.h"
+ #include "third_party/blink/renderer/core/dom/document.h"
++#include "third_party/blink/renderer/core/dom/events/event.h"
+ #include "third_party/blink/renderer/core/dom/shadow_root.h"
+ #include "third_party/blink/renderer/core/fileapi/file_list.h"
+ #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
+@@ -24,6 +25,7 @@
+ #include "third_party/blink/renderer/core/testing/wait_for_event.h"
+ #include "third_party/blink/renderer/platform/file_metadata.h"
+ #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
++#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
+ #include "third_party/blink/renderer/platform/testing/task_environment.h"
+ #include "third_party/blink/renderer/platform/wtf/date_math.h"
+ 
+@@ -36,6 +38,17 @@
+   bool invoked = false;
+   void Invoke(ExecutionContext*, Event*) override { invoked = true; }
+   void ClearInvoked() { invoked = false; }
++};
++
++class FileSelectionEventListener final : public NativeEventListener {
++ public:
++  Vector<AtomicString> events;
++  bool all_trusted = true;
++
++  void Invoke(ExecutionContext*, Event* event) override {
++    events.push_back(event->type());
++    all_trusted = all_trusted && event->isTrusted();
++  }
+ };
+ 
+ class WebKitDirectoryChromeClient : public EmptyChromeClient {
+@@ -187,6 +200,91 @@
+             file_input->Files()->item(1)->GetPath());
+ }
+ 
++TEST(FileInputTypeTest, EmptyPathsClearNativeSelection) {
++  test::TaskEnvironment task_environment;
++  ScopedNullExecutionContext execution_context;
++  auto* document =
++      Document::CreateForTest(execution_context.GetExecutionContext());
++  for (bool multiple : {false, true}) {
++    for (bool directory : {false, true}) {
++      auto* input = MakeGarbageCollected<HTMLInputElement>(*document);
++      input->setType(input_type_names::kFile);
++      input->SetBooleanAttribute(html_names::kMultipleAttr, multiple);
++      input->SetBooleanAttribute(html_names::kRequiredAttr, true);
++      Vector<String> paths;
++      paths.push_back("/native/path1");
++      paths.push_back("/native/path2");
++      input->SetFilesFromPaths(paths);
++      auto* const old_files = input->files();
++      ASSERT_EQ(multiple ? 2u : 1u, old_files->length());
++      EXPECT_FALSE(input->ValueMissing());
++      // Empty selection must clear before directory enumeration is considered.
++      input->SetBooleanAttribute(html_names::kWebkitdirectoryAttr, directory);
++      auto* listener = MakeGarbageCollected<FileSelectionEventListener>();
++      input->addEventListener(event_type_names::kInput, listener);
++      input->addEventListener(event_type_names::kChange, listener);
++      input->addEventListener(event_type_names::kCancel, listener);
++
++      input->SetFilesFromPaths(Vector<String>());
++      EXPECT_EQ(0u, input->files()->length());
++      EXPECT_NE(old_files, input->files());
++      EXPECT_EQ(multiple ? 2u : 1u, old_files->length());
++      EXPECT_TRUE(input->ValueMissing());
++      ASSERT_EQ(2u, listener->events.size());
++      EXPECT_EQ(event_type_names::kInput, listener->events[0]);
++      EXPECT_EQ(event_type_names::kChange, listener->events[1]);
++      EXPECT_TRUE(listener->all_trusted);
++
++      // Preserve native unchanged-selection behavior rather than forcing events.
++      listener->events.clear();
++      input->SetFilesFromPaths(Vector<String>());
++      ASSERT_EQ(1u, listener->events.size());
++      EXPECT_EQ(event_type_names::kCancel, listener->events[0]);
++      EXPECT_TRUE(listener->all_trusted);
++    }
++  }
++}
++
++TEST(FileInputTypeTest, CanceledChooserPreservesExistingSelection) {
++  test::TaskEnvironment task_environment;
++  ScopedFilePickerEventsFixForTest file_picker_events_fix(true);
++  auto* chrome_client = MakeGarbageCollected<WebKitDirectoryChromeClient>();
++  auto page_holder =
++      std::make_unique<DummyPageHolder>(gfx::Size(), chrome_client);
++  Document& document = page_holder->GetDocument();
++  document.body()->SetInnerHTMLWithoutTrustedTypes("<input type=file>");
++  auto& input = *To<HTMLInputElement>(document.body()->firstChild());
++  Vector<String> paths;
++  paths.push_back("/native/existing-file");
++  input.SetFilesFromPaths(paths);
++  auto* const old_files = input.files();
++  ASSERT_EQ(1u, old_files->length());
++  input.SetBooleanAttribute(html_names::kWebkitdirectoryAttr, true);
++  auto* listener = MakeGarbageCollected<FileSelectionEventListener>();
++  input.addEventListener(event_type_names::kInput, listener);
++  input.addEventListener(event_type_names::kChange, listener);
++  input.addEventListener(event_type_names::kCancel, listener);
++
++  base::RunLoop run_loop;
++  MockFileChooser chooser(document.GetFrame()->GetBrowserInterfaceBroker(),
++                          run_loop.QuitClosure());
++  ScopedNullExecutionContext execution_context;
++  DragData drag_data(DataObject::Create(), gfx::PointF(), gfx::PointF(),
++                     kDragOperationCopy, false);
++  drag_data.PlatformData()->Add(MakeGarbageCollected<File>(
++      &execution_context.GetExecutionContext(), "/native/new-directory"));
++  input.ReceiveDroppedFiles(&drag_data);
++  run_loop.Run();
++  chooser.CancelOpenFileChooser();
++
++  EXPECT_EQ(old_files, input.files());
++  ASSERT_EQ(1u, input.files()->length());
++  EXPECT_EQ("/native/existing-file", input.files()->item(0)->GetPath());
++  ASSERT_EQ(1u, listener->events.size());
++  EXPECT_EQ(event_type_names::kCancel, listener->events[0]);
++  EXPECT_TRUE(listener->all_trusted);
++}
++
+ TEST(FileInputTypeTest, DropTouchesNoPopupOpeningObserver) {
+   test::TaskEnvironment task_environment;
+   ScopedNullExecutionContext execution_context;
+--- a/third_party/blink/renderer/core/html/forms/mock_file_chooser.h
++++ b/third_party/blink/renderer/core/html/forms/mock_file_chooser.h
+@@ -50,6 +50,12 @@
+     receivers_.FlushForTesting();
+   }
+ 
++  void CancelOpenFileChooser() {
++    DCHECK(callback_);
++    std::move(callback_).Run(nullptr);
++    receivers_.FlushForTesting();
++  }
++
+  private:
+   void BindFileChooserReceiver(mojo::ScopedMessagePipeHandle handle) {
+     receivers_.Add(this, mojo::PendingReceiver<FileChooser>(std::move(handle)));

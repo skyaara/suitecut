@@ -1,13 +1,60 @@
-import * as z from 'zod'
-
-import { FrameRateSchema } from './frame-rate.js'
-import { createLiveAudioTransport } from './live-audio.js'
-import { createLiveStream, type SuiteCutLiveStream } from './live-stream.js'
-import { NativeAudioAssembler } from './native-audio.js'
-import { type NativeAudioPacket, type NativeBrowser } from './native-browser.js'
-import { SuiteCutStreamOptionsSchema, type SuiteCutStreamOptions } from './schemas.js'
+export { NativeTracing } from './native-tracing.js'
+export { NativeDebuggerSession } from './native-debugger.js'
+export type {
+  NativeDebuggerOptions,
+  NativeDebuggerPause,
+  NativeDebuggerCallFrame,
+  NativeDebuggerLocation,
+  NativeDebuggerBreakpoint,
+  NativeDebuggerPrimitive,
+  NativeDebuggerEvaluationException,
+  NativeDebuggerEvaluation,
+  NativeDebuggerScript,
+  NativeDebuggerScriptCursor,
+  NativeDebuggerScriptPage,
+} from './native-debugger.js'
+export type { NativeTraceDisposable } from './native-tracing.js'
+export type { NativeHighlightDisposable, NativeHighlightOptions } from './native-highlight.js'
 
 export { launchNativeBrowser } from './native-browser.js'
+export type { NativeIdleState } from './native-idle.js'
+export {
+  NativeHTTPTransportError,
+  NativeTimeoutError,
+  NativeTimeoutError as TimeoutError,
+} from './native-timeouts.js'
+export type {
+  NativeScreenshotOptions,
+  NativePDFOptions,
+  NativeMediaOptions,
+} from './native-artifacts.js'
+export type {
+  NativeFormOptions,
+  NativePageFormOptions,
+  NativeSelectValues,
+  NativeInputFiles,
+} from './native-form.js'
+export type { NativeRoleOptions } from './native-query.js'
+export type { NativeBeforeStableHook } from './native-action-hooks.js'
+export type { NativeBeforeScreenshotHook } from './native-artifacts.js'
+export { setNativeTestIdAttribute } from './native-query.js'
+export { NativeBrowserContexts, NativeBrowserContext } from './native-context.js'
+export type { NativeCookie, NativeCookieInput, NativeContextTransport } from './native-context.js'
+export type { NativeBrowserContextOptions } from './native-context.js'
+export type { NativeStorageState, NativeStorageStateInput } from './native-storage-state.js'
+export { NativeRequest, NativeRoute, type NativeRouteFetchOptions } from './native-network.js'
+export type { NativeResponseServerAddr, NativeResponseSecurityDetails } from './native-network.js'
+export { NativeVideo } from './native-video.js'
+export type { NativeRecordVideoOptions } from './native-video.js'
+export { NativeDownload } from './native-download.js'
+export type { NativeDownloadInfo } from './native-download.js'
+export { NativeAPIRequestContext, NativeAPIResponse } from './native-http.js'
+export type {
+  NativeAPIRequestContextOptions,
+  NativeAPIRequestOptions,
+  NativeMultipartFile,
+} from './native-http.js'
+export type { NativeFrameInfo, NativeAutomationEvent } from './native-protocol.js'
 export type {
   NativeAudioPacket,
   NativeBrowser,
@@ -17,129 +64,206 @@ export type {
   NativeVideoFrame,
 } from './native-browser.js'
 
-export interface NativeBroadcast extends Omit<SuiteCutLiveStream, 'update'> {
-  /** Switches sources without restarting the publisher; dimensions and pixel format must match. */
-  selectSource(source: NativeBrowser): void
-}
+export { createNativeBroadcast } from './native-broadcast.js'
+export type {
+  NativeBroadcast,
+  NativeBroadcastOptions,
+  NativeStreamOptions,
+} from './native-broadcast.js'
 
-export interface NativeBroadcastOptions {
-  source: NativeBrowser
-  ffmpegPath: string
-  stream: NativeStreamOptions
-  signal?: AbortSignal
-}
-
-const NativeStreamOptionsSchema = SuiteCutStreamOptionsSchema.omit({ audio: true }).extend({
-  /** Constant output cadence; defaults to the first source's requested capture rate. */
-  framesPerSecond: FrameRateSchema.exactOptional(),
-  /** Includes CEF page audio in the broadcast when explicitly enabled. */
-  audio: z.boolean().default(false),
-})
-
-export type NativeStreamOptions = z.input<typeof NativeStreamOptionsSchema>
-
-/** Feeds CEF's raw video and audio into SuiteCut's persistent RTMP publisher. */
-export async function createNativeBroadcast(
-  options: NativeBroadcastOptions,
-): Promise<NativeBroadcast> {
-  options.signal?.throwIfAborted()
-  const nativeConfig = NativeStreamOptionsSchema.parse(options.stream)
-  const audioEnabled = nativeConfig.audio
-  const { framesPerSecond, ...streamConfig } = nativeConfig
-  const config: SuiteCutStreamOptions = SuiteCutStreamOptionsSchema.parse({
-    ...streamConfig,
-    audio: audioEnabled,
-  })
-  const initial = options.source
-  if (initial.width % 2 || initial.height % 2)
-    throw new Error('Broadcast source dimensions must be even')
-  const transport = audioEnabled
-    ? await createLiveAudioTransport(
-        () => undefined,
-        () => undefined,
-      )
-    : undefined
-  const controller = new AbortController()
-  const signal = options.signal
-    ? AbortSignal.any([options.signal, controller.signal])
-    : controller.signal
-  let stream: SuiteCutLiveStream
-  try {
-    stream = createLiveStream(
-      options.ffmpegPath,
-      config,
-      framesPerSecond ?? initial.framesPerSecond,
-      { width: initial.width, height: initial.height },
-      signal,
-      undefined,
-      transport,
-      { width: initial.width, height: initial.height },
-      initial.pixelFormat,
-    )
-  } catch (error) {
-    await transport?.close()
-    throw error
-  }
-  let unsubscribeFrame = (): void => undefined
-  let unsubscribeAudio = (): void => undefined
-  let stopping: Promise<void> | undefined
-  const assembler = new NativeAudioAssembler((at, pcm) => transport?.buffer.push(at, pcm))
-  const selectSource = (source: NativeBrowser): void => {
-    if (signal.aborted || stopping) throw new Error('Native broadcast is closed')
-    if (source.state !== 'running') throw new Error('Native source is not running')
-    if (
-      source.width !== initial.width ||
-      source.pixelFormat !== initial.pixelFormat ||
-      source.height !== initial.height
-    )
-      throw new Error('Native broadcast sources must have matching dimensions and pixel format')
-    unsubscribeFrame()
-    unsubscribeAudio()
-    assembler.clear()
-    transport?.buffer.clear()
-    unsubscribeFrame = source.onFrame((frame) => stream.update(frame.data, frame.timestampMs))
-    if (audioEnabled)
-      unsubscribeAudio = source.onAudio((packet: NativeAudioPacket) => assembler.push(packet))
-  }
-  const stop = (): Promise<void> =>
-    (stopping ??= (async () => {
-      signal.removeEventListener('abort', onAbort)
-      controller.abort()
-      unsubscribeFrame()
-      unsubscribeAudio()
-      try {
-        await stream.stop()
-      } finally {
-        await transport?.close()
-      }
-    })())
-  const onAbort = (): void => {
-    void stop().catch(() => undefined)
-  }
-  signal.addEventListener('abort', onAbort, { once: true })
-  try {
-    selectSource(initial)
-  } catch (error) {
-    await stop()
-    throw error
-  }
-  void stream.failure.catch(() => stop().catch(() => undefined))
-  return {
-    failure: stream.failure,
-    ready: () => stream.ready(),
-    health: () => stream.health(),
-    ...(stream.setBitrate
-      ? { setBitrate: (value: number) => stream.setBitrate?.(value) ?? Promise.resolve() }
-      : {}),
-    selectSource,
-    stop,
-  }
-}
-
-export { createNativePage, NativePage, NativeLocator } from './native-page.js'
+export {
+  createNativePage,
+  NativePage,
+  NativeLocator,
+  NativeJSHandle,
+  NativeElementHandle,
+  NativeFrame,
+  NativeFrameLocator,
+  NativeConsoleMessage,
+  NativeResponse,
+} from './native-page.js'
 export { recordNative } from './native-recording.js'
 export type {
   NativeRecordingOptions,
   NativeRecordingContext,
   NativeRecordingCaptureOptions,
 } from './native-recording.js'
+
+export type { NativeNavigationOptions, NativeLoadState } from './native-page.js'
+
+export { NativeMouse, NativeKeyboard, NativeTouchscreen } from './native-input.js'
+
+export {
+  expectNative,
+  createNativeMatchers,
+  NativeLocatorAssertions,
+  NativePageAssertions,
+  NativeAPIResponseAssertions,
+  NativeAssertionError,
+} from './native-expect.js'
+export type {
+  NativeAssertionOptions,
+  NativeExpectMessage,
+  NativeSoftLocatorAssertions,
+  NativeSoftPageAssertions,
+  NativeSoftAPIResponseAssertions,
+} from './native-expect.js'
+
+export type {
+  NativeClickOptions,
+  NativeEditableOptions,
+  NativePageEditableOptions,
+  NativeHoverOptions,
+  NativeBlurOptions,
+  NativeDispatchEventOptions,
+  NativePageDispatchEventOptions,
+  NativeDOMReadOptions,
+  NativePredicateArgument,
+  NativePageDOMReadOptions,
+  NativeInputValueOptions,
+  NativeKeyboardTargetOptions,
+  NativeScrollOptions,
+  NativeSelectTextOptions,
+  NativeTapOptions,
+} from './native-page.js'
+export { NativeSelectors } from './native-selectors.js'
+export type { NativeSelectorEngine } from './native-selectors.js'
+export { NativeDialog } from './native-dialog.js'
+export type { NativeLocatorScreenshotOptions, NativeScreenshotMask } from './native-artifacts.js'
+
+export {
+  NativeBindings,
+  type NativeBindingSource,
+  type NativeExposedBinding,
+  type NativeBindingEvent,
+} from './native-bindings.js'
+
+export { NativeFileChooser } from './native-filechooser.js'
+
+export type { NativeDragOptions } from './native-drag.js'
+
+export { NativeWorker, NativeWorkerHandle } from './native-worker.js'
+export type { NativeWorkerInfo, NativeWorkerEvent } from './native-worker-protocol.js'
+
+export {
+  NativeCredentials,
+  type NativeCredentialOptions,
+  type NativeVirtualCredential,
+} from './native-credentials.js'
+
+export {
+  NativeWebSocket,
+  NativeWebSockets,
+  type NativeWebSocketFrame,
+  type NativeWebSocketWaitOptions,
+  type NativeWebSocketEvent,
+} from './native-websocket.js'
+
+export { createNativePublisher } from './native-streaming.js'
+export type { NativePublisher, NativePublisherConfig } from './native-streaming.js'
+export type { NativeStreamingInfo } from './native-streaming-protocol.js'
+
+export { NativeVirtualTime } from './native-virtual-time.js'
+export type {
+  NativeVirtualTimeInfo,
+  NativeVirtualTimeOptions,
+  NativeVirtualTimeSource,
+} from './native-virtual-time.js'
+
+export type { NativeRecordHAROptions, NativeRouteFromHAROptions } from './native-har.js'
+
+export { NativeCoverage } from './native-coverage.js'
+export type {
+  NativeJSCoverageOptions,
+  NativeCSSCoverageOptions,
+  NativeJSCoverageEntry,
+  NativeCSSCoverageEntry,
+} from './native-coverage.js'
+
+export {
+  runNativeSuite,
+  type NativeSuiteRunOptions,
+  type NativeSuiteRunResult,
+} from './native-runner.js'
+export {
+  defineNativeSuite,
+  type NativeTestInfo,
+  type NativeTestAnnotation,
+  type NativeFixtureInfo,
+  type NativeFixtureValues,
+  type NativeFixtureDefinition,
+  type NativeTestDefinition,
+  type NativeSuiteDefinition,
+  type NativeProjectDefinition,
+  type NativeProjectInfo,
+  type NativeSuiteEntry,
+  type NativeNestedSuiteDefinition,
+  type NativeHookKind,
+  type NativeHookInfo,
+  type NativeHookDefinition,
+} from './native-suite.js'
+
+export type { NativeHTTPLookup, NativeHTTPLookupAddress } from './native-http-lookup.js'
+
+export {
+  createNativeBrowserFixtures,
+  NativeFixtureBrowser,
+  type NativeBrowserFixtureOptions,
+  type NativeBrowserFixtureDefinitions,
+} from './native-runner-fixtures.js'
+
+export type {
+  NativeScreenshotAssertionOptions,
+  NativeLocatorScreenshotAssertionOptions,
+} from './native-screenshot-expect.js'
+
+export type { NativeCookieFilter } from './native-cookie-filter.js'
+export type {
+  NativeTestStep,
+  NativeTestStepInfo,
+  NativeTestStepOptions,
+} from './native-runner-steps.js'
+
+export { type NativeLocatorNormalization } from './native-locator-normalization.js'
+export type {
+  NativeLocatorPickPoint,
+  NativeLocatorSuggestionOptions,
+  NativeLocatorSuggestionRecipe,
+  NativeLocatorSuggestionProvenance,
+  NativeLocatorSuggestions,
+} from './native-locator-suggestion.js'
+
+export type { NativeTestAttach, NativeTestAttachmentOptions } from './native-runner-attachments.js'
+
+export type { NativeAriaSnapshotJSONOptions, NativeAriaJSONNode } from './native-aria.js'
+
+export type {
+  NativeTestAttachment,
+  NativeTestAttachments,
+} from './native-runner-attachment-view.js'
+
+export {
+  extendNativeFixtures,
+  type NativeFixtureLayers,
+  type NativeFixtureDeclarations,
+} from './native-fixture-layers.js'
+
+export type {
+  NativeFixtureJSON,
+  NativeFixtureLiteral,
+  NativeLiteralFixtureDefinition,
+  NativeSelectableFixtureDefinition,
+} from './native-fixture-values.js'
+
+export {
+  type NativeSnapshotPath,
+  type NativeTestSnapshots,
+  type NativeSnapshotConfiguration,
+} from './native-runner-snapshot-paths.js'
+
+export type { NativeToPassOptions, NativeRetryCallback } from './native-callback-assertions.js'
+
+export {
+  type NativeLocatorHandler,
+  type NativeLocatorHandlerOptions,
+} from './native-locator-handlers.js'

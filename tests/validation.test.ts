@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import * as z from 'zod'
 
-import SuiteCutReporter from '../src/reporter.js'
 import { type UntrustedInput } from '../src/untrusted.js'
 import {
   parseCapturedGeometry,
@@ -45,27 +44,24 @@ function expectZodIssue(
 describe('SuiteCut fixture input validation', () => {
   it('parses a complete capture profile', () => {
     const options = {
-      viewport: { width: 1600, height: 900 },
       size: { width: 3840, height: 2160 },
-      deviceScaleFactor: 2,
       framesPerSecond: 60 as const,
-      quality: 100,
       narrationTailMs: 250,
     }
 
     expect(parseCaptureOptions(options)).toEqual(options)
   })
 
+  it.each([29.97, 59.94, 119.5])('preserves fractional output cadence %s', (framesPerSecond) => {
+    expect(parseCaptureOptions({ framesPerSecond })).toEqual({ framesPerSecond })
+  })
+
   it.each<[UntrustedInput, PropertyKey[], z.core.$ZodIssue['code']]>([
     [{ size: { width: 0, height: 2160 } }, ['size', 'width'], 'too_small'],
     [{ size: { width: 3839, height: 2160 } }, ['size', 'width'], 'not_multiple_of'],
-    [{ viewport: { width: 0, height: 900 } }, ['viewport', 'width'], 'too_small'],
-    [{ deviceScaleFactor: 0.5 }, ['deviceScaleFactor'], 'too_small'],
-    [{ deviceScaleFactor: 4.1 }, ['deviceScaleFactor'], 'too_big'],
     [{ framesPerSecond: 0 }, ['framesPerSecond'], 'too_small'],
     [{ framesPerSecond: 121 }, ['framesPerSecond'], 'too_big'],
-    [{ framesPerSecond: 29.97 }, ['framesPerSecond'], 'invalid_type'],
-    [{ quality: 101 }, ['quality'], 'too_big'],
+    [{ framesPerSecond: 0.5 }, ['framesPerSecond'], 'too_small'],
     [{ mode: 'legacy' }, [], 'unrecognized_keys'],
     [{ narrationTailMs: -1 }, ['narrationTailMs'], 'too_small'],
     [{ bitrate: 10_000_000 }, [], 'unrecognized_keys'],
@@ -263,10 +259,9 @@ describe('SuiteCut fixture input validation', () => {
       parseCapturedViewport({
         width: 1280,
         height: 720,
-        deviceScaleFactor: 2,
         scrollX: 0,
         scrollY: 100,
-      } as never),
+      }),
     ).toEqual({ width: 1280, height: 720, scrollX: 0, scrollY: 100 })
   })
 
@@ -291,31 +286,6 @@ describe('SuiteCut fixture input validation', () => {
     ],
   ])('rejects invalid captured geometry', (rect, viewport, path, code) => {
     expectZodIssue(() => parseCapturedGeometry(rect as never, viewport as never), path, code)
-  })
-})
-
-describe('SuiteCut reporter option validation', () => {
-  it('parses valid reporter options', () => {
-    const reporter = new SuiteCutReporter({
-      outputFile: '.suitecut/latest-run.json',
-      pathKind: 'manifest-relative',
-      includeStepCategories: ['pw:api', 'expect'],
-    })
-
-    expect(reporter.options).toEqual({
-      outputFile: '.suitecut/latest-run.json',
-      pathKind: 'manifest-relative',
-      includeStepCategories: ['pw:api', 'expect'],
-    })
-  })
-
-  it.each<[UntrustedInput, PropertyKey[], z.core.$ZodIssue['code']]>([
-    [{ outputFile: '' }, ['outputFile'], 'custom'],
-    [{ pathKind: 'relative' }, ['pathKind'], 'invalid_value'],
-    [{ includeStepCategories: ['network'] }, ['includeStepCategories', 0], 'invalid_value'],
-    [{ outputDirectory: '.suitecut' }, [], 'unrecognized_keys'],
-  ])('rejects invalid reporter options', (options, path, code) => {
-    expectZodIssue(() => new SuiteCutReporter(options as never), path, code)
   })
 })
 

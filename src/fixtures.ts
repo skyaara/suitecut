@@ -1,5 +1,4 @@
-import { type Locator, type Page } from 'playwright'
-
+import { type PresentationPage, type PresentationLocator } from './browser-control.js'
 import {
   type SuiteCutCheckpointOptions,
   type SuiteCutHighlightOptions,
@@ -25,10 +24,13 @@ export type {
 } from './schemas.js'
 
 /** Controls the recording timeline through the selected browser backend. */
-export interface SuiteCutFixture<P = Page, L = Locator> {
+export interface SuiteCutFixture<
+  P extends PresentationPage = PresentationPage,
+  L = PresentationLocator<P>,
+> {
   /**
    * Makes a page the source for later narration and visual events.
-   * @param page - The main page, popup, or secondary page to record.
+   * @param page - A registered native source page to record.
    */
   selectPage(page: P): void
   /**
@@ -38,9 +40,9 @@ export interface SuiteCutFixture<P = Page, L = Locator> {
    */
   narrate(text: string, options?: SuiteCutNarrationOptions): Promise<void>
   /**
-   * Captures a named screenshot and adds it to the recording manifest.
+   * Captures a named video checkpoint and adds it to the recording manifest.
    * @param label - A stable human-readable name for the captured state.
-   * @param options - Screenshot capture settings.
+   * @param options - Checkpoint clip settings.
    */
   checkpoint(label: string, options?: SuiteCutCheckpointOptions): Promise<void>
   /**

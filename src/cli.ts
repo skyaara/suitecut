@@ -1,10 +1,8 @@
 #!/usr/bin/env node
 
-import { spawn } from 'node:child_process'
 import { realpathSync } from 'node:fs'
-import { createRequire } from 'node:module'
 import process from 'node:process'
-import { fileURLToPath, pathToFileURL } from 'node:url'
+import { pathToFileURL } from 'node:url'
 
 import { installMediaTools, verifyMediaTools } from './media-tools.js'
 import { resolveFfmpeg, resolveFfprobe } from './process.js'
@@ -15,8 +13,8 @@ const USAGE = `SuiteCut
 Usage:
   suitecut install       Download and verify pinned FFmpeg and FFprobe for this machine.
   suitecut doctor        Verify the selected media tools without downloading.
-  suitecut test [--manifest <path>] -- [Playwright test options]
   suitecut render --manifest <path> --output <video-path> [options]
+  suitecut view [http(s)://url] [--executable <path>] [--port <number>]
 
 Render options:
   --test-id <id>          Select a test. Defaults to the first test.
@@ -190,38 +188,6 @@ function parseRenderArguments(args: readonly string[]): ParsedRenderArguments {
   return parsed
 }
 
-async function runPlaywright(args: readonly string[]): Promise<number> {
-  const forwarded = [...args]
-  let manifestPath: string | undefined
-  for (let index = 0; index < forwarded.length; index += 1) {
-    if (forwarded[index] === '--manifest') {
-      manifestPath = requiredValue(forwarded, index, '--manifest')
-      forwarded.splice(index, 2)
-      break
-    }
-  }
-  const separatorIndex = forwarded.indexOf('--')
-  if (separatorIndex !== -1) forwarded.splice(separatorIndex, 1)
-
-  const require = createRequire(import.meta.url)
-  const playwrightCli = require.resolve('@playwright/test/cli')
-  const reporterPath = fileURLToPath(new URL('./reporter.js', import.meta.url))
-  const playwrightArgs = [playwrightCli, 'test', ...forwarded, `--reporter=line,${reporterPath}`]
-  return new Promise((resolvePromise, reject) => {
-    const child = spawn(process.execPath, playwrightArgs, {
-      cwd: process.cwd(),
-      env: {
-        ...process.env,
-        ...(manifestPath === undefined ? {} : { SUITECUT_MANIFEST_PATH: manifestPath }),
-      },
-      shell: false,
-      stdio: 'inherit',
-    })
-    child.once('error', reject)
-    child.once('close', (exitCode) => resolvePromise(exitCode ?? 1))
-  })
-}
-
 export async function runSuiteCutCli(args: readonly string[]): Promise<number> {
   try {
     const [command, ...rest] = args
@@ -241,7 +207,6 @@ export async function runSuiteCutCli(args: readonly string[]): Promise<number> {
       )
       return 0
     }
-    if (command === 'test') return runPlaywright(rest)
     if (command === 'render') {
       const parsed = parseRenderArguments(rest)
       const selection: { testId?: string; retry?: number } = {}
@@ -255,6 +220,10 @@ export async function runSuiteCutCli(args: readonly string[]): Promise<number> {
       })
       process.stdout.write(`Rendered ${report.outputPath ?? parsed.outputPath}\n`)
       return 0
+    }
+    if (command === 'view') {
+      const { runNativeViewerCli } = await import('./native-viewer-cli.js')
+      return await runNativeViewerCli(rest)
     }
     throw new Error(`Unknown command: ${command}`)
   } catch (error) {

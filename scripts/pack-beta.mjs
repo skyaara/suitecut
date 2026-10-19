@@ -36,7 +36,6 @@ try {
     exports: {
       ...metadata.exports,
       '.': metadata.exports['./beta'],
-      './stable': metadata.exports['./playwright'],
     },
     publishConfig: { ...metadata.publishConfig, tag: 'beta' },
   }

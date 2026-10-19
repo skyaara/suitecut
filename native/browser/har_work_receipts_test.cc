@@ -1,0 +1,25 @@
+// SPDX-License-Identifier: MIT
+#ifdef NDEBUG
+#undef NDEBUG
+#endif
+#include "include/cef_api_hash.h"
+#include "har_work_receipts.h"
+#include <cassert>
+#include <iostream>
+using Book=suitecut::NativeHARWorkLeases;
+using Policy=suitecut::NativeHARRouteRegistration;
+auto Archive(){auto archive=std::make_shared<suitecut::NativeHARReplay>();std::string error;assert(archive->Load(CefParseJSON(R"({"log":{"entries":[]}})",JSON_PARSER_RFC)->GetDictionary(),error));return archive;}
+int main(){assert(cef_api_hash(CEF_API_VERSION,0));auto archive=Archive();
+  {Book book;auto policy=Policy::Create(archive,false);assert(!book.Issue(0,"",policy,Book::Kind::ReplayFetch)&&!book.Issue(1,std::string(129,'s'),policy,Book::Kind::ReplayFetch)&&!book.Issue(1,"",{},Book::Kind::PostRead));assert(!book.physical());}
+  {Book book;auto policy=Policy::Create(archive,false);auto fetch=book.Issue(1,"",policy,Book::Kind::ReplayFetch),read=book.Issue(1,"child",policy,Book::Kind::PostRead);assert(fetch&&read&&book.physical()==2&&book.physical(Book::Kind::PostRead)==1);const auto snapshot=book.Capture([&](const auto&actual){return actual==policy;});assert(snapshot&&snapshot->size()==2&&!snapshot->front()->settled());fetch->acknowledge(true,"");assert(book.physical()==1&&fetch->receipt->settled()&&!read->receipt->settled());read->acknowledge(true,"");assert(!book.physical()&&read->receipt->settled());}
+  {Book book;auto policy=Policy::Create(archive,false),replacement=Policy::Create(archive,false);auto original=book.Issue(1,"",policy,Book::Kind::ReplayFetch),other=book.Issue(1,"",replacement,Book::Kind::ReplayFetch);assert(original&&other);auto selected=book.Capture([&](const auto&actual){return actual==policy;});assert(selected&&selected->size()==1&&selected->front()==original->receipt);original->acknowledge(true,"");assert(!other->receipt->settled());other->acknowledge(true,"");}
+  {Book book;auto policy=Policy::Create(archive,false);std::weak_ptr<const Policy>weak=policy;auto work=book.Issue(1,"",policy,Book::Kind::ReplayFetch);assert(work);auto snapshot=book.Capture([&](const auto&actual){return actual==policy;});policy.reset();snapshot.reset();assert(!weak.expired()&&book.physical()==1&&!work->receipt->settled());work->acknowledge(true,"");assert(weak.expired()&&!book.physical());}
+  {Book book;auto work=book.Issue(1,"",Policy::Create(archive,false),Book::Kind::ReplayFetch);assert(work);book.ObserverUnavailable(1);assert(book.physical()==1&&work->receipt->unavailable()&&!work->receipt->settled());work->acknowledge(true,"");assert(!book.physical()&&work->receipt->settled()&&work->receipt->unavailable());}
+  {std::optional<Book::Admission>work;{Book book;work=book.Issue(1,"",Policy::Create(archive,false),Book::Kind::PostRead);assert(work);}assert(work->receipt->unavailable()&&!work->receipt->settled());work->acknowledge(true,"");assert(work->receipt->settled());}
+  {Book book;auto a=book.Issue(1,"",Policy::Create(archive,false),Book::Kind::ReplayFetch),b=book.Issue(1,"child",Policy::Create(archive,false),Book::Kind::PostRead),c=book.Issue(2,"",Policy::Create(archive,false),Book::Kind::ReplayFetch);assert(a&&b&&c);book.SessionClosed(1,"");assert(a->receipt->settled()&&a->receipt->failed()&&!b->receipt->settled()&&!c->receipt->settled()&&book.physical()==2);book.ScopeClosed(1);assert(b->receipt->settled()&&!c->receipt->settled()&&book.physical()==1);a->acknowledge(true,"");assert(book.physical()==1&&a->receipt->failed());c->acknowledge(true,"");}
+  {Book book;auto old=book.Issue(1,"child",Policy::Create(archive,false),Book::Kind::PostRead);assert(old);old->acknowledge(true,"");auto fresh=book.Issue(1,"child",Policy::Create(archive,false),Book::Kind::PostRead);assert(fresh);old->acknowledge(false,"stale native receipt");assert(book.physical()==1&&!fresh->receipt->settled());fresh->acknowledge(true,"");}
+  {Book book;auto work=book.Issue(1,"",Policy::Create(archive,false),Book::Kind::ReplayFetch);assert(work);work->acknowledge(false,"Actual Fetch rejection");assert(work->receipt->failed()&&work->receipt->settled()&&!work->receipt->unavailable()&&work->receipt->error()=="Actual Fetch rejection"&&!book.physical());}
+  {Book book;auto policy=Policy::Create(archive,false);std::vector<Book::Admission>work;for(size_t i=0;i<Book::kSnapshotCapacity+1;++i){auto item=book.Issue(1,"",policy,Book::Kind::PostRead);assert(item);work.push_back(std::move(*item));}assert(!book.Capture([](const auto&){return true;})&&book.physical()==129);for(auto&item:work)item.acknowledge(true,"");assert(!book.physical());}
+  {Book book;auto policy=Policy::Create(archive,false);std::vector<Book::Admission>work;for(size_t i=0;i<Book::kCapacity;++i){auto item=book.Issue(1,"",policy,Book::Kind::ReplayFetch);assert(item);work.push_back(std::move(*item));}assert(!book.Issue(1,"",policy,Book::Kind::PostRead)&&book.physical()==Book::kCapacity);for(auto&item:work)item.acknowledge(true,"");}
+  std::cout<<"PASS11 native HAR work-receipt policy identities/independent read+Fetch owners/actual ACK/channel boundaries; unused leaf, no browser or unrouteAll integration claim\n";
+}

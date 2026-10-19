@@ -1,0 +1,42 @@
+// SPDX-License-Identifier: MIT
+#include "runner_soft_assertions.h"
+#include "runner_html.h"
+#include <cassert>
+#include <iostream>
+using namespace suitecut::runner;
+const StepOwner body{1,1,0,1,1,1,101,"body"};
+template<class F>void RejectDeadline(F&& action){bool rejected=false;try{action();}catch(const std::exception&){rejected=true;}assert(rejected);}
+struct DeadlineController {
+ std::vector<std::string> sent;std::vector<SoftAssertionRecord> failures;unsigned hard=0;
+ RunnerSoftAssertions soft{{[&](const auto& packet){sent.push_back(packet);},[&](const auto& record,double){failures.push_back(record);},[&](const auto&,const auto&,bool){++hard;},[](const auto&){assert(false);},[](uint64_t)->const StepRecord*{return nullptr;}}};
+ void Begin(){soft.Open(body,100,0);assert(soft.Packet({"SOFT_BEGIN","1","0","1","1","0","-","0","0","0"},1,false));}
+ std::vector<std::string> End(std::string token="0")const{return {"SOFT_SETTLED","1",std::move(token),"1","1","1","D",StepWire("\"actual native assertion deadline\"")};}
+};
+RunnerReport DeadlineReport(){
+ TestSteps steps;assert(steps.Open(body,100,0));const auto id=*steps.Begin(body,0,"\"actual soft deadline step\"",0,1);
+ SoftAssertions soft([&](auto actual){return steps.Find(actual);});soft.Open(body,100,0);const auto a=soft.Begin(body,1,id,StepLocation{"\"/actual/deadline.ts\"",7,9,false},2);
+ assert(soft.Settled(body,a.id,SoftRawOutcome::RecognizedDeadline,"\"raw assertion deadline \\ud800\\u0000 <&>\"",3)==SoftAssertions::Verdict::AcceptedDeadline);
+ assert(steps.NoteSoftFailure(body,id,a.id,soft.Records()[0].error_json,3));assert(steps.Settle(body,id,true,"\"\"",4));assert(steps.Close(body,5)&&steps.Retire(body));soft.CloseAdmission(body);soft.RetireContext(body);
+ RunnerReport report;report.workers.push_back({1,101,false,0,{},{}});report.attempts.push_back({1,1,0,1,101,"\"controlled deadline test\"",soft.Records()[0].error_json,"failed",false,5,std::nullopt,"passed",std::nullopt,{},0,a.id});report.soft_assertions=soft.Records();report.steps=steps.Records();return report;
+}
+int main(int argc,char** argv){assert(argc==2);unsigned groups=0;
+ {SoftAssertions soft;soft.Open(body,100,0);const auto a=soft.Begin(body,1,0,std::nullopt,1);assert(soft.Settled(body,a.id,SoftRawOutcome::RecognizedDeadline,"\"original error\"",2)==SoftAssertions::Verdict::AcceptedDeadline);const auto* actual=soft.FirstFailure(body);assert(actual&&actual->receipt==SoftReceipt::AcceptedDeadline&&actual->raw==SoftRawOutcome::RecognizedDeadline&&actual->error_json=="\"original error\""&&soft.FailedAttempt(1)&&!soft.Physical());++groups;}
+ {assert(IsAcceptedSoftFailure(SoftReceipt::AcceptedDeadline)&&IsAcceptedSoftFailure(SoftReceipt::Mismatch)&&!IsAcceptedSoftFailure(SoftReceipt::Late)&&!IsAcceptedSoftFailure(SoftReceipt::Canceled)&&!IsAcceptedSoftFailure(SoftReceipt::OtherFailure));++groups;}
+ {SoftAssertions soft;soft.Open(body,100,0);const auto a=soft.Begin(body,1,0,std::nullopt,1);assert(soft.Settled(body,a.id,SoftRawOutcome::OtherFailure,"\"bare native transport timeout\"",2)==SoftAssertions::Verdict::OtherFailure);assert(!soft.FailedAttempt(1)&&!soft.FirstFailure(body));++groups;}
+ {SoftAssertions soft;soft.Open(body,10,0);const auto a=soft.Begin(body,1,0,std::nullopt,1);assert(soft.Settled(body,a.id,SoftRawOutcome::RecognizedDeadline,"\"actual deadline but callback expired\"",10)==SoftAssertions::Verdict::Late);assert(!soft.FailedAttempt(1)&&soft.Records()[0].raw==SoftRawOutcome::RecognizedDeadline);++groups;}
+ {SoftAssertions soft;soft.Open(body,100,0);const auto a=soft.Begin(body,1,0,std::nullopt,1);unsigned aborts=0;soft.Cancel(body,"\"actual global cancellation\"",2,[&](auto,const auto&,auto,const auto&){++aborts;});assert(aborts==1&&soft.Physical()==1);assert(soft.Settled(body,a.id,SoftRawOutcome::RecognizedDeadline,"\"original deadline error\"",3)==SoftAssertions::Verdict::Canceled);assert(!soft.FailedAttempt(1)&&soft.Records()[0].cancel_reason_json=="\"actual global cancellation\"");++groups;}
+ {StepRecord step;step.id=7;step.owner=body;step.deadline=10;SoftAssertions soft([&](auto id){return id==7?&step:nullptr;});soft.Open(body,100,0);const auto a=soft.Begin(body,1,7,std::nullopt,1);assert(soft.Settled(body,a.id,SoftRawOutcome::RecognizedDeadline,"\"original assertion deadline\"",10)==SoftAssertions::Verdict::Late&&!soft.FailedAttempt(1));++groups;}
+ {StepRecord step;step.id=7;step.owner=body;step.deadline=100;SoftAssertions soft([&](auto id){return id==7?&step:nullptr;});soft.Open(body,100,0);const auto a=soft.Begin(body,1,7,std::nullopt,1);step.status=StepStatus::Failed;assert(soft.Settled(body,a.id,SoftRawOutcome::RecognizedDeadline,"\"original assertion deadline\"",2)==SoftAssertions::Verdict::Canceled&&!soft.FailedAttempt(1));++groups;}
+ {SoftAssertions soft;soft.Open(body,100,0);const auto a=soft.Begin(body,1,0,std::nullopt,1);auto foreign=body;++foreign.pid;RejectDeadline([&]{soft.Settled(foreign,a.id,SoftRawOutcome::RecognizedDeadline,"\"foreign\"",2);});assert(soft.Physical()==1&&soft.Records().empty());assert(soft.Settled(body,a.id,SoftRawOutcome::RecognizedDeadline,"\"original\"",3)==SoftAssertions::Verdict::AcceptedDeadline);++groups;}
+ {SoftAssertions soft;soft.Open(body,100,0);const auto a=soft.Begin(body,1,0,std::nullopt,1);RejectDeadline([&]{soft.Settled(body,a.id,static_cast<SoftRawOutcome>(99),"\"forged kind\"",2);});assert(soft.Physical()==1&&soft.Records().empty());assert(soft.Settled(body,a.id,SoftRawOutcome::RecognizedDeadline,"\"original\"",3)==SoftAssertions::Verdict::AcceptedDeadline);++groups;}
+ {SoftAssertions soft;soft.Open(body,100,0);for(uint64_t i=1;i<=32;++i){const auto a=soft.Begin(body,i,0,std::nullopt,1);soft.Settled(body,a.id,i%2?SoftRawOutcome::RecognizedDeadline:SoftRawOutcome::RecognizedMismatch,"\"bounded actual failure\"",1);}assert(soft.Records().size()==32);RejectDeadline([&]{soft.Begin(body,33,0,std::nullopt,2);});++groups;}
+ {SoftAssertions soft;soft.Open(body,100,0);const auto a=soft.Begin(body,1,0,std::nullopt,1);soft.CloseAdmission(body);RejectDeadline([&]{soft.Begin(body,2,0,std::nullopt,2);});assert(soft.Physical()==1);assert(soft.Settled(body,a.id,SoftRawOutcome::RecognizedDeadline,"\"actual pending operation\"",3)==SoftAssertions::Verdict::AcceptedDeadline);soft.RetireContext(body);assert(soft.IdleReady());++groups;}
+ {SoftAssertions soft;soft.Open(body,100,0);soft.Begin(body,1,0,std::nullopt,1);soft.ConfirmedWorkerExit(1,101,2);assert(!soft.Physical()&&!soft.FailedAttempt(1)&&soft.Records()[0].receipt==SoftReceipt::WorkerExited&&soft.Records()[0].raw==SoftRawOutcome::OtherFailure);++groups;}
+ {DeadlineController control;control.Begin();bool forwarded=false;control.soft.Fence(0,1,1,[&]{forwarded=true;},2);assert(!forwarded&&control.soft.Physical()==1);control.soft.Packet(control.End(),3,false);assert(forwarded&&control.soft.IdleReady()&&control.failures.size()==1&&control.failures[0].receipt==SoftReceipt::AcceptedDeadline&&control.soft.FailedAttempt(1)&&!control.hard);assert(control.sent[control.sent.size()-2]=="SOFT_SETTLED_ACK 1 0 1 1 1 1 -");++groups;}
+ {DeadlineController control;control.Begin();RejectDeadline([&]{control.soft.Packet(control.End("7"),2,false);});assert(control.soft.Physical()==1&&control.failures.empty());control.soft.Packet(control.End(),3,false);assert(control.failures.size()==1);++groups;}
+ {auto report=DeadlineReport();assert(report_detail::Validate(report).unexpected==1);WriteRunnerJson(report,std::filesystem::path(argv[1])/"deadline.json");WriteRunnerJUnit(report,std::filesystem::path(argv[1])/"deadline.xml");WriteRunnerHTML(report,std::filesystem::path(argv[1])/"deadline.html");auto hard=report;hard.attempts[0].soft_error_id=0;hard.attempts[0].error_json="\"actual raw hard primary\"";assert(report_detail::Validate(hard).unexpected==1);WriteRunnerJson(hard,std::filesystem::path(argv[1])/"hard.json");++groups;}
+ {auto report=DeadlineReport();report.soft_assertions[0].raw=SoftRawOutcome::RecognizedMismatch;RejectDeadline([&]{report_detail::Validate(report);});++groups;}
+ {auto report=DeadlineReport();report.soft_assertions[0].receipt=SoftReceipt::Mismatch;RejectDeadline([&]{report_detail::Validate(report);});++groups;}
+ {auto report=DeadlineReport();report.soft_assertions[0].cancel_reason_json="\"canceled\"";RejectDeadline([&]{report_detail::Validate(report);});++groups;}
+ std::cout<<"PASS "<<groups<<" distinct native assertion-deadline policy/controller/report controls (controlled receipts/DTO, no Source or OS receipt claim)\n";
+}

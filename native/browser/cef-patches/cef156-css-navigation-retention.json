@@ -1,0 +1,42 @@
+{
+  "status": "UNCOMPILED PINNED VENDOR CANDIDATE; no public capability claim",
+  "chromium": "156.0.8078.17",
+  "v8": "4b33f15d4d172248a95629d6aa9917b20a79ad76",
+  "cefSource": "47dbc1df023e99f006fb9e850a8d83cc19b4fdd9",
+  "scope": "Opt-in same-agent native CSS usage before root reset and stylesheet unbind, immutable header/text retained without DOM; source mutation fails explicitly; no renderer/agent replacement claim",
+  "capabilityRevision": 2,
+  "base": {
+    "third_party/blink/renderer/core/inspector/inspector_css_agent.cc": "c5d184fb3ace0686369a3c970fc86cd62ade5a892743411ea8992dfb48788b93",
+    "third_party/blink/renderer/core/inspector/inspector_css_agent.h": "f35f93c4f4c7a75886839bfbb27465dd9d838b5fd759f91a95142ed2f478a131",
+    "third_party/blink/public/devtools_protocol/domains/CSS.pdl": "be7724f102548c0bf5054d11e47a5663b1776e18012e887159222e09a0692e07"
+  },
+  "output": {
+    "third_party/blink/renderer/core/inspector/inspector_css_agent.cc": "ef94a93fe1564f8b8da91fc9aa3a9fdee7f574c6080e126e2c78c0d343ba6790",
+    "third_party/blink/renderer/core/inspector/inspector_css_agent.h": "2e3ce229ffa28b31fd7572475da874b88196ea0e61c8b8a23c795a85e70d9f67",
+    "third_party/blink/public/devtools_protocol/domains/CSS.pdl": "59543cc3792c23d50655ec6c9e7bbe826894f87bc82d94918cce4ffe6d50e572"
+  },
+  "patchSHA256": "21f8c01d1c85209a16d92973775e97b68f37b1351ca853534e959ed8e6fa572e",
+  "nativeActivation": "NONE; stock resetOnNavigation:false remains unsupported; no production Source/SDK activation",
+  "upstreamURLs": {
+    "third_party/blink/renderer/core/inspector/inspector_css_agent.cc": "https://raw.githubusercontent.com/chromium/chromium/156.0.8078.17/third_party/blink/renderer/core/inspector/inspector_css_agent.cc",
+    "third_party/blink/renderer/core/inspector/inspector_css_agent.h": "https://raw.githubusercontent.com/chromium/chromium/156.0.8078.17/third_party/blink/renderer/core/inspector/inspector_css_agent.h",
+    "third_party/blink/public/devtools_protocol/domains/CSS.pdl": "https://raw.githubusercontent.com/chromium/chromium/156.0.8078.17/third_party/blink/public/devtools_protocol/domains/CSS.pdl"
+  },
+  "verification": [
+    "git apply --check against every exact pinned base file PASS",
+    "Pinned Chromium PDL parser accepts candidate domain syntax; local extension references checked",
+    "No generated protocol C++ compile, Chromium/V8 compile, rebuilt libcef, or candidate runtime proof"
+  ],
+  "sourceComponent": "chromium",
+  "patchRoot": "chromium",
+  "componentBase": {
+    "third_party/blink/renderer/core/inspector/inspector_css_agent.cc": "c5d184fb3ace0686369a3c970fc86cd62ade5a892743411ea8992dfb48788b93",
+    "third_party/blink/renderer/core/inspector/inspector_css_agent.h": "f35f93c4f4c7a75886839bfbb27465dd9d838b5fd759f91a95142ed2f478a131",
+    "third_party/blink/public/devtools_protocol/domains/CSS.pdl": "be7724f102548c0bf5054d11e47a5663b1776e18012e887159222e09a0692e07"
+  },
+  "componentOutput": {
+    "third_party/blink/renderer/core/inspector/inspector_css_agent.cc": "ef94a93fe1564f8b8da91fc9aa3a9fdee7f574c6080e126e2c78c0d343ba6790",
+    "third_party/blink/renderer/core/inspector/inspector_css_agent.h": "2e3ce229ffa28b31fd7572475da874b88196ea0e61c8b8a23c795a85e70d9f67",
+    "third_party/blink/public/devtools_protocol/domains/CSS.pdl": "59543cc3792c23d50655ec6c9e7bbe826894f87bc82d94918cce4ffe6d50e572"
+  }
+}

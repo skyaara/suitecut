@@ -1,158 +1,40 @@
 ---
-import basicExampleSource from '../../../../examples/basic.spec.ts?raw'
 import CodeBlock from '../../components/CodeBlock.astro'
 import DocsLayout from '../../layouts/DocsLayout.astro'
-import { sitePath } from '../../lib/paths.js'
-
-const nativeExample = `import { defineSuiteCut, renderSuiteCut } from 'suitecut'
-
-const record = defineSuiteCut({
-  native: { width: 1920, height: 1080, framesPerSecond: 60 },
-  capture: { audio: true },
-  output: { manifestPath: '.suitecut/tour.json' },
-})
-
-const result = await record('Embedded browser tour', async ({ page, suitecut }) => {
-  await page.goto('https://example.com')
-  await suitecut.highlight(page.locator('h1'))
-  await suitecut.narrate('Welcome to SuiteCut 2.0.')
-  await suitecut.checkpoint('Opening screen')
-})
-
-await renderSuiteCut({
-  manifestPath: result.manifestPath,
-  outputPath: '.suitecut/tour.mp4',
-})`
+import { recordExample } from '../../lib/api-reference.js'
 ---
 
 <DocsLayout
   title="Getting started"
-  description="Set up SuiteCut 2.0 with embedded CEF, record a native browser flow, and migrate from Playwright or the beta."
+  description="Set up native CEF browser capture, recording and rendering."
   section="overview"
 >
-  <h1>Getting started</h1>
-  <p>
-    SuiteCut 2.0 records and streams with an embedded Chromium browser powered by CEF. The native
-    beta is now the default <code>suitecut</code> API. Record a flow with narration, captions, page audio,
-    and checkpoints, then render its saved manifest into a video.
-  </p>
-
+  <h1>Native browser recording</h1>
   <h2 id="requirements">Requirements</h2>
-  <ul>
-    <li>Node.js 22 or newer.</li>
-    <li>macOS Apple Silicon for the verified native CEF build.</li>
-    <li>CMake 3.21+, Ninja, a C++20 compiler, and the pinned CEF and libyuv SDKs.</li>
-    <li>FFmpeg and FFprobe, installed with <code>suitecut install</code> or available on PATH.</li>
-  </ul>
   <p>
-    Linux native builds are unverified. Windows native packaging is not implemented. Use <code
-      >suitecut/playwright</code
-    > for existing Chromium, Firefox, and WebKit flows on those platforms.
+    Use Node.js 22+, FFmpeg/FFprobe and a separately built native CEF browser. macOS ARM64 has
+    historical native verification. Linux remains unverified; Windows packaging is not implemented.
   </p>
-
   <h2 id="install">Install</h2>
-  <CodeBlock
-    label="Terminal"
-    code={`npm install https://github.com/skyaara/suitecut/releases/download/v2.0.0/suitecut-2.0.0.tgz
-npx suitecut install
-npx suitecut doctor`}
-  />
   <p>
-    Install the 2.0 package from the GitHub release asset above. The package contains the native
-    browser source and checksum pins, but no compiled CEF browser. Follow the <a
-      href="https://github.com/skyaara/suitecut/blob/main/native/browser/README.md#build"
-      >CEF build instructions</a
-    > to obtain and verify the pinned dependencies and compile the complete browser bundle. Then set its
-    executable path:
+    Follow the <a href="https://github.com/skyaara/suitecut/blob/main/native/browser/README.md"
+      >native build instructions</a
+    > and set the browser executable path.
   </p>
   <CodeBlock
     label="Terminal"
-    code={`export SUITECUT_NATIVE_EXECUTABLE="/absolute/path/to/suitecut-browser.app/Contents/MacOS/suitecut-browser"`}
+    code={'pnpm install --frozen-lockfile\npnpm build\nexport SUITECUT_NATIVE_EXECUTABLE="/absolute/path/to/suitecut-browser"\nnode dist/cli.js doctor'}
   />
-  <p>
-    Keep the complete <code>.app</code> bundle together. You can also pass
-    <code>native.executablePath</code> per recording. A missing browser is an error; SuiteCut never silently
-    switches backends. <code>suitecut install</code> installs checksum-pinned media tools, not CEF. Imports
-    and recording calls do not download software.
-  </p>
-
   <h2 id="record-a-flow">Record a flow</h2>
-  <p>
-    Save this as <code>tour.ts</code>. The root recorder launches and closes its primary native
-    browser, including after callback errors. Native defaults are 1920 × 1080 at 60 FPS with I420
-    capture. Page audio is off by default; the example enables it with <code
-      >capture.audio: true</code
-    >.
-  </p>
-  <CodeBlock code={nativeExample} />
-  <p>
-    Native locators use strict CSS selectors in the main document. Await application readiness
-    explicitly. Role/text locators, iframe traversal, popup flows, and custom Playwright setup
-    require the explicit Playwright backend.
-  </p>
-
+  <CodeBlock code={recordExample} />
   <h2 id="run-and-render">Run and render</h2>
-  <CodeBlock
-    label="Terminal"
-    code={`node --experimental-strip-types tour.ts
-
-# Render the saved run again with different output settings:
-npx suitecut render \\
-  --manifest .suitecut/tour.json \\
-  --output .suitecut/tour-4k.mp4 \\
-  --width 3840 --height 2160 --fps 60`}
-  />
   <p>
-    Rendering is separate from browser capture. The manifest keeps authored timing, page selection,
-    narration, and checkpoints. Recorded page audio follows source selection and mixes with
-    narration. For live output, see <a href={sitePath('/docs/streaming')}>Live streaming</a>.
+    The recorder closes its primary browser, saves source clips and writes a manifest. The renderer
+    composes selected intervals and mixes page audio with narration.
   </p>
-
-  <h2 id="playwright-test">Migrating from 1.x and using Playwright Test</h2>
+  <h2 id="render-quality">Render quality</h2>
   <p>
-    Native beta scripts can change <code>suitecut/beta</code> to <code>suitecut</code>. The beta
-    entry point remains an alias. Existing Playwright scripts should change their import:
+    Choose output dimensions, FPS 1–120, quality profiles and supported FFmpeg encoders. Higher
+    output FPS can repeat captured images; it does not create motion the browser did not capture.
   </p>
-  <CodeBlock
-    code={`import { defineSuiteCut, record } from 'suitecut/playwright'
-// Existing Playwright launch, context, capture, and setup options still work.`}
-  />
-  <p>
-    Or keep root <code>record</code> and pass <code>backend: 'playwright'</code> explicitly. The old beta's
-    <code>suitecut/stable</code> alias also retains Playwright behavior. Audio flags are boolean in 2.0:
-    replace <code>'tab'</code> with <code>true</code> and
-    <code>'silent'</code> with <code>false</code>.
-  </p>
-  <CodeBlock
-    label="Terminal"
-    code={`npm install playwright
-npx playwright install chromium
-# For the optional test runner:
-npm install --save-dev @playwright/test`}
-  />
-  <p>
-    <code>suitecut/test</code> and <code>suitecut/reporter</code> keep their existing behavior. Keep Playwright
-    trace and video off when SuiteCut owns capture. See the
-    <a href={sitePath('/examples')}>Playwright examples</a> for reporter configuration and browser flows.
-  </p>
-  <CodeBlock code={basicExampleSource.trim()} />
-
-  <h2 id="render-quality">Render size and frame rate</h2>
-  <p>
-    Native browser dimensions, device scale, and FPS belong in <code>native</code>.
-    <code>capture</code> accepts output <code>size</code>, <code>narrationTailMs</code>, and boolean
-    <code>audio</code>. The final renderer defaults to 1920 × 1080 at 30 FPS; request 4K60
-    explicitly when using a 4K physical capture.
-  </p>
-  <CodeBlock
-    code={`import { defineSuiteCut } from 'suitecut'
-
-const record = defineSuiteCut({
-  native: {
-    width: 1920, height: 1080,
-    deviceScaleFactor: 2,
-    framesPerSecond: 60,
-  },
-})`}
-  />
 </DocsLayout>

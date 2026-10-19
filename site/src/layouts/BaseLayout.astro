@@ -9,16 +9,11 @@ import '../styles/syntax.css'
 interface Props {
   title: string
   description: string
-  current?: 'home' | 'docs' | 'examples' | 'benchmarks'
+  current?: 'home' | 'docs' | 'examples'
   socialImage?: string
 }
 
-const {
-  title,
-  description,
-  current,
-  socialImage = '/demo/suitecut-field-manual-poster.png',
-} = Astro.props
+const { title, description, current, socialImage = '/favicon.svg' } = Astro.props
 const canonicalUrl = new URL(Astro.url.pathname, Astro.site)
 const socialImageUrl = new URL(sitePath(socialImage), Astro.site)
 ---

@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest'
 
 import { NativeAudioAssembler } from '../src/native-audio.js'
-import { NativePacketDecoder, type NativePacket } from '../src/native-protocol.js'
+import {
+  NativePacketDecoder,
+  MAX_NATIVE_RESPONSE_PAYLOAD,
+  type NativePacket,
+} from '../src/native-protocol.js'
 
 function packet(header: object, data = Buffer.alloc(0)): Buffer {
   const json = Buffer.from(JSON.stringify({ version: 1, bytes: data.length, ...header }))
@@ -11,6 +15,71 @@ function packet(header: object, data = Buffer.alloc(0)): Buffer {
 }
 
 describe('native IPC boundary', () => {
+  it('preserves proven viewport geometry and null resize paints alongside legacy frame packets', () => {
+    const headers: NativePacket[] = []
+    const decoder = new NativePacketDecoder((header) => headers.push(header))
+    const base = { type: 'frame', timestampMs: 1, width: 8, height: 6, dropped: 0 }
+    const data = Buffer.alloc(8 * 6 * 4)
+    decoder.push(packet(base, data))
+    decoder.push(
+      packet({ ...base, viewport: null, contentRect: { x: 2, y: 0, width: 3, height: 6 } }, data),
+    )
+    decoder.push(
+      packet(
+        {
+          ...base,
+          viewport: { width: 390, height: 844 },
+          contentRect: { x: 2, y: 0, width: 3, height: 6 },
+        },
+        data,
+      ),
+    )
+    decoder.end()
+    expect(headers[0]).not.toHaveProperty('viewport')
+    expect(headers[1]).toMatchObject({ viewport: null })
+    expect(headers[2]).toMatchObject({
+      viewport: { width: 390, height: 844 },
+      contentRect: { x: 2, y: 0, width: 3, height: 6 },
+    })
+  })
+
+  it.each([
+    { x: 7, y: 0, width: 2, height: 6 },
+    { x: 0, y: 5, width: 8, height: 2 },
+    { x: -1, y: 0, width: 8, height: 6 },
+  ])('rejects crop rectangles outside actual frame storage: %j', (contentRect) => {
+    const decoder = new NativePacketDecoder(() => undefined)
+    expect(() =>
+      decoder.push(
+        packet(
+          { type: 'frame', timestampMs: 1, width: 8, height: 6, dropped: 0, contentRect },
+          Buffer.alloc(8 * 6 * 4),
+        ),
+      ),
+    ).toThrow()
+  })
+  it('requires a genuine child identity and empty payload for a page-crash packet', () => {
+    const received: NativePacket[] = []
+    new NativePacketDecoder((header) => received.push(header)).push(
+      packet({ type: 'pagecrash', pageId: 2, error: 'Browser renderer terminated' }),
+    )
+    expect(received[0]).toMatchObject({ type: 'pagecrash', pageId: 2, bytes: 0 })
+    for (const pageId of [undefined, 0, 1])
+      expect(() =>
+        new NativePacketDecoder(() => undefined).push(
+          packet({ type: 'pagecrash', pageId, error: 'Browser renderer terminated' }),
+        ),
+      ).toThrow()
+    expect(() =>
+      new NativePacketDecoder(() => undefined).push(
+        packet(
+          { type: 'pagecrash', pageId: 2, error: 'Browser renderer terminated' },
+          Buffer.from('x'),
+        ),
+      ),
+    ).toThrow()
+  })
+
   it('accepts fragmented and coalesced packets without losing frame bytes', () => {
     const received: { header: NativePacket; data: Buffer }[] = []
     const decoder = new NativePacketDecoder((header, data) => received.push({ header, data }))
@@ -58,7 +127,7 @@ describe('native IPC boundary', () => {
     { type: 'audio', timestampMs: 1, frames: 960 },
     { type: 'frame', timestampMs: -1, width: 1, height: 1, dropped: 0 },
     { type: 'response', id: 0, ok: true },
-    { type: 'response', id: 1, ok: true, bytes: 2_000_000 },
+    { type: 'response', id: 1, ok: true, bytes: MAX_NATIVE_RESPONSE_PAYLOAD + 1 },
   ])('rejects malformed metadata %j', (header) => {
     expect(() => new NativePacketDecoder(() => undefined).push(packet(header))).toThrow()
   })
@@ -70,6 +139,23 @@ describe('native IPC boundary', () => {
       decoder.push(bytes)
       expect(() => decoder.end()).toThrow('Truncated')
     }
+  })
+
+  it('stops decoding a coalesced batch when the receiver disposes the process decoder', () => {
+    const received: string[] = []
+    const decoder = new NativePacketDecoder((header) => {
+      received.push(header.type)
+      decoder.dispose()
+    })
+    decoder.push(
+      Buffer.concat([
+        packet({ type: 'ready', timestampMs: 1, cefVersion: 'test' }),
+        packet({ type: 'audio', timestampMs: 2, frames: 1 }, Buffer.alloc(4)),
+      ]),
+    )
+    expect(received).toEqual(['ready'])
+    decoder.end()
+    expect(() => decoder.push(Buffer.from([1]))).toThrow('disposed')
   })
 
   it('keeps delivered buffers stable across subsequent packets', () => {
@@ -114,4 +200,30 @@ describe('native PCM reblocking', () => {
     assembler.push({ data: Buffer.alloc(3840, 4), frames: 960, timestampMs: 1030 })
     expect(output).toEqual([Buffer.alloc(3840, 2), Buffer.alloc(3840, 4)])
   })
+})
+
+it('permits bounded WebSocket base64 predicate snapshots without enlarging other event budgets', () => {
+  const header = {
+    type: 'eventpredicate',
+    pageId: 2,
+    id: 7,
+    generation: 1,
+    token: 1,
+    clientToken: 'socket-test',
+    sequence: 1,
+  }
+  const bytes = Buffer.alloc(2_796_204, 32)
+  const received: Buffer[] = []
+  const decoder = new NativePacketDecoder((_, data) => received.push(data))
+  decoder.push(packet({ ...header, event: 'framereceived' }, bytes))
+  decoder.end()
+  expect(received[0]?.equals(bytes)).toBe(true)
+  expect(() =>
+    new NativePacketDecoder(() => undefined).push(packet({ ...header, event: 'console' }, bytes)),
+  ).toThrow('predicate payload')
+  expect(() =>
+    new NativePacketDecoder(() => undefined).push(
+      packet({ ...header, event: 'framereceived' }, Buffer.alloc(3_145_729)),
+    ),
+  ).toThrow('predicate payload')
 })

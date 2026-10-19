@@ -1,7 +1,10 @@
 import * as z from 'zod'
 
 export const MAX_FRAMES_PER_SECOND = 120
-export const FrameRateSchema = z.number().int().min(1).max(MAX_FRAMES_PER_SECOND)
+/** CEF OSR capture request: its supported ceiling is an integer. */
+export const CaptureFrameRateSchema = z.number().int().min(1).max(MAX_FRAMES_PER_SECOND)
+/** Constant encoded output cadence; native resampling supports finite fractions. */
+export const OutputFrameRateSchema = z.number().finite().min(1).max(MAX_FRAMES_PER_SECOND)
 
 /** Converts elapsed time to output slots, snapping only floating-point roundoff at boundaries. */
 export function videoFramePosition(

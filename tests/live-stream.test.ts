@@ -67,7 +67,6 @@ describe('live stream publishing', () => {
         {
           url: '',
           buffer: new LiveAudioBuffer(),
-          activate: () => Promise.resolve(),
           createInput: () => ({
             url: 'http://localhost/audio',
             write: (at, samples) => {
@@ -216,7 +215,6 @@ describe('live stream publishing', () => {
       {
         url: '',
         buffer: new LiveAudioBuffer(),
-        activate: () => Promise.resolve(),
         createInput: () => {
           throw new Error('Persistent output owns the audio encoder')
         },
@@ -312,12 +310,6 @@ describe('live stream publishing', () => {
         audio: false,
       }).audio,
     ).toBe(false)
-    expect(
-      SuiteCutStreamOptionsSchema.parse({
-        url: 'rtmp://localhost/live/key',
-        audio: 'tab',
-      }).audio,
-    ).toBe(true)
     expect(
       SuiteCutStreamOptionsSchema.safeParse({
         url: 'rtmp://localhost/live/key',

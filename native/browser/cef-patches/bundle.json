@@ -1,0 +1,187 @@
+{
+  "version": 1,
+  "status": "ISOLATED SOURCE CANDIDATES; not compiled or activated",
+  "pins": {
+    "cef": "47dbc1df023e99f006fb9e850a8d83cc19b4fdd9",
+    "chromium": "refs/tags/156.0.8078.17",
+    "v8": "4b33f15d4d172248a95629d6aa9917b20a79ad76"
+  },
+  "components": {
+    "cef": {
+      "base": {
+        "libcef/browser/alloy/alloy_browser_host_impl.h": "16637c9e3d24fc685c005f1f03c7d31a2d803066a3d3bb8867b17cd0f63835af",
+        "libcef/browser/alloy/alloy_browser_host_impl.cc": "f18aafe7254fbf82c5a8a0b7221db7dc10fb76d14e7e86cf02fb039037374ebf",
+        "libcef/browser/request_context_impl.cc": "b2483b97408e978a914d75623162ebb57525e57f0f55676b92e59ee668b282e8"
+      },
+      "output": {
+        "libcef/browser/alloy/alloy_browser_host_impl.h": "dcf3b4a629734f717f60158b0924569db227fa552053e69eaff283a373bd1fdf",
+        "libcef/browser/alloy/alloy_browser_host_impl.cc": "99701e936eb14d9da0a83e48ce30d3892583c695a6ab5578fe09e79c19650e45",
+        "libcef/browser/request_context_impl.cc": "77c5366e1fc31d98cf6967be315edefc7260ed11b69250fc50a4e09d5cf4ac6c"
+      }
+    },
+    "chromium": {
+      "base": {
+        "third_party/blink/renderer/core/html/forms/file_input_type.cc": "98bb621e81556e5dff699fb5c1abf49e68697d2b6e7bc7aeab6dee38774a0990",
+        "third_party/blink/renderer/core/html/forms/file_input_type_test.cc": "c583b973a9afca7568b799be25a9cfd6fac00662446f18d72b6d856d4a3da739",
+        "third_party/blink/renderer/core/html/forms/mock_file_chooser.h": "a3ebe4e8d7d679d3669e1f106fd6221a79d9d6ffd1069d66bcebce81febe40aa",
+        "third_party/blink/renderer/platform/scheduler/common/process_time_override_coordinator.h": "fea9f3212eb7db03a3418095a1c1d5ebf7d6e3128da9426869f5c4b24bca70f2",
+        "third_party/blink/renderer/platform/scheduler/common/process_time_override_coordinator.cc": "81acc0e85536a363c023a3d211f599775bf3350617f3825a2e0b85328d45d02e",
+        "third_party/blink/renderer/core/inspector/inspector_emulation_agent.h": "f5c9da997201d0a813a5953837b835725d5a533f26125e5489e305150fc8990f",
+        "third_party/blink/renderer/core/inspector/inspector_emulation_agent.cc": "72c9dfeb21bf39146f129f58a5a4a93c1ec7ff9ad41498ba42d64af1b2d51d73",
+        "third_party/blink/public/devtools_protocol/domains/Emulation.pdl": "bbb4e8575a117d322cffbfcf6227a2831106acbf7872fb92d5144bcf661d9684",
+        "components/content_settings/core/browser/content_settings_registry.cc": "c85d26741658d617e5067f22a6cd6cf0c2e32e65c493e12b9fec556848d4d530",
+        "components/permissions/contexts/midi_permission_context.cc": "65f95d4860f713142a3d5e7251872265c58ccc21c68f8126747fc7a2325f62ef",
+        "components/permissions/contexts/midi_permission_context.h": "b9c39c78960efa2d85526e899d62a6c62e6f63b7c270c4bfeecfbf2273b8179a",
+        "third_party/blink/renderer/modules/webmidi/midi_access_initializer.cc": "8ee6925c9bd5f8bed3bc1eae2de08cb8963c87308741dd198ce715d9fcbd3d1f",
+        "third_party/blink/renderer/core/frame/local_frame_view.cc": "f43bd7fa49d6b7ca1729d5e2df7ea08864a87a913fd4ad60bec26c96d74110fe",
+        "third_party/blink/renderer/core/frame/remote_frame_view.cc": "98d835f595df40bb8cbbd91b4dcca8be1654486e63c36baec510fca42d2f707d",
+        "third_party/blink/renderer/core/inspector/inspector_css_agent.cc": "c5d184fb3ace0686369a3c970fc86cd62ade5a892743411ea8992dfb48788b93",
+        "third_party/blink/renderer/core/inspector/inspector_css_agent.h": "f35f93c4f4c7a75886839bfbb27465dd9d838b5fd759f91a95142ed2f478a131",
+        "third_party/blink/public/devtools_protocol/domains/CSS.pdl": "be7724f102548c0bf5054d11e47a5663b1776e18012e887159222e09a0692e07",
+        "v8/src/inspector/v8-profiler-agent-impl.cc": "4db6678ad50265752e74d1c918a3a4c751209e13f58b86b7771b314d032bb315",
+        "v8/src/inspector/v8-profiler-agent-impl.h": "f2b6115ef9fd6382b5fdebdfb61a1d3ec49f8edd0fbba105528bb7bd2b016c66",
+        "v8/src/inspector/v8-inspector-impl.cc": "8ce6e15c078959e51e07891fd823ab9cc3479939bc4ff7b2c5fc39e8d46d611a",
+        "v8/src/inspector/v8-inspector-impl.h": "2d00bd23601082b99cb1d8ca0a06d504f8af2ef4a332d47b6a8a83b04c2cb4a0",
+        "v8/include/js_protocol.pdl": "784d67464dc055f26cf59798cfdcf2989fad2fdd5dd6f4d027dcd322f79fad82",
+        "third_party/blink/public/devtools_protocol/domains/Network.pdl": "2e757d8ef2e09101a42dc9d5a7bbd3cef26c8db74fbdb991dd9d3336ab122d7b",
+        "third_party/blink/renderer/core/inspector/build.gni": "bbe877990cc635aafaed8642ccc367fbf231bcf77f49610223dd13c81f39fb92",
+        "third_party/blink/renderer/core/inspector/inspector_network_agent.cc": "2ea4d7a5dde70311ce758f41544097f2e0359042873e406e1723abf790588981",
+        "third_party/blink/renderer/core/inspector/inspector_network_agent.h": "4225dc4054eaf1d72f698e0a94ac69342b50461572a69c1e9fc1e567b6cfe636",
+        "third_party/blink/renderer/core/inspector/suitecut_websocket_route.h": null,
+        "third_party/blink/renderer/core/probe/core_probes.json5": "0bb9accfc58254489e68b053f912ae2c4240f2cb149d55f6e1da9eb0e5f28673",
+        "third_party/blink/renderer/core/probe/core_probes.pidl": "d25c1fce25568b5a87921c7e1c410ec56f3f7d80672868c4a4efcf369527a42f",
+        "third_party/blink/renderer/modules/websockets/websocket_channel_impl.cc": "3c8eba45790259972a9c5eb813e83c4c0b4777fb14ac67b72fcbe6ab7d0e417d",
+        "third_party/blink/renderer/modules/websockets/websocket_channel_impl.h": "e9b7af337a1856dd89fd56834576a358d576fa86d04a0b5da11bdebed5c22641",
+        "content/browser/devtools/protocol/input_handler.h": "345707b12770a5e2ff04d51deb3805250a865722276ed9e38c45fbd7e652760c",
+        "content/browser/devtools/protocol/input_handler.cc": "5008fb8d8eb67bb584c99e304eb8f2456c1d8c07b6afeed8214e215df77671f7",
+        "content/browser/renderer_host/render_widget_host_impl.h": "a8e9d644b7209cd6153d55df125ef491fc31a25ff1786d61684cbded2dc4216a",
+        "content/browser/renderer_host/render_widget_host_impl.cc": "20e6b9c92046d35223b5b0e870b9f9aa67d99aa1b9b460a0a229cc80344a6ee1",
+        "content/browser/devtools/protocol_config.json": "1b613ae8f136895502117c37e8ae298d8c5aa465451dc1088483df35d4e7d4ef",
+        "third_party/blink/public/devtools_protocol/domains/Input.pdl": "5bbc6e23eb17a009da540792bd5f647567e9c81f919081059dff5274a1c66e3d"
+      },
+      "output": {
+        "third_party/blink/renderer/core/html/forms/file_input_type.cc": "c747fb20252fa04b11a4bf321a46730d2437ce836d054dd697bd20199ace8781",
+        "third_party/blink/renderer/core/html/forms/file_input_type_test.cc": "59d3358b422c73a1ea9558463dc910f7338724ff086a19342729aac88a57691d",
+        "third_party/blink/renderer/core/html/forms/mock_file_chooser.h": "60f9cff021cafec23983f6ae05c151dfbf2efd9d17c48f7b7cc3a21b241cf36c",
+        "third_party/blink/renderer/platform/scheduler/common/process_time_override_coordinator.h": "3cef8de660c741995191c05dedc039ba77922b6149f38e42dda9a4d66d0f7d8c",
+        "third_party/blink/renderer/platform/scheduler/common/process_time_override_coordinator.cc": "e9ee00cac62437ce6802163c8df8c4fef426fbec0b7a7a4a1ba882e7ce6cb39e",
+        "third_party/blink/renderer/core/inspector/inspector_emulation_agent.h": "e531f75b560b597f374e7e2dab6fa5ea95397d5ec1fc895633561100d6d0690b",
+        "third_party/blink/renderer/core/inspector/inspector_emulation_agent.cc": "12a4c74444fc1a070f62fff3babf9491ef7a28369217c67912c07134772c3c84",
+        "third_party/blink/public/devtools_protocol/domains/Emulation.pdl": "69d597474c86078e4046206b947a336dc8530b1ac735c15abca998742004739d",
+        "components/content_settings/core/browser/content_settings_registry.cc": "cdfc9974a8ad346b4abac795bc5d378ddb514a7eb730adf8c4a749c7a8499317",
+        "components/permissions/contexts/midi_permission_context.cc": "37f9b4fef6e69f4157c98bacd9e45bdb17fe70eca5b4ff767a3ffa0cb787ae8a",
+        "components/permissions/contexts/midi_permission_context.h": "c9d4a2c206763141aea0879d491df0a3a46790b6e2b53d10b1646483ef6c2ef8",
+        "third_party/blink/renderer/modules/webmidi/midi_access_initializer.cc": "736320e1248e0b8249f9f6f8b77801ab33cae8d61f2d7c49f16b65a0585b7566",
+        "third_party/blink/renderer/core/frame/local_frame_view.cc": "1b43bd086a52d499fa020aa1ee9bcdaa1081523da39f4e43edaba21e2dc42fc9",
+        "third_party/blink/renderer/core/frame/remote_frame_view.cc": "f1701b70d99d735648087d9ec536dd269d0c653a44b3bee56d8000dac570648d",
+        "third_party/blink/renderer/core/inspector/inspector_css_agent.cc": "ef94a93fe1564f8b8da91fc9aa3a9fdee7f574c6080e126e2c78c0d343ba6790",
+        "third_party/blink/renderer/core/inspector/inspector_css_agent.h": "2e3ce229ffa28b31fd7572475da874b88196ea0e61c8b8a23c795a85e70d9f67",
+        "third_party/blink/public/devtools_protocol/domains/CSS.pdl": "59543cc3792c23d50655ec6c9e7bbe826894f87bc82d94918cce4ffe6d50e572",
+        "v8/src/inspector/v8-profiler-agent-impl.cc": "c05daa7db6d759d3fd34ed6860a093f578a0c6ed24dee01c132676044b2055f5",
+        "v8/src/inspector/v8-profiler-agent-impl.h": "1598dd51873a447ff711226a45fae4552a1a76be52d1bed4eedb51c125937352",
+        "v8/src/inspector/v8-inspector-impl.cc": "5a739f36a7070620b25eae45e89887cbbc8080ed2c4b321fe7105ca648ae8f6a",
+        "v8/src/inspector/v8-inspector-impl.h": "379920e88d14c313c35b86ae96f704f398e3d6e28a678807597eb58ceab3dcb8",
+        "v8/include/js_protocol.pdl": "8018eaa090a2cbfac9d702417aa4fe45cb5773c92fc1f68a814cfb983df53161",
+        "third_party/blink/public/devtools_protocol/domains/Network.pdl": "fc0da158c38ff5f05dd0f544e6a3b3a7afcd512ef385653087c0b541dec2496a",
+        "third_party/blink/renderer/core/inspector/build.gni": "ddba7deb414ad41805dd1a8e0fa690afa70477c1af3fae3ad9ce8448ee565425",
+        "third_party/blink/renderer/core/inspector/inspector_network_agent.cc": "28af68b47ac3d33818d5fadf2af8d7e37347fcd2be1c007573da8824c99c08bb",
+        "third_party/blink/renderer/core/inspector/inspector_network_agent.h": "dbabc898baaa928d305494b57827475a8f3b6c880035274d59784d5214c3f729",
+        "third_party/blink/renderer/core/inspector/suitecut_websocket_route.h": "0de7f302dcad93b0ddfab803134e9c7d2331dbecf4748e44fb1119b7a29ca1a0",
+        "third_party/blink/renderer/core/probe/core_probes.json5": "0ba7a234893fcce81eaa4364489bedcf8c64d377b763399f7cc53e5919c5c8e8",
+        "third_party/blink/renderer/core/probe/core_probes.pidl": "7cca7c79dd24c04e08ac4f459595dc52e1edf72089729bb45131029ff11bcde4",
+        "third_party/blink/renderer/modules/websockets/websocket_channel_impl.cc": "f6df13edec4a7ba069e78f8f2888cd2c9cfb27972b02da30436a1d3d7a007ee8",
+        "third_party/blink/renderer/modules/websockets/websocket_channel_impl.h": "6c52d79115f91ff48cfa2aa1203dd2529632a54871a7737bb4c9cf87dda43f28",
+        "content/browser/devtools/protocol/input_handler.h": "cfa4567a6afb9b272f24e083f8f506c1ef0c2646614bb2b54c8fc2b4a33546f3",
+        "content/browser/devtools/protocol/input_handler.cc": "b0004b114a8ac543b03b1a50df10cf32c0cc6f60ef4f3ab208dd0974fb1d0aa4",
+        "content/browser/renderer_host/render_widget_host_impl.h": "acf979fe61d96255b464cf442c50bd5d5ab766c76ed1c03cb6eb0f7bb7baac04",
+        "content/browser/renderer_host/render_widget_host_impl.cc": "b67bdc611bb4a07ed3a616a18bc8594d47ec3b1f7b2a8c886aa2df03227259d5",
+        "content/browser/devtools/protocol_config.json": "ba38fdaace7cd9d5441f9ad53c679abd780271a6b54a20df5567af6166b8a56f",
+        "third_party/blink/public/devtools_protocol/domains/Input.pdl": "8914f08b0aa7fad12f5d15d1a66fbd7952726a2ae116745e466da2b9e10a8c93"
+      }
+    }
+  },
+  "patches": [
+    {
+      "id": "alloy-directory-enumeration",
+      "component": "cef",
+      "patch": "cef156-alloy-directory-enumeration.patch",
+      "sha256": "830d3ce0821b66c41b0549fa124649f02f57d6940a4fea8bbf268a39c6101ccc"
+    },
+    {
+      "id": "native-empty-file-selection",
+      "component": "chromium",
+      "patch": "chromium156-empty-file-selection.patch",
+      "sha256": "b34cc8e6f5fb6d109e2357813ec787fa4b7e7986b3544ceae281def3133aa34b"
+    },
+    {
+      "id": "chromium156-process-wall-time",
+      "component": "chromium",
+      "patch": "chromium156-process-wall-time.patch",
+      "sha256": "1dec1804306b8567caf141bded0c13117fb05faef1e154a50aecd183fd37a536"
+    },
+    {
+      "id": "chromium156-separate-midi-permissions",
+      "component": "chromium",
+      "patch": "chromium156-separate-midi-permissions.patch",
+      "sha256": "865a58385c6d1008d8cf0ab9045b28311d82867be749d3bcc615de8f8aa3eb0c"
+    },
+    {
+      "id": "chromium156-offscreen-oopif-raster",
+      "component": "chromium",
+      "patch": "chromium156-offscreen-oopif-raster.patch",
+      "sha256": "cf28c83bd8d4a7f337f9417b76e7fe6cf730941fd5e6ea8d135d0b1c9f78b7e8"
+    },
+    {
+      "id": "cef156-css-navigation-retention",
+      "component": "chromium",
+      "patch": "cef156-css-navigation-retention.patch",
+      "sha256": "21f8c01d1c85209a16d92973775e97b68f37b1351ca853534e959ed8e6fa572e"
+    },
+    {
+      "id": "cef156-js-navigation-retention",
+      "component": "chromium",
+      "patch": "cef156-js-navigation-retention.patch",
+      "sha256": "4447fd4c0b38f1ea713f6afcfdb7e0491f19e790ddd0687d31595d8847442170"
+    },
+    {
+      "id": "chromium156-websocket-routing",
+      "component": "chromium",
+      "patch": "chromium156-websocket-routing.patch",
+      "sha256": "47109a7d59783433dfbfabab978e88af108769fb924ff35437e3a31d381279d8"
+    },
+    {
+      "id": "cef156-content-setting-registry-guard",
+      "component": "cef",
+      "patch": "cef156-content-setting-registry-guard.patch",
+      "sha256": "77ab00c34919c58f3709b593e48d8019366d583f0c3e15c1fee4d2774676508d"
+    },
+    {
+      "id": "chromium156-widget-input-receipts",
+      "component": "chromium",
+      "patch": "chromium156-widget-input-receipts.patch",
+      "sha256": "c4218ea875cc53d0dc5f7001245e6afc68470799dd28f130be178c473c01fcc7"
+    },
+    {
+      "id": "chromium156-widget-input-receipt-probe",
+      "component": "chromium",
+      "patch": "chromium156-widget-input-receipt-probe.patch",
+      "sha256": "d1b6cd6e10315faa9e9ad4b5014de9c22b456a7d1c4e46b64c8204b157f8a896"
+    }
+  ],
+  "vendorCompilation": "UNRUN",
+  "runtimeVerification": "UNRUN",
+  "productionActivation": "NONE",
+  "manualAdapters": [
+    "suitecut-verified-midi-adapter.patch",
+    "suitecut-process-wall-time-adapter.patch",
+    "suitecut-native-directory-adapter.patch"
+  ],
+  "limits": [
+    "Source applicability does not establish vendor compilation or complete API parity.",
+    "Clock, coverage, raster and widget receipt candidates retain the limits in their adjacent manifests.",
+    "Native widget mouse controller and SDK are integrated behind the exact runtime probe; stock CEF remains unsupported and custom runtime is unverified.",
+    "Production coverage controller requires the final lifecycle contract (JS revision 2/CSS revision 3); the older isolated producers are rejected until that backend contract exists.",
+    "Native WebSocket controller/SDK policy integration is being completed separately; vendor compilation and runtime verification remain unrun.",
+    "Native directory and wall-time adapter activation remains manual and requires actual verified backend contracts."
+  ]
+}

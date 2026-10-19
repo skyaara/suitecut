@@ -4,11 +4,10 @@ import { record as betaRecord } from '../src/beta.js'
 import { DEFAULT_BACKEND, defineSuiteCut, launchBrowser, record } from '../src/index.js'
 import { launchNativeBrowser, type NativeBrowser } from '../src/native-browser.js'
 import { recordNative } from '../src/native-recording.js'
-import { record as recordPlaywright, type SuiteCutRecordResult } from '../src/playwright.js'
+import { type SuiteCutRecordResult } from '../src/native-recording.js'
 
 vi.mock('../src/native-browser.js', () => ({ launchNativeBrowser: vi.fn() }))
 vi.mock('../src/native-recording.js', () => ({ recordNative: vi.fn() }))
-vi.mock('../src/playwright.js', () => ({ record: vi.fn() }))
 
 describe('native-default public API', () => {
   let source: NativeBrowser
@@ -23,7 +22,6 @@ describe('native-default public API', () => {
     source = { close: vi.fn(() => Promise.resolve()) } as Partial<NativeBrowser> as NativeBrowser
     vi.mocked(launchNativeBrowser).mockResolvedValue(source)
     vi.mocked(recordNative).mockResolvedValue(result)
-    vi.mocked(recordPlaywright).mockResolvedValue(result)
   })
   afterEach(() => {
     vi.resetAllMocks()
@@ -41,23 +39,14 @@ describe('native-default public API', () => {
     })
     expect(recordNative).toHaveBeenCalledWith('beta', callback, { source })
     expect(recorded.backend).toBe('native')
-    expect(recordPlaywright).not.toHaveBeenCalled()
     // eslint-disable-next-line @typescript-eslint/unbound-method -- Inspecting a mock.
     expect(source.close).toHaveBeenCalledTimes(1)
   })
 
-  it('requires explicit Playwright fallback and leaves its options intact', async () => {
-    const callback = vi.fn()
-    const fallback = await record('baseline', callback, {
-      backend: 'playwright',
-      browserName: 'firefox',
-      capture: { framesPerSecond: 30 },
-    })
-    expect(fallback.backend).toBe('playwright')
-    expect(recordPlaywright).toHaveBeenCalledWith('baseline', callback, {
-      browserName: 'firefox',
-      capture: { framesPerSecond: 30 },
-    })
+  it('rejects unsupported backend options before launching', async () => {
+    await expect(
+      record('invalid backend', vi.fn(), { backend: 'external' } as never),
+    ).rejects.toThrow('Unsupported SuiteCut backend')
     expect(launchNativeBrowser).not.toHaveBeenCalled()
   })
 
@@ -67,7 +56,6 @@ describe('native-default public API', () => {
     vi.stubEnv('SUITECUT_NATIVE_EXECUTABLE', '/bad/browser')
     vi.mocked(launchNativeBrowser).mockRejectedValue(new Error('CEF launch failed'))
     await expect(record('beta', vi.fn())).rejects.toThrow('CEF launch failed')
-    expect(recordPlaywright).not.toHaveBeenCalled()
   })
 
   it('closes its native source on recording failure', async () => {

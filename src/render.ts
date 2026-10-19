@@ -7,7 +7,7 @@ import * as z from 'zod'
 
 import { raceWithAbort } from './abort.js'
 import { formattedJson, writeTextFileAtomic } from './atomic-file.js'
-import { FrameRateSchema } from './frame-rate.js'
+import { OutputFrameRateSchema } from './frame-rate.js'
 import { decodeManifest } from './manifest.js'
 import { resolveFfmpeg, runProcess, type SuiteCutProcessResult } from './process.js'
 import { createSuiteCutReportRedactor } from './report-redaction.js'
@@ -49,7 +49,7 @@ const OutputSchema = z
     colorRange: ColorRangeSchema.exactOptional(),
     width: z.number().int().positive().max(7680).multipleOf(2).exactOptional(),
     height: z.number().int().positive().max(4320).multipleOf(2).exactOptional(),
-    framesPerSecond: FrameRateSchema.exactOptional(),
+    framesPerSecond: OutputFrameRateSchema.exactOptional(),
     quality: RenderQualitySchema.exactOptional(),
   })
   .superRefine((output, context) => {

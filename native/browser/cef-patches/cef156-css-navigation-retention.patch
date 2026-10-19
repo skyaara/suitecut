@@ -1,0 +1,351 @@
+--- a/third_party/blink/renderer/core/inspector/inspector_css_agent.cc
++++ b/third_party/blink/renderer/core/inspector/inspector_css_agent.cc
+@@ -899,6 +899,7 @@
+ }
+
+ void InspectorCSSAgent::Reset() {
++  RetireRootRuleUsage();
+   id_to_inspector_style_sheet_.clear();
+   id_to_inspector_style_sheet_for_inline_style_.clear();
+   css_style_sheet_to_inspector_style_sheet_.clear();
+@@ -4254,6 +4255,8 @@
+
+ String InspectorCSSAgent::UnbindStyleSheet(
+     InspectorStyleSheet* inspector_style_sheet) {
++  // Drain genuine rule offsets while every imported/parent mapping exists.
++  RetireRootRuleUsage();
+   String id = inspector_style_sheet->Id();
+   id_to_inspector_style_sheet_.erase(id);
+   if (inspector_style_sheet->PageStyleSheet()) {
+@@ -4649,6 +4652,7 @@
+   auto it = css_style_sheet_to_inspector_style_sheet_.find(css_style_sheet);
+   if (it == css_style_sheet_to_inspector_style_sheet_.end())
+     return;
++  if (retain_navigation_rule_usage_) retained_rule_usage_failed_ = true;
+   InspectorStyleSheet* style_sheet = it->value;
+   style_sheet->MarkForSync();
+   StyleSheetChanged(style_sheet);
+@@ -4672,6 +4676,7 @@
+
+ void InspectorCSSAgent::DidReplaceStyleSheetText(CSSStyleSheet* css_style_sheet,
+                                                  const String& text) {
++  if (retain_navigation_rule_usage_) retained_rule_usage_failed_ = true;
+   BindStyleSheet(css_style_sheet)->CSSOMStyleSheetTextReplaced(text);
+ }
+
+@@ -5114,17 +5119,36 @@
+   if (enabled == !!tracker_)
+     return;
+   tracker_ = enabled ? MakeGarbageCollected<StyleRuleUsageTracker>() : nullptr;
++  if (!enabled) {
++    retain_navigation_rule_usage_ = false;
++    retained_rule_usage_failed_ = false;
++    retired_rule_usage_.clear();
++    retired_style_sheets_.clear();
++    retained_source_units_ = 0;
++  }
+
+   for (Document* document : dom_agent_->Documents())
+     document->GetStyleEngine().SetRuleUsageTracker(tracker_);
+ }
+
+ void InspectorCSSAgent::WillChangeStyleElement(Element* element) {
++  if (retain_navigation_rule_usage_) {
++    for (const auto& entry : css_style_sheet_to_inspector_style_sheet_) {
++      if (entry.key->ownerNode() == element) {
++        retained_rule_usage_failed_ = true;
++        break;
++      }
++    }
++  }
+   resource_container_->EraseStyleElementContent(
+       DOMNodeIdType(element->GetDomNodeId()));
+ }
+
+ protocol::Response InspectorCSSAgent::startRuleUsageTracking() {
++  if (retain_navigation_rule_usage_) {
++    return protocol::Response::ServerError(
++        "Navigation-retaining CSS coverage already owns this agent");
++  }
+   coverage_enabled_.Set(true);
+   SetCoverageEnabled(true);
+
+@@ -5135,6 +5159,131 @@
+   }
+
+   return protocol::Response::Success();
++}
++
++protocol::Response InspectorCSSAgent::getNavigationCoverageCapabilities(
++    int* revision, int* max_retired_rules, int* max_stylesheet_id_length,
++    int* max_retired_sheets, int* max_source_units) {
++  *revision = 2;
++  *max_retired_sheets = static_cast<int>(kMaxRetiredSheets);
++  *max_source_units = static_cast<int>(kMaxRetiredSourceUnits);
++  *max_retired_rules = static_cast<int>(kMaxRetiredRules);
++  *max_stylesheet_id_length =
++      static_cast<int>(kMaxRetiredStyleSheetIdLength);
++  return protocol::Response::Success();
++}
++
++protocol::Response
++InspectorCSSAgent::startRuleUsageTrackingWithNavigationRetention() {
++  if (!enable_completed_) {
++    return protocol::Response::ServerError(
++        "CSS agent must be enabled before navigation-retaining coverage");
++  }
++  if (tracker_) {
++    return protocol::Response::ServerError(
++        "CSS rule usage tracking is already enabled");
++  }
++  // Opt-in ownership precedes the synchronous style/layout update, whose
++  // sheet-removal callbacks must also be captured.
++  retain_navigation_rule_usage_ = true;
++  retained_rule_usage_failed_ = false;
++  retired_rule_usage_.clear();
++  retired_style_sheets_.clear();
++  retained_source_units_ = 0;
++  coverage_enabled_.Set(true);
++  SetCoverageEnabled(true);
++  for (Document* document : dom_agent_->Documents()) {
++    document->GetStyleEngine().MarkAllElementsForStyleRecalc(
++        StyleChangeReasonForTracing::Create(style_change_reason::kInspector));
++    document->UpdateStyleAndLayoutTree();
++  }
++  if (retained_rule_usage_failed_) {
++    SetCoverageEnabled(false);
++    return protocol::Response::ServerError(
++        "CSS navigation retention failed during initial style update");
++  }
++  return protocol::Response::Success();
++}
++
++void InspectorCSSAgent::RetireRootRuleUsage() {
++  if (!retain_navigation_rule_usage_ || !tracker_ ||
++      retained_rule_usage_failed_) {
++    return;
++  }
++  // Immutable header/text snapshots retain no DOM or style-sheet object.
++  for (const auto& entry : id_to_inspector_style_sheet_) {
++    auto* sheet = entry.value.Get();
++    String text;
++    if (!sheet->GetText(&text)) {
++      retained_rule_usage_failed_ = true;
++      return;
++    }
++    const auto found = retired_style_sheets_.find(entry.key);
++    if (found != retired_style_sheets_.end()) {
++      if (found->value->getText() != text) {
++        // Changed offsets under the same sheet identity need a separate
++        // mutation-generation protocol; never conflate the source versions.
++        retained_rule_usage_failed_ = true;
++        return;
++      }
++      continue;
++    }
++    if (retired_style_sheets_.size() >= kMaxRetiredSheets ||
++        entry.key.length() > kMaxRetiredStyleSheetIdLength ||
++        text.length() > kMaxRetiredSourceUnits - retained_source_units_) {
++      retained_rule_usage_failed_ = true;
++      return;
++    }
++    auto header = sheet->BuildObjectForStyleSheetInfo();
++    const size_t metadata = size_t(header->getFrameId().length()) +
++        header->getSourceURL().length() + header->getTitle().length() +
++        header->getSourceMapURL(String()).length();
++    if (metadata > 32768 ||
++        metadata > kMaxRetiredSourceUnits - retained_source_units_ -
++                       text.length()) {
++      retained_rule_usage_failed_ = true;
++      return;
++    }
++    retained_source_units_ += text.length() + metadata;
++    retired_style_sheets_.Set(entry.key,
++        protocol::CSS::NavigationCoverageStyleSheet::create()
++            .setHeader(std::move(header)).setText(text).build());
++  }
++  std::unique_ptr<protocol::Array<protocol::CSS::RuleUsage>> current;
++  double timestamp;
++  auto response = CollectCurrentRuleUsage(
++      &current, &timestamp, kMaxRetiredRules - retired_rule_usage_.size());
++  if (!response.IsSuccess()) {
++    retained_rule_usage_failed_ = true;
++    return;
++  }
++  for (auto& usage : *current) {
++    retired_rule_usage_.emplace_back(std::move(usage));
++  }
++}
++
++protocol::Response
++InspectorCSSAgent::stopRuleUsageTrackingWithNavigationRetention(
++    std::unique_ptr<protocol::Array<protocol::CSS::RuleUsage>>* result,
++    std::unique_ptr<protocol::Array<
++        protocol::CSS::NavigationCoverageStyleSheet>>* style_sheets) {
++  if (!retain_navigation_rule_usage_ || !tracker_) {
++    return protocol::Response::ServerError(
++        "CSS navigation-retaining coverage is not enabled");
++  }
++  for (Document* document : dom_agent_->Documents())
++    document->UpdateStyleAndLayoutTree();
++  RetireRootRuleUsage();
++  double timestamp;
++  auto response = TakeRetainedRuleUsage(result, &timestamp);
++  if (response.IsSuccess()) {
++    *style_sheets = std::make_unique<protocol::Array<
++        protocol::CSS::NavigationCoverageStyleSheet>>();
++    for (auto& entry : retired_style_sheets_)
++      (*style_sheets)->emplace_back(std::move(entry.value));
++  }
++  SetCoverageEnabled(false);
++  return response;
+ }
+
+ protocol::Response InspectorCSSAgent::trackComputedStyleUpdatesForNode(
+@@ -5185,6 +5334,39 @@
+ protocol::Response InspectorCSSAgent::takeCoverageDelta(
+     std::unique_ptr<protocol::Array<protocol::CSS::RuleUsage>>* result,
+     double* out_timestamp) {
++  if (retain_navigation_rule_usage_) {
++    return protocol::Response::ServerError(
++        "Use the navigation retention collection API");
++  }
++  return CollectCurrentRuleUsage(result, out_timestamp, 0);
++}
++
++protocol::Response InspectorCSSAgent::TakeRetainedRuleUsage(
++    std::unique_ptr<protocol::Array<protocol::CSS::RuleUsage>>* result,
++    double* out_timestamp) {
++  if (retained_rule_usage_failed_) {
++    return protocol::Response::ServerError(
++        "CSS navigation coverage retention lost source, mutation or capacity");
++  }
++  std::unique_ptr<protocol::Array<protocol::CSS::RuleUsage>> current;
++  auto response = CollectCurrentRuleUsage(
++      &current, out_timestamp,
++      kMaxRetiredRules - retired_rule_usage_.size());
++  if (!response.IsSuccess()) {
++    retained_rule_usage_failed_ = true;
++    return response;
++  }
++  *result = std::make_unique<protocol::Array<protocol::CSS::RuleUsage>>();
++  (*result)->swap(retired_rule_usage_);
++  for (auto& usage : *current) {
++    (*result)->emplace_back(std::move(usage));
++  }
++  return protocol::Response::Success();
++}
++
++protocol::Response InspectorCSSAgent::CollectCurrentRuleUsage(
++    std::unique_ptr<protocol::Array<protocol::CSS::RuleUsage>>* result,
++    double* out_timestamp, size_t remaining_rules) {
+   if (!tracker_) {
+     return protocol::Response::ServerError(
+         "CSS rule usage tracking is not enabled");
+@@ -5225,6 +5407,13 @@
+       while (rule) {
+         if (std::unique_ptr<protocol::CSS::RuleUsage> rule_usage_object =
+                 rule_style_sheet->BuildObjectForRuleUsage(rule, true)) {
++          if (retain_navigation_rule_usage_ &&
++              ((*result)->size() >= remaining_rules ||
++               rule_usage_object->getStyleSheetId().length() >
++                   kMaxRetiredStyleSheetIdLength)) {
++            return protocol::Response::ServerError(
++                "CSS navigation coverage retention lost source, mutation or capacity");
++          }
+           (*result)->emplace_back(std::move(rule_usage_object));
+         }
+         rule = rule->parentRule();
+--- a/third_party/blink/renderer/core/inspector/inspector_css_agent.h
++++ b/third_party/blink/renderer/core/inspector/inspector_css_agent.h
+@@ -25,6 +25,8 @@
+
+ #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_INSPECTOR_CSS_AGENT_H_
+ #define THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_INSPECTOR_CSS_AGENT_H_
++
++#include <cstddef>
+
+ #include "third_party/blink/renderer/core/animation/keyframe_effect.h"
+ #include "third_party/blink/renderer/core/core_export.h"
+@@ -175,6 +177,13 @@
+                     const String& src,
+                     const FontCustomPlatformData*);
+   void SetCoverageEnabled(bool);
++  protocol::Response CollectCurrentRuleUsage(
++      std::unique_ptr<protocol::Array<protocol::CSS::RuleUsage>>* result,
++      double* timestamp, size_t remaining_rules);
++  protocol::Response TakeRetainedRuleUsage(
++      std::unique_ptr<protocol::Array<protocol::CSS::RuleUsage>>* result,
++      double* out_timestamp);
++  void RetireRootRuleUsage();
+   void WillChangeStyleElement(Element*);
+   void DidMutateStyleSheet(CSSStyleSheet* css_style_sheet);
+   void DidInvalidateStyleAttr(Element* element);
+@@ -336,6 +345,14 @@
+       std::optional<String>* computed_font_weight) override;
+
+   protocol::Response startRuleUsageTracking() override;
++  protocol::Response getNavigationCoverageCapabilities(
++      int* revision, int* max_retired_rules, int* max_stylesheet_id_length,
++      int* max_retired_sheets, int* max_source_units) override;
++  protocol::Response startRuleUsageTrackingWithNavigationRetention() override;
++  protocol::Response stopRuleUsageTrackingWithNavigationRetention(
++      std::unique_ptr<protocol::Array<protocol::CSS::RuleUsage>>* result,
++      std::unique_ptr<protocol::Array<
++          protocol::CSS::NavigationCoverageStyleSheet>>* style_sheets) override;
+   protocol::Response takeCoverageDelta(
+       std::unique_ptr<protocol::Array<protocol::CSS::RuleUsage>>* result,
+       double* out_timestamp) override;
+@@ -596,6 +613,18 @@
+
+   Member<StyleRuleUsageTracker> tracker_;
+
++  // Typed usage records only: these never retain old DOM/style-sheet objects.
++  static constexpr size_t kMaxRetiredRules = 8192;
++  static constexpr size_t kMaxRetiredStyleSheetIdLength = 256;
++  static constexpr size_t kMaxRetiredSheets = 2048;
++  static constexpr size_t kMaxRetiredSourceUnits = 8 * 1024 * 1024;
++  size_t retained_source_units_ = 0;
++  HashMap<String, std::unique_ptr<protocol::CSS::NavigationCoverageStyleSheet>>
++      retired_style_sheets_;
++  bool retain_navigation_rule_usage_ = false;
++  bool retained_rule_usage_failed_ = false;
++  protocol::Array<protocol::CSS::RuleUsage> retired_rule_usage_;
++
+   Member<CSSStyleSheet> inspector_user_agent_style_sheet_;
+   // This is cached to track when the ViewTransition UA stylesheet changes
+   // and a new binding is required to an InspectorStyleSheet.
+--- a/third_party/blink/public/devtools_protocol/domains/CSS.pdl
++++ b/third_party/blink/public/devtools_protocol/domains/CSS.pdl
+@@ -1029,6 +1029,31 @@
+   # Enables the selector recording.
+   command startRuleUsageTracking
+
++  # Immutable native source snapshot; no retained DOM or stylesheet object.
++  experimental type NavigationCoverageStyleSheet extends object
++    properties
++      CSSStyleSheetHeader header
++      string text
++
++  # SuiteCut vendor capability. Opt-in only; ordinary tracking is unchanged.
++  experimental command getNavigationCoverageCapabilities
++    returns
++      integer revision
++      integer maxRetiredRules
++      integer maxStylesheetIdLength
++      integer maxRetiredSheets
++      integer maxSourceUnits
++
++  # Retains actual rule usage before root reset or sheet unbind. Mutations of
++  # an existing source identity fail explicitly until versioned offsets exist.
++  experimental command startRuleUsageTrackingWithNavigationRetention
++
++  # Collect and stop atomically, including immutable native source snapshots.
++  experimental command stopRuleUsageTrackingWithNavigationRetention
++    returns
++      array of RuleUsage ruleUsage
++      array of NavigationCoverageStyleSheet styleSheets
++
+   # Stop tracking rule usage and return the list of rules that were used since last call to
+   # `takeCoverageDelta` (or since start of coverage instrumentation).
+   command stopRuleUsageTracking

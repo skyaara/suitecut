@@ -244,7 +244,7 @@ export async function pulseSuiteCutCursor(durationMs: number): Promise<void> {
   ripple.remove()
 }
 
-/** Shows a highlight inside the page so the screencast records its animation. */
+/** Shows a highlight inside the page so native capture records its animation. */
 export async function showSuiteCutHighlight(input: PresentationHighlightInput): Promise<void> {
   const host = document.documentElement.querySelector('[data-suitecut-presentation]')
   const layer = host?.shadowRoot?.querySelector<HTMLElement>('#layer')

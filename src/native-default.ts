@@ -7,18 +7,13 @@ import {
   recordNative,
   type NativeRecordingContext,
   type NativeRecordingOptions,
+  type SuiteCutRecordResult,
 } from './native-recording.js'
 import {
   createNativeBroadcast,
   type NativeBroadcast,
   type NativeBroadcastOptions,
 } from './native.js'
-import {
-  record as recordPlaywright,
-  type SuiteCutRecordOptions,
-  type SuiteCutRecordingCallback,
-  type SuiteCutRecordResult,
-} from './playwright.js'
 import { resolveFfmpeg } from './process.js'
 
 export { renderSuiteCut } from './render.js'
@@ -39,47 +34,27 @@ export interface SuiteCutNativeRecordOptions extends Omit<NativeRecordingOptions
   /** Native launch settings; executablePath also accepts SUITECUT_NATIVE_EXECUTABLE. */
   native?: Omit<SuiteCutBrowserOptions, 'signal'>
 }
-export interface SuiteCutPlaywrightRecordOptions extends SuiteCutRecordOptions {
-  backend: 'playwright'
-}
-export type SuiteCutRecordingResult = SuiteCutRecordResult & { backend: 'native' | 'playwright' }
+export type SuiteCutRecordingResult = SuiteCutRecordResult & { backend: 'native' }
 export type SuiteCutNativeRecordingCallback = (
   context: NativeRecordingContext,
 ) => void | Promise<void>
 
-/** Launches SuiteCut's default I420 native browser; never silently falls back to Playwright. */
+/** Launches SuiteCut's I420 native browser. */
 export function launchBrowser(options: SuiteCutBrowserOptions = {}): Promise<NativeBrowser> {
   const executablePath = options.executablePath ?? process.env.SUITECUT_NATIVE_EXECUTABLE
   if (!executablePath)
     throw new Error(
-      'SuiteCut 2.0 requires a native executable. Set SUITECUT_NATIVE_EXECUTABLE or native.executablePath; choose backend: "playwright" explicitly for fallback.',
+      'SuiteCut 2.0 requires a native executable. Set SUITECUT_NATIVE_EXECUTABLE or native.executablePath.',
     )
   return launchNativeBrowser({ pixelFormat: 'i420', ...options, executablePath })
 }
 
 /** Records with native capture by default; each call owns and closes its primary browser. */
-export function record(
-  name: string,
-  callback: SuiteCutNativeRecordingCallback,
-  options?: SuiteCutNativeRecordOptions,
-): Promise<SuiteCutRecordingResult>
-export function record(
-  name: string,
-  callback: SuiteCutRecordingCallback,
-  options: SuiteCutPlaywrightRecordOptions,
-): Promise<SuiteCutRecordingResult>
 export async function record(
   name: string,
-  callback: SuiteCutNativeRecordingCallback | SuiteCutRecordingCallback,
-  options: SuiteCutNativeRecordOptions | SuiteCutPlaywrightRecordOptions = {},
+  callback: SuiteCutNativeRecordingCallback,
+  options: SuiteCutNativeRecordOptions = {},
 ): Promise<SuiteCutRecordingResult> {
-  if (options.backend === 'playwright') {
-    const { backend, ...settings } = options
-    return {
-      ...(await recordPlaywright(name, callback as SuiteCutRecordingCallback, settings)),
-      backend,
-    }
-  }
   const { backend, native, ...settings } = options
   if (backend !== undefined && backend !== 'native') throw new Error('Unsupported SuiteCut backend')
   // Validate before spawning; recordNative validates the remaining recording settings.
@@ -93,7 +68,7 @@ export async function record(
   })
   try {
     return {
-      ...(await recordNative(name, callback as SuiteCutNativeRecordingCallback, {
+      ...(await recordNative(name, callback, {
         ...settings,
         source,
       })),

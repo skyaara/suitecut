@@ -1,0 +1,11 @@
+// SPDX-License-Identifier: MIT
+#ifdef NDEBUG
+#undef NDEBUG
+#endif
+#include <cassert>
+#include "include/cef_api_hash.h"
+#ifndef SUITECUT_NETWORK_CONTROL_HEADER
+#define SUITECUT_NETWORK_CONTROL_HEADER "network_controls.h"
+#endif
+#include SUITECUT_NETWORK_CONTROL_HEADER
+int main(){assert(cef_api_hash(CEF_API_VERSION,0));using Controls=suitecut::NetworkControls;using Dict=Controls::Dict;std::vector<Dict>actual;Controls controls([&](const std::string&,const std::string&method,Dict params,Controls::Result done){assert(method=="Network.setExtraHTTPHeaders");actual.push_back(params->GetDictionary("headers")->Copy(false));done(true,"");},[](Dict){},[](const std::string&){assert(false);},[]{},[]{return 0;});controls.SessionAttached("");auto ctx=CefDictionaryValue::Create();ctx->SetString("X-Case","context");ctx->SetString("X-Context","inherited");auto command=CefDictionaryValue::Create();command->SetString("action","setContextExtraHTTPHeaders");command->SetDictionary("headers",ctx->Copy(false));controls.Command(1,command,[](bool ok,const std::string&,const std::string&){assert(ok);});auto local=CefDictionaryValue::Create();local->SetString("x-case","page");local->SetString("X-Page","local");command->SetString("action","setExtraHTTPHeaders");command->SetDictionary("headers",local->Copy(false));controls.Command(2,command,[](bool ok,const std::string&,const std::string&){assert(ok);});auto merged=actual.back();assert(merged->GetSize()==3&&!merged->HasKey("X-Case")&&merged->GetString("x-case")=="page"&&merged->GetString("X-Context")=="inherited");controls.SessionAttached("actual-worker",[](bool ok,const std::string&){assert(ok);},false);assert(actual.back()->GetString("x-case")=="page");command->SetString("action","setContextExtraHTTPHeaders");command->SetDictionary("headers",CefDictionaryValue::Create());controls.Command(3,command,[](bool ok,const std::string&,const std::string&){assert(ok);});assert(actual.back()->GetSize()==2&&actual.back()->GetString("x-case")=="page");command->SetString("action","setExtraHTTPHeaders");command->SetDictionary("headers",CefDictionaryValue::Create());controls.Command(4,command,[](bool ok,const std::string&,const std::string&){assert(ok);});assert(actual.back()->GetSize()==0);controls.Clear();}

@@ -1,0 +1,33 @@
+{
+  "status": "ISOLATED VENDOR SOURCE REPAIR; not compiled, installed or enabled",
+  "chromium": "156.0.8078.17",
+  "cef": "47dbc1df023e99f006fb9e850a8d83cc19b4fdd9",
+  "baseSHA256": {
+    "components/content_settings/core/browser/content_settings_registry.cc": "c85d26741658d617e5067f22a6cd6cf0c2e32e65c493e12b9fec556848d4d530",
+    "components/permissions/contexts/midi_permission_context.cc": "65f95d4860f713142a3d5e7251872265c58ccc21c68f8126747fc7a2325f62ef",
+    "components/permissions/contexts/midi_permission_context.h": "b9c39c78960efa2d85526e899d62a6c62e6f63b7c270c4bfeecfbf2273b8179a",
+    "third_party/blink/renderer/modules/webmidi/midi_access_initializer.cc": "8ee6925c9bd5f8bed3bc1eae2de08cb8963c87308741dd198ce715d9fcbd3d1f"
+  },
+  "patchedSHA256": {
+    "components/content_settings/core/browser/content_settings_registry.cc": "cdfc9974a8ad346b4abac795bc5d378ddb514a7eb730adf8c4a749c7a8499317",
+    "components/permissions/contexts/midi_permission_context.cc": "37f9b4fef6e69f4157c98bacd9e45bdb17fe70eca5b4ff767a3ffa0cb787ae8a",
+    "components/permissions/contexts/midi_permission_context.h": "c9d4a2c206763141aea0879d491df0a3a46790b6e2b53d10b1646483ef6c2ef8",
+    "third_party/blink/renderer/modules/webmidi/midi_access_initializer.cc": "736320e1248e0b8249f9f6f8b77801ab33cae8d61f2d7c49f16b65a0585b7566"
+  },
+  "patchSHA256": "865a58385c6d1008d8cf0ab9045b28311d82867be749d3bcc615de8f8aa3eb0c",
+  "applyCheck": "PASS against exact pinned downloaded source files",
+  "nativeActivation": "NONE; stock SDK continues to reject midi and never projects setting27",
+  "policy": "Ordinary MIDI default BLOCK, ALLOW/BLOCK only; separate true sysex descriptor and genuine GrantSendMidiMessage. SysEx transport authority remains separate and Chromium permissions-policy/secure-origin checks unchanged.",
+  "limits": [
+    "No Chromium/CEF compile or device/runtime evidence.",
+    "No claim of immediate revocation of preexisting MIDI handles; upstream process-scoped transport rights are retained.",
+    "Ordinary MIDI has no upstream prompt RequestType; default BLOCK is an explicit automation policy difference.",
+    "Native candidate adapter is a separate unapplied patch and must only be enabled after rebuilt vendor provenance and real permission/device checks."
+  ],
+  "sourceURLs": {
+    "components/content_settings/core/browser/content_settings_registry.cc": "https://raw.githubusercontent.com/chromium/chromium/156.0.8078.17/components/content_settings/core/browser/content_settings_registry.cc",
+    "components/permissions/contexts/midi_permission_context.cc": "https://raw.githubusercontent.com/chromium/chromium/156.0.8078.17/components/permissions/contexts/midi_permission_context.cc",
+    "components/permissions/contexts/midi_permission_context.h": "https://raw.githubusercontent.com/chromium/chromium/156.0.8078.17/components/permissions/contexts/midi_permission_context.h",
+    "third_party/blink/renderer/modules/webmidi/midi_access_initializer.cc": "https://raw.githubusercontent.com/chromium/chromium/156.0.8078.17/third_party/blink/renderer/modules/webmidi/midi_access_initializer.cc"
+  }
+}

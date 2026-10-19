@@ -1,0 +1,126 @@
+{
+  "status": "BASELINE_COMPLETE_POSTFIX_PENDING",
+  "sourceHead": "9e7ad4180a259d722c2fd1c0b89ab1e3d4985ffa",
+  "binarySHA256": "1bd2b22c7f16656f92ac923b1433aa2f7d96357962476b54aca52553c43653f1",
+  "seed": 123456789,
+  "nativeSandbox": "enabled; no --no-sandbox launch switch",
+  "nodeMaxOldSpaceMiB": 512,
+  "nativePSSBudgetMiB": 1536,
+  "baseline": {
+    "operations": 1966,
+    "contextPageCreateNavigateCloseCycles": 128,
+    "allOperationAssertionsPassed": true,
+    "framesPerSecond": 5,
+    "elapsedMs": 135289.13726000002,
+    "heapBytesPerBatchSlopeAfterWarmup": 95791.14285714286,
+    "nativePSSKiBPerBatchSlopeAfterWarmup": 17891.571428571428,
+    "peakNativePSSKiB": 532262,
+    "proof": "/workspace/suitecut-hardening-live-proof-20261017/baseline/result.json",
+    "cleanup": "Actual helper exit 0. Initial unsupervised run conservatively FAILs closure because two exited zygotes are zombies adopted by PID 1; subsequent runs use existing subreaper and actual waitpid receipts. No running descendants remained."
+  },
+  "families": {
+    "result": "PASS",
+    "families": [
+      "forms-checkbox-select",
+      "pdf",
+      "js-current-document-coverage",
+      "css-current-document-coverage",
+      "tracing",
+      "har-record-replay",
+      "renderer-crash-recovery"
+    ],
+    "proof": "/workspace/suitecut-hardening-live-proof-20261017/families/result.json",
+    "supervisor": "/workspace/suitecut-hardening-live-proof-20261017/families.supervisor.json"
+  },
+  "causalRetention": {
+    "result": "Reproduced growth in native renderer PSS with flat post-GC JavaScript heap",
+    "phases": [
+      {
+        "phase": "evaluate",
+        "operations": 192,
+        "nativeRendererPSSKiBFirst": 33782,
+        "nativeRendererPSSKiBLast": 41126,
+        "postGCJavaScriptUsedBytesFirstMeasuredBatch": 847868,
+        "postGCJavaScriptUsedBytesLast": 847868
+      },
+      {
+        "phase": "handle",
+        "operations": 192,
+        "nativeRendererPSSKiBFirst": 34884,
+        "nativeRendererPSSKiBLast": 47048,
+        "postGCJavaScriptUsedBytesFirstMeasuredBatch": 848056,
+        "postGCJavaScriptUsedBytesLast": 848056
+      },
+      {
+        "phase": "fill",
+        "operations": 192,
+        "nativeRendererPSSKiBFirst": 34846,
+        "nativeRendererPSSKiBLast": 91171,
+        "postGCJavaScriptUsedBytesFirstMeasuredBatch": 961820,
+        "postGCJavaScriptUsedBytesLast": 961820
+      },
+      {
+        "phase": "click",
+        "operations": 192,
+        "nativeRendererPSSKiBFirst": 34836,
+        "nativeRendererPSSKiBLast": 90048,
+        "postGCJavaScriptUsedBytesFirstMeasuredBatch": 1017804,
+        "postGCJavaScriptUsedBytesLast": 1017804
+      }
+    ],
+    "proof": "/workspace/suitecut-hardening-live-proof-20261017/retention/result.json",
+    "supervisor": "/workspace/suitecut-hardening-live-proof-20261017/retention.supervisor.json"
+  },
+  "fpsLatency": [
+    {
+      "fps": 5,
+      "operations": 20,
+      "p50Ms": 599.9142370000009,
+      "p95Ms": 601.1763340000002,
+      "p99Ms": 601.1854949999997,
+      "nativeExit": {
+        "code": 0,
+        "signal": null
+      }
+    },
+    {
+      "fps": 60,
+      "operations": 20,
+      "p50Ms": 50.000694999998814,
+      "p95Ms": 52.140809000000445,
+      "p99Ms": 70.17553399999997,
+      "nativeExit": {
+        "code": 0,
+        "signal": null
+      }
+    },
+    {
+      "fps": 120,
+      "operations": 20,
+      "p50Ms": 29.875738999999157,
+      "p95Ms": 42.82157200000074,
+      "p99Ms": 49.37304600000061,
+      "nativeExit": {
+        "code": 0,
+        "signal": null
+      }
+    }
+  ],
+  "fpsInterpretation": "Low capture FPS slows locator clicks because native stability checks wait for real RAF samples. Existing actionability checks were preserved. Measurements on contended cloud workspace, not a standalone throughput benchmark.",
+  "knownFixesOwnedElsewhere": [
+    "Native Source cycle through retained network admission/post-read hooks",
+    "Bounded role-aware V8 debugger collected-script cache"
+  ],
+  "notClaimed": [
+    "All possible fuzz inputs exhausted",
+    "No memory leaks anywhere",
+    "Custom CEF features supported by stock backend",
+    "Video/audio long-duration encoding soak",
+    "Shared/service worker long-duration lifecycle soak"
+  ],
+  "reproduce": [
+    "Run existing suitecut-proof-supervisor --report <proof.json> --timeout-ms 600000 --cleanup-grace-ms 6000 --physical-ms 6000 -- env SUITECUT_STRESS_SUPERVISED=1 SUITECUT_STRESS_OUTPUT=<output> node --expose-gc --max-old-space-size=512 scripts/sdk-browser-stress.mjs",
+    "Set SUITECUT_STRESS_SDK and SUITECUT_NATIVE_EXECUTABLE to selected emitted SDK/binary for postfix comparison.",
+    "For stress result PASS_PENDING_SUPERVISOR_REAP, require the outer supervisor descendantsRetired=true, cleanupFailed=false, timeout=false, error empty and actual descendant waitpid receipts before treating shutdown as complete."
+  ]
+}

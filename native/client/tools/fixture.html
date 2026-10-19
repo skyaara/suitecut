@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><title>Native client verification</title>
+<style>body{font:16px sans-serif;margin:20px}label,button,select{display:block;margin:8px}#moving,#trap{position:absolute;left:80px;top:300px;width:170px;height:55px}#trap{z-index:1}#moving{z-index:2}#overlay{position:fixed;inset:0;z-index:100;background:#ddd}#overlay button{margin:60px}#noise{display:none}</style>
+<label>Name<input id="name" aria-label="Name"></label>
+<label><input id="consent" type="checkbox" aria-label="Consent">Consent</label>
+<label>Region<select id="region" aria-label="Region"><option value="west">West</option><option value="east">East</option></select></label>
+<button id="commit" data-testid="commit">Commit transaction</button><output id="status">Waiting</output>
+<div id="shadow"></div><button id="trap">Wrong target</button><button id="moving">Moving target</button><div id="noise"></div>
+<script>
+window.clicks=0;window.lastTrusted=false;window.race={moves:0,downs:0,clicks:0,traps:0,overlayDowns:0};
+document.querySelector('#commit').onclick=event=>{window.clicks++;window.lastTrusted=event.isTrusted;document.querySelector('#status').textContent='Saved '+document.querySelector('#name').value};
+const shadow=document.querySelector('#shadow').attachShadow({mode:'open'});shadow.innerHTML='<button aria-label="Shadow action">Shadow action</button>';shadow.querySelector('button').onclick=event=>{window.shadowTrusted=event.isTrusted};
+const mode=new URL(location.href).hash.slice(1);const moving=document.querySelector('#moving');document.querySelector('#trap').onclick=()=>race.traps++;moving.onmousedown=()=>race.downs++;moving.onclick=event=>{race.clicks++;race.trusted=event.isTrusted};moving.onmousemove=()=>{race.moves++;if(mode==='shift'&&race.moves===1){moving.style.left='600px';moving.style.top='500px'}if(mode==='overlay'&&!document.querySelector('#overlay')){const cover=document.createElement('div');cover.id='overlay';cover.onmousedown=()=>race.overlayDowns++;cover.innerHTML='<button>Dismiss overlay</button>';document.body.append(cover)}};
+document.querySelector('#noise').innerHTML='<div class="entry">Dense DOM content</div>'.repeat(3000);
+</script></html>

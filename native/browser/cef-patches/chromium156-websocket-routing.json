@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "component": "chromium",
+  "chromium_revision": "refs/tags/156.0.8078.17",
+  "cef_revision": "47dbc1df023e99f006fb9e850a8d83cc19b4fdd9",
+  "cef_version": "156.0.7+g47dbc1d+chromium-156.0.8078.17",
+  "patch": "chromium156-websocket-routing.patch",
+  "patch_sha256": "47109a7d59783433dfbfabab978e88af108769fb924ff35437e3a31d381279d8",
+  "status": "isolated-candidate-source-patch-custom-cef-build-required",
+  "compiled": false,
+  "runtime_verified": false,
+  "production_sdk_wired": true,
+  "source_cache": "/workspace/suitecut-websocket-vendor-source-20261017",
+  "patched_source_cache": "/workspace/suitecut-websocket-vendor-modified-20261017",
+  "files": [
+    {
+      "path": "third_party/blink/public/devtools_protocol/domains/Network.pdl",
+      "original_sha256": "2e757d8ef2e09101a42dc9d5a7bbd3cef26c8db74fbdb991dd9d3336ab122d7b",
+      "patched_sha256": "fc0da158c38ff5f05dd0f544e6a3b3a7afcd512ef385653087c0b541dec2496a"
+    },
+    {
+      "path": "third_party/blink/renderer/core/inspector/build.gni",
+      "original_sha256": "bbe877990cc635aafaed8642ccc367fbf231bcf77f49610223dd13c81f39fb92",
+      "patched_sha256": "ddba7deb414ad41805dd1a8e0fa690afa70477c1af3fae3ad9ce8448ee565425"
+    },
+    {
+      "path": "third_party/blink/renderer/core/inspector/inspector_network_agent.cc",
+      "original_sha256": "2ea4d7a5dde70311ce758f41544097f2e0359042873e406e1723abf790588981",
+      "patched_sha256": "28af68b47ac3d33818d5fadf2af8d7e37347fcd2be1c007573da8824c99c08bb"
+    },
+    {
+      "path": "third_party/blink/renderer/core/inspector/inspector_network_agent.h",
+      "original_sha256": "4225dc4054eaf1d72f698e0a94ac69342b50461572a69c1e9fc1e567b6cfe636",
+      "patched_sha256": "dbabc898baaa928d305494b57827475a8f3b6c880035274d59784d5214c3f729"
+    },
+    {
+      "path": "third_party/blink/renderer/core/inspector/suitecut_websocket_route.h",
+      "original_sha256": null,
+      "patched_sha256": "0de7f302dcad93b0ddfab803134e9c7d2331dbecf4748e44fb1119b7a29ca1a0"
+    },
+    {
+      "path": "third_party/blink/renderer/core/probe/core_probes.json5",
+      "original_sha256": "0bb9accfc58254489e68b053f912ae2c4240f2cb149d55f6e1da9eb0e5f28673",
+      "patched_sha256": "0ba7a234893fcce81eaa4364489bedcf8c64d377b763399f7cc53e5919c5c8e8"
+    },
+    {
+      "path": "third_party/blink/renderer/core/probe/core_probes.pidl",
+      "original_sha256": "d25c1fce25568b5a87921c7e1c410ec56f3f7d80672868c4a4efcf369527a42f",
+      "patched_sha256": "7cca7c79dd24c04e08ac4f459595dc52e1edf72089729bb45131029ff11bcde4"
+    },
+    {
+      "path": "third_party/blink/renderer/modules/websockets/websocket_channel_impl.cc",
+      "original_sha256": "3c8eba45790259972a9c5eb813e83c4c0b4777fb14ac67b72fcbe6ab7d0e417d",
+      "patched_sha256": "f6df13edec4a7ba069e78f8f2888cd2c9cfb27972b02da30436a1d3d7a007ee8"
+    },
+    {
+      "path": "third_party/blink/renderer/modules/websockets/websocket_channel_impl.h",
+      "original_sha256": "e9b7af337a1856dd89fd56834576a358d576fa86d04a0b5da11bdebed5c22641",
+      "patched_sha256": "6c52d79115f91ff48cfa2aa1203dd2529632a54871a7737bb4c9cf87dda43f28"
+    }
+  ],
+  "limits": [
+    "Vendor protocol/probe generation and C++ compilation unrun",
+    "Root-target production adapter compiled against stock CEF headers; custom vendor binary integration and runtime unverified",
+    "Page/context URL registrations, callback dispatch and popup/OOPIF/worker inheritance remain pending",
+    "Independent server-close interception/policy not added; original Chromium close propagation preserved",
+    "No E2E or fuzz acceptance claimed"
+  ],
+  "production_sdk_scope": "version-probed-root-page-target-explicit-controller"
+}

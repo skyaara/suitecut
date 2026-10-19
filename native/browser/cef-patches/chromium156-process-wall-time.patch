@@ -1,0 +1,192 @@
+--- a/third_party/blink/renderer/platform/scheduler/common/process_time_override_coordinator.h
++++ b/third_party/blink/renderer/platform/scheduler/common/process_time_override_coordinator.h
+@@ -58,6 +58,12 @@
+   // values of overridden tick clock.
+   // TODO(caseq): remove `requested_ticks` and use appropriate value based
+   // on current tick clock.
++  // SuiteCut V1: explicitly renderer-process-wide wall time only. Requires an
++  // existing native virtual-time owner. Does not alter monotonic ticks or timer
++  // scheduling and is not a page/context-isolation boundary.
++  static bool SetWallTimeForProcess(base::Time time, bool fixed);
++  static bool ClearWallTimeForProcess();
++
+   static std::unique_ptr<ScopedOverride> CreateOverride(
+       base::Time requested_time,
+       base::TimeTicks requested_ticks,
+@@ -96,6 +102,11 @@
+   base::TimeTicks initial_ticks_;
+ 
+   std::atomic<base::TimeTicks> current_ticks_;
++  // Max is outside the supported ECMAScript time range and marks running wall
++  // time. Fixed mode never changes the offset; switching to running publishes
++  // the new offset before clearing the fixed value. Readers take no coordinator lock.
++  std::atomic<base::Time> fixed_wall_time_{base::Time::Max()};
++  std::atomic<base::TimeDelta> wall_time_offset_{base::TimeDelta()};
+ 
+   base::Lock lock_;
+   std::unique_ptr<base::subtle::ScopedTimeClockOverrides> clock_override_
+--- a/third_party/blink/renderer/platform/scheduler/common/process_time_override_coordinator.cc
++++ b/third_party/blink/renderer/platform/scheduler/common/process_time_override_coordinator.cc
+@@ -46,6 +46,40 @@
+   return handle;
+ }
+ 
++bool ProcessTimeOverrideCoordinator::SetWallTimeForProcess(base::Time time,
++                                                         bool fixed) {
++  auto& self = Instance();
++  base::AutoLock auto_lock(self.lock_);
++  if (!self.clock_override_ || self.requested_ticks_by_client_.empty() ||
++      time.is_null() || time.is_max() || time.is_min()) {
++    return false;
++  }
++  if (fixed) {
++    self.fixed_wall_time_.store(time, std::memory_order_release);
++    return true;
++  }
++  const auto ticks = self.current_ticks_.load(std::memory_order_acquire);
++  const auto unshifted = self.initial_time_ + (ticks - self.initial_ticks_);
++  const auto offset = time - unshifted;
++  if (offset == base::TimeDelta::Max() || offset == base::TimeDelta::Min()) {
++    return false;
++  }
++  self.wall_time_offset_.store(offset, std::memory_order_release);
++  self.fixed_wall_time_.store(base::Time::Max(), std::memory_order_release);
++  return true;
++}
++
++bool ProcessTimeOverrideCoordinator::ClearWallTimeForProcess() {
++  auto& self = Instance();
++  base::AutoLock auto_lock(self.lock_);
++  if (!self.clock_override_ || self.requested_ticks_by_client_.empty()) {
++    return false;
++  }
++  self.wall_time_offset_.store(base::TimeDelta(), std::memory_order_release);
++  self.fixed_wall_time_.store(base::Time::Max(), std::memory_order_release);
++  return true;
++}
++
+ void ProcessTimeOverrideCoordinator::RegisterOverride(
+     ScopedOverride* handle,
+     base::Time requested_time,
+@@ -77,6 +111,8 @@
+   DCHECK(!clock_override_);
+   initial_time_ = initial_time;
+   initial_ticks_ = initial_ticks;
++  wall_time_offset_.store(base::TimeDelta(), std::memory_order_release);
++  fixed_wall_time_.store(base::Time::Max(), std::memory_order_release);
+   current_ticks_.store(initial_ticks, std::memory_order_release);
+ 
+   clock_override_ = std::make_unique<base::subtle::ScopedTimeClockOverrides>(
+@@ -143,7 +179,12 @@
+   if (ticks.is_null()) {
+     return base::subtle::TimeNowIgnoringOverride();
+   }
+-  return self.initial_time_ + (ticks - self.initial_ticks_);
++  const auto fixed = self.fixed_wall_time_.load(std::memory_order_acquire);
++  if (fixed != base::Time::Max()) {
++    return fixed;
++  }
++  return self.initial_time_ + (ticks - self.initial_ticks_) +
++         self.wall_time_offset_.load(std::memory_order_acquire);
+ }
+ 
+ // static
+--- a/third_party/blink/renderer/core/inspector/inspector_emulation_agent.h
++++ b/third_party/blink/renderer/core/inspector/inspector_emulation_agent.h
+@@ -61,6 +61,12 @@
+   protocol::Response setCPUThrottlingRate(double) override;
+   protocol::Response setFocusEmulationEnabled(bool) override;
+   protocol::Response setAutoDarkModeOverride(std::optional<bool>) override;
++  protocol::Response suiteCutClockCapabilitiesV1(int* revision,
++                                                  String* scope) override;
++  protocol::Response suiteCutSetWallTimeV1(double time_ms,
++                                        bool fixed,
++                                        String* scope) override;
++  protocol::Response suiteCutClearWallTimeV1(String* scope) override;
+   protocol::Response setVirtualTimePolicy(
+       const String& policy,
+       std::optional<double> virtual_time_budget_ms,
+--- a/third_party/blink/renderer/core/inspector/inspector_emulation_agent.cc
++++ b/third_party/blink/renderer/core/inspector/inspector_emulation_agent.cc
+@@ -39,6 +39,7 @@
+ #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
+ #include "third_party/blink/renderer/platform/loader/fetch/url_loader/request_conversion.h"
+ #include "third_party/blink/renderer/platform/network/network_utils.h"
++#include "third_party/blink/renderer/platform/scheduler/common/process_time_override_coordinator.h"
+ #include "third_party/blink/renderer/platform/scheduler/public/thread_cpu_throttler.h"
+ #include "third_party/blink/renderer/platform/scheduler/public/virtual_time_controller.h"
+ #include "third_party/blink/renderer/platform/theme/web_theme_engine_helper.h"
+@@ -629,6 +630,43 @@
+   return response;
+ }
+ 
++protocol::Response InspectorEmulationAgent::suiteCutClockCapabilitiesV1(
++    int* revision, String* scope) {
++  *revision = 1;
++  *scope = "rendererProcess";
++  return protocol::Response::Success();
++}
++
++protocol::Response InspectorEmulationAgent::suiteCutSetWallTimeV1(
++    double time_ms, bool fixed, String* scope) {
++  if (!std::isfinite(time_ms) || std::abs(time_ms) > 8640000000000000.) {
++    return protocol::Response::InvalidParams(
++        "Wall time must be a finite ECMAScript epoch millisecond number");
++  }
++  if (virtual_time_policy_.Get().IsNull()) {
++    return protocol::Response::ServerError(
++        "This agent must install native virtual time before wall-time control");
++  }
++  if (!scheduler::ProcessTimeOverrideCoordinator::SetWallTimeForProcess(
++          base::Time::FromMillisecondsSinceUnixEpoch(time_ms), fixed)) {
++    return protocol::Response::ServerError(
++        "Native wall-time owner absent, reserved null time, or saturated offset");
++  }
++  *scope = "rendererProcess";
++  return protocol::Response::Success();
++}
++
++protocol::Response InspectorEmulationAgent::suiteCutClearWallTimeV1(
++    String* scope) {
++  if (virtual_time_policy_.Get().IsNull() ||
++      !scheduler::ProcessTimeOverrideCoordinator::ClearWallTimeForProcess()) {
++    return protocol::Response::ServerError(
++        "This agent has no installed native virtual-time wall clock");
++  }
++  *scope = "rendererProcess";
++  return protocol::Response::Success();
++}
++
+ protocol::Response InspectorEmulationAgent::setVirtualTimePolicy(
+     const String& policy,
+     std::optional<double> virtual_time_budget_ms,
+--- a/third_party/blink/public/devtools_protocol/domains/Emulation.pdl
++++ b/third_party/blink/public/devtools_protocol/domains/Emulation.pdl
+@@ -507,6 +507,27 @@
+       # Maximum touch points supported. Defaults to one.
+       optional integer maxTouchPoints
+ 
++  # SuiteCut native wall-clock extension V1. This is renderer-process-wide,
++  # including other pages/contexts sharing that process. It is not isolation.
++  experimental command suiteCutClockCapabilitiesV1
++    returns
++      integer revision
++      string scope
++
++  # Requires native virtual time installed by this agent. Changes Time::Now
++  # only, preserving monotonic ticks and actual native timer scheduling.
++  experimental command suiteCutSetWallTimeV1
++    parameters
++      number timeMs
++      boolean fixed
++    returns
++      string scope
++
++  # Restores the original virtual wall-time origin, not the host real clock.
++  experimental command suiteCutClearWallTimeV1
++    returns
++      string scope
++
+   # Turns on virtual time for all frames (replacing real-time with a synthetic time source) and sets
+   # the current virtual time policy.  Note this supersedes any previous time budget.
+   experimental command setVirtualTimePolicy

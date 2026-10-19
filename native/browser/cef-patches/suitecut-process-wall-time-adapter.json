@@ -1,0 +1,44 @@
+{
+  "status": "ISOLATED UNAPPLIED ADAPTER CANDIDATE; stock API and binary unchanged",
+  "baseCommit": "762e844fcca625d70acec9174fc7f8463a504c2c",
+  "vendorDependency": "chromium156-process-wall-time.patch",
+  "scope": "rendererProcess; never page or context isolation",
+  "patchSHA256": "f2b008e831c247641c7b1e4f70a05e351d97e54385692019827fa35bd4d3f54e",
+  "sourceFiles": [
+    {
+      "path": "native/browser/virtual_time.h",
+      "originalSHA256": "1b6808960eef3a30587bd40178bc16cd970969dc18c0d6b554df3e162681b8de",
+      "patchedSHA256": "c8a39b67b1417c8f19f381a49c9ace598e599a7bafbd8b51865bd4e5342e486b"
+    },
+    {
+      "path": "native/browser/virtual_time.cc",
+      "originalSHA256": "0ebe6c47e75bc7325d339ec75795e4cf94c31d4f1422b39cef82800c7fc01791",
+      "patchedSHA256": "c768417a81319746091bcccc450db5db3c4766d9dc949718167f3ef68a9c5057"
+    },
+    {
+      "path": "native/browser/virtual_time_source.inc",
+      "originalSHA256": "b07aba900e3986d27b7acc4a8bd6f5b47c3898a938b4bc6bd5f9e1a6936c7174",
+      "patchedSHA256": "817414592adffa7354e6dc9d59eccfc8b5b1bfc9e57cdd8aeae1ec8839d8af62"
+    }
+  ],
+  "activationMacro": "SUITECUT_VERIFIED_CEF156_PROCESS_WALL_TIME",
+  "preconditions": [
+    "Compile pinned custom Chromium/CEF wall-time backend and regenerated protocol bindings.",
+    "Resolve process ownership and reset on navigation/detach/crash before enabling adapter.",
+    "Verify real Date/Temporal changes and timer/monotonic invariants with custom library.",
+    "Explicit acknowledgement of renderer-process scope on every custom wire action."
+  ],
+  "vendorCompilation": "UNRUN",
+  "runtimeVerification": "UNRUN",
+  "publicSDKMethods": "NONE",
+  "fullClockControl": false,
+  "verification": {
+    "sourceApplicability": "PASS against exact production document-fence source at 762e844fcca625d70acec9174fc7f8463a504c2c",
+    "modifiedControllerCompileAndFocusedChecks": "PASS prior exact unchanged modified virtual_time.h/.cc content; SHA256 values unchanged",
+    "modifiedSourceActivationMacroSyntax": "PRIOR PASS before production document-fence integration; current combined activation-macro syntax not rerun",
+    "productionSourceDocumentFenceSyntax": "PASS current production browser.cc -fsyntax-only, empty stderr",
+    "vendorCompilation": "UNRUN",
+    "runtimeDateTemporalObservations": "UNRUN",
+    "E2EAndFuzz": "DEFERRED_BY_USER"
+  }
+}

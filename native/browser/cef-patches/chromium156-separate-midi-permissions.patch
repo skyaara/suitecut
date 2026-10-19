@@ -1,0 +1,106 @@
+diff --git a/components/content_settings/core/browser/content_settings_registry.cc b/components/content_settings/core/browser/content_settings_registry.cc
+--- a/components/content_settings/core/browser/content_settings_registry.cc
++++ b/components/content_settings/core/browser/content_settings_registry.cc
+@@ -204,6 +204,18 @@
+            WebsiteSettingsRegistry::DESKTOP |
+                WebsiteSettingsRegistry::PLATFORM_ANDROID,
+            ContentSettingsInfo::INHERIT_IN_INCOGNITO,
++           PermissionSettingsInfo::EXCEPTIONS_ON_SECURE_ORIGINS_ONLY);
++
++  // SuiteCut's native automation policy separates ordinary MIDI from SysEx.
++  // Ordinary MIDI has no Chromium prompt RequestType; default to deny rather
++  // than sending an unrepresentable prompt through the SysEx authority.
++  Register(ContentSettingsType::MIDI, "midi", CONTENT_SETTING_BLOCK,
++           WebsiteSettingsInfo::UNSYNCABLE, /*allowlisted_primary_schemes=*/{},
++           /*valid_settings=*/{CONTENT_SETTING_ALLOW, CONTENT_SETTING_BLOCK},
++           WebsiteSettingsInfo::TOP_ORIGIN_ONLY_SCOPE,
++           WebsiteSettingsRegistry::DESKTOP |
++               WebsiteSettingsRegistry::PLATFORM_ANDROID,
++           ContentSettingsInfo::INHERIT_IF_LESS_PERMISSIVE,
+            PermissionSettingsInfo::EXCEPTIONS_ON_SECURE_ORIGINS_ONLY);
+ 
+   Register(ContentSettingsType::MIDI_SYSEX, "midi-sysex", CONTENT_SETTING_ASK,
+diff --git a/components/permissions/contexts/midi_permission_context.cc b/components/permissions/contexts/midi_permission_context.cc
+--- a/components/permissions/contexts/midi_permission_context.cc
++++ b/components/permissions/contexts/midi_permission_context.cc
+@@ -5,11 +5,13 @@
+ #include "components/permissions/contexts/midi_permission_context.h"
+ 
+ #include "components/content_settings/core/browser/host_content_settings_map.h"
++#include "components/content_settings/browser/page_specific_content_settings.h"
++#include "components/content_settings/core/common/content_settings_types.h"
++#include "content/public/browser/child_process_security_policy.h"
+ #include "components/content_settings/core/common/content_settings.h"
+ #include "components/content_settings/core/common/content_settings_types.h"
+ #include "components/permissions/permissions_client.h"
+ #include "services/network/public/mojom/permissions_policy/permissions_policy_feature.mojom.h"
+-#include "third_party/blink/public/common/features.h"
+ 
+ namespace permissions {
+ 
+@@ -26,13 +28,30 @@
+     content::RenderFrameHost* render_frame_host,
+     const GURL& requesting_origin,
+     const GURL& embedding_origin) const {
+-  if (base::FeatureList::IsEnabled(blink::features::kBlockMidiByDefault)) {
+-    return PermissionsClient::Get()
+-        ->GetSettingsMap(browser_context())
+-        ->GetContentSetting(requesting_origin, embedding_origin,
+-                            ContentSettingsType::MIDI_SYSEX);
++  return PermissionsClient::Get()
++      ->GetSettingsMap(browser_context())
++      ->GetContentSetting(requesting_origin, embedding_origin,
++                          ContentSettingsType::MIDI);
++}
++
++void MidiPermissionContext::UpdateTabContext(
++    const PermissionRequestData& request_data,
++    bool allowed) {
++  if (auto* settings =
++          content_settings::PageSpecificContentSettings::GetForFrame(
++              request_data.id.global_render_frame_host_id())) {
++    if (allowed) {
++      settings->OnContentAllowed(ContentSettingsType::MIDI);
++    } else {
++      settings->OnContentBlocked(ContentSettingsType::MIDI);
++    }
+   }
+-  return CONTENT_SETTING_ALLOW;
++  if (allowed) {
++    // Actual ordinary device transport permission, without granting SysEx.
++    // Keep Chromium's existing process-scoped MIDI security model.
++    content::ChildProcessSecurityPolicy::GetInstance()->GrantSendMidiMessage(
++        request_data.id.global_render_frame_host_id().child_id.GetUnsafeValue());
++  }
+ }
+ 
+ }  // namespace permissions
+diff --git a/components/permissions/contexts/midi_permission_context.h b/components/permissions/contexts/midi_permission_context.h
+--- a/components/permissions/contexts/midi_permission_context.h
++++ b/components/permissions/contexts/midi_permission_context.h
+@@ -23,6 +23,8 @@
+ 
+  private:
+   // ContentSettingPermissionContextBase:
++  void UpdateTabContext(const PermissionRequestData& request_data,
++                        bool allowed) override;
+   ContentSetting GetContentSettingStatusInternal(
+       content::RenderFrameHost* render_frame_host,
+       const GURL& requesting_origin,
+diff --git a/third_party/blink/renderer/modules/webmidi/midi_access_initializer.cc b/third_party/blink/renderer/modules/webmidi/midi_access_initializer.cc
+--- a/third_party/blink/renderer/modules/webmidi/midi_access_initializer.cc
++++ b/third_party/blink/renderer/modules/webmidi/midi_access_initializer.cc
+@@ -46,10 +46,9 @@
+       permission_service_.BindNewPipeAndPassReceiver(std::move(task_runner)));
+ 
+   permission_service_->RequestPermission(
+-      CreateMidiPermissionDescriptor(
+-          base::FeatureList::IsEnabled(blink::features::kBlockMidiByDefault)
+-              ? true
+-              : options_->hasSysex() && options_->sysex()),
++      // Use the authority actually requested. Ordinary MIDI must not consume
++      // a SysEx grant merely because BlockMidiByDefault is enabled.
++      CreateMidiPermissionDescriptor(options_->hasSysex() && options_->sysex()),
+       BindOnce(&MIDIAccessInitializer::OnPermissionRequestResult,
+                WrapPersistent(this)));
+ 

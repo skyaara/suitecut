@@ -1,0 +1,65 @@
+diff --git a/libcef/browser/request_context_impl.cc b/libcef/browser/request_context_impl.cc
+--- a/libcef/browser/request_context_impl.cc
++++ b/libcef/browser/request_context_impl.cc
+@@ -20,7 +20,9 @@
+ #include "chrome/browser/profiles/profile.h"
+ #include "chrome/browser/themes/theme_service.h"
+ #include "chrome/browser/themes/theme_service_factory.h"
++#include "components/content_settings/core/browser/content_settings_registry.h"
+ #include "components/content_settings/core/browser/host_content_settings_map.h"
++#include "components/content_settings/core/browser/website_settings_registry.h"
+ #include "components/prefs/pref_service.h"
+ #include "content/public/browser/browser_task_traits.h"
+ #include "content/public/browser/child_process_host.h"
+@@ -540,7 +542,11 @@
+   }
+ 
+   const auto setting_type = setting_helper::FromCefType(content_type);
+-  if (!setting_type) {
++  // Public CEF enum values can outlive their Chromium registry entry.
++  // Do not forward an unregistered type into HostContentSettingsMap CHECKs.
++  if (!setting_type ||
++      !content_settings::WebsiteSettingsRegistry::GetInstance()->Get(
++          *setting_type)) {
+     return nullptr;
+   }
+ 
+@@ -584,7 +590,11 @@
+   }
+ 
+   const auto setting_type = setting_helper::FromCefType(content_type);
+-  if (!setting_type) {
++  // Public CEF enum values can outlive their Chromium registry entry.
++  // Do not forward an unregistered type into HostContentSettingsMap CHECKs.
++  if (!setting_type ||
++      !content_settings::ContentSettingsRegistry::GetInstance()->Get(
++          *setting_type)) {
+     return CEF_CONTENT_SETTING_VALUE_DEFAULT;
+   }
+ 
+@@ -926,7 +936,11 @@
+   }
+ 
+   const auto setting_type = setting_helper::FromCefType(content_type);
+-  if (!setting_type) {
++  // Public CEF enum values can outlive their Chromium registry entry.
++  // Do not forward an unregistered type into HostContentSettingsMap CHECKs.
++  if (!setting_type ||
++      !content_settings::WebsiteSettingsRegistry::GetInstance()->Get(
++          *setting_type)) {
+     return;
+   }
+ 
+@@ -968,7 +982,11 @@
+   }
+ 
+   const auto setting_type = setting_helper::FromCefType(content_type);
+-  if (!setting_type) {
++  // Public CEF enum values can outlive their Chromium registry entry.
++  // Do not forward an unregistered type into HostContentSettingsMap CHECKs.
++  if (!setting_type ||
++      !content_settings::ContentSettingsRegistry::GetInstance()->Get(
++          *setting_type)) {
+     return;
+   }
+ 

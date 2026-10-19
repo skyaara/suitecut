@@ -6,7 +6,7 @@ import { finished } from 'node:stream/promises'
 
 import { raceWithAbort } from './abort.js'
 import { createCaptureScaleFilter } from './capture.js'
-import { FrameRateSchema, videoFramePosition } from './frame-rate.js'
+import { OutputFrameRateSchema, videoFramePosition } from './frame-rate.js'
 import { type NativeBrowser } from './native-browser.js'
 import { runProcess, waitForProcessExit } from './process.js'
 import { type SuiteCutCaptureSize } from './schemas.js'
@@ -21,7 +21,9 @@ export function createNativeVideoRecorder(options: {
   audio?: boolean
 }) {
   const { source } = options
-  const framesPerSecond = FrameRateSchema.parse(options.framesPerSecond ?? source.framesPerSecond)
+  const framesPerSecond = OutputFrameRateSchema.parse(
+    options.framesPerSecond ?? source.framesPerSecond,
+  )
   const videoOutputPath = options.audio ? `${options.outputPath}.video.webm` : options.outputPath
   const audioOutputPath = `${options.outputPath}.audio.pcm`
   const child = spawn(

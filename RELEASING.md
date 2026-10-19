@@ -14,9 +14,7 @@ Only maintainers with npm and GitHub release access should use this checklist.
    pnpm check
    pnpm site:check
    pnpm site:build
-   pnpm test:stream
-   pnpm test:browsers
-   pnpm test:retry-parallel
+   pnpm test:native:cadence
    pnpm test:audio-plugin
    pnpm test:kokoro
    SUITECUT_SHERPA_VITS_MODEL_DIR=/path/to/vits-model pnpm test:sherpa
@@ -63,6 +61,58 @@ Only maintainers with npm and GitHub release access should use this checklist.
 
 Never test a release by publishing another version. Use `npm pack` and the package smoke test first.
 
+## Browser-control and native SDK release gates
+
+The release includes the `suitecut` and `@suitecut/browser-control` npm packages,
+the eight audio packages, and separate Linux C++20/C ABI/CLI distributions.
+Keep CEF and other browser runtimes outside the small SDK-only archives. The
+optional full-runtime archive is built separately with
+`scripts/package-native-runtime.py`; see [native full runtime](docs/native-full-runtime.md).
+Verify native recording from a freshly extracted and relocated installation,
+including CEF page audio and external Chromium, using the bundled media tools.
+Do not publish the GPL media bundle without its complete corresponding source.
+Native SDK versioning
+and ABI versioning are independent of npm package versions. Current native
+support is Linux/POSIX; a Linux proof does not qualify Windows or macOS binaries.
+
+Build `pnpm build:browser-control` as well as the root package. Ignore generated
+package `dist` directories during linting, then check the authored code with
+`pnpm lint`, `pnpm format:check`, `pnpm typecheck`, and `pnpm test -- --run`.
+Regenerate `native_aria_formatter.h` and `native_aria_json.h` with
+`scripts/generate-native-aria-formatter.mjs` after changing their authored
+functions; the JSON generator requires its `formatNativeAriaJSON` argument.
+The matching regression tests enforce the canonical source contract.
+
+Run the standalone native client tests in Release and with
+`SUITECUT_CLIENT_SANITIZERS=ON`. Set `ASAN_OPTIONS=detect_leaks=1:halt_on_error=1`
+and `UBSAN_OPTIONS=halt_on_error=1`. Run the heavy native JSON/packet and
+observation campaigns directly with `SUITECUT_CLIENT_FUZZ_ITERATIONS` and
+`SUITECUT_AGENT_FUZZ_ITERATIONS`; ordinary CTest uses smaller finite defaults.
+Exercise the session worker with `scripts/fuzz-native-control.py`, passing an
+absolute CLI path, the built `simple_agent_test` engine, and a new report path.
+Run process-owning checks under `suitecut-proof-supervisor` and retain its
+descendant-cleanup receipt. Sanitizer CLI builds explicitly request leak checks
+before a worker's `_exit`.
+
+Run the emitted JavaScript lifecycle, routes, protocol and value fuzz scripts
+against both `dist` and `packages/browser-control/dist`. Use fixed seeds, finite
+iteration counts, exposed GC, and a bounded heap. These are controlled transport
+proofs; additionally run real CEF, Chrome and Firefox browser workflows. Do not
+label acknowledgement-only results as verified application outcomes.
+
+Before distribution, install both static and shared native builds into fresh
+prefixes and compile independent C and C++ consumers using only installed
+headers/CMake exports. Verify the installed CLI, skill files, native browser
+cleanup, and runtime library requirements. Test npm tarballs in fresh consumers,
+including declarations, exports, CLI entry points and the browser viewer.
+Run `pnpm audit` after dependency updates and verify a frozen lockfile install.
+
+Publish only the exact tested archives. Record versions, source/binary hashes,
+archive SHA-256, dependency audit, fuzz seeds/counts, platform requirements and
+remaining backend limits in the release manifest. Passing finite fuzz tests
+does not establish whole-browser leak freedom; prebuilt CEF is not sanitizer
+instrumented by native-client sanitizer builds.
+
 ## Website deployment
 
 Build and test the custom-domain site before deploying to the existing Cloudflare Pages project:
@@ -70,7 +120,6 @@ Build and test the custom-domain site before deploying to the existing Cloudflar
 ```sh
 pnpm site:check
 pnpm site:build
-SUITECUT_SITE_PORT=4388 pnpm site:test
 wrangler pages deploy site/dist --project-name suitecut --branch main --profile aakash
 ```
 
@@ -87,7 +136,7 @@ SUITECUT_NATIVE_EXECUTABLE=/path/to/suitecut-browser node scripts/verify-beta-pa
 ```
 
 This installs the actual tarball in a temporary consumer, verifies root/native and
-legacy Playwright exports, records with CEF page audio, and checks browser cleanup.
+native subpath exports, records with CEF page audio, and checks browser cleanup.
 Publish this verified tarball. The native executable is built separately; do not
 label the npm artifact as containing a signed or notarized CEF binary.
 

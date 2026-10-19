@@ -1,4 +1,4 @@
-import { type Page } from 'playwright'
+import { type PresentationPage } from '../browser-control.js'
 
 import { type SuiteCutAttemptClock } from './clock.js'
 import {
@@ -6,10 +6,10 @@ import {
   type SuiteCutEvent,
   type SuiteCutZoomEvent,
 } from './events.js'
+import { type SuiteCutNativeRecordingTiming } from './media.js'
 import { type SuiteCutPage } from './pages.js'
 import {
   type EpochMilliseconds,
-  type FilePath,
   type Milliseconds,
   type MimeType,
   type SuiteCutArtifactId,
@@ -59,17 +59,7 @@ export interface SuiteCutCapturedVideo {
   attachmentName: string
   firstFrameEpochMs: EpochMilliseconds
   sourceStartedAtMs: Milliseconds
-}
-
-export interface SuiteCutActiveScreencast {
-  artifactId: SuiteCutArtifactId
-  pageId: SuiteCutPageId
-  page: Page
-  outputPath: FilePath
-  attachmentName: string
-  firstFrameEpochMs?: EpochMilliseconds
-  sourceStartedAtMs?: Milliseconds
-  stopCapture?: () => Promise<void>
+  nativeRecording?: SuiteCutNativeRecordingTiming
 }
 
 export interface SuiteCutEventAttachment {
@@ -82,7 +72,7 @@ export interface SuiteCutEventAttachment {
   videos: SuiteCutCapturedVideo[]
 }
 
-export interface SuiteCutRecordingSession<P = Page> {
+export interface SuiteCutRecordingSession<P = PresentationPage> {
   readonly playLiveZoom?: (
     event: SuiteCutZoomEvent,
     playback?: () => Promise<void>,
@@ -95,7 +85,6 @@ export interface SuiteCutRecordingSession<P = Page> {
   readonly activePageId: SuiteCutPageId
   readonly events: SuiteCutEvent[]
   readonly artifacts: SuiteCutCapturedArtifact[]
-  readonly screencasts: Map<SuiteCutPageId, SuiteCutActiveScreencast>
   readonly videos: SuiteCutCapturedVideo[]
 
   now(): Milliseconds

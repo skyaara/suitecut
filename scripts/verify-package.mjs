@@ -49,7 +49,7 @@ function run(executable, args, cwd) {
       args,
       {
         cwd,
-        env: { ...process.env, npm_config_dry_run: 'false' },
+        env: { ...process.env, NODE_PATH: '', npm_config_dry_run: 'false' },
         maxBuffer: 20 * 1024 * 1024,
       },
       (error, stdout, stderr) => {
@@ -113,7 +113,13 @@ async function packAudioPackage(audioPackage, destination) {
     throw new Error(`npm pack did not return a result for ${audioPackage.name}`)
   }
   const paths = new Set(packagePackResult.files.map((file) => file.path))
-  for (const requiredPath of ['README.md', 'dist/index.d.ts', 'dist/index.js', 'package.json']) {
+  for (const requiredPath of [
+    'LICENSE',
+    'README.md',
+    'dist/index.d.ts',
+    'dist/index.js',
+    'package.json',
+  ]) {
     assert(paths.has(requiredPath), `${audioPackage.name} is missing ${requiredPath}`)
   }
   assert(
@@ -188,28 +194,16 @@ try {
     'dist/native-default.js',
     'dist/native-default.d.ts',
     'native/browser/cef-build.json',
-    'dist/playwright.d.ts',
-    'dist/playwright.js',
+    'native/tools/CMakeLists.txt',
+    'native/tools/proof_supervisor.cc',
     'dist/render.d.ts',
     'dist/render.js',
-    'dist/reporter.d.ts',
-    'dist/reporter.js',
-    'dist/test.d.ts',
-    'dist/test.js',
     'package.json',
   ]) {
     assert(packagedPaths.has(requiredPath), `npm package is missing ${requiredPath}`)
   }
 
-  for (const forbiddenPrefix of [
-    '.github/',
-    'benchmarks/',
-    'examples/',
-    'plugins/',
-    'site/',
-    'src/',
-    'tests/',
-  ]) {
+  for (const forbiddenPrefix of ['.github/', 'examples/', 'plugins/', 'site/', 'src/', 'tests/']) {
     assert(
       ![...packagedPaths].some((path) => path.startsWith(forbiddenPrefix)),
       `npm package contains development files under ${forbiddenPrefix}`,
@@ -260,7 +254,6 @@ try {
       consumerTarballPath,
       coreTarballPath,
       vitsTarballPath,
-      '@playwright/test@^1.62.1',
     ],
     consumerDirectory,
   )
@@ -269,30 +262,21 @@ try {
     join(consumerDirectory, 'smoke.mjs'),
     `import { defineSuiteCut, record, renderSuiteCut } from 'suitecut'
 import { defineSuiteCutAudioPlugin, encodePcm16Wav } from 'suitecut/audio-plugin'
-import Reporter from 'suitecut/reporter'
-import { defineSuiteCut as defineFromAlias, record as recordFromAlias } from 'suitecut/playwright'
 import { renderSuiteCut as renderFromSubpath } from 'suitecut/render'
 import { launchNativeBrowser, createNativeBroadcast, recordNative, createNativePage } from 'suitecut/native'
 import { DEFAULT_BACKEND, record as betaRecord } from 'suitecut/beta'
-import { expect, test } from 'suitecut/test'
 import { SUITECUT_EVENT_ATTACHMENT, SUITECUT_MANIFEST_SCHEMA_VERSION } from 'suitecut/types'
 import vitsPlugin from '@suitecut/audio-vits'
 
 if (DEFAULT_BACKEND !== 'native' || typeof betaRecord !== 'function' || betaRecord !== record) throw new Error('suitecut beta default is incorrect')
-if (typeof test !== 'function') throw new Error('suitecut test export is unavailable')
-if (typeof expect !== 'function') throw new Error('suitecut expect export is unavailable')
 if (typeof launchNativeBrowser !== 'function' || typeof createNativeBroadcast !== 'function' || typeof recordNative !== 'function' || typeof createNativePage !== 'function') {
   throw new Error('suitecut native exports are unavailable')
 }
 if (typeof renderSuiteCut !== 'function' || renderSuiteCut !== renderFromSubpath) {
   throw new Error('suitecut render exports do not match')
 }
-if (typeof Reporter !== 'function') throw new Error('suitecut reporter export is unavailable')
 if (typeof defineSuiteCut !== 'function' || typeof record !== 'function') {
   throw new Error('suitecut recorder export is unavailable')
-}
-if (defineSuiteCut === defineFromAlias || record === recordFromAlias) {
-  throw new Error('suitecut/playwright must retain its explicit backend')
 }
 if (typeof defineSuiteCutAudioPlugin !== 'function' || typeof encodePcm16Wav !== 'function') {
   throw new Error('suitecut audio plugin export is unavailable')
@@ -343,13 +327,6 @@ if (typeof defineSuiteCut !== 'function' || typeof record !== 'function') {
     'utf8',
   )
   await run(process.execPath, ['smoke.mjs'], rawConsumerDirectory)
-  assert(
-    !(await pathExists(
-      join(rawConsumerDirectory, 'node_modules', '@playwright', 'test', 'package.json'),
-    )),
-    'plain Playwright consumer unexpectedly installed @playwright/test',
-  )
-
   const installedCli = join(
     consumerDirectory,
     'node_modules',
@@ -364,7 +341,7 @@ if (typeof defineSuiteCut !== 'function' || typeof record !== 'function') {
   assert(cli.stdout.includes('suitecut render'), 'installed CLI did not print SuiteCut help')
 
   process.stdout.write(
-    `Verified ${packResult.id} and ${String(audioPackages.length)} split audio packages. VITS-only install, Playwright Test, standalone Playwright, and public import smokes passed.\n`,
+    `Verified ${packResult.id} and ${String(audioPackages.length)} split audio packages. VITS-only install, native public imports, and CLI smoke checks passed.\n`,
   )
 } finally {
   await rm(temporaryRoot, { recursive: true, force: true })

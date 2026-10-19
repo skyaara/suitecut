@@ -1,0 +1,12 @@
+{
+  "status": "UNAPPLIED NATIVE ADAPTER; no activation in stock build",
+  "baseSHA256": "1c5a9d739cda62ac9e6b3926abdd90cfb1d5f0b8f0147838a72950617bb36386",
+  "patchedSHA256": "e3a0a1a69ab5058f1e0f34460b544f7643180b15c1b17bef62b28c0fa0ff5f77",
+  "patchSHA256": "9b1bdb42bc4486f2b05c000f1d2317416d267a4661e1ccafda8cfb23e2d8b054",
+  "preconditions": [
+    "Compile full pinned Chromium/CEF vendor repair and preserve source + libcef digests.",
+    "Establish real runtime ordinary grant/deny/query/request and SysEx isolation before enabling native definition.",
+    "Only candidate build applies adapter and defines SUITECUT_VERIFIED_CEF156_SEPARATE_MIDI_PERMISSIONS. Never define it for stock CEF."
+  ],
+  "applyCheck": "PASS against current exact native header; no native setter27 execution"
+}

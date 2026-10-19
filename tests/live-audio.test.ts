@@ -1,11 +1,6 @@
-import { once } from 'node:events'
-import { runInNewContext } from 'node:vm'
-
-import { describe, expect, it } from 'vitest'
-import { WebSocket } from 'ws'
+import { describe, expect, it, vi } from 'vitest'
 
 import { createLiveAudioTransport, LiveAudioBuffer } from '../src/live-audio.js'
-import { tabAudioWorklet } from '../src/tab-audio-extension.js'
 
 function tone(value: number): Buffer {
   const pcm = Buffer.alloc(3840)
@@ -62,89 +57,87 @@ describe('live audio timeline', () => {
   })
 })
 
-describe('audio WebSocket transport', () => {
-  it('accepts binary PCM, rejects stale connections, and closes active sockets on shutdown', async () => {
-    const packets: number[] = []
-    const transport = await createLiveAudioTransport(
-      (generation, timestamp, pcm) => {
-        expect(timestamp).toBe(1234)
-        expect(pcm.length).toBe(3840)
-        packets.push(generation)
-      },
-      () => undefined,
+describe('native audio HTTP input', () => {
+  it('retires held input queues on transport close and rejects new work before reading PCM', async () => {
+    const transport = await createLiveAudioTransport()
+    const input = transport.createInput()
+    const read = vi.spyOn(transport.buffer, 'read')
+    await input.write(performance.now(), 48000, new AbortController().signal)
+    await transport.close()
+    expect(() => transport.createInput()).toThrow('transport is closed')
+    await expect(input.write(performance.now(), 960, new AbortController().signal)).rejects.toThrow(
+      'input is closed',
     )
-    const activate = async (generation: number) => {
-      const ready = transport.activate(generation)
-      await fetch(`${transport.url}/status/${generation}/ok`, { method: 'POST' })
-      await ready
-    }
-    const connect = (generation: number) =>
-      new WebSocket(`${transport.url.replace('http:', 'ws:')}/pcm/${generation}`)
+    expect(read).toHaveBeenCalledOnce()
+    input.close()
+  })
+
+  it('rejects closed, pre-aborted and over-capacity writes before allocating or consuming PCM', async () => {
+    const transport = await createLiveAudioTransport()
+    const input = transport.createInput()
+    const read = vi.spyOn(transport.buffer, 'read')
+    const canceled = new AbortController()
+    const reason = new Error('original audio cancellation')
+    canceled.abort(reason)
     try {
-      await activate(1)
-      const first = connect(1)
-      await once(first, 'open')
-      const packet = Buffer.alloc(3848)
-      packet.writeDoubleLE(1234)
-      const ack = once(first, 'message')
-      first.send(packet)
-      await ack
-      expect(packets).toEqual([1])
-      const closed = once(first, 'close')
-      await activate(2)
-      await closed
-      const stale = connect(1)
-      const rejected = new Promise<void>((resolve) => stale.once('error', () => resolve()))
-      await rejected
-      const second = connect(2)
-      await once(second, 'open')
-      const malformedClosed = once(second, 'close')
-      second.send(Buffer.alloc(3849))
-      await malformedClosed
-      expect(packets).toEqual([1])
-      const third = connect(2)
-      await once(third, 'open')
-      const shutdown = once(third, 'close')
-      await transport.close()
-      await shutdown
+      await expect(input.write(performance.now(), 960, canceled.signal)).rejects.toBe(reason)
+      await expect(
+        input.write(performance.now(), 48001, new AbortController().signal),
+      ).rejects.toThrow('encoder did not connect')
+      expect(read).not.toHaveBeenCalled()
+      input.close()
+      await expect(
+        input.write(performance.now(), 960, new AbortController().signal),
+      ).rejects.toThrow('input is closed')
+      expect(read).not.toHaveBeenCalled()
     } finally {
-      await transport.close().catch(() => undefined)
+      input.close()
+      await transport.close()
     }
   })
-})
 
-it('bounds the worklet queue during a stalled consumer and resumes with current audio', () => {
-  const messages: { time: number }[] = []
-  let Processor: new () => {
-    process(inputs: Float32Array[][]): boolean
-    port: { onmessage: () => void }
-  }
-  const sandbox = {
-    AudioWorkletProcessor: class {
-      port = {
-        postMessage: (value: { time: number }) => messages.push(value),
-        onmessage: () => undefined,
-      }
-    },
-    registerProcessor: (_name: string, value: typeof Processor) => {
-      Processor = value
-    },
-    currentFrame: 0,
-    sampleRate: 48000,
-  }
-  runInNewContext(tabAudioWorklet, sandbox)
-  const processor = new Processor!()
-  const input = [[new Float32Array(128)]]
-  for (let i = 0; i < 10000; i++) {
-    sandbox.currentFrame += 128
-    processor.process(input)
-  }
-  expect(messages).toHaveLength(4)
-  processor.port.onmessage()
-  for (let i = 0; i < 8; i++) {
-    sandbox.currentFrame += 128
-    processor.process(input)
-  }
-  expect(messages).toHaveLength(5)
-  expect(messages[4]!.time).toBeGreaterThan(26)
+  it('retires a connected input when the encoder disconnects', async () => {
+    const transport = await createLiveAudioTransport()
+    const input = transport.createInput()
+    const read = vi.spyOn(transport.buffer, 'read')
+    try {
+      const response = await fetch(input.url)
+      await response.body?.cancel()
+      await vi.waitFor(async () => {
+        await expect(
+          input.write(performance.now(), 0, new AbortController().signal),
+        ).rejects.toThrow('input is closed')
+      })
+      read.mockClear()
+      await expect(
+        input.write(performance.now(), 960, new AbortController().signal),
+      ).rejects.toThrow('input is closed')
+      expect(read).not.toHaveBeenCalled()
+    } finally {
+      input.close()
+      await transport.close()
+    }
+  })
+
+  it('delivers queued native PCM to the encoder and closes its input', async () => {
+    const transport = await createLiveAudioTransport()
+    const input = transport.createInput()
+    const at = performance.now()
+    transport.buffer.push(at, tone(1234))
+    try {
+      await input.write(at, 960, new AbortController().signal)
+      const response = await fetch(input.url)
+      expect(response.status).toBe(200)
+      const reader = response.body?.getReader()
+      if (!reader) throw new Error('Missing PCM response')
+      const chunk = await reader.read()
+      expect(Buffer.from(chunk.value ?? []).equals(tone(1234))).toBe(true)
+      input.close()
+      expect((await reader.read()).done).toBe(true)
+      expect((await fetch(`${transport.url}/invalid`)).status).toBe(404)
+    } finally {
+      input.close()
+      await transport.close()
+    }
+  })
 })

@@ -7,7 +7,7 @@ import { createCaptureScaleFilter } from './capture.js'
 import {
   audioSampleBoundary,
   audioSamplesForVideoFrame,
-  FrameRateSchema,
+  OutputFrameRateSchema,
   MAX_FRAMES_PER_SECOND,
 } from './frame-rate.js'
 import { LIVE_AUDIO_DELAY_MS, type LiveAudioTransport } from './live-audio.js'
@@ -60,7 +60,7 @@ export function createLiveStreamAttempt(
   inputSize?: SuiteCutCaptureViewport,
   inputFormat: 'mjpeg' | 'bgra' | 'i420' = 'mjpeg',
 ): SuiteCutLiveStream {
-  FrameRateSchema.parse(framesPerSecond)
+  OutputFrameRateSchema.parse(framesPerSecond)
   if (inputFormat !== 'mjpeg' && inputSize === undefined)
     throw new Error('Raw capture requires explicit input dimensions')
   const rawFrameBytes =
@@ -146,6 +146,10 @@ export function createLiveStreamAttempt(
       'veryfast',
       '-tune',
       'zerolatency',
+      // Bound encoder workers just as the native recorder does. Host CPU counts
+      // can exceed a container's CPU quota by two orders of magnitude.
+      '-threads',
+      '4',
       '-pix_fmt',
       'yuv420p',
       ...(inputFormat === 'i420'
@@ -163,9 +167,9 @@ export function createLiveStreamAttempt(
       '-r',
       String(framesPerSecond),
       '-g',
-      String(framesPerSecond * 2),
+      String(Math.ceil(framesPerSecond * 2)),
       '-keyint_min',
-      String(framesPerSecond * 2),
+      String(Math.ceil(framesPerSecond * 2)),
       '-sc_threshold',
       '0',
       '-b:v',
@@ -500,7 +504,7 @@ export function createLiveStream(
   inputSize?: SuiteCutCaptureViewport,
   inputFormat: 'mjpeg' | 'bgra' | 'i420' = 'mjpeg',
 ): SuiteCutLiveStream {
-  FrameRateSchema.parse(framesPerSecond)
+  OutputFrameRateSchema.parse(framesPerSecond)
   if (options.adaptiveBitrate !== false)
     return createPersistentLiveStream(
       ffmpegPath,

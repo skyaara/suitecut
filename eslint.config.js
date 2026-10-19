@@ -9,9 +9,9 @@ export default tseslint.config(
     ignores: [
       'dist/**',
       'plugins/*/dist/**',
+      'packages/*/dist/**',
       '.suitecut/**',
       'test-results/**',
-      'playwright-report/**',
       'site/.astro/**',
       'site/dist/**',
       'eslint.config.js',
@@ -138,6 +138,7 @@ export default tseslint.config(
     files: ['scripts/**/*.mjs'],
     rules: {
       'jsdoc/no-types': 'off',
+      'jsdoc/check-tag-names': ['error', { typed: false }],
     },
   },
 )
