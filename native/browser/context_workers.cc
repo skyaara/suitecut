@@ -230,7 +230,7 @@ class SuiteCutContextWorkers::Client : public CefClient, public CefLifeSpanHandl
     });
   }
   CefRefPtr<Client> RetainWorkerRouteFetchOwner(){return this;}
-#include "worker_route_fetch.inc"
+#include "controllers/workers/worker_route_fetch.inc"
   void PublicNetworkEvent(Dict event){
     auto request=event?(event->GetString("event")=="routematch"?event:event->GetDictionary("request")):nullptr;if(!request)return;
     const auto worker=request->GetDictionary("workerInfo");if(!worker||!request->GetBool("contextWorker"))return;
@@ -516,7 +516,7 @@ class SuiteCutContextWorkers::Client : public CefClient, public CefLifeSpanHandl
     }
     WakeDispatch();return true;
   }
-  #include "accepted_inspector_owner.inc"
+  #include "controllers/work/accepted_inspector_owner.inc"
   int SendDevTools(const std::string& method,Dict params=nullptr,const std::string& session="") {const int id=AllocateDevToolsId();return id&&SubmitDevTools(id,method,params,session)?id:0;}
   int ControlSend(const std::string& method,Dict params,const std::string& session,DevToolsCallback callback,double original_deadline=0){
     const int id=AllocateDevToolsId();if(!id||controls_.size()>=128){callback(false,"Native context worker control capacity exceeded");return 0;}
@@ -611,11 +611,11 @@ class SuiteCutContextWorkers::Client : public CefClient, public CefLifeSpanHandl
   std::map<int,CookieWaiting> cookie_waiting_;std::set<int> cookie_owners_;std::map<int,int> cookie_controls_;
   std::map<int,Control> controls_;std::set<std::string> attaching_,finished_targets_;
   std::deque<Record> journal_;size_t journal_bytes_=0;
-  #include "worker_controller.inc"
+  #include "controllers/workers/worker_controller.inc"
   static_assert(suitecut::NativeContextWorkerCursors::kTargets==kWorkerTargets);
   std::map<std::string,WorkerTarget> detached_targets_;
-  #include "context_worker_console_refs.inc"
-  #include "context_worker_console.inc"
+  #include "controllers/workers/context_worker_console_refs.inc"
+  #include "controllers/workers/context_worker_console.inc"
   std::map<int,DevToolsCall> devtools_;
   IMPLEMENT_REFCOUNTING(Client);
 };

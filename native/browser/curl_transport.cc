@@ -158,9 +158,8 @@ bool NativeCurlTransport::Start(int owner,Request request,Data data,Done done,st
   curl_easy_setopt(handle,CURLOPT_SSL_VERIFYPEER,transfer->request.ignore_https_errors?0L:1L);curl_easy_setopt(handle,CURLOPT_SSL_VERIFYHOST,transfer->request.ignore_https_errors?0L:2L);
   curl_easy_setopt(handle,CURLOPT_PROXY_SSL_VERIFYPEER,transfer->request.ignore_https_errors?0L:1L);curl_easy_setopt(handle,CURLOPT_PROXY_SSL_VERIFYHOST,transfer->request.ignore_https_errors?0L:2L);
   if(transfer->request.extra_ca){
-    const auto*version=curl_version_info(CURLVERSION_NOW);
-    if(!version||!version->ssl_version||!std::string_view(version->ssl_version).starts_with("OpenSSL/")){
-      error="Native API extra CA requires the OpenSSL curl backend";return false;
+    if(!HTTPOpenSSLCurlCompatible()){
+      error="Native API extra CA requires a curl backend with a matching OpenSSL ABI";return false;
     }
     // SSL_CTX changes are invisible to curl's connection-cache identity. Never
     // reuse a connection, TLS session, or cached mutable CA store across it.

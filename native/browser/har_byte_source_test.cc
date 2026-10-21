@@ -18,7 +18,7 @@ struct SourceFixture {
  EngineFixture engine_;int network_context_id_=7,page_id_=42,next=100;bool closing_page_=false,accept=true,inline_ack=false;int submissions=0;Dict sent;
  int AllocateDevToolsId(){return ++next;}
  bool SubmitDevTools(int id,const std::string&method,Dict params,const std::string&session){assert(method=="Network.enable"&&session.empty()&&native_har_primary_enable_==id);++submissions;sent=params->Copy(false);if(inline_ack)NativeHARPrimaryReceipt(id,true,session);return accept;}
- #include "har_byte_source.inc"
+ #include "controllers/network/har_byte_source.inc"
 };
 int main(){
  assert(cef_api_hash(CEF_API_VERSION,0));auto params=CefDictionaryValue::Create();params->SetInt("maxResourceBufferSize",128*1048576);

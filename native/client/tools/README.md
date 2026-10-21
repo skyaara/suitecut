@@ -1,6 +1,6 @@
 # Native client real-browser verification
 
-`tests/real_browser.cpp` is a standalone C++ application linked only against the
+`tests/integration/real_browser.cpp` is a standalone C++ application linked only against the
 native client library and ordinary C++/OS libraries. It launches the existing CEF
 engine directly. Node is used only as a separate comparison application.
 

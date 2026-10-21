@@ -13,6 +13,18 @@ describe('actual native coverage deadline error classification', () => {
       expect(error.message).toBe(diagnostic)
     }
   })
+  it('classifies the native worker control deadline without reclassifying target loss', () => {
+    for (const diagnostic of [
+      'Native context worker original control deadline exceeded',
+      'Native context worker original deadline expired',
+    ]) {
+      expect(nativeCommandError(diagnostic)).toBeInstanceOf(NativeTimeoutError)
+      expect(nativeCommandError(diagnostic).message).toBe(diagnostic)
+    }
+    expect(nativeCommandError('Native context worker channel closed')).not.toBeInstanceOf(
+      NativeTimeoutError,
+    )
+  })
   it('keeps actual target loss and physical-retirement failure distinct from a public timeout', () => {
     for (const diagnostic of [
       'Actual native coverage target detached before its engine counters could be collected',

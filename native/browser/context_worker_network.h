@@ -92,7 +92,17 @@ class NativeContextWorkerNetwork {
       if(!route_emit_||sequence_>=9007199254740991ULL)return false;
       projected->SetDouble("sequence",double(++sequence_));route_emit_(context,owner,entry->worker->Copy(false),projected);return true;
     }
-    if(!bit||(entry->published&bit))return true;
+    if(!bit||(entry->published&bit)){
+      // Page and broker aliases can each own a distinct body publication for
+      // the same canonical request. Suppress duplicate public lifecycle events,
+      // but deliver the metadata needed to take every physical body receipt.
+      if(value->HasKey("postDataBodyId")){
+        if(sequence_>=9007199254740991ULL)return false;
+        projected->SetString("event","requestupdated");projected->SetDouble("sequence",double(++sequence_));
+        emit_(context,entry->worker->Copy(false),projected);
+      }
+      return true;
+    }
     if(sequence_>=9007199254740991ULL)return false;
     entry->published|=bit;projected->SetDouble("sequence",double(++sequence_));
     emit_(context,entry->worker->Copy(false),projected);return true;

@@ -12,8 +12,8 @@
 #include <vector>
 #include "include/cef_api_hash.h"
 #include "include/cef_parser.h"
-#include "native_aria_json.h"
-#include "native_aria_formatter.h"
+#include "../shared/native_aria_json.h"
+#include "../shared/native_aria_formatter.h"
 #include "operation_registry.h"
 #include "snapshot_reference_capture.h"
 #include "snapshot_reference_frames.h"
@@ -52,7 +52,7 @@ class Harness final:public CefBaseRefCounted {
   refs.Cancel(owner,operation->generation,now);reference_frame_batches_.erase(owner);
  }
 
-#include "snapshot_reference_current.inc"
+#include "controllers/dom/snapshot_reference_current.inc"
  void ReferenceRequest(const std::shared_ptr<SnapshotReferenceCapture>&work,const std::string&method,Dict params,std::function<void(Dict)>done){
   if(!ReferenceCurrent(work))return;
   if(work->before_request&&!work->before_request())return;
@@ -75,7 +75,7 @@ class Harness final:public CefBaseRefCounted {
  std::string Forest(const std::shared_ptr<SnapshotReferenceCapture>&work,const std::string&role){return "[{\"role\":\""+role+"\",\"ref\":\""+refs.Prefix(work->ticket)+"0\"}]";}
  void AckReleases(){for(size_t i=0;i<release_ack.size();++i)release_ack[i](true,"");}
  void Close(){calls.clear();captures.clear();install.clear();tasks.clear();refs.Destroyed();assert(!refs.Resident()&&!refs.Borrows()&&!refs.InstallPhysical()&&!refs.Physical());}
-#include "snapshot_reference_frames.inc"
+#include "controllers/dom/snapshot_reference_frames.inc"
  private:IMPLEMENT_REFCOUNTING(Harness);
 };
 int main(){cef_api_hash(CEF_API_VERSION,0);int groups=0;

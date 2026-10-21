@@ -1,0 +1,2 @@
+suitecut_sdk_module(transport transport.cpp decoder.cpp)
+target_link_libraries(suitecut_sdk_transport PRIVATE suitecut_sdk_chromium suitecut_sdk_firefox Threads::Threads)

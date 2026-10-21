@@ -43,7 +43,7 @@ class RoutingLifecycle {
     calls.push_back({std::move(reply)});
   }
   void DevTools(int,const std::string&,Dict,std::function<void(bool,const std::string&)>,std::optional<std::string>,bool,size_t){}
-#include "websocket_routing.inc"
+#include "controllers/network/websocket_routing.inc"
   void Enable(int id){operations_.live[id]=1;auto input=CefDictionaryValue::Create();input->SetString("action","routeEnable");NativeWebSocketRouteCommand(id,1,input);}
   void Disable(int id){operations_.live[id]=1;auto input=CefDictionaryValue::Create();input->SetString("action","routeDisable");input->SetString("routingToken",std::to_string(native_routed_epoch_));NativeWebSocketRouteCommand(id,1,input);}
   static std::string Supported(){return "{\"revision\":1,\"maxSockets\":128,\"maxPendingMessages\":64,\"maxPendingBytes\":2097152}";}

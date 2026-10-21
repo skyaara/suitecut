@@ -89,10 +89,13 @@ const expected = {
 }
 const empty = { local: null, session: null, cookies: [], idb: null, opfs: null }
 const checks = []
+let stage = 'launch first profile'
 try {
   const first = await launch()
   const page = createNativePage(first)
+  stage = 'navigate first profile'
   await page.goto(origin)
+  stage = 'write all persistent stores'
   await page.evaluate(`(async()=>{
     localStorage.setItem('profile','native-'+String.fromCharCode(0xd800));sessionStorage.setItem('session','tab-only');
     document.cookie='persistent=actual; Max-Age=3600; Path=/';document.cookie='session=actual; Path=/';
@@ -103,6 +106,7 @@ try {
     const root=await navigator.storage.getDirectory();const handle=await root.getFileHandle('native-bytes',{create:true});
     const writer=await handle.createWritable();await writer.write(new Uint8Array([0,255,128,32]));await writer.close();
   })()`)
+  stage = 'reject overlapping profile'
   await assert.rejects(launch(), /persistent profile is already in use/u)
   assert.equal(await page.title(), 'Native profile')
   assert.equal(await readFile(join(profile, 'original-data'), 'utf8'), 'preserve these exact bytes')
@@ -115,21 +119,25 @@ try {
       typeof first.onContextEvent === 'function',
   )
   const contexts = new NativeBrowserContexts(first)
+  stage = 'create isolated context'
   const isolated = await contexts.newContext()
   const isolatedPage = await isolated.newPage()
   await isolatedPage.goto(origin)
   assert.deepEqual(await readState(isolatedPage), empty)
   await isolatedPage.evaluate(() => localStorage.setItem('profile', 'isolated context'))
   assert.equal((await readState(page)).local, expected.local)
+  stage = 'close isolated context'
   await isolated.close()
   checks.push(
     'ordinary contexts inside a persistent helper use genuine isolated in-memory partitions',
   )
+  stage = 'close first profile'
   await first.close()
   sources.delete(first)
   assert.equal(await readFile(join(profile, 'original-data'), 'utf8'), 'preserve these exact bytes')
   const files = await readdir(profile)
   assert(files.includes('Default'))
+  stage = 'relaunch profile'
   const second = await launch()
   const restoredPage = createNativePage(second)
   await restoredPage.goto(origin)
@@ -138,8 +146,10 @@ try {
   checks.push(
     'actual disk profile restores cookies, exact UTF16 localStorage, IndexedDB and OPFS across helper restart; new tab sessionStorage is empty',
   )
+  stage = 'close restored profile'
   await second.close()
   sources.delete(second)
+  stage = 'launch temporary profile'
   const temporary = await launch(false)
   const temporaryPage = createNativePage(temporary)
   await temporaryPage.goto(origin)
@@ -168,11 +178,31 @@ try {
     ) + '\n',
   )
   console.log('Native profile verified: .suitecut/native-profile/report.json')
+} catch (error) {
+  await mkdir('.suitecut/native-profile', { recursive: true })
+  await writeFile(
+    '.suitecut/native-profile/failure.json',
+    JSON.stringify(
+      {
+        stage,
+        checks,
+        stderr,
+        error: String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      },
+      null,
+      2,
+    ) + '\n',
+  )
+  console.error('Native profile failure at', stage, error)
+  throw error
 } finally {
-  await Promise.all([...sources].map((source) => source.close()))
+  const cleanup = await Promise.allSettled([...sources].map((source) => source.close()))
   server.closeAllConnections()
   await new Promise((resolve, reject) =>
     server.close((error) => (error ? reject(error) : resolve(undefined))),
   )
   await rm(root, { recursive: true, force: true })
+  for (const result of cleanup)
+    if (result.status === 'rejected') console.error('Native profile cleanup failed:', result.reason)
 }

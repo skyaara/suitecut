@@ -29,7 +29,7 @@ struct Harness {
  void Ack(int id,const std::string&session){const auto found=devtools_.find(id);assert(found!=devtools_.end()&&found->second.session==session);auto callback=std::move(found->second.callback);devtools_.erase(found);callback(true,"{}");}
  bool Reject(int id,bool success=false,const std::string&session="",const std::string&json=R"({"code":-32001,"message":"Session with given id not found."})"){return SelectorWaitRejectedSession(id,success,json.data(),json.size(),session);}
  void Release(const std::string&session="actual-child",bool with_main=false){auto& owner=SelectorWaits();assert(owner.Admit(1,1)&&owner.Group(1,"actual-group",session));if(with_main)assert(owner.Group(1,"actual-group",""));owner.Cancel(1);}
-#include "selector_wait_controller.inc"
+#include "controllers/dom/selector_wait_controller.inc"
 };
 int main(){cef_api_hash(CEF_API_VERSION,0);int groups=0;
  // A real child close while the prior main group is awaiting ACK must prevent

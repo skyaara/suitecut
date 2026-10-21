@@ -33,7 +33,7 @@ std::optional<SnapshotReferenceDocument> document=SnapshotReferenceDocument{"mai
   void NativeTargetSessionDetached(const std::string& session){sessions_.erase(session);}
   std::vector<int> screenshot_release_failures;
   void ScreenshotAssertionReleaseFailed(int owner){screenshot_release_failures.push_back(owner);}
-#include "selector_wait_controller.inc"
+#include "controllers/dom/selector_wait_controller.inc"
   bool ReferenceTemporaryGroups(int id){return SelectorWaits().Group(id,"suitecut-automation-"+std::to_string(id),"");}
   std::optional<SnapshotReferenceDocument>ReferenceDocument(const std::string&)const{return document;}
   static double Now(){return clock;}
@@ -47,8 +47,8 @@ std::optional<SnapshotReferenceDocument> document=SnapshotReferenceDocument{"mai
   }
   uint64_t Start(double timeout=40){const auto entry=operations_.Begin(1,now,timeout);assert(entry&&document);assert(AssertionDeadlineDispatch(1,entry->generation,"toHaveText","main"));first_observations_[1]=now+1000;return entry->generation;}
   void AckRelease(){assert(!release_acks.empty());auto ack=std::move(release_acks.front());release_acks.erase(release_acks.begin());ack();}
-#include "expectation_deadline.inc"
-#include "assertion_deadline_source.inc"
+#include "controllers/lifecycle/expectation_deadline.inc"
+#include "controllers/lifecycle/assertion_deadline_source.inc"
 };
 const std::string actual=R"({"result":{"type":"object","value":{"waiting":false,"value":{"matches":false,"count":1,"actual":["primitive","late actual"],"preview":"p#status"}}}})";
 const std::string waiting=R"({"result":{"type":"object","value":{"waiting":true}}})";

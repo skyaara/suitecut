@@ -111,7 +111,7 @@ try {
   )
   const publisher = await createNativePublisher({
     source: page.source,
-    ffmpegPath: '/usr/bin/ffmpeg',
+    ffmpegPath: process.env.SUITECUT_FFMPEG ?? '/usr/bin/ffmpeg',
     publisher: {
       destination: `tcp://127.0.0.1:${address.port}`,
       videoCodec: 'vp9',

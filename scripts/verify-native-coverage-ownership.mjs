@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-/* global document, getComputedStyle */
+/* global document, getComputedStyle, XMLHttpRequest */
 import assert from 'node:assert/strict'
 import { Buffer } from 'node:buffer'
 import console from 'node:console'
@@ -26,7 +26,14 @@ const counterSchema = z.object({
   nativeCoverageSourceBytes: z.number().nonnegative(),
   sessions: z.number().int().nonnegative(),
 })
+let releaseHeld = () => undefined
+let announceHeld = () => undefined
 const server = createServer((request, response) => {
+  if (request.url === '/hold') {
+    releaseHeld = () => response.end('released')
+    announceHeld()
+    return
+  }
   response.setHeader('Content-Type', 'text/html')
   const address = server.address()
   assert(address && typeof address !== 'string')
@@ -166,18 +173,26 @@ try {
   )
   report.groups.push('genuine function-wide V8 coverage option')
   phase = 'held renderer original timeout and late physical startup ACK'
-  let ready = observe(page.waitForEvent('console'))
-  let held = observe(
-    page.evaluate(() => {
-      console.log('actual-held-timeout')
-      const end = performance.now() + 1600
-      while (performance.now() < end) {
-        void 0
-      }
-      return 42
-    }),
-  )
-  await ready
+  /**
+   * Hold the actual renderer until the verifier releases the server response.
+   * @param {number} result Actual evaluation result after the gate releases.
+   */
+  const holdRenderer = async (result) => {
+    const ready = new Promise((accept) => {
+      announceHeld = () => accept(undefined)
+    })
+    const held = observe(
+      page.evaluate((value) => {
+        const xhr = new XMLHttpRequest()
+        xhr.open('GET', '/hold', false)
+        xhr.send()
+        return value
+      }, result),
+    )
+    await ready
+    return { held }
+  }
+  let { held } = await holdRenderer(42)
   page.setDefaultTimeout(120)
   const start = performance.now()
   await assert.rejects(page.coverage.startJSCoverage(), (error) => {
@@ -195,6 +210,7 @@ try {
   assert(physical.nativeCoveragePhysical > 0)
   assert.equal(physical.nativeCoverageRecordings, 1)
   await assert.rejects(page.coverage.startJSCoverage(), /already enabled|cleanup/i)
+  releaseHeld()
   assert.equal(await held, 42)
   const afterTimeout = await settled()
   page.setDefaultTimeout(30000)
@@ -207,18 +223,7 @@ try {
     'original120ms logical timeout retains real pending debugger ACK until renderer release',
   )
   phase = 'actual explicit cancel keeps physical ownership'
-  ready = observe(page.waitForEvent('console'))
-  held = observe(
-    page.evaluate(() => {
-      console.log('actual-held-cancel')
-      const end = performance.now() + 1600
-      while (performance.now() < end) {
-        void 0
-      }
-      return 43
-    }),
-  )
-  await ready
+  ;({ held } = await holdRenderer(43))
   const controller = new AbortController()
   const canceled = page.runAutomation(
     'coverage',
@@ -239,6 +244,7 @@ try {
   await assert.rejects(canceled, /actual coverage caller canceled/)
   const retained = counterSchema.parse(await source.runAutomation('diagnostics'))
   assert(retained.nativeCoveragePhysical > 0)
+  releaseHeld()
   assert.equal(await held, 43)
   await settled()
   await page.coverage.startJSCoverage()
@@ -268,6 +274,7 @@ try {
   report.error = String(error)
   throw error
 } finally {
+  releaseHeld()
   try {
     await source?.close()
     report.nativeShutdown = 'clean'

@@ -74,8 +74,11 @@
     "SECURITY.md",
     "THIRD_PARTY_NOTICES.md",
     "native/browser",
+    "native/shared",
     "native/runner",
     "native/tools",
+    "scripts/sign-native-macos.py",
+    "scripts/native_macos_signing.py",
     "scripts/native-runner-callback-proof.mjs",
     "scripts/check-native-runner-grep.py",
     "scripts/check-native-runner-directory.py",
@@ -160,7 +163,10 @@
     "test:native:publisher": "pnpm build && node scripts/verify-native-streaming-source.mjs",
     "test:native:values": "pnpm build && node scripts/verify-native-window-values.mjs",
     "test:native:cookies": "pnpm build && node scripts/verify-native-partitioned-cookies.mjs",
-    "test:native:recovery": "pnpm build && node scripts/verify-native-page-recovery.mjs && node scripts/verify-native-page-recovery-deadlines.mjs && node scripts/verify-native-page-recovery-media.mjs"
+    "test:native:recovery": "pnpm build && node scripts/verify-native-page-recovery.mjs && node scripts/verify-native-page-recovery-deadlines.mjs && node scripts/verify-native-page-recovery-media.mjs",
+    "test:cef": "python3 tests/cef",
+    "test:cef:list": "python3 tests/cef --list",
+    "test:cef:unit": "python3 -m unittest discover -s tests/cef/unit -p 'test_*.py'"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

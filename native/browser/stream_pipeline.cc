@@ -21,7 +21,9 @@
 #include <sstream>
 #include <stdexcept>
 #include <sys/wait.h>
+#if defined(__linux__)
 #include <sys/syscall.h>
+#endif
 #include <thread>
 #include <unistd.h>
 
@@ -71,7 +73,14 @@ class StreamFD {
 };
 std::array<StreamFD, 2> StreamPipe() {
   int raw[2];
+#if defined(__APPLE__)
+  if (pipe(raw) != 0) throw std::runtime_error("Native publisher pipe creation failed");
+  if (fcntl(raw[0], F_SETFD, FD_CLOEXEC) || fcntl(raw[1], F_SETFD, FD_CLOEXEC)) {
+    close(raw[0]); close(raw[1]); throw std::runtime_error("Native publisher pipe inheritance configuration failed");
+  }
+#else
   if (pipe2(raw, O_CLOEXEC) != 0) throw std::runtime_error("Native publisher pipe creation failed");
+#endif
   return {StreamFD(raw[0]), StreamFD(raw[1])};
 }
 void StreamNonblocking(int fd) {
@@ -106,10 +115,13 @@ struct StreamChild {
   void FinishPhysical() {
     video.Reset(); audio.Reset();
     if (pid > 0 && !reaped) {
+#if defined(__linux__)
       if(identity.Get()>=0){
         const auto signaled=syscall(SYS_pidfd_send_signal,identity.Get(),SIGKILL,nullptr,0);
         if(signaled<0&&errno!=ESRCH)std::terminate();
-      }else kill(-pid,SIGKILL);
+      }else
+#endif
+      kill(-pid,SIGKILL);
       pid_t ended; do { ended = waitpid(pid, &status, 0); } while (ended < 0 && errno == EINTR);
       if (ended == pid) { reaped = true; exit_observed = true; }
       else {
@@ -117,6 +129,7 @@ struct StreamChild {
         // An actual pidfd cannot refer to a recycled PID. Retain this physical
         // owner until that original process has genuinely exited, even if an
         // external process reaper took its wait status.
+#if defined(__linux__)
         if (identity.Get() >= 0) {
           const auto signaled = syscall(SYS_pidfd_send_signal, identity.Get(), SIGKILL, nullptr, 0); (void)signaled;
           pollfd ended{identity.Get(), POLLIN, 0};
@@ -126,7 +139,9 @@ struct StreamChild {
             if (observed < 0 && errno == EINTR) continue;
             std::terminate();  // Never publish a false physical settlement.
           }
-        } else std::terminate();
+        } else
+#endif
+        std::terminate();
       }
     }
   }
@@ -150,10 +165,14 @@ struct StreamChild {
       error |= posix_spawn_file_actions_adddup2(&actions, inputs[index].Get(), static_cast<int>(index));
 #if defined(__GLIBC__) && defined(__linux__)
     error |= posix_spawn_file_actions_addclosefrom_np(&actions, 5);
-#else
-#error Native stream subprocess ownership currently requires Linux glibc
+#elif !defined(__APPLE__)
+#error Native stream subprocess ownership requires Linux glibc or macOS
 #endif
-    error |= posix_spawnattr_setflags(&attributes, POSIX_SPAWN_SETPGROUP);
+    short spawn_flags = POSIX_SPAWN_SETPGROUP;
+#ifdef POSIX_SPAWN_CLOEXEC_DEFAULT
+    spawn_flags |= POSIX_SPAWN_CLOEXEC_DEFAULT;
+#endif
+    error |= posix_spawnattr_setflags(&attributes, spawn_flags);
     error |= posix_spawnattr_setpgroup(&attributes, 0);
     const std::string filter = "scale=" + std::to_string(options.output_width) + ":" + std::to_string(options.output_height) +
       ":force_original_aspect_ratio=decrease,pad=" + std::to_string(options.output_width) + ":" + std::to_string(options.output_height) + ":(ow-iw)/2:(oh-ih)/2:black,setsar=1";
@@ -183,8 +202,10 @@ struct StreamChild {
     if (!error) error = posix_spawn(&pid, options.launcher_path.c_str(), &actions, &attributes, argv.data(), environ);
     posix_spawn_file_actions_destroy(&actions); posix_spawnattr_destroy(&attributes);
     if (error) { pid = -1; throw std::runtime_error("Native publisher spawn failed: " + std::string(strerror(error))); }
+#if defined(__linux__)
     identity.Reset(static_cast<int>(syscall(SYS_pidfd_open, pid, 0)));
     if (identity.Get() < 0) throw std::runtime_error("Native publisher process identity descriptor unavailable");
+#endif
     video = std::move(v[1]); audio = std::move(a[1]); diagnostics = std::move(d[0]); progress = std::move(p[0]);
     if (!options.audio) audio.Reset();
     StreamNonblocking(video.Get()); if (options.audio) StreamNonblocking(audio.Get()); StreamNonblocking(diagnostics.Get()); StreamNonblocking(progress.Get());
@@ -549,11 +570,14 @@ StreamPipeline::StreamPipeline(StreamPipelineOptions options, Completion complet
 StreamPipeline::~StreamPipeline() = default;
 void StreamPipeline::Frame(const std::vector<uint8_t>& data, double timestamp) {
   const auto expected = static_cast<size_t>(impl_->options.source_width) * impl_->options.source_height * (impl_->options.i420 ? 3 : 8) / 2;
-  if (data.size() != expected || !std::isfinite(timestamp) || timestamp < impl_->options.start_timestamp_ms) { impl_->Cancel("Malformed native publisher capture frame"); return; }
+  if (data.size() != expected || !std::isfinite(timestamp) || timestamp < 0) { impl_->Cancel("Malformed native publisher capture frame"); return; }
   try {
     std::lock_guard lock(impl_->mutex);
     if (impl_->settled || impl_->canceled || impl_->stopping) return;
     ++impl_->result.input_frames;
+    // A real capture may precede admission and arrive late from the renderer.
+    // Discard it without rewriting its source clock or failing the publisher.
+    if (timestamp < impl_->options.start_timestamp_ms) { ++impl_->result.superseded_frames; return; }
     if (timestamp < impl_->last_frame_timestamp) { ++impl_->result.superseded_frames; return; }
     impl_->last_frame_timestamp = timestamp;
     if (impl_->At(timestamp).paused) { ++impl_->result.paused_input_video_frames; return; }

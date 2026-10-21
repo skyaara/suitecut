@@ -6,7 +6,23 @@ audio comes from `CefAudioHandler::OnAudioStreamPacket`. No screenshot loop, bro
 
 The root `suitecut` API uses this backend.
 
-## Current callback retry build a238fec
+## Runtime modules and local qualification
+
+Production code is organized into compiled `protocol/`, `runtime/`, `page/` and
+`process/` modules, with private controller fragments grouped by domain. See
+[architecture and ownership](ARCHITECTURE.md) and the
+[component build requirements](../../docs/building.md).
+
+The October 21 macOS ARM64 qualification passed the full 90-case
+[CEF regression package](../../tests/cef/README.md) with one worker, plus 30
+frame handoff repetitions under the original three-second deadline. The local
+checks cover navigation-close shutdown, frame metadata ordering and libc++
+completion ownership. All 23 module translation units also passed compiler
+checks without forced precompiled headers. These results are scoped to macOS
+27.0.1; the historical Linux checks below are separate evidence. No CEF CI job
+is enabled. See [macOS packaging and signing](../../docs/native-full-runtime-macos.md).
+
+## Historical callback retry build a238fec
 
 Native callback retries are integrated at production `a238fec`, with Runner
 `343b915d`, Source `d29461c1` and merge tool `c3889a7e`. All native targets and
@@ -197,7 +213,7 @@ cmake -S native/browser -B .suitecut/native-build -G Ninja \
   -DCEF_ROOT="$PWD/.suitecut/cef-sdk" \
   -DLIBYUV_ROOT="$PWD/.suitecut/libyuv" \
   -DPROJECT_ARCH=x86_64 -DCMAKE_BUILD_TYPE=Release
-cmake --build .suitecut/native-build --target suitecut-browser --parallel 4
+cmake --build .suitecut/native-build --target suitecut-browser --parallel 2
 export SUITECUT_NATIVE_EXECUTABLE="$PWD/.suitecut/native-build/suitecut-browser"
 ```
 
@@ -208,13 +224,16 @@ cmake -S native/browser -B .suitecut/native-build -G Ninja \
   -DCEF_ROOT="$PWD/.suitecut/cef-sdk" \
   -DLIBYUV_ROOT="$PWD/.suitecut/libyuv" \
   -DPROJECT_ARCH=arm64 -DCMAKE_BUILD_TYPE=Release
-cmake --build .suitecut/native-build --target suitecut-browser --parallel 4
+cmake --build .suitecut/native-build --target suitecut-browser --parallel 1
 export SUITECUT_NATIVE_EXECUTABLE="$PWD/.suitecut/native-build/suitecut-browser.app/Contents/MacOS/suitecut-browser"
 ```
 
 The CMake bundle includes the CEF framework, sandbox helper apps, CEF license, and
-Chromium credits. Keep the complete `.app` together. Distribution builds need
-platform signing/notarization; local compilation is not a signed release.
+Chromium credits. Keep the complete `.app` together. Local builds use the shared
+signing policy, which defaults to ad-hoc signing on an unconfigured host. Pin a
+fixed certificate for repeated certificate-backed builds. Distribution requires
+separate notarization and platform qualification; local compilation alone does
+not establish those gates.
 
 Linux also needs Chromium's runtime dependencies. Set `headless: true` in native
 launch options for display-free software rendering; the sandbox stays enabled.
@@ -534,7 +553,6 @@ overflow fails explicitly. At most four physical publishers are active. CEF
 surfaces, FFmpeg memory and separately retained SDK frames are additional.
 GPU texture sharing remains unimplemented.
 
-
 ## Native screenshot comparison slice
 
 The ed097480 candidate adds `expectNative(page).toHaveScreenshot(pathOrPNG,
@@ -622,7 +640,6 @@ write/progress callbacks so its connection cannot enter the idle pool. It does
 not wait for unseen bytes, log raw messages, or relabel orderly EOF as reset.
 Header continuations extend only their actual preceding field; derived cookie
 metadata commits complete field values after the real header section ends.
-
 
 The browser-control integration at `bf480072` built against pinned CEF156 and
 passed a bounded live scope for activation, mobile capture restoration, locator

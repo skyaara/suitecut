@@ -116,10 +116,16 @@ try {
   checks.push(
     'nested owners deliver genuine retained handles bound to the immediate parent execution context',
   )
+  const left = await page.locator('#left').elementHandle()
+  assert(left)
+  const navigatingFrame = await left.contentFrame()
+  assert(navigatingFrame)
+  await left.dispose()
   await page.locator('#left').evaluate((node, url) => {
     if (!(node instanceof Element)) throw new Error('Actual iframe missing')
     node.setAttribute('src', url)
   }, `http://localhost:${address.port}/child`)
+  await navigatingFrame.waitForURL(`http://localhost:${address.port}/child`, { timeout: 5000 })
   await page.frameLocator('#left').getByPlaceholder('Account').waitFor({ timeout: 2000 })
   const cross = page
     .frames()

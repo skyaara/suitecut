@@ -2,6 +2,7 @@
 #ifdef NDEBUG
 #undef NDEBUG
 #endif
+#include <algorithm>
 #include <cassert>
 #include <cstdio>
 #include <deque>
@@ -12,6 +13,9 @@
 #include <string>
 #include <vector>
 #include "include/cef_api_hash.h"
+#ifdef __APPLE__
+#include "include/wrapper/cef_library_loader.h"
+#endif
 #include "include/cef_task.h"
 #include "artifact_controls.h"
 #include "operation_registry.h"
@@ -88,13 +92,16 @@ class Source : public CefBaseRefCounted {
     assert(!calls.empty()); auto call = std::move(calls.front()); calls.pop_front();
     call.callback(true,"{\"result\":{\"type\":\"boolean\",\"value\":true}}");
   }
-  #include "artifact_documents.inc"
+  #include "controllers/artifacts/artifact_documents.inc"
  private:
   IMPLEMENT_REFCOUNTING(Source);
 };
 #undef CefPostDelayedTask
 
 int main() {
+#ifdef __APPLE__
+  if (!cef_load_library(SUITECUT_TEST_CEF_LIBRARY)) { std::fprintf(stderr,"Could not load the native CEF test library\n"); return 1; }
+#endif
   assert(cef_api_hash(CEF_API_VERSION,0));
   {
     auto source = CefRefPtr<Source>(new Source()); source->Admit(1); int done = 0;
@@ -165,7 +172,7 @@ int main() {
     source->ArtifactDocuments(1,"(()=>true)()",[&done,raw = source.get()](bool ok,const std::string& error) {
       assert(!ok && error == "Native screenshot child-document preparation failed"); ++done; raw->ArtifactDocumentCleanup(1,false);
     });
-    auto bad = std::move(source->calls.front()); source->calls.pop_front(); bad.callback(true,"{\"result\":{\"value\":false}}");
+    auto bad = std::move(source->calls.front()); source->calls.pop_front(); bad.callback(true,"{\"result\":{\"value\":null}}");
     assert(done == 1 && source->fires.size() == 1 && source->artifact_document_work_.empty());
     assert(source->operations_.Finish(1)); DrainTasks();
   }
@@ -188,6 +195,22 @@ int main() {
     source->ArtifactDocuments(1,"(()=>true)()",[&done](bool,const std::string&) { ++done; });
     assert(source->calls.empty() && !scheduled.empty()); source->ArtifactDocumentCleanup(1,false);
     assert(source->operations_.Finish(1)); DrainTasks(); assert(done == 0 && source->fires.empty());
+  }
+  {
+    auto source = CefRefPtr<Source>(new Source()); source->Admit(1); int done = 0;
+    const auto original = source->operations_.Get(1);
+    source->ArtifactDocuments(1,"(()=>true)()",[&done](bool ok,const std::string&) { assert(ok); ++done; });
+    for (int attempt=0;attempt<3;++attempt) {
+      auto pending=std::move(source->calls.front());source->calls.pop_front();
+      assert(pending.params->GetString("expression").ToString().find("if(!document.documentElement)return false;")!=std::string::npos);
+      pending.callback(true,"{\"result\":{\"type\":\"boolean\",\"value\":false}}");
+      assert(done==0 && source->ArtifactDocumentContextCount()==1);
+      while(source->calls.empty()) { assert(!scheduled.empty());auto task=scheduled.front();scheduled.pop_front();task->Execute(); }
+      assert(source->operations_.Get(1)->generation==original->generation && source->operations_.Get(1)->deadline_ms==original->deadline_ms);
+    }
+    source->Ack();source->Ack();assert(done==1 && source->ArtifactDocumentContextCount()==2);
+    source->ArtifactDocumentCleanup(1,false);assert(source->fires.size()==2);
+    assert(source->operations_.Finish(1));DrainTasks();
   }
   std::puts("Native artifact document ownership, per-session restoration, cancellation, swapped-target retry and original deadline passed");
 }

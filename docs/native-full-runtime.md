@@ -1,5 +1,8 @@
 # Native full runtime
 
+For macOS ARM64 builds and qualification, see
+[the macOS runtime recipe](native-full-runtime-macos.md).
+
 `SuiteCutRuntime-0.1.0-linux-x86_64.tar.gz` combines the native C++ SDK,
 C ABI, agent CLI, native recorder, SuiteCut engine, pinned CEF 156 beta,
 CEF resources/locales/notices, and pinned FFmpeg/ffprobe in one installation.

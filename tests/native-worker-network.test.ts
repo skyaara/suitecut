@@ -133,5 +133,25 @@ describe('native context worker request projection', () => {
       false,
     )
     expect(NativeContextNetworkInfoSchema.safeParse(base).success).toBe(false)
+    const update = {
+      ...base,
+      network: {
+        event: 'requestupdated',
+        sequence: 2,
+        request: { ...info, postDataBodyId: '23', postDataOwner: 'broker:2' },
+      },
+    }
+    expect(NativeContextNetworkInfoSchema.safeParse({ ...update, worker }).success).toBe(true)
+    expect(NativeContextNetworkInfoSchema.safeParse({ ...update, pageId: 1 }).success).toBe(false)
+    expect(
+      NativeContextNetworkInfoSchema.safeParse({
+        ...update,
+        worker,
+        network: {
+          ...update.network,
+          request: { ...info, postDataBodyId: undefined, postDataOwner: undefined },
+        },
+      }).success,
+    ).toBe(false)
   })
 })

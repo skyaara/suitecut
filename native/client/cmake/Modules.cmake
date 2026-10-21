@@ -1,0 +1,28 @@
+# SPDX-License-Identifier: MIT
+# Build-only policy. None of these private targets escapes into the SDK export.
+add_library(suitecut_sdk_options INTERFACE)
+target_compile_features(suitecut_sdk_options INTERFACE cxx_std_20)
+target_include_directories(suitecut_sdk_options INTERFACE "${PROJECT_SOURCE_DIR}/include")
+if(MSVC)
+  target_compile_options(suitecut_sdk_options INTERFACE /W4)
+else()
+  target_compile_options(suitecut_sdk_options INTERFACE -Wall -Wextra -Wpedantic)
+endif()
+if(SUITECUT_CLIENT_SANITIZERS)
+  if(MSVC)
+    message(FATAL_ERROR "The SDK sanitizer preset requires Clang or GCC")
+  endif()
+  target_compile_options(suitecut_sdk_options INTERFACE -fsanitize=address,undefined -fno-omit-frame-pointer)
+endif()
+
+function(suitecut_sdk_module name)
+  add_library(suitecut_sdk_${name} OBJECT ${ARGN})
+  set_target_properties(suitecut_sdk_${name} PROPERTIES POSITION_INDEPENDENT_CODE ON)
+  target_link_libraries(suitecut_sdk_${name} PRIVATE suitecut_sdk_options)
+  # Headers here are private to this module and its explicit dependents.
+  target_include_directories(suitecut_sdk_${name} INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}")
+  set_property(GLOBAL APPEND PROPERTY suitecut_client_modules suitecut_sdk_${name})
+  foreach(source IN LISTS ARGN)
+    set_property(GLOBAL APPEND PROPERTY suitecut_client_sources "${CMAKE_CURRENT_SOURCE_DIR}/${source}")
+  endforeach()
+endfunction()

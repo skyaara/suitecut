@@ -3,7 +3,9 @@ import assert from 'node:assert/strict'
 import { Buffer } from 'node:buffer'
 import console from 'node:console'
 import { createHash } from 'node:crypto'
+import { mkdir, writeFile } from 'node:fs/promises'
 import { createServer } from 'node:http'
+import { resolve } from 'node:path'
 import process from 'node:process'
 
 import * as z from 'zod'
@@ -157,4 +159,27 @@ try {
 }
 assert.equal(source.processExit?.()?.code, 0)
 assert.equal(stderr, '')
+const directory = resolve(
+  process.env.SUITECUT_NATIVE_PROOF_DIRECTORY ?? '.suitecut/native-websocket-close',
+)
+await mkdir(directory, { recursive: true })
+await writeFile(
+  resolve(directory, 'report.json'),
+  JSON.stringify(
+    {
+      completed: true,
+      checks: [
+        'close event precedes rejection of pending frame wait',
+        'last frame is delivered before close',
+        'closing one socket preserves another socket and its pending frame',
+        'already closed socket rejects a new event wait immediately',
+        'deadline and explicit abort preserve the live socket and exact abort reason',
+      ],
+      exit: source.processExit?.(),
+      stderr,
+    },
+    null,
+    2,
+  ) + '\n',
+)
 console.log('Native WebSocket early-close: five behavior groups PASS')

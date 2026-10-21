@@ -63,6 +63,10 @@ const peers = z.array(z.instanceof(Socket)).parse([])
 server.on('upgrade', (request, socket, head) => {
   const key = z.string().min(1).parse(request.headers['sec-websocket-key'])
   peers.push(socket)
+  socket.on('error', (error) => {
+    // A deliberately crashed renderer can reset an upgraded TCP connection.
+    if (!('code' in error) || error.code !== 'ECONNRESET') behaviorErrors.push(error)
+  })
   const accept = createHash('sha1')
     .update(key + '258EAFA5-E914-47DA-95CA-C5AB0DC85B11')
     .digest('base64')

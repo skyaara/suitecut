@@ -8,12 +8,12 @@ import { pathToFileURL } from 'node:url'
 
 import * as z from 'zod'
 
-/** @type {typeof import('/workspace/suitecut/src/native.js')} */
+/** @type {typeof import('../src/native.js')} */
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- Explicit immutable SDK selected and hashed alongside the report.
 const native = await import(
   pathToFileURL(process.env.SUITECUT_NATIVE_SDK_DIRECTORY + '/native.js').href
 )
-/** @type {{stderr:string,deadlines:import('/workspace/suitecut/src/untrusted.js').UntrustedInput[],successes:import('/workspace/suitecut/src/untrusted.js').UntrustedInput[],cancellations:import('/workspace/suitecut/src/untrusted.js').UntrustedInput[],final?:import('/workspace/suitecut/src/untrusted.js').UntrustedInput,exit?:{code:number|null,signal:NodeJS.Signals|null},error?:string,stack?:string|undefined,cleanup?:string,shutdown?:string}} */
+/** @type {{stderr:string,deadlines:import('../src/untrusted.js').UntrustedInput[],successes:import('../src/untrusted.js').UntrustedInput[],cancellations:import('../src/untrusted.js').UntrustedInput[],final?:import('../src/untrusted.js').UntrustedInput,exit?:{code:number|null,signal:NodeJS.Signals|null},error?:string,stack?:string|undefined,cleanup?:string,shutdown?:string}} */
 const report = { stderr: '', deadlines: [], successes: [], cancellations: [] }
 const source = await native.launchNativeBrowser({
   executablePath: z.string().parse(process.env.SUITECUT_NATIVE_EXECUTABLE),
@@ -27,7 +27,7 @@ const root = native.createNativePage(source)
 const context = await browser.newContext()
 /**
  * Calls the genuine context transport with its actual source receiver.
- * @type {NonNullable<import('/workspace/suitecut/src/native-browser.js').NativeBrowser['runContext']>}
+ * @type {NonNullable<import('../src/native-browser.js').NativeBrowser['runContext']>}
  */
 const runContext = (action, params, signal) => {
   if (!source.runContext) throw new Error('Native context command transport is unavailable')

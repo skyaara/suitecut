@@ -9,6 +9,7 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { createServer } from 'node:http'
 import { resolve } from 'node:path'
 import process from 'node:process'
+import { setTimeout as timer } from 'node:timers/promises'
 import { pathToFileURL } from 'node:url'
 
 import * as z from 'zod'
@@ -58,6 +59,10 @@ const source = await native.launchNativeBrowser({
 })
 const browser = new native.NativeBrowserContexts(source),
   checks = []
+const check = (message) => {
+  checks.push(message)
+  console.log(message)
+}
 const eventSchema = z.array(
   z.object({
     type: z.string(),
@@ -66,6 +71,7 @@ const eventSchema = z.array(
     location: z.number(),
     shift: z.boolean(),
     ctrl: z.boolean(),
+    meta: z.boolean(),
     trusted: z.literal(true),
     target: z.string(),
   }),
@@ -82,7 +88,7 @@ try {
   const reset = async () => {
     await page.goto(prefix)
     await page.evaluate(() => {
-      /** @type {Array<{type:string,key:string,code:string,location:number,shift:boolean,ctrl:boolean,trusted:boolean,target:string}>} */
+      /** @type {Array<{type:string,key:string,code:string,location:number,shift:boolean,ctrl:boolean,meta:boolean,trusted:boolean,target:string}>} */
       const journal = []
       Reflect.set(globalThis, 'actualKeyEvents', journal)
       for (const type of ['keydown', 'keyup', 'keypress', 'input'])
@@ -97,6 +103,7 @@ try {
               location: key?.location ?? 0,
               shift: key?.shiftKey ?? false,
               ctrl: key?.ctrlKey ?? false,
+              meta: key?.metaKey ?? false,
               trusted: event.isTrusted,
               target: event.target instanceof Element ? event.target.id : '',
             })
@@ -125,17 +132,34 @@ try {
   )
   assert(journal.some((event) => event.type === 'keydown' && event.key === 'A' && event.shift))
   assert(journal.some((event) => event.type === 'keydown' && event.key === 'b' && !event.shift))
-  checks.push('Explicit Shift stays held until NULL; real trusted text and key events agree')
+  check('Explicit Shift stays held until NULL; real trusted text and key events agree')
   await reset()
   await page.locator('#a').fill('abcdef')
-  await page.locator('#a').sendKeys('\uE009a\uE000Z')
+  const selectModifier = process.platform === 'darwin' ? '\uE03D' : '\uE009'
+  await page.locator('#a').sendKeys(`${selectModifier}a\uE000Z`)
   assert.equal(await page.locator('#a').inputValue(), 'Z')
   await page.keyboard.type('x')
   assert.equal(await page.locator('#a').inputValue(), 'Zx')
   journal = await events()
-  assert(journal.some((event) => event.key === 'a' && event.ctrl))
+  assert(
+    journal.some(
+      (event) => event.key === 'a' && (process.platform === 'darwin' ? event.meta : event.ctrl),
+    ),
+  )
+  assert(
+    journal.some(
+      (event) =>
+        event.type === 'keyup' &&
+        event.code === (process.platform === 'darwin' ? 'MetaLeft' : 'ControlLeft'),
+    ),
+  )
+  check('Platform select-all/NULL/uppercase replacement releases modifiers before ordinary typing')
+  await reset()
+  await page.locator('#a').sendKeys('\uE009a\uE000')
+  journal = await events()
+  assert(journal.some((event) => event.key === 'a' && event.ctrl && !event.meta))
   assert(journal.some((event) => event.type === 'keyup' && event.code === 'ControlLeft'))
-  checks.push('Real Control+A/NULL/uppercase replacement releases modifiers before ordinary typing')
+  check('Literal Control keeps its real platform meaning and releases independently of Meta')
   await reset()
   await page.locator('#a').fill('abcd')
   await page.locator('#a').sendKeys('\uE011\uE014\uE014\uE003X')
@@ -143,12 +167,12 @@ try {
   journal = await events()
   for (const key of ['Home', 'ArrowRight', 'Backspace'])
     assert(journal.some((event) => event.type === 'keydown' && event.key === key))
-  checks.push('Native navigation and Backspace alter the genuine caret and value')
+  check('Native navigation and Backspace alter the genuine caret and value')
   await reset()
   await page.locator('#a').sendKeys('a\uE004b')
   assert.equal(await page.locator('#a').inputValue(), 'a')
   assert.equal(await page.locator('#b').inputValue(), 'b')
-  checks.push('Native Tab moves actual focus within one original sendKeys operation')
+  check('Native Tab moves actual focus within one original sendKeys operation')
   await reset()
   await page.locator('#a').sendKeys('\uE01B\uE028\uE01C\uE025\uE01D')
   assert.equal(await page.locator('#a').inputValue(), '1.2+3')
@@ -161,9 +185,7 @@ try {
     )
   await page.locator('#a').sendKeys('\uE057\uE05A\uE05D')
   assert.equal(await page.locator('#a').inputValue(), '12+3')
-  checks.push(
-    'Numeric and navigation numpad keys keep actual location/code and distinct text semantics',
-  )
+  check('Numeric and navigation numpad keys keep actual location/code and distinct text semantics')
   await reset()
   await page.locator('#a').sendKeys('\uE050A\uE000\uE032')
   journal = await events()
@@ -176,9 +198,7 @@ try {
   await page.locator('#a').fill('')
   await page.locator('#a').type('\uE003')
   assert.equal(await page.locator('#a').inputValue(), '\uE003')
-  checks.push(
-    'Right modifiers/function keys are native; ordinary type keeps private-use text literal',
-  )
+  check('Right modifiers/function keys are native; ordinary type keeps private-use text literal')
   await reset()
   await page.locator('#a').sendKeys('\uE03Dv')
   await page.locator('#a').fill('')
@@ -187,7 +207,7 @@ try {
   journal = await events()
   assert(journal.some((event) => event.type === 'keyup' && event.code === 'MetaLeft'))
   assert(journal.some((event) => event.type === 'keypress' && event.key === 'a'))
-  checks.push('Awaited real Meta shortcut releases before a subsequent ordinary keypress')
+  check('Awaited real Meta shortcut releases before a subsequent ordinary keypress')
   for (const mode of ['deadline', 'abort']) {
     await reset()
     await page.evaluate((url) => {
@@ -231,7 +251,14 @@ try {
       first,
       mode === 'deadline' ? /Timeout|timed out/iu : (error) => error === cause,
     )
-    await held
+    await Promise.race([
+      held,
+      rejected.then(() => {
+        throw new Error(
+          'Native key operation settled before the renderer entered its synchronous XHR',
+        )
+      }),
+    ])
     if (mode === 'abort') controller.abort(cause)
     await rejected
     const retained = physicalSchema.parse(await page.runAutomation('diagnostics'))
@@ -247,7 +274,21 @@ try {
       announceHeld = () => accept(undefined)
     })
     releaseHeld()
-    await cleanupHeld
+    const cleanupDeadline = new AbortController()
+    try {
+      await Promise.race([
+        cleanupHeld,
+        timer(3000, undefined, { signal: cleanupDeadline.signal }).then(async () => {
+          console.log(
+            'Missing cleanup keyup evidence',
+            physicalSchema.parse(await page.runAutomation('diagnostics')),
+          )
+          throw new Error('Actual cleanup keyup never entered the fixture block')
+        }),
+      ])
+    } finally {
+      cleanupDeadline.abort()
+    }
     const cleanupRetained = physicalSchema.parse(await page.runAutomation('diagnostics'))
     assert.equal(cleanupRetained.pendingSendKeysPhysicalCommands, 1)
     assert.equal(cleanupRetained.retainedSendKeysOwners, 1)
@@ -267,7 +308,7 @@ try {
       pendingSendKeysPhysicalCommands: 0,
       retainedSendKeysOwners: 0,
     })
-    checks.push(
+    check(
       `Real blocked Shift keydown ${mode} retains physical owner through held keydown AND cleanup-keyup ACKs, blocks next owner and never types expired text`,
     )
   }

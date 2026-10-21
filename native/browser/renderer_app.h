@@ -28,7 +28,7 @@ class SuiteCutRendererApp : public CefApp, public CefRenderProcessHandler {
     if (!snapshot) return;
     const int context = snapshot->GetInt("contextId");
     if (!Apply(snapshot) || context <= 0) return;
-    auto& entry = browsers_[browser->GetIdentifier()];entry.settings_bootstrap=info->GetBool("suitecutContextSettingsBootstrap");entry.initial_empty=info->GetBool("suitecutInitialEmptyDocument"); entry.context = context; ++entry.references;
+    auto& entry = browsers_[browser->GetIdentifier()];entry.popup=info->GetBool("suitecutPopup");entry.settings_bootstrap=info->GetBool("suitecutContextSettingsBootstrap");entry.initial_empty=info->GetBool("suitecutInitialEmptyDocument"); entry.context = context; ++entry.references;
   }
   void OnBrowserDestroyed(CefRefPtr<CefBrowser> browser) override {
     const auto found = browsers_.find(browser->GetIdentifier()); if (found == browsers_.end()) return;
@@ -44,14 +44,23 @@ class SuiteCutRendererApp : public CefApp, public CefRenderProcessHandler {
     contexts_.erase(context);
   }
   void OnContextCreated(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame, CefRefPtr<CefV8Context> context) override {
-    const auto owner = browsers_.find(browser->GetIdentifier()); if (owner == browsers_.end()) return;
+    const auto owner = browsers_.find(browser->GetIdentifier());
+    if (owner == browsers_.end()) return;
     const auto main_world=frame->GetV8Context();if(!main_world||!main_world->IsSame(context))return;
     // A recovered renderer can expose a speculative main V8 realm before it
     // has a committed document or a bound subresource factory. Its native frame
     // URL is empty. The later real document has its own OnContextCreated callback
     // and still bootstraps synchronously before any authored script executes.
-    if(frame->IsMain()&&frame->GetURL().empty())return;
+    if(frame->IsMain()&&frame->GetURL().empty()&&!owner->second.popup)return;
     SnapshotContextCreated(browser,frame,context);
+    // CEF can create a new renderer with the browser's original extra_info
+    // after the initial document has gone. A committed ordinary URL cannot be
+    // our private empty startup document. Do not query its identity with XHR:
+    // the new document may already forbid synchronous requests.
+    const auto native_url=frame->GetURL().ToString();
+    if(owner->second.initial_empty&&frame->IsMain()&&native_url!="about:blank"&&native_url!="suitecut-init://registry/settings-document"){
+      owner->second.initial_empty=false;owner->second.settings_bootstrap=false;
+    }
     if(owner->second.initial_empty&&frame->IsMain()){
       CefRefPtr<CefV8Value>pending;CefRefPtr<CefV8Exception>error;
       if(!context->Eval(suitecut::kNativeIdentityScript.source,suitecut::kNativeIdentityScript.name,1,pending,error)||!pending||!pending->IsBool()){
@@ -92,6 +101,23 @@ class SuiteCutRendererApp : public CefApp, public CefRenderProcessHandler {
     const int context_id=owner->second.context;
     CefRefPtr<CefV8Value> current; CefRefPtr<CefV8Exception> failure;
     const auto& snapshot_script=suitecut::NativeSnapshotScriptForFrame(frame);
+    // A local child shares the native context registry with its actual parent.
+    // Accepted mutations already wait for that registry's renderer ACK. Select
+    // its immutable installed snapshot before author code, without a second
+    // web request or debugger pause (which can be recursive during a parent
+    // pause). A remote child still obtains current browser state at its pause.
+    // A same-origin popup can reuse its initial empty V8 realm for the first
+    // navigation. Install inherited state there, before its first author code;
+    // its browser extra_info already pins the accepted native context snapshot.
+    const bool inherited_popup=owner->second.popup&&frame->IsMain()&&frame->GetURL().empty();
+    const bool local_child=&snapshot_script==&suitecut::kNativeLocalChildSnapshotScript;
+    if(inherited_popup){
+      if(!context->Eval(suitecut::kNativeEmptyScript.source,suitecut::kNativeEmptyScript.name,1,current,failure))return false;
+    }else if(local_child){
+      // A native embedder script identity classifies this realm without a
+      // recursive snapshot request or a pristine-factory capture breakpoint.
+      if(!context->Eval(snapshot_script.source,snapshot_script.name,1,current,failure))return false;
+    }else{
     const bool fetched = context->Eval(
         snapshot_script.source,snapshot_script.name, 1, current, failure);
     const auto parsed = fetched && current && current->IsString() ? CefParseJSON(current->GetStringValue(), JSON_PARSER_RFC) : nullptr;
@@ -100,6 +126,7 @@ class SuiteCutRendererApp : public CefApp, public CefRenderProcessHandler {
       auto message = CefProcessMessage::Create(initial?"suitecutInitialEmptyFailure":"suitecutInitScriptBootstrapError");
       message->GetArgumentList()->SetString(0, failure ? failure->GetMessage().ToString().substr(0, 4096) : "Native init script snapshot is unavailable");
       frame->SendProcessMessage(PID_BROWSER, message); return false;
+    }
     }
     const auto scripts = contexts_.find(context_id); if (scripts == contexts_.end()) return false;
     const auto snapshot = scripts->second;
@@ -155,7 +182,7 @@ class SuiteCutRendererApp : public CefApp, public CefRenderProcessHandler {
   }
  private:
   struct Snapshot { int version = 0, binding_version = 0,credential_version=0;bool credentials_installed=false; std::vector<SuiteCutInitScripts::Entry> entries, bindings; };
-  struct Browser { int context = 0, references = 0;bool settings_bootstrap=false,initial_empty=false;CefRefPtr<CefV8Context>initial_context;CefRefPtr<CefFrame>initial_frame;
+  struct Browser { int context = 0, references = 0;bool popup=false,settings_bootstrap=false,initial_empty=false;CefRefPtr<CefV8Context>initial_context;CefRefPtr<CefFrame>initial_frame;
     uint64_t snapshot_request=0,snapshot_epoch=0;std::string snapshot_frame_id;CefRefPtr<CefV8Context>snapshot_context;CefRefPtr<CefFrame>snapshot_route; };
   bool Apply(CefRefPtr<CefDictionaryValue> value) {
     if (!value || value->GetType("contextId") != VTYPE_INT || value->GetType("version") != VTYPE_INT || value->GetType("scripts") != VTYPE_LIST) return false;
@@ -195,6 +222,6 @@ class SuiteCutRendererApp : public CefApp, public CefRenderProcessHandler {
   std::map<int, Browser> browsers_;
   std::map<int, std::shared_ptr<Snapshot>> contexts_;
   suitecut::InitSnapshotReceiver snapshot_receiver_;uint64_t snapshot_next_request_=0;
-#include "renderer_snapshot_receiver.inc"
+#include "controllers/renderer/renderer_snapshot_receiver.inc"
   IMPLEMENT_REFCOUNTING(SuiteCutRendererApp);
 };

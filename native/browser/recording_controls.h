@@ -22,6 +22,7 @@ class RecordingControls : public std::enable_shared_from_this<RecordingControls>
                        const MediaPipelineResult&)> event;
     std::function<void(int page, int context)> physical_settled;
     std::function<double()> now;
+    std::function<void(int page, const std::string& id)> request_paint;
   };
   explicit RecordingControls(Hooks hooks);
   ~RecordingControls();
@@ -36,7 +37,13 @@ class RecordingControls : public std::enable_shared_from_this<RecordingControls>
   void Cancel(const std::string& id, const std::string& reason);
   void CancelCommand(int owner_command);
   bool NeedsFrame(int page, bool viewport = false) const;
+  bool HasRecording(int page) const;
+  bool CaptureClockFrozen(int page) const;
   void Frame(int page, const std::vector<uint8_t>& data, double timestamp);
+  bool NativeCanvasFrame(int page, std::shared_ptr<MacCaptureFrame> surface, double timestamp,
+                         std::function<void(std::vector<uint8_t>)> painted);
+  bool CanvasFrame(int page, const std::vector<uint8_t>& bgra, int width, int height,
+                   double timestamp, uint64_t capture_sequence);
   void ViewportFrame(int page, const std::vector<uint8_t>& bgra, int width, int height,
                      double css_width, double css_height, double timestamp);
   void Audio(int page, const std::vector<uint8_t>& data, double timestamp);
@@ -77,6 +84,7 @@ class RecordingControls : public std::enable_shared_from_this<RecordingControls>
   uint64_t sequence_ = 0;
   bool closing_ = false;
   std::string StartImpl(int owner, int page, int context, MediaPipelineOptions options, Reply ready, bool automatic);
+  void Prepared(const std::string& id);
   void Started(const std::string& id, double timestamp);
   void Finished(const std::string& id, const MediaPipelineResult& result);
   std::shared_ptr<MediaPipeline> Active(const std::string& id) const;

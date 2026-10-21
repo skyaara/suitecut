@@ -6,6 +6,9 @@
 #include <stdexcept>
 #include <string>
 #include <thread>
+#ifdef __APPLE__
+#include <mach-o/dyld.h>
+#endif
 
 namespace {
 using suitecut::Json;
@@ -15,7 +18,7 @@ const char* usage =
   "  [--backend cef|chromium] [--browser /absolute/browser]\n"
   "  [--ffmpeg /absolute/ffmpeg] [--ffprobe /absolute/ffprobe]\n"
   "  [--browser-arg ARG]...\n"
-  "CEF records WebM, including optional page audio; Chromium records silent MP4/WebM.\n"
+  "CEF records WebM or macOS hardware H.264 MP4 with optional audio; Chromium records silent MP4/WebM.\n"
   "Bundled engine/media tools are found relative to this executable. No Node.js.\n";
 double number(const std::string& input,double low,double high,bool whole) {
   const auto value=Json::parse(input,{128,1,1,128});
@@ -29,6 +32,12 @@ std::filesystem::path executable_directory(const char* argument) {
 #ifdef __linux__
   const auto executable=std::filesystem::canonical("/proc/self/exe",error);
   if(!error)return executable.parent_path();
+#elif defined(__APPLE__)
+  uint32_t size=0;
+  _NSGetExecutablePath(nullptr,&size);
+  std::string path(size,'\0');
+  if(_NSGetExecutablePath(path.data(),&size)==0)
+    return std::filesystem::canonical(path.c_str()).parent_path();
 #endif
   return std::filesystem::canonical(argument).parent_path();
 }
@@ -43,6 +52,9 @@ int main(int argc,char** argv) {
     const auto bin=executable_directory(argv[0]);
     suitecut::LaunchOptions options;
     options.executable=(bin/"../libexec/suitecut/cef/suitecut-browser").lexically_normal().string();
+#ifdef __APPLE__
+    options.executable=(bin/"../libexec/suitecut/suitecut-browser.app/Contents/MacOS/suitecut-browser").lexically_normal().string();
+#endif
     std::string url,output,ffmpeg=tool(bin,"ffmpeg"),ffprobe=tool(bin,"ffprobe");
     double fps=30;
     int duration=5000;
@@ -73,7 +85,11 @@ int main(int argc,char** argv) {
     output=std::filesystem::absolute(output).lexically_normal().string();
     const bool cef=options.backend==suitecut::BrowserBackend::cef;
     const auto extension=std::filesystem::path(output).extension();
-    if(cef&&extension!=".webm")throw std::invalid_argument("CEF recording output must be .webm");
+    if(cef&&extension!=".webm"
+#ifdef __APPLE__
+        &&extension!=".mp4"
+#endif
+    )throw std::invalid_argument("CEF recording output must be WebM, or MP4 with macOS hardware encoding");
     if(!cef&&(extension!=".webm"&&extension!=".mp4"))throw std::invalid_argument("Chromium recording output must be .webm or .mp4");
     if(!cef&&!browser_explicit)throw std::invalid_argument("Chromium recording requires --browser /absolute/browser");
     if(!cef&&audio)throw std::invalid_argument("Page audio recording is currently supported by the CEF backend");

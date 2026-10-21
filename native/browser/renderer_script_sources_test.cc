@@ -32,10 +32,12 @@ int main(){
   assert(&NativeSnapshotScriptForFrame(root)==&kNativeSnapshotScript);++groups;
   root->context.reset();
   assert(&NativeSnapshotScriptForFrame(child)==&kNativeSnapshotScript);++groups;
-  assert(kNativeSnapshotScript.source==kNativeLocalChildSnapshotScript.source);
+  assert(string_view(kNativeLocalChildSnapshotScript.source)=="void 0");
+  assert(string_view(kNativeLocalChildSnapshotScript.source).find("XMLHttpRequest")==string_view::npos);
   assert(string_view(kNativeSnapshotScript.name)!=kNativeLocalChildSnapshotScript.name);
   assert(string_view(kNativeSnapshotScript.source).find("request.open('GET','suitecut-init://registry/snapshot',false)")!=string_view::npos);
   assert(string_view(kNativeSnapshotScript.source).find("request.status!==200)throw")!=string_view::npos);++groups;
+  assert(string_view(kNativeSnapshotScript.source).find("var nativeSnapshot;if(typeof nativeSnapshot==='string')return nativeSnapshot;")!=string_view::npos);++groups;
   size_t ordinary=0,local=0;
   for(const auto&script:kNativeRendererScriptSources){
     ordinary+=string_view(script.name)==kNativeSnapshotScript.name;

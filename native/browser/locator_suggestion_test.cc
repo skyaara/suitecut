@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+#include "tests/support/cef_library.h"
 #include "include/cef_api_hash.h"
 #include "locator_suggestion.h"
 #include "locator_suggestion_dom.h"
@@ -52,7 +53,7 @@ struct Harness {
  void Ack(const std::string&method,const std::string&json,bool ok=true){std::cout<<"controlled reply "<<method<<" queued="<<calls.size()<<std::endl;assert(!calls.empty()&&calls.front().method==method);auto done=std::move(calls.front().done);calls.erase(calls.begin());done(ok,json);}
  void Drain(){while(!releases.empty()){auto done=std::move(releases.back());releases.pop_back();done();}}
  ~Harness(){selectors.Close();}
-#include "locator_suggestion_controller.inc"
+#include "controllers/dom/locator_suggestion_controller.inc"
 #ifdef SUITECUT_LOCATOR_PICK_TEST_INCLUDE
 #include SUITECUT_LOCATOR_PICK_TEST_INCLUDE
 #endif
@@ -62,7 +63,7 @@ static const char*observed=R"({"candidates":[{"kind":"path","query":[{"engine":"
 static const char*selected=R"({"result":{"subtype":"node","objectId":"actual-utility-node"}})";
 [[maybe_unused]] static void Observe(Harness&h){h.Ack("query",selected);h.Ack("Runtime.callFunctionOn",Capture(observed));}
 #ifndef SUITECUT_LOCATOR_SUGGESTION_TEST_NO_MAIN
-int main(){assert(cef_api_hash(CEF_API_VERSION,0));int groups=0;
+int main(){if(!LoadSuiteCutCEFForTest())return 1;assert(cef_api_hash(CEF_API_VERSION,0));int groups=0;
  {Harness h;h.Start();Observe(h);const auto fn=h.calls.front().params->GetString("functionDeclaration").ToString();assert(fn.find("testId")<fn.rfind("html > button"));h.Ack("Runtime.callFunctionOn",Capture(R"({"results":[{"matches":1,"same":true},{"matches":1,"same":true},{"matches":1,"same":true}]})"));assert(h.errors.empty()&&h.responses.size()==1);const auto out=Parse(h.responses[0]);assert(out->GetList("suggestions")->GetDictionary(0)->GetString("kind")=="testId"&&out->GetDictionary("provenance")->GetInt("backendNodeId")==913&&!out->GetBool("pointPicking"));assert(h.selectors.PhysicalSize()==1&&!h.releases.empty());h.Drain();assert(!h.selectors.Size()&&!h.selectors.PhysicalSize());++groups;std::cout<<"completed controlled group "<<groups<<std::endl;}
  {Harness h;h.Start();Observe(h);h.Ack("Runtime.callFunctionOn",Capture(R"({"results":[{"matches":2,"same":false},{"matches":1,"same":false},{"matches":1,"same":true}]})"));const auto out=Parse(h.responses[0]);assert(out->GetList("suggestions")->GetSize()==1&&out->GetList("suggestions")->GetDictionary(0)->GetString("kind")=="path"&&out->GetList("diagnostics")->GetSize()==3);h.Drain();++groups;std::cout<<"completed controlled group "<<groups<<std::endl;}
  {Harness h;h.Start(true);assert(!h.queries&&h.calls.front().params->GetString("objectId")=="actual-retained-node");h.Ack("DOM.describeNode",R"({"node":{"backendNodeId":913}})");assert(h.calls.front().params->GetInt("executionContextId")==5);h.Ack("DOM.resolveNode",R"({"object":{"subtype":"node","objectId":"actual-adopted-node"}})");assert(h.calls.front().params->GetString("objectId")=="actual-adopted-node");h.Ack("Runtime.callFunctionOn",Capture(observed));h.Ack("Runtime.callFunctionOn",Capture(R"({"results":[{"matches":1,"same":true},{"matches":1,"same":true},{"matches":1,"same":true}]})"));assert(Parse(h.responses[0])->GetDictionary("provenance")->GetInt("retainedHandle")==17);h.Drain();++groups;std::cout<<"completed controlled group "<<groups<<std::endl;}

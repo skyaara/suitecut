@@ -150,5 +150,5 @@ class NativeContextHARRoutes {
   std::map<const NativeHARReplay*,ArchiveUse>archives_;size_t policy_bytes_=0;
   std::map<int,State>states_;std::map<std::string,Target>targets_;std::map<int,Batch>batches_;std::map<int,RemovalBatch>removals_;
 };
-#include "context_har_removal.inc"
+#include "controllers/network/context_har_removal.inc"
 }

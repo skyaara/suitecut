@@ -44,7 +44,7 @@ class Source:public CefBaseRefCounted {
   struct Browser{Host host;Host* GetHost(){return &host;}};
   struct Call{int command,owner;std::string method;Dict params;};
   struct Result{int owner;bool ok;std::string error;};
-  #include "input_work.inc"
+  #include "controllers/input/input_work.inc"
   double now=0;
   double Now()const{return now;}
   bool NativeDropBusy()const{return false;}
@@ -104,12 +104,12 @@ class Source:public CefBaseRefCounted {
     InputCall(work,"Input.dispatchKeyEvent",SendKeysPacket(key,true),[]{});
   }
   void Closed(){operations_.Clear();devtools_.clear();calls.clear();send_keys_physical_.clear();send_keys_physical_count_=0;input_work_.clear();keyboard_input_=0;keyboard_queue_.clear();}
-  #include "input_admission.inc"
-  #include "input_queue.inc"
-  #include "input_retirement.inc"
-  #include "send_keys.inc"
-  #include "targeted_keyboard.inc"
-  #include "send_keys_sequence.inc"
+  #include "controllers/input/input_admission.inc"
+  #include "controllers/input/input_queue.inc"
+  #include "controllers/input/input_retirement.inc"
+  #include "controllers/input/send_keys.inc"
+  #include "controllers/input/targeted_keyboard.inc"
+  #include "controllers/input/send_keys_sequence.inc"
   SuiteCutOperationRegistry operations_;
   std::shared_ptr<Browser> browser_=std::make_shared<Browser>();
   std::map<int,std::shared_ptr<InputWork>> input_work_;

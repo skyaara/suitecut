@@ -8,6 +8,7 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { createServer } from 'node:http'
 import { resolve } from 'node:path'
 import process from 'node:process'
+import { setTimeout as delay } from 'node:timers/promises'
 
 import * as z from 'zod'
 
@@ -195,9 +196,23 @@ try {
   assert.ok(ordinary)
   assert.equal(ordinary.serviceWorker(), null)
   if (!source.runContext) throw new Error('Native context command transport unavailable')
-  const native = z
-    .object({ networkBodyOwners: z.literal(0), networkPhysicalControls: z.literal(0) })
-    .parse(await source.runContext('worker', { contextId: context.id, action: 'diagnostics' }))
+  const counters = z.object({ networkBodyOwners: z.number(), networkPhysicalControls: z.number() })
+  const observations = []
+  const settlementDeadline = Date.now() + 5000
+  let native
+  do {
+    native = counters.parse(
+      await source.runContext('worker', { contextId: context.id, action: 'diagnostics' }),
+    )
+    observations.push(native)
+    if (native.networkBodyOwners === 0 && native.networkPhysicalControls === 0) break
+    if (Date.now() >= settlementDeadline) break
+    await delay(10)
+  } while (Date.now() < settlementDeadline)
+  // take() sends its native acknowledgement asynchronously. Observe its real
+  // settlement, retaining the zero-owner assertion and a bounded leak deadline.
+  await writeFile(resolve(directory, 'body-settlement.json'), JSON.stringify(observations, null, 2))
+  z.object({ networkBodyOwners: z.literal(0), networkPhysicalControls: z.literal(0) }).parse(native)
   assert.equal(native.networkBodyOwners, 0)
   checks.push('Native body receipt/take and response control owners settle after ACK')
   const retained = record(`${origin}/worker-after`).requests[0]

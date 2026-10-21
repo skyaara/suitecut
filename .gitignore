@@ -1,13 +1,42 @@
+# Dependencies and generated JavaScript
 node_modules/
 dist/
-__pycache__/
-*.py[cod]
-*.orig
-/a.out
-site/.astro/
+
+# Local qualification evidence, profiles, signing policy and media
 .suitecut/
-/build/
 test-results/
 *.mp4
 !site/public/demo/*.mp4
 *.webm
+
+# Native build trees and compiler/debugger output
+build/
+cmake-build-*/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+CTestTestfile.cmake
+Testing/
+compile_commands.json
+*.dSYM/
+*.o
+*.obj
+*.a
+*.so
+*.so.*
+*.dylib
+/a.out
+
+# Local tools, environment and signing credentials
+.DS_Store
+.env
+.env.*
+!.env.example
+*.p12
+*.pfx
+*.keychain
+*.keychain-db
+__pycache__/
+*.py[cod]
+*.orig
+site/.astro/

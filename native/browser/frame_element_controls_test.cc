@@ -62,7 +62,7 @@ struct Harness {
   Call Take(const std::string& method){for(auto i=calls.begin();i!=calls.end();++i)if(i->method==method){auto call=std::move(*i);calls.erase(i);return call;}assert(false);return {};}
   void Ack(const std::string& method,const std::string& json="{}",bool ok=true){auto call=Take(method);call.done(ok,json);}
   void Drain(){while(!calls.empty()){auto call=Take("Runtime.releaseObjectGroup");call.done(true,"{}");}assert(!controls.Size()&&!controls.PhysicalSize());}
-#include "frame_element_controller.inc"
+#include "controllers/dom/frame_element_controller.inc"
 };
 int main(){cef_api_hash(CEF_API_VERSION,0);
  {Harness h;h.Admit();h.FrameElementHandle(1,h.Message("parent"));assert(h.calls.empty()&&h.completions.size()==1&&!h.completions[0].ok&&h.controls.Size()==0);}

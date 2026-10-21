@@ -26,7 +26,7 @@ struct Host {
     const auto admitted = operations_.Begin(1, now, timeout);
     assert(admitted); return admitted->generation;
   }
-#include "expectation_deadline.inc"
+#include "controllers/lifecycle/expectation_deadline.inc"
 };
 
 int main() {

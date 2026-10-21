@@ -189,7 +189,7 @@ def main():
     assert 1 <= args.repetitions <= 8 and args.sample_interval >= 0
     output = Path(args.output).resolve()
     output.mkdir(parents=True, exist_ok=True)
-    paths = [Path(v).resolve() for v in (args.cpp, args.browser, args.sdk, args.fixture, __file__, 'scripts/native-client-node-baseline.mjs', 'native/client/tests/real_browser.cpp')]
+    paths = [Path(v).resolve() for v in (args.cpp, args.browser, args.sdk, args.fixture, __file__, 'scripts/native-client-node-baseline.mjs', 'native/client/tests/integration/real_browser.cpp')]
     # Hash all emitted SDK modules, not just the entrypoint.
     paths.extend(Path(args.sdk).resolve().parent.rglob('*.js'))
     cef_library = Path(args.browser).resolve().parent / 'libcef.so'

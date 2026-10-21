@@ -6,14 +6,16 @@ sandboxing when changing these boundaries.
 
 ## Setup and checks
 
-Use Node.js 22, pnpm 11, FFmpeg and FFprobe. Real browser checks require the pinned
+See [component build requirements](docs/building.md) for the JavaScript SDK,
+standalone C++ SDK, macOS packaging and local CEF regression suite.
+Use Node.js 22 or newer, pnpm 11, FFmpeg and FFprobe. Real browser checks require the pinned
 CEF executable described in [native/browser/README.md](native/browser/README.md).
 
 ```sh
 pnpm install --frozen-lockfile
 pnpm build
 pnpm typecheck
-pnpm test
+pnpm exec vitest run --maxWorkers=2
 pnpm test:native:cadence
 pnpm site:check
 pnpm site:build
@@ -22,6 +24,10 @@ pnpm site:build
 Run `pnpm test:native` for browser/capture/lifecycle changes on a supported CEF
 host. Report missing runtime evidence as blocked, not passing. Use native CTest
 checks for frame-rate parsing, audio-clock and libyuv pixel changes.
+Run `pnpm test:cef:unit` for harness changes and the
+[full CEF suite](docs/cef-regressions.md) for runtime qualification. Keep compiler
+jobs and browser workers bounded; default to one browser worker on a small Mac.
+The CEF suite is not enabled in CI.
 
 ## Code and package boundaries
 

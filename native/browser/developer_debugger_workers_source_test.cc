@@ -37,8 +37,8 @@ class Source{
   auto NativeDebuggerDomains(){return domains;}
   bool NativeDebuggerSend(const std::string&s,const std::string&m,Dict p,double,Domains::Reply reply){calls.push_back({s,m,p,std::move(reply)});return true;}
   void NativeDebuggerRequestClose(const std::string&e){fatal.push_back(e);native_debugger_closing_requested_=true;}
-#include "developer_debugger_worker_documents_source.inc"
-#include "developer_debugger_workers_source.inc"
+#include "controllers/workers/developer_debugger_worker_documents_source.inc"
+#include "controllers/workers/developer_debugger_workers_source.inc"
   Source(){Domains::Hooks h;h.now=[]{return Now();};h.send=[this](const auto&s,const auto&m,Dict p,double d,auto r){return NativeDebuggerSend(s,m,p,d,std::move(r));};h.close_channel=[this](const auto&,const auto&e){NativeDebuggerRequestClose(e);};domains=std::make_shared<Domains>(std::move(h));NativeWorkerDebuggerObserved();}
   ~Source(){domains->Closed();if(native_worker_developer_debuggers_)native_worker_developer_debuggers_->Closed();calls.clear();}
   void Attach(const std::string&target="w",const std::string&session="worker-session",uint64_t gen=1,int context=7){

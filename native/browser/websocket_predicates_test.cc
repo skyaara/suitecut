@@ -39,7 +39,7 @@ struct SourceFixture {
     results.push_back({id,ok,error});event_predicates_.Cancel(id);
     websocket_predicates_.erase(id);sockets_->Cancel(id);operations_.Finish(id);
   }
-#include "websocket_predicates.inc"
+#include "controllers/network/websocket_predicates.inc"
   SourceFixture(){
     sockets_=std::make_unique<suitecut::NativeWebSocketControls>([this](Dict info,const std::vector<uint8_t>& bytes){
       auto header=Header("websocket");header->SetDictionary("socket",info->Copy(false));

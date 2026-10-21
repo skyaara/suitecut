@@ -79,7 +79,7 @@ struct Harness {
  void Ack(const std::string& method,const std::string& json,bool ok=true){assert(!calls.empty()&&calls.front().method==method);auto done=std::move(calls.front().done);calls.erase(calls.begin());done(ok,json);}
  void Drain(){while(!releases.empty()){auto done=std::move(releases.front());releases.erase(releases.begin());done();}}
  void Child(){frame_states_["child"]={"main","actualOOPIF",{"child","actualOOPIF","childLoader","childMainUnique","childUtilityUnique",8,9,2}};sessions_["actualOOPIF"]="child";}
-#include "element_geometry.inc"
+#include "controllers/dom/element_geometry.inc"
 };
 const char* visible=R"({"result":{"type":"boolean","value":true}})";
 const char* hidden=R"({"result":{"type":"boolean","value":false}})";

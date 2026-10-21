@@ -55,7 +55,7 @@ struct Harness {
   void Ack(const std::string& method,const std::string& json="{}",bool ok=true){auto call=Take(method);call.done(ok,json);}
   void Drain(){while(!calls.empty()){auto call=Take("Runtime.releaseObjectGroup");call.done(true,"{}");}}
   bool Start(Dict message,bool utility=false){return QueryBuiltinNodesInWorld(1,message,utility,[this](const std::string& nodes){delivered=nodes;Complete(1,true);});}
-#include "query_selection_controller.inc"
+#include "controllers/dom/query_selection_controller.inc"
 };
 int main(){cef_api_hash(CEF_API_VERSION,0);
  {Harness h;h.Admit();assert(h.Start(h.Message(),true));auto call=h.Take("Runtime.evaluate");assert(call.lossless&&call.session=="session"&&call.params->GetInt("contextId")==42&&!call.params->GetBool("returnByValue")&&call.params->GetString("expression")=="actual-authored-helper-expression");call.done(true,"{\"result\":{\"type\":\"object\",\"subtype\":\"array\",\"objectId\":\"actual-isolated-array\"}}");assert(h.delivered=="actual-isolated-array"&&h.error.empty());h.Drain();assert(!h.controls.Size()&&!h.controls.PhysicalSize());}

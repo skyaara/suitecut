@@ -8,8 +8,12 @@ headers, or browser automation dependency is needed to build or run the client.
 
 See [measured validation and performance](VALIDATION.md) for tested scope,
 latency, memory, sanitizer results and limitations.
+See [architecture and package boundaries](ARCHITECTURE.md) for module ownership,
+source packaging, embedding, and downstream installation checks.
 
-The native client targets Linux/POSIX. Browser binaries are distributed
+The native client supports Linux/POSIX and a separately qualified macOS ARM64
+build; see `docs/native-full-runtime-macos.md` for macOS scope and verification.
+Browser binaries are distributed
 separately from the client. Chromium and Firefox expose launch and attach APIs;
 their supported command families differ and fail explicitly when unavailable.
 The supported backends are SuiteCut CEF, external Chrome/Chromium and Firefox.
@@ -213,6 +217,52 @@ auto page = attached.main_page();
 auto title = page.title();
 attached.close(); // Detach; the caller's browser stays open.
 ```
+
+Visible launch mode (`headless = false`) still uses the private debugging pipe.
+Chromium enables its `AutomationControlled` runtime feature for that pipe, so
+`navigator.webdriver` is normally `true` in both visible and headless launches.
+This is browser behavior, not a SuiteCut JavaScript override. Visible mode does
+not promise an undetectable browser. Caller-owned attachment can report a
+different value depending on the browser's original launch switches.
+
+To use Chrome's debugger attachment behavior, start a separate browser with a
+specific **nonzero** port, then connect through the existing attach API:
+
+```sh
+chrome_profile=$(mktemp -d "${TMPDIR:-/tmp}/suitecut-debug.XXXXXX")
+"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
+  --remote-debugging-address=127.0.0.1 --remote-debugging-port=9222 \
+  --user-data-dir="$chrome_profile" --no-first-run --no-default-browser-check
+```
+
+```cpp
+auto browser = suitecut::Browser::connect_chromium("http://127.0.0.1:9222");
+auto page = browser.main_page();
+page.set_viewport(1280, 900);
+auto webdriver = page.evaluate("navigator.webdriver");
+browser.close(); // Detaches; the caller still owns the Chrome process/profile.
+```
+
+Choose an unused port; `--remote-debugging-port=0` has different automation
+semantics. Do not add `--enable-automation` or `--remote-debugging-pipe` to this
+launch. On the locally tested Chrome 155.0.8059.85 for macOS, both visible and
+`--headless=new` launches with a specific nonzero port exposed
+`navigator.webdriver == false` without feature overrides or injected scripts.
+Verify the value on the installed browser; other versions can behave differently.
+Headless Chrome still exposes other headless signals and was flagged by several
+detectors in this configuration. CDP commands do not require `webdriver` to be
+true. Keep the debugging listener local, and close the caller-owned browser
+before removing its temporary profile. The default SDK-owned launch continues
+to use its private pipe and automatic process/profile cleanup.
+
+The CEF transport acknowledges complete network request-body transfers on its
+existing I/O thread after admitting their exact chunks into the bounded event
+queue. This keeps command replies moving even when the application is not
+polling events. Raw `networkbody` and `contextnetworkbody` packets remain
+available through `Transport::poll`; callers should not acknowledge them again.
+Incomplete bodies are limited to 128 transfers and 16 MiB, with a 2 MiB limit
+per body. Queued packets remain subject to `max_event_bytes` and the event-count
+limit; receipt controls have a separate bounded queue and a 30-second deadline.
 
 Numeric ports, HTTP(S) discovery and WS(S) browser URLs are supported, including
 remote hosts. No Node or JavaScript runtime is needed by either connection mode.
@@ -762,3 +812,15 @@ the output. This differs from `Page::evaluate()`, which converts JSON-compatible
 values and throws for JavaScript exceptions or unsupported values. See
 [`examples/read_window.cpp`](examples/read_window.cpp) for submission, bounded
 storage, deadline, and cancellation handling.
+
+## Test package layout
+
+`tests/unit` holds browser-free checks, `tests/integration` holds real-browser
+workflows, and `tests/support` holds test-only engines/fixtures. The test directory
+owns an explicit `CMakeLists.txt`; missing test sources fail configuration. Target
+names and root build-directory executable paths remain stable.
+
+Local presets `release` and `sanitizers` configure bounded builds and labeled CTest
+checks. Build `client-unit-binaries` for unit checks or `client-cef-binaries` for the
+five C++ CEF workflows. Run browser qualification through `python3 tests/cef` from
+the repository root. See [the regression guide](../../docs/cef-regressions.md).

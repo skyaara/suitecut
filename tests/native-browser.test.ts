@@ -1,6 +1,6 @@
 import { ChildProcess, spawn } from 'node:child_process'
 import { getEventListeners } from 'node:events'
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
+import { mkdtemp, readFile, realpath, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { PassThrough } from 'node:stream'
@@ -68,6 +68,36 @@ describe('native browser lifecycle', () => {
     emit({ type: 'error', error: 'Native persistent profile is already in use' })
     await rejected
   })
+  it('lets the native finalization deadline settle before forcing process termination', async () => {
+    const browser = await launch()
+    input.removeAllListeners('finish')
+    vi.useFakeTimers()
+    try {
+      const closing = browser.close()
+      await vi.advanceTimersByTimeAsync(60_001)
+      // eslint-disable-next-line @typescript-eslint/unbound-method -- Inspecting the mocked method.
+      expect(child.kill).not.toHaveBeenCalled()
+      child.emit('close', 0)
+      await closing
+      expect(browser.state).toBe('closed')
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+  it('still terminates and rejects a native process that never drains', async () => {
+    const browser = await launch()
+    input.removeAllListeners('finish')
+    vi.useFakeTimers()
+    try {
+      const rejected = expect(browser.close()).rejects.toThrow('failed during shutdown')
+      await vi.advanceTimersByTimeAsync(75_000)
+      await rejected
+      // eslint-disable-next-line @typescript-eslint/unbound-method -- Inspecting the mocked method.
+      expect(child.kill).toHaveBeenCalledWith('SIGKILL')
+    } finally {
+      vi.useRealTimers()
+    }
+  })
   it('preserves the selected persistent profile after a failed native launch', async () => {
     const profile = await mkdtemp(join(tmpdir(), 'suitecut-persistent-unit-'))
     try {
@@ -84,7 +114,7 @@ describe('native browser lifecycle', () => {
         path,
         expect.arrayContaining([
           '--suitecut-persistent-profile=1',
-          `--suitecut-profile=${profile}`,
+          `--suitecut-profile=${await realpath(profile)}`,
         ]),
         expect.any(Object),
       )

@@ -25,7 +25,12 @@ class NativeContextNetworkControls {
     return Append(record);
   }
   bool ObserveWorker(int context,Dict worker,Dict network) {
-    if(context<1||!worker||!network||!Allowed(network->GetString("event").ToString())||sequence_==9007199254740991ULL)return false;
+    if(context<1||!worker||!network||sequence_==9007199254740991ULL)return false;
+    const auto event=network->GetString("event").ToString();const auto request=network->GetDictionary("request");
+    const bool body_update=event=="requestupdated"&&request&&request->GetType("postDataBodyId")==VTYPE_STRING;
+    // Private receipt metadata shares the ordered journal cursor but never
+    // becomes a public lifecycle event or an admissible wait predicate.
+    if(!Allowed(event)&&!body_update)return false;
     const auto kind=worker->GetString("type").ToString();
     if(worker->GetType("id")!=VTYPE_STRING||worker->GetString("id").empty()||worker->GetString("id").length()>128||worker->GetType("url")!=VTYPE_STRING||worker->GetString("url").length()>8192||(kind!="worker"&&kind!="shared_worker"&&kind!="service_worker"))return false;
     auto record=CefDictionaryValue::Create();record->SetInt("contextId",context);record->SetDictionary("worker",worker->Copy(false));record->SetDouble("sequence",double(sequence_+1));record->SetDictionary("network",network->Copy(false));return Append(record);

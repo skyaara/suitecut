@@ -56,6 +56,10 @@ std::string RecordingControls::StartImpl(int owner, int page, int context, Media
     },
     [weak, dispatch, id](double timestamp) {
       dispatch([weak, id, timestamp] { if (const auto controls = weak.lock()) controls->Started(id, timestamp); });
+    },
+    [weak, dispatch, id](const MediaPipelineResult& result) {
+      if (result.first_timestamp_ms < 0 && result.preparation_packets)
+        dispatch([weak, id] { if (const auto controls = weak.lock()) controls->Prepared(id); });
     });
   records_.emplace(id, std::move(record));
   active_pages_.insert(std::move(node));
@@ -74,6 +78,16 @@ std::shared_ptr<MediaPipeline> RecordingControls::ForPage(int page, bool viewpor
   const auto found = records_.find(index->second);
   if (found != records_.end() && found->second.viewport_frames == viewport) return found->second.pipeline;
   return {};
+}
+void RecordingControls::Prepared(const std::string& id) {
+  int page;
+  {
+    std::lock_guard lock(mutex_);
+    const auto found = records_.find(id);
+    if (found == records_.end() || !found->second.pipeline || found->second.phase != "starting") return;
+    page = found->second.page;
+  }
+  if (hooks_.request_paint) hooks_.request_paint(page, id);
 }
 void RecordingControls::Started(const std::string& id, double timestamp) {
   std::map<int, Reply> replies;
@@ -172,10 +186,34 @@ void RecordingControls::CancelCommand(int owner) {
   for (const auto& pipeline : canceled) pipeline->Cancel("Native recording operation canceled");
 }
 bool RecordingControls::NeedsFrame(int page, bool viewport) const {
-  return static_cast<bool>(ForPage(page, viewport));
+  auto pipeline=ForPage(page,viewport);return pipeline&&pipeline->WantsFrames();
+}
+bool RecordingControls::HasRecording(int page) const {
+  std::lock_guard lock(mutex_);return active_pages_.contains(page);
+}
+bool RecordingControls::CaptureClockFrozen(int page) const {
+  std::lock_guard lock(mutex_);
+  const auto index=active_pages_.find(page);if(index==active_pages_.end())return false;
+  const auto& record=records_.at(index->second);
+  if(record.phase!="starting")return true;
+  const auto result=record.pipeline->Snapshot();
+  return result.first_timestamp_ms>=0||(result.preparation_packets&&result.input_frames);
 }
 void RecordingControls::Frame(int page, const std::vector<uint8_t>& data, double timestamp) {
   if (auto pipeline = ForPage(page)) pipeline->Frame(data, timestamp);
+}
+bool RecordingControls::NativeCanvasFrame(int page, std::shared_ptr<MacCaptureFrame> surface,
+    double timestamp, std::function<void(std::vector<uint8_t>)> painted) {
+  auto pipeline=ForPage(page);
+  if(!pipeline || !pipeline->UsesCanvasFrames())return false;
+  return pipeline->NativeCanvasFrame(std::move(surface),timestamp,std::move(painted));
+}
+bool RecordingControls::CanvasFrame(int page, const std::vector<uint8_t>& bgra, int width, int height,
+    double timestamp, uint64_t capture_sequence) {
+  auto pipeline = ForPage(page);
+  if (!pipeline || !pipeline->UsesCanvasFrames()) return false;
+  pipeline->CanvasFrame(bgra, width, height, timestamp, capture_sequence);
+  return true;
 }
 void RecordingControls::ViewportFrame(int page, const std::vector<uint8_t>& bgra, int width, int height,
     double css_width, double css_height, double timestamp) {

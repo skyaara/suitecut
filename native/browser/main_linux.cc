@@ -1,3 +1,3 @@
 // SPDX-License-Identifier: MIT
-int RunSuiteCutBrowser(int argc, char** argv);
+#include "process/main.h"
 int main(int argc, char** argv) { return RunSuiteCutBrowser(argc, argv); }

@@ -49,7 +49,7 @@ await new Promise((done) => server.listen(0, '0.0.0.0', done))
 const address = server.address()
 assert(address && typeof address === 'object')
 const url = `http://127.0.0.1:${address.port}`
-const crossURL = `http://127.0.0.2:${address.port}`
+const crossURL = `http://localhost:${address.port}`
 const started = new Date().toISOString()
 const hash = async () =>
   createHash('sha256')

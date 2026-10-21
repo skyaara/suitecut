@@ -39,6 +39,9 @@ const events = z
     }),
   )
   .parse([])
+const waits = z.record(z.string(), z.string()).parse({})
+const frameCandidates = z.array(z.string()).parse([])
+const frameEvents = z.array(z.string()).parse([])
 const server = createServer((request, response) => {
   const url = request.url ?? ''
   wire.push({ url, host: request.headers.host ?? '' })
@@ -51,6 +54,7 @@ assert.ok(address && typeof address !== 'string')
 const origin = `http://localhost:${address.port}`
 const cross = `http://127.0.0.1:${address.port}`
 let closeSource = () => Promise.resolve()
+let phase = 'launch'
 try {
   const source = await launchNativeBrowser({
     executablePath: executable,
@@ -60,7 +64,9 @@ try {
     onDiagnostic: (value) => diagnostics.push(value),
   })
   closeSource = () => source.close()
+  phase = 'create-context'
   const context = await new NativeBrowserContexts(source).newContext()
+  phase = 'create-page'
   const page = await context.newPage()
   page.setDefaultTimeout(3000)
   page.setDefaultNavigationTimeout(3000)
@@ -80,27 +86,50 @@ try {
   page.on('response', (response) => record('response', response))
   page.on('requestfinished', (request) => record('requestfinished', request))
   page.on('requestfailed', (request) => record('requestfailed', request))
+  page.on('framenavigated', (frame) => frameEvents.push(frame.url()))
+  phase = 'parent-navigation'
   await page.goto(`${origin}/parent`)
   const firstResponse = page.waitForResponse(`${cross}/child`)
   const firstFinish = page.waitForEvent('requestfinished', {
     predicate: (value) => value instanceof NativeRequest && value.url() === `${cross}/child`,
   })
   const firstFrame = page.waitForEvent('framenavigated', {
-    predicate: (frame) => frame.url() === `${cross}/child`,
+    predicate: (frame) => {
+      const url = frame.url()
+      frameCandidates.push(url)
+      return url === `${cross}/child`
+    },
   })
+  for (const [name, promise] of Object.entries({
+    response: firstResponse,
+    finished: firstFinish,
+    frame: firstFrame,
+  }))
+    void promise.then(
+      () => {
+        waits[name] = 'fulfilled'
+      },
+      (error) => {
+        waits[name] = error instanceof Error ? error.message : String(error)
+      },
+    )
   void firstResponse.catch(() => undefined)
   void firstFinish.catch(() => undefined)
   void firstFrame.catch(() => undefined)
+  phase = 'append-cross-origin-frame'
   await page.evaluate((url) => {
     const frame = document.createElement('iframe')
     frame.src = url
     document.body.append(frame)
   }, `${cross}/child`)
+  phase = 'initial-response-finish-frame'
   const [response, finished, child] = await Promise.all([firstResponse, firstFinish, firstFrame])
   assert.equal(response.request(), finished)
+  phase = 'initial-response-body'
   assert.equal(await response.text(), '<body>actual /child</body>')
   assert.equal(response.frame(), child)
   checks.push('Parent to OOPIF preserves canonical finished identity and actual response bytes')
+  phase = 'initial-frame-network-idle'
   await child.waitForLoadState('networkidle', { timeout: 3000 })
   checks.push('Initial OOPIF completion retires parent active request ownership')
   const mergeResponse = page.waitForResponse(`${origin}/merged`)
@@ -109,16 +138,20 @@ try {
   })
   void mergeResponse.catch(() => undefined)
   void mergeFinish.catch(() => undefined)
+  phase = 'merge-navigation'
   const navigation = await child.goto(`${origin}/merged`, { timeout: 3000 })
+  phase = 'merge-response-finish'
   const [merged, ended] = await Promise.all([mergeResponse, mergeFinish])
   assert.equal(merged.request(), ended)
   assert.equal(navigation?.request(), ended)
   assert.equal(navigation, merged)
+  phase = 'merge-response-body'
   assert.equal(await merged.text(), '<body>actual /merged</body>')
   assert.equal(merged.frame(), child)
   checks.push(
     'OOPIF to parent merge preserves navigation/response/finished identity and actual new-session body',
   )
+  phase = 'merged-frame-network-idle'
   await child.waitForLoadState('networkidle', { timeout: 3000 })
   const native = z
     .object({ activeRequests: z.literal(0), bodyWaits: z.literal(0) })
@@ -136,7 +169,9 @@ try {
   checks.push(
     'Real terminal events settle native active/body waits without duplicate requests or fabricated failure',
   )
+  phase = 'close-context'
   await context.close()
+  phase = 'complete'
 } catch (error) {
   failures.push(error instanceof Error ? (error.stack ?? error.message) : String(error))
 } finally {
@@ -151,7 +186,17 @@ try {
   )
   if (diagnostics.length) failures.push(`Unexpected native diagnostics: ${diagnostics.length}`)
   await writeFile(resolve(directory, 'stderr.log'), diagnostics.join('\n'))
-  const report = { binarySHA256, checks, failures, wire, events }
+  const report = {
+    binarySHA256,
+    checks,
+    failures,
+    wire,
+    events,
+    phase,
+    waits,
+    frameCandidates,
+    frameEvents,
+  }
   await writeFile(resolve(directory, 'report.json'), JSON.stringify(report, null, 2))
   console.log(JSON.stringify(report, null, 2))
   if (failures.length) process.exitCode = 1

@@ -69,10 +69,10 @@ class Source:public CefBaseRefCounted {
   void QueryInspect(int owner,Dict,const std::string&,bool,bool,std::function<void(bool,const std::string&)> callback){const int id=++next_call;const auto ticket=*engine_.inspector_work_->Reserve(channel,id,"");assert(engine_.inspector_work_->Dispatch(ticket,"")&&engine_.inspector_work_->SendReturned(ticket,true));devtools_.emplace(id,Call{owner,std::move(callback),ticket});}
   void EvaluateFixedNode(int owner,Dict target,const std::string& expression,std::function<void(bool,const std::string&)> callback){QueryInspect(owner,target,expression,true,true,std::move(callback));}
   void Observe(bool visible){assert(!devtools_.empty());auto it=devtools_.begin();auto call=std::move(it->second);devtools_.erase(it);assert(engine_.inspector_work_->ActualReply(channel,call.ticket.command,"")==suitecut::AcceptedInspectorWork::Reply::Observed);const auto frame=engine_.inspector_work_->BeginCallback(channel);call.callback(true,visible?R"({"result":{"value":true}})":R"({"result":{"value":false}})");assert(engine_.inspector_work_->CallbackReturned(frame));}
-#include "locator_handler_source.inc"
+#include "controllers/dom/locator_handler_source.inc"
   IMPLEMENT_REFCOUNTING(Source);
 };
-#include "locator_handler_engine.inc"
+#include "controllers/dom/locator_handler_engine.inc"
 struct Fixture {
   Writer writer;Engine engine{writer};CefRefPtr<Source> a,b;
   Fixture(){clock_now=1;a=new Source(writer,engine,1);b=new Source(writer,engine,2);engine.sources_={{1,a},{2,b}};}

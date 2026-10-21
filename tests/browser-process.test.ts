@@ -108,13 +108,16 @@ describe.skipIf(process.platform === 'win32')('owned protocol browser processes'
       await launchProtocolProcess({
         backend: 'cdp',
         executablePath: config.executablePath,
-        timeoutMs: 150,
+        // Include real interpreter startup in the fixture budget. A 150 ms
+        // deadline can kill Node before it writes either state or diagnostics.
+        timeoutMs: 2_000,
       })
     } catch (failure) {
       if (failure instanceof Error) error = failure
       else throw failure
     }
     expect(error?.name).toBe('TimeoutError')
+    expect(error?.message).toContain('x'.repeat(1024))
     expect(error?.message.length).toBeLessThan(17_000)
     const launched = await state(config.statePath)
     expect(() => process.kill(launched.pid, 0)).toThrow()
@@ -129,11 +132,17 @@ describe.skipIf(process.platform === 'win32')('owned protocol browser processes'
       executablePath: config.executablePath,
       signal: controller.signal,
     })
-    const timer = setTimeout(() => controller.abort(), 150)
+    const rejected = expect(launching).rejects.toMatchObject({ name: 'AbortError' })
     try {
-      await expect(launching).rejects.toMatchObject({ name: 'AbortError' })
+      // Cancel a running fixture, rather than racing its interpreter startup.
+      await expect
+        .poll(() => state(config.statePath), { timeout: 2_000 })
+        .toMatchObject({
+          pid: expect.any(Number),
+        })
     } finally {
-      clearTimeout(timer)
+      controller.abort()
+      await rejected
     }
     const launched = await state(config.statePath)
     expect(() => process.kill(launched.pid, 0)).toThrow()

@@ -13,6 +13,17 @@ const NativeContextNetworkBase = {
 }
 export const NativeContextNetworkInfoSchema = z.union([
   z.strictObject({ ...NativeContextNetworkBase, pageId: z.number().int().positive() }),
-  z.strictObject({ ...NativeContextNetworkBase, worker: NativeWorkerInfoSchema }),
+  z.strictObject({
+    ...NativeContextNetworkBase,
+    worker: NativeWorkerInfoSchema,
+    network: NativeNetworkInfoSchema.refine(
+      (value) =>
+        ['request', 'response', 'requestfinished', 'requestfailed'].includes(value.event) ||
+        (value.event === 'requestupdated' &&
+          value.request.postDataBodyId !== undefined &&
+          value.request.postDataOwner !== undefined),
+      'Native worker metadata updates require a body publication owner',
+    ),
+  }),
 ])
 export type NativeContextNetworkInfo = z.infer<typeof NativeContextNetworkInfoSchema>

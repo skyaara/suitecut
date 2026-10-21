@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 #include "recording_controls.h"
+#include <unistd.h>
 #include <cassert>
 #include <condition_variable>
 #include <deque>
@@ -40,7 +41,7 @@ int main(int argc, char** argv) {
   const int helper = suitecut::MediaEncoderHelperMain(argc, argv);
   if (helper >= 0) return helper;
   assert(argc == 3 || (argc == 4 && std::string(argv[3]) == "automatic-fast-close"));
-  const std::filesystem::path directory(argv[2]); std::filesystem::create_directories(directory);
+  const auto directory = std::filesystem::path(argv[2]) / ("run-" + std::to_string(getpid())); std::filesystem::create_directories(directory);
   UIQueue queue;
   int settled = 0;
   RecordingControls::Hooks hooks;
@@ -109,6 +110,7 @@ int main(int argc, char** argv) {
     assert(actual == id); assert(result.failure.empty() && result.first_timestamp_ms == 100 && result.output_frames >= 1); started = true;
   });
   assert(controls->PhysicalCount() == 1 && !controls->ContextReady(3));
+  assert(!controls->CaptureClockFrozen(2));
   assert(controls->NeedsFrame(2) && !controls->NeedsFrame(2, true) && !controls->NeedsFrame(4));
   bool duplicate = false;
   try { controls->Start(4, 2, 3, options("duplicate.webm"), [](const auto&, const auto&) {}); } catch (...) { duplicate = true; }
@@ -118,10 +120,12 @@ int main(int argc, char** argv) {
   assert(duplicate);
   controls->Frame(2, frame, 100); queue.Until([&] { return started; });
   assert(controls->Status(id).first_timestamp_ms == 100);
+  assert(controls->CaptureClockFrozen(2));
   assert(controls->Status(id).output_frames >= 1);
   controls->Stop(2, id, 400, Clock::now() + std::chrono::seconds(10), [&](const auto& actual, const auto& result) {
     assert(actual == id && result.failure.empty() && result.output_frames == 18); stopped = true;
   });
+  assert(!controls->NeedsFrame(2) && controls->PhysicalCount()==1);
   queue.Until([&] { return stopped; });
   assert(controls->PhysicalCount() == 0 && controls->ContextReady(3) && controls->Phase(id) == "complete");
   assert(controls->MetadataCount() == 1 && settled == 1);

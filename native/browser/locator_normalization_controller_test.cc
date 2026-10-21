@@ -38,7 +38,7 @@ struct Harness {
  uint64_t Start(){const auto entry=operations_.Begin(1,now,10);assert(entry);return entry->generation;}
  Dict Message(){auto message=CefDictionaryValue::Create();auto query=CefListValue::Create();auto step=CefDictionaryValue::Create();step->SetString("engine","css");step->SetString("selector","button");query->SetDictionary(0,step);message->SetList("query",query);return message;}
  void Ack(const std::string& json,bool ok=true){assert(!callbacks.empty());auto callback=std::move(callbacks.front());callbacks.erase(callbacks.begin());callback(ok,json);}
-#include "locator_normalization_controller.inc"
+#include "controllers/dom/locator_normalization_controller.inc"
 };
 std::string Capture(){return R"JSON({"result":{"subtype":"array","deepSerializedValue":{"type":"array","value":[{"type":"node","value":{"nodeType":1,"backendNodeId":913}},{"type":"string","value":"{\"kind\":\"id\",\"query\":[{\"engine\":\"css\",\"selector\":\"#actual\"}]}"}]}}})JSON";}
 const char* selected=R"JSON({"result":{"subtype":"node","objectId":"actualSelectedObject"}})JSON";

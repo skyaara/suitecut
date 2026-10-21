@@ -441,9 +441,9 @@ void SuiteCutHTTPControls::Diagnostics(Dict result) const {result->SetDouble("ht
 
 std::string SuiteCutHTTPControls::TimeoutError(int owner)const{const auto found=active_.find(owner);if(found==active_.end())return {};return "apiRequestContext."+found->second->api_name+": Timeout "+std::to_string(found->second->timeout_ms)+"ms exceeded";}
 
-#include "http_profiles.inc"
-#include "http_api_cookies.inc"
-#include "http_api_origins.inc"
+#include "controllers/network/http_profiles.inc"
+#include "controllers/network/http_api_cookies.inc"
+#include "controllers/network/http_api_origins.inc"
 
 bool SuiteCutHTTPControls::AcceptedWorkReady()const{
   if(!active_.empty()||!storage_queries_.empty()||!scope_commands_.empty()||!uploads_.empty()||

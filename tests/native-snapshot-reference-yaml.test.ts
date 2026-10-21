@@ -8,7 +8,13 @@ import { type NativeAriaNode } from '../src/native-aria.js'
 import { type UntrustedInput } from '../src/untrusted.js'
 
 async function literal(file: string): Promise<UntrustedInput> {
-  const header = await readFile(new URL(`../native/browser/${file}`, import.meta.url), 'utf8')
+  const header = await readFile(
+    new URL(
+      `../native/${file.startsWith('native_aria_') ? 'shared' : 'browser'}/${file}`,
+      import.meta.url,
+    ),
+    'utf8',
+  )
   const source = /R"JS\(([\s\S]*)\)JS";/u.exec(header)?.[1]
   if (!source) throw new Error('Missing canonical native helper')
   return new Script(`(${source})`).runInNewContext({ TextEncoder }) as UntrustedInput

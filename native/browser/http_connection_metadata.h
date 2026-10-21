@@ -4,6 +4,7 @@
 #include <ctime>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <curl/curl.h>
 #include <openssl/ssl.h>
 #include <openssl/x509.h>
@@ -18,7 +19,17 @@ struct HTTPConnectionTiming {
   double secure_connection_start=-1,connect_end=-1,request_start=-1,response_start=-1,response_end=-1;
 };
 inline double HTTPWallTime(){return std::chrono::duration<double,std::milli>(std::chrono::system_clock::now().time_since_epoch()).count();}
-inline std::string HTTPCommonName(X509_NAME* name){
+// An SSL_CTX/X509 from curl is usable only by the same OpenSSL ABI family.
+// A process may legitimately contain more than one dylib major after packaging.
+inline bool HTTPOpenSSLBackendCompatible(std::string_view backend){
+  const auto prefix="OpenSSL/"+std::to_string(OPENSSL_VERSION_MAJOR)+".";
+  return backend.starts_with(prefix)&&(OpenSSL_version_num()>>28)==OPENSSL_VERSION_MAJOR;
+}
+inline bool HTTPOpenSSLCurlCompatible(){
+  const auto*version=curl_version_info(CURLVERSION_NOW);
+  return version&&version->ssl_version&&HTTPOpenSSLBackendCompatible(version->ssl_version);
+}
+inline std::string HTTPCommonName(const X509_NAME* name){
   if(!name)return {};
   const int first=X509_NAME_get_index_by_NID(name,NID_commonName,-1);
   if(first<0)return {};
@@ -32,6 +43,7 @@ inline std::optional<double> HTTPASN1Time(const ASN1_TIME* value){
   const auto result=timegm(&parsed);if(result==-1)return std::nullopt;return static_cast<double>(result);
 }
 inline std::optional<HTTPConnectionSecurity> CaptureHTTPSecurity(CURL* handle){
+  if(!HTTPOpenSSLCurlCompatible())return std::nullopt;
   curl_tlssessioninfo* session=nullptr;
   if(curl_easy_getinfo(handle,CURLINFO_TLS_SSL_PTR,&session)!=CURLE_OK||!session||session->backend!=CURLSSLBACKEND_OPENSSL||!session->internals)return std::nullopt;
   auto ssl=static_cast<SSL*>(session->internals);auto certificate=SSL_get1_peer_certificate(ssl);if(!certificate)return std::nullopt;

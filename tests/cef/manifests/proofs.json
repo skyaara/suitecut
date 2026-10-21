@@ -1,0 +1,924 @@
+[
+  {
+    "script": "scripts/verify-native-init-scripts.mjs",
+    "timeout": 150,
+    "tags": ["bootstrap", "race"],
+    "evidence": {
+      "file": "work/.suitecut/native-init-scripts/report.json",
+      "rules": [
+        {
+          "path": "completed",
+          "nonEmptyString": true
+        },
+        {
+          "path": "evidence",
+          "minItems": 13
+        }
+      ]
+    }
+  },
+  {
+    "script": "scripts/verify-native-bootstrap-siblings.mjs",
+    "timeout": 150,
+    "tags": ["bootstrap", "race"],
+    "evidence": {
+      "file": "artifacts/report.json",
+      "rules": [
+        {
+          "path": "completed",
+          "equals": true
+        },
+        {
+          "path": "checks",
+          "minItems": 4
+        },
+        {
+          "path": "nativeStderr.strictStderrClean",
+          "equals": true
+        }
+      ]
+    }
+  },
+  {
+    "script": "scripts/verify-native-init-snapshot-publication.mjs",
+    "timeout": 150,
+    "tags": ["bootstrap", "race"],
+    "evidence": {
+      "file": "artifacts/report.json",
+      "rules": [
+        {
+          "path": "completed",
+          "equals": true
+        },
+        {
+          "path": "checks",
+          "minItems": 8
+        },
+        {
+          "path": "nativeStderr.strictStderrClean",
+          "equals": true
+        }
+      ]
+    }
+  },
+  {
+    "script": "scripts/verify-native-pristine-dispatch.mjs",
+    "timeout": 150,
+    "tags": ["bootstrap", "race"],
+    "evidence": {
+      "file": "artifacts/report.json",
+      "rules": [
+        {
+          "path": "completed",
+          "equals": true
+        },
+        {
+          "path": "checks",
+          "minItems": 10
+        },
+        {
+          "path": "nativeStderr.strictStderrClean",
+          "equals": true
+        }
+      ]
+    }
+  },
+  {
+    "script": "scripts/verify-native-input-ownership.mjs",
+    "timeout": 150,
+    "tags": ["input"],
+    "evidence": {
+      "file": "artifacts/report.json",
+      "rules": [
+        {
+          "path": "passed",
+          "equals": 9
+        },
+        {
+          "path": "inputsUnchanged",
+          "equals": true
+        },
+        {
+          "path": "checks",
+          "minItems": 9
+        }
+      ]
+    }
+  },
+  {
+    "script": "scripts/verify-native-click-detach.mjs",
+    "timeout": 150,
+    "tags": ["input"],
+    "evidence": {
+      "file": "artifacts/report.json",
+      "rules": [
+        {
+          "path": "passed",
+          "equals": 4
+        },
+        {
+          "path": "inputsUnchanged",
+          "equals": true
+        },
+        {
+          "path": "checks",
+          "minItems": 4
+        }
+      ]
+    }
+  },
+  {
+    "script": "scripts/verify-native-edit-focus.mjs",
+    "timeout": 150,
+    "tags": ["input"],
+    "evidence": {
+      "file": "artifacts/report.json",
+      "rules": [
+        {
+          "path": "completed",
+          "equals": true
+        },
+        {
+          "path": "checks",
+          "minItems": 5
+        },
+        {
+          "path": "nativeStderr.strictStderrClean",
+          "equals": true
+        }
+      ]
+    }
+  },
+  {
+    "script": "scripts/verify-native-contenteditable-states.mjs",
+    "timeout": 150,
+    "tags": ["input"],
+    "evidence": {
+      "file": "work/.suitecut/native-contenteditable-states/report.json",
+      "rules": [
+        {
+          "path": "checks",
+          "minItems": 3
+        }
+      ]
+    }
+  },
+  {
+    "script": "scripts/verify-native-checked-label.mjs",
+    "timeout": 150,
+    "tags": ["input"],
+    "evidence": {
+      "file": "artifacts/report.json",
+      "rules": [
+        {
+          "path": "completed",
+          "equals": true
+        },
+        {
+          "path": "checks",
+          "minItems": 4
+        },
+        {
+          "path": "nativeStderr.strictStderrClean",
+          "equals": true
+        }
+      ]
+    }
+  },
+  {
+    "script": "scripts/verify-native-select-text.mjs",
+    "timeout": 150,
+    "tags": ["input"],
+    "evidence": {
+      "file": "artifacts/report.json",
+      "rules": [
+        {
+          "path": "completed",
+          "equals": true
+        },
+        {
+          "path": "checks",
+          "minItems": 7
+        },
+        {
+          "path": "nativeStderr.strictStderrClean",
+          "equals": true
+        }
+      ]
+    }
+  },
+  {
+    "script": "scripts/verify-native-special-keys.mjs",
+    "timeout": 150,
+    "tags": ["input"],
+    "evidence": {
+      "file": "artifacts/report.json",
+      "rules": [
+        {
+          "path": "passed",
+          "equals": 10
+        },
+        {
+          "path": "inputsUnchanged",
+          "equals": true
+        },
+        {
+          "path": "checks",
+          "minItems": 10
+        }
+      ]
+    }
+  },
+  {
+    "script": "scripts/verify-native-shadow-hit.mjs",
+    "timeout": 150,
+    "tags": ["input"],
+    "evidence": {
+      "file": "work/.suitecut/native-shadow-hit/report.json",
+      "rules": [
+        {
+          "path": "checks",
+          "minItems": 4
+        }
+      ]
+    }
+  },
+  {
+    "script": "scripts/verify-native-frame-owners.mjs",
+    "timeout": 150,
+    "tags": ["frames", "race"],
+    "evidence": {
+      "file": "work/.suitecut/native-frame-owners/report.json",
+      "rules": [
+        {
+          "path": "checks",
+          "minItems": 8
+        }
+      ]
+    }
+  },
+  {
+    "script": "scripts/verify-native-frame-visibility-snapshot.mjs",
+    "timeout": 150,
+    "tags": ["frames", "race"],
+    "evidence": {
+      "file": "work/.suitecut/native-frame-visibility-snapshot/report.json",
+      "rules": [
+        {
+          "path": "completed",
+          "equals": true
+        },
+        {
+          "path": "checks",
+          "minItems": 13
+        },
+        {
+          "path": "nativeStderr.strictStderrClean",
+          "equals": true
+        }
+      ]
+    }
+  },
+  {
+    "script": "scripts/verify-native-frame-metadata.mjs",
+    "timeout": 150,
+    "tags": ["frames", "race"],
+    "evidence": {
+      "file": "work/.suitecut/native-frame-metadata/report.json",
+      "rules": [
+        {
+          "path": "checks",
+          "minItems": 8
+        }
+      ]
+    }
+  },
+  {
+    "script": "scripts/verify-native-navigation-close.mjs",
+    "timeout": 150,
+    "tags": ["network", "race"],
+    "evidence": {
+      "file": "work/.suitecut/native-navigation-close/report.json",
+      "rules": [
+        {
+          "path": "completed",
+          "equals": true
+        },
+        {
+          "path": "checks",
+          "minItems": 3
+        },
+        {
+          "path": "nativeStderr",
+          "equals": ""
+        },
+        {
+          "path": "processExit.code",
+          "equals": 0
+        },
+        {
+          "path": "processExit.signal",
+          "equals": null
+        }
+      ]
+    }
+  },
+  {
+    "script": "scripts/verify-native-route-lifetime.mjs",
+    "timeout": 240,
+    "tags": ["network", "race"],
+    "evidence": {
+      "file": "work/.suitecut/native-route-lifetime/report.json",
+      "rules": [
+        {
+          "path": "ok",
+          "equals": true
+        },
+        {
+          "path": "checks",
+          "minItems": 7
+        }
+      ]
+    }
+  },
+  {
+    "script": "scripts/verify-native-route-url-matchers.mjs",
+    "timeout": 150,
+    "tags": ["network", "race"],
+    "evidence": {
+      "file": "artifacts/report.json",
+      "rules": [
+        {
+          "path": "checks",
+          "minItems": 6
+        }
+      ]
+    }
+  },
+  {
+    "script": "scripts/verify-native-page-route-removal.mjs",
+    "timeout": 150,
+    "tags": ["network", "race"],
+    "evidence": {
+      "file": "artifacts/report.json",
+      "rules": [
+        {
+          "path": "checks",
+          "minItems": 5
+        }
+      ]
+    }
+  },
+  {
+    "script": "scripts/verify-native-network-session-handoff.mjs",
+    "timeout": 150,
+    "tags": ["network", "race"],
+    "evidence": {
+      "file": "work/.suitecut/native-network-session-handoff/report.json",
+      "rules": [
+        {
+          "path": "checks",
+          "minItems": 4
+        }
+      ]
+    }
+  },
+  {
+    "script": "scripts/verify-native-network-predicates.mjs",
+    "timeout": 150,
+    "tags": ["network", "race"],
+    "evidence": {
+      "file": "work/.suitecut/native-network-predicates/report.json",
+      "rules": [
+        {
+          "path": "passed",
+          "equals": true
+        },
+        {
+          "path": "completed",
+          "nonEmptyString": true
+        },
+        {
+          "path": "checks",
+          "minItems": 4
+        }
+      ]
+    }
+  },
+  {
+    "script": "scripts/verify-native-network-fallback.mjs",
+    "timeout": 150,
+    "tags": ["network", "race"],
+    "evidence": {
+      "file": "work/.suitecut/native-network-fallback/report.json",
+      "rules": [
+        {
+          "path": "ok",
+          "equals": true
+        },
+        {
+          "path": "checks",
+          "minItems": 5
+        },
+        {
+          "path": "diagnostics.networkPaused",
+          "equals": 0
+        },
+        {
+          "path": "diagnostics.networkRejectedPauses",
+          "equals": 0
+        },
+        {
+          "path": "diagnostics.pendingNetworkCommands",
+          "equals": 0
+        },
+        {
+          "path": "diagnostics.networkPausedMetadataBytes",
+          "equals": 0
+        },
+        {
+          "path": "diagnostics.networkRoutes",
+          "equals": 0
+        }
+      ]
+    }
+  },
+  {
+    "script": "scripts/verify-native-har-route-order.mjs",
+    "timeout": 150,
+    "tags": ["network", "race"],
+    "evidence": {
+      "file": "artifacts/report.json",
+      "rules": [
+        {
+          "path": "checks",
+          "minItems": 6
+        }
+      ]
+    }
+  },
+  {
+    "script": "scripts/verify-native-context-har-ownership.mjs",
+    "timeout": 150,
+    "tags": ["network", "race"],
+    "evidence": {
+      "file": "work/.suitecut/native-context-har-ownership/report.json",
+      "rules": [
+        {
+          "path": "records",
+          "minItems": 6
+        }
+      ]
+    }
+  },
+  {
+    "script": "scripts/verify-native-storage-state.mjs",
+    "timeout": 240,
+    "tags": ["storage"],
+    "evidence": {
+      "file": "work/.suitecut/native-storage-state/report.json",
+      "rules": [
+        {
+          "path": "completed",
+          "nonEmptyString": true
+        },
+        {
+          "path": "evidence",
+          "minItems": 15
+        }
+      ]
+    }
+  },
+  {
+    "script": "scripts/verify-native-http-storage.mjs",
+    "timeout": 150,
+    "tags": ["storage"],
+    "evidence": {
+      "file": "work/.suitecut/native-http-storage/report.json",
+      "rules": [
+        {
+          "path": "ok",
+          "equals": true
+        },
+        {
+          "path": "checks",
+          "minItems": 5
+        }
+      ]
+    }
+  },
+  {
+    "script": "scripts/verify-native-api-cookie-jar.mjs",
+    "timeout": 150,
+    "tags": ["storage"],
+    "evidence": {
+      "file": "artifacts/report.json",
+      "rules": [
+        {
+          "path": "stderr",
+          "equals": ""
+        },
+        {
+          "path": "phases",
+          "minItems": 6
+        },
+        {
+          "path": "exit.code",
+          "equals": 0
+        },
+        {
+          "path": "exit.signal",
+          "equals": null
+        }
+      ]
+    }
+  },
+  {
+    "script": "scripts/verify-native-bindings.mjs",
+    "timeout": 150,
+    "tags": ["bindings", "race"],
+    "evidence": {
+      "file": "work/.suitecut/native-bindings/report.json",
+      "rules": [
+        {
+          "path": "checks",
+          "minItems": 16
+        }
+      ]
+    }
+  },
+  {
+    "script": "scripts/verify-native-binding-capacity.mjs",
+    "timeout": 150,
+    "tags": ["bindings", "race"],
+    "evidence": {
+      "file": "work/.suitecut/native-binding-capacity/report.json",
+      "rules": [
+        {
+          "path": "simultaneousOrdinaryEvaluations",
+          "equals": 64
+        },
+        {
+          "path": "exactNativeHandleResults",
+          "equals": 64
+        }
+      ]
+    }
+  },
+  {
+    "script": "scripts/verify-native-binding-handles.mjs",
+    "timeout": 150,
+    "tags": ["bindings", "race"],
+    "evidence": {
+      "file": "work/.suitecut/native-binding-handles/report.json",
+      "rules": [
+        {
+          "path": "checks",
+          "minItems": 10
+        }
+      ]
+    }
+  },
+  {
+    "script": "scripts/verify-native-worker-observed-lifecycle.mjs",
+    "timeout": 150,
+    "tags": ["workers", "race"],
+    "evidence": {
+      "file": "artifacts/report.json",
+      "rules": [
+        {
+          "path": "result",
+          "equals": "passed"
+        },
+        {
+          "path": "nativeShutdown",
+          "equals": "clean"
+        },
+        {
+          "path": "nativeStderrBytes",
+          "equals": 0
+        },
+        {
+          "path": "checks",
+          "minItems": 2
+        },
+        {
+          "path": "unexercised",
+          "equals": []
+        }
+      ]
+    }
+  },
+  {
+    "script": "scripts/verify-native-context-worker-replacement.mjs",
+    "timeout": 150,
+    "tags": ["workers", "race"],
+    "evidence": {
+      "file": "artifacts/report.json",
+      "rules": [
+        {
+          "path": "checks",
+          "minItems": 5
+        }
+      ]
+    }
+  },
+  {
+    "script": "scripts/verify-native-worker-target-lifetime.mjs",
+    "env": {
+      "SUITECUT_NATIVE_WORKER_LIFETIME_CACHE_POLICY": "disabled"
+    },
+    "timeout": 150,
+    "tags": ["workers", "race"],
+    "evidence": {
+      "file": "artifacts/report.json",
+      "rules": [
+        {
+          "path": "checks",
+          "minItems": 6
+        }
+      ]
+    }
+  },
+  {
+    "script": "scripts/verify-native-worker-cache-policy.mjs",
+    "timeout": 150,
+    "tags": ["workers", "race", "navigation"],
+    "evidence": {
+      "file": "artifacts/report.json",
+      "rules": [
+        {
+          "path": "checks",
+          "minItems": 3
+        }
+      ]
+    }
+  },
+  {
+    "script": "scripts/verify-native-context-service-route.mjs",
+    "timeout": 150,
+    "tags": ["workers", "race"],
+    "evidence": {
+      "file": "artifacts/report.json",
+      "rules": [
+        {
+          "path": "checks",
+          "minItems": 2
+        }
+      ]
+    }
+  },
+  {
+    "script": "scripts/verify-native-page-recovery.mjs",
+    "timeout": 240,
+    "tags": ["lifecycle", "race"],
+    "evidence": {
+      "file": "artifacts/report.json",
+      "rules": [
+        {
+          "path": "completed",
+          "equals": true
+        },
+        {
+          "path": "epochs",
+          "minItems": 2
+        },
+        {
+          "path": "nativeStderr.strictStderrClean",
+          "equals": true
+        },
+        {
+          "path": "crashes",
+          "equals": 2
+        },
+        {
+          "path": "healthyRootValue",
+          "equals": 42
+        }
+      ]
+    }
+  },
+  {
+    "script": "scripts/verify-native-page-recovery-deadlines.mjs",
+    "timeout": 150,
+    "tags": ["lifecycle", "race"],
+    "evidence": {
+      "file": "artifacts/report.json",
+      "rules": [
+        {
+          "path": "completed",
+          "equals": true
+        },
+        {
+          "path": "results",
+          "minItems": 3
+        },
+        {
+          "path": "nativeStderr.strictStderrClean",
+          "equals": true
+        }
+      ]
+    }
+  },
+  {
+    "script": "scripts/verify-native-crash-listener-throws.mjs",
+    "timeout": 150,
+    "tags": ["lifecycle", "race"],
+    "requires": ["ffmpeg"],
+    "evidence": {
+      "file": "artifacts/report.json",
+      "rules": [
+        {
+          "path": "completed",
+          "equals": true
+        },
+        {
+          "path": "observedExceptions",
+          "minItems": 2
+        },
+        {
+          "path": "nativeStderr.strictStderrClean",
+          "equals": true
+        },
+        {
+          "path": "sameAuthoredErrorObjectsObserved",
+          "equals": true
+        },
+        {
+          "path": "cleanupCompletedBeforeUserListener",
+          "equals": true
+        },
+        {
+          "path": "laterListenerInvoked",
+          "equals": true
+        },
+        {
+          "path": "actualTcpEOF",
+          "equals": true
+        },
+        {
+          "path": "actualEncoderReaped",
+          "equals": true
+        }
+      ]
+    }
+  },
+  {
+    "script": "scripts/verify-native-debugger-unowned-pauses.mjs",
+    "timeout": 150,
+    "tags": ["developer", "race"],
+    "evidence": {
+      "file": "artifacts/report.json",
+      "rules": [
+        {
+          "path": "completed",
+          "equals": true
+        },
+        {
+          "path": "checks",
+          "minItems": 2
+        },
+        {
+          "path": "nativeStderr.strictStderrClean",
+          "equals": true
+        },
+        {
+          "path": "unexercised",
+          "allowedItems": [
+            "Exact next-pause-before-previous-resume-ACK ordering was not observed; controlled native regression covers it separately"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "script": "scripts/verify-native-coverage-ownership.mjs",
+    "timeout": 150,
+    "tags": ["developer", "race"],
+    "evidence": {
+      "file": "artifacts/report.json",
+      "rules": [
+        {
+          "path": "result",
+          "equals": "pass"
+        },
+        {
+          "path": "nativeShutdown",
+          "equals": "clean"
+        },
+        {
+          "path": "nativeStderrBytes",
+          "equals": 0
+        },
+        {
+          "path": "groups",
+          "minItems": 6
+        }
+      ]
+    }
+  },
+  {
+    "script": "scripts/verify-native-coverage-oopif.mjs",
+    "timeout": 150,
+    "tags": ["developer", "race"],
+    "evidence": {
+      "file": "artifacts/report.json",
+      "rules": [
+        {
+          "path": "result",
+          "equals": "pass"
+        },
+        {
+          "path": "nativeShutdown",
+          "equals": "clean"
+        },
+        {
+          "path": "nativeStderrBytes",
+          "equals": 0
+        },
+        {
+          "path": "groups",
+          "minItems": 7
+        }
+      ]
+    }
+  },
+  {
+    "script": "scripts/verify-native-screenshot-expect.mjs",
+    "timeout": 150,
+    "tags": ["artifacts"],
+    "evidence": {
+      "file": "artifacts/report.json",
+      "rules": [
+        {
+          "path": "result",
+          "equals": "pass"
+        },
+        {
+          "path": "nativeShutdown",
+          "equals": "clean"
+        },
+        {
+          "path": "nativeStderrBytes",
+          "equals": 0
+        },
+        {
+          "path": "groups",
+          "minItems": 8
+        }
+      ]
+    }
+  },
+  {
+    "script": "scripts/verify-native-artifact-navigation.mjs",
+    "timeout": 150,
+    "tags": ["artifacts"],
+    "evidence": {
+      "file": "work/.suitecut/native-artifact-navigation/report.json",
+      "rules": [
+        {
+          "path": "result",
+          "equals": "passed"
+        },
+        {
+          "path": "viewportDeviceClipPixelsAndNoResize",
+          "equals": "passed"
+        },
+        {
+          "path": "fullPageOffscreenMaskAndRestoration",
+          "equals": "passed"
+        },
+        {
+          "path": "concurrentFiveReloadsAndFiveFullPageScreenshots",
+          "equals": "passed"
+        },
+        {
+          "path": "navigationHookExactlyOnce",
+          "equals": 1
+        }
+      ]
+    }
+  },
+  {
+    "script": "scripts/verify-native-artifact-oopif.mjs",
+    "timeout": 150,
+    "tags": ["artifacts"],
+    "evidence": {
+      "file": "work/.suitecut/native-artifact-oopif/report.json",
+      "rules": [
+        {
+          "path": "transformedOOPIFLocatorPixelsAndDimensions",
+          "equals": "passed"
+        },
+        {
+          "path": "transformedOOPIFFixedElementHandlePixels",
+          "equals": "passed"
+        },
+        {
+          "path": "transformedOOPIFMaskPixelsAndRestoration",
+          "equals": "passed"
+        }
+      ]
+    }
+  }
+]

@@ -3,10 +3,25 @@ import { describe, expect, it, vi } from 'vitest'
 
 import { type NativeBrowser } from '../src/native-browser.js'
 import { createNativeRecordingPipeline } from '../src/native-recording-pipeline.js'
-import { type NativeRecordingInfo } from '../src/native-recording-protocol.js'
+import {
+  NativeRecordingInfoSchema,
+  type NativeRecordingInfo,
+} from '../src/native-recording-protocol.js'
 import { type UntrustedInput } from '../src/untrusted.js'
 
 const info: NativeRecordingInfo = {
+  encodingBackend: 'ffmpeg',
+  encoder: 'libvpx-vp9',
+  container: 'webm',
+  preparationFrames: 0,
+  preparationPackets: 0,
+  preparationMs: 0,
+  coalescedFrames: 0,
+  gpuNv12Frames: 0,
+  gpuInputFrames: 0,
+  captureTimestampsExact: false,
+  captureLookaheadMs: 0,
+  maxTimestampCorrectionMs: 0,
   id: 'recording-1',
   phase: 'recording',
   outputPath: '/actual-native-output.webm',
@@ -204,4 +219,16 @@ describe('native recording control adapter', () => {
     expect(f.runRecording.mock.calls.map(([params]) => params.action)).toEqual(['start', 'cancel'])
     expect(f.detach).toHaveBeenCalledTimes(1)
   })
+})
+
+it('decodes bounded native capture metadata without accepting unrecognized or invalid fields', () => {
+  expect(NativeRecordingInfoSchema.parse(info)).toEqual(info)
+  for (const invalid of [
+    { ...info, gpuInputFrames: -1 },
+    { ...info, preparationMs: Infinity },
+    { ...info, captureTimestampsExact: 'yes' },
+    { ...info, unexpected: 1 },
+  ]) {
+    expect(NativeRecordingInfoSchema.safeParse(invalid).success).toBe(false)
+  }
 })

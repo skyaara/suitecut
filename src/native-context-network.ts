@@ -26,7 +26,7 @@ interface ContextOwner {
   readonly id: number
   projectWorkerNetworkEvent(
     worker: NativeWorkerInfo,
-    event: NativeNetworkEventName,
+    event: NativeNetworkEventName | 'requestupdated',
     value: UntrustedInput,
   ): NativeRequest | NativeResponse
   projectNetworkEvent(
@@ -52,6 +52,11 @@ export class NativeContextNetwork {
   ) {
     this.detach = transport.onContextNetwork((event) => {
       if (event.contextId !== owner.id) return
+      if (event.network.event === 'requestupdated') {
+        if ('worker' in event)
+          owner.projectWorkerNetworkEvent(event.worker, 'requestupdated', event.network)
+        return
+      }
       const listeners = this.listeners.get(event.network.event as NativeNetworkEventName)
       if (!listeners?.length && !('worker' in event)) return
       const value = this.project(event.network.event as NativeNetworkEventName, event)

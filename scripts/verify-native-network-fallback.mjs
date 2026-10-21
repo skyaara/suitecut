@@ -6,7 +6,9 @@ import { createHash } from 'node:crypto'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { createServer } from 'node:http'
 import { resolve } from 'node:path'
+import { performance } from 'node:perf_hooks'
 import process from 'node:process'
+import { setTimeout as delay } from 'node:timers/promises'
 
 import * as z from 'zod'
 
@@ -24,6 +26,7 @@ const hash = async () =>
   createHash('sha256')
     .update(await readFile(executable))
     .digest('hex')
+const ownershipSamples = []
 const executableSha256 = await hash(),
   started = new Date().toISOString(),
   checks = [],
@@ -121,6 +124,34 @@ try {
   assert.deepEqual(order, ['upper', 'lower'])
   checks.push('native finite invocation counts remove only exhausted handlers')
   await page.unroute('**/changed')
+  // Supported large bodies now use the bounded chunked upload path. Verify
+  // real fallback handoff and origin bytes before testing the rejection bound.
+  const largeBody = Buffer.alloc(900000, 255)
+  await page.route(
+    '**/large',
+    async (route, request) => {
+      assert.deepEqual(request.postDataBuffer(), largeBody)
+      await route.continue()
+    },
+    { times: 1 },
+  )
+  await page.route(
+    '**/large',
+    async (route) => {
+      await route.fallback({ method: 'POST', postData: largeBody })
+    },
+    { times: 1 },
+  )
+  const large = Echo.parse(
+    await page.evaluate(
+      `fetch(${JSON.stringify(`${origin}/large`)}).then(response=>response.json())`,
+    ),
+  )
+  assert.equal(large.method, 'POST')
+  assert.deepEqual(Buffer.from(large.body, 'base64'), largeBody)
+  checks.push(
+    'Supported 900 KB body survives native chunked fallback, next-handler admission and actual origin echo',
+  )
   let nativeCapacityError = ''
   await page.route(
     '**/retry',
@@ -134,11 +165,11 @@ try {
     '**/retry',
     async (route) => {
       try {
-        await route.fallback({ method: 'POST', postData: Buffer.alloc(900000, 255) })
+        await route.fallback({ method: 'POST', postData: Buffer.alloc(2 * 1024 * 1024 + 1, 255) })
       } catch (error) {
         nativeCapacityError = error instanceof Error ? error.message : 'Unknown native rejection'
       }
-      assert.match(nativeCapacityError, /remains owned/u)
+      assert.match(nativeCapacityError, /body exceeds 2 MiB/u)
       await route.fallback({ method: 'POST', postData: Buffer.from([0, 255, 13, 10]) })
     },
     { times: 1 },
@@ -151,18 +182,30 @@ try {
   assert.equal(retried.body, 'AP8NCg==')
   assert.equal(retried.method, 'POST')
   checks.push(
-    'actual oversized fallback publication rejects before consuming the next handler and permits retry on the same physical pause',
+    'actual out-of-bound fallback rejects before consuming the next handler and permits retry on the same physical pause',
   )
-  diagnostics = await source.runAutomation('diagnostics', {})
-  const state = z
-    .object({
-      networkPaused: z.number(),
-      networkRejectedPauses: z.number(),
-      pendingNetworkCommands: z.number(),
-      networkPausedMetadataBytes: z.number(),
-      networkRoutes: z.number(),
-    })
-    .parse(diagnostics)
+  // Fetch completion and the DevTools continuation ACK cross separate channels.
+  // Require actual physical retirement; never infer it from the response receipt.
+  const ownershipSchema = z.object({
+    networkPaused: z.number(),
+    networkRejectedPauses: z.number(),
+    pendingNetworkCommands: z.number(),
+    networkPausedMetadataBytes: z.number(),
+    networkRoutes: z.number(),
+  })
+  const retirementDeadline = performance.now() + 5000
+  let state
+  for (;;) {
+    diagnostics = await source.runAutomation('diagnostics', {})
+    state = ownershipSchema.parse(diagnostics)
+    ownershipSamples.push(state)
+    assert.ok(
+      performance.now() < retirementDeadline,
+      `Physical network ownership did not retire within 5 seconds: ${JSON.stringify(state)}`,
+    )
+    if (Object.values(state).every((value) => value === 0)) break
+    await delay(20)
+  }
   assert.equal(state.networkPaused, 0)
   assert.equal(state.networkRejectedPauses, 0)
   assert.equal(state.pendingNetworkCommands, 0)
@@ -187,6 +230,7 @@ try {
     ended: new Date().toISOString(),
     checks,
     diagnostics,
+    ownershipSamples,
     error: failure?.stack,
   }
   await writeFile(resolve(directory, 'report.json'), JSON.stringify(report, null, 2) + '\n')

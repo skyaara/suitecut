@@ -49,7 +49,7 @@ struct Harness {
   void Fetch(){auto command=Parse(R"({"action":"fetch","timeoutMs":10})");command->SetString("callbackScope",route->GetString("callbackScope"));command->SetString("routeId",route->GetString("id"));network_->Command(13,command,[this](bool ok,const auto&,const auto&){delivered=true;success=ok;},100);}
   std::shared_ptr<void> RetainWorkerRouteFetchOwner(){return {};}
   void Finish(){network_->Clear();physical.reset();completion={};assert(!network_->NeedsTick());}
-#include "worker_route_fetch.inc"
+#include "controllers/workers/worker_route_fetch.inc"
 };
 int main(){
   assert(cef_api_hash(CEF_API_VERSION,0));unsigned controls=0;

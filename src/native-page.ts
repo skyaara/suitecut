@@ -2345,6 +2345,15 @@ export class NativeFrame extends NativePage {
     this.info = info
   }
   update(info: NativeFrameInfo): void {
+    // A native predicate snapshot can precede its public frame packet. Never
+    // replace that newer observation with an older registry/journal entry.
+    if (
+      this.info?.id === info.id &&
+      this.info.navigationSequence !== undefined &&
+      info.navigationSequence !== undefined &&
+      info.navigationSequence < this.info.navigationSequence
+    )
+      return
     this.info = info
   }
   markDetached(): void {
@@ -2398,8 +2407,9 @@ export class NativeFrame extends NativePage {
     const info = this.source
       .frameInfos?.()
       .find((info) => (this.frameId ? info.id === this.frameId : !info.parentId))
-    if (info) this.info = info
-    return info
+    if (!info) return undefined
+    this.update(info)
+    return this.info
   }
   /** The actual DOM owner in the parent frame, retained by native backend identity. */
   async frameElement(): Promise<NativeElementHandle> {

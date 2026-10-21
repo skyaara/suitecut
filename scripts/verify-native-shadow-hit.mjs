@@ -24,7 +24,12 @@ const source = await launchNativeBrowser({
 const checks = []
 try {
   const page = createNativePage(source)
-  const text = await readFile('native/browser/browser.cc', 'utf8')
+  // Join adjacent literal lines introduced by C++ formatting before extracting
+  // the authored shadow hit-test expression.
+  const text = (await readFile('native/browser/page/dom.cc', 'utf8')).replace(
+    /"[ \t]*\r?\n[ \t]*"/gu,
+    '',
+  )
   const logic = z
     .string()
     .parse(

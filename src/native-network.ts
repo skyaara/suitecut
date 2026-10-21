@@ -1105,7 +1105,10 @@ export class NativeNetwork {
       ),
     )
   }
-  eventValue(event: NativeNetworkEventName, value: UntrustedInput): NativeRequest | NativeResponse {
+  eventValue(
+    event: NativeNetworkEventName | 'requestupdated',
+    value: UntrustedInput,
+  ): NativeRequest | NativeResponse {
     const data = NativeNetworkInfoSchema.parse(value)
     if (data.event !== event) throw new Error('Native network wait returned a different event')
     const request = this.request(data.request, data.sequence)

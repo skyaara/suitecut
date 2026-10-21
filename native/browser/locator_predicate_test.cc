@@ -68,7 +68,7 @@ struct Harness {
  void Adopt(){Ack("DOM.describeNode",R"({"node":{"backendNodeId":781}})");assert(calls.front().params->GetInt("backendNodeId")==781&&calls.front().params->GetInt("executionContextId")==4);Ack("DOM.resolveNode",R"({"object":{"subtype":"node","objectId":"selected-main-node"}})");}
  void Drain(){while(!releases.empty()){auto done=std::move(releases.front());releases.erase(releases.begin());done();}}
  void AtPredicate(){Begin();Selected();Adopt();assert(calls.front().params->GetString("objectId")=="selected-main-node"&&calls.front().params->GetBool("awaitPromise")&&calls.front().params->GetBool("returnByValue"));}
-#include "locator_predicate.inc"
+#include "controllers/dom/locator_predicate.inc"
 };
 constexpr auto yes=R"({"result":{"type":"boolean","value":true}})";
 constexpr auto no=R"({"result":{"type":"boolean","value":false}})";

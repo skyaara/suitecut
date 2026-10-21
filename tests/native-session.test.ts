@@ -65,6 +65,18 @@ function source() {
 }
 function recorder(firstTimestampMs = performance.now(), durationMs = 300) {
   const info: NativeRecordingInfo = {
+    encodingBackend: 'ffmpeg',
+    encoder: 'libvpx-vp9',
+    container: 'webm',
+    preparationFrames: 0,
+    preparationPackets: 0,
+    preparationMs: 0,
+    coalescedFrames: 0,
+    gpuNv12Frames: 0,
+    gpuInputFrames: 0,
+    captureTimestampsExact: false,
+    captureLookaheadMs: 0,
+    maxTimestampCorrectionMs: 0,
     id: 'recording-test',
     phase: 'complete',
     outputPath: '/native.webm',

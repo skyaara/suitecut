@@ -41,7 +41,7 @@ class Source {
   void DrainPosted(){while(!posted.empty()){auto task=std::move(posted.front());posted.pop_front();task();}}
   void WakeDeadlines(){++wakes;}
   void NativeTargetSessionDetached(const std::string& session){NativeDebuggerDetached(session);}
-#include "native_debugger_controller.inc"
+#include "controllers/debugger/native_debugger_controller.inc"
   void Ack(const std::string& method,bool ok=true,const std::string& result="{}"){
     assert(!wire.empty()&&wire.front().method==method);auto command=wire.front();wire.erase(wire.begin());auto found=devtools_.find(command.id);assert(found!=devtools_.end());auto callback=std::move(found->second.callback);devtools_.erase(found);callback(ok,result);
   }

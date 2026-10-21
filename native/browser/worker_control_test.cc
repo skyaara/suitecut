@@ -115,8 +115,8 @@ class Source : public CefBaseRefCounted {
   void NetworkFatal(const std::string& error){Error(error.c_str());}
   void MaybeReady(){++lifetime_ready;}
   void NativeTargetSessionDetached(const std::string& session){WorkerDetached(session);}
-  #include "worker_controller.inc"
-  #include "worker_target_lifetime.inc"
+  #include "controllers/workers/worker_controller.inc"
+  #include "controllers/workers/worker_target_lifetime.inc"
   // Declared after physical latch state so callbacks die before that state.
   std::map<int,DevToolsCall> devtools_;
  private:

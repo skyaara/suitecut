@@ -6,6 +6,9 @@
 #include "context_video_files.h"
 #include "context_video_policy.h"
 #include "include/cef_api_hash.h"
+#ifdef __APPLE__
+#include "include/wrapper/cef_library_loader.h"
+#endif
 #include <cassert>
 #include <deque>
 #include <filesystem>
@@ -39,6 +42,9 @@ void DirectoryReplacement(const fs::path&root){
 }
 }
 int main(int argc,char**argv){
+#ifdef __APPLE__
+  assert(cef_load_library(SUITECUT_TEST_CEF_LIBRARY));
+#endif
   cef_api_hash(CEF_API_VERSION,0);assert(argc==2||argc==3);const fs::path root=argv[1];fs::create_directories(root);
   if(argc==3){assert(std::string(argv[2])=="directory-ownership");DirectoryReplacement(root);std::cout<<"ContextVideo affected directory ownership control PASS (no browser acceptance)\n";return 0;}
   unsigned controls=0;

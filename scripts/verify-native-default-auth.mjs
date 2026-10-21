@@ -12,7 +12,7 @@ import * as z from 'zod'
 const executable = process.env.SUITECUT_NATIVE_EXECUTABLE,
   sdk = process.env.SUITECUT_NATIVE_SDK_DIRECTORY
 assert.ok(executable && sdk)
-/** @type {typeof import('/workspace/suitecut/src/native.js')} */
+/** @type {typeof import('../src/native.js')} */
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- Explicit hashed immutable SDK is selected at runtime.
 const { launchNativeBrowser, NativeBrowserContexts } = await import(
   pathToFileURL(join(sdk, 'native.js')).href
@@ -31,7 +31,7 @@ await new Promise((resolve) => server.listen(0, resolve))
 const address = server.address()
 assert.ok(address && typeof address !== 'string')
 const origin = 'http://localhost:' + address.port
-/** @type {import('/workspace/suitecut/src/native-browser.js').NativeBrowser|undefined} */
+/** @type {import('../src/native-browser.js').NativeBrowser|undefined} */
 let source
 try {
   source = await launchNativeBrowser({

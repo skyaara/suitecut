@@ -13,7 +13,7 @@
 #include "include/cef_api_hash.h"
 #include "include/cef_parser.h"
 #include "devtools_utf16.h"
-#include "native_aria_json.h"
+#include "../shared/native_aria_json.h"
 #include "operation_registry.h"
 #include "selector_wait_controls.h"
 #include "snapshot_reference_controls.h"
@@ -58,7 +58,7 @@ struct Harness {
  void Ack(const std::string& method,const std::string& json,bool ok=true){assert(!calls.empty()&&calls.front().method==method);auto done=std::move(calls.front().done);calls.erase(calls.begin());done(ok,json);}
  void Captured(){Ack("Runtime.evaluate","{}");}
  void Drain(){while(!releases.empty()){auto done=std::move(releases.front());releases.erase(releases.begin());done();}}
-#include "aria_json.inc"
+#include "controllers/dom/aria_json.inc"
 };
 constexpr auto actual=R"({"result":{"value":{"count":1,"json":"[{\"role\":\"button\",\"name\":\"Actual\"}]"}}})";
 int main(){assert(cef_api_hash(CEF_API_VERSION,0));int checks=0;

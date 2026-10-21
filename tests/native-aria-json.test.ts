@@ -170,7 +170,7 @@ describe('direct structured native semantic projection', () => {
   it('keeps the exact C++ utility-world formatter identical to the canonical authored function', async () => {
     const source = await readFile(new URL('../src/native-aria.ts', import.meta.url), 'utf8')
     const header = await readFile(
-      new URL('../native/browser/native_aria_json.h', import.meta.url),
+      new URL('../native/shared/native_aria_json.h', import.meta.url),
       'utf8',
     )
     const parsed = ts.createSourceFile('native-aria.ts', source, ts.ScriptTarget.Latest, true)

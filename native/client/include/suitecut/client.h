@@ -45,7 +45,11 @@ typedef struct sc_stats {
 
 /* Supplemental connection options leave the ABI-v1 launch layout unchanged.
  * TLS always verifies trust and hostname/IP; headers_json is an object of strings. */
-typedef enum sc_remote_backend { SC_REMOTE_CHROMIUM = 1, SC_REMOTE_FIREFOX = 2 } sc_remote_backend;
+typedef enum sc_remote_backend
+#ifdef __cplusplus
+  : int
+#endif
+{ SC_REMOTE_CHROMIUM = 1, SC_REMOTE_FIREFOX = 2 } sc_remote_backend;
 typedef struct sc_connection_options {
   size_t struct_size;
   uint32_t abi_version;

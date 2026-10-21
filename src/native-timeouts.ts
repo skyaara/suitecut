@@ -49,7 +49,10 @@ export function nativeCommandError(message: string): Error {
     /^Native Debugger (?:acquisition|startup|pause|breakpoint arm) exceeded its original (?:document )?deadline(?: before arm ACK)?$/u.test(
       message,
     )
-  return coverageDeadline ||
+  const workerDeadline =
+    /^Native context worker original (?:control )?deadline (?:exceeded|expired)$/u.test(message)
+  return workerDeadline ||
+    coverageDeadline ||
     debuggerDeadline ||
     /\b(?:timed out|Timeout (?:\d+ms|exceeded)|deadline expired)\b/iu.test(message)
     ? new NativeTimeoutError(message)

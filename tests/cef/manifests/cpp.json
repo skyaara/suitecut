@@ -1,0 +1,146 @@
+[
+  {
+    "id": "cpp.restricted-bootstrap",
+    "binary": "suitecut-native-cef_restricted_bootstrap",
+    "timeout": 90,
+    "tags": ["bootstrap", "frames", "cpp"],
+    "evidence": {
+      "file": "artifacts/results.json",
+      "rules": [
+        {
+          "path": "ok",
+          "equals": true
+        },
+        {
+          "path": "stage",
+          "equals": "complete"
+        },
+        {
+          "path": "closed",
+          "equals": true
+        },
+        {
+          "path": "cases",
+          "minItems": 3
+        },
+        {
+          "path": "cases",
+          "allTrue": "ok"
+        }
+      ]
+    }
+  },
+  {
+    "id": "cpp.facade-lifecycle",
+    "binary": "native-client-real-browser",
+    "timeout": 180,
+    "tags": ["lifecycle", "input", "cpp"],
+    "evidence": {
+      "file": "artifacts/results.json",
+      "rules": [
+        {
+          "path": "passed",
+          "equals": true
+        },
+        {
+          "path": "checks",
+          "minItems": 20
+        },
+        {
+          "path": "cycles",
+          "equals": 50
+        },
+        {
+          "path": "transport.pending",
+          "equals": 0
+        },
+        {
+          "path": "transport.droppedEvents",
+          "equals": 0
+        }
+      ]
+    }
+  },
+  {
+    "id": "cpp.features-network",
+    "binary": "suitecut-native-cross_browser_features",
+    "timeout": 180,
+    "tags": ["network", "storage", "cpp"],
+    "evidence": {
+      "file": "artifacts/results.json",
+      "rules": [
+        {
+          "path": "ok",
+          "equals": true
+        },
+        {
+          "path": "checks",
+          "minItems": 75
+        },
+        {
+          "path": "scenarios",
+          "minItems": 9
+        },
+        {
+          "path": "scenarios",
+          "allTrue": "ok"
+        },
+        {
+          "path": "serverReceipts.errors",
+          "equals": 0
+        }
+      ]
+    }
+  },
+  {
+    "id": "cpp.artifact-workflows",
+    "binary": "suitecut-native-cef_artifact_workflows",
+    "timeout": 90,
+    "tags": ["artifacts", "frames", "cpp"],
+    "evidence": {
+      "file": "artifacts/results.json",
+      "rules": [
+        {
+          "path": "ok",
+          "equals": true
+        },
+        {
+          "path": "cases",
+          "minItems": 7
+        },
+        {
+          "path": "cases",
+          "allTrue": "ok"
+        }
+      ]
+    }
+  },
+  {
+    "id": "cpp.decoded-media",
+    "binary": "suitecut-native-cef_media_workflows",
+    "timeout": 150,
+    "tags": ["media", "artifacts", "cpp"],
+    "evidence": {
+      "file": "artifacts/results.json",
+      "rules": [
+        {
+          "path": "ok",
+          "equals": true
+        },
+        {
+          "path": "checks",
+          "minItems": 10
+        },
+        {
+          "path": "native.ok",
+          "equals": true
+        },
+        {
+          "path": "native.checks",
+          "minItems": 8
+        }
+      ]
+    },
+    "requires": ["ffmpeg", "ffprobe"]
+  }
+]

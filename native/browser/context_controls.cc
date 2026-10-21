@@ -704,10 +704,10 @@ void SuiteCutContextControls::ApplySettings(Context& context, const std::string&
   }
 }
 
-#include "context_init_scripts.inc"
+#include "controllers/context/context_init_scripts.inc"
 
-#include "context_bindings.inc"
-#include "context_snapshot_publication.inc"
+#include "controllers/context/context_bindings.inc"
+#include "controllers/context/context_snapshot_publication.inc"
 
 std::string SuiteCutContextControls::RequestPolicyError(int context)const{
   const auto found=contexts_.find(context);if(found==contexts_.end())return "Native request context is closed";

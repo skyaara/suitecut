@@ -41,6 +41,7 @@ Only maintainers with npm and GitHub release access should use this checklist.
 
    Each tarball should contain compiled output, its README, and package metadata. It must not contain
    model files or TypeScript source.
+
 6. Publish SuiteCut, then the shared runtime, then the matching family package versions. Use npm
    provenance when the npm account and repository are configured for it:
 
@@ -64,7 +65,7 @@ Never test a release by publishing another version. Use `npm pack` and the packa
 ## Browser-control and native SDK release gates
 
 The release includes the `suitecut` and `@suitecut/browser-control` npm packages,
-the eight audio packages, and separate Linux C++20/C ABI/CLI distributions.
+the eight audio packages, and separate platform-specific C++20/C ABI/CLI distributions.
 Keep CEF and other browser runtimes outside the small SDK-only archives. The
 optional full-runtime archive is built separately with
 `scripts/package-native-runtime.py`; see [native full runtime](docs/native-full-runtime.md).
@@ -73,12 +74,22 @@ including CEF page audio and external Chromium, using the bundled media tools.
 Do not publish the GPL media bundle without its complete corresponding source.
 Native SDK versioning
 and ABI versioning are independent of npm package versions. Current native
-support is Linux/POSIX; a Linux proof does not qualify Windows or macOS binaries.
+support includes Linux/POSIX and a separately qualified macOS ARM64 recipe;
+each platform needs its own dependency/runtime qualification. Windows runtime
+packaging is not implemented. Follow the [macOS recipe](docs/native-full-runtime-macos.md)
+for fixed signing, dependency closure and deployment-target limitations.
+
+Before shipping CEF changes, run the [full local regression suite](docs/cef-regressions.md)
+with bounded workers against the exact candidate app and freshly built SDK.
+Retain the complete source/runtime fingerprints, failures and cleanup receipts.
+The regression package is not enabled in CI. SDK source archives and static/shared
+consumer verification are described in the [SDK architecture](native/client/ARCHITECTURE.md).
+Keep generated build outputs, profiles, local signing policies and reports out of Git.
 
 Build `pnpm build:browser-control` as well as the root package. Ignore generated
 package `dist` directories during linting, then check the authored code with
 `pnpm lint`, `pnpm format:check`, `pnpm typecheck`, and `pnpm test -- --run`.
-Regenerate `native_aria_formatter.h` and `native_aria_json.h` with
+Regenerate `native/shared/native_aria_formatter.h` and `native/shared/native_aria_json.h` with
 `scripts/generate-native-aria-formatter.mjs` after changing their authored
 functions; the JSON generator requires its `formatNativeAriaJSON` argument.
 The matching regression tests enforce the canonical source contract.

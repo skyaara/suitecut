@@ -216,13 +216,23 @@ try {
   await page.ariaSnapshotJSON()
   assert.equal(await page.getByRef(button.ref).textContent(), 'Actual ref')
   const newer = find(await page.ariaSnapshotJSON({ mode: 'ai' }), 'button')
-  assert(newer?.ref && newer.ref !== button.ref)
+  assert(newer?.ref && newer.ref === button.ref)
+  assert.equal(await page.getByRef(button.ref).textContent(), 'Actual ref')
+  await page.evaluate(() => {
+    const old = document.querySelector('button')
+    if (!old) throw new Error('Actual reference button missing')
+    const replacement = document.createElement('button')
+    replacement.textContent = 'Replacement ref'
+    old.replaceWith(replacement)
+  })
+  const replaced = find(await page.ariaSnapshotJSON({ mode: 'ai' }), 'button')
+  assert(replaced?.ref && replaced.ref !== button.ref)
   await assert.rejects(page.getByRef(button.ref).textContent(), /stale|unknown/u)
-  assert.equal(await page.getByRef(newer.ref).textContent(), 'Actual ref')
+  assert.equal(await page.getByRef(replaced.ref).textContent(), 'Replacement ref')
   await page.goto('about:blank')
   await retired()
   checks.push(
-    'default JSON does not replace committed AI identity while a new successful AI generation invalidates actual prior references',
+    'default JSON preserves AI identity; repeated AI captures retain the same backend node and replacement invalidates the removed node',
   )
   await page.setContent('<div class="duplicate"></div><div class="duplicate"></div>')
   await assert.rejects(page.locator('.duplicate').ariaSnapshotJSON(), /strict mode violation/u)
@@ -235,7 +245,24 @@ try {
     'strict actual scope and missing-element original deadlines remain native errors with complete physical retirement',
   )
   await page.goto(`http://127.0.0.1:${address.port}/main`)
-  await page.setContent(`<iframe id="child" src="http://localhost:${address.port}/child"></iframe>`)
+  await page.setContent(
+    `<iframe id="child" src="http://localhost:${address.port}/child" onload="this.dataset.loaded='1'"></iframe>`,
+  )
+  // Establish actual fixture readiness without touching the child utility realm.
+  // Cold OOPIF renderer startup is setup; the semantic operation keeps its own
+  // original two-second deadline and still resolves the lazy scope itself.
+  const childLoaded = await page.waitForFunction(
+    'document.querySelector("#child")?.dataset.loaded === "1"',
+    undefined,
+    { timeout: 8000 },
+  )
+  await childLoaded.dispose()
+  observations.push({
+    childLoadedBeforeSnapshot: z
+      .boolean()
+      .parse(await page.evaluate('document.querySelector("#child").dataset.loaded === "1"')),
+    snapshotTimeoutMs: 2000,
+  })
   assert.deepEqual(
     await page.frameLocator('#child').locator('body').ariaSnapshotJSON({ timeout: 2000 }),
     [{ role: 'button', name: 'Actual child' }],

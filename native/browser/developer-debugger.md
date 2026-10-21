@@ -49,11 +49,11 @@ ownership/payload limits, not an absolute allocator heap bound.
 
 ## Source composition
 
-The shared Source owner must add the following hooks. `browser.cc` remains owned
-by integration; the controller and `developer_debugger_source.inc` are separate.
+The shared Source owner must add the following hooks. `page/source.h` declares that owner; its compiled adapters live under `page/`.
+The controller and `controllers/debugger/developer_debugger_source.inc` remain separate.
 
 1. Include `developer_debugger_controls.h` with the native headers, then include
-   `developer_debugger_source.inc` in Source after the debugger/coverage adapters.
+   `controllers/debugger/developer_debugger_source.inc` in Source after the debugger/coverage adapters.
 2. Classify only `debugger` actions `open`, `close`, `resume`, `stepOver`,
    `stepInto`, and `stepOut` in the actual native control lane. Open is bounded to
    one per Source/process16. Pause/wait/source retain ordinary admission and

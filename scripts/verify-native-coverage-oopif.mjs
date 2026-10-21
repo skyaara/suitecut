@@ -225,12 +225,12 @@ try {
   phase = 'unsupported actual navigation-retention options remain rejected'
   await assert.rejects(
     page.coverage.startJSCoverage({ resetOnNavigation: false }),
-    /retention.*not implemented|unsupported/i,
+    /retention.*(?:not implemented|unavailable)|unsupported/i,
   )
   await settled()
   await assert.rejects(
     page.coverage.startCSSCoverage({ resetOnNavigation: false }),
-    /retention.*not implemented|unsupported/i,
+    /retention.*(?:not implemented|unavailable)|unsupported/i,
   )
   report.diagnostics = await settled()
   report.groups.push(

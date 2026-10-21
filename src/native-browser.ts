@@ -1886,7 +1886,10 @@ export async function launchNativeBrowser(options: NativeBrowserOptions): Promis
         pending.delete(id)
       }
       if (!exited) child.stdin.end()
-      const timer = setTimeout(() => child.kill('SIGKILL'), 5000)
+      // Native recording/stream finalization owns a real 60-second deadline.
+      // Give that work and CEF's physical process drain time to settle under
+      // load, then enforce a finite process-wide shutdown bound.
+      const timer = setTimeout(() => child.kill('SIGKILL'), 75_000)
       try {
         await closed
         if (shutdownError) throw shutdownError

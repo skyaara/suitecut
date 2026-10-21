@@ -998,7 +998,7 @@ export class NativeBrowserContext {
   }
   projectWorkerNetworkEvent(
     _worker: NativeWorkerInfo,
-    event: NativeNetworkEventName,
+    event: NativeNetworkEventName | 'requestupdated',
     value: UntrustedInput,
   ): NativeRequest | NativeResponse {
     return this.workerNetworkController().eventValue(event, value)

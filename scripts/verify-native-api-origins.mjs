@@ -277,14 +277,21 @@ try {
   rawContexts.push(info.apiContextId)
   const abort = new AbortController(),
     reason = new Error('Actual original origins restore cancellation')
+  /** @type {(() => void)|undefined} */ let restoreSubmitted
+  const submitted = new Promise((resolve) => {
+    restoreSubmitted = () => resolve(undefined)
+  })
   const restoring = restoreNativeStorageState(
     {
-      runContext: (storageAction, params) =>
-        source.runAutomation(
+      runContext: (storageAction, params) => {
+        const pending = source.runAutomation(
           'http',
           { action: 'initializeStorage', apiContextId: info.apiContextId, storageAction, params },
           storageAction === 'setStorageState' ? abort.signal : undefined,
-        ),
+        )
+        if (storageAction === 'setStorageState') restoreSubmitted?.()
+        return pending
+      },
     },
     info.browserContextId,
     slow,
@@ -295,6 +302,14 @@ try {
    */
   const failed = (error) => ({ completed: false, error })
   const outcome = restoring.then(() => ({ completed: true, error: undefined }), failed)
+  // Uploading 4.8 MB is a distinct operation. Begin the observation budget
+  // only after the real restore command is sent, preserving the physical check.
+  await Promise.race([
+    submitted,
+    outcome.then(() => {
+      throw new Error('Actual restore settled before admission was observed')
+    }),
+  ])
   const held = await waitState(
     (state) => state.httpAPIOriginsPendingEntries === 16 && state.storagePhysicalLeases > 0,
   )

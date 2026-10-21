@@ -38,7 +38,7 @@ class Source{
   std::map<std::string,FrameState>frame_states_;
   std::shared_ptr<Domains>native_debugger_domains_=std::make_shared<Domains>();
   std::shared_ptr<Browser>browser_=std::make_shared<Browser>();
-  struct Call{int owner=0;bool retain_after_cancel=false,retained_control=false;std::function<void(bool,const std::string&)>callback;};
+  struct Call{int owner=0;bool retain_after_cancel=false,retained_control=false;std::function<void(bool,const std::string&)>callback;bool selector_group_release=false;};
   struct Artifacts{void PhysicalDispatchFailed(int){}};std::unique_ptr<Artifacts>artifacts_;
   struct Operations{bool Contains(int)const{return false;}}operations_;
   std::map<int,Call>devtools_,network_calls_,binding_calls_;
@@ -60,15 +60,16 @@ class Source{
   bool NativeIdleDispatchCurrent(int id)const{return id!=refused_idle;}
   bool NativeTraceDispatchReady(int){return true;}
   void NativeTraceDispatchFailed(int){}
-  bool SendKeysPhysicalPending(int){return false;}
+  bool keyboard_physical=false;
+  bool SendKeysPhysicalPending(int){return keyboard_physical;}
   bool SendKeysCleanupCommand(int){return false;}
   void MarkFinalReleaseSubmitted(int){}
   void Error(const char*error){close_requests.push_back(error);}
-#include "developer_debugger_documents_source.inc"
+#include "controllers/debugger/developer_debugger_documents_source.inc"
 #ifndef SUITECUT_DEVTOOLS_DISPATCH_TEST_INCLUDE
-#define SUITECUT_DEVTOOLS_DISPATCH_TEST_INCLUDE "devtools_dispatch.inc"
+#define SUITECUT_DEVTOOLS_DISPATCH_TEST_INCLUDE "controllers/debugger/devtools_dispatch.inc"
 #endif
-#include "accepted_inspector_owner.inc"
+#include "controllers/work/accepted_inspector_owner.inc"
 #include SUITECUT_DEVTOOLS_DISPATCH_TEST_INCLUDE
   explicit Source(bool initialize=true){if(initialize){native_frame_debugger_registering_=true;assert(NativeFrameDebuggerObserved());NativeFrameDebuggerMainObserved();}}
   ~Source(){assert(tasks.empty());NativeFrameDebuggerClosed();}
@@ -152,5 +153,13 @@ int main(){size_t groups=0;
  {Source source;bool failed=false;source.refused_idle=77;source.devtools_.emplace(77,Source::Call{1,true,true,[&](bool ok,const auto&){assert(!ok);failed=true;}});
   assert(source.QueueDeferredDevTools(77,R"({"id":77,"method":"Emulation.setIdleOverride"})",false,"",false,0));DrainTasks();
   assert(failed&&source.browser_->host.sent.empty()&&source.devtools_.empty()&&source.devtools_dispatch_bytes_==0&&source.close_requests.empty());++groups;}
+ {Source source;source.keyboard_physical=true;bool failed=false;
+  source.devtools_.emplace(81,Source::Call{1,true,true,[&](bool ok,const auto&){assert(!ok);failed=true;}});
+  assert(source.QueueDeferredDevTools(81,R"({"id":81,"method":"Runtime.callFunctionOn"})",false,"",false,0));DrainTasks();
+  assert(failed&&source.browser_->host.sent.empty()&&source.devtools_.empty());++groups;}
+ {Source source;source.keyboard_physical=true;bool failed=false;
+  Source::Call release{1,true,true,[&](bool,const auto&){failed=true;}};release.selector_group_release=true;source.devtools_.emplace(82,std::move(release));
+  assert(source.QueueDeferredDevTools(82,R"({"id":82,"method":"Runtime.releaseObjectGroup"})",false,"",false,0));DrainTasks();
+  assert(!failed&&source.browser_->host.sent.size()==1&&source.devtools_.contains(82)&&source.close_requests.empty());++groups;}
  std::cout<<"native included frame-document Source adapter "<<groups<<" groups passed\n";
 }

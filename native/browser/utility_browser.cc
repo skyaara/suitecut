@@ -64,7 +64,7 @@ class SuiteCutUtilityBrowsers::Client : public CefClient, public CefLifeSpanHand
     browser_ = browser;NativeInspectorOpened(inspector_work_,browser->GetIdentifier(),suitecut::AcceptedInspectorWork::Kind::Utility);
     const auto native_inspector_callback=NativeInspectorCallback();
     registration_ = browser->GetHost()->AddDevToolsMessageObserver(this);
-    if (closing_) { browser->GetHost()->CloseBrowser(true); return; }
+    if (closing_) { Close(); return; }
     const int call = ++next_call_;
     calls_.emplace(call, Call{0, Now() + 30000, [weak = owner_, client_id = id_](bool ok, Dict, const std::string&) {
       const auto owner = weak.lock(); if (!owner) return;
@@ -175,12 +175,23 @@ class SuiteCutUtilityBrowsers::Client : public CefClient, public CefLifeSpanHand
     else { output.json.assign(static_cast<const char*>(result), size); owner->deferred_result_bytes_ += size; }
     completed_.emplace(id, std::move(output)); WakeCompletions();
   }
-  #include "accepted_inspector_owner.inc"
+  #include "controllers/work/accepted_inspector_owner.inc"
   bool NativeUtilityExecute(int id,const char* method,Dict params){
     const auto actual_browser=browser_;if(!actual_browser)return false;NativeInspectorReserve(id,"");
     return NativeInspectorCall(id,"",[actual_browser,id,method,params]{return actual_browser->GetHost()->ExecuteDevToolsMethod(id,method,params)>0;});
   }
-  void Close() { closing_ = true; calls_.clear(); ClearResults(); if (browser_) browser_->GetHost()->CloseBrowser(true); }
+  void Close() {
+    closing_ = true; calls_.clear(); ClearResults();
+    if (!browser_ || close_posted_) return;
+    close_posted_ = true;
+    // Cancellation can win before OnAfterCreated or inside a CEF callback.
+    // Return from that callback before mutating Chromium's browser lifetime;
+    // retain the real client/browser until the posted close and OnBeforeClose.
+    CefPostTask(TID_UI, new UtilityTask([self = CefRefPtr<Client>(this)] {
+      if (self->browser_) self->browser_->GetHost()->CloseBrowser(true);
+    }));
+  }
+  bool close_posted_ = false;
   struct Call { int lease; double deadline; Result result; };
   std::weak_ptr<SuiteCutUtilityBrowsers> owner_; int id_;
   CefRefPtr<CefRequestContext> context_; std::string origin_; HTTPObserver observer_;

@@ -9,25 +9,27 @@ import { createServer } from 'node:http'
 import { resolve } from 'node:path'
 import { performance } from 'node:perf_hooks'
 import process from 'node:process'
+import { setTimeout as delay } from 'node:timers/promises'
 
 import image from 'sharp'
 import * as z from 'zod'
 
 import { createNativePage, launchNativeBrowser } from '../dist/native.js'
 
+import { nativeBrowserModuleFiles } from './native-browser-source-files.mjs'
+
 const directory = resolve('.suitecut/native-artifact-navigation')
 await mkdir(directory, { recursive: true })
 const executablePath = z.string().parse(process.env.SUITECUT_NATIVE_EXECUTABLE)
 const files = [
   executablePath,
-  resolve('.suitecut/native-build/suitecut-browser'),
   resolve('dist/native-page.js'),
   resolve('dist/native-artifacts.js'),
   resolve('native/browser/artifact_controls.h'),
-  resolve('native/browser/artifact_navigation.inc'),
-  resolve('native/browser/artifact_before_screenshot.inc'),
-  resolve('native/browser/artifact_view_lease.inc'),
-  resolve('native/browser/browser.cc'),
+  resolve('native/browser/controllers/artifacts/artifact_navigation.inc'),
+  resolve('native/browser/controllers/artifacts/artifact_before_screenshot.inc'),
+  resolve('native/browser/controllers/artifacts/artifact_view_lease.inc'),
+  ...(await nativeBrowserModuleFiles()),
 ]
 const provenance = z.record(z.string(), z.string()).parse({})
 for (const file of files)
@@ -35,16 +37,19 @@ for (const file of files)
     .update(await readFile(file))
     .digest('hex')
 let loopRequests = 0
+let looping = false
 const server = createServer((request, response) => {
   response.setHeader('Content-Type', 'text/html')
   response.setHeader('Cache-Control', 'no-store')
   if (request.url?.startsWith('/loop')) {
     ++loopRequests
-    response.end('<script>setTimeout(()=>location.replace("/loop?"+Date.now()),5)</script>')
+    response.end(
+      `<script>globalThis.startNativeLoop=()=>setTimeout(()=>location.replace('/loop?'+Date.now()),5);${looping ? 'startNativeLoop()' : "document.documentElement.dataset.loopStopped='1'"}</script>`,
+    )
     return
   }
   response.end(
-    '<style>html,body{margin:0;background:blue}body{height:1000px}#offscreen{position:absolute;left:20px;top:500px;width:40px;height:30px;background:red}</style><div id="offscreen"></div>',
+    '<style>html,body{margin:0;background:blue;scrollbar-width:none}body{height:1000px}#offscreen{position:absolute;left:20px;top:500px;width:40px;height:30px;background:red}</style><div id="offscreen"></div>',
   )
 })
 server.listen(0, '127.0.0.1')
@@ -167,8 +172,13 @@ try {
   assert.equal(hooks, 1)
   assert.deepEqual(await pixel(hooked, 30, 510), [255, 0, 0, 255])
 
-  await page.goto(`${prefix}/loop`, { waitUntil: 'commit' })
+  await page.goto(`${prefix}/loop`)
   const loopBefore = loopRequests
+  looping = true
+  await page.evaluate('startNativeLoop()')
+  const admissionDeadline = performance.now() + 5000
+  while (loopRequests < loopBefore + 2 && performance.now() < admissionDeadline) await delay(2)
+  assert(loopRequests >= loopBefore + 2, 'Real navigation churn did not start')
   const started = performance.now()
   await assert.rejects(
     page.screenshot({ timeout: 400, fullPage: true }),
@@ -183,6 +193,13 @@ try {
     loopRequests > loopBefore + 2,
     'Deadline proof requires genuine repeated native document navigations',
   )
+  looping = false
+  const stopped = await page.waitForFunction(
+    () => document.documentElement.dataset.loopStopped === '1',
+    undefined,
+    { timeout: 5000 },
+  )
+  await stopped.dispose()
   await page.goto(`${prefix}/grid`)
   assert.deepEqual(await pixel(await page.screenshot({ scale: 'css' }), 199, 119), [0, 0, 255, 255])
   const state = z

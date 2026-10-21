@@ -3,8 +3,8 @@
 #include <string>
 #include "dom_query.h"
 #include "dom_semantic_snapshot.h"
-#include "../browser/native_aria_json.h"
-#include "../browser/native_aria_formatter.h"
+#include "native_aria_json.h"
+#include "native_aria_formatter.h"
 
 inline constexpr char kSuiteCutDOMDriverStateKey[] = "__suitecutNativeChromeDOM1";
 // Protocol-independent authored DOM helpers; install only in a private realm.

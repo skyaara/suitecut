@@ -13,12 +13,9 @@ import { launchNativeBrowser, NativeBrowserContexts } from '../dist/native.js'
 
 const executable = process.env.SUITECUT_NATIVE_EXECUTABLE
 if (!executable) throw new Error('Set SUITECUT_NATIVE_EXECUTABLE to the pinned native engine')
-const archivePath = resolve(
-  process.env.SUITECUT_HAR_ARCHIVE ?? '.suitecut/native-context-har/context-updated.har',
-)
-await readFile(archivePath)
 const directory = resolve('.suitecut/native-context-har-ownership')
 await mkdir(directory, { recursive: true })
+const archivePath = resolve(process.env.SUITECUT_HAR_ARCHIVE ?? `${directory}/captured.har`)
 const binarySHA256 = createHash('sha256')
   .update(await readFile(executable))
   .digest('hex')
@@ -59,6 +56,32 @@ try {
     pageSource: source.pageSource.bind(source),
     onContextEvent: source.onContextEvent.bind(source),
   })
+  // Capture the replay input through the actual native HAR recorder in this
+  // isolated attempt. No preceding proof or pre-existing workspace file is needed.
+  if (!process.env.SUITECUT_HAR_ARCHIVE) {
+    const fixture = createServer((_request, response) => {
+      response.setHeader('content-type', 'text/html')
+      response.end('<!doctype html><title>HAR ownership fixture</title>')
+    })
+    await new Promise((done) => fixture.listen(0, '127.0.0.1', () => done(undefined)))
+    const address = fixture.address()
+    assert(address && typeof address !== 'string')
+    const recording = await browser.newContext()
+    try {
+      await recording.routeFromHAR(archivePath, {
+        update: true,
+        updateContent: 'embed',
+        updateMode: 'full',
+      })
+      const page = await recording.newPage()
+      await page.goto(`http://127.0.0.1:${address.port}/fixture`)
+    } finally {
+      await recording.close()
+      fixture.closeAllConnections()
+      await new Promise((done) => fixture.close(() => done(undefined)))
+    }
+  }
+  await readFile(archivePath)
   const observerContext = await browser.newContext()
   const observer = await observerContext.newPage()
   for (const group of ['Page close', 'Context close', 'Original deadline']) {

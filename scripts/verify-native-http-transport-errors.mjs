@@ -3,6 +3,7 @@ import assert from 'node:assert/strict'
 import console from 'node:console'
 import { mkdir, writeFile } from 'node:fs/promises'
 import { createServer } from 'node:http'
+import { constants } from 'node:os'
 import { resolve } from 'node:path'
 import process from 'node:process'
 import { inspect } from 'node:util'
@@ -83,7 +84,7 @@ try {
   const reset = await rejected(api.get(origin + '/reset'))
   assert(reset instanceof NativeHTTPTransportError)
   assert.equal(reset.curlCode, 56)
-  assert.equal(reset.osErrno, 104)
+  assert.equal(reset.osErrno, constants.errno.ECONNRESET)
   assert.equal(reset.code, 'ECONNRESET')
   assert.match(reset.message, /ECONNRESET/u)
   observations.push({
@@ -94,7 +95,7 @@ try {
     code: reset.code,
   })
   checks.push(
-    'actual native curl reset preserves its observed Linux errno and attributed code through the framed failure payload',
+    'actual native curl reset preserves its observed platform errno and attributed code through the framed failure payload',
   )
 
   const eof = await rejected(api.get(origin + '/eof'))

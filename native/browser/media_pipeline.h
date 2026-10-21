@@ -9,6 +9,7 @@
 #include <vector>
 
 namespace suitecut {
+class MacCaptureFrame;
 
 // Capture clocks are milliseconds from the native monotonic Source clock.
 // Manual frames use the Source's fixed capture canvas. Automatic viewport
@@ -22,8 +23,16 @@ struct MediaPipelineOptions {
   int output_width = 0;
   int output_height = 0;
   bool i420 = false;
+  // Manual BGRA snapshots are fitted/converted by the existing media worker.
+  bool worker_canvas_fit = false;
+  bool worker_i420 = false;
+  bool worker_nv12 = false;
   bool audio = false;
+  // macOS MP4 capture requires hardware H.264; never silently fall back to CPU.
+  bool hardware_h264 = false;
   double frames_per_second = 60;
+  double capture_frames_per_second = 0;
+  bool capture_timestamps_exact = false;
   double start_timestamp_ms = 0;
   std::chrono::steady_clock::time_point first_frame_deadline{};
   uint64_t max_file_bytes = 512ULL * 1024 * 1024;
@@ -43,13 +52,25 @@ struct MediaPipelineResult {
   std::string output_path;
   std::string failure;
   std::string diagnostics;
+  std::string encoder;
+  std::string encoding_backend;
+  std::string container;
+  uint64_t preparation_frames = 0;
+  uint64_t preparation_packets = 0;
+  double preparation_ms = 0;
   double first_timestamp_ms = -1;
   double duration_ms = 0;
   double encoded_duration_ms = 0;
   double frames_per_second = 0;
   uint64_t input_frames = 0;
+  uint64_t gpu_input_frames = 0;
+  uint64_t gpu_nv12_frames = 0;
   uint64_t output_frames = 0;
   uint64_t held_frames = 0;
+  uint64_t coalesced_frames = 0;
+  bool capture_timestamps_exact = false;
+  double capture_lookahead_ms = 0;
+  double max_timestamp_correction_ms = 0;
   uint64_t superseded_frames = 0;
   uint64_t audio_input_frames = 0;
   uint64_t audio_output_frames = 0;
@@ -74,6 +95,12 @@ class MediaPipeline {
   MediaPipeline& operator=(const MediaPipeline&) = delete;
 
   void Frame(std::vector<uint8_t> data, double timestamp_ms);
+  bool UsesCanvasFrames() const;
+  bool WantsFrames() const;
+  bool NativeCanvasFrame(std::shared_ptr<MacCaptureFrame> surface, double timestamp_ms,
+                         std::function<void(std::vector<uint8_t>)> painted);
+  void CanvasFrame(const std::vector<uint8_t>& bgra, int width, int height,
+                   double timestamp_ms, uint64_t capture_sequence);
   void ViewportFrame(const std::vector<uint8_t>& bgra, int width, int height,
                      double css_width, double css_height, double timestamp_ms);
   void Audio(std::vector<uint8_t> stereo_s16, double timestamp_ms);

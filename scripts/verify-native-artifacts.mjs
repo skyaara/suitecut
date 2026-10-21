@@ -15,19 +15,22 @@ import * as z from 'zod'
 
 import { createNativePage, launchNativeBrowser } from '../dist/native.js'
 
+import { nativeBrowserModuleFiles } from './native-browser-source-files.mjs'
+
 const directory = resolve('.suitecut/native-artifacts')
 const executablePath = z.string().parse(process.env.SUITECUT_NATIVE_EXECUTABLE)
 const provenancePaths = [
   executablePath,
+  ...(await nativeBrowserModuleFiles()),
   resolve('dist/native-artifacts.js'),
   resolve('dist/native-browser.js'),
   resolve('dist/native-page.js'),
   resolve('dist/native-protocol.js'),
   resolve('native/browser/artifact_controls.h'),
-  resolve('native/browser/artifact_geometry.inc'),
-  resolve('native/browser/artifact_masks.inc'),
-  resolve('native/browser/artifact_view_lease.inc'),
-  resolve('native/browser/artifact_before_screenshot.inc'),
+  resolve('native/browser/controllers/artifacts/artifact_geometry.inc'),
+  resolve('native/browser/controllers/artifacts/artifact_masks.inc'),
+  resolve('native/browser/controllers/artifacts/artifact_view_lease.inc'),
+  resolve('native/browser/controllers/artifacts/artifact_before_screenshot.inc'),
 ]
 const provenance = z.record(z.string(), z.string()).parse({})
 await Promise.all(

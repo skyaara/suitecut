@@ -2,6 +2,7 @@
 #include "include/cef_app.h"
 #include "include/cef_sandbox_mac.h"
 #include "include/wrapper/cef_library_loader.h"
+#include "renderer_app.h"
 
 int main(int argc, char** argv) {
   CefScopedSandboxContext sandbox;
@@ -9,5 +10,5 @@ int main(int argc, char** argv) {
   CefScopedLibraryLoader loader;
   if (!loader.LoadInHelper()) return 1;
   CefMainArgs args(argc, argv);
-  return CefExecuteProcess(args, nullptr, nullptr);
+  return CefExecuteProcess(args, new SuiteCutRendererApp(), nullptr);
 }

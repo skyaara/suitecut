@@ -13,16 +13,19 @@ import * as z from 'zod'
 
 import { launchNativeBrowser, createNativePage } from '../dist/native.js'
 
+import { nativeBrowserModuleFiles } from './native-browser-source-files.mjs'
+
 const directory = resolve('.suitecut/native-artifact-oopif')
 await mkdir(directory, { recursive: true })
 const executablePath = z.string().parse(process.env.SUITECUT_NATIVE_EXECUTABLE)
 const files = [
   executablePath,
+  ...(await nativeBrowserModuleFiles()),
   resolve('dist/native-page.js'),
   resolve('dist/native-artifacts.js'),
   resolve('native/browser/artifact_controls.h'),
-  resolve('native/browser/artifact_geometry.inc'),
-  resolve('native/browser/artifact_masks.inc'),
+  resolve('native/browser/controllers/artifacts/artifact_geometry.inc'),
+  resolve('native/browser/controllers/artifacts/artifact_masks.inc'),
 ]
 const provenance = z.record(z.string(), z.string()).parse({})
 for (const file of files)

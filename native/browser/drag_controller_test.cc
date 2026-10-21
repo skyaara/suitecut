@@ -137,7 +137,7 @@ class Source {
     assert(NativeManualInput(work, "Input.dispatchMouseEvent", packet, [&] { ++done; }));
   }
 
-#include "drag_controller.inc"
+#include "controllers/input/drag_controller.inc"
 
   std::shared_ptr<NativeDragWork> Helper(double timeout = 0) {
     const auto entry = operations_.Begin(1, now, timeout); assert(entry);

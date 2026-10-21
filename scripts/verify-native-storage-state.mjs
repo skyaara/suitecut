@@ -40,7 +40,7 @@ await new Promise((done) => server.listen(0, '0.0.0.0', done))
 const address = server.address()
 assert(address && typeof address === 'object')
 const origin = `http://127.0.0.1:${address.port}`
-const otherOrigin = `http://127.0.0.2:${address.port}`
+const otherOrigin = `http://localhost:${address.port}`
 const hash = async () =>
   createHash('sha256')
     .update(await readFile(executable))

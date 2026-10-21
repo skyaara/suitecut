@@ -15,6 +15,8 @@ import * as z from 'zod'
 
 import { createNativePage, launchNativeBrowser } from '../dist/native.js'
 
+import { nativeBrowserModuleFiles } from './native-browser-source-files.mjs'
+
 const directory = resolve('.suitecut/native-artifact-documents')
 await mkdir(directory, { recursive: true })
 await rm(`${directory}/report.json`, { force: true })
@@ -25,14 +27,14 @@ const files = [
   ...[
     'dist/native-page.js',
     'dist/native-artifacts.js',
-    'native/browser/browser.cc',
+    ...(await nativeBrowserModuleFiles()),
     'native/browser/artifact_controls.h',
-    'native/browser/artifact_documents.inc',
-    'native/browser/artifact_navigation.inc',
-    'native/browser/artifact_before_screenshot.inc',
-    'native/browser/artifact_geometry.inc',
-    'native/browser/artifact_masks.inc',
-    'native/browser/artifact_view_lease.inc',
+    'native/browser/controllers/artifacts/artifact_documents.inc',
+    'native/browser/controllers/artifacts/artifact_navigation.inc',
+    'native/browser/controllers/artifacts/artifact_before_screenshot.inc',
+    'native/browser/controllers/artifacts/artifact_geometry.inc',
+    'native/browser/controllers/artifacts/artifact_masks.inc',
+    'native/browser/controllers/artifacts/artifact_view_lease.inc',
   ].map((path) => resolve(path)),
 ]
 const provenance = z.record(z.string(), z.string()).parse({})

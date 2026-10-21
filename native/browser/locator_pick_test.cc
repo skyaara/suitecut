@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT
+#include "tests/support/cef_library.h"
 #include "element_bounds_geometry.h"
 #include "element_bounds_reply.h"
 #include "dictionary_number.h"
-#define SUITECUT_LOCATOR_PICK_TEST_INCLUDE "locator_pick_controller.inc"
+#define SUITECUT_LOCATOR_PICK_TEST_INCLUDE "controllers/dom/locator_pick_controller.inc"
 #define SUITECUT_LOCATOR_SUGGESTION_TEST_NO_MAIN
 #include "locator_suggestion_test.cc"
 static void Pick(Harness&h,int x=13,int y=17,const std::string&frame="main"){
@@ -15,7 +16,7 @@ static void Hit(Harness&h,const std::string&frame="main"){
  h.Ack("Runtime.callFunctionOn",Capture(observed));
  h.Ack("Runtime.callFunctionOn",Capture(R"({"results":[{"matches":1,"same":true},{"matches":1,"same":true},{"matches":1,"same":true}]})"));
 }
-int main(){assert(cef_api_hash(CEF_API_VERSION,0));int groups=0;
+int main(){if(!LoadSuiteCutCEFForTest())return 1;assert(cef_api_hash(CEF_API_VERSION,0));int groups=0;
  {Harness h;Pick(h);assert(!h.queries&&h.calls.front().params->GetInt("x")==13&&!h.calls.front().params->HasKey("pierce"));Hit(h);const auto reply=Parse(h.responses.at(0));assert(reply->GetBool("pointPicking")&&reply->GetDictionary("provenance")->GetDictionary("point")->GetInt("inspectorY")==17);h.Drain();++groups;}
  {Harness h;h.documents["main"].session="realOOPIF";h.sessions_["realOOPIF"]="main";h.frame_states_["main"]={"outside-parent","realOOPIF"};Pick(h);Hit(h);assert(h.errors.empty()&&h.responses.size()==1);h.Drain();++groups;}
  {Harness h;h.documents["child"]={"child","","child-loader","child-main","child-utility",8,9,1};h.frame_states_["child"]={"main",""};Pick(h,20,30,"child");assert(h.calls.front().params->GetInt("contextId")==9);h.Ack("Runtime.evaluate",R"({"result":{"value":{"width":200,"height":100}}})");h.Ack("DOM.getFrameOwner",R"({"backendNodeId":77})");h.Ack("DOM.getBoxModel",R"({"model":{"content":[100,200,300,200,300,300,100,300]}})");assert(h.calls.front().params->GetInt("x")==120&&h.calls.front().params->GetInt("y")==230);Hit(h,"child");assert(h.errors.empty());const auto output=Parse(h.responses[0]);const auto point=output->GetDictionary("provenance")->GetDictionary("point");assert(point->GetInt("x")==20&&point->GetInt("inspectorX")==120&&point->GetString("inspectorRoot")=="main");h.Drain();++groups;}

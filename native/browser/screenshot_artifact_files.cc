@@ -8,9 +8,14 @@
 #include <stdexcept>
 #include <utility>
 #include <fcntl.h>
+#if defined(__APPLE__)
+#include <cstdlib>
+#include <stdio.h>
+#else
 #include <sys/random.h>
-#include <sys/stat.h>
 #include <sys/syscall.h>
+#endif
+#include <sys/stat.h>
 #include <unistd.h>
 namespace suitecut {
 namespace {
@@ -25,7 +30,13 @@ struct FD {
 void System(const char*step){throw Failure(step,errno);}
 bool Same(const struct stat&a,const struct stat&b){return a.st_dev==b.st_dev&&a.st_ino==b.st_ino;}
 void PNG(const std::vector<uint8_t>&bytes){constexpr std::array<uint8_t,8>magic{137,80,78,71,13,10,26,10};if(bytes.size()<33||bytes.size()>kPNGBytes||!std::equal(magic.begin(),magic.end(),bytes.begin()))throw Failure("requires an admitted PNG of at most2MiB",0);}
-std::string Nonce(){std::array<unsigned char,12>bytes;size_t offset=0;while(offset<bytes.size()){const auto count=::getrandom(bytes.data()+offset,bytes.size()-offset,0);if(count>0)offset+=size_t(count);else if(count<0&&errno==EINTR)continue;else System("unique directory entropy failed");}static constexpr char hex[]="0123456789abcdef";std::string value;value.reserve(bytes.size()*2);for(const auto byte:bytes){value+=hex[byte>>4];value+=hex[byte&15];}return value;}
+std::string Nonce(){std::array<unsigned char,12>bytes;
+#if defined(__APPLE__)
+arc4random_buf(bytes.data(),bytes.size());
+#else
+size_t offset=0;while(offset<bytes.size()){const auto count=::getrandom(bytes.data()+offset,bytes.size()-offset,0);if(count>0)offset+=size_t(count);else if(count<0&&errno==EINTR)continue;else System("unique directory entropy failed");}
+#endif
+static constexpr char hex[]="0123456789abcdef";std::string value;value.reserve(bytes.size()*2);for(const auto byte:bytes){value+=hex[byte>>4];value+=hex[byte&15];}return value;}
 struct File {const char*name;struct stat identity{};bool created=false;};
 }
 ScreenshotArtifactPublication WriteScreenshotArtifacts(const std::string&root,const std::vector<uint8_t>&actual,const std::vector<uint8_t>&diff,double deadline,const std::atomic_bool&canceled,const std::function<double()>&now){
@@ -65,6 +76,8 @@ ScreenshotArtifactPublication WriteScreenshotArtifacts(const std::string&root,co
     write(files[0],actual);if(!diff.empty())write(files[1],diff);check();if(::fsync(own.value))System("staging directory fsync failed");check();root_current();struct stat staged{};if(::fstatat(parent.value,staging.c_str(),&staged,AT_SYMLINK_NOFOLLOW)||!S_ISDIR(staged.st_mode)||!Same(staged,own_identity))throw Failure("staging directory identity changed",errno);
 #if defined(__linux__) && defined(SYS_renameat2)
     if(::syscall(SYS_renameat2,parent.value,staging.c_str(),parent.value,final.c_str(),1U))System("atomic directory publication failed");
+#elif defined(__APPLE__)
+    if(::renameatx_np(parent.value,staging.c_str(),parent.value,final.c_str(),RENAME_EXCL))System("atomic directory publication failed");
 #else
     throw Failure("atomic directory publication unsupported on this native platform",0);
 #endif

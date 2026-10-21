@@ -49,8 +49,8 @@ struct Harness {
       [this,ticket,temporary,publish](bool submitted,bool ok,const std::string&){++receipts;if(!submitted)SnapshotReferences().Rejected(ticket);else if(SnapshotReferences().Installed(ticket,ok,ok?"actual-installed-object":"",now)&&publish)assert(SnapshotReferences().Commit(ticket,now));});
   }
   Dict Query(const std::string&token,bool prefix=false,bool root_handle=false){auto message=CefDictionaryValue::Create();auto query=CefListValue::Create();size_t index=0;if(prefix){auto step=CefDictionaryValue::Create();step->SetString("engine","css");step->SetString("selector","#container");query->SetDictionary(index++,step);}auto ref=CefDictionaryValue::Create();ref->SetString("engine","reference");ref->SetString("ref",token);query->SetDictionary(index,ref);message->SetList("query",query);if(root_handle)message->SetInt("nativeRootHandle",7);return message;}
-#include "snapshot_reference_dispatch.inc"
-#include "snapshot_reference_scope.inc"
+#include "controllers/dom/snapshot_reference_dispatch.inc"
+#include "controllers/dom/snapshot_reference_scope.inc"
 };
 int main(){cef_api_hash(CEF_API_VERSION,0);
   {Harness h;const auto generation=h.Start();assert(h.selectors.Admit(1,generation)&&h.selectors.Group(1,"temporary-operation","session"));const auto ticket=h.BeginGroup(1,generation);h.Install(ticket,1,generation,true);assert(h.reference_dispatch_.Pending()==1&&h.SnapshotReferences().InstallPhysical()==1&&h.selectors.PhysicalSize()==1);h.Ack(1);assert(h.receipts==1&&h.SnapshotReferences().Active()==1&&!h.reference_dispatch_.Pending());h.operations_.Finish(1);h.selectors.Cancel(1);assert(h.released.size()==1&&h.released[0]=="temporary-operation");h.release_ack[0]();assert(!h.selectors.Size()&&h.SnapshotReferences().Active()==1&&h.SnapshotReferences().Groups()==1);}

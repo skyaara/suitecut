@@ -22,7 +22,7 @@ class Source{
   std::string handle_namespace_="controlled-Source";
   uint64_t native_frame_debugger_observer_=4;
   bool observer_=true,native_frame_debugger_registering_=false,native_frame_debugger_registration_traffic_=false,closing_page_=false,native_debugger_closing_requested_=false;
-#include "developer_debugger_worker_documents_source.inc"
+#include "controllers/workers/developer_debugger_worker_documents_source.inc"
   Source(){NativeWorkerDebuggerObserved();}
   void Attach(uint64_t generation=1,const std::string&session="actual-session",const std::string&kind="worker"){
     const std::string target="actual-target";worker_targets_[target]={target,session,"actual-parent",kind,0,generation,false,false,false};worker_sessions_[session]=target;

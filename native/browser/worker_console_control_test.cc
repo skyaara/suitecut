@@ -117,12 +117,12 @@ class Source : public CefBaseRefCounted {
   void NetworkFatal(const std::string& error){Error(error.c_str());}
   void MaybeReady(){++lifetime_ready;}
   void NativeTargetSessionDetached(const std::string& session){WorkerDetached(session);}
-  #include "worker_controller.inc"
-  #include "worker_target_lifetime.inc"
+  #include "controllers/workers/worker_controller.inc"
+  #include "controllers/workers/worker_target_lifetime.inc"
 #ifdef SUITECUT_CONTEXT_WORKER_CONSOLE_REFERENCE_TEST
-  #include "context_worker_console_refs.inc"
+  #include "controllers/workers/context_worker_console_refs.inc"
 #else
-  #include "worker_console.inc"
+  #include "controllers/workers/worker_console.inc"
 #endif
   // Declared after physical latch state so callbacks die before that state.
   std::map<int,DevToolsCall> devtools_;

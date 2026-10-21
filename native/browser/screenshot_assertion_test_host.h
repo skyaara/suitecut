@@ -53,11 +53,11 @@ struct Harness {
   Identity Start(){const auto operation=operations_.Begin(7,now,50);assert(operation);assert(ScreenshotAssertionScopeBegin(7,operation->generation,50));return {page_id_,7,operation->generation};}
   void ScreenshotAssertionOriginalDeadline(Identity identity){++deadlines;screenshot_assertion_retirement_.Freeze(identity,false,now);}
   void ScreenshotAssertionReceiptFinished(Identity){++receipts;}
-#include "screenshot_assertion_scope.inc"
-#include "screenshot_assertion_capture.inc"
-#include "screenshot_assertion_sender.inc"
-#include "screenshot_assertion_view.inc"
-#include "screenshot_assertion_cleanup.inc"
+#include "controllers/artifacts/screenshot_assertion_scope.inc"
+#include "controllers/artifacts/screenshot_assertion_capture.inc"
+#include "controllers/artifacts/screenshot_assertion_sender.inc"
+#include "controllers/artifacts/screenshot_assertion_view.inc"
+#include "controllers/artifacts/screenshot_assertion_cleanup.inc"
   void Send(Identity identity,Stage stage=Stage::Boolean,bool cleanup=false,std::string frame="main",std::string session="",bool group=false){
     auto params=CefDictionaryValue::Create();if(group)params->SetString("objectGroup","actual-native-query-group");
     ScreenshotAssertionSubmit(identity,frame,session,stage==Stage::PNG?"Page.captureScreenshot":"Runtime.evaluate",params,stage,cleanup,[this](bool,bool,const auto&){++consumers;});

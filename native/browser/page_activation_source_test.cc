@@ -20,7 +20,7 @@ struct Host {
   void Complete(int id,bool ok,const std::string& message="",const std::string& =""){assert(operations_.Finish(id));++publications;success=ok;error=message;}
   uint64_t Begin(double timeout=20){const auto entry=operations_.Begin(1,now,timeout);assert(entry);NativeBringToFront(1,entry->generation);return entry->generation;}
   void Ack(bool ok=true,const std::string& json="{}"){assert(!pending.empty());auto call=std::move(pending.front());pending.erase(pending.begin());assert(call.method=="Page.bringToFront"&&call.params&&call.params->GetSize()==0&&call.session.empty()&&call.retained&&call.response_limit==8192);call.callback(ok,json);}
-#include "page_activation_source.inc"
+#include "controllers/lifecycle/page_activation_source.inc"
 };
 int main(){cef_api_hash(CEF_API_VERSION,0);size_t checks=0;
   {Host h;h.Begin();assert(h.pending.size()==1&&h.operations_.Size()==1&&!h.publications);h.Ack();assert(h.publications==1&&h.success&&h.pending.empty()&&!h.operations_.Size());++checks;}

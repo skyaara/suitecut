@@ -393,7 +393,7 @@ the final close regression. Evidence is under
 `.suitecut/native-chrome/native-agent-cef-tools/results.json`, with supervisor receipts
 and build/source provenance retained alongside the validation artifacts.
 
-`tests/chromium_real_browser.cpp` is a separate public-API integration executable
+`tests/integration/chromium_real_browser.cpp` is a separate public-API integration executable
 for a locally installed Chrome/Chromium. It uses a self-contained data URL,
 does not start Node or a fixture server, and writes a JSON assertion report and
 an actual viewport PNG. It is not part of the browser-independent CTest suite.
@@ -445,7 +445,7 @@ optional URL.
 
 ## Expanded native HTTP and agent workflows
 
-The new `tests/chromium_workflows.cpp` executable embeds a bounded C++ loopback
+The new `tests/integration/chromium_workflows.cpp` executable embeds a bounded C++ loopback
 HTTP server and writes its own result report, PDF, HAR, upload files and saved
 download. Its source exercises the native `AgentDriver` and `Agent::run` against
 actual browser state, including snapshot/ref actions, confirmed form outcomes,

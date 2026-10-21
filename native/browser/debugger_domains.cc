@@ -91,7 +91,9 @@ class DebuggerDomains::Impl : public std::enable_shared_from_this<Impl> {
   }
   bool Current(const std::shared_ptr<Session>& s)const{auto it=sessions_.find(s->id);return !closed_&&it!=sessions_.end()&&it->second==s;}
   bool Expired(double deadline)const{return deadline>0&&hooks_.now()>=deadline;}
-  static void Finish(Ready& ready,bool ok,const std::string& error){auto reply=std::move(ready);if(reply)reply(ok,error);}
+  // Moving a small libc++ std::function can leave its source callable. Consume
+  // the stored completion before invocation, including through reentrant close.
+  static void Finish(Ready& ready,bool ok,const std::string& error){auto reply=std::exchange(ready,{});if(reply)reply(ok,error);}
   void Wake(){if(hooks_.wake)hooks_.wake();}
   uint64_t Next(){return identity_>=9007199254740991ULL?0:++identity_;}
   void Close(const std::shared_ptr<Session>& s,const std::string& error){if(!Current(s)||s->closing)return;s->closing=true;std::vector<std::shared_ptr<Lease>> leases;for(const auto& [id,l]:s->leases)leases.push_back(l);for(const auto& l:leases){Finish(l->ready,false,error);Finish(l->arm_ready,false,error);Finish(l->release_ready,false,error);}if(s->capture)Finish(s->capture->reply,false,error);if(hooks_.close_channel)hooks_.close_channel(s->id,error);}

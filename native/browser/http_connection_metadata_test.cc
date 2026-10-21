@@ -6,6 +6,10 @@
 #include <cassert>
 #include <iostream>
 int main(){
+  assert(suitecut::HTTPOpenSSLBackendCompatible("OpenSSL/"+std::to_string(OPENSSL_VERSION_MAJOR)+".0.0"));
+  assert(!suitecut::HTTPOpenSSLBackendCompatible("OpenSSL/"+std::to_string(OPENSSL_VERSION_MAJOR+1)+".0.0"));
+  assert(!suitecut::HTTPOpenSSLBackendCompatible("SecureTransport"));
+  assert(!suitecut::HTTPOpenSSLBackendCompatible("LibreSSL/3.3.6"));
   assert(suitecut::HTTPCommonName(nullptr).empty());
   auto name=X509_NAME_new();assert(name);assert(suitecut::HTTPCommonName(name).empty());
   assert(X509_NAME_add_entry_by_txt(name,"CN",MBSTRING_ASC,reinterpret_cast<const unsigned char*>("localhost"),-1,-1,0)==1);

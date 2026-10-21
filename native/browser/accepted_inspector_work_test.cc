@@ -8,7 +8,7 @@
 #include <string>
 using Work=suitecut::AcceptedInspectorWork;
 struct Owner {
-#include "accepted_inspector_owner.inc"
+#include "controllers/work/accepted_inspector_owner.inc"
 };
 int main(){
  size_t controls=0;auto work=std::make_shared<Work>();

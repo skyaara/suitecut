@@ -76,6 +76,11 @@ try {
     .parse(await source.runAutomation('diagnostics'))
   assert.equal(nativeStderr, '')
   assert.equal(await hash(), binarySHA256)
+  await source.close()
+  const processExit = source.processExit?.()
+  assert.deepEqual(processExit, { code: 0, signal: null })
+  assert.equal(nativeStderr, '')
+  checks.push('native process physically exits with code zero after navigation cancellation')
   const directory = resolve('.suitecut/native-navigation-close')
   await mkdir(directory, { recursive: true })
   await writeFile(
@@ -88,6 +93,7 @@ try {
         checks,
         diagnostics,
         nativeStderr,
+        processExit,
       },
       null,
       2,
@@ -95,7 +101,10 @@ try {
   )
   console.log(`Native navigation close verified: ${directory}/report.json`)
 } finally {
-  await source.close()
-  server.closeAllConnections()
-  await new Promise((done) => server.close(done))
+  try {
+    await source.close()
+  } finally {
+    server.closeAllConnections()
+    await new Promise((done) => server.close(done))
+  }
 }

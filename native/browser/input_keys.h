@@ -14,7 +14,13 @@ struct SuiteCutKey {
 // Authored US keyboard descriptions. Public key names are input data; this
 // table supplies native protocol fields rather than dispatching DOM events.
 inline std::optional<SuiteCutKey> SuiteCutDescribeKey(std::string name, int modifiers) {
-  if (name == "ControlOrMeta") name = "Control";
+  if (name == "ControlOrMeta") {
+#if defined(__APPLE__)
+    name = "Meta";
+#else
+    name = "Control";
+#endif
+  }
   if (name == "\n" || name == "\r") name = "Enter";
   struct Named { const char* name; const char* code; int key, modifier, location; const char* text; };
   static constexpr Named named[] = {
