@@ -723,8 +723,8 @@ Diagnostics expose `nativeTraceBackgroundWorkerLimit` and
 is optional application-level concurrency and does not control these threads.
 
 The standalone `native/resource-policy` CMake project checks this component
-without CEF. Its CI workflow covers Linux, Windows, and macOS; a prepared
-workflow is not evidence that those remote jobs have run. Resource-policy
-portability does not implement missing browser backend support: Windows CEF
+without CEF and can be run locally on Linux, Windows, and macOS. GitHub Actions
+are intentionally disabled for this repository; do not add CI workflows.
+Resource-policy portability does not implement missing browser backend support: Windows CEF
 packaging/sandbox and the native client's Windows transport remain unimplemented.
 Linux runtime checks do not establish complete macOS application support.
