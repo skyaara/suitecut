@@ -37,6 +37,10 @@ parallel service registry or a second set of lifecycle state.
 - CEF callback and control state remains on the UI thread. Existing explicit
   physical continuations, generation checks, deadlines and completion receipts
   retain their original owners.
+- Audio stream errors can originate on the capture thread. Their Source-retaining
+  task decides ownership on UI: active failures remain fatal, a cancelable
+  beforeunload prompt is still active, and committed page close retires late
+  capture errors. The engine lifetime guard precedes access to its state.
 - The writer owns its existing single I/O thread and bounded queues. Splitting
   files does not create workers or introduce per-command threads.
 - Consume stored one-shot callbacks before invocation, including through
@@ -55,7 +59,9 @@ parallel service registry or a second set of lifecycle state.
 
 ## Controller fragments
 
-The private `.inc` files remain canonical in-class or command-body adapters.
+The private `.inc` files are canonical adapters into their enclosing owner's
+state, mostly in-class or command-body fragments. The audio-failure callback
+also shares its out-of-line definition with a controlled scheduling fixture.
 Some focused tests instantiate these same fragments with controlled protocol
 receipts and callback schedules. They are grouped under `controllers/` by
 domain rather than copied into separate production and test implementations.

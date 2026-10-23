@@ -5,6 +5,7 @@ dist/
 # Local qualification evidence, profiles, signing policy and media
 .suitecut/
 test-results/
+examples/song-maker/output/
 *.mp4
 !site/public/demo/*.mp4
 *.webm

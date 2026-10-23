@@ -12,6 +12,11 @@ The package is built and packed locally; it has not been published to npm. Insta
 npm install /absolute/path/to/suitecut-browser-control-2.0.0.tgz
 ```
 
+For a complete live application flow with video and page audio, see the
+[Song Maker example](../../examples/song-maker/README.md). It installs this SDK
+and the `suitecut` recording/rendering package as tarballs in an isolated
+consumer, alongside real third-party packages.
+
 ## Installed browsers
 
 `launchBrowser()` defaults to CEF. Set `backend: 'cdp'` to launch an installed Chrome, Chromium, Edge or Brave executable, or `backend: 'bidi'` for Firefox:
@@ -97,7 +102,9 @@ const pending = page.waitForEvent('download')
 await page.getByRole('button', { name: 'Export' }).click()
 const download = await pending
 await download.saveAs('/absolute/path/export.csv')
-page.once('dialog', async dialog => { await dialog.accept() })
+page.once('dialog', async (dialog) => {
+  await dialog.accept()
+})
 ```
 
 Uploads use local file paths without sending file bytes through the protocol. Passing `[]` clears an input. Download files stay in managed temporary storage until browser close; use `saveAs()` to preserve them. Downloads begin after an explicit download subscription (`on` or `waitForEvent`) is installed. Subscribe before triggering the download. Dialogs without listeners are dismissed automatically; subscribing transfers responsibility for answering to the listener. Closing a page rejects its pending event waits, and browser close cleans up managed download storage.

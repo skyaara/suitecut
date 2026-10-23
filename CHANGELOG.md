@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Add a complete real Song Maker example with isolated SDK tarball installation,
+  external packages, browser actions and verified 1080p60 recording with page audio.
+- Preserve bounded inline resource URLs in network observations and retain
+  underlying protocol validation errors for diagnostics.
+- Retire late audio-capture errors on committed CEF page close while preserving
+  active-stream failures and cancelable beforeunload behavior.
 - Split the C++ SDK into private build modules with stable installed C/C++ APIs,
   relocatable static/shared packages, source archives and consumer checks.
 - Split the CEF browser implementation into protocol, runtime, page and process

@@ -96,12 +96,21 @@ export const NativeConsoleInfoSchema = z.strictObject({
   }),
 })
 export type NativeConsoleInfo = z.infer<typeof NativeConsoleInfoSchema>
+// Inline images/fonts are genuine browser requests. Their observed data URLs
+// can exceed the command URL limit; retain their identity without making
+// ordinary network URLs or observed inline resources unbounded.
+const NativeObservedNetworkURLSchema = z
+  .string()
+  .max(1_048_576)
+  .refine((value) => value.length <= 8192 || value.startsWith('data:'), {
+    message: 'Observed non-data network URLs must not exceed 8192 characters',
+  })
 export const NativeNetworkRequestSchema = z.object({
   id: z.string().min(1).max(256),
   requestId: z.string().max(256),
   session: z.string().max(256),
   frameId: z.string().max(128),
-  url: z.string().max(8192),
+  url: NativeObservedNetworkURLSchema,
   method: z.string().max(128),
   resourceType: z.string().max(128),
   postDataBodyId: z
@@ -140,7 +149,7 @@ export const NativeResponseSecurityDetailsSchema = z.strictObject({
 })
 export const NativeNetworkResponseSchema = z.object({
   headersReady: z.boolean().optional(),
-  url: z.string().max(8192),
+  url: NativeObservedNetworkURLSchema,
   status: z.number().int().min(0).max(999),
   statusText: z.string().max(1024),
   headers: NativeObservedHeadersSchema,

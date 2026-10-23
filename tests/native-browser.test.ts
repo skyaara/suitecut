@@ -227,6 +227,9 @@ describe('native browser lifecycle', () => {
       Buffer.from(JSON.stringify({ ...predicate, contextId: -1 })),
     )
     await expect(browser.failure).rejects.toThrow('protocol or subscriber failure')
+    await expect(browser.failure).rejects.toMatchObject({
+      cause: { issues: expect.arrayContaining([expect.objectContaining({ path: ['contextId'] })]) },
+    })
     expect(predicates).toHaveBeenCalledTimes(1)
     await browser.closed
   })

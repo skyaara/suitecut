@@ -196,9 +196,7 @@ auto Source::OnAudioStreamPacket(CefRefPtr<CefBrowser>, const float** data, int 
 
 auto Source::OnAudioStreamStopped(CefRefPtr<CefBrowser>) -> void { audio_valid_ = false; }
 
-auto Source::OnAudioStreamError(CefRefPtr<CefBrowser>, const CefString&) -> void {
-  Error("Native audio capture failed");
-}
+#include "controllers/media/audio_failure.inc"
 
 auto Source::ScheduleRecordingSnapshot(const std::string& id, int delay) -> void {
   if (recording_snapshot_pending_ == id) return;

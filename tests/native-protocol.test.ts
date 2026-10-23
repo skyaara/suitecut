@@ -3,6 +3,8 @@ import { describe, expect, it } from 'vitest'
 import { NativeAudioAssembler } from '../src/native-audio.js'
 import {
   NativePacketDecoder,
+  NativeNetworkRequestSchema,
+  NativeNetworkResponseSchema,
   MAX_NATIVE_RESPONSE_PAYLOAD,
   type NativePacket,
 } from '../src/native-protocol.js'
@@ -15,6 +17,43 @@ function packet(header: object, data = Buffer.alloc(0)): Buffer {
 }
 
 describe('native IPC boundary', () => {
+  it('preserves bounded inline resource URLs in observed requests and responses', () => {
+    const url = `data:image/svg+xml;base64,${'A'.repeat(32_768)}`
+    const request = {
+      id: 'inline-1',
+      requestId: '1',
+      session: '',
+      frameId: 'frame-1',
+      url,
+      method: 'GET',
+      resourceType: 'Image',
+      headers: {},
+      isNavigationRequest: false,
+    }
+    const response = {
+      url,
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      requestId: '1',
+      session: '',
+      frameId: 'frame-1',
+      method: 'GET',
+    }
+    expect(NativeNetworkRequestSchema.parse(request).url).toBe(url)
+    expect(NativeNetworkResponseSchema.parse(response).url).toBe(url)
+    for (const rejected of [
+      `https://example.test/${'a'.repeat(8192)}`,
+      `data:image/png;base64,${'A'.repeat(1_048_576)}`,
+    ]) {
+      expect(NativeNetworkRequestSchema.safeParse({ ...request, url: rejected }).success).toBe(
+        false,
+      )
+      expect(NativeNetworkResponseSchema.safeParse({ ...response, url: rejected }).success).toBe(
+        false,
+      )
+    }
+  })
   it('preserves proven viewport geometry and null resize paints alongside legacy frame packets', () => {
     const headers: NativePacket[] = []
     const decoder = new NativePacketDecoder((header) => headers.push(header))

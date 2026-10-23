@@ -16,6 +16,12 @@ callback schedules. Preserve their assertions, deadlines and physical ownership
 checks when moving code. A small callback that would be stored inline in
 `std::function` is useful for checking completion consumption on libc++.
 
+`native-audio-failure` exercises the canonical audio-error callback with
+controlled UI/capture-thread scheduling. It verifies that active errors retain
+their Source until delivery, cancelable beforeunload does not hide failures,
+committed/finished close retires late errors, and rejected dispatch stays fatal.
+The real Song Maker example separately verifies live Web Audio and exit code zero.
+
 Run bounded component checks and then the real-browser package:
 
 ```sh

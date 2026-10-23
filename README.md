@@ -75,6 +75,7 @@ streaming, IPC and failure behavior.
 - [Playwright behavior reference and feature-matching checklist](docs/playwright-feature-parity.md)
 - [Audio plugin packages](plugins/)
 - [Native example](examples/native.ts)
+- [Full real-app example: Song Maker with 1080p60 video and page audio](examples/song-maker/README.md)
 - [Contributing](CONTRIBUTING.md)
 
 `pnpm test:native:cadence` decodes actual FFmpeg video/audio from timestamped test

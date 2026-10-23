@@ -1,0 +1,18 @@
+{
+  "name": "suitecut-song-maker-example",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Real Song Maker automation and 1080p60 page-audio recording through SuiteCut CEF",
+  "scripts": {
+    "start": "node run.mjs"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "dependencies": {
+    "@tonaljs/note": "4.12.3",
+    "dotenv": "18.0.8",
+    "zod": "4.6.7"
+  }
+}

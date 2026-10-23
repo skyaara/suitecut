@@ -1352,8 +1352,8 @@ export async function launchNativeBrowser(options: NativeBrowserOptions): Promis
     if (terminal) return
     try {
       decoder.push(chunk)
-    } catch {
-      fail(new Error('Native browser protocol or subscriber failure'))
+    } catch (cause) {
+      fail(new Error('Native browser protocol or subscriber failure', { cause }))
     }
   })
   // Native stderr is observable only through an explicitly supplied callback.
