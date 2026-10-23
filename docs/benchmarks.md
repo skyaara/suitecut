@@ -66,7 +66,7 @@ fixture mode with any published number; the two are different workloads.
 
 ## Component measurements
 
-[Native performance review](native-performance-review.md) records paired
+[Native performance review](internals/native-performance-review.md) records paired
 before/after component results (pixel conversion, frame fitting, HAR lookup,
 worker event delivery, viewer encoding) measured on Linux on 2026-10-17 with
 CEF 156. They measure specific helpers after optimisation work, not

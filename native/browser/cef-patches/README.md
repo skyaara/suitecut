@@ -30,7 +30,7 @@ The integrated original-widget mouse controller consumes the real lease API
 only after its exact read-only revision probe succeeds. The probe supplement
 must follow the widget receipt patch; its three source postimages are included
 in the bundle's final hashes. Stock CEF keeps this capability false. See
-[`docs/native-widget-mouse.md`](../../../docs/native-widget-mouse.md) for raw
+[`docs/features/native-widget-mouse.md`](../../../docs/features/native-widget-mouse.md) for raw
 root-widget/attached-OOPIF scope, physical cancellation and remaining backend
 receipt families. These candidates do not constitute complete browser parity.
 

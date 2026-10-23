@@ -169,7 +169,7 @@ hashes, empty stderr and actual process retirement. HAR covers strict legacy
 cookie expiry forms, not the full cookie-date grammar. Clock includes a genuine
 25-hour runFor jump, not broader page/context clock parity.
 
-See the [active workboard](../../docs/native-feature-workboard.md) for the
+See the [active workboard](../../docs/internals/native-feature-workboard.md) for the
 current batch, following implementation and explicit scope limits.
 
 ## Sealed combined build 0d116d39

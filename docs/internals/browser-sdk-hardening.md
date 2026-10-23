@@ -63,7 +63,7 @@ or audio-encoding stress result.
 - Internal Inspector factory sessions retained collected script sources without
   a limit. They now use an acknowledged 8 MiB cache policy. Explicit debugger or
   coverage ownership preserves historical sources; actual release restores the
-  internal bound. See [the cache contract](native-debugger-script-cache.md).
+  internal bound. See [the cache contract](../features/native-debugger-script-cache.md).
 - The dispatch optimization initially dropped the JSON-object envelope check.
   Five adversarial regressions exposed it; the final SDK preserves that check
   without rebuilding a Zod schema for every immediate command.

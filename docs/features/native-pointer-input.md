@@ -99,7 +99,7 @@ evidence, not an unchanged upstream test or a vendor widget-delivery receipt.
 
 An ordinary CDP mouse-event success is not a stronger original-widget delivery
 receipt: Chromium can acknowledge injector cleanup and events that were never
-queued. The [deferred native widget receipt proposal](../native/browser/cef-patches/chromium156-widget-input-receipts.md)
+queued. The [deferred native widget receipt proposal](../../native/browser/cef-patches/chromium156-widget-input-receipts.md)
 describes that separate vendor capability; it is not implemented or enabled.
 
 Text-node handles use actual DOM Range geometry for pointer actions. The binary scrolls an offscreen selected Text node with Chromium's native DOM command, then maps a visible positive-area text rectangle to genuine pointer input. Style/disabled checks and hit ancestry use the owning element; the pointer does not use the center of a larger parent. A detached selected Text node rejects. For forced pointer actions, a node with real layout rectangles but no positive-area viewport point reports an outside-viewport error; missing layout and CSS-hidden elements retain visibility errors. Run `pnpm test:native:pointer-nodes` with the matching native executable to verify these cases and actual trusted input.

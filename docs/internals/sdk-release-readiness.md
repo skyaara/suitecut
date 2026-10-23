@@ -81,7 +81,7 @@ SuiteCut engine, CEF 156 beta and resources, and pinned FFmpeg/ffprobe:
 
 The archive is 306,580,934 bytes (about 293 MiB), with SHA-256
 `0746b858c3a75363d4475ac9bea69e6f877af3278e420e0f82cd65977ce7a79f`.
-It uses the separate build recipe in [native full runtime](native-full-runtime.md).
+It uses the separate build recipe in [native full runtime](../native-full-runtime.md).
 This candidate preserves the smaller SDK archives and their earlier receipts.
 
 After a native rebuild and all 16 client tests passed, verification extracted the

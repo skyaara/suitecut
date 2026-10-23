@@ -24,5 +24,5 @@ the guard are pending. Stock SuiteCut already rejects ordinary MIDI overrides
 before calling the unsafe setting path and remains unchanged by this patch.
 
 The upstream report and standalone reproduction are recorded under
-`docs/cef-issues`. No custom library is built or installed by the ordinary SDK
+`docs/internals/cef-issues`. No custom library is built or installed by the ordinary SDK
 build.

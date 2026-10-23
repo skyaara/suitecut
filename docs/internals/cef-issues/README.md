@@ -37,7 +37,7 @@ with remote debugging enabled (for example, `--use-alloy-style
 that supports those switches), then run:
 
 ```sh
-node docs/cef-issues/repro/directory-upload.mjs http://127.0.0.1:9222
+node docs/internals/cef-issues/repro/directory-upload.mjs http://127.0.0.1:9222
 ```
 
 The script replaces the first debuggable page's body, creates temporary real
@@ -52,7 +52,7 @@ example (substitute absolute paths) is:
 ```sh
 c++ -std=c++20 -O2 -DNDEBUG -DCEF_USE_SANDBOX \
   -I/absolute/path/to/cef-sdk \
-  docs/cef-issues/repro/midi-content-setting.cc \
+  docs/internals/cef-issues/repro/midi-content-setting.cc \
   /absolute/path/to/libcef_dll_wrapper.a \
   /absolute/path/to/cef-sdk/Release/libcef.so \
   -pthread -ldl '-Wl,-rpath,$ORIGIN' -o /absolute/path/to/run/midi-content-setting

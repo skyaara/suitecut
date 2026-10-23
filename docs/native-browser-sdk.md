@@ -74,7 +74,7 @@ report capabilities returns `undefined`, meaning unknown.
 
 `page.webSocketRouting` provides explicit root-target native channel control
 through an acknowledged custom-backend protocol. Stock CEF rejects activation.
-See [WebSocket routing](native-websocket-routing.md) for message decisions,
+See [WebSocket routing](features/native-websocket-routing.md) for message decisions,
 transport uncertainty and the remaining context/frame/worker inheritance limits.
 
 File mutations retain actual native command acknowledgments and serialize on the
@@ -101,8 +101,8 @@ helpers remain because browser operations depend on them; a few retain historica
 runner/assertion-oriented internal names. No browser policies move into the SDK.
 
 This entry describes implemented APIs, not complete cross-browser parity. Current
-backend limitations remain in [the active backlog](native-browser-active-backlog.md).
+backend limitations remain in [the active backlog](internals/native-browser-active-backlog.md).
 
-The [native performance review](native-performance-review.md) records measured
+The [native performance review](internals/native-performance-review.md) records measured
 capture, tracing, HAR replay, transport, lifecycle and viewer improvements, with
 the remaining raw-frame bandwidth and multi-page memory limits.

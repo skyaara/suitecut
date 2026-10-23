@@ -27,9 +27,9 @@ The commerce server independently checked quantity three and the 44,700 minor-un
 
 Reusable scripts:
 
-- [Account, commerce, file and recovery journeys](../scripts/verify-browser-real-world-scenarios.mjs)
-- [Editor, WebSocket, pointer and service-worker journeys](../scripts/verify-browser-collaboration-scenarios.mjs)
-- [Public research](../scripts/verify-browser-public-research.mjs)
+- [Account, commerce, file and recovery journeys](../../scripts/verify-browser-real-world-scenarios.mjs)
+- [Editor, WebSocket, pointer and service-worker journeys](../../scripts/verify-browser-collaboration-scenarios.mjs)
+- [Public research](../../scripts/verify-browser-public-research.mjs)
 
 The local scripts use existing repository development dependencies and final `packages/browser-control/dist/browser.js`. They have executable-path/output overrides where applicable. The public probes preserve workspace proxy settings and TLS certificate verification. Tests use local controlled state rather than making purchases or modifying external accounts.
 
@@ -59,7 +59,7 @@ Firefox's six unmuted audio-only samples failed with `OnMediaSinkAudioError`, in
 
 The initial Twitch channel was offline, so it could not verify playback. The actual live check used AlveusSanctuary, which was visibly live. Chrome progressed from **2.85 to 14.91 seconds**, decoded frames **118 to 841**, at **1280×720**, with no media error. CEF displayed the service's “unavailable or not supported” error #4000, and both time and decoded frame count stayed zero. Local H.264/AAC fixtures independently confirmed the missing codec path; Twitch's error number alone was not used as a decoder diagnosis.
 
-Reusable scripts: [media playback](../scripts/verify-browser-media-playback.mjs), [Twitch smoke check](../scripts/verify-browser-twitch.mjs). The media verifier includes affected-only fixture/backend/mute controls and preserves initial and follow-up evidence.
+Reusable scripts: [media playback](../../scripts/verify-browser-media-playback.mjs), [Twitch smoke check](../../scripts/verify-browser-twitch.mjs). The media verifier includes affected-only fixture/backend/mute controls and preserves initial and follow-up evidence.
 
 ## Why recording support does not imply playback support
 

@@ -6,8 +6,8 @@ This list separates remaining implementation and evidence work; it is not a pari
 
 **M** = recorded implementation gap; **U** = implemented/unmapped behavior needing
 specific evidence, not a proven missing API; **D** = backend/platform or explicitly
-deferred vendor work; **H** = composed implementation with the specific acceptance limits below. The [matching register](playwright-feature-parity.md#matching-register),
-[browser README](../native/browser/README.md), and [audit](../native/browser/AUDIT.md)
+deferred vendor work; **H** = composed implementation with the specific acceptance limits below. The [matching register](../playwright-feature-parity.md#matching-register),
+[browser README](../../native/browser/README.md), and [audit](../../native/browser/AUDIT.md)
 retain the actual evidence and original negatives. Where their historical wording
 differs from a newer private handoff, neither is silently upgraded or erased.
 
@@ -164,7 +164,7 @@ opaque wildcard origins, closing scopes and empty permission masks.
 `browser.capabilities()` reports the executable's actual vendor-dependent
 capabilities without an extra command. The stock backend continues to report
 its unsupported vendor features as false. Eight CEF/Chromium/V8 patch candidates
-are isolated in [the vendor bundle](../native/browser/cef-patches/README.md),
+are isolated in [the vendor bundle](../../native/browser/cef-patches/README.md),
 with one ordered pinned-source check. Candidate applicability does not establish
 a rebuilt vendor library, complete clock semantics, surface synchronization,
 production adapters or runtime acceptance. No vendor patch is applied by the

@@ -65,6 +65,6 @@ The official [CEF build index](https://cef-builds.spotifycdn.com/index.html) off
 
 This is deliberately a **common web codec profile**, not “all codecs.” On this Chromium pin, the software FFmpeg video adapter and security allowlist accept H.264 only; VP8/VP9 and AV1 have separate implementations. HEVC, Dolby/DTS, ALAC and various legacy formats require additional adapter/demuxer/decoder integration or an actual platform decoder. Setting their platform flags can advertise support without supplying a working Linux decoder. `--profile web-hevc` makes the acceptance gate additionally require actual HEVC playback; it does not add a decoder.
 
-Widevine/DRM components and licenses are separate from codec flags. This profile does not provide a CDM, certify HDR/profile combinations or establish hardware decode throughput. See the [real-world playback matrix](../../docs/browser-real-world-coverage.md) for measured current runtime behavior.
+Widevine/DRM components and licenses are separate from codec flags. This profile does not provide a CDM, certify HDR/profile combinations or establish hardware decode throughput. See the [real-world playback matrix](../../docs/internals/browser-real-world-coverage.md) for measured current runtime behavior.
 
 Local audit/proof evidence: `.suitecut/codec-enable/source-audit/FINDINGS.md`, `.suitecut/codec-enable/prebuilt-audit.md`, `.suitecut/codec-runtime-acceptance/stock-negative/acceptance.json` and `.suitecut/codec-enable/build-attempt.json`.

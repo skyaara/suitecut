@@ -77,7 +77,7 @@ The preceding common Source `4f8fefac` passes matching HAR11 and clock11 browser
 checks. Its common native run is 490 pass / 2 fail, with the corrected directory
 checker scope passing separately and one output-preparation timeout unresolved.
 SDK1,196/type/lint and all native builds pass. This is unsealed evidence; see
-[the active workboard](../../docs/native-feature-workboard.md) and
+[the active workboard](../../docs/internals/native-feature-workboard.md) and
 [validation ledger](AUDIT.md) for exact limits and current feature work.
 
 The latest sealed Linux candidate is `0d116d39`: all eight checks pass afresh,
@@ -645,7 +645,7 @@ The browser-control integration at `bf480072` built against pinned CEF156 and
 passed a bounded live scope for activation, mobile capture restoration, locator
 handlers, idle emulation, before-unload and native context video/file lifecycle.
 Ordinary MIDI overrides now reject explicitly: that content-setting type is not
-registered in this CEF build. See [the active backlog](../../docs/native-browser-active-backlog.md)
+registered in this CEF build. See [the active backlog](../../docs/internals/native-browser-active-backlog.md)
 for exact remaining implementation and verification boundaries. Browser builds
 must use `-DSUITECUT_BUILD_TEST_RUNNER=OFF` when reusing an older cache.
 
@@ -675,8 +675,8 @@ The current consolidated build/installation result remains
 The current implementation pass adds version-probed root-target WebSocket
 control, native file-mutation receipts/serialization, precise credential-import
 identity and retained-coverage interval/source helpers. Backend-dependent
-activation remains explicit; see `docs/native-browser-active-backlog.md` and
-`docs/cef-issues/README.md`. Compilation is not full runtime parity.
+activation remains explicit; see `docs/internals/native-browser-active-backlog.md` and
+`docs/internals/cef-issues/README.md`. Compilation is not full runtime parity.
 
 The controller completion adds page/context WebSocket URL callbacks and target
 inheritance, bounded 2 MiB message staging, production retained-coverage lifecycle

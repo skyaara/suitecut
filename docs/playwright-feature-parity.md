@@ -15,7 +15,7 @@ Native browser debugger sessions and locator suggestion/point-picking APIs remai
 in scope even though the reference groups them under PW-37; this exception does
 not include a test generator, editor integration, or interactive test UI.
 
-Use the [one-page browser backlog](native-browser-active-backlog.md) for the next
+Use the [one-page browser backlog](internals/native-browser-active-backlog.md) for the next
 browser work. Existing evidence, unchecked reference items, historical failures,
 and deferred vendor decisions below remain unchanged. An unchecked item or an
 unrun private handoff is not, by itself, missing implementation; historical runner
@@ -190,7 +190,7 @@ hashes, empty stderr and actual process retirement. HAR covers strict legacy
 cookie expiry forms, not the full cookie-date grammar. Clock includes a genuine
 25-hour runFor jump, not broader page/context clock parity.
 
-See the [active workboard](native-feature-workboard.md) for integrated features,
+See the [active workboard](internals/native-feature-workboard.md) for integrated features,
 next implementation owners, measured performance and remaining scope. Earlier
 sealed evidence remains in the [native audit](../native/browser/AUDIT.md).
 

@@ -32,7 +32,7 @@
     "tests/**/*.ts",
     "examples/**/*.ts",
     "scripts/**/*.mjs",
-    "docs/cef-issues/repro/**/*.mjs",
+    "docs/internals/cef-issues/repro/**/*.mjs",
     "vitest.config.ts"
   ]
 }
