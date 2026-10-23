@@ -26,4 +26,4 @@
 - Preserve native capture, media and lifecycle verification.
 
 The pre-cleanup source is retained in the local checkpoint
-`checkpoint/native-cef-120fps-before-playwright-benchmark-removal` at `582a17e`.
+`checkpoint/native-cef-120fps-before-playwright-benchmark-removal` at `bf9fa19`.

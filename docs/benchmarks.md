@@ -8,7 +8,7 @@ not published here.
 
 ## Sustained 1080p120 recording on macOS
 
-Measured 2026-10-23 at commit `0e75427` on an Apple M4 (16 GB, 10 logical CPUs,
+Measured 2026-10-23 at commit `4694aa1` on an Apple M4 (16 GB, 10 logical CPUs,
 macOS 27.0.1, ARM64). The runtime was packaged and relocated with the documented
 [macOS full-runtime flow](native-full-runtime-macos.md), ad-hoc signed.
 Capture uses IOSurface, Metal NV12 conversion and `h264_videotoolbox` into MP4.
@@ -32,7 +32,7 @@ The strict sustained gate (`--required-distinct-fps 120`) did **not** pass on th
 beside the five load workers, so these results reflect a busy machine rather than
 a quiet one.
 
-For comparison, the same command on 2026-10-20 at commit `f834d78` (before the
+For comparison, the same command on 2026-10-20 at commit `c75d579` (before the
 2026-10-21 runtime modularization), on the same host model with load average
 2.3–6.8, measured 120.00 distinct FPS over 120 s with 0 held paints and 115 ms
 preparation. Whether the gap is host contention or a regression is not yet
