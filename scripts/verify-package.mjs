@@ -6,6 +6,8 @@ import process from 'node:process'
 
 import * as z from 'zod'
 
+import { lfsAssets } from './check-lfs-assets.mjs'
+
 const packageRoot = resolve(import.meta.dirname, '..')
 const npmExecutable = process.platform === 'win32' ? 'npm.cmd' : 'npm'
 const PackageJsonSchema = z.object({
@@ -133,12 +135,13 @@ try {
     )
   }
 
-  // The model is stored in Git LFS; a checkout without LFS packs a 133-byte pointer.
-  assert(
-    packResult.files.find((file) => file.path === 'assets/kokoro/model_quantized.onnx')?.size ===
-      92_361_210,
-    'npm package must contain the real Kokoro model, not a Git LFS pointer',
-  )
+  // These files are stored in Git LFS; a checkout without LFS packs a 133-byte pointer.
+  for (const asset of lfsAssets) {
+    assert(
+      packResult.files.find((file) => file.path === asset.path)?.size === asset.size,
+      `npm package must contain the real ${asset.path}, not a Git LFS pointer`,
+    )
+  }
 
   assert(packResult.size < 80 * 1024 * 1024, 'packed tarball exceeds the 80 MB release budget')
   assert(
@@ -156,9 +159,48 @@ try {
   const tarballPath = join(temporaryRoot, packResult.filename)
   const consumerTarballPath = join(consumerDirectory, packResult.filename)
   await copyFile(tarballPath, consumerTarballPath)
+
+  // A split audio plugin resolves suitecut/audio-plugin from the consumer's installed core,
+  // as the published @suitecut/audio-* packages do. This keeps the plugin contract covered
+  // now that those packages live on the audio-plugins branch.
+  const pluginDirectory = join(temporaryRoot, 'audio-plugin-fixture')
+  await mkdir(pluginDirectory)
+  await writeFile(
+    join(pluginDirectory, 'package.json'),
+    `${JSON.stringify({ name: 'suitecut-audio-plugin-fixture', version: '1.0.0', type: 'module', exports: './index.js', peerDependencies: { suitecut: packageJson.version } }, null, 2)}\n`,
+    'utf8',
+  )
+  await writeFile(
+    join(pluginDirectory, 'index.js'),
+    `import { writeFile } from 'node:fs/promises'
+import { defineSuiteCutAudioPlugin, encodePcm16Wav } from 'suitecut/audio-plugin'
+
+export default defineSuiteCutAudioPlugin({
+  async synthesize({ outputPath, speed }) {
+    await writeFile(outputPath, encodePcm16Wav(new Float32Array(2400).fill(0.25 * speed), 24000))
+  },
+})
+`,
+    'utf8',
+  )
+  const pluginPacked = await run(
+    npmExecutable,
+    ['pack', '--ignore-scripts', '--json', '--pack-destination', consumerDirectory],
+    pluginDirectory,
+  )
+  const pluginPackResult = z.array(PackResultSchema).parse(JSON.parse(pluginPacked.stdout))[0]
+  if (pluginPackResult === undefined) throw new Error('npm pack did not return the plugin fixture')
+
   await run(
     npmExecutable,
-    ['install', '--ignore-scripts', '--no-audit', '--no-fund', consumerTarballPath],
+    [
+      'install',
+      '--ignore-scripts',
+      '--no-audit',
+      '--no-fund',
+      consumerTarballPath,
+      join(consumerDirectory, pluginPackResult.filename),
+    ],
     consumerDirectory,
   )
 
@@ -170,6 +212,8 @@ import { renderSuiteCut as renderFromSubpath } from 'suitecut/render'
 import { launchNativeBrowser, createNativeBroadcast, recordNative, createNativePage } from 'suitecut/native'
 import { DEFAULT_BACKEND, record as betaRecord } from 'suitecut/beta'
 import { SUITECUT_EVENT_ATTACHMENT, SUITECUT_MANIFEST_SCHEMA_VERSION } from 'suitecut/types'
+import { readFile } from 'node:fs/promises'
+import fixturePlugin from 'suitecut-audio-plugin-fixture'
 
 if (DEFAULT_BACKEND !== 'native' || typeof betaRecord !== 'function' || betaRecord !== record) throw new Error('suitecut beta default is incorrect')
 if (typeof launchNativeBrowser !== 'function' || typeof createNativeBroadcast !== 'function' || typeof recordNative !== 'function' || typeof createNativePage !== 'function') {
@@ -189,6 +233,11 @@ if (SUITECUT_EVENT_ATTACHMENT !== 'suitecut-events.json') {
 }
 if (SUITECUT_MANIFEST_SCHEMA_VERSION !== 1) {
   throw new Error('suitecut manifest schema version export is unavailable')
+}
+await fixturePlugin.synthesize({ text: 'Hello', voice: 'fixture', speed: 1, outputPath: 'plugin.wav' })
+const wav = await readFile('plugin.wav')
+if (wav.toString('ascii', 0, 4) !== 'RIFF' || wav.toString('ascii', 8, 12) !== 'WAVE' || wav.length !== 44 + 2400 * 2) {
+  throw new Error('split audio plugin did not write a PCM WAV through suitecut/audio-plugin')
 }
 `,
     'utf8',
@@ -234,7 +283,7 @@ if (typeof defineSuiteCut !== 'function' || typeof record !== 'function') {
   assert(cli.stdout.includes('suitecut render'), 'installed CLI did not print SuiteCut help')
 
   process.stdout.write(
-    `Verified ${packResult.id}. Native public imports and CLI smoke checks passed.\n`,
+    `Verified ${packResult.id}. Native public imports, split audio plugin and CLI smoke checks passed.\n`,
   )
 } finally {
   await rm(temporaryRoot, { recursive: true, force: true })

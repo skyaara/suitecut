@@ -14,9 +14,11 @@ auto Source::OnAudioStreamError(CefRefPtr<CefBrowser>, const CefString& message)
   };
   if (CefCurrentlyOn(TID_UI)) {
     report();
-  } else if (!CefPostTask(TID_UI, new Task(std::move(report)))) {
+  } else if (!CefPostTask(TID_UI, new Task(std::move(report))) && !stopped_) {
     // UI is shutting down. Error() only queues a packet on the locked writer,
-    // so report directly without the UI-owned close checks.
+    // so report directly without the UI-owned close checks. A source whose
+    // reader already stopped is closing deliberately; an audio error then is
+    // part of teardown, not a capture failure.
     Error(("Native audio capture failed: " + detail + " (UI dispatch rejected)").c_str());
   }
 }

@@ -52,6 +52,7 @@ class Source : public CefBaseRefCounted {
   void OnAudioStreamError(CefRefPtr<CefBrowser>, const CefString&);
   void Error(const char* message) { observation_->errors.emplace_back(message); }
   std::atomic<bool> audio_valid_{true};
+  std::atomic<bool> stopped_{false};
   bool closing_page_ = false;
   const int page_id_ = 1;
   Engine engine_;
@@ -131,4 +132,11 @@ int main() {
   source->OnAudioStreamError(nullptr, "capture failed");
   assert(rejected->errors.size() == 1 && scheduled.empty());
   assert(rejected->errors[0] == "Native audio capture failed: capture failed (UI dispatch rejected)");
+
+  // A stopping source's rejected dispatch is teardown, not a capture failure.
+  auto stopping = std::make_shared<Observation>();
+  source = new Source(stopping);
+  source->stopped_ = true;
+  source->OnAudioStreamError(nullptr, "stream ended during shutdown");
+  assert(stopping->errors.empty() && !source->audio_valid_ && scheduled.empty());
 }

@@ -44,13 +44,16 @@ def main():
     try:
         run(['pnpm', 'build'])
         run(['pnpm', 'build:browser-control'])
+        # npm pack runs with --ignore-scripts below, so run the prepack LFS guard here.
+        run(['pnpm', 'check:lfs'])
         for project in (ROOT, ROOT / 'packages/browser-control'):
             packed = json.loads(run(['npm', 'pack', '--ignore-scripts', '--json',
                                      '--pack-destination', output], cwd=project, capture=True))[0]
             archive = output / packed['filename']
             setup['packages'].append({'name': packed['name'], 'version': packed['version'],
                                       'path': str(archive), 'sha256': hashlib.sha256(archive.read_bytes()).hexdigest()})
-        for name in ('package.json', 'run.mjs', 'verify-media.mjs', '.env.example'):
+        for name in ('package.json', 'run.mjs', 'verify-media.mjs', '.env.example', 'README.md',
+                     'eslint.config.mjs'):
             shutil.copy2(ROOT / 'examples/song-maker' / name, consumer / name)
         run(['npm', 'install', '--no-audit', '--no-fund', '--save-exact',
              *[item['path'] for item in setup['packages']]], cwd=consumer)

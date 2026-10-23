@@ -7,6 +7,7 @@ import {
   NativeNetworkRequestSchema,
   NativeNetworkResponseSchema,
   MAX_NATIVE_RESPONSE_PAYLOAD,
+  MAX_OBSERVED_DATA_URL,
   type NativePacket,
 } from '../src/native-protocol.js'
 
@@ -43,16 +44,19 @@ describe('native IPC boundary', () => {
     }
     expect(NativeNetworkRequestSchema.parse(request).url).toBe(url)
     expect(NativeNetworkResponseSchema.parse(response).url).toBe(url)
-    for (const rejected of [
-      `https://example.test/${'a'.repeat(8192)}`,
-      `data:image/png;base64,${'A'.repeat(1_048_576)}`,
+    const rejected = `https://example.test/${'a'.repeat(8192)}`
+    expect(NativeNetworkRequestSchema.safeParse({ ...request, url: rejected }).success).toBe(false)
+    expect(NativeNetworkResponseSchema.safeParse({ ...response, url: rejected }).success).toBe(
+      false,
+    )
+    // An oversized inline resource degrades to a bounded prefix instead of failing the session.
+    const oversized = `data:image/png;base64,${'A'.repeat(MAX_OBSERVED_DATA_URL)}`
+    for (const parsed of [
+      NativeNetworkRequestSchema.parse({ ...request, url: oversized }).url,
+      NativeNetworkResponseSchema.parse({ ...response, url: oversized }).url,
     ]) {
-      expect(NativeNetworkRequestSchema.safeParse({ ...request, url: rejected }).success).toBe(
-        false,
-      )
-      expect(NativeNetworkResponseSchema.safeParse({ ...response, url: rejected }).success).toBe(
-        false,
-      )
+      expect(parsed).toHaveLength(MAX_OBSERVED_DATA_URL)
+      expect(oversized.startsWith(parsed)).toBe(true)
     }
   })
   it('preserves proven viewport geometry and null resize paints alongside legacy frame packets', () => {

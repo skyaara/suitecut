@@ -285,10 +285,11 @@ try {
   clearTimeout(timer)
   process.off('SIGINT', cancel)
   process.off('SIGTERM', cancel)
-  const installed = JSON.parse(await readFile(new URL('./package.json', import.meta.url), 'utf8'))
-  await writeFile(
-    join(output, 'report.json'),
-    JSON.stringify(
+  // Each artifact is saved independently; a write failure never replaces the run's own error.
+  await saveArtifact('native-stderr.log', async () => diagnostics.join(''))
+  await saveArtifact('report.json', async () => {
+    const installed = JSON.parse(await readFile(new URL('./package.json', import.meta.url), 'utf8'))
+    return JSON.stringify(
       {
         passed: !failure && verification?.passed === true,
         appUrl,
@@ -305,12 +306,21 @@ try {
       },
       null,
       2,
-    ),
-  )
-  await writeFile(join(output, 'native-stderr.log'), diagnostics.join(''))
+    )
+  })
   process.stdout.write(`Artifacts: ${output}\n`)
 }
 if (failure) throw failure
+
+async function saveArtifact(name, produce) {
+  try {
+    await writeFile(join(output, name), await produce())
+  } catch (error) {
+    failure ??= error
+    process.exitCode = 1
+    process.stderr.write(`Could not save ${name}: ${describeError(error).message}\n`)
+  }
+}
 
 function describeError(error) {
   if (!error) return null
