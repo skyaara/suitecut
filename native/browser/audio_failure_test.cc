@@ -130,4 +130,5 @@ int main() {
   source = new Source(rejected);
   source->OnAudioStreamError(nullptr, "capture failed");
   assert(rejected->errors.size() == 1 && scheduled.empty());
+  assert(rejected->errors[0] == "Native audio capture failed: capture failed (UI dispatch rejected)");
 }

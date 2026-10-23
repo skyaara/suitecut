@@ -15,6 +15,8 @@ auto Source::OnAudioStreamError(CefRefPtr<CefBrowser>, const CefString& message)
   if (CefCurrentlyOn(TID_UI)) {
     report();
   } else if (!CefPostTask(TID_UI, new Task(std::move(report)))) {
-    Error("Native audio capture failed: error dispatch to UI was rejected");
+    // UI is shutting down. Error() only queues a packet on the locked writer,
+    // so report directly without the UI-owned close checks.
+    Error(("Native audio capture failed: " + detail + " (UI dispatch rejected)").c_str());
   }
 }
