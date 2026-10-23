@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import { describe, expect, it, vi } from 'vitest'
 
 import { NativeContextNetworkInfoSchema } from '../src/native-context-network-protocol.js'

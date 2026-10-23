@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import sherpaOnnx from 'sherpa-onnx'
 import { type SuiteCutAudioPlugin } from 'suitecut/audio-plugin'
 import { z } from 'zod'

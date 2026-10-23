@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import { setTimeout as delay } from 'node:timers/promises'
 
 import imageSharp from 'sharp'

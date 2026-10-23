@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import { expect, it } from 'vitest'
 
 import { nativeCookieFilter } from '../src/native-cookie-filter.js'

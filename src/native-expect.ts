@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import { inspect } from 'node:util'
 
 import * as z from 'zod'

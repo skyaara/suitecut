@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import { open, mkdir, writeFile } from 'node:fs/promises'
 import { dirname } from 'node:path'
 

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 export { SUITECUT_EVENT_ATTACHMENT, SUITECUT_MANIFEST_SCHEMA_VERSION } from './constants.js'
 export type {
   SuiteCutCheckpointOptions,

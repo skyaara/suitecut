@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import { randomUUID } from 'node:crypto'
 
 import { raceWithAbort } from './abort.js'

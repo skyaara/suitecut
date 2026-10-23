@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import { describe, expect, it } from 'vitest'
 
 import { type NativeHTTPLookupEvent } from '../src/native-http-lookup-protocol.js'

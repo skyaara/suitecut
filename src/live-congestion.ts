@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /** Measurements never contain publisher URLs, process arguments, or encoder stderr. */
 export interface LiveStreamDiagnostic {
   event:

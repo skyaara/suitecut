@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /* eslint import-x/consistent-type-specifier-style: off -- Whole type imports erase lifecycle module edges. */
 import type { NativeRequest } from './native-network.js'
 import type { UntrustedInput } from './untrusted.js'

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import { type SuiteCutStepCategory } from '../schemas.js'
 
 import { type SuiteCutError, type SuiteCutSourceLocation } from './errors.js'

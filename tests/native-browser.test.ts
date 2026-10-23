@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import { ChildProcess, spawn } from 'node:child_process'
 import { getEventListeners } from 'node:events'
 import { mkdtemp, readFile, realpath, rm, writeFile } from 'node:fs/promises'

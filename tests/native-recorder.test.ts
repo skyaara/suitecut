@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import { ChildProcess, spawn } from 'node:child_process'
 import { PassThrough, Writable } from 'node:stream'
 

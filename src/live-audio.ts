@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import { randomUUID } from 'node:crypto'
 import { once } from 'node:events'
 import { createServer, type ServerResponse } from 'node:http'

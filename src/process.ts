@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import { spawn, type ChildProcess } from 'node:child_process'
 import { constants as fsConstants } from 'node:fs'
 import { access } from 'node:fs/promises'

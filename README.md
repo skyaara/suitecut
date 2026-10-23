@@ -10,7 +10,7 @@ Browser control is also available through a standalone [native C++ SDK and C ABI
 Requires Node.js 22+, pnpm 11, FFmpeg/FFprobe, and the separately built CEF
 executable. See [build requirements and component setup](docs/building.md).
 The native SDK builds independently of CEF; the embedded browser uses the pinned
-CEF 156 beta. Linux x64 and macOS ARM64 have separate qualification scopes.
+CEF 156 build (Chromium 156 beta channel). Linux x64 and macOS ARM64 have separate qualification scopes.
 Windows runtime packaging is not implemented.
 
 ```sh

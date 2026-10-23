@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import { type SuiteCutArtifact } from './artifacts.js'
 import { type SuiteCutAttemptClock } from './clock.js'
 import { type SuiteCutDiagnostic } from './diagnostics.js'

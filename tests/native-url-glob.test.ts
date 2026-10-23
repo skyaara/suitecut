@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import { describe, expect, it } from 'vitest'
 
 import { nativeURLGlobMatcher, resolveNativeURLGlob } from '../src/native-url-glob.js'

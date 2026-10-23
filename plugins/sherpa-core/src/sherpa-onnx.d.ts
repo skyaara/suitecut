@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 declare module 'sherpa-onnx' {
   interface GeneratedAudio {
     samples: Float32Array

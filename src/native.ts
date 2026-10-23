@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 export { NativeTracing } from './native-tracing.js'
 export { NativeDebuggerSession } from './native-debugger.js'
 export type {

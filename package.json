@@ -74,6 +74,7 @@
     "SECURITY.md",
     "THIRD_PARTY_NOTICES.md",
     "native/browser",
+    "!native/browser/AUDIT.md",
     "native/shared",
     "native/runner",
     "native/tools",
@@ -120,7 +121,8 @@
   },
   "workspaces": [
     "site",
-    "plugins/*"
+    "plugins/*",
+    "packages/*"
   ],
   "scripts": {
     "build:browser-control": "pnpm --filter @suitecut/browser-control build",

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import { type PresentationPage, type PresentationLocator } from './browser-control.js'
 import {
   type SuiteCutCheckpointOptions,

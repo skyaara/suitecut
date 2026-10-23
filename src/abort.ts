@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import { toError, type UntrustedInput } from './untrusted.js'
 
 function abortReason(signal: AbortSignal): Error {

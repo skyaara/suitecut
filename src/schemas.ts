@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import * as z from 'zod'
 
 import { MAX_SUITE_CUT_ZOOM_SCALE } from './constants.js'

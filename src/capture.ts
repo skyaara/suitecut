@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import { type SuiteCutCaptureSize, type SuiteCutCaptureViewport } from './schemas.js'
 
 export const DEFAULT_SUITE_CUT_CHECKPOINT_DURATION_MS = 500

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 // The caller's promise always keeps its actual navigation result. Explicit
 // teardown observes cancellation of otherwise ignored navigation promises so
 // closing a context cannot create a separate unhandled-rejection failure.

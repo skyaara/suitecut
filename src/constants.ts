@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 export const SUITECUT_EVENT_ATTACHMENT = 'suitecut-events.json' as const
 export const SUITECUT_MANIFEST_SCHEMA_VERSION = 1 as const
 

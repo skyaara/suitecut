@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /** Compatibility entry point for scripts written against the native beta. */
 export * from './native-default.js'
 export type {

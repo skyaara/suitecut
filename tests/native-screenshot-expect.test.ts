@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import { execFile } from 'node:child_process'
 import { mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import { describe, expect, it, vi } from 'vitest'
 
 import { type NativeBrowser } from '../src/native-browser.js'

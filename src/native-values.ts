@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import { type UntrustedInput } from './untrusted.js'
 
 /** A self-contained codec shared by the SDK and the browser execution context. */

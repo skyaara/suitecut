@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import { createRequire } from 'node:module'
 import { isAbsolute, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'

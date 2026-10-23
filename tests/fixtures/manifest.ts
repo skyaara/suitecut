@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import { type SuiteCutManifest } from '../../src/types.js'
 
 export function createManifest(): SuiteCutManifest {

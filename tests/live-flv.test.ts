@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import { expect, it } from 'vitest'
 
 import { LIVE_FLV_HEADER, LiveFlvParser, flvTimestamp, stampFlv } from '../src/live-flv.js'

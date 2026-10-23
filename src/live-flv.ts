@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /** Incremental FLV framing with strict size limits for encoder output. */
 export class LiveFlvParser {
   private pending = Buffer.allocUnsafe(13)

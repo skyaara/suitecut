@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import { type NativeArtifactRunner } from '../src/native-artifacts.js'
 import { toError, type UntrustedInput } from '../src/untrusted.js'
 

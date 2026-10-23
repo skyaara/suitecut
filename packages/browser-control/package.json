@@ -10,6 +10,10 @@
     "url": "git+https://github.com/skyaara/suitecut.git",
     "directory": "packages/browser-control"
   },
+  "homepage": "https://github.com/skyaara/suitecut/tree/main/packages/browser-control#readme",
+  "bugs": {
+    "url": "https://github.com/skyaara/suitecut/issues"
+  },
   "main": "./dist/browser.js",
   "types": "./dist/browser.d.ts",
   "exports": {

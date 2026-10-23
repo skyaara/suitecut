@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import { setImmediate } from 'node:timers/promises'
 
 import { describe, expect, it } from 'vitest'

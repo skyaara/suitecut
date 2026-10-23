@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * A value received before SuiteCut has checked its runtime shape.
  *

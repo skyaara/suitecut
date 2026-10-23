@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import { isPromise } from 'node:util/types'
 
 import { toError, type UntrustedInput } from './untrusted.js'

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /* eslint import-x/consistent-type-specifier-style: off -- Whole type imports erase module edges and avoid lifecycle initialization cycles. */
 import { resolveNativeURLGlob } from './native-url-glob.js'
 

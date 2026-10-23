@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import { type SuiteCutRect } from './types/geometry.js'
 
 /** Browser operations shared by presentation and narration, independent of capture. */

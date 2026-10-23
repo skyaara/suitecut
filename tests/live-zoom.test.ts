@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import imageSharp from 'sharp'
 import { afterEach, expect, it, vi } from 'vitest'
 

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import * as childProcess from 'node:child_process'
 import process from 'node:process'
 

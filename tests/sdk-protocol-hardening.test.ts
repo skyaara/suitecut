@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import { describe, expect, it } from 'vitest'
 
 import { MAX_NATIVE_RESPONSE_PAYLOAD, NativePacketDecoder } from '../src/native-protocol.js'

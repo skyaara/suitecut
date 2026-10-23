@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 export interface SuiteCutReportRedaction {
   value: string
   replacement: string

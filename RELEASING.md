@@ -131,7 +131,7 @@ Build and test the custom-domain site before deploying to the existing Cloudflar
 ```sh
 pnpm site:check
 pnpm site:build
-wrangler pages deploy site/dist --project-name suitecut --branch main --profile aakash
+wrangler pages deploy site/dist --project-name suitecut --branch main
 ```
 
 Cloudflare builds use the default `https://suitecut.aakashreddy.com` origin and `/` base.

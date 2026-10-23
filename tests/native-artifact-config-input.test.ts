@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import { describe, expect, it } from 'vitest'
 
 import { type NativeArtifactRunner } from '../src/native-artifacts.js'

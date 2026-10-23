@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /** Resolves relative URL patterns while preserving syntax that URL parsing would encode. */
 export function resolveNativeURLGlob(pattern: string, baseURL?: string): string {
   if (baseURL === undefined || pattern.startsWith('*')) return pattern

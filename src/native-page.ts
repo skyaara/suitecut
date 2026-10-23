@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import { readFile } from 'node:fs/promises'
 
 import * as z from 'zod'

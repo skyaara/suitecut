@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import { type Milliseconds, type SuiteCutArtifactId, type SuiteCutEventId } from './primitives.js'
 
 export type SuiteCutDiagnosticLevel = 'info' | 'warning' | 'error'

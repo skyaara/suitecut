@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import { type Milliseconds, type SuiteCutPageId } from './primitives.js'
 
 export type SuiteCutPageKind = 'main' | 'popup' | 'secondary'

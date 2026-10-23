@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /* eslint import-x/consistent-type-specifier-style: off -- Whole type imports erase the HTTP lifecycle edge. */
 import { Buffer } from 'node:buffer'
 import { close, fstatSync, ReadStream, statSync } from 'node:fs'

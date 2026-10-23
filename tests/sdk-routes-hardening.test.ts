@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import { expect, it } from 'vitest'
 
 import { NativeContextRoutes } from '../src/native-context-routes.js'

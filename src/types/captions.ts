@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import { type Milliseconds, type SuiteCutEventId } from './primitives.js'
 
 export interface SuiteCutWordTiming {

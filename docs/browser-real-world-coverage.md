@@ -75,9 +75,9 @@ Widevine/DRM is separate from codec decoding. No Widevine provisioning/runtime a
 
 CDP/BiDi command/listener counts returned to zero after the app journeys. CEF exited zero. Collaboration and public-research supervisors confirmed every adopted descendant retired, without requested kills or timeout. The app/media supervisors also retired all descendants with no requested kills; their strict cleanup flag was raised by Firefox workers exiting through SIGTERM. That receipt is preserved rather than described as all-zero natural exits or a surviving-process leak. Short scenario memory samples are not a substitute for the separate endurance/memory review.
 
-One CEF screenshot at the end of the original live Twitch check hit the generic 30-second SDK command timeout. A separate bounded 5-second screenshot/recovery check succeeded, including a visually verified Twitch error screen and a later simple document. The original timeout remains unexplained; the later success does not prove it fixed. Source inspection identified font, animation-frame and descendant-document readiness waits but did not identify the failing stage. Earlier intermittent CDP input and native idle allocation findings from the [heavy review](../.suitecut/hard-browser-review/REVIEW.md) also remain open.
+One CEF screenshot at the end of the original live Twitch check hit the generic 30-second SDK command timeout. A separate bounded 5-second screenshot/recovery check succeeded, including a visually verified Twitch error screen and a later simple document. The original timeout remains unexplained; the later success does not prove it fixed. Source inspection identified font, animation-frame and descendant-document readiness waits but did not identify the failing stage. Earlier intermittent CDP input and native idle allocation findings from the earlier heavy browser review also remain open.
 
-Raw evidence under `.suitecut/real-world-review/`:
+Raw evidence was recorded locally under `.suitecut/real-world-review/` (gitignored; not part of the repository or package):
 
 - `journeys/verified/results.json` and `journeys/verified-supervisor.json`: 13 app journeys, independent server audit and unchanged hashes for all 120 SDK JavaScript files.
 - `collaboration/results.json` and `collaboration/supervisor.json`: eight composed journeys.

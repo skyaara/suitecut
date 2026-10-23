@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import { stat } from 'node:fs/promises'
 import { resolve } from 'node:path'
 

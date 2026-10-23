@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// SPDX-License-Identifier: MIT
 
 import { realpathSync } from 'node:fs'
 import process from 'node:process'

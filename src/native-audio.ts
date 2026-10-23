@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import { type NativeAudioPacket } from './native-browser.js'
 
 /** Reblocks arbitrary CEF callback sizes into the publisher's 20 ms PCM packets. */

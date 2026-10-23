@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 export * from './artifacts.js'
 export * from './captions.js'
 export * from './clock.js'

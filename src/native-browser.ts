@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /* eslint import-x/consistent-type-specifier-style: off -- Whole type imports erase lifecycle module edges. */
 import { spawn, type ChildProcessWithoutNullStreams } from 'node:child_process'
 import { mkdir, mkdtemp, realpath, rm } from 'node:fs/promises'

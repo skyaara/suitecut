@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import { type NativeRouteHandler } from './native-network.js'
 import {
   isNativeRouteCommandFailure,

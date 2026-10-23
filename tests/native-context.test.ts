@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import { fileURLToPath } from 'node:url'
 
 import { describe, expect, it, vi } from 'vitest'

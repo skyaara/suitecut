@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /** Pinned FFmpeg 9.0.1 archives and upstream SHA-256 checksums. */
 export const MEDIA_BUILD_ID = '9.0.1-r1'
 export const MEDIA_BUILDS: Record<string, { url: string; sha256: string }[]> = {

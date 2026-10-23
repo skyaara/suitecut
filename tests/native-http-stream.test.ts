@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import { Buffer } from 'node:buffer'
 import { createReadStream, read, open, close, openSync, fstatSync } from 'node:fs'
 import { mkdtemp, rm, writeFile } from 'node:fs/promises'

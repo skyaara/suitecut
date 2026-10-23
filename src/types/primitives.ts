@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 export type Milliseconds = number
 export type EpochMilliseconds = number
 export type ISODateTime = string

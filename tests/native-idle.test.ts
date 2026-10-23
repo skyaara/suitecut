@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import { describe, expect, it } from 'vitest'
 
 import { emulateNativeIdleState, type NativeIdleState } from '../src/native-idle.js'

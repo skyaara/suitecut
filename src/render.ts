@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import { randomUUID } from 'node:crypto'
 import { access, mkdir, readFile, rename, rm } from 'node:fs/promises'
 import { homedir, tmpdir } from 'node:os'

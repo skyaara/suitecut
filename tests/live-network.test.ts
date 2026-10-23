@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import { once } from 'node:events'
 import { createConnection, createServer, type Socket } from 'node:net'
 import { setTimeout as delay } from 'node:timers/promises'

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import * as z from 'zod'
 
 export const MAX_FRAMES_PER_SECOND = 120

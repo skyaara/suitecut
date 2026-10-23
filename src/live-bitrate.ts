@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import { type NetworkSample } from './live-network.js'
 
 /** Socket-based reduction with conservative recovery after measured output congestion. */

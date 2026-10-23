@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import { toError, type UntrustedInput } from './untrusted.js'
 
 const observers = new WeakMap<object, (settlement: Promise<void>) => void>()

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /* eslint import-x/consistent-type-specifier-style: off -- Whole type imports erase lifecycle module edges. */
 import { Buffer } from 'node:buffer'
 import { randomUUID } from 'node:crypto'

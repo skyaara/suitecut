@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import { type defineSuiteCut, type SuiteCutNativeRecordOptions } from './native-default.js'
 import { type NativeRecordingContext } from './native-recording.js'
 

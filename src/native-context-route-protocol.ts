@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import * as z from 'zod'
 
 import { NativeNetworkInfoSchema } from './native-protocol.js'

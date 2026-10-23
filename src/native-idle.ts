@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import * as z from 'zod'
 
 import { withoutNativeRetryOperation } from './native-callback-operations.js'

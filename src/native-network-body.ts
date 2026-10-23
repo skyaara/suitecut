@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import { Buffer } from 'node:buffer'
 
 import * as z from 'zod'

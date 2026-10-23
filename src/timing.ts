@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import { type EpochMilliseconds, type Milliseconds } from './types.js'
 
 function requireFinite(value: number, name: string): void {

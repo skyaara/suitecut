@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import { Script } from 'node:vm'
 
 import { describe, expect, it, vi } from 'vitest'

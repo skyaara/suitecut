@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import { execFile } from 'node:child_process'
 import { mkdir } from 'node:fs/promises'
 import { dirname } from 'node:path'

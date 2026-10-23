@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import * as z from 'zod'
 
 import { SUITECUT_MANIFEST_SCHEMA_VERSION } from './constants.js'

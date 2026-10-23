@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import { randomUUID } from 'node:crypto'
 
 import { type PresentationPage, type PresentationLocator } from './browser-control.js'
