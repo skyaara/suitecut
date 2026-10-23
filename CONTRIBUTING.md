@@ -8,6 +8,9 @@ sandboxing when changing these boundaries.
 
 See [component build requirements](docs/building.md) for the JavaScript SDK,
 standalone C++ SDK, macOS packaging and local CEF regression suite.
+Install [Git LFS](https://git-lfs.com) before cloning: the bundled Kokoro model
+(`assets/kokoro/model_quantized.onnx`) is stored in LFS, and `pnpm pack` refuses a
+pointer file. In an existing clone run `git lfs install` and `git lfs pull`.
 Use Node.js 22 or newer, pnpm 11, FFmpeg and FFprobe. Real browser checks require the pinned
 CEF executable described in [native/browser/README.md](native/browser/README.md).
 

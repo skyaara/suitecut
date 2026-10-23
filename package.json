@@ -148,7 +148,7 @@
     "test:package": "pnpm build && pnpm audio-plugins:build && pnpm test:package:built",
     "test:package:built": "node scripts/verify-package.mjs",
     "test:platform": "vitest run tests/atomic-file.test.ts tests/cli.test.ts tests/manifest.test.ts tests/process.test.ts tests/report-redaction.test.ts tests/timeline.test.ts",
-    "prepack": "pnpm build",
+    "prepack": "pnpm check:lfs && pnpm build",
     "prepublishOnly": "pnpm check && pnpm site:check && pnpm site:build && pnpm test:package:built",
     "test:native": "pnpm build && node scripts/verify-native-browser.mjs && node scripts/verify-native-stream.mjs && node scripts/verify-native-recording.mjs",
     "test:native:stream": "pnpm build && node scripts/verify-native-stream.mjs",
@@ -169,7 +169,8 @@
     "test:native:recovery": "pnpm build && node scripts/verify-native-page-recovery.mjs && node scripts/verify-native-page-recovery-deadlines.mjs && node scripts/verify-native-page-recovery-media.mjs",
     "test:cef": "python3 tests/cef",
     "test:cef:list": "python3 tests/cef --list",
-    "test:cef:unit": "python3 -m unittest discover -s tests/cef/unit -p 'test_*.py'"
+    "test:cef:unit": "python3 -m unittest discover -s tests/cef/unit -p 'test_*.py'",
+    "check:lfs": "node scripts/check-lfs-assets.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

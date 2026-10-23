@@ -216,6 +216,13 @@ try {
     )
   }
 
+  // The model is stored in Git LFS; a checkout without LFS packs a 133-byte pointer.
+  assert(
+    packResult.files.find((file) => file.path === 'assets/kokoro/model_quantized.onnx')?.size ===
+      92_361_210,
+    'npm package must contain the real Kokoro model, not a Git LFS pointer',
+  )
+
   assert(packResult.size < 80 * 1024 * 1024, 'packed tarball exceeds the 80 MB release budget')
   assert(
     packResult.unpackedSize < 110 * 1024 * 1024,
