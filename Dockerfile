@@ -4,7 +4,6 @@ WORKDIR /build
 RUN npm install --global pnpm@11.21.0
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.json tsconfig.build.json ./
 COPY site/package.json ./site/package.json
-COPY plugins ./plugins
 COPY src ./src
 COPY scripts/clean-dist.mjs ./scripts/clean-dist.mjs
 COPY assets ./assets
@@ -12,7 +11,7 @@ COPY native ./native
 COPY LICENSE README.md CHANGELOG.md CODE_OF_CONDUCT.md CONTRIBUTING.md SECURITY.md THIRD_PARTY_NOTICES.md ./
 RUN pnpm install --frozen-lockfile --network-concurrency=4 \
     && pnpm build && mkdir /out && npm pack --ignore-scripts --pack-destination /out \
-    && rm -rf node_modules site/node_modules plugins/*/node_modules /root/.local/share/pnpm/store /root/.npm
+    && rm -rf node_modules site/node_modules /root/.local/share/pnpm/store /root/.npm
 
 FROM ${NODE_IMAGE} AS runtime
 ENV SUITECUT_MEDIA_CACHE=/opt/suitecut-media

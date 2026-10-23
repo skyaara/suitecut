@@ -29,7 +29,6 @@
   },
   "include": [
     "src/**/*.ts",
-    "plugins/**/*.ts",
     "tests/**/*.ts",
     "examples/**/*.ts",
     "scripts/**/*.mjs",

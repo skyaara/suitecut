@@ -121,7 +121,6 @@
   },
   "workspaces": [
     "site",
-    "plugins/*",
     "packages/*"
   ],
   "scripts": {
@@ -131,11 +130,9 @@
     "example:render": "node dist/cli.js render --manifest .suitecut/latest-run.json --output .suitecut/videos/product-tour.mp4",
     "lint": "eslint . --max-warnings 0",
     "lint:fix": "eslint . --fix",
-    "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\" \"examples/**/*.ts\" \"plugins/**/*.{ts,json,mjs}\" \"scripts/**/*.mjs\" \"site/**/*.{astro,css,ts,json,mjs}\" \".github/**/*.yml\" \"*.{js,json}\"",
-    "format:check": "prettier --check \"src/**/*.ts\" \"tests/**/*.ts\" \"examples/**/*.ts\" \"plugins/**/*.{ts,json,mjs}\" \"scripts/**/*.mjs\" \"site/**/*.{astro,css,ts,json,mjs}\" \".github/**/*.yml\" \"*.{js,json}\"",
-    "check": "pnpm site:sync && pnpm build && pnpm audio-plugins:check && pnpm test:audio-plugin:built && pnpm lint && pnpm format:check && pnpm typecheck && pnpm test -- --run",
-    "audio-plugins:build": "pnpm --filter @suitecut/audio-sherpa-core build && pnpm --filter @suitecut/audio-vits build && pnpm --filter @suitecut/audio-matcha build && pnpm --filter @suitecut/audio-kokoro-sherpa build && pnpm --filter @suitecut/audio-kitten build && pnpm --filter @suitecut/audio-zipvoice build && pnpm --filter @suitecut/audio-pocket build && pnpm --filter @suitecut/audio-supertonic build",
-    "audio-plugins:check": "pnpm audio-plugins:build && pnpm --filter @suitecut/audio-sherpa-core check && pnpm --filter @suitecut/audio-vits check && pnpm --filter @suitecut/audio-matcha check && pnpm --filter @suitecut/audio-kokoro-sherpa check && pnpm --filter @suitecut/audio-kitten check && pnpm --filter @suitecut/audio-zipvoice check && pnpm --filter @suitecut/audio-pocket check && pnpm --filter @suitecut/audio-supertonic check",
+    "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\" \"examples/**/*.ts\" \"scripts/**/*.mjs\" \"site/**/*.{astro,css,ts,json,mjs}\" \".github/**/*.yml\" \"*.{js,json}\"",
+    "format:check": "prettier --check \"src/**/*.ts\" \"tests/**/*.ts\" \"examples/**/*.ts\" \"scripts/**/*.mjs\" \"site/**/*.{astro,css,ts,json,mjs}\" \".github/**/*.yml\" \"*.{js,json}\"",
+    "check": "pnpm site:sync && pnpm build && pnpm test:audio-plugin:built && pnpm lint && pnpm format:check && pnpm typecheck && pnpm test -- --run",
     "typecheck": "tsc --noEmit",
     "site:build": "pnpm --filter suitecut-docs build",
     "site:check": "pnpm --filter suitecut-docs check",
@@ -144,8 +141,7 @@
     "test:audio-plugin": "pnpm build && pnpm test:audio-plugin:built",
     "test:audio-plugin:built": "node scripts/verify-audio-plugin.mjs",
     "test:kokoro": "pnpm build && node scripts/verify-kokoro.mjs",
-    "test:sherpa": "pnpm audio-plugins:build && vitest run tests/sherpa-plugin.test.ts",
-    "test:package": "pnpm build && pnpm audio-plugins:build && pnpm test:package:built",
+    "test:package": "pnpm build && pnpm test:package:built",
     "test:package:built": "node scripts/verify-package.mjs",
     "test:platform": "vitest run tests/atomic-file.test.ts tests/cli.test.ts tests/manifest.test.ts tests/process.test.ts tests/report-redaction.test.ts tests/timeline.test.ts",
     "prepack": "pnpm check:lfs && pnpm build",

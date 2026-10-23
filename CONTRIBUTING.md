@@ -38,7 +38,8 @@ The CEF suite is not enabled in CI.
 - Use NodeNext ESM imports with emitted `.js` relative specifiers.
 - Keep renderer DOM logic independent of host orchestration.
 - Preserve bounded capture queues, capture timestamps and observable failures.
-- Keep model runtimes in `plugins/` and retain upstream license notices.
+- Keep model runtimes out of this branch; the Sherpa audio plugins live on the
+  `audio-plugins` branch. Retain upstream license notices.
 - Do not commit `.suitecut`, `dist`, browser profiles or generated media.
 - Do not replace Kokoro assets without updating their pin and notices.
 
@@ -47,9 +48,9 @@ Public entries are `suitecut`, `suitecut/native`, `suitecut/beta`,
 option, manifest and CLI changes as public API changes. Audio plugins run in the
 narration worker and write mono PCM WAV to the requested path.
 
-Run `pnpm test:package` for package changes, `pnpm test:audio-plugin` for audio
-contracts and `pnpm test:sherpa` with an explicit local model when exercising
-Sherpa integrations. These checks do not publish anything.
+Run `pnpm test:package` for package changes and `pnpm test:audio-plugin` for audio
+contracts. Sherpa plugin checks run on the `audio-plugins` branch. These checks
+do not publish anything.
 
 ## Review
 

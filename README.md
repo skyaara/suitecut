@@ -74,7 +74,7 @@ streaming, IPC and failure behavior.
 - [Benchmarks: measured capture throughput](docs/benchmarks.md)
 - [macOS runtime packaging and fixed signing](docs/native-full-runtime-macos.md)
 - [Playwright behavior reference and feature-matching checklist](docs/playwright-feature-parity.md)
-- [Audio plugin packages](plugins/)
+- [Audio plugin packages](https://github.com/skyaara/suitecut/tree/audio-plugins/plugins) (`audio-plugins` branch)
 - [Native example](examples/native.ts)
 - [Full real-app example: Song Maker with 1080p60 video and page audio](examples/song-maker/README.md)
 - [Contributing](CONTRIBUTING.md)

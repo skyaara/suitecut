@@ -17,7 +17,6 @@ Only maintainers with npm and GitHub release access should use this checklist.
    pnpm test:native:cadence
    pnpm test:audio-plugin
    pnpm test:kokoro
-   SUITECUT_SHERPA_VITS_MODEL_DIR=/path/to/vits-model pnpm test:sherpa
    pnpm test:package
    SUITECUT_NATIVE_EXECUTABLE=/path/to/suitecut-browser pnpm test:native
    pnpm audit
@@ -25,36 +24,13 @@ Only maintainers with npm and GitHub release access should use this checklist.
 
 5. Inspect `npm pack --dry-run --json`. The SuiteCut tarball should contain only `dist`, the README,
    changelog, licenses, package metadata, cursor/Kokoro assets, and native browser source/build pins.
-   Compiled CEF binaries and SDKs must stay out of the npm tarball. Also inspect the shared
-   Sherpa runtime and each family package:
+   Compiled CEF binaries and SDKs must stay out of the npm tarball. The Sherpa audio plugin
+   packages live on the `audio-plugins` branch and are released from there.
 
-   ```sh
-   npm pack --dry-run --json --workspace @suitecut/audio-sherpa-core
-   npm pack --dry-run --json --workspace @suitecut/audio-vits
-   npm pack --dry-run --json --workspace @suitecut/audio-matcha
-   npm pack --dry-run --json --workspace @suitecut/audio-kokoro-sherpa
-   npm pack --dry-run --json --workspace @suitecut/audio-kitten
-   npm pack --dry-run --json --workspace @suitecut/audio-zipvoice
-   npm pack --dry-run --json --workspace @suitecut/audio-pocket
-   npm pack --dry-run --json --workspace @suitecut/audio-supertonic
-   ```
-
-   Each tarball should contain compiled output, its README, and package metadata. It must not contain
-   model files or TypeScript source.
-
-6. Publish SuiteCut, then the shared runtime, then the matching family package versions. Use npm
-   provenance when the npm account and repository are configured for it:
+6. Publish SuiteCut. Use npm provenance when the npm account and repository are configured for it:
 
    ```sh
    npm publish --provenance --access public
-   npm publish --provenance --access public --workspace @suitecut/audio-sherpa-core
-   npm publish --provenance --access public --workspace @suitecut/audio-vits
-   npm publish --provenance --access public --workspace @suitecut/audio-matcha
-   npm publish --provenance --access public --workspace @suitecut/audio-kokoro-sherpa
-   npm publish --provenance --access public --workspace @suitecut/audio-kitten
-   npm publish --provenance --access public --workspace @suitecut/audio-zipvoice
-   npm publish --provenance --access public --workspace @suitecut/audio-pocket
-   npm publish --provenance --access public --workspace @suitecut/audio-supertonic
    ```
 
 7. Verify the published package in a new temporary project before creating and pushing the matching

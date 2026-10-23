@@ -88,102 +88,6 @@ importers:
         specifier: ^4.4.3
         version: 4.4.3
 
-  plugins/kitten:
-    dependencies:
-      '@suitecut/audio-sherpa-core':
-        specifier: ^2.0.0
-        version: link:../sherpa-core
-      suitecut:
-        specifier: '>=1.0.0 <3'
-        version: link:../..
-      zod:
-        specifier: ^4.4.3
-        version: 4.4.3
-
-  plugins/kokoro-sherpa:
-    dependencies:
-      '@suitecut/audio-sherpa-core':
-        specifier: ^2.0.0
-        version: link:../sherpa-core
-      suitecut:
-        specifier: '>=1.0.0 <3'
-        version: link:../..
-      zod:
-        specifier: ^4.4.3
-        version: 4.4.3
-
-  plugins/matcha:
-    dependencies:
-      '@suitecut/audio-sherpa-core':
-        specifier: ^2.0.0
-        version: link:../sherpa-core
-      suitecut:
-        specifier: '>=1.0.0 <3'
-        version: link:../..
-      zod:
-        specifier: ^4.4.3
-        version: 4.4.3
-
-  plugins/pocket:
-    dependencies:
-      '@suitecut/audio-sherpa-core':
-        specifier: ^2.0.0
-        version: link:../sherpa-core
-      suitecut:
-        specifier: '>=1.0.0 <3'
-        version: link:../..
-      zod:
-        specifier: ^4.4.3
-        version: 4.4.3
-
-  plugins/sherpa-core:
-    dependencies:
-      sherpa-onnx:
-        specifier: ^1.13.6
-        version: 1.13.6
-      suitecut:
-        specifier: '>=1.0.0 <3'
-        version: link:../..
-      zod:
-        specifier: ^4.4.3
-        version: 4.4.3
-
-  plugins/supertonic:
-    dependencies:
-      '@suitecut/audio-sherpa-core':
-        specifier: ^2.0.0
-        version: link:../sherpa-core
-      suitecut:
-        specifier: '>=1.0.0 <3'
-        version: link:../..
-      zod:
-        specifier: ^4.4.3
-        version: 4.4.3
-
-  plugins/vits:
-    dependencies:
-      '@suitecut/audio-sherpa-core':
-        specifier: ^2.0.0
-        version: link:../sherpa-core
-      suitecut:
-        specifier: '>=1.0.0 <3'
-        version: link:../..
-      zod:
-        specifier: ^4.4.3
-        version: 4.4.3
-
-  plugins/zipvoice:
-    dependencies:
-      '@suitecut/audio-sherpa-core':
-        specifier: ^2.0.0
-        version: link:../sherpa-core
-      suitecut:
-        specifier: '>=1.0.0 <3'
-        version: link:../..
-      zod:
-        specifier: ^4.4.3
-        version: 4.4.3
-
   site:
     dependencies:
       '@fontsource-variable/manrope':
@@ -2218,9 +2122,6 @@ packages:
   shebang-regex@3.0.0:
     resolution: {integrity: sha512-7++dFhtcx3353uBaq8DDR4NuxBetBzC7ZQOhmTQInHEd6bSrXdiEyzCvG07Z44UYdLShWUyXt5M/yhz8ekcb1A==}
     engines: {node: '>=8'}
-
-  sherpa-onnx@1.13.6:
-    resolution: {integrity: sha512-N4EpR3PNBdhPWB0dar6K01KKFWdLtvocFFXqT6srljxcDna+o57WAEN9GDHgwA/kKm+JVuDjZ9s/ydF3jOFhuQ==}
 
   shiki@4.4.3:
     resolution: {integrity: sha512-Mb/GvXPHBAXdgGIcnfU5L3ldpn1XcxrGkPHwqgRx17/I2XRfqlFKk2vGkHWINn1kdXvzJZeuO3is6I9KLPFm0g==}
@@ -4678,8 +4579,6 @@ snapshots:
       shebang-regex: 3.0.0
 
   shebang-regex@3.0.0: {}
-
-  sherpa-onnx@1.13.6: {}
 
   shiki@4.4.3:
     dependencies:

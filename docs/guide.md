@@ -103,7 +103,7 @@ mixes it with narration. `sourceAudioEnabled`, `sourceAudioVolume` and
 Local Kokoro narration and optional model packages share the worker contract.
 Choose a provider with `audioPlugins` and `suitecut.narrate` options. Audio plugins
 must write mono PCM WAV to the requested path and must not download model files
-implicitly. See [audio packages](../plugins/) and [the plugin API](../src/audio-plugin.ts).
+implicitly. See [audio packages](https://github.com/skyaara/suitecut/tree/audio-plugins/plugins) (on the `audio-plugins` branch) and [the plugin API](../src/audio-plugin.ts).
 
 ## Streaming
 

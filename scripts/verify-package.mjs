@@ -8,17 +8,6 @@ import * as z from 'zod'
 
 const packageRoot = resolve(import.meta.dirname, '..')
 const npmExecutable = process.platform === 'win32' ? 'npm.cmd' : 'npm'
-const audioPackages = [
-  { name: '@suitecut/audio-sherpa-core', directory: 'sherpa-core' },
-  { name: '@suitecut/audio-vits', directory: 'vits' },
-  { name: '@suitecut/audio-matcha', directory: 'matcha' },
-  { name: '@suitecut/audio-kokoro-sherpa', directory: 'kokoro-sherpa' },
-  { name: '@suitecut/audio-kitten', directory: 'kitten' },
-  { name: '@suitecut/audio-zipvoice', directory: 'zipvoice' },
-  { name: '@suitecut/audio-pocket', directory: 'pocket' },
-  { name: '@suitecut/audio-supertonic', directory: 'supertonic' },
-]
-
 const PackageJsonSchema = z.object({
   name: z.string(),
   version: z.string(),
@@ -32,7 +21,7 @@ const PackResultSchema = z.object({
   entryCount: z.number().int().nonnegative(),
   size: z.number().int().nonnegative(),
   unpackedSize: z.number().int().nonnegative(),
-  files: z.array(z.object({ path: z.string() })),
+  files: z.array(z.object({ path: z.string(), size: z.number().int().nonnegative() })),
 })
 
 /**
@@ -77,61 +66,6 @@ function assert(condition, message) {
   if (!condition) throw new Error(message)
 }
 
-/**
- * Reads whether a path exists.
- * @param {string} path
- * @returns {Promise<boolean>}
- */
-async function pathExists(path) {
-  return access(path).then(
-    () => true,
-    () => false,
-  )
-}
-
-/**
- * Packs and validates one split audio package.
- * @param {{ name: string, directory: string }} audioPackage
- * @param {string} destination
- */
-async function packAudioPackage(audioPackage, destination) {
-  const result = await run(
-    npmExecutable,
-    [
-      'pack',
-      '--ignore-scripts',
-      '--json',
-      '--pack-destination',
-      destination,
-      '--workspace',
-      audioPackage.name,
-    ],
-    packageRoot,
-  )
-  const packagePackResult = z.array(PackResultSchema).parse(JSON.parse(result.stdout))[0]
-  if (packagePackResult === undefined) {
-    throw new Error(`npm pack did not return a result for ${audioPackage.name}`)
-  }
-  const paths = new Set(packagePackResult.files.map((file) => file.path))
-  for (const requiredPath of [
-    'LICENSE',
-    'README.md',
-    'dist/index.d.ts',
-    'dist/index.js',
-    'package.json',
-  ]) {
-    assert(paths.has(requiredPath), `${audioPackage.name} is missing ${requiredPath}`)
-  }
-  assert(
-    ![...paths].some(
-      (path) => path.startsWith('src/') || path.endsWith('.onnx') || path.endsWith('.wasm'),
-    ),
-    `${audioPackage.name} contains source or model files`,
-  )
-  assert(packagePackResult.size < 100 * 1024, `${audioPackage.name} tarball exceeds 100 KB`)
-  return { name: audioPackage.name, result: packagePackResult }
-}
-
 const temporaryRoot = await mkdtemp(join(tmpdir(), 'suitecut-package-'))
 
 try {
@@ -142,23 +76,6 @@ try {
   assert(packageJson.version !== '0.0.0', 'package.json must use a release version')
   assert(packageJson.license === 'MIT', 'package.json license must match LICENSE')
   assert(packageJson.repository?.url, 'package.json must identify its source repository')
-
-  for (const audioPackage of audioPackages) {
-    const metadata = PackageJsonSchema.parse(
-      JSON.parse(
-        await readFile(
-          join(packageRoot, 'plugins', audioPackage.directory, 'package.json'),
-          'utf8',
-        ),
-      ),
-    )
-    assert(metadata.name === audioPackage.name, `${audioPackage.directory} package name changed`)
-    assert(
-      metadata.version === packageJson.version,
-      `${audioPackage.name} version must match SuiteCut`,
-    )
-    assert(metadata.license === 'MIT', `${audioPackage.name} license must match SuiteCut`)
-  }
 
   const packed = await run(
     npmExecutable,
@@ -209,7 +126,7 @@ try {
     assert(packagedPaths.has(requiredPath), `npm package is missing ${requiredPath}`)
   }
 
-  for (const forbiddenPrefix of ['.github/', 'examples/', 'plugins/', 'site/', 'src/', 'tests/']) {
+  for (const forbiddenPrefix of ['.github/', 'examples/', 'site/', 'src/', 'tests/']) {
     assert(
       ![...packagedPaths].some((path) => path.startsWith(forbiddenPrefix)),
       `npm package contains development files under ${forbiddenPrefix}`,
@@ -229,20 +146,6 @@ try {
     'installed package exceeds the 110 MB release budget',
   )
 
-  const packedAudio = await Promise.all(
-    audioPackages.map((audioPackage) => packAudioPackage(audioPackage, temporaryRoot)),
-  )
-
-  const corePackResult = packedAudio.find(
-    (audioPackage) => audioPackage.name === '@suitecut/audio-sherpa-core',
-  )?.result
-  const vitsPackResult = packedAudio.find(
-    (audioPackage) => audioPackage.name === '@suitecut/audio-vits',
-  )?.result
-  if (corePackResult === undefined || vitsPackResult === undefined) {
-    throw new Error('Sherpa core or VITS package result is missing')
-  }
-
   const consumerDirectory = join(temporaryRoot, 'consumer')
   await mkdir(consumerDirectory)
   await writeFile(
@@ -252,22 +155,10 @@ try {
   )
   const tarballPath = join(temporaryRoot, packResult.filename)
   const consumerTarballPath = join(consumerDirectory, packResult.filename)
-  const coreTarballPath = join(consumerDirectory, corePackResult.filename)
-  const vitsTarballPath = join(consumerDirectory, vitsPackResult.filename)
   await copyFile(tarballPath, consumerTarballPath)
-  await copyFile(join(temporaryRoot, corePackResult.filename), coreTarballPath)
-  await copyFile(join(temporaryRoot, vitsPackResult.filename), vitsTarballPath)
   await run(
     npmExecutable,
-    [
-      'install',
-      '--ignore-scripts',
-      '--no-audit',
-      '--no-fund',
-      consumerTarballPath,
-      coreTarballPath,
-      vitsTarballPath,
-    ],
+    ['install', '--ignore-scripts', '--no-audit', '--no-fund', consumerTarballPath],
     consumerDirectory,
   )
 
@@ -279,7 +170,6 @@ import { renderSuiteCut as renderFromSubpath } from 'suitecut/render'
 import { launchNativeBrowser, createNativeBroadcast, recordNative, createNativePage } from 'suitecut/native'
 import { DEFAULT_BACKEND, record as betaRecord } from 'suitecut/beta'
 import { SUITECUT_EVENT_ATTACHMENT, SUITECUT_MANIFEST_SCHEMA_VERSION } from 'suitecut/types'
-import vitsPlugin from '@suitecut/audio-vits'
 
 if (DEFAULT_BACKEND !== 'native' || typeof betaRecord !== 'function' || betaRecord !== record) throw new Error('suitecut beta default is incorrect')
 if (typeof launchNativeBrowser !== 'function' || typeof createNativeBroadcast !== 'function' || typeof recordNative !== 'function' || typeof createNativePage !== 'function') {
@@ -294,9 +184,6 @@ if (typeof defineSuiteCut !== 'function' || typeof record !== 'function') {
 if (typeof defineSuiteCutAudioPlugin !== 'function' || typeof encodePcm16Wav !== 'function') {
   throw new Error('suitecut audio plugin export is unavailable')
 }
-if (typeof vitsPlugin.synthesize !== 'function') {
-  throw new Error('VITS audio plugin export is unavailable')
-}
 if (SUITECUT_EVENT_ATTACHMENT !== 'suitecut-events.json') {
   throw new Error('suitecut types export is unavailable')
 }
@@ -307,13 +194,6 @@ if (SUITECUT_MANIFEST_SCHEMA_VERSION !== 1) {
     'utf8',
   )
   await run(process.execPath, ['smoke.mjs'], consumerDirectory)
-
-  for (const audioPackage of audioPackages.slice(2)) {
-    assert(
-      !(await pathExists(join(consumerDirectory, 'node_modules', ...audioPackage.name.split('/')))),
-      `VITS-only consumer unexpectedly installed ${audioPackage.name}`,
-    )
-  }
 
   const rawConsumerDirectory = join(temporaryRoot, 'raw-consumer')
   await mkdir(rawConsumerDirectory)
@@ -354,7 +234,7 @@ if (typeof defineSuiteCut !== 'function' || typeof record !== 'function') {
   assert(cli.stdout.includes('suitecut render'), 'installed CLI did not print SuiteCut help')
 
   process.stdout.write(
-    `Verified ${packResult.id} and ${String(audioPackages.length)} split audio packages. VITS-only install, native public imports, and CLI smoke checks passed.\n`,
+    `Verified ${packResult.id}. Native public imports and CLI smoke checks passed.\n`,
   )
 } finally {
   await rm(temporaryRoot, { recursive: true, force: true })

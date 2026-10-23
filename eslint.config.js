@@ -8,7 +8,6 @@ export default tseslint.config(
   {
     ignores: [
       'dist/**',
-      'plugins/*/dist/**',
       'packages/*/dist/**',
       '.suitecut/**',
       'test-results/**',
@@ -36,7 +35,7 @@ export default tseslint.config(
         typescript: {
           alwaysTryTypes: true,
           noWarnOnMultipleProjects: true,
-          project: ['./tsconfig.json', './plugins/*/tsconfig.json'],
+          project: ['./tsconfig.json'],
         },
       },
     },
