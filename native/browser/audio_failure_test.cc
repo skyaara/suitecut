@@ -139,4 +139,16 @@ int main() {
   source->stopped_ = true;
   source->OnAudioStreamError(nullptr, "stream ended during shutdown");
   assert(stopping->errors.empty() && !source->audio_valid_ && scheduled.empty());
+
+  // The same teardown error on the UI thread, or dispatched there, is also ignored.
+  accept_post = true;
+  auto stopping_ui = std::make_shared<Observation>();
+  source = new Source(stopping_ui);
+  source->stopped_ = true;
+  on_ui = true;
+  source->OnAudioStreamError(nullptr, "stream ended on UI during shutdown");
+  on_ui = false;
+  source->OnAudioStreamError(nullptr, "stream ended off UI during shutdown");
+  Drain();
+  assert(stopping_ui->errors.empty());
 }

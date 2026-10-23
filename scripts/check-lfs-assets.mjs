@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 // Refuse to pack Git LFS pointer files in place of the bundled Kokoro model.
 import { createHash } from 'node:crypto'
-import { createReadStream } from 'node:fs'
+import { createReadStream, realpathSync } from 'node:fs'
 import { stat } from 'node:fs/promises'
 import process from 'node:process'
-import { pathToFileURL } from 'node:url'
+import { fileURLToPath } from 'node:url'
 
 /** Bundled files stored in Git LFS, pinned by exact size and SHA-256. */
 export const lfsAssets = [
@@ -37,6 +37,9 @@ export async function checkLfsAssets(root) {
   }
 }
 
-if (process.argv[1] !== undefined && import.meta.url === pathToFileURL(process.argv[1]).href) {
+// Node resolves the entry module's symlinks, but argv keeps the path as typed;
+// compare real paths so running through a symlink still runs the check.
+const entry = process.argv[1]
+if (entry !== undefined && realpathSync(entry) === realpathSync(fileURLToPath(import.meta.url))) {
   await checkLfsAssets(new URL('../', import.meta.url))
 }

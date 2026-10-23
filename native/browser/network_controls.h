@@ -13,6 +13,7 @@
 #include <vector>
 #include "include/cef_parser.h"
 #include "network_glob.h"
+#include "observed_url.h"
 #include "route_registry.h"
 #include "route_matcher_selections.h"
 #include "network_preflights.h"
@@ -681,7 +682,7 @@ class NetworkControls {
   Request* FindLogical(const std::string& id) {for(auto& [key,request]:requests_)if(request.logical_id==id)return &request;return nullptr;}
   Dict RequestInfo(const Request& request) const {
     auto info=CefDictionaryValue::Create();info->SetString("id",request.logical_id);info->SetString("requestId",request.native_id);
-    info->SetString("session",request.session);info->SetString("frameId",request.frame);info->SetString("url",request.url);
+    info->SetString("session",request.session);info->SetString("frameId",request.frame);info->SetString("url",NativeObservedURL(request.url));
     info->SetString("method",request.method);info->SetString("resourceType",request.resource);
     info->SetBool("isNavigationRequest",request.navigation);info->SetBool("headersReady",request.request_headers_ready||(request.finished&&!request.request_headers_expected));
     if(!request.request_header_error.empty())info->SetString("_nativeHeadersError",request.request_header_error);

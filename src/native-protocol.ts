@@ -107,9 +107,12 @@ const NativeObservedNetworkURLSchema = z
   .refine((value) => value.length <= 8192 || value.startsWith('data:'), {
     message: 'Observed non-data network URLs must not exceed 8192 characters',
   })
-  .transform((value) =>
-    value.length > MAX_OBSERVED_DATA_URL ? value.slice(0, MAX_OBSERVED_DATA_URL) : value,
-  )
+  .transform((value) => {
+    if (value.length <= MAX_OBSERVED_DATA_URL) return value
+    // Never keep a lone high surrogate from a split astral character.
+    const last = value.charCodeAt(MAX_OBSERVED_DATA_URL - 1)
+    return value.slice(0, MAX_OBSERVED_DATA_URL - (last >= 0xd800 && last <= 0xdbff ? 1 : 0))
+  })
 export const NativeNetworkRequestSchema = z.object({
   id: z.string().min(1).max(256),
   requestId: z.string().max(256),

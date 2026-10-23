@@ -4,7 +4,7 @@ auto Source::OnAudioStreamError(CefRefPtr<CefBrowser>, const CefString& message)
   audio_valid_ = false;
   const auto detail = suitecut::DevToolsTruncateWTF8(message.ToString(), 2048);
   auto report = [self = CefRefPtr<Source>(this), alive = engine_.Alive(), detail] {
-    if (!*alive || self->closing_page_) return;
+    if (!*alive || self->closing_page_ || self->stopped_) return;
     const auto contexts = self->engine_.contexts();
     // A pending, cancelable beforeunload dialog is not a committed close.
     const bool committed = contexts->PageClosePending(self->page_id_) &&

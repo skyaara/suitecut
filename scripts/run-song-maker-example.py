@@ -52,8 +52,8 @@ def main():
             archive = output / packed['filename']
             setup['packages'].append({'name': packed['name'], 'version': packed['version'],
                                       'path': str(archive), 'sha256': hashlib.sha256(archive.read_bytes()).hexdigest()})
-        for name in ('package.json', 'run.mjs', 'verify-media.mjs', '.env.example', 'README.md',
-                     'eslint.config.mjs'):
+        # eslint.config.mjs needs the repository's ESLint install, so it is not copied.
+        for name in ('package.json', 'run.mjs', 'verify-media.mjs', '.env.example', 'README.md'):
             shutil.copy2(ROOT / 'examples/song-maker' / name, consumer / name)
         run(['npm', 'install', '--no-audit', '--no-fund', '--save-exact',
              *[item['path'] for item in setup['packages']]], cwd=consumer)

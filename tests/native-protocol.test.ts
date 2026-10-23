@@ -58,6 +58,11 @@ describe('native IPC boundary', () => {
       expect(parsed).toHaveLength(MAX_OBSERVED_DATA_URL)
       expect(oversized.startsWith(parsed)).toBe(true)
     }
+    // The cut never leaves half of a surrogate pair.
+    const astral = `data:text/plain,${'x'.repeat(MAX_OBSERVED_DATA_URL - 17)}\u{1F600}tail`
+    const cut = NativeNetworkRequestSchema.parse({ ...request, url: astral }).url
+    expect(cut).toHaveLength(MAX_OBSERVED_DATA_URL - 1)
+    expect(cut.endsWith('x')).toBe(true)
   })
   it('preserves proven viewport geometry and null resize paints alongside legacy frame packets', () => {
     const headers: NativePacket[] = []

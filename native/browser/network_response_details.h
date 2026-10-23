@@ -3,6 +3,7 @@
 #include <cmath>
 #include <string>
 #include "include/cef_values.h"
+#include "observed_url.h"
 namespace suitecut {
 // Project only observed Chromium response metadata. Limits apply before any
 // UTF-8 conversion; the resulting DTO is charged by NetworkControls' existing
@@ -41,7 +42,7 @@ inline CefRefPtr<CefDictionaryValue> NativeResponseWireInfo(
     const std::string& session,const std::string& frame,const std::string& method) {
   if(!source)return nullptr;
   auto info=CefDictionaryValue::Create();
-  info->SetString("url",source->GetString("url"));
+  info->SetString("url",NativeObservedURL(source->GetString("url").ToString()));
   double status=0;NativeResponseNumber(source,"status",status);
   info->SetInt("status",static_cast<int>(status));
   info->SetString("statusText",source->GetString("statusText"));

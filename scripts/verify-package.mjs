@@ -213,7 +213,11 @@ import { launchNativeBrowser, createNativeBroadcast, recordNative, createNativeP
 import { DEFAULT_BACKEND, record as betaRecord } from 'suitecut/beta'
 import { SUITECUT_EVENT_ATTACHMENT, SUITECUT_MANIFEST_SCHEMA_VERSION } from 'suitecut/types'
 import { readFile } from 'node:fs/promises'
-import fixturePlugin from 'suitecut-audio-plugin-fixture'
+import { resolve as resolvePath } from 'node:path'
+// Internal modules of the installed package, loaded by path: the same resolver and
+// narration worker that run plugins configured through audioPlugins.
+import { resolveAudioPluginReferences } from './node_modules/suitecut/dist/audio-plugin-loader.js'
+import { SuiteCutNarrationWorker } from './node_modules/suitecut/dist/narration-worker-client.js'
 
 if (DEFAULT_BACKEND !== 'native' || typeof betaRecord !== 'function' || betaRecord !== record) throw new Error('suitecut beta default is incorrect')
 if (typeof launchNativeBrowser !== 'function' || typeof createNativeBroadcast !== 'function' || typeof recordNative !== 'function' || typeof createNativePage !== 'function') {
@@ -234,7 +238,27 @@ if (SUITECUT_EVENT_ATTACHMENT !== 'suitecut-events.json') {
 if (SUITECUT_MANIFEST_SCHEMA_VERSION !== 1) {
   throw new Error('suitecut manifest schema version export is unavailable')
 }
-await fixturePlugin.synthesize({ text: 'Hello', voice: 'fixture', speed: 1, outputPath: 'plugin.wav' })
+const plugin = resolveAudioPluginReferences(
+  [{ provider: 'fixture-audio', module: 'suitecut-audio-plugin-fixture' }],
+  process.cwd(),
+).get('fixture-audio')
+if (!plugin?.module.includes('/node_modules/suitecut-audio-plugin-fixture/')) {
+  throw new Error('split audio plugin did not resolve from the consumer project')
+}
+const worker = new SuiteCutNarrationWorker()
+try {
+  await worker.synthesize({
+    jobId: '00000000-0000-4000-8000-000000000003',
+    text: 'Hello',
+    provider: 'fixture-audio',
+    voice: 'fixture',
+    speed: 1,
+    outputPath: resolvePath('plugin.wav'),
+    plugin,
+  })
+} finally {
+  await worker.close()
+}
 const wav = await readFile('plugin.wav')
 if (wav.toString('ascii', 0, 4) !== 'RIFF' || wav.toString('ascii', 8, 12) !== 'WAVE' || wav.length !== 44 + 2400 * 2) {
   throw new Error('split audio plugin did not write a PCM WAV through suitecut/audio-plugin')
