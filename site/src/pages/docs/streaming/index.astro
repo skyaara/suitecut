@@ -2,6 +2,7 @@
 import CodeBlock from '../../../components/CodeBlock.astro'
 import DocsLayout from '../../../layouts/DocsLayout.astro'
 import { streamExample } from '../../../lib/api-reference.js'
+import { sitePath } from '../../../lib/paths.js'
 ---
 
 <DocsLayout
@@ -42,7 +43,9 @@ import { streamExample } from '../../../lib/api-reference.js'
   <CodeBlock label="Terminal" code={'pnpm test:native:cadence\npnpm test:native:stream'} />
   <p>
     The stream verifier needs the built native browser and checks decoded received media, source
-    replacement and receiver reconnection. Actual 120 FPS browser throughput remains unverified
-    here.
+    replacement and receiver reconnection. Streaming throughput at 120 FPS remains unverified;
+    measured recording throughput is on the <a href={sitePath('/docs/performance')}
+      >performance page</a
+    >.
   </p>
 </DocsLayout>

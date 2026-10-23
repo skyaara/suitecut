@@ -1,0 +1,83 @@
+---
+import CodeBlock from '../../../components/CodeBlock.astro'
+import DocsLayout from '../../../layouts/DocsLayout.astro'
+
+const reproduce = `python3 scripts/verify-native-macos-recording.py \\
+  --installation '/path/to/relocated installation' \\
+  --output /new/output/dir --format mp4 \\
+  --duration-ms 120000 --case 1920x1080@120:audio --load-workers 5 \\
+  --required-distinct-fps 120 --require-no-recorder-drops --require-native-capture \\
+  --require-source-continuity`
+---
+
+<DocsLayout
+  title="Performance"
+  description="Measured native CEF 156 capture throughput, with host, workload and reproduction command."
+  section="performance"
+>
+  <h1>Performance</h1>
+  <p>
+    Latest valid measurements for the CEF 156 engine. Each result names its commit, host and
+    workload. The full record, including earlier runs and limits, is in
+    <a href="https://github.com/skyaara/suitecut/blob/main/docs/benchmarks.md">docs/benchmarks.md</a
+    >.
+  </p>
+  <h2 id="macos-recording">1080p120 recording on macOS</h2>
+  <p>
+    Measured 2026-10-23 at commit <code>0e75427</code> on an Apple M4 (16 GB, macOS 27.0.1). IOSurface
+    capture, Metal NV12 conversion and <code>h264_videotoolbox</code> MP4, with 48 kHz page audio, the
+    per-frame canvas-reallocation fixture and five CPU load workers.
+  </p>
+  <table>
+    <thead>
+      <tr>
+        <th>Run</th>
+        <th>Distinct FPS</th>
+        <th>Held paints</th>
+        <th>Audio</th>
+        <th>Load average</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>120 s</td>
+        <td>119.07</td>
+        <td>112 (0.78%)</td>
+        <td>no silence</td>
+        <td>3.9–8.4</td>
+      </tr>
+      <tr>
+        <td>60 s</td>
+        <td>119.25</td>
+        <td>45 (0.62%)</td>
+        <td>no silence</td>
+        <td>8.0–11.4</td>
+      </tr>
+      <tr>
+        <td>10 s, A/V sync</td>
+        <td>120.00</td>
+        <td>0</td>
+        <td>8.33 ms audio delay</td>
+        <td>9.6–10.2</td>
+      </tr>
+    </tbody>
+  </table>
+  <p>
+    The recorder dropped and coalesced no frames; held paints are frames CEF never delivered. The
+    strict sustained 120 FPS gate did not pass on the longer runs on this busy host. An earlier run
+    of the same command on 2026-10-20, before the runtime modularization and on a quieter host,
+    measured 120.00 distinct FPS over 120 s with no held paints.
+  </p>
+  <h2 id="reproduce">Reproduce</h2>
+  <CodeBlock label="Terminal" code={reproduce} />
+  <p>
+    Build and relocate the runtime with the macOS full-runtime guide first. Add
+    <code>--audio-sync-proof</code> for the A/V sync row, and state the fixture mode with any number you
+    publish.
+  </p>
+  <h2 id="limits">Limits</h2>
+  <p>
+    macOS ARM64 only. Arbitrary page workloads, popup paths and live streaming throughput are not
+    covered. A 120 FPS container can still repeat images that CEF never delivered under contention.
+  </p>
+</DocsLayout>

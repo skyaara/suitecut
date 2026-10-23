@@ -5,7 +5,7 @@ import { sitePath } from '../lib/paths.js'
 interface Props {
   title: string
   description: string
-  section: 'overview' | 'api' | 'kokoro' | 'audio-plugins' | 'streaming'
+  section: 'overview' | 'api' | 'kokoro' | 'audio-plugins' | 'streaming' | 'performance'
 }
 
 const { title, description, section } = Astro.props
@@ -23,6 +23,16 @@ const categories = [
       { label: 'Reconnect and stop', hash: 'reconnect-and-stop' },
       { label: 'Live effects', hash: 'live-effects' },
       { label: 'Verify locally', hash: 'verify-locally' },
+    ],
+  },
+  {
+    key: 'performance',
+    label: 'Performance',
+    href: '/docs/performance',
+    subcategories: [
+      { label: '1080p120 recording', hash: 'macos-recording' },
+      { label: 'Reproduce', hash: 'reproduce' },
+      { label: 'Limits', hash: 'limits' },
     ],
   },
   {
@@ -81,8 +91,8 @@ const categories = [
 ] as const
 const orderedCategories = [...categories].sort(
   (a, b) =>
-    ['overview', 'api', 'streaming', 'kokoro', 'audio-plugins'].indexOf(a.key) -
-    ['overview', 'api', 'streaming', 'kokoro', 'audio-plugins'].indexOf(b.key),
+    ['overview', 'api', 'streaming', 'performance', 'kokoro', 'audio-plugins'].indexOf(a.key) -
+    ['overview', 'api', 'streaming', 'performance', 'kokoro', 'audio-plugins'].indexOf(b.key),
 )
 const content = await Astro.slots.render('default')
 const headings = [...content.matchAll(/<h2[^>]*id="([^"]+)"[^>]*>([\s\S]*?)<\/h2>/gu)].map(

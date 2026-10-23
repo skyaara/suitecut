@@ -71,6 +71,7 @@ streaming, IPC and failure behavior.
 - [Native component and SDK layout](native/README.md)
 - [CEF runtime architecture](native/browser/ARCHITECTURE.md)
 - [Real-browser regression suite](docs/cef-regressions.md)
+- [Benchmarks: measured capture throughput](docs/benchmarks.md)
 - [macOS runtime packaging and fixed signing](docs/native-full-runtime-macos.md)
 - [Playwright behavior reference and feature-matching checklist](docs/playwright-feature-parity.md)
 - [Audio plugin packages](plugins/)
