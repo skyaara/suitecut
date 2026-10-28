@@ -485,7 +485,7 @@ a:hover {
   gap: 0.25rem 1.5rem;
   padding-bottom: 0.75rem;
   border-bottom: 1px solid var(--line);
-  font-size: 0.9375rem;
+  font-size: 1rem;
 }
 
 .docs-pages a {
@@ -525,7 +525,7 @@ a:hover {
   margin: 0 0 1rem;
   padding: 1rem 0;
   border-block: 1px solid var(--line);
-  font-size: 0.9375rem;
+  font-size: 1rem;
   line-height: 1.5;
 }
 
@@ -602,7 +602,7 @@ a:hover {
     gap: 0;
     padding: 0;
     border: 0;
-    font-size: 0.875rem;
+    font-size: 1rem;
   }
 
   .docs-pages a {
@@ -619,7 +619,7 @@ a:hover {
 
   .docs-toc-side {
     left: calc(50% + var(--sheet) / 2 + 1.5rem);
-    font-size: 0.8125rem;
+    font-size: 1rem;
     line-height: 1.35;
   }
 
