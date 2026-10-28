@@ -1,31 +1,12 @@
 ---
 import CodeBlock from '../components/CodeBlock.astro'
+import FlowDiagram from '../components/FlowDiagram.astro'
 import BaseLayout from '../layouts/BaseLayout.astro'
 import { recordExample } from '../lib/api-reference.js'
 import { clientRuns } from '../lib/benchmarks.js'
 import { sitePath } from '../lib/paths.js'
 
 type Spec = [string, string]
-
-const flow = [
-  {
-    label: 'Your code',
-    items: ['TypeScript SDK', 'C++ SDK and C ABI', 'Command-line sessions', 'MCP server'],
-  },
-  {
-    label: 'Protocol',
-    items: ['IPC v1 binary frames', 'Chrome over CDP', 'Firefox over BiDi'],
-  },
-  {
-    label: 'Embedded CEF 156',
-    items: ['OnPaint video', 'OnAudioStreamPacket audio', 'Isolated contexts and pages'],
-    engine: true,
-  },
-  {
-    label: 'Outputs',
-    items: ['MP4 recording', 'RTMP and RTMPS', 'Live viewer', 'Traces and HAR'],
-  },
-]
 
 const engineSpecs: Spec[] = [
   ['Pinned build', 'CEF 156.0.7 on Chromium 156.0.8078.17, beta channel'],
@@ -155,26 +136,13 @@ const format = (value: number) => (value < 10 ? value.toFixed(2) : String(Math.r
     </section>
 
     <h2 id="capabilities">How it fits together</h2>
-    <p class="muted">
+    <p>
       One engine sits in the middle. Everything you build talks to it through the same protocol, and
       everything it produces comes from its own paint and audio callbacks.
     </p>
-    <div class="flow" role="list">
-      {
-        flow.map((column) => (
-          <div class:list={['flow-column', { 'is-engine': column.engine }]} role="listitem">
-            <span class="label">{column.label}</span>
-            <ul>
-              {column.items.map((item) => (
-                <li>{item}</li>
-              ))}
-            </ul>
-          </div>
-        ))
-      }
-    </div>
+    <FlowDiagram />
 
-    <h2 id="engine"><span class="kicker">01</span>Embedded CEF engine</h2>
+    <h2 id="engine">Embedded CEF engine</h2>
     <p>
       SuiteCut ships its own Chromium Embedded Framework runtime. Frames come straight from the
       renderer's paint callback and sound from its audio stream, so what you record is exactly what
@@ -191,7 +159,7 @@ const format = (value: number) => (value < 10 ? value.toFixed(2) : String(Math.r
       }
     </dl>
 
-    <h2 id="media"><span class="kicker">02</span>Media engine</h2>
+    <h2 id="media">Media engine</h2>
     <p>
       Capture, resampling, encoding and publishing run natively on one clock. Recording and
       streaming share the pipeline, and the renderer mixes narration with page audio afterwards.
@@ -208,7 +176,7 @@ const format = (value: number) => (value < 10 ? value.toFixed(2) : String(Math.r
     </dl>
     <CodeBlock code={recordExample} />
 
-    <h2 id="agent"><span class="kicker">03</span>Browser agent</h2>
+    <h2 id="agent">Browser agent</h2>
     <p>
       The simple agent gives a model three tools instead of fifty. It observes the page as compact
       controls, acts on short refs and waits for a visible change, all inside one deadline.
@@ -225,7 +193,7 @@ const format = (value: number) => (value < 10 ? value.toFixed(2) : String(Math.r
     </dl>
     <CodeBlock code={agentExample} label="C++" lang="cpp" />
 
-    <h2 id="mcp"><span class="kicker">04</span>Browser MCP</h2>
+    <h2 id="mcp">Browser MCP</h2>
     <p>
       <code>suitecut-native-control</code> is a native executable that runs as an MCP server, a line-by-line
       JSON tool or a persistent command-line session. No Node.js, model or task planner is embedded; your
@@ -243,7 +211,7 @@ const format = (value: number) => (value < 10 ? value.toFixed(2) : String(Math.r
     </dl>
     <CodeBlock code={mcpConfig} label="MCP config" lang="json" />
 
-    <h2 id="control"><span class="kicker">05</span>Browser control</h2>
+    <h2 id="control">Browser control</h2>
     <p>
       <code>@suitecut/browser-control</code> drives the CEF engine, installed Chrome, Chromium, Edge or
       Brave over CDP, and Firefox over WebDriver BiDi. It covers 31 feature families, each with scoped
@@ -268,7 +236,7 @@ const format = (value: number) => (value < 10 ? value.toFixed(2) : String(Math.r
       }
     </dl>
 
-    <h2 id="test"><span class="kicker">06</span>Testing and tracing</h2>
+    <h2 id="test">Testing and tracing</h2>
     <p>
       <code>suitecut-test</code> runs suites with fixtures, retries, repeat-each and multi-file discovery,
       and writes JSON, JUnit and HTML reports. <code>expectNative</code> adds retrying and soft assertions,
@@ -279,7 +247,7 @@ const format = (value: number) => (value < 10 ? value.toFixed(2) : String(Math.r
       sources, finalized into a zip. Document coverage and HAR record and replay sit alongside.
     </p>
 
-    <h2 id="benchmarks"><span class="kicker">07</span>Benchmarks</h2>
+    <h2 id="benchmarks">Benchmarks</h2>
     <p>
       The native C++ client against the Node SDK, driving the same pinned CEF binary. Shorter is
       faster.
@@ -315,7 +283,7 @@ const format = (value: number) => (value < 10 ? value.toFixed(2) : String(Math.r
       <a href={sitePath('/benchmarks')}>See every run, its host and how to reproduce it.</a>
     </p>
 
-    <h2 id="platforms"><span class="kicker">08</span>Platforms</h2>
+    <h2 id="platforms">Platforms</h2>
     <dl class="specs">
       <div><dt>Runtime</dt><dd>Linux x64 and macOS ARM64, each with its own qualification</dd></div>
       <div><dt>Not yet</dt><dd>Windows runtime packaging and Safari or WebKit backends</dd></div>
@@ -367,78 +335,7 @@ const format = (value: number) => (value < 10 ? value.toFixed(2) : String(Math.r
   }
 
   .home h2 {
-    display: flex;
-    align-items: baseline;
-    gap: 0.9rem;
     margin-top: 8rem;
-  }
-
-  .kicker {
-    color: var(--accent);
-    font: 400 0.8125rem / 1 var(--mono);
-    letter-spacing: 0;
-  }
-
-  /* Architecture flow */
-  .flow {
-    position: relative;
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 1.5rem;
-    margin: 2.5rem 0 0;
-  }
-
-  .flow::before {
-    content: '';
-    position: absolute;
-    top: 3.15rem;
-    right: 12.5%;
-    left: 12.5%;
-    height: 1px;
-    background: linear-gradient(90deg, var(--line-strong), var(--accent), var(--line-strong));
-    opacity: 0.7;
-  }
-
-  .flow-column {
-    position: relative;
-    display: grid;
-    align-content: start;
-    gap: 1rem;
-  }
-
-  .flow-column ul {
-    position: relative;
-    display: grid;
-    gap: 0.4rem;
-    margin: 0;
-    padding: 1rem;
-    border-radius: 14px;
-    background: var(--panel);
-    box-shadow: inset 0 0 0 1px var(--line);
-    list-style: none;
-  }
-
-  .flow-column li {
-    margin: 0;
-    color: var(--ink-strong);
-    font-size: 0.9375rem;
-    line-height: 1.4;
-  }
-
-  .flow-column.is-engine .label {
-    color: var(--accent);
-  }
-
-  .flow-column.is-engine ul {
-    background: var(--chrome);
-    box-shadow:
-      inset 0 1px 0 #fff,
-      inset 0 0 0 1px #c4cad3,
-      0 14px 30px -18px rgb(30 35 42 / 45%);
-  }
-
-  .flow-column.is-engine li {
-    color: var(--accent-ink);
   }
 
   /* Specs */
@@ -500,7 +397,6 @@ const format = (value: number) => (value < 10 ? value.toFixed(2) : String(Math.r
     gap: 1.25rem;
     margin: 2rem 0;
     padding: 1.5rem;
-    border-radius: 16px;
     background: var(--panel);
     box-shadow: inset 0 0 0 1px var(--line);
   }
@@ -519,7 +415,6 @@ const format = (value: number) => (value < 10 ? value.toFixed(2) : String(Math.r
   .bar-fill {
     height: 0.5rem;
     min-width: 2px;
-    border-radius: 99px;
     background: var(--line-strong);
   }
 
@@ -549,7 +444,6 @@ const format = (value: number) => (value < 10 ? value.toFixed(2) : String(Math.r
   .bars-key i {
     width: 0.5rem;
     height: 0.5rem;
-    border-radius: 50%;
     background: var(--line-strong);
   }
 
@@ -583,21 +477,6 @@ const format = (value: number) => (value < 10 ? value.toFixed(2) : String(Math.r
 
     .home h2 {
       margin-top: 5rem;
-    }
-
-    .flow {
-      grid-template-columns: 1fr;
-      gap: 1rem;
-    }
-
-    .flow::before {
-      top: 1rem;
-      bottom: 1rem;
-      left: 1.5rem;
-      right: auto;
-      width: 1px;
-      height: auto;
-      background: linear-gradient(180deg, var(--line-strong), var(--accent), var(--line-strong));
     }
 
     .specs div {

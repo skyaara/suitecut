@@ -9,34 +9,144 @@ interface Props {
 }
 
 const { current } = Astro.props
+const repository = 'skyaara/suitecut'
 const links: { label: string; href: string; key?: Section }[] = [
   { label: 'Capabilities', href: sitePath('/#capabilities') },
   { label: 'Benchmarks', href: sitePath('/benchmarks'), key: 'benchmarks' },
   { label: 'Docs', href: sitePath('/docs'), key: 'docs' },
   { label: 'Examples', href: sitePath('/examples'), key: 'examples' },
-  { label: 'GitHub', href: 'https://github.com/skyaara/suitecut' },
 ]
+
+// Star count at build time; the page refreshes it in the browser.
+let stars: number | undefined
+try {
+  const response = await fetch(`https://api.github.com/repos/${repository}`, {
+    headers: { accept: 'application/vnd.github+json' },
+    signal: AbortSignal.timeout(4000),
+  })
+  if (response.ok)
+    stars = ((await response.json()) as { stargazers_count?: number }).stargazers_count
+} catch {
+  stars = undefined
+}
+const formatStars = (count: number) =>
+  count >= 1000 ? `${(count / 1000).toFixed(count >= 10000 ? 0 : 1)}k` : String(count)
 ---
 
-<header class="site-header" data-variant={current === 'home' ? 'stacked' : 'inline'}>
+<div class="nav-strip" data-nav-strip>
+  <a class="nav-strip-logo" href={sitePath('/')} aria-label="SuiteCut home" tabindex="-1">
+    <Logo />
+  </a>
+</div>
+
+<header class="site-header">
   <a class="wordmark" href={sitePath('/')} aria-label="SuiteCut home">
     <Logo />
   </a>
-  <nav class="site-nav" aria-label="Primary navigation">
-    <ul>
+  <div class="nav-slot" data-nav-slot>
+    <nav class="site-nav" aria-label="Primary navigation" data-nav>
       {
         links.map((link) => (
-          <li>
-            <a
-              href={link.href}
-              aria-current={link.key !== undefined && link.key === current ? 'page' : undefined}
-            >
-              {link.label}
-            </a>
-          </li>
+          <a
+            href={link.href}
+            aria-current={link.key !== undefined && link.key === current ? 'page' : undefined}
+          >
+            {link.label}
+          </a>
         ))
       }
-    </ul>
-    <a class="tag" href={sitePath('/docs')}>Get started</a>
-  </nav>
+      <a
+        class="github"
+        href={`https://github.com/${repository}`}
+        data-repo={repository}
+        aria-label={stars === undefined
+          ? 'SuiteCut on GitHub'
+          : `SuiteCut on GitHub, ${stars} stars`}
+      >
+        <svg viewBox="0 0 16 16" aria-hidden="true">
+          <path
+            d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"
+          ></path>
+        </svg>
+        <span>GitHub</span>
+        <span class="github-stars" data-stars hidden={stars === undefined}>
+          <svg viewBox="0 0 16 16" aria-hidden="true">
+            <path
+              d="M8 .25a.75.75 0 01.67.42l1.88 3.81 4.2.61a.75.75 0 01.42 1.28l-3.04 2.96.72 4.19a.75.75 0 01-1.09.79L8 12.33l-3.76 1.98a.75.75 0 01-1.09-.79l.72-4.19L.83 6.37a.75.75 0 01.42-1.28l4.2-.61L7.33.67A.75.75 0 018 .25z"
+            ></path>
+          </svg>
+          <span data-stars-value>{stars === undefined ? '' : formatStars(stars)}</span>
+        </span>
+      </a>
+    </nav>
+  </div>
+  <a class="tag" href={sitePath('/docs')}>Get started</a>
 </header>
+
+<script>
+  // Pin the stacked nav into a top bar once it scrolls past, like aakashreddy.com.
+  const root = document.documentElement
+  const slot = document.querySelector<HTMLElement>('[data-nav-slot]')
+  const nav = document.querySelector<HTMLElement>('[data-nav]')
+  const sheet = document.querySelector<HTMLElement>('.sheet')
+
+  if (slot && nav && sheet) {
+    let threshold = 0
+    const measure = () => {
+      root.classList.remove('nav-stuck')
+      slot.style.height = ''
+      const slotRect = slot.getBoundingClientRect()
+      const sheetRect = sheet.getBoundingClientRect()
+      slot.style.height = `${slotRect.height}px`
+      threshold = slotRect.top + window.scrollY + slotRect.height - 8
+      root.style.setProperty('--nav-left', `${slotRect.left}px`)
+      root.style.setProperty('--sheet-left', `${sheetRect.left}px`)
+      root.style.setProperty('--sheet-width', `${sheetRect.width}px`)
+      update()
+    }
+    const update = () => {
+      root.classList.toggle('nav-stuck', window.scrollY > threshold)
+    }
+    window.addEventListener('scroll', update, { passive: true })
+    window.addEventListener('resize', measure)
+    document.fonts?.ready.then(measure)
+    measure()
+  }
+
+  // Refresh the star count without blocking the page.
+  const github = document.querySelector<HTMLAnchorElement>('.github[data-repo]')
+  const starsBox = document.querySelector<HTMLElement>('[data-stars]')
+  const starsValue = document.querySelector<HTMLElement>('[data-stars-value]')
+  const format = (count: number) =>
+    count >= 1000 ? `${(count / 1000).toFixed(count >= 10000 ? 0 : 1)}k` : String(count)
+  const show = (count: number) => {
+    if (!starsBox || !starsValue || !github) return
+    starsValue.textContent = format(count)
+    starsBox.hidden = false
+    github.setAttribute('aria-label', `SuiteCut on GitHub, ${count} stars`)
+  }
+  if (github) {
+    const key = `stars:${github.dataset.repo}`
+    let cached: string | null = null
+    try {
+      cached = sessionStorage.getItem(key)
+    } catch {
+      cached = null
+    }
+    if (cached) show(Number(cached))
+    else {
+      fetch(`https://api.github.com/repos/${github.dataset.repo}`)
+        .then((response) => (response.ok ? response.json() : undefined))
+        .then((data: { stargazers_count?: number } | undefined) => {
+          if (typeof data?.stargazers_count !== 'number') return
+          show(data.stargazers_count)
+          try {
+            sessionStorage.setItem(key, String(data.stargazers_count))
+          } catch {
+            // Storage is optional.
+          }
+        })
+        .catch(() => undefined)
+    }
+  }
+</script>

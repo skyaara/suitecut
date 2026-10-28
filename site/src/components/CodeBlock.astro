@@ -5,14 +5,14 @@ interface Props {
   code: string
   label?: string
   lang?: 'bash' | 'cpp' | 'css' | 'html' | 'json' | 'plaintext' | 'typescript'
-  theme?: 'github-dark' | 'github-light'
+  theme?: 'github-dark' | 'github-light' | 'one-light'
 }
 
 const {
   code,
   label = 'TypeScript',
   lang = label === 'Terminal' ? 'bash' : 'typescript',
-  theme = 'github-light',
+  theme = 'one-light',
 } = Astro.props
 const lineCount = code.split('\n').length
 const collapsible = lineCount > 24

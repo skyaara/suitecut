@@ -36,6 +36,9 @@ const socialImageUrl = new URL(sitePath(socialImage), Astro.site)
     <link rel="canonical" href={canonicalUrl} />
     <link rel="icon" href={sitePath('/favicon.svg')} type="image/svg+xml" />
     <title>{title}</title>
+    <script is:inline>
+      document.documentElement.classList.add('js')
+    </script>
   </head>
   <body>
     <a class="skip-link" href="#main-content">Skip to content</a>
@@ -52,5 +55,30 @@ const socialImageUrl = new URL(sitePath(socialImage), Astro.site)
         </nav>
       </footer>
     </div>
+    <script is:inline>
+      ;(() => {
+        const targets = document.querySelectorAll(
+          'main .prose > :not(h1), main .specs > div, main .families > li, main .bars > .bar',
+        )
+        if (!('IntersectionObserver' in window)) return
+        const observer = new IntersectionObserver(
+          (entries) => {
+            for (const entry of entries) {
+              if (!entry.isIntersecting) continue
+              entry.target.classList.add('is-in')
+              observer.unobserve(entry.target)
+            }
+          },
+          { rootMargin: '0px 0px -8% 0px' },
+        )
+        targets.forEach((element) => {
+          const siblings = [...element.parentElement.children]
+          const index = element.parentElement.matches('.prose') ? 0 : siblings.indexOf(element)
+          element.dataset.reveal = ''
+          element.style.setProperty('--delay', `${Math.min(index, 12) * 45}ms`)
+          observer.observe(element)
+        })
+      })()
+    </script>
   </body>
 </html>
