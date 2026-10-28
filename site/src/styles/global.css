@@ -1,4 +1,4 @@
-/* SuiteCut site: a paper sheet on a grey desk, one grotesk, one mono and a single ink accent. */
+/* SuiteCut site: a paper sheet on a grey desk, one grotesk, one mono and a Chrome-blue accent. */
 
 :root {
   color-scheme: light;
@@ -11,7 +11,9 @@
   --faint: #8f8f8f;
   --line: #ededed;
   --line-strong: #c7c7c7;
-  --accent: #171717;
+  --accent: #1a73e8;
+  --accent-soft: #e8f0fe;
+  --accent-ink: #174ea6;
   --sans: 'Geist Variable', -apple-system, system-ui, 'Helvetica Neue', sans-serif;
   --mono: 'Geist Mono Variable', ui-monospace, Menlo, monospace;
   --sheet: 72rem;
@@ -40,7 +42,7 @@ body {
 }
 
 ::selection {
-  background: #dcdcdc;
+  background: var(--accent-soft);
 }
 
 a {
@@ -153,6 +155,7 @@ a:hover {
 }
 
 .site-nav li a[aria-current='page'] {
+  color: var(--accent);
   text-decoration: underline;
   text-decoration-thickness: 1px;
   text-underline-offset: 0.3em;

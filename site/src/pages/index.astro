@@ -5,6 +5,77 @@ import { recordExample } from '../lib/api-reference.js'
 import { clientRuns } from '../lib/benchmarks.js'
 import { sitePath } from '../lib/paths.js'
 
+type Spec = [string, string]
+
+const flow = [
+  {
+    label: 'Your code',
+    items: ['TypeScript SDK', 'C++ SDK and C ABI', 'Command-line sessions', 'MCP server'],
+  },
+  {
+    label: 'Protocol',
+    items: ['IPC v1 binary frames', 'Chrome over CDP', 'Firefox over BiDi'],
+  },
+  {
+    label: 'Embedded CEF 156',
+    items: ['OnPaint video', 'OnAudioStreamPacket audio', 'Isolated contexts and pages'],
+    engine: true,
+  },
+  {
+    label: 'Outputs',
+    items: ['MP4 recording', 'RTMP and RTMPS', 'Live viewer', 'Traces and HAR'],
+  },
+]
+
+const engineSpecs: Spec[] = [
+  ['Pinned build', 'CEF 156.0.7 on Chromium 156.0.8078.17, beta channel'],
+  ['Video', 'CefRenderHandler::OnPaint, BGRA8 or I420 frames with paint IDs'],
+  ['Audio', 'CefAudioHandler::OnAudioStreamPacket, 48 kHz stereo PCM'],
+  ['Not used', 'No screenshot loop, browser extension or open debugging port'],
+  ['Process', 'One sandboxed helper per launch, hosting isolated contexts and many pages'],
+  ['Modules', 'protocol, runtime, page and process, with one shutdown barrier'],
+  ['Backpressure', 'Callbacks never wait on pipes; one pending frame, 100 audio packets'],
+  ['Qualified', '90-case CEF regression package on macOS ARM64, October 21'],
+]
+
+const mediaSpecs: Spec[] = [
+  ['Capture', '1–120 FPS ceiling per page; actual paints follow page activity'],
+  ['Output rate', 'Any rate from 1–120, including 29.97 and 59.94'],
+  ['Resampling', 'Newest real image at each tick. Never blended or interpolated'],
+  ['macOS path', 'IOSurface capture, Metal NV12 conversion, h264_videotoolbox'],
+  ['Audio sync', 'Whole-sample boundaries per tick, so fractional rates never drift'],
+  ['Publishing', 'Up to four publishers, adaptive bitrate, supervised reconnects'],
+  ['Health', 'Held images, audio gaps, pauses and source switches are counted'],
+  ['Narration', 'Kokoro 82M with 28 voices, the macOS voice, Piper via plugins'],
+]
+
+const agentSpecs: Spec[] = [
+  ['Tools', 'observe, act and wait'],
+  ['Observations', 'Compact controls and text, 100 controls and 8 KiB by default'],
+  ['Refs', 'Short element refs, replaced on every observation; stale refs rejected'],
+  ['Batches', 'Up to 64 known actions in one act, stopping on the first failure'],
+  ['Deadlines', 'One shared deadline, 5 s by default and capped at 30 s'],
+  ['Safety', 'Mutations are never retried. Password values are redacted'],
+  ['Results', 'delivered confirms the browser received it; effect checks the UI'],
+]
+
+const mcpSpecs: Spec[] = [
+  ['Transport', 'stdio MCP server or one JSON request per line'],
+  ['Catalogue', '53 native driver tools plus the three agent tools'],
+  ['Groups', 'core by default; add network, state, debug, media or all'],
+  ['Backends', 'Launch or attach to Chrome, Firefox or the SuiteCut CEF engine'],
+  ['Sessions', 'Named sessions keep a browser alive; idle after ten minutes'],
+  ['Artifacts', 'Screenshots as image content, PDFs as embedded resources'],
+  ['Remote', 'Connection headers and TLS client certificates for remote browsers'],
+]
+
+const viewerSpecs: Spec[] = [
+  ['Take control', 'Waits for admitted agent work, then hands input to a person'],
+  ['Resume AI', 'Releases held keys and buttons and returns control'],
+  ['Same session', 'One page, cookies and storage for both people and agents'],
+  ['Private', 'Binds to 127.0.0.1 with a bearer token; no external scripts or CDNs'],
+]
+
 const families = [
   'Browser lifecycle',
   'Contexts and profiles',
@@ -39,6 +110,23 @@ const families = [
   'Tracing and coverage',
 ]
 
+const mcpConfig = `{
+  "mcpServers": {
+    "suitecut": {
+      "command": "/usr/local/bin/suitecut-native-control",
+      "args": ["--browser", "/usr/bin/chromium", "--mcp", "--tools", "core,network"]
+    }
+  }
+}`
+
+const agentExample = `suitecut::AgentDriver driver(browser);
+suitecut::SimpleAgent agent(driver);
+
+auto seen = agent.call("observe", {{"boxes", true}});
+auto done = agent.call("act", {
+    {"action", "fill"}, {"ref", "e1"}, {"value", "Hello"}});
+auto ready = agent.call("wait", {{"text", "Saved"}, {"timeoutMs", 2000}});`
+
 const highlights = clientRuns.filter((row) =>
   ['Launch to ready', 'Locator fill', 'Peak client memory'].includes(row.measure),
 )
@@ -47,7 +135,7 @@ const format = (value: number) => (value < 10 ? value.toFixed(2) : String(Math.r
 
 <BaseLayout
   title="SuiteCut"
-  description="Record, narrate, render and stream browser flows with native embedded Chromium capture."
+  description="An embedded Chromium engine for recording, streaming, browser agents and MCP, with native capture and a C++ SDK."
   current="home"
 >
   <div class="home prose">
@@ -57,9 +145,9 @@ const format = (value: number) => (value < 10 ? value.toFixed(2) : String(Math.r
         and lining up a voiceover that never quite matches the clicks?
       </p>
       <p>
-        SuiteCut drives an embedded Chromium from a script, records its real pixels and page audio,
-        and keeps a timeline of every narration, highlight and checkpoint. Render a finished video
-        or stream it live.
+        SuiteCut is a browser engine built for that. It embeds Chromium, captures its real pixels
+        and page audio, and lets a script, an agent or a person drive it. Render a video, stream it
+        live or hand it to an MCP client.
       </p>
     </section>
 
@@ -77,115 +165,152 @@ const format = (value: number) => (value < 10 ? value.toFixed(2) : String(Math.r
       </figcaption>
     </figure>
 
-    <h2 id="capabilities">Capabilities</h2>
-    <p>
-      Everything below ships in the repository today. Each part is usable on its own: record without
-      streaming, control a browser without recording, or drive it from C++ with no Node.js at all.
-    </p>
-
-    <h3 id="record">Record</h3>
-    <p>
-      Write the flow like a test. Locators, clicks and navigation drive a real embedded browser
-      while SuiteCut captures what it paints, at 1 to 120 frames per second, with optional 48 kHz
-      page audio.
-    </p>
+    <h2 id="capabilities">How it fits together</h2>
     <p class="muted">
-      <code>narrate</code>, <code>highlight</code>, <code>checkpoint</code>, <code>zoom</code>,
-      <code>hover</code>, <code>click</code> and <code>type</code> are stamped onto an action timeline
-      beside the source video.
+      One engine sits in the middle. Everything you build talks to it through the same protocol, and
+      everything it produces comes from its own paint and audio callbacks.
     </p>
+    <div class="flow" role="list">
+      {
+        flow.map((column) => (
+          <div class:list={['flow-column', { 'is-engine': column.engine }]} role="listitem">
+            <span class="label">{column.label}</span>
+            <ul>
+              {column.items.map((item) => (
+                <li>{item}</li>
+              ))}
+            </ul>
+          </div>
+        ))
+      }
+    </div>
 
-    <h3 id="narrate">Narrate</h3>
+    <h2 id="engine"><span class="kicker">01</span>Embedded CEF engine</h2>
     <p>
-      Kokoro 82M runs locally in a Node worker with 28 English voices. No hosted speech API or key
-      is needed. The macOS system voice and optional Sherpa voices such as Piper are available as
-      audio plugins.
+      SuiteCut ships its own Chromium Embedded Framework runtime. Frames come straight from the
+      renderer's paint callback and sound from its audio stream, so what you record is exactly what
+      the page drew.
     </p>
-    <p class="muted">
-      Providers can return word timings, so captions highlight each word as it is spoken.
-    </p>
+    <dl class="specs">
+      {
+        engineSpecs.map(([key, value]) => (
+          <div>
+            <dt>{key}</dt>
+            <dd>{value}</dd>
+          </div>
+        ))
+      }
+    </dl>
 
-    <h3 id="render">Render</h3>
+    <h2 id="media"><span class="kicker">02</span>Media engine</h2>
     <p>
-      <code>renderSuiteCut</code> turns the manifest into a finished video: selected intervals, captions,
-      highlights, action zoom and a mix of narration with page audio.
+      Capture, resampling, encoding and publishing run natively on one clock. Recording and
+      streaming share the pipeline, and the renderer mixes narration with page audio afterwards.
     </p>
-    <p class="muted">
-      Choose output size, frame rate, quality profile and encoder. Resampling holds or drops real
-      frames by timestamp, so it never invents motion that wasn't captured.
-    </p>
+    <dl class="specs">
+      {
+        mediaSpecs.map(([key, value]) => (
+          <div>
+            <dt>{key}</dt>
+            <dd>{value}</dd>
+          </div>
+        ))
+      }
+    </dl>
+    <CodeBlock code={recordExample} />
 
-    <h3 id="stream">Stream</h3>
+    <h2 id="agent"><span class="kicker">03</span>Browser agent</h2>
     <p>
-      <code>launchBrowser</code> and <code>createBroadcast</code> publish native pixels and page audio
-      to RTMP or RTMPS, with adaptive bitrate, supervised reconnects and health reports.
+      The simple agent gives a model three tools instead of fifty. It observes the page as compact
+      controls, acts on short refs and waits for a visible change, all inside one deadline.
     </p>
-    <p class="muted">
-      Switch the source without dropping the publisher connection. Browser-drawn highlights and
-      captions appear live.
-    </p>
+    <dl class="specs">
+      {
+        agentSpecs.map(([key, value]) => (
+          <div>
+            <dt>{key}</dt>
+            <dd>{value}</dd>
+          </div>
+        ))
+      }
+    </dl>
+    <CodeBlock code={agentExample} label="C++" lang="cpp" />
 
-    <h3 id="control">Control</h3>
+    <h2 id="mcp"><span class="kicker">04</span>Browser MCP</h2>
     <p>
-      <code>@suitecut/browser-control</code> drives the SuiteCut CEF engine, installed Chrome, Chromium,
-      Edge or Brave over CDP, and Firefox over WebDriver BiDi. The CEF backend adds a live viewer where
-      a person can take over.
+      <code>suitecut-native-control</code> is a native executable that runs as an MCP server, a line-by-line
+      JSON tool or a persistent command-line session. No Node.js, model or task planner is embedded; your
+      host brings the agent.
     </p>
-    <p class="muted">
-      It covers 31 browser feature families. Each has scoped evidence in the
+    <dl class="specs">
+      {
+        mcpSpecs.map(([key, value]) => (
+          <div>
+            <dt>{key}</dt>
+            <dd>{value}</dd>
+          </div>
+        ))
+      }
+    </dl>
+    <CodeBlock code={mcpConfig} label="MCP config" lang="json" />
+
+    <h2 id="control"><span class="kicker">05</span>Browser control</h2>
+    <p>
+      <code>@suitecut/browser-control</code> drives the CEF engine, installed Chrome, Chromium, Edge or
+      Brave over CDP, and Firefox over WebDriver BiDi. It covers 31 feature families, each with scoped
+      evidence in the
       <a href="https://github.com/skyaara/suitecut/blob/main/docs/playwright-feature-parity.md"
         >feature checklist</a
-      >, which also lists what's still missing.
+      >.
     </p>
-    <ul class="home-families">
+    <ul class="families">
       {families.map((family) => <li>{family}</li>)}
     </ul>
 
-    <h3 id="test">Test</h3>
+    <h3 id="viewer">Live viewer and human handover</h3>
+    <dl class="specs">
+      {
+        viewerSpecs.map(([key, value]) => (
+          <div>
+            <dt>{key}</dt>
+            <dd>{value}</dd>
+          </div>
+        ))
+      }
+    </dl>
+
+    <h2 id="test"><span class="kicker">06</span>Testing and tracing</h2>
     <p>
-      <code>suitecut-test</code> is a native runner with fixtures, retries, repeat-each, multi-file discovery
-      and JSON, JUnit and HTML reports.
+      <code>suitecut-test</code> runs suites with fixtures, retries, repeat-each and multi-file discovery,
+      and writes JSON, JUnit and HTML reports. <code>expectNative</code> adds retrying and soft assertions,
+      <code>toPass</code> and locator handlers.
     </p>
     <p class="muted">
-      <code>expectNative</code> adds retrying assertions, soft assertions with deadlines,
-      <code>toPass</code> and locator handlers for interrupting overlays.
+      Tracing is recorded in C++: screencast frames, DOM, network and accessibility snapshots, and
+      sources, finalized into a zip. Document coverage and HAR record and replay sit alongside.
     </p>
 
-    <h3 id="agents">Agents</h3>
-    <p>
-      <code>SuiteCut::Client</code> is a C++20 SDK with a stable C ABI. It launches CEF, Chrome or Firefox
-      with no Node.js, CEF headers or automation dependency.
-    </p>
-    <p class="muted">
-      Its <code>suitecut-native-control</code> CLI also runs as an MCP server. The simple agent offers
-      three tools, observe, act and wait, with compact observations, short element refs and redacted password
-      values.
-    </p>
-
-    <h2 id="benchmarks">Benchmarks</h2>
+    <h2 id="benchmarks"><span class="kicker">07</span>Benchmarks</h2>
     <p>
       The native C++ client against the Node SDK, driving the same pinned CEF binary. Shorter is
       faster.
     </p>
-    <div class="home-bars">
+    <div class="bars">
       {
         highlights.map((row) => {
           const max = Math.max(row.native, row.node)
           return (
-            <div class="home-bar">
+            <div class="bar">
               <span class="label">{row.measure}</span>
-              <span class="home-bar-track">
-                <span
-                  class="home-bar-fill is-native"
-                  style={`width:${(row.native / max) * 100}%`}
-                />
-                <span class="home-bar-value">
+              <span class="bar-track">
+                <span class="bar-fill is-native" style={`width:${(row.native / max) * 100}%`} />
+                <span class="bar-value">
                   {format(row.native)} {row.unit}
                 </span>
               </span>
-              <span class="home-bar-track">
-                <span class="home-bar-fill" style={`width:${(row.node / max) * 100}%`} />
-                <span class="home-bar-value">
+              <span class="bar-track">
+                <span class="bar-fill" style={`width:${(row.node / max) * 100}%`} />
+                <span class="bar-value">
                   {format(row.node)} {row.unit}
                 </span>
               </span>
@@ -193,7 +318,7 @@ const format = (value: number) => (value < 10 ? value.toFixed(2) : String(Math.r
           )
         })
       }
-      <p class="home-bars-key label">
+      <p class="bars-key label">
         <span><i class="is-native"></i>Native C++</span><span><i></i>Node SDK</span>
       </p>
     </div>
@@ -203,21 +328,29 @@ const format = (value: number) => (value < 10 ? value.toFixed(2) : String(Math.r
       >
     </p>
 
-    <h2 id="platforms">Platforms</h2>
-    <p>
-      Linux x64 and macOS ARM64, each with its own qualification scope. Windows runtime packaging is
-      not implemented. The engine is a pinned CEF 156 build on the Chromium 156 beta channel.
-    </p>
+    <h2 id="platforms"><span class="kicker">08</span>Platforms</h2>
+    <dl class="specs">
+      <div><dt>Runtime</dt><dd>Linux x64 and macOS ARM64, each with its own qualification</dd></div>
+      <div><dt>Not yet</dt><dd>Windows runtime packaging and Safari or WebKit backends</dd></div>
+      <div>
+        <dt>Requires</dt><dd>Node.js 22, pnpm, FFmpeg and a separately built CEF executable</dd>
+      </div>
+      <div><dt>Native SDK</dt><dd>Builds without Node.js or CEF headers</dd></div>
+      <div>
+        <dt>Playback</dt><dd>
+          Stock CEF lacks H.264 and AAC playback; a codec build profile is pinned
+        </dd>
+      </div>
+    </dl>
+
+    <h2 id="start">Get started</h2>
     <p class="muted">
-      You need Node.js 22, pnpm, FFmpeg and a separately built CEF executable.
       <code>suitecut install</code> fetches checksum-verified media tools and
       <code>suitecut doctor</code> reports what's missing.
     </p>
-
-    <h2 id="start">Get started</h2>
-    <CodeBlock code={recordExample} />
     <p class="home-links">
       <a class="tag" href={sitePath('/docs')}>Read the guide</a>
+      <a href={sitePath('/benchmarks')}>Benchmarks</a>
       <a href={sitePath('/examples')}>Examples</a>
       <a href="https://github.com/skyaara/suitecut">GitHub</a>
     </p>
@@ -281,7 +414,7 @@ const format = (value: number) => (value < 10 ? value.toFixed(2) : String(Math.r
 
   .home-stats small {
     margin-left: 0.25rem;
-    color: var(--faint);
+    color: var(--accent);
     font-size: 1rem;
     letter-spacing: 0;
   }
@@ -292,10 +425,105 @@ const format = (value: number) => (value < 10 ? value.toFixed(2) : String(Math.r
   }
 
   .home h2 {
+    display: flex;
+    align-items: baseline;
+    gap: 0.9rem;
     margin-top: 8rem;
   }
 
-  .home-families {
+  .kicker {
+    color: var(--accent);
+    font: 400 0.8125rem / 1 var(--mono);
+    letter-spacing: 0;
+  }
+
+  /* Architecture flow */
+  .flow {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1.5rem;
+    margin: 2.5rem 0 0;
+  }
+
+  .flow::before {
+    content: '';
+    position: absolute;
+    top: 3.15rem;
+    right: 12.5%;
+    left: 12.5%;
+    height: 1px;
+    background: linear-gradient(90deg, var(--line-strong), var(--accent), var(--line-strong));
+  }
+
+  .flow-column {
+    position: relative;
+    display: grid;
+    align-content: start;
+    gap: 1rem;
+  }
+
+  .flow-column ul {
+    position: relative;
+    display: grid;
+    gap: 0.4rem;
+    margin: 0;
+    padding: 1rem;
+    border-radius: 14px;
+    background: var(--panel);
+    box-shadow: inset 0 0 0 1px var(--line);
+    list-style: none;
+  }
+
+  .flow-column li {
+    margin: 0;
+    color: var(--ink-strong);
+    font-size: 0.9375rem;
+    line-height: 1.4;
+  }
+
+  .flow-column.is-engine .label {
+    color: var(--accent);
+  }
+
+  .flow-column.is-engine ul {
+    background: var(--accent-soft);
+    box-shadow:
+      inset 0 0 0 1px color-mix(in srgb, var(--accent) 35%, transparent),
+      0 12px 30px -18px color-mix(in srgb, var(--accent) 60%, transparent);
+  }
+
+  .flow-column.is-engine li {
+    color: var(--accent-ink);
+  }
+
+  /* Specs */
+  .specs {
+    margin: 2rem 0;
+    border-top: 1px solid var(--line);
+  }
+
+  .specs div {
+    display: grid;
+    grid-template-columns: 11rem minmax(0, 1fr);
+    gap: 1.5rem;
+    padding: 0.85rem 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .specs dt {
+    color: var(--faint);
+    font: 400 0.8125rem / 1.75rem var(--mono);
+  }
+
+  .specs dd {
+    margin: 0;
+    color: var(--ink-strong);
+    font-size: 1rem;
+    line-height: 1.75rem;
+  }
+
+  .families {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 0 1.5rem;
@@ -304,7 +532,7 @@ const format = (value: number) => (value < 10 ? value.toFixed(2) : String(Math.r
     list-style: none;
   }
 
-  .home-families li {
+  .families li {
     display: flex;
     align-items: center;
     gap: 0.6rem;
@@ -314,15 +542,16 @@ const format = (value: number) => (value < 10 ? value.toFixed(2) : String(Math.r
     font: 400 0.8125rem / 1.5 var(--mono);
   }
 
-  .home-families li::before {
+  .families li::before {
     content: '';
     width: 0.75rem;
     height: 1px;
     flex: none;
-    background: var(--line-strong);
+    background: var(--accent);
   }
 
-  .home-bars {
+  /* Benchmark bars */
+  .bars {
     display: grid;
     gap: 1.25rem;
     margin: 2rem 0;
@@ -332,55 +561,55 @@ const format = (value: number) => (value < 10 ? value.toFixed(2) : String(Math.r
     box-shadow: inset 0 0 0 1px var(--line);
   }
 
-  .home-bar {
+  .bar {
     display: grid;
     gap: 0.35rem;
   }
 
-  .home-bar-track {
+  .bar-track {
     display: flex;
     align-items: center;
     gap: 0.75rem;
   }
 
-  .home-bar-fill {
+  .bar-fill {
     height: 0.5rem;
     min-width: 2px;
     border-radius: 99px;
     background: var(--line-strong);
   }
 
-  .home-bar-fill.is-native {
+  .bar-fill.is-native {
     background: var(--accent);
   }
 
-  .home-bar-value {
+  .bar-value {
     flex: none;
     color: var(--muted);
     font: 400 0.8125rem / 1 var(--mono);
     font-variant-numeric: tabular-nums;
   }
 
-  .home-bars-key {
+  .bars-key {
     display: flex;
     gap: 1.25rem;
     margin: 0;
   }
 
-  .home-bars-key span {
+  .bars-key span {
     display: inline-flex;
     align-items: center;
     gap: 0.45rem;
   }
 
-  .home-bars-key i {
+  .bars-key i {
     width: 0.5rem;
     height: 0.5rem;
     border-radius: 50%;
     background: var(--line-strong);
   }
 
-  .home-bars-key i.is-native {
+  .bars-key i.is-native {
     background: var(--accent);
   }
 
@@ -398,7 +627,7 @@ const format = (value: number) => (value < 10 ? value.toFixed(2) : String(Math.r
   }
 
   .home-links a:not(.tag):hover {
-    color: var(--ink);
+    color: var(--accent);
   }
 
   @media (max-width: 52rem) {
@@ -424,7 +653,27 @@ const format = (value: number) => (value < 10 ? value.toFixed(2) : String(Math.r
       margin-top: 5rem;
     }
 
-    .home-families {
+    .flow {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+
+    .flow::before {
+      top: 1rem;
+      bottom: 1rem;
+      left: 1.5rem;
+      right: auto;
+      width: 1px;
+      height: auto;
+      background: linear-gradient(180deg, var(--line-strong), var(--accent), var(--line-strong));
+    }
+
+    .specs div {
+      grid-template-columns: 1fr;
+      gap: 0.1rem;
+    }
+
+    .families {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
   }
