@@ -98,14 +98,18 @@ const formatStars = (count: number) =>
       const slotRect = slot.getBoundingClientRect()
       const sheetRect = sheet.getBoundingClientRect()
       slot.style.height = `${slotRect.height}px`
-      threshold = slotRect.top + window.scrollY + slotRect.height - 8
+      // Pin as soon as the first link would sit where it does inside the bar.
+      const first = nav.querySelector('a')?.getBoundingClientRect()
+      const barHeight = 56
+      const inset = first ? (barHeight - first.height) / 2 : 0
+      threshold = (first?.top ?? slotRect.top) + window.scrollY - inset
       root.style.setProperty('--nav-left', `${slotRect.left}px`)
       root.style.setProperty('--sheet-left', `${sheetRect.left}px`)
       root.style.setProperty('--sheet-width', `${sheetRect.width}px`)
       update()
     }
     const update = () => {
-      root.classList.toggle('nav-stuck', window.scrollY > threshold)
+      root.classList.toggle('nav-stuck', window.scrollY >= threshold)
     }
     window.addEventListener('scroll', update, { passive: true })
     window.addEventListener('resize', measure)
