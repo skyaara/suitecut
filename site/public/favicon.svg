@@ -1,5 +1,17 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <rect width="32" height="32" rx="7" fill="#111111"/>
-  <path fill="#f5f5f5" d="M5 5.6c0-1.6 1.7-2.6 3.1-1.8L15 7.8 7.2 27.1C6.1 27.7 5 26.9 5 25.7V5.6Z"/>
-  <path fill="#f5f5f5" d="m18.7 10 8.8 5.1c1.1.6 1.1 1.2 0 1.8l-16.2 9.5L18.7 10Z"/>
+  <defs>
+    <linearGradient id="chrome" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fdfdfd"/>
+      <stop offset="0.32" stop-color="#cdd2d8"/>
+      <stop offset="0.48" stop-color="#7c8591"/>
+      <stop offset="0.54" stop-color="#a9b1bb"/>
+      <stop offset="0.72" stop-color="#f3f5f7"/>
+      <stop offset="1" stop-color="#9aa3ae"/>
+    </linearGradient>
+  </defs>
+  <rect width="32" height="32" fill="#fcfcfc"/>
+  <g fill="url(#chrome)" stroke="#171717" stroke-width="2">
+    <path d="M5.5 5.5H22L5.5 21.5Z"/>
+    <path d="M26.5 10.5V26.5H10L26.5 10.5Z"/>
+  </g>
 </svg>
