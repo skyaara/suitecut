@@ -1,4 +1,4 @@
-/* SuiteCut site: a paper sheet on a grey desk, one grotesk, one mono and a brushed-chrome accent. */
+/* SuiteCut site: a paper sheet on a grey desk, one grotesk for everything but code, and a brushed-chrome accent. */
 
 :root {
   color-scheme: light;
@@ -18,7 +18,7 @@
   --chrome-dark: linear-gradient(180deg, #59616c 0%, #30353d 48%, #1f2329 52%, #3b424c 100%);
   --chrome-bar: linear-gradient(90deg, #22262c 0%, #59616c 70%, #9aa3ae 100%);
   --sans: 'Geist Variable', -apple-system, system-ui, 'Helvetica Neue', sans-serif;
-  --mono: 'Geist Mono Variable', ui-monospace, Menlo, monospace;
+  --code: 'Geist Mono Variable', ui-monospace, Menlo, monospace;
   --sheet: 72rem;
   --gutter: clamp(1.25rem, 8vw, 8rem);
   font-family: var(--sans);
@@ -100,7 +100,7 @@ a:hover {
 
 .label {
   color: var(--faint);
-  font: 400 0.8125rem / 1.5 var(--mono);
+  font: 400 0.8125rem / 1.5 var(--sans);
 }
 
 /* Header: stacked links that pin into a top bar on scroll */
@@ -166,7 +166,7 @@ a:hover {
   color: var(--ink-strong);
   background: var(--chrome);
   box-shadow: inset 0 0 0 1px var(--line-strong);
-  font: 500 0.75rem / 1.4 var(--mono);
+  font: 500 0.75rem / 1.4 var(--sans);
   font-variant-numeric: tabular-nums;
 }
 
@@ -195,10 +195,8 @@ a:hover {
   box-shadow:
     inset 0 1px 0 rgb(255 255 255 / 25%),
     0 1px 2px rgb(0 0 0 / 20%);
-  font: 500 0.6875rem / 1 var(--mono);
-  letter-spacing: 0.06em;
+  font: 500 0.8125rem / 1 var(--sans);
   text-decoration: none;
-  text-transform: uppercase;
   white-space: nowrap;
 }
 
@@ -274,7 +272,7 @@ a:hover {
   padding: 2rem 0 4rem;
   border-top: 1px solid var(--line);
   color: var(--faint);
-  font: 400 0.8125rem / 1.5 var(--mono);
+  font: 400 0.8125rem / 1.5 var(--sans);
 }
 
 .site-footer p {
@@ -366,7 +364,7 @@ a:hover {
   color: var(--ink-strong);
   background: var(--panel);
   box-shadow: inset 0 0 0 1px var(--line);
-  font: 400 0.85em / 1 var(--mono);
+  font: 400 0.85em / 1 var(--code);
 }
 
 .prose audio {
@@ -387,7 +385,7 @@ a:hover {
   padding: 0 1rem 0.6rem 0;
   border-bottom: 1px solid var(--line-strong);
   color: var(--faint);
-  font: 400 0.8125rem / 1.5 var(--mono);
+  font: 400 0.8125rem / 1.5 var(--sans);
   text-align: left;
 }
 
@@ -418,7 +416,7 @@ a:hover {
   padding: 0.6rem 0.6rem 0.6rem 1.1rem;
   border-bottom: 1px solid var(--line);
   color: var(--faint);
-  font: 400 0.8125rem / 1.5 var(--mono);
+  font: 400 0.8125rem / 1.5 var(--sans);
 }
 
 .code-copy {
@@ -441,7 +439,7 @@ a:hover {
   padding: 1.1rem 1.25rem;
   overflow-x: auto;
   background: transparent !important;
-  font: 400 0.8125rem / 1.7 var(--mono);
+  font: 400 0.8125rem / 1.7 var(--code);
   tab-size: 2;
 }
 
@@ -464,7 +462,7 @@ a:hover {
   border-top: 1px solid var(--line);
   color: var(--muted);
   background: transparent;
-  font: 400 0.8125rem / 1.5 var(--mono);
+  font: 400 0.8125rem / 1.5 var(--sans);
   cursor: pointer;
 }
 
@@ -488,7 +486,7 @@ a:hover {
   gap: 1.5rem;
   max-height: calc(100svh - 4rem);
   overflow-y: auto;
-  font: 400 0.8125rem / 1.5 var(--mono);
+  font: 400 0.8125rem / 1.5 var(--sans);
   scrollbar-width: none;
 }
 
@@ -643,7 +641,7 @@ a:hover {
     border-block: 1px solid var(--line);
     color: var(--ink-strong);
     background: none;
-    font: 400 0.8125rem / 1.5 var(--mono);
+    font: 400 0.8125rem / 1.5 var(--sans);
     cursor: pointer;
   }
 
