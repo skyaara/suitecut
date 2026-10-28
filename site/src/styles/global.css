@@ -470,69 +470,43 @@ a:hover {
   color: var(--accent);
 }
 
-/* Docs: article on the left; pages and this page's sections in a sidebar on the right */
+/* Docs: the article fills the sheet. When the margin is wide enough, the page list and this
+   page's sections sit outside the sheet on the right; otherwise they sit above the article. */
 .docs-shell {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 12rem;
-  gap: 4rem;
-  padding-top: 5rem;
-}
-
-.docs-side {
-  position: sticky;
-  top: 5rem;
-  grid-column: 2;
-  grid-row: 1;
-  align-self: start;
-  display: grid;
   gap: 2.5rem;
-  max-height: calc(100svh - 6rem);
-  overflow-y: auto;
-  scrollbar-width: none;
+  padding-top: 4rem;
 }
 
 .docs-pages {
-  display: grid;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--line);
   font-size: 0.9375rem;
 }
 
 .docs-pages a {
-  padding: 0.3rem 0 0.3rem 0.85rem;
-  border-left: 1px solid var(--line);
+  padding: 0.2rem 0;
   color: var(--muted);
   text-decoration: none;
-  transition:
-    color 150ms ease,
-    border-color 150ms ease;
+  transition: color 150ms ease;
 }
 
-.docs-pages a:hover {
+.docs-pages a:hover,
+.docs-pages a[aria-current='page'] {
   color: var(--ink-strong);
 }
 
 .docs-pages a[aria-current='page'] {
-  border-left-color: var(--ink-strong);
-  color: var(--ink-strong);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.35em;
 }
 
 .docs-toc-side {
-  display: grid;
-  font-size: 0.875rem;
-  line-height: 1.5;
-}
-
-.docs-toc-side p {
-  margin: 0 0 0.5rem;
-  color: var(--ink-strong);
-}
-
-.docs-toc-inline {
   display: none;
-}
-
-.docs-article {
-  grid-column: 1;
-  grid-row: 1;
 }
 
 .docs-article > h1:first-child {
@@ -544,7 +518,8 @@ a:hover {
 }
 
 .docs-toc-inline {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0 1.5rem;
   margin: 0 0 1rem;
   padding: 1rem 0;
@@ -598,6 +573,62 @@ a:hover {
 
 .docs-bottom a:hover {
   color: var(--ink-strong);
+}
+
+@media (max-width: 52rem) {
+  .docs-toc-inline {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 96rem) {
+  .docs-side {
+    position: fixed;
+    top: 7rem;
+    left: calc(50% + var(--sheet) / 2 + 1.5rem);
+    z-index: 5;
+    display: grid;
+    gap: 2.5rem;
+    width: calc((100vw - var(--sheet)) / 2 - 2.5rem);
+    max-width: 13rem;
+    max-height: calc(100svh - 9rem);
+    overflow-y: auto;
+    scrollbar-width: none;
+  }
+
+  .docs-pages {
+    display: grid;
+    gap: 0;
+    padding: 0;
+    border: 0;
+    font-size: 0.875rem;
+  }
+
+  .docs-pages a {
+    padding: 0.25rem 0 0.25rem 0.75rem;
+    border-left: 1px solid var(--line-strong);
+    line-height: 1.35;
+  }
+
+  .docs-pages a[aria-current='page'] {
+    border-left-color: var(--ink-strong);
+    text-decoration: none;
+  }
+
+  .docs-toc-side {
+    display: grid;
+    font-size: 0.8125rem;
+    line-height: 1.35;
+  }
+
+  .docs-toc-side p {
+    margin: 0 0 0.4rem;
+    color: var(--ink-strong);
+  }
+
+  .docs-toc-inline {
+    display: none;
+  }
 }
 
 /* Standalone pages */
@@ -655,48 +686,6 @@ a:hover {
   .prose h2 {
     font-size: 1.625rem;
     line-height: 2rem;
-  }
-
-  .docs-shell {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 2.5rem;
-    padding-top: 3rem;
-  }
-
-  .docs-side {
-    position: static;
-    grid-column: 1;
-    max-height: none;
-  }
-
-  .docs-article {
-    grid-row: 2;
-  }
-
-  .docs-pages {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.25rem 1.5rem;
-    padding-bottom: 0.75rem;
-    border-bottom: 1px solid var(--line);
-  }
-
-  .docs-pages a {
-    padding: 0.2rem 0;
-    border-left: 0;
-  }
-
-  .docs-pages a[aria-current='page'] {
-    text-decoration: underline;
-    text-underline-offset: 0.35em;
-  }
-
-  .docs-toc-side {
-    display: none;
-  }
-
-  .docs-toc-inline {
-    display: grid;
   }
 
   .page {
