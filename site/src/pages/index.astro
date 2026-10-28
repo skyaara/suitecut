@@ -100,6 +100,28 @@ const mcpConfig = `{
   }
 }`
 
+const externalSpecs: Spec[] = [
+  ['Chromium family', 'Installed Chrome, Chromium, Edge or Brave over a private CDP pipe'],
+  ['Firefox', 'Installed Firefox over WebDriver BiDi'],
+  ['Attach', 'Connect to a browser that is already running instead of launching one'],
+  ['Remote', 'Connection headers and TLS client certificates for browsers on another host'],
+  ['Nothing extra', 'The CLI and C++ SDK need no CEF runtime, Node.js or automation library'],
+]
+
+const externalExample = `suitecut-native-control --session shop --browser /usr/bin/chromium open https://example.com
+suitecut-native-control --session shop snapshot
+suitecut-native-control --session shop --response none fill e12 'Ada'
+suitecut-native-control --session shop click e15
+suitecut-native-control --session shop close`
+
+const externalNode = `import { launchBrowser } from '@suitecut/browser-control'
+
+const browser = await launchBrowser({
+  backend: 'bidi',
+  executablePath: '/path/to/firefox',
+  headless: true,
+})`
+
 const agentExample = `suitecut::AgentDriver driver(browser);
 suitecut::SimpleAgent agent(driver);
 
@@ -126,7 +148,8 @@ const format = (value: number) => (value < 10 ? value.toFixed(2) : String(Math.r
         SuiteCut runs Chromium inside your own process and takes video and sound straight from the
         renderer, with no screenshots, extensions or open debugging port. Drive it from TypeScript,
         C++ or any MCP client, then record it, stream it live, or let an agent work while a person
-        watches.
+        watches. Or skip the engine and use it as a browser agent for the Chrome or Firefox you
+        already have.
       </p>
       <p class="home-links">
         <a class="tag" href={sitePath('/docs')}>Get started</a>
@@ -192,6 +215,24 @@ const format = (value: number) => (value < 10 ? value.toFixed(2) : String(Math.r
       }
     </dl>
     <CodeBlock code={agentExample} label="C++" lang="cpp" />
+
+    <h3 id="external">Use the browser you already have</h3>
+    <p>
+      You don't need the embedded engine to use the agent. Point SuiteCut at an installed browser
+      and the same observe, act and wait tools, refs and deadlines work against it.
+    </p>
+    <dl class="specs">
+      {
+        externalSpecs.map(([key, value]) => (
+          <div>
+            <dt>{key}</dt>
+            <dd>{value}</dd>
+          </div>
+        ))
+      }
+    </dl>
+    <CodeBlock code={externalExample} label="Terminal" />
+    <CodeBlock code={externalNode} label="TypeScript" />
 
     <h2 id="mcp">Browser MCP</h2>
     <p>
@@ -336,6 +377,12 @@ const format = (value: number) => (value < 10 ? value.toFixed(2) : String(Math.r
 
   .home h2 {
     margin-top: 8rem;
+  }
+
+  .home h3 {
+    margin-top: 4.5rem;
+    font-size: 1.5rem;
+    line-height: 2rem;
   }
 
   /* Specs */
