@@ -24,7 +24,7 @@ const socialImageUrl = new URL(sitePath(socialImage), Astro.site)
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
     <meta name="description" content={description} />
-    <meta name="theme-color" content="#111111" />
+    <meta name="theme-color" content={current === 'home' ? '#f7f5f0' : '#111111'} />
     <meta property="og:type" content="website" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
@@ -38,7 +38,7 @@ const socialImageUrl = new URL(sitePath(socialImage), Astro.site)
     <link rel="icon" href={sitePath('/favicon.svg')} type="image/svg+xml" />
     <title>{title}</title>
   </head>
-  <body class:list={{ 'workspace-page': current !== 'home' }}>
+  <body class:list={{ 'workspace-page': current !== 'home', 'home-page': current === 'home' }}>
     <a class="skip-link" href="#main-content">Skip to content</a>
     {current ? <SiteHeader current={current} /> : <SiteHeader />}
     <main id="main-content"><slot /></main>
