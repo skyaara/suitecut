@@ -470,8 +470,9 @@ a:hover {
   color: var(--accent);
 }
 
-/* Docs: the article fills the sheet. When the margin is wide enough, the page list and this
-   page's sections sit outside the sheet on the right; otherwise they sit above the article. */
+/* Docs: the article fills the sheet. When the margins are wide enough, the page list sits
+   outside the sheet on the left and this page's sections on the right; otherwise both sit
+   above the article. */
 .docs-shell {
   display: grid;
   gap: 2.5rem;
@@ -582,13 +583,13 @@ a:hover {
 }
 
 @media (min-width: 96rem) {
-  .docs-side {
+  .docs-pages,
+  .docs-toc-side {
     position: fixed;
     top: 7rem;
-    left: calc(50% + var(--sheet) / 2 + 1.5rem);
     z-index: 5;
     display: grid;
-    gap: 2.5rem;
+    align-content: start;
     width: calc((100vw - var(--sheet)) / 2 - 2.5rem);
     max-width: 13rem;
     max-height: calc(100svh - 9rem);
@@ -597,7 +598,7 @@ a:hover {
   }
 
   .docs-pages {
-    display: grid;
+    right: calc(50% + var(--sheet) / 2 + 1.5rem);
     gap: 0;
     padding: 0;
     border: 0;
@@ -605,18 +606,19 @@ a:hover {
   }
 
   .docs-pages a {
-    padding: 0.25rem 0 0.25rem 0.75rem;
-    border-left: 1px solid var(--line-strong);
+    padding: 0.25rem 0.75rem 0.25rem 0;
+    border-right: 1px solid var(--line-strong);
     line-height: 1.35;
+    text-align: right;
   }
 
   .docs-pages a[aria-current='page'] {
-    border-left-color: var(--ink-strong);
+    border-right-color: var(--ink-strong);
     text-decoration: none;
   }
 
   .docs-toc-side {
-    display: grid;
+    left: calc(50% + var(--sheet) / 2 + 1.5rem);
     font-size: 0.8125rem;
     line-height: 1.35;
   }
