@@ -65,6 +65,7 @@ const content = await Astro.slots.render('default')
 const titleEnd = content.indexOf('</h1>') + '</h1>'.length
 const [lead, body] =
   titleEnd > 4 ? [content.slice(0, titleEnd), content.slice(titleEnd)] : ['', content]
+const currentIndex = categories.findIndex((category) => category.key === section)
 const headings = [...content.matchAll(/<h2[^>]*id="([^"]+)"[^>]*>([\s\S]*?)<\/h2>/gu)].map(
   (match) => ({ id: match[1] ?? '', label: (match[2] ?? '').replace(/<[^>]+>/gu, '') }),
 )
@@ -74,10 +75,11 @@ const headings = [...content.matchAll(/<h2[^>]*id="([^"]+)"[^>]*>([\s\S]*?)<\/h2
   <div class="docs-shell" data-section={section}>
     <nav class="docs-pages" aria-label="Documentation pages">
       {
-        categories.map((category) => (
+        categories.map((category, index) => (
           <a
             href={sitePath(category.href)}
             aria-current={section === category.key ? 'page' : undefined}
+            data-distance={Math.min(Math.abs(index - currentIndex), 2)}
           >
             {category.label}
           </a>
@@ -88,9 +90,11 @@ const headings = [...content.matchAll(/<h2[^>]*id="([^"]+)"[^>]*>([\s\S]*?)<\/h2
       headings.length > 0 && (
         <nav class="docs-toc docs-toc-side" aria-label="On this page">
           <p>On this page</p>
-          {headings.map((heading) => (
-            <a href={`#${heading.id}`} set:html={heading.label} />
-          ))}
+          <div class="toc-rail" data-toc-rail>
+            {headings.map((heading) => (
+              <a href={`#${heading.id}`} set:html={heading.label} />
+            ))}
+          </div>
         </nav>
       )
     }
@@ -115,18 +119,40 @@ const headings = [...content.matchAll(/<h2[^>]*id="([^"]+)"[^>]*>([\s\S]*?)<\/h2
 </BaseLayout>
 
 <script>
-  // Mark the section being read in the page index.
+  // Track the section being read. Near the end of the page the reading line moves down the
+  // viewport, so the index keeps advancing to the last section even when it is already visible.
   const links = [...document.querySelectorAll<HTMLAnchorElement>('.docs-toc a')]
-  const observer = new IntersectionObserver(
-    (entries) => {
-      const visible = entries.find((entry) => entry.isIntersecting)
-      if (!visible) return
-      for (const link of links) {
-        if (link.hash === `#${visible.target.id}`) link.setAttribute('aria-current', 'location')
-        else link.removeAttribute('aria-current')
-      }
-    },
-    { rootMargin: '0px 0px -65% 0px' },
-  )
-  document.querySelectorAll('.docs-article h2[id]').forEach((heading) => observer.observe(heading))
+  const rail = document.querySelector<HTMLElement>('[data-toc-rail]')
+  const headings = [...document.querySelectorAll<HTMLElement>('.docs-article h2[id]')]
+
+  let frame = 0
+  const update = () => {
+    frame = 0
+    if (headings.length === 0) return
+    const viewport = window.innerHeight
+    const maxScroll = document.documentElement.scrollHeight - viewport
+    const tail = Math.min(1, Math.max(0, (window.scrollY - (maxScroll - viewport)) / viewport))
+    const line = viewport * (0.3 + 0.65 * tail)
+    let active = 0
+    headings.forEach((heading, index) => {
+      if (heading.getBoundingClientRect().top <= line) active = index
+    })
+    if (window.scrollY >= maxScroll - 2) active = headings.length - 1
+
+    const id = headings[active]?.id
+    for (const link of links) {
+      if (link.hash === `#${id}`) link.setAttribute('aria-current', 'location')
+      else link.removeAttribute('aria-current')
+    }
+    const current = rail?.querySelector<HTMLElement>('[aria-current]')
+    if (rail && current) {
+      rail.style.setProperty('--progress', `${current.offsetTop + current.offsetHeight / 2}px`)
+    }
+  }
+  const schedule = () => {
+    if (!frame) frame = requestAnimationFrame(update)
+  }
+  window.addEventListener('scroll', schedule, { passive: true })
+  window.addEventListener('resize', schedule)
+  update()
 </script>
