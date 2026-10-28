@@ -65,7 +65,6 @@ const content = await Astro.slots.render('default')
 const titleEnd = content.indexOf('</h1>') + '</h1>'.length
 const [lead, body] =
   titleEnd > 4 ? [content.slice(0, titleEnd), content.slice(titleEnd)] : ['', content]
-const currentIndex = categories.findIndex((category) => category.key === section)
 const headings = [...content.matchAll(/<h2[^>]*id="([^"]+)"[^>]*>([\s\S]*?)<\/h2>/gu)].map(
   (match) => ({ id: match[1] ?? '', label: (match[2] ?? '').replace(/<[^>]+>/gu, '') }),
 )
@@ -75,11 +74,10 @@ const headings = [...content.matchAll(/<h2[^>]*id="([^"]+)"[^>]*>([\s\S]*?)<\/h2
   <div class="docs-shell" data-section={section}>
     <nav class="docs-pages" aria-label="Documentation pages">
       {
-        categories.map((category, index) => (
+        categories.map((category) => (
           <a
             href={sitePath(category.href)}
             aria-current={section === category.key ? 'page' : undefined}
-            data-distance={Math.min(Math.abs(index - currentIndex), 2)}
           >
             {category.label}
           </a>
