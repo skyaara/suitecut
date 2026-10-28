@@ -1,0 +1,194 @@
+---
+import CodeBlock from '../../components/CodeBlock.astro'
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import {
+  captureHost,
+  captureRuns,
+  clientRuns,
+  clientSetup,
+  reproduceCapture,
+} from '../../lib/benchmarks.js'
+
+const format = (value: number) =>
+  value < 10 ? value.toFixed(2) : value.toFixed(2).replace(/\.00$/u, '')
+---
+
+<BaseLayout
+  title="Benchmarks · SuiteCut"
+  description="Measured native CEF 156 capture throughput and native client latency, with host, workload and reproduction command."
+  current="benchmarks"
+>
+  <article class="page prose">
+    <h1>Benchmarks</h1>
+    <p>
+      Only the latest valid measurements on the CEF 156 engine are published. Each one names its
+      commit, host and workload, and how to run it again.
+    </p>
+
+    <h2 id="recording">1080p120 recording</h2>
+    <p class="muted">{captureHost}</p>
+    <div class="fps">
+      {
+        captureRuns.map((row) => (
+          <div class="fps-row">
+            <span class="label">{row.run}</span>
+            <span class="fps-track">
+              <span class="fps-fill" style={`width:${(row.fps / 120) * 100}%`} />
+            </span>
+            <span class="fps-value">{row.fps.toFixed(2)}</span>
+          </div>
+        ))
+      }
+      <p class="label">Distinct frames per second, out of 120</p>
+    </div>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Run</th>
+            <th>Frames</th>
+            <th>Held paints</th>
+            <th>Audio</th>
+            <th>Load</th>
+          </tr>
+        </thead>
+        <tbody>
+          {
+            captureRuns.map((row) => (
+              <tr>
+                <td>{row.run}</td>
+                <td>{row.frames}</td>
+                <td>{row.held}</td>
+                <td>{row.audio}</td>
+                <td>{row.load}</td>
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
+    </div>
+    <p>
+      Every encoded frame carried a valid paint ID with an exact timestamp. The recorder dropped and
+      coalesced nothing. Held paints are frames CEF never delivered, filled by holding the previous
+      image.
+    </p>
+    <p class="note">
+      The strict 120 FPS sustained gate did not pass on the 120 s and 60 s runs. The host was also
+      running desktop apps beside the load workers. A run on 2026-10-20 at commit c75d579, on a
+      quieter host, measured 120.00 distinct FPS over 120 s with no held paints. Whether the gap is
+      contention or a regression isn't established yet.
+    </p>
+
+    <h2 id="client">Native client</h2>
+    <p class="muted">{clientSetup}</p>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Median</th>
+            <th>Native C++</th>
+            <th>Node SDK</th>
+            <th>Ratio</th>
+          </tr>
+        </thead>
+        <tbody>
+          {
+            clientRuns.map((row) => (
+              <tr>
+                <td>{row.measure}</td>
+                <td class="accent">
+                  {format(row.native)} {row.unit}
+                </td>
+                <td>
+                  {format(row.node)} {row.unit}
+                </td>
+                <td class="muted">{(row.node / row.native).toFixed(1)}×</td>
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
+    </div>
+    <p class="muted">
+      Memory is the application client only; browser memory is excluded. These are scoped
+      observations from two repetitions, not universal speedups.
+    </p>
+
+    <h2 id="reproduce">Reproduce</h2>
+    <p>
+      Build and relocate the macOS runtime first, then run the verifier. Add
+      <code>--audio-sync-proof</code> with <code>--duration-ms 10000</code> for the A/V sync row.
+    </p>
+    <CodeBlock label="Terminal" code={reproduceCapture} />
+
+    <h2 id="limits">Limits</h2>
+    <ul>
+      <li>The recorder can't restore images CEF never delivered.</li>
+      <li>
+        Recording numbers are macOS ARM64 only. Intel Macs and notarized builds aren't covered.
+      </li>
+      <li>
+        Arbitrary page workloads, popups, heavier contention and longer captures aren't qualified.
+      </li>
+      <li>Live streaming throughput is a separate path and isn't measured here.</li>
+    </ul>
+    <p class="muted">
+      The full record is in
+      <a href="https://github.com/skyaara/suitecut/blob/main/docs/benchmarks.md"
+        >docs/benchmarks.md</a
+      >
+      and
+      <a href="https://github.com/skyaara/suitecut/blob/main/native/client/VALIDATION.md"
+        >native/client/VALIDATION.md</a
+      >.
+    </p>
+  </article>
+</BaseLayout>
+
+<style>
+  .fps {
+    display: grid;
+    gap: 0.9rem;
+    margin: 1.5rem 0;
+    padding: 1.5rem;
+    border-radius: 16px;
+    background: var(--panel);
+    box-shadow: inset 0 0 0 1px var(--line);
+  }
+
+  .fps-row {
+    display: grid;
+    grid-template-columns: 7.5rem 1fr 3.5rem;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .fps-track {
+    position: relative;
+    height: 0.5rem;
+    border-radius: 99px;
+    background: var(--line);
+  }
+
+  .fps-fill {
+    position: absolute;
+    inset: 0 auto 0 0;
+    border-radius: 99px;
+    background: var(--accent);
+  }
+
+  .fps-value {
+    color: var(--ink-strong);
+    font: 400 0.8125rem / 1 var(--mono);
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .fps > .label {
+    margin: 0;
+  }
+
+  td.accent {
+    color: var(--accent);
+  }
+</style>

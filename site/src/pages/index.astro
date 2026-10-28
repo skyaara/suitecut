@@ -2,108 +2,430 @@
 import CodeBlock from '../components/CodeBlock.astro'
 import BaseLayout from '../layouts/BaseLayout.astro'
 import { recordExample } from '../lib/api-reference.js'
+import { clientRuns } from '../lib/benchmarks.js'
 import { sitePath } from '../lib/paths.js'
-import '@fontsource-variable/inter'
-import '../styles/home.css'
 
-const packages = [
-  { name: 'suitecut', text: 'Record, narrate, render and stream browser flows.' },
-  {
-    name: '@suitecut/browser-control',
-    text: 'The native CEF engine, Chromium over CDP and Firefox over WebDriver BiDi, with a live viewer.',
-  },
-  { name: 'SuiteCut::Client', text: 'A C/C++ SDK with a stable C ABI. No Node.js required.' },
-  { name: 'suitecut-native-control', text: 'A CLI that also runs as an MCP server for agents.' },
+const families = [
+  'Browser lifecycle',
+  'Contexts and profiles',
+  'Pages and popups',
+  'Navigation',
+  'Frames and iframes',
+  'Locators',
+  'Actionability',
+  'Pointer and touch',
+  'Keyboard and text',
+  'Form controls',
+  'Uploads and drag-drop',
+  'DOM inspection',
+  'Evaluation and handles',
+  'Events and cancellation',
+  'Dialogs',
+  'Downloads',
+  'Network observation',
+  'Request routing',
+  'HAR record and replay',
+  'WebSockets',
+  'API requests',
+  'Storage and auth state',
+  'Proxies and permissions',
+  'Emulation',
+  'Virtual time',
+  'Workers',
+  'Accessibility',
+  'Screenshots',
+  'PDF',
+  'Video and screencast',
+  'Tracing and coverage',
 ]
+
+const highlights = clientRuns.filter((row) =>
+  ['Launch to ready', 'Locator fill', 'Peak client memory'].includes(row.measure),
+)
+const format = (value: number) => (value < 10 ? value.toFixed(2) : String(Math.round(value)))
 ---
 
 <BaseLayout
   title="SuiteCut"
-  description="Record and stream narrated browser flows with native embedded Chromium capture."
+  description="Record, narrate, render and stream browser flows with native embedded Chromium capture."
   current="home"
 >
-  <article class="landing">
-    <header class="home-intro">
-      <h1>Script a browser flow. Get back a finished, narrated video.</h1>
-      <div class="home-columns">
-        <p>
-          Have you ever recorded a product tour, then spent an afternoon cutting it, adding captions
-          and lining up a voiceover?
-        </p>
-        <p class="muted">
-          SuiteCut drives an embedded Chromium, records its real pixels and page audio, and keeps a
-          timeline of every narration, highlight and checkpoint.
-        </p>
-      </div>
-      <p class="home-links">
-        <a class="home-button" href={sitePath('/docs')}>Get started</a>
-        <a href={sitePath('/examples')}>Examples</a>
-        <a href="https://github.com/skyaara/suitecut">GitHub</a>
-      </p>
-    </header>
-
-    <section>
-      <h2><span>01</span>Record</h2>
+  <div class="home prose">
+    <section class="home-intro">
       <p>
-        Write the flow the way you'd write a test. Locators, clicks and navigation drive a real
-        embedded browser while SuiteCut captures what it paints.
+        Have you ever recorded a product tour, then lost an afternoon to trimming it, captioning it
+        and lining up a voiceover that never quite matches the clicks?
       </p>
-      <p class="muted">
-        Call narrate, highlight and checkpoint as you go. Each one is stamped onto an action
-        timeline beside the source video, so nothing is edited by hand afterwards.
-      </p>
-      <CodeBlock code={recordExample} theme="github-light" />
-    </section>
-
-    <section>
-      <h2><span>02</span>Render</h2>
       <p>
-        renderSuiteCut reads the manifest and produces the finished video, with narration, captions,
-        highlights and page audio mixed in.
-      </p>
-      <p class="muted">
-        Capture and output rates are independent, from 1 to 120 frames per second. Resampling holds
-        or drops real frames by timestamp. It never invents motion that wasn't there.
+        SuiteCut drives an embedded Chromium from a script, records its real pixels and page audio,
+        and keeps a timeline of every narration, highlight and checkpoint. Render a finished video
+        or stream it live.
       </p>
     </section>
 
-    <section>
-      <h2><span>03</span>Stream</h2>
-      <p>
-        launchBrowser and createBroadcast publish the same native pixels and page audio to RTMP or
-        RTMPS.
-      </p>
-      <p class="muted">
-        You can switch the broadcast source without dropping the publisher connection. Your
-        application owns the browser, the stop signal and the stream credentials.
-      </p>
-    </section>
-
-    <section>
-      <h2><span>04</span>Control</h2>
-      <p>The browser layer stands on its own. Use it from TypeScript, C++ or an agent.</p>
-      <dl class="home-packages">
-        {
-          packages.map((item) => (
-            <div>
-              <dt>{item.name}</dt>
-              <dd>{item.text}</dd>
-            </div>
-          ))
-        }
+    <figure class="home-figure">
+      <dl class="home-stats">
+        <div><dt>Distinct frames per second</dt><dd>120</dd></div>
+        <div><dt>Frames dropped by the recorder</dt><dd>0</dd></div>
+        <div><dt>Audio to video delay</dt><dd>8.33<small>ms</small></dd></div>
+        <div><dt>Native client memory</dt><dd>3.63<small>MiB</small></dd></div>
       </dl>
-    </section>
+      <figcaption class="label">
+        1080p120 with page audio on an Apple M4. <a href={sitePath('/benchmarks')}
+          >How it was measured</a
+        >
+      </figcaption>
+    </figure>
 
-    <section>
-      <h2><span>05</span>Before you start</h2>
-      <p>Bring Node.js 22, FFmpeg and a built CEF executable.</p>
-      <p class="muted">
-        suitecut install fetches checksum-verified media tools, and suitecut doctor tells you what's
-        missing. Builds are qualified on macOS ARM64 and Linux x64.
+    <h2 id="capabilities">Capabilities</h2>
+    <p>
+      Everything below ships in the repository today. Each part is usable on its own: record without
+      streaming, control a browser without recording, or drive it from C++ with no Node.js at all.
+    </p>
+
+    <h3 id="record">Record</h3>
+    <p>
+      Write the flow like a test. Locators, clicks and navigation drive a real embedded browser
+      while SuiteCut captures what it paints, at 1 to 120 frames per second, with optional 48 kHz
+      page audio.
+    </p>
+    <p class="muted">
+      <code>narrate</code>, <code>highlight</code>, <code>checkpoint</code>, <code>zoom</code>,
+      <code>hover</code>, <code>click</code> and <code>type</code> are stamped onto an action timeline
+      beside the source video.
+    </p>
+
+    <h3 id="narrate">Narrate</h3>
+    <p>
+      Kokoro 82M runs locally in a Node worker with 28 English voices. No hosted speech API or key
+      is needed. The macOS system voice and optional Sherpa voices such as Piper are available as
+      audio plugins.
+    </p>
+    <p class="muted">
+      Providers can return word timings, so captions highlight each word as it is spoken.
+    </p>
+
+    <h3 id="render">Render</h3>
+    <p>
+      <code>renderSuiteCut</code> turns the manifest into a finished video: selected intervals, captions,
+      highlights, action zoom and a mix of narration with page audio.
+    </p>
+    <p class="muted">
+      Choose output size, frame rate, quality profile and encoder. Resampling holds or drops real
+      frames by timestamp, so it never invents motion that wasn't captured.
+    </p>
+
+    <h3 id="stream">Stream</h3>
+    <p>
+      <code>launchBrowser</code> and <code>createBroadcast</code> publish native pixels and page audio
+      to RTMP or RTMPS, with adaptive bitrate, supervised reconnects and health reports.
+    </p>
+    <p class="muted">
+      Switch the source without dropping the publisher connection. Browser-drawn highlights and
+      captions appear live.
+    </p>
+
+    <h3 id="control">Control</h3>
+    <p>
+      <code>@suitecut/browser-control</code> drives the SuiteCut CEF engine, installed Chrome, Chromium,
+      Edge or Brave over CDP, and Firefox over WebDriver BiDi. The CEF backend adds a live viewer where
+      a person can take over.
+    </p>
+    <p class="muted">
+      It covers 31 browser feature families. Each has scoped evidence in the
+      <a href="https://github.com/skyaara/suitecut/blob/main/docs/playwright-feature-parity.md"
+        >feature checklist</a
+      >, which also lists what's still missing.
+    </p>
+    <ul class="home-families">
+      {families.map((family) => <li>{family}</li>)}
+    </ul>
+
+    <h3 id="test">Test</h3>
+    <p>
+      <code>suitecut-test</code> is a native runner with fixtures, retries, repeat-each, multi-file discovery
+      and JSON, JUnit and HTML reports.
+    </p>
+    <p class="muted">
+      <code>expectNative</code> adds retrying assertions, soft assertions with deadlines,
+      <code>toPass</code> and locator handlers for interrupting overlays.
+    </p>
+
+    <h3 id="agents">Agents</h3>
+    <p>
+      <code>SuiteCut::Client</code> is a C++20 SDK with a stable C ABI. It launches CEF, Chrome or Firefox
+      with no Node.js, CEF headers or automation dependency.
+    </p>
+    <p class="muted">
+      Its <code>suitecut-native-control</code> CLI also runs as an MCP server. The simple agent offers
+      three tools, observe, act and wait, with compact observations, short element refs and redacted password
+      values.
+    </p>
+
+    <h2 id="benchmarks">Benchmarks</h2>
+    <p>
+      The native C++ client against the Node SDK, driving the same pinned CEF binary. Shorter is
+      faster.
+    </p>
+    <div class="home-bars">
+      {
+        highlights.map((row) => {
+          const max = Math.max(row.native, row.node)
+          return (
+            <div class="home-bar">
+              <span class="label">{row.measure}</span>
+              <span class="home-bar-track">
+                <span
+                  class="home-bar-fill is-native"
+                  style={`width:${(row.native / max) * 100}%`}
+                />
+                <span class="home-bar-value">
+                  {format(row.native)} {row.unit}
+                </span>
+              </span>
+              <span class="home-bar-track">
+                <span class="home-bar-fill" style={`width:${(row.node / max) * 100}%`} />
+                <span class="home-bar-value">
+                  {format(row.node)} {row.unit}
+                </span>
+              </span>
+            </div>
+          )
+        })
+      }
+      <p class="home-bars-key label">
+        <span><i class="is-native"></i>Native C++</span><span><i></i>Node SDK</span>
       </p>
-      <p class="home-links">
-        <a class="home-button" href={sitePath('/docs')}>Read the guide</a>
-      </p>
-    </section>
-  </article>
+    </div>
+    <p class="muted">
+      Recording held 119 to 120 distinct frames per second at 1080p over two minutes on a busy
+      machine. <a href={sitePath('/benchmarks')}>See every run, its host and how to reproduce it.</a
+      >
+    </p>
+
+    <h2 id="platforms">Platforms</h2>
+    <p>
+      Linux x64 and macOS ARM64, each with its own qualification scope. Windows runtime packaging is
+      not implemented. The engine is a pinned CEF 156 build on the Chromium 156 beta channel.
+    </p>
+    <p class="muted">
+      You need Node.js 22, pnpm, FFmpeg and a separately built CEF executable.
+      <code>suitecut install</code> fetches checksum-verified media tools and
+      <code>suitecut doctor</code> reports what's missing.
+    </p>
+
+    <h2 id="start">Get started</h2>
+    <CodeBlock code={recordExample} />
+    <p class="home-links">
+      <a class="tag" href={sitePath('/docs')}>Read the guide</a>
+      <a href={sitePath('/examples')}>Examples</a>
+      <a href="https://github.com/skyaara/suitecut">GitHub</a>
+    </p>
+  </div>
 </BaseLayout>
+
+<style>
+  .home {
+    padding-top: 8rem;
+    font-size: 1.25rem;
+    line-height: 2rem;
+  }
+
+  .home-intro {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.5rem;
+  }
+
+  .home-intro p {
+    margin: 0;
+  }
+
+  .home-figure {
+    margin: 6rem 0 0;
+  }
+
+  .home-stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1px;
+    margin: 0;
+    overflow: hidden;
+    border-radius: 16px;
+    background: var(--line);
+    box-shadow: 0 0 0 1px var(--line);
+  }
+
+  .home-stats div {
+    display: flex;
+    flex-direction: column-reverse;
+    justify-content: space-between;
+    gap: 2.5rem;
+    padding: 1.5rem;
+    background: var(--panel);
+  }
+
+  .home-stats dt {
+    color: var(--faint);
+    font: 400 0.8125rem / 1.5 var(--mono);
+  }
+
+  .home-stats dd {
+    margin: 0;
+    color: var(--ink-strong);
+    font-size: 3rem;
+    letter-spacing: -1px;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .home-stats small {
+    margin-left: 0.25rem;
+    color: var(--faint);
+    font-size: 1rem;
+    letter-spacing: 0;
+  }
+
+  .home-figure figcaption {
+    margin-top: 1rem;
+    text-align: center;
+  }
+
+  .home h2 {
+    margin-top: 8rem;
+  }
+
+  .home-families {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0 1.5rem;
+    margin: 1.5rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .home-families li {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin: 0;
+    padding: 0.3rem 0;
+    color: var(--muted);
+    font: 400 0.8125rem / 1.5 var(--mono);
+  }
+
+  .home-families li::before {
+    content: '';
+    width: 0.75rem;
+    height: 1px;
+    flex: none;
+    background: var(--line-strong);
+  }
+
+  .home-bars {
+    display: grid;
+    gap: 1.25rem;
+    margin: 2rem 0;
+    padding: 1.5rem;
+    border-radius: 16px;
+    background: var(--panel);
+    box-shadow: inset 0 0 0 1px var(--line);
+  }
+
+  .home-bar {
+    display: grid;
+    gap: 0.35rem;
+  }
+
+  .home-bar-track {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .home-bar-fill {
+    height: 0.5rem;
+    min-width: 2px;
+    border-radius: 99px;
+    background: var(--line-strong);
+  }
+
+  .home-bar-fill.is-native {
+    background: var(--accent);
+  }
+
+  .home-bar-value {
+    flex: none;
+    color: var(--muted);
+    font: 400 0.8125rem / 1 var(--mono);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .home-bars-key {
+    display: flex;
+    gap: 1.25rem;
+    margin: 0;
+  }
+
+  .home-bars-key span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+  }
+
+  .home-bars-key i {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: var(--line-strong);
+  }
+
+  .home-bars-key i.is-native {
+    background: var(--accent);
+  }
+
+  .home-links {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1.5rem;
+    font: 400 0.8125rem / 1.5 var(--mono);
+  }
+
+  .home-links a:not(.tag) {
+    color: var(--muted);
+    text-decoration: none;
+  }
+
+  .home-links a:not(.tag):hover {
+    color: var(--ink);
+  }
+
+  @media (max-width: 52rem) {
+    .home {
+      padding-top: 4rem;
+      font-size: 1.125rem;
+      line-height: 1.75rem;
+    }
+
+    .home-intro {
+      grid-template-columns: 1fr;
+    }
+
+    .home-stats {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .home-stats dd {
+      font-size: 2.25rem;
+    }
+
+    .home h2 {
+      margin-top: 5rem;
+    }
+
+    .home-families {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+</style>

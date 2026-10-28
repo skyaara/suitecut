@@ -7,6 +7,8 @@ export default defineConfig({
   site: process.env.SUITECUT_SITE_URL ?? 'https://suitecut.aakashreddy.com',
   base: process.env.SUITECUT_SITE_BASE ?? '/',
   trailingSlash: 'never',
+  // Keep the space between text and an inline element that starts the next source line.
+  compressHTML: false,
   devToolbar: {
     enabled: false,
   },

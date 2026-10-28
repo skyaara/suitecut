@@ -1,6 +1,7 @@
 ---
 import CodeBlock from '../../../components/CodeBlock.astro'
 import DocsLayout from '../../../layouts/DocsLayout.astro'
+import { sitePath } from '../../../lib/paths.js'
 
 const reproduce = `python3 scripts/verify-native-macos-recording.py \\
   --installation '/path/to/relocated installation' \\
@@ -20,7 +21,8 @@ const reproduce = `python3 scripts/verify-native-macos-recording.py \\
     Latest valid measurements for the CEF 156 engine. Each result names its commit, host and
     workload. The full record, including earlier runs and limits, is in
     <a href="https://github.com/skyaara/suitecut/blob/main/docs/benchmarks.md">docs/benchmarks.md</a
-    >.
+    >. Native client latency and memory are on the
+    <a href={sitePath('/benchmarks')}>benchmarks page</a>.
   </p>
   <h2 id="macos-recording">1080p120 recording on macOS</h2>
   <p>
