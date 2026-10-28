@@ -128,7 +128,7 @@ auto done = agent.call("act", {
 auto ready = agent.call("wait", {{"text", "Saved"}, {"timeoutMs", 2000}});`
 
 const highlights = clientRuns.filter((row) =>
-  ['Launch to ready', 'Locator fill', 'Peak client memory'].includes(row.measure),
+  ['Launch to ready', 'Small evaluation', 'Locator fill'].includes(row.measure),
 )
 const format = (value: number) => (value < 10 ? value.toFixed(2) : String(Math.round(value)))
 ---
@@ -139,31 +139,20 @@ const format = (value: number) => (value < 10 ? value.toFixed(2) : String(Math.r
   current="home"
 >
   <div class="home prose">
-    <section class="home-intro">
-      <p>
-        Have you ever recorded a product tour, then lost an afternoon to trimming it, captioning it
-        and lining up a voiceover that never quite matches the clicks?
+    <section class="home-hero">
+      <h1>The first embedded Chrome built to be recorded, streamed and driven.</h1>
+      <p class="home-lede">
+        SuiteCut runs Chromium inside your own process and takes video and sound straight from the
+        renderer, with no screenshots, extensions or open debugging port. Drive it from TypeScript,
+        C++ or any MCP client, then record it, stream it live, or let an agent work while a person
+        watches.
       </p>
-      <p>
-        SuiteCut is a browser engine built for that. It embeds Chromium, captures its real pixels
-        and page audio, and lets a script, an agent or a person drive it. Render a video, stream it
-        live or hand it to an MCP client.
+      <p class="home-links">
+        <a class="tag" href={sitePath('/docs')}>Get started</a>
+        <a href="#capabilities">How it works</a>
+        <a href="https://github.com/skyaara/suitecut">GitHub</a>
       </p>
     </section>
-
-    <figure class="home-figure">
-      <dl class="home-stats">
-        <div><dt>Distinct frames per second</dt><dd>120</dd></div>
-        <div><dt>Frames dropped by the recorder</dt><dd>0</dd></div>
-        <div><dt>Audio to video delay</dt><dd>8.33<small>ms</small></dd></div>
-        <div><dt>Native client memory</dt><dd>3.63<small>MiB</small></dd></div>
-      </dl>
-      <figcaption class="label">
-        1080p120 with page audio on an Apple M4. <a href={sitePath('/benchmarks')}
-          >How it was measured</a
-        >
-      </figcaption>
-    </figure>
 
     <h2 id="capabilities">How it fits together</h2>
     <p class="muted">
@@ -323,9 +312,7 @@ const format = (value: number) => (value < 10 ? value.toFixed(2) : String(Math.r
       </p>
     </div>
     <p class="muted">
-      Recording held 119 to 120 distinct frames per second at 1080p over two minutes on a busy
-      machine. <a href={sitePath('/benchmarks')}>See every run, its host and how to reproduce it.</a
-      >
+      <a href={sitePath('/benchmarks')}>See every run, its host and how to reproduce it.</a>
     </p>
 
     <h2 id="platforms"><span class="kicker">08</span>Platforms</h2>
@@ -364,64 +351,19 @@ const format = (value: number) => (value < 10 ? value.toFixed(2) : String(Math.r
     line-height: 2rem;
   }
 
-  .home-intro {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 1.5rem;
+  .home-hero h1 {
+    max-width: 26ch;
+    margin: 0 0 3rem;
   }
 
-  .home-intro p {
+  .home-lede {
+    max-width: 40rem;
     margin: 0;
+    color: var(--muted);
   }
 
-  .home-figure {
-    margin: 6rem 0 0;
-  }
-
-  .home-stats {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 1px;
-    margin: 0;
-    overflow: hidden;
-    border-radius: 16px;
-    background: var(--line);
-    box-shadow: 0 0 0 1px var(--line);
-  }
-
-  .home-stats div {
-    display: flex;
-    flex-direction: column-reverse;
-    justify-content: space-between;
-    gap: 2.5rem;
-    padding: 1.5rem;
-    background: var(--panel);
-  }
-
-  .home-stats dt {
-    color: var(--faint);
-    font: 400 0.8125rem / 1.5 var(--mono);
-  }
-
-  .home-stats dd {
-    margin: 0;
-    color: var(--ink-strong);
-    font-size: 3rem;
-    letter-spacing: -1px;
-    line-height: 1;
-    font-variant-numeric: tabular-nums;
-  }
-
-  .home-stats small {
-    margin-left: 0.25rem;
-    color: var(--accent);
-    font-size: 1rem;
-    letter-spacing: 0;
-  }
-
-  .home-figure figcaption {
-    margin-top: 1rem;
-    text-align: center;
+  .home-hero .home-links {
+    margin: 2.5rem 0 0;
   }
 
   .home h2 {
@@ -454,6 +396,7 @@ const format = (value: number) => (value < 10 ? value.toFixed(2) : String(Math.r
     left: 12.5%;
     height: 1px;
     background: linear-gradient(90deg, var(--line-strong), var(--accent), var(--line-strong));
+    opacity: 0.7;
   }
 
   .flow-column {
@@ -487,10 +430,11 @@ const format = (value: number) => (value < 10 ? value.toFixed(2) : String(Math.r
   }
 
   .flow-column.is-engine ul {
-    background: var(--accent-soft);
+    background: var(--chrome);
     box-shadow:
-      inset 0 0 0 1px color-mix(in srgb, var(--accent) 35%, transparent),
-      0 12px 30px -18px color-mix(in srgb, var(--accent) 60%, transparent);
+      inset 0 1px 0 #fff,
+      inset 0 0 0 1px #c4cad3,
+      0 14px 30px -18px rgb(30 35 42 / 45%);
   }
 
   .flow-column.is-engine li {
@@ -580,7 +524,7 @@ const format = (value: number) => (value < 10 ? value.toFixed(2) : String(Math.r
   }
 
   .bar-fill.is-native {
-    background: var(--accent);
+    background: var(--chrome-bar);
   }
 
   .bar-value {
@@ -610,7 +554,7 @@ const format = (value: number) => (value < 10 ? value.toFixed(2) : String(Math.r
   }
 
   .bars-key i.is-native {
-    background: var(--accent);
+    background: var(--chrome-dark);
   }
 
   .home-links {
@@ -635,18 +579,6 @@ const format = (value: number) => (value < 10 ? value.toFixed(2) : String(Math.r
       padding-top: 4rem;
       font-size: 1.125rem;
       line-height: 1.75rem;
-    }
-
-    .home-intro {
-      grid-template-columns: 1fr;
-    }
-
-    .home-stats {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .home-stats dd {
-      font-size: 2.25rem;
     }
 
     .home h2 {

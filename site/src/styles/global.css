@@ -1,4 +1,4 @@
-/* SuiteCut site: a paper sheet on a grey desk, one grotesk, one mono and a Chrome-blue accent. */
+/* SuiteCut site: a paper sheet on a grey desk, one grotesk, one mono and a brushed-chrome accent. */
 
 :root {
   color-scheme: light;
@@ -11,9 +11,12 @@
   --faint: #8f8f8f;
   --line: #ededed;
   --line-strong: #c7c7c7;
-  --accent: #1a73e8;
-  --accent-soft: #e8f0fe;
-  --accent-ink: #174ea6;
+  --accent: #5f6b7a;
+  --accent-soft: #eef0f3;
+  --accent-ink: #2f3742;
+  --chrome: linear-gradient(180deg, #ffffff 0%, #e6e9ed 46%, #cdd2d9 54%, #eef0f3 100%);
+  --chrome-dark: linear-gradient(180deg, #59616c 0%, #30353d 48%, #1f2329 52%, #3b424c 100%);
+  --chrome-bar: linear-gradient(90deg, #22262c 0%, #59616c 70%, #9aa3ae 100%);
   --sans: 'Geist Variable', -apple-system, system-ui, 'Helvetica Neue', sans-serif;
   --mono: 'Geist Mono Variable', ui-monospace, Menlo, monospace;
   --sheet: 72rem;
@@ -190,7 +193,10 @@ a:hover {
   padding: 0.3rem 0.5rem;
   border-radius: 3px;
   color: #fff;
-  background: var(--accent);
+  background: var(--chrome-dark);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 25%),
+    0 1px 2px rgb(0 0 0 / 20%);
   font: 500 0.6875rem / 1 var(--mono);
   letter-spacing: 0.06em;
   text-decoration: none;
