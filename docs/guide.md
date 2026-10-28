@@ -53,17 +53,15 @@ and produce failed manifests when finalization is possible.
 
 ## Browser controls
 
-`NativePage` supports `goto`, `evaluate`, `locator`, `waitForTimeout`,
-`waitForLoadState('domcontentloaded')`, `isClosed` and private DevTools commands.
-Functions and values used by evaluation must be self-contained and JSON
-serializable. There are no remote object handles.
+`NativePage` provides CSS, role, text, label, placeholder and test-id locators,
+frames and frame locators, keyboard and pointer input, file uploads, network
+routing, popups, downloads, dialogs, screenshots, PDFs and lifecycle events.
+`suitecut/native` also exports tracing, coverage, HAR record and replay, virtual
+time, workers and API request contexts. Functions and values used by evaluation
+must be self-contained and JSON serializable.
 
-Locators require exactly one CSS match in the main document. They support
-bounding boxes, element evaluation, scroll-into-view, hover, click, fill and
-sequential text insertion. Click/hover use basic geometry, hit-test and enabled
-checks; complete automatic actionability/retry behavior is not implemented.
-Role/text selectors, shadow-root traversal, frame APIs, popup windows and downloads
-are not supported.
+Each family has scoped evidence and known gaps in the
+[feature checklist](playwright-feature-parity.md).
 
 ## Capture settings and resampling
 
@@ -150,7 +148,8 @@ node dist/cli.js render --manifest .suitecut/tour.json --output .suitecut/tour.m
 node dist/cli.js --help
 ```
 
-The CLI provides `install`, `doctor`, `render` and help.
+The CLI provides `install`, `doctor`, `render`, `view` and help. The package also
+installs `suitecut-test`, the native test runner.
 
 ## Validation
 

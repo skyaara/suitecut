@@ -5,7 +5,15 @@ import { sitePath } from '../lib/paths.js'
 interface Props {
   title: string
   description: string
-  section: 'overview' | 'api' | 'kokoro' | 'audio-plugins' | 'streaming' | 'performance'
+  section:
+    | 'overview'
+    | 'api'
+    | 'browser-control'
+    | 'agents'
+    | 'kokoro'
+    | 'audio-plugins'
+    | 'streaming'
+    | 'performance'
 }
 
 const { title, description, section } = Astro.props
@@ -20,6 +28,16 @@ const categories = [
     key: 'api',
     label: 'API and CLI',
     href: '/docs/api',
+  },
+  {
+    key: 'browser-control',
+    label: 'Browser control',
+    href: '/docs/browser-control',
+  },
+  {
+    key: 'agents',
+    label: 'Agents and MCP',
+    href: '/docs/agents',
   },
   {
     key: 'streaming',

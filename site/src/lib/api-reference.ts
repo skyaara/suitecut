@@ -18,6 +18,9 @@ await renderSuiteCut({
 
 export const streamExample = `import { launchBrowser, createBroadcast } from 'suitecut'
 
+// Your app decides when to stop, here on Ctrl+C.
+const applicationStopSignal = new Promise<void>((resolve) => process.once('SIGINT', () => resolve()))
+
 const source = await launchBrowser({ framesPerSecond: 120 })
 let broadcast
 try {

@@ -15,24 +15,42 @@ import { sitePath } from '../../../lib/paths.js'
   <CodeBlock code={streamExample} />
   <h2 id="stream-options">Stream options</h2>
   <p>
-    Set an RTMP/RTMPS URL, output size, output FPS 1–120, boolean audio, bitrate, adaptive bitrate
-    and reconnect policy. Source switching requires matching dimensions and pixel format; capture
-    rates may differ.
+    Set an RTMP or RTMPS URL, output size, output frame rate, boolean audio, a fixed
+    <code>bitrateKbps</code>, <code>captureLatencyMs</code> and an optional <code>reconnect</code>
+    policy. Output rates can be fractional, such as 29.97.
+  </p>
+  <p>
+    <code>selectSource()</code> switches to another page in the same native browser helper, for example
+    one from <code>context.newPage()</code>. It needs matching dimensions and pixel format; capture
+    rates may differ. Switching to a page in a different helper isn't supported. Broadcasts also
+    support <code>pause()</code>, <code>resume()</code> and <code>cancel()</code>.
   </p>
   <h2 id="page-audio">Page audio</h2>
   <p>
     Audio comes from CEF callbacks as 48 kHz stereo PCM. It is disabled by default. Timestamped
     buffering aligns it with the video timeline; missing audio contributes silence.
   </p>
-  <h2 id="adaptive-bitrate">Adaptive bitrate</h2>
+  <h2 id="bitrate-and-health">Bitrate and health</h2>
   <p>
-    The persistent publisher supports bitrate changes and monitors congestion. Health reports expose
-    capture/output lag and progress age.
+    Bitrate is fixed: <code>bitrateKbps</code> accepts 100 to 50,000 and defaults to 4500.
+    <code>adaptiveBitrate: true</code> and <code>onDiagnostic</code> are rejected.
+  </p>
+  <p>
+    <code>await broadcast.health()</code> and <code>status()</code> return native counters for submitted,
+    held and encoded frames, muxed bytes, reconnect attempts and
+    <code>maxCaptureToPipeMs</code>. Muxed bytes don't prove the remote server received them.
   </p>
   <h2 id="reconnect-and-stop">Reconnect and stop</h2>
   <p>
-    The publisher supervises reconnects. The application owns its source and observes both source
-    and publisher failure. A failed source holds its last frame until replacement or stop.
+    Reconnect is off unless you pass
+    <code>reconnect: &#123; maxAttempts, initialDelayMs, maxDelayMs &#125;</code>. It allows 1 to 8
+    attempts per outage, with defaults of 3 attempts, 250 ms and 5000 ms. Without a policy, the
+    publisher makes one attempt.
+  </p>
+  <p>
+    Closing the page, context or browser gracefully finalizes the publisher. Crashes and forced
+    termination surface on <code>failure</code>. Your app owns its source and should watch both the
+    source and the broadcast.
   </p>
   <h2 id="live-effects">Live effects</h2>
   <p>
@@ -40,12 +58,16 @@ import { sitePath } from '../../../lib/paths.js'
     narration mix do not transform a concurrent broadcast.
   </p>
   <h2 id="verify-locally">Verify locally</h2>
-  <CodeBlock label="Terminal" code={'pnpm test:native:cadence\npnpm test:native:stream'} />
+  <CodeBlock
+    label="Terminal"
+    code={'pnpm test:native:cadence\npnpm test:native:stream\npnpm test:native:reconnect'}
+  />
   <p>
-    The stream verifier needs the built native browser and checks decoded received media, source
-    replacement and receiver reconnection. Streaming throughput at 120 FPS remains unverified;
-    measured recording throughput is on the <a href={sitePath('/docs/performance')}
-      >performance page</a
+    The stream verifier needs the built native browser and checks decoded received media and source
+    replacement. <code>test:native:reconnect</code> covers refused connections, listener replacement and
+    closure during retries. Publishing has known audio dropouts and low-rate Opus startup failures. Streaming
+    throughput at 120 FPS remains unverified; measured recording throughput is on the <a
+      href={sitePath('/docs/performance')}>performance page</a
     >.
   </p>
 </DocsLayout>

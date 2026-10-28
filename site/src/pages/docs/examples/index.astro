@@ -1,3 +1,4 @@
 ---
-return Astro.redirect('/examples', 301)
+// Respect the deployment base path, as sitePath() does elsewhere.
+return Astro.redirect(`${import.meta.env.BASE_URL.replace(/\/$/u, '')}/examples`, 301)
 ---

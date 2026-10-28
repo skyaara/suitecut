@@ -3,27 +3,147 @@ import nativeSource from '../../../../examples/native.ts?raw'
 import CodeBlock from '../../components/CodeBlock.astro'
 import BaseLayout from '../../layouts/BaseLayout.astro'
 import { streamExample } from '../../lib/api-reference.js'
+import { sitePath } from '../../lib/paths.js'
+
+const songMaker = `export SUITECUT_NATIVE_EXECUTABLE="/absolute/path/to/suitecut-browser"
+pnpm example:song-maker`
+
+const installedBrowser = `import { launchBrowser } from '@suitecut/browser-control'
+
+const browser = await launchBrowser({
+  backend: 'cdp',
+  executablePath: '/path/to/google-chrome',
+  headless: true,
+})
+try {
+  const page = await browser.newPage()
+  await page.goto('https://example.com')
+  await page.getByRole('link', { name: 'More information' }).click()
+  console.log(await page.title())
+} finally {
+  await browser.close()
+}`
+
+const handover = `import { launchBrowser, createBrowserViewer } from '@suitecut/browser-control'
+
+const browser = await launchBrowser({
+  executablePath: '/absolute/path/to/suitecut-browser',
+  headless: true,
+  pixelFormat: 'bgra',
+})
+const page = await browser.newPage()
+await page.goto('https://example.com')
+const viewer = await createBrowserViewer({ browser, page, resolutionMode: 'auto' })
+console.log('Watch or take over at', viewer.url)
+
+try {
+  await viewer.runAgent(() => page.getByRole('link', { name: 'More information' }).click())
+} finally {
+  await viewer.close()
+  await browser.close()
+}`
+
+const cliAgent = `suitecut-native-control --session shop --browser /usr/bin/chromium open https://example.com
+suitecut-native-control --session shop snapshot
+suitecut-native-control --session shop --response none fill e12 'Ada'
+suitecut-native-control --session shop click e15
+suitecut-native-control --session shop close`
+
+const mcpConfig = `{
+  "mcpServers": {
+    "suitecut": {
+      "command": "/absolute/install/prefix/bin/suitecut-native-control",
+      "args": ["--browser", "/usr/bin/chromium", "--mcp", "--tools", "core,network"]
+    }
+  }
+}`
+
+const cppAgent = `#include <suitecut/browser.hpp>
+#include <suitecut/simple_agent.hpp>
+
+int main() {
+  suitecut::LaunchOptions options;
+  options.executable = "/usr/bin/firefox";
+  auto browser = suitecut::Browser::launch_firefox(options);
+  browser.main_page().navigate("https://example.com");
+
+  suitecut::AgentDriver driver(browser);
+  suitecut::SimpleAgent agent(driver);
+  auto seen = agent.call("observe", {});
+  auto ready = agent.call("wait", {{"text", "Example Domain"}, {"timeoutMs", 2000}});
+  browser.close();
+}`
 ---
 
 <BaseLayout
-  title="Native examples · SuiteCut"
-  description="Record, render and stream with SuiteCut's native CEF source."
+  title="Examples · SuiteCut"
+  description="Record, render, stream and drive browsers with SuiteCut: complete examples from the repository."
   current="examples"
 >
   <article class="page prose">
-    <h1>Native examples</h1>
-    <h2>Record and render</h2>
+    <h1>Examples</h1>
     <p>
-      Build the pinned CEF executable and set <code>SUITECUT_NATIVE_EXECUTABLE</code>, then run <code
-        >pnpm example:native</code
-      >.
+      Each example uses the current packages. The recording examples need the built CEF executable
+      in <code>SUITECUT_NATIVE_EXECUTABLE</code>; the browser agent examples also work with an
+      installed Chrome or Firefox.
+    </p>
+
+    <h2 id="record-and-render">Record and render</h2>
+    <p>
+      A narrated tour in the embedded browser with page audio, rendered to a video. This is
+      <code>examples/native.ts</code>; run it with <code>pnpm example:native</code>.
     </p>
     <CodeBlock code={nativeSource} />
-    <h2>Publish a source</h2>
+
+    <h2 id="song-maker">A real app at 1080p60</h2>
     <p>
-      The application owns the browser and stop signal. Keep publishing credentials in environment
-      variables.
+      The
+      <a href="https://github.com/skyaara/suitecut/blob/main/examples/song-maker/README.md"
+        >Song Maker example</a
+      > drives Chrome Music Lab's Song Maker with real pointer input: it composes a melody, changes the
+      tempo, switches instruments and plays it back. It records the app and its Web Audio, then renders
+      and verifies a 1920 × 1080, 60 fps MP4.
+    </p>
+    <p>
+      It installs <code>@suitecut/browser-control</code> and <code>suitecut</code> from freshly packed
+      tarballs into a separate project, the way a real consumer would.
+    </p>
+    <CodeBlock label="Terminal" code={songMaker} />
+
+    <h2 id="publish">Publish a source</h2>
+    <p>
+      Stream a page to RTMP or RTMPS. Your app owns the browser and the stop signal; keep stream
+      keys in environment variables.
     </p>
     <CodeBlock code={streamExample} />
+
+    <h2 id="installed-browser">Drive an installed browser</h2>
+    <p>
+      <code>@suitecut/browser-control</code> without the embedded engine, against the Chrome you already
+      have.
+    </p>
+    <CodeBlock code={installedBrowser} />
+
+    <h2 id="handover">Agent with human handover</h2>
+    <p>
+      An agent works in the CEF engine while a person watches through the live viewer and can take
+      over at any point.
+    </p>
+    <CodeBlock code={handover} />
+
+    <h2 id="cli-agent">Command-line agent session</h2>
+    <p>A persistent session that any script or agent can drive one command at a time.</p>
+    <CodeBlock label="Terminal" code={cliAgent} />
+
+    <h2 id="mcp">MCP client</h2>
+    <p>
+      Add SuiteCut to any MCP client as a stdio server. See
+      <a href={sitePath('/docs/agents')}>Agents and MCP</a> for tool groups and backends.
+    </p>
+    <CodeBlock code={mcpConfig} label="MCP config" lang="json" />
+
+    <h2 id="cpp-agent">C++ agent with Firefox</h2>
+    <p>The native SDK's simple agent, driving an installed Firefox over WebDriver BiDi.</p>
+    <CodeBlock code={cppAgent} label="C++" lang="cpp" />
   </article>
 </BaseLayout>

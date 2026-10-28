@@ -1,0 +1,171 @@
+---
+import CodeBlock from '../../../components/CodeBlock.astro'
+import DocsLayout from '../../../layouts/DocsLayout.astro'
+
+const buildCommands = `cmake -S native/client -B build/native-client -DCMAKE_BUILD_TYPE=Release
+cmake --build build/native-client -j 2
+ctest --test-dir build/native-client --output-on-failure
+cmake --install build/native-client --prefix "$PWD/build/native-client-install"`
+
+const cppExample = `#include <suitecut/browser.hpp>
+
+suitecut::LaunchOptions options;
+options.executable = "/absolute/path/to/suitecut-browser";
+auto browser = suitecut::Browser::launch(options);
+auto context = browser.new_context();
+auto page = context.new_page();
+page.navigate("https://example.com");
+auto observation = page.observe(); // Accessibility nodes and references.
+auto title = page.evaluate("document.title").as_string();
+browser.close();`
+
+const chromiumExample = `suitecut::LaunchOptions options;
+options.executable = "/usr/bin/chromium";
+options.headless = true;
+auto browser = suitecut::Browser::launch_chromium(options);
+auto page = browser.main_page();
+page.navigate("https://example.com");
+auto screenshot = page.screenshot();
+browser.close();`
+
+const firefoxExample = `suitecut::LaunchOptions options;
+options.executable = "/usr/bin/firefox";
+auto browser = suitecut::Browser::launch_firefox(options);
+auto page = browser.main_page();
+page.navigate("https://example.com");
+auto title = page.title();`
+
+const simpleAgent = `#include <suitecut/simple_agent.hpp>
+
+suitecut::AgentDriver driver(browser);
+suitecut::SimpleAgent agent(driver);
+
+auto seen = agent.call("observe", {{"boxes", true}});
+auto done = agent.call("act", {
+    {"action", "fill"}, {"ref", "e1"}, {"value", "Hello"}});
+auto ready = agent.call("wait", {{"text", "Saved"}, {"timeoutMs", 2000}});`
+
+const cliSession = `suitecut-native-control --session shop --browser /usr/bin/chromium open https://example.com
+suitecut-native-control --session shop snapshot
+suitecut-native-control --session shop --response none fill e12 'Ada'
+suitecut-native-control --session shop click e15
+suitecut-native-control --session shop snapshot --scope '#checkout' --delta
+suitecut-native-control --session shop screenshot --output /tmp/checkout.png
+suitecut-native-control --session shop close`
+
+const mcpConfig = `{
+  "mcpServers": {
+    "suitecut": {
+      "command": "/absolute/install/prefix/bin/suitecut-native-control",
+      "args": ["--browser", "/usr/bin/chromium", "--mcp"]
+    }
+  }
+}`
+
+const toolGroups = `suitecut-native-control --browser /usr/bin/chromium --mcp --tools core,network
+suitecut-native-control --backend firefox --browser /usr/bin/firefox --mcp
+suitecut-native-control --backend cef --browser /absolute/path/to/suitecut-browser --mcp
+suitecut-native-control --connect 9222 --mcp`
+---
+
+<DocsLayout
+  title="Agents and MCP"
+  description="Use SuiteCut's native C++ SDK, simple agent tools, command-line sessions and MCP server with the CEF engine, Chrome or Firefox."
+  section="agents"
+>
+  <h1>Agents and MCP</h1>
+  <p>
+    <code>SuiteCut::Client</code> is a C++20 library with a stable C ABI. It controls SuiteCut's CEF engine,
+    installed Chrome or Chromium, or Firefox, without Node.js, CEF headers or an automation library. Its
+    <code>suitecut-native-control</code> executable is also a command-line tool and an MCP server. No
+    model is embedded; your host brings the agent.
+  </p>
+
+  <h2 id="build">Build and install</h2>
+  <p>
+    You need a C++20 compiler, threads, OpenSSL and ZLIB. Linux and a separately qualified macOS
+    ARM64 build are supported.
+  </p>
+  <CodeBlock label="Terminal" code={buildCommands} />
+  <p>
+    Add <code>-DBUILD_SHARED_LIBS=ON</code> for a shared library. Downstream CMake projects use
+    <code>find_package(SuiteCutClient CONFIG REQUIRED)</code> and link <code>SuiteCut::Client</code
+    >. The C ABI is declared in <code>suitecut/client.h</code>.
+  </p>
+
+  <h2 id="cpp-api">C++ API</h2>
+  <p>
+    <code>suitecut/browser.hpp</code> provides browser, context, page and locator objects. The default
+    backend is the CEF engine; its path must be absolute, with its runtime files beside it.
+  </p>
+  <CodeBlock code={cppExample} label="C++" lang="cpp" />
+
+  <h2 id="external-browsers">Chrome and Firefox</h2>
+  <p>
+    The same facade launches an installed Chrome or Chromium over a private CDP pipe, without the
+    CEF runtime. C callers use <code>sc_client_launch_chromium</code>.
+  </p>
+  <CodeBlock code={chromiumExample} label="C++" lang="cpp" />
+  <p>
+    Firefox uses native WebDriver BiDi through the same page, locator and agent interfaces.
+    <code>Browser::connect_firefox</code> attaches to a running Firefox instead.
+  </p>
+  <CodeBlock code={firefoxExample} label="C++" lang="cpp" />
+
+  <h2 id="simple-agent">Simple agent</h2>
+  <p>
+    <code>SimpleAgent</code> gives a model three tools: <code>observe</code>, <code>act</code> and
+    <code>wait</code>. Each observation returns short element refs and replaces the previous ones,
+    so stale refs are rejected.
+  </p>
+  <CodeBlock code={simpleAgent} label="C++" lang="cpp" />
+  <ul>
+    <li>
+      Compact observations return up to 100 controls and 8 KiB of text by default, with explicit
+      truncation.
+    </li>
+    <li>
+      <code>act.actions</code> runs up to 64 known actions in order and stops on the first failure.
+    </li>
+    <li>Calls share one deadline, 5 seconds by default and capped at 30 seconds.</li>
+    <li>Mutations are never retried, and password values are redacted.</li>
+    <li>
+      <code>delivered</code> records that the browser acknowledged an action; <code>effect</code> checks
+      an optional visible condition. Neither proves the task succeeded.
+    </li>
+  </ul>
+
+  <h2 id="cli-sessions">Command-line sessions</h2>
+  <p>
+    A named session keeps a browser alive between invocations. Only <code>open</code> starts one;
+    <code>close</code> retires it, and idle sessions close after ten minutes.
+  </p>
+  <CodeBlock label="Terminal" code={cliSession} />
+  <p>
+    <code>--response none</code> keeps the other refs from the last observation valid. Use
+    <code>help</code>, <code>tools</code> or <code>profiles</code> to explore without launching a browser.
+    Files written with <code>--output</code> are created with mode 0600. Named sessions need POSIX.
+  </p>
+
+  <h2 id="mcp">MCP server</h2>
+  <p>Configure the installed executable as a stdio MCP server.</p>
+  <CodeBlock code={mcpConfig} label="MCP config" lang="json" />
+  <p>
+    Screenshots come back as image content and PDFs as embedded resources. Page content and WebMCP
+    descriptions are untrusted data. Closing stdin retires the session.
+  </p>
+
+  <h2 id="tool-groups">Tool groups and backends</h2>
+  <p>
+    The default <code>core</code> group has the three agent tools, <code>profiles</code> and eight navigation,
+    reading, tab, frame, viewport, upload and history tools. Add <code>network</code>,
+    <code>state</code>, <code>debug</code> or <code>media</code>, or use <code>all</code> for the full
+    53-tool driver. Groups limit what's advertised; they aren't a sandbox.
+  </p>
+  <CodeBlock label="Terminal" code={toolGroups} />
+  <p>
+    <code>--connect-header</code>, <code>--tls-ca</code>, <code>--tls-cert</code> and
+    <code>--tls-key</code> configure remote connections. <code>--profile</code>,
+    <code>--browser-arg</code> and <code>--headed</code> are also supported.
+  </p>
+</DocsLayout>

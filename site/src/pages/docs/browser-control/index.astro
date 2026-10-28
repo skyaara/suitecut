@@ -1,0 +1,193 @@
+---
+import CodeBlock from '../../../components/CodeBlock.astro'
+import DocsLayout from '../../../layouts/DocsLayout.astro'
+
+const installedExample = `import { launchBrowser } from '@suitecut/browser-control'
+
+const browser = await launchBrowser({
+  backend: 'cdp',
+  executablePath: '/path/to/google-chrome',
+  headless: true,
+  viewport: { width: 1440, height: 900 },
+})
+
+try {
+  const context = await browser.newContext()
+  const page = await context.newPage()
+  await page.goto('https://example.com')
+  console.log(await page.getByRole('heading').innerText())
+  await page.setViewportSize({ width: 1280, height: 720 })
+  await page.screenshot({ path: 'page.png' })
+} finally {
+  await browser.close()
+}`
+
+const firefoxExample = `import { launchProtocolBrowser } from '@suitecut/browser-control/remote'
+
+const firefox = await launchProtocolBrowser({
+  backend: 'bidi',
+  executablePath: '/path/to/firefox',
+  headless: true,
+  viewport: { width: 1280, height: 720 },
+})
+try {
+  const page = await firefox.newPage()
+  await page.goto('https://example.com')
+  console.log(await page.title())
+} finally {
+  await firefox.close()
+}`
+
+const attachExample = `import { connectBrowser } from '@suitecut/browser-control/remote'
+
+const chrome = await connectBrowser({
+  backend: 'cdp',
+  endpointURL: 'http://127.0.0.1:9222',
+  timeoutMs: 15_000,
+})
+console.log((await chrome.pages()).length)
+await chrome.close()
+
+const firefox = await connectBrowser({
+  backend: 'bidi',
+  endpointURL: 'ws://127.0.0.1:9223/session',
+})
+await firefox.close()`
+
+const cdpExtras = `await page.frameLocator('iframe[title="Billing"]').getByLabel('Account number').fill('12345')
+await page.getByLabel('Supporting document').setInputFiles('/absolute/path/document.pdf')
+
+const pending = page.waitForEvent('download')
+await page.getByRole('button', { name: 'Export' }).click()
+const download = await pending
+await download.saveAs('/absolute/path/export.csv')
+
+page.once('dialog', async (dialog) => {
+  await dialog.accept()
+})`
+
+const viewerCli = `npx browser-control view https://example.com \\
+  --executable /absolute/path/to/suitecut-browser \\
+  --resolution auto`
+
+const viewerExample = `import { launchBrowser, createBrowserViewer } from '@suitecut/browser-control'
+
+const browser = await launchBrowser({
+  executablePath: '/absolute/path/to/suitecut-browser',
+  headless: true,
+  pixelFormat: 'bgra',
+})
+const page = await browser.newPage()
+await page.goto('https://example.com')
+const viewer = await createBrowserViewer({ browser, page, resolutionMode: 'auto' })
+console.log(viewer.url)
+
+try {
+  // One fully awaited agent step at a time. Each step waits during human control.
+  await viewer.runAgent(() => page.getByRole('link', { name: 'More information' }).click())
+} finally {
+  await viewer.close()
+  await browser.close()
+}`
+
+const buildCommands = `pnpm --filter @suitecut/browser-control build
+pnpm --filter @suitecut/browser-control pack --pack-destination /absolute/output/directory
+npm install /absolute/path/to/suitecut-browser-control-2.0.0.tgz`
+---
+
+<DocsLayout
+  title="Browser control"
+  description="Drive the SuiteCut CEF engine, installed Chromium browsers or Firefox from Node.js, with a live viewer and human handover."
+  section="browser-control"
+>
+  <h1>Browser control</h1>
+  <p>
+    <code>@suitecut/browser-control</code> is the standalone Node.js SDK for browsers. It doesn't depend
+    on SuiteCut's narration, rendering or test runner, and its protocol adapters have no external automation
+    dependencies. It needs Node.js 22 or newer.
+  </p>
+
+  <h2 id="backends">Backends</h2>
+  <ul>
+    <li>
+      <code>cef</code>, the default: SuiteCut's embedded engine, with native capture and the live
+      viewer.
+    </li>
+    <li><code>cdp</code>: an installed Chrome, Chromium, Edge or Brave over CDP.</li>
+    <li><code>bidi</code>: an installed Firefox over WebDriver BiDi.</li>
+  </ul>
+  <p class="note">
+    The package doesn't bundle or download browsers. Safari and WebKit aren't supported.
+  </p>
+
+  <h2 id="installed-browsers">Installed browsers</h2>
+  <p>
+    Set <code>backend</code> and point <code>executablePath</code> at the browser. Owned launches use
+    a temporary profile and a loopback debugging endpoint; both are cleaned up on close. Sandboxing stays
+    on unless you pass an argument that turns it off.
+  </p>
+  <CodeBlock code={installedExample} />
+  <p>
+    For protocol-only apps, <code>@suitecut/browser-control/remote</code> exports
+    <code>launchProtocolBrowser</code> and <code>connectBrowser</code> without loading the CEF module
+    graph.
+  </p>
+  <CodeBlock code={firefoxExample} />
+
+  <h2 id="attach">Attach to a running browser</h2>
+  <p>
+    <code>connectBrowser</code> attaches to a browser whose debugging endpoint is already enabled. CDP
+    accepts an HTTP origin or a browser WebSocket URL; Firefox needs its WebSocket session endpoint. <code
+      >close()</code
+    > disconnects without shutting the browser down unless you set
+    <code>closeBrowserOnClose: true</code>.
+  </p>
+  <CodeBlock code={attachExample} />
+
+  <h2 id="protocol-features">Protocol features</h2>
+  <p>
+    Both protocol backends support tabs, isolated contexts where available, cookies, navigation,
+    evaluation, screenshots, viewport changes, CSS, role, text, label and test-id locators, form
+    controls, and browser-dispatched keyboard and pointer input. Check
+    <code>browser.capabilities()</code> for what a backend supports, and use
+    <code>browser.sendCommand()</code> for raw protocol commands.
+  </p>
+  <p>
+    CDP also supports iframes, file uploads, downloads, JavaScript dialogs, popups, hover, dragging
+    and scrolling. Subscribe to downloads before triggering them; dialogs without a listener are
+    dismissed.
+  </p>
+  <CodeBlock code={cdpExtras} />
+
+  <h2 id="viewer">Live viewer</h2>
+  <p>
+    With the CEF backend, the viewer streams the same browser session to a local web page. It binds
+    to <code>127.0.0.1</code> behind a private link; treat that link as a credential and forward the port
+    over SSH for remote machines.
+  </p>
+  <CodeBlock label="Terminal" code={viewerCli} />
+  <p>
+    <code>--resolution auto</code> fits the page to the viewer while a person has control. Fixed sizes
+    such as <code>1920x1080</code> are also available, up to 3840 × 2160 physical pixels. Resizing changes
+    the page's real CSS viewport, not just the displayed image.
+  </p>
+
+  <h2 id="handover">Human handover</h2>
+  <p>
+    <strong>Take control</strong> waits for admitted agent work to finish, then hands input to a person.
+    <strong>Resume AI</strong> releases held keys and buttons and returns control. Both use the same page,
+    cookies and storage.
+  </p>
+  <CodeBlock code={viewerExample} />
+  <p>
+    During human control, direct SDK calls fail explicitly. <code>viewer.runAgent()</code> waits for control
+    instead, so submit bounded steps through it. Up to eight clients can watch, with one owning input.
+  </p>
+
+  <h2 id="build">Build and install</h2>
+  <p>
+    The package is built and packed from the repository; it hasn't been published to npm. Install
+    the tarball in your app and distribute the CEF runtime separately.
+  </p>
+  <CodeBlock label="Terminal" code={buildCommands} />
+</DocsLayout>

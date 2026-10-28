@@ -2,76 +2,151 @@
 import CodeBlock from '../../../components/CodeBlock.astro'
 import DocsLayout from '../../../layouts/DocsLayout.astro'
 import { recordExample, renderExample, streamExample } from '../../../lib/api-reference.js'
+
+const cliCommands = `node dist/cli.js install
+node dist/cli.js doctor
+node dist/cli.js render --manifest .suitecut/tour.json --output .suitecut/tour.mp4 --fps 60
+node dist/cli.js view https://example.com --executable /absolute/path/to/suitecut-browser
+node dist/cli.js --help`
+
+const renderFlags = `node dist/cli.js render --manifest .suitecut/tour.json --output .suitecut/tour.webm \\
+  --container webm --width 2560 --height 1440 --fps 60 --quality master \\
+  --test-id checkout --retry 1 --failure-mode best-effort --no-narration`
+
+const verifyCommands = `pnpm test
+pnpm test:native:cadence
+pnpm test:native`
 ---
 
 <DocsLayout
   title="API and CLI"
-  description="Native browser, recording, media and publishing APIs."
+  description="Native browser, recording, media and publishing APIs, and the SuiteCut command line."
   section="api"
 >
   <h1>Native API and CLI</h1>
   <h2 id="public-exports">Public exports</h2>
   <p>
-    <code>suitecut</code> exposes <code>record</code>, <code>defineSuiteCut</code>, <code
-      >launchBrowser</code
-    >, <code>createBroadcast</code>, <code>createNativePage</code> and <code>renderSuiteCut</code>.
-    Lower-level source and recorder APIs live in <code>suitecut/native</code>. Audio plugins,
-    rendering and manifest types have separate subpaths.
+    <code>suitecut</code> exposes <code>record</code>, <code>defineSuiteCut</code>,
+    <code>launchBrowser</code>, <code>createBroadcast</code>, <code>createNativePublisher</code>,
+    <code>createNativePage</code>, <code>renderSuiteCut</code> and
+    <code>decodeWordTimingArtifact</code>.
   </p>
+  <ul>
+    <li><code>suitecut/native</code>: lower-level sources, recorders and native page APIs.</li>
+    <li><code>suitecut/render</code>: the renderer on its own.</li>
+    <li><code>suitecut/audio-plugin</code>: helpers for writing speech plugins.</li>
+    <li><code>suitecut/types</code>: manifest types.</li>
+    <li><code>suitecut/beta</code>: a compatibility alias of the root package.</li>
+  </ul>
+
   <h2 id="recording-options">Recording options</h2>
   <CodeBlock code={recordExample} />
   <p>
-    Root recording owns its primary source. <code>recordNative</code> records a caller-owned source. Callback
-    context contains the source, page, presentation fixture, cancellation signal and <code
-      >addSource</code
-    >.
+    Root recording owns its primary source. <code>recordNative</code> records a caller-owned source. The
+    callback context contains the source, page, presentation fixture, cancellation signal and
+    <code>addSource</code>. The <code>output</code> option sets a <code>directory</code>,
+    <code>manifestPath</code> and <code>pathKind</code>.
   </p>
+
   <h2 id="fixture-methods">Fixture methods</h2>
   <p>
-    Use <code>selectPage</code>, <code>narrate</code>, <code>checkpoint</code>, <code>hold</code>, <code
-      >highlight</code
-    >, <code>zoom</code>, <code>hover</code>, <code>click</code>, <code>type</code>, <code
-      >scrollTo</code
-    > and <code>scrollTop</code>. Checkpoints are video clips.
+    Use <code>selectPage</code>, <code>narrate</code>, <code>checkpoint</code>, <code>hold</code>,
+    <code>highlight</code>, <code>zoom</code>, <code>hover</code>, <code>click</code>,
+    <code>type</code>, <code>scrollTo</code> and <code>scrollTop</code>. Checkpoints are video
+    clips.
   </p>
+  <p>
+    Highlights come in <code>outline</code>, <code>spotlight</code> and <code>fill</code> modes, with
+    optional labels, borders, a backdrop and enter and exit animations.
+  </p>
+
   <h2 id="capture-options">Capture options</h2>
   <p>
-    Native launch sets CSS dimensions, device scale 1 or 2, capture FPS 1–120 and BGRA/I420 format.
-    Physical frames are bounded to 3840×2160. Recording capture sets output size/FPS, narration tail
-    and boolean page audio.
+    Native launch sets CSS dimensions, device scale 1 or 2, an integer capture rate from 1 to 120
+    and BGRA or I420 pixels. Physical frames are bounded to 3840 × 2160. Other launch options
+    include
+    <code>headless</code>, <code>userDataDir</code>, <code>downloadsPath</code>,
+    <code>recordVideo</code>, <code>tracesDir</code>, <code>startupTimeoutMs</code> and
+    <code>frameTransport</code>.
   </p>
   <p>
-    Strict CSS locators operate in the main document. Evaluation requires JSON-serializable values.
-    Frame APIs, role/text locators, remote handles and popup/download workflows are not implemented.
+    Recording capture sets output size and frame rate, a narration tail and boolean page audio.
+    Evaluation requires JSON-serializable values.
   </p>
+
+  <h2 id="native-page">Native page</h2>
+  <p>
+    <code>NativePage</code> provides CSS, role, text, label, placeholder and test-id locators, frames
+    and frame locators, keyboard and pointer input, file uploads, network routing, popups, downloads,
+    dialogs, screenshots, PDFs and lifecycle events. <code>suitecut/native</code> also exports tracing,
+    coverage, HAR record and replay, virtual time, workers and API request contexts.
+  </p>
+  <p>
+    Each family has scoped evidence and known gaps in the
+    <a href="https://github.com/skyaara/suitecut/blob/main/docs/playwright-feature-parity.md"
+      >feature checklist</a
+    >.
+  </p>
+
   <h2 id="render-api">Renderer</h2>
   <CodeBlock code={renderExample} />
+  <p>
+    Beyond size, frame rate and quality, the renderer accepts a container, video and audio codecs,
+    pixel format, color range, <code>resultHoldMs</code>, <code>backgroundColor</code>,
+    <code>failureMode</code>, narration and source-audio switches, and a <code>selection</code> of test
+    and retry. Output rates can be fractional, such as 29.97.
+  </p>
+
   <h2 id="audio-plugin-api">Audio plugins</h2>
   <p>
-    Configure local model providers with <code>audioPlugins</code>. The worker invokes <code
-      >synthesize</code
-    > and expects mono PCM WAV at the supplied output path.
+    Configure local model providers with <code>audioPlugins</code>. The worker invokes
+    <code>synthesize</code> and expects mono PCM WAV at the supplied output path.
   </p>
+
   <h2 id="action-zoom">Action zoom</h2>
   <p>
     Authored zoom is applied by the final renderer. Browser-rendered effects can appear in
-    simultaneous broadcasts, but offline zoom and narration mixing do not affect them.
+    simultaneous broadcasts, but offline zoom and narration mixing don't affect them.
   </p>
+
   <h2 id="stream-options">Streaming API</h2>
   <CodeBlock code={streamExample} />
+  <p>
+    <code>createBroadcast</code> uses a fixed bitrate. <code>createNativePublisher</code> is the lower-level
+    publisher, with explicit codecs and containers.
+  </p>
+
   <h2 id="word-timings">Word timings</h2>
   <p>
-    Providers may return word timing artifacts for caption highlighting. Timing values are validated
-    against the narration text and clip duration.
+    Built-in Kokoro returns word timings, saved as an artifact for caption highlighting and
+    validated against the text and the measured clip duration. The macOS voice and audio plugins
+    don't produce word timings. <code>decodeWordTimingArtifact</code> reads the artifact.
   </p>
-  <h2 id="command-line-flags">CLI flags</h2>
-  <CodeBlock
-    label="Terminal"
-    code={'node dist/cli.js install\nnode dist/cli.js doctor\nnode dist/cli.js render --manifest .suitecut/tour.json --output .suitecut/tour.mp4 --fps 60\nnode dist/cli.js --help'}
-  />
-  <h2 id="recorded-test">Verification</h2>
+
+  <h2 id="command-line-flags">Command line</h2>
   <p>
-    Run native unit tests and decoded cadence verification. Real browser verifiers additionally
-    require the built CEF executable.
+    Installed packages run the same commands as <code>suitecut install</code>,
+    <code>suitecut doctor</code>, <code>suitecut render</code> and <code>suitecut view</code>.
   </p>
+  <CodeBlock label="Terminal" code={cliCommands} />
+  <p>
+    <code>render</code> also accepts <code>--test-id</code>, <code>--retry</code>,
+    <code>--container</code>, <code>--video-codec</code>, <code>--audio-codec</code>,
+    <code>--pixel-format</code>, <code>--color-range</code>, <code>--width</code>,
+    <code>--height</code>, <code>--quality</code>, <code>--result-hold-ms</code>,
+    <code>--background-color</code>, <code>--failure-mode</code>, <code>--ffmpeg-path</code> and
+    <code>--no-narration</code>.
+  </p>
+  <CodeBlock label="Terminal" code={renderFlags} />
+  <p>
+    The package also installs <code>suitecut-test</code>, a native test runner with filtering,
+    projects, workers, sharding, repeat-each and JSON, JUnit and HTML reports.
+  </p>
+
+  <h2 id="verification">Verification</h2>
+  <p>
+    Unit tests and decoded cadence checks run without CEF. Real browser verifiers need the built CEF
+    executable in <code>SUITECUT_NATIVE_EXECUTABLE</code>.
+  </p>
+  <CodeBlock label="Terminal" code={verifyCommands} />
 </DocsLayout>
