@@ -36,43 +36,53 @@ const collapsible = lineCount > 24
 </figure>
 
 <script>
-  for (const button of document.querySelectorAll<HTMLButtonElement>('.code-expand')) {
-    button.addEventListener('click', () => {
-      const expanded = button.getAttribute('aria-expanded') !== 'true'
-      button.setAttribute('aria-expanded', String(expanded))
-      const block = button.closest('.code-block')
-      block?.toggleAttribute('data-expanded', expanded)
-      button.textContent = expanded ? 'Collapse code ↑' : `Show all ${button.dataset.lines} lines ↓`
-      if (!expanded && block && block.getBoundingClientRect().top < 80) {
-        block.scrollIntoView({ block: 'start', behavior: 'instant' })
-      }
-    })
-  }
   const resetTimers = new WeakMap<HTMLButtonElement, number>()
 
-  for (const button of document.querySelectorAll<HTMLButtonElement>('[data-copy-code]')) {
-    if (button.dataset.copyReady === 'true') continue
-    button.dataset.copyReady = 'true'
-    button.addEventListener('click', async () => {
-      const code = button.closest('.code-block')?.querySelector('code')?.textContent
-      if (code === undefined) return
+  // Wire up code blocks on every page, including pages swapped in by the client router.
+  const setupCodeBlocks = () => {
+    for (const button of document.querySelectorAll<HTMLButtonElement>('.code-expand')) {
+      if (button.dataset.expandReady === 'true') continue
+      button.dataset.expandReady = 'true'
+      button.addEventListener('click', () => {
+        const expanded = button.getAttribute('aria-expanded') !== 'true'
+        button.setAttribute('aria-expanded', String(expanded))
+        const block = button.closest('.code-block')
+        block?.toggleAttribute('data-expanded', expanded)
+        button.textContent = expanded
+          ? 'Collapse code ↑'
+          : `Show all ${button.dataset.lines} lines ↓`
+        if (!expanded && block && block.getBoundingClientRect().top < 80) {
+          block.scrollIntoView({ block: 'start', behavior: 'instant' })
+        }
+      })
+    }
 
-      const existingTimer = resetTimers.get(button)
-      if (existingTimer !== undefined) window.clearTimeout(existingTimer)
+    for (const button of document.querySelectorAll<HTMLButtonElement>('[data-copy-code]')) {
+      if (button.dataset.copyReady === 'true') continue
+      button.dataset.copyReady = 'true'
+      button.addEventListener('click', async () => {
+        const code = button.closest('.code-block')?.querySelector('code')?.textContent
+        if (code === undefined) return
 
-      try {
-        await navigator.clipboard.writeText(code)
-        button.textContent = 'Copied'
-      } catch {
-        button.textContent = 'Copy failed'
-      }
+        const existingTimer = resetTimers.get(button)
+        if (existingTimer !== undefined) window.clearTimeout(existingTimer)
 
-      resetTimers.set(
-        button,
-        window.setTimeout(() => {
-          button.textContent = 'Copy'
-        }, 1600),
-      )
-    })
+        try {
+          await navigator.clipboard.writeText(code)
+          button.textContent = 'Copied'
+        } catch {
+          button.textContent = 'Copy failed'
+        }
+
+        resetTimers.set(
+          button,
+          window.setTimeout(() => {
+            button.textContent = 'Copy'
+          }, 1600),
+        )
+      })
+    }
   }
+
+  document.addEventListener('astro:page-load', setupCodeBlocks)
 </script>

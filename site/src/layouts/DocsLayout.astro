@@ -72,7 +72,7 @@ const headings = [...content.matchAll(/<h2[^>]*id="([^"]+)"[^>]*>([\s\S]*?)<\/h2
 
 <BaseLayout title={`${title} · SuiteCut`} description={description} current="docs">
   <div class="docs-shell" data-section={section}>
-    <nav class="docs-pages" aria-label="Documentation pages">
+    <nav class="docs-pages" aria-label="Documentation pages" transition:persist="docs-pages">
       {
         categories.map((category) => (
           <a
@@ -119,9 +119,10 @@ const headings = [...content.matchAll(/<h2[^>]*id="([^"]+)"[^>]*>([\s\S]*?)<\/h2
 <script>
   // Track the section being read. Near the end of the page the reading line moves down the
   // viewport, so the index keeps advancing to the last section even when it is already visible.
-  const links = [...document.querySelectorAll<HTMLAnchorElement>('.docs-toc a')]
-  const rail = document.querySelector<HTMLElement>('[data-toc-rail]')
-  const headings = [...document.querySelectorAll<HTMLElement>('.docs-article h2[id]')]
+  // The client router swaps pages without reloading, so these are re-read on every page load.
+  let links: HTMLAnchorElement[] = []
+  let rail: HTMLElement | null = null
+  let headings: HTMLElement[] = []
 
   let frame = 0
   const update = () => {
@@ -152,5 +153,10 @@ const headings = [...content.matchAll(/<h2[^>]*id="([^"]+)"[^>]*>([\s\S]*?)<\/h2
   }
   window.addEventListener('scroll', schedule, { passive: true })
   window.addEventListener('resize', schedule)
-  update()
+  document.addEventListener('astro:page-load', () => {
+    links = [...document.querySelectorAll<HTMLAnchorElement>('.docs-toc a')]
+    rail = document.querySelector<HTMLElement>('[data-toc-rail]')
+    headings = [...document.querySelectorAll<HTMLElement>('.docs-article h2[id]')]
+    update()
+  })
 </script>

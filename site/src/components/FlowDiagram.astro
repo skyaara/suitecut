@@ -103,29 +103,46 @@ const wave = Array.from({ length: 64 }, (_, index) =>
 </figure>
 
 <script>
-  for (const flow of document.querySelectorAll<HTMLElement>('[data-flow]')) {
-    const counter = flow.querySelector<HTMLElement>('[data-frame]')
-    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    let playing = false
-    let start = 0
-    const tick = (now: number) => {
-      if (!playing) return
-      if (!start) start = now
-      const frame = Math.floor(((now - start) / 1000) * 120) % 10000
-      if (counter) counter.textContent = `frame ${String(frame).padStart(4, '0')}`
-      requestAnimationFrame(tick)
-    }
-    new IntersectionObserver(([entry]) => {
-      const visible = entry?.isIntersecting ?? false
-      flow.classList.toggle('is-playing', visible && !reduce)
-      if (visible && !reduce && !playing) {
-        playing = true
+  // Start each diagram on page load and stop it before the client router swaps the page.
+  const stops: (() => void)[] = []
+
+  const setupFlows = () => {
+    for (const flow of document.querySelectorAll<HTMLElement>('[data-flow]')) {
+      if (flow.dataset.flowReady === 'true') continue
+      flow.dataset.flowReady = 'true'
+      const counter = flow.querySelector<HTMLElement>('[data-frame]')
+      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      let playing = false
+      let start = 0
+      const tick = (now: number) => {
+        if (!playing) return
+        if (!start) start = now
+        const frame = Math.floor(((now - start) / 1000) * 120) % 10000
+        if (counter) counter.textContent = `frame ${String(frame).padStart(4, '0')}`
         requestAnimationFrame(tick)
-      } else if (!visible) {
-        playing = false
       }
-    }).observe(flow)
+      const observer = new IntersectionObserver(([entry]) => {
+        const visible = entry?.isIntersecting ?? false
+        flow.classList.toggle('is-playing', visible && !reduce)
+        if (visible && !reduce && !playing) {
+          playing = true
+          requestAnimationFrame(tick)
+        } else if (!visible) {
+          playing = false
+        }
+      })
+      observer.observe(flow)
+      stops.push(() => {
+        playing = false
+        observer.disconnect()
+      })
+    }
   }
+
+  document.addEventListener('astro:page-load', setupFlows)
+  document.addEventListener('astro:before-swap', () => {
+    for (const stop of stops.splice(0)) stop()
+  })
 </script>
 
 <style>

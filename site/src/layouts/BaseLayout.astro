@@ -1,4 +1,5 @@
 ---
+import { ClientRouter } from 'astro:transitions'
 import SiteHeader, { type Section } from '../components/SiteHeader.astro'
 import { sitePath } from '../lib/paths.js'
 import '@fontsource-variable/geist'
@@ -36,6 +37,7 @@ const socialImageUrl = new URL(sitePath(socialImage), Astro.site)
     <link rel="canonical" href={canonicalUrl} />
     <link rel="icon" href={sitePath('/favicon.svg')} type="image/svg+xml" />
     <title>{title}</title>
+    <ClientRouter />
     <script is:inline>
       document.documentElement.classList.add('js')
     </script>
@@ -44,8 +46,8 @@ const socialImageUrl = new URL(sitePath(socialImage), Astro.site)
     <a class="skip-link" href="#main-content">Skip to content</a>
     <div class="sheet">
       {current ? <SiteHeader current={current} /> : <SiteHeader />}
-      <main id="main-content"><slot /></main>
-      <footer class="site-footer">
+      <main id="main-content" transition:animate="fade"><slot /></main>
+      <footer class="site-footer" transition:persist="site-footer">
         <p>SuiteCut 2.0 · MIT License</p>
         <nav aria-label="Footer">
           <a href={sitePath('/about')}>About</a>

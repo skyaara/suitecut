@@ -33,13 +33,13 @@ const formatStars = (count: number) =>
   count >= 1000 ? `${(count / 1000).toFixed(count >= 10000 ? 0 : 1)}k` : String(count)
 ---
 
-<div class="nav-strip" data-nav-strip>
+<div class="nav-strip" data-nav-strip transition:persist="nav-strip">
   <a class="nav-strip-logo" href={sitePath('/')} aria-label="SuiteCut home" tabindex="-1">
     <Logo />
   </a>
 </div>
 
-<header class="site-header">
+<header class="site-header" transition:persist="site-header">
   <a class="wordmark" href={sitePath('/')} aria-label="SuiteCut home">
     <Logo />
   </a>
@@ -145,7 +145,30 @@ const formatStars = (count: number) =>
     window.addEventListener('resize', measure)
     document.fonts?.ready.then(measure)
     measure()
+
+    // The client router replaces <html> attributes on each navigation; restore page state.
+    document.addEventListener('astro:after-swap', () => {
+      root.classList.add('js')
+      measure()
+    })
   }
+
+  // The header persists across client navigation, so mark the current page here.
+  const markCurrentPage = () => {
+    const path = window.location.pathname.replace(/\/+$/u, '') || '/'
+    for (const link of document.querySelectorAll<HTMLAnchorElement>(
+      '[data-nav] a, .docs-pages a',
+    )) {
+      if (link.origin !== window.location.origin) continue
+      const target = link.pathname.replace(/\/+$/u, '') || '/'
+      const exact = link.closest('.docs-pages') !== null
+      const current =
+        target !== '/' && (path === target || (!exact && path.startsWith(`${target}/`)))
+      if (current) link.setAttribute('aria-current', 'page')
+      else link.removeAttribute('aria-current')
+    }
+  }
+  document.addEventListener('astro:page-load', markCurrentPage)
 
   // Refresh the star count without blocking the page.
   const github = document.querySelector<HTMLAnchorElement>('.github[data-repo]')
