@@ -102,7 +102,7 @@ const formatStars = (count: number) =>
       const barHeight = 56
       const inset = first ? (barHeight - first.height) / 2 : 0
       threshold = (first?.top ?? slotRect.top) + window.scrollY - inset
-      root.style.setProperty('--nav-left', `${slotRect.left}px`)
+      root.style.setProperty('--nav-right', `${document.documentElement.clientWidth - slotRect.right}px`)
       root.style.setProperty('--sheet-left', `${sheetRect.left}px`)
       root.style.setProperty('--sheet-width', `${sheetRect.width}px`)
       update()

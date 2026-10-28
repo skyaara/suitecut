@@ -127,9 +127,13 @@ a:hover {
   flex: none;
 }
 
+.nav-slot {
+  justify-self: end;
+}
+
 .site-nav {
   display: grid;
-  justify-items: start;
+  justify-items: end;
 }
 
 .site-nav a {
@@ -243,7 +247,7 @@ a:hover {
 .nav-stuck .site-nav {
   position: fixed;
   top: 0;
-  left: var(--nav-left);
+  right: var(--nav-right);
   z-index: 21;
   display: flex;
   align-items: center;
@@ -657,6 +661,11 @@ a:hover {
   .site-header .nav-slot {
     grid-column: 1 / -1;
     grid-row: 2;
+    justify-self: start;
+  }
+
+  .site-nav {
+    justify-items: start;
   }
 
   .site-nav a {
