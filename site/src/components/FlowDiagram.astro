@@ -7,94 +7,95 @@ const inputs = [
 ]
 
 const outputs = [
-  { name: 'MP4 recording', note: '1–120 fps, page audio', kind: 'rec' },
-  { name: 'RTMP and RTMPS', note: 'adaptive bitrate', kind: 'live' },
-  { name: 'Live viewer', note: 'a person takes over', kind: 'hand' },
-  { name: 'Traces and HAR', note: 'zip archives', kind: 'file' },
+  { name: 'MP4 recording', note: '1–120 fps, page audio' },
+  { name: 'RTMP and RTMPS', note: 'adaptive bitrate' },
+  { name: 'Live viewer', note: 'a person takes over' },
+  { name: 'Traces and HAR', note: 'zip archives' },
 ]
 
-const paint = [
-  { x: 6, y: 8, w: 22, h: 6 },
-  { x: 62, y: 8, w: 32, h: 6 },
-  { x: 6, y: 24, w: 54, h: 12 },
-  { x: 6, y: 42, w: 40, h: 4 },
-  { x: 6, y: 50, w: 46, h: 4 },
-  { x: 6, y: 64, w: 28, h: 26 },
-  { x: 37, y: 64, w: 28, h: 26 },
-  { x: 68, y: 64, w: 26, h: 26 },
+// Strokes the engine "paints", as percentages of the screen.
+const strokes = [
+  { x: 6, y: 14, w: 18, kind: 'heavy' },
+  { x: 70, y: 14, w: 24, kind: 'light' },
+  { x: 6, y: 30, w: 58, kind: 'heavy' },
+  { x: 6, y: 40, w: 44, kind: 'light' },
+  { x: 6, y: 47, w: 50, kind: 'light' },
 ]
-
-const wave = [
-  0.35, 0.6, 0.9, 0.5, 0.75, 1, 0.65, 0.4, 0.8, 0.55, 0.95, 0.7, 0.45, 0.85, 0.6, 0.3, 0.7, 0.9,
-  0.5, 0.65, 0.4, 0.8, 0.6, 0.35,
+const boxes = [
+  { x: 6, y: 60, w: 27 },
+  { x: 36.5, y: 60, w: 27 },
+  { x: 67, y: 60, w: 27 },
 ]
+const wave = Array.from({ length: 64 }, (_, index) =>
+  (0.25 + 0.75 * Math.abs(Math.sin(index * 0.45) * Math.cos(index * 0.13))).toFixed(2),
+)
 ---
 
 <figure class="flow" data-flow aria-label="How SuiteCut fits together">
-  <div class="flow-col">
+  <div class="tier tier-in">
     {
       inputs.map((node, index) => (
-        <div class="node node-in" style={`--i:${index}`}>
-          <span class="node-name">{node.name}</span>
-          <span class="node-note">{node.note}</span>
+        <div class="cell" style={`--i:${index}`}>
+          <span class="cell-name">{node.name}</span>
+          <span class="cell-note">{node.note}</span>
         </div>
       ))
     }
   </div>
 
-  <div class="wire" aria-hidden="true">
-    <span class="wire-name">IPC·CDP·BiDi</span>
-    <span class="wire-line"><i></i><i></i><i></i><i></i></span>
+  <div class="drop" aria-hidden="true">
+    <i></i>
+    <span>IPC · CDP · BiDi</span>
   </div>
 
   <div class="engine">
-    <div class="engine-head">
+    <div class="engine-row engine-head">
       <span>SuiteCut CEF 156</span>
-      <span class="engine-live"><b></b>painting</span>
+      <span class="engine-count" data-frame>frame 0000</span>
     </div>
-    <div class="engine-screen" aria-hidden="true">
+    <div class="screen" aria-hidden="true">
       <span class="screen-bar"><i></i><i></i><i></i></span>
-      <span class="screen-page">
-        {
-          paint.map((block, index) => (
-            <i
-              style={`left:${block.x}%;top:${block.y}%;width:${block.w}%;height:${block.h}%;--i:${index}`}
-            />
-          ))
-        }
-        <span class="scan"></span>
-      </span>
+      {
+        strokes.map((stroke, index) => (
+          <i
+            class={`stroke is-${stroke.kind}`}
+            style={`left:${stroke.x}%;top:${stroke.y}%;width:${stroke.w}%;--i:${index}`}
+          />
+        ))
+      }
+      {
+        boxes.map((box, index) => (
+          <i
+            class="box"
+            style={`left:${box.x}%;top:${box.y}%;width:${box.w}%;--i:${index + strokes.length}`}
+          />
+        ))
+      }
+      <span class="scan"></span>
     </div>
     <div class="engine-row">
       <span>OnPaint</span>
-      <span class="engine-count" data-frame>frame 0000</span>
-    </div>
-    <div class="film" aria-hidden="true">
-      {Array.from({ length: 12 }, () => <i />)}
+      <span class="film" aria-hidden="true">{Array.from({ length: 24 }, () => <i />)}</span>
     </div>
     <div class="engine-row">
       <span>OnAudioStreamPacket</span>
-      <span class="engine-count">48 kHz</span>
-    </div>
-    <div class="wave" aria-hidden="true">
-      {wave.map((level, index) => <i style={`--h:${level};--i:${index}`} />)}
+      <span class="wave" aria-hidden="true">
+        {wave.map((level, index) => <i style={`--h:${level};--i:${index}`} />)}
+      </span>
     </div>
   </div>
 
-  <div class="wire" aria-hidden="true">
-    <span class="wire-name">frames · PCM</span>
-    <span class="wire-line"><i></i><i></i><i></i><i></i></span>
+  <div class="drop" aria-hidden="true">
+    <i></i>
+    <span>frames · PCM</span>
   </div>
 
-  <div class="flow-col">
+  <div class="tier tier-out">
     {
       outputs.map((node, index) => (
-        <div class={`node node-out is-${node.kind}`} style={`--i:${index}`}>
-          <span class="node-name">
-            <b aria-hidden="true" />
-            {node.name}
-          </span>
-          <span class="node-note">{node.note}</span>
+        <div class="cell" style={`--i:${index}`}>
+          <span class="cell-name">{node.name}</span>
+          <span class="cell-note">{node.note}</span>
         </div>
       ))
     }
@@ -130,16 +131,8 @@ const wave = [
 <style>
   .flow {
     --cycle: 4.8s;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 5.5rem minmax(0, 1.25fr) 5.5rem minmax(0, 1fr);
-    align-items: center;
-    margin: 3rem 0 0;
-    padding: 2rem;
-    background:
-      linear-gradient(var(--line) 1px, transparent 1px) 0 0 / 100% 2rem,
-      linear-gradient(90deg, var(--line) 1px, transparent 1px) 0 0 / 2rem 100%,
-      var(--panel);
-    box-shadow: inset 0 0 0 1px var(--line);
+    --tick: 1.75rem;
+    margin: 3.5rem 0 0;
   }
 
   .flow * {
@@ -150,288 +143,243 @@ const wave = [
     animation-play-state: running;
   }
 
-  .flow-col {
-    display: grid;
-    gap: 0.6rem;
-  }
-
-  /* Nodes */
-  .node {
+  /* Tiers: four cells joined by a bus line */
+  .tier {
     position: relative;
     display: grid;
-    gap: 0.15rem;
-    padding: 0.7rem 0.85rem;
-    background: var(--paper);
-    box-shadow: inset 0 0 0 1px var(--line-strong);
-    animation: node-glow var(--cycle) ease-in-out infinite;
-    animation-delay: calc(var(--i) * var(--cycle) / 4);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1.5rem;
   }
 
-  .node-name {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    color: var(--ink-strong);
-    font-size: 0.9375rem;
-    line-height: 1.3;
+  .tier-in {
+    padding-bottom: var(--tick);
   }
 
-  .node-note {
-    color: var(--faint);
-    font: 400 0.75rem / 1.4 var(--mono);
+  .tier-out {
+    padding-top: var(--tick);
   }
 
-  .node-in::after,
-  .node-out::before {
+  .tier::after {
     content: '';
     position: absolute;
-    top: 50%;
-    width: 0.35rem;
-    height: 0.35rem;
-    background: var(--chrome-dark);
-    transform: translateY(-50%);
-  }
-
-  .node-in::after {
-    right: -0.2rem;
-  }
-
-  .node-out::before {
-    left: -0.2rem;
-  }
-
-  @keyframes node-glow {
-    0%,
-    18%,
-    100% {
-      background: var(--paper);
-      box-shadow: inset 0 0 0 1px var(--line-strong);
-    }
-    6% {
-      background: var(--chrome);
-      box-shadow:
-        inset 0 0 0 1px #9aa3ae,
-        0 8px 18px -12px rgb(20 24 30 / 50%);
-    }
-  }
-
-  .node-out b {
-    width: 0.55rem;
-    height: 0.55rem;
-    flex: none;
+    right: calc((100% - 4.5rem) / 8);
+    left: calc((100% - 4.5rem) / 8);
+    height: 1px;
     background: var(--line-strong);
   }
 
-  .node-out.is-rec b {
-    background: #d93025;
-    animation: blink 1.6s steps(2, jump-none) infinite;
+  .tier-in::after {
+    bottom: 0;
   }
 
-  .node-out.is-live b {
+  .tier-out::after {
+    top: 0;
+  }
+
+  .cell {
+    position: relative;
+    display: grid;
+    gap: 0.2rem;
+    padding-top: 0.9rem;
+    border-top: 1px solid var(--line-strong);
+  }
+
+  .cell::before {
+    content: '';
+    position: absolute;
+    top: -1px;
+    left: 0;
+    width: 100%;
+    height: 1px;
     background: var(--ink-strong);
-    clip-path: polygon(0 0, 100% 50%, 0 100%);
+    transform: scaleX(0);
+    transform-origin: left;
+    animation: cell-line var(--cycle) cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
+    animation-delay: calc(var(--i) * var(--cycle) / 4);
   }
 
-  .node-out.is-hand b {
-    background: var(--chrome-dark);
+  .cell::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    width: 1px;
+    height: var(--tick);
+    background: var(--line-strong);
   }
 
-  .node-out.is-file b {
-    background: var(--chrome);
-    box-shadow: inset 0 0 0 1px #9aa3ae;
+  .tier-in .cell::after {
+    top: 100%;
   }
 
-  @keyframes blink {
-    50% {
-      opacity: 0.25;
+  .tier-out .cell::after {
+    top: calc(var(--tick) * -1);
+  }
+
+  @keyframes cell-line {
+    0% {
+      transform: scaleX(0);
+    }
+    12%,
+    22% {
+      transform: scaleX(1);
+      transform-origin: left;
+    }
+    23% {
+      transform-origin: right;
+    }
+    34%,
+    100% {
+      transform: scaleX(0);
+      transform-origin: right;
     }
   }
 
-  /* Wires and packets */
-  .wire {
-    position: relative;
-    display: grid;
-    gap: 0.4rem;
-    align-self: stretch;
-    align-content: center;
+  .cell-name {
+    color: var(--ink-strong);
+    font-size: 1.125rem;
+    line-height: 1.5rem;
   }
 
-  .wire-name {
+  .cell-note {
     color: var(--faint);
-    font: 400 0.625rem / 1.2 var(--mono);
-    text-align: center;
+    font: 400 0.8125rem / 1.4 var(--mono);
+  }
+
+  /* Vertical drops with a travelling pulse */
+  .drop {
+    position: relative;
+    height: 5.5rem;
+  }
+
+  .drop::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 1px;
+    background: var(--line-strong);
+  }
+
+  .drop i {
+    position: absolute;
+    top: 0;
+    left: calc(50% - 2px);
+    width: 5px;
+    height: 5px;
+    background: var(--ink-strong);
+    animation: pulse-down 1.6s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+  }
+
+  .drop span {
+    position: absolute;
+    top: 50%;
+    left: calc(50% + 1rem);
+    color: var(--faint);
+    font: 400 0.8125rem / 1 var(--mono);
+    transform: translateY(-50%);
     white-space: nowrap;
   }
 
-  .wire-line {
-    position: relative;
-    height: 1px;
-    background: linear-gradient(90deg, var(--line-strong), #7d8794, var(--line-strong));
-  }
-
-  .wire-line i {
-    position: absolute;
-    top: -2.5px;
-    left: 0;
-    width: 6px;
-    height: 6px;
-    background: var(--chrome-dark);
-    box-shadow: 0 0 0 2px var(--panel);
-    animation: packet 1.6s linear infinite;
-  }
-
-  .wire-line i:nth-child(2) {
-    animation-delay: -0.4s;
-  }
-
-  .wire-line i:nth-child(3) {
-    animation-delay: -0.8s;
-  }
-
-  .wire-line i:nth-child(4) {
-    animation-delay: -1.2s;
-  }
-
-  @keyframes packet {
+  @keyframes pulse-down {
     from {
-      left: 0;
+      top: 0;
       opacity: 0;
     }
-    12%,
-    88% {
+    15%,
+    85% {
       opacity: 1;
     }
     to {
-      left: calc(100% - 6px);
+      top: calc(100% - 5px);
       opacity: 0;
     }
   }
 
   /* Engine */
   .engine {
-    position: relative;
-    display: grid;
-    gap: 0.6rem;
-    padding: 0.9rem;
-    overflow: hidden;
-    background: var(--chrome);
-    box-shadow:
-      inset 0 1px 0 #fff,
-      inset 0 0 0 1px #b9c0c9,
-      0 24px 40px -26px rgb(20 24 30 / 55%);
+    border: 1px solid var(--ink-strong);
+    background: var(--paper);
   }
 
-  .engine::after {
-    content: '';
-    position: absolute;
-    inset: -50% auto -50% -60%;
-    width: 40%;
-    background: linear-gradient(
-      100deg,
-      transparent,
-      rgb(255 255 255 / 70%) 45%,
-      rgb(255 255 255 / 0%) 60%
-    );
-    transform: rotate(8deg);
-    pointer-events: none;
-    animation: sheen 6s ease-in-out infinite;
-  }
-
-  @keyframes sheen {
-    0%,
-    55% {
-      left: -60%;
-    }
-    100% {
-      left: 130%;
-    }
-  }
-
-  .engine-head,
   .engine-row {
     display: flex;
+    align-items: center;
     justify-content: space-between;
-    gap: 0.75rem;
+    gap: 1.5rem;
+    padding: 0.85rem 1.25rem;
+    border-top: 1px solid var(--line-strong);
+    color: var(--muted);
+    font: 400 0.8125rem / 1.4 var(--mono);
   }
 
   .engine-head {
+    border-top: 0;
     color: var(--ink-strong);
-    font-size: 0.9375rem;
-  }
-
-  .engine-live {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    color: var(--accent);
-    font: 400 0.6875rem / 1.4 var(--mono);
-  }
-
-  .engine-live b {
-    width: 0.4rem;
-    height: 0.4rem;
-    background: #1e8e3e;
-    animation: blink 1.2s steps(2, jump-none) infinite;
-  }
-
-  .engine-row {
-    color: var(--accent-ink);
-    font: 400 0.6875rem / 1.4 var(--mono);
+    font: 500 1.125rem / 1.5rem var(--sans);
   }
 
   .engine-count {
-    color: var(--muted);
+    color: var(--faint);
+    font: 400 0.8125rem / 1 var(--mono);
     font-variant-numeric: tabular-nums;
   }
 
-  .engine-screen {
-    display: grid;
-    background: #fff;
-    box-shadow: inset 0 0 0 1px #b9c0c9;
+  .screen {
+    position: relative;
+    aspect-ratio: 16 / 6;
+    margin: 0 1.25rem 1.25rem;
+    overflow: hidden;
+    border: 1px solid var(--line-strong);
   }
 
   .screen-bar {
+    position: absolute;
+    inset: 0 0 auto;
     display: flex;
-    gap: 0.25rem;
-    padding: 0.35rem 0.45rem;
-    border-bottom: 1px solid var(--line);
+    gap: 0.3rem;
+    height: 1.4rem;
+    align-items: center;
+    padding: 0 0.6rem;
+    border-bottom: 1px solid var(--line-strong);
   }
 
   .screen-bar i {
-    width: 0.35rem;
-    height: 0.35rem;
-    background: var(--line-strong);
+    width: 0.4rem;
+    height: 0.4rem;
+    border: 1px solid var(--line-strong);
   }
 
-  .screen-page {
-    position: relative;
-    aspect-ratio: 16 / 8;
-    overflow: hidden;
-  }
-
-  .screen-page i {
+  .stroke,
+  .box {
     position: absolute;
-    background: #e3e6ea;
     transform-origin: left;
-    animation: paint var(--cycle) cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
-    animation-delay: calc(var(--i) * 120ms);
+    animation: draw var(--cycle) cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
+    animation-delay: calc(var(--i) * 140ms);
   }
 
-  .screen-page i:nth-child(3) {
-    background: var(--chrome-dark);
+  .stroke.is-heavy {
+    height: 3px;
+    background: var(--ink-strong);
   }
 
-  .screen-page i:nth-child(n + 6) {
-    background: linear-gradient(180deg, #eef0f3, #d5dae0);
+  .stroke.is-light {
+    height: 1px;
+    background: var(--faint);
   }
 
-  @keyframes paint {
+  .box {
+    height: 26%;
+    border: 1px solid var(--line-strong);
+  }
+
+  @keyframes draw {
     0% {
       transform: scaleX(0);
-      opacity: 0;
+      opacity: 1;
     }
-    10%,
-    82% {
+    12%,
+    80% {
       transform: scaleX(1);
       opacity: 1;
     }
@@ -443,16 +391,16 @@ const wave = [
 
   .scan {
     position: absolute;
-    inset: 0 0 auto;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, rgb(30 142 62 / 55%), transparent);
+    right: 0;
+    left: 0;
+    top: 1.4rem;
+    height: 1px;
+    background: var(--ink-strong);
+    opacity: 0.18;
     animation: scan calc(var(--cycle) / 2) linear infinite;
   }
 
   @keyframes scan {
-    from {
-      top: 0;
-    }
     to {
       top: 100%;
     }
@@ -461,14 +409,15 @@ const wave = [
   .film {
     position: relative;
     display: grid;
-    grid-template-columns: repeat(12, 1fr);
-    gap: 2px;
-    height: 0.9rem;
+    flex: 0 1 18rem;
+    grid-template-columns: repeat(24, 1fr);
+    height: 0.75rem;
+    border: 1px solid var(--line-strong);
+    border-right: 0;
   }
 
   .film i {
-    background: #fff;
-    box-shadow: inset 0 0 0 1px #c4cad3;
+    border-right: 1px solid var(--line-strong);
   }
 
   .film::after {
@@ -477,96 +426,65 @@ const wave = [
     top: 0;
     bottom: 0;
     left: 0;
-    width: calc((100% - 22px) / 12);
-    background: var(--chrome-dark);
-    animation: film 1s steps(12, jump-none) infinite;
+    width: calc(100% / 24);
+    background: var(--ink-strong);
+    animation: film 0.8s steps(24, jump-none) infinite;
   }
 
   @keyframes film {
     to {
-      left: calc(100% - (100% - 22px) / 12);
+      left: calc(100% - 100% / 24);
     }
   }
 
   .wave {
     display: flex;
+    flex: 0 1 18rem;
     align-items: center;
-    gap: 2px;
-    height: 1.6rem;
+    justify-content: space-between;
+    height: 1.5rem;
   }
 
   .wave i {
-    flex: 1;
+    width: 1px;
     height: calc(var(--h) * 100%);
-    background: linear-gradient(180deg, #59616c, #1f2329);
-    transform-origin: center;
-    animation: wave 1.1s ease-in-out infinite alternate;
-    animation-delay: calc(var(--i) * -90ms);
+    background: var(--ink-strong);
+    animation: wave 1.2s ease-in-out infinite alternate;
+    animation-delay: calc(var(--i) * -70ms);
   }
 
   @keyframes wave {
     from {
-      transform: scaleY(0.25);
-    }
-    to {
-      transform: scaleY(1);
+      transform: scaleY(0.2);
     }
   }
 
   @media (max-width: 52rem) {
-    .flow {
-      grid-template-columns: 1fr;
-      gap: 0;
-      padding: 1.25rem;
-    }
-
-    .wire {
-      height: 3.5rem;
-      justify-items: center;
-    }
-
-    .wire-name {
-      position: absolute;
-      top: 50%;
-      left: calc(50% + 1rem);
-      transform: translateY(-50%);
-      text-align: left;
-    }
-
-    .wire-line {
-      width: 1px;
-      height: 100%;
-      background: linear-gradient(180deg, var(--line-strong), #7d8794, var(--line-strong));
-    }
-
-    .wire-line i {
-      top: 0;
-      left: -2.5px;
-      animation-name: packet-down;
-    }
-
-    @keyframes packet-down {
-      from {
-        top: 0;
-        opacity: 0;
-      }
-      12%,
-      88% {
-        opacity: 1;
-      }
-      to {
-        top: calc(100% - 6px);
-        opacity: 0;
-      }
-    }
-
-    .flow-col {
+    .tier {
       grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1.25rem 1rem;
+      padding: 0;
     }
 
-    .node-in::after,
-    .node-out::before {
+    .tier::after,
+    .cell::after {
       display: none;
+    }
+
+    .screen {
+      aspect-ratio: 16 / 9;
+      margin: 0 1rem 1rem;
+    }
+
+    .engine-row {
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      padding: 0.75rem 1rem;
+    }
+
+    .film,
+    .wave {
+      flex-basis: 100%;
     }
   }
 
