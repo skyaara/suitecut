@@ -39,10 +39,9 @@ const socialImageUrl = new URL(sitePath(socialImage), Astro.site)
   </head>
   <body>
     <a class="skip-link" href="#main-content">Skip to content</a>
-    <nav class="index-rail" aria-label="Page index" data-index-rail hidden></nav>
     <div class="sheet">
       {current ? <SiteHeader current={current} /> : <SiteHeader />}
-      <main id="main-content" data-index-root><slot /></main>
+      <main id="main-content"><slot /></main>
       <footer class="site-footer">
         <p>SuiteCut 2.0 · MIT License</p>
         <nav aria-label="Footer">
@@ -55,44 +54,3 @@ const socialImageUrl = new URL(sitePath(socialImage), Astro.site)
     </div>
   </body>
 </html>
-
-<script>
-  // Build the left index from the page's own headings.
-  const rail = document.querySelector<HTMLElement>('[data-index-rail]')
-  const headings = [...document.querySelectorAll<HTMLElement>('[data-index-root] :is(h2, h3)[id]')]
-  if (rail && headings.length > 1) {
-    const links = headings.map((heading) => {
-      const link = document.createElement('a')
-      link.href = `#${heading.id}`
-      link.dataset.level = heading.tagName === 'H2' ? '2' : '3'
-      const label = document.createElement('span')
-      label.textContent = heading.dataset.indexLabel ?? heading.textContent?.trim() ?? ''
-      link.append(label)
-      link.setAttribute('aria-label', label.textContent)
-      rail.append(link)
-      return link
-    })
-    rail.hidden = false
-
-    let frame = 0
-    const update = () => {
-      frame = 0
-      const line = window.innerHeight * 0.35
-      let active = 0
-      headings.forEach((heading, index) => {
-        if (heading.getBoundingClientRect().top <= line) active = index
-      })
-      links.forEach((link, index) => {
-        link.setAttribute('aria-current', String(index === active))
-      })
-    }
-    window.addEventListener(
-      'scroll',
-      () => {
-        if (!frame) frame = requestAnimationFrame(update)
-      },
-      { passive: true },
-    )
-    update()
-  }
-</script>

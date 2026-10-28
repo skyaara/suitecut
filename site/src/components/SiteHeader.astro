@@ -1,5 +1,6 @@
 ---
 import { sitePath } from '../lib/paths.js'
+import Logo from './Logo.astro'
 
 export type Section = 'home' | 'benchmarks' | 'docs' | 'examples'
 
@@ -19,8 +20,7 @@ const links: { label: string; href: string; key?: Section }[] = [
 
 <header class="site-header" data-variant={current === 'home' ? 'stacked' : 'inline'}>
   <a class="wordmark" href={sitePath('/')} aria-label="SuiteCut home">
-    <span class="dot" aria-hidden="true"></span>
-    SuiteCut
+    <Logo />
   </a>
   <nav class="site-nav" aria-label="Primary navigation">
     <ul>

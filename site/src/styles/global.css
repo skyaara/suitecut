@@ -1,4 +1,4 @@
-/* SuiteCut site: a paper sheet on a grey desk, one grotesk, one mono and one orange accent. */
+/* SuiteCut site: a paper sheet on a grey desk, one grotesk, one mono and a single ink accent. */
 
 :root {
   color-scheme: light;
@@ -11,7 +11,7 @@
   --faint: #8f8f8f;
   --line: #ededed;
   --line-strong: #c7c7c7;
-  --accent: #fd6606;
+  --accent: #171717;
   --sans: 'Geist Variable', -apple-system, system-ui, 'Helvetica Neue', sans-serif;
   --mono: 'Geist Mono Variable', ui-monospace, Menlo, monospace;
   --sheet: 72rem;
@@ -22,12 +22,6 @@
   background: var(--desk);
   font-synthesis: none;
   -webkit-font-smoothing: antialiased;
-}
-
-@supports (color: color(display-p3 1 1 1)) {
-  :root {
-    --accent: color(display-p3 0.99 0.4 0.02);
-  }
 }
 
 * {
@@ -46,7 +40,7 @@ body {
 }
 
 ::selection {
-  background: color-mix(in srgb, var(--accent) 22%, transparent);
+  background: #dcdcdc;
 }
 
 a {
@@ -123,11 +117,10 @@ a:hover {
   text-decoration: none;
 }
 
-.site-header .dot {
-  width: 0.875rem;
-  height: 0.875rem;
-  border-radius: 50%;
-  background: var(--accent);
+.site-header .logo-mark {
+  width: 1.75rem;
+  height: 1.75rem;
+  flex: none;
 }
 
 .site-nav {
@@ -155,9 +148,14 @@ a:hover {
   text-decoration: none;
 }
 
-.site-nav li a:hover,
+.site-nav li a:hover {
+  color: var(--muted);
+}
+
 .site-nav li a[aria-current='page'] {
-  color: var(--accent);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.3em;
 }
 
 .site-header[data-variant='inline'] {
@@ -230,87 +228,6 @@ a:hover {
 
 .site-footer a:hover {
   color: var(--ink);
-}
-
-/* Index rail: one long line per section, one short line per subsection */
-.index-rail {
-  position: fixed;
-  top: 50%;
-  left: max(1rem, calc((100vw - var(--sheet)) / 2 - 4.5rem));
-  z-index: 10;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  transform: translateY(-50%);
-}
-
-.index-rail a {
-  position: relative;
-  display: block;
-  width: 1.5rem;
-  height: 5px;
-  padding: 2px 0;
-}
-
-.index-rail a::before {
-  content: '';
-  display: block;
-  width: 0.875rem;
-  height: 1px;
-  background: var(--line-strong);
-  transition:
-    width 200ms ease,
-    background 200ms ease;
-}
-
-.index-rail a[data-level='2']::before {
-  width: 1.5rem;
-  background: var(--faint);
-}
-
-.index-rail a:hover::before,
-.index-rail a[aria-current='true']::before {
-  background: var(--accent);
-}
-
-.index-rail a[aria-current='true']::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -0.6rem;
-  border-block: 3.5px solid transparent;
-  border-left: 5px solid var(--accent);
-}
-
-.index-rail span {
-  position: absolute;
-  top: 50%;
-  left: 2.25rem;
-  padding: 0.2rem 0.45rem;
-  border-radius: 3px;
-  color: var(--ink-strong);
-  background: var(--paper);
-  box-shadow: 0 0 0 1px var(--line);
-  font: 400 0.75rem / 1.4 var(--mono);
-  white-space: nowrap;
-  opacity: 0;
-  pointer-events: none;
-  transform: translate(-4px, -50%);
-  transition:
-    opacity 150ms ease,
-    transform 150ms ease;
-}
-
-.index-rail a:hover span,
-.index-rail a:focus-visible span {
-  opacity: 1;
-  transform: translate(0, -50%);
-}
-
-@media (max-width: 82rem) {
-  .index-rail {
-    display: none;
-  }
 }
 
 /* Prose shared by marketing, docs and examples */
