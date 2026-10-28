@@ -1,62 +1,19 @@
 ---
 import CodeBlock from '../components/CodeBlock.astro'
 import BaseLayout from '../layouts/BaseLayout.astro'
-import { recordExample, streamExample } from '../lib/api-reference.js'
+import { recordExample } from '../lib/api-reference.js'
 import { sitePath } from '../lib/paths.js'
+import '@fontsource-variable/inter'
 import '../styles/home.css'
 
-const duration = 12
-
-type Clip = { start: number; end: number; label: string; target?: string }
-
-const tracks: { id: string; name: string; clips: Clip[] }[] = [
+const packages = [
+  { name: 'suitecut', text: 'Record, narrate, render and stream browser flows.' },
   {
-    id: 'narration',
-    name: 'Narration',
-    clips: [
-      { start: 0.4, end: 3.2, label: 'Welcome to the product tour.' },
-      { start: 4.6, end: 7.6, label: 'Revenue updates as the week closes.' },
-      { start: 8.6, end: 11.4, label: 'Export the report in one click.' },
-    ],
+    name: '@suitecut/browser-control',
+    text: 'The native CEF engine, Chromium over CDP and Firefox over WebDriver BiDi, with a live viewer.',
   },
-  {
-    id: 'highlight',
-    name: 'Highlight',
-    clips: [
-      { start: 1.0, end: 3.0, label: 'h1', target: 'title' },
-      { start: 4.4, end: 7.2, label: '.revenue', target: 'card' },
-      { start: 8.8, end: 10.8, label: 'button', target: 'export' },
-    ],
-  },
-  {
-    id: 'checkpoint',
-    name: 'Checkpoint',
-    clips: [
-      { start: 3.2, end: 3.2, label: 'Opening screen' },
-      { start: 10.6, end: 10.6, label: 'Report exported' },
-    ],
-  },
-]
-
-const cursorPath = [
-  { t: 0, target: 'start' },
-  { t: 0.9, target: 'title' },
-  { t: 3.4, target: 'title' },
-  { t: 4.3, target: 'card' },
-  { t: 7.6, target: 'card' },
-  { t: 8.6, target: 'export' },
-  { t: 12, target: 'export' },
-]
-
-const clicks = [4.4, 9.0]
-const pct = (seconds: number) => `${((seconds / duration) * 100).toFixed(3)}%`
-const ticks = Array.from({ length: duration * 4 + 1 }, (_, i) => i / 4)
-
-const chapters = [
-  { id: 'record', number: '01', title: 'Record' },
-  { id: 'render', number: '02', title: 'Render' },
-  { id: 'stream', number: '03', title: 'Stream' },
-  { id: 'control', number: '04', title: 'Control' },
+  { name: 'SuiteCut::Client', text: 'A C/C++ SDK with a stable C ABI. No Node.js required.' },
+  { name: 'suitecut-native-control', text: 'A CLI that also runs as an MCP server for agents.' },
 ]
 ---
 
@@ -65,601 +22,88 @@ const chapters = [
   description="Record and stream narrated browser flows with native embedded Chromium capture."
   current="home"
 >
-  <div class="scrub-rail" aria-hidden="true">
-    <div class="scrub-rail-ticks"></div>
-  </div>
-  <div class="scrub-line" aria-hidden="true">
-    <span class="scrub-line-label"
-      ><span data-scroll-chapter>00 Intro</span><span data-scroll-time>00:00:00</span></span
-    >
-  </div>
-
-  <div class="paper">
-    <section class="intro" data-chapter="00 Intro">
-      <p class="kicker"><span class="rec-dot"></span> SuiteCut 2.0</p>
-      <div class="intro-columns">
-        <h1>
-          Script a browser flow.<br />
-          <span class="soft">Get back a finished, narrated video.</span>
-        </h1>
-        <div class="intro-copy">
-          <p>
-            SuiteCut drives an embedded Chromium, records its real pixels and page audio, and keeps
-            a timeline of every narration, highlight and checkpoint. Render it to a video, or stream
-            it live.
-          </p>
-          <div class="intro-actions">
-            <a class="pill pill-ink" href={sitePath('/docs')}>Get started</a>
-            <a class="pill" href={sitePath('/examples')}>See an example</a>
-          </div>
-          <button class="install" type="button" data-copy-text="pnpm add suitecut">
-            <span class="install-prompt">$</span> pnpm add suitecut
-            <span class="install-hint" data-copy-label>copy</span>
-          </button>
-        </div>
-      </div>
-    </section>
-
-    <section
-      class="stage"
-      aria-label="Interactive recording preview"
-      data-stage
-      data-duration={duration}
-      data-tracks={JSON.stringify(tracks)}
-      data-cursor={JSON.stringify(cursorPath)}
-      data-clicks={JSON.stringify(clicks)}
-    >
-      <div class="window">
-        <div class="window-bar">
-          <span class="window-dots"><i></i><i></i><i></i></span>
-          <span class="window-url">example.com/dashboard</span>
-          <span class="window-rec"><span class="rec-dot"></span> REC</span>
-        </div>
-        <div class="window-page" data-page>
-          <div class="mock-nav">
-            <span class="mock-logo"></span>
-            <span class="mock-link"></span><span class="mock-link"></span><span class="mock-link"
-            ></span>
-          </div>
-          <h2 class="mock-title" data-target="title">Weekly overview</h2>
-          <div class="mock-grid">
-            <div class="mock-card mock-card-revenue" data-target="card">
-              <span class="mock-label">Revenue</span>
-              <span class="mock-value" data-revenue>$48.2k</span>
-              <svg class="mock-spark" viewBox="0 0 120 32" preserveAspectRatio="none">
-                <path d="M0 26 L15 22 L30 24 L45 16 L60 18 L75 11 L90 13 L105 6 L120 4"></path>
-              </svg>
-            </div>
-            <div class="mock-card">
-              <span class="mock-label">Sessions</span>
-              <span class="mock-value">12,904</span>
-              <span class="mock-bars"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
-            </div>
-          </div>
-          <div class="mock-footer">
-            <span class="mock-line"></span>
-            <span class="mock-button" data-target="export">Export report</span>
-          </div>
-
-          <span class="hl-ring" data-ring></span>
-          <span class="click-ripple" data-ripple></span>
-          <svg class="cursor" data-cursor-el viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M5 3l14 8-6 1.6L10 19z"></path>
-          </svg>
-          <span class="toast" data-toast
-            ><span class="toast-diamond"></span><span data-toast-text></span></span
-          >
-          <p class="caption" data-caption aria-live="off"></p>
-        </div>
-      </div>
-
-      <div class="deck">
-        <div class="deck-controls">
-          <button class="play" type="button" data-play aria-label="Pause preview">
-            <svg viewBox="0 0 16 16" aria-hidden="true" class="icon-pause"
-              ><rect x="3.5" y="3" width="3" height="10" rx="1"></rect><rect
-                x="9.5"
-                y="3"
-                width="3"
-                height="10"
-                rx="1"></rect></svg
-            >
-            <svg viewBox="0 0 16 16" aria-hidden="true" class="icon-play"
-              ><path d="M4.5 2.8v10.4L13 8z"></path></svg
-            >
-          </button>
-          <span class="timecode" data-timecode>00:00:00</span>
-          <span class="deck-meta">1920×1080 · capture 60 fps · audio on</span>
-        </div>
-
-        <div
-          class="timeline"
-          data-timeline
-          role="slider"
-          tabindex="0"
-          aria-label="Preview position"
-          aria-valuemin="0"
-          aria-valuemax={duration}
-          aria-valuenow="0"
-        >
-          <div class="ruler">
-            {
-              ticks.map((t) => (
-                <span
-                  class:list={['tick', { major: Number.isInteger(t) }]}
-                  style={`left:${pct(t)}`}
-                >
-                  {Number.isInteger(t) && t % 2 === 0 && t < duration ? <em>{t}s</em> : null}
-                </span>
-              ))
-            }
-          </div>
-          <div class="track track-video">
-            <span class="track-name">Video</span>
-            <span class="track-lane"
-              ><span class="clip clip-video" style="left:0;width:100%"></span></span
-            >
-          </div>
-          {
-            tracks.map((track) => (
-              <div class={`track track-${track.id}`}>
-                <span class="track-name">{track.name}</span>
-                <span class="track-lane">
-                  {track.clips.map((clip) =>
-                    clip.start === clip.end ? (
-                      <span
-                        class="marker"
-                        style={`left:${pct(clip.start)}`}
-                        title={clip.label}
-                        data-start={clip.start}
-                        data-end={clip.end}
-                      />
-                    ) : (
-                      <span
-                        class="clip"
-                        data-start={clip.start}
-                        data-end={clip.end}
-                        style={`left:${pct(clip.start)};width:${pct(clip.end - clip.start)}`}
-                      >
-                        <span>{clip.label}</span>
-                      </span>
-                    ),
-                  )}
-                </span>
-              </div>
-            ))
-          }
-          <div class="playhead" data-playhead><span></span></div>
-        </div>
-        <p class="deck-hint">
-          Drag the timeline to scrub. Everything above comes from one timeline.
-        </p>
-      </div>
-    </section>
-
-    <dl class="facts">
-      <div><dt>Frame rate</dt><dd>1–120 fps capture and output</dd></div>
-      <div><dt>Engine</dt><dd>CEF 156 · Chromium 156</dd></div>
-      <div><dt>Live</dt><dd>RTMP and RTMPS publishing</dd></div>
-      <div><dt>Platforms</dt><dd>macOS ARM64 · Linux x64</dd></div>
-    </dl>
-
-    <nav class="chapters" aria-label="Chapters">
-      {
-        chapters.map((c) => (
-          <a href={`#${c.id}`}>
-            <span>{c.number}</span>
-            {c.title}
-          </a>
-        ))
-      }
-    </nav>
-
-    <section class="chapter" id="record" data-chapter="01 Record">
-      <header class="chapter-head">
-        <span class="chapter-number">01</span>
-        <h2>Record</h2>
-      </header>
-      <div class="chapter-body">
-        <p class="lede">
-          Write the flow the way you'd write a test. Locators, clicks and navigation drive a real
-          embedded browser while SuiteCut captures what it paints.
-        </p>
+  <article class="landing">
+    <header class="home-intro">
+      <h1>Script a browser flow. Get back a finished, narrated video.</h1>
+      <div class="home-columns">
         <p>
-          Call <code>narrate</code>, <code>highlight</code> and <code>checkpoint</code> as you go. Each
-          one is stamped onto an action timeline beside the source video, so nothing is edited by hand
-          afterwards.
+          Have you ever recorded a product tour, then spent an afternoon cutting it, adding captions
+          and lining up a voiceover?
         </p>
-        <div class="code-frame"><CodeBlock code={recordExample} /></div>
+        <p class="muted">
+          SuiteCut drives an embedded Chromium, records its real pixels and page audio, and keeps a
+          timeline of every narration, highlight and checkpoint.
+        </p>
       </div>
-    </section>
-
-    <section class="chapter" id="render" data-chapter="02 Render">
-      <header class="chapter-head">
-        <span class="chapter-number">02</span>
-        <h2>Render</h2>
-      </header>
-      <div class="chapter-body">
-        <p class="lede">
-          <code>renderSuiteCut</code> reads the manifest and produces the finished video: narration, captions,
-          highlights and page audio mixed in.
-        </p>
-        <p>
-          Capture and output rates are independent integers from 1 to 120. Resampling is
-          timestamp-based. It holds or drops frames and never invents motion that wasn't there.
-        </p>
-        <figure class="resample" data-resample>
-          <div class="resample-row">
-            <span class="resample-label">Capture · 120</span>
-            <span class="resample-frames resample-frames-dense">
-              {Array.from({ length: 48 }, () => <i />)}
-            </span>
-          </div>
-          <div class="resample-row">
-            <span class="resample-label">Output · 60</span>
-            <span class="resample-frames resample-frames-kept">
-              {Array.from({ length: 24 }, () => <i />)}
-            </span>
-          </div>
-          <figcaption>Every output frame is a real captured frame, picked by timestamp.</figcaption>
-        </figure>
-      </div>
-    </section>
-
-    <section class="chapter" id="stream" data-chapter="03 Stream">
-      <header class="chapter-head">
-        <span class="chapter-number">03</span>
-        <h2>Stream</h2>
-      </header>
-      <div class="chapter-body">
-        <p class="lede">
-          <code>launchBrowser</code> and <code>createBroadcast</code> publish the same native pixels and
-          page audio to RTMP or RTMPS.
-        </p>
-        <p>
-          You can switch the broadcast source without dropping the publisher connection. Your
-          application owns the browser, the stop signal and the stream credentials.
-        </p>
-        <figure class="signal" aria-hidden="true">
-          <span class="signal-node">Browser</span>
-          <span class="signal-wire"><i></i><i></i><i></i></span>
-          <span class="signal-node">Broadcast</span>
-          <span class="signal-wire"><i></i><i></i><i></i></span>
-          <span class="signal-node signal-node-live"><span class="rec-dot"></span> rtmps://</span>
-        </figure>
-        <div class="code-frame"><CodeBlock code={streamExample} /></div>
-      </div>
-    </section>
-
-    <section class="chapter" id="control" data-chapter="04 Control">
-      <header class="chapter-head">
-        <span class="chapter-number">04</span>
-        <h2>Control</h2>
-      </header>
-      <div class="chapter-body">
-        <p class="lede">
-          The browser layer stands on its own. Use it from TypeScript, C++ or an agent.
-        </p>
-        <ul class="surfaces">
-          <li>
-            <strong>suitecut</strong>
-            <span>Record, narrate, render and stream browser flows.</span>
-          </li>
-          <li>
-            <strong>@suitecut/browser-control</strong>
-            <span
-              >The native CEF engine, Chromium over CDP and Firefox over WebDriver BiDi, with a live
-              viewer.</span
-            >
-          </li>
-          <li>
-            <strong>SuiteCut::Client</strong>
-            <span>A C/C++ SDK with a stable C ABI. No Node.js required.</span>
-          </li>
-          <li>
-            <strong>suitecut-native-control</strong>
-            <span>A CLI that also runs as an MCP server for agents.</span>
-          </li>
-        </ul>
-      </div>
-    </section>
-
-    <section class="outro" data-chapter="05 Fin">
-      <p class="kicker">Before you start</p>
-      <h2>Bring Node.js 22, FFmpeg and a built CEF executable.</h2>
-      <p>
-        <code>suitecut install</code> fetches checksum-verified media tools, and
-        <code>suitecut doctor</code> tells you what's missing.
+      <p class="home-links">
+        <a class="home-button" href={sitePath('/docs')}>Get started</a>
+        <a href={sitePath('/examples')}>Examples</a>
+        <a href="https://github.com/skyaara/suitecut">GitHub</a>
       </p>
-      <div class="intro-actions">
-        <a class="pill pill-ink" href={sitePath('/docs')}>Read the guide</a>
-        <a class="pill" href="https://github.com/skyaara/suitecut">View source</a>
-      </div>
+    </header>
+
+    <section>
+      <h2><span>01</span>Record</h2>
+      <p>
+        Write the flow the way you'd write a test. Locators, clicks and navigation drive a real
+        embedded browser while SuiteCut captures what it paints.
+      </p>
+      <p class="muted">
+        Call narrate, highlight and checkpoint as you go. Each one is stamped onto an action
+        timeline beside the source video, so nothing is edited by hand afterwards.
+      </p>
+      <CodeBlock code={recordExample} theme="github-light" />
     </section>
-  </div>
+
+    <section>
+      <h2><span>02</span>Render</h2>
+      <p>
+        renderSuiteCut reads the manifest and produces the finished video, with narration, captions,
+        highlights and page audio mixed in.
+      </p>
+      <p class="muted">
+        Capture and output rates are independent, from 1 to 120 frames per second. Resampling holds
+        or drops real frames by timestamp. It never invents motion that wasn't there.
+      </p>
+    </section>
+
+    <section>
+      <h2><span>03</span>Stream</h2>
+      <p>
+        launchBrowser and createBroadcast publish the same native pixels and page audio to RTMP or
+        RTMPS.
+      </p>
+      <p class="muted">
+        You can switch the broadcast source without dropping the publisher connection. Your
+        application owns the browser, the stop signal and the stream credentials.
+      </p>
+    </section>
+
+    <section>
+      <h2><span>04</span>Control</h2>
+      <p>The browser layer stands on its own. Use it from TypeScript, C++ or an agent.</p>
+      <dl class="home-packages">
+        {
+          packages.map((item) => (
+            <div>
+              <dt>{item.name}</dt>
+              <dd>{item.text}</dd>
+            </div>
+          ))
+        }
+      </dl>
+    </section>
+
+    <section>
+      <h2><span>05</span>Before you start</h2>
+      <p>Bring Node.js 22, FFmpeg and a built CEF executable.</p>
+      <p class="muted">
+        suitecut install fetches checksum-verified media tools, and suitecut doctor tells you what's
+        missing. Builds are qualified on macOS ARM64 and Linux x64.
+      </p>
+      <p class="home-links">
+        <a class="home-button" href={sitePath('/docs')}>Read the guide</a>
+      </p>
+    </section>
+  </article>
 </BaseLayout>
-
-<script>
-  type Clip = { start: number; end: number; label: string; target?: string }
-  type Track = { id: string; clips: Clip[] }
-  type CursorKey = { t: number; target: string }
-
-  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-
-  // Install command copy
-  for (const button of document.querySelectorAll<HTMLButtonElement>('[data-copy-text]')) {
-    const label = button.querySelector('[data-copy-label]')
-    button.addEventListener('click', async () => {
-      try {
-        await navigator.clipboard.writeText(button.dataset.copyText ?? '')
-        if (label) label.textContent = 'copied'
-      } catch {
-        if (label) label.textContent = 'press ⌘C'
-      }
-      window.setTimeout(() => {
-        if (label) label.textContent = 'copy'
-      }, 1600)
-    })
-  }
-
-  const formatTime = (seconds: number) => {
-    const whole = Math.max(0, seconds)
-    const m = Math.floor(whole / 60)
-    const s = Math.floor(whole % 60)
-    const f = Math.floor((whole % 1) * 60)
-    return [m, s, f].map((n) => String(n).padStart(2, '0')).join(':')
-  }
-
-  const ease = (x: number) => (x < 0.5 ? 4 * x * x * x : 1 - (-2 * x + 2) ** 3 / 2)
-
-  const stage = document.querySelector<HTMLElement>('[data-stage]')
-  if (stage) {
-    const duration = Number(stage.dataset.duration)
-    const tracks = JSON.parse(stage.dataset.tracks ?? '[]') as Track[]
-    const cursorKeys = JSON.parse(stage.dataset.cursor ?? '[]') as CursorKey[]
-    const clicks = JSON.parse(stage.dataset.clicks ?? '[]') as number[]
-    const narration = tracks.find((t) => t.id === 'narration')?.clips ?? []
-    const highlights = tracks.find((t) => t.id === 'highlight')?.clips ?? []
-    const checkpoints = tracks.find((t) => t.id === 'checkpoint')?.clips ?? []
-
-    const page = stage.querySelector<HTMLElement>('[data-page]')!
-    const cursor = stage.querySelector<SVGElement>('[data-cursor-el]')!
-    const ring = stage.querySelector<HTMLElement>('[data-ring]')!
-    const ripple = stage.querySelector<HTMLElement>('[data-ripple]')!
-    const caption = stage.querySelector<HTMLElement>('[data-caption]')!
-    const toast = stage.querySelector<HTMLElement>('[data-toast]')!
-    const toastText = stage.querySelector<HTMLElement>('[data-toast-text]')!
-    const timecode = stage.querySelector<HTMLElement>('[data-timecode]')!
-    const timeline = stage.querySelector<HTMLElement>('[data-timeline]')!
-    const playhead = stage.querySelector<HTMLElement>('[data-playhead]')!
-    const play = stage.querySelector<HTMLButtonElement>('[data-play]')!
-    const revenue = stage.querySelector<HTMLElement>('[data-revenue]')!
-
-    let rects = new Map<string, DOMRect>()
-    const measure = () => {
-      const base = page.getBoundingClientRect()
-      rects = new Map()
-      for (const el of page.querySelectorAll<HTMLElement>('[data-target]')) {
-        const r = el.getBoundingClientRect()
-        rects.set(el.dataset.target!, new DOMRect(r.x - base.x, r.y - base.y, r.width, r.height))
-      }
-      rects.set('start', new DOMRect(base.width * 0.82, base.height * 0.78, 0, 0))
-    }
-    const point = (target: string) => {
-      const r = rects.get(target)
-      if (!r) return { x: 0, y: 0 }
-      if (target === 'title')
-        return { x: r.x + Math.min(r.width, 180) * 0.7, y: r.y + r.height * 0.6 }
-      return { x: r.x + r.width * 0.55, y: r.y + r.height * 0.55 }
-    }
-
-    let time = reduceMotion ? 5.2 : 0
-    let playing = !reduceMotion
-    let visible = false
-    let last = 0
-    let scrubbing = false
-    let lastCaption = ''
-    let lastRing = ''
-
-    const draw = () => {
-      // Cursor
-      const next = cursorKeys.findIndex((key) => key.t > time)
-      const b = cursorKeys[next === -1 ? cursorKeys.length - 1 : next]!
-      const a = next === -1 ? b : cursorKeys[Math.max(0, next - 1)]!
-      const span = b.t - a.t || 1
-      const k = ease(Math.min(1, Math.max(0, (time - a.t) / span)))
-      const pa = point(a.target)
-      const pb = point(b.target)
-      const x = pa.x + (pb.x - pa.x) * k
-      const y = pa.y + (pb.y - pa.y) * k
-      const pressed = clicks.some((c) => time >= c && time < c + 0.18)
-      cursor.style.transform = `translate(${x}px, ${y}px) scale(${pressed ? 0.86 : 1})`
-
-      // Click ripple
-      const click = clicks.find((c) => time >= c && time < c + 0.6)
-      if (click !== undefined) {
-        const p = (time - click) / 0.6
-        ripple.style.transform = `translate(${x}px, ${y}px) scale(${0.4 + p * 1.6})`
-        ripple.style.opacity = String(0.55 * (1 - p))
-      } else {
-        ripple.style.opacity = '0'
-      }
-
-      // Highlight ring
-      const hl = highlights.find((c) => time >= c.start && time < c.end)
-      if (hl?.target) {
-        const r = rects.get(hl.target)
-        if (r && lastRing !== hl.target) {
-          // Appear in place when hidden; glide between targets when already visible.
-          const jump = !ring.classList.contains('is-on')
-          ring.classList.toggle('is-jumping', jump)
-          ring.style.transform = `translate(${r.x - 6}px, ${r.y - 6}px)`
-          ring.style.width = `${r.width + 12}px`
-          ring.style.height = `${r.height + 12}px`
-          lastRing = hl.target
-          if (jump) void ring.offsetWidth
-        }
-        ring.classList.remove('is-jumping')
-        ring.classList.add('is-on')
-      } else {
-        ring.classList.remove('is-on')
-      }
-
-      // Narration caption, revealed word by word
-      const line = narration.find((c) => time >= c.start && time < c.end)
-      if (line) {
-        const words = line.label.split(' ')
-        const spoken = Math.ceil(
-          ((time - line.start) / ((line.end - line.start) * 0.8)) * words.length,
-        )
-        const html = words
-          .map((w, n) => `<span class="${n < spoken ? 'said' : ''}">${w}</span>`)
-          .join(' ')
-        if (html !== lastCaption) {
-          caption.innerHTML = html
-          lastCaption = html
-        }
-        caption.classList.add('is-on')
-      } else {
-        caption.classList.remove('is-on')
-      }
-
-      // Checkpoint toast
-      const cp = checkpoints.find((c) => time >= c.start && time < c.start + 1.6)
-      if (cp) toastText.textContent = cp.label
-      toast.classList.toggle('is-on', Boolean(cp))
-
-      // Revenue ticks up after the card is clicked
-      const grow = Math.min(1, Math.max(0, (time - 4.6) / 2.4))
-      revenue.textContent = `$${(48.2 + grow * 3.9).toFixed(1)}k`
-
-      // Deck
-      const progress = time / duration
-      playhead.style.setProperty('--p', `${progress * 100}%`)
-      timecode.textContent = formatTime(time)
-      timeline.setAttribute('aria-valuenow', time.toFixed(1))
-      timeline.setAttribute('aria-valuetext', formatTime(time))
-    }
-
-    const clipEls = [...timeline.querySelectorAll<HTMLElement>('[data-start]')]
-    const markLive = () => {
-      for (const el of clipEls) {
-        const start = Number(el.dataset.start)
-        const end = Number(el.dataset.end)
-        const live = time >= start && time < (end === start ? start + 1.6 : end)
-        el.classList.toggle('is-live', live)
-      }
-    }
-
-    const setPlaying = (next: boolean) => {
-      playing = next
-      stage.classList.toggle('is-paused', !playing)
-      play.setAttribute('aria-label', playing ? 'Pause preview' : 'Play preview')
-    }
-
-    const frame = (now: number) => {
-      const dt = last ? Math.min(0.05, (now - last) / 1000) : 0
-      last = now
-      if (playing && visible && !scrubbing) {
-        time = (time + dt) % duration
-      }
-      draw()
-      markLive()
-      requestAnimationFrame(frame)
-    }
-
-    const seekFromEvent = (event: PointerEvent) => {
-      const lane = timeline.querySelector('.track-lane')!.getBoundingClientRect()
-      const p = (event.clientX - lane.left) / lane.width
-      time = Math.min(duration - 0.001, Math.max(0, p * duration))
-    }
-
-    timeline.addEventListener('pointerdown', (event) => {
-      scrubbing = true
-      stage.classList.add('is-scrubbing')
-      timeline.setPointerCapture(event.pointerId)
-      seekFromEvent(event)
-    })
-    timeline.addEventListener('pointermove', (event) => {
-      if (scrubbing) seekFromEvent(event)
-    })
-    const endScrub = () => {
-      scrubbing = false
-      stage.classList.remove('is-scrubbing')
-    }
-    timeline.addEventListener('pointerup', endScrub)
-    timeline.addEventListener('pointercancel', endScrub)
-    timeline.addEventListener('keydown', (event) => {
-      const step = event.shiftKey ? 1 : 0.25
-      if (event.key === 'ArrowRight') time = Math.min(duration - 0.001, time + step)
-      else if (event.key === 'ArrowLeft') time = Math.max(0, time - step)
-      else if (event.key === ' ' || event.key === 'Enter') setPlaying(!playing)
-      else return
-      event.preventDefault()
-    })
-    play.addEventListener('click', () => setPlaying(!playing))
-
-    new IntersectionObserver(([entry]) => {
-      visible = entry?.isIntersecting ?? false
-    }).observe(stage)
-    new ResizeObserver(() => {
-      measure()
-      lastRing = ''
-    }).observe(page)
-
-    measure()
-    setPlaying(playing)
-    requestAnimationFrame(frame)
-  }
-
-  // Scroll playhead: the page itself reads like a timeline
-  const chapterLabel = document.querySelector<HTMLElement>('[data-scroll-chapter]')
-  const scrollTime = document.querySelector<HTMLElement>('[data-scroll-time]')
-  const railTicks = document.querySelector<HTMLElement>('.scrub-rail-ticks')
-  const sections = [...document.querySelectorAll<HTMLElement>('[data-chapter]')]
-  let ticking = false
-  const onScroll = () => {
-    ticking = false
-    const max = document.documentElement.scrollHeight - window.innerHeight
-    const progress = max > 0 ? window.scrollY / max : 0
-    if (scrollTime) scrollTime.textContent = formatTime(progress * 90)
-    if (railTicks) railTicks.style.transform = `translateY(${-window.scrollY * 0.35}px)`
-    const lineY = window.innerHeight * 0.42
-    let current = sections[0]
-    for (const s of sections) if (s.getBoundingClientRect().top <= lineY) current = s
-    if (chapterLabel && current) chapterLabel.textContent = current.dataset.chapter ?? ''
-  }
-  window.addEventListener(
-    'scroll',
-    () => {
-      if (!ticking) {
-        ticking = true
-        requestAnimationFrame(onScroll)
-      }
-    },
-    { passive: true },
-  )
-  onScroll()
-
-  // Gentle reveal as sections enter
-  const revealables = document.querySelectorAll<HTMLElement>(
-    '.chapter, .facts, .outro, .chapters, .resample, .signal',
-  )
-  if (!reduceMotion && 'IntersectionObserver' in window) {
-    const io = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('is-in')
-            io.unobserve(entry.target)
-          }
-        }
-      },
-      { rootMargin: '0px 0px -12% 0px' },
-    )
-    for (const el of revealables) {
-      el.classList.add('reveal')
-      io.observe(el)
-    }
-  }
-</script>

@@ -5,12 +5,14 @@ interface Props {
   code: string
   label?: string
   lang?: 'bash' | 'css' | 'html' | 'json' | 'plaintext' | 'typescript'
+  theme?: 'github-dark' | 'github-light'
 }
 
 const {
   code,
   label = 'TypeScript',
   lang = label === 'Terminal' ? 'bash' : 'typescript',
+  theme = 'github-dark',
 } = Astro.props
 const lineCount = code.split('\n').length
 const collapsible = lineCount > 24
@@ -23,7 +25,7 @@ const collapsible = lineCount > 24
       >Copy</button
     >
   </figcaption>
-  <Code code={code} lang={lang} theme="github-dark" />
+  <Code code={code} lang={lang} theme={theme} />
   {
     collapsible && (
       <button class="code-expand" type="button" data-lines={lineCount} aria-expanded="false">
