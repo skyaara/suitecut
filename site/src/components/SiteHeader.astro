@@ -2,7 +2,7 @@
 import { sitePath } from '../lib/paths.js'
 import Logo from './Logo.astro'
 
-export type Section = 'home' | 'benchmarks' | 'docs' | 'examples'
+export type Section = 'home' | 'about' | 'benchmarks' | 'docs' | 'examples'
 
 interface Props {
   current?: Section
@@ -11,7 +11,7 @@ interface Props {
 const { current } = Astro.props
 const repository = 'skyaara/suitecut'
 const links: { label: string; href: string; key?: Section }[] = [
-  { label: 'Capabilities', href: sitePath('/#capabilities') },
+  { label: 'About', href: sitePath('/about'), key: 'about' },
   { label: 'Benchmarks', href: sitePath('/benchmarks'), key: 'benchmarks' },
   { label: 'Docs', href: sitePath('/docs'), key: 'docs' },
   { label: 'Examples', href: sitePath('/examples'), key: 'examples' },
@@ -102,7 +102,10 @@ const formatStars = (count: number) =>
       const barHeight = 56
       const inset = first ? (barHeight - first.height) / 2 : 0
       threshold = (first?.top ?? slotRect.top) + window.scrollY - inset
-      root.style.setProperty('--nav-right', `${document.documentElement.clientWidth - slotRect.right}px`)
+      root.style.setProperty(
+        '--nav-right',
+        `${document.documentElement.clientWidth - slotRect.right}px`,
+      )
       root.style.setProperty('--sheet-left', `${sheetRect.left}px`)
       root.style.setProperty('--sheet-width', `${sheetRect.width}px`)
       update()

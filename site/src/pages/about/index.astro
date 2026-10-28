@@ -1,0 +1,214 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import { sitePath } from '../../lib/paths.js'
+
+const packages = [
+  {
+    name: 'suitecut',
+    kind: 'TypeScript · npm',
+    text: 'Record, narrate, render and stream browser flows. Includes the suitecut command line and the suitecut-test runner.',
+  },
+  {
+    name: '@suitecut/browser-control',
+    kind: 'TypeScript · tarball',
+    text: 'Drive the CEF engine, installed Chrome, Chromium, Edge or Brave over CDP, and Firefox over WebDriver BiDi, with a live viewer for human handover.',
+  },
+  {
+    name: 'SuiteCut::Client',
+    kind: 'C++20 · C ABI',
+    text: 'A native SDK for the same browsers, with no Node.js, CEF headers or automation library.',
+  },
+  {
+    name: 'suitecut-native-control',
+    kind: 'Native executable',
+    text: 'A command line with persistent sessions that also runs as an MCP server for agents.',
+  },
+  {
+    name: 'SuiteCut CEF runtime',
+    kind: 'C++ · CEF 156',
+    text: 'The embedded engine itself, built from a pinned CEF and distributed separately from the SDKs.',
+  },
+  {
+    name: 'Audio plugins',
+    kind: 'TypeScript · branch',
+    text: 'Optional local voices built on Sherpa: VITS and Piper, Kitten, Matcha, Pocket, Supertonic, ZipVoice and Kokoro.',
+  },
+]
+---
+
+<BaseLayout
+  title="About · SuiteCut"
+  description="What SuiteCut is, how its embedded Chrome works, and the packages it ships."
+  current="about"
+>
+  <article class="page prose about">
+    <h1>About SuiteCut</h1>
+    <p class="about-lede">
+      SuiteCut is an embedded Chrome built to be recorded, streamed and driven. It began as a way to
+      turn scripted browser flows into narrated product videos, and grew into a browser layer that
+      scripts, agents and people can share.
+    </p>
+
+    <h2 id="what">What we do</h2>
+    <dl class="about-list">
+      <div>
+        <dt>Record</dt>
+        <dd>
+          Capture what the page really draws and plays, with a timeline of every narration,
+          highlight and checkpoint beside it.
+        </dd>
+      </div>
+      <div>
+        <dt>Render</dt>
+        <dd>Turn that timeline into a finished video with captions, zoom and mixed audio.</dd>
+      </div>
+      <div>
+        <dt>Stream</dt>
+        <dd>Publish the same pixels and sound live to RTMP or RTMPS.</dd>
+      </div>
+      <div>
+        <dt>Drive</dt>
+        <dd>
+          Control the browser from TypeScript, C++, a command line or any MCP client, or point those
+          same tools at the Chrome or Firefox you already have.
+        </dd>
+      </div>
+    </dl>
+
+    <h2 id="how">How it works</h2>
+    <p>
+      SuiteCut ships its own Chromium Embedded Framework runtime, pinned to CEF 156. Each launch
+      starts a sandboxed helper that hosts isolated contexts and pages. Video comes straight from
+      the renderer's paint callback and audio from its audio stream, so there's no screenshot loop,
+      browser extension or open debugging port in the capture path.
+    </p>
+    <p>
+      Your code talks to the helper over a small binary protocol. Frames and sound flow back on one
+      clock, where the recorder picks the newest real image for each output frame and never blends
+      or invents motion. FFmpeg encodes the result; the renderer later composes it with narration
+      into the final video, or the publisher streams it live.
+    </p>
+    <p>
+      Browser control, the agent tools and the MCP server sit on the same native driver. That's why
+      a script, a model and a person in the live viewer can all work in one session, with the same
+      page, cookies and storage.
+    </p>
+
+    <h2 id="packages">Packages</h2>
+    <div class="about-packages">
+      {
+        packages.map((item) => (
+          <div>
+            <p class="about-package-name">
+              <strong>{item.name}</strong>
+              <span>{item.kind}</span>
+            </p>
+            <p class="about-package-text">{item.text}</p>
+          </div>
+        ))
+      }
+    </div>
+
+    <h2 id="status">Where things stand</h2>
+    <ul>
+      <li>
+        Linux x64 and macOS ARM64 are qualified separately. Windows runtime packaging isn't
+        implemented yet.
+      </li>
+      <li>
+        <code>suitecut</code> is published on npm. <code>@suitecut/browser-control</code> is built and
+        packed from the repository and hasn't been published yet.
+      </li>
+      <li>
+        Browser features are tracked family by family, with evidence and known gaps, in the
+        <a href="https://github.com/skyaara/suitecut/blob/main/docs/playwright-feature-parity.md"
+          >feature checklist</a
+        >.
+      </li>
+      <li>
+        Every published <a href={sitePath('/benchmarks')}>benchmark</a> names its host, commit and the
+        command that reproduces it.
+      </li>
+    </ul>
+
+    <h2 id="open-source">Open source</h2>
+    <p>
+      SuiteCut is MIT licensed and developed in the open on
+      <a href="https://github.com/skyaara/suitecut">GitHub</a>. Read the
+      <a href="https://github.com/skyaara/suitecut/blob/main/CONTRIBUTING.md">contributing guide</a> to
+      get involved, and report security issues through the
+      <a href="https://github.com/skyaara/suitecut/blob/main/SECURITY.md">security policy</a>.
+    </p>
+  </article>
+</BaseLayout>
+
+<style>
+  .about-lede {
+    color: var(--ink-strong);
+    font-size: 1.375rem;
+    line-height: 2rem;
+  }
+
+  .about-list,
+  .about-packages {
+    margin: 1.5rem 0 0;
+    border-top: 1px solid var(--line);
+  }
+
+  .about-list div,
+  .about-packages > div {
+    display: grid;
+    grid-template-columns: 14rem minmax(0, 1fr);
+    gap: 1.5rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .about-list dt {
+    color: var(--ink-strong);
+  }
+
+  .about-list dd {
+    margin: 0;
+    color: var(--muted);
+  }
+
+  .about-packages p {
+    margin: 0;
+  }
+
+  .about-package-name {
+    display: grid;
+    align-content: start;
+    gap: 0.35rem;
+  }
+
+  .about-package-name strong {
+    color: var(--ink-strong);
+    font-size: 1rem;
+    font-weight: 500;
+    overflow-wrap: anywhere;
+  }
+
+  .about-package-name span {
+    color: var(--faint);
+    font-size: 0.875rem;
+  }
+
+  .about-package-text {
+    color: var(--muted);
+  }
+
+  @media (max-width: 52rem) {
+    .about-list div,
+    .about-packages > div {
+      grid-template-columns: 1fr;
+      gap: 0.4rem;
+    }
+
+    .about-package-name {
+      grid-template-columns: auto 1fr;
+      align-items: center;
+    }
+  }
+</style>
