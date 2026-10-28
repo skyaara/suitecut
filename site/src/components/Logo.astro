@@ -6,17 +6,17 @@ const id = `chrome-${Math.random().toString(36).slice(2, 8)}`
 <svg class="logo-mark" viewBox="0 0 32 32" aria-hidden="true">
   <defs>
     <linearGradient id={id} x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#fdfdfd"></stop>
-      <stop offset="0.32" stop-color="#cdd2d8"></stop>
-      <stop offset="0.48" stop-color="#7c8591"></stop>
-      <stop offset="0.54" stop-color="#a9b1bb"></stop>
-      <stop offset="0.72" stop-color="#f3f5f7"></stop>
-      <stop offset="1" stop-color="#9aa3ae"></stop>
+      <stop offset="0" stop-color="#eef0f3"></stop>
+      <stop offset="0.3" stop-color="#bcc3cb"></stop>
+      <stop offset="0.47" stop-color="#5d6570"></stop>
+      <stop offset="0.55" stop-color="#8e97a2"></stop>
+      <stop offset="0.72" stop-color="#e2e6ea"></stop>
+      <stop offset="1" stop-color="#7f8894"></stop>
     </linearGradient>
   </defs>
-  <g fill={`url(#${id})`} stroke="currentColor" stroke-width="1.6" stroke-linejoin="miter">
-    <path d="M5.5 5.5H22L5.5 21.5Z"></path>
-    <path d="M26.5 10.5V26.5H10L26.5 10.5Z"></path>
+  <g fill={`url(#${id})`}>
+    <path d="M4 4H23L4 23Z"></path>
+    <path d="M28 9V28H9Z"></path>
   </g>
 </svg>
 <span class="wordmark-text">SuiteCut</span>
