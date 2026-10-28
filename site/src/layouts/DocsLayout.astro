@@ -54,23 +54,35 @@ const headings = [...content.matchAll(/<h2[^>]*id="([^"]+)"[^>]*>([\s\S]*?)<\/h2
 
 <BaseLayout title={`${title} · SuiteCut`} description={description} current="docs">
   <div class="docs-shell" data-section={section}>
-    <nav class="docs-pages" aria-label="Documentation pages">
+    <aside class="docs-side">
+      <nav class="docs-pages" aria-label="Documentation pages">
+        {
+          categories.map((category) => (
+            <a
+              href={sitePath(category.href)}
+              aria-current={section === category.key ? 'page' : undefined}
+            >
+              {category.label}
+            </a>
+          ))
+        }
+      </nav>
       {
-        categories.map((category) => (
-          <a
-            href={sitePath(category.href)}
-            aria-current={section === category.key ? 'page' : undefined}
-          >
-            {category.label}
-          </a>
-        ))
+        headings.length > 0 && (
+          <nav class="docs-toc docs-toc-side" aria-label="On this page">
+            <p>On this page</p>
+            {headings.map((heading) => (
+              <a href={`#${heading.id}`} set:html={heading.label} />
+            ))}
+          </nav>
+        )
       }
-    </nav>
+    </aside>
     <article class="docs-article prose">
       <Fragment set:html={lead} />
       {
         headings.length > 0 && (
-          <nav class="docs-toc" aria-label="On this page">
+          <nav class="docs-toc docs-toc-inline" aria-label="On this page">
             {headings.map((heading) => (
               <a href={`#${heading.id}`} set:html={heading.label} />
             ))}
