@@ -108,10 +108,38 @@ const formatStars = (count: number) =>
       )
       root.style.setProperty('--sheet-left', `${sheetRect.left}px`)
       root.style.setProperty('--sheet-width', `${sheetRect.width}px`)
-      update()
+      update(false)
     }
-    const update = () => {
-      root.classList.toggle('nav-stuck', window.scrollY >= threshold)
+    // Glide each link from where it was to where it lands (FLIP), in both directions.
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const update = (animate: boolean | Event = true) => {
+      const stuck = window.scrollY >= threshold
+      if (stuck === root.classList.contains('nav-stuck')) return
+      const items = [...nav.querySelectorAll<HTMLElement>(':scope > a')]
+      const before = items.map((item) => item.getBoundingClientRect())
+      root.classList.toggle('nav-stuck', stuck)
+      if (animate === false || reduceMotion.matches) return
+      items.forEach((item, index) => {
+        const from = before[index]
+        const to = item.getBoundingClientRect()
+        if (!from || to.width === 0) return
+        const scale = from.height / to.height
+        item.animate(
+          [
+            {
+              transformOrigin: 'top left',
+              transform: `translate(${from.left - to.left}px, ${from.top - to.top}px) scale(${scale})`,
+            },
+            { transformOrigin: 'top left', transform: 'none' },
+          ],
+          {
+            duration: 520,
+            delay: index * 25,
+            easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)',
+            fill: 'backwards',
+          },
+        )
+      })
     }
     window.addEventListener('scroll', update, { passive: true })
     window.addEventListener('resize', measure)

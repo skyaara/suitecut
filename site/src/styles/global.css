@@ -253,18 +253,10 @@ a:hover {
   align-items: center;
   gap: 1.75rem;
   height: 3.5rem;
-  animation: nav-settle 450ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .nav-stuck .site-nav a {
   font-size: 1rem;
-}
-
-@keyframes nav-settle {
-  from {
-    opacity: 0;
-    transform: translateY(-8px);
-  }
 }
 
 /* Footer */
@@ -823,9 +815,7 @@ a:hover {
     transition: none;
   }
 
-  .nav-strip,
-  .nav-stuck .site-nav {
+  .nav-strip {
     transition: none;
-    animation: none;
   }
 }
