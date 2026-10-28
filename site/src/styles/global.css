@@ -586,13 +586,14 @@ a:hover {
   .docs-pages,
   .docs-toc-side {
     position: fixed;
-    top: 7rem;
+    top: 50%;
     z-index: 5;
+    transform: translateY(-50%);
     display: grid;
     align-content: start;
     width: calc((100vw - var(--sheet)) / 2 - 2.5rem);
     max-width: 13rem;
-    max-height: calc(100svh - 9rem);
+    max-height: calc(100svh - 10rem);
     overflow-y: auto;
     scrollbar-width: none;
   }
