@@ -1,5 +1,6 @@
 ---
 import { ClientRouter } from 'astro:transitions'
+import DeliPaper from '../components/DeliPaper.astro'
 import SiteHeader, { type Section } from '../components/SiteHeader.astro'
 import { sitePath } from '../lib/paths.js'
 import '@fontsource-variable/geist'
@@ -44,6 +45,7 @@ const socialImageUrl = new URL(sitePath(socialImage), Astro.site)
   </head>
   <body>
     <a class="skip-link" href="#main-content">Skip to content</a>
+    <DeliPaper />
     <div class="sheet">
       {current ? <SiteHeader current={current} /> : <SiteHeader />}
       <main id="main-content" transition:animate="fade"><slot /></main>

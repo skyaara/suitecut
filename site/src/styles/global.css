@@ -91,6 +91,8 @@ a:hover {
 
 /* The sheet */
 .sheet {
+  position: relative;
+  z-index: 1;
   width: min(100%, var(--sheet));
   min-height: 100svh;
   margin: 0 auto;
@@ -587,17 +589,19 @@ a:hover {
     transform: translateY(-50%);
     display: grid;
     align-content: start;
-    width: calc((100vw - var(--sheet)) / 2 - 2.5rem);
-    max-width: 13rem;
+    width: calc((100vw - var(--sheet)) / 2 - 2rem);
+    max-width: 15rem;
     max-height: calc(100svh - 10rem);
     overflow-y: auto;
     scrollbar-width: none;
+    /* A scrap of plain paper so the links read clearly over the checked desk. */
+    padding: 0.75rem 1rem;
+    background: var(--paper);
   }
 
   .docs-pages {
-    right: calc(50% + var(--sheet) / 2 + 1.5rem);
+    right: calc(50% + var(--sheet) / 2 + 1rem);
     gap: 0;
-    padding: 0;
     border: 0;
     font-size: 1rem;
   }
@@ -615,7 +619,7 @@ a:hover {
   }
 
   .docs-toc-side {
-    left: calc(50% + var(--sheet) / 2 + 1.5rem);
+    left: calc(50% + var(--sheet) / 2 + 1rem);
     font-size: 1rem;
     line-height: 1.35;
   }
