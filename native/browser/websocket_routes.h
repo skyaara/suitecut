@@ -67,7 +67,7 @@ class NativeWebSocketRoutes {
     for(const auto id:expired)Cancel(id);
     std::vector<std::pair<int,bool>>done;
     for(const auto&[id,r]:removals_){bool settled=true;for(const auto&receipt:r.receipts)if(receipt&&!receipt->settled())settled=false;if(settled&&!r.controls)done.push_back({id,r.error.empty()});else if(r.deadline&&now_()>=r.deadline)done.push_back({id,false});}
-    for(const auto&[id,ok]:done){auto it=removals_.find(id);if(it==removals_.end())continue;auto reply=std::move(it->second.reply);removals_.erase(it);reply(ok,nullptr,ok?"":"Native WebSocket removal cleanup failed or its original deadline exceeded");}
+    for(const auto&[id,ok]:done){auto it=removals_.find(id);if(it==removals_.end())continue;auto reply=std::exchange(it->second.reply, nullptr);removals_.erase(it);reply(ok,nullptr,ok?"":"Native WebSocket removal cleanup failed or its original deadline exceeded");}
   }
   void Command(int id,int context,int page,Dict input,double deadline,Reply reply){
     if(context<1||page<0||!input||(deadline&&now_()>=deadline)){reply(false,nullptr,"Native WebSocket policy scope is closed or expired");return;}

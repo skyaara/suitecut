@@ -24,7 +24,7 @@ bool NativeHighlightSend(const std::string&session,const std::string&method,Dict
   // is the only alternative retirement boundary. No author by-value projection.
   devtools_.emplace(tool,DevToolsCall{0,std::move(callback),session,true,65536,true,false});
   if(!SubmitDevTools(tool,method,params,session)){
-    const auto found=devtools_.find(tool);if(found!=devtools_.end()){auto actual=std::move(found->second.callback);devtools_.erase(found);actual(false,"{\"message\":\"Native highlight submission was not accepted\"}");}
+    const auto found=devtools_.find(tool);if(found!=devtools_.end()){auto actual=std::exchange(found->second.callback, nullptr);devtools_.erase(found);actual(false,"{\"message\":\"Native highlight submission was not accepted\"}");}
   }
   WakeDeadlines();return true;
 }

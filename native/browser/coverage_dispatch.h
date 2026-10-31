@@ -37,7 +37,7 @@ class CoverageDispatch : public std::enable_shared_from_this<CoverageDispatch> {
   struct Call{uint64_t id=0;std::string session,method;Dict params;double deadline=0;Reply reply;size_t bytes=0;bool dispatched=false;};
   void Wake(){if(hooks_.wake)hooks_.wake();}
   void Drop(const std::vector<uint64_t>& ids,const std::string& error){const bool prior=std::exchange(pumping_,true);for(auto id:ids)Finish(id,false,nullptr,error);pumping_=prior;Pump();}
-  void Finish(uint64_t id,bool ok,Dict result,const std::string& error){const auto found=calls_.find(id);if(found==calls_.end())return;auto call=found->second;calls_.erase(found);bytes_-=call->bytes;if(call->dispatched)--backend_;else std::erase(queue_,id);auto reply=std::move(call->reply);if(reply)reply(ok,result,error);Pump();Wake();}
+  void Finish(uint64_t id,bool ok,Dict result,const std::string& error){const auto found=calls_.find(id);if(found==calls_.end())return;auto call=found->second;calls_.erase(found);bytes_-=call->bytes;if(call->dispatched)--backend_;else std::erase(queue_,id);auto reply=std::exchange(call->reply, nullptr);if(reply)reply(ok,result,error);Pump();Wake();}
   void Pump(){
     if(pumping_||closed_)return;
     struct Guard{bool& value;explicit Guard(bool& flag):value(flag){value=true;}~Guard(){value=false;}} guard(pumping_);

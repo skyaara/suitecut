@@ -37,7 +37,7 @@ void ArtifactDocumentsFinish(const std::shared_ptr<ArtifactDocumentWork>& work, 
   if (!ArtifactDocumentsCurrent(work)) return;
   work->pending = false;
   operation_frames_[work->owner] = main_frame_id_; operation_sessions_[work->owner] = "";
-  auto done = std::move(work->done); if (done) done(ok,error);
+  auto done = std::exchange(work->done, nullptr); if (done) done(ok,error);
 }
 void ArtifactDocuments(int id, const std::string& expression, SuiteCutArtifactController::Callback done) {
   const auto operation = operations_.Get(id);

@@ -55,7 +55,7 @@ void NativeCoverageEnsure(){
     // registered across public operation cancellation; only ACK/close retires it.
     devtools_.emplace(assigned,DevToolsCall{0,callback,session,true,8*1048576,true,true});
     if(!SubmitDevTools(assigned,method,params,session)){
-      const auto found=devtools_.find(assigned);if(found!=devtools_.end()){auto done=std::move(found->second.callback);devtools_.erase(found);done(false,"{\"message\":\"Actual native coverage dispatch failed\"}");}
+      const auto found=devtools_.find(assigned);if(found!=devtools_.end()){auto done=std::exchange(found->second.callback, nullptr);devtools_.erase(found);done(false,"{\"message\":\"Actual native coverage dispatch failed\"}");}
     }
     WakeDeadlines();return true;
   };
@@ -94,7 +94,7 @@ void NativeCoverageDetached(const std::string& session){
   WorkerDetached(session);
   native_coverage_->Detached(session);
   std::vector<DevToolsCallback> callbacks;
-  for(auto it=devtools_.begin();it!=devtools_.end();)if(it->second.session==session&&native_coverage_calls_.contains(it->first)){callbacks.push_back(std::move(it->second.callback));it=devtools_.erase(it);}else ++it;
+  for(auto it=devtools_.begin();it!=devtools_.end();)if(it->second.session==session&&native_coverage_calls_.contains(it->first)){callbacks.push_back(std::exchange(it->second.callback, nullptr));it=devtools_.erase(it);}else ++it;
   for(auto& callback:callbacks)callback(false,"{\"message\":\"Actual native coverage target session detached\"}");
 }
 bool NativeCoverageEvent(const std::string& method,Dict params,const std::string& session){

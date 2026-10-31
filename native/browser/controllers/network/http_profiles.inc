@@ -35,7 +35,7 @@ void SuiteCutHTTPControls::ScopeCommandStart(int owner,int context_id,const std:
       }
       if(ok&&action=="storageState"&&found->second.owned)ok=self->PublishOrigins(context,result,indexed_db,opfs,command->second.deadline,error);
       if(ok&&initialize)found->second.initializing=false;
-      auto reply=std::move(command->second.reply);self->scope_commands_.erase(command);reply(ok,ok?result:nullptr,error);self->FinishDispose(context);
+      auto reply=std::exchange(command->second.reply, nullptr);self->scope_commands_.erase(command);reply(ok,ok?result:nullptr,error);self->FinishDispose(context);
     };
     if(ok&&result&&(action=="cookies"||action=="storageState")){auto value=CefValue::Create();value->SetDictionary(result->Copy(false));const auto retained=CefWriteJSON(value,JSON_WRITER_DEFAULT).ToString().size();self->OrderCookies(context,result->GetList("cookies"),[finish=std::move(finish),result](CefRefPtr<CefListValue>ordered,const std::string&error){if(!error.empty()){finish(false,nullptr,error);return;}result->SetList("cookies",suitecut::HTTPPublicationCookies(ordered));finish(true,result,"");},retained);}
     else finish(ok,result,error);
@@ -48,7 +48,7 @@ void SuiteCutHTTPControls::BeginDispose(int context_id,Reply reply,int owner){
   if(first){
     std::vector<int>active;for(const auto&[id,state]:active_)if(state->context==context_id)active.push_back(id);for(const int id:active)Stop(id,"Target page, context or browser has been closed (API request context disposed)");
     std::vector<int>commands;for(const auto&[id,command]:scope_commands_)if(command.context==context_id)commands.push_back(id);
-    for(const int id:commands){const auto pending=scope_commands_.find(id);if(pending==scope_commands_.end())continue;auto done=std::move(pending->second.reply);scope_commands_.erase(pending);if(hooks_.cancel_context_command)hooks_.cancel_context_command(id);done(false,nullptr,"Target page, context or browser has been closed (API request context disposed)");}
+    for(const int id:commands){const auto pending=scope_commands_.find(id);if(pending==scope_commands_.end())continue;auto done=std::exchange(pending->second.reply, nullptr);scope_commands_.erase(pending);if(hooks_.cancel_context_command)hooks_.cancel_context_command(id);done(false,nullptr,"Target page, context or browser has been closed (API request context disposed)");}
     commands.clear();for(const auto&[id,query]:storage_queries_)if(query.context==context_id)commands.push_back(id);for(const int id:commands)StopStorage(id,"Target page, context or browser has been closed (API request context disposed)",true);
     for(auto it=responses_.begin();it!=responses_.end();)if(it->second.context==context_id){body_bytes_-=it->second.body.size();it=responses_.erase(it);}else ++it;
     for(auto it=uploads_.begin();it!=uploads_.end();)if(it->second.context==context_id){upload_bytes_-=it->second.bytes.size();it=uploads_.erase(it);}else ++it;

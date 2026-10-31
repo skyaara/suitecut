@@ -49,7 +49,7 @@ void OwnerFrameDocumentCommand(const std::shared_ptr<OwnerFrameDocumentJob>&job,
   done(std::move(value));
  };
  devtools_.emplace(call,DevToolsCall{0,[reply](bool ok,const std::string&json){reply->Settle(ok,json);},job->session,true,1048576,true,method==Read::Method::Describe||method==Read::Method::Document});WakeDeadlines();
- if(!SubmitDevTools(call,command,params,job->session)){const auto found=devtools_.find(call);if(found!=devtools_.end()){auto failed=std::move(found->second.callback);devtools_.erase(found);failed(false,"{}");}}
+ if(!SubmitDevTools(call,command,params,job->session)){const auto found=devtools_.find(call);if(found!=devtools_.end()){auto failed=std::exchange(found->second.callback, nullptr);devtools_.erase(found);failed(false,"{}");}}
 }
 bool OwnerFrameCandidateCurrent(CefRefPtr<Source>peer,const std::string&frame,int context,int utility,const std::string&session,const std::string&loader){
  const auto found=peer->frame_states_.find(frame);return peer->browser_&&!peer->closing_page_&&(session.empty()||peer->sessions_.contains(session))&&found!=peer->frame_states_.end()&&found->second.context==context&&found->second.utility_context==utility&&found->second.session==session&&found->second.loader==loader;

@@ -78,7 +78,7 @@ void DispatchEventArguments(const std::shared_ptr<DispatchEventWork>& work) {
   const auto params=parsed?parsed->GetDictionary():nullptr;
   if(!params){Complete(work->id,false,"dispatchEvent: Native argument packet could not be constructed");return;}
   if(!DispatchEventDocument(work))return;
-  DevTools(work->id,"Runtime.callFunctionOn",params,[this,work](bool ok,const std::string& json){DispatchEventResult(work->id,work->generation,ok,json,work->config,std::move(work->retry));},work->session);
+  DevTools(work->id,"Runtime.callFunctionOn",params,[this,work](bool ok,const std::string& json){DispatchEventResult(work->id,work->generation,ok,json,work->config,std::exchange(work->retry, nullptr));},work->session);
 }
 
 void DispatchEventInvoke(int id,uint64_t generation,Dict config,const std::string& node) {

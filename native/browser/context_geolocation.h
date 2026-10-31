@@ -61,7 +61,7 @@ class NativeContextGeolocation {
   }
   void Detach(const std::string&key){
     const auto target=targets_.find(key);if(target==targets_.end())return;
-    const int context=target->second.context;auto ready=std::move(target->second.ready);targets_.erase(target);
+    const int context=target->second.context;auto ready=std::exchange(target->second.ready, nullptr);targets_.erase(target);
     const auto state=states_.find(context);const int owner=state==states_.end()?0:state->second.owner;
     const auto update=updates_.find(owner);if(update!=updates_.end()){update->second.pending.erase(key);if(update->second.pending.empty())Finish(owner);}
     if(ready)ready(false,"Native geolocation target is closed");
@@ -85,7 +85,7 @@ class NativeContextGeolocation {
   struct State{NativeGeolocationValue value;int owner=0;bool closing=false;uint64_t revision=0;};
   struct Target{int context;uint64_t generation;Apply apply;Result ready;bool in_flight=false;uint64_t revision=0;};
   struct Update{int context=0;double deadline=0;Result done;std::set<std::string>pending;bool logical_done=false,success=true;std::string error;};
-  void LogicalFailure(int owner,const std::string&error){const auto update=updates_.find(owner);if(update==updates_.end()||update->second.logical_done)return;update->second.logical_done=true;auto done=std::move(update->second.done);if(done)done(false,error);}
+  void LogicalFailure(int owner,const std::string&error){const auto update=updates_.find(owner);if(update==updates_.end()||update->second.logical_done)return;update->second.logical_done=true;auto done=std::exchange(update->second.done, nullptr);if(done)done(false,error);}
   void Dispatch(const std::string&key,int owner){
     const auto target=targets_.find(key);if(target==targets_.end())return;
     const auto state=states_.find(target->second.context);if(state==states_.end())return;
@@ -101,7 +101,7 @@ class NativeContextGeolocation {
       const auto active=updates_.find(state->second.owner);
       if(ok&&state->second.revision!=setting_revision&&(active==updates_.end()||!active->second.logical_done)){Dispatch(key,state->second.owner);return;}
       const int current_owner=owner?owner:state->second.owner;
-      auto ready=std::move(target->second.ready);if(ready)ready(ok,error);
+      auto ready=std::exchange(target->second.ready, nullptr);if(ready)ready(ok,error);
       const auto update=updates_.find(current_owner);if(update!=updates_.end()){
         update->second.pending.erase(key);if(!ok){update->second.success=false;if(update->second.error.empty())update->second.error=error.substr(0,4096);}
         if(update->second.pending.empty())Finish(current_owner);

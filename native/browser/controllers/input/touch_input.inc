@@ -29,7 +29,7 @@ void TouchDispatch(SuiteCutTouchControls::Packet packet,SuiteCutTouchControls::R
   },"",true,65536,true});
   if(!SubmitDevTools(assigned,method,params,"")){
     auto found=devtools_.find(assigned);
-    if(found!=devtools_.end()){auto callback=std::move(found->second.callback);devtools_.erase(found);callback(false,"Native touch dispatch submission failed");}
+    if(found!=devtools_.end()){auto callback=std::exchange(found->second.callback, nullptr);devtools_.erase(found);callback(false,"Native touch dispatch submission failed");}
   }
 }
 void EnsureNativeTouch(){

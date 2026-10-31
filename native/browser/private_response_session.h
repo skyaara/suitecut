@@ -88,7 +88,7 @@ class NativePrivateResponseSession {
       const auto found=pending_.find(value->GetInt("id"));if(found==pending_.end())return true;
       auto call=std::move(found->second);pending_.erase(found);--global_receipts_;
       const auto result=value->GetDictionary("result");const bool ok=result&&!value->HasKey("error")&&!call.expired&&now_()<call.deadline&&(!call.body||ValidBody(result));
-      auto done=std::move(call.reply);
+      auto done=std::exchange(call.reply, nullptr);
       if(done)done(ok,ok?JSON(result):call.expired||now_()>=call.deadline?"Private body original deadline exceeded":JSON(value));
       return true;
     }
@@ -224,7 +224,7 @@ class NativePrivateResponseSession {
       if(detaching_||now_()>=found->second.deadline){
         found->second.expired=true;Detach("Private body original deadline exceeded");return;
       }
-      auto done=std::move(found->second.reply);pending_.erase(found);--global_receipts_;if(done)done(false,error);
+      auto done=std::exchange(found->second.reply, nullptr);pending_.erase(found);--global_receipts_;if(done)done(false,error);
     });
     if(*alive&&!closed_)wake_();
     return true;

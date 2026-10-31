@@ -75,7 +75,7 @@ void SettingsPrepare(){
       }
       network_calls_.emplace(id,NetworkCall{session,std::move(done),Now()+30000});WakeDeadlines();
       if(!SubmitDevTools(id,method,params,session)){
-        const auto found=network_calls_.find(id);if(found!=network_calls_.end()){auto done=std::move(found->second.callback);network_calls_.erase(found);done(false,"Native context settings dispatch failed");}
+        const auto found=network_calls_.find(id);if(found!=network_calls_.end()){auto done=std::exchange(found->second.callback, nullptr);network_calls_.erase(found);done(false,"Native context settings dispatch failed");}
       }
     });
   if(!PostSettingsWatchdog(settings_watchdog_,[self=CefRefPtr<Source>(this)]{if(!self->settings_applied_&&!self->closing_page_)self->SettingsFail("Native context settings bootstrap deadline exceeded");})){SettingsFail("CEF refused native context settings watchdog");return;}
@@ -84,7 +84,7 @@ void SettingsPrepare(){
 void SettingsReadCommand(const std::string&method,Dict params,suitecut::ContextSettingsPage::Result done){
   const int id=AllocateDevToolsId();if(!id||network_calls_.size()>=1024||closing_page_){done(false,"Native settings read capacity exceeded or page closed");return;}
   network_calls_.emplace(id,NetworkCall{"",std::move(done),Now()+30000});WakeDeadlines();
-  if(!SubmitDevTools(id,method,params,"")){auto found=network_calls_.find(id);if(found!=network_calls_.end()){auto callback=std::move(found->second.callback);network_calls_.erase(found);callback(false,"Native settings read dispatch failed");}}
+  if(!SubmitDevTools(id,method,params,"")){auto found=network_calls_.find(id);if(found!=network_calls_.end()){auto callback=std::exchange(found->second.callback, nullptr);network_calls_.erase(found);callback(false,"Native settings read dispatch failed");}}
 }
 void SettingsStart(){
   if(!settings_empty_seen_||settings_started_||!settings_page_||!browser_||closing_page_)return;

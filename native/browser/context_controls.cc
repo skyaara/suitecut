@@ -257,14 +257,14 @@ void SuiteCutContextControls::PageCreated(int page_id, CefRefPtr<CefBrowser> bro
   // The initial page is announced by the process handshake; emitting before
   // that handshake would violate protocol startup ordering.
   if (page_id != 1) Emit("page-created", page->second.context, page_id, page->second.opener);
-  if (page->second.created_reply) { auto reply = std::move(page->second.created_reply); reply(true, PageResult(page->second.context, page_id), ""); }
+  if (page->second.created_reply) { auto reply = std::exchange(page->second.created_reply, nullptr); reply(true, PageResult(page->second.context, page_id), ""); }
   if (stopping_ || contexts_.at(page->second.context).closing || page->second.closing)
     BeginPageClose(page_id, contexts_.at(page->second.context).closing ? contexts_.at(page->second.context).close_reason : page->second.close_reason);
 }
 void SuiteCutContextControls::PageCreationFailed(int page_id, const std::string& error) {
   const auto page = pages_.find(page_id); if (page == pages_.end()) return;
   const int context = page->second.context;
-  auto created = std::move(page->second.created_reply); auto closed = std::move(page->second.close_replies);
+  auto created = std::exchange(page->second.created_reply, nullptr); auto closed = std::move(page->second.close_replies);
   pages_.erase(page);
   const auto owning = contexts_.find(context); if (owning != contexts_.end() && owning->second.owned_page == page_id) owning->second.closing = true;
   if (created) created(false, nullptr, error);
@@ -278,7 +278,7 @@ void SuiteCutContextControls::PageClosed(int page_id, const std::string& actual_
   const auto page = pages_.find(page_id); if (page == pages_.end()) return;
   const int context = page->second.context, opener = page->second.opener;
   const auto close_reason = page->second.close_reason.empty()?actual_reason:page->second.close_reason;const double close_deadline=page->second.close_deadline;
-  auto closed = std::move(page->second.close_replies); auto created = std::move(page->second.created_reply);
+  auto closed = std::move(page->second.close_replies); auto created = std::exchange(page->second.created_reply, nullptr);
   pages_.erase(page); Emit("page-closed", context, page_id, opener,close_reason);
   const auto owning = contexts_.find(context);
   if (owning != contexts_.end() && owning->second.owned_page == page_id) {
@@ -365,7 +365,7 @@ void SuiteCutContextControls::Emit(const char* event, int context, int page, int
   for (const auto& [owner, wait] : waits_) if (Matches(wait, info)) completed.push_back(owner);
   for (const int owner : completed) {
     const auto found = waits_.find(owner); if (found == waits_.end()) continue;
-    auto reply = std::move(found->second.reply); waits_.erase(found); reply(true, info->Copy(false), "");
+    auto reply = std::exchange(found->second.reply, nullptr); waits_.erase(found); reply(true, info->Copy(false), "");
   }
 }
 CefRefPtr<CefRequestContext> SuiteCutContextControls::RequestContext(int page_id) const {
@@ -636,7 +636,7 @@ bool SuiteCutContextControls::Handle(const std::string& action, Dict params, Rep
     auto writer = std::make_shared<CookieWriter>(); writer->manager = manager; writer->reply = std::move(reply);
     for (size_t index = 0; index < input->GetSize(); ++index) {
       CookieInput item; std::string error;
-      if (!ParseCookie(input->GetDictionary(index), item, error) || (input->GetDictionary(index)->HasKey("partitionKey") && (error="Partitioned cookies require the native context cookie channel",true))) { auto done = std::move(writer->reply); done(false, nullptr, error); return true; }
+      if (!ParseCookie(input->GetDictionary(index), item, error) || (input->GetDictionary(index)->HasKey("partitionKey") && (error="Partitioned cookies require the native context cookie channel",true))) { auto done = std::exchange(writer->reply, nullptr); done(false, nullptr, error); return true; }
       writer->cookies.push_back(std::move(item));
     }
     cookie_cancellations_[params->GetInt("internalOwner")] = [weak = std::weak_ptr<CookieWriter>(writer)] { if (const auto work = weak.lock()) work->Cancel(); };

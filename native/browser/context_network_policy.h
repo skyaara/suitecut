@@ -58,7 +58,7 @@ class NativeContextNetworkPolicy {
     const auto owner=state->second.owner;states_.erase(state);
     std::vector<std::string> pages;for(const auto& [page,target]:targets_)if(target.context==context)pages.push_back(page);
     for(const auto& page:pages)targets_.erase(page);
-    const auto batch=batches_.find(owner);if(batch!=batches_.end()){auto done=std::move(batch->second.done);batches_.erase(batch);done(false,"Native browser context is closed");}
+    const auto batch=batches_.find(owner);if(batch!=batches_.end()){auto done=std::exchange(batch->second.done, nullptr);batches_.erase(batch);done(false,"Native browser context is closed");}
   }
   void Tick(double now) {
     std::vector<int> expired;for(const auto& [owner,batch]:batches_)if(batch.deadline>0 && now>=batch.deadline)expired.push_back(owner);
@@ -79,7 +79,7 @@ class NativeContextNetworkPolicy {
     apply(offline,[this,alive=alive_,page,generation,revision,owner,epoch](bool ok,const std::string& error){
       if(!*alive)return;
       auto target=targets_.find(page);if(target==targets_.end() || target->second.generation!=generation)return;
-      Result ready;if(target->second.revision==revision)ready=std::move(target->second.ready);
+      Result ready;if(target->second.revision==revision)ready=std::exchange(target->second.ready, nullptr);
       const auto batch=batches_.find(owner);
       if(batch!=batches_.end() && batch->second.generation==epoch){batch->second.pending.erase(page);if(!ok){batch->second.success=false;batch->second.error=error;}if(batch->second.pending.empty())Finish(owner);}
       if(ready)ready(ok,error);
@@ -88,7 +88,7 @@ class NativeContextNetworkPolicy {
   void Finish(int owner) {
     const auto batch=batches_.find(owner);if(batch==batches_.end())return;
     auto state=states_.find(batch->second.context);if(state!=states_.end() && state->second.owner==owner)state->second.owner=0;
-    auto done=std::move(batch->second.done);const auto success=batch->second.success;const auto error=batch->second.error;batches_.erase(batch);done(success,error);
+    auto done=std::exchange(batch->second.done, nullptr);const auto success=batch->second.success;const auto error=batch->second.error;batches_.erase(batch);done(success,error);
   }
   std::shared_ptr<bool> alive_=std::make_shared<bool>(true);uint64_t serial_=0;
   std::map<int,State> states_;std::map<std::string,Target> targets_;std::map<int,Batch> batches_;

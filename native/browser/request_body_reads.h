@@ -35,7 +35,7 @@ class NativeRequestBodyReads {
     send(session,request,deadline,[this,alive,id](bool ok,const std::string&json){
       if(!*alive)return;
       const auto found=reads_.find(id);if(found==reads_.end())return;
-      auto reply=std::move(found->second.reply);const auto deadline=found->second.deadline;
+      auto reply=std::exchange(found->second.reply, nullptr);const auto deadline=found->second.deadline;
       // The receipt is independent of logical delivery and survives timeout.
       struct ActualReceipt {Receipt done;~ActualReceipt(){if(done)done();}} receipt{std::move(found->second.receipt)};
       reads_.erase(found);--global_;
@@ -60,7 +60,7 @@ class NativeRequestBodyReads {
   void CancelAll(){for(auto&[id,read]:reads_)read.reply={};}
   void Tick(double now){
     std::vector<Reply>expired;
-    for(auto&[id,read]:reads_)if(read.reply&&read.deadline&&now>=read.deadline)expired.push_back(std::move(read.reply));
+    for(auto&[id,read]:reads_)if(read.reply&&read.deadline&&now>=read.deadline)expired.push_back(std::exchange(read.reply, nullptr));
     for(auto&reply:expired)reply(false,{},false,"Native original request-body deadline exceeded");
   }
   void Close(){

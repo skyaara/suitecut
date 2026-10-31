@@ -264,12 +264,12 @@ void SuiteCutStorageControls::Finish(const std::shared_ptr<Work>& work, bool suc
     utilities_->Release(lease, [weak = weak_from_this(), work, success, error] {
       const auto self = weak.lock(); if (!self) return;
       self->physical_.erase(work->owner);self->closing_.erase(work->owner); self->retained_bytes_ -= work->bytes; work->bytes = 0;
-      auto reply = std::move(work->reply); if (reply) reply(success, success && !work->restore ? work->output : nullptr, error);
+      auto reply = std::exchange(work->reply, nullptr); if (reply) reply(success, success && !work->restore ? work->output : nullptr, error);
       if(self->hooks_.settled)self->hooks_.settled(work->context);
     });
   } else {
     retained_bytes_ -= work->bytes; work->bytes = 0;
-    auto reply = std::move(work->reply); if (reply) reply(success, success && !work->restore ? work->output : nullptr, error);
+    auto reply = std::exchange(work->reply, nullptr); if (reply) reply(success, success && !work->restore ? work->output : nullptr, error);
   }
 }
 void SuiteCutStorageControls::Cancel(int owner) {

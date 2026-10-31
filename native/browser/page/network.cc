@@ -186,7 +186,7 @@ auto Source::NativeReadResponseBody(const std::string& session, const std::strin
           if (!SubmitDevTools(id, "Network.getResponseBody", params, target)) {
             const auto found = network_calls_.find(id);
             if (found != network_calls_.end()) {
-              auto callback = std::move(found->second.callback);
+              auto callback = std::exchange(found->second.callback, nullptr);
               network_calls_.erase(found);
               callback(false, "CEF rejected actual response-body read");
             }
@@ -259,7 +259,7 @@ auto Source::NativeNetworkSend(const std::string& session, const std::string& me
   if (!SubmitDevTools(id, method, params, session)) {
     const auto found = network_calls_.find(id);
     if (found != network_calls_.end()) {
-      auto done = std::move(found->second.callback);
+      auto done = std::exchange(found->second.callback, nullptr);
       network_calls_.erase(found);
       done(false, "Native network command dispatch failed");
     }

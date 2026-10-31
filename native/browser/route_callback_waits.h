@@ -28,11 +28,11 @@ class NativeRouteCallbackWaits {
   bool Applied(int operation,uint64_t generation){
     auto found=entries_.find(operation);if(found==entries_.end()||found->second.generation!=generation)return false;
     found->second.applied=true;const auto status=Inspect(found->second.snapshot,found->second.deadline,now_());
-    if(status!=Status::Pending){auto reply=std::move(found->second.reply);bytes_-=found->second.bytes;entries_.erase(found);Complete(std::move(reply),status);}return true;
+    if(status!=Status::Pending){auto reply=std::exchange(found->second.reply, nullptr);bytes_-=found->second.bytes;entries_.erase(found);Complete(std::move(reply),status);}return true;
   }
   void Failed(int operation,uint64_t generation,const std::string&error){
     auto found=entries_.find(operation);if(found==entries_.end()||found->second.generation!=generation)return;
-    auto reply=std::move(found->second.reply);bytes_-=found->second.bytes;entries_.erase(found);reply(false,error);
+    auto reply=std::exchange(found->second.reply, nullptr);bytes_-=found->second.bytes;entries_.erase(found);reply(false,error);
   }
   // Convenience for a snapshot whose actual remove ACK already arrived. The
   // production two-stage adapter reserves capacity before mutating policy.
@@ -44,17 +44,17 @@ class NativeRouteCallbackWaits {
     // Remove before delivery. A callback may destroy this controller or reuse a
     // completed operation ID; no saved iterator/ID can touch the replacement.
     std::vector<std::pair<Reply,Status>>done;
-    const auto now=now_();for(auto it=entries_.begin();it!=entries_.end();){const auto status=Inspect(it->second.snapshot,it->second.deadline,now);if(status==Status::Pending||(status==Status::Settled&&!it->second.applied)){++it;continue;}bytes_-=it->second.bytes;done.emplace_back(std::move(it->second.reply),status);it=entries_.erase(it);}
+    const auto now=now_();for(auto it=entries_.begin();it!=entries_.end();){const auto status=Inspect(it->second.snapshot,it->second.deadline,now);if(status==Status::Pending||(status==Status::Settled&&!it->second.applied)){++it;continue;}bytes_-=it->second.bytes;done.emplace_back(std::exchange(it->second.reply, nullptr),status);it=entries_.erase(it);}
     for(auto&[reply,status]:done)Complete(std::move(reply),status);
   }
   void Cancel(int operation){auto found=entries_.find(operation);if(found==entries_.end())return;bytes_-=found->second.bytes;entries_.erase(found);}
   void Closed(int context){
-    std::vector<Reply>done;for(auto it=entries_.begin();it!=entries_.end();)if(it->second.context==context){bytes_-=it->second.bytes;done.push_back(std::move(it->second.reply));it=entries_.erase(it);}else ++it;
+    std::vector<Reply>done;for(auto it=entries_.begin();it!=entries_.end();)if(it->second.context==context){bytes_-=it->second.bytes;done.push_back(std::exchange(it->second.reply, nullptr));it=entries_.erase(it);}else ++it;
     for(auto&reply:done)reply(false,"Actual native routing context closed before callback settlement");
   }
   void Clear(){
     if(closed_)return;
-    closed_=true;std::vector<Reply>done;for(auto&[operation,entry]:entries_)done.push_back(std::move(entry.reply));entries_.clear();bytes_=0;
+    closed_=true;std::vector<Reply>done;for(auto&[operation,entry]:entries_)done.push_back(std::exchange(entry.reply, nullptr));entries_.clear();bytes_=0;
     for(auto&reply:done)reply(false,"Native route callback observer disposed before settlement");
   }
   bool Contains(int operation)const{return entries_.contains(operation);}

@@ -71,10 +71,10 @@ void CookieControls::Filtered(int owner,Dict result){
 }
 void CookieControls::SelectionReady(int owner){const auto found=jobs_.find(owner);if(found==jobs_.end())return;if(found->second.action!="matchOwned"){DeleteNext(owner);return;}auto output=CefDictionaryValue::Create();output->SetList("matches",found->second.remove->Copy());Complete(owner,true,output,"");}
 void CookieControls::DeleteNext(int owner){const auto found=jobs_.find(owner);if(found==jobs_.end())return;auto& job=found->second;if(job.canceled){jobs_.erase(found);return;}if(!job.remove||job.next==job.remove->GetSize()){Complete(owner,true,nullptr,"");return;}const auto cookie=job.remove->GetDictionary(job.next++);auto params=CefDictionaryValue::Create();for(const auto* field:{"name","domain","path"})params->SetString(field,cookie->GetString(field));if(cookie->HasKey("partitionKey")){auto key=CefDictionaryValue::Create();key->SetString("topLevelSite",cookie->GetString("partitionKey"));key->SetBool("hasCrossSiteAncestor",cookie->GetBool("partitionKeyHasCrossSiteAncestor"));params->SetDictionary("partitionKey",key);}Send(owner,CookieMethod::Delete,params);}
-void CookieControls::Complete(int owner,bool ok,Dict result,const std::string& error){const auto found=jobs_.find(owner);if(found==jobs_.end())return;auto reply=std::move(found->second.reply);jobs_.erase(found);if(reply)reply(ok,result,error);}
+void CookieControls::Complete(int owner,bool ok,Dict result,const std::string& error){const auto found=jobs_.find(owner);if(found==jobs_.end())return;auto reply=std::exchange(found->second.reply, nullptr);jobs_.erase(found);if(reply)reply(ok,result,error);}
 void CookieControls::Cancel(int owner){const auto found=jobs_.find(owner);if(found!=jobs_.end()){found->second.canceled=true;found->second.reply={};found->second.params=nullptr;found->second.remove=nullptr;}}
 void CookieControls::Closed(int context){
   std::vector<int> owners;for(const auto&[owner,job]:jobs_)if(job.context==context)owners.push_back(owner);
-  for(const int owner:owners){const auto found=jobs_.find(owner);if(found==jobs_.end())continue;auto& job=found->second;job.canceled=true;auto reply=std::move(job.reply);job.params=nullptr;job.remove=nullptr;if(reply)reply(false,nullptr,"Native cookie context closed");}
+  for(const int owner:owners){const auto found=jobs_.find(owner);if(found==jobs_.end())continue;auto& job=found->second;job.canceled=true;auto reply=std::exchange(job.reply, nullptr);job.params=nullptr;job.remove=nullptr;if(reply)reply(false,nullptr,"Native cookie context closed");}
 }
 }

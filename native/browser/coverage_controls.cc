@@ -45,7 +45,7 @@ class CoverageControls::Impl : public std::enable_shared_from_this<Impl> {
   void Owner(const std::shared_ptr<Record>& record,bool ok,const std::string& error,const std::string& json=""){
     const bool expired=ok&&record->deadline>0&&hooks_.now()>=record->deadline;
     if(expired){Error(record,"Native coverage operation timed out");record->phase=Phase::Cleaning;record->queue.clear();}
-    auto reply=std::move(record->reply);record->owner=0;record->deadline=0;if(reply)reply(ok&&!expired,expired?record->error:error,expired?std::string():json);
+    auto reply=std::exchange(record->reply, nullptr);record->owner=0;record->deadline=0;if(reply)reply(ok&&!expired,expired?record->error:error,expired?std::string():json);
   }
   void Fail(const std::shared_ptr<Record>& record,const std::string& error){
     if(!Current(record)){return;}Error(record,error);record->phase=Phase::Cleaning;record->queue.clear();Owner(record,false,record->error);Cleanup(record);

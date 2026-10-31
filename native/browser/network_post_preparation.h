@@ -53,8 +53,8 @@ class NativeNetworkPostPreparation {
     // shared_ptr/std::function cannot leave an admitted receipt unrecorded.
     owners.reserve(16);known=std::find_if(owners.begin(),owners.end(),[&](const Retention&entry){return entry.owner.get()==policy.get();});
     auto work=GlobalHARWorkLeases().Issue(scope,found->second.session,policy,NativeHARWorkLeases::Kind::PostRead);if(!work)return false;
-    if(known!=owners.end())known->acknowledge=std::move(work->acknowledge);
-    else owners.push_back({std::move(policy),std::move(work->acknowledge)});
+    if(known!=owners.end())known->acknowledge=std::exchange(work->acknowledge, nullptr);
+    else owners.push_back({std::move(policy),std::exchange(work->acknowledge, nullptr)});
     return true;
   }
   void Invalidate(const std::string&logical){const auto found=jobs_.find(logical);if(found==jobs_.end())return;const auto job=found->second;*job.valid=false;jobs_.erase(found);auto unavailable=CefDictionaryValue::Create();unavailable->SetBool("postDataUnavailable",true);publication_.Prepared(job.gate,unavailable);}

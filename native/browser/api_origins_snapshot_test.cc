@@ -35,7 +35,13 @@ void AllocationBounds(){
  assert(budget->Bytes()==0&&tracking.current==0&&tracking.allocations.empty());
 }
 void SharedRetainedBudget(){
- Tracking tracking;auto budget=std::make_shared<APIOriginsBudget>(1100,&tracking);std::string error;
+ std::string error;
+ // Allocation sizes differ between standard libraries: size the shared budget
+ // from two measured snapshots, leaving one byte less than a third needs.
+ size_t two=0;
+ {Tracking probe_tracking;auto probe=std::make_shared<APIOriginsBudget>(1<<20,&probe_tracking);APIOriginsSnapshot a(probe),b(probe);
+  assert(a.AddValidated(origin,raw,clock_now,error)&&b.AddValidated(origin,raw,clock_now,error));two=probe->Bytes();}
+ Tracking tracking;auto budget=std::make_shared<APIOriginsBudget>(two+two/2-1,&tracking);
  auto first=std::make_unique<APIOriginsSnapshot>(budget),second=std::make_unique<APIOriginsSnapshot>(budget);APIOriginsSnapshot third(budget);
  assert(first->AddValidated(origin,raw,clock_now,error));assert(second->AddValidated(origin,raw,clock_now,error));const size_t retained=budget->Bytes();assert(retained==tracking.current);
  assert(!third.AddValidated(origin,raw,clock_now,error));assert(third.Size()==0&&budget->Bytes()==retained);

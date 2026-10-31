@@ -100,7 +100,7 @@ class NativeNetworkBodyPublication {
   }
   void Tick(double now) {
     std::vector<int> expired;for(const auto& [owner,waiter]:waiters_)if(waiter.deadline>0 && now>=waiter.deadline)expired.push_back(owner);
-    for(const auto owner:expired){auto found=waiters_.find(owner);if(found==waiters_.end())continue;auto done=std::move(found->second.done);waiters_.erase(found);done(false,"Native network body command deadline exceeded");}
+    for(const auto owner:expired){auto found=waiters_.find(owner);if(found==waiters_.end())continue;auto done=std::exchange(found->second.done, nullptr);waiters_.erase(found);done(false,"Native network body command deadline exceeded");}
     std::vector<uint64_t> expired_preparations;for(const auto&[id,deadline]:preparations_)if(deadline>0&&now>=deadline)expired_preparations.push_back(id);
     auto unavailable=CefDictionaryValue::Create();unavailable->SetBool("postDataUnavailable",true);
     for(const auto id:expired_preparations)Prepared(id,unavailable);
@@ -130,7 +130,7 @@ class NativeNetworkBodyPublication {
   void CompleteWaiters(uint64_t body,bool consumed,bool ok,const std::string& error) {
     std::vector<Completion> ready;
     for(auto it=waiters_.begin();it!=waiters_.end();) {
-      if(it->second.body==body && (consumed || !it->second.consumed)) {ready.push_back(std::move(it->second.done));it=waiters_.erase(it);}else ++it;
+      if(it->second.body==body && (consumed || !it->second.consumed)) {ready.push_back(std::exchange(it->second.done, nullptr));it=waiters_.erase(it);}else ++it;
     }
     for(auto& done:ready)done(ok,error);
   }

@@ -116,7 +116,7 @@ class SuiteCutUtilityBrowsers::Client : public CefClient, public CefLifeSpanHand
     if (closing_ || !frame->IsMain() || code == ERR_ABORTED) return;
     const auto owner = owner_.lock(); if (!owner) return;
     std::vector<std::pair<int, Ready>> replies;
-    for (auto& [id, lease] : owner->leases_) if (lease->client.get() == this && lease->ready) replies.emplace_back(id, std::move(lease->ready));
+    for (auto& [id, lease] : owner->leases_) if (lease->client.get() == this && lease->ready) replies.emplace_back(id, std::exchange(lease->ready, nullptr));
     for (auto& [id, reply] : replies) { owner->Release(id); reply(nullptr, "Native utility origin document failed: " + text.ToString()); }
   }
   CefRefPtr<CefResourceRequestHandler> GetResourceRequestHandler(CefRefPtr<CefBrowser>, CefRefPtr<CefFrame>,
@@ -228,7 +228,7 @@ int SuiteCutUtilityBrowsers::Acquire(CefRefPtr<CefRequestContext> context, const
   if (create) {
     CefWindowInfo window; window.SetAsWindowless(0); CefBrowserSettings settings; settings.windowless_frame_rate = 1;
     if (!CefBrowserHost::CreateBrowser(window, client, "about:blank", settings, nullptr, context)) {
-      auto reply = std::move(lease->ready); leases_.erase(id); clients_.erase(client->id_);
+      auto reply = std::exchange(lease->ready, nullptr); leases_.erase(id); clients_.erase(client->id_);
       reply(nullptr, "CEF utility browser creation failed"); return 0;
     }
   }
@@ -237,7 +237,7 @@ int SuiteCutUtilityBrowsers::Acquire(CefRefPtr<CefRequestContext> context, const
 }
 void SuiteCutUtilityBrowsers::Loaded(Client* client) {
   std::vector<Ready> replies;
-  for (auto& [id, lease] : leases_) if (lease->client.get() == client && lease->ready) replies.push_back(std::move(lease->ready));
+  for (auto& [id, lease] : leases_) if (lease->client.get() == client && lease->ready) replies.push_back(std::exchange(lease->ready, nullptr));
   const auto frame = client->browser_->GetMainFrame(); for (auto& reply : replies) reply(frame, "");
 }
 void SuiteCutUtilityBrowsers::Navigate(int id, const std::string& origin, Ready ready, int timeout_ms) {
@@ -276,7 +276,7 @@ void SuiteCutUtilityBrowsers::Release(int id, Closed closed) {
 void SuiteCutUtilityBrowsers::BrowserClosed(Client* client) {
   std::vector<Ready> replies;
   for (auto it = leases_.begin(); it != leases_.end();) {
-    if (it->second->client.get() == client) { if (it->second->ready) replies.push_back(std::move(it->second->ready)); it = leases_.erase(it); } else ++it;
+    if (it->second->client.get() == client) { if (it->second->ready) replies.push_back(std::exchange(it->second->ready, nullptr)); it = leases_.erase(it); } else ++it;
   }
   auto closed = std::move(client->closed_); clients_.erase(client->id_);
   for (auto& reply : replies) reply(nullptr, "Native utility browser closed before becoming ready");
@@ -298,7 +298,7 @@ void SuiteCutUtilityBrowsers::Wake() {
 }
 void SuiteCutUtilityBrowsers::Tick() {
   timer_ = false; const double now = Now(); std::vector<std::pair<int, Ready>> expired;
-  for (auto& [id, lease] : leases_) if (lease->ready && lease->deadline <= now) expired.emplace_back(id, std::move(lease->ready));
+  for (auto& [id, lease] : leases_) if (lease->ready && lease->deadline <= now) expired.emplace_back(id, std::exchange(lease->ready, nullptr));
   for (auto& [id, reply] : expired) { Release(id); reply(nullptr, "Native utility browser acquisition timed out"); }
   std::vector<Result> results;
   for (const auto& [id, client] : clients_) for (auto it = client->calls_.begin(); it != client->calls_.end();) {

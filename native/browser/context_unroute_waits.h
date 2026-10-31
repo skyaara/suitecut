@@ -42,7 +42,7 @@ class NativeContextUnrouteWaits {
   }
   void Cancel(int operation,uint64_t generation){const auto found=entries_.find(operation);if(found!=entries_.end()&&found->second.generation==generation)Remove(found);}
   void Closed(int context){std::vector<Reply>ready;for(auto it=entries_.begin();it!=entries_.end();)if(it->second.context==context){auto current=it++;ready.push_back(Remove(current));}else ++it;for(auto&reply:ready)reply(false,"Actual native context closed during unrouteAll");}
-  void Clear(){if(closed_)return;closed_=true;std::vector<Reply>ready;for(auto&[operation,entry]:entries_){(void)operation;ready.push_back(std::move(entry.reply));}entries_.clear();bytes_=0;for(auto&reply:ready)reply(false,"Native context unrouteAll observer closed");}
+  void Clear(){if(closed_)return;closed_=true;std::vector<Reply>ready;for(auto&[operation,entry]:entries_){(void)operation;ready.push_back(std::exchange(entry.reply, nullptr));}entries_.clear();bytes_=0;for(auto&reply:ready)reply(false,"Native context unrouteAll observer closed");}
   bool Contains(int operation)const{return entries_.contains(operation);}
   size_t pending()const{return entries_.size();}
   size_t bytes()const{return bytes_;}
@@ -50,7 +50,7 @@ class NativeContextUnrouteWaits {
   struct Entry {int context;uint64_t generation;bool wait;NativeRouteCallbackSnapshot handlers;NativeHARWorkSnapshot har;double deadline;size_t bytes;Reply reply;bool handlers_applied,har_applied;};
   struct Status {enum Kind{Pending,Success,Failure}kind;std::string error;};
   using Iterator=std::map<int,Entry>::iterator;
-  Reply Remove(Iterator found){bytes_-=found->second.bytes;auto reply=std::move(found->second.reply);entries_.erase(found);return reply;}
+  Reply Remove(Iterator found){bytes_-=found->second.bytes;auto reply=std::exchange(found->second.reply, nullptr);entries_.erase(found);return reply;}
   static Status Inspect(const Entry&entry,double now){
     if(entry.deadline&&now>=entry.deadline)return {Status::Failure,"Native context unrouteAll original deadline exceeded"};
     if(!entry.handlers_applied||!entry.har_applied)return {Status::Pending,{}};

@@ -132,6 +132,7 @@ add_test(NAME native-http-lookup-controls COMMAND suitecut-http-lookup-controls-
 add_executable(suitecut-http-lookup-transport-test http_lookup_transport_test.cc curl_transport.cc)
 target_link_libraries(suitecut-http-lookup-transport-test CURL::libcurl Threads::Threads OpenSSL::SSL suitecut-http-content-codec)
 add_test(NAME native-http-lookup-transport COMMAND suitecut-http-lookup-transport-test)
+set_tests_properties(native-http-lookup-transport PROPERTIES SKIP_RETURN_CODE 77)
 add_executable(suitecut-http-multipart-test http_multipart_test.cc)
 add_test(NAME native-http-multipart COMMAND suitecut-http-multipart-test)
 add_executable(suitecut-har-multipart-test har_multipart_test.cc)
@@ -238,6 +239,13 @@ target_link_libraries(suitecut-capture-canvas-test yuv)
 add_test(NAME native-capture-canvas COMMAND suitecut-capture-canvas-test)
 
 if(APPLE)
+  # Linux and Windows link CEF as libcef_lib. Here CEF is a framework loaded at
+  # run time, so tests that name libcef_lib load it before main instead.
+  add_library(libcef_lib INTERFACE)
+  target_sources(libcef_lib INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/tests/support/cef_library_autoload.cc")
+  target_include_directories(libcef_lib INTERFACE "${CEF_ROOT}")
+  target_compile_definitions(libcef_lib INTERFACE
+    SUITECUT_TEST_CEF_LIBRARY="${CEF_ROOT}/Release/Chromium Embedded Framework.framework/Chromium Embedded Framework")
   add_executable(suitecut-browser MACOSX_BUNDLE screenshot_compare.cc screenshot_artifact_files.cc screenshot_inputs.cc screenshot_pixels.cc screenshot_png_codec.cc har_files.cc har_recording.cc har_replay_files.cc coverage_controls.cc coverage_retention.cc coverage_targets.cc virtual_time.cc trace_archive.cc trace_journal.cc trace_controls.cc trace_preview.cc trace_sources.cc trace_dom_tree.cc context_workers.cc credential_controls.cc credential_crypto.cc context_controls.cc cookie_controls.cc utility_browser.cc storage_controls.cc http_controls.cc api_cookie_jar.cc download_controls.cc media_pipeline.cc recording_controls.cc context_video.cc stream_pipeline.cc streaming_controls.cc curl_transport.cc main_mac.mm)
   add_library(suitecut-mac-capture STATIC mac_capture.mm mac_encoder.mm)
   target_link_libraries(suitecut-mac-capture PUBLIC "-framework Foundation" "-framework IOSurface" "-framework Metal" "-framework CoreVideo" "-framework CoreMedia" "-framework VideoToolbox")
@@ -1255,12 +1263,15 @@ foreach(screenshot_check retirement sender controller cleanup capture)
   target_link_libraries(suitecut-screenshot-assertion-${screenshot_check}-test PRIVATE libcef_lib libcef_dll_wrapper)
   add_test(NAME native-screenshot-assertion-${screenshot_check} COMMAND suitecut-screenshot-assertion-${screenshot_check}-test)
 endforeach()
-add_executable(suitecut-screenshot-artifact-files-test screenshot_artifact_files_test.cc screenshot_artifact_files.cc)
-target_compile_features(suitecut-screenshot-artifact-files-test PRIVATE cxx_std_20)
-target_compile_options(suitecut-screenshot-artifact-files-test PRIVATE -UNDEBUG -fexceptions -Wall -Wextra -Werror)
-target_link_libraries(suitecut-screenshot-artifact-files-test PRIVATE Threads::Threads)
-target_link_options(suitecut-screenshot-artifact-files-test PRIVATE -Wl,--wrap=fsync)
-add_test(NAME native-screenshot-artifact-files COMMAND suitecut-screenshot-artifact-files-test)
+# Holds fsync open through the GNU linker's --wrap, which Apple's linker lacks.
+if(OS_LINUX)
+  add_executable(suitecut-screenshot-artifact-files-test screenshot_artifact_files_test.cc screenshot_artifact_files.cc)
+  target_compile_features(suitecut-screenshot-artifact-files-test PRIVATE cxx_std_20)
+  target_compile_options(suitecut-screenshot-artifact-files-test PRIVATE -UNDEBUG -fexceptions -Wall -Wextra -Werror)
+  target_link_libraries(suitecut-screenshot-artifact-files-test PRIVATE Threads::Threads)
+  target_link_options(suitecut-screenshot-artifact-files-test PRIVATE -Wl,--wrap=fsync)
+  add_test(NAME native-screenshot-artifact-files COMMAND suitecut-screenshot-artifact-files-test)
+endif()
 
 # Actual dedicated-worker debugger adapter and shared controller composition.
 add_executable(suitecut-developer-worker-source-test developer_debugger_workers_source_test.cc developer_debugger_controls.cc developer_debugger_breakpoints.cc developer_debugger_evaluations.cc debugger_domains.cc)

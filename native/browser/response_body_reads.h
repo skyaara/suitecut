@@ -32,7 +32,7 @@ class NativeResponseBodyReads {
     send_(session,request,deadline,[this,alive=alive_,id](bool ok,const std::string&json){
       if(!*alive)return;
       const auto found=reads_.find(id);if(found==reads_.end())return;
-      auto reply=std::move(found->second.reply);const auto deadline=found->second.deadline;reads_.erase(found);--global_;
+      auto reply=std::exchange(found->second.reply, nullptr);const auto deadline=found->second.deadline;reads_.erase(found);--global_;
       if(!reply)return;
       if(deadline&&now_()>=deadline){reply(false,{},"Native original response-body deadline exceeded");return;}
       if(!ok){reply(false,{},json.empty()?"Actual native response body is unavailable":json.substr(0,8192));return;}
@@ -50,7 +50,7 @@ class NativeResponseBodyReads {
   }
   void Tick(double now){
     std::vector<Reply>expired;
-    for(auto&[id,read]:reads_)if(read.reply&&read.deadline&&now>=read.deadline)expired.push_back(std::move(read.reply));
+    for(auto&[id,read]:reads_)if(read.reply&&read.deadline&&now>=read.deadline)expired.push_back(std::exchange(read.reply, nullptr));
     for(auto&reply:expired)reply(false,{},"Native original response-body deadline exceeded");
   }
   void Close(){

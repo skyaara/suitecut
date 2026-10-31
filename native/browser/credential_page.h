@@ -127,7 +127,7 @@ class CredentialPage:public std::enable_shared_from_this<CredentialPage>{
   }
   void Finish(std::shared_ptr<Job>job,bool ok,const std::string&error){
     if(!Current(job))return;
-    auto done=std::move(job->done);queue_.pop_front();active_.reset();
+    auto done=std::exchange(job->done, nullptr);queue_.pop_front();active_.reset();
     if(ok&&Ready()){ready_(true);auto waiting=std::move(ready_waiters_);for(auto&callback:waiting)callback(true,"");}
     if(done)done(ok,error);
     Pump();

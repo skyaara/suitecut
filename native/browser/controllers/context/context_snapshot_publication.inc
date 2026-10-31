@@ -86,7 +86,7 @@ void SuiteCutContextControls::SnapshotCheckWaiters(){
       if(peer->second.sent<wait.version){error="Native shared snapshot was not submitted to admitted receiver";break;}
       if(peer->second.installed<wait.version)complete=false;
     }
-    if(!error.empty()||complete){replies.push_back({std::move(wait.reply),error.empty(),wait.result,std::move(error)});it=snapshot_waits_.erase(it);}else ++it;
+    if(!error.empty()||complete){replies.push_back({std::exchange(wait.reply, nullptr),error.empty(),wait.result,std::move(error)});it=snapshot_waits_.erase(it);}else ++it;
   }
   for(auto&reply:replies)reply.reply(reply.ok,reply.result,reply.error);
 }

@@ -97,7 +97,7 @@ class NetworkControls {
           if(pause.replay_done)resume.push_back(key);
         }
         if(const auto current=FindLogical(id))Publish(BaseEvent("requestupdated",*current));
-        for(const auto&key:resume){const auto found=paused_.find(key);if(found==paused_.end())continue;auto done=std::move(found->second.replay_done);ReplayPaused(key,"",std::move(done));}
+        for(const auto&key:resume){const auto found=paused_.find(key);if(found==paused_.end())continue;auto done=std::exchange(found->second.replay_done, nullptr);ReplayPaused(key,"",std::move(done));}
       });
   }
   ~NetworkControls() {CancelAllRouteFetches();GlobalHARWorkLeases().ObserverUnavailable(callback_scope_);*alive_=false;if(post_reads_)post_reads_->Clear();GlobalRouteCallbackLeases().Close(callback_scope_);}
@@ -539,7 +539,7 @@ class NetworkControls {
   }
  private:
   struct RouteFetchPending {std::string route;Done done;double deadline=0;};
-  void CancelRouteFetch(int owner,bool notify=true){const auto found=route_fetch_pending_.find(owner);if(found==route_fetch_pending_.end())return;auto done=std::move(found->second.done);route_fetch_pending_.erase(found);if(cancel_route_fetch_)cancel_route_fetch_(owner);if(notify&&done)done(false,"Native route fetch paused owner was retired","");}
+  void CancelRouteFetch(int owner,bool notify=true){const auto found=route_fetch_pending_.find(owner);if(found==route_fetch_pending_.end())return;auto done=std::exchange(found->second.done, nullptr);route_fetch_pending_.erase(found);if(cancel_route_fetch_)cancel_route_fetch_(owner);if(notify&&done)done(false,"Native route fetch paused owner was retired","");}
   void CancelRouteFetches(const std::string& route){std::vector<int> owners;for(const auto&[id,entry]:route_fetch_pending_)if(entry.route==route)owners.push_back(id);for(int id:owners)CancelRouteFetch(id);}
   void CancelAllRouteFetches(){while(!route_fetch_pending_.empty())CancelRouteFetch(route_fetch_pending_.begin()->first,false);}
   void FetchRoute(int owner,Dict config,Done done,double original){

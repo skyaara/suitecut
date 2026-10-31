@@ -39,7 +39,7 @@ class DeveloperDebuggerBreakpoints::Impl:public std::enable_shared_from_this<Imp
   }
   void Changed(){if(hooks_.changed)hooks_.changed();}
   bool Finish(const std::shared_ptr<Record>&record,bool ok,const std::string&json,const std::string&error){
-    auto reply=std::move(record->reply);record->owner=0;
+    auto reply=std::exchange(record->reply, nullptr);record->owner=0;
     const bool expired=Expired(record->deadline);
     return reply&&reply(ok&&!expired,expired?"":json,
       expired?"Native debugger breakpoint original deadline expired":error)&&ok&&!expired;

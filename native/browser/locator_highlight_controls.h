@@ -87,7 +87,7 @@ class LocatorHighlights:public std::enable_shared_from_this<LocatorHighlights>{
     for(const auto& state:states){
       if(state->shown&&!state->delivered&&state->delivery&&now>=state->delivery){state->canceled=true;}
       if(state->reply&&state->deadline&&now>=state->deadline){Owner(state,false,"Native operation timed out");state->canceled=true;}
-      if(state->hide_reply&&state->hide_deadline&&now>=state->hide_deadline){auto reply=std::move(state->hide_reply);reply(false,"Native operation timed out","");}
+      if(state->hide_reply&&state->hide_deadline&&now>=state->hide_deadline){auto reply=std::exchange(state->hide_reply, nullptr);reply(false,"Native operation timed out","");}
       if(!hooks_.current(state->document)){if(state->reply)Owner(state,false,"Native highlight document changed");state->canceled=true;}
       if(state->canceled)Cleanup(state);
     }
@@ -95,7 +95,7 @@ class LocatorHighlights:public std::enable_shared_from_this<LocatorHighlights>{
   void Detached(const std::string& session){
     const auto found=sessions_.find(session);if(found==sessions_.end())return;
     const auto state=found->second;sessions_.erase(found);--GlobalResidents();state->dead=true;
-    Owner(state,false,"Native highlight target channel destroyed");if(state->hide_reply){auto reply=std::move(state->hide_reply);reply(true,"","{}");}
+    Owner(state,false,"Native highlight target channel destroyed");if(state->hide_reply){auto reply=std::exchange(state->hide_reply, nullptr);reply(true,"","{}");}
   }
   void Closed(){if(closed_)return;closed_=true;while(!sessions_.empty())Detached(sessions_.begin()->first);}
   bool SessionOwned(const std::string&session)const{return sessions_.contains(session);}
@@ -113,7 +113,7 @@ class LocatorHighlights:public std::enable_shared_from_this<LocatorHighlights>{
     if(!hooks_.current(s->document)){Owner(s,false,"Native highlight document changed");s->canceled=true;}
     return !s->canceled;
   }
-  void Owner(const std::shared_ptr<Session>&s,bool ok,const std::string&error){if(!s->reply)return;auto reply=std::move(s->reply);reply(ok,error,ok?"{\"token\":\""+Token(s->token)+"\"}":"");}
+  void Owner(const std::shared_ptr<Session>&s,bool ok,const std::string&error){if(!s->reply)return;auto reply=std::exchange(s->reply, nullptr);reply(ok,error,ok?"{\"token\":\""+Token(s->token)+"\"}":"");}
   void Fail(const std::shared_ptr<Session>&s,const std::string&error){Owner(s,false,error);s->canceled=true;Cleanup(s);}
   void Send(const std::shared_ptr<Session>&s,const std::string&method,Dict params,double deadline,Ready done){
     s->busy=true;const auto self=shared_from_this();auto settled=std::make_shared<bool>(false);
@@ -141,9 +141,9 @@ class LocatorHighlights:public std::enable_shared_from_this<LocatorHighlights>{
     if(s->shown){s->shown=false;Send(s,"Overlay.hideHighlight",nullptr,deadline,[self,s](bool ok,const std::string&error){if(!ok){self->Fatal(s,error);return;}self->Cleanup(s);});return;}
     if(s->overlay){s->overlay=false;Send(s,"Overlay.disable",nullptr,deadline,[self,s](bool ok,const std::string&error){if(!ok){self->Fatal(s,error);return;}self->Cleanup(s);});return;}
     if(s->dom){s->dom=false;s->busy=true;hooks_.dom->Release(s->document.session,s->lease,[self,s](bool ok,const std::string&error){if(s->dead)return;s->busy=false;if(!ok){self->Fatal(s,error);return;}self->Cleanup(s);});return;}
-    sessions_.erase(s->document.session);--GlobalResidents();s->dead=true;if(s->hide_reply){auto reply=std::move(s->hide_reply);const bool expired=s->hide_deadline&&hooks_.now()>=s->hide_deadline;reply(!expired,expired?"Native operation timed out":"","{}");}
+    sessions_.erase(s->document.session);--GlobalResidents();s->dead=true;if(s->hide_reply){auto reply=std::exchange(s->hide_reply, nullptr);const bool expired=s->hide_deadline&&hooks_.now()>=s->hide_deadline;reply(!expired,expired?"Native operation timed out":"","{}");}
   }
-  void Fatal(const std::shared_ptr<Session>&s,const std::string&error){failed_=true;Owner(s,false,error);if(s->hide_reply){auto reply=std::move(s->hide_reply);reply(false,error,"");}hooks_.fatal(error.empty()?"Native highlight physical cleanup failed":error);}
+  void Fatal(const std::shared_ptr<Session>&s,const std::string&error){failed_=true;Owner(s,false,error);if(s->hide_reply){auto reply=std::exchange(s->hide_reply, nullptr);reply(false,error,"");}hooks_.fatal(error.empty()?"Native highlight physical cleanup failed":error);}
   Hooks hooks_;std::map<std::string,std::shared_ptr<Session>>sessions_;uint64_t sequence_=0;bool closed_=false,failed_=false;
 };
 } // namespace suitecut

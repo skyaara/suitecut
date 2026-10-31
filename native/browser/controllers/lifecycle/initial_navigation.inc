@@ -84,7 +84,7 @@ void ObserveRestoredDocument(const std::string&frame_id){
   const auto send=[this,session](const std::string&method,Dict params,suitecut::ContextSettingsPage::Result done){
     const int id=AllocateDevToolsId();if(!id||network_calls_.size()>=1024||closing_page_){done(false,"Native restored document observation capacity exceeded");return;}
     network_calls_.emplace(id,NetworkCall{session,std::move(done),Now()+30000});WakeDeadlines();
-    if(!SubmitDevTools(id,method,params,session)){const auto entry=network_calls_.find(id);if(entry!=network_calls_.end()){auto done=std::move(entry->second.callback);network_calls_.erase(entry);done(false,"Native restored document observation dispatch failed");}}
+    if(!SubmitDevTools(id,method,params,session)){const auto entry=network_calls_.find(id);if(entry!=network_calls_.end()){auto done=std::exchange(entry->second.callback, nullptr);network_calls_.erase(entry);done(false,"Native restored document observation dispatch failed");}}
   };
   send("Page.createIsolatedWorld",params,[this,frame_id,current,send](bool ok,const std::string&json){
     if(!current())return;

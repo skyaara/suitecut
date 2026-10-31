@@ -18,7 +18,7 @@ void CredentialPrepare() {
         done(ok,json);
       },Now()+30000});WakeDeadlines();
       if(!SubmitDevTools(id,method,params,session)){
-        const auto call=network_calls_.find(id);if(call!=network_calls_.end()){auto callback=std::move(call->second.callback);network_calls_.erase(call);callback(false,"Native credential physical dispatch failed");}
+        const auto call=network_calls_.find(id);if(call!=network_calls_.end()){auto callback=std::exchange(call->second.callback, nullptr);network_calls_.erase(call);callback(false,"Native credential physical dispatch failed");}
       }
     },[this,store](bool ready){
       if(!browser_)return;

@@ -140,7 +140,7 @@
   }
   void LocatorHandlerResume(const std::shared_ptr<LocatorHandlerWork>& work) {
     if(!LocatorHandlerCurrent(work))return;
-    auto resume=std::move(work->resume);locator_handler_work_.erase(work->owner);
+    auto resume=std::exchange(work->resume, nullptr);locator_handler_work_.erase(work->owner);
     if(!operations_.IsCurrent(work->owner,work->generation)||!resume)return;
     if(selector_waits_)selector_waits_->Resume(work->owner);
     locator_handler_resuming_={work->owner,work->generation};resume();locator_handler_resuming_={};

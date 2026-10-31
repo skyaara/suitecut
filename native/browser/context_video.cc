@@ -92,7 +92,7 @@ bool NativeContextVideo::Prepare(int owner,uint64_t generation,Dict options,doub
     prepared->directory=ContextVideoDirectory::Create(directory,work->canceled,work->deadline,now);
     prepared->ffmpeg=ResolveMediaExecutable("ffmpeg");ContextVideoActive(work->canceled,work->deadline,now);
     work->prepared=std::move(prepared);work->ok=true;
-  })){auto done=std::move(work->prepare_reply);if(done)done({},"Native video preparation background capacity exceeded");return false;}
+  })){auto done=std::exchange(work->prepare_reply, nullptr);if(done)done({},"Native video preparation background capacity exceeded");return false;}
   return true;
 }
 bool NativeContextVideo::Configure(int context,Prepared prepared,std::string&error){
@@ -167,7 +167,7 @@ void NativeContextVideo::Handle(int owner,uint64_t generation,int context,Dict p
   waits_.emplace(wait->key,wait);record->second->waits.push_back(wait->key);Tick();
 }
 void NativeContextVideo::EndWait(Key key,bool ok,const std::string&path,const std::string&error){
-  const auto found=waits_.find(key);if(found==waits_.end())return;auto wait=std::move(found->second);waits_.erase(found);std::erase(wait->record->waits,key);auto reply=std::move(wait->reply);if(reply)reply(ok,path,error);
+  const auto found=waits_.find(key);if(found==waits_.end())return;auto wait=std::move(found->second);waits_.erase(found);std::erase(wait->record->waits,key);auto reply=std::exchange(wait->reply, nullptr);if(reply)reply(ok,path,error);
 }
 void NativeContextVideo::Pump(const std::shared_ptr<Record>&record){
   if(record->active_work||!record->terminal)return;
@@ -199,7 +199,7 @@ void NativeContextVideo::Pump(const std::shared_ptr<Record>&record){
 void NativeContextVideo::Finish(const std::shared_ptr<Work>&work){
   if(work->ok&&work->deadline&&hooks_.now()>=work->deadline){work->ok=false;work->error="Native video original file operation deadline expired before owner publication";}
   if(work->kind==Work::Kind::Prepare){
-    auto reply=std::move(work->prepare_reply);
+    auto reply=std::exchange(work->prepare_reply, nullptr);
     if(!work->canceled.load()&&!cleared_&&work->ok&&work->prepared){work->prepared->token=work->serial;prepared_.emplace(work->serial,work->prepared);if(reply)reply(work->prepared,"");}
     else if(reply&&!work->canceled.load())reply({},work->error.empty()?"Native video preparation failed":work->error);
     return;

@@ -31,7 +31,7 @@ class SuiteCutURLPredicateRegistry {
     if (found == entries_.end() || found->second.generation != generation ||
         found->second.token != token || found->second.client_token != client_token)
       return std::nullopt;
-    auto continuation = std::move(found->second.continuation);
+    auto continuation = std::exchange(found->second.continuation, nullptr);
     entries_.erase(found);
     return continuation;
   }

@@ -7,7 +7,9 @@
 
 inline bool LoadSuiteCutCEFForTest() {
 #if defined(__APPLE__)
-  if (!cef_load_library(SUITECUT_TEST_CEF_LIBRARY)) {
+  // cef_load_library fails when called again; libcef_lib may already have loaded it.
+  static const bool loaded = cef_load_library(SUITECUT_TEST_CEF_LIBRARY);
+  if (!loaded) {
     std::fprintf(stderr, "Could not load the pinned native CEF test library\n");
     return false;
   }

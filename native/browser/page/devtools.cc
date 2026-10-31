@@ -221,7 +221,7 @@ auto Source::ToolResult(int id, bool success, const void* result, size_t size,
       Error("Native binding protocol session mismatch");
       return;
     }
-    auto callback = std::move(binding_call->second.callback);
+    auto callback = std::exchange(binding_call->second.callback, nullptr);
     binding_calls_.erase(binding_call);
     if (size > 1048576)
       callback(false, "Native binding protocol response limit exceeded");
@@ -236,7 +236,7 @@ auto Source::ToolResult(int id, bool success, const void* result, size_t size,
       return;
     }
     const bool expired = network_call->second.expired;
-    auto callback = std::move(network_call->second.callback);
+    auto callback = std::exchange(network_call->second.callback, nullptr);
     network_calls_.erase(network_call);
     if (expired)
       callback(false, "Native network command deadline expired");
@@ -353,7 +353,7 @@ auto Source::ToolResult(int id, bool success, const void* result, size_t size,
     Error("Native protocol session mismatch");
     return;
   }
-  auto callback = std::move(found->second.callback);
+  auto callback = std::exchange(found->second.callback, nullptr);
   const int owner = found->second.owner;
   const bool retained = found->second.retain_after_cancel;
   const size_t response_limit = found->second.response_limit;

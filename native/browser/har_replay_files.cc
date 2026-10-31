@@ -23,10 +23,10 @@ bool NativeHARReplayFiles::Read(int owner,const std::string&path,double deadline
     catch(...){work->error="Native HAR replay file decode failed";}
     work->done.store(true,std::memory_order_release);try{post([weak,owner=work->owner]{if(const auto self=weak.lock())self->Finish(owner);});}catch(...){/* Tick retains and drains actual completed file work. */}
   });}catch(...){submitted=false;}
-  if(!submitted){auto callback=std::move(work->reply);work_.erase(owner);callback(nullptr,"Native HAR file executor capacity exceeded");return false;}if(hooks_.wake)hooks_.wake();return true;
+  if(!submitted){auto callback=std::exchange(work->reply, nullptr);work_.erase(owner);callback(nullptr,"Native HAR file executor capacity exceeded");return false;}if(hooks_.wake)hooks_.wake();return true;
 }
 void NativeHARReplayFiles::Finish(int owner){
-  const auto found=work_.find(owner);if(found==work_.end()||!found->second->done.load(std::memory_order_acquire))return;auto work=found->second;work_.erase(found);auto callback=std::move(work->reply);
+  const auto found=work_.find(owner);if(found==work_.end()||!found->second->done.load(std::memory_order_acquire))return;auto work=found->second;work_.erase(found);auto callback=std::exchange(work->reply, nullptr);
   if(work->canceled.load(std::memory_order_acquire)||!callback){if(hooks_.wake)hooks_.wake();return;}
   if(work->deadline&&hooks_.now()>=work->deadline){work->replay.reset();callback(nullptr,"Native HAR original file deadline exceeded");if(hooks_.wake)hooks_.wake();return;}
   Replay replay;

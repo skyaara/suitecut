@@ -36,7 +36,7 @@ class PristineDispatchFactories::Impl:public std::enable_shared_from_this<Impl>{
     const auto id=++next_call;calls.emplace(id,Call{r,std::move(reply),method=="Runtime.releaseObjectGroup"?deadline:(deadline?deadline+30000:hooks.now()+30000)});hooks.wake();
     auto settled=[self=shared_from_this(),id](bool ok,Dict result,const std::string&error){
       const auto found=self->calls.find(id);if(found==self->calls.end())return;
-      auto callback=std::move(found->second.reply);self->calls.erase(found);
+      auto callback=std::exchange(found->second.reply, nullptr);self->calls.erase(found);
       callback(ok,result,error);
     };
     if(method=="Runtime.evaluate")r->group_possible=true;

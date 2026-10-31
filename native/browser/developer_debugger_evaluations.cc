@@ -27,7 +27,7 @@ class DeveloperDebuggerEvaluations::Impl:public std::enable_shared_from_this<Imp
   void Changed(){if(hooks_.changed)hooks_.changed();}
   void CleanupClock(const std::shared_ptr<Record>&record){if(!record->cleanup)record->cleanup=(Expired(record->deadline)?record->deadline:hooks_.now())+kCleanup;}
   void Finish(const std::shared_ptr<Record>&record,bool ok,const std::string&error){
-    auto reply=std::move(record->reply);record->owner=0;if(!reply)return;
+    auto reply=std::exchange(record->reply, nullptr);record->owner=0;if(!reply)return;
     if(Expired(record->deadline)){reply(false,"","Native paused evaluation original deadline expired");return;}
     if(ok&&(closing_||record->canceled||!hooks_.current(record->pause,record->frame))){reply(false,"","Native paused evaluation exact pause or frame changed before publication");return;}
     reply(ok,ok?record->json:std::string(),error);

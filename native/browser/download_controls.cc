@@ -285,7 +285,7 @@ void DownloadControls::StartCopy(Wait wait,std::shared_ptr<Record> record){
   if(copies_.size()>=4){wait.reply(false,nullptr,"Native download saveAs copy capacity exceeded");return;}
   auto lease=std::make_shared<DownloadQuotaLease>(quota_);
   if(!lease->Add(static_cast<std::uint64_t>(record->received))){wait.reply(false,nullptr,"Native download saveAs disk capacity exceeded (1 GiB)");return;}
-  auto copy=std::make_shared<Copy>();copy->owner=wait.owner;copy->id=record->id;copy->deadline=wait.deadline;copy->reply=std::move(wait.reply);copy->files=record->files;copy->quota=lease;copies_[copy->owner]=copy;
+  auto copy=std::make_shared<Copy>();copy->owner=wait.owner;copy->id=record->id;copy->deadline=wait.deadline;copy->reply=std::exchange(wait.reply, nullptr);copy->files=record->files;copy->quota=lease;copies_[copy->owner]=copy;
   const auto weak=weak_from_this();const auto now=hooks_.now;const auto path=wait.path;
   copy->thread=std::thread([copy,weak,now,path]{
     copy->result=CopyDownloadFile(copy->files->path(),path,copy->canceled,copy->deadline,now,copy->quota->Bytes());
@@ -295,7 +295,7 @@ void DownloadControls::StartCopy(Wait wait,std::shared_ptr<Record> record){
 void DownloadControls::CopyFinished(int owner){
   const auto found=copies_.find(owner);if(found==copies_.end())return;
   auto copy=found->second;if(copy->thread.joinable())copy->thread.join();copies_.erase(found);
-  auto reply=std::move(copy->reply);const auto result=copy->result;const auto record=records_.find(copy->id);
+  auto reply=std::exchange(copy->reply, nullptr);const auto result=copy->result;const auto record=records_.find(copy->id);
   copy->files.reset();copy->quota.reset();
   if(record!=records_.end()&&record->second->context_closed)Cleanup(record->second);
   if(reply)reply(result.ok,nullptr,result.error);

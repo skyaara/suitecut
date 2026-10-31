@@ -191,7 +191,7 @@ void ScreenshotComparisons::Finish(std::shared_ptr<Record> record,bool passed,bo
   if(record->diff)result->SetString("diff",record->diff->text);
   auto unobserved=record->assertion?record->assertion->unobserved:std::function<void(uint64_t,Dict)>{};
   auto retained=record->captured;const auto sample=record->sample;
-  auto reply=std::move(record->reply);records_.erase(record->key);record->capture={};record->screenshot=nullptr;record->expected_input.reset();record->prepared.reset();record->captured.reset();record->actual.reset();record->diff.reset();record->expected.reset();record->previous.reset();record->config_lease.reset();reply(error.empty(),result,error);
+  auto reply=std::exchange(record->reply, nullptr);records_.erase(record->key);record->capture={};record->screenshot=nullptr;record->expected_input.reset();record->prepared.reset();record->captured.reset();record->actual.reset();record->diff.reset();record->expected.reset();record->previous.reset();record->config_lease.reset();reply(error.empty(),result,error);
   // This exact received PNG was queued behind the shared native physical cap.
   // The Source freezes first and admits validation only; it is not Received.
   if(retained&&unobserved){auto actual=CefDictionaryValue::Create();actual->SetString("data",retained->text);unobserved(sample,actual);}
@@ -239,7 +239,7 @@ bool ScreenshotComparisons::WriteArtifacts(int context,int page,int owner,const 
 }
 void ScreenshotComparisons::RetireFinalization(const std::shared_ptr<Finalization>&work,const std::string&error){
   const auto found=finalizations_.find(work->id);if(found==finalizations_.end()||found->second!=work)return;
-  const auto assertion=work->assertion;auto reply=std::move(work->reply);
+  const auto assertion=work->assertion;auto reply=std::exchange(work->reply, nullptr);
   work->actual.reset();work->diff.reset();finalizations_.erase(found);work->physical_owner.reset();
   const auto publication=work->publication;publication->error=error;
   try{if(reply)reply(publication);}catch(...){/* Actual no-submit retirement must still reach its native owner. */}

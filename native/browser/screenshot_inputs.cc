@@ -136,7 +136,7 @@ void ScreenshotInputs::StartFile(const std::shared_ptr<Record>&record){
 }
 void ScreenshotInputs::Finish(std::shared_ptr<Record>record,const std::string&error){
  const auto found=records_.find(record->token);if(found==records_.end()||found->second!=record)return;
- auto reply=std::move(record->reply);auto watch=std::move(record->watch);auto data=error.empty()?record->data:nullptr;const double deadline=record->deadline;
+ auto reply=std::exchange(record->reply, nullptr);auto watch=std::move(record->watch);auto data=error.empty()?record->data:nullptr;const double deadline=record->deadline;
  records_.erase(found);record->data.reset();if(error.size()&&record->physical){const auto pending=pending_.find(record->physical);if(pending!=pending_.end())pending->second->canceled.store(true,std::memory_order_release);}
  if(watch)watch(error.empty(),error);
  if(reply)reply(std::move(data),deadline,error);

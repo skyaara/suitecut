@@ -26,7 +26,7 @@ suitecut::SnapshotReferences& SnapshotReferences(){
       auto params=CefDictionaryValue::Create();params->SetString("objectGroup",group.name);const auto session=group.document.session;
       devtools_.emplace(tool,DevToolsCall{0,[ack=std::move(ack)](bool ok,const std::string&)mutable{ack(ok,ok?"":"Native snapshot reference group release failed");},session,true,65536,true,false});
       if(!SubmitDevTools(tool,"Runtime.releaseObjectGroup",params,session)){
-        const auto found=devtools_.find(tool);if(found!=devtools_.end()){auto callback=std::move(found->second.callback);devtools_.erase(found);callback(false,"");}
+        const auto found=devtools_.find(tool);if(found!=devtools_.end()){auto callback=std::exchange(found->second.callback, nullptr);devtools_.erase(found);callback(false,"");}
       }
       WakeDeadlines();
     },[this](const std::string& error){NetworkFatal(error);});
@@ -83,7 +83,7 @@ void InstallReferenceSnapshot(const std::shared_ptr<SnapshotReferenceCapture>& w
     const bool retained=SnapshotReferences().Installed(work->ticket,installed,installed?remote->GetString("objectId").ToString():std::string(),Now());
     if(!ReferenceCurrent(work))return;
     if(!retained){Complete(work->owner,false,"Native snapshot reference group installation failed");return;}
-    auto done=std::move(work->installed_done);
+    auto done=std::exchange(work->installed_done, nullptr);
     if(done)done();else PublishReferenceSnapshot(work);
   });
 }

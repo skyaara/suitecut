@@ -45,7 +45,7 @@ class TracePhaseControls final:public std::enable_shared_from_this<TracePhaseCon
  private:
   struct Job{Request request;Done done;bool issued=false;};
   void Finish(uint64_t token,bool ok,Result result,const std::string& error){
-    const auto found=jobs_.find(token);if(found==jobs_.end())return;const auto request=found->second.request;std::string failure=error;if(hooks_.now()>=request.deadline){ok=false;failure="Native trace phase capture deadline expired";}auto done=std::move(found->second.done);
+    const auto found=jobs_.find(token);if(found==jobs_.end())return;const auto request=found->second.request;std::string failure=error;if(hooks_.now()>=request.deadline){ok=false;failure="Native trace phase capture deadline expired";}auto done=std::exchange(found->second.done, nullptr);
     if(hooks_.current(request.scope)){
       if(ok&&((request.screen&&(result.png.empty()||result.png.size()>8*1048576))||(request.aria&&(result.aria.empty()||result.aria.size()>65536)))){ok=false;failure="Native trace phase payload byte limit exceeded";}
       if(ok)hooks_.captured(request,std::move(result));else if(!failure.empty())hooks_.error(request.scope,failure);

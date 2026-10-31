@@ -84,7 +84,7 @@ struct NativeDropTransport {
 bool NativeDropDispatchRefused(int command, const std::string& error) {
   const auto found = native_drop_transport_.find(command);
   if (found == native_drop_transport_.end()) return false;
-  auto receipt = std::move(found->second.reply);
+  auto receipt = std::exchange(found->second.reply, nullptr);
   native_drop_transport_.erase(found); devtools_.erase(command);
   auto callback = std::move(*receipt);
   if (callback) callback(NativeDropCore::Outcome::Refused, error);

@@ -36,7 +36,7 @@ class CoverageTargets::Impl : public std::enable_shared_from_this<Impl> {
     target->controls=std::make_shared<CoverageControls>(std::move(hooks));return target;
   }
   void ReplyOwner(const std::shared_ptr<Record>& record,bool ok,const std::string& error,const std::string& json=""){
-    auto reply=std::move(record->reply);record->owner=0;record->deadline=0;if(reply)reply(ok,error,json);
+    auto reply=std::exchange(record->reply, nullptr);record->owner=0;record->deadline=0;if(reply)reply(ok,error,json);
   }
   void Fail(const std::shared_ptr<Record>& record,const std::string& error){
     if(!Current(record)||record->phase==Phase::Cleaning)return;

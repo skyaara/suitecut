@@ -89,7 +89,7 @@ inline bool NativeContextHARRoutes::PumpRemoval(const std::string&owner){
     if(batch!=removals_.end()&&batch->second.generation==task.generation){batch->second.pending.erase({owner,task.route.id});if(!ok||batch->second.pending.empty())FinishRemoval(task.batch,task.generation,ok,error);}
     if(!*alive)return;
     const auto current=targets_.find(owner);if(current==targets_.end()||current->second.generation!=generation)return;
-    if(!ok){auto ready=std::move(current->second.ready);if(ready)ready(false,error);else failure_(owner,error);return;}
+    if(!ok){auto ready=std::exchange(current->second.ready, nullptr);if(ready)ready(false,error);else failure_(owner,error);return;}
     Pump(owner);
   });return true;
 }

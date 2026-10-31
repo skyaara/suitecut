@@ -14,7 +14,7 @@ void NativeIdleEnsure(){
       native_idle_dispatch_=id;
       devtools_.emplace(id,DevToolsCall{owner,[self=CefRefPtr<Source>(this),id,receipt](bool ok,const std::string&error){if(self->native_idle_dispatch_==id)self->native_idle_dispatch_=0;receipt->Settle(ok,error);},session,true,65536,true});
       if(!SubmitDevTools(id,state?"Emulation.setIdleOverride":"Emulation.clearIdleOverride",params,session)){
-        const auto found=devtools_.find(id);if(found!=devtools_.end()){auto callback=std::move(found->second.callback);devtools_.erase(found);callback(false,"Native idle command dispatch failed");}
+        const auto found=devtools_.find(id);if(found!=devtools_.end()){auto callback=std::exchange(found->second.callback, nullptr);devtools_.erase(found);callback(false,"Native idle command dispatch failed");}
       }
     },
     [this]{std::vector<std::string> actual;actual.reserve(sessions_.size());for(const auto&[session,frame]:sessions_)actual.push_back(session);return actual;},

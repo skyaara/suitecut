@@ -26,7 +26,7 @@ bool NativeDebuggerSend(const std::string& session,const std::string& method,Dic
   // Typed scalar projection applies only to genuine protocol-owned metadata.
   devtools_.emplace(assigned,DevToolsCall{0,callback,session,true,8*1048576,true,true});
   if(!SubmitDevTools(assigned,method,params,session)){
-    const auto found=devtools_.find(assigned);if(found!=devtools_.end()){auto done=std::move(found->second.callback);devtools_.erase(found);done(false,"{\"message\":\"Native shared Debugger dispatch was not accepted\"}");}
+    const auto found=devtools_.find(assigned);if(found!=devtools_.end()){auto done=std::exchange(found->second.callback, nullptr);devtools_.erase(found);done(false,"{\"message\":\"Native shared Debugger dispatch was not accepted\"}");}
   }
   WakeDeadlines();return true;
 }
@@ -43,7 +43,7 @@ void NativeDebuggerRawSend(int owner,uint64_t raw_receipt,const std::string&sess
   devtools_.emplace(assigned,DevToolsCall{owner,std::move(actual_reply),session,true,kMaxResponseBytes,true,false});
   if(!SubmitDevTools(assigned,method,params,session)){
     const auto found=devtools_.find(assigned);
-    if(found!=devtools_.end()){if(native_debugger_domains_)native_debugger_domains_->EndRaw(raw_receipt,false,false);auto actual=std::move(found->second.callback);devtools_.erase(found);actual(false,"{\"message\":\"Native raw Debugger dispatch was not accepted\"}");}
+    if(found!=devtools_.end()){if(native_debugger_domains_)native_debugger_domains_->EndRaw(raw_receipt,false,false);auto actual=std::exchange(found->second.callback, nullptr);devtools_.erase(found);actual(false,"{\"message\":\"Native raw Debugger dispatch was not accepted\"}");}
   }
   WakeDeadlines();
 }
@@ -105,7 +105,7 @@ void NativeDebuggerDetached(const std::string& session){
   if(native_debugger_domains_)native_debugger_domains_->Detached(session);
   native_coverage_debugger_leases_.erase(session);
   std::vector<DevToolsCallback> callbacks;
-  for(auto it=devtools_.begin();it!=devtools_.end();)if(it->second.session==session&&native_debugger_calls_.contains(it->first)){callbacks.push_back(std::move(it->second.callback));it=devtools_.erase(it);}else ++it;
+  for(auto it=devtools_.begin();it!=devtools_.end();)if(it->second.session==session&&native_debugger_calls_.contains(it->first)){callbacks.push_back(std::exchange(it->second.callback, nullptr));it=devtools_.erase(it);}else ++it;
   for(auto& callback:callbacks)callback(false,"{\"message\":\"Actual native shared Debugger session detached\"}");
 }
 void NativeDebuggerClosed(){

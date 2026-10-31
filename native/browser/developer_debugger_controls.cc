@@ -91,7 +91,7 @@ class DeveloperDebuggerControls::Impl : public std::enable_shared_from_this<Impl
     if (it == operations_.end() || it->second != op) return false;
     operations_.erase(it);
     if(opening_==op)opening_.reset();
-    auto reply = std::move(op->reply);
+    auto reply = std::exchange(op->reply, nullptr);
     const bool expired=Expired(op->deadline);
     if(op->actual_close&&(!ok||expired)&&state_&&state_->lease==op->close_lease&&state_->completion->error.empty())
       state_->completion->error=expired?"Native debugger original deadline expired":error;

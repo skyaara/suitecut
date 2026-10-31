@@ -53,7 +53,7 @@ class NativeContextHARRoutes {
   }
   void Detach(const std::string&owner){
     const auto target=targets_.find(owner);if(target==targets_.end())return;
-    auto ready=std::move(target->second.ready);targets_.erase(target);
+    auto ready=std::exchange(target->second.ready, nullptr);targets_.erase(target);
     std::vector<std::pair<int,uint64_t>>finished;for(auto&[id,batch]:batches_)if(batch.pending.erase(owner)){batch.success=false;batch.error="Actual HAR replay target closed during installation";if(batch.pending.empty())finished.emplace_back(id,batch.generation);}
     auto alive=alive_;for(const auto&[id,generation]:finished){if(!*alive)break;Finish(id,generation);}
     std::vector<std::pair<int,uint64_t>>removed;
@@ -74,16 +74,16 @@ class NativeContextHARRoutes {
   }
   void Closed(int context){
     const auto state=states_.find(context);if(state==states_.end())return;const auto owner=state->second.owner;*state->second.policy_owner=false;for(const auto&[id,route]:state->second.routes)ReleaseArchive(route.archive);states_.erase(state);
-    std::vector<Result>callbacks;for(auto it=targets_.begin();it!=targets_.end();)if(it->second.context==context){if(it->second.ready)callbacks.push_back(std::move(it->second.ready));it=targets_.erase(it);}else ++it;
-    const auto batch=batches_.find(owner);if(batch!=batches_.end()){callbacks.push_back(std::move(batch->second.reply));batches_.erase(batch);}
-    for(auto it=removals_.begin();it!=removals_.end();)if(it->second.context==context){callbacks.push_back(std::move(it->second.reply));it=removals_.erase(it);}else ++it;
+    std::vector<Result>callbacks;for(auto it=targets_.begin();it!=targets_.end();)if(it->second.context==context){if(it->second.ready)callbacks.push_back(std::exchange(it->second.ready, nullptr));it=targets_.erase(it);}else ++it;
+    const auto batch=batches_.find(owner);if(batch!=batches_.end()){callbacks.push_back(std::exchange(batch->second.reply, nullptr));batches_.erase(batch);}
+    for(auto it=removals_.begin();it!=removals_.end();)if(it->second.context==context){callbacks.push_back(std::exchange(it->second.reply, nullptr));it=removals_.erase(it);}else ++it;
     for(auto&callback:callbacks)if(callback)callback(false,"Actual native HAR replay context closed");
   }
   void Clear(){
     if(closed_)return;
     closed_=true;*alive_=false;
-    std::vector<Result>callbacks;for(auto&[id,batch]:batches_)if(batch.reply)callbacks.push_back(std::move(batch.reply));for(auto&[owner,target]:targets_)if(target.ready)callbacks.push_back(std::move(target.ready));
-    for(auto&[id,batch]:removals_)if(batch.reply)callbacks.push_back(std::move(batch.reply));
+    std::vector<Result>callbacks;for(auto&[id,batch]:batches_)if(batch.reply)callbacks.push_back(std::exchange(batch.reply, nullptr));for(auto&[owner,target]:targets_)if(target.ready)callbacks.push_back(std::exchange(target.ready, nullptr));
+    for(auto&[id,batch]:removals_)if(batch.reply)callbacks.push_back(std::exchange(batch.reply, nullptr));
     for(auto&[context,state]:states_){(void)context;*state.policy_owner=false;}
     removals_.clear();batches_.clear();targets_.clear();states_.clear();archives_.clear();policy_bytes_=0;for(auto&callback:callbacks)callback(false,"Native HAR replay policy is closed");
   }
@@ -115,7 +115,7 @@ class NativeContextHARRoutes {
     const auto found=targets_.find(owner);if(closed_||found==targets_.end()||found->second.busy)return;auto&target=found->second;const auto state=states_.find(target.context);if(state==states_.end())return;
     if(PumpRemoval(owner))return;
     while(!target.queue.empty()&&!state->second.routes.contains(target.queue.front()))target.queue.pop_front();
-    if(target.queue.empty()){auto ready=std::move(target.ready);if(ready)ready(true,"");return;}
+    if(target.queue.empty()){auto ready=std::exchange(target.ready, nullptr);if(ready)ready(true,"");return;}
     const auto route=state->second.routes.at(target.queue.front());target.queue.pop_front();target.busy=true;target.claims[route.id]=route.policy;
     double deadline=0;int batch_owner=0;uint64_t batch_generation=0;if(state->second.owner&&batches_.contains(state->second.owner)){const auto&batch=batches_.at(state->second.owner);if(batch.route==route.id){deadline=batch.deadline;batch_owner=state->second.owner;batch_generation=batch.generation;}}
     const auto generation=target.generation;const int context=target.context;auto apply=target.apply;
@@ -126,7 +126,7 @@ class NativeContextHARRoutes {
       const auto batch=batches_.find(batch_owner);if(batch!=batches_.end()&&batch->second.generation==batch_generation&&batch->second.context==context&&batch->second.route==id){batch->second.pending.erase(owner);if(!ok){batch->second.success=false;batch->second.error=error;}if(batch->second.pending.empty())Finish(batch_owner,batch_generation);}
       if(!*alive)return;
       const auto current=targets_.find(owner);if(current==targets_.end()||current->second.generation!=generation)return;
-      if(!ok){auto ready=std::move(current->second.ready);if(ready)ready(false,error);else failure_(owner,error);return;}
+      if(!ok){auto ready=std::exchange(current->second.ready, nullptr);if(ready)ready(false,error);else failure_(owner,error);return;}
       Pump(owner);
     });
   }
@@ -144,7 +144,7 @@ class NativeContextHARRoutes {
   void Finish(int owner,uint64_t generation){
     const auto found=batches_.find(owner);if(found==batches_.end()||found->second.generation!=generation)return;auto batch=std::move(found->second);batches_.erase(found);if(now_&&batch.deadline&&now_()>=batch.deadline){batch.success=false;batch.error="Native context HAR replay original deadline exceeded";}const auto state=states_.find(batch.context);if(state!=states_.end()&&state->second.owner==owner)state->second.owner=0;
     if(!batch.success)Drop(batch.context,batch.route);
-    auto reply=std::move(batch.reply);reply(batch.success,batch.error);
+    auto reply=std::exchange(batch.reply, nullptr);reply(batch.success,batch.error);
   }
   std::shared_ptr<bool>alive_=std::make_shared<bool>(true);std::shared_ptr<Physical>physical_=std::make_shared<Physical>();Failure failure_;std::function<double()>now_;uint64_t serial_=0;bool closed_=false;
   std::map<const NativeHARReplay*,ArchiveUse>archives_;size_t policy_bytes_=0;

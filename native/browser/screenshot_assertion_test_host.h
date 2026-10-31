@@ -48,7 +48,7 @@ struct Harness {
     if(synchronous){Ack(id,true,synchronous_json);}return submit_ok;
   }
   void Ack(int id=1,bool ok=true,const std::string&json="{\"result\":{\"type\":\"boolean\",\"value\":true}}"){
-    auto found=devtools_.find(id);assert(found!=devtools_.end());auto callback=std::move(found->second.callback);devtools_.erase(found);callback(ok,json);
+    auto found=devtools_.find(id);assert(found!=devtools_.end());auto callback=std::exchange(found->second.callback, nullptr);devtools_.erase(found);callback(ok,json);
   }
   Identity Start(){const auto operation=operations_.Begin(7,now,50);assert(operation);assert(ScreenshotAssertionScopeBegin(7,operation->generation,50));return {page_id_,7,operation->generation};}
   void ScreenshotAssertionOriginalDeadline(Identity identity){++deadlines;screenshot_assertion_retirement_.Freeze(identity,false,now);}

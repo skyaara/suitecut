@@ -48,6 +48,10 @@ class Source:public CefBaseRefCounted {
   double now=0;
   double Now()const{return now;}
   bool NativeDropBusy()const{return false;}
+  // Stock CEF has no original-widget mouse to own the pointer.
+  struct WidgetMouse{bool held()const{return false;}bool available()const{return false;}};
+  std::shared_ptr<WidgetMouse> native_widget_mouse_;
+  int mouse_buttons_=0;
   bool NativeDropOwns(int)const{return false;}
   double Number(Dict data,const char* key){return data->GetType(key)==VTYPE_INT?data->GetInt(key):data->GetDouble(key);}
   std::string Literal(const std::string& value){return value;}

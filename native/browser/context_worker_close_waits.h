@@ -33,7 +33,7 @@ class NativeContextWorkerCloseWaits {
         ++it;
         continue;
       }
-      replies.emplace_back(std::move(it->second.reply),
+      replies.emplace_back(std::exchange(it->second.reply, nullptr),
                            std::isfinite(now) && (it->second.deadline == 0 || now < it->second.deadline));
       it = waits_.erase(it);
     }
@@ -46,7 +46,7 @@ class NativeContextWorkerCloseWaits {
   }
   void Clear() {
     std::vector<Reply> replies;
-    for (auto& [owner, wait] : waits_) replies.push_back(std::move(wait.reply));
+    for (auto& [owner, wait] : waits_) replies.push_back(std::exchange(wait.reply, nullptr));
     waits_.clear();
     for (auto& reply : replies)
       reply(false, 0, "Native worker owner-close observer disposed");

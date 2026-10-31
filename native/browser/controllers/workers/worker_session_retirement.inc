@@ -24,13 +24,13 @@ void NativeTargetSessionDetached(const std::string& root){
       if(page_errors_)page_errors_->Detached(child);
       std::vector<suitecut::BindingControls::Result> binding_detached;
       for (auto it = binding_calls_.begin(); it != binding_calls_.end();) {
-        if (it->second.session == child) { binding_detached.push_back(std::move(it->second.callback)); it = binding_calls_.erase(it); }
+        if (it->second.session == child) { binding_detached.push_back(std::exchange(it->second.callback, nullptr)); it = binding_calls_.erase(it); }
         else ++it;
       }
       for (auto& callback : binding_detached) callback(false,"Native binding target detached");
       std::vector<suitecut::NetworkControls::Result> detached_callbacks;
       for (auto it = network_calls_.begin(); it != network_calls_.end();) {
-        if (it->second.session == child) { detached_callbacks.push_back(std::move(it->second.callback)); it = network_calls_.erase(it); }
+        if (it->second.session == child) { detached_callbacks.push_back(std::exchange(it->second.callback, nullptr)); it = network_calls_.erase(it); }
         else ++it;
       }
       if (network_) network_->InterceptionSessionClosed(child);
@@ -45,7 +45,7 @@ void NativeTargetSessionDetached(const std::string& root){
       // perform physical browser work, so retire their retained ownership now.
       CompleteVisibilityInContext(child);
       std::vector<DevToolsCallback> ax_detached;
-      for(auto it=devtools_.begin();it!=devtools_.end();){if(it->second.retained_control&&it->second.session==child){ax_detached.push_back(std::move(it->second.callback));it=devtools_.erase(it);}else ++it;}
+      for(auto it=devtools_.begin();it!=devtools_.end();){if(it->second.retained_control&&it->second.session==child){ax_detached.push_back(std::exchange(it->second.callback, nullptr));it=devtools_.erase(it);}else ++it;}
       for(auto& callback:ax_detached)callback(false,"{\"message\":\"Native retained command session was detached\"}");
       NativeFrameDebuggerDetached(child,debugger_attachment);
       NativeDeveloperWorkerChannelClosed(child,worker_debugger_attachment.observer,worker_debugger_attachment.generation);

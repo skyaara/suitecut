@@ -40,6 +40,13 @@ class Source {
   struct InputWork {
     int owner = 0; uint64_t generation = 0; std::string kind;
     bool busy = false, manual_prepared = false, held_mouse = false;
+    Dict message = CefDictionaryValue::Create();
+  };
+  // Stock CEF has no original-widget mouse; it is never held or physical here.
+  struct WidgetMouse {
+    bool held() const { return false; }
+    bool physical() const { return false; }
+    bool available() const { return false; }
   };
   struct DevToolsCall {
     int owner; Reply callback; std::string session;
@@ -53,9 +60,10 @@ class Source {
   struct Browser { int GetIdentifier() const { return 7; } };
   struct Call { int id, owner; std::string method; Dict params; };
   struct Result { int owner; bool ok; std::string error; };
-  Source() { frame_states_[main_frame_id_] = FrameState{}; }
+  Source() { now = 1; frame_states_[main_frame_id_] = FrameState{}; }
   ~Source() { Closed(); }
-  double Now() const { return now; }
+  // Source::Now is static; the controller's completion hooks call it without this.
+  static double Now() { return now; }
   void WakeDeadlines() { ++wakes; }
   void NetworkFatal(const std::string&) { ++posted_closes; }
   int AllocateDevToolsId() { return ++next_command; }
@@ -111,6 +119,8 @@ class Source {
   }
   void LocatorAction(int, uint64_t, const std::string&, const std::string&,
                      const std::string&, Dict) {}
+  bool LocatorHandlerBefore(int, uint64_t, Dict, std::function<void()>) { return false; }
+  bool NativeWidgetPointerOwned() const { return false; }
   void Ack(bool ok = true, const std::string& json = "{}") {
     assert(!calls.empty()); auto call = std::move(calls.front()); calls.erase(calls.begin());
     const auto found = devtools_.find(call.id); if (found == devtools_.end()) return;
@@ -162,7 +172,10 @@ class Source {
   int mouse_buttons_ = 1, key_modifiers_ = 2, next_command = 0;
   int wakes = 0, posted_closes = 0;
   bool refuse = false, synchronous = false, defer = false;
-  double mouse_x_ = 17, mouse_y_ = 23, now = 1;
+  double mouse_x_ = 17, mouse_y_ = 23;
+  static inline double now = 1;
+  std::shared_ptr<WidgetMouse> native_widget_mouse_;
+  std::map<int, int> locator_handlers_;
   std::vector<Call> calls, cleanup, routed;
   std::vector<Result> results;
 };

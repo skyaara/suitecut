@@ -305,7 +305,7 @@ void NativeCurlTransport::Finish(CURL* handle,CURLcode result) {
   curl_multi_remove_handle(multi_,handle);handles_.erase(handle);active_.erase(found);
   curl_easy_cleanup(handle);transfer->handle=nullptr;transfer->decoder.reset();
   if(basic_challenge||proxy_basic_challenge){
-    auto request=transfer->request;if(basic_challenge)request.preemptive_credentials=true;if(proxy_basic_challenge)request.preemptive_proxy_credentials=true;const auto prior=std::move(transfer->response.set_cookies);auto done=std::move(transfer->done);std::string error;
+    auto request=transfer->request;if(basic_challenge)request.preemptive_credentials=true;if(proxy_basic_challenge)request.preemptive_proxy_credentials=true;const auto prior=std::move(transfer->response.set_cookies);auto done=std::exchange(transfer->done, nullptr);std::string error;
     auto callback=[done,prior](Response result)mutable{result.set_cookies.insert(result.set_cookies.begin(),prior.begin(),prior.end());done(std::move(result));};
     if(Start(transfer->owner,std::move(request),transfer->data,callback,error))return;
     transfer->response.error=error;callback(std::move(transfer->response));return;

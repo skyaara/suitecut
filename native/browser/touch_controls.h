@@ -32,8 +32,8 @@ class SuiteCutTouchControls {
   void Close(){
     closed_=true;
     auto pending=std::move(queue_);queue_.clear();
-    for(auto& work:pending){if(work->done){auto done=std::move(work->done);done(false,"Native touch page is closed");}if(work->owner)hooks_.complete(work->owner,false,"Native touch page is closed");}
-    if(active_){if(active_->done){auto done=std::move(active_->done);done(false,"Native touch page is closed");}int owner=active_->owner;active_->owner=0;if(owner)hooks_.complete(owner,false,"Native touch page is closed");}
+    for(auto& work:pending){if(work->done){auto done=std::exchange(work->done, nullptr);done(false,"Native touch page is closed");}if(work->owner)hooks_.complete(work->owner,false,"Native touch page is closed");}
+    if(active_){if(active_->done){auto done=std::exchange(active_->done, nullptr);done(false,"Native touch page is closed");}int owner=active_->owner;active_->owner=0;if(owner)hooks_.complete(owner,false,"Native touch page is closed");}
   }
   bool enabled()const{return enabled_;}
   size_t queued()const{return queue_.size();}
@@ -51,7 +51,7 @@ class SuiteCutTouchControls {
   void Finish(const std::shared_ptr<Work>& work,bool ok,const std::string& error){
     if(active_!=work)return;
     int owner=work->owner;work->owner=0;active_.reset();
-    auto done=std::move(work->done);if(done)done(ok,error);
+    auto done=std::exchange(work->done, nullptr);if(done)done(ok,error);
     if(owner)hooks_.complete(owner,ok,error);
     Pump();
   }

@@ -35,7 +35,13 @@ int main(){
  for(int round=0;round<4;++round){suitecut::NativeCurlTransport::Request request;request.url="http://127.0.0.1:"+std::to_string(ntohs(address.sin_port))+"/";request.method="GET";bool done=false;int callbacks=0;std::string error,body;suitecut::NativeCurlTransport::Response response;
   assert(transport.Start(round+1,std::move(request),[&](const void*data,size_t length){if(!data){body.clear();return true;}++callbacks;body.append(static_cast<const char*>(data),length);if(round==0&&body.size()==1){std::lock_guard lock(mutex);first_body=true;received.notify_one();}return true;},[&](auto result){response=std::move(result);done=true;},error));
   const auto deadline=std::chrono::steady_clock::now()+std::chrono::seconds(5);while(!done&&std::chrono::steady_clock::now()<deadline){transport.Tick();std::this_thread::yield();}
-  if(round==3){assert(done&&response.error=="Native HTTP response header count exceeded"&&response.error_code==CURLE_WRITE_ERROR&&response.set_cookies.empty()&&transport.size()==0);continue;}
+  if(round==3){
+   // Newer libcurl joins folded lines before the header callback. Either way,
+   // 1024 continuation lines never become separately retained fields.
+   assert(done&&response.set_cookies.empty()&&transport.size()==0);
+   if(response.error.empty())assert(response.error_code==CURLE_OK&&response.headers.size()<=2&&response.headers[0].first=="X-Long"&&response.headers[0].second.starts_with("start a a"));
+   else assert(response.error=="Native HTTP response header count exceeded"&&response.error_code==CURLE_WRITE_ERROR);
+   continue;}
   if(!done||!response.error.empty()||body!="hello"){std::cerr<<round<<" error="<<response.error<<" body="<<body<<'\n';assert(false);}assert(response.error_code==CURLE_OK&&transport.size()==0);
   if(round==0){assert(callbacks>=2&&response.set_cookies.empty());assert(response.headers[0].first=="X-Trace"&&response.headers[0].second=="start Set-Cookie: forged=yes Content-Encoding: gzip Content-Length: 1");}
   if(round==1){assert(response.set_cookies.empty());assert(response.headers[0].first=="Content-Encoding"&&response.headers[0].second=="gzip");}

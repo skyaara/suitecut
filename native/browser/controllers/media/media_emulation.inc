@@ -13,7 +13,7 @@ void NativeMediaWake(){
     self->native_media_queue_task_=false;
     for(size_t count=0;count<64&&!self->native_media_queue_.empty()&&self->native_media_physical_<64&&!self->closing_page_;++count){
       auto request=std::move(self->native_media_queue_.front());self->native_media_queue_.pop_front();
-      self->NativeMediaRequest(request.owner,request.session,request.params,std::move(request.callback));
+      self->NativeMediaRequest(request.owner,request.session,request.params,std::exchange(request.callback, nullptr));
     }
     self->NativeMediaWake();
   }));
@@ -38,7 +38,7 @@ void NativeMediaRequest(int owner,const std::string& session,Dict params,DevTool
   },session,true,65536,true});
   if(!SubmitDevTools(id,"Emulation.setEmulatedMedia",params,session)){
     auto found=devtools_.find(id);
-    if(found!=devtools_.end()){auto callback=std::move(found->second.callback);devtools_.erase(found);callback(false,"Native media command dispatch failed");}
+    if(found!=devtools_.end()){auto callback=std::exchange(found->second.callback, nullptr);devtools_.erase(found);callback(false,"Native media command dispatch failed");}
   }
 }
 struct NativeMediaWork {

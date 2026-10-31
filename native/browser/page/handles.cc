@@ -5,7 +5,7 @@ auto Source::ArgumentStep(std::shared_ptr<ArgumentWork> work) -> void {
   if (!operations_.IsCurrent(work->owner, work->generation)) return;
   if (work->index == work->handles.size()) {
     work->params->SetList("arguments", work->arguments);
-    auto done = std::move(work->done);
+    auto done = std::exchange(work->done, nullptr);
     done();
     return;
   }

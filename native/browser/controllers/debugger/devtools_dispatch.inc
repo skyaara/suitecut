@@ -21,12 +21,12 @@ void DeferredDevToolsFailure(int id) {
   }
   const auto network = network_calls_.find(id);
   if (network != network_calls_.end()) {
-    auto callback = std::move(network->second.callback); network_calls_.erase(network);
+    auto callback = std::exchange(network->second.callback, nullptr); network_calls_.erase(network);
     callback(false,"Native deferred network dispatch failed"); return;
   }
   const auto binding = binding_calls_.find(id);
   if (binding != binding_calls_.end()) {
-    auto callback = std::move(binding->second.callback); binding_calls_.erase(binding);
+    auto callback = std::exchange(binding->second.callback, nullptr); binding_calls_.erase(binding);
     callback(false,"Native deferred binding dispatch failed"); return;
   }
   utility_worlds_.erase(id); session_trees_.erase(id);

@@ -90,7 +90,7 @@ bool WorkerToolResult(int id, bool ok, const void* data, size_t size, const std:
   auto found = worker_calls_.find(id); if (found == worker_calls_.end()) return false;
   if (found->second.session != session) { Error("Native worker protocol session mismatch"); return true; }
   const bool expired=found->second.expired||Now()>=found->second.deadline;
-  auto callback = std::move(found->second.callback); worker_calls_.erase(found);
+  auto callback = std::exchange(found->second.callback, nullptr); worker_calls_.erase(found);
   if(expired)callback(false,"Native worker bootstrap original deadline expired");
   else if (size > 1048576) callback(false,"Native worker bootstrap response exceeds limit");
   else callback(ok,size ? std::string(static_cast<const char*>(data),size) : "{}");

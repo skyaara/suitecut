@@ -35,7 +35,7 @@ void NativeTraceDOM(suitecut::TraceJournal::Lease lease,uint64_t call,const std:
   for(const auto& [frame,state]:frame_states_)if(state.context&&!state.loader.empty()&&(state.session.empty()||sessions_.contains(state.session))){loaders[frame]=state.loader;target_sessions.insert(state.session);}
   if(target_sessions.empty()){if(done)done();return;}
   struct Batch {size_t remaining;std::function<void()> done;};auto batch=std::make_shared<Batch>(Batch{target_sessions.size(),std::move(done)});
-  const auto finish=[batch]{if(batch->remaining&&!--batch->remaining&&batch->done){auto done=std::move(batch->done);done();}};
+  const auto finish=[batch]{if(batch->remaining&&!--batch->remaining&&batch->done){auto done=std::exchange(batch->done, nullptr);done();}};
   for(const auto& session:target_sessions){
     if(native_trace_protocol_.size()>=8||!engine_.TraceClaim()){traces->CaptureError(lease,"Native trace physical DOM capture capacity exceeded");finish();continue;}
     const int assigned=AllocateDevToolsId();if(!assigned){engine_.TraceRelease();traces->CaptureError(lease,"Native trace DevTools identity exhausted");finish();continue;}
@@ -61,14 +61,14 @@ bool NativeTraceProtocolResult(int id,bool ok,const void* bytes,size_t size,cons
 }
 bool NativeTraceDispatchReady(int id){const auto found=native_trace_protocol_.find(id);if(found==native_trace_protocol_.end())return false;if(!found->second.expired&&(found->second.deadline<=0||Now()<found->second.deadline))return true;auto work=std::move(found->second);native_trace_protocol_.erase(found);NativeTracePhysicalRelease(work);if(work.reply)work.reply(false,"Native trace DOM capture expired before dispatch");return false;}
 void NativeTraceDispatchFailed(int id){const auto found=native_trace_protocol_.find(id);if(found==native_trace_protocol_.end())return;auto work=std::move(found->second);native_trace_protocol_.erase(found);NativeTracePhysicalRelease(work);if(work.reply)work.reply(false,"Native trace DOM protocol dispatch failed");}
-void NativeTraceSessionDetached(const std::string& session){std::vector<std::function<void(bool,const std::string&)>> replies;for(auto it=native_trace_protocol_.begin();it!=native_trace_protocol_.end();)if(it->second.session==session){if(it->second.reply)replies.push_back(std::move(it->second.reply));NativeTracePhysicalRelease(it->second);it=native_trace_protocol_.erase(it);}else++it;for(auto& reply:replies)reply(false,"Native trace frame target detached");}
+void NativeTraceSessionDetached(const std::string& session){std::vector<std::function<void(bool,const std::string&)>> replies;for(auto it=native_trace_protocol_.begin();it!=native_trace_protocol_.end();)if(it->second.session==session){if(it->second.reply)replies.push_back(std::exchange(it->second.reply, nullptr));NativeTracePhysicalRelease(it->second);it=native_trace_protocol_.erase(it);}else++it;for(auto& reply:replies)reply(false,"Native trace frame target detached");}
 void NativeTracePhysicalRelease(NativeTraceProtocolCall& work){engine_.TraceRelease(work.dom);if(work.release){auto release=std::move(work.release);release();}}
 #include "trace_phases.inc"
 bool NativeTraceNeedsTick() const{for(const auto& [id,work]:native_trace_protocol_)if(!work.expired)return true;return !native_wait_until_.empty()||NativeTraceScreenshots()||(native_trace_phases_&&native_trace_phases_->NeedsTick());}
 void NativeTraceTick(){
   if(native_trace_phases_)native_trace_phases_->Tick();
   if(NativeTraceScreenshots()&&Now()-native_trace_last_invalidate_>=100){native_trace_last_invalidate_=Now();browser_->GetHost()->Invalidate(PET_VIEW);}
-  std::vector<std::function<void(bool,const std::string&)>> expired;for(auto& [id,work]:native_trace_protocol_)if(!work.expired&&work.deadline>0&&Now()>=work.deadline){work.expired=true;if(work.reply)expired.push_back(std::move(work.reply));}for(auto& reply:expired)reply(false,"Native trace DOM capture deadline expired");
+  std::vector<std::function<void(bool,const std::string&)>> expired;for(auto& [id,work]:native_trace_protocol_)if(!work.expired&&work.deadline>0&&Now()>=work.deadline){work.expired=true;if(work.reply)expired.push_back(std::exchange(work.reply, nullptr));}for(auto& reply:expired)reply(false,"Native trace DOM capture deadline expired");
   std::vector<int> waited;for(const auto& [id,until]:native_wait_until_)if(Now()>=until)waited.push_back(id);for(int id:waited)Complete(id,true);
 }
 void NativeTraceClear(){if(native_trace_phases_)native_trace_phases_->Clear();for(auto& [id,work]:native_trace_protocol_)NativeTracePhysicalRelease(work);native_trace_protocol_.clear();native_trace_api_.clear();native_wait_until_.clear();}

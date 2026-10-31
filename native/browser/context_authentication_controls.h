@@ -76,7 +76,7 @@ class NativeContextAuthenticationControls {
       found->second.preparing=false;if(!ok){
         found->second.success=false;found->second.error=error.substr(0,4096);
         const auto state=states_.find(found->second.context);if(state!=states_.end()){state->second.closing=true;state->second.snapshot->Set(nullptr);}
-        std::vector<Result>ready;for(auto&[key,target]:targets_){(void)key;if(target.context==found->second.context&&target.ready)ready.push_back(std::move(target.ready));}
+        std::vector<Result>ready;for(auto&[key,target]:targets_){(void)key;if(target.context==found->second.context&&target.ready)ready.push_back(std::exchange(target.ready, nullptr));}
         for(auto&callback:ready)callback(false,error);
         if(*alive){Finish(owner);}return;
       }
@@ -87,7 +87,7 @@ class NativeContextAuthenticationControls {
   void Cancel(int owner){const auto found=updates_.find(owner);if(found!=updates_.end()){found->second.logical_done=true;found->second.done={};}}
   void Tick(double now){if(!std::isfinite(now))return;std::vector<int>expired;for(const auto&[owner,update]:updates_)if(!update.logical_done&&update.deadline>0&&now>=update.deadline)expired.push_back(owner);for(const int owner:expired)FailLogical(owner,DeadlineError());}
   void Detach(const std::string&key){
-    const auto found=targets_.find(key);if(found==targets_.end())return;const int context=found->second.context;auto ready=std::move(found->second.ready);targets_.erase(found);
+    const auto found=targets_.find(key);if(found==targets_.end())return;const int context=found->second.context;auto ready=std::exchange(found->second.ready, nullptr);targets_.erase(found);
     const auto state=states_.find(context);if(state!=states_.end()){const int owner=state->second.owner;const auto update=updates_.find(owner);if(update!=updates_.end()){update->second.pending.erase(key);if(!update->second.preparing&&update->second.pending.empty())Finish(owner);}}
     if(ready)ready(false,"Native authentication target is closed");
     Notify(context);
@@ -113,7 +113,7 @@ class NativeContextAuthenticationControls {
   struct State{Snapshot snapshot;int owner=0;bool closing=false;uint64_t revision=0;};
   struct Target{int context;uint64_t generation;Apply apply;Result ready;bool in_flight=false;uint64_t revision=0;};
   struct Update{int context=0;uint64_t generation=0;double deadline=0;Result done;std::set<std::string>pending;bool preparing=false,logical_done=false,success=true;std::string error;};
-  void FailLogical(int owner,const std::string&error){const auto found=updates_.find(owner);if(found==updates_.end()||found->second.logical_done)return;found->second.logical_done=true;auto done=std::move(found->second.done);if(done)done(false,error);}
+  void FailLogical(int owner,const std::string&error){const auto found=updates_.find(owner);if(found==updates_.end()||found->second.logical_done)return;found->second.logical_done=true;auto done=std::exchange(found->second.done, nullptr);if(done)done(false,error);}
   void Dispatch(const std::string&key){
     const auto target=targets_.find(key);if(target==targets_.end()||target->second.in_flight)return;const auto state=states_.find(target->second.context);if(state==states_.end()||state->second.closing)return;
     const auto update=updates_.find(state->second.owner);if(update!=updates_.end()&&update->second.preparing)return;
@@ -124,7 +124,7 @@ class NativeContextAuthenticationControls {
       const int context=target->second.context;const auto state=states_.find(context);if(state==states_.end())return;const int owner=state->second.owner;const auto update=updates_.find(owner);
       if(ok&&state->second.revision!=setting&&update!=updates_.end()){if(!update->second.preparing)Dispatch(key);return;}
       const uint64_t update_generation=update==updates_.end()?0:update->second.generation;
-      auto ready=std::move(target->second.ready);if(ready)ready(ok,error);
+      auto ready=std::exchange(target->second.ready, nullptr);if(ready)ready(ok,error);
       if(!*alive)return;
       const auto current=updates_.find(owner);
       if(current!=updates_.end()&&current->second.generation==update_generation){current->second.pending.erase(key);if(!ok){current->second.success=false;if(current->second.error.empty())current->second.error=error.substr(0,4096);}if(!current->second.preparing&&current->second.pending.empty())Finish(owner);}

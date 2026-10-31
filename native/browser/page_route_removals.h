@@ -60,7 +60,7 @@ class NativePageRouteRemovals {
   void Clear(){
     if(closed_)return;
     closed_=true;*alive_=false;
-    std::vector<Reply>replies;for(auto&[operation,task]:active_){task->canceled=true;if(task->reply)replies.push_back(std::move(task->reply));task->DropMetadata();if(!task->dispatched)physical_->receipts.erase(task->receipt);}active_.clear();waits_.Clear();
+    std::vector<Reply>replies;for(auto&[operation,task]:active_){task->canceled=true;if(task->reply)replies.push_back(std::exchange(task->reply, nullptr));task->DropMetadata();if(!task->dispatched)physical_->receipts.erase(task->receipt);}active_.clear();waits_.Clear();
     for(auto&reply:replies)reply(false,"Native Page route removal observer disposed before callback settlement");
   }
   size_t pending()const{return active_.size();}
@@ -80,7 +80,7 @@ class NativePageRouteRemovals {
   static bool Current(NativePageRouteRemovals*self,const std::weak_ptr<bool>&weak,const std::shared_ptr<Task>&task){auto alive=weak.lock();if(!alive||!*alive||task->canceled)return false;const auto found=self->active_.find(task->operation);return found!=self->active_.end()&&found->second==task;}
   void Complete(const std::shared_ptr<Task>&task,bool ok,const std::string&error){
     const auto found=active_.find(task->operation);if(found==active_.end()||found->second!=task||task->canceled)return;
-    auto reply=std::move(task->reply);active_.erase(found);if(!task->dispatched)physical_->receipts.erase(task->receipt);task->canceled=true;task->DropMetadata();if(reply)reply(ok,error);
+    auto reply=std::exchange(task->reply, nullptr);active_.erase(found);if(!task->dispatched)physical_->receipts.erase(task->receipt);task->canceled=true;task->DropMetadata();if(reply)reply(ok,error);
   }
   uint64_t scope_,serial_=0;std::function<double()>now_;Emit emit_;NativeRouteCallbackWaits waits_;std::map<int,std::shared_ptr<Task>>active_;std::shared_ptr<Physical>physical_=std::make_shared<Physical>();std::shared_ptr<bool>alive_=std::make_shared<bool>(true);bool closed_=false;
 };

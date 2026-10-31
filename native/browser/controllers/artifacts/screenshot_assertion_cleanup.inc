@@ -94,7 +94,7 @@ void ScreenshotAssertionCleanupNext(const std::shared_ptr<ScreenshotAssertionCle
     });return;
   }
   if(!screenshot_assertion_retirement_.Acknowledge(work->physical,true,"",Now()))return;
-  auto done=std::move(work->done);screenshot_assertion_cleanup_.erase(current);
+  auto done=std::exchange(work->done, nullptr);screenshot_assertion_cleanup_.erase(current);
   if(done){done(true,"");}
   ScreenshotAssertionReceiptFinished(work->identity);
 }
@@ -111,5 +111,5 @@ void ScreenshotAssertionCleanupChannelClosed(){
   // Caller first supplies the exact native channel boundary to the policy and
   // controller. No ordinary cancel/navigation/reset can enter this function.
   auto retired=std::move(screenshot_assertion_cleanup_);screenshot_assertion_cleanup_.clear();
-  for(auto&[owner,work]:retired){(void)owner;auto done=std::move(work->done);if(done)done(false,"Actual native screenshot channel closed");}
+  for(auto&[owner,work]:retired){(void)owner;auto done=std::exchange(work->done, nullptr);if(done)done(false,"Actual native screenshot channel closed");}
 }

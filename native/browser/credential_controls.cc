@@ -31,7 +31,7 @@ size_t CredentialControls::Bytes(const std::vector<VirtualCredential>&items){siz
 void CredentialControls::ContextCreated(int context){if(context>0&&!profiles_.contains(context)&&profiles_.size()<32)profiles_.emplace(context,Profile{});}
 void CredentialControls::ContextClosed(int context){
   const auto found=profiles_.find(context);if(found==profiles_.end())return;const auto queue=found->second.queue;profiles_.erase(found);
-  for(const auto&item:queue){const auto active=work_.find(item->owner);if(active==work_.end())continue;retained_bytes_-=item->bytes;work_.erase(active);auto reply=std::move(item->reply);if(reply&&!item->canceled)reply(false,nullptr,"Native credential context closed");}
+  for(const auto&item:queue){const auto active=work_.find(item->owner);if(active==work_.end())continue;retained_bytes_-=item->bytes;work_.erase(active);auto reply=std::exchange(item->reply, nullptr);if(reply&&!item->canceled)reply(false,nullptr,"Native credential context closed");}
 }
 std::shared_ptr<const CredentialPage::Config>CredentialControls::Config(int context)const{
   const auto found=profiles_.find(context);if(found==profiles_.end())return nullptr;
@@ -130,7 +130,7 @@ void CredentialControls::Finish(std::shared_ptr<Work>item,bool ok,Dict result,co
   const NativeWorkOriginFrame handler_origin(item->handler_receipt.Origin());
   const auto active=work_.find(item->owner);if(active==work_.end())return;retained_bytes_-=item->bytes;work_.erase(active);
   const auto profile=profiles_.find(item->context);if(profile!=profiles_.end()){auto&queue=profile->second.queue;const auto found=std::find(queue.begin(),queue.end(),item);if(found!=queue.end())queue.erase(found);}
-  auto reply=std::move(item->reply);if(reply&&!item->canceled)reply(ok,result,error);Pump(item->context);
+  auto reply=std::exchange(item->reply, nullptr);if(reply&&!item->canceled)reply(ok,result,error);Pump(item->context);
 }
 void CredentialControls::Cancel(int owner){
   const auto found=work_.find(owner);if(found==work_.end())return;const auto item=found->second;item->canceled=true;item->reply=nullptr;

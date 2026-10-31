@@ -100,7 +100,7 @@ class NativeRouteMatcherSelections {
   }
   void Complete(uint64_t id,std::optional<NativeRouteRegistry::Invocation>invocation,const std::string&error,Failure failure=Failure::None){
     const auto found=entries_.find(id);if(found==entries_.end())return;
-    auto done=std::move(found->second.done);auto plan=std::move(found->second.plan);Erase(found);
+    auto done=std::exchange(found->second.done, nullptr);auto plan=std::move(found->second.plan);Erase(found);
     done(std::move(invocation),std::move(plan),error,failure);
   }
   void Erase(std::map<uint64_t,Entry>::iterator found){

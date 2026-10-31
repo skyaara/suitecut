@@ -460,7 +460,7 @@ void FormNativeControl(std::shared_ptr<FormNativeSelectionWork> work,const std::
   if(!wire||devtools_.size()>=1024){callback(false,"Native file-selection control capacity exceeded");return;}
   devtools_.emplace(wire,DevToolsCall{work->owner,suitecut::BindNativeLocatorHandlerAsync(std::move(callback)),work->session,true,65536,true});
   if(!SubmitDevTools(wire,method,params,work->session)){
-    const auto found=devtools_.find(wire);if(found!=devtools_.end()){auto done=std::move(found->second.callback);devtools_.erase(found);done(false,"Native file-selection control dispatch was refused");}
+    const auto found=devtools_.find(wire);if(found!=devtools_.end()){auto done=std::exchange(found->second.callback, nullptr);devtools_.erase(found);done(false,"Native file-selection control dispatch was refused");}
   }
 }
 // All file mutations, including already-staged ordinary uploads, enter the

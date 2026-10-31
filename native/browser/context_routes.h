@@ -101,7 +101,7 @@ class NativeContextRoutes {
   }
   void Detach(const std::string&owner){
     const auto target=targets_.find(owner);if(target==targets_.end())return;
-    auto ready=std::move(target->second.ready);targets_.erase(target);
+    auto ready=std::exchange(target->second.ready, nullptr);targets_.erase(target);
     std::vector<std::pair<int,uint64_t>>failed;for(auto&[operation,batch]:batches_)if(std::any_of(batch.pending.begin(),batch.pending.end(),[&](const auto&key){return key.first==owner;}))failed.emplace_back(operation,batch.generation);
     auto alive=alive_;for(const auto&[operation,generation]:failed){if(!*alive)break;Finish(operation,false,"Actual context route target closed before policy acknowledgement",generation);}
     if(ready)ready(false,"Actual context route owner closed before readiness acknowledgement");
@@ -111,16 +111,16 @@ class NativeContextRoutes {
     *state->second.policy_owner=false;for(auto&[id,route]:state->second.routes)route->Remove();
     states_.erase(state);
     std::vector<Result>replies;
-    for(auto it=batches_.begin();it!=batches_.end();)if(it->second.context==context){replies.push_back(std::move(it->second.reply));it=batches_.erase(it);}else ++it;
-    for(auto it=targets_.begin();it!=targets_.end();)if(it->second.context==context){if(it->second.ready)replies.push_back(std::move(it->second.ready));it=targets_.erase(it);}else ++it;
+    for(auto it=batches_.begin();it!=batches_.end();)if(it->second.context==context){replies.push_back(std::exchange(it->second.reply, nullptr));it=batches_.erase(it);}else ++it;
+    for(auto it=targets_.begin();it!=targets_.end();)if(it->second.context==context){if(it->second.ready)replies.push_back(std::exchange(it->second.ready, nullptr));it=targets_.erase(it);}else ++it;
     waits_.Closed(context);for(auto&reply:replies)reply(false,"Actual native routing context closed");
   }
   void Clear(){
     if(closed_)return;
     closed_=true;*alive_=false;
     std::vector<Result>replies;for(auto&[context,state]:states_){*state.policy_owner=false;for(auto&[id,route]:state.routes)route->Remove();}
-    for(auto&[operation,batch]:batches_)replies.push_back(std::move(batch.reply));
-    for(auto&[owner,target]:targets_)if(target.ready)replies.push_back(std::move(target.ready));
+    for(auto&[operation,batch]:batches_)replies.push_back(std::exchange(batch.reply, nullptr));
+    for(auto&[owner,target]:targets_)if(target.ready)replies.push_back(std::exchange(target.ready, nullptr));
     states_.clear();batches_.clear();targets_.clear();waits_.Clear();for(auto&reply:replies)reply(false,"Native context routing is closed");
   }
   class RemovalReservation;
@@ -166,7 +166,7 @@ class NativeContextRoutes {
     auto found=batches_.find(operation);if(found==batches_.end()||(expected&&found->second.generation!=expected))return;auto batch=std::move(found->second);batches_.erase(found);
     const bool expired=batch.deadline&&now_()>=batch.deadline;const std::string reason=expired?"Native context route original deadline exceeded":error;success=success&&!expired;
     auto state=states_.find(batch.context);if(state!=states_.end()&&state->second.operation==operation)state->second.operation=0;
-    auto reply=std::move(batch.reply);auto alive=alive_;if(!success&&batch.mutation==Mutation::Install)Rollback(batch.context,batch.ids);if(*alive)reply(success,reason);else reply(false,"Native context routing closed during policy rollback");
+    auto reply=std::exchange(batch.reply, nullptr);auto alive=alive_;if(!success&&batch.mutation==Mutation::Install)Rollback(batch.context,batch.ids);if(*alive)reply(success,reason);else reply(false,"Native context routing closed during policy rollback");
   }
   void Pump(const std::string&owner){
     auto found=targets_.find(owner);if(closed_||found==targets_.end()||found->second.busy)return;
@@ -176,7 +176,7 @@ class NativeContextRoutes {
     while(!target.queue.empty()&&target.queue.front().mutation==Mutation::Install&&!target.queue.front().route->available()){
       auto task=std::move(target.queue.front());target.queue.pop_front();if(task.batch){auto batch=batches_.find(task.batch);if(batch!=batches_.end()&&batch->second.generation==task.generation){batch->second.pending.erase({owner,task.route->id()});if(batch->second.pending.empty()){auto alive=alive_;Finish(task.batch,true,"",task.generation);if(!*alive)return;Pump(owner);return;}}}
     }
-    if(target.queue.empty()){auto ready=std::move(target.ready);if(ready)ready(true,"");return;}
+    if(target.queue.empty()){auto ready=std::exchange(target.ready, nullptr);if(ready)ready(true,"");return;}
     auto task=std::move(target.queue.front());target.queue.pop_front();const auto generation=target.generation;
     if(physical_->receipts.size()>=1024||physical_->serial==UINT64_MAX){auto failure=failure_;auto alive=alive_;failure(owner,"Native context route physical receipt capacity exceeded; actual channel must close");if(*alive&&task.batch)Finish(task.batch,false,"Native context route physical receipt capacity exceeded",task.generation);return;}
     target.busy=true;if(task.mutation==Mutation::Install)target.claims[task.route->id()]=task.route;
@@ -189,7 +189,7 @@ class NativeContextRoutes {
       if(task.batch){auto batch=batches_.find(task.batch);if(batch!=batches_.end()&&batch->second.generation==task.generation){batch->second.pending.erase({owner,task.route->id()});if(!ok||batch->second.pending.empty())Finish(task.batch,ok,error,task.generation);}}
       if(!*alive)return;
       found=targets_.find(owner);if(found==targets_.end()||found->second.generation!=generation)return;
-      if(!ok){auto ready=std::move(found->second.ready);auto failure=failure_;if(ready)ready(false,error);if(*alive)failure(owner,error);return;}
+      if(!ok){auto ready=std::exchange(found->second.ready, nullptr);auto failure=failure_;if(ready)ready(false,error);if(*alive)failure(owner,error);return;}
       Pump(owner);
     });
   }

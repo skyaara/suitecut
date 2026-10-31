@@ -25,7 +25,7 @@ void NativeTraceReadARIA(const suitecut::TracePhaseControls::Request& request,st
     NativeTracePhaseProtocol("Accessibility.getFullAXTree",params,document.session,request.deadline,false,[this,batch,document,request](bool ok,const std::string& json){
       if(batch->finished)return;
       const auto frame=frame_states_.find(document.frame);const auto traces=engine_.traces();
-      const auto fail=[batch](const std::string& cause){batch->finished=true;auto done=std::move(batch->done);if(done)done(false,"",cause);};
+      const auto fail=[batch](const std::string& cause){batch->finished=true;auto done=std::exchange(batch->done, nullptr);if(done)done(false,"",cause);};
       if(!ok){fail(NativeTracePhaseCause(json,"Native trace accessibility read failed"));return;}
       if(!traces->ChunkCurrent(request.scope)||frame==frame_states_.end()||frame->second.session!=document.session||frame->second.loader!=document.loader){fail("Native trace accessibility document epoch changed");return;}
       auto parsed=CefParseJSON(json,JSON_PARSER_RFC);auto result=parsed?parsed->GetDictionary():nullptr;auto nodes=result?result->GetList("nodes"):nullptr;int backend=0;
@@ -35,7 +35,7 @@ void NativeTraceReadARIA(const suitecut::TracePhaseControls::Request& request,st
       ++native_trace_aria_readbacks_;batch->forests.emplace(document.frame,forest);if(--batch->remaining)return;
       auto combined=CefListValue::Create();size_t index=0;for(const auto& [frame,roots]:batch->forests)for(size_t i=0;i<roots->GetSize();++i)combined->SetValue(index++,roots->GetValue(i)->Copy());auto value=CefValue::Create();value->SetList(combined);std::string encoded;
       if(!suitecut::DevToolsLosslessJSON(value,encoded,65536)){fail("Native trace accessibility forest exceeds 64 KiB");return;}
-      batch->finished=true;auto done=std::move(batch->done);if(done)done(true,std::move(encoded),"");
+      batch->finished=true;auto done=std::exchange(batch->done, nullptr);if(done)done(true,std::move(encoded),"");
     });
   }
 }

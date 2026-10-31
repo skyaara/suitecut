@@ -256,7 +256,7 @@ class SuiteCutContextWorkers::Client : public CefClient, public CefLifeSpanHandl
         controls_.emplace(id,Control{target,original?original:Now()+30000,[this,target,request,done=std::move(done)](bool ok,const std::string&json){const auto result=image_streams_?image_streams_->Resolve(target,request,ok,json):std::pair<bool,std::string>{ok,json};done(result.first,result.second);}});WakeDeadlines();
         auto params=CefDictionaryValue::Create();params->SetString("requestId",request);
         if(!SubmitDevTools(id,"Network.getResponseBody",params,target)){
-          const auto found=controls_.find(id);if(found!=controls_.end()){auto callback=std::move(found->second.callback);controls_.erase(found);callback(false,"CEF rejected actual broker response-body read");}
+          const auto found=controls_.find(id);if(found!=controls_.end()){auto callback=std::exchange(found->second.callback, nullptr);controls_.erase(found);callback(false,"CEF rejected actual broker response-body read");}
         }
       },[this]{return Now();},[this]{WakeDeadlines();});
     // HAR owns logical timeout. This callback settles only on actual CDP ACK
@@ -270,7 +270,7 @@ class SuiteCutContextWorkers::Client : public CefClient, public CefLifeSpanHandl
         if(closing_page_||!browser_){done(false,"Actual native broker request-body owner is closed");return;}
         const int id=AllocateDevToolsId();if(!id||controls_.size()>=128){done(false,"Native broker request-body command capacity exceeded");return;}
         controls_.emplace(id,Control{session,original?original:Now()+30000,std::move(done)});WakeDeadlines();auto params=CefDictionaryValue::Create();params->SetString("requestId",request);
-        if(!SubmitDevTools(id,"Network.getRequestPostData",params,session)){const auto found=controls_.find(id);if(found!=controls_.end()){auto done=std::move(found->second.callback);controls_.erase(found);done(false,"CEF rejected actual broker request-body read");}}
+        if(!SubmitDevTools(id,"Network.getRequestPostData",params,session)){const auto found=controls_.find(id);if(found!=controls_.end()){auto done=std::exchange(found->second.callback, nullptr);controls_.erase(found);done(false,"CEF rejected actual broker request-body read");}}
       },[this]{return Now();},[this]{WakeDeadlines();});
     request_reads_->Read(session,request,deadline,std::move(reply),std::move(receipt));
   }
@@ -352,7 +352,7 @@ class SuiteCutContextWorkers::Client : public CefClient, public CefLifeSpanHandl
         const auto mapped=worker_sessions_.find(closed);
         if(mapped!=worker_sessions_.end()){const auto& target=worker_targets_.at(mapped->second);if((target.published||target.observed)&&!target.context_destroyed){if(detached_targets_.size()>=kWorkerTargets){Error("Native context worker detached target capacity exceeded");return true;}detached_targets_[target.id]=target;}}
         WorkerConsoleSessionRemoved(closed);WorkerDetached(closed);
-        std::vector<DevToolsCallback> callbacks;for(auto it=controls_.begin();it!=controls_.end();)if(it->second.session==closed){callbacks.push_back(std::move(it->second.callback));it=controls_.erase(it);}else ++it;
+        std::vector<DevToolsCallback> callbacks;for(auto it=controls_.begin();it!=controls_.end();)if(it->second.session==closed){callbacks.push_back(std::exchange(it->second.callback, nullptr));it=controls_.erase(it);}else ++it;
         for(auto& callback:callbacks)callback(false,"Actual native worker target session detached");
       }return true;
     }
@@ -418,7 +418,7 @@ class SuiteCutContextWorkers::Client : public CefClient, public CefLifeSpanHandl
     if(pending.method==suitecut::CookieMethod::Filter){Dict evaluation;std::string error;if(!suitecut::BuildCookieFilterEvaluation(pending.params,pending.deadline,Now(),evaluation,error)){cookie_owners_.erase(owner);pending.reply(false,nullptr,error);return;}pending.params=evaluation;}
     // ControlSend retains the physical callback on original deadline expiry;
     // only a real CDP ACK or actual OnBeforeClose retires this owner.
-    const int control=ControlSend(suitecut::NativeCookieMethodName(pending.method),pending.params,"",[self=CefRefPtr<Client>(this),owner,reply=std::move(pending.reply)](bool ok,const std::string& json){
+    const int control=ControlSend(suitecut::NativeCookieMethodName(pending.method),pending.params,"",[self=CefRefPtr<Client>(this),owner,reply=std::exchange(pending.reply, nullptr)](bool ok,const std::string& json){
       self->cookie_owners_.erase(owner);self->cookie_controls_.erase(owner);
       auto parsed=ok?CefParseJSON(json,JSON_PARSER_RFC):nullptr;auto result=parsed?parsed->GetDictionary():nullptr;
       if(ok&&!result){reply(false,nullptr,"Actual native cookie reply is not an object");return;}
@@ -428,18 +428,18 @@ class SuiteCutContextWorkers::Client : public CefClient, public CefLifeSpanHandl
   }
   void CancelCookie(int owner){
     if(const auto found=cookie_waiting_.find(owner);found!=cookie_waiting_.end()){
-      auto reply=std::move(found->second.reply);cookie_waiting_.erase(found);cookie_owners_.erase(owner);reply(false,nullptr,"Native cookie command canceled before dispatch");return;
+      auto reply=std::exchange(found->second.reply, nullptr);cookie_waiting_.erase(found);cookie_owners_.erase(owner);reply(false,nullptr,"Native cookie command canceled before dispatch");return;
     }
     const auto pending=cookie_controls_.find(owner);if(pending==cookie_controls_.end())return;
     const auto control=controls_.find(pending->second);
     // Actual dispatched commands keep their physical completion callback. An
     // unsent job becomes stale in DispatchCurrent when its control is erased.
     if(control==controls_.end()||control->second.dispatched)return;
-    auto callback=std::move(control->second.callback);controls_.erase(control);callback(false,"Native cookie command canceled before dispatch");
+    auto callback=std::exchange(control->second.callback, nullptr);controls_.erase(control);callback(false,"Native cookie command canceled before dispatch");
   }
   void FlushCookieControls(){std::vector<int> owners;for(const auto&[id,pending]:cookie_waiting_)owners.push_back(id);for(int id:owners)DispatchCookie(id);}
   void FailQueuedCookies(const std::string& error){auto pending=std::move(cookie_waiting_);cookie_waiting_.clear();for(auto&[id,item]:pending){cookie_owners_.erase(id);item.reply(false,nullptr,error);}}
-  void CookieTick(){std::vector<int> expired;for(const auto&[id,pending]:cookie_waiting_)if(pending.deadline&&pending.deadline<=Now())expired.push_back(id);for(int id:expired){const auto found=cookie_waiting_.find(id);if(found==cookie_waiting_.end())continue;auto reply=std::move(found->second.reply);cookie_waiting_.erase(found);cookie_owners_.erase(id);reply(false,nullptr,"Native cookie original deadline expired before dispatch");}}
+  void CookieTick(){std::vector<int> expired;for(const auto&[id,pending]:cookie_waiting_)if(pending.deadline&&pending.deadline<=Now())expired.push_back(id);for(int id:expired){const auto found=cookie_waiting_.find(id);if(found==cookie_waiting_.end())continue;auto reply=std::exchange(found->second.reply, nullptr);cookie_waiting_.erase(found);cookie_owners_.erase(id);reply(false,nullptr,"Native cookie original deadline expired before dispatch");}}
   void Run(int owner) {
     const auto request=waiting_.find(owner);if(request==waiting_.end()||!operations_.Contains(owner))return;
     const suitecut::NativeWorkOriginFrame handler_origin(request->second.origin.Origin());
@@ -475,8 +475,8 @@ class SuiteCutContextWorkers::Client : public CefClient, public CefLifeSpanHandl
   static std::string Json(Dict dict){auto value=CefValue::Create();value->SetDictionary(dict);return CefWriteJSON(value,JSON_WRITER_DEFAULT);}
   int AllocateDevToolsId(){return next_call_==std::numeric_limits<int>::max()?0:++next_call_;}
   void DeferredFailure(int id,const std::string& error) {
-    if(auto found=controls_.find(id);found!=controls_.end()){auto callback=std::move(found->second.callback);controls_.erase(found);callback(false,error);return;}
-    if(auto found=worker_calls_.find(id);found!=worker_calls_.end()){auto callback=std::move(found->second.callback);worker_calls_.erase(found);callback(false,error);return;}
+    if(auto found=controls_.find(id);found!=controls_.end()){auto callback=std::exchange(found->second.callback, nullptr);controls_.erase(found);callback(false,error);return;}
+    if(auto found=worker_calls_.find(id);found!=worker_calls_.end()){auto callback=std::exchange(found->second.callback, nullptr);worker_calls_.erase(found);callback(false,error);return;}
     if(auto found=devtools_.find(id);found!=devtools_.end()){auto call=std::move(found->second);devtools_.erase(found);if(call.retain_after_cancel||operations_.Contains(call.owner))call.callback(false,error);return;}
     Error(error.c_str());
   }
@@ -549,7 +549,7 @@ class SuiteCutContextWorkers::Client : public CefClient, public CefLifeSpanHandl
     if(!operations_.Finish(owner))return;
     WorkerCancel(owner);event_predicates_.Cancel(owner);event_waiters_.erase(owner);operation_sessions_.erase(owner);
     for(auto it=devtools_.begin();it!=devtools_.end();)if(it->second.owner==owner&&!it->second.retain_after_cancel)it=devtools_.erase(it);else++it;
-    const auto found=waiting_.find(owner);if(found==waiting_.end())return;auto reply=std::move(found->second.reply);waiting_.erase(found);
+    const auto found=waiting_.find(owner);if(found==waiting_.end())return;auto reply=std::exchange(found->second.reply, nullptr);waiting_.erase(found);
     auto parsed=json.empty()?nullptr:CefParseJSON(json,JSON_PARSER_RFC);auto value=parsed?parsed->GetDictionary():nullptr;
     // Arrays/primitive operation results are carried intact in this envelope.
     if(parsed&&!value){value=CefDictionaryValue::Create();value->SetValue("result",parsed);}

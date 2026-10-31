@@ -126,7 +126,7 @@ class NativeContextWorkerNetwork {
       if(!*alive)return;
       auto found=pending_.find(operation);if(found==pending_.end()||found->second.generation!=generation)return;
       if(ok&&terminal)for(auto&[id,entry]:entries_)if(entry->route_owner&&entry->route_owner->owner==actual&&entry->route_owner->scope==scope&&entry->route_owner->invocation==invocation)entry->route_owner.reset();
-      auto reply=std::move(found->second.reply);pending_.erase(found);if(reply)reply(ok,result,error);
+      auto reply=std::exchange(found->second.reply, nullptr);pending_.erase(found);if(reply)reply(ok,result,error);
     });return true;
   }
   bool Handle(int owner,int context,const std::string& id,Dict params,double deadline,Reply reply){
@@ -140,7 +140,7 @@ class NativeContextWorkerNetwork {
     auto done=[this,alive=alive_,owner,generation](bool ok,Dict value,const std::string&error){
       if(!*alive)return;
       const auto found=pending_.find(owner);if(found==pending_.end()||found->second.generation!=generation)return;
-      auto reply=std::move(found->second.reply);pending_.erase(found);
+      auto reply=std::exchange(found->second.reply, nullptr);pending_.erase(found);
       if(reply)reply(ok,value,error);
     };
     if(body){backend.body(alias.session,alias.native,deadline,[done=std::move(done)](bool ok,Bytes bytes,const std::string&error){
@@ -159,11 +159,11 @@ class NativeContextWorkerNetwork {
     for(auto it=aliases_.begin();it!=aliases_.end();)if(it->first.starts_with(owner+"\n"))it=aliases_.erase(it);else ++it;
     for(auto&[id,entry]:entries_){entry->aliases.erase(owner);if(entry->route_owner&&entry->route_owner->owner==owner)entry->route_owner.reset();}
     std::vector<int> canceled;for(const auto&[id,pending]:pending_)if(pending.owner==owner&&!pending.body)canceled.push_back(id);
-    for(const auto id:canceled){const auto found=pending_.find(id);auto reply=std::move(found->second.reply);pending_.erase(found);if(reply)reply(false,nullptr,"Actual worker network observation channel closed");}
+    for(const auto id:canceled){const auto found=pending_.find(id);auto reply=std::exchange(found->second.reply, nullptr);pending_.erase(found);if(reply)reply(false,nullptr,"Actual worker network observation channel closed");}
   }
   void Closed(int context){
     std::vector<int> canceled;for(const auto&[id,pending]:pending_)if(pending.context==context)canceled.push_back(id);
-    for(const auto id:canceled){auto found=pending_.find(id);auto reply=std::move(found->second.reply);CancelOwner(id);if(reply)reply(false,nullptr,"Native browser context is closed");}
+    for(const auto id:canceled){auto found=pending_.find(id);auto reply=std::exchange(found->second.reply, nullptr);CancelOwner(id);if(reply)reply(false,nullptr,"Native browser context is closed");}
     std::vector<std::string> owners;for(const auto&[id,value]:owners_)if(value.context==context)owners.push_back(id);for(const auto&id:owners)Detach(id);
     std::vector<std::string> entries;for(const auto&[id,value]:entries_)if(value->context==context)entries.push_back(id);for(const auto&id:entries)Erase(id);
   }

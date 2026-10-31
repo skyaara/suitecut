@@ -61,7 +61,7 @@ class NativeNetworkBodyTransfers {
   void Finish(uint64_t id,bool ok,const std::string& error) {
     const auto found=entries_.find(id);if(found==entries_.end())return;
     auto entry=std::move(found->second);entries_.erase(found);byte_count_-=entry->bytes.size();
-    auto done=std::move(entry->done);std::vector<uint8_t>().swap(entry->bytes);done(id,ok,error);
+    auto done=std::exchange(entry->done, nullptr);std::vector<uint8_t>().swap(entry->bytes);done(id,ok,error);
   }
   Emit emit_;std::map<uint64_t,std::shared_ptr<Entry>> entries_;size_t byte_count_=0;uint64_t serial_=0,last_emitted_=0;
 };

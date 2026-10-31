@@ -34,7 +34,7 @@ class NativeContextConsoleControls {
     journal_.push_back({record,bytes});journal_bytes_+=bytes;
     std::vector<Reply> completed;
     for(auto it=waiters_.begin();it!=waiters_.end();) {
-      if(Matches(it->second,record)){completed.push_back(std::move(it->second.reply));it=waiters_.erase(it);}else ++it;
+      if(Matches(it->second,record)){completed.push_back(std::exchange(it->second.reply, nullptr));it=waiters_.erase(it);}else ++it;
     }
     emit_(record);for(auto& reply:completed)reply(true,record->Copy(false),"");return true;
   }
@@ -49,14 +49,14 @@ class NativeContextConsoleControls {
   void Tick(double now) {
     std::vector<Reply> expired;
     for(auto it=waiters_.begin();it!=waiters_.end();) {
-      if(it->second.deadline>0 && now>=it->second.deadline){expired.push_back(std::move(it->second.reply));it=waiters_.erase(it);}else ++it;
+      if(it->second.deadline>0 && now>=it->second.deadline){expired.push_back(std::exchange(it->second.reply, nullptr));it=waiters_.erase(it);}else ++it;
     }
     for(auto& reply:expired)reply(false,nullptr,"Native context console event deadline exceeded");
   }
   void Closed(int context) {
     std::vector<Reply> closing;
     for(auto it=waiters_.begin();it!=waiters_.end();) {
-      if(it->second.context==context){closing.push_back(std::move(it->second.reply));it=waiters_.erase(it);}else ++it;
+      if(it->second.context==context){closing.push_back(std::exchange(it->second.reply, nullptr));it=waiters_.erase(it);}else ++it;
     }
     for(auto it=journal_.begin();it!=journal_.end();) {
       if(it->value->GetInt("contextId")==context){journal_bytes_-=it->bytes;it=journal_.erase(it);}else ++it;

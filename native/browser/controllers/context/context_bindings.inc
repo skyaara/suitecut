@@ -48,7 +48,7 @@ void SuiteCutContextControls::RegisterContextBinding(int context, int owner, Dic
       found->second.pages.erase(page);
       if (!found->second.pages.empty()) return;
       auto result = Result(found->second.context); result->SetInt("entryId",found->second.entry);
-      auto reply = std::move(found->second.reply); self->binding_batches_.erase(found); reply(true,result,"");
+      auto reply = std::exchange(found->second.reply, nullptr); self->binding_batches_.erase(found); reply(true,result,"");
     });
   }
 }

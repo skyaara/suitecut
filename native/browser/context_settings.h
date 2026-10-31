@@ -194,8 +194,8 @@ class ContextSettingsPage:public std::enable_shared_from_this<ContextSettingsPag
     if(closed_||session.size()>128||!done||states_.contains(session)||states_.size()>=1024||queue_.size()>=64){if(done)done(false,"Native context settings target capacity or identity conflict");return;}
     auto work=std::make_shared<Work>();work->session=session;work->steps=std::move(steps);work->done=std::move(done);states_.emplace(session,work);queue_.push_back(work);Pump();
   }
-  void Detach(const std::string&session){const auto found=states_.find(session);if(found==states_.end())return;auto work=found->second;states_.erase(found);work->detached=true;auto done=std::move(work->done);if(done)done(false,"Native context settings target detached");if(!physical_)Pump();}
-  void Clear(){closed_=true;auto rows=std::move(states_);states_.clear();queue_.clear();for(auto&[session,work]:rows){work->detached=true;auto done=std::move(work->done);if(done)done(false,"Native context settings page closed");}active_.reset();physical_=false;}
+  void Detach(const std::string&session){const auto found=states_.find(session);if(found==states_.end())return;auto work=found->second;states_.erase(found);work->detached=true;auto done=std::exchange(work->done, nullptr);if(done)done(false,"Native context settings target detached");if(!physical_)Pump();}
+  void Clear(){closed_=true;auto rows=std::move(states_);states_.clear();queue_.clear();for(auto&[session,work]:rows){work->detached=true;auto done=std::exchange(work->done, nullptr);if(done)done(false,"Native context settings page closed");}active_.reset();physical_=false;}
   size_t targets()const{return states_.size();}
   size_t pending()const{return queue_.size();}
   bool physical()const{return physical_;}
@@ -211,7 +211,7 @@ class ContextSettingsPage:public std::enable_shared_from_this<ContextSettingsPag
   }
   void Finish(const std::shared_ptr<Work>&work,bool ok,const std::string&error){
     if(active_!=work)return;
-    auto done=std::move(work->done);if(!queue_.empty()&&queue_.front()==work)queue_.pop_front();active_.reset();if(!ok){const auto found=states_.find(work->session);if(found!=states_.end()&&found->second==work)states_.erase(found);}if(done)done(ok,error);Pump();
+    auto done=std::exchange(work->done, nullptr);if(!queue_.empty()&&queue_.front()==work)queue_.pop_front();active_.reset();if(!ok){const auto found=states_.find(work->session);if(found!=states_.end()&&found->second==work)states_.erase(found);}if(done)done(ok,error);Pump();
   }
   Send send_;std::map<std::string,std::shared_ptr<Work>>states_;std::deque<std::shared_ptr<Work>>queue_;std::shared_ptr<Work>active_;bool physical_=false,closed_=false;
 };

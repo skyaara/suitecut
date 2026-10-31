@@ -517,7 +517,7 @@ auto Source::OnAfterCreated(CefRefPtr<CefBrowser> browser) -> void {
         if (!SubmitDevTools(id, method, params, session)) {
           const auto found = binding_calls_.find(id);
           if (found != binding_calls_.end()) {
-            auto callback = std::move(found->second.callback);
+            auto callback = std::exchange(found->second.callback, nullptr);
             binding_calls_.erase(found);
             callback(false, "Native binding command dispatch failed");
           }

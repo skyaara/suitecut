@@ -61,7 +61,7 @@ class NativeIdleControls:public std::enable_shared_from_this<NativeIdleControls>
     if(active_&&active_->owner==owner&&active_->generation==generation)return true;
     return std::any_of(queue_.begin(),queue_.end(),[&](const auto&work){return work->owner==owner&&work->generation==generation;});
   }
-  void Finish(bool ok,const std::string&error){auto work=std::move(active_);auto done=std::move(work->done);if(done)done(ok,error);}
+  void Finish(bool ok,const std::string&error){auto work=std::move(active_);auto done=std::exchange(work->done, nullptr);if(done)done(ok,error);}
   void Pump(){
     if(pumping_||closed_)return;
     pumping_=true;struct Restore{bool&value;~Restore(){value=false;}}restore{pumping_};

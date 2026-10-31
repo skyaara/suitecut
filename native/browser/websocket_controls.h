@@ -90,7 +90,7 @@ class NativeWebSocketControls {
   void Tick(double now) {
     if(disposed_)return;
     std::vector<Reply> expired;
-    for(auto it=waiters_.begin();it!=waiters_.end();)if(it->second.deadline>0&&now>=it->second.deadline){expired.push_back(std::move(it->second.reply));it=waiters_.erase(it);}else ++it;
+    for(auto it=waiters_.begin();it!=waiters_.end();)if(it->second.deadline>0&&now>=it->second.deadline){expired.push_back(std::exchange(it->second.reply, nullptr));it=waiters_.erase(it);}else ++it;
     for(auto& reply:expired)reply(false,nullptr,{},"Native WebSocket event deadline exceeded");
     size_t burst=0;
     while(!pending_.empty()&&burst++<16){
@@ -103,7 +103,7 @@ class NativeWebSocketControls {
       std::vector<std::pair<Reply,bool>> done;
       for(auto it=waiters_.begin();it!=waiters_.end();){
         const bool matches=Matches(it->second,record->event);
-        if(matches||Closed(it->second,record->event)){done.emplace_back(std::move(it->second.reply),matches);it=waiters_.erase(it);}else ++it;
+        if(matches||Closed(it->second,record->event)){done.emplace_back(std::exchange(it->second.reply, nullptr),matches);it=waiters_.erase(it);}else ++it;
       }
       for(auto& [reply,matches]:done)if(matches)reply(true,record->event,record->bytes,"");else reply(false,nullptr,{},"WebSocket closed");
     }

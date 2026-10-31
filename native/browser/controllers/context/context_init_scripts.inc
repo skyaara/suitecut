@@ -131,11 +131,11 @@ bool SuiteCutContextControls::InitScriptMessage(int page_id, CefRefPtr<CefFrame>
   const auto batch = script_batches_.find(owner); if (batch == script_batches_.end()) return true;
   batch->second.tokens.erase(token);
   if (!args->GetBool(1)) {
-    auto reply = std::move(batch->second.reply); CancelInitScript(owner);
+    auto reply = std::exchange(batch->second.reply, nullptr); CancelInitScript(owner);
     reply(false, nullptr, "Native renderer rejected context init script snapshot"); return true;
   }
   if (batch->second.tokens.empty()) {
-    const int context = batch->second.context; auto reply = std::move(batch->second.reply); script_batches_.erase(batch);
+    const int context = batch->second.context; auto reply = std::exchange(batch->second.reply, nullptr); script_batches_.erase(batch);
     reply(true, Result(context), "");
   }
   return true;
@@ -158,7 +158,7 @@ void SuiteCutContextControls::InitScriptFrameDestroyed(int page_id, const std::s
   }
   for (const int owner : failed) {
     const auto batch = script_batches_.find(owner); if (batch == script_batches_.end()) continue;
-    auto reply = std::move(batch->second.reply); CancelInitScript(owner);
+    auto reply = std::exchange(batch->second.reply, nullptr); CancelInitScript(owner);
     reply(false, nullptr, "Native frame closed during context init script registration");
   }
 }

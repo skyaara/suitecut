@@ -8,6 +8,10 @@
 #include <string>
 #include <sys/socket.h>
 #include <unistd.h>
+#ifndef SOCK_CLOEXEC
+// macOS has no SOCK_CLOEXEC; this test never execs, so the flag changes nothing.
+#define SOCK_CLOEXEC 0
+#endif
 using Reader=suitecut::AcceptedReaderWork;
 using Writer=suitecut::AcceptedWriterWork;
 int main(){

@@ -76,7 +76,7 @@ class DOMDomainLeases : public std::enable_shared_from_this<DOMDomainLeases> {
     if(s->enabled&&!s->owners.empty()){
       auto releases=std::move(s->releases);Replied(std::move(releases),true,"");
       if(s->dead||s->busy||s->failed)return;
-      std::vector<std::pair<std::string,Ready>> replies;for(auto&[id,lease]:s->owners){if(lease.ready)replies.emplace_back(id,std::move(lease.ready));}
+      std::vector<std::pair<std::string,Ready>> replies;for(auto&[id,lease]:s->owners){if(lease.ready)replies.emplace_back(id,std::exchange(lease.ready, nullptr));}
       for(auto&[id,reply]:replies){const bool live=!s->dead&&s->owners.contains(id);reply(live,live?"":"Native DOM lease retired during readiness");}
       if(s->dead||s->busy||s->failed)return;
     }
@@ -88,7 +88,7 @@ class DOMDomainLeases : public std::enable_shared_from_this<DOMDomainLeases> {
     if(s->enabled&&!s->owners.empty())return;
     if(!s->enabled&&!s->force_disable){
       std::vector<std::string> expired;for(const auto&[id,lease]:s->owners)if(lease.deadline&&hooks_.now()>=lease.deadline)expired.push_back(id);
-      for(const auto& id:expired){const auto found=s->owners.find(id);if(found==s->owners.end())continue;auto reply=std::move(found->second.ready);s->owners.erase(found);--owners_;if(reply)reply(false,"Native DOM original acquisition deadline expired");}
+      for(const auto& id:expired){const auto found=s->owners.find(id);if(found==s->owners.end())continue;auto reply=std::exchange(found->second.ready, nullptr);s->owners.erase(found);--owners_;if(reply)reply(false,"Native DOM original acquisition deadline expired");}
       if(s->dead||s->busy||s->failed)return;
       if(s->owners.empty()){Pump(s);return;}
     }

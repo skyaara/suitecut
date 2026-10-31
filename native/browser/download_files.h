@@ -13,6 +13,10 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#if defined(__APPLE__)
+#include <libproc.h>
+#include <sys/proc_info.h>
+#endif
 
 namespace suitecut {
 class DownloadDescriptor {
@@ -54,6 +58,21 @@ class DownloadFiles {
       const auto target=std::filesystem::read_symlink(entry.path(),error).string();
       if(!error&&target.starts_with(root_+"/"))return true;
       error.clear();
+    }
+#elif defined(__APPLE__)
+    // macOS reports descriptor paths with symlinks resolved (/private/var/...).
+    std::error_code error;
+    const auto root=std::filesystem::weakly_canonical(root_,error).string()+"/";
+    if(error)return false;
+    const int listed=proc_pidinfo(getpid(),PROC_PIDLISTFDS,0,nullptr,0);
+    if(listed<=0)return false;
+    std::vector<proc_fdinfo> fds(static_cast<size_t>(listed)/sizeof(proc_fdinfo)+16);
+    const int bytes=proc_pidinfo(getpid(),PROC_PIDLISTFDS,0,fds.data(),static_cast<int>(fds.size()*sizeof(proc_fdinfo)));
+    for(int index=0;index<bytes/static_cast<int>(sizeof(proc_fdinfo));++index){
+      if(fds[index].proc_fdtype!=PROX_FDTYPE_VNODE)continue;
+      vnode_fdinfowithpath info{};
+      if(proc_pidfdinfo(getpid(),fds[index].proc_fd,PROC_PIDFDVNODEPATHINFO,&info,sizeof(info))==sizeof(info)&&
+         std::string(info.pvip.vip_path).starts_with(root))return true;
     }
 #endif
     return false;

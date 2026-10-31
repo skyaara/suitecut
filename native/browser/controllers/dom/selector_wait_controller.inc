@@ -17,7 +17,7 @@ suitecut::SelectorWaitControls& SelectorWaits(){
       pending.selector_group_release=true;
       devtools_.emplace(call,std::move(pending));
       if(!SubmitDevTools(call,"Runtime.releaseObjectGroup",params,session)){
-        const auto found=devtools_.find(call);if(found!=devtools_.end()){auto done=std::move(found->second.callback);devtools_.erase(found);done(false,"{}");}
+        const auto found=devtools_.find(call);if(found!=devtools_.end()){auto done=std::exchange(found->second.callback, nullptr);devtools_.erase(found);done(false,"{}");}
       }
     });
   return *selector_waits_;
@@ -32,7 +32,7 @@ bool SelectorWaitRejectedSession(int id,bool success,const void* result,size_t s
   const auto json=std::string(static_cast<const char*>(result),size);
   const auto parsed=CefParseJSON(json,JSON_PARSER_RFC);const auto error=parsed?parsed->GetDictionary():nullptr;
   if(!error||error->GetType("code")!=VTYPE_INT||error->GetInt("code")!=-32001||error->GetType("message")!=VTYPE_STRING||error->GetString("message")!="Session with given id not found.")return false;
-  const auto expected=found->second.session;auto acknowledged=std::move(found->second.callback);devtools_.erase(found);
+  const auto expected=found->second.session;auto acknowledged=std::exchange(found->second.callback, nullptr);devtools_.erase(found);
   // This actual backend denial proves the exact accepted channel is gone.
   // Retire other physical work through the existing real-channel boundary;
   // the denied command's own callback remains alive until it settles below.

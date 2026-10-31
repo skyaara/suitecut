@@ -32,7 +32,7 @@ void DisposeNativeHandles(int id,Dict message){
       },session,true,65536,true,false});
       if(!SubmitDevTools(tool,"Runtime.releaseObjectGroup",params,session)){
         const auto found=devtools_.find(tool);
-        if(found!=devtools_.end()){auto callback=std::move(found->second.callback);devtools_.erase(found);callback(false,"Native handle disposal dispatch failed");}
+        if(found!=devtools_.end()){auto callback=std::exchange(found->second.callback, nullptr);devtools_.erase(found);callback(false,"Native handle disposal dispatch failed");}
       }
     },
     [this](const auto& handle){const auto found=handles_.find(handle.id);if(found!=handles_.end()&&found->second.group==handle.group)handles_.erase(found);},
