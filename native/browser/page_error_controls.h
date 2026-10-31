@@ -42,7 +42,7 @@ class PageErrorControls {
         auto remote=result?result->GetDictionary("result"):nullptr;
         if(ok&&remote&&!result->HasKey("exceptionDetails")&&remote->GetType("objectId")==VTYPE_STRING&&state->group_owned)state->group_installed=true;
         if(state->canceled){Cleanup(state);return;}
-        if(!ok||!remote||result->HasKey("exceptionDetails")||remote->GetType("objectId")!=VTYPE_STRING){Reject(state,"Native page error alias unavailable");return;}
+        if(!ok||!remote||result->HasKey("exceptionDetails")||remote->GetType("objectId")!=VTYPE_STRING){Publish(state,Described(state->details));return;}
         auto params=CefDictionaryValue::Create();params->SetString("objectId",remote->GetString("objectId"));params->SetBool("ownProperties",false);params->SetBool("generatePreview",false);
         Request(state,"Runtime.getProperties",params,[this,state](bool ok,Dict result){
           if(state->canceled){Cleanup(state);return;}
@@ -52,21 +52,19 @@ class PageErrorControls {
             if(name!="name"&&name!="message"&&name!="stack")continue;
             const auto value=property->GetDictionary("value");
             // Never execute author accessors or decode arbitrary author objects.
-            if(!value||value->GetString("type")!="string"||!value->HasKey("value")){Reject(state,"Native page error field is not a genuine string descriptor");return;}
+            // DOMException and platform errors keep name/message as prototype
+            // getters, so their Inspector description is the faithful text.
+            if(!value||value->GetString("type")!="string"||!value->HasKey("value")){Publish(state,Described(state->details));return;}
             if(metadata->HasKey(name)){Reject(state,"Duplicate native page error field descriptor");return;}
             DevToolsSetString(metadata,name,DevToolsString(value->GetValue("value")));
           }
-          if(!metadata->HasKey("name")||!metadata->HasKey("message")||!metadata->HasKey("stack")){Reject(state,"Native page error exact fields unavailable");return;}
+          if(!metadata->HasKey("name")||!metadata->HasKey("message")||!metadata->HasKey("stack")){Publish(state,Described(state->details));return;}
           if(JSON(metadata).size()>kResponse){Reject(state,"Native page error exact field limit exceeded");return;}
           Publish(state,metadata);
         });
         ReleaseRaw(state);
       });
-    }else{
-      const auto text=exception?(exception->HasKey("description")?DevToolsString(exception->GetValue("description")):exception->GetString("type")=="string"?DevToolsString(exception->GetValue("value")):preview_(exception)):DevToolsString(details->GetValue("text"));
-      auto metadata=CefDictionaryValue::Create();metadata->SetString("name","Error");DevToolsSetString(metadata,"message",text);DevToolsSetString(metadata,"stack",text);
-      Publish(state,metadata);
-    }
+    }else Publish(state,Described(details));
   }
   bool Accepts(int id,const std::string& session)const{const auto found=calls_.find(id);return found!=calls_.end()&&found->second.state->session==session;}
   bool Complete(int id,bool ok,const std::string& json,const std::string& session){
@@ -96,6 +94,12 @@ class PageErrorControls {
   struct State{uint64_t id=0;Dict details;std::string session,raw,group;size_t bytes=0,physical=0;double deadline=0;bool expired=false,canceled=false,group_owned=false,group_installed=false,raw_releasing=false,group_releasing=false,ready=false,delivered=false;Dict metadata;};
   using Done=std::function<void(bool,Dict)>;
   struct Call{std::shared_ptr<State> state;Done done;};
+  Dict Described(Dict details){
+    const auto exception=details->GetDictionary("exception");
+    const auto text=exception?(exception->HasKey("description")?DevToolsString(exception->GetValue("description")):exception->GetString("type")=="string"?DevToolsString(exception->GetValue("value")):preview_(exception)):DevToolsString(details->GetValue("text"));
+    auto metadata=CefDictionaryValue::Create();metadata->SetString("name","Error");DevToolsSetString(metadata,"message",text);DevToolsSetString(metadata,"stack",text);
+    return metadata;
+  }
   static std::string JSON(Dict value){auto wrapper=CefValue::Create();wrapper->SetDictionary(value);return CefWriteJSON(wrapper,JSON_WRITER_DEFAULT).ToString();}
   void Publish(const std::shared_ptr<State>& state,Dict metadata){
     const auto bytes=JSON(metadata).size();if(bytes>kResponse||bytes>kBytes-bytes_){Reject(state,"Native page error metadata capacity exceeded");return;}
