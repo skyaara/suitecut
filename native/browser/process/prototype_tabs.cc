@@ -16,9 +16,11 @@
 
 #include "include/cef_browser.h"
 #include "include/cef_client.h"
+#include "include/cef_command_line.h"
 #include "include/cef_devtools_message_observer.h"
 #include "include/cef_download_handler.h"
 #include "include/cef_jsdialog_handler.h"
+#include "include/cef_load_handler.h"
 #include "include/cef_permission_handler.h"
 #include "include/cef_parser.h"
 #include "include/cef_task.h"
@@ -40,6 +42,8 @@ struct Options {
   bool toolbar = true;  // false: no toolbar view, to isolate Chrome-style limits
   bool control = false;     // JSON-line commands on stdin, answers and events on stdout
   bool autodialog = false;  // accept JS dialogs instead of showing them
+  bool hold_dialogs = false;  // control mode: a dialog waits for a "dialog" command
+  int width = 1200, height = 800;
   std::string first_url;
   std::string permissions = "ask";  // ask: our toolbar's permission bar; allow; deny
 };
@@ -211,6 +215,7 @@ class Shell {
     std::function<void(bool)> answer;
   };
   std::vector<Prompt> prompts;
+  std::map<int, CefRefPtr<CefJSDialogCallback>> dialogs;
   void Ask(Prompt prompt);
   void Answer(bool allow);
   int active_ = 0, next_tab_ = 1, next_call_ = 1, open_browsers_ = 0;
@@ -225,6 +230,7 @@ class Client : public CefClient,
                public CefDownloadHandler,
                public CefJSDialogHandler,
                public CefPermissionHandler,
+               public CefLoadHandler,
                public CefDevToolsMessageObserver {
  public:
   explicit Client(bool toolbar) : toolbar_(toolbar) {}
@@ -233,6 +239,26 @@ class Client : public CefClient,
   CefRefPtr<CefDownloadHandler> GetDownloadHandler() override { return this; }
   CefRefPtr<CefJSDialogHandler> GetJSDialogHandler() override { return this; }
   CefRefPtr<CefPermissionHandler> GetPermissionHandler() override { return this; }
+  CefRefPtr<CefLoadHandler> GetLoadHandler() override { return this; }
+
+  void OnLoadingStateChange(CefRefPtr<CefBrowser> browser, bool loading, bool back, bool forward) override {
+    if (toolbar_) return;
+    auto event = Event("loading", TabOf(browser));
+    event->SetBool("loading", loading);
+    event->SetString("url", browser->GetMainFrame()->GetURL());
+    event->SetBool("back", back);
+    event->SetBool("forward", forward);
+    Emit(event);
+  }
+  void OnLoadError(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame, ErrorCode code,
+                   const CefString& text, const CefString& url) override {
+    if (toolbar_ || !frame->IsMain() || code == ERR_ABORTED) return;
+    auto event = Event("load-error", TabOf(browser));
+    event->SetInt("code", code);
+    event->SetString("error", text);
+    event->SetString("url", url);
+    Emit(event);
+  }
 
   // Alloy cancels downloads without a handler; save them like Chrome does.
   bool OnBeforeDownload(CefRefPtr<CefBrowser> browser, CefRefPtr<CefDownloadItem>,
@@ -262,8 +288,12 @@ class Client : public CefClient,
     event->SetInt("type", type);
     event->SetString("message", message);
     Emit(event);
-    if (!options.autodialog) return false;  // CEF shows its native dialog
-    callback->Continue(true, "");
+    if (options.autodialog) return callback->Continue(true, ""), true;
+    if (!options.hold_dialogs) return false;  // CEF shows its native dialog
+    // An earlier unanswered dialog on this tab is dismissed, as a page can show one at a time.
+    auto& held = shell.dialogs[TabOf(browser)];
+    if (held) held->Continue(false, "");
+    held = callback;
     return true;
   }
   // Alloy has no permission UI: without an answer a prompt waits forever and
@@ -347,6 +377,7 @@ class Client : public CefClient,
     return tab ? tab->id : 0;
   }
   void OnBeforeClose(CefRefPtr<CefBrowser> browser) override { shell.Closed(browser); }
+  void OnResetDialogState(CefRefPtr<CefBrowser> browser) override { shell.dialogs.erase(TabOf(browser)); }
   void OnDevToolsMethodResult(CefRefPtr<CefBrowser>, int message_id, bool success,
                               const void* result, size_t size) override {
     shell.Result(message_id, success, std::string(static_cast<const char*>(result), size));
@@ -382,7 +413,9 @@ class WindowDelegate : public CefWindowDelegate {
   cef_runtime_style_t GetWindowRuntimeStyle() override {
     return options.chrome_pages ? CEF_RUNTIME_STYLE_CHROME : CEF_RUNTIME_STYLE_ALLOY;
   }
-  CefRect GetInitialBounds(CefRefPtr<CefWindow>) override { return CefRect(120, 120, 1200, 800); }
+  CefRect GetInitialBounds(CefRefPtr<CefWindow>) override {
+    return CefRect(120, 120, options.width, options.height);
+  }
   void OnWindowCreated(CefRefPtr<CefWindow> window) override { shell.Build(window); }
   bool CanClose(CefRefPtr<CefWindow>) override { return shell.CanClose(); }
   void OnWindowDestroyed(CefRefPtr<CefWindow>) override {
@@ -463,6 +496,8 @@ void Shell::CloseTab(int id) {
   closing_views_.push_back(closing->view);
   if (auto browser = closing->view->GetBrowser()) browser->GetHost()->CloseBrowser(true);
   tabs_.erase(closing);
+  dialogs.erase(id);
+  Emit(Event("closed", id));
   Render();
 }
 
@@ -554,6 +589,10 @@ void Shell::Changed(CefRefPtr<CefBrowser> browser, const std::string* title, con
   if (!tab) return;
   if (title) tab->title = *title;
   if (url) tab->url = *url;
+  auto event = Event("page", tab->id);
+  event->SetString("title", tab->title);
+  event->SetString("url", tab->url);
+  Emit(event);
   Render();
 }
 
@@ -621,6 +660,29 @@ void Shell::Control(const std::string& line) {
   if (cmd == "open") return reply(true, number(NewTab(message->GetString("url"))));
   if (cmd == "select") return Select(tab), reply(Find(tab) != nullptr, nullptr);
   if (cmd == "close") return CloseTab(tab), reply(true, nullptr);
+  if (cmd == "back" || cmd == "forward" || cmd == "reload" || cmd == "stop") {
+    Tab* found = Find(tab);
+    const auto browser = found ? found->view->GetBrowser() : nullptr;
+    if (!browser) return reply(false, nullptr);
+    if (cmd == "back") browser->GoBack();
+    else if (cmd == "forward") browser->GoForward();
+    else if (cmd == "reload") browser->Reload();
+    else browser->StopLoad();
+    return reply(true, nullptr);
+  }
+  if (cmd == "permission") {
+    const bool pending = !prompts.empty();
+    Answer(message->GetBool("allow"));
+    return reply(pending, nullptr);
+  }
+  if (cmd == "dialog") {
+    const auto held = dialogs.find(tab);
+    if (held == dialogs.end()) return reply(false, nullptr);
+    const auto callback = held->second;
+    dialogs.erase(held);
+    callback->Continue(message->GetBool("accept"), message->GetString("text"));
+    return reply(true, nullptr);
+  }
   // Runs script in our toolbar, e.g. clicking its permission bar like a user.
   if (cmd == "ui") {
     const auto browser = toolbar_ ? toolbar_->GetBrowser() : nullptr;
@@ -737,6 +799,18 @@ void Shell::SelfTest() {
 class App : public CefApp, public CefBrowserProcessHandler {
  public:
   CefRefPtr<CefBrowserProcessHandler> GetBrowserProcessHandler() override { return this; }
+  // A page in a new document widget (RenderDocument, or the process swap
+  // BackForwardCache makes) reads outerWidth, outerHeight and screenX as 0
+  // until shortly after load in Alloy Views on macOS; Chrome never reports 0 for
+  // a visible window, and BotD flags it as headless. 7 of 40 navigations hit
+  // it, none with both features off.
+  void OnBeforeCommandLineProcessing(const CefString& process_type,
+                                     CefRefPtr<CefCommandLine> command_line) override {
+    if (!process_type.empty()) return;
+    std::string disabled = command_line->GetSwitchValue("disable-features");
+    disabled += std::string(disabled.empty() ? "" : ",") + "RenderDocument,BackForwardCache";
+    command_line->AppendSwitchWithValue("disable-features", disabled);
+  }
   // Renderer helpers register the same scheme whatever the browser mode.
   void OnRegisterCustomSchemes(CefRawPtr<CefSchemeRegistrar> registrar) override {
     RegisterSuiteCutInitScheme(registrar);
@@ -776,6 +850,9 @@ int Run(const CefMainArgs& args, int argc, char** argv) {
   options.control = Flag(argc, argv, "suitecut-prototype-control");
   options.autodialog = Flag(argc, argv, "suitecut-prototype-autodialog");
   options.first_url = Arg(argc, argv, "suitecut-prototype-url");
+  options.hold_dialogs = options.control && Arg(argc, argv, "suitecut-prototype-dialogs") == "control";
+  if (const auto size = Arg(argc, argv, "suitecut-prototype-size"); !size.empty())
+    std::sscanf(size.c_str(), "%dx%d", &options.width, &options.height);
   if (const auto value = Arg(argc, argv, "suitecut-prototype-permissions"); !value.empty())
     options.permissions = value;
   if (options.hide && options.chrome_pages) {
