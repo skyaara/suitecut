@@ -124,6 +124,23 @@ describe('native browser lifecycle', () => {
     }
   })
 
+  it('passes Chrome window mode to the native helper and rejects capture-only options', async () => {
+    vi.mocked(spawn).mockImplementationOnce(() => {
+      throw new Error('actual spawn failure')
+    })
+    await expect(
+      launchNativeBrowser({ executablePath: path, windowMode: 'chrome' }),
+    ).rejects.toThrow('actual spawn failure')
+    expect(spawn).toHaveBeenCalledWith(
+      path,
+      expect.arrayContaining(['--suitecut-window-mode=chrome']),
+      expect.any(Object),
+    )
+    await expect(
+      launchNativeBrowser({ executablePath: path, windowMode: 'chrome', headless: true }),
+    ).rejects.toThrow('cannot be headless or record video')
+  })
+
   it('uses private pipes and delivers physical frames without browser automation', async () => {
     const browser = await launch()
     const received = vi.fn()

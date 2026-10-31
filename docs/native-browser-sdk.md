@@ -57,6 +57,39 @@ process transport. `contexts()`, `defaultContext()`, `version()`, and
 also closes its owned context. Use `newContext()` followed by `context.newPage()`
 for a context shared by multiple pages.
 
+## Chrome window mode
+
+`windowMode: 'chrome'` shows SuiteCut's pages as ordinary Chrome windows that a
+person can use while the SDK drives them: tabs, the address bar, back/forward,
+menus, find, zoom, bookmarks, history, downloads and right-click menus. Combine it
+with `userDataDir` to keep cookies, logins and storage across restarts. Pages in
+`browser.defaultContext()` use that profile; `newPage()` and `newContext()` still
+create in-memory contexts.
+
+```ts
+const browser = await launchBrowser({
+  executablePath: '/absolute/path/to/suitecut-browser',
+  userDataDir: '/absolute/path/to/profile',
+  windowMode: 'chrome',
+})
+const page = browser.defaultContext().pages()[0]
+await page.goto('https://example.com')
+```
+
+A tab the person opens from Chrome's own UI (the new-tab button, Cmd+T or a
+restored session) becomes a page of the context it opened in, so `context.pages()`
+and the context `page` event include it and the SDK can drive it. DevTools, View
+Source and Inspect are hidden and refused in this mode. The window takes macOS
+focus and a Dock icon like any other app.
+
+CEF renders Chrome-style windows on screen only, so this mode cannot be combined
+with `headless` or `recordVideo`, and the live viewer and raw frame capture need
+the default `offscreen` mode. `page.screenshot()` still works. On macOS, CEF only
+draws Chrome's interface in its own top-level windows: embedding it inside
+another application's view falls back to a bare page without tabs or address bar.
+Each launch starts with the launch page rather than restoring the previous run's
+tabs, like Chrome's default New Tab startup; cookies, storage and history remain.
+
 `browser.close()` is idempotent for concurrent callers and waits for actual
 process closure. `browser.closed` observes that same process lifetime, including
 unexpected shutdown. `browser.source` provides the native capture frames/audio

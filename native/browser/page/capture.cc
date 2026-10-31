@@ -1,9 +1,11 @@
 // SPDX-License-Identifier: MIT
 #include "page/source.h"
 namespace suitecut::browser {
-[[gnu::noinline]] auto Source::OnPaint(CefRefPtr<CefBrowser>, PaintElementType type,
+[[gnu::noinline]] auto Source::OnPaint(CefRefPtr<CefBrowser> browser, PaintElementType type,
                                        const RectList& dirty, const void* buffer, int width,
                                        int height) -> void {
+  if (auto tab = AdoptedTab(browser))
+    return tab->OnPaint(browser, type, dirty, buffer, width, height);
   if (type == PET_VIEW) last_view_delivery_ms_ = Now();
   if (!native_paint_timestamp_) {
     ScreenshotAssertionViewPaint(type, width, height);
@@ -63,6 +65,7 @@ namespace suitecut::browser {
 auto Source::OnAcceleratedPaint(CefRefPtr<CefBrowser> browser, PaintElementType type,
                                 const RectList& dirty, const CefAcceleratedPaintInfo& info)
     -> void {
+  if (auto tab = AdoptedTab(browser)) return tab->OnAcceleratedPaint(browser, type, dirty, info);
   if (type == PET_VIEW) last_view_delivery_ms_ = Now();
   const auto& visible = info.extra.visible_rect;
   const int width = visible.width > 0 ? visible.width : info.extra.coded_size.width;
@@ -117,7 +120,8 @@ auto Source::OnAcceleratedPaint(CefRefPtr<CefBrowser> browser, PaintElementType 
 }
 #endif
 
-auto Source::OnPopupShow(CefRefPtr<CefBrowser>, bool show) -> void {
+auto Source::OnPopupShow(CefRefPtr<CefBrowser> browser, bool show) -> void {
+  if (auto tab = AdoptedTab(browser)) return tab->OnPopupShow(browser, show);
   show_popup_ = show;
   if (show && native_view_stale_ && browser_) browser_->GetHost()->Invalidate(PET_VIEW);
   if (!show) {
@@ -126,17 +130,22 @@ auto Source::OnPopupShow(CefRefPtr<CefBrowser>, bool show) -> void {
   }
 }
 
-auto Source::OnPopupSize(CefRefPtr<CefBrowser>, const CefRect& rect) -> void { popup_rect_ = rect; }
+auto Source::OnPopupSize(CefRefPtr<CefBrowser> browser, const CefRect& rect) -> void {
+  if (auto tab = AdoptedTab(browser)) return tab->OnPopupSize(browser, rect);
+  popup_rect_ = rect;
+}
 
-auto Source::GetAudioParameters(CefRefPtr<CefBrowser>, CefAudioParameters& params) -> bool {
+auto Source::GetAudioParameters(CefRefPtr<CefBrowser> browser, CefAudioParameters& params) -> bool {
+  if (auto tab = AdoptedTab(browser)) return tab->GetAudioParameters(browser, params);
   params.channel_layout = CEF_CHANNEL_LAYOUT_STEREO;
   params.sample_rate = 48000;
   params.frames_per_buffer = 960;
   return true;
 }
 
-auto Source::OnAudioStreamStarted(CefRefPtr<CefBrowser>, const CefAudioParameters& params,
+auto Source::OnAudioStreamStarted(CefRefPtr<CefBrowser> browser, const CefAudioParameters& params,
                                   int channels) -> void {
+  if (auto tab = AdoptedTab(browser)) return tab->OnAudioStreamStarted(browser, params, channels);
   audio_clock_.Reset();
 #if defined(__APPLE__)
   // Audio PTS is process-wide Mach TimeTicks; video PTS is relative to its
@@ -156,8 +165,10 @@ auto Source::OnAudioStreamStarted(CefRefPtr<CefBrowser>, const CefAudioParameter
   if (!audio_valid_) Error("Unsupported native audio format");
 }
 
-auto Source::OnAudioStreamPacket(CefRefPtr<CefBrowser>, const float** data, int frames, int64_t pts)
+auto Source::OnAudioStreamPacket(CefRefPtr<CefBrowser> browser, const float** data, int frames,
+                                 int64_t pts)
     -> void {
+  if (auto tab = AdoptedTab(browser)) return tab->OnAudioStreamPacket(browser, data, frames, pts);
   if (!audio_valid_ || frames < 1 || frames > 4096) return;
   const double received = Now();
   const double epoch =
@@ -194,7 +205,10 @@ auto Source::OnAudioStreamPacket(CefRefPtr<CefBrowser>, const float** data, int 
   SendPacket(header, std::move(pcm));
 }
 
-auto Source::OnAudioStreamStopped(CefRefPtr<CefBrowser>) -> void { audio_valid_ = false; }
+auto Source::OnAudioStreamStopped(CefRefPtr<CefBrowser> browser) -> void {
+  if (auto tab = AdoptedTab(browser)) return tab->OnAudioStreamStopped(browser);
+  audio_valid_ = false;
+}
 
 #include "controllers/media/audio_failure.inc"
 

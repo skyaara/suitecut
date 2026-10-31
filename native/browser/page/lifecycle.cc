@@ -46,6 +46,7 @@ auto Source::Error(const char* message) -> void {
 auto Source::GetFrameHandler() -> CefRefPtr<CefFrameHandler> { return this; }
 
 auto Source::OnFrameCreated(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame) -> void {
+  if (auto tab = AdoptedTab(browser)) return tab->OnFrameCreated(browser, frame);
   if (settings_bootstrap_ && !settings_committed_ && frame->IsMain()) {
     if (!engine_.contexts()->CredentialReadyStore()->RegisterBootstrap(
             browser->GetIdentifier(), browser->GetHost()->GetRequestContext())) {
@@ -59,17 +60,21 @@ auto Source::OnFrameCreated(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> f
   }
 }
 
-auto Source::OnFrameDestroyed(CefRefPtr<CefBrowser>, CefRefPtr<CefFrame> frame) -> void {
+auto Source::OnFrameDestroyed(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame) -> void {
+  if (auto tab = AdoptedTab(browser)) return tab->OnFrameDestroyed(browser, frame);
   engine_.contexts()->InitScriptFrameDestroyed(page_id_, frame->GetIdentifier().ToString());
 }
 
-auto Source::OnFrameDetached(CefRefPtr<CefBrowser>, CefRefPtr<CefFrame> frame) -> void {
+auto Source::OnFrameDetached(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame) -> void {
+  if (auto tab = AdoptedTab(browser)) return tab->OnFrameDetached(browser, frame);
   engine_.contexts()->InitScriptFrameDestroyed(page_id_, frame->GetIdentifier().ToString());
 }
 
-auto Source::OnProcessMessageReceived(CefRefPtr<CefBrowser>, CefRefPtr<CefFrame> frame,
+auto Source::OnProcessMessageReceived(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame,
                                       CefProcessId sender, CefRefPtr<CefProcessMessage> message)
     -> bool {
+  if (auto tab = AdoptedTab(browser))
+    return tab->OnProcessMessageReceived(browser, frame, sender, message);
   if (SettingsMessage(frame, sender, message)) return true;
   if (engine_.contexts()->InitScriptMessage(page_id_, frame, sender, message)) return true;
   if (sender == PID_RENDERER && message->GetName() == "suitecutInitScriptBootstrapError") {
@@ -89,16 +94,23 @@ auto Source::GetPermissionHandler() -> CefRefPtr<CefPermissionHandler> { return 
 
 auto Source::GetDialogHandler() -> CefRefPtr<CefDialogHandler> { return this; }
 
-auto Source::OnFileDialog(CefRefPtr<CefBrowser>, FileDialogMode mode, const CefString&,
-                          const CefString&, const std::vector<CefString>&,
-                          const std::vector<CefString>&, const std::vector<CefString>&,
+auto Source::OnFileDialog(CefRefPtr<CefBrowser> browser, FileDialogMode mode,
+                          const CefString& routed_arg2, const CefString& routed_arg3,
+                          const std::vector<CefString>& routed_arg4,
+                          const std::vector<CefString>& routed_arg5,
+                          const std::vector<CefString>& routed_arg6,
                           CefRefPtr<CefFileDialogCallback> callback) -> bool {
+  if (auto tab = AdoptedTab(browser))
+    return tab->OnFileDialog(browser, mode, routed_arg2, routed_arg3, routed_arg4, routed_arg5,
+                             routed_arg6, callback);
   return FormFileDialog(mode, callback);
 }
 
-auto Source::OnShowPermissionPrompt(CefRefPtr<CefBrowser>, uint64_t, const CefString& origin,
-                                    uint32_t requested,
+auto Source::OnShowPermissionPrompt(CefRefPtr<CefBrowser> browser, uint64_t routed_arg1,
+                                    const CefString& origin, uint32_t requested,
                                     CefRefPtr<CefPermissionPromptCallback> callback) -> bool {
+  if (auto tab = AdoptedTab(browser))
+    return tab->OnShowPermissionPrompt(browser, routed_arg1, origin, requested, callback);
   const auto granted = engine_.contexts()->AllowedPermissions(page_id_, origin.ToString());
   callback->Continue(suitecut::NativePermissionRequestGranted(requested, granted)
                          ? CEF_PERMISSION_RESULT_ACCEPT
@@ -106,9 +118,12 @@ auto Source::OnShowPermissionPrompt(CefRefPtr<CefBrowser>, uint64_t, const CefSt
   return true;
 }
 
-auto Source::OnRequestMediaAccessPermission(CefRefPtr<CefBrowser>, CefRefPtr<CefFrame>,
+auto Source::OnRequestMediaAccessPermission(CefRefPtr<CefBrowser> browser,
+                                            CefRefPtr<CefFrame> routed_arg1,
                                             const CefString& origin, uint32_t requested,
                                             CefRefPtr<CefMediaAccessCallback> callback) -> bool {
+  if (auto tab = AdoptedTab(browser))
+    return tab->OnRequestMediaAccessPermission(browser, routed_arg1, origin, requested, callback);
   callback->Continue(requested &
                      engine_.contexts()->AllowedMediaPermissions(page_id_, origin.ToString()));
   return true;
@@ -117,6 +132,7 @@ auto Source::OnRequestMediaAccessPermission(CefRefPtr<CefBrowser>, CefRefPtr<Cef
 auto Source::GetLifeSpanHandler() -> CefRefPtr<CefLifeSpanHandler> { return this; }
 
 auto Source::DoClose(CefRefPtr<CefBrowser> browser) -> bool {
+  if (auto tab = AdoptedTab(browser)) return tab->DoClose(browser);
   return engine_.contexts()->BeforeUnloadCloseApproved(page_id_, browser);
 }
 
@@ -136,8 +152,9 @@ auto Source::GetContextMenuHandler() -> CefRefPtr<CefContextMenuHandler> { retur
 
 auto Source::GetDisplayHandler() -> CefRefPtr<CefDisplayHandler> { return this; }
 
-auto Source::OnAddressChange(CefRefPtr<CefBrowser>, CefRefPtr<CefFrame> frame,
+auto Source::OnAddressChange(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame,
                              const CefString& address) -> void {
+  if (auto tab = AdoptedTab(browser)) return tab->OnAddressChange(browser, frame, address);
   if (!ready_ || !frame->IsMain()) return;
   const auto url = address.ToString();
   if (url.size() > 8192) {
@@ -149,25 +166,33 @@ auto Source::OnAddressChange(CefRefPtr<CefBrowser>, CefRefPtr<CefFrame> frame,
   SendPacket(header);
 }
 
-auto Source::CanDownload(CefRefPtr<CefBrowser>, const CefString&, const CefString&) -> bool {
+auto Source::CanDownload(CefRefPtr<CefBrowser> browser, const CefString& routed_arg1,
+                         const CefString& routed_arg2) -> bool {
+  if (auto tab = AdoptedTab(browser)) return tab->CanDownload(browser, routed_arg1, routed_arg2);
   return engine_.downloads()->CanDownload(page_id_);
 }
 
-auto Source::OnBeforeDownload(CefRefPtr<CefBrowser>, CefRefPtr<CefDownloadItem> item,
+auto Source::OnBeforeDownload(CefRefPtr<CefBrowser> browser, CefRefPtr<CefDownloadItem> item,
                               const CefString& name, CefRefPtr<CefBeforeDownloadCallback> callback)
     -> bool {
+  if (auto tab = AdoptedTab(browser)) return tab->OnBeforeDownload(browser, item, name, callback);
   return engine_.downloads()->Before(page_id_, item, name.ToString(), callback);
 }
 
-auto Source::OnDownloadUpdated(CefRefPtr<CefBrowser>, CefRefPtr<CefDownloadItem> item,
+auto Source::OnDownloadUpdated(CefRefPtr<CefBrowser> browser, CefRefPtr<CefDownloadItem> item,
                                CefRefPtr<CefDownloadItemCallback> callback) -> void {
+  if (auto tab = AdoptedTab(browser)) return tab->OnDownloadUpdated(browser, item, callback);
   engine_.downloads()->Updated(page_id_, item, callback);
 }
 
 auto Source::GetResourceRequestHandler(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame,
                                        CefRefPtr<CefRequest> request, bool navigation,
-                                       bool download, const CefString&, bool&)
+                                       bool download, const CefString& routed_arg5,
+                                       bool& routed_arg6)
     -> CefRefPtr<CefResourceRequestHandler> {
+  if (auto tab = AdoptedTab(browser))
+    return tab->GetResourceRequestHandler(browser, frame, request, navigation, download,
+                                          routed_arg5, routed_arg6);
   if (std::getenv("SUITECUT_NATIVE_RESOURCE_DIAGNOSTICS")) {
     const auto data = request->GetPostData();
     CefPostData::ElementVector elements;
@@ -191,9 +216,11 @@ auto Source::GetResourceRequestHandler(CefRefPtr<CefBrowser> browser, CefRefPtr<
   return engine_.downloads()->ResourceHandler(page_id_, frame, request, navigation, download);
 }
 
-auto Source::OnJSDialog(CefRefPtr<CefBrowser>, const CefString& origin, JSDialogType type,
+auto Source::OnJSDialog(CefRefPtr<CefBrowser> browser, const CefString& origin, JSDialogType type,
                         const CefString& message, const CefString& default_value,
                         CefRefPtr<CefJSDialogCallback> callback, bool& suppress) -> bool {
+  if (auto tab = AdoptedTab(browser))
+    return tab->OnJSDialog(browser, origin, type, message, default_value, callback, suppress);
   const auto name = type == JSDIALOGTYPE_ALERT     ? "alert"
                     : type == JSDIALOGTYPE_CONFIRM ? "confirm"
                                                    : "prompt";
@@ -206,8 +233,11 @@ auto Source::OnJSDialog(CefRefPtr<CefBrowser>, const CefString& origin, JSDialog
   return false;
 }
 
-auto Source::OnBeforeUnloadDialog(CefRefPtr<CefBrowser>, const CefString& message, bool,
-                                  CefRefPtr<CefJSDialogCallback> callback) -> bool {
+auto Source::OnBeforeUnloadDialog(CefRefPtr<CefBrowser> browser, const CefString& message,
+                                  bool routed_arg2, CefRefPtr<CefJSDialogCallback> callback)
+    -> bool {
+  if (auto tab = AdoptedTab(browser))
+    return tab->OnBeforeUnloadDialog(browser, message, routed_arg2, callback);
   const auto token = engine_.contexts()->BeforeUnloadCloseToken(page_id_);
   SuiteCutDialogControls::Decision decision;
   if (token)
@@ -224,21 +254,29 @@ auto Source::OnBeforeUnloadDialog(CefRefPtr<CefBrowser>, const CefString& messag
   return true;
 }
 
-auto Source::OnResetDialogState(CefRefPtr<CefBrowser>) -> void {
+auto Source::OnResetDialogState(CefRefPtr<CefBrowser> browser) -> void {
+  if (auto tab = AdoptedTab(browser)) return tab->OnResetDialogState(browser);
   if (dialogs_) dialogs_->Clear();
 }
 
-auto Source::OnDialogClosed(CefRefPtr<CefBrowser>) -> void {
+auto Source::OnDialogClosed(CefRefPtr<CefBrowser> browser) -> void {
+  if (auto tab = AdoptedTab(browser)) return tab->OnDialogClosed(browser);
   if (dialogs_) dialogs_->Closed();
 }
 
-auto Source::OnBeforeContextMenu(CefRefPtr<CefBrowser>, CefRefPtr<CefFrame>,
-                                 CefRefPtr<CefContextMenuParams>, CefRefPtr<CefMenuModel> model)
+auto Source::OnBeforeContextMenu(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> routed_arg1,
+                                 CefRefPtr<CefContextMenuParams> routed_arg2,
+                                 CefRefPtr<CefMenuModel> model)
     -> void {
-  model->Clear();
+  if (auto tab = AdoptedTab(browser))
+    return tab->OnBeforeContextMenu(browser, routed_arg1, routed_arg2, model);
+  // Automation pages never show a menu; a person's Chrome window keeps one.
+  if (ChromeWindowMode()) RemoveInspectionItems(model);
+  else model->Clear();
 }
 
-auto Source::GetViewRect(CefRefPtr<CefBrowser>, CefRect& rect) -> void {
+auto Source::GetViewRect(CefRefPtr<CefBrowser> browser, CefRect& rect) -> void {
+  if (auto tab = AdoptedTab(browser)) return tab->GetViewRect(browser, rect);
   rect = CefRect(0, 0, artifact_view_owner_ ? artifact_view_width_ : width_,
                  artifact_view_owner_ ? artifact_view_height_ : height_);
   if (!artifact_view_owner_) {
@@ -247,7 +285,8 @@ auto Source::GetViewRect(CefRefPtr<CefBrowser>, CefRect& rect) -> void {
   }
 }
 
-auto Source::GetScreenInfo(CefRefPtr<CefBrowser>, CefScreenInfo& info) -> bool {
+auto Source::GetScreenInfo(CefRefPtr<CefBrowser> browser, CefScreenInfo& info) -> bool {
+  if (auto tab = AdoptedTab(browser)) return tab->GetScreenInfo(browser, info);
   info.device_scale_factor = static_cast<float>(scale_);
   const auto screen = context_settings_ && context_settings_->screen
                           ? *context_settings_->screen
@@ -256,9 +295,22 @@ auto Source::GetScreenInfo(CefRefPtr<CefBrowser>, CefScreenInfo& info) -> bool {
   return true;
 }
 
+auto Source::AdoptedTab(const CefRefPtr<CefBrowser>& browser) -> CefRefPtr<Source> {
+  // Before its own browser exists, every callback belongs to this page.
+  if (!own_browser_id_ || !browser || browser->GetIdentifier() == own_browser_id_) return nullptr;
+  const int id = browser->GetIdentifier();
+  if (const auto found = tabs_.find(id); found != tabs_.end()) return found->second;
+  auto tab = engine_.TabClient(network_context_id_, width_, height_);
+  if (!tab) return nullptr;
+  tabs_.emplace(id, tab);
+  return tab;
+}
+
 auto Source::OnAfterCreated(CefRefPtr<CefBrowser> browser) -> void {
+  if (auto tab = AdoptedTab(browser)) return tab->OnAfterCreated(browser);
   const suitecut::NativeWorkOriginFrame native_creation(native_creation_origin_.Origin());
   browser_ = browser;
+  own_browser_id_ = browser->GetIdentifier();
   NativeInspectorOpened(engine_.AcceptedInspector(), browser->GetIdentifier(),
                         suitecut::AcceptedInspectorWork::Kind::Page);
   const auto native_inspector_callback = NativeInspectorCallback();
@@ -607,6 +659,11 @@ auto Source::OnAfterCreated(CefRefPtr<CefBrowser> browser) -> void {
 }
 
 auto Source::OnBeforeClose(CefRefPtr<CefBrowser> actual_browser) -> void {
+  if (auto tab = AdoptedTab(actual_browser)) {
+    tab->OnBeforeClose(actual_browser);
+    tabs_.erase(actual_browser->GetIdentifier());
+    return;
+  }
   const auto native_inspector_callback = NativeInspectorCallback();
   closing_page_ = true;
   SDKBrowserControlClosed();
@@ -767,25 +824,28 @@ auto Source::OnBeforeClose(CefRefPtr<CefBrowser> actual_browser) -> void {
   engine_.PageClosed(page_id_);
 }
 
-auto Source::OnBeforePopup(CefRefPtr<CefBrowser>, CefRefPtr<CefFrame>, int popup_id,
-                           const CefString& target_url, const CefString&,
-                           CefLifeSpanHandler::WindowOpenDisposition, bool, const CefPopupFeatures&,
-                           CefWindowInfo& window, CefRefPtr<CefClient>& client, CefBrowserSettings&,
-                           CefRefPtr<CefDictionaryValue>& extra_info, bool*) -> bool {
+auto Source::OnBeforePopup(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> routed_arg1,
+                           int popup_id, const CefString& target_url, const CefString& routed_arg4,
+                           CefLifeSpanHandler::WindowOpenDisposition routed_arg5, bool routed_arg6,
+                           const CefPopupFeatures& routed_arg7, CefWindowInfo& window,
+                           CefRefPtr<CefClient>& client, CefBrowserSettings& routed_arg10,
+                           CefRefPtr<CefDictionaryValue>& extra_info, bool* routed_arg12) -> bool {
+  if (auto tab = AdoptedTab(browser))
+    return tab->OnBeforePopup(browser, routed_arg1, popup_id, target_url, routed_arg4, routed_arg5,
+                              routed_arg6, routed_arg7, window, client, routed_arg10, extra_info,
+                              routed_arg12);
   if (closing_page_) return true;
   auto popup = engine_.PopupClient(page_id_, popup_id, target_url.ToString());
   if (!popup) return true;
   extra_info = engine_.BrowserInfo(popup->page_id_);
-  window.SetAsWindowless(0);
-#if defined(__APPLE__)
-  window.shared_texture_enabled =
-      CefCommandLine::GetGlobalCommandLine()->GetSwitchValue("suitecut-shared-texture") != "0";
-#endif
+  // Chrome-style popups keep CEF's window so tab dispositions open as tabs.
+  if (!ChromeWindowMode()) ConfigurePageWindow(window, popup->width_, popup->height_);
   client = popup;
   return false;
 }
 
-auto Source::OnBeforePopupAborted(CefRefPtr<CefBrowser>, int popup_id) -> void {
+auto Source::OnBeforePopupAborted(CefRefPtr<CefBrowser> browser, int popup_id) -> void {
+  if (auto tab = AdoptedTab(browser)) return tab->OnBeforePopupAborted(browser, popup_id);
   engine_.AbortPopup(page_id_, popup_id);
 }
 

@@ -79,6 +79,8 @@ class SuiteCutContextControls : public std::enable_shared_from_this<SuiteCutCont
   bool ContextClosePending(int context)const{const auto found=contexts_.find(context);return found!=contexts_.end()&&found->second.closing;}
   bool PhysicalOwner(int owner)const{return (cookies_&&cookies_->PhysicalOwner(owner))||(storage_&&storage_->PhysicalOwner(owner));}
   int ReservePopup(int opener_page, int popup_id, const std::string& initial_url);
+  // A tab a person opened from Chrome UI: an ordinary page of the context, without an opener.
+  int ReserveTab(int context) { return ReservePage(context, 0, 0); }
   void AbortPopup(int opener_page, int popup_id);
   void PageCreated(int page_id, CefRefPtr<CefBrowser> browser);
   void PageCreationFailed(int page_id, const std::string& error);

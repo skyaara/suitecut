@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: MIT
 #include "page/source.h"
 namespace suitecut::browser {
-auto Source::OnDevToolsMessage(CefRefPtr<CefBrowser>, const void* message, size_t size) -> bool {
+auto Source::OnDevToolsMessage(CefRefPtr<CefBrowser> browser, const void* message, size_t size)
+    -> bool {
+  if (auto tab = AdoptedTab(browser)) return tab->OnDevToolsMessage(browser, message, size);
   const auto native_inspector_callback = NativeInspectorCallback();
   DevToolsObserverScope observer(devtools_observer_depth_);
   if (std::getenv("SUITECUT_NATIVE_PROTOCOL_DIAGNOSTICS") && diagnostic_messages_++ < 2000)

@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: MIT
 #include "page/source.h"
 namespace suitecut::browser {
-auto Source::OnLoadEnd(CefRefPtr<CefBrowser>, CefRefPtr<CefFrame> frame, int status) -> void {
+auto Source::OnLoadEnd(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame, int status)
+    -> void {
+  if (auto tab = AdoptedTab(browser)) return tab->OnLoadEnd(browser, frame, status);
   if (frame->IsMain() && !settings_bootstrap_ && settings_page_ && !settings_started_) {
     settings_empty_seen_ = true;
     SettingsStart();
@@ -37,8 +39,10 @@ auto Source::OnLoadEnd(CefRefPtr<CefBrowser>, CefRefPtr<CefFrame> frame, int sta
   }
 }
 
-auto Source::OnLoadError(CefRefPtr<CefBrowser>, CefRefPtr<CefFrame> frame, ErrorCode code,
-                         const CefString&, const CefString&) -> void {
+auto Source::OnLoadError(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame, ErrorCode code,
+                         const CefString& routed_arg3, const CefString& routed_arg4) -> void {
+  if (auto tab = AdoptedTab(browser))
+    return tab->OnLoadError(browser, frame, code, routed_arg3, routed_arg4);
   if (frame->IsMain() && recovery_requested_ && code != ERR_ABORTED) {
     recovery_requested_ = false;
     RendererRecoveryHandlerFailed("Native handler renderer recovery navigation failed");
@@ -55,14 +59,17 @@ auto Source::OnLoadError(CefRefPtr<CefBrowser>, CefRefPtr<CefFrame> frame, Error
   }
 }
 
-auto Source::OnTitleChange(CefRefPtr<CefBrowser>, const CefString& title) -> void {
+auto Source::OnTitleChange(CefRefPtr<CefBrowser> browser, const CefString& title) -> void {
+  if (auto tab = AdoptedTab(browser)) return tab->OnTitleChange(browser, title);
   if (!closing_page_ && network_ &&
       !engine_.network_archive().PageTitle(network_context_id_, "page:" + std::to_string(page_id_),
                                            title.ToString()))
     NetworkFatal("Native HAR actual page title capacity exceeded");
 }
 
-auto Source::OnLoadStart(CefRefPtr<CefBrowser>, CefRefPtr<CefFrame> frame, TransitionType) -> void {
+auto Source::OnLoadStart(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame,
+                         TransitionType routed_arg2) -> void {
+  if (auto tab = AdoptedTab(browser)) return tab->OnLoadStart(browser, frame, routed_arg2);
   if (frame->IsMain()) {
     for (const auto& [id, handle] : handles_) {
       auto params = CefDictionaryValue::Create();
@@ -74,13 +81,16 @@ auto Source::OnLoadStart(CefRefPtr<CefBrowser>, CefRefPtr<CefFrame> frame, Trans
   }
 }
 
-auto Source::OnRenderViewReady(CefRefPtr<CefBrowser>) -> void {
+auto Source::OnRenderViewReady(CefRefPtr<CefBrowser> browser) -> void {
+  if (auto tab = AdoptedTab(browser)) return tab->OnRenderViewReady(browser);
   ++renderer_views_;
   CheckRendererRecovery();
 }
 
-auto Source::OnRenderProcessTerminated(CefRefPtr<CefBrowser>, TerminationStatus, int,
-                                       const CefString&) -> void {
+auto Source::OnRenderProcessTerminated(CefRefPtr<CefBrowser> browser, TerminationStatus routed_arg1,
+                                       int routed_arg2, const CefString& routed_arg3) -> void {
+  if (auto tab = AdoptedTab(browser))
+    return tab->OnRenderProcessTerminated(browser, routed_arg1, routed_arg2, routed_arg3);
   if (engine_.websocket_routes().HasPolicy(engine_.contexts()->ContextId(page_id_), page_id_) ||
       engine_.websocket_routes().Owns(NativeWebSocketPolicyOwner("")) || native_routed_active_ ||
       native_routed_configuring_)

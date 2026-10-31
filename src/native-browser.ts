@@ -145,6 +145,7 @@ const LaunchSchema = z
     pixelFormat: z.enum(['bgra', 'i420']).default('bgra'),
     frameTransport: z.enum(['always', 'on-demand']).default('always'),
     headless: z.boolean().default(false),
+    windowMode: z.enum(['offscreen', 'chrome']).default('offscreen'),
     backForwardCache: z.boolean().optional(),
     recordVideo: NativeRecordVideoSchema.optional(),
     startupTimeoutMs: z.number().int().min(100).max(120_000).default(30_000),
@@ -204,6 +205,11 @@ export interface NativeBrowserOptions {
   frameTransport?: 'always' | 'on-demand'
   /** Linux display-free software rendering; leaves Chromium's sandbox enabled. */
   headless?: boolean
+  /**
+   * `chrome` shows pages as real Chrome-style windows (tabs, omnibox, menus) a person can use
+   * alongside automation. Frame capture, recording and the live viewer need `offscreen`.
+   */
+  windowMode?: 'offscreen' | 'chrome'
   /** Omit/true preserves Chromium's policy; false disables its BackForwardCache at native launch. */
   backForwardCache?: boolean
   /** Record every page in the launch/default context, including persistent profiles and popups. */
@@ -420,6 +426,8 @@ export async function launchNativeBrowser(options: NativeBrowserOptions): Promis
   const config = LaunchSchema.parse(options)
   if (config.pixelFormat === 'i420' && (config.width % 2 || config.height % 2))
     throw new Error('I420 sources require even CSS dimensions')
+  if (config.windowMode === 'chrome' && (config.headless || config.recordVideo))
+    throw new Error('Chrome window mode shows real windows; it cannot be headless or record video')
   config.signal?.throwIfAborted()
   const temporaryProfile = config.userDataDir === undefined
   const requestedProfile = config.userDataDir ?? (await mkdtemp(join(tmpdir(), 'suitecut-cef-')))
@@ -462,6 +470,7 @@ export async function launchNativeBrowser(options: NativeBrowserOptions): Promis
         `--suitecut-pixel-format=${config.pixelFormat}`,
         `--suitecut-frame-transport=${config.frameTransport}`,
         `--suitecut-headless=${config.headless ? 1 : 0}`,
+        ...(config.windowMode === 'chrome' ? ['--suitecut-window-mode=chrome'] : []),
         ...(config.backForwardCache === false ? ['--disable-features=BackForwardCache'] : []),
         `--suitecut-profile=${profile}`,
         ...(config.tracesDir === undefined

@@ -51,6 +51,7 @@ class Source : public CefBaseRefCounted {
   ~Source() override { ++observation_->destroyed; }
   void OnAudioStreamError(CefRefPtr<CefBrowser>, const CefString&);
   void Error(const char* message) { observation_->errors.emplace_back(message); }
+  CefRefPtr<Source> AdoptedTab(const CefRefPtr<CefBrowser>&) { return nullptr; }
   std::atomic<bool> audio_valid_{true};
   std::atomic<bool> stopped_{false};
   bool closing_page_ = false;

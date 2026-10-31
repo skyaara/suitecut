@@ -1,5 +1,8 @@
 // SPDX-License-Identifier: MIT
 #pragma once
+#include <map>
+
+#include "page/window_mode.h"
 #include "runtime/engine.h"
 namespace suitecut::browser {
 class Source : public CefClient,
@@ -54,6 +57,11 @@ class Source : public CefClient,
   CefRefPtr<CefDownloadHandler> GetDownloadHandler() override;
   CefRefPtr<CefContextMenuHandler> GetContextMenuHandler() override;
   CefRefPtr<CefDisplayHandler> GetDisplayHandler() override;
+  CefRefPtr<CefCommandHandler> GetCommandHandler() override {
+    static CefRefPtr<CefCommandHandler> commands =
+        ChromeWindowMode() ? new ChromeWindowCommands : nullptr;
+    return commands;
+  }
   void OnAddressChange(CefRefPtr<CefBrowser>, CefRefPtr<CefFrame> frame,
                        const CefString& address) override;
   bool CanDownload(CefRefPtr<CefBrowser>, const CefString&, const CefString&) override;
@@ -562,6 +570,19 @@ class Source : public CefClient,
   const std::string handle_namespace_;
   std::thread reader_;
   CefRefPtr<CefBrowser> browser_;
+  // Chrome style hands a tab opened from Chrome UI (new tab button, session
+  // restore) the client of the tab beside it. That source keeps routing each
+  // such browser's callbacks to a page of its own.
+  int own_browser_id_ = 0;
+  std::map<int, CefRefPtr<Source>> tabs_;
+  CefRefPtr<Source> AdoptedTab(const CefRefPtr<CefBrowser>& browser);
+  // A Chrome UI tab already has its own first document, like a popup, so it
+  // skips the private initial empty document handshake.
+  void AdoptChromeTab() {
+    initial_empty_document_ = false;
+    initial_empty_ready_ = true;
+    settings_bootstrap_ = false;
+  }
   CefRefPtr<CefRegistration> observer_;
   IMPLEMENT_REFCOUNTING(Source);
 };

@@ -57,6 +57,42 @@ const viewerSpecs: Spec[] = [
   ['Private', 'Binds to 127.0.0.1 with a bearer token; no external scripts or CDNs'],
 ]
 
+const demos = [
+  {
+    name: 'agent-shops',
+    title: 'An agent does the shopping',
+    caption: 'It searches, adds two items and checks out, typing into a normal Chrome window.',
+  },
+  {
+    name: 'person-and-agent',
+    title: 'You and the agent share the browser',
+    caption:
+      'A person adds an item and opens checkout in a new tab. The agent picks up that tab and places the order.',
+  },
+  {
+    name: 'stays-signed-in',
+    title: 'It remembers you',
+    caption:
+      'Sign in once, quit, launch again: the profile keeps its cookies, so you are still signed in.',
+  },
+]
+
+const chromeWindowSpecs: Spec[] = [
+  ['Window', "Chromium's own tabs, address bar, menus, find, zoom and right-click menus"],
+  ['Shared tabs', 'Tabs a person opens become pages the agent can see and drive'],
+  ['Profile', 'Cookies, logins, storage and history survive restarts'],
+  ['Closed off', 'No DevTools, View Source or Inspect, and no open debugging port'],
+  ['Limits', 'Shown on screen, so no headless runs or frame capture; tested on macOS ARM64'],
+]
+
+const chromeWindowExample = `const browser = await launchBrowser({
+  executablePath: '/path/to/suitecut-browser',
+  userDataDir: '/path/to/profile',
+  windowMode: 'chrome',
+})
+const page = browser.defaultContext().pages()[0]
+await page.goto('https://example.com')`
+
 const families = [
   'Browser lifecycle',
   'Contexts and profiles',
@@ -152,6 +188,36 @@ const format = (value: number) => (value < 10 ? value.toFixed(2) : String(Math.r
         already have.
       </p>
     </section>
+
+    <h2 id="watch">Watch it work</h2>
+    <p>
+      SuiteCut can also open as a regular Chrome window that you and an AI agent use together. These
+      are unedited screen recordings of that window on a sample shop running locally. The tabs,
+      address bar and password prompt are Chromium's own; the typing comes from SuiteCut's browser
+      control.
+    </p>
+    <div class="demos">
+      {
+        demos.map((demo) => (
+          <figure class="demo">
+            <video
+              src={sitePath(`/demo/${demo.name}.mp4`)}
+              poster={sitePath(`/demo/${demo.name}.jpg`)}
+              autoplay
+              muted
+              loop
+              playsinline
+              preload="metadata"
+              aria-label={demo.title}
+            />
+            <figcaption>
+              <strong>{demo.title}</strong>
+              {demo.caption}
+            </figcaption>
+          </figure>
+        ))
+      }
+    </div>
 
     <h2 id="capabilities">How it fits together</h2>
     <p>
@@ -260,6 +326,24 @@ const format = (value: number) => (value < 10 ? value.toFixed(2) : String(Math.r
       {families.map((family) => <li>{family}</li>)}
     </ul>
 
+    <h3 id="chrome-window">A Chrome window people can use</h3>
+    <p>
+      Launch with <code>windowMode: 'chrome'</code> and the same browser control drives a full Chrome
+      window instead of an offscreen page. Add <code>userDataDir</code> and it keeps its profile between
+      runs.
+    </p>
+    <dl class="specs">
+      {
+        chromeWindowSpecs.map(([key, value]) => (
+          <div>
+            <dt>{key}</dt>
+            <dd>{value}</dd>
+          </div>
+        ))
+      }
+    </dl>
+    <CodeBlock code={chromeWindowExample} />
+
     <h3 id="viewer">Live viewer and human handover</h3>
     <dl class="specs">
       {
@@ -348,6 +432,20 @@ const format = (value: number) => (value < 10 ? value.toFixed(2) : String(Math.r
   </div>
 </BaseLayout>
 
+<script>
+  // Respect reduced motion: show the first frame with controls instead of looping.
+  function setupDemos() {
+    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    for (const video of document.querySelectorAll<HTMLVideoElement>('.demo video')) {
+      video.autoplay = false
+      video.pause()
+      video.controls = true
+    }
+  }
+
+  document.addEventListener('astro:page-load', setupDemos)
+</script>
+
 <style>
   .home {
     padding-top: 8rem;
@@ -374,6 +472,39 @@ const format = (value: number) => (value < 10 ? value.toFixed(2) : String(Math.r
     margin-top: 4.5rem;
     font-size: 1.5rem;
     line-height: 2rem;
+  }
+
+  /* Demo recordings */
+  .demos {
+    display: grid;
+    gap: 3rem;
+    margin: 2.5rem 0 0;
+  }
+
+  .demo {
+    margin: 0;
+  }
+
+  .demo video {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1600 / 1172;
+    border-radius: 0.5rem;
+    background: var(--panel);
+    box-shadow: 0 0 0 1px var(--line);
+  }
+
+  .demo figcaption {
+    margin-top: 1rem;
+    color: var(--muted);
+    font: 400 1rem / 1.75rem var(--sans);
+  }
+
+  .demo figcaption strong {
+    display: block;
+    color: var(--ink-strong);
+    font-weight: 500;
   }
 
   /* Specs */

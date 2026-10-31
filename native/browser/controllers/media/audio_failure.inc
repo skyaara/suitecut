@@ -1,6 +1,7 @@
 // Audio errors may arrive on the capture thread. Serialize their ownership
 // decision with page close on UI; closing_page_ and context state are UI-owned.
-auto Source::OnAudioStreamError(CefRefPtr<CefBrowser>, const CefString& message) -> void {
+auto Source::OnAudioStreamError(CefRefPtr<CefBrowser> browser, const CefString& message) -> void {
+  if (auto tab = AdoptedTab(browser)) return tab->OnAudioStreamError(browser, message);
   audio_valid_ = false;
   const auto detail = suitecut::DevToolsTruncateWTF8(message.ToString(), 2048);
   auto report = [self = CefRefPtr<Source>(this), alive = engine_.Alive(), detail] {

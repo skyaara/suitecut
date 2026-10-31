@@ -79,14 +79,11 @@ bool Engine::CreatePage(int page, int, CefRefPtr<CefRequestContext> context) {
   sources_[page] = source;
   if (page == 1) reader_source_ = source;
   CefWindowInfo window;
-  window.SetAsWindowless(0);
-#if defined(__APPLE__)
-  window.shared_texture_enabled =
-      CefCommandLine::GetGlobalCommandLine()->GetSwitchValue("suitecut-shared-texture") != "0";
-#endif
+  ConfigurePageWindow(window, view.width, view.height);
   CefBrowserSettings settings;
   settings.windowless_frame_rate = fps_;
-  settings.background_color = CefColorSetARGB(255, 0, 0, 0);
+  // Chrome windows keep Chromium's white default like any other browser.
+  if (!ChromeWindowMode()) settings.background_color = CefColorSetARGB(255, 0, 0, 0);
   if (CefBrowserHost::CreateBrowser(window, source, "about:blank", settings, BrowserInfo(page),
                                     context))
     return true;
@@ -102,6 +99,16 @@ CefRefPtr<Source> Engine::PopupClient(int opener, int popup_id, const std::strin
   const auto config = settings_.Get(contexts_->ContextId(page));
   const double scale = config && config->device_scale ? *config->device_scale : scale_;
   CefRefPtr<Source> source = new Source(writer_, *this, page, width, height, scale, i420_);
+  sources_[page] = source;
+  return source;
+}
+CefRefPtr<Source> Engine::TabClient(int context, int width, int height) {
+  const int page = contexts_->ReserveTab(context);
+  if (!page) return nullptr;
+  const auto config = settings_.Get(context);
+  const double scale = config && config->device_scale ? *config->device_scale : scale_;
+  CefRefPtr<Source> source = new Source(writer_, *this, page, width, height, scale, i420_);
+  source->AdoptChromeTab();
   sources_[page] = source;
   return source;
 }

@@ -18,6 +18,7 @@ class Engine {
   Dict VideoMetadata(int page) const;
   bool CreatePage(int page, int context, CefRefPtr<CefRequestContext> request_context);
   CefRefPtr<Source> PopupClient(int opener, int popup_id, const std::string& initial_url);
+  CefRefPtr<Source> TabClient(int context, int width, int height);
   bool PageCreated(int page, CefRefPtr<CefBrowser> browser);
   void PageClosed(int page);
   void AbortPopup(int opener, int popup_id);

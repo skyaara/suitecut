@@ -76,6 +76,11 @@ static int RunSuiteCutBrowserMain(
   std::string lock_error;
   if (persistent && !profile_lock.Acquire(actual_profile.string(), lock_error))
     return startup_error(lock_error.c_str());
+  // Chrome-style windows restore the previous session's tabs at startup,
+  // racing the launch page's ready handshake. Start fresh like Chrome's default
+  // "open the New Tab page"; cookies, storage and history are kept.
+  if (persistent && command->GetSwitchValue("suitecut-window-mode") == "chrome")
+    std::filesystem::remove_all(actual_profile / "Default" / "Sessions", profile_error);
   Writer writer(output);
   CefRefPtr<App> app = new App(writer);
 #if defined(__linux__)
