@@ -425,6 +425,13 @@ class Source : public CefClient,
   void CheckNavigations();
   void ScheduleRecordingSnapshot(const std::string& id, int delay = 25);
   [[gnu::noinline]] void EmitFrame(double timestamp = Now(), bool clocked_capture = false);
+  // Chrome-style windows have no offscreen paints; Chromium's screencast feeds
+  // the same frame consumers (recording, streaming, the viewer) while one is active.
+  bool chrome_screencast_ = false;
+  double chrome_screencast_requested_ms_ = 0;
+  void ChromeScreencastStart();
+  void ChromeScreencastUpdate();
+  void ChromeScreencastFrame(Dict params);
   void ValidateVisibilitySelectors(int id, uint64_t generation, Dict message);
 #include "controllers/lifecycle/expectation_deadline.inc"
 #include "controllers/lifecycle/assertion_deadline_source.inc"

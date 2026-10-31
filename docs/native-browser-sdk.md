@@ -83,8 +83,10 @@ Source and Inspect are hidden and refused in this mode. The window takes macOS
 focus and a Dock icon like any other app.
 
 CEF renders Chrome-style windows on screen only, so this mode cannot be combined
-with `headless` or `recordVideo`, and the live viewer and raw frame capture need
-the default `offscreen` mode. `page.screenshot()` still works. On macOS, CEF only
+with `headless`. Screenshots, `recordVideo`, streaming and the live viewer take
+their frames from Chromium's screencast of the window instead of offscreen paints;
+nothing opens DevTools. Frames follow what the window shows, at up to the launch
+size, and a still page is refreshed about once a second. On macOS, CEF only
 draws Chrome's interface in its own top-level windows: embedding it inside
 another application's view falls back to a bare page without tabs or address bar.
 Each launch starts with the launch page rather than restoring the previous run's

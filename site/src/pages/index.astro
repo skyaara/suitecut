@@ -82,7 +82,8 @@ const chromeWindowSpecs: Spec[] = [
   ['Shared tabs', 'Tabs a person opens become pages the agent can see and drive'],
   ['Profile', 'Cookies, logins, storage and history survive restarts'],
   ['Closed off', 'No DevTools, View Source or Inspect, and no open debugging port'],
-  ['Limits', 'Shown on screen, so no headless runs or frame capture; tested on macOS ARM64'],
+  ['Capture', 'Record, stream or watch the window live while a person uses it'],
+  ['Limits', 'Shown on screen, so no headless runs; tested on macOS ARM64'],
 ]
 
 const chromeWindowExample = `const browser = await launchBrowser({

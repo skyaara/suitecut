@@ -311,6 +311,7 @@ auto Source::OnAfterCreated(CefRefPtr<CefBrowser> browser) -> void {
   const suitecut::NativeWorkOriginFrame native_creation(native_creation_origin_.Origin());
   browser_ = browser;
   own_browser_id_ = browser->GetIdentifier();
+  if (ChromeWindowMode()) ChromeScreencastUpdate();
   NativeInspectorOpened(engine_.AcceptedInspector(), browser->GetIdentifier(),
                         suitecut::AcceptedInspectorWork::Kind::Page);
   const auto native_inspector_callback = NativeInspectorCallback();

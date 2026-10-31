@@ -54,7 +54,7 @@ static NSMenu* AddMenu(NSMenu* bar, NSString* title, NSArray<NSMenuItem*>* items
 static void InstallChromeMenu() {
   const auto shift = NSEventModifierFlagCommand | NSEventModifierFlagShift;
   const auto option = NSEventModifierFlagCommand | NSEventModifierFlagOption;
-  NSString* name = NSProcessInfo.processInfo.processName;
+  NSString* name = @"SuiteCut";
   NSMenu* bar = [[NSMenu alloc] initWithTitle:@""];
   AddMenu(bar, name, @[
     CocoaItem([@"Hide " stringByAppendingString:name], @selector(hide:), @"h"),

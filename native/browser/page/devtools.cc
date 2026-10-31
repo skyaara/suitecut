@@ -115,6 +115,11 @@ auto Source::OnDevToolsMessage(CefRefPtr<CefBrowser> browser, const void* messag
     ToolResult(id, success, json.data(), json.size(), session);
   } else if (data->GetType("method") == VTYPE_STRING) {
     auto params = data->GetDictionary("params");
+    if (session.empty() && chrome_screencast_ && params &&
+        data->GetString("method") == "Page.screencastFrame") {
+      ChromeScreencastFrame(params);
+      return true;
+    }
     if (session.empty() && private_response_ &&
         private_response_->Event(data->GetString("method"), params))
       return true;

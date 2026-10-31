@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: MIT
+#include "include/cef_image.h"
+#include "include/cef_parser.h"
 #include "page/source.h"
 namespace suitecut::browser {
 [[gnu::noinline]] auto Source::OnPaint(CefRefPtr<CefBrowser> browser, PaintElementType type,
@@ -241,6 +243,93 @@ auto Source::ScheduleRecordingSnapshot(const std::string& id, int delay) -> void
 #endif
       }),
       delay);
+}
+
+auto Source::ChromeScreencastStart() -> void {
+  auto params = CefDictionaryValue::Create();
+  params->SetString("format", "jpeg");
+  params->SetInt("quality", 90);
+  params->SetInt("maxWidth", std::min(capture_width_ > 0 ? capture_width_ : 1920, 3840));
+  params->SetInt("maxHeight", std::min(capture_height_ > 0 ? capture_height_ : 1080, 2160));
+  chrome_screencast_requested_ms_ = Now();
+  SendDevTools("Page.startScreencast", params);
+}
+
+auto Source::ChromeScreencastUpdate() -> void {
+  if (!browser_ || closing_page_) return;
+#if defined(OS_LINUX) || defined(__APPLE__)
+  const bool publishing = engine_.streaming()->NeedsFrame(page_id_);
+#else
+  const bool publishing = false;
+#endif
+  const bool wanted = ready_ && (frame_transport_enabled_ || publishing ||
+                                 engine_.recordings()->NeedsFrame(page_id_) ||
+                                 engine_.recordings()->NeedsFrame(page_id_, true));
+  if (wanted != chrome_screencast_) {
+    chrome_screencast_ = wanted;
+    if (wanted)
+      ChromeScreencastStart();
+    else
+      SendDevTools("Page.stopScreencast", nullptr);
+  } else if (wanted && Now() - chrome_screencast_requested_ms_ > 1000) {
+    // A navigation to another renderer can drop the pending request.
+    ChromeScreencastStart();
+  }
+  // Consumers start and stop without notifying the page; poll for them.
+  CefPostDelayedTask(TID_UI,
+                     new Task([self = CefRefPtr<Source>(this), alive = engine_.Alive()] {
+                       if (*alive) self->ChromeScreencastUpdate();
+                     }),
+                     250);
+}
+
+auto Source::ChromeScreencastFrame(Dict params) -> void {
+  auto ack = CefDictionaryValue::Create();
+  ack->SetInt("sessionId", params->GetInt("sessionId"));
+  SendDevTools("Page.screencastFrameAck", ack);
+  // CEF's Chrome-style windows deliver one screencast frame per start rather
+  // than one per visual change, so request the next frame at about 30 fps.
+  const double wait = std::max(0.0, 33 - (Now() - chrome_screencast_requested_ms_));
+  CefPostDelayedTask(TID_UI,
+                     new Task([self = CefRefPtr<Source>(this), alive = engine_.Alive()] {
+                       if (*alive && self->chrome_screencast_ && !self->closing_page_)
+                         self->ChromeScreencastStart();
+                     }),
+                     static_cast<int64_t>(wait));
+  const auto metadata = params->GetDictionary("metadata");
+  const auto jpeg = CefBase64Decode(params->GetString("data"));
+  if (!metadata || !jpeg || !jpeg->GetSize()) return;
+  std::vector<uint8_t> bytes(jpeg->GetSize());
+  jpeg->GetData(bytes.data(), bytes.size(), 0);
+  auto image = CefImage::CreateImage();
+  int width = 0, height = 0;
+  if (!image->AddJPEG(1.0f, bytes.data(), bytes.size())) return;
+  const auto bitmap =
+      image->GetAsBitmap(1.0f, CEF_COLOR_TYPE_BGRA_8888, CEF_ALPHA_TYPE_OPAQUE, width, height);
+  if (!bitmap || width <= 0 || height <= 0 || width > 3840 || height > 2160 ||
+      bitmap->GetSize() != static_cast<size_t>(width) * height * 4)
+    return;
+  const double captured = Now();
+  last_view_delivery_ms_ = captured;
+  native_view_stale_ = false;
+#if defined(__APPLE__)
+  native_capture_snapshot_.reset();
+#endif
+  view_.resize(bitmap->GetSize());
+  bitmap->GetData(view_.data(), view_.size(), 0);
+  engine_.TracePaint(page_id_, width_, height_, captured, view_.data(), width, height);
+  view_damage_valid_ = true;
+  frame_width_ = width;
+  frame_height_ = height;
+  // The protocol writes whole numbers as JSON integers.
+  const auto css = [&](const char* key) {
+    return metadata->GetType(key) == VTYPE_INT
+               ? metadata->GetInt(key)
+               : static_cast<int>(std::lround(metadata->GetDouble(key)));
+  };
+  frame_css_width_ = css("deviceWidth");
+  frame_css_height_ = css("deviceHeight");
+  EmitFrame(captured);
 }
 
 [[gnu::noinline]] auto Source::EmitFrame(double timestamp, bool clocked_capture) -> void {

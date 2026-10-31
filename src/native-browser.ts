@@ -207,7 +207,8 @@ export interface NativeBrowserOptions {
   headless?: boolean
   /**
    * `chrome` shows pages as real Chrome-style windows (tabs, omnibox, menus) a person can use
-   * alongside automation. Frame capture, recording and the live viewer need `offscreen`.
+   * alongside automation. Recording, streaming and the live viewer use Chromium's screencast of
+   * the window; `headless` needs `offscreen`.
    */
   windowMode?: 'offscreen' | 'chrome'
   /** Omit/true preserves Chromium's policy; false disables its BackForwardCache at native launch. */
@@ -426,8 +427,8 @@ export async function launchNativeBrowser(options: NativeBrowserOptions): Promis
   const config = LaunchSchema.parse(options)
   if (config.pixelFormat === 'i420' && (config.width % 2 || config.height % 2))
     throw new Error('I420 sources require even CSS dimensions')
-  if (config.windowMode === 'chrome' && (config.headless || config.recordVideo))
-    throw new Error('Chrome window mode shows real windows; it cannot be headless or record video')
+  if (config.windowMode === 'chrome' && config.headless)
+    throw new Error('Chrome window mode shows real windows; it cannot be headless')
   config.signal?.throwIfAborted()
   const temporaryProfile = config.userDataDir === undefined
   const requestedProfile = config.userDataDir ?? (await mkdtemp(join(tmpdir(), 'suitecut-cef-')))
@@ -1338,6 +1339,9 @@ export async function launchNativeBrowser(options: NativeBrowserOptions): Promis
         fail(new Error('Native frame dimensions changed unexpectedly'))
         return
       }
+      // A person sizes a Chrome window, and its toolbar takes part of it; the
+      // frame reports the page area actually shown.
+      if (config.windowMode === 'chrome' && header.viewport) page.viewport = header.viewport
       page.lastFrame = {
         data: payload,
         pixelFormat: header.pixelFormat,
