@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { setTimeout as delay } from 'node:timers/promises'
 
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { launchProtocolProcess, type ProtocolBrowserProcess } from '../src/browser-process.js'
 
@@ -241,6 +241,30 @@ describe.skipIf(process.platform === 'win32')('owned protocol browser processes'
     await expect(access((await state(config.statePath)).profile)).rejects.toMatchObject({
       code: 'ENOENT',
     })
+  })
+
+  it('treats a group left with only exited, unreaped members as gone', async () => {
+    const config = await fixture(
+      "process.stderr.write('DevTools listening on ws://127.0.0.1:12345/devtools/browser/zombies\\n'); setTimeout(() => process.exit(0), 10)",
+    )
+    // macOS answers a probe of such a group with EPERM rather than ESRCH.
+    const kill = process.kill.bind(process)
+    const probe = vi.spyOn(process, 'kill').mockImplementation((pid, signal) => {
+      if (pid < 0 && signal === 0) throw Object.assign(new Error('kill EPERM'), { code: 'EPERM' })
+      return kill(pid, signal)
+    })
+    try {
+      const browser = await launchProtocolProcess({
+        backend: 'cdp',
+        executablePath: config.executablePath,
+        timeoutMs: 2_000,
+      })
+      browsers.push(browser)
+      await expect(browser.closed).resolves.toBeUndefined()
+      expect(probe).toHaveBeenCalledWith(expect.any(Number), 0)
+    } finally {
+      probe.mockRestore()
+    }
   })
 
   it.skipIf(process.platform !== 'linux')(

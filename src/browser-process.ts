@@ -232,6 +232,9 @@ export async function launchProtocolProcess(
       return true
     } catch (error) {
       if (error instanceof Error && 'code' in error && error.code === 'ESRCH') return false
+      // macOS reports EPERM for a group whose remaining members have already
+      // exited and await reaping; nothing in it can still run.
+      if (error instanceof Error && 'code' in error && error.code === 'EPERM') return false
       throw error
     }
   }

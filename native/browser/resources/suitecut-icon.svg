@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
   <defs>
     <linearGradient id="chrome" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="#eef0f3"/>
@@ -8,22 +8,11 @@
       <stop offset="0.72" stop-color="#e2e6ea"/>
       <stop offset="1" stop-color="#7f8894"/>
     </linearGradient>
-    <linearGradient id="tile" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#ffffff"/>
-      <stop offset="1" stop-color="#eceef1"/>
-    </linearGradient>
-    <clipPath id="shape">
-      <rect x="100" y="100" width="824" height="824" rx="185"/>
-    </clipPath>
   </defs>
-  <!-- The mark fills the whole macOS icon shape, as other app icons do; the
-       tile only shows through the diagonal split. -->
-  <g clip-path="url(#shape)">
-    <rect x="100" y="100" width="824" height="824" fill="url(#tile)"/>
-    <g transform="translate(-37.33 -37.33) scale(34.33)" fill="url(#chrome)">
-      <path d="M4 4H26.25L4 26.25Z"/>
-      <path d="M28 5.75V28H5.75Z"/>
-    </g>
+  <!-- A black tile with the mark inside, matching SuiteCut.icon for older macOS. -->
+  <rect x="100" y="100" width="824" height="824" rx="185" fill="#000"/>
+  <g transform="translate(179.33 179.33) scale(20.8)" fill="url(#chrome)">
+    <path d="M4 4H26.25L4 26.25Z"/>
+    <path d="M28 5.75V28H5.75Z"/>
   </g>
-  <rect x="100" y="100" width="824" height="824" rx="185" fill="none" stroke="#d5d9de" stroke-width="4"/>
 </svg>
