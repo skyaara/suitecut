@@ -6,6 +6,9 @@
 #include <cstring>
 #include <filesystem>
 #include <functional>
+#include <iostream>
+#include <mutex>
+#include <thread>
 #include <map>
 #include <string>
 #include <utility>
@@ -14,6 +17,9 @@
 #include "include/cef_browser.h"
 #include "include/cef_client.h"
 #include "include/cef_devtools_message_observer.h"
+#include "include/cef_download_handler.h"
+#include "include/cef_jsdialog_handler.h"
+#include "include/cef_permission_handler.h"
 #include "include/cef_parser.h"
 #include "include/cef_task.h"
 #include "include/views/cef_box_layout.h"
@@ -32,6 +38,10 @@ struct Options {
   bool hide = false;         // true: keep every tab attached and hide the others
   bool selftest = false;
   bool toolbar = true;  // false: no toolbar view, to isolate Chrome-style limits
+  bool control = false;     // JSON-line commands on stdin, answers and events on stdout
+  bool autodialog = false;  // accept JS dialogs instead of showing them
+  std::string first_url;
+  std::string permissions = "ask";  // ask: our toolbar's permission bar; allow; deny
 };
 Options options;
 
@@ -51,6 +61,21 @@ bool Flag(int argc, char** argv, const char* name) {
 void Report(const std::string& line) {
   std::fprintf(stderr, "PROTOTYPE %s\n", line.c_str());
   std::fflush(stderr);
+}
+
+// Control-mode output: one JSON object per line on stdout.
+void Emit(CefRefPtr<CefDictionaryValue> message) {
+  if (!options.control) return;
+  auto value = CefValue::Create();
+  value->SetDictionary(message);
+  std::fprintf(stdout, "%s\n", CefWriteJSON(value, JSON_WRITER_DEFAULT).ToString().c_str());
+  std::fflush(stdout);
+}
+CefRefPtr<CefDictionaryValue> Event(const std::string& name, int tab) {
+  auto event = CefDictionaryValue::Create();
+  event->SetString("event", name);
+  if (tab) event->SetInt("tab", tab);
+  return event;
 }
 
 class Later : public CefTask {
@@ -86,10 +111,13 @@ body{margin:0;background:#202124;color:#e8eaed;user-select:none;overflow:hidden}
 #bar button{background:none;border:0;color:#e8eaed;font-size:15px;width:28px}
 #bar button:disabled{opacity:.35}
 #url{flex:1;height:26px;border-radius:13px;border:0;padding:0 12px;background:#202124;color:#fff;font:inherit}
+#ask{display:none;flex:1;align-items:center;gap:8px;height:26px;padding:0 12px;border-radius:13px;background:#3c4043}
+#ask span{flex:1}#ask button{width:auto;padding:2px 10px;border-radius:10px;background:#8ab4f8;color:#202124;font-size:12px}
 </style>
 <div id=tabs></div>
 <div id=bar><button id=back>&#8249;</button><button id=fwd>&#8250;</button><button id=reload>&#8635;</button>
-<input id=url spellcheck=false placeholder="Search or type a URL"></div>
+<input id=url spellcheck=false placeholder="Search or type a URL">
+<div id=ask><span></span><button id=allow>Allow</button><button id=block>Block</button></div></div>
 <script>
 const send = (m) => console.log('suitecut-ui:' + JSON.stringify(m));
 const tabs = document.getElementById('tabs');
@@ -104,7 +132,12 @@ function render(s) {
   }), Object.assign(document.createElement('button'), { id: 'new', textContent: '+', onclick: () => send({ cmd: 'new' }) }));
   if (document.activeElement !== url) url.value = s.url || '';
   back.disabled = !s.back; fwd.disabled = !s.forward;
+  ask.style.display = s.prompt ? 'flex' : 'none';
+  url.style.display = s.prompt ? 'none' : '';
+  if (s.prompt) ask.firstChild.textContent = s.prompt + ' wants: ' + s.wants;
 }
+allow.onclick = () => send({ cmd: 'permission', allow: true });
+block.onclick = () => send({ cmd: 'permission', allow: false });
 back.onclick = () => send({ cmd: 'back' });
 fwd.onclick = () => send({ cmd: 'forward' });
 reload.onclick = () => send({ cmd: 'reload' });
@@ -143,7 +176,10 @@ struct Tab {
 class Shell {
  public:
   void Build(CefRefPtr<CefWindow> window);
-  void NewTab(const std::string& url);
+  int NewTab(const std::string& url);
+  void Control(const std::string& line);
+  void Cdp(int tab, const std::string& method, CefRefPtr<CefDictionaryValue> params,
+           std::function<void(bool, std::string)> done);
   void Select(int id);
   void CloseTab(int id);
   void Command(const std::string& json);
@@ -166,20 +202,110 @@ class Shell {
   CefRefPtr<CefPanel> content_;
   CefRefPtr<CefBrowserView> toolbar_;
   std::vector<Tab> tabs_;
+  std::vector<CefRefPtr<CefBrowserView>> closing_views_;
+
+ public:
+  // One prompt at a time, as Chrome queues them.
+  struct Prompt {
+    std::string origin, wants;
+    std::function<void(bool)> answer;
+  };
+  std::vector<Prompt> prompts;
+  void Ask(Prompt prompt);
+  void Answer(bool allow);
   int active_ = 0, next_tab_ = 1, next_call_ = 1, open_browsers_ = 0;
   bool closing_ = false, close_now_ = false;
-  std::map<int, std::function<void(std::string)>> calls_;
+  std::map<int, std::function<void(bool, std::string)>> calls_;
 };
 Shell shell;
 
 class Client : public CefClient,
                public CefDisplayHandler,
                public CefLifeSpanHandler,
+               public CefDownloadHandler,
+               public CefJSDialogHandler,
+               public CefPermissionHandler,
                public CefDevToolsMessageObserver {
  public:
   explicit Client(bool toolbar) : toolbar_(toolbar) {}
   CefRefPtr<CefDisplayHandler> GetDisplayHandler() override { return this; }
   CefRefPtr<CefLifeSpanHandler> GetLifeSpanHandler() override { return this; }
+  CefRefPtr<CefDownloadHandler> GetDownloadHandler() override { return this; }
+  CefRefPtr<CefJSDialogHandler> GetJSDialogHandler() override { return this; }
+  CefRefPtr<CefPermissionHandler> GetPermissionHandler() override { return this; }
+
+  // Alloy cancels downloads without a handler; save them like Chrome does.
+  bool OnBeforeDownload(CefRefPtr<CefBrowser> browser, CefRefPtr<CefDownloadItem>,
+                        const CefString& suggested_name,
+                        CefRefPtr<CefBeforeDownloadCallback> callback) override {
+    const auto path = options.root / "Downloads" / suggested_name.ToString();
+    std::error_code error;
+    std::filesystem::create_directories(path.parent_path(), error);
+    callback->Continue(path.string(), false);
+    auto event = Event("download-started", TabOf(browser));
+    event->SetString("path", path.string());
+    Emit(event);
+    return true;
+  }
+  void OnDownloadUpdated(CefRefPtr<CefBrowser> browser, CefRefPtr<CefDownloadItem> item,
+                         CefRefPtr<CefDownloadItemCallback>) override {
+    if (!item->IsComplete() && !item->IsCanceled()) return;
+    auto event = Event(item->IsComplete() ? "download-complete" : "download-canceled", TabOf(browser));
+    event->SetString("path", item->GetFullPath().ToString());
+    event->SetDouble("bytes", static_cast<double>(item->GetReceivedBytes()));
+    Emit(event);
+  }
+  bool OnJSDialog(CefRefPtr<CefBrowser> browser, const CefString&, JSDialogType type,
+                  const CefString& message, const CefString&, CefRefPtr<CefJSDialogCallback> callback,
+                  bool&) override {
+    auto event = Event("dialog", TabOf(browser));
+    event->SetInt("type", type);
+    event->SetString("message", message);
+    Emit(event);
+    if (!options.autodialog) return false;  // CEF shows its native dialog
+    callback->Continue(true, "");
+    return true;
+  }
+  // Alloy has no permission UI: without an answer a prompt waits forever and
+  // queues every later one. Ours is a bar in the toolbar.
+  bool OnShowPermissionPrompt(CefRefPtr<CefBrowser> browser, uint64_t, const CefString& origin,
+                              uint32_t requested, CefRefPtr<CefPermissionPromptCallback> callback) override {
+    auto event = Event("permission-prompt", TabOf(browser));
+    event->SetString("origin", origin);
+    event->SetInt("permissions", static_cast<int>(requested));
+    Emit(event);
+    shell.Ask({origin.ToString(), Wants(requested), [callback](bool allow) {
+                 callback->Continue(allow ? CEF_PERMISSION_RESULT_ACCEPT : CEF_PERMISSION_RESULT_DENY);
+               }});
+    return true;
+  }
+  bool OnRequestMediaAccessPermission(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame>,
+                                      const CefString& origin, uint32_t requested,
+                                      CefRefPtr<CefMediaAccessCallback> callback) override {
+    auto event = Event("media-permission", TabOf(browser));
+    event->SetString("origin", origin);
+    event->SetInt("permissions", static_cast<int>(requested));
+    Emit(event);
+    shell.Ask({origin.ToString(), "camera or microphone", [callback, requested](bool allow) {
+                 callback->Continue(allow ? requested : 0);
+               }});
+    return true;
+  }
+  static std::string Wants(uint32_t requested) {
+    std::string out;
+    const std::pair<uint32_t, const char*> names[] = {
+        {CEF_PERMISSION_TYPE_CLIPBOARD, "clipboard"}, {CEF_PERMISSION_TYPE_NOTIFICATIONS, "notifications"},
+        {CEF_PERMISSION_TYPE_GEOLOCATION, "location"}, {CEF_PERMISSION_TYPE_CAMERA_STREAM, "camera"},
+        {CEF_PERMISSION_TYPE_MIC_STREAM, "microphone"}, {CEF_PERMISSION_TYPE_MULTIPLE_DOWNLOADS, "downloads"}};
+    for (const auto& [bit, name] : names)
+      if (requested & bit) out += (out.empty() ? "" : ", ") + std::string(name);
+    return out.empty() ? "a permission" : out;
+  }
+  void OnFullscreenModeChange(CefRefPtr<CefBrowser> browser, bool fullscreen) override {
+    auto event = Event("fullscreen", TabOf(browser));
+    event->SetBool("fullscreen", fullscreen);
+    Emit(event);
+  }
 
   void OnTitleChange(CefRefPtr<CefBrowser> browser, const CefString& title) override {
     if (toolbar_) return;
@@ -200,15 +326,26 @@ class Client : public CefClient,
     return true;
   }
   // Links and window.open become tabs in our strip, like Chrome's default.
-  bool OnBeforePopup(CefRefPtr<CefBrowser>, CefRefPtr<CefFrame>, int, const CefString& target_url,
-                     const CefString&, WindowOpenDisposition, bool, const CefPopupFeatures&,
-                     CefWindowInfo&, CefRefPtr<CefClient>&, CefBrowserSettings&,
-                     CefRefPtr<CefDictionaryValue>&, bool*) override {
+  bool OnBeforePopup(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame>, int,
+                     const CefString& target_url, const CefString&, WindowOpenDisposition,
+                     bool gesture, const CefPopupFeatures&, CefWindowInfo&, CefRefPtr<CefClient>&,
+                     CefBrowserSettings&, CefRefPtr<CefDictionaryValue>&, bool*) override {
     const auto url = target_url.ToString();
-    After(0, [url] { shell.NewTab(url); });
+    const int opener = TabOf(browser);
+    After(0, [url, opener, gesture] {
+      auto event = Event("popup", opener);
+      event->SetInt("opened", shell.NewTab(url));
+      event->SetString("url", url);
+      event->SetBool("gesture", gesture);
+      Emit(event);
+    });
     return true;
   }
   void OnAfterCreated(CefRefPtr<CefBrowser> browser) override { shell.Created(browser, !toolbar_); }
+  static int TabOf(CefRefPtr<CefBrowser> browser) {
+    const Tab* tab = shell.ByBrowser(browser);
+    return tab ? tab->id : 0;
+  }
   void OnBeforeClose(CefRefPtr<CefBrowser> browser) override { shell.Closed(browser); }
   void OnDevToolsMethodResult(CefRefPtr<CefBrowser>, int message_id, bool success,
                               const void* result, size_t size) override {
@@ -273,13 +410,14 @@ void Shell::Build(CefRefPtr<CefWindow> created) {
   content_->SetToFillLayout();
   window->AddChildView(content_);
   layout->SetFlexForView(content_, 1);
-  NewTab(ProbePage("Tab A"));
+  NewTab(options.first_url.empty() ? ProbePage("Tab A") : options.first_url);
   window->Show();
+  Emit(Event("ready", tabs_.front().id));
   if (options.selftest) After(1500, [this] { SelfTest(); });
 }
 
-void Shell::NewTab(const std::string& url) {
-  if (closing_ || !window) return;
+int Shell::NewTab(const std::string& url) {
+  if (closing_ || !window) return 0;
   Tab tab;
   tab.id = next_tab_++;
   tab.url = url;
@@ -288,6 +426,7 @@ void Shell::NewTab(const std::string& url) {
       new ViewDelegate(options.chrome_pages ? CEF_RUNTIME_STYLE_CHROME : CEF_RUNTIME_STYLE_ALLOY, 0));
   tabs_.push_back(tab);
   Select(tab.id);
+  return tab.id;
 }
 
 void Shell::Select(int id) {
@@ -315,12 +454,16 @@ void Shell::CloseTab(int id) {
   if (tabs_.size() <= 1) return;
   const auto found = std::find_if(tabs_.begin(), tabs_.end(), [&](const Tab& t) { return t.id == id; });
   if (found == tabs_.end()) return;
-  const auto index = found - tabs_.begin();
-  if (found->attached) content_->RemoveChildView(found->view);
-  if (auto browser = found->view->GetBrowser()) browser->GetHost()->CloseBrowser(true);
-  tabs_.erase(found);
-  if (active_ == id) Select(tabs_[std::min<size_t>(index, tabs_.size() - 1)].id);
-  else Render();
+  const auto index = static_cast<size_t>(found - tabs_.begin());
+  // Show the neighbour first, so the closing view is no longer in the window.
+  if (active_ == id) Select(tabs_[index + 1 < tabs_.size() ? index + 1 : index - 1].id);
+  const auto closing = std::find_if(tabs_.begin(), tabs_.end(), [&](const Tab& t) { return t.id == id; });
+  if (closing->attached) content_->RemoveChildView(closing->view);
+  // The view must outlive its browser's close; OnBeforeClose releases it.
+  closing_views_.push_back(closing->view);
+  if (auto browser = closing->view->GetBrowser()) browser->GetHost()->CloseBrowser(true);
+  tabs_.erase(closing);
+  Render();
 }
 
 void Shell::Command(const std::string& json) {
@@ -334,6 +477,7 @@ void Shell::Command(const std::string& json) {
   if (cmd == "ready") Render();
   else if (cmd == "new") NewTab(ProbePage("Tab " + std::to_string(next_tab_)));
   else if (cmd == "select") Select(id);
+  else if (cmd == "permission") Answer(message->GetBool("allow"));
   else if (cmd == "close") CloseTab(id);
   else if (cmd == "back" && browser) browser->GoBack();
   else if (cmd == "forward" && browser) browser->GoForward();
@@ -345,6 +489,20 @@ void Shell::Command(const std::string& json) {
       url = (url.rfind("localhost", 0) == 0 ? "http://" : "https://") + url;
     browser->GetMainFrame()->LoadURL(url);
   }
+}
+
+void Shell::Ask(Prompt prompt) {
+  if (options.permissions != "ask") return prompt.answer(options.permissions == "allow");
+  prompts.push_back(std::move(prompt));
+  Render();
+}
+
+void Shell::Answer(bool allow) {
+  if (prompts.empty()) return;
+  auto prompt = std::move(prompts.front());
+  prompts.erase(prompts.begin());
+  prompt.answer(allow);
+  Render();
 }
 
 void Shell::Render() {
@@ -361,6 +519,10 @@ void Shell::Render() {
     list->SetDictionary(list->GetSize(), item);
   }
   state->SetList("tabs", list);
+  if (!prompts.empty()) {
+    state->SetString("prompt", prompts.front().origin);
+    state->SetString("wants", prompts.front().wants);
+  }
   if (Tab* tab = Find(active_)) {
     const auto page = tab->view->GetBrowser();
     state->SetString("url", tab->url.rfind("data:", 0) == 0 ? "" : tab->url);
@@ -379,7 +541,11 @@ void Shell::Created(CefRefPtr<CefBrowser> browser, bool page) {
   if (Tab* tab = ByBrowser(browser)) tab->devtools = browser->GetHost()->AddDevToolsMessageObserver(pages);
 }
 
-void Shell::Closed(CefRefPtr<CefBrowser>) {
+void Shell::Closed(CefRefPtr<CefBrowser> browser) {
+  std::erase_if(closing_views_, [&](const CefRefPtr<CefBrowserView>& view) {
+    const auto closed = view->GetBrowser();
+    return !closed || closed->IsSame(browser);
+  });
   if (--open_browsers_ == 0 && closing_ && window) window->Close();
 }
 
@@ -391,23 +557,37 @@ void Shell::Changed(CefRefPtr<CefBrowser> browser, const std::string* title, con
   Render();
 }
 
-void Shell::Evaluate(int id, const std::string& expression, std::function<void(std::string)> done,
-                     bool gesture) {
+void Shell::Cdp(int id, const std::string& method, CefRefPtr<CefDictionaryValue> params,
+                std::function<void(bool, std::string)> done) {
   Tab* tab = Find(id);
   const auto browser = tab ? tab->view->GetBrowser() : nullptr;
-  if (!browser) return done("{\"error\":\"no browser\"}");
+  if (!browser) return done(false, "{\"message\":\"no browser\"}");
   if (!tab->devtools) tab->devtools = browser->GetHost()->AddDevToolsMessageObserver(pages);
+  const int call = next_call_++;
+  calls_[call] = std::move(done);
+  if (!browser->GetHost()->ExecuteDevToolsMethod(call, method, params)) {
+    auto failed = std::move(calls_[call]);
+    calls_.erase(call);
+    failed(false, "{\"message\":\"devtools refused\"}");
+  }
+}
+
+void Shell::Evaluate(int id, const std::string& expression, std::function<void(std::string)> done,
+                     bool gesture) {
   auto params = CefDictionaryValue::Create();
   params->SetString("expression", expression);
   params->SetBool("returnByValue", true);
   params->SetBool("userGesture", gesture);
-  const int call = next_call_++;
-  calls_[call] = std::move(done);
-  if (!browser->GetHost()->ExecuteDevToolsMethod(call, "Runtime.evaluate", params)) {
-    auto failed = std::move(calls_[call]);
-    calls_.erase(call);
-    failed("{\"error\":\"devtools refused\"}");
-  }
+  Cdp(id, "Runtime.evaluate", params, [done = std::move(done)](bool ok, std::string json) {
+    const auto value = ok ? CefParseJSON(json, JSON_PARSER_RFC) : nullptr;
+    const auto root = value ? value->GetDictionary() : nullptr;
+    const auto result = root ? root->GetDictionary("result") : nullptr;
+    if (!result) return done("{\"error\":" + (json.empty() ? std::string("\"failed\"") : json) + "}");
+    if (result->GetType("value") == VTYPE_STRING) return done(result->GetString("value").ToString());
+    auto copy = CefValue::Create();
+    copy->SetDictionary(result->Copy(false));
+    done(CefWriteJSON(copy, JSON_WRITER_DEFAULT).ToString());
+  });
 }
 
 void Shell::Result(int id, bool ok, const std::string& json) {
@@ -415,14 +595,71 @@ void Shell::Result(int id, bool ok, const std::string& json) {
   if (found == calls_.end()) return;
   auto done = std::move(found->second);
   calls_.erase(found);
-  const auto value = ok ? CefParseJSON(json, JSON_PARSER_RFC) : nullptr;
-  const auto root = value ? value->GetDictionary() : nullptr;
-  const auto result = root ? root->GetDictionary("result") : nullptr;
-  if (!result) return done(ok ? json : "{\"error\":" + (json.empty() ? std::string("\"failed\"") : json) + "}");
-  if (result->GetType("value") == VTYPE_STRING) return done(result->GetString("value").ToString());
-  auto copy = CefValue::Create();
-  copy->SetDictionary(result->Copy(false));
-  done(CefWriteJSON(copy, JSON_WRITER_DEFAULT).ToString());
+  done(ok, json);
+}
+
+// {"id":1,"cmd":"open","url":...} -> {"id":1,"ok":true,"result":...}
+void Shell::Control(const std::string& line) {
+  const auto parsed = CefParseJSON(line, JSON_PARSER_RFC);
+  const auto message = parsed ? parsed->GetDictionary() : nullptr;
+  if (!message) return;
+  const int id = message->GetInt("id");
+  const auto cmd = message->GetString("cmd").ToString();
+  const int tab = message->GetInt("tab");
+  auto reply = [id](bool ok, CefRefPtr<CefValue> result) {
+    auto answer = CefDictionaryValue::Create();
+    answer->SetInt("id", id);
+    answer->SetBool("ok", ok);
+    if (result) answer->SetValue("result", result);
+    Emit(answer);
+  };
+  auto number = [](int value) {
+    auto result = CefValue::Create();
+    result->SetInt(value);
+    return result;
+  };
+  if (cmd == "open") return reply(true, number(NewTab(message->GetString("url"))));
+  if (cmd == "select") return Select(tab), reply(Find(tab) != nullptr, nullptr);
+  if (cmd == "close") return CloseTab(tab), reply(true, nullptr);
+  // Runs script in our toolbar, e.g. clicking its permission bar like a user.
+  if (cmd == "ui") {
+    const auto browser = toolbar_ ? toolbar_->GetBrowser() : nullptr;
+    if (browser) browser->GetMainFrame()->ExecuteJavaScript(message->GetString("js"), "", 0);
+    return reply(browser != nullptr, nullptr);
+  }
+  if (cmd == "quit") {
+    reply(true, nullptr);
+    if (window) window->Close();
+    return;
+  }
+  if (cmd == "tabs") {
+    auto list = CefListValue::Create();
+    for (const auto& item : tabs_) {
+      auto entry = CefDictionaryValue::Create();
+      entry->SetInt("tab", item.id);
+      entry->SetString("title", item.title);
+      entry->SetString("url", item.url);
+      entry->SetBool("active", item.id == active_);
+      list->SetDictionary(list->GetSize(), entry);
+    }
+    auto result = CefValue::Create();
+    result->SetList(list);
+    return reply(true, result);
+  }
+  if (cmd == "navigate") {
+    Tab* found = Find(tab);
+    const auto browser = found ? found->view->GetBrowser() : nullptr;
+    if (browser) browser->GetMainFrame()->LoadURL(message->GetString("url"));
+    return reply(browser != nullptr, nullptr);
+  }
+  if (cmd == "cdp") {
+    auto params = message->HasKey("params") ? message->GetDictionary("params")->Copy(false)
+                                            : CefDictionaryValue::Create();
+    return Cdp(tab, message->GetString("method"), params, [reply](bool ok, std::string json) {
+      reply(ok, CefParseJSON(json, JSON_PARSER_RFC));
+    });
+  }
+  reply(false, nullptr);
 }
 
 bool Shell::CanClose() {
@@ -508,6 +745,13 @@ class App : public CefApp, public CefBrowserProcessHandler {
     shell.pages = new Client(false);
     shell.toolbar_client = new Client(true);
     CefWindow::CreateTopLevelWindow(new WindowDelegate);
+    if (options.control)
+      std::thread([] {
+        std::string line;
+        while (std::getline(std::cin, line))
+          CefPostTask(TID_UI, new Later([line] { shell.Control(line); }));
+        CefPostTask(TID_UI, new Later([] { if (shell.window) shell.window->Close(); }));
+      }).detach();
   }
 
  private:
@@ -529,6 +773,11 @@ int Run(const CefMainArgs& args, int argc, char** argv) {
   options.hide = Arg(argc, argv, "suitecut-prototype-switch") == "hide";
   options.selftest = Flag(argc, argv, "suitecut-prototype-selftest");
   options.toolbar = Arg(argc, argv, "suitecut-prototype-toolbar") != "none";
+  options.control = Flag(argc, argv, "suitecut-prototype-control");
+  options.autodialog = Flag(argc, argv, "suitecut-prototype-autodialog");
+  options.first_url = Arg(argc, argv, "suitecut-prototype-url");
+  if (const auto value = Arg(argc, argv, "suitecut-prototype-permissions"); !value.empty())
+    options.permissions = value;
   if (options.hide && options.chrome_pages) {
     std::fprintf(stderr, "SuiteCut prototype: a window holds one Chrome-style page; hide needs alloy pages\n");
     return 1;
