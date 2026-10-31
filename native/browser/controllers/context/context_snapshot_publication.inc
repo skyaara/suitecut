@@ -125,7 +125,8 @@ bool SuiteCutContextControls::SnapshotMessage(int page,CefRefPtr<CefFrame>frame,
     if(!frame->IsMain()||!frame->IsValid()||!actual||actual->GetIdentifier()!=frame->GetIdentifier().ToString()||channel!=frame->GetIdentifier().ToString()||snapshot_next_epoch_==std::numeric_limits<uint64_t>::max())return true;
     auto peer=snapshot_peers_.find(page);
     if(peer==snapshot_peers_.end()||peer->second.request!=request||peer->second.pin.frame!=channel){
-      if(snapshot_peers_.size()>=64&&peer==snapshot_peers_.end())return true;
+      // One receiver per page, up to the browser's 128-page limit.
+      if(snapshot_peers_.size()>=128&&peer==snapshot_peers_.end())return true;
       SnapshotPeer next;next.pin={static_cast<uint64_t>(context),static_cast<uint64_t>(target->second.browser->GetIdentifier()),++snapshot_next_epoch_,frame->GetIdentifier().ToString()};next.request=request;next.route=frame->GetIdentifier().ToString();
       snapshot_peers_.insert_or_assign(page,std::move(next));peer=snapshot_peers_.find(page);
     }

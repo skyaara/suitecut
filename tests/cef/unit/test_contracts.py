@@ -170,7 +170,7 @@ class CatalogueContracts(unittest.TestCase):
     def test_real_catalogue_is_complete_and_valid(self):
         cases = catalogue('node')
         self.assertEqual({kind: sum(c['kind'] == kind for c in cases) for kind in ('journey', 'proof', 'cpp')},
-                         {'journey': 29, 'proof': 56, 'cpp': 5})
+                         {'journey': 29, 'proof': 57, 'cpp': 5})
         for case in cases:
             if case['kind'] != 'journey':
                 validate_contract(case['evidence'])

@@ -80,7 +80,10 @@ class InitSnapshotWire {
 // requests teardown; it never fabricates either physical receipt.
 class InitSnapshotReceipts {
  public:
-  static constexpr size_t kTransfers=64,kBytes=64*1048576;
+  // Every page keeps its installed region and may have one replacement in
+  // flight, so this is twice the browser's 128-page limit. A lower bound let
+  // long-lived popups exhaust it and close every page opened afterwards.
+  static constexpr size_t kTransfers=256,kBytes=64*1048576;
   static constexpr double kRetirementGrace=30;
   enum class Status {Accepted,Rejected,Canceled,Expired,CloseRequired,RendererGone};
   struct Event {InitSnapshotPin pin;Status status;bool public_reply=false,region_installed=false;};

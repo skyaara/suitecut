@@ -548,6 +548,20 @@
     }
   },
   {
+    "script": "scripts/verify-native-snapshot-page-capacity.mjs",
+    "timeout": 150,
+    "tags": ["bootstrap", "lifecycle"],
+    "evidence": {
+      "file": "work/.suitecut/native-snapshot-page-capacity/report.json",
+      "rules": [
+        {
+          "path": "initializedPages",
+          "equals": 100
+        }
+      ]
+    }
+  },
+  {
     "script": "scripts/verify-native-binding-capacity.mjs",
     "timeout": 150,
     "tags": ["bindings", "race"],
