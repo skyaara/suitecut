@@ -11,6 +11,7 @@
 
 #include "context_menus.h"
 #include "process/main.h"
+#include "process/prototype_tabs.h"
 #include "process/standalone.h"
 
 namespace standalone = suitecut::browser::standalone;
@@ -278,8 +279,9 @@ int main(int argc, char** argv) {
     // Offscreen automation never shows UI. Chrome window mode is a browser a
     // person uses, so it needs a Dock icon, menu bar and keyboard focus.
     // Opened from Finder, the Dock or Spotlight there are no SDK arguments.
-    g_standalone = standalone::Requested(argc, argv);
-    bool chrome_windows = g_standalone;
+    const bool prototype = suitecut::browser::prototype::Requested(argc, argv);
+    g_standalone = !prototype && standalone::Requested(argc, argv);
+    bool chrome_windows = g_standalone || prototype;
     for (int i = 1; i < argc; ++i)
       if (std::strcmp(argv[i], "--suitecut-window-mode=chrome") == 0) chrome_windows = true;
     SuiteCutStandalone* own = g_standalone ? [[SuiteCutStandalone alloc] init] : nil;
