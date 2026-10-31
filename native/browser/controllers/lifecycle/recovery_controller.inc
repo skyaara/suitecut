@@ -18,7 +18,7 @@
     if(!RendererRecoveryHandlerPending()||recovery_handler_retiring_)return;
     recovery_handler_retiring_=true;
     if(closed_reason_.empty())closed_reason_=error;
-    if(browser_)browser_->GetHost()->CloseBrowser(true);
+    if(browser_)suitecut::browser::CloseBrowser(browser_, true);
   }
   void RendererRecoveryHandlerTick() {
     if(!RendererRecoveryHandlerPending()||recovery_handler_retiring_)return;

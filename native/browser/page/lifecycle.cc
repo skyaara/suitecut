@@ -56,7 +56,7 @@ auto Source::OnFrameCreated(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> f
   }
   if (!engine_.contexts()->InitScriptFrameCreated(page_id_, frame)) {
     Error("Native context init script IPC capacity exceeded");
-    browser->GetHost()->CloseBrowser(true);
+    suitecut::browser::CloseBrowser(browser, true);
   }
 }
 
@@ -80,7 +80,7 @@ auto Source::OnProcessMessageReceived(CefRefPtr<CefBrowser> browser, CefRefPtr<C
   if (sender == PID_RENDERER && message->GetName() == "suitecutInitScriptBootstrapError") {
     if (closing_page_ || !browser_) return true;
     Error(message->GetArgumentList()->GetString(0).ToString().c_str());
-    if (browser_) browser_->GetHost()->CloseBrowser(true);
+    if (browser_) suitecut::browser::CloseBrowser(browser_, true);
     return true;
   }
   if (sender == PID_RENDERER && message->GetName() == "suitecutInitScriptError") {
@@ -273,6 +273,11 @@ auto Source::OnBeforeContextMenu(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFra
   // Automation pages never show a menu; a person's Chrome window keeps one.
   if (ChromeWindowMode()) RemoveInspectionItems(model);
   else model->Clear();
+  if (model->GetCount()) ContextMenus::Get().Opened(browser->GetIdentifier());
+}
+
+auto Source::OnContextMenuDismissed(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame>) -> void {
+  ContextMenus::Get().Dismissed(browser->GetIdentifier());
 }
 
 auto Source::GetViewRect(CefRefPtr<CefBrowser> browser, CefRect& rect) -> void {
@@ -320,7 +325,7 @@ auto Source::OnAfterCreated(CefRefPtr<CefBrowser> browser) -> void {
       engine_.contexts()->RequestPolicyError(engine_.contexts()->ContextId(page_id_));
   if (!policy_error.empty()) {
     Error(policy_error.c_str());
-    browser->GetHost()->CloseBrowser(true);
+    suitecut::browser::CloseBrowser(browser, true);
     return;
   }
   CredentialPrepare();
@@ -349,7 +354,7 @@ auto Source::OnAfterCreated(CefRefPtr<CefBrowser> browser) -> void {
       [this] { WakeDeadlines(); },
       [this](const std::string& error) {
         Error(error.c_str());
-        if (browser_) browser_->GetHost()->CloseBrowser(true);
+        if (browser_) suitecut::browser::CloseBrowser(browser_, true);
       });
   sockets_->SetObserver([this](Dict event, const std::vector<uint8_t>& bytes, double observed) {
     NativeTraceWebSocket(event, bytes, observed);
@@ -436,7 +441,7 @@ auto Source::OnAfterCreated(CefRefPtr<CefBrowser> browser) -> void {
             self->NativeReadResponseBody(session, request, deadline, std::move(reply));
           })) {
     Error("Native network archive owner capacity exceeded");
-    browser->GetHost()->CloseBrowser(true);
+    suitecut::browser::CloseBrowser(browser, true);
     return;
   }
   if (!engine_.network_archive().PageCreated(
@@ -587,7 +592,7 @@ auto Source::OnAfterCreated(CefRefPtr<CefBrowser> browser) -> void {
   std::string inherited_error;
   if (!engine_.contexts()->SeedPageBindings(page_id_, inherited_error)) {
     Error(inherited_error.c_str());
-    browser->GetHost()->CloseBrowser(true);
+    suitecut::browser::CloseBrowser(browser, true);
     return;
   }
   if (!engine_.PageCreated(page_id_, browser)) return;
@@ -642,13 +647,13 @@ auto Source::OnAfterCreated(CefRefPtr<CefBrowser> browser) -> void {
             if (self->closing_page_) return;
             if (!ok) {
               self->Error(error.c_str());
-              if (self->browser_) self->browser_->GetHost()->CloseBrowser(true);
+              if (self->browser_) suitecut::browser::CloseBrowser(self->browser_, true);
               return;
             }
             self->NativeStartContextHeaders();
           })) {
     Error("Native network policy target capacity exceeded");
-    browser->GetHost()->CloseBrowser(true);
+    suitecut::browser::CloseBrowser(browser, true);
     return;
   }
   if (!SubmitDevTools(bootstrap_tree_, "Page.getFrameTree", nullptr, "")) {

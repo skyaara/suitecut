@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 #include "utility_browser.h"
+#include "context_menus.h"
 #include "locator_handler_async_work.h"
 #include "accepted_task_work.h"
 #include <algorithm>
@@ -188,7 +189,7 @@ class SuiteCutUtilityBrowsers::Client : public CefClient, public CefLifeSpanHand
     // Return from that callback before mutating Chromium's browser lifetime;
     // retain the real client/browser until the posted close and OnBeforeClose.
     CefPostTask(TID_UI, new UtilityTask([self = CefRefPtr<Client>(this)] {
-      if (self->browser_) self->browser_->GetHost()->CloseBrowser(true);
+      if (self->browser_) suitecut::browser::CloseBrowser(self->browser_, true);
     }));
   }
   bool close_posted_ = false;

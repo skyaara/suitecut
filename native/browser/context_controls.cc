@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 #include "context_controls.h"
+#include "context_menus.h"
 #include "accepted_task_work.h"
 #include "context_settings.h"
 #include "inbound_string.h"
@@ -251,7 +252,7 @@ bool SuiteCutContextControls::AcceptDownloads(int page) const {
 void SuiteCutContextControls::ContinueCloseContext(int context){FinishContext(context);if(stopping_&&pages_.empty()&&hooks_.idle)hooks_.idle();}
 void SuiteCutContextControls::PageCreated(int page_id, CefRefPtr<CefBrowser> browser) {
   const auto page = pages_.find(page_id);
-  if (page == pages_.end()) { browser->GetHost()->CloseBrowser(true); return; }
+  if (page == pages_.end()) { suitecut::browser::CloseBrowser(browser, true); return; }
   page->second.browser = browser;
   PageOriginObserved(page_id, browser->GetMainFrame()->GetURL().ToString());
   // The initial page is announced by the process handshake; emitting before
@@ -318,8 +319,8 @@ void SuiteCutContextControls::BeginPageClose(int page_id, const std::string& rea
   const auto context=contexts_.find(page->second.context);if(context!=contexts_.end()&&context->second.closing&&!page->second.close_deadline)page->second.close_deadline=context->second.close_deadline;
   const auto browser = page->second.browser; if(!browser||page->second.download_close_started)return;
   page->second.download_close_started=true;
-  if(hooks_.before_page_close)hooks_.before_page_close(page_id,page->second.close_deadline,[browser]{browser->GetHost()->CloseBrowser(true);});
-  else browser->GetHost()->CloseBrowser(true);
+  if(hooks_.before_page_close)hooks_.before_page_close(page_id,page->second.close_deadline,[browser]{suitecut::browser::CloseBrowser(browser, true);});
+  else suitecut::browser::CloseBrowser(browser, true);
 }
 uint64_t SuiteCutContextControls::BeforeUnloadCloseToken(int page)const{
   const auto found=pages_.find(page);return found==pages_.end()?0:found->second.before_unload.Pending();
@@ -494,7 +495,7 @@ bool SuiteCutContextControls::Handle(const std::string& action, Dict params, Rep
         if(!page->second.browser||!page->second.before_unload.Begin(params->GetString("reason").ToString(),deadline,now)){
           reply(false,nullptr,"Native beforeunload close is unavailable or its original deadline expired");return true;
         }
-        if(!pending)page->second.browser->GetHost()->CloseBrowser(false);
+        if(!pending)suitecut::browser::CloseBrowser(page->second.browser, false);
       }
       // Dispatch acknowledgement is not a page-closed receipt. Do not mutate
       // the context/page or finalize resources before genuine DoClose approval.

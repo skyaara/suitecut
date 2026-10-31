@@ -19,7 +19,7 @@ auto Source::ToolEvent(const std::string& method, const void* params, size_t siz
   }
   if (method == "Runtime.exceptionThrown" && size > 1048576) {
     Error("Native page error event limit exceeded");
-    if (browser_) browser_->GetHost()->CloseBrowser(true);
+    if (browser_) suitecut::browser::CloseBrowser(browser_, true);
     return;
   }
   if (size > 1048576 ||

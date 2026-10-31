@@ -31,7 +31,7 @@ void DeferredDevToolsFailure(int id) {
   }
   utility_worlds_.erase(id); session_trees_.erase(id);
   if (browser_ && !closing_page_) {
-    browser_->GetHost()->CloseBrowser(true);
+    suitecut::browser::CloseBrowser(browser_, true);
     Error("Native deferred protocol dispatch failed");
   }
 }

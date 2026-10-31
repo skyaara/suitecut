@@ -53,7 +53,7 @@ void NativeVirtualTimePumpClose(){
   if(!native_virtual_time_close_fence_.Post(Now()))return;
   if(!CefPostTask(TID_UI,new Task([self=CefRefPtr<Source>(this)]{
     if(self->native_virtual_time_close_fence_.EnterPosted(Now())&&self->browser_&&!self->closing_page_)
-      self->browser_->GetHost()->CloseBrowser(true);
+      suitecut::browser::CloseBrowser(self->browser_, true);
   }))){
     native_virtual_time_close_fence_.PostRejected();
     Error("CEF rejected native virtual-time close task");WakeDeadlines();

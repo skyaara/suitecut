@@ -24,13 +24,13 @@ auto Source::NativeStartContextHeaders() -> void {
             if (self->closing_page_) return;
             if (!ok) {
               self->Error(error.c_str());
-              if (self->browser_) self->browser_->GetHost()->CloseBrowser(true);
+              if (self->browser_) suitecut::browser::CloseBrowser(self->browser_, true);
               return;
             }
             self->NativeStartContextHAR();
           })) {
     Error("Native context HTTP headers target capacity exceeded");
-    browser_->GetHost()->CloseBrowser(true);
+    suitecut::browser::CloseBrowser(browser_, true);
   }
 }
 

@@ -27,6 +27,12 @@ struct BrowserHost{
   void CloseBrowser(bool){++closes;}
 };
 struct Browser{BrowserHost host;BrowserHost*GetHost(){return &host;}};
+// Production closes go through context_menus.h; these fakes close directly.
+namespace suitecut::browser {
+template <class Browser> void CloseBrowser(const Browser& browser, bool force) {
+  browser->GetHost()->CloseBrowser(force);
+}
+}  // namespace suitecut::browser
 // Actual included production adapter, with controlled Source facts and posted
 // close observations. This is not a CEF browser/observer or physical ACK proof.
 class Source{

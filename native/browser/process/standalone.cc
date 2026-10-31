@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 #include "process/standalone.h"
+#include "context_menus.h"
 #include <cstdlib>
 #include <cstring>
 #include <filesystem>
@@ -47,7 +48,7 @@ class Client : public CefClient, public CefLifeSpanHandler {
     }
     // Pages may still ask to confirm leaving; a cancelled close keeps that
     // window, and closing it later finishes the quit.
-    for (const auto& browser : std::vector(browsers_)) browser->GetHost()->CloseBrowser(false);
+    for (const auto& browser : std::vector(browsers_)) suitecut::browser::CloseBrowser(browser, false);
   }
   const std::vector<CefRefPtr<CefBrowser>>& browsers() const { return browsers_; }
 

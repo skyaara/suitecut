@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 #include "context_workers.h"
+#include "context_menus.h"
 #include "accepted_task_work.h"
 #include "locator_handler_async_work.h"
 #include "context_worker_event_cursor.h"
@@ -96,7 +97,7 @@ class SuiteCutContextWorkers::Client : public CefClient, public CefLifeSpanHandl
     browser_=browser;NativeInspectorOpened(inspector_work_,browser->GetIdentifier(),suitecut::AcceptedInspectorWork::Kind::Broker);
     const auto native_inspector_callback=NativeInspectorCallback();
     runtime_style_=browser->GetHost()->GetRuntimeStyle();observer_=browser->GetHost()->AddDevToolsMessageObserver(this);
-    if(closing_page_){browser->GetHost()->CloseBrowser(true);return;}
+    if(closing_page_){suitecut::browser::CloseBrowser(browser, true);return;}
     network_fatal_=std::make_unique<suitecut::NativeNetworkFatalTeardown>(
       [this](std::function<void()> task){return CefPostTask(TID_UI,new Task([self=CefRefPtr<Client>(this),task=std::move(task)]{task();}));},
       [this](const std::string&error){Error(error.c_str());},[this]{Close();});
@@ -116,7 +117,7 @@ class SuiteCutContextWorkers::Client : public CefClient, public CefLifeSpanHandl
     }
     if(auto owner=owner_.lock();owner&&owner->hooks_.resource_owner){
       if(!owner->hooks_.resource_owner(context_,network_policy_target_,[self=CefRefPtr<Client>(this)](const std::string&session,const std::string&request,double deadline,std::function<void(bool,std::vector<uint8_t>,const std::string&)>reply){self->NativeReadResponseBody(session,request,deadline,std::move(reply));})){
-        Error("Native broker network archive owner capacity exceeded");browser->GetHost()->CloseBrowser(true);return;
+        Error("Native broker network archive owner capacity exceeded");suitecut::browser::CloseBrowser(browser, true);return;
       }
       network_->SetObserver([this](Dict event){if(auto owner=owner_.lock();owner&&owner->hooks_.resource_event)owner->hooks_.resource_event(context_,network_policy_target_,event);});
     }
@@ -135,7 +136,7 @@ class SuiteCutContextWorkers::Client : public CefClient, public CefLifeSpanHandl
           auto params=CefDictionaryValue::Create();params->SetString("action","setOffline");params->SetBool("offline",offline);
           self->network_->Command(0,params,[done=std::move(done)](bool ok,const std::string& error,const std::string&){done(ok,error);});
         },std::move(initialize));
-      if(!attached){Error("Native broker network policy capacity exceeded");browser->GetHost()->CloseBrowser(true);}
+      if(!attached){Error("Native broker network policy capacity exceeded");suitecut::browser::CloseBrowser(browser, true);}
     }else initialize(true,"");
   }
   void AuthenticateAndDiscover() {
@@ -460,7 +461,7 @@ class SuiteCutContextWorkers::Client : public CefClient, public CefLifeSpanHandl
     WorkerDispatch(owner,request->second.params);
   }
   void Flush() {const auto owners=operations_.Ids();for(int id:owners)Run(id);}
-  void Close() {if(closing_page_)return;closing_page_=true;FailQueuedCookies("Native browser context is closing");for(int id:operations_.Ids())Complete(id,false,"Native browser context is closing");if(browser_)browser_->GetHost()->CloseBrowser(true);}
+  void Close() {if(closing_page_)return;closing_page_=true;FailQueuedCookies("Native browser context is closing");for(int id:operations_.Ids())Complete(id,false,"Native browser context is closing");if(browser_)suitecut::browser::CloseBrowser(browser_, true);}
   void Cancel(int owner) {Complete(owner,false,"Native context worker operation canceled");}
   bool Matches(Dict info) const {return ready_&&!chromium_context_.empty()&&info&&info->GetString("browserContextId")==chromium_context_&&(info->GetString("type")=="shared_worker"||info->GetString("type")=="service_worker");}
   void Discover(Dict info) {

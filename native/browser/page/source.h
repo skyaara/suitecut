@@ -2,6 +2,7 @@
 #pragma once
 #include <map>
 
+#include "context_menus.h"
 #include "page/window_mode.h"
 #include "runtime/engine.h"
 namespace suitecut::browser {
@@ -84,6 +85,7 @@ class Source : public CefClient,
   void OnDialogClosed(CefRefPtr<CefBrowser>) override;
   void OnBeforeContextMenu(CefRefPtr<CefBrowser>, CefRefPtr<CefFrame>,
                            CefRefPtr<CefContextMenuParams>, CefRefPtr<CefMenuModel> model) override;
+  void OnContextMenuDismissed(CefRefPtr<CefBrowser>, CefRefPtr<CefFrame>) override;
   void GetViewRect(CefRefPtr<CefBrowser>, CefRect& rect) override;
   bool GetScreenInfo(CefRefPtr<CefBrowser>, CefScreenInfo& info) override;
   void OnAfterCreated(CefRefPtr<CefBrowser> browser) override;

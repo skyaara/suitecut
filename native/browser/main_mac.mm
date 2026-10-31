@@ -1,12 +1,15 @@
 // SPDX-License-Identifier: MIT
 #import <Cocoa/Cocoa.h>
 #include <cstring>
+#include <utility>
+#include <vector>
 #include "include/cef_application_mac.h"
 #include "include/cef_id_mappers.h"
 #include "include/wrapper/cef_library_loader.h"
 #include "media_pipeline.h"
 #include "media_activity.h"
 
+#include "context_menus.h"
 #include "process/main.h"
 #include "process/standalone.h"
 
@@ -233,6 +236,34 @@ static void InstallChromeMenu(SuiteCutStandalone* own) {
   NSApp.windowsMenu = window;
 }
 
+// Remembers the menus being tracked so closing a page can cancel its context
+// menu first and wait for it to finish (see context_menus.h).
+static void WatchMenus() {
+  static NSMutableSet* tracking = [[NSMutableSet alloc] init];
+  static auto* ended = new std::vector<std::function<void()>>;
+  NSNotificationCenter* center = NSNotificationCenter.defaultCenter;
+  [center addObserverForName:NSMenuDidBeginTrackingNotification
+                      object:nil
+                       queue:nil
+                  usingBlock:^(NSNotification* note) {
+                    [tracking addObject:note.object];
+                  }];
+  [center addObserverForName:NSMenuDidEndTrackingNotification
+                      object:nil
+                       queue:nil
+                  usingBlock:^(NSNotification* note) {
+                    [tracking removeObject:note.object];
+                    if (tracking.count) return;
+                    const auto waiting = std::exchange(*ended, {});
+                    for (const auto& callback : waiting) callback();
+                  }];
+  suitecut::browser::ContextMenus::Get().cancel = [](std::function<void()> callback) {
+    if (!tracking.count) return callback();
+    ended->push_back(std::move(callback));
+    for (NSMenu* menu in [tracking allObjects]) [menu cancelTrackingWithoutAnimation];
+  };
+}
+
 int main(int argc, char** argv) {
   // The supervised encoder is a native process helper, not a browser. Dispatch
   // it before mapping CEF or creating NSApplication so the first paint does not
@@ -257,6 +288,7 @@ int main(int argc, char** argv) {
                                               : NSApplicationActivationPolicyProhibited];
     if (chrome_windows) {
       InstallChromeMenu(own);
+      WatchMenus();
       // Launched from a script rather than the Dock, it would open behind the
       // caller's windows; come forward like a browser the person just opened.
       [NSApp activateIgnoringOtherApps:YES];

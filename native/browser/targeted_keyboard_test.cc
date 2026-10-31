@@ -34,6 +34,12 @@ static bool ControlledPostTask(int,Task* task){tasks.push_back(std::move(task->f
 static void Pump(){while(!tasks.empty()){auto fn=std::move(tasks.front());tasks.pop_front();fn();}}
 #define CefPostTask ControlledPostTask
 #define TID_UI 0
+// Production closes go through context_menus.h; these fakes close directly.
+namespace suitecut::browser {
+template <class Browser> void CloseBrowser(const Browser& browser, bool force) {
+  browser->GetHost()->CloseBrowser(force);
+}
+}  // namespace suitecut::browser
 class Source:public CefBaseRefCounted {
  public:
   using Dict=CefRefPtr<CefDictionaryValue>;

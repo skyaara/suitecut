@@ -4,7 +4,7 @@ suitecut::ElementStateControls& ElementStates(){
   if(!element_states_)element_states_=std::make_unique<suitecut::ElementStateControls>(
     "__suitecut_element_state_"+handle_namespace_,[this]{return AllocateDevToolsId();},
     [this](int id,const std::string& method,Dict params,const std::string& session){return !closing_page_&&SubmitDevTools(id,method,params,session);},
-    [this](const std::string& error){Error(error.c_str());if(browser_)browser_->GetHost()->CloseBrowser(true);},[]{return Now();});
+    [this](const std::string& error){Error(error.c_str());if(browser_)suitecut::browser::CloseBrowser(browser_, true);},[]{return Now();});
   return *element_states_;
 }
 // False means either the normal native frame waiter was scheduled or the exact

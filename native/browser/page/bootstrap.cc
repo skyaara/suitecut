@@ -6,7 +6,7 @@ auto Source::FailChildBootstrap(const std::string& error) -> void {
   child_bootstrap_failed_ = true;
   pending_child_bootstraps_.clear();
   Error(error.c_str());
-  if (browser_) browser_->GetHost()->CloseBrowser(true);
+  if (browser_) suitecut::browser::CloseBrowser(browser_, true);
 }
 
 auto Source::WakeChildBootstrapDeadlines() -> void {

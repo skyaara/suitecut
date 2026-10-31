@@ -124,7 +124,7 @@ bool SuiteCutContextControls::InitScriptMessage(int page_id, CefRefPtr<CefFrame>
   if (!owner) {
     if (!args->GetBool(1)) {
       const auto page = pages_.find(page_id);
-      if (page != pages_.end() && page->second.browser) page->second.browser->GetHost()->CloseBrowser(true);
+      if (page != pages_.end() && page->second.browser) suitecut::browser::CloseBrowser(page->second.browser, true);
     }
     return true;
   }
@@ -179,7 +179,7 @@ void SuiteCutContextControls::PumpInitScriptDeadlines() {
     const auto found = pages_.find(page);
     // An attached frame that cannot install its context snapshot must not keep
     // silently running future documents with incomplete initialization.
-    if (found != pages_.end() && found->second.browser) found->second.browser->GetHost()->CloseBrowser(true);
+    if (found != pages_.end() && found->second.browser) suitecut::browser::CloseBrowser(found->second.browser, true);
   }
   if (!script_acks_.empty()) WakeInitScriptDeadlines();
 }

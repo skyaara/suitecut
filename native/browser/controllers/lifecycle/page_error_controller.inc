@@ -14,7 +14,7 @@ suitecut::PageErrorControls& PageErrors(){
       auto header=Header("pageerror");header->SetDouble("sequence",static_cast<double>(sequence));SendPacket(header,std::vector<uint8_t>(json.begin(),json.end()));
       std::vector<int> waiters;for(const auto& [id,event]:event_waiters_)if(event=="pageerror")waiters.push_back(id);for(const int id:waiters)Complete(id,true,"",json);
     },
-    [this](const std::string& error){Error(error.c_str());if(browser_)browser_->GetHost()->CloseBrowser(true);},
+    [this](const std::string& error){Error(error.c_str());if(browser_)suitecut::browser::CloseBrowser(browser_, true);},
     [this](Dict remote){return ConsolePreview(remote);},[]{return Now();});
   return *page_errors_;
 }

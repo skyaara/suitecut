@@ -35,7 +35,7 @@ void FailSendKeysCleanup(const std::shared_ptr<InputWork>& work,const char* reas
   // No protocol counter or local map mutation proves a physical key release.
   // Keep the queue owner/descriptors until actual OnBeforeClose clears them.
   CefPostTask(TID_UI,new Task([self=CefRefPtr<Source>(this)]{
-    if(self->browser_)self->browser_->GetHost()->CloseBrowser(true);
+    if(self->browser_)suitecut::browser::CloseBrowser(self->browser_, true);
   }));
 }
 bool CleanupSendKeysSequence(const std::shared_ptr<InputWork>& work) {

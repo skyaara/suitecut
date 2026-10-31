@@ -32,7 +32,7 @@ void NetworkFatal(const std::string&error){
   if(!network_fatal_)network_fatal_=std::make_unique<suitecut::NativeNetworkFatalTeardown>(
     [this](std::function<void()> task){return CefPostTask(TID_UI,new Task([self=CefRefPtr<Source>(this),task=std::move(task)]{if(!self->closing_page_)task();}));},
     [this](const std::string&message){if(closed_reason_.empty())closed_reason_=message;},
-    [this]{if(browser_&&!closing_page_)browser_->GetHost()->CloseBrowser(true);});
+    [this]{if(browser_&&!closing_page_)suitecut::browser::CloseBrowser(browser_, true);});
   network_fatal_->Fail(error);WakeDeadlines();
 }
 void SettingsFail(const std::string&error){CancelSettingsWatchdogs();NetworkFatal(error);}

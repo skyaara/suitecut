@@ -15,7 +15,7 @@ bool NativeWidgetMouseReady(){
     const auto found=frame_states_.find(pin.frame);
     return found!=frame_states_.end()&&found->second.loader==pin.loader&&found->second.session==pin.session&&found->second.context_identity==pin.identity&&native_pristine_renderer_epoch_==pin.generation;
   };
-  hooks.fatal=[this](const std::string&error){Error(error.c_str());if(browser_)browser_->GetHost()->CloseBrowser(true);};
+  hooks.fatal=[this](const std::string&error){Error(error.c_str());if(browser_)suitecut::browser::CloseBrowser(browser_, true);};
   native_widget_mouse_=std::make_shared<suitecut::NativeWidgetMouse>(std::move(hooks));
   native_widget_mouse_->Probe([this](bool,const std::string&){native_widget_probe_ready_=true;if(!closing_page_)MaybeReady();});
   // The native sender can reject synchronously. Its callback already retries

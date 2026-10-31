@@ -485,7 +485,7 @@ void FormNativeRetirementFailed(std::shared_ptr<FormNativeSelectionWork> work,co
   // Only actual OnBeforeClose retires an unknown accepted backend operation.
   // Request that real retirement, rather than leaving idle waits permanently
   // blocked behind a failed lane or inventing a cleanup ACK.
-  if(!already&&browser_){if(closed_reason_.empty())closed_reason_=error;browser_->GetHost()->CloseBrowser(true);}
+  if(!already&&browser_){if(closed_reason_.empty())closed_reason_=error;suitecut::browser::CloseBrowser(browser_, true);}
 }
 void FormNativeRelease(std::shared_ptr<FormNativeSelectionWork> work) {
   auto params=CefDictionaryValue::Create();params->SetString("objectGroup",work->group);

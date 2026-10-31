@@ -116,7 +116,7 @@ bool Engine::PageCreated(int page, CefRefPtr<CefBrowser> browser) {
   const int context = contexts_->ContextId(page);
   const auto found = sources_.find(page);
   if (!context || found == sources_.end()) {
-    browser->GetHost()->CloseBrowser(true);
+    suitecut::browser::CloseBrowser(browser, true);
     return false;
   }
   std::optional<suitecut::NativeContextVideo::Descriptor> video;
@@ -140,7 +140,7 @@ bool Engine::PageCreated(int page, CefRefPtr<CefBrowser> browser) {
     if (!context_video_->PageCreated(page, context, std::move(actual), video, error)) {
       contexts_->PageCreationFailed(page, error);
       if (page == 1) StartupFailed(error);
-      browser->GetHost()->CloseBrowser(true);
+      suitecut::browser::CloseBrowser(browser, true);
       return false;
     }
   }

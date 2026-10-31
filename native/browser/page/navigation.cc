@@ -128,7 +128,7 @@ auto Source::OnRenderProcessTerminated(CefRefPtr<CefBrowser> browser, Terminatio
     ChildRendererCrash(reason);
     if (!ready_ && browser_) {
       closed_reason_ = reason;
-      browser_->GetHost()->CloseBrowser(true);
+      suitecut::browser::CloseBrowser(browser_, true);
     }
   }
 }
