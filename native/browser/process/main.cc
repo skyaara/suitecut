@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 #include "process/main.h"
 #include "process/app.h"
+#include "process/standalone.h"
 #include "runtime/dependencies.h"
 using namespace suitecut::browser;
 
@@ -150,6 +151,8 @@ int RunSuiteCutBrowser(int argc, char** argv) {
   const int code = CefExecuteProcess(args, new SuiteCutRendererApp(), nullptr);
   if (code >= 0) return code;
 #endif
+  if (suitecut::browser::standalone::Requested(argc, argv))
+    return suitecut::browser::standalone::Run(args, argc, argv);
   return RunSuiteCutBrowserMain(args, argc, argv
 #if defined(__linux__)
                                 ,
