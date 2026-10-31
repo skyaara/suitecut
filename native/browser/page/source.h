@@ -586,12 +586,16 @@ class Source : public CefClient,
   std::map<int, CefRefPtr<Source>> tabs_;
   CefRefPtr<Source> AdoptedTab(const CefRefPtr<CefBrowser>& browser);
   // A Chrome UI tab already has its own first document, like a popup, so it
-  // skips the private initial empty document handshake.
-  void AdoptChromeTab() {
+  // skips the private initial empty document handshake. A tab a newPage asked
+  // for opens on Chrome's New Tab page; it is ready only once on about:blank,
+  // the first document every new page has.
+  void AdoptChromeTab(bool blank) {
     initial_empty_document_ = false;
     initial_empty_ready_ = true;
     settings_bootstrap_ = false;
+    blank_tab_ = blank;
   }
+  bool blank_tab_ = false;
   CefRefPtr<CefRegistration> observer_;
   IMPLEMENT_REFCOUNTING(Source);
 };

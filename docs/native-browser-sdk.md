@@ -76,6 +76,18 @@ const page = browser.defaultContext().pages()[0]
 await page.goto('https://example.com')
 ```
 
+Like Chrome, a context's first page gets a window and `context.newPage()` opens
+each later page as a foreground tab in the window of the context's newest page.
+The tab starts on `about:blank`, not Chrome's New Tab page. Launch with
+`newPages: 'windows'` to give every page a window of its own, or pass
+`context.newPage({ newWindow: true })` (or `false`) to choose for one page.
+`browser.newPage()` makes a new context, so it always gets its own window.
+
+As with Playwright, SDK pages keep focus emulation on, so a tab behind another
+tab still reports `document.visibilityState` `visible` and keeps rendering;
+pages in background tabs can be driven in parallel. `page.bringToFront()`
+selects a page's tab so a person can see it.
+
 A tab the person opens from Chrome's own UI (the new-tab button, Cmd+T or a
 restored session) becomes a page of the context it opened in, so `context.pages()`
 and the context `page` event include it and the SDK can drive it. DevTools, View

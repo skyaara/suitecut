@@ -19,6 +19,14 @@ inline bool ChromeWindowMode() {
   return chrome;
 }
 
+// `--suitecut-new-pages=windows` gives each new page a window of its own;
+// otherwise, like Chrome, a context's later pages open as tabs.
+inline bool WindowsByDefault() {
+  static const bool windows =
+      CefCommandLine::GetGlobalCommandLine()->GetSwitchValue("suitecut-new-pages") == "windows";
+  return windows;
+}
+
 inline void ConfigurePageWindow(CefWindowInfo& window, int width, int height) {
   if (ChromeWindowMode()) {
     // A null parent asks CEF for its default Chrome window. Bounds size the

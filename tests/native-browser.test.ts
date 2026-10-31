@@ -136,6 +136,14 @@ describe('native browser lifecycle', () => {
       expect.arrayContaining(['--suitecut-window-mode=chrome']),
       expect.any(Object),
     )
+    expect(vi.mocked(spawn).mock.lastCall?.[1]).not.toContain('--suitecut-new-pages=windows')
+    vi.mocked(spawn).mockImplementationOnce(() => {
+      throw new Error('actual spawn failure')
+    })
+    await expect(
+      launchNativeBrowser({ executablePath: path, windowMode: 'chrome', newPages: 'windows' }),
+    ).rejects.toThrow('actual spawn failure')
+    expect(vi.mocked(spawn).mock.lastCall?.[1]).toContain('--suitecut-new-pages=windows')
     await expect(
       launchNativeBrowser({ executablePath: path, windowMode: 'chrome', headless: true }),
     ).rejects.toThrow('cannot be headless')

@@ -103,12 +103,13 @@ CefRefPtr<Source> Engine::PopupClient(int opener, int popup_id, const std::strin
   return source;
 }
 CefRefPtr<Source> Engine::TabClient(int context, int width, int height) {
-  const int page = contexts_->ReserveTab(context);
+  bool requested = false;
+  const int page = contexts_->ReserveTab(context, requested);
   if (!page) return nullptr;
   const auto config = settings_.Get(context);
   const double scale = config && config->device_scale ? *config->device_scale : scale_;
   CefRefPtr<Source> source = new Source(writer_, *this, page, width, height, scale, i420_);
-  source->AdoptChromeTab();
+  source->AdoptChromeTab(requested);
   sources_[page] = source;
   return source;
 }

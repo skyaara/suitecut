@@ -596,6 +596,7 @@ auto Source::OnAfterCreated(CefRefPtr<CefBrowser> browser) -> void {
     return;
   }
   if (!engine_.PageCreated(page_id_, browser)) return;
+  if (blank_tab_) browser->GetMainFrame()->LoadURL("about:blank");
   browser->GetHost()->SetFocus(true);
   native_frame_debugger_registering_ = true;
   observer_ = browser->GetHost()->AddDevToolsMessageObserver(this);
@@ -666,8 +667,10 @@ auto Source::OnAfterCreated(CefRefPtr<CefBrowser> browser) -> void {
 
 auto Source::OnBeforeClose(CefRefPtr<CefBrowser> actual_browser) -> void {
   if (auto tab = AdoptedTab(actual_browser)) {
+    // The closed tab keeps its entry: CEF still delivers a late callback for
+    // the browser, and adopting it again would reserve a page that never gets
+    // a browser and blocks shutdown forever.
     tab->OnBeforeClose(actual_browser);
-    tabs_.erase(actual_browser->GetIdentifier());
     return;
   }
   const auto native_inspector_callback = NativeInspectorCallback();

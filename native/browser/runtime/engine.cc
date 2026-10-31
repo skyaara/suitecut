@@ -222,6 +222,15 @@ Engine::Engine(Writer& writer, int width, int height, double scale, bool i420, i
   hooks.create_page = [this](int page, int context, CefRefPtr<CefRequestContext> cef) {
     return CreatePage(page, context, cef);
   };
+  hooks.open_tab = [](CefRefPtr<CefBrowser> browser) {
+    // Chrome's own New Tab command; the tab arrives through TabClient.
+    static const int command = cef_id_for_command_id_name("IDC_NEW_TAB");
+    if (!ChromeWindowMode() || command < 0 || !browser->GetHost()->CanExecuteChromeCommand(command))
+      return false;
+    browser->GetHost()->ExecuteChromeCommand(command, CEF_WOD_NEW_FOREGROUND_TAB);
+    return true;
+  };
+  hooks.windows_by_default = [] { return WindowsByDefault(); };
   hooks.before_page_close = [this](int page, double deadline, std::function<void()> continuation) {
     const auto recording_deadline =
         Clock::now() +

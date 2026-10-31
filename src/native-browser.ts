@@ -146,6 +146,7 @@ const LaunchSchema = z
     frameTransport: z.enum(['always', 'on-demand']).default('always'),
     headless: z.boolean().default(false),
     windowMode: z.enum(['offscreen', 'chrome']).default('offscreen'),
+    newPages: z.enum(['tabs', 'windows']).default('tabs'),
     backForwardCache: z.boolean().optional(),
     recordVideo: NativeRecordVideoSchema.optional(),
     startupTimeoutMs: z.number().int().min(100).max(120_000).default(30_000),
@@ -211,6 +212,12 @@ export interface NativeBrowserOptions {
    * the window; `headless` needs `offscreen`.
    */
   windowMode?: 'offscreen' | 'chrome'
+  /**
+   * Chrome window mode only. `tabs` (the default, like Chrome) opens each later page of a context
+   * as a tab in the window of its newest page; `windows` gives every page a window of its own.
+   * `context.newPage({ newWindow })` overrides it for one page.
+   */
+  newPages?: 'tabs' | 'windows'
   /** Omit/true preserves Chromium's policy; false disables its BackForwardCache at native launch. */
   backForwardCache?: boolean
   /** Record every page in the launch/default context, including persistent profiles and popups. */
@@ -472,6 +479,7 @@ export async function launchNativeBrowser(options: NativeBrowserOptions): Promis
         `--suitecut-frame-transport=${config.frameTransport}`,
         `--suitecut-headless=${config.headless ? 1 : 0}`,
         ...(config.windowMode === 'chrome' ? ['--suitecut-window-mode=chrome'] : []),
+        ...(config.newPages === 'windows' ? ['--suitecut-new-pages=windows'] : []),
         ...(config.backForwardCache === false ? ['--disable-features=BackForwardCache'] : []),
         `--suitecut-profile=${profile}`,
         ...(config.tracesDir === undefined

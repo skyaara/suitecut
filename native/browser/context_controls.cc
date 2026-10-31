@@ -559,6 +559,7 @@ bool SuiteCutContextControls::Handle(const std::string& action, Dict params, Rep
   if (action == "newPage") {
     if(context.internal){reply(false,nullptr,"Internal native HTTP profiles cannot create public pages");return true;}
     if (params->HasKey("owned") && params->GetType("owned") != VTYPE_BOOL) { reply(false, nullptr, "Invalid native page ownership option"); return true; }
+    if (params->HasKey("window") && params->GetType("window") != VTYPE_BOOL) { reply(false, nullptr, "Invalid native page window option"); return true; }
     if (params->GetBool("owned")) {
       for (const auto& [page_id, page] : pages_) if (page.context == id) { reply(false, nullptr, "Native owned page requires an unused context"); return true; }
     }
@@ -567,6 +568,18 @@ bool SuiteCutContextControls::Handle(const std::string& action, Dict params, Rep
     if (params->GetBool("owned")) context.owned_page = page_id;
     pages_.at(page_id).created_reply = std::move(reply);
     pages_.at(page_id).creation_deadline=hooks_.operation_deadline?hooks_.operation_deadline(params->GetInt("internalOwner")):0;
+    // Like Chrome, a page opens as a tab in the window of the context's newest
+    // page unless it asks for a window (or the launch made windows the
+    // default). The context's first page gets a window of its own.
+    const bool window = params->HasKey("window") ? params->GetBool("window") : hooks_.windows_by_default && hooks_.windows_by_default();
+    if (!window && hooks_.open_tab)
+      for (auto other = pages_.rbegin(); other != pages_.rend(); ++other) {
+        if (other->first == page_id || other->second.context != id || !other->second.browser || other->second.closing) continue;
+        context.pending_tabs.push_back(page_id);
+        if (hooks_.open_tab(other->second.browser)) return true;
+        context.pending_tabs.pop_back();
+        break;
+      }
     if (!hooks_.create_page || !hooks_.create_page(page_id, id, context.cef)) PageCreationFailed(page_id, "CEF browser creation failed");
     return true;
   }

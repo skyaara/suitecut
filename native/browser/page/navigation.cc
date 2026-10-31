@@ -21,6 +21,7 @@ auto Source::OnLoadEnd(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame,
     }
   }
   if (frame->IsMain() && !ready_) {
+    if (blank_tab_ && frame->GetURL() != "about:blank") return;
     // Handshake only after the initial blank document loads, so its load-end
     // cannot accidentally resolve the operator's first navigation command.
     initial_loaded_ = true;

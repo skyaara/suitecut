@@ -730,9 +730,22 @@ export class NativeBrowserContext {
   pages(): NativePage[] {
     return [...this.pageObjects.values()]
   }
-  async newPage(): Promise<NativePage> {
+  /**
+   * In Chrome window mode the context's first page gets a window and later pages open as tabs
+   * beside its newest page (the launch `newPages` option can make windows the default).
+   * `newWindow` overrides that for this page; it has no effect offscreen.
+   */
+  async newPage(options: { newWindow?: boolean } = {}): Promise<NativePage> {
     this.assertOpen()
-    const result = PageId.parse(await this.transport.runContext('newPage', { contextId: this.id }))
+    const { newWindow } = withoutNativeRetryOperation(() =>
+      z.strictObject({ newWindow: z.boolean().optional() }).parse(options),
+    )
+    const result = PageId.parse(
+      await this.transport.runContext('newPage', {
+        contextId: this.id,
+        ...(newWindow === undefined ? {} : { window: newWindow }),
+      }),
+    )
     return this.adoptPage(result.pageId, undefined, false, result.video)
   }
   async waitForPageEvent(

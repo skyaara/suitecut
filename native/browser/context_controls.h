@@ -43,6 +43,8 @@ class SuiteCutContextControls : public std::enable_shared_from_this<SuiteCutCont
     std::function<bool(int,int,CefRefPtr<CefListValue>,double,std::string&)> validate_internal_cookies;
     std::function<bool(int,int,Dict,double,std::string&)> validate_internal_storage;
     std::function<bool(int, int, CefRefPtr<CefRequestContext>)> create_page;
+    std::function<bool(CefRefPtr<CefBrowser>)> open_tab;
+    std::function<bool()> windows_by_default;
     std::function<bool(int,Dict,std::string&)> context_created;
     std::function<void(int)> context_removed;
     std::function<void(int)> context_gone;
@@ -79,8 +81,19 @@ class SuiteCutContextControls : public std::enable_shared_from_this<SuiteCutCont
   bool ContextClosePending(int context)const{const auto found=contexts_.find(context);return found!=contexts_.end()&&found->second.closing;}
   bool PhysicalOwner(int owner)const{return (cookies_&&cookies_->PhysicalOwner(owner))||(storage_&&storage_->PhysicalOwner(owner));}
   int ReservePopup(int opener_page, int popup_id, const std::string& initial_url);
-  // A tab a person opened from Chrome UI: an ordinary page of the context, without an opener.
-  int ReserveTab(int context) { return ReservePage(context, 0, 0); }
+  // A tab opened in a context's Chrome window: the oldest newPage waiting for
+  // one, else a tab a person opened from Chrome UI. Either way an ordinary page
+  // of the context, without an opener. `requested` says which.
+  int ReserveTab(int context, bool& requested) {
+    const auto found = contexts_.find(context);
+    while (found != contexts_.end() && !found->second.pending_tabs.empty()) {
+      const int page = found->second.pending_tabs.front();
+      found->second.pending_tabs.pop_front();
+      if (pages_.contains(page)) return requested = true, page;
+    }
+    requested = false;
+    return ReservePage(context, 0, 0);
+  }
   void AbortPopup(int opener_page, int popup_id);
   void PageCreated(int page_id, CefRefPtr<CefBrowser> browser);
   void PageCreationFailed(int page_id, const std::string& error);
@@ -127,6 +140,7 @@ class SuiteCutContextControls : public std::enable_shared_from_this<SuiteCutCont
     int owned_page = 0;
     std::map<std::string, uint32_t> permissions, media_permissions;
     std::vector<Reply> close_replies;
+    std::deque<int> pending_tabs;  // newPage requests a Chrome window is opening as tabs
     std::set<std::string> origins;
     bool origins_overflow = false;
     std::set<std::string> clipboard_write_origins;
