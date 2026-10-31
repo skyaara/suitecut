@@ -325,13 +325,15 @@ int main() {
     f.Ack("Debugger.setBreakpoint",true,JSON("{}"));assert(!f.results.at(2).ok&&f.closes.size()==1&&!f.Has("Debugger.disable"));
     auto diagnostic=CefDictionaryValue::Create();f.controls->Diagnostics(diagnostic);assert(diagnostic->GetInt("nativeDeveloperDebuggerBreakpoints")==1);++groups;
   }
-  { // Factory-preserved domain release can finish synchronously; old readers
-    // must be failed before a close reply reentrantly opens a replacement.
-    Fixture f;f.Open();const auto factory=++f.lease;bool factory_ready=false;
+  { // A factory-preserved domain keeps Debugger enabled, but each developer
+    // handoff reconfigures its script cache: release waits for the bounded
+    // enable ACK and the replacement for the unbounded one. Old readers must
+    // be failed before a close reply reentrantly opens that replacement.
+    Fixture f;f.Open();const auto factory=++f.lease;bool factory_ready=false,closed=false;
     f.domains->Acquire("",factory,Domains::Kind::Factory,100,[&](bool ok,const std::string&){assert(ok);factory_ready=true;});assert(factory_ready);
     f.Run(2,"waitForPause",0);
     f.controls->Handle(3,JSON("{\"action\":\"close\",\"session\":\""+f.Session()+"\"}"),100,[&](bool ok,const std::string&,const std::string&){
-      assert(ok&&!f.results.at(2).ok);
+      assert(ok&&!f.results.at(2).ok);closed=true;
       f.controls->Handle(8,JSON(R"({"action":"open"})"),100,
         [&](bool opened,const std::string& json,const std::string& error){
           f.Reply(8)(opened,json,error);assert(opened);
@@ -339,8 +341,15 @@ int main() {
           f.controls->Handle(9,JSON("{\"action\":\"waitForPause\",\"session\":\""+token+"\"}"),0,f.Reply(9));
         });
     });
+    const auto cache=[&](bool bounded){
+      const auto it=std::find_if(f.calls.begin(),f.calls.end(),[](const auto&call){return call.method=="Debugger.enable";});
+      assert(it!=f.calls.end()&&it->params&&it->params->HasKey("maxScriptsCacheSize")==bounded);f.Ack("Debugger.enable");
+    };
+    assert(f.results.contains(2)&&!f.results.at(2).ok&&!closed);cache(true);
+    assert(closed&&!f.results.contains(8));cache(false);
     assert(!f.results.contains(9));const auto token=JSON(f.results.at(8).json)->GetString("session").ToString();
-    f.controls->Handle(10,JSON("{\"action\":\"close\",\"session\":\""+token+"\"}"),100,f.Reply(10));assert(f.results.at(10).ok&&!f.results.at(9).ok);
+    f.controls->Handle(10,JSON("{\"action\":\"close\",\"session\":\""+token+"\"}"),100,f.Reply(10));
+    assert(!f.results.at(9).ok&&!f.results.contains(10));cache(true);assert(f.results.at(10).ok);
     f.domains->Release(factory,100,[](bool ok,const std::string&){assert(ok);});f.Ack("Debugger.disable");++groups;
   }
   { // Evaluate uses an actual retained pause/frame, including opaque membership.
