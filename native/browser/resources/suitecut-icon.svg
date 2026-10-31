@@ -12,10 +12,18 @@
       <stop offset="0" stop-color="#ffffff"/>
       <stop offset="1" stop-color="#eceef1"/>
     </linearGradient>
+    <clipPath id="shape">
+      <rect x="100" y="100" width="824" height="824" rx="185"/>
+    </clipPath>
   </defs>
-  <rect x="100" y="100" width="824" height="824" rx="185" fill="url(#tile)" stroke="#d5d9de" stroke-width="4"/>
-  <g transform="translate(232 232) scale(17.5)" fill="url(#chrome)">
-    <path d="M4 4H26.25L4 26.25Z"/>
-    <path d="M28 5.75V28H5.75Z"/>
+  <!-- The mark fills the whole macOS icon shape, as other app icons do; the
+       tile only shows through the diagonal split. -->
+  <g clip-path="url(#shape)">
+    <rect x="100" y="100" width="824" height="824" fill="url(#tile)"/>
+    <g transform="translate(-37.33 -37.33) scale(34.33)" fill="url(#chrome)">
+      <path d="M4 4H26.25L4 26.25Z"/>
+      <path d="M28 5.75V28H5.75Z"/>
+    </g>
   </g>
+  <rect x="100" y="100" width="824" height="824" rx="185" fill="none" stroke="#d5d9de" stroke-width="4"/>
 </svg>
