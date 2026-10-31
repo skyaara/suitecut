@@ -262,7 +262,7 @@ auto Source::ToolEvent(const std::string& method, const void* params, size_t siz
     const auto found = frame_states_.find(data->GetString("frameId"));
     if (found != frame_states_.end()) {
       const auto url = data->GetString("url").ToString();
-      if (url.size() <= 8192) {
+      if (url.size() <= kMaxObservedURL) {
         found->second.url = url;
         ++found->second.navigation;
         FrameEvent("framenavigated", found->second);

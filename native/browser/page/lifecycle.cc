@@ -157,8 +157,8 @@ auto Source::OnAddressChange(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> 
   if (auto tab = AdoptedTab(browser)) return tab->OnAddressChange(browser, frame, address);
   if (!ready_ || !frame->IsMain()) return;
   const auto url = address.ToString();
-  if (url.size() > 8192) {
-    Error("Native address exceeds 8 KiB");
+  if (url.size() > kMaxObservedURL) {
+    Error("Native address exceeds 2 MiB");
     return;
   }
   auto header = Header("navigation");

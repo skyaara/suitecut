@@ -8,6 +8,7 @@ import {
   NativeNetworkResponseSchema,
   MAX_NATIVE_RESPONSE_PAYLOAD,
   MAX_OBSERVED_DATA_URL,
+  MAX_OBSERVED_URL,
   type NativePacket,
 } from '../src/native-protocol.js'
 
@@ -44,7 +45,11 @@ describe('native IPC boundary', () => {
     }
     expect(NativeNetworkRequestSchema.parse(request).url).toBe(url)
     expect(NativeNetworkResponseSchema.parse(response).url).toBe(url)
-    const rejected = `https://example.test/${'a'.repeat(8192)}`
+    // A long GET form submission is an ordinary Chrome request and stays whole.
+    const long = `https://example.test/?q=${'a'.repeat(MAX_OBSERVED_DATA_URL + 10)}`
+    expect(NativeNetworkRequestSchema.parse({ ...request, url: long }).url).toBe(long)
+    expect(NativeNetworkResponseSchema.parse({ ...response, url: long }).url).toBe(long)
+    const rejected = `https://example.test/${'a'.repeat(MAX_OBSERVED_URL)}`
     expect(NativeNetworkRequestSchema.safeParse({ ...request, url: rejected }).success).toBe(false)
     expect(NativeNetworkResponseSchema.safeParse({ ...response, url: rejected }).success).toBe(
       false,

@@ -14,7 +14,12 @@ import { type UntrustedInput } from './untrusted.js'
 export const NATIVE_PROTOCOL_VERSION = 1
 export const MAX_NATIVE_PAYLOAD = 3840 * 2160 * 4
 export const MAX_NATIVE_RESPONSE_PAYLOAD = 192 * 1024 * 1024
-const MAX_HEADER = 65_536
+// Chrome loads URLs up to url::kMaxURLChars, and a frame, navigation or
+// request event carries the URL the page actually used. Headers stay bounded
+// but leave room for that URL beside the event's other metadata.
+export const MAX_OBSERVED_DATA_URL = 1_048_576
+export const MAX_OBSERVED_URL = 2_097_152
+const MAX_HEADER = 4 * MAX_OBSERVED_URL
 const MAX_REENTRANT_CHUNKS = 4096
 const MAX_REENTRANT_BYTES = MAX_NATIVE_RESPONSE_PAYLOAD + MAX_HEADER + 4
 
@@ -33,7 +38,7 @@ export const NativeFrameInfoSchema = z
       .string()
       .max(1024 * 6 + 2)
       .optional(),
-    url: z.string().max(8192),
+    url: z.string().max(MAX_OBSERVED_URL),
     navigationSequence: z.number().int().nonnegative().optional(),
   })
   .transform((value, context) => {
@@ -100,15 +105,15 @@ export type NativeConsoleInfo = z.infer<typeof NativeConsoleInfoSchema>
 // Inline images/fonts are genuine browser requests. Their observed data URLs
 // can exceed the command URL limit. The packet framing already bounds them, so
 // an oversized one is retained as a bounded prefix rather than failing the
-// whole session; ordinary network URLs keep the strict limit.
-export const MAX_OBSERVED_DATA_URL = 1_048_576
+// whole session. A long GET form or tracking request is an ordinary page
+// action too, so those are kept whole and only a longer one is malformed.
 const NativeObservedNetworkURLSchema = z
   .string()
-  .refine((value) => value.length <= 8192 || value.startsWith('data:'), {
-    message: 'Observed non-data network URLs must not exceed 8192 characters',
+  .refine((value) => value.length <= MAX_OBSERVED_URL || value.startsWith('data:'), {
+    message: `Observed non-data network URLs must not exceed ${MAX_OBSERVED_URL} characters`,
   })
   .transform((value) => {
-    if (value.length <= MAX_OBSERVED_DATA_URL) return value
+    if (value.length <= MAX_OBSERVED_DATA_URL || !value.startsWith('data:')) return value
     // Never keep a lone high surrogate from a split astral character.
     const last = value.charCodeAt(MAX_OBSERVED_DATA_URL - 1)
     return value.slice(0, MAX_OBSERVED_DATA_URL - (last >= 0xd800 && last <= 0xdbff ? 1 : 0))
@@ -427,7 +432,7 @@ export const NativePacketSchema = z.discriminatedUnion('type', [
   z.strictObject({
     ...base,
     type: z.literal('navigation'),
-    url: z.string().max(8192),
+    url: z.string().max(MAX_OBSERVED_URL),
   }),
   z
     .strictObject({

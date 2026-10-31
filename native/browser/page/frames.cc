@@ -68,7 +68,7 @@ auto Source::StoreFrame(Dict info, const char* event, const std::string& session
   }
   // Chromium reports a committed frame's fragment separately from its URL.
   const auto url = info->GetString("url").ToString() + info->GetString("urlFragment").ToString();
-  if (id.empty() || id.size() > 128 || parent.size() > 128 || url.size() > 8192 ||
+  if (id.empty() || id.size() > 128 || parent.size() > 128 || url.size() > kMaxObservedURL ||
       (!frame_states_.contains(id) && frame_states_.size() >= 1024)) {
     Error("Native frame metadata limit exceeded");
     return;
