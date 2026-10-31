@@ -97,12 +97,21 @@ bool WorkerToolResult(int id, bool ok, const void* data, size_t size, const std:
   WakeDeadlines(); // Real replies can retire physical ownership while idle.
   return true;
 }
+// A short-lived worker, such as a module worker whose script fails to load,
+// can terminate while its bootstrap commands are in flight. Its detach receipt
+// follows; nothing of the page failed, so this is not a session error.
+static bool WorkerTargetGone(const std::string& error){
+  for(const char* gone:{"Inspected target navigated or closed","Session with given id not found","No target with given id found"})
+    if(error.find(gone)!=std::string::npos)return true;
+  return false;
+}
 bool WorkerWebSocketRequired(const WorkerTarget&target)const{return target.websocket_required||(worker_websocket_required_&&worker_websocket_required_());}
 void WorkerBootstrapFailed(const std::string& id, uint64_t generation, const std::string& error) {
   const auto found = worker_targets_.find(id); if (found == worker_targets_.end() || found->second.generation != generation || found->second.bootstrap_failed) return;
   // Logical setup failure is not physical session/target closure. Retain this
   // bounded actual identity until a genuine detach or browser-close receipt.
   found->second.bootstrap_failed=true;
+  if(WorkerTargetGone(error))return; // No author execution remains to resume or protect.
   if(WorkerWebSocketRequired(found->second)){
     if(worker_websocket_failure_)worker_websocket_failure_(error);
     else Error(("Protected native WebSocket worker bootstrap failed: "+error).c_str());

@@ -334,6 +334,12 @@ int main() {
     assert(source->events.empty()&&source->worker_targets_.size()==1&&source->worker_sessions_.contains("failed-session"));
     assert(!source->worker_calls_.empty()); // Pending real ACKs remain owned.
     source->WorkerBootstrapFailed("failed-observed",generation,"duplicate failure");assert(source->errors.size()==1);
+    { // A worker that terminated mid-bootstrap is not a page error.
+      auto gone=CefRefPtr<Source>(new Source());
+      assert(gone->WorkerAttached(Parse(R"({"targetInfo":{"type":"worker","targetId":"gone","url":"http://fixture.test/w.js"},"sessionId":"gone-session"})"),""));RunOne();
+      gone->WorkerBootstrapFailed("gone",gone->worker_targets_.at("gone").generation,R"({"code":-32000,"message":"Inspected target navigated or closed"})");
+      assert(gone->errors.empty()&&gone->worker_targets_.at("gone").bootstrap_failed);
+    }
     source->Admit(1);source->WorkerRun(1,Request("evaluate","failed-observed"));assert(!source->completions.back().ok&&source->completions.back().error.find("bootstrap failed")!=std::string::npos);
     source->AckBoot("Runtime.enable","failed-session");source->AckBoot("Runtime.runIfWaitingForDebugger","failed-session");
     source->WorkerRuntimeEvent("Runtime.executionContextCreated",Parse(R"({"context":{"id":31}})"),"failed-session");source->WorkerRuntimeEvent("Inspector.workerScriptLoaded",CefDictionaryValue::Create(),"failed-session");
