@@ -77,7 +77,7 @@ interface KokoroTextWord {
   endOffset: number
 }
 
-interface KokoroPhonemeRun {
+export interface KokoroPhonemeRun {
   startToken: number
   endToken: number
 }
@@ -308,6 +308,52 @@ function allocatePhonemeRuns(weights: readonly number[], runCount: number): numb
   return boundaries
 }
 
+/**
+ * Places each word on the token-duration timeline. Usually every word owns one or
+ * more phoneme runs. The phonemizer sometimes joins words into one run ("in the"
+ * becomes "ɪnðə", and "shared-browser" one word), so when there are fewer runs than
+ * words, neighbouring words share a run and split its duration by their weights.
+ */
+export function wordSpans(
+  weights: readonly number[],
+  runs: readonly KokoroPhonemeRun[],
+  cumulativeDurations: readonly number[],
+): { startUnits: number; endUnits: number }[] {
+  const units = (run: KokoroPhonemeRun | undefined) => {
+    const startUnits = run && cumulativeDurations[1 + run.startToken]
+    const endUnits = run && cumulativeDurations[1 + run.endToken]
+    if (startUnits === undefined || endUnits === undefined) {
+      throw new Error('Kokoro returned incomplete timing for a phoneme run')
+    }
+    return { startUnits, endUnits }
+  }
+  if (runs.length >= weights.length) {
+    const boundaries = allocatePhonemeRuns(weights, runs.length)
+    return weights.map((_, index) => ({
+      startUnits: units(runs[boundaries[index] ?? 0]).startUnits,
+      endUnits: units(runs[(boundaries[index + 1] ?? 1) - 1]).endUnits,
+    }))
+  }
+  const groups = allocatePhonemeRuns(
+    runs.map((run) => run.endToken - run.startToken),
+    weights.length,
+  )
+  return runs.flatMap((run, index) => {
+    const { startUnits, endUnits } = units(run)
+    const shared = weights.slice(groups[index] ?? 0, groups[index + 1] ?? 0)
+    const total = shared.reduce((sum, weight) => sum + Math.max(1, weight), 0)
+    let at = startUnits
+    return shared.map((weight) => {
+      const span = {
+        startUnits: at,
+        endUnits: at + ((endUnits - startUnits) * Math.max(1, weight)) / total,
+      }
+      at = span.endUnits
+      return span
+    })
+  })
+}
+
 async function wordRunWeights(
   words: readonly KokoroTextWord[],
   language: 'en-us' | 'en-gb',
@@ -386,10 +432,6 @@ async function generateChunk(
     language,
     (character) => vocabulary?.[character] !== undefined,
   )
-  const boundaries = allocatePhonemeRuns(weights, runs.length)
-  if (words.length > 0 && boundaries.length === 0) {
-    throw new Error('Kokoro could not map token durations to narration words')
-  }
   const cumulativeDurations = [0]
   for (const value of durations) {
     cumulativeDurations.push((cumulativeDurations.at(-1) ?? 0) + value)
@@ -397,21 +439,17 @@ async function generateChunk(
   const totalDurationUnits = cumulativeDurations.at(-1) ?? 0
   if (totalDurationUnits <= 0) throw new Error('Kokoro returned empty token durations')
   const millisecondsPerUnit = (samples.length / SAMPLE_RATE / totalDurationUnits) * 1_000
+  const spans = wordSpans(weights, runs, cumulativeDurations)
+  if (words.length > 0 && spans.length !== words.length) {
+    throw new Error('Kokoro could not map token durations to narration words')
+  }
   const wordTimings = words.map((word, index): SuiteCutWordTiming => {
-    const firstRun = runs[boundaries[index] ?? 0]
-    const lastRun = runs[(boundaries[index + 1] ?? 1) - 1]
-    if (firstRun === undefined || lastRun === undefined) {
-      throw new Error(`Kokoro could not resolve timing for word ${word.text}`)
-    }
-    const startUnits = cumulativeDurations[1 + firstRun.startToken]
-    const endUnits = cumulativeDurations[1 + lastRun.endToken]
-    if (startUnits === undefined || endUnits === undefined) {
-      throw new Error(`Kokoro returned incomplete timing for word ${word.text}`)
-    }
+    const span = spans[index]
+    if (span === undefined) throw new Error(`Kokoro could not resolve timing for word ${word.text}`)
     return {
       ...word,
-      startMs: startUnits * millisecondsPerUnit,
-      endMs: endUnits * millisecondsPerUnit,
+      startMs: span.startUnits * millisecondsPerUnit,
+      endMs: span.endUnits * millisecondsPerUnit,
     }
   })
   return { samples, words: wordTimings }
