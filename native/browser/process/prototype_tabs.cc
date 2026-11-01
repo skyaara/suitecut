@@ -718,14 +718,15 @@ void Shell::Control(const std::string& line) {
     return reply(browser != nullptr, nullptr);
   }
 #if defined(__APPLE__)
-  // Prototype: {"cmd":"frame-probe","tab":1,"ms":5000,"path":"/tmp/last.png","scope":"window"}
+  // Prototype: {"cmd":"frame-probe","tab":1,"ms":5000,"path":"/tmp/last.png","scope":"window","mode":"poll"}
   if (cmd == "frame-probe") {
     const Tab* found = Find(tab);
     const auto browser = found && found->view ? found->view->GetBrowser() : nullptr;
     void* handle = message->GetString("scope") == "window" && window ? window->GetWindowHandle()
                    : browser ? browser->GetHost()->GetWindowHandle() : nullptr;
     if (!handle) return reply(false, nullptr);
-    return ProbeWindowFrames(handle, message->GetInt("ms"), message->GetString("path"),
+    return ProbeWindowFrames(handle, message->GetInt("ms"), message->GetString("mode") == "poll",
+                             message->GetString("path"),
                              [reply](std::string json) { reply(true, CefParseJSON(json, JSON_PARSER_RFC)); });
   }
 #endif
