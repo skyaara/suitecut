@@ -30,6 +30,9 @@
 #include "include/views/cef_panel.h"
 #include "include/views/cef_window.h"
 #include "init_snapshot_scheme.h"
+#if defined(__APPLE__)
+#include "window_frames.h"
+#endif
 
 namespace suitecut::browser::prototype {
 namespace {
@@ -714,6 +717,18 @@ void Shell::Control(const std::string& line) {
     if (browser) browser->GetMainFrame()->LoadURL(message->GetString("url"));
     return reply(browser != nullptr, nullptr);
   }
+#if defined(__APPLE__)
+  // Prototype: {"cmd":"frame-probe","tab":1,"ms":5000,"path":"/tmp/last.png","scope":"window"}
+  if (cmd == "frame-probe") {
+    const Tab* found = Find(tab);
+    const auto browser = found && found->view ? found->view->GetBrowser() : nullptr;
+    void* handle = message->GetString("scope") == "window" && window ? window->GetWindowHandle()
+                   : browser ? browser->GetHost()->GetWindowHandle() : nullptr;
+    if (!handle) return reply(false, nullptr);
+    return ProbeWindowFrames(handle, message->GetInt("ms"), message->GetString("path"),
+                             [reply](std::string json) { reply(true, CefParseJSON(json, JSON_PARSER_RFC)); });
+  }
+#endif
   if (cmd == "cdp") {
     auto params = message->HasKey("params") ? message->GetDictionary("params")->Copy(false)
                                             : CefDictionaryValue::Create();
