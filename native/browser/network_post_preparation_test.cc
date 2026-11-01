@@ -18,8 +18,8 @@ int main(){
   auto event=CefDictionaryValue::Create();auto request=CefDictionaryValue::Create();request->SetString("id","logical");request->SetBool("postDataUnavailable",true);event->SetDictionary("request",request);
   assert(publication.Queue(event,gate));const auto original=publication.QueuedCursor();assert(publication.Queue(event,gate));assert(events.empty());
   prepare.Start("logical");prepare.Start("logical");assert(acks.size()==1&&receipts==0&&reads.physical()==1);
-  acks[0](true,"{\"postData\":\"AP8B\",\"base64Encoded\":true}");assert(data==1&&receipts==1&&applied==1&&prepare.pending()==0&&events.empty());
-  publication.Tick(now);assert(token&&wire==std::vector<uint8_t>({0,255,1}));assert(publication.Received(token));assert(events.size()==2&&publication.PublishedCursor()>original);
+  acks[0](true,"{\"postData\":\"AP8B\",\"base64Encoded\":true}");assert(data==1&&receipts==1&&applied==1&&prepare.pending()==0);
+  assert(token&&wire==std::vector<uint8_t>({0,255,1}));assert(events.size()==2&&publication.PublishedCursor()>original);
   for(auto&value:events){auto actual=value->GetDictionary("request");assert(actual->GetString("postDataBodyId")==std::to_string(token)&&!actual->GetBool("postDataUnavailable"));}
   assert(publication.Taken(token));publication.Clear();
   // Clearing metadata does not settle a physically dispatched native read or

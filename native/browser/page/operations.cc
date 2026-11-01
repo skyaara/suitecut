@@ -197,6 +197,7 @@ auto Source::Complete(int id, bool ok, const std::string& error, const std::stri
   CleanupInput(id);
   RestoreLocatorModifiers(id);
   context_retries_.erase(id);
+  lost_context_retries_.erase(id);
   locator_attempts_.erase(id);
   locator_logs_.erase(id);
   locator_waits_.erase(id);

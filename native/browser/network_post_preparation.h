@@ -74,11 +74,13 @@ class NativeNetworkPostPreparation {
         if(!*alive)return;
         const auto found=jobs_.find(logical);if(found==jobs_.end()||found->second.gate!=gate)return;
         jobs_.erase(found);auto fields=CefDictionaryValue::Create();
+        std::optional<uint64_t> body;
         if(ok&&text&&(!publish||bytes.size()<=524288))fields->SetString("postData",std::string(bytes.begin(),bytes.end()));
         else if(ok&&!publish)fields->SetString("postDataBase64",CefBase64Encode(bytes.data(),bytes.size()));
-        else if(ok){const auto body=publication_.Begin(bytes,deadline);if(body)fields->SetString("postDataBodyId",std::to_string(*body));else fields->SetBool("postDataUnavailable",true);}
+        else if(ok){body=publication_.Begin(bytes,deadline);if(body)fields->SetString("postDataBodyId",std::to_string(*body));else fields->SetBool("postDataUnavailable",true);}
         else fields->SetBool("postDataUnavailable",true);
-        auto apply=apply_;apply(logical,fields,ok,bytes,text);if(!*alive)return;publication_.Prepared(gate,fields);
+        // A read that outlived its gate was already published without a body.
+        auto apply=apply_;apply(logical,fields,ok,bytes,text);if(!*alive)return;if(!publication_.Prepared(gate,fields)&&body)publication_.Cancel(*body);
       },[owners=job.owners,receipt=std::move(reservation.receipt)]()mutable{if(owners->settled)return;
         owners->settled=true;auto work=std::move(owners->values);owners->values.clear();
         for(auto&entry:work)if(entry.acknowledge)entry.acknowledge(owners->observed&&owners->ok,owners->observed?owners->error:"Native HAR body receipt arrived without its actual data outcome");
@@ -89,7 +91,7 @@ class NativeNetworkPostPreparation {
     // longer callable after Close; actual dispatched readers independently own
     // their callbacks and physical receipts. Retire hooks only at function exit
     // so releasing an owner cannot destroy this object mid-cleanup.
-    auto read=std::move(read_);auto reserve=std::move(reserve_);auto apply=std::move(apply_);
+    auto read=std::exchange(read_,nullptr);auto reserve=std::exchange(reserve_,nullptr);auto apply=std::exchange(apply_,nullptr);
     auto jobs=std::move(jobs_);jobs_.clear();auto unavailable=CefDictionaryValue::Create();unavailable->SetBool("postDataUnavailable",true);for(const auto&[id,job]:jobs){*job.valid=false;publication_.Prepared(job.gate,unavailable);}}
   size_t pending()const{return jobs_.size();}
  private:

@@ -16,7 +16,8 @@ int main() {
   auto entries=CefListValue::Create();auto entry=CefDictionaryValue::Create();entry->SetString("bytes","AP8NCg==");entries->SetDictionary(0,entry);request->SetList("postDataEntries",entries);
   assert(controls.Prepare(request,100,true)==Prepared::Transferred);assert(!request->HasKey("postData") && !request->HasKey("postDataEntries"));
   const auto id=std::stoull(request->GetString("postDataBodyId").ToString());auto event=CefDictionaryValue::Create();event->SetDictionary("request",request);assert(controls.publication().Queue(event));
-  controls.publication().Tick(1);assert(wire==std::vector<uint8_t>({0,255,13,10}) && events.empty());assert(controls.publication().Received(id));assert(events.size()==1);assert(controls.publication().Taken(id));
+  // Chunks precede their metadata on the one ordered channel; no receipt is awaited.
+  assert(wire==std::vector<uint8_t>({0,255,13,10}) && events.size()==1);assert(controls.publication().Received(id));assert(controls.publication().Taken(id));
   const std::vector<uint8_t> large(2097152,255);auto override=CefDictionaryValue::Create();override->SetString("postDataBase64",CefBase64Encode(large.data(),large.size()));
   assert(controls.PrepareOverride(override,100)==Prepared::Transferred);const auto large_id=std::stoull(override->GetString("postDataBodyId").ToString());
   for(size_t i=0;i<8;++i){controls.publication().Tick(1);}

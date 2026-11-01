@@ -8,8 +8,9 @@
 #include "network_body_transfers.h"
 
 namespace suitecut {
-// Native FIFO publication and byte reservations persist through both transport
-// receipt and metadata consumption. Slow receivers apply explicit backpressure.
+// Native FIFO publication. Byte reservations mirror the receiver's capacity
+// until it consumes a body; transport backpressure applies explicitly. A body
+// read or transfer that cannot finish in time costs that body, never the page.
 struct NativeNetworkBodyQuota {
   size_t bytes=0,owners=0,preparations=0;
   bool Reserve(size_t count) {if(owners>=128 || count>16777216-bytes)return false;++owners;bytes+=count;return true;}
@@ -44,10 +45,10 @@ class NativeNetworkBodyPublication {
     for(auto& event:events_)if(BodyId(event.value)==id){auto request=event.value->GetDictionary("request");request->Remove("postDataBodyId");request->SetBool("postDataUnavailable",true);}
     canceled_[id]=found->second.deadline+1000;GlobalNetworkBodyQuota().Release(found->second.bytes);reserved_bytes_-=found->second.bytes;reservations_.erase(found);CompleteWaiters(id,true,false,"Native network body publication canceled");Pump();return true;
   }
-  bool Received(uint64_t id) {return transfers_.Acknowledge(id);}
+  bool Received(uint64_t id) {return transfers_.Issued(id);}
   bool Taken(uint64_t id) {
     const auto found=reservations_.find(id);
-    if(found==reservations_.end())return taken_.contains(id);
+    if(found==reservations_.end())return taken_.contains(id)||transfers_.Issued(id);
     if(!found->second.ready)return false;
     GlobalNetworkBodyQuota().Release(found->second.bytes);reserved_bytes_-=found->second.bytes;reservations_.erase(found);
     taken_.insert(id);taken_order_.push_back(id);
@@ -93,7 +94,11 @@ class NativeNetworkBodyPublication {
   }
   bool Queue(Dict event,uint64_t preparation=0) {
     auto wrapped=CefValue::Create();wrapped->SetDictionary(event);const auto bytes=CefWriteJSON(wrapped,JSON_WRITER_DEFAULT).ToString().size();
-    if(queued_serial_>=9007199254740991ULL || bytes>1048576 || events_.size()>=256 || bytes>4194304-event_bytes_){Fail("Native network metadata publication capacity exceeded");return false;}
+    if(queued_serial_>=9007199254740991ULL || bytes>1048576){Fail("Native network metadata publication capacity exceeded");return false;}
+    // A slow POST read or body transfer at the head must not hold every later
+    // event hostage. Like Playwright, publish it without its body instead.
+    while(!events_.empty() && (events_.size()>=256 || bytes>4194304-event_bytes_) && Unblock()){}
+    if(events_.size()>=256 || bytes>4194304-event_bytes_){Fail("Native network metadata publication capacity exceeded");return false;}
     const auto owner=BodyId(event);
     if(owner && !reservations_.contains(owner) && !taken_.contains(owner)){auto request=event->GetDictionary("request");request->Remove("postDataBodyId");request->SetBool("postDataUnavailable",true);}
     events_.push_back({event->Copy(false),bytes,++queued_serial_,preparation});event_bytes_+=bytes;Pump();return true;
@@ -104,8 +109,12 @@ class NativeNetworkBodyPublication {
     std::vector<uint64_t> expired_preparations;for(const auto&[id,deadline]:preparations_)if(deadline>0&&now>=deadline)expired_preparations.push_back(id);
     auto unavailable=CefDictionaryValue::Create();unavailable->SetBool("postDataUnavailable",true);
     for(const auto id:expired_preparations)Prepared(id,unavailable);
-    transfers_.Tick(now);
-    for(const auto& entry:reservations_)if(entry.second.ready && now>=entry.second.deadline){Fail("Native network body metadata consumption deadline exceeded");return;}
+    // Completions inside the transfer tick are published by the Pump below.
+    pumping_=true;transfers_.Tick(now);pumping_=false;
+    // The receiver consumes a body when its metadata arrives. A receipt that
+    // never comes retires the reservation instead of failing the page.
+    std::vector<uint64_t> stale;for(const auto& entry:reservations_)if(entry.second.ready && now>=entry.second.deadline)stale.push_back(entry.first);
+    for(const auto id:stale)Retire(id);
     const std::vector<std::pair<uint64_t,double>> canceled(canceled_.begin(),canceled_.end());
     for(const auto& [id,deadline]:canceled) {
       if(!canceled_.erase(id))continue;
@@ -140,15 +149,32 @@ class NativeNetworkBodyPublication {
     auto request=event->GetDictionary("request");if(!request)return 0;const auto text=request->GetString("postDataBodyId").ToString();
     uint64_t id=0;const auto parsed=std::from_chars(text.data(),text.data()+text.size(),id);return parsed.ec==std::errc{} && parsed.ptr==text.data()+text.size()?id:0;
   }
+  // Chunks for a waiting head are emitted at once rather than on the next tick.
   void Pump() {
+    if(pumping_)return;
+    pumping_=true;
     while(!events_.empty()) {
       if(preparations_.contains(events_.front().preparation))break;
-      const auto owner=reservations_.find(BodyId(events_.front().value));if(owner!=reservations_.end() && !owner->second.ready)break;
+      const auto owner=reservations_.find(BodyId(events_.front().value));
+      if(owner!=reservations_.end() && !owner->second.ready){if(transfers_.Flush())continue;break;}
       auto event=std::move(events_.front());events_.pop_front();event_bytes_-=event.bytes;publish_(event.value);published_serial_=std::max(published_serial_,event.serial);
     }
+    pumping_=false;
+  }
+  // Gives up the body blocking the head; false when nothing blocks it.
+  bool Unblock() {
+    if(events_.empty() || pumping_)return false;
+    const auto& head=events_.front();
+    if(preparations_.contains(head.preparation)){auto unavailable=CefDictionaryValue::Create();unavailable->SetBool("postDataUnavailable",true);Prepared(head.preparation,unavailable);return true;}
+    const auto owner=BodyId(head.value);const auto found=reservations_.find(owner);
+    return found!=reservations_.end() && !found->second.ready && Cancel(owner);
+  }
+  void Retire(uint64_t id) {
+    for(const auto& event:events_)if(BodyId(event.value)==id){Cancel(id);return;}
+    Taken(id);
   }
   uint64_t queued_serial_=0,published_serial_=0,preparation_serial_=0;std::map<uint64_t,double>preparations_;
-  bool failed_=false;Emit emit_;Publish publish_;Failure failure_;NativeNetworkBodyTransfers transfers_;
+  bool failed_=false,pumping_=false;Emit emit_;Publish publish_;Failure failure_;NativeNetworkBodyTransfers transfers_;
   std::map<int,Waiter> waiters_;std::set<uint64_t> taken_;std::deque<uint64_t> taken_order_;
   std::map<uint64_t,Reservation> reservations_;std::map<uint64_t,double> canceled_;std::deque<Event> events_;size_t reserved_bytes_=0,event_bytes_=0;
 };

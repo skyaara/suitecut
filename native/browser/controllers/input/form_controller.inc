@@ -239,7 +239,17 @@ void FormResolveNode(int id,uint64_t generation,Dict config,std::function<void(D
 
 void FormError(int id,const std::string& action,Dict result) {
   auto details=result?result->GetDictionary("exceptionDetails"):nullptr;auto exception=details?details->GetDictionary("exception"):nullptr;
-  auto message=exception?exception->GetString("description").ToString():"Native form evaluation failed";
+  // No page exception: the evaluation lost its document, usually to a
+  // navigation. Like Playwright, resolve the element again in the new one.
+  if(!details&&context_retries_.contains(id)&&lost_context_retries_[id]<20){
+    const auto attempt=++lost_context_retries_[id];const auto entry=operations_.Get(id);
+    if(entry){
+      locator_waits_[id]="element in the new document after navigation; retrying "+action+" action";
+      CefPostDelayedTask(TID_UI,new Task([self=CefRefPtr<Source>(this),id,generation=entry->generation]{if(self->operations_.IsCurrent(id,generation))self->RetryContext(id);}),std::min(25*attempt,250));
+      return;
+    }
+  }
+  auto message=exception?exception->GetString("description").ToString():"Native form evaluation failed: the element's document changed or closed";
   message=message.substr(0,message.find('\n'));Complete(id,false,action+": "+message);
 }
 

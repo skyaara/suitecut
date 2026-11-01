@@ -511,6 +511,7 @@ class Source : public CefClient,
   int bootstrap_tree_ = 0;
   std::map<int, DevToolsCall> devtools_;
   std::map<int, std::function<void()>> context_retries_;
+  std::map<int, int> lost_context_retries_;
   std::map<int, Dict> artifact_configs_;
   std::map<int, uint64_t> artifact_attempts_;
   std::map<int, uint64_t> locator_attempts_;

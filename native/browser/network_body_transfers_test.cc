@@ -17,10 +17,11 @@ int main() {
   const auto id=transfers.Begin(original,100,[&](uint64_t owner,bool ok,const std::string& error){assert(owner==expected_owner && ok && error.empty());assert(transfers.size()==0 && transfers.bytes()==0);++callbacks;});
   assert(id);expected_owner=*id;
   assert(id && transfers.size()==1 && transfers.bytes()==original.size());
-  transfers.Tick(0);assert(received.empty() && callbacks==0 && transfers.bytes()==original.size());assert(!transfers.Acknowledge(*id));
-  backpressure=false;for(size_t tick=0;received[*id].size()<original.size();++tick){assert(tick<100);transfers.Tick(0);assert(callbacks==0);}
-  assert(received[*id]==original && transfers.bytes()==original.size());assert(transfers.Acknowledge(*id));assert(callbacks==1 && !transfers.Acknowledge(*id));
-  const auto expired=transfers.Begin({0,255,13,10},50,[&](uint64_t,bool ok,const std::string& error){assert(!ok && !error.empty());assert(transfers.bytes()==0);++callbacks;});assert(expired);transfers.Tick(49);assert(callbacks==1);transfers.Tick(50);assert(callbacks==2 && transfers.size()==0);
+  transfers.Tick(0);assert(received.empty() && callbacks==0 && transfers.bytes()==original.size());assert(!transfers.Flush());
+  // The last accepted chunk completes the owner and frees its copy at once.
+  backpressure=false;for(size_t tick=0;received[*id].size()<original.size();++tick){assert(tick<100);assert(callbacks==0);transfers.Tick(0);}
+  assert(received[*id]==original && callbacks==1 && transfers.size()==0 && transfers.bytes()==0);assert(transfers.Issued(*id) && !transfers.Issued(*id+1) && !transfers.Issued(0));
+  backpressure=true;const auto expired=transfers.Begin({0,255,13,10},50,[&](uint64_t,bool ok,const std::string& error){assert(!ok && !error.empty());assert(transfers.bytes()==0);++callbacks;});assert(expired);transfers.Tick(49);assert(callbacks==1);transfers.Tick(50);assert(callbacks==2 && transfers.size()==0);
   std::vector<uint64_t> owners;
   for(size_t i=0;i<8;++i){auto owner=transfers.Begin(original,100,[](uint64_t,bool,const std::string&){});assert(owner);owners.push_back(*owner);}
   assert(transfers.bytes()==Transfers::kByteBudget);assert(!transfers.Begin({1},100,[](uint64_t,bool,const std::string&){}));

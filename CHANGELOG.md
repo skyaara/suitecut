@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+- Stop closing busy pages with "Native network metadata publication capacity
+  exceeded". Each network event waited for the host to acknowledge the POST
+  body before it, and on eBay an ad beacon's body went unacknowledged while
+  the viewer streamed frames, so 256 events piled up behind it. Bodies and
+  events share one ordered pipe, so an event now goes out as soon as its body's
+  chunks are queued, and the chunks go out at once instead of on the next
+  10 ms tick. As in Playwright, a POST body that still can't keep up costs
+  that request its body (`postDataUnavailable`), not the page, and a body the
+  host never confirms consuming no longer closes the page after 30 s.
+- Retry `fill`, `check`, `selectOption`, `scrollIntoViewIfNeeded` and other
+  form actions when a navigation replaces the element's document mid-action,
+  as Playwright does, instead of failing with "Native form evaluation failed".
 - Let a person take control from the live viewer on busy sites. The handover
   waits for native work to finish, but on a page like eBay each request kept a
   short-lived correlation in case an auth challenge arrived, and console
