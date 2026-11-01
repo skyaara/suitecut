@@ -12,7 +12,7 @@
   <!-- A black tile with the mark inside, matching SuiteCut.icon for older macOS. -->
   <rect x="100" y="100" width="824" height="824" rx="185" fill="#000"/>
   <g transform="translate(179.33 179.33) scale(20.8)" fill="url(#chrome)">
-    <path d="M4 4H26.25L4 26.25Z"/>
-    <path d="M28 5.75V28H5.75Z"/>
+    <path d="M5.2 25.05C4.2 23.27 4 20.45 4 16C4 5.2 5.2 4 16 4C20.45 4 23.27 4.2 25.05 5.2Z"/>
+    <path d="M26.8 6.95C27.8 8.73 28 11.55 28 16C28 26.8 26.8 28 16 28C11.55 28 8.73 27.8 6.95 26.8Z"/>
   </g>
 </svg>
