@@ -91,7 +91,8 @@ void main() { gl_Position = vec4(aPosition, 0.0, 1.0); }
     const shader = gl.createShader(type)!
     gl.shaderSource(shader, source)
     gl.compileShader(shader)
-    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(shader) ?? '')
+    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS))
+      throw new Error(gl.getShaderInfoLog(shader) ?? '')
     return shader
   }
 
