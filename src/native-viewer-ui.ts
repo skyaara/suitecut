@@ -180,7 +180,7 @@ export function nativeViewerScript(): string {
   function updateFrameStatus() {
     if (!frameReady || !state) { ui.frame.textContent = 'Waiting for first frame'; return; }
     const age = Date.now() - frameAt;
-    ui.frame.textContent = state.width + ' × ' + state.height + (connection !== 'connected' ? ' · connection lost' : age > 3000 ? ' · last frame ' + Math.floor(age / 1000) + 's ago' : ' · live');
+    ui.frame.textContent = state.width + ' × ' + state.height + (connection !== 'connected' ? ' · connection lost' : state.crashed ? ' · page crashed' : age > 3000 ? ' · last frame ' + Math.floor(age / 1000) + 's ago' : ' · live');
   }
   function clearLocalInput() {
     heldKeys.clear(); heldButtons.clear(); composing = false; compositionCommit = null; ui.keyboard.value = ''; lastPointer = null;
@@ -196,6 +196,9 @@ export function nativeViewerScript(): string {
     const changed = !state || next.revision !== state.revision || next.pageId !== state.pageId || next.width !== state.width || next.height !== state.height;
     const ownerChanged = !state || next.owner !== state.owner || next.mode !== state.mode;
     const pageChanged = !state || next.pageId !== state.pageId;
+    const crashNotice = 'This page crashed. Take control and choose ↻ to reload it, or let the agent reload it.';
+    if (next.crashed && !(state && state.crashed)) showError(crashNotice);
+    else if (!next.crashed && ui.notice.textContent === crashNotice) showError('');
     state = next;
     connection = 'connected';
     if (changed || ownerChanged) {

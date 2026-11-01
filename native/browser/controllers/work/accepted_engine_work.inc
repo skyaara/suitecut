@@ -1,8 +1,15 @@
 // SPDX-License-Identifier: MIT
 // Included after Source is complete. The UI thread owns these real Engine
 // checks. CEF state/timers/listeners are resident state, not automation work.
+bool Engine::InspectorReceiptsReady(bool viewer)const{
+  if(!viewer)return inspector_work_->ReceiptLaneReady();
+  return inspector_work_->ViewerReceiptLaneReady([this](const auto& channel){
+    for(const auto&[page,source]:sources_){(void)page;if(source->InspectorChannelCrashed(channel))return true;}
+    return false;
+  });
+}
 bool Engine::AcceptedWorkReady(bool viewer)const{
-  if(!locator_handler_leases_.empty()||closing_||operations_.Size()||!inspector_work_->ReceiptLaneReady()||
+  if(!locator_handler_leases_.empty()||closing_||operations_.Size()||!InspectorReceiptsReady(viewer)||
      !suitecut::NativeTaskBarrierReady(AcceptedSourceTicket(),viewer)||!authentication_failures_.empty()||
      authentication_.pending()||authentication_.physical()||geolocation_.pending()||
      network_policy_.pending()||network_headers_.pending()||

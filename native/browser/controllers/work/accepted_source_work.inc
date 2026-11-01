@@ -2,8 +2,13 @@
 // Included inside Source. Only actual pending automation/backend ownership is
 // joined. Frame state, handles, timers, listeners, routes, uploaded File backing
 // and paused virtual-time policy remain resident under the worker fixture.
+  bool InspectorChannelCrashed(const suitecut::AcceptedInspectorWork::Channel& channel)const{
+    return renderer_failed_&&inspector_channel_&&*inspector_channel_==channel;
+  }
   bool AcceptedWorkReady(bool viewer = false)const{
-    if(locator_handler_active_||!browser_||!ready_||closing_page_||renderer_failed_||child_bootstrap_failed_||
+    // A crashed page runs no work until recovery, so a viewer can still hand
+    // over control of it; recovery itself is joined below.
+    if(locator_handler_active_||!browser_||!ready_||closing_page_||(renderer_failed_&&!viewer)||child_bootstrap_failed_||
        operations_.Size()||RendererRecoveryHandlerPending()||native_debugger_closing_requested_||NativePristineNeedsTick()||!devtools_.empty()||!devtools_dispatch_.empty()||
        !context_retries_.empty()||!context_retry_queued_.empty()||
        !input_work_.empty()||!mouse_queue_.empty()||!keyboard_queue_.empty()||mouse_input_||keyboard_input_||

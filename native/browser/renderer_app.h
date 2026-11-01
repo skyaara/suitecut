@@ -124,7 +124,7 @@ class SuiteCutRendererApp : public CefApp, public CefRenderProcessHandler {
     const auto native = parsed && parsed->GetType() == VTYPE_DICTIONARY ? parsed->GetDictionary() : nullptr;
     if (!native || native->GetInt("contextId") != context_id || !Apply(native)) {
       auto message = CefProcessMessage::Create(initial?"suitecutInitialEmptyFailure":"suitecutInitScriptBootstrapError");
-      message->GetArgumentList()->SetString(0, failure ? failure->GetMessage().ToString().substr(0, 4096) : "Native init script snapshot is unavailable");
+      message->GetArgumentList()->SetString(0, "context snapshot: " + (failure ? failure->GetMessage().ToString().substr(0, 4096) : std::string("Native init script snapshot is unavailable")));
       frame->SendProcessMessage(PID_BROWSER, message); return false;
     }
     }
@@ -133,7 +133,7 @@ class SuiteCutRendererApp : public CefApp, public CefRenderProcessHandler {
     if(snapshot->credentials_installed){
       CefRefPtr<CefV8Value>value;CefRefPtr<CefV8Exception>error;
       if(!context->Eval(suitecut::kNativeCredentialScript.source,suitecut::kNativeCredentialScript.name,1,value,error)){
-        auto message=CefProcessMessage::Create(initial?"suitecutInitialEmptyFailure":"suitecutInitScriptBootstrapError");message->GetArgumentList()->SetString(0,error?error->GetMessage().ToString().substr(0,4096):"Native credential readiness failed");frame->SendProcessMessage(PID_BROWSER,message);return false;
+        auto message=CefProcessMessage::Create(initial?"suitecutInitialEmptyFailure":"suitecutInitScriptBootstrapError");message->GetArgumentList()->SetString(0,"credentials: "+(error?error->GetMessage().ToString().substr(0,4096):std::string("Native credential readiness failed")));frame->SendProcessMessage(PID_BROWSER,message);return false;
       }
     }
     // Queued inherited bindings exist before context init scripts or author code.
@@ -141,7 +141,7 @@ class SuiteCutRendererApp : public CefApp, public CefRenderProcessHandler {
       CefRefPtr<CefV8Value> value; CefRefPtr<CefV8Exception> error;
       if (!context->Eval(binding.source,"suitecut:context-binding:"+std::to_string(binding.id),1,value,error)) {
         auto message = CefProcessMessage::Create(initial?"suitecutInitialEmptyFailure":"suitecutInitScriptBootstrapError");
-        message->GetArgumentList()->SetString(0,error ? error->GetMessage().ToString().substr(0,4096) : "Native context binding bootstrap failed");
+        message->GetArgumentList()->SetString(0,"binding: "+(error ? error->GetMessage().ToString().substr(0,4096) : std::string("Native context binding bootstrap failed")));
         frame->SendProcessMessage(PID_BROWSER,message); return false;
       }
     }

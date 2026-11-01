@@ -2,6 +2,20 @@
 
 ## Unreleased
 
+- Keep pages open when a frame fails to start, and keep the browser running
+  when its first page crashes. A child frame that couldn't bootstrap its init
+  scripts, usually an ad frame removed while it loaded, closed the whole page
+  with "Native browser: Uncaught". Now only that frame is affected, as in
+  Playwright. A crash of the first page no longer ends the browser: the page
+  emits `crash` and `page.reload()` recovers it, like any other page.
+- Let a person take over and hand back a crashed page in the live viewer. The
+  viewer shows that the page crashed, its ↻ button recovers it, and frames
+  resume after recovery, whoever reloads the page. Before, takeover and Resume
+  AI could wait forever: a crash left the page's earlier init-script snapshots
+  and in-flight DevTools commands looking busy, and kept held keys and buttons
+  counted as pressed.
+- Let a recovered page stream again on macOS. Live streams were marked failed
+  on a crash but only re-enabled on recovery on Linux.
 - Stop closing busy pages with "Native network metadata publication capacity
   exceeded". Each network event waited for the host to acknowledge the POST
   body before it, and on eBay an ad beacon's body went unacknowledged while

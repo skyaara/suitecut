@@ -114,6 +114,14 @@ class AcceptedInspectorWork {
   void Unsupported()noexcept{poisoned_=true;}
   Snapshot Inspect()const noexcept{return {channel_count_,queued_,submitted_,callback_count_,dispatches_,accepted_,replied_,refused_,unwound_,not_dispatched_,channel_closed_,poisoned_};}
   bool ReceiptLaneReady()const noexcept{return !poisoned_&&!queued_&&!submitted_&&!callback_count_;}
+  // A viewer handover may pass commands already sent to a crashed renderer:
+  // they can act on nothing, and recovery joins them before the page runs.
+  // Queued commands still block, since they could reach the recovered page.
+  template<class Crashed>bool ViewerReceiptLaneReady(Crashed&& crashed)const{
+    if(poisoned_||callback_count_)return false;
+    for(const auto& row:pending_)if(row.active&&(!row.submitted||!crashed(row.ticket.channel)))return false;
+    return true;
+  }
   // Scoped observation only; it neither retires rows nor relaxes global idle.
   // Callback frames lack exact per-frame origins, so an executing real native
   // Inspector callback conservatively blocks every handler observation.

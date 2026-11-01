@@ -1745,6 +1745,8 @@ export async function launchNativeBrowser(options: NativeBrowserOptions): Promis
       command !== 'http' &&
       command !== 'routeCallback' &&
       command !== 'selectors' &&
+      // The viewer's idle probe reads engine-wide work, not this page.
+      command !== 'viewerIdle' &&
       ['closed', 'failed'].includes(pages.get(pageId)?.state ?? 'closed')
     ) {
       const reason = z.instanceof(Error).safeParse(pages.get(pageId)?.lifecycle.signal.reason)
@@ -2051,6 +2053,7 @@ export async function launchNativeBrowser(options: NativeBrowserOptions): Promis
           command === 'selectors' ||
           command === 'routeCallback' ||
           command === 'networkBody' ||
+          command === 'viewerIdle' ||
           nativeOwnerCommand(command, params) ||
           page.ready
             ? request(command, params, signal, pageId)

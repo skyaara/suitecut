@@ -112,13 +112,18 @@ describe('native IPC boundary', () => {
       ),
     ).toThrow()
   })
-  it('requires a genuine child identity and empty payload for a page-crash packet', () => {
+  it('requires a page identity and empty payload for a page-crash packet', () => {
     const received: NativePacket[] = []
-    new NativePacketDecoder((header) => received.push(header)).push(
-      packet({ type: 'pagecrash', pageId: 2, error: 'Browser renderer terminated' }),
-    )
-    expect(received[0]).toMatchObject({ type: 'pagecrash', pageId: 2, bytes: 0 })
-    for (const pageId of [undefined, 0, 1])
+    // The default page crashes like any other: its crash no longer ends the browser.
+    for (const pageId of [1, 2])
+      new NativePacketDecoder((header) => received.push(header)).push(
+        packet({ type: 'pagecrash', pageId, error: 'Browser renderer terminated' }),
+      )
+    expect(received).toMatchObject([
+      { type: 'pagecrash', pageId: 1, bytes: 0 },
+      { type: 'pagecrash', pageId: 2, bytes: 0 },
+    ])
+    for (const pageId of [undefined, 0])
       expect(() =>
         new NativePacketDecoder(() => undefined).push(
           packet({ type: 'pagecrash', pageId, error: 'Browser renderer terminated' }),

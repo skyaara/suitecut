@@ -9,5 +9,8 @@
     for (const auto& [id,event] : event_waiters_) if(event == "crash") waiters.push_back(id);
     for(const int id : waiters) Complete(id,true,"","{}");
     for(const int id : operations_.Ids()) if(!crash_wait_owners_.contains(id)) Complete(id,false,reason);
+    // The renderer that received held keys and buttons is gone, so nothing is
+    // held any more. A recovered page starts with released input.
+    pressed_keys_.clear();key_modifiers_=0;mouse_buttons_=0;
     auto header=Header("pagecrash");header->SetString("error",reason);header->SetDouble("sequence",static_cast<double>(sequence));SendPacket(header);
   }

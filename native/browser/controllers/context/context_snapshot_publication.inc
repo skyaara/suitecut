@@ -153,10 +153,14 @@ bool SuiteCutContextControls::SnapshotMessage(int page,CefRefPtr<CefFrame>frame,
   peer->second.route=frame->GetIdentifier().ToString();peer->second.ready=true;if(!SnapshotSend(page))SnapshotFatal(page,"Native current snapshot receiver admission failed");SnapshotCheckWaiters();return true;
 }
 void SuiteCutContextControls::SnapshotRendererTerminated(int page){
-  const auto peer=snapshot_peers_.find(page);if(peer==snapshot_peers_.end())return;
-  const auto owner=peer->second.pin;snapshot_receipts_.RendererGone(owner.browser,owner.renderer_epoch);
-  for(auto it=snapshot_flights_.begin();it!=snapshot_flights_.end();)if(it->second.pin.owner.browser==owner.browser&&it->second.pin.owner.renderer_epoch==owner.renderer_epoch)it=snapshot_flights_.erase(it);else ++it;
-  snapshot_peers_.erase(peer);SnapshotCheckWaiters();
+  // The terminated renderer also held this page's earlier documents, whose
+  // release receipts will now never arrive. Retire every epoch of the page.
+  std::vector<suitecut::InitSnapshotOwner>owners;
+  if(const auto peer=snapshot_peers_.find(page);peer!=snapshot_peers_.end())owners.push_back(peer->second.pin);
+  for(const auto&[id,flight]:snapshot_flights_)if(flight.page==page)owners.push_back(flight.pin.owner);
+  for(const auto&owner:owners)snapshot_receipts_.RendererGone(owner.browser,owner.renderer_epoch);
+  for(auto it=snapshot_flights_.begin();it!=snapshot_flights_.end();)if(it->second.page==page)it=snapshot_flights_.erase(it);else ++it;
+  snapshot_peers_.erase(page);SnapshotCheckWaiters();
 }
 void SuiteCutContextControls::SnapshotPageClosed(int page){
   snapshot_closing_.erase(page);

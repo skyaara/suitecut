@@ -1,6 +1,6 @@
-# Native child renderer recovery
+# Native renderer recovery
 
-A physically open child page can call `page.reload()` after an actual renderer crash. The C++ engine calls the supported `CefBrowser::Reload` API and admits the new renderer only after a genuine render-view callback, a new committed main document, and both main and utility Runtime contexts. DOM access stays failed until these facts exist. Generic helper/protocol failure and failure of the initial root page remain fatal; recovery currently supports child-page reload, not arbitrary navigation of a failed page.
+A physically open page, including the browser's first page, can call `page.reload()` after an actual renderer crash. The C++ engine calls the supported `CefBrowser::Reload` API and admits the new renderer only after a genuine render-view callback, a new committed main document, and both main and utility Runtime contexts. DOM access stays failed until these facts exist. Generic helper/protocol failure and a crash of the first page before it is ready remain fatal; recovery supports reload, not arbitrary navigation of a failed page.
 
 The Page and source objects keep their identities. `source.signal` and `source.failure` describe the current render epoch; previously captured signals and failure promises stay failed permanently. The optional `source.pageSignal` describes actual page/helper closure, allowing durable event listeners, routes and exposed binding definitions to survive a renderer crash. Existing DOM calls, handle creation, temporary evaluation groups and host binding calls belong to their original epoch and cannot resume after recovery. Unresolved host callback promises retain their bounded physical admission slots until they settle.
 

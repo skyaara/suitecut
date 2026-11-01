@@ -106,6 +106,7 @@ async function fixture(size = { width: 3840, height: 2160 }) {
       processSignal,
       viewport,
       listeners,
+      failure: new Promise<never>(() => undefined),
       onFrame(listener: (frame: NativeVideoFrame) => void) {
         listeners.add(listener)
         return () => listeners.delete(listener)

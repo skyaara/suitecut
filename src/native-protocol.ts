@@ -487,7 +487,7 @@ export const NativePacketSchema = z.discriminatedUnion('type', [
   z.strictObject({
     ...base,
     type: z.literal('pagerecovered'),
-    pageId: z.number().int().min(2),
+    pageId: z.number().int().min(1),
     bytes: z.literal(0),
     rendererGeneration: z.number().int().positive(),
     mainFrame: NativeFrameInfoSchema,
@@ -496,7 +496,7 @@ export const NativePacketSchema = z.discriminatedUnion('type', [
     ...base,
     type: z.literal('pagecrash'),
     sequence: z.number().int().positive().optional(),
-    pageId: z.number().int().min(2),
+    pageId: z.number().int().min(1),
     bytes: z.literal(0),
     error: z.string().max(4096),
   }),

@@ -16,6 +16,14 @@ async function fixture(framesPerSecond = 120) {
   const signal = new AbortController().signal
   const listeners = new Set<(frame: NativeVideoFrame) => void>()
   let current: NativeVideoFrame | undefined
+  let rejectFailure: (error: Error) => void = () => undefined
+  const failure = () => {
+    const failed = new Promise<never>((_, reject) => {
+      rejectFailure = reject
+    })
+    failed.catch(() => undefined)
+    return failed
+  }
   const source = {
     width: 64,
     height: 48,
@@ -23,6 +31,8 @@ async function fixture(framesPerSecond = 120) {
     pixelFormat: 'bgra',
     processSignal: signal,
     pageId: 1,
+    state: 'running',
+    failure: failure(),
     onFrame(listener: (frame: NativeVideoFrame) => void) {
       listeners.add(listener)
       if (current) listener(current)
@@ -67,10 +77,38 @@ async function fixture(framesPerSecond = 120) {
       `/frame?after=${after}&revision=${viewer.state().revision}${wait ? '&wait=1' : ''}`,
       signal,
     )
-  return { viewer, request, emit, frame, listeners, source }
+  // As in the real source, a crash rejects the page failure and drops its
+  // frame listeners; recovery starts a new failure epoch.
+  const crash = () => {
+    source.state = 'failed'
+    listeners.clear()
+    rejectFailure(new Error('Browser renderer terminated'))
+  }
+  const recover = () => {
+    source.failure = failure()
+    source.state = 'running'
+  }
+  return { viewer, request, emit, frame, listeners, source, crash, recover }
 }
 
 describe('native viewer frame demand and lifecycle', () => {
+  it('reports a crashed page and serves frames again once it recovers', async () => {
+    const f = await fixture()
+    f.emit()
+    expect((await f.frame()).status).toBe(200)
+    f.crash()
+    await delay(0)
+    expect(f.viewer.state().crashed).toBe(true)
+    expect(f.listeners.size).toBe(0)
+    f.recover()
+    expect(f.viewer.state().crashed).toBe(false)
+    expect(f.listeners.size).toBe(1)
+    f.emit()
+    const response = await f.frame()
+    expect(response.status).toBe(200)
+    expect((await response.arrayBuffer()).byteLength).toBeGreaterThan(0)
+  })
+
   it('does no JPEG work before demand or after the requested frame is delivered', async () => {
     const f = await fixture()
     f.emit()

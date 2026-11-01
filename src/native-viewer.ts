@@ -48,6 +48,8 @@ export interface NativeBrowserViewerState {
   height: number
   frameSequence: number
   frameError: string | null
+  /** The selected page's renderer crashed. Reloading it recovers the page. */
+  crashed: boolean
   resolutionMode: NativeViewerResolutionMode
   maxWidth: number
   maxHeight: number
@@ -210,6 +212,10 @@ export async function createBrowserViewer(
   let rgbIdleTimer: ReturnType<typeof setTimeout> | undefined
   let encodeTimer: ReturnType<typeof setTimeout> | undefined
   let detachFrame: (() => void) | undefined
+  // A crash drops the page's frame listeners. The next state read re-attaches
+  // once the page has recovered, whoever recovered it.
+  let awaitingRecovery: NativePage | undefined
+  let frameAttachment = 0
   let closing: Promise<void> | undefined
   let actionBusy = false
   let activeAction: Promise<void> | undefined
@@ -304,8 +310,18 @@ export async function createBrowserViewer(
     latest = undefined
     jpeg = undefined
     notifyFrames()
+    awaitingRecovery = undefined
+    const attachment = ++frameAttachment
     if (selected && !selected.isClosed()) {
-      detachFrame = selected.source.onFrame((frame) => {
+      const page = selected
+      if (page.source.state === 'failed') {
+        awaitingRecovery = page
+        return
+      }
+      page.source.failure.catch(() => {
+        if (attachment === frameAttachment) awaitingRecovery = page
+      })
+      detachFrame = page.source.onFrame((frame) => {
         if (frame.pixelFormat !== 'bgra' || frame.width * frame.height > 3840 * 2160) return
         if (frame.viewport !== undefined && frame.contentRect && selected)
           geometrySources.add(selected)
@@ -341,6 +357,10 @@ export async function createBrowserViewer(
     return selected
   }
   function state(): NativeBrowserViewerState {
+    if (awaitingRecovery && awaitingRecovery === selected && selected.source.state === 'running') {
+      ++revision
+      attachFrame()
+    }
     syncViewport()
     const viewport = selected?.viewportSize()
     const limits = viewportLimits()
@@ -354,6 +374,7 @@ export async function createBrowserViewer(
       height: viewport?.height ?? selected?.source.height ?? browser.source.height,
       frameSequence,
       frameError,
+      crashed: !!selected && !selected.isClosed() && selected.source.state === 'failed',
       resolutionMode,
       ...limits,
       canResize: !!selected && geometrySources.has(selected),
@@ -438,7 +459,8 @@ export async function createBrowserViewer(
     attachFrame()
   }
   async function resetInput(): Promise<void> {
-    if (!selected || selected.isClosed()) {
+    // A crash releases everything the renderer held, so there is nothing to send.
+    if (!selected || selected.isClosed() || selected.source.state === 'failed') {
       heldKeys.clear()
       heldButtons.clear()
       return

@@ -122,7 +122,10 @@ auto Source::OnRenderProcessTerminated(CefRefPtr<CefBrowser> browser, Terminatio
   NativeHighlightDetached("");
   RememberFailedEpoch();
   const char* reason = "Browser renderer terminated";
-  if (page_id_ == 1) {
+  // Only a crash before the first page is ready fails the launch. Afterwards
+  // the default page crashes like any other: the browser stays up and
+  // page.reload() recovers it, as in Playwright.
+  if (page_id_ == 1 && !ready_) {
     for (const int id : operations_.Ids()) Complete(id, false, reason);
     Error(reason);
   } else {

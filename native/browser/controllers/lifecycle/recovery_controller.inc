@@ -66,7 +66,7 @@
         !frame->second.utility_context) return;
     // The native reload remains physically owned even if its observer timed out.
     recovery_requested_ = false; renderer_failed_ = false;
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(__APPLE__)
     engine_.streaming()->RecoverPage(page_id_);
 #endif
     auto header = Header("pagerecovered");
@@ -80,8 +80,9 @@
     if(!operation)return;
     if(operations_.IsExpired(id,operation->generation,Now())){Complete(id,false,"Native renderer recovery original action deadline exceeded");return;}
     if(recovery_handler_retiring_){Complete(id,false,"Native renderer recovery is awaiting actual page closure");return;}
-    if (page_id_ == 1 || !renderer_failed_ || !browser_ || closing_page_) {
-      Complete(id,false,"Native renderer recovery requires a failed, open child page"); return;
+    // The default page recovers like any other: its crash no longer ends the browser.
+    if (!renderer_failed_ || !browser_ || closing_page_) {
+      Complete(id,false,"Native renderer recovery requires a failed, open page"); return;
     }
     if (FrameId(message) != main_frame_id_) {
       Complete(id,false,"Native renderer recovery requires the main frame"); return;
