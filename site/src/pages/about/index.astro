@@ -24,7 +24,7 @@ const packages = [
     text: 'A command line with persistent sessions that also runs as an MCP server for agents.',
   },
   {
-    name: 'SuiteCut CEF runtime',
+    name: 'suitecut CEF runtime',
     kind: 'C++ · CEF 156',
     text: 'The embedded engine itself, built from a pinned CEF and distributed separately from the SDKs.',
   },
@@ -37,14 +37,14 @@ const packages = [
 ---
 
 <BaseLayout
-  title="About · SuiteCut"
-  description="What SuiteCut is, how its embedded Chrome works, and the packages it ships."
+  title="About · suitecut"
+  description="What suitecut is, how its embedded Chrome works, and the packages it ships."
   current="about"
 >
   <article class="page prose about">
-    <h1>About SuiteCut</h1>
+    <h1>About suitecut</h1>
     <p class="about-lede">
-      SuiteCut is an embedded Chrome built to be recorded, streamed and driven. It began as a way to
+      suitecut is an embedded Chrome built to be recorded, streamed and driven. It began as a way to
       turn scripted browser flows into narrated product videos, and grew into a browser layer that
       scripts, agents and people can share.
     </p>
@@ -77,7 +77,7 @@ const packages = [
 
     <h2 id="how">How it works</h2>
     <p>
-      SuiteCut ships its own Chromium Embedded Framework runtime, pinned to CEF 156. Each launch
+      suitecut ships its own Chromium Embedded Framework runtime, pinned to CEF 156. Each launch
       starts a sandboxed helper that hosts isolated contexts and pages. Video comes straight from
       the renderer's paint callback and audio from its audio stream, so there's no screenshot loop,
       browser extension or open debugging port in the capture path.
@@ -133,7 +133,7 @@ const packages = [
 
     <h2 id="open-source">Open source</h2>
     <p>
-      SuiteCut is MIT licensed and developed in the open on
+      suitecut is MIT licensed and developed in the open on
       <a href="https://github.com/skyaara/suitecut">GitHub</a>. Read the
       <a href="https://github.com/skyaara/suitecut/blob/main/CONTRIBUTING.md">contributing guide</a> to
       get involved, and report security issues through the

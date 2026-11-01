@@ -1,32 +1,35 @@
-/* SuiteCut site: a paper sheet on a grey desk, one grotesk for everything but code, and a brushed-chrome accent. */
+/* suitecut site on Deli Paper v3 (design-system.aakashreddy.com): one card on the
+   chrome-checked paper, Manrope throughout, warm greys and one highlighter line per page.
+   The old names below map onto the design system's tokens from tokens.css. */
 
 :root {
   color-scheme: light;
-  --desk: #ededed;
-  --paper: #fcfcfc;
-  --panel: #f8f8f8;
-  --ink: #000000;
-  --ink-strong: #171717;
-  --muted: #6f6f6f;
-  --faint: #8f8f8f;
-  --line: #ededed;
-  --line-strong: #c7c7c7;
-  --accent: #5f6b7a;
-  --accent-soft: #eef0f3;
-  --accent-ink: #2f3742;
+  --desk: var(--page);
+  --paper: var(--card);
+  --panel: var(--card-sunken);
+  --ink: var(--text);
+  --ink-strong: var(--heading);
+  --faint: var(--muted);
+  --line: var(--rule);
+  --line-strong: var(--rule-strong);
+  --sans: var(--font-sans);
+  --code: var(--font-mono);
+  /* suitecut's colourway: the logo's chrome on the checks, record red for the highlighter. */
   --chrome: linear-gradient(180deg, #ffffff 0%, #e6e9ed 46%, #cdd2d9 54%, #eef0f3 100%);
-  --chrome-dark: linear-gradient(180deg, #59616c 0%, #30353d 48%, #1f2329 52%, #3b424c 100%);
-  --chrome-bar: linear-gradient(90deg, #22262c 0%, #59616c 70%, #9aa3ae 100%);
-  --sans: 'Geist Variable', -apple-system, system-ui, 'Helvetica Neue', sans-serif;
-  --code: 'Geist Mono Variable', ui-monospace, Menlo, monospace;
-  --sheet: 72rem;
-  --gutter: clamp(1.25rem, 8vw, 8rem);
+  --sheet: var(--card-width);
+  --gutter: var(--space-16);
   font-family: var(--sans);
   font-weight: 500;
   color: var(--ink);
   background: var(--desk);
   font-synthesis: none;
   -webkit-font-smoothing: antialiased;
+}
+
+@media (max-width: 720px) {
+  :root {
+    --gutter: var(--space-6);
+  }
 }
 
 * {
@@ -45,7 +48,8 @@ body {
 }
 
 ::selection {
-  background: var(--accent-soft);
+  background: var(--accent);
+  color: var(--on-accent);
 }
 
 a {
@@ -58,11 +62,11 @@ a {
 }
 
 a:hover {
-  text-decoration-color: var(--accent);
+  text-decoration-color: currentColor;
 }
 
 :focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--focus);
   outline-offset: 3px;
 }
 
@@ -102,7 +106,7 @@ a:hover {
 
 .label {
   color: var(--faint);
-  font: 400 0.8125rem / 1.5 var(--sans);
+  font: 500 16px / 24px var(--sans);
 }
 
 /* Header: stacked links that pin into a top bar on scroll */
@@ -143,7 +147,7 @@ a:hover {
   font-size: 1.25rem;
   line-height: 1.75rem;
   text-decoration: none;
-  transition: color 200ms ease;
+  transition: color var(--duration-hover) var(--ease-hover);
 }
 
 .site-nav a:hover,
@@ -151,28 +155,9 @@ a:hover {
   color: var(--ink-strong);
 }
 
-.github {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.github > svg {
-  width: 1.05rem;
-  height: 1.05rem;
-  fill: currentColor;
-}
-
 .github-stars {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
-  margin-left: 0.2rem;
-  padding: 0.1rem 0.45rem;
-  color: var(--ink-strong);
-  background: var(--chrome);
-  box-shadow: inset 0 0 0 1px var(--line-strong);
-  font: 500 0.75rem / 1.4 var(--sans);
+  margin-left: 0.35rem;
+  color: var(--muted);
   font-variant-numeric: tabular-nums;
 }
 
@@ -180,35 +165,33 @@ a:hover {
   display: none;
 }
 
-.github-stars svg {
-  width: 0.7rem;
-  height: 0.7rem;
-  fill: #e3a008;
-  transition: transform 400ms cubic-bezier(0.2, 0.8, 0.2, 1.4);
-}
-
-.github:hover .github-stars svg {
-  transform: rotate(72deg) scale(1.15);
-}
-
+/* The ink button from Deli Paper. */
 .tag {
   display: inline-flex;
   flex: none;
   align-items: center;
-  padding: 0.35rem 0.6rem;
-  color: #fff;
-  background: var(--chrome-dark);
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 25%),
-    0 1px 2px rgb(0 0 0 / 20%);
-  font: 500 0.8125rem / 1 var(--sans);
+  padding: 0.5rem 1.15rem;
+  border-radius: var(--radius-pill);
+  color: var(--on-ink);
+  background: var(--heading);
+  font: 500 18px / 24px var(--sans);
   text-decoration: none;
   white-space: nowrap;
+  touch-action: manipulation;
+  transition:
+    opacity var(--duration-hover) var(--ease-hover),
+    transform var(--duration-press) var(--ease-out);
 }
 
-.tag:hover {
-  color: #fff;
-  background: var(--ink-strong);
+.tag:active {
+  transform: scale(0.97);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .tag:hover {
+    color: var(--on-ink);
+    opacity: 0.85;
+  }
 }
 
 .nav-strip {
@@ -270,7 +253,7 @@ a:hover {
   padding: 2rem 0 4rem;
   border-top: 1px solid var(--line);
   color: var(--faint);
-  font: 400 0.8125rem / 1.5 var(--sans);
+  font: 500 16px / 24px var(--sans);
 }
 
 .site-footer p {
@@ -295,40 +278,45 @@ a:hover {
 .prose {
   min-width: 0;
   color: var(--ink);
-  font-size: 1.125rem;
-  line-height: 1.75rem;
+  font-size: 20px;
+  line-height: 32px;
 }
 
+/* display: the one hero headline. */
 .prose h1 {
-  margin: 0 0 2rem;
-  font-size: 3rem;
-  font-weight: 500;
-  letter-spacing: -1px;
-  line-height: 1.15;
+  max-width: 15ch;
+  margin: 0 0 var(--space-8);
+  color: var(--heading);
+  font-size: clamp(2.1rem, 5vw, 3rem);
+  font-weight: 600;
+  letter-spacing: -0.045em;
+  line-height: 1.08;
   text-wrap: balance;
 }
 
+/* title: light, so type does the work. */
 .prose h2 {
-  margin: 4.5rem 0 1.25rem;
-  color: var(--ink-strong);
-  font-size: 2rem;
-  font-weight: 500;
-  letter-spacing: -0.5px;
-  line-height: 2.25rem;
+  margin: var(--space-30) 0 var(--space-6);
+  color: var(--heading);
+  font-size: 24px;
+  font-weight: 400;
+  letter-spacing: -0.4px;
+  line-height: 28px;
 }
 
+/* subhead */
 .prose h3 {
-  margin: 2.5rem 0 0.75rem;
-  color: var(--ink-strong);
-  font-size: 1.25rem;
-  font-weight: 500;
-  line-height: 1.75rem;
+  margin: var(--space-14) 0 var(--space-3);
+  color: var(--heading);
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 28px;
 }
 
 .prose p,
 .prose ul,
 .prose ol {
-  margin: 0 0 1.25rem;
+  margin: 0 0 var(--space-5);
 }
 
 .prose ul,
@@ -358,11 +346,11 @@ a:hover {
 }
 
 .prose code:not(pre code) {
-  padding: 0.1em 0.35em;
-  color: var(--ink-strong);
-  background: var(--panel);
-  box-shadow: inset 0 0 0 1px var(--line);
-  font: 400 0.9em / 1 var(--code);
+  padding: 0.1rem 0.3rem;
+  border-radius: var(--radius-sm);
+  color: var(--heading);
+  background: var(--card-sunken);
+  font: 400 0.85em / 1 var(--code);
 }
 
 .prose audio {
@@ -382,8 +370,8 @@ a:hover {
 .prose th {
   padding: 0 1rem 0.6rem 0;
   border-bottom: 1px solid var(--line-strong);
-  color: var(--faint);
-  font: 400 0.8125rem / 1.5 var(--sans);
+  color: var(--muted);
+  font: 500 16px / 24px var(--sans);
   text-align: left;
 }
 
@@ -400,10 +388,10 @@ a:hover {
 /* Code */
 .code-block {
   min-width: 0;
-  margin: 1.5rem 0 2rem;
+  margin: var(--space-6) 0 var(--space-8);
   overflow: hidden;
-  background: var(--panel);
-  box-shadow: inset 0 0 0 1px var(--line);
+  border-radius: var(--radius-md);
+  background: var(--card-sunken);
 }
 
 .code-block-header {
@@ -413,8 +401,8 @@ a:hover {
   gap: 1rem;
   padding: 0.6rem 0.6rem 0.6rem 1.1rem;
   border-bottom: 1px solid var(--line);
-  color: var(--faint);
-  font: 400 1rem / 1.5 var(--sans);
+  color: var(--muted);
+  font: 500 16px / 24px var(--sans);
 }
 
 .code-copy {
@@ -427,7 +415,7 @@ a:hover {
 }
 
 .code-copy:hover {
-  color: var(--accent);
+  color: var(--heading);
   background: var(--paper);
 }
 
@@ -437,7 +425,7 @@ a:hover {
   padding: 1.1rem 1.25rem;
   overflow-x: auto;
   background: transparent !important;
-  font: 400 1rem / 1.65 var(--code);
+  font: 400 14px / 22px var(--code);
   tab-size: 2;
 }
 
@@ -460,12 +448,12 @@ a:hover {
   border-top: 1px solid var(--line);
   color: var(--muted);
   background: transparent;
-  font: 400 0.8125rem / 1.5 var(--sans);
+  font: 500 16px / 24px var(--sans);
   cursor: pointer;
 }
 
 .code-expand:hover {
-  color: var(--accent);
+  color: var(--heading);
 }
 
 /* Docs: the article fills the sheet. When the margins are wide enough, the page list sits
@@ -762,7 +750,7 @@ a:hover {
   }
 
   .nav-stuck .site-nav a {
-    font-size: 0.8125rem;
+    font-size: 16px;
   }
 
   .nav-stuck .site-nav .github > span:not(.github-stars) {
@@ -773,13 +761,8 @@ a:hover {
     display: none;
   }
 
-  .prose h1 {
-    font-size: 2.25rem;
-  }
-
   .prose h2 {
-    font-size: 1.625rem;
-    line-height: 2rem;
+    margin-top: var(--space-18);
   }
 
   .page {
@@ -787,9 +770,10 @@ a:hover {
   }
 }
 
-@media (max-width: 38rem) {
+@media (max-width: 720px) {
   .prose {
-    font-size: 1.0625rem;
+    font-size: 18px;
+    line-height: 28px;
   }
 }
 

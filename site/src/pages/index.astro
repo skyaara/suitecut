@@ -1,6 +1,8 @@
 ---
 import CodeBlock from '../components/CodeBlock.astro'
+import Film from '../components/Film.astro'
 import FlowDiagram from '../components/FlowDiagram.astro'
+import PackageRows from '../components/PackageRows.astro'
 import BaseLayout from '../layouts/BaseLayout.astro'
 import { recordExample } from '../lib/api-reference.js'
 import { clientRuns } from '../lib/benchmarks.js'
@@ -44,7 +46,7 @@ const mcpSpecs: Spec[] = [
   ['Transport', 'stdio MCP server or one JSON request per line'],
   ['Catalogue', '53 native driver tools plus the three agent tools'],
   ['Groups', 'core by default; add network, state, debug, media or all'],
-  ['Backends', 'Launch or attach to Chrome, Firefox or the SuiteCut CEF engine'],
+  ['Backends', 'Launch or attach to Chrome, Firefox or the suitecut CEF engine'],
   ['Sessions', 'Named sessions keep a browser alive; idle after ten minutes'],
   ['Artifacts', 'Screenshots as image content, PDFs as embedded resources'],
   ['Remote', 'Connection headers and TLS client certificates for remote browsers'],
@@ -174,27 +176,39 @@ const format = (value: number) => (value < 10 ? value.toFixed(2) : String(Math.r
 ---
 
 <BaseLayout
-  title="SuiteCut"
+  title="suitecut"
   description="An embedded Chromium engine for recording, streaming, browser agents and MCP, with native capture and a C++ SDK."
   current="home"
 >
   <div class="home prose">
     <section class="home-hero">
-      <h1>The first embedded Chrome built to be recorded, streamed and driven.</h1>
+      <h1>Chromium you can record, stream and drive</h1>
       <p class="home-lede">
-        SuiteCut runs Chromium inside your own process and takes video and sound straight from the
-        renderer, with no screenshots, extensions or open debugging port. Drive it from TypeScript,
-        C++ or any MCP client, then record it, stream it live, or let an agent work while a person
-        watches. Or skip the engine and use it as a browser agent for the Chrome or Firefox you
-        already have.
+        suitecut runs Chromium inside your own program and takes
+        <span class="dp-marker dp-marker-red dp-marker-inline"
+          >video and sound straight from the renderer</span
+        >, with no screenshots, extensions or open debugging port. Drive it from TypeScript, C++ or
+        any MCP client, then record it, stream it live, or let an agent work while you watch.
+      </p>
+      <p class="home-actions">
+        <a class="tag" href={sitePath('/packages')}>See the packages</a>
+        <a class="dp-link" href={sitePath('/docs')}>Read the guide</a>
       </p>
     </section>
+    <Film slug="suitecut" title="suitecut in a minute" />
+
+    <h2 id="packages">Packages</h2>
+    <p>
+      Four packages share one engine. Each has its own page with a short film, a diagram and a quick
+      start.
+    </p>
+    <PackageRows />
 
     <h2 id="watch">Watch it work</h2>
     <p>
-      SuiteCut can also open as a regular Chrome window that you and an AI agent use together. These
+      suitecut can also open as a regular Chrome window that you and an AI agent use together. These
       are unedited screen recordings of that window on a sample shop running locally. The tabs,
-      address bar and password prompt are Chromium's own; the typing comes from SuiteCut's browser
+      address bar and password prompt are Chromium's own; the typing comes from suitecut's browser
       control.
     </p>
     <div class="demos">
@@ -229,7 +243,7 @@ const format = (value: number) => (value < 10 ? value.toFixed(2) : String(Math.r
 
     <h2 id="engine">Embedded CEF engine</h2>
     <p>
-      SuiteCut ships its own Chromium Embedded Framework runtime. Frames come straight from the
+      suitecut ships its own Chromium Embedded Framework runtime. Frames come straight from the
       renderer's paint callback and sound from its audio stream, so what you record is exactly what
       the page drew.
     </p>
@@ -280,7 +294,7 @@ const format = (value: number) => (value < 10 ? value.toFixed(2) : String(Math.r
 
     <h3 id="external">Use the browser you already have</h3>
     <p>
-      You don't need the embedded engine to use the agent. Point SuiteCut at an installed browser
+      You don't need the embedded engine to use the agent. Point suitecut at an installed browser
       and the same observe, act and wait tools, refs and deadlines work against it.
     </p>
     <dl class="specs">
@@ -449,30 +463,19 @@ const format = (value: number) => (value < 10 ? value.toFixed(2) : String(Math.r
 
 <style>
   .home {
-    padding-top: 8rem;
-    font-size: 1.25rem;
-    line-height: 2rem;
-  }
-
-  .home-hero h1 {
-    max-width: 26ch;
-    margin: 0 0 3rem;
+    padding-top: var(--space-18);
   }
 
   .home-lede {
-    max-width: 40rem;
     margin: 0;
-    color: var(--muted);
   }
 
-  .home h2 {
-    margin-top: 8rem;
-  }
-
-  .home h3 {
-    margin-top: 4.5rem;
-    font-size: 1.5rem;
-    line-height: 2rem;
+  .home-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-3) var(--space-6);
+    margin: var(--space-8) 0 0;
   }
 
   /* Demo recordings */
@@ -497,15 +500,15 @@ const format = (value: number) => (value < 10 ? value.toFixed(2) : String(Math.r
   }
 
   .demo figcaption {
-    margin-top: 1rem;
+    margin-top: var(--space-3);
     color: var(--muted);
-    font: 400 1rem / 1.75rem var(--sans);
+    font: 500 16px / 24px var(--sans);
   }
 
   .demo figcaption strong {
     display: block;
-    color: var(--ink-strong);
-    font-weight: 500;
+    color: var(--heading);
+    font-weight: 600;
   }
 
   /* Specs */
@@ -523,8 +526,8 @@ const format = (value: number) => (value < 10 ? value.toFixed(2) : String(Math.r
   }
 
   .specs dt {
-    color: var(--faint);
-    font: 400 0.8125rem / 1.75rem var(--sans);
+    color: var(--muted);
+    font: 500 16px / 32px var(--sans);
   }
 
   .specs dd {
@@ -550,7 +553,7 @@ const format = (value: number) => (value < 10 ? value.toFixed(2) : String(Math.r
     margin: 0;
     padding: 0.3rem 0;
     color: var(--muted);
-    font: 400 0.8125rem / 1.5 var(--sans);
+    font: 500 16px / 24px var(--sans);
   }
 
   .families li::before {
@@ -595,7 +598,7 @@ const format = (value: number) => (value < 10 ? value.toFixed(2) : String(Math.r
   .bar-value {
     flex: none;
     color: var(--muted);
-    font: 400 0.8125rem / 1 var(--sans);
+    font: 500 16px / 1 var(--sans);
     font-variant-numeric: tabular-nums;
   }
 
@@ -626,7 +629,7 @@ const format = (value: number) => (value < 10 ? value.toFixed(2) : String(Math.r
     flex-wrap: wrap;
     align-items: center;
     gap: 1.5rem;
-    font: 400 0.8125rem / 1.5 var(--sans);
+    font: 500 16px / 24px var(--sans);
   }
 
   .home-links a:not(.tag) {

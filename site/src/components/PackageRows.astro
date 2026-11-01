@@ -1,0 +1,38 @@
+---
+// Every package as a row: its name, linked to its page, and what it is.
+import { packages } from '../data/packages.js'
+import { sitePath } from '../lib/paths.js'
+
+interface Props {
+  except?: string
+}
+
+const { except } = Astro.props
+---
+
+<ul class="dp-rows package-rows">
+  {
+    packages
+      .filter((item) => item.slug !== except)
+      .map((item) => (
+        <li>
+          <a class="dp-link" href={sitePath(`/packages/${item.slug}`)}>
+            {item.name}
+          </a>
+          <span class="dp-detail">{item.line}</span>
+        </li>
+      ))
+  }
+</ul>
+
+<style>
+  .package-rows {
+    margin: var(--space-6) 0 var(--space-8);
+  }
+
+  .package-rows a {
+    color: var(--heading);
+    font-weight: 600;
+    overflow-wrap: anywhere;
+  }
+</style>

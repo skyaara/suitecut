@@ -1,0 +1,462 @@
+---
+// The stage for a package's explainer film: one 1920×1080 card on the paper,
+// one scene at a time. scripts/record-site-films.mjs records it with suitecut,
+// calling window.film.show(index) and narrating each scene. Not linked or indexed.
+import { Code } from 'astro:components'
+import DeliPaper from '../../components/DeliPaper.astro'
+import Doodle from '../../components/Doodle.astro'
+import Logo from '../../components/Logo.astro'
+import { packages, type Package } from '../../data/packages.js'
+import '../../styles/tokens.css'
+
+export function getStaticPaths() {
+  return packages.map((item) => ({ params: { slug: item.slug }, props: { item } }))
+}
+
+interface Props {
+  item: Package
+}
+
+const { item }: Props = Astro.props
+const script = item.film.map(({ narration, focus, kind }) => ({ narration, focus, kind }))
+const languageOf = (code: string): 'typescript' | 'json' | 'cpp' | 'bash' =>
+  code.trimStart().startsWith('{')
+    ? 'json'
+    : code.includes('suitecut::')
+      ? 'cpp'
+      : code.startsWith('suitecut-native-control')
+        ? 'bash'
+        : 'typescript'
+---
+
+<!doctype html>
+<html lang="en" class="js">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920" />
+    <meta name="robots" content="noindex" />
+    <title>{item.name} film</title>
+  </head>
+  <body>
+    <DeliPaper />
+    <main class="stage">
+      <header class="bar">
+        <span class="brand"><Logo /></span>
+        <span class="bar-name">{item.name}</span>
+      </header>
+      {
+        item.film.map((scene, index) => (
+          <section class={`scene scene-${scene.kind}`} data-scene={index} aria-hidden="true">
+            {scene.kind === 'title' && (
+              <div class="title-block">
+                <h1>{scene.heading}</h1>
+                <p>
+                  <span class="mark">{scene.body}</span>
+                </p>
+              </div>
+            )}
+            {scene.kind === 'doodle' && scene.doodle && (
+              <div class="split">
+                <div class="words">
+                  <h2>{scene.heading}</h2>
+                  <p>{scene.body}</p>
+                </div>
+                <Doodle doodle={scene.doodle} draw="manual" class="art" />
+              </div>
+            )}
+            {scene.kind === 'code' && scene.code !== undefined && (
+              <div class="split split-code">
+                <div class="words">
+                  <h2>{scene.heading}</h2>
+                  <p>{scene.body}</p>
+                </div>
+                <div class="code">
+                  <Code code={scene.code} lang={languageOf(scene.code)} theme="github-light" />
+                </div>
+              </div>
+            )}
+            {scene.kind === 'list' && (
+              <div class="list">
+                <h2>{scene.heading}</h2>
+                <ol>
+                  {scene.items?.map(([name, detail]) => (
+                    <li>
+                      <strong>{name}</strong>
+                      <span>{detail}</span>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+            )}
+            {scene.kind === 'end' && (
+              <div class="end">
+                <h2>{scene.heading}</h2>
+                <p class="install">{scene.code}</p>
+                <p class="credit">{scene.body}</p>
+                <p class="site">suitecut.aakashreddy.com</p>
+              </div>
+            )}
+          </section>
+        ))
+      }
+    </main>
+    <script type="application/json" id="film-script" set:html={JSON.stringify(script)} />
+  </body>
+</html>
+
+<script>
+  interface Cue {
+    narration: string
+    focus?: string
+    kind: string
+  }
+
+  const cues = JSON.parse(document.getElementById('film-script')?.textContent ?? '[]') as Cue[]
+  const scenes = [...document.querySelectorAll<HTMLElement>('[data-scene]')]
+  let current = -1
+  let focusTimer = 0
+
+  /** Rings or underlines what a scene is about: a diagram node, or a line of code. */
+  function focus(scene: HTMLElement, target: string) {
+    const node = scene.querySelector<SVGGElement>(`[data-node="${CSS.escape(target)}"]`)
+    if (node) {
+      node.classList.add('is-focus')
+      return
+    }
+    const line = [...scene.querySelectorAll<HTMLElement>('.code .line')].find((element) =>
+      element.textContent?.includes(target),
+    )
+    line?.classList.add('is-focus')
+  }
+
+  // The recorder shows a caption when the narration starts; the focus lands a
+  // moment later, so it is part of the recorded time, not the synthesis pause.
+  function whenCaptionShows(callback: () => void) {
+    const host = document.querySelector('[data-suitecut-presentation]')
+    const root = host?.shadowRoot
+    if (!root) {
+      focusTimer = window.setTimeout(callback, 1800)
+      return
+    }
+    const check = () => {
+      if (!root.querySelector('[data-suitecut-caption]')) return false
+      observer.disconnect()
+      focusTimer = window.setTimeout(callback, 1400)
+      return true
+    }
+    const observer = new MutationObserver(check)
+    if (!check()) observer.observe(root, { childList: true, subtree: true })
+  }
+
+  function restyleCaptions() {
+    const root = document.querySelector('[data-suitecut-presentation]')?.shadowRoot
+    if (!root) return false
+    if (root.querySelector('style[data-film]')) return true
+    const style = document.createElement('style')
+    style.dataset.film = ''
+    style.textContent = `
+      .caption { bottom: 48px; max-width: 1400px; padding: 16px 28px; border: 0; border-radius: 16px;
+        background: #171717; color: #fcfcfb; box-shadow: none;
+        font: 600 34px/1.35 "Manrope Variable", system-ui, sans-serif; letter-spacing: -0.2px; }
+      .caption-word-current { color: #171717; background: rgba(247, 214, 74, 0.95); }
+    `
+    root.append(style)
+    return true
+  }
+
+  // The recorder adds its caption layer once recording starts, which can be after
+  // the first scene is shown; restyle it as soon as it appears.
+  const captionLayer = new MutationObserver(() => {
+    if (restyleCaptions()) captionLayer.disconnect()
+  })
+  if (!restyleCaptions())
+    captionLayer.observe(document.documentElement, { childList: true, subtree: true })
+
+  function show(index: number) {
+    window.clearTimeout(focusTimer)
+    restyleCaptions()
+    scenes.forEach((scene, i) => {
+      const on = i === index
+      scene.toggleAttribute('data-on', on)
+      scene.setAttribute('aria-hidden', String(!on))
+      if (!on)
+        scene
+          .querySelectorAll('.is-focus')
+          .forEach((element) => element.classList.remove('is-focus'))
+    })
+    current = index
+    const scene = scenes[index]
+    if (!scene) return
+    scene.querySelector('[data-doodle]')?.classList.remove('is-drawn')
+    requestAnimationFrame(() =>
+      window.setTimeout(() => scene.querySelector('[data-doodle]')?.classList.add('is-drawn'), 250),
+    )
+    const target = cues[index]?.focus
+    if (target) whenCaptionShows(() => focus(scene, target))
+  }
+
+  Object.assign(window, { film: { cues, show, current: () => current } })
+  document.fonts.ready.then(() => document.documentElement.setAttribute('data-ready', ''))
+</script>
+
+<style is:global>
+  html,
+  body {
+    margin: 0;
+    width: 1920px;
+    height: 1080px;
+    overflow: hidden;
+    background: var(--page);
+    color: var(--text);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .stage {
+    position: absolute;
+    left: 150px;
+    top: 72px;
+    z-index: 1;
+    box-sizing: border-box;
+    width: 1620px;
+    height: 820px;
+    padding: 64px 104px;
+    background: var(--card);
+  }
+
+  .bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: var(--muted);
+    font-size: 26px;
+    font-weight: 500;
+  }
+
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    color: var(--heading);
+  }
+
+  .brand .logo-mark {
+    width: 38px;
+    height: 38px;
+  }
+
+  .scene {
+    position: absolute;
+    inset: 150px 104px 64px;
+    display: grid;
+    align-items: center;
+    opacity: 0;
+    transform: translateY(8px);
+    transition:
+      opacity var(--duration-leave) var(--ease-out),
+      transform var(--duration-leave) var(--ease-out);
+  }
+
+  .scene[data-on] {
+    opacity: 1;
+    transform: none;
+    transition:
+      opacity var(--duration-enter) var(--ease-out),
+      transform var(--duration-enter) var(--ease-out);
+  }
+
+  h1,
+  h2 {
+    margin: 0;
+    color: var(--heading);
+    font-weight: 400;
+    text-wrap: balance;
+  }
+
+  h1 {
+    font-size: 128px;
+    line-height: 1;
+    font-weight: 600;
+    letter-spacing: -0.045em;
+  }
+
+  h2 {
+    font-size: 64px;
+    line-height: 1.08;
+    letter-spacing: -0.02em;
+  }
+
+  p {
+    margin: 0;
+  }
+
+  .title-block p {
+    margin-top: 44px;
+    max-width: 22ch;
+    font-size: 54px;
+    line-height: 1.25;
+    font-weight: 500;
+  }
+
+  /* The highlighter: drawn left to right behind the one line that matters. */
+  .mark {
+    background: linear-gradient(var(--marker-red), var(--marker-red)) no-repeat 0 72% / 0% 42%;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+    transition: background-size var(--duration-draw) var(--ease-in-out) 500ms;
+  }
+
+  [data-on] .mark {
+    background-size: 100% 42%;
+  }
+
+  .split {
+    display: grid;
+    grid-template-columns: 430px 1fr;
+    gap: 56px;
+    align-items: center;
+  }
+
+  .split-code {
+    grid-template-columns: 360px minmax(0, 1fr);
+    gap: 48px;
+  }
+
+  .words p {
+    margin-top: 28px;
+    color: var(--muted);
+    font-size: 32px;
+    line-height: 1.4;
+    font-weight: 500;
+  }
+
+  .art {
+    --draw-gap: 38ms;
+    --draw-stroke: 460ms;
+  }
+
+  [data-node] .dd-fill {
+    transition:
+      opacity var(--duration-enter) var(--ease-out),
+      transform var(--duration-enter) var(--ease-out);
+  }
+
+  /* A focused node gets a red ring drawn around it and its fill deepens. */
+  [data-node].is-focus .dd-ink {
+    stroke: var(--accent);
+    stroke-width: 3.4;
+    transition: stroke var(--duration-hover) var(--ease-hover);
+  }
+
+  .code {
+    padding: 36px 32px;
+    border-radius: var(--radius-md);
+    background: var(--card-sunken);
+  }
+
+  .code pre {
+    margin: 0;
+    background: transparent !important;
+    font: 400 21px/1.65 var(--font-mono);
+    white-space: pre;
+  }
+
+  .code .line {
+    display: inline-block;
+    min-width: 100%;
+    background: linear-gradient(var(--marker-yellow), var(--marker-yellow)) no-repeat 0 85% / 0% 80%;
+    transition: background-size var(--duration-draw) var(--ease-in-out);
+  }
+
+  .code .line.is-focus {
+    background-size: 100% 80%;
+  }
+
+  .list h2 {
+    margin-bottom: 40px;
+  }
+
+  .list ol {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .list li {
+    display: grid;
+    grid-template-columns: 620px 1fr;
+    gap: 40px;
+    padding: 22px 0;
+    border-top: 2px solid var(--rule);
+    font-size: 34px;
+    line-height: 1.3;
+  }
+
+  .list strong {
+    color: var(--heading);
+    font-weight: 650;
+  }
+
+  .list span {
+    color: var(--muted);
+    font-weight: 500;
+  }
+
+  .list li {
+    opacity: 0;
+    transform: translateY(8px);
+    transition:
+      opacity var(--duration-enter) var(--ease-out),
+      transform var(--duration-enter) var(--ease-out);
+  }
+
+  [data-on] .list li {
+    opacity: 1;
+    transform: none;
+  }
+
+  [data-on] .list li:nth-child(2) {
+    transition-delay: 1.6s;
+  }
+
+  [data-on] .list li:nth-child(3) {
+    transition-delay: 4.2s;
+  }
+
+  [data-on] .list li:nth-child(4) {
+    transition-delay: 6.6s;
+  }
+
+  .end {
+    justify-self: center;
+    text-align: center;
+  }
+
+  .end h2 {
+    font-size: 76px;
+  }
+
+  .end .install {
+    display: inline-block;
+    margin-top: 48px;
+    padding: 18px 34px;
+    border-radius: var(--radius-pill);
+    background: var(--heading);
+    color: var(--on-ink);
+    font: 500 34px/1.3 var(--font-mono);
+  }
+
+  .end .credit {
+    margin-top: 44px;
+    color: var(--text);
+    font-size: 32px;
+    font-weight: 500;
+  }
+
+  .end .site {
+    margin-top: 12px;
+    color: var(--muted);
+    font-size: 30px;
+    font-weight: 500;
+  }
+</style>

@@ -1,0 +1,182 @@
+/* Deli Paper — generated from tokens.json */
+
+@font-face {
+  font-family: 'Manrope Variable';
+  src: url('manrope-latin-wght-normal.woff2') format('woff2');
+  font-weight: 200 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root,
+[data-theme='light'] {
+  --page: #e7e6e2;
+  --card: #fcfcfb;
+  --card-sunken: #efefeb;
+  --text: #0a0a0a;
+  --heading: #171717;
+  --muted: #6b6b66;
+  --rule: #e6e6e1;
+  --rule-strong: #8f8e88;
+  --on-ink: #fcfcfb;
+  --accent: #d6402f;
+  --on-accent: #fcfcfb;
+  --marker-red: rgba(214, 64, 47, 0.42);
+  --marker-yellow: rgba(247, 214, 74, 0.6);
+  --marker-blue: rgba(150, 195, 238, 0.7);
+  --credit: #1e7a4c;
+  --debit: #c4302b;
+  --focus: #0a0a0a;
+  --deli-ink: #111111;
+  --deli-paper: #f7f7f7;
+  --ledger-credit: #bae0c4;
+  --ledger-debit: #f4c9c3;
+  --ledger-credit-ink: #267046;
+  --ledger-debit-ink: #a83e32;
+  --hook-ink: #b3c8f1;
+  --hook-paper: #f9f5ed;
+  --hook-accent: #5b8def;
+  --shadow-phone: 0 1px 2px rgba(0, 0, 0, 0.04), 0 18px 36px -18px rgba(0, 0, 0, 0.28);
+}
+
+[data-theme='dark'] {
+  --page: #0f0f0e;
+  --card: #1a1a18;
+  --card-sunken: #242421;
+  --text: #f2f1ed;
+  --heading: #fafaf7;
+  --muted: #a5a49d;
+  --rule: #2e2e2b;
+  --rule-strong: #6b6a64;
+  --on-ink: #1a1a18;
+  --accent: #f0705f;
+  --on-accent: #1a1a18;
+  --marker-red: rgba(240, 112, 95, 0.4);
+  --marker-yellow: rgba(247, 214, 74, 0.32);
+  --marker-blue: rgba(120, 170, 230, 0.45);
+  --credit: #4cc38a;
+  --debit: #ff7a6e;
+  --focus: #f2f1ed;
+  --deli-ink: #111111;
+  --deli-paper: #f7f7f7;
+  --ledger-credit: #bae0c4;
+  --ledger-debit: #f4c9c3;
+  --ledger-credit-ink: #267046;
+  --ledger-debit-ink: #a83e32;
+  --hook-ink: #b3c8f1;
+  --hook-paper: #f9f5ed;
+  --hook-accent: #7ea6f2;
+  --shadow-phone: 0 1px 2px rgba(0, 0, 0, 0.04), 0 18px 36px -18px rgba(0, 0, 0, 0.28);
+}
+
+:root {
+  --space-3: 12px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-14: 56px;
+  --space-16: 64px;
+  --space-18: 72px;
+  --space-30: 120px;
+  --radius-none: 0px;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-phone: 12%;
+  --radius-pill: 999px;
+  --card-width: 51.2rem;
+  --measure: 32rem;
+  --breakpoint: 720px;
+  --duration-press: 160ms;
+  --duration-hover: 150ms;
+  --duration-leave: 150ms;
+  --duration-nav: 250ms;
+  --duration-enter: 300ms;
+  --duration-count: 400ms;
+  --duration-paper: 400ms;
+  --duration-draw: 600ms;
+  --duration-ledger: 900ms;
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-hover: ease;
+  --font-sans: 'Manrope Variable', system-ui, sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', Menlo, monospace;
+}
+
+.display {
+  font-family: var(--font-sans);
+  font-size: 48px;
+  line-height: 52px;
+  font-weight: 600;
+  letter-spacing: -2.16px;
+}
+
+.title {
+  font-family: var(--font-sans);
+  font-size: 24px;
+  line-height: 28px;
+  font-weight: 400;
+  letter-spacing: -0.4px;
+}
+
+.body {
+  font-family: var(--font-sans);
+  font-size: 20px;
+  line-height: 32px;
+  font-weight: 500;
+}
+
+.body-compact {
+  font-family: var(--font-sans);
+  font-size: 18px;
+  line-height: 28px;
+  font-weight: 500;
+}
+
+.subhead {
+  font-family: var(--font-sans);
+  font-size: 20px;
+  line-height: 28px;
+  font-weight: 600;
+}
+
+.nav {
+  font-family: var(--font-sans);
+  font-size: 20px;
+  line-height: 24px;
+  font-weight: 500;
+}
+
+.caption {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 500;
+}
+
+.ui {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+}
+
+.ui-small {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
+}
+
+.figure {
+  font-family: var(--font-sans);
+  font-size: 20px;
+  line-height: 24px;
+  font-weight: 600;
+}
+
+.code {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  line-height: 22px;
+  font-weight: 400;
+}

@@ -1,0 +1,163 @@
+---
+import CodeBlock from '../../components/CodeBlock.astro'
+import Doodle from '../../components/Doodle.astro'
+import Film from '../../components/Film.astro'
+import PackageRows from '../../components/PackageRows.astro'
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import { packages, type Package } from '../../data/packages.js'
+import { sitePath } from '../../lib/paths.js'
+
+export function getStaticPaths() {
+  return packages.map((item) => ({ params: { slug: item.slug }, props: { item } }))
+}
+
+interface Props {
+  item: Package
+}
+
+const { item }: Props = Astro.props
+const languages = {
+  ts: { label: 'TypeScript', lang: 'typescript' },
+  json: { label: 'MCP config', lang: 'json' },
+  cpp: { label: 'C++', lang: 'cpp' },
+  sh: { label: 'Terminal', lang: 'bash' },
+} as const
+const external = (href: string) => href.startsWith('http')
+const index = packages.indexOf(item)
+const next = packages[(index + 1) % packages.length]
+---
+
+<BaseLayout title={`${item.name} · suitecut`} description={`${item.line}.`} current="packages">
+  <article class="prose package">
+    <h1>{item.name}</h1>
+    <p class="package-line">{item.line}.</p>
+    <p class="package-kind">
+      <span class="dp-badge dp-badge-neutral">{item.kind}</span>
+      <span class="dp-badge dp-badge-neutral">{item.status}</span>
+    </p>
+
+    <Film slug={item.slug} title={`${item.name}, explained`} />
+
+    <h2 id="how">How it works</h2>
+    {
+      item.intro.map((paragraph) =>
+        paragraph === item.marker ? (
+          <p>
+            <span class="dp-marker dp-marker-red dp-marker-inline">{paragraph}</span>
+          </p>
+        ) : (
+          <p>{paragraph}</p>
+        ),
+      )
+    }
+    <Doodle doodle={item.doodle} class="package-doodle" />
+    <p class="doodle-caption">{item.doodle.title}</p>
+
+    <h2 id="start">Quick start</h2>
+    <CodeBlock
+      code={item.install}
+      label={item.slug === 'native-sdk' ? 'CMake' : 'Terminal'}
+      lang={item.slug === 'native-sdk' ? 'plaintext' : 'bash'}
+    />
+    {
+      item.examples.map((example) => (
+        <>
+          <h3>{example.title}</h3>
+          <CodeBlock
+            code={example.code}
+            label={languages[example.language as keyof typeof languages].label}
+            lang={languages[example.language as keyof typeof languages].lang}
+          />
+        </>
+      ))
+    }
+
+    <h2 id="facts">What you get</h2>
+    <ul class="dp-rows facts">
+      {
+        item.facts.map(([name, detail]) => (
+          <li>
+            <span>{name}</span>
+            <span class="dp-detail">{detail}</span>
+          </li>
+        ))
+      }
+    </ul>
+
+    <h2 id="limits">Limits</h2>
+    <ul>
+      {item.limits.map((limit) => <li>{limit}</li>)}
+    </ul>
+
+    <h2 id="more">Read more</h2>
+    <ul class="dp-rows">
+      {
+        item.links.map(([label, href]) => (
+          <li>
+            <a
+              class="dp-link"
+              href={external(href) ? href : sitePath(href)}
+              target={external(href) ? '_blank' : undefined}
+              rel={external(href) ? 'noopener noreferrer' : undefined}
+            >
+              {label}
+            </a>
+            <span class="dp-detail">{external(href) ? 'GitHub' : 'Docs'}</span>
+          </li>
+        ))
+      }
+    </ul>
+
+    <h2 id="others">Other packages</h2>
+    <PackageRows except={item.slug} />
+    {
+      next && (
+        <p>
+          <a class="tag" href={sitePath(`/packages/${next.slug}`)}>
+            Next: {next.name}
+          </a>
+        </p>
+      )
+    }
+  </article>
+</BaseLayout>
+
+<style>
+  .package {
+    padding-top: var(--space-18);
+  }
+
+  .package h1 {
+    max-width: none;
+    margin-bottom: var(--space-5);
+    overflow-wrap: anywhere;
+  }
+
+  .package-line {
+    max-width: 32rem;
+  }
+
+  .package-kind {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    font-size: 16px;
+    line-height: 24px;
+  }
+
+  /* Diagrams take the card's full width so their labels stay readable. */
+  .package :global(.package-doodle) {
+    margin: var(--space-8) calc(var(--space-6) - var(--gutter)) var(--space-3);
+  }
+
+  .doodle-caption {
+    color: var(--muted);
+    font-size: 16px;
+    line-height: 24px;
+  }
+
+  .facts li > span:first-child {
+    color: var(--heading);
+    font-weight: 600;
+  }
+</style>

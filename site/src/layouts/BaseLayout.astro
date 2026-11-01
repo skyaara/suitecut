@@ -3,8 +3,8 @@ import { ClientRouter } from 'astro:transitions'
 import DeliPaper from '../components/DeliPaper.astro'
 import SiteHeader, { type Section } from '../components/SiteHeader.astro'
 import { sitePath } from '../lib/paths.js'
-import '@fontsource-variable/geist'
-import '@fontsource-variable/geist-mono'
+import '../styles/tokens.css'
+import '../styles/deli-paper.css'
 import '../styles/global.css'
 
 interface Props {
@@ -23,9 +23,9 @@ const socialImageUrl = new URL(sitePath(socialImage), Astro.site)
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="description" content={description} />
-    <meta name="theme-color" content="#ededed" />
+    <meta name="theme-color" content="#e7e6e2" />
     <meta property="og:type" content="website" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
@@ -50,16 +50,48 @@ const socialImageUrl = new URL(sitePath(socialImage), Astro.site)
       {current ? <SiteHeader current={current} /> : <SiteHeader />}
       <main id="main-content" transition:animate="fade"><slot /></main>
       <footer class="site-footer" transition:persist="site-footer">
-        <p>SuiteCut 2.0 · MIT License</p>
+        <p>
+          suitecut 2.1 · MIT licence · on <a
+            href="https://design-system.aakashreddy.com"
+            target="_blank"
+            rel="noopener noreferrer">Deli Paper</a
+          >
+        </p>
         <nav aria-label="Footer">
+          <a href={sitePath('/packages')}>Packages</a>
           <a href={sitePath('/about')}>About</a>
           <a href={sitePath('/docs')}>Docs</a>
           <a href={sitePath('/benchmarks')}>Benchmarks</a>
-          <a href="https://github.com/skyaara/suitecut">GitHub</a>
-          <a href="https://github.com/skyaara/suitecut/issues">Issues</a>
+          <a href="https://github.com/skyaara/suitecut" target="_blank" rel="noopener noreferrer"
+            >GitHub</a
+          >
+          <a
+            href="https://github.com/skyaara/suitecut/issues"
+            target="_blank"
+            rel="noopener noreferrer">Issues</a
+          >
         </nav>
       </footer>
     </div>
+    <script is:inline>
+      // Deli Paper's Marker without React: cover the stroke, then draw it in once it is in view.
+      ;(() => {
+        if (!('IntersectionObserver' in window)) return
+        const still = matchMedia('(prefers-reduced-motion: reduce)').matches
+        const observer = new IntersectionObserver((entries) => {
+          for (const entry of entries) {
+            if (!entry.isIntersecting) continue
+            entry.target.setAttribute('data-in', '')
+            observer.unobserve(entry.target)
+          }
+        })
+        if (still) return
+        document.querySelectorAll('.dp-marker:not([data-armed])').forEach((marker) => {
+          marker.setAttribute('data-armed', '')
+          requestAnimationFrame(() => observer.observe(marker))
+        })
+      })()
+    </script>
     <script is:inline>
       ;(() => {
         const targets = document.querySelectorAll(

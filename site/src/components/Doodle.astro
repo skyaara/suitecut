@@ -1,0 +1,127 @@
+---
+// A hand-drawn diagram. It draws itself in, stroke by stroke, the first time it
+// comes into view; `draw="manual"` leaves that to a script (the film pages).
+import { renderDoodle, type Doodle } from '../lib/doodle.js'
+
+interface Props {
+  doodle: Doodle
+  draw?: 'view' | 'manual'
+  class?: string
+}
+
+const { doodle, draw = 'view', class: className } = Astro.props
+---
+
+<figure
+  class:list={['doodle-figure', className]}
+  data-doodle={draw}
+  set:html={renderDoodle(doodle)}
+/>
+
+<script>
+  function watch() {
+    const figures = document.querySelectorAll<HTMLElement>('[data-doodle="view"]:not(.is-drawn)')
+    if (!('IntersectionObserver' in window)) {
+      figures.forEach((figure) => figure.classList.add('is-drawn'))
+      return
+    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue
+          entry.target.classList.add('is-drawn')
+          observer.unobserve(entry.target)
+        }
+      },
+      { rootMargin: '0px 0px -15% 0px' },
+    )
+    figures.forEach((figure) => observer.observe(figure))
+  }
+  document.addEventListener('astro:page-load', watch)
+</script>
+
+<style is:global>
+  .doodle-figure {
+    margin: 0;
+  }
+
+  .doodle {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+
+  .dd-ink {
+    fill: none;
+    stroke: var(--heading);
+    stroke-width: 2.4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .dd-ink[data-cross] {
+    stroke: var(--accent);
+    stroke-width: 3.2;
+  }
+
+  .dd-label,
+  .dd-detail,
+  .dd-note,
+  .dd-edge {
+    font-family: var(--font-sans);
+  }
+
+  .dd-label {
+    fill: var(--heading);
+    font-weight: 650;
+  }
+
+  .dd-detail {
+    fill: var(--muted);
+    font-weight: 500;
+  }
+
+  .dd-note,
+  .dd-edge {
+    fill: var(--heading);
+    font-weight: 600;
+  }
+
+  .dd-chip {
+    fill: var(--card);
+  }
+
+  /* Drawing in: each stroke's dash slides from hidden to whole, one after another. */
+  .js [data-doodle] .dd-ink {
+    stroke-dasharray: 1 1;
+    stroke-dashoffset: 1;
+    transition: stroke-dashoffset var(--draw-stroke, 420ms) var(--ease-out)
+      calc(var(--i) * var(--draw-gap, 32ms));
+  }
+
+  .js [data-doodle] :is(.dd-fill, .dd-text) {
+    opacity: 0;
+    transition: opacity var(--duration-enter) var(--ease-out)
+      calc(var(--i) * var(--draw-gap, 32ms) + 120ms);
+  }
+
+  .js [data-doodle].is-drawn .dd-ink {
+    stroke-dashoffset: 0;
+  }
+
+  .js [data-doodle].is-drawn :is(.dd-fill, .dd-text) {
+    opacity: 1;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .js [data-doodle] .dd-ink {
+      stroke-dashoffset: 0;
+      transition: none;
+    }
+
+    .js [data-doodle] :is(.dd-fill, .dd-text) {
+      transition: opacity var(--duration-enter) var(--ease-out);
+    }
+  }
+</style>

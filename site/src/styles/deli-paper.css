@@ -1,0 +1,686 @@
+/* Deli Paper components, copied from design-system.aakashreddy.com/files/bundle.css (v3). Do not edit here; update the design system and copy it again. */
+/* Deli Paper components. Colours, spacing, radii, durations and easings come from tokens.css;
+   type comes from its classes (.body, .title, …). The marker strokes are SVG data, which cannot
+   read variables, so their colours are the marker-* tokens written out per theme. */
+
+/* Base: no grey flash on tap (every control has its own :active instead), and no font inflation in landscape. */
+html {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* Paper: the checked sheet behind the card. Fixed to the window, or filling its parent. */
+.dp-paper {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  background: var(--page);
+  pointer-events: none;
+}
+.dp-paper-contained {
+  position: absolute;
+}
+.dp-paper canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity var(--duration-paper) var(--ease-out);
+}
+.dp-paper canvas[data-ready] {
+  opacity: 1;
+}
+
+/* Card: the one white sheet on the paper. Square, 64px inside, 51.2rem wide at most. */
+.dp-card {
+  position: relative;
+  z-index: 1;
+  box-sizing: border-box;
+  max-width: var(--card-width);
+  margin: 0 auto;
+  padding: var(--space-16);
+  background: var(--card);
+  color: var(--text);
+  font-family: var(--font-sans);
+  overflow-wrap: break-word;
+}
+.dp-card ::selection {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+.dp-card p {
+  margin: 0;
+}
+.dp-card p + p {
+  margin-top: var(--space-5);
+}
+.dp-card strong {
+  font-weight: 700;
+  color: var(--heading);
+}
+.dp-card :focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 3px;
+}
+
+/* Columns: two equal columns with the card's gutter; one column under 720px. */
+.dp-columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-8);
+}
+.dp-columns > * {
+  min-width: 0;
+}
+
+/* Masthead: a stacked list on each side; the right one pins to the top as one row. */
+.dp-masthead {
+  position: relative;
+  z-index: 21;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-8);
+  margin-bottom: var(--space-30);
+}
+.dp-masthead ul {
+  display: grid;
+  justify-items: start;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  transition: opacity var(--duration-hover) var(--ease-hover);
+}
+.dp-masthead a {
+  color: var(--muted);
+  text-decoration: none;
+  transition: color var(--duration-hover) var(--ease-hover);
+}
+.dp-masthead a[aria-current='page'] {
+  color: var(--heading);
+}
+.dp-masthead .dp-brand {
+  display: inline-flex;
+  gap: 0.55rem;
+  align-items: center;
+  color: var(--heading);
+  font-weight: 600;
+}
+.dp-masthead .dp-brand svg,
+.dp-masthead .dp-brand img {
+  flex: none;
+  width: 1.25rem;
+  height: 1.25rem;
+}
+.dp-masthead nav {
+  display: grid;
+  justify-items: end;
+}
+.dp-masthead.dp-pinned ul {
+  opacity: 0;
+  pointer-events: none;
+}
+.dp-masthead nav.dp-stuck {
+  position: fixed;
+  top: env(safe-area-inset-top, 0px);
+  right: var(--dp-nav-right, 0px);
+  z-index: 21;
+  display: flex;
+  gap: 1.75rem;
+  height: var(--space-14);
+  align-items: center;
+}
+.dp-strip {
+  position: fixed;
+  top: 0;
+  left: var(--dp-card-left, 0px);
+  z-index: 20;
+  width: var(--dp-card-width, 100%);
+  height: calc(var(--space-14) + env(safe-area-inset-top, 0px));
+  border-bottom: 1px solid var(--rule);
+  background: var(--card);
+  transform: translateY(-101%);
+  transition: transform var(--duration-leave) var(--ease-out);
+}
+.dp-strip-shown {
+  transform: none;
+  transition-duration: var(--duration-nav);
+}
+/* When the nav pins, the brand takes the left end of the strip, lined up with the card's content. */
+.dp-pin-brand {
+  position: fixed;
+  top: env(safe-area-inset-top, 0px);
+  left: var(--dp-brand-left, 0px);
+  z-index: 21;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  height: var(--space-14);
+  color: var(--heading);
+  font-weight: 600;
+  text-decoration: none;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-0.5rem);
+  transition:
+    opacity var(--duration-leave) var(--ease-out),
+    transform var(--duration-leave) var(--ease-out),
+    visibility 0s linear var(--duration-leave);
+}
+.dp-pin-brand.dp-pin-shown {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  transition-duration: var(--duration-nav), var(--duration-nav), 0s;
+  transition-delay: 50ms, 50ms, 0s;
+}
+.dp-pin-brand svg,
+.dp-pin-brand img {
+  flex: none;
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+/* Section: a light heading, then its content; clears the pinned nav when jumped to. */
+.dp-section {
+  margin-top: var(--space-30);
+  scroll-margin-top: calc(var(--space-14) + var(--space-8));
+}
+.dp-section > h2 {
+  margin: 0 0 var(--space-6);
+  color: var(--heading);
+}
+
+/* Hero: the one headline, a lede, actions, then figures. */
+.dp-hero h1 {
+  max-width: 15ch;
+  margin: 0 0 var(--space-5);
+  color: var(--heading);
+  font-size: clamp(2.1rem, 5vw, 3rem);
+  line-height: 1.08;
+  letter-spacing: -0.045em;
+  text-wrap: balance;
+}
+.dp-hero .dp-lede {
+  max-width: var(--measure);
+  color: var(--muted);
+}
+.dp-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem 1.75rem;
+  align-items: center;
+  margin-top: var(--space-8);
+}
+.dp-hero .dp-figures {
+  margin-top: var(--space-16);
+}
+
+/* Button: ink is the one call to action; text is a link in the same row. */
+.dp-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: 0;
+  font: inherit;
+  cursor: pointer;
+  text-decoration: none;
+}
+.dp-button-ink {
+  padding: 0.5rem 1.15rem;
+  border-radius: var(--radius-pill);
+  background: var(--heading);
+  color: var(--on-ink);
+  transition:
+    opacity var(--duration-hover) var(--ease-hover),
+    transform var(--duration-press) var(--ease-out);
+}
+.dp-button-outline {
+  padding: calc(0.5rem - 1px) calc(1.15rem - 1px);
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--radius-pill);
+  background: var(--card);
+  color: var(--heading);
+}
+
+/* Controls answer the tap at once (no double-tap-zoom wait) and a long press never selects their label. */
+.dp-button,
+.dp-masthead nav a,
+.dp-pin-brand,
+.dp-masthead .dp-brand {
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+.dp-link {
+  touch-action: manipulation;
+}
+
+/* Pressed buttons give a little, so a click feels heard. */
+.dp-button-outline {
+  transition:
+    background-color var(--duration-hover) var(--ease-hover),
+    transform var(--duration-press) var(--ease-out);
+}
+.dp-button-ink:active,
+.dp-button-outline:active {
+  transform: scale(0.97);
+}
+.dp-button:disabled {
+  opacity: 0.45;
+  cursor: default;
+  transform: none;
+}
+/* Pressed links answer on touch too: the masthead link darkens, a text link's marker paints in. */
+.dp-masthead a:active {
+  color: var(--heading);
+}
+.dp-link:active {
+  background-size:
+    0% 100%,
+    100% 100%;
+}
+
+/* Link: underlined at 35% of the text colour; a yellow marker paints in from the left on hover. */
+.dp-link {
+  padding: 0.06em 0.22em;
+  margin: 0 -0.22em;
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, currentColor 35%, transparent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+  background:
+    linear-gradient(var(--card), var(--card)) right / 100% 100% no-repeat,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 40' preserveAspectRatio='none'%3E%3Cpath d='M6 9 C40 5 90 7 140 5 S188 3 196 6 C199 14 197 25 198 33 C150 36 100 34 60 36 S12 37 3 35 C1 26 4 17 6 9 Z' fill='%23f7d64a' fill-opacity='.6'/%3E%3C/svg%3E")
+      0 0 / 100% 100% no-repeat;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  transition: background-size var(--duration-hover) var(--ease-hover);
+}
+[data-theme='dark'] .dp-link {
+  background-image:
+    linear-gradient(var(--card), var(--card)),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 40' preserveAspectRatio='none'%3E%3Cpath d='M6 9 C40 5 90 7 140 5 S188 3 196 6 C199 14 197 25 198 33 C150 36 100 34 60 36 S12 37 3 35 C1 26 4 17 6 9 Z' fill='%23f7d64a' fill-opacity='.32'/%3E%3C/svg%3E");
+}
+
+/* Marker: the hand-drawn highlighter behind one line. A card-coloured cover slides off it. */
+.dp-marker {
+  padding: 0.12em 0.4em;
+  margin: 0 -0.15em 0 -0.4em;
+  color: inherit;
+  background-color: transparent;
+  background-position:
+    right,
+    0 0;
+  background-size:
+    0% 100%,
+    100% 100%;
+  background-repeat: no-repeat;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  transition: background-size var(--duration-draw) var(--ease-in-out) 0.2s;
+}
+.dp-marker-inline {
+  padding: 0.1em 0.22em;
+  margin: 0 -0.22em;
+}
+.dp-marker[data-armed]:not([data-in]) {
+  background-size:
+    100% 100%,
+    100% 100%;
+  transition: none;
+}
+.dp-marker-red {
+  background-image:
+    linear-gradient(var(--card), var(--card)),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 40' preserveAspectRatio='none'%3E%3Cpath d='M6 9 C40 5 90 7 140 5 S188 3 196 6 C199 14 197 25 198 33 C150 36 100 34 60 36 S12 37 3 35 C1 26 4 17 6 9 Z' fill='%23d6402f' fill-opacity='.42'/%3E%3C/svg%3E");
+}
+[data-theme='dark'] .dp-marker-red {
+  background-image:
+    linear-gradient(var(--card), var(--card)),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 40' preserveAspectRatio='none'%3E%3Cpath d='M6 9 C40 5 90 7 140 5 S188 3 196 6 C199 14 197 25 198 33 C150 36 100 34 60 36 S12 37 3 35 C1 26 4 17 6 9 Z' fill='%23f0705f' fill-opacity='.4'/%3E%3C/svg%3E");
+}
+.dp-marker-yellow {
+  background-image:
+    linear-gradient(var(--card), var(--card)),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 40' preserveAspectRatio='none'%3E%3Cpath d='M6 9 C40 5 90 7 140 5 S188 3 196 6 C199 14 197 25 198 33 C150 36 100 34 60 36 S12 37 3 35 C1 26 4 17 6 9 Z' fill='%23f7d64a' fill-opacity='.6'/%3E%3C/svg%3E");
+}
+[data-theme='dark'] .dp-marker-yellow {
+  background-image:
+    linear-gradient(var(--card), var(--card)),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 40' preserveAspectRatio='none'%3E%3Cpath d='M6 9 C40 5 90 7 140 5 S188 3 196 6 C199 14 197 25 198 33 C150 36 100 34 60 36 S12 37 3 35 C1 26 4 17 6 9 Z' fill='%23f7d64a' fill-opacity='.32'/%3E%3C/svg%3E");
+}
+.dp-marker-blue {
+  background-image:
+    linear-gradient(var(--card), var(--card)),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 40' preserveAspectRatio='none'%3E%3Cpath d='M6 9 C40 5 90 7 140 5 S188 3 196 6 C199 14 197 25 198 33 C150 36 100 34 60 36 S12 37 3 35 C1 26 4 17 6 9 Z' fill='%2396c3ee' fill-opacity='.7'/%3E%3C/svg%3E");
+}
+[data-theme='dark'] .dp-marker-blue {
+  background-image:
+    linear-gradient(var(--card), var(--card)),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 40' preserveAspectRatio='none'%3E%3Cpath d='M6 9 C40 5 90 7 140 5 S188 3 196 6 C199 14 197 25 198 33 C150 36 100 34 60 36 S12 37 3 35 C1 26 4 17 6 9 Z' fill='%2378aae6' fill-opacity='.45'/%3E%3C/svg%3E");
+}
+.dp-marker-hook {
+  background-image:
+    linear-gradient(var(--card), var(--card)),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 40' preserveAspectRatio='none'%3E%3Cpath d='M6 9 C40 5 90 7 140 5 S188 3 196 6 C199 14 197 25 198 33 C150 36 100 34 60 36 S12 37 3 35 C1 26 4 17 6 9 Z' fill='%235b8def' fill-opacity='.36'/%3E%3C/svg%3E");
+}
+[data-theme='dark'] .dp-marker-hook {
+  background-image:
+    linear-gradient(var(--card), var(--card)),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 40' preserveAspectRatio='none'%3E%3Cpath d='M6 9 C40 5 90 7 140 5 S188 3 196 6 C199 14 197 25 198 33 C150 36 100 34 60 36 S12 37 3 35 C1 26 4 17 6 9 Z' fill='%237ea6f2' fill-opacity='.4'/%3E%3C/svg%3E");
+}
+.dp-marker-ink {
+  background-image:
+    linear-gradient(var(--card), var(--card)),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 40' preserveAspectRatio='none'%3E%3Cpath d='M6 9 C40 5 90 7 140 5 S188 3 196 6 C199 14 197 25 198 33 C150 36 100 34 60 36 S12 37 3 35 C1 26 4 17 6 9 Z' fill='%230d0d0d' fill-opacity='.13'/%3E%3C/svg%3E");
+}
+[data-theme='dark'] .dp-marker-ink {
+  background-image:
+    linear-gradient(var(--card), var(--card)),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 40' preserveAspectRatio='none'%3E%3Cpath d='M6 9 C40 5 90 7 140 5 S188 3 196 6 C199 14 197 25 198 33 C150 36 100 34 60 36 S12 37 3 35 C1 26 4 17 6 9 Z' fill='%23f2f1ed' fill-opacity='.16'/%3E%3C/svg%3E");
+}
+
+/* Rows: a title on the left, its detail on the right, between hairlines. */
+.dp-rows {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.dp-rows li {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-8);
+  padding: var(--space-3) 0;
+  border-top: 1px solid var(--rule);
+}
+.dp-rows li:last-child {
+  border-bottom: 1px solid var(--rule);
+}
+.dp-rows li > * {
+  overflow-wrap: anywhere;
+}
+.dp-rows li > a {
+  justify-self: start;
+  align-self: start;
+}
+.dp-rows .dp-detail {
+  color: var(--muted);
+  text-align: right;
+}
+.dp-rows-figures .dp-detail {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Phone: an app screenshot in a rounded frame with one soft shadow. Phones: three across. */
+.dp-phones {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-5);
+  margin: 0;
+}
+.dp-phone {
+  margin: 0;
+  min-width: 0;
+}
+.dp-phone img {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-phone) / 5.5%;
+  box-shadow: var(--shadow-phone);
+}
+.dp-phone figcaption {
+  margin-top: 0.9rem;
+  color: var(--muted);
+}
+
+/* Reveal: the first screen arrives, one child after another. Below the fold nothing waits. Visible without script. */
+.dp-reveal[data-armed] > * {
+  transition:
+    opacity var(--duration-enter) var(--ease-out),
+    transform var(--duration-enter) var(--ease-out);
+}
+.dp-reveal[data-armed] > :not([data-in]) {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+/* Amount: signed money. The sign is always written; colour repeats it. */
+.dp-amount {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.dp-amount-credit {
+  color: var(--credit);
+}
+.dp-amount-debit {
+  color: var(--debit);
+}
+
+/* Code: sunken wells; mono at 0.85em inline, 0.9rem in blocks. */
+.dp-code {
+  padding: 0.1rem 0.3rem;
+  border-radius: var(--radius-sm);
+  background: var(--card-sunken);
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+}
+.dp-codeblock {
+  margin: 0;
+  padding: 1.25rem;
+  overflow-x: auto;
+  border-radius: var(--radius-md);
+  background: var(--card-sunken);
+  color: var(--heading);
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+/* Badge: a word or two of state in the dense app screens. */
+.dp-badge {
+  display: inline-flex;
+  max-width: 100%;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.1rem 0.55rem;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-pill);
+  background: var(--card);
+  color: var(--muted);
+}
+.dp-badge::before {
+  content: '';
+  flex: none;
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 50%;
+  background: currentColor;
+}
+.dp-badge-neutral::before {
+  display: none;
+}
+.dp-badge-credit {
+  color: var(--credit);
+}
+.dp-badge-debit {
+  color: var(--debit);
+}
+
+/* Field: a label over an input, with an optional hint or error. */
+.dp-field {
+  display: grid;
+  gap: 0.5rem;
+}
+.dp-field label {
+  color: var(--heading);
+}
+.dp-field input {
+  box-sizing: border-box;
+  height: 2.75rem;
+  padding: 0 0.85rem;
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--radius-md);
+  background: var(--card);
+  color: var(--text);
+  font: inherit;
+  transition: border-color var(--duration-hover) var(--ease-hover);
+}
+/* iOS zooms the page into any input under 16px and stays zoomed: touch screens get 16px. */
+@media (pointer: coarse) {
+  .dp-field input {
+    font-size: max(16px, 1em);
+  }
+}
+.dp-field input::placeholder {
+  color: var(--muted);
+}
+.dp-field input:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+.dp-field .dp-hint {
+  color: var(--muted);
+}
+.dp-field[data-invalid] input {
+  border-color: var(--debit);
+}
+.dp-field[data-invalid] .dp-hint {
+  color: var(--debit);
+}
+/* An error arrives as a fade, so it reads as new rather than as a jump in the layout. */
+.dp-field .dp-hint[role='alert'] {
+  transition: opacity var(--duration-hover) var(--ease-out);
+}
+@starting-style {
+  .dp-field .dp-hint[role='alert'] {
+    opacity: 0;
+  }
+}
+
+@media (max-width: 720px) {
+  /* In landscape the notch sits at a side: the card's content keeps clear of it. */
+  .dp-card {
+    padding: 2rem max(var(--space-6), env(safe-area-inset-right, 0px)) 2rem
+      max(var(--space-6), env(safe-area-inset-left, 0px));
+  }
+  .dp-columns {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-5);
+  }
+  .dp-masthead {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: var(--space-6);
+    margin-bottom: 4rem;
+  }
+  .dp-masthead nav.dp-stuck {
+    gap: 1.25rem;
+  }
+  .dp-section {
+    margin-top: var(--space-18);
+  }
+  .dp-rows li {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+  .dp-rows .dp-detail {
+    text-align: left;
+  }
+  .dp-rows-figures li {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: var(--space-3);
+  }
+  .dp-rows-figures .dp-detail {
+    text-align: right;
+  }
+  /* Phones scroll sideways rather than shrink to stamps. */
+  .dp-phones {
+    grid-template-columns: none;
+    grid-auto-flow: column;
+    grid-auto-columns: 72%;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    padding-bottom: 0.5rem;
+  }
+  .dp-phone {
+    scroll-snap-align: start;
+  }
+}
+
+/* On a phone the pinned links need the room: only the mark shows, and the row steps down. */
+@media (max-width: 520px) {
+  .dp-pin-brand span {
+    display: none;
+  }
+  .dp-masthead nav.dp-stuck {
+    gap: 1rem;
+  }
+  .dp-masthead nav.dp-stuck a {
+    font-size: 1rem;
+  }
+}
+@media (max-width: 360px) {
+  .dp-masthead nav.dp-stuck {
+    gap: 0.75rem;
+  }
+  .dp-masthead nav.dp-stuck a {
+    font-size: 0.875rem;
+  }
+}
+
+/* Hover only where there is a pointer that hovers: a tap on a phone would set it off. */
+@media (hover: hover) and (pointer: fine) {
+  .dp-masthead a:hover {
+    color: var(--heading);
+  }
+  .dp-button-ink:hover {
+    opacity: 0.85;
+  }
+  .dp-button-outline:hover {
+    background: var(--card-sunken);
+  }
+  .dp-link:hover {
+    background-size:
+      0% 100%,
+      100% 100%;
+  }
+}
+
+/* More contrast: hairlines take the control border, and link underlines go solid. */
+@media (prefers-contrast: more) {
+  .dp-card {
+    --rule: var(--rule-strong);
+  }
+  .dp-link {
+    text-decoration-color: currentColor;
+  }
+}
+
+/* Reduced motion: nothing changes place. Fades and colour changes stay. */
+@media (prefers-reduced-motion: reduce) {
+  .dp-pin-brand,
+  .dp-pin-brand.dp-pin-shown {
+    transform: none;
+  }
+  .dp-strip,
+  .dp-marker,
+  .dp-link {
+    transition: none;
+  }
+  .dp-reveal[data-armed] > :not([data-in]) {
+    transform: none;
+  }
+  .dp-button-ink:active,
+  .dp-button-outline:active {
+    transform: none;
+  }
+}

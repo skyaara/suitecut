@@ -9,6 +9,12 @@
 - Prepare `suitecut` and `@suitecut/browser-control` 2.1.0, and add
   `pnpm release:check`, which checks every npm package's manifest, tarball and
   registry version without publishing.
+- Keep Kokoro narration word timing when espeak joins several words into one
+  phoneme run, instead of failing to map token durations to words.
+- Move the site onto Deli Paper, add a page per package under `/packages` with a
+  hand-drawn diagram, quick start and limits, and add an explainer film for each
+  package that suitecut records, narrates and renders itself
+  (`scripts/record-site-films.mjs`).
 - Add a complete real Song Maker example with isolated SDK tarball installation,
   external packages, browser actions and verified 1080p60 recording with page audio.
 - Preserve bounded inline resource URLs in network observations and retain

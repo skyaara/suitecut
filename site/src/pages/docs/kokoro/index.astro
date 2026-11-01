@@ -9,7 +9,7 @@ const bellaSample = sitePath('/audio/kokoro-af-bella.wav')
 
 <DocsLayout
   title="Kokoro speech"
-  description="Use local Kokoro WASM narration in SuiteCut."
+  description="Use local Kokoro WASM narration in suitecut."
   section="kokoro"
 >
   <h1>Kokoro speech</h1>
@@ -27,7 +27,7 @@ const bellaSample = sitePath('/audio/kokoro-af-bella.wav')
 })`}
   />
   <p>
-    SuiteCut supports 28 English Kokoro voices. Useful starting points include
+    suitecut supports 28 English Kokoro voices. Useful starting points include
     <code>af_heart</code>, <code>af_bella</code>, <code>am_michael</code>, <code>bf_emma</code>, and
     <code>bm_george</code>.
   </p>
@@ -36,7 +36,7 @@ const bellaSample = sitePath('/audio/kokoro-af-bella.wav')
   <h3>Heart</h3>
   <p>
     Voice <code>af_heart</code>. Speed <code>1</code>. Bundled and available offline. Sample text:
-    &quot;This is the Heart voice, generated locally by SuiteCut.&quot;
+    &quot;This is the Heart voice, generated locally by suitecut.&quot;
   </p>
   <audio aria-label="Kokoro Heart voice sample" controls preload="metadata" src={heartSample}>
     <a href={heartSample}>Download the Kokoro Heart sample</a>
@@ -45,7 +45,7 @@ const bellaSample = sitePath('/audio/kokoro-af-bella.wav')
   <h3>Bella</h3>
   <p>
     Voice <code>af_bella</code>. Speed <code>1</code>. Downloads once, then uses the local cache.
-    Sample text: &quot;This is the Bella voice, generated locally by SuiteCut.&quot;
+    Sample text: &quot;This is the Bella voice, generated locally by suitecut.&quot;
   </p>
   <audio aria-label="Kokoro Bella voice sample" controls preload="metadata" src={bellaSample}>
     <a href={bellaSample}>Download the Kokoro Bella sample</a>
@@ -63,7 +63,7 @@ const bellaSample = sitePath('/audio/kokoro-af-bella.wav')
     add about 89 MB to the installed package. The default voice works without a download or network request.
   </p>
   <div class="note">
-    Other supported voice profiles need network access on first use. SuiteCut downloads them from a
+    Other supported voice profiles need network access on first use. suitecut downloads them from a
     pinned upstream revision with a 30-second request timeout, then keeps them in the local cache.
     Set <code>SUITECUT_MODEL_CACHE</code> to choose another cache directory.
   </div>
@@ -82,15 +82,15 @@ const bellaSample = sitePath('/audio/kokoro-af-bella.wav')
 
   <h2 id="timing">Timeline behavior</h2>
   <p>
-    Narrations are serialized. SuiteCut pauses frame ingestion during synthesis, then records each
+    Narrations are serialized. suitecut pauses frame ingestion during synthesis, then records each
     caption for the measured audio duration. Model startup time does not appear in the video. After
-    five seconds, SuiteCut prints a notice so a cold model load is not mistaken for a stalled test.
+    five seconds, suitecut prints a notice so a cold model load is not mistaken for a stalled test.
   </p>
 
   <h2 id="other-models">Other models</h2>
   <p>
     Install another model runtime as an <a href={sitePath('/docs/audio-plugins')}>audio plugin</a>.
-    SuiteCut keeps those dependencies outside the core package and loads the selected provider in
+    suitecut keeps those dependencies outside the core package and loads the selected provider in
     the narration worker.
   </p>
 </DocsLayout>
