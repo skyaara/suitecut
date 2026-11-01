@@ -47,7 +47,8 @@ Tools: `browser_navigate`, `browser_snapshot`, `browser_click`,
 `browser_hover`, `browser_type`, `browser_press`, `browser_scroll`,
 `browser_evaluate`, `browser_screenshot`, `browser_wait_for`, `browser_back`,
 `browser_reload`, `browser_tabs`, `browser_new_tab`, `browser_select_tab`,
-`browser_close_tab`, `browser_dialog`, `browser_permission`, `browser_events`.
+`browser_close_tab`, `browser_dialog`, `browser_permission`, `browser_events`,
+`browser_record_start`, `browser_record_stop`.
 
 ## TypeScript SDK
 
@@ -73,7 +74,7 @@ await browser.close()
 - **Dialogs:** with `dialogs: 'control'` (the default) a dialog waits for `tab.answerDialog(accept, text)`. Input that opens one returns at once.
 - **Permissions:** `permissions: 'ask'` puts Allow and Block in the toolbar; `browser.answerPermission(allow)` answers from code.
 - **Background tabs:** the first input or screenshot on a tab turns on focus emulation, so a tab behind others, or a covered window, keeps rendering.
-- **Recording:** `browser.startRecording({ path, fps })` records the window from Chromium's own compositor frames, not screen recording, through suitecut's hardware H.264 encoder. `stop()` returns the frame counts. Cropped to the tab in front by default.
+- **Recording:** `browser.startRecording({ path, fps, audio })` records the window from Chromium's own compositor frames, not screen recording, through suitecut's hardware H.264 encoder, with the front tab's sound if asked. `stop()` returns the frame counts. Cropped to the tab in front by default.
 - **Events:** `browser.on(listener)`, `waitForEvent(match)` and `eventsSince(cursor)` cover loads, popups, dialogs, downloads and permission prompts.
 
 ## Limits

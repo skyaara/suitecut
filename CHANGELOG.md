@@ -8,6 +8,9 @@
   crops it to the page and copies it on the GPU, and only at the requested rate.
   It is then encoded through the existing media pipeline. Pages see no
   difference. `MacCapturePool` takes a larger budget for 2x frames.
+  `audio: true` adds the front tab's sound; capture is on only while such a
+  recording runs, and the captured sound is played back so the page stays
+  audible. The MCP server adds `browser_record_start` and `browser_record_stop`.
 - Add `@suitecut/shared-browser` 0.1.0 (preview): one native browser window with
   SuiteCut's own tabs that a person and an agent use together, with a TypeScript
   SDK and the `shared-browser-mcp` stdio MCP server. Input is trusted, CDP runs

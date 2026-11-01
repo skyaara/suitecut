@@ -7,7 +7,7 @@ import { PassThrough } from 'node:stream'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import * as z from 'zod'
 
-import { serveSharedBrowserMcp } from '../src/shared-browser-mcp.js'
+import { serveSharedBrowserMcp, sharedBrowserTools } from '../src/shared-browser-mcp.js'
 import { launchSharedBrowser } from '../src/shared-browser.js'
 
 vi.mock('node:child_process', async (original) => ({
@@ -201,5 +201,48 @@ describe('shared browser MCP server', () => {
     })
     input.end()
     await served
+  })
+  it('starts a recording and stops the latest one', async () => {
+    const info = {
+      recording: 'recording-7',
+      outputPath: '/tmp/out/demo.mp4',
+      framesPerSecond: 30,
+      canvas: '2560x1504',
+      source: '2560x1504',
+      copiedFrames: 1,
+      skippedFrames: 0,
+    }
+    const { seen } = fakeBrowser((message) => {
+      if (message.cmd === 'record-start') return { ok: true, result: info }
+      if (message.cmd === 'record-stop')
+        return {
+          ok: true,
+          result: {
+            ...info,
+            encoder: 'h264_videotoolbox',
+            container: 'mp4',
+            durationMs: 2000,
+            inputFrames: 20,
+            outputFrames: 60,
+            heldFrames: 40,
+            coalescedFrames: 0,
+            supersededFrames: 0,
+            outputBytes: 4096,
+          },
+        }
+      return { ok: true }
+    })
+    const browser = await launchSharedBrowser(options)
+    const tools = sharedBrowserTools(() => Promise.resolve(browser))
+    const started = await tools.browser_record_start!.invoke(
+      { path: '/tmp/out/demo.mp4', fps: 30, audio: true },
+      () => Promise.resolve(browser),
+    )
+    expect(started).toContain('recording-7')
+    expect(seen.find((m) => m.cmd === 'record-start')).toMatchObject({ fps: 30, audio: true })
+    const stopped = await tools.browser_record_stop!.invoke({}, () => Promise.resolve(browser))
+    expect(stopped).toContain('60 video frames, 20 of them new and 40 repeated')
+    expect(seen.find((m) => m.cmd === 'record-stop')).toMatchObject({ recording: 'recording-7' })
+    await browser.close()
   })
 })

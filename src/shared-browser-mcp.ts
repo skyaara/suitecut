@@ -9,6 +9,7 @@ import {
   type JsonValue,
   type SharedBrowser,
   type SharedBrowserOptions,
+  type SharedRecording,
   type SharedTab,
   launchSharedBrowser,
 } from './shared-browser.js'
@@ -79,6 +80,8 @@ const loadText = (result: { url: string; error?: string }) =>
 
 /** The tools this server offers, keyed by name. */
 export function sharedBrowserTools(browser: () => Promise<SharedBrowser>): Record<string, Tool> {
+  // Recordings this server started, by id, so a later call can stop them.
+  const recordings = new Map<string, SharedRecording>()
   return {
     browser_navigate: tool({
       description: 'Load a URL in a tab and wait for it to finish loading.',
@@ -238,6 +241,66 @@ export function sharedBrowserTools(browser: () => Promise<SharedBrowser>): Recor
         (await (await browser()).answerPermission(allow))
           ? `${allow ? 'Allowed' : 'Blocked'} the permission`
           : 'No permission prompt was waiting',
+    }),
+    browser_record_start: tool({
+      description:
+        "Start recording the browser window to a video file. Frames come from Chromium's own compositor inside the browser, not screen recording. Records the tab in front; switching tabs switches the picture. Returns a recording id for browser_record_stop.",
+      input: z.object({
+        path: z
+          .string()
+          .describe(
+            'Output file, such as demo.mp4; relative to the server directory. Must not exist yet.',
+          ),
+        fps: z
+          .number()
+          .int()
+          .min(1)
+          .max(120)
+          .optional()
+          .describe('Frames per second; defaults to 60'),
+        audio: z.boolean().optional().describe("Record the front tab's sound; defaults to false"),
+        area: z
+          .enum(['page', 'window'])
+          .optional()
+          .describe('page (default) crops to the tab; window keeps the tab strip and toolbar'),
+      }),
+      run: async ({ path, fps, audio, area }) => {
+        const options: Parameters<SharedBrowser['startRecording']>[0] = {
+          path,
+          ...(fps === undefined ? {} : { fps }),
+          ...(audio === undefined ? {} : { audio }),
+          ...(area === undefined ? {} : { area }),
+        }
+        const recording = await (await browser()).startRecording(options)
+        recordings.set(recording.info.recording, recording)
+        return `Recording ${recording.info.recording} to ${recording.info.outputPath} at ${recording.info.framesPerSecond} fps, ${recording.info.canvas}`
+      },
+    }),
+    browser_record_stop: tool({
+      description: 'Finish a recording and report the file it wrote.',
+      input: z.object({
+        recording: z
+          .string()
+          .optional()
+          .describe('Id from browser_record_start; defaults to the latest'),
+        discard: z.boolean().optional().describe('Stop without keeping the file'),
+      }),
+      run: async ({ recording, discard }) => {
+        const id = recording ?? [...recordings.keys()].at(-1)
+        const running = id === undefined ? undefined : recordings.get(id)
+        if (!id || !running) throw new Error('No recording started by this server is running')
+        recordings.delete(id)
+        if (discard) {
+          await running.cancel()
+          return `Discarded ${id}`
+        }
+        const result = await running.stop()
+        const seconds = (result.durationMs / 1000).toFixed(1)
+        return [
+          `Wrote ${result.outputPath}: ${seconds} s, ${result.canvas}, ${result.framesPerSecond} fps, ${result.outputBytes} bytes.`,
+          `${result.outputFrames} video frames, ${result.outputFrames - result.heldFrames} of them new and ${result.heldFrames} repeated while nothing changed.`,
+        ].join(' ')
+      },
     }),
     browser_events: tool({
       description:

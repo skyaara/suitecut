@@ -80,6 +80,14 @@ pipeline as `record()`.
   video size, the crop and NV12 conversion stay on the GPU and go straight to
   hardware H.264. `width` and `height` change the size; the media worker then
   scales each frame.
+- **Audio:** `audio: true` adds the front tab's sound as 48 kHz stereo AAC.
+  CEF's audio capture mutes the page it captures, so capture is on only while
+  such a recording runs, and the browser plays the captured sound to the
+  speakers meanwhile; a person in the window still hears the page. A sound that
+  started before the recording is picked up. In a test where a page flashed and
+  beeped together, the beep landed 14 to 19 ms after the flash in the file.
+  Capture can stay on after the recording until the page next goes quiet; it
+  stays audible through the same playback.
 - **Minimized window:** Chromium draws nothing, and the video holds the last frame
   until the window is back.
 - **Measured (M4, 1280x860 window, 2x):** an animation recorded at 60 fps gave 241
@@ -87,7 +95,7 @@ pipeline as `record()`.
   every other frame before copying it. In the same test, a DevTools screencast
   from Google Chrome delivered 54 to 58 fps and used about 1.8 more CPU cores
   for JPEG encoding.
-- **Protocol:** `{"cmd":"record-start","path":"/abs/out.mp4","fps":60,"area":"page","width":0,"height":0,"ffmpegPath":"ffmpeg"}`
+- **Protocol:** `{"cmd":"record-start","path":"/abs/out.mp4","fps":60,"area":"page","width":0,"height":0,"audio":false,"ffmpegPath":"ffmpeg"}`
   replies once frames are being encoded. `{"cmd":"record-stop","recording":"recording-1","cancel":false}`
   replies with the finished file's details. An existing file is refused.
 
@@ -131,7 +139,8 @@ Tools: `browser_navigate`, `browser_snapshot`, `browser_click`, `browser_hover`,
 `browser_type`, `browser_press`, `browser_scroll`, `browser_evaluate`,
 `browser_screenshot`, `browser_wait_for`, `browser_back`, `browser_reload`,
 `browser_tabs`, `browser_new_tab`, `browser_select_tab`, `browser_close_tab`,
-`browser_dialog`, `browser_permission`, `browser_events`.
+`browser_dialog`, `browser_permission`, `browser_events`, `browser_record_start`,
+`browser_record_stop`.
 
 ## Bot detection
 

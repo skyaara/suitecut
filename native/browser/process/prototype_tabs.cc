@@ -14,6 +14,7 @@
 #include <utility>
 #include <vector>
 
+#include "include/cef_audio_handler.h"
 #include "include/cef_browser.h"
 #include "include/cef_client.h"
 #include "include/cef_command_line.h"
@@ -34,6 +35,10 @@
 #include <chrono>
 #include <cmath>
 
+#include <atomic>
+
+#include "audio_clock.h"
+#include "audio_monitor.h"
 #include "mac_capture.h"
 #include "media_pipeline.h"
 #include "window_frames.h"
@@ -190,9 +195,92 @@ struct Recording {
   std::unique_ptr<suitecut::WindowFrames> frames;
   std::unique_ptr<suitecut::MacCapturePool> pool;
   std::shared_ptr<suitecut::MediaPipeline> pipeline;
+  bool audio = false;
   uint64_t copied = 0, skipped = 0, failed_copies = 0;
   Reply on_start, on_stop;
 };
+
+// Page audio for the running recording, from the tab in front, like the picture.
+// CEF's audio capture mutes the page it captures, so it is only on while a
+// recording takes audio, and each captured stream is played back to the
+// speakers meanwhile. Packets arrive on CEF's audio stream thread; everything
+// else on the UI thread.
+class AudioTap {
+ public:
+  void Target(std::shared_ptr<suitecut::MediaPipeline> pipeline) {
+    std::lock_guard lock(mutex_);
+    wanted_.store(pipeline != nullptr);
+    pipeline_ = std::move(pipeline);
+  }
+  bool Wanted() const { return wanted_.load(); }
+  void Front(int browser) { front_.store(browser); }
+  void Started(int browser, bool valid) {
+    // CEF's audio PTS is Mach time; WindowFrames uses CACurrentMediaTime.
+    // Calibrate one to the other, as the engine does for its own clock.
+    double width = std::numeric_limits<double>::infinity(), offset = 0;
+    for (int i = 0; i < 4; ++i) {
+      const double before = suitecut::WindowFramesNow(), native = suitecut::MacNativeTimeTicksMs(),
+                   after = suitecut::WindowFramesNow();
+      if (after - before < width) width = after - before, offset = (before + after) / 2 - native;
+    }
+    auto monitor = std::make_shared<suitecut::AudioMonitor>();
+    std::lock_guard lock(mutex_);
+    auto& stream = streams_[browser];
+    stream.valid = valid;
+    stream.offset = offset;
+    stream.clock.Reset();
+    stream.monitor = monitor->Ok() ? std::move(monitor) : nullptr;
+  }
+  void Stopped(int browser) {
+    std::lock_guard lock(mutex_);
+    streams_.erase(browser);
+  }
+  void Packet(int browser, const float** data, int frames, int64_t pts) {
+    if (frames < 1 || frames > 4096) return;
+    std::shared_ptr<suitecut::MediaPipeline> pipeline;
+    std::shared_ptr<suitecut::AudioMonitor> monitor;
+    double timestamp = 0;
+    {
+      std::lock_guard lock(mutex_);
+      const auto stream = streams_.find(browser);
+      if (stream == streams_.end() || !stream->second.valid) return;
+      monitor = stream->second.monitor;
+      if (pipeline_ && browser == front_.load()) {
+        const double epoch =
+            std::chrono::duration<double, std::milli>(std::chrono::system_clock::now().time_since_epoch()).count();
+        timestamp = stream->second.clock.Map(static_cast<double>(pts), suitecut::WindowFramesNow(), epoch,
+                                             stream->second.offset);
+        pipeline = pipeline_;
+      }
+    }
+    // 48 kHz stereo float to interleaved signed 16-bit, as the pipeline takes it.
+    std::vector<uint8_t> pcm(static_cast<size_t>(frames) * 4);
+    for (int frame = 0; frame < frames; ++frame)
+      for (int channel = 0; channel < 2; ++channel) {
+        const float value = std::isfinite(data[channel][frame]) ? data[channel][frame] : 0;
+        const int sample = static_cast<int>(std::clamp(value, -1.0f, 1.0f) * 32767);
+        const auto offset = static_cast<size_t>(frame * 2 + channel) * 2;
+        pcm[offset] = static_cast<uint8_t>(sample & 255);
+        pcm[offset + 1] = static_cast<uint8_t>((sample >> 8) & 255);
+      }
+    if (monitor) monitor->Play(pcm);
+    if (pipeline) pipeline->Audio(std::move(pcm), timestamp);
+  }
+
+ private:
+  struct Stream {
+    bool valid = false;
+    double offset = 0;
+    SuiteCutAudioClock clock;
+    std::shared_ptr<suitecut::AudioMonitor> monitor;
+  };
+  std::atomic<bool> wanted_{false};
+  std::mutex mutex_;
+  std::shared_ptr<suitecut::MediaPipeline> pipeline_;
+  std::map<int, Stream> streams_;
+  std::atomic<int> front_{0};
+};
+AudioTap audio_tap;
 #endif
 
 struct Tab {
@@ -272,9 +360,38 @@ class Client : public CefClient,
                public CefJSDialogHandler,
                public CefPermissionHandler,
                public CefLoadHandler,
-               public CefDevToolsMessageObserver {
+               public CefDevToolsMessageObserver
+#if defined(__APPLE__)
+    ,
+               public CefAudioHandler
+#endif
+{
  public:
   explicit Client(bool toolbar) : toolbar_(toolbar) {}
+#if defined(__APPLE__)
+  CefRefPtr<CefAudioHandler> GetAudioHandler() override { return toolbar_ ? nullptr : this; }
+  // Capture (which mutes the page) only while a recording takes audio.
+  bool GetAudioParameters(CefRefPtr<CefBrowser>, CefAudioParameters& params) override {
+    if (!audio_tap.Wanted()) return false;
+    params.channel_layout = CEF_CHANNEL_LAYOUT_STEREO;
+    params.sample_rate = 48000;
+    params.frames_per_buffer = 960;
+    return true;
+  }
+  void OnAudioStreamStarted(CefRefPtr<CefBrowser> browser, const CefAudioParameters& params,
+                            int channels) override {
+    audio_tap.Started(browser->GetIdentifier(), params.sample_rate == 48000 && channels == 2);
+  }
+  void OnAudioStreamPacket(CefRefPtr<CefBrowser> browser, const float** data, int frames,
+                           int64_t pts) override {
+    audio_tap.Packet(browser->GetIdentifier(), data, frames, pts);
+  }
+  void OnAudioStreamStopped(CefRefPtr<CefBrowser> browser) override { audio_tap.Stopped(browser->GetIdentifier()); }
+  void OnAudioStreamError(CefRefPtr<CefBrowser> browser, const CefString& message) override {
+    audio_tap.Stopped(browser->GetIdentifier());
+    Report("audio error: " + message.ToString());
+  }
+#endif
   CefRefPtr<CefDisplayHandler> GetDisplayHandler() override { return this; }
   CefRefPtr<CefLifeSpanHandler> GetLifeSpanHandler() override { return this; }
   CefRefPtr<CefDownloadHandler> GetDownloadHandler() override { return this; }
@@ -520,6 +637,9 @@ void Shell::Select(int id) {
   }
   content_->Layout();
   active_ = id;
+#if defined(__APPLE__)
+  audio_tap.Front(tab->browser_id());
+#endif
   tab->view->RequestFocus();
   Render();
 }
@@ -614,7 +734,12 @@ void Shell::Render() {
 void Shell::Created(CefRefPtr<CefBrowser> browser, bool page) {
   ++open_browsers_;
   if (!page) return;
-  if (Tab* tab = ByBrowser(browser)) tab->devtools = browser->GetHost()->AddDevToolsMessageObserver(pages);
+  if (Tab* tab = ByBrowser(browser)) {
+    tab->devtools = browser->GetHost()->AddDevToolsMessageObserver(pages);
+#if defined(__APPLE__)
+    if (tab->id == active_) audio_tap.Front(browser->GetIdentifier());
+#endif
+  }
 }
 
 void Shell::Closed(CefRefPtr<CefBrowser> browser) {
@@ -757,7 +882,7 @@ void Shell::Control(const std::string& line) {
   }
 #if defined(__APPLE__)
   // {"cmd":"record-start","path":"/abs/out.mp4","fps":60,"area":"page"|"window","width":0,"height":0,
-  //  "ffmpegPath":"ffmpeg","maxFileBytes":0} -> {"recording":"recording-1",...} once frames are encoding.
+  //  "audio":true,"ffmpegPath":"ffmpeg","maxFileBytes":0} -> {"recording":"recording-1",...} once frames are encoding.
   if (cmd == "record-start") return StartRecording(message, reply);
   // {"cmd":"record-stop","recording":"recording-1","cancel":false} -> the finished file's details.
   if (cmd == "record-stop") return StopRecording(message->GetString("recording"), message->GetBool("cancel"), reply);
@@ -834,6 +959,12 @@ CefRefPtr<CefValue> RecordingInfo(const Recording& recording, const suitecut::Me
     info->SetDouble("coalescedFrames", static_cast<double>(result->coalesced_frames));
     info->SetDouble("supersededFrames", static_cast<double>(result->superseded_frames));
     info->SetDouble("outputBytes", static_cast<double>(result->output_bytes));
+    if (recording.audio) {
+      info->SetDouble("audioInputFrames", static_cast<double>(result->audio_input_frames));
+      info->SetDouble("audioOutputFrames", static_cast<double>(result->audio_output_frames));
+      info->SetDouble("audioGapFrames", static_cast<double>(result->audio_gap_frames));
+      info->SetDouble("audioOverlapFrames", static_cast<double>(result->audio_overlap_frames));
+    }
   }
   auto value = CefValue::Create();
   value->SetDictionary(info);
@@ -851,14 +982,17 @@ void Shell::StartRecording(CefRefPtr<CefDictionaryValue> message, Reply reply) {
   recording->width = static_cast<int>(Number(message, "width", 0));
   recording->height = static_cast<int>(Number(message, "height", 0));
   recording->max_bytes = static_cast<int64_t>(Number(message, "maxFileBytes", 0));
+  recording->audio = message->GetBool("audio");
   if (recording->output.empty() || recording->output.front() != '/')
     return reply(false, Text("The recording path must be absolute"));
   if (!(recording->fps >= 1 && recording->fps <= 120))
     return reply(false, Text("fps must be from 1 through 120"));
   if ((recording->width != 0) != (recording->height != 0) || recording->width < 0 || recording->height < 0)
     return reply(false, Text("Give both width and height, or neither"));
-  for (const auto& [id, other] : recordings)
+  for (const auto& [id, other] : recordings) {
     if (other->output == recording->output) return reply(false, Text("That file is already being recorded"));
+    if (other->audio && recording->audio) return reply(false, Text("Another recording already takes the page audio"));
+  }
   // The encoder never replaces a file when it finishes; say so now rather than at stop.
   if (std::error_code error; std::filesystem::exists(recording->output, error))
     return reply(false, Text("The recording file already exists"));
@@ -934,6 +1068,7 @@ bool Shell::StartPipeline(const std::shared_ptr<Recording>& recording, int width
   options.start_timestamp_ms = now;
   options.first_frame_deadline = std::chrono::steady_clock::now() + std::chrono::seconds(15);
   if (recording->max_bytes > 0) options.max_file_bytes = static_cast<uint64_t>(recording->max_bytes);
+  options.audio = recording->audio;
   const std::string id = recording->id;
   try {
     if (options.ffmpeg_path.front() != '/') options.ffmpeg_path = suitecut::ResolveMediaExecutable(options.ffmpeg_path);
@@ -952,6 +1087,7 @@ bool Shell::StartPipeline(const std::shared_ptr<Recording>& recording, int width
             const auto recording = found->second;
             recordings.erase(found);
             recording->frames.reset();
+            if (recording->audio) audio_tap.Target(nullptr);
             if (recording->on_start) recording->on_start(false, Text(result.failure));
             else if (recording->on_stop)
               recording->on_stop(result.failure.empty() || result.failure == "Native recording canceled",
@@ -981,11 +1117,13 @@ bool Shell::StartPipeline(const std::shared_ptr<Recording>& recording, int width
     FailRecording(recording, error.what());
     return false;
   }
+  if (recording->audio) audio_tap.Target(recording->pipeline);
   return true;
 }
 
 void Shell::FailRecording(const std::shared_ptr<Recording>& recording, const std::string& reason) {
   recording->frames.reset();
+  if (recording->audio) audio_tap.Target(nullptr);
   if (recording->pipeline) return recording->pipeline->Cancel(reason);  // its completion replies
   recordings.erase(recording->id);
   if (recording->on_start) recording->on_start(false, Text(reason));
@@ -998,7 +1136,7 @@ void Shell::StopRecording(const std::string& id, bool cancel, Reply reply) {
     return reply(false, Text("No recording " + id + " is running"));
   const auto recording = found->second;
   recording->on_stop = std::move(reply);
-  recording->frames.reset();
+  recording->frames.reset();  // audio keeps flowing until the pipeline has its tail
   if (cancel) recording->pipeline->Cancel("Native recording canceled");
   else
     recording->pipeline->Stop(suitecut::WindowFramesNow(),

@@ -59,6 +59,8 @@ export interface SharedRecordingOptions {
   readonly fps?: number
   /** `page` crops to the active tab's page; `window` keeps the tab strip and toolbar. Defaults to `page`. */
   readonly area?: 'page' | 'window'
+  /** Records the front tab's sound as 48 kHz stereo AAC. Defaults to false. */
+  readonly audio?: boolean
   /** Video size. Defaults to the captured area in device pixels, scaled to fit 3840x2160. */
   readonly width?: number
   readonly height?: number
@@ -380,6 +382,7 @@ export class SharedBrowser {
       path: resolve(options.path),
       fps: options.fps ?? 60,
       area: options.area ?? 'page',
+      audio: options.audio ?? false,
       ffmpegPath: options.ffmpegPath ?? process.env.SUITECUT_FFMPEG_PATH ?? 'ffmpeg',
     }
     if (options.width !== undefined) args.width = options.width
