@@ -228,7 +228,17 @@ export function splitKokoroText(text: string, maximumLength = 360): string[] {
   return chunks.filter((chunk) => chunk.length > 0)
 }
 
+/**
+ * Respells words the phonemizer reads wrongly, right before phonemizing, so captions
+ * and word timing keep the written text. Read as one word, "suitecut" comes out as
+ * "sooty-cut"; as two it is "sweet cut".
+ */
+export function spokenKokoroText(text: string): string {
+  return text.replace(/\b(suite)(cut)\b/giu, '$1 $2')
+}
+
 async function phonemizeText(text: string, language: 'en-us' | 'en-gb'): Promise<string> {
+  text = spokenKokoroText(text)
   const punctuation = /(\s*[;:,.!?¡¿—…"«»“”()[\]{}]+\s*)+/gu
   const sections: { punctuation: boolean; text: string }[] = []
   let lastIndex = 0

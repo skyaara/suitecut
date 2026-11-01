@@ -1,12 +1,24 @@
 // SPDX-License-Identifier: MIT
 import { describe, expect, it } from 'vitest'
 
-import { normalizeKokoroText, splitKokoroText, synthesizeKokoro, wordSpans } from '../src/kokoro.js'
+import {
+  normalizeKokoroText,
+  splitKokoroText,
+  spokenKokoroText,
+  synthesizeKokoro,
+  wordSpans,
+} from '../src/kokoro.js'
 
 describe('Kokoro narration helpers', () => {
   it('normalizes punctuation, titles, ranges, and whitespace', () => {
     expect(normalizeKokoroText('  Dr. Rivera reviewed 1,200-1,500 “items”.  ')).toBe(
       'Doctor Rivera reviewed 1200 to 1500 "items".',
+    )
+  })
+
+  it('says suitecut as "suite cut" however it is written', () => {
+    expect(spokenKokoroText('This is suitecut. SuiteCut and Suitecut-browser, not suites.')).toBe(
+      'This is suite cut. Suite Cut and Suite cut-browser, not suites.',
     )
   })
 

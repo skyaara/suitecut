@@ -11,6 +11,8 @@
   registry version without publishing.
 - Keep Kokoro narration word timing when espeak joins several words into one
   phoneme run, instead of failing to map token durations to words.
+- Say "suitecut" as "suite cut" in Kokoro narration; espeak read the one word as
+  "sooty-cut". Captions keep the written name.
 - Move the site onto Deli Paper, add a page per package under `/packages` with a
   hand-drawn diagram, quick start and limits, and add an explainer film for each
   package that suitecut records, narrates and renders itself
