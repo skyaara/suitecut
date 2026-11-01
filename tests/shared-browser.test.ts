@@ -98,6 +98,54 @@ describe('shared browser SDK', () => {
     })
     await browser.close()
   })
+
+  it('starts a recording with an absolute path and returns what was written when stopped', async () => {
+    const info = {
+      recording: 'recording-1',
+      outputPath: '/tmp/out/demo.mp4',
+      framesPerSecond: 30,
+      canvas: '2560x1504',
+      source: '2560x1504',
+      copiedFrames: 1,
+      skippedFrames: 0,
+    }
+    const { seen } = fakeBrowser((message) => {
+      if (message.cmd === 'record-start') return { ok: true, result: info }
+      if (message.cmd === 'record-stop')
+        return {
+          ok: true,
+          result: {
+            ...info,
+            copiedFrames: 61,
+            skippedFrames: 60,
+            encoder: 'h264_videotoolbox',
+            container: 'mp4',
+            durationMs: 2000,
+            inputFrames: 61,
+            outputFrames: 60,
+            heldFrames: 0,
+            coalescedFrames: 1,
+            supersededFrames: 0,
+            outputBytes: 1234,
+          },
+        }
+      return { ok: true }
+    })
+    const browser = await launchSharedBrowser(options)
+    const recording = await browser.startRecording({
+      path: 'demo.mp4',
+      fps: 30,
+      ffmpegPath: '/bin/ffmpeg',
+    })
+    expect(recording.info.recording).toBe('recording-1')
+    const result = await recording.stop()
+    expect(result.outputFrames).toBe(60)
+    const start = seen.find((m) => m.cmd === 'record-start')
+    expect(start).toMatchObject({ fps: 30, area: 'page', ffmpegPath: '/bin/ffmpeg' })
+    expect(String(start?.path)).toMatch(/^\/.*demo\.mp4$/)
+    expect(seen.find((m) => m.cmd === 'record-stop')).toMatchObject({ recording: 'recording-1' })
+    await browser.close()
+  })
 })
 
 describe('shared browser MCP server', () => {

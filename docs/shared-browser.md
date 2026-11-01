@@ -50,6 +50,47 @@ await browser.close()
   - A hidden page draws no frames, whether its tab is in the background or its window is covered.
   - The first time the SDK sends input or takes a screenshot on a tab, it turns on `Emulation.setFocusEmulationEnabled`, as Playwright does. That tab then keeps rendering and reports itself visible and focused.
 
+## Recording
+
+```ts
+const recording = await browser.startRecording({ path: 'demo.mp4', fps: 60 })
+// ... drive the page, or let a person use it ...
+const result = await recording.stop() // outputFrames, heldFrames, durationMs, ...
+```
+
+Recording uses the frames Chromium's compositor draws for the window, not
+screen recording or a DevTools screencast, and encodes them with the same media
+pipeline as `record()`.
+
+- **Where frames come from:** the shared browser starts Chromium with
+  `--disable-features=RemoteCoreAnimationAPI`. Each finished frame then reaches
+  the browser process as an IOSurface on the window's layer, instead of being
+  drawn into the window from the GPU process. The browser hooks that one layer
+  and takes each frame when the layer receives it. Pages cannot tell; Nike's
+  bot protection still let a test add a shoe to the bag while recording.
+  `--suitecut-window-frames=off` restores Chromium's default, which disables
+  recording.
+- **Rate:** `fps` (1 to 120, default 60) sets the video's rate. Only frames due
+  at that rate are copied. When nothing repaints, the pipeline holds the last
+  frame, so a static page costs nothing.
+- **Area:** `area: 'page'` (the default) crops to the tab in front, so switching
+  tabs switches what is recorded. `'window'` keeps the tab strip and toolbar.
+- **Size:** the captured area in device pixels by default (2560x1504 for a
+  1280x752 page on a 2x display), scaled to fit 3840x2160. When it matches the
+  video size, the crop and NV12 conversion stay on the GPU and go straight to
+  hardware H.264. `width` and `height` change the size; the media worker then
+  scales each frame.
+- **Minimized window:** Chromium draws nothing, and the video holds the last frame
+  until the window is back.
+- **Measured (M4, 1280x860 window, 2x):** an animation recorded at 60 fps gave 241
+  distinct frames in 4.0 s, none held or dropped. At 30 fps the browser skipped
+  every other frame before copying it. In the same test, a DevTools screencast
+  from Google Chrome delivered 54 to 58 fps and used about 1.8 more CPU cores
+  for JPEG encoding.
+- **Protocol:** `{"cmd":"record-start","path":"/abs/out.mp4","fps":60,"area":"page","width":0,"height":0,"ffmpegPath":"ffmpeg"}`
+  replies once frames are being encoded. `{"cmd":"record-stop","recording":"recording-1","cancel":false}`
+  replies with the finished file's details. An existing file is refused.
+
 ## Window size after navigation
 
 In Alloy Views on macOS, a new document widget can report its window

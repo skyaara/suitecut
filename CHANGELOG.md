@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Record the shared browser's window with `browser.startRecording({ path, fps })`.
+  Chromium hands each composited frame to the browser process (the shared browser
+  now disables `RemoteCoreAnimationAPI`), where a hook on the window's layer
+  crops it to the page and copies it on the GPU, and only at the requested rate.
+  It is then encoded through the existing media pipeline. Pages see no
+  difference. `MacCapturePool` takes a larger budget for 2x frames.
 - Add `@suitecut/shared-browser` 0.1.0 (preview): one native browser window with
   SuiteCut's own tabs that a person and an agent use together, with a TypeScript
   SDK and the `shared-browser-mcp` stdio MCP server. Input is trusted, CDP runs

@@ -2,7 +2,8 @@
 import { type ChildProcess, spawn } from 'node:child_process'
 import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { join, resolve } from 'node:path'
+import process from 'node:process'
 import { createInterface } from 'node:readline'
 
 import * as z from 'zod'
@@ -50,6 +51,48 @@ export interface SharedBrowserOptions {
   /** Further command-line switches for the browser. */
   readonly arguments?: readonly string[]
 }
+
+export interface SharedRecordingOptions {
+  /** Output file. An `.mp4` is encoded with hardware H.264. Relative paths resolve from the working directory. */
+  readonly path: string
+  /** Frames per second of the video, 1 to 120; only frames due at this rate are captured. Defaults to 60. */
+  readonly fps?: number
+  /** `page` crops to the active tab's page; `window` keeps the tab strip and toolbar. Defaults to `page`. */
+  readonly area?: 'page' | 'window'
+  /** Video size. Defaults to the captured area in device pixels, scaled to fit 3840x2160. */
+  readonly width?: number
+  readonly height?: number
+  /** FFmpeg used to write the file. Defaults to `SUITECUT_FFMPEG_PATH`, then `ffmpeg` on the PATH. */
+  readonly ffmpegPath?: string
+  readonly maxFileBytes?: number
+}
+
+const recordingInfo = z.looseObject({
+  recording: z.string(),
+  outputPath: z.string(),
+  framesPerSecond: z.number(),
+  /** Encoded video size. */
+  canvas: z.string(),
+  /** Size of the first captured frame. */
+  source: z.string(),
+  copiedFrames: z.number(),
+  skippedFrames: z.number(),
+})
+const recordingResult = recordingInfo.extend({
+  encoder: z.string(),
+  container: z.string(),
+  durationMs: z.number(),
+  inputFrames: z.number(),
+  outputFrames: z.number(),
+  heldFrames: z.number(),
+  coalescedFrames: z.number(),
+  supersededFrames: z.number(),
+  outputBytes: z.number(),
+})
+/** A recording that is running. */
+export type SharedRecordingInfo = z.infer<typeof recordingInfo>
+/** A finished recording: frames copied from the window, and frames written at the constant rate. */
+export type SharedRecordingResult = z.infer<typeof recordingResult>
 
 export interface GotoResult {
   readonly url: string
@@ -326,6 +369,28 @@ export class SharedBrowser {
     )
   }
 
+  /**
+   * Records the window to a video file. Frames come from Chromium's compositor
+   * inside the browser process as it draws them, not from screen recording or
+   * DevTools screencast, and go through SuiteCut's encoder. Resolves once
+   * frames are being encoded. Records whichever tab is in front.
+   */
+  async startRecording(options: SharedRecordingOptions): Promise<SharedRecording> {
+    const args: Record<string, JsonValue> = {
+      path: resolve(options.path),
+      fps: options.fps ?? 60,
+      area: options.area ?? 'page',
+      ffmpegPath: options.ffmpegPath ?? process.env.SUITECUT_FFMPEG_PATH ?? 'ffmpeg',
+    }
+    if (options.width !== undefined) args.width = options.width
+    if (options.height !== undefined) args.height = options.height
+    if (options.maxFileBytes !== undefined) args.maxFileBytes = options.maxFileBytes
+    return new SharedRecording(
+      this,
+      recordingInfo.parse(await this.command('record-start', args, 30_000)),
+    )
+  }
+
   /** Closes the window, waits for the process, and removes a temporary profile. */
   async close(): Promise<void> {
     if (this.alive) {
@@ -363,6 +428,29 @@ export class SharedBrowser {
         this.openDialogs.delete(recorded.tab)
     }
     for (const listener of [...this.listeners]) listener(recorded)
+  }
+}
+
+export class SharedRecording {
+  constructor(
+    private readonly browser: SharedBrowser,
+    readonly info: SharedRecordingInfo,
+  ) {}
+
+  /** Finishes the file and returns what was written. */
+  async stop(timeout = 60_000): Promise<SharedRecordingResult> {
+    return recordingResult.parse(
+      await this.browser.command('record-stop', { recording: this.info.recording }, timeout),
+    )
+  }
+
+  /** Stops without keeping the file. */
+  async cancel(timeout = 30_000): Promise<void> {
+    await this.browser.command(
+      'record-stop',
+      { recording: this.info.recording, cancel: true },
+      timeout,
+    )
   }
 }
 

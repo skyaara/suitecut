@@ -6,122 +6,66 @@
 #import <objc/runtime.h>
 #include "window_frames.h"
 
-#include <sys/resource.h>
-
 #include <algorithm>
 #include <map>
-#include <memory>
 #include <vector>
 
 namespace suitecut {
 namespace {
-struct LayerFrames {
-  void* last_surface = nullptr;
-  uint32_t last_seed = 0;
-  std::vector<double> arrivals;
-  std::vector<double> copy_ms;
-  std::map<void*, int> surfaces;
-  int repeats = 0;
-  size_t width = 0, height = 0;
-  OSType format = 0;
-};
-
-struct Probe {
-  bool poll = false;
-  dispatch_source_t timer = nil;
-  CALayer* root = nil;
-  double started = 0, cpu_started = 0;
-  int duration_ms = 0;
-  std::string png_path;
-  std::function<void(std::string)> done;
-  std::map<void*, LayerFrames> layers;
-  std::map<void*, Class> hooked;  // layer -> class it had before the hook
-  std::vector<uint8_t> last_pixels;
-  size_t last_row = 0, last_width = 0, last_height = 0;
-  OSType last_format = 0;
-  int remote_hosts = 0, layer_count = 0, notifications = 0;
-};
-
-double Now() { return CACurrentMediaTime() * 1000.0; }
-
-double CpuMs() {
-  rusage usage{};
-  getrusage(RUSAGE_SELF, &usage);
-  return (usage.ru_utime.tv_sec + usage.ru_stime.tv_sec) * 1000.0 +
-         (usage.ru_utime.tv_usec + usage.ru_stime.tv_usec) / 1000.0;
-}
-
-std::string FourCC(OSType code) {
-  std::string text(4, ' ');
-  for (int i = 0; i < 4; ++i) text[i] = static_cast<char>((code >> (24 - 8 * i)) & 0xff);
-  return text;
-}
-
-void Walk(CALayer* layer, const std::function<void(CALayer*)>& visit) {
-  visit(layer);
-  for (CALayer* child in layer.sublayers) Walk(child, visit);
-}
-
 IOSurfaceRef SurfaceOf(CALayer* layer) {
   id contents = layer.contents;
   if (!contents || CFGetTypeID((__bridge CFTypeRef)contents) != IOSurfaceGetTypeID()) return nullptr;
   return (__bridge IOSurfaceRef)contents;
 }
 
-// Records one frame from |layer|. Polling skips a surface it has already seen;
-// the hook counts every update, because Chromium may redraw into the surface
-// the layer already shows and only mark the contents changed.
-void Capture(Probe& probe, CALayer* layer, bool skip_repeats) {
-  IOSurfaceRef surface = SurfaceOf(layer);
-  if (!surface) return;
-  auto& seen = probe.layers[(__bridge void*)layer];
-  const uint32_t seed = IOSurfaceGetSeed(surface);
-  const bool repeat = seen.last_surface == surface && seen.last_seed == seed;
-  if (repeat && skip_repeats) return;
-  if (repeat) ++seen.repeats;
-  seen.last_surface = surface;
-  seen.last_seed = seed;
-  seen.arrivals.push_back(Now());
-  seen.surfaces[surface]++;
-  seen.width = IOSurfaceGetWidth(surface);
-  seen.height = IOSurfaceGetHeight(surface);
-  seen.format = IOSurfaceGetPixelFormat(surface);
-  // Copy now: Chromium recycles these surfaces for later frames.
-  const double copy_start = Now();
-  IOSurfaceLock(surface, kIOSurfaceLockReadOnly, nullptr);
-  const size_t row = IOSurfaceGetBytesPerRow(surface);
-  const auto* base = static_cast<const uint8_t*>(IOSurfaceGetBaseAddress(surface));
-  probe.last_pixels.assign(base, base + row * seen.height);
-  IOSurfaceUnlock(surface, kIOSurfaceLockReadOnly, nullptr);
-  seen.copy_ms.push_back(Now() - copy_start);
-  probe.last_row = row;
-  probe.last_width = seen.width;
-  probe.last_height = seen.height;
-  probe.last_format = seen.format;
+void Walk(CALayer* layer, const std::function<void(CALayer*)>& visit) {
+  visit(layer);
+  for (CALayer* child in layer.sublayers) Walk(child, visit);
 }
+}  // namespace
 
+double WindowFramesNow() { return CACurrentMediaTime() * 1000.0; }
+
+struct WindowFrames::Impl {
+  NSView* view = nil;
+  Frame frame;
+  dispatch_source_t rescan = nil;
+  std::vector<CALayer*> hooked;  // retained so unhooking never touches a freed layer
+  std::map<void*, Class> original;
+  CALayer* primary = nil;
+  bool remote = false;
+
+  void Deliver(CALayer* layer) {
+    if (layer != primary) return;
+    IOSurfaceRef surface = SurfaceOf(layer);
+    if (!surface) return;
+    frame(surface, static_cast<int>(IOSurfaceGetWidth(surface)), static_cast<int>(IOSurfaceGetHeight(surface)),
+          WindowFramesNow());
+  }
+  void Discover(const std::shared_ptr<Impl>& self, bool deliver);
+  void Unhook();
+};
+
+namespace {
 // Layers being watched, keyed by layer. Only the main thread touches this.
-std::map<void*, std::weak_ptr<Probe>>& Watched() {
-  static std::map<void*, std::weak_ptr<Probe>> watched;
+std::map<void*, std::weak_ptr<WindowFrames::Impl>>& Watched() {
+  static std::map<void*, std::weak_ptr<WindowFrames::Impl>> watched;
   return watched;
 }
 
 void Updated(CALayer* layer) {
   const auto found = Watched().find((__bridge void*)layer);
   if (found == Watched().end()) return;
-  if (auto probe = found->second.lock()) {
-    ++probe->notifications;
-    Capture(*probe, layer, false);
-  }
+  if (auto impl = found->second.lock()) impl->Deliver(layer);
 }
 
-// A per-instance subclass, the way KVO observes one object: only the layers we
-// hook change class, and each update still runs the original method first.
 void Forward(Class hooked, Class base, SEL selector, id block) {
   Method method = class_getInstanceMethod(base, selector);
   if (method) class_addMethod(hooked, selector, imp_implementationWithBlock(block), method_getTypeEncoding(method));
 }
 
+// A per-instance subclass, the way KVO observes one object: only the layers we
+// hook change class, and each update runs the original method first.
 Class HookedClass(Class base) {
   NSString* name = [@"SuiteCutFrames_" stringByAppendingString:NSStringFromClass(base)];
   if (Class existing = NSClassFromString(name)) return existing;
@@ -143,44 +87,101 @@ Class HookedClass(Class base) {
   objc_registerClassPair(hooked);
   return hooked;
 }
+}  // namespace
 
-void Discover(const std::shared_ptr<Probe>& probe) {
+void WindowFrames::Impl::Discover(const std::shared_ptr<Impl>& self, bool deliver) {
+  if (!view.layer) return;
   Class host = NSClassFromString(@"CALayerHost");
-  int hosts = 0, count = 0;
-  Walk(probe->root, [&](CALayer* layer) {
-    ++count;
-    if (host && [layer isKindOfClass:host]) ++hosts;
-    if (probe->poll) return Capture(*probe, layer, true);
+  CALayer* largest = nil;
+  size_t largest_area = 0;
+  Walk(view.layer, [&](CALayer* layer) {
+    if (host && [layer isKindOfClass:host]) remote = true;
+    IOSurfaceRef surface = SurfaceOf(layer);
+    if (!surface) return;
+    const size_t area = IOSurfaceGetWidth(surface) * IOSurfaceGetHeight(surface);
+    if (area > largest_area) largest = layer, largest_area = area;
     void* key = (__bridge void*)layer;
-    if (!SurfaceOf(layer) || probe->hooked.count(key)) return;
+    if (original.count(key)) return;
     Class base = object_getClass(layer);
-    Class hooked = HookedClass(base);
-    if (!hooked) return;
-    object_setClass(layer, hooked);
-    probe->hooked[key] = base;
-    Watched()[key] = probe;
-    Capture(*probe, layer, false);  // the frame already on screen
+    Class hooked_class = HookedClass(base);
+    if (!hooked_class) return;
+    object_setClass(layer, hooked_class);
+    original[key] = base;
+    hooked.push_back(layer);
+    Watched()[key] = self;
   });
-  probe->remote_hosts = std::max(probe->remote_hosts, hosts);
-  probe->layer_count = std::max(probe->layer_count, count);
+  // The window's own compositor surface is the largest; follow it if Chromium
+  // replaces it (first frame, resize).
+  if (largest && largest != primary) {
+    primary = largest;
+    if (deliver) Deliver(primary);
+  }
 }
 
-void Unhook(Probe& probe) {
-  for (const auto& [key, base] : probe.hooked) {
+void WindowFrames::Impl::Unhook() {
+  for (CALayer* layer : hooked) {
+    void* key = (__bridge void*)layer;
     Watched().erase(key);
-    auto layer = (__bridge CALayer*)key;
     // Leave the class alone if something else has since subclassed the layer.
-    if ([NSStringFromClass(object_getClass(layer)) hasPrefix:@"SuiteCutFrames_"]) object_setClass(layer, base);
+    if ([NSStringFromClass(object_getClass(layer)) hasPrefix:@"SuiteCutFrames_"])
+      object_setClass(layer, original[key]);
   }
-  probe.hooked.clear();
+  hooked.clear();
+  original.clear();
+  primary = nil;
+}
+
+WindowFrames::WindowFrames(void* handle, Frame frame) : impl_(std::make_shared<Impl>()) {
+  id object = (__bridge id)handle;
+  impl_->view = [object isKindOfClass:[NSWindow class]] ? [(NSWindow*)object contentView] : (NSView*)object;
+  impl_->frame = std::move(frame);
+  impl_->Discover(impl_, true);
+  // Frames come from the hook; this only finds layers Chromium creates later.
+  std::weak_ptr<Impl> weak = impl_;
+  impl_->rescan = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, dispatch_get_main_queue());
+  dispatch_source_set_timer(impl_->rescan, dispatch_time(DISPATCH_TIME_NOW, 250 * NSEC_PER_MSEC),
+                            250 * NSEC_PER_MSEC, 50 * NSEC_PER_MSEC);
+  dispatch_source_set_event_handler(impl_->rescan, ^{
+    if (auto impl = weak.lock()) impl->Discover(impl, true);
+  });
+  dispatch_resume(impl_->rescan);
+}
+
+WindowFrames::~WindowFrames() {
+  dispatch_source_cancel(impl_->rescan);
+  impl_->rescan = nil;
+  impl_->Unhook();
+}
+
+bool WindowFrames::Remote() const { return impl_->remote; }
+
+void WindowFrames::Redeliver() {
+  if (impl_->primary) impl_->Deliver(impl_->primary);
+}
+
+namespace {
+struct Probe {
+  std::unique_ptr<WindowFrames> frames;
+  std::vector<double> arrivals, copy_ms;
+  std::map<void*, int> surfaces;
+  std::vector<uint8_t> pixels;
+  size_t row = 0, width = 0, height = 0;
+  OSType format = 0;
+  std::string png_path;
+};
+
+std::string FourCC(OSType code) {
+  std::string text(4, ' ');
+  for (int i = 0; i < 4; ++i) text[i] = static_cast<char>((code >> (24 - 8 * i)) & 0xff);
+  return text;
 }
 
 bool WritePng(const Probe& probe) {
-  if (probe.last_pixels.empty() || probe.last_format != 'BGRA') return false;
+  if (probe.pixels.empty() || probe.format != 'BGRA') return false;
   auto space = CGColorSpaceCreateWithName(kCGColorSpaceSRGB);
-  auto data = CFDataCreate(nullptr, probe.last_pixels.data(), probe.last_pixels.size());
+  auto data = CFDataCreate(nullptr, probe.pixels.data(), probe.pixels.size());
   auto provider = CGDataProviderCreateWithCFData(data);
-  auto image = CGImageCreate(probe.last_width, probe.last_height, 8, 32, probe.last_row, space,
+  auto image = CGImageCreate(probe.width, probe.height, 8, 32, probe.row, space,
                              static_cast<CGBitmapInfo>(kCGBitmapByteOrder32Little) |
                                  static_cast<CGBitmapInfo>(kCGImageAlphaPremultipliedFirst),
                              provider, nullptr, false, kCGRenderingIntentDefault);
@@ -200,34 +201,22 @@ bool WritePng(const Probe& probe) {
 }
 
 std::string Report(const Probe& probe) {
-  NSMutableArray* layers = [NSMutableArray array];
-  for (const auto& [layer, seen] : probe.layers) {
-    std::vector<double> gaps;
-    for (size_t i = 1; i < seen.arrivals.size(); ++i) gaps.push_back(seen.arrivals[i] - seen.arrivals[i - 1]);
-    std::sort(gaps.begin(), gaps.end());
-    const double span = seen.arrivals.size() > 1 ? seen.arrivals.back() - seen.arrivals.front() : 0;
-    double copy = 0;
-    for (double ms : seen.copy_ms) copy += ms;
-    [layers addObject:@{
-      @"frames" : @(seen.arrivals.size()),
-      @"fps" : @(span > 0 ? (seen.arrivals.size() - 1) * 1000.0 / span : 0),
-      @"p50GapMs" : @(gaps.empty() ? 0 : gaps[gaps.size() / 2]),
-      @"p95GapMs" : @(gaps.empty() ? 0 : gaps[gaps.size() * 95 / 100]),
-      @"size" : [NSString stringWithFormat:@"%zux%zu", seen.width, seen.height],
-      @"format" : @(FourCC(seen.format).c_str()),
-      @"distinctSurfaces" : @(seen.surfaces.size()),
-      @"sameSurfaceUpdates" : @(seen.repeats),
-      @"avgCopyMs" : @(seen.copy_ms.empty() ? 0 : copy / seen.copy_ms.size()),
-    }];
-  }
+  std::vector<double> gaps;
+  for (size_t i = 1; i < probe.arrivals.size(); ++i) gaps.push_back(probe.arrivals[i] - probe.arrivals[i - 1]);
+  std::sort(gaps.begin(), gaps.end());
+  const double span = probe.arrivals.size() > 1 ? probe.arrivals.back() - probe.arrivals.front() : 0;
+  double copy = 0;
+  for (double ms : probe.copy_ms) copy += ms;
   NSDictionary* report = @{
-    @"mode" : probe.poll ? @"poll" : @"hook",
-    @"layers" : layers,
-    @"layerCount" : @(probe.layer_count),
-    @"remoteLayerHosts" : @(probe.remote_hosts),
-    @"hookedLayers" : @(probe.hooked.size()),
-    @"notifications" : @(probe.notifications),
-    @"processCpuMs" : @(CpuMs() - probe.cpu_started),
+    @"frames" : @(probe.arrivals.size()),
+    @"fps" : @(span > 0 ? (probe.arrivals.size() - 1) * 1000.0 / span : 0),
+    @"p50GapMs" : @(gaps.empty() ? 0 : gaps[gaps.size() / 2]),
+    @"p95GapMs" : @(gaps.empty() ? 0 : gaps[gaps.size() * 95 / 100]),
+    @"size" : [NSString stringWithFormat:@"%zux%zu", probe.width, probe.height],
+    @"format" : @(FourCC(probe.format).c_str()),
+    @"distinctSurfaces" : @(probe.surfaces.size()),
+    @"avgCopyMs" : @(probe.copy_ms.empty() ? 0 : copy / probe.copy_ms.size()),
+    @"remote" : @(probe.frames->Remote()),
     @"png" : @(WritePng(probe)),
   };
   NSData* json = [NSJSONSerialization dataWithJSONObject:report options:0 error:nil];
@@ -235,33 +224,31 @@ std::string Report(const Probe& probe) {
 }
 }  // namespace
 
-void ProbeWindowFrames(void* handle, int duration_ms, bool poll, const std::string& png_path,
+void ProbeWindowFrames(void* handle, int duration_ms, const std::string& png_path,
                        std::function<void(std::string)> done) {
-  id object = (__bridge id)handle;
-  NSView* view = [object isKindOfClass:[NSWindow class]] ? [(NSWindow*)object contentView] : (NSView*)object;
-  if (!view.layer) return done("{\"error\":\"view has no layer\"}");
   auto probe = std::make_shared<Probe>();
-  probe->poll = poll;
-  probe->root = view.layer;
-  probe->started = Now();
-  probe->cpu_started = CpuMs();
-  probe->duration_ms = duration_ms;
   probe->png_path = png_path;
-  probe->done = std::move(done);
-  // Polling checks every layer at 1 kHz. The hook only rescans at 4 Hz to find
-  // layers Chromium creates later (first frame, resize); frames come from the hook.
-  const uint64_t interval = poll ? NSEC_PER_MSEC : 250 * NSEC_PER_MSEC;
-  probe->timer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, dispatch_get_main_queue());
-  dispatch_source_set_timer(probe->timer, DISPATCH_TIME_NOW, interval, 0);
-  dispatch_source_set_event_handler(probe->timer, ^{
-    Discover(probe);
-    if (Now() - probe->started < probe->duration_ms) return;
-    dispatch_source_cancel(probe->timer);
-    probe->timer = nil;
-    const auto report = Report(*probe);
-    Unhook(*probe);
-    probe->done(report);
+  Probe* raw = probe.get();
+  probe->frames = std::make_unique<WindowFrames>(handle, [raw](void* io_surface, int width, int height, double now) {
+    auto surface = static_cast<IOSurfaceRef>(io_surface);
+    raw->arrivals.push_back(now);
+    raw->surfaces[surface]++;
+    raw->width = width;
+    raw->height = height;
+    raw->format = IOSurfaceGetPixelFormat(surface);
+    const double start = WindowFramesNow();
+    IOSurfaceLock(surface, kIOSurfaceLockReadOnly, nullptr);
+    raw->row = IOSurfaceGetBytesPerRow(surface);
+    const auto* base = static_cast<const uint8_t*>(IOSurfaceGetBaseAddress(surface));
+    raw->pixels.assign(base, base + raw->row * height);
+    IOSurfaceUnlock(surface, kIOSurfaceLockReadOnly, nullptr);
+    raw->copy_ms.push_back(WindowFramesNow() - start);
   });
-  dispatch_resume(probe->timer);
+  dispatch_after(dispatch_time(DISPATCH_TIME_NOW, static_cast<int64_t>(duration_ms) * NSEC_PER_MSEC),
+                 dispatch_get_main_queue(), ^{
+                   const auto report = Report(*probe);
+                   probe->frames.reset();
+                   done(report);
+                 });
 }
 }  // namespace suitecut

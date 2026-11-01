@@ -2,6 +2,7 @@
 #include "mac_capture.h"
 #include <mach/mach_time.h>
 #include <IOSurface/IOSurface.h>
+#include <algorithm>
 #include <cstring>
 #include <functional>
 
@@ -50,6 +51,7 @@ bool CopyMacSurface(void* handle, int x, int y, int width, int height,
 #include <mutex>
 namespace suitecut {
 struct MacCapturePool::Impl {
+  uint64_t max_bytes=64ULL*1024*1024;
   id<MTLDevice> device=MTLCreateSystemDefaultDevice();
   id<MTLCommandQueue> queue=device ? [device newCommandQueue] : nil;
   id<MTLComputePipelineState> converter=nil;
@@ -93,19 +95,19 @@ kernel void nv12_capture(texture2d<float,access::read> source[[texture(0)]],text
         auto buffer=*it;free.erase(it);return buffer;
       }
     const size_t needed=size_t(width)*height*(nv12?3:8)/2;
-    while(bytes+needed>64ULL*1024*1024&&!free.empty()){
+    while(bytes+needed>max_bytes&&!free.empty()){
       auto buffer=free.back();free.pop_back();
       bytes-=Bytes(buffer);CVPixelBufferRelease(buffer);
     }
-    if(bytes+needed>64ULL*1024*1024)return nullptr;
+    if(bytes+needed>max_bytes)return nullptr;
     CVPixelBufferRef buffer=nullptr;
     NSDictionary* attributes=@{(id)kCVPixelBufferIOSurfacePropertiesKey:@{},(id)kCVPixelBufferMetalCompatibilityKey:@YES};
     if(CVPixelBufferCreate(kCFAllocatorDefault,width,height,format,(__bridge CFDictionaryRef)attributes,&buffer)!=kCVReturnSuccess)return nullptr;
     const size_t actual=Bytes(buffer);
-    while(bytes+actual>64ULL*1024*1024&&!free.empty()){
+    while(bytes+actual>max_bytes&&!free.empty()){
       auto old=free.back();free.pop_back();bytes-=Bytes(old);CVPixelBufferRelease(old);
     }
-    if(bytes+actual>64ULL*1024*1024){CVPixelBufferRelease(buffer);return nullptr;}
+    if(bytes+actual>max_bytes){CVPixelBufferRelease(buffer);return nullptr;}
     bytes+=actual;return buffer;
   }
 };
@@ -130,7 +132,7 @@ bool MacCaptureFrame::Read(std::vector<uint8_t>& bgra)const{
   }
   CVPixelBufferUnlockBaseAddress(impl_->buffer,kCVPixelBufferLock_ReadOnly);return true;
 }
-MacCapturePool::MacCapturePool():impl_(std::make_shared<Impl>()){}
+MacCapturePool::MacCapturePool(uint64_t max_bytes):impl_(std::make_shared<Impl>()){impl_->max_bytes=std::max<uint64_t>(max_bytes,64ULL*1024*1024);}
 MacCapturePool::~MacCapturePool()=default;
 void PrepareMacCapture(){MacCapturePool prepared;}
 std::shared_ptr<MacCaptureFrame> MacCapturePool::Copy(void* handle,int x,int y,int width,int height,bool nv12){

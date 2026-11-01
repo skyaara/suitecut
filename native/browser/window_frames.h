@@ -2,16 +2,41 @@
 #pragma once
 
 #include <functional>
+#include <memory>
 #include <string>
 
 namespace suitecut {
-// Watches the compositor frames macOS shows in a windowed browser's view and
-// reports what arrived as one JSON object. Frames are only visible in-process
-// when Chromium hands IOSurfaces to the browser process, i.e. with
-// --disable-features=RemoteCoreAnimationAPI; otherwise the view holds a remote
-// CALayerHost and the report says so. By default frames come from a hook on
-// the layer's contents setter; |poll| instead checks the layers at 1 kHz.
-// Writes the last frame to |png_path|.
-void ProbeWindowFrames(void* view_or_window, int duration_ms, bool poll, const std::string& png_path,
+// The compositor frames macOS shows in a windowed browser, delivered as the
+// IOSurface Chromium hands the browser process, on the main thread, the moment
+// the window's layer receives it. Frames are only in this process with
+// --disable-features=RemoteCoreAnimationAPI; by default the window holds a
+// remote CALayerHost instead and nothing arrives.
+//
+// The surface is borrowed: Chromium recycles it for later frames, so copy it
+// before returning. Construction delivers the frame already on screen.
+class WindowFrames {
+ public:
+  using Frame = std::function<void(void* io_surface, int width, int height, double timestamp_ms)>;
+  WindowFrames(void* view_or_window, Frame frame);
+  ~WindowFrames();
+  WindowFrames(const WindowFrames&) = delete;
+  WindowFrames& operator=(const WindowFrames&) = delete;
+  // A CALayerHost was seen: Chromium is drawing remotely and no frames will come.
+  bool Remote() const;
+  // Delivers the frame on screen again, now. A static page sends no new frames.
+  void Redeliver();
+
+  struct Impl;  // public so the layer hook can reach it
+
+ private:
+  std::shared_ptr<Impl> impl_;
+};
+
+// The clock WindowFrames timestamps use, in milliseconds.
+double WindowFramesNow();
+
+// Diagnostics: watches |duration_ms| of frames and reports counts, rate, gaps,
+// size and copy cost as one JSON object; writes the last frame to |png_path|.
+void ProbeWindowFrames(void* view_or_window, int duration_ms, const std::string& png_path,
                        std::function<void(std::string)> done);
 }  // namespace suitecut

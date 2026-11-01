@@ -31,6 +31,11 @@
 #include "include/views/cef_window.h"
 #include "init_snapshot_scheme.h"
 #if defined(__APPLE__)
+#include <chrono>
+#include <cmath>
+
+#include "mac_capture.h"
+#include "media_pipeline.h"
 #include "window_frames.h"
 #endif
 
@@ -168,6 +173,28 @@ const char kProbe[] =
 
 class Client;
 
+#if defined(__APPLE__)
+using Reply = std::function<void(bool, CefRefPtr<CefValue>)>;
+// A recording of the window from the compositor frames macOS hands this process
+// (WindowFrames), encoded by the engine's media pipeline. Only frames due at the
+// requested rate are copied, on the GPU, cropped to the active tab's page unless
+// the whole window was asked for.
+struct Recording {
+  std::string id, output, ffmpeg;
+  double fps = 60, last_ms = -1;
+  bool window_area = false;
+  int width = 0, height = 0;               // requested encoder canvas; 0 follows the page
+  int canvas_width = 0, canvas_height = 0;  // the encoder canvas in use
+  int source_width = 0, source_height = 0;  // the first frame's crop
+  int64_t max_bytes = 0;
+  std::unique_ptr<suitecut::WindowFrames> frames;
+  std::unique_ptr<suitecut::MacCapturePool> pool;
+  std::shared_ptr<suitecut::MediaPipeline> pipeline;
+  uint64_t copied = 0, skipped = 0, failed_copies = 0;
+  Reply on_start, on_stop;
+};
+#endif
+
 struct Tab {
   int id = 0;
   CefRefPtr<CefBrowserView> view;
@@ -198,6 +225,17 @@ class Shell {
                 bool gesture = false);
   void Result(int id, bool ok, const std::string& json);
   bool CanClose();
+#if defined(__APPLE__)
+  void StartRecording(CefRefPtr<CefDictionaryValue> message, Reply reply);
+  void StopRecording(const std::string& id, bool cancel, Reply reply);
+  void RecordingFrame(const std::shared_ptr<Recording>& recording, void* surface, int width, int height,
+                      double now);
+  bool StartPipeline(const std::shared_ptr<Recording>& recording, int width, int height, double now);
+  void FailRecording(const std::shared_ptr<Recording>& recording, const std::string& reason);
+  CefRect PageRect(int width, int height);
+  std::map<std::string, std::shared_ptr<Recording>> recordings;
+  int next_recording_ = 1;
+#endif
   Tab* Find(int id);
   Tab* ByBrowser(CefRefPtr<CefBrowser> browser);
   void SelfTest();
@@ -718,15 +756,15 @@ void Shell::Control(const std::string& line) {
     return reply(browser != nullptr, nullptr);
   }
 #if defined(__APPLE__)
-  // Prototype: {"cmd":"frame-probe","tab":1,"ms":5000,"path":"/tmp/last.png","scope":"window","mode":"poll"}
+  // {"cmd":"record-start","path":"/abs/out.mp4","fps":60,"area":"page"|"window","width":0,"height":0,
+  //  "ffmpegPath":"ffmpeg","maxFileBytes":0} -> {"recording":"recording-1",...} once frames are encoding.
+  if (cmd == "record-start") return StartRecording(message, reply);
+  // {"cmd":"record-stop","recording":"recording-1","cancel":false} -> the finished file's details.
+  if (cmd == "record-stop") return StopRecording(message->GetString("recording"), message->GetBool("cancel"), reply);
+  // Diagnostics: {"cmd":"frame-probe","ms":5000,"path":"/abs/last.png"} -> frame counts and timing.
   if (cmd == "frame-probe") {
-    const Tab* found = Find(tab);
-    const auto browser = found && found->view ? found->view->GetBrowser() : nullptr;
-    void* handle = message->GetString("scope") == "window" && window ? window->GetWindowHandle()
-                   : browser ? browser->GetHost()->GetWindowHandle() : nullptr;
-    if (!handle) return reply(false, nullptr);
-    return ProbeWindowFrames(handle, message->GetInt("ms"), message->GetString("mode") == "poll",
-                             message->GetString("path"),
+    if (!window) return reply(false, nullptr);
+    return ProbeWindowFrames(window->GetWindowHandle(), message->GetInt("ms"), message->GetString("path"),
                              [reply](std::string json) { reply(true, CefParseJSON(json, JSON_PARSER_RFC)); });
   }
 #endif
@@ -741,6 +779,13 @@ void Shell::Control(const std::string& line) {
 }
 
 bool Shell::CanClose() {
+#if defined(__APPLE__)
+  // Stop watching the window's layers before it goes; an unfinished file is removed.
+  for (auto& [id, recording] : recordings) {
+    recording->frames.reset();
+    if (recording->pipeline) recording->pipeline->Cancel("The shared browser closed");
+  }
+#endif
   if (open_browsers_ == 0 || close_now_) return true;
   if (!closing_) {
     closing_ = true;
@@ -756,6 +801,224 @@ bool Shell::CanClose() {
   }
   return false;
 }
+
+#if defined(__APPLE__)
+namespace {
+CefRefPtr<CefValue> Text(const std::string& text) {
+  auto value = CefValue::Create();
+  value->SetString(text);
+  return value;
+}
+double Number(CefRefPtr<CefDictionaryValue> message, const char* key, double fallback) {
+  const auto type = message->GetType(key);
+  return type == VTYPE_INT ? message->GetInt(key) : type == VTYPE_DOUBLE ? message->GetDouble(key) : fallback;
+}
+CefRefPtr<CefValue> RecordingInfo(const Recording& recording, const suitecut::MediaPipelineResult* result) {
+  auto info = CefDictionaryValue::Create();
+  info->SetString("recording", recording.id);
+  info->SetString("outputPath", recording.output);
+  info->SetDouble("framesPerSecond", recording.fps);
+  info->SetString("canvas", std::to_string(recording.canvas_width) + "x" + std::to_string(recording.canvas_height));
+  info->SetString("source", std::to_string(recording.source_width) + "x" + std::to_string(recording.source_height));
+  info->SetDouble("copiedFrames", static_cast<double>(recording.copied));
+  info->SetDouble("skippedFrames", static_cast<double>(recording.skipped));
+  if (recording.failed_copies) info->SetDouble("failedCopies", static_cast<double>(recording.failed_copies));
+  if (result) {
+    info->SetString("encoder", result->encoder);
+    info->SetString("container", result->container);
+    info->SetDouble("durationMs", result->duration_ms);
+    info->SetDouble("inputFrames", static_cast<double>(result->input_frames));
+    info->SetDouble("gpuNv12Frames", static_cast<double>(result->gpu_nv12_frames));
+    info->SetDouble("outputFrames", static_cast<double>(result->output_frames));
+    info->SetDouble("heldFrames", static_cast<double>(result->held_frames));
+    info->SetDouble("coalescedFrames", static_cast<double>(result->coalesced_frames));
+    info->SetDouble("supersededFrames", static_cast<double>(result->superseded_frames));
+    info->SetDouble("outputBytes", static_cast<double>(result->output_bytes));
+  }
+  auto value = CefValue::Create();
+  value->SetDictionary(info);
+  return value;
+}
+}  // namespace
+
+void Shell::StartRecording(CefRefPtr<CefDictionaryValue> message, Reply reply) {
+  if (!window) return reply(false, Text("The window is not open"));
+  auto recording = std::make_shared<Recording>();
+  recording->output = message->GetString("path").ToString();
+  recording->ffmpeg = message->HasKey("ffmpegPath") ? message->GetString("ffmpegPath").ToString() : "ffmpeg";
+  recording->fps = Number(message, "fps", 60);
+  recording->window_area = message->GetString("area") == "window";
+  recording->width = static_cast<int>(Number(message, "width", 0));
+  recording->height = static_cast<int>(Number(message, "height", 0));
+  recording->max_bytes = static_cast<int64_t>(Number(message, "maxFileBytes", 0));
+  if (recording->output.empty() || recording->output.front() != '/')
+    return reply(false, Text("The recording path must be absolute"));
+  if (!(recording->fps >= 1 && recording->fps <= 120))
+    return reply(false, Text("fps must be from 1 through 120"));
+  if ((recording->width != 0) != (recording->height != 0) || recording->width < 0 || recording->height < 0)
+    return reply(false, Text("Give both width and height, or neither"));
+  for (const auto& [id, other] : recordings)
+    if (other->output == recording->output) return reply(false, Text("That file is already being recorded"));
+  // The encoder never replaces a file when it finishes; say so now rather than at stop.
+  if (std::error_code error; std::filesystem::exists(recording->output, error))
+    return reply(false, Text("The recording file already exists"));
+  recording->id = "recording-" + std::to_string(next_recording_++);
+  recording->on_start = std::move(reply);
+  recordings[recording->id] = recording;
+  std::weak_ptr<Recording> weak = recording;
+  // Delivers the frame already on screen at once, which starts the pipeline.
+  recording->frames = std::make_unique<suitecut::WindowFrames>(
+      window->GetWindowHandle(), [this, weak](void* surface, int width, int height, double now) {
+        if (const auto recording = weak.lock()) RecordingFrame(recording, surface, width, height, now);
+      });
+  if (recording->frames->Remote())
+    return FailRecording(recording, "Chromium is drawing this window remotely, so its frames never reach "
+                                    "the browser process; do not pass --suitecut-window-frames=off");
+  After(5000, [this, weak] {
+    const auto recording = weak.lock();
+    if (recording && !recording->pipeline && recording->on_start)
+      FailRecording(recording, "No compositor frames reached the browser process within 5 seconds");
+  });
+}
+
+// Runs on the main thread the moment the window's layer receives a frame.
+void Shell::RecordingFrame(const std::shared_ptr<Recording>& recording, void* surface, int width, int height,
+                           double now) {
+  // Copy only frames due at the requested rate. A quarter-interval tolerance
+  // keeps a 60 Hz display at 60 fps despite jitter; the pipeline holds the last
+  // frame through any slot with nothing new.
+  if (recording->last_ms >= 0 && now - recording->last_ms < 750.0 / recording->fps) {
+    ++recording->skipped;
+    return;
+  }
+  CefRect crop = recording->window_area ? CefRect(0, 0, width, height) : PageRect(width, height);
+  crop.width &= ~1;
+  crop.height &= ~1;
+  if (crop.width < 2 || crop.height < 2) return;
+  if (!recording->pipeline && !StartPipeline(recording, crop.width, crop.height, now)) return;
+  if (!recording->pipeline->WantsFrames()) return;
+  // A crop that matches the canvas goes to the encoder as NV12 without leaving
+  // the GPU; any other size (a resized window) is fitted by the media worker.
+  const bool nv12 = crop.width == recording->canvas_width && crop.height == recording->canvas_height;
+  auto copy = recording->pool->Copy(surface, crop.x, crop.y, crop.width, crop.height, nv12);
+  if (!copy) {
+    ++recording->failed_copies;
+    return;
+  }
+  if (recording->pipeline->NativeCanvasFrame(std::move(copy), now, {})) {
+    ++recording->copied;
+    recording->last_ms = now;
+  }
+}
+
+bool Shell::StartPipeline(const std::shared_ptr<Recording>& recording, int width, int height, double now) {
+  recording->source_width = width;
+  recording->source_height = height;
+  int canvas_width = recording->width ? recording->width : width;
+  int canvas_height = recording->height ? recording->height : height;
+  // The encoder takes at most 3840x2160; a larger page is scaled to fit.
+  const double scale = std::min({1.0, 3840.0 / canvas_width, 2160.0 / canvas_height});
+  recording->canvas_width = static_cast<int>(canvas_width * scale) & ~1;
+  recording->canvas_height = static_cast<int>(canvas_height * scale) & ~1;
+  suitecut::MediaPipelineOptions options;
+  options.launcher_path = CefCommandLine::GetGlobalCommandLine()->GetProgram().ToString();
+  options.ffmpeg_path = recording->ffmpeg;
+  options.output_path = recording->output;
+  options.source_width = options.output_width = recording->canvas_width;
+  options.source_height = options.output_height = recording->canvas_height;
+  options.frames_per_second = options.capture_frames_per_second = recording->fps;
+  options.capture_timestamps_exact = true;
+  options.hardware_h264 = std::filesystem::path(recording->output).extension() == ".mp4";
+  options.worker_canvas_fit = true;
+  options.worker_nv12 = true;
+  options.start_timestamp_ms = now;
+  options.first_frame_deadline = std::chrono::steady_clock::now() + std::chrono::seconds(15);
+  if (recording->max_bytes > 0) options.max_file_bytes = static_cast<uint64_t>(recording->max_bytes);
+  const std::string id = recording->id;
+  try {
+    if (options.ffmpeg_path.front() != '/') options.ffmpeg_path = suitecut::ResolveMediaExecutable(options.ffmpeg_path);
+    // Room for every frame the pipeline may hold at once: its queue (fps / 5),
+    // the encoder's four in flight, and the held frame, as NV12.
+    const uint64_t frame_bytes = static_cast<uint64_t>(recording->canvas_width) * recording->canvas_height * 3 / 2;
+    recording->pool = std::make_unique<suitecut::MacCapturePool>(
+        frame_bytes * static_cast<uint64_t>(std::ceil(recording->fps / 5) + 6));
+    // Pipeline callbacks run on its worker; everything else happens here.
+    recording->pipeline = std::make_shared<suitecut::MediaPipeline>(
+        std::move(options),
+        [this, id](const suitecut::MediaPipelineResult& result) {
+          CefPostTask(TID_UI, new Later([this, id, result] {
+            const auto found = recordings.find(id);
+            if (found == recordings.end()) return;
+            const auto recording = found->second;
+            recordings.erase(found);
+            recording->frames.reset();
+            if (recording->on_start) recording->on_start(false, Text(result.failure));
+            else if (recording->on_stop)
+              recording->on_stop(result.failure.empty() || result.failure == "Native recording canceled",
+                                 result.failure.empty() ? RecordingInfo(*recording, &result) : Text(result.failure));
+          }));
+        },
+        [this, id](double) {
+          CefPostTask(TID_UI, new Later([this, id] {
+            const auto found = recordings.find(id);
+            if (found == recordings.end() || !found->second->on_start) return;
+            auto reply = std::move(found->second->on_start);
+            found->second->on_start = nullptr;
+            reply(true, RecordingInfo(*found->second, nullptr));
+          }));
+        },
+        [this, id](const suitecut::MediaPipelineResult& result) {
+          // The encoder is ready; a static page will not paint again by itself.
+          if (result.first_timestamp_ms >= 0 || !result.preparation_packets) return;
+          CefPostTask(TID_UI, new Later([this, id] {
+            const auto found = recordings.find(id);
+            if (found == recordings.end() || !found->second->frames) return;
+            found->second->last_ms = -1;
+            found->second->frames->Redeliver();
+          }));
+        });
+  } catch (const std::exception& error) {
+    FailRecording(recording, error.what());
+    return false;
+  }
+  return true;
+}
+
+void Shell::FailRecording(const std::shared_ptr<Recording>& recording, const std::string& reason) {
+  recording->frames.reset();
+  if (recording->pipeline) return recording->pipeline->Cancel(reason);  // its completion replies
+  recordings.erase(recording->id);
+  if (recording->on_start) recording->on_start(false, Text(reason));
+  recording->on_start = nullptr;
+}
+
+void Shell::StopRecording(const std::string& id, bool cancel, Reply reply) {
+  const auto found = recordings.find(id);
+  if (found == recordings.end() || found->second->on_start)
+    return reply(false, Text("No recording " + id + " is running"));
+  const auto recording = found->second;
+  recording->on_stop = std::move(reply);
+  recording->frames.reset();
+  if (cancel) recording->pipeline->Cancel("Native recording canceled");
+  else
+    recording->pipeline->Stop(suitecut::WindowFramesNow(),
+                              std::chrono::steady_clock::now() + std::chrono::seconds(30));
+}
+
+// The active tab's page inside the window's compositor surface, in pixels.
+CefRect Shell::PageRect(int width, int height) {
+  const Tab* tab = Find(active_);
+  if (!window || !tab || !tab->view) return CefRect(0, 0, width, height);
+  const CefRect client = window->GetClientAreaBoundsInScreen();
+  const CefRect page = tab->view->GetBoundsInScreen();
+  if (client.width <= 0 || client.height <= 0) return CefRect();
+  const double sx = static_cast<double>(width) / client.width, sy = static_cast<double>(height) / client.height;
+  const auto x = [&](int value) { return std::clamp(static_cast<int>(std::lround((value - client.x) * sx)), 0, width); };
+  const auto y = [&](int value) { return std::clamp(static_cast<int>(std::lround((value - client.y) * sy)), 0, height); };
+  const int left = x(page.x), top = y(page.y);
+  return CefRect(left, top, x(page.x + page.width) - left, y(page.y + page.height) - top);
+}
+#endif
 
 Tab* Shell::Find(int id) {
   for (auto& tab : tabs_)
@@ -825,6 +1088,12 @@ class App : public CefApp, public CefBrowserProcessHandler {
     if (!process_type.empty()) return;
     std::string disabled = command_line->GetSwitchValue("disable-features");
     disabled += std::string(disabled.empty() ? "" : ",") + "RenderDocument,BackForwardCache";
+#if defined(__APPLE__)
+    // Chromium then hands each finished frame to this process as an IOSurface
+    // on the window's layer, instead of drawing into the window from the GPU
+    // process. That is what recording reads (WindowFrames). Pages cannot tell.
+    if (command_line->GetSwitchValue("suitecut-window-frames") != "off") disabled += ",RemoteCoreAnimationAPI";
+#endif
     command_line->AppendSwitchWithValue("disable-features", disabled);
   }
   // Renderer helpers register the same scheme whatever the browser mode.

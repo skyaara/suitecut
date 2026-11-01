@@ -21,11 +21,12 @@ class MacCaptureFrame {
   struct Impl; std::unique_ptr<Impl> impl_;
   MacCaptureFrame(); friend class MacCapturePool;
 };
-// Owns at most 64 MiB of reusable surfaces. Copy completes on the GPU before
-// CEF's borrowed texture expires. Readback runs on the existing media worker.
+// Owns at most |max_bytes| (at least 64 MiB) of reusable surfaces. Copy
+// completes on the GPU before CEF's borrowed texture expires. Readback runs on
+// the existing media worker.
 class MacCapturePool {
  public:
-  MacCapturePool(); ~MacCapturePool();
+  explicit MacCapturePool(uint64_t max_bytes=64ULL*1024*1024); ~MacCapturePool();
   std::shared_ptr<MacCaptureFrame> Copy(void* surface,int x,int y,int width,int height,bool nv12=false);
  private:
   struct Impl; std::shared_ptr<Impl> impl_;
