@@ -2,6 +2,7 @@
 import { randomBytes, timingSafeEqual } from 'node:crypto'
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http'
 import { type Socket } from 'node:net'
+import { networkInterfaces } from 'node:os'
 import { setTimeout as delay } from 'node:timers/promises'
 
 import * as z from 'zod'
@@ -19,8 +20,15 @@ export type NativeViewerResolutionMode = 'fixed' | 'auto'
 export interface NativeBrowserViewerOptions {
   browser: NativeBrowserController
   page?: NativePage
-  /** Loopback HTTP port; zero selects a free port. Defaults to zero. */
+  /** HTTP port; zero selects a free port. Defaults to zero. */
   port?: number
+  /**
+   * Also listen on this machine's network addresses, so a phone, tablet or another
+   * computer on the same network can open the link. The link then names the first
+   * network address. Plain HTTP: anyone on the network who sees the traffic can see
+   * the token, so use it on networks you trust. Defaults to false, loopback only.
+   */
+  network?: boolean
   /** Maximum shared JPEG encoding rate, independent of native capture cadence. */
   framesPerSecond?: number
   quality?: number
@@ -46,7 +54,7 @@ export interface NativeBrowserViewerState {
   canResize: boolean
 }
 export interface NativeBrowserViewer {
-  /** Local URL with an unguessable bearer token in its fragment. Treat it as a credential. */
+  /** URL with an unguessable bearer token in its fragment. Treat it as a credential. */
   readonly url: string
   readonly closed: Promise<void>
   state(): NativeBrowserViewerState
@@ -58,6 +66,7 @@ export interface NativeBrowserViewer {
 
 const Options = z.strictObject({
   port: z.number().int().min(0).max(65535).default(0),
+  network: z.boolean().default(false),
   framesPerSecond: z.number().int().min(1).max(120).default(30),
   quality: z.number().int().min(20).max(95).default(75),
   takeoverTimeoutMs: z.number().int().min(100).max(120000).default(15000),
@@ -137,12 +146,22 @@ async function body(request: IncomingMessage): Promise<UntrustedInput> {
   }
 }
 
+/** This machine's external IPv4 addresses, the ones another device can reach. */
+function networkAddresses(): string[] {
+  return Object.values(networkInterfaces()).flatMap((entries = []) =>
+    entries
+      .filter((entry) => entry.family === 'IPv4' && !entry.internal)
+      .map((entry) => entry.address),
+  )
+}
+
 /** Adds a live human view to an existing helper without creating a second browser session. */
 export async function createBrowserViewer(
   options: NativeBrowserViewerOptions,
 ): Promise<NativeBrowserViewer> {
   const config = Options.parse({
     ...(options.port === undefined ? {} : { port: options.port }),
+    ...(options.network === undefined ? {} : { network: options.network }),
     ...(options.framesPerSecond === undefined ? {} : { framesPerSecond: options.framesPerSecond }),
     ...(options.quality === undefined ? {} : { quality: options.quality }),
     ...(options.takeoverTimeoutMs === undefined
@@ -203,7 +222,8 @@ export async function createBrowserViewer(
   const allSockets = new Set<Socket>()
   const server = createServer({ requestTimeout: 10000, headersTimeout: 10000, maxHeaderSize: 8192 })
   server.maxConnections = 32
-  let origin = ''
+  // Every Host a request may name: loopback, plus the network addresses when shared.
+  const hosts = new Set<string>()
 
   function releaseRGB(): void {
     // An active job retains its lease until packing and Sharp have settled.
@@ -510,9 +530,9 @@ export async function createBrowserViewer(
     }
   }
   function authorized(request: IncomingMessage): void {
-    if (request.headers.host !== new URL(origin).host)
-      throw new ViewerHTTPError(403, 'Invalid viewer host')
-    if (request.headers.origin && request.headers.origin !== origin)
+    const host = request.headers.host ?? ''
+    if (!hosts.has(host)) throw new ViewerHTTPError(403, 'Invalid viewer host')
+    if (request.headers.origin && request.headers.origin !== `http://${host}`)
       throw new ViewerHTTPError(403, 'Invalid viewer origin')
     const provided = Buffer.from(request.headers.authorization ?? '')
     if (provided.length !== tokenBytes.length || !timingSafeEqual(provided, tokenBytes))
@@ -640,9 +660,9 @@ export async function createBrowserViewer(
       'Content-Security-Policy',
       "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' blob:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'",
     )
-    if (request.headers.host !== new URL(origin).host)
-      throw new ViewerHTTPError(403, 'Invalid viewer host')
-    const url = new URL(request.url ?? '/', origin)
+    const host = request.headers.host ?? ''
+    if (!hosts.has(host)) throw new ViewerHTTPError(403, 'Invalid viewer host')
+    const url = new URL(request.url ?? '/', `http://${host}`)
     if (request.method === 'GET' && ['/', '/viewer.js', '/viewer.css'].includes(url.pathname)) {
       response.writeHead(200, {
         'Content-Type':
@@ -830,12 +850,15 @@ export async function createBrowserViewer(
       }
       server.once('error', failed)
       server.once('listening', ready)
-      server.listen(config.port, '127.0.0.1')
+      server.listen(config.port, config.network ? '0.0.0.0' : '127.0.0.1')
     })
     const address = server.address()
     if (!address || typeof address === 'string')
       throw new Error('Viewer did not bind a local TCP port')
-    origin = `http://127.0.0.1:${address.port}`
+    hosts.add(`127.0.0.1:${address.port}`)
+    const shared = config.network ? networkAddresses() : []
+    for (const network of shared) hosts.add(`${network}:${address.port}`)
+    const origin = `http://${shared[0] ?? '127.0.0.1'}:${address.port}`
     attachFrame()
     options.signal?.addEventListener('abort', abort, { once: true })
     browser.source.processSignal.addEventListener('abort', abort, { once: true })

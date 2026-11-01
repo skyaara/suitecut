@@ -268,7 +268,7 @@ class NetworkControls {
   // ExtraInfo FIFO metadata can await an optional late receipt after a failed
   // request. Its unchanged retention timer is resident during viewer handover;
   // route pauses, callbacks, reads and every actual command remain fenced.
-  bool NeedsTick(bool viewer=false) const { return (route_fetch_physical_&&*route_fetch_physical_) || matchers_->pending() || page_removals_->pending() || preflights_->NeedsTick() || (!viewer&&(request_extras_->NeedsTick() || response_extras_->NeedsTick())) || authentication_->NeedsTick() || !paused_.empty() || !rejected_.empty() || !waiters_.empty() || (bodies_ && bodies_->publication().NeedsTick()); }
+  bool NeedsTick(bool viewer=false) const { return (route_fetch_physical_&&*route_fetch_physical_) || matchers_->pending() || page_removals_->pending() || preflights_->NeedsTick() || (!viewer&&(request_extras_->NeedsTick() || response_extras_->NeedsTick())) || authentication_->NeedsTick(viewer) || !paused_.empty() || !rejected_.empty() || !waiters_.empty() || (bodies_ && bodies_->publication().NeedsTick()); }
   // Source invokes this before dropping an oversized Fetch.requestPaused packet.
   // Retain physical interception ownership until Chromium acknowledges rejection.
   void RejectOversizedPause(Dict data,const std::string& session,const std::string& reason="Native intercepted request metadata exceeds 1 MiB; actual request aborted",bool report=true,std::shared_ptr<NativeHARFetchWork>work={}) {

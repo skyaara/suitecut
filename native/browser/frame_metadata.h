@@ -5,17 +5,25 @@
 
 namespace suitecut {
 inline constexpr size_t kNativeFrameNameUnits=1024;
+// Longest name decoded at all; DevTools messages are bounded well below this.
+inline constexpr size_t kNativeFrameNameInputUnits=1048576;
 // Only Chromium's native Page.Frame.name field is accepted here. Author object
 // dictionaries are never passed to this decoder or recursively interpreted.
+// Ad frames often carry kilobytes of JSON in their names, so a longer name keeps
+// its first kNativeFrameNameUnits units (never splitting a surrogate pair) instead
+// of failing the page.
 inline bool ReadInspectorFrameName(CefRefPtr<CefDictionaryValue> frame,std::string& name){
  name.clear();if(!frame)return false;if(!frame->HasKey("name"))return true;
  const auto value=frame->GetValue("name");std::u16string units;
  if(value&&value->GetType()==VTYPE_STRING)units=value->GetString().ToString16();
  else{
   const auto scalar=value&&value->GetType()==VTYPE_DICTIONARY?value->GetDictionary():nullptr;
-  if(!scalar||scalar->GetSize()!=1||scalar->GetType(kDevToolsUTF16Tag)!=VTYPE_STRING||scalar->GetString(kDevToolsUTF16Tag).length()>kNativeFrameNameUnits*4||!DevToolsReadTag(value,units))return false;
+  if(!scalar||scalar->GetSize()!=1||scalar->GetType(kDevToolsUTF16Tag)!=VTYPE_STRING||scalar->GetString(kDevToolsUTF16Tag).length()>kNativeFrameNameInputUnits*4||!DevToolsReadTag(value,units))return false;
  }
- if(units.size()>kNativeFrameNameUnits)return false;
+ if(units.size()>kNativeFrameNameUnits){
+  const bool split=(units[kNativeFrameNameUnits-1]&0xfc00)==0xd800&&(units[kNativeFrameNameUnits]&0xfc00)==0xdc00;
+  units.resize(kNativeFrameNameUnits-(split?1:0));
+ }
  name=DevToolsUnitsWTF8(units);return true;
 }
 

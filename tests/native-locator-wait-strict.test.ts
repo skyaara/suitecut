@@ -83,6 +83,27 @@ describe('strict native locator wait diagnostics', () => {
     runAutomation.mockRejectedValue(error)
     await expect(page.locator('span').waitFor()).rejects.toBe(error)
   })
+  it('waits again in the next document when a navigation removes the one it was polling', async () => {
+    const { page, runAutomation } = fixture()
+    runAutomation.mockResolvedValueOnce({
+      code: -32000,
+      message: 'Cannot find context with specified id',
+    })
+    await page.locator('h1').waitFor({ timeout: 5000 })
+    expect(runAutomation).toHaveBeenCalledTimes(2)
+    const retried = runAutomation.mock.lastCall?.[1]?.timeoutMs
+    expect(retried).toBeGreaterThan(0)
+    expect(retried).toBeLessThan(5000)
+  })
+  it('reports a lost context once the deadline has passed', async () => {
+    const { page, runAutomation } = fixture()
+    runAutomation.mockResolvedValue({
+      code: -32000,
+      message: 'Cannot find context with specified id',
+    })
+    await expect(page.locator('h1').waitFor({ timeout: 120 })).rejects.toThrow()
+    expect(runAutomation.mock.calls.length).toBeGreaterThan(1)
+  })
   it('forwards the actual page projection cancellation signal and validates options before admission', async () => {
     const { source, runAutomation } = fixture(),
       abort = new AbortController(),

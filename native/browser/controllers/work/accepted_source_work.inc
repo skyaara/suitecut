@@ -18,7 +18,9 @@
        worker_physical_||!worker_calls_.empty()||!worker_work_.empty()||WorkerNeedsTick()||
        network_publication_results_.size()||!network_publication_operations_.empty()||
        !ax_captures_.empty()||ax_physical_||native_media_physical_||!native_media_queue_.empty()||(native_idle_&&native_idle_->Pending())||
-       !console_arguments_.empty()||!console_materializations_.empty()||
+       // Retained console arguments are resident handles during a viewer handover;
+       // their materializations are still actual work.
+       (!viewer&&!console_arguments_.empty())||!console_materializations_.empty()||
        !artifact_document_work_.empty()||artifact_view_owner_||
        screenshot_assertion_retirement_.Size()||screenshot_assertion_retirement_.Physical()||
        !native_trace_protocol_.empty()||native_trace_png_readbacks_||native_trace_aria_readbacks_||

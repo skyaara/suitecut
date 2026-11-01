@@ -73,8 +73,9 @@ pipeline as `record()`.
 - **Rate:** `fps` (1 to 120, default 60) sets the video's rate. Only frames due
   at that rate are copied. When nothing repaints, the pipeline holds the last
   frame, so a static page costs nothing.
-- **Area:** `area: 'page'` (the default) crops to the tab in front, so switching
-  tabs switches what is recorded. `'window'` keeps the tab strip and toolbar.
+- **Area:** the video is cropped to the tab in front, so switching tabs switches
+  what is recorded. The tab strip and toolbar are drawn on a separate surface and
+  aren't recorded yet.
 - **Size:** the captured area in device pixels by default (2560x1504 for a
   1280x752 page on a 2x display), scaled to fit 3840x2160. When it matches the
   video size, the crop and NV12 conversion stay on the GPU and go straight to

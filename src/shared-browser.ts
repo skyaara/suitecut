@@ -57,8 +57,6 @@ export interface SharedRecordingOptions {
   readonly path: string
   /** Frames per second of the video, 1 to 120; only frames due at this rate are captured. Defaults to 60. */
   readonly fps?: number
-  /** `page` crops to the active tab's page; `window` keeps the tab strip and toolbar. Defaults to `page`. */
-  readonly area?: 'page' | 'window'
   /** Records the front tab's sound as 48 kHz stereo AAC. Defaults to false. */
   readonly audio?: boolean
   /** Video size. Defaults to the captured area in device pixels, scaled to fit 3840x2160. */
@@ -381,7 +379,7 @@ export class SharedBrowser {
     const args: Record<string, JsonValue> = {
       path: resolve(options.path),
       fps: options.fps ?? 60,
-      area: options.area ?? 'page',
+      area: 'page',
       audio: options.audio ?? false,
       ffmpegPath: options.ffmpegPath ?? process.env.SUITECUT_FFMPEG_PATH ?? 'ffmpeg',
     }

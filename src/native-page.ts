@@ -185,6 +185,17 @@ function evaluationError(
   return details.text
 }
 
+/** The protocol's reply when the document an evaluation ran in went away mid-call. */
+function lostEvaluationContext(result: UntrustedInput): boolean {
+  if (typeof result !== 'object' || result === null || !('message' in result)) return false
+  const message = result.message
+  return (
+    typeof message === 'string' &&
+    (message.includes('Cannot find context with specified id') ||
+      message.includes('Execution context was destroyed'))
+  )
+}
+
 function evaluationBody(fn: { toString(): string } | string): string {
   return withoutNativeRetryOperation(() => {
     let body = typeof fn === 'string' ? fn : fn.toString()
@@ -3353,7 +3364,25 @@ export class NativeLocator implements PresentationLocator<NativePage> {
       options.signal,
     )
   }
-  runExpectation(
+  async runExpectation(
+    params: Record<string, UntrustedInput>,
+    signal?: AbortSignal,
+  ): Promise<UntrustedInput> {
+    // A navigation can remove the document a check is polling in. Check again in the
+    // next one until the original deadline, as Playwright does, instead of reporting
+    // the lost context.
+    const timeoutMs = typeof params.timeoutMs === 'number' ? params.timeoutMs : 0
+    const deadline = timeoutMs > 0 ? performance.now() + timeoutMs : Infinity
+    for (;;) {
+      const result = await this.runExpectationOnce(params, signal)
+      const remaining = Math.floor(deadline - performance.now())
+      if (!lostEvaluationContext(result) || remaining <= 0) return result
+      signal?.throwIfAborted()
+      await new Promise((resolve) => setTimeout(resolve, 50))
+      if (Number.isFinite(remaining)) params = { ...params, timeoutMs: Math.max(1, remaining - 50) }
+    }
+  }
+  private runExpectationOnce(
     params: Record<string, UntrustedInput>,
     signal?: AbortSignal,
   ): Promise<UntrustedInput> {

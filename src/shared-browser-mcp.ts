@@ -259,17 +259,12 @@ export function sharedBrowserTools(browser: () => Promise<SharedBrowser>): Recor
           .optional()
           .describe('Frames per second; defaults to 60'),
         audio: z.boolean().optional().describe("Record the front tab's sound; defaults to false"),
-        area: z
-          .enum(['page', 'window'])
-          .optional()
-          .describe('page (default) crops to the tab; window keeps the tab strip and toolbar'),
       }),
-      run: async ({ path, fps, audio, area }) => {
+      run: async ({ path, fps, audio }) => {
         const options: Parameters<SharedBrowser['startRecording']>[0] = {
           path,
           ...(fps === undefined ? {} : { fps }),
           ...(audio === undefined ? {} : { audio }),
-          ...(area === undefined ? {} : { area }),
         }
         const recording = await (await browser()).startRecording(options)
         recordings.set(recording.info.recording, recording)

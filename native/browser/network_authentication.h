@@ -79,7 +79,9 @@ class NativeNetworkAuthentication {
     for(const auto&[key,pending]:pending_)if(now>=pending.deadline){Fail("Native authentication response deadline exceeded");return;}
     for(auto it=attempts_.begin();it!=attempts_.end();)if(now>=it->second.deadline&&!pending_.contains(it->first)){it=attempts_.erase(it);--global_attempts_;}else++it;
   }
-  bool NeedsTick()const{return!pending_.empty()||!attempts_.empty()||!links_.empty();}
+  // A link only correlates a request in case a challenge arrives; it expires on
+  // its own. A viewer handover treats links as resident, not as pending work.
+  bool NeedsTick(bool viewer=false)const{return!pending_.empty()||!attempts_.empty()||(!viewer&&!links_.empty());}
   bool failed()const{return failed_;}
   size_t pending()const{return pending_.size();}
   size_t attempts()const{return attempts_.size();}

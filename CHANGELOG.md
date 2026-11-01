@@ -2,6 +2,31 @@
 
 ## Unreleased
 
+- Let a person take control from the live viewer on busy sites. The handover
+  waits for native work to finish, but on a page like eBay each request kept a
+  short-lived correlation in case an auth challenge arrived, and console
+  messages kept their arguments, so **Take control** always failed with "could
+  not transfer while native work is active". Both now count as resident state
+  during a handover; challenges in flight and argument reads still wait.
+- Add `network: true` to `createBrowserViewer` and `--network` to `view`: the
+  viewer also listens on this machine's network addresses, so a phone, tablet
+  or another computer on the same network can watch and take over. It is plain
+  HTTP with the link's bearer token; loopback stays the default.
+- Keep `locator.waitFor()` and other expectations waiting when a navigation
+  replaces the document they were polling, as Playwright does, instead of
+  failing with "Cannot find context with specified id".
+- Truncate frame names longer than 1024 UTF-16 units instead of closing the
+  page with "Native frame name metadata encoding or unit limit exceeded". Ad
+  frames on eBay and Target carry kilobytes of JSON in their names.
+- Remove the shared browser recording's `area` option. `'window'` recorded a
+  dark band where the toolbar is, because the tab strip and toolbar are drawn
+  on a separate surface.
+- Add shopping-site examples: a narrated eBay tour (`examples/real-sites/ebay.ts`),
+  Apple's iPhone store rendered at 24, 60 and 120 fps
+  (`examples/engine/frame-rates.ts`), a headless eBay run with `recordVideo`
+  and a phone taking over an agent through the live viewer
+  (`examples/browser-control`), and an MCP host driving the shared browser
+  through eBay while it records itself (`examples/shared-browser/agent.ts`).
 - Record the shared browser's window with `browser.startRecording({ path, fps })`.
   Chromium hands each composited frame to the browser process (the shared browser
   now disables `RemoteCoreAnimationAPI`), where a hook on the window's layer

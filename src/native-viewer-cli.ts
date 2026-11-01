@@ -7,7 +7,9 @@ import { createBrowserViewer } from './native-viewer.js'
 
 export const NATIVE_VIEWER_USAGE = `Usage: suitecut view [http(s)://url] [options]
   --executable <path>  Native browser binary (default .suitecut/native-build/suitecut-browser).
-  --port <0..65535>    Local viewer port; default picks a free port.
+  --port <0..65535>    Viewer port; default picks a free port.
+  --network           Also listen on this machine's network addresses, so a phone or
+                      another computer on the same network can open the link.
   --width <pixels>    Browser viewport width; default 1280.
   --height <pixels>   Browser viewport height; default 720.
   --resolution <WxH|auto>  Initial viewport or automatic fit during human control.
@@ -27,6 +29,7 @@ export async function runNativeViewerCli(args: readonly string[]): Promise<numbe
   let url: string | undefined
   let proxy = process.env.HTTPS_PROXY ?? process.env.HTTP_PROXY
   let resolutionMode: 'fixed' | 'auto' = 'fixed'
+  let network = false
   const values = { port: 0, width: 1280, height: 720, fps: 30, quality: 75 }
   for (let index = 0; index < args.length; ++index) {
     const name = args[index]
@@ -36,6 +39,10 @@ export async function runNativeViewerCli(args: readonly string[]): Promise<numbe
       url = new URL(name).href
       if (!['http:', 'https:'].includes(new URL(url).protocol))
         throw new Error('Viewer URL requires HTTP(S)')
+      continue
+    }
+    if (name === '--network') {
+      network = true
       continue
     }
     const value = args[++index]
@@ -101,6 +108,7 @@ export async function runNativeViewerCli(args: readonly string[]): Promise<numbe
       browser,
       page,
       port: values.port,
+      network,
       framesPerSecond: values.fps,
       quality: values.quality,
       resolutionMode,

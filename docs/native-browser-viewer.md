@@ -30,9 +30,16 @@ resolution, viewport, port, JPEG quality and frame-rate options.
 The CLI honors `HTTPS_PROXY` / `HTTP_PROXY` and `NO_PROXY`; `--proxy` overrides
 the proxy server. SDK applications configure their own browser context proxy.
 
-The server binds to `127.0.0.1`. When running on another machine, use an SSH tunnel
-with the same local port and open the original link through that tunnel. There is
-no public listener or automatic hosting. The URL fragment holds a bearer token;
+The server binds to `127.0.0.1` by default. To watch or take over from a phone,
+tablet or another computer on the same network, pass `network: true` (or `--network`
+on the command line). The viewer then also listens on this machine's network
+addresses and the printed link names the first one. The page works with touch and
+fits phone screens, and with `resolutionMode: 'auto'` the browser resizes to the
+screen in control. It is plain HTTP, so anyone who can see the network traffic can
+see the token: use it on networks you trust. For anything further away, keep the
+default and use an SSH tunnel with the same local port, opening the original link
+through that tunnel. There is no public listener or automatic hosting. The URL
+fragment holds a bearer token;
 the viewer removes it from the address bar after saving it for that browser tab.
 Keep the original link private. Requests require the token and validate Host and
 Origin. Assets use no external scripts or CDNs.
@@ -49,7 +56,8 @@ const browser = await launchBrowser({
 })
 const page = await browser.newPage()
 await page.goto('https://example.com')
-const viewer = await createBrowserViewer({ browser, page, resolutionMode: 'auto' })
+// network: true lets another device on the same network open viewer.url.
+const viewer = await createBrowserViewer({ browser, page, network: true, resolutionMode: 'auto' })
 console.log(viewer.url)
 
 try {
