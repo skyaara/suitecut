@@ -1,0 +1,60 @@
+{
+  "name": "@suitecut/shared-browser",
+  "version": "0.1.0",
+  "description": "One native browser window that a person and an AI agent use together, with a TypeScript SDK and an MCP server.",
+  "keywords": [
+    "browser",
+    "mcp",
+    "agent",
+    "cef",
+    "chromium",
+    "automation"
+  ],
+  "type": "module",
+  "license": "MIT",
+  "author": "skyaara",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/skyaara/suitecut.git",
+    "directory": "packages/shared-browser"
+  },
+  "homepage": "https://suitecut.aakashreddy.com/packages/shared-browser",
+  "bugs": {
+    "url": "https://github.com/skyaara/suitecut/issues"
+  },
+  "main": "./dist/shared-browser.js",
+  "types": "./dist/shared-browser.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/shared-browser.d.ts",
+      "default": "./dist/shared-browser.js"
+    },
+    "./mcp": {
+      "types": "./dist/shared-browser-mcp.d.ts",
+      "default": "./dist/shared-browser-mcp.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "bin": {
+    "shared-browser-mcp": "dist/shared-browser-mcp-cli.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "prepack": "pnpm build"
+  },
+  "dependencies": {
+    "zod": "^4.4.3"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

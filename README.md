@@ -5,6 +5,21 @@ SuiteCut saves source video and an action timeline, then renders a finished vide
 
 Browser control is also available through a standalone [native C++ SDK and C ABI](native/client/README.md), which controls the SuiteCut CEF engine or installed Chrome/Chromium without Node.js. Its `suitecut-native-control` CLI also runs as an MCP server for agents. Browser runtimes remain separate distributions.
 
+## Packages
+
+| Package                                                                         | What it is                                                                                                 |
+| ------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| [`suitecut`](https://www.npmjs.com/package/suitecut)                            | Record, narrate, render and stream browser flows (this directory)                                          |
+| [`@suitecut/browser-control`](packages/browser-control/README.md)               | Browser control for the native CEF engine, Chromium (CDP) and Firefox (WebDriver BiDi), with a live viewer |
+| [`@suitecut/shared-browser`](packages/shared-browser/README.md)                 | One native window a person and an agent use together, with a TypeScript SDK and an MCP server (preview)    |
+| [`SuiteCut::Client`](native/client/README.md)                                   | C/C++ SDK with a stable C ABI and the `suitecut-native-control` CLI and MCP server                         |
+| [Audio plugins](https://github.com/skyaara/suitecut/tree/audio-plugins/plugins) | Optional Sherpa text-to-speech voices, developed on the `audio-plugins` branch                             |
+
+Each package has its own page, explainer video and quick start at
+[suitecut.aakashreddy.com/packages](https://suitecut.aakashreddy.com/packages).
+`pnpm release:check` builds nothing and publishes nothing; it checks every npm
+package's manifest, tarball contents and version against npm.
+
 ## Native browser and media tools
 
 Requires Node.js 22+, pnpm 11, FFmpeg/FFprobe, and the separately built CEF
@@ -64,15 +79,6 @@ to RTMP/RTMPS. Broadcast source selection preserves the publisher connection.
 See [the native guide](native/browser/README.md) for source ownership, recording,
 streaming, IPC and failure behavior.
 
-## Packages
-
-| Package                                                                         | What it is                                                                                                 |
-| ------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| [`suitecut`](https://www.npmjs.com/package/suitecut)                            | Record, narrate, render and stream browser flows (this directory)                                          |
-| [`@suitecut/browser-control`](packages/browser-control/README.md)               | Browser control for the native CEF engine, Chromium (CDP) and Firefox (WebDriver BiDi), with a live viewer |
-| [`SuiteCut::Client`](native/client/README.md)                                   | C/C++ SDK with a stable C ABI and the `suitecut-native-control` CLI and MCP server                         |
-| [Audio plugins](https://github.com/skyaara/suitecut/tree/audio-plugins/plugins) | Optional Sherpa text-to-speech voices, developed on the `audio-plugins` branch                             |
-
 ## Repository layout
 
 | Path                        | Contents                                                                                            |
@@ -80,6 +86,7 @@ streaming, IPC and failure behavior.
 | `src/`                      | TypeScript SDK, CLI and test runner                                                                 |
 | `native/`                   | CEF runtime, C/C++ client SDK, native test runner and shared helpers ([overview](native/README.md)) |
 | `packages/browser-control/` | Build and package metadata for `@suitecut/browser-control`                                          |
+| `packages/shared-browser/`  | Build and package metadata for `@suitecut/shared-browser`                                           |
 | `site/`                     | Documentation website                                                                               |
 | `docs/`                     | Guides, feature reference and engineering notes ([index](docs/README.md))                           |
 | `examples/`                 | Runnable examples ([index](examples/README.md))                                                     |

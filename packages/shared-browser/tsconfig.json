@@ -1,0 +1,18 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "../../src",
+    "outDir": "./dist",
+    "allowJs": false,
+    "declaration": true,
+    "declarationMap": false,
+    "sourceMap": false,
+    "noEmitOnError": true
+  },
+  "include": [
+    "../../src/shared-browser.ts",
+    "../../src/shared-browser-mcp.ts",
+    "../../src/shared-browser-mcp-cli.ts"
+  ],
+  "exclude": []
+}

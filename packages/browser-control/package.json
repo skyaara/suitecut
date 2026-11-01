@@ -1,7 +1,16 @@
 {
   "name": "@suitecut/browser-control",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Browser control SDK for native CEF, Chromium CDP and Firefox WebDriver BiDi, with a native browser viewer.",
+  "keywords": [
+    "browser",
+    "automation",
+    "cdp",
+    "webdriver-bidi",
+    "chromium",
+    "firefox",
+    "cef"
+  ],
   "type": "module",
   "license": "MIT",
   "author": "skyaara",
@@ -10,7 +19,7 @@
     "url": "git+https://github.com/skyaara/suitecut.git",
     "directory": "packages/browser-control"
   },
-  "homepage": "https://github.com/skyaara/suitecut/tree/main/packages/browser-control#readme",
+  "homepage": "https://suitecut.aakashreddy.com/packages/browser-control",
   "bugs": {
     "url": "https://github.com/skyaara/suitecut/issues"
   },

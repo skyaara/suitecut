@@ -7,16 +7,16 @@ import * as z from 'zod'
 import {
   describeError,
   type JsonValue,
-  type PrototypeBrowser,
-  type PrototypeBrowserOptions,
-  type PrototypeTab,
-  launchPrototypeBrowser,
-} from './prototype-browser.js'
+  type SharedBrowser,
+  type SharedBrowserOptions,
+  type SharedTab,
+  launchSharedBrowser,
+} from './shared-browser.js'
 import { type UntrustedInput } from './untrusted.js'
 
 /**
  * A Model Context Protocol server (stdio, newline-delimited JSON-RPC) that lets
- * an agent drive the custom-UI prototype browser. The window stays on screen,
+ * an agent drive the SuiteCut shared browser. The window stays on screen,
  * so a person sees and can use the same tabs the agent works in.
  */
 
@@ -27,7 +27,7 @@ interface ToolDefinition<Shape extends z.ZodRawShape> {
   readonly input: z.ZodObject<Shape>
   readonly run: (
     args: z.infer<z.ZodObject<Shape>>,
-    tab: () => Promise<PrototypeTab>,
+    tab: () => Promise<SharedTab>,
   ) => Promise<Content[] | string>
 }
 
@@ -37,7 +37,7 @@ export interface Tool {
   readonly input: z.ZodType
   readonly invoke: (
     args: JsonValue,
-    browser: () => Promise<PrototypeBrowser>,
+    browser: () => Promise<SharedBrowser>,
   ) => Promise<Content[] | string>
 }
 
@@ -66,7 +66,7 @@ function tool<Shape extends z.ZodRawShape>(definition: ToolDefinition<Shape>): T
 }
 
 async function point(
-  tab: PrototypeTab,
+  tab: SharedTab,
   args: { ref?: string | undefined; x?: number | undefined; y?: number | undefined },
 ) {
   if (args.ref) return tab.locate(args.ref)
@@ -78,9 +78,7 @@ const loadText = (result: { url: string; error?: string }) =>
   result.error ? `Loaded ${result.url} with error ${result.error}` : `Loaded ${result.url}`
 
 /** The tools this server offers, keyed by name. */
-export function prototypeBrowserTools(
-  browser: () => Promise<PrototypeBrowser>,
-): Record<string, Tool> {
+export function sharedBrowserTools(browser: () => Promise<SharedBrowser>): Record<string, Tool> {
   return {
     browser_navigate: tool({
       description: 'Load a URL in a tab and wait for it to finish loading.',
@@ -264,32 +262,32 @@ const request = z.object({
   params: z.record(z.string(), z.json()).optional(),
 })
 
-export interface PrototypeMcpOptions {
-  readonly browser: PrototypeBrowserOptions
+export interface SharedBrowserMcpOptions {
+  readonly browser: SharedBrowserOptions
   readonly input: Readable
   readonly output: Writable
 }
 
 /** Serves MCP until the input ends, then closes the browser it started. */
-export async function servePrototypeBrowserMcp({
+export async function serveSharedBrowserMcp({
   browser: launchOptions,
   input,
   output,
-}: PrototypeMcpOptions): Promise<void> {
+}: SharedBrowserMcpOptions): Promise<void> {
   // Started on the first tool call, and again if the window was closed.
-  let launched: Promise<PrototypeBrowser> | undefined
+  let launched: Promise<SharedBrowser> | undefined
   const browser = async () => {
     const pending = launched
     const current = await pending?.catch(() => undefined)
     if (current?.running) return current
     let next = launched
     if (!next || next === pending) {
-      next = launchPrototypeBrowser(launchOptions)
+      next = launchSharedBrowser(launchOptions)
       launched = next
     }
     return next
   }
-  const tools = prototypeBrowserTools(browser)
+  const tools = sharedBrowserTools(browser)
   const send = (message: Record<string, JsonValue>) =>
     output.write(`${JSON.stringify({ jsonrpc: '2.0', ...message })}\n`)
   const respond = async (line: string) => {
@@ -309,7 +307,7 @@ export async function servePrototypeBrowserMcp({
             protocolVersion:
               typeof params?.protocolVersion === 'string' ? params.protocolVersion : '2025-06-18',
             capabilities: { tools: {} },
-            serverInfo: { name: 'suitecut-prototype-browser', version: '0.1.0' },
+            serverInfo: { name: 'suitecut-shared-browser', version: '0.1.0' },
             instructions:
               'Drives a visible native Chromium window with tabs. Start with browser_snapshot, act with refs, and take a new snapshot after the page changes.',
           },

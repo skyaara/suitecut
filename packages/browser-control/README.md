@@ -6,10 +6,8 @@ Requires Node.js 22 or newer. Use an installed Chrome, Chromium, Edge, Brave or 
 
 For applications that do not use Node.js, the separate [native C++ SDK and C ABI](../../native/client/README.md) control SuiteCut's CEF engine or installed Chrome/Chromium directly. That standalone library does not require CEF headers to build and is distributed separately from this npm package and browser runtimes.
 
-The package is built and packed locally; it has not been published to npm. Install the supplied tarball in your application:
-
 ```sh
-npm install /absolute/path/to/suitecut-browser-control-2.0.0.tgz
+npm install @suitecut/browser-control
 ```
 
 For a complete live application flow with video and page audio, see the

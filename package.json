@@ -1,6 +1,6 @@
 {
   "name": "suitecut",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Record and stream narrated browser flows with native embedded CEF capture.",
   "keywords": [
     "screen-recording",
@@ -125,6 +125,9 @@
   ],
   "scripts": {
     "build:browser-control": "pnpm --filter @suitecut/browser-control build",
+    "build:shared-browser": "pnpm --filter @suitecut/shared-browser build",
+    "build:packages": "pnpm --filter \"./packages/*\" build",
+    "release:check": "node scripts/release-check.mjs",
     "build": "pnpm clean:dist && tsc -p tsconfig.build.json",
     "clean:dist": "node scripts/clean-dist.mjs",
     "example:render": "node dist/cli.js render --manifest .suitecut/latest-run.json --output .suitecut/videos/product-tour.mp4",

@@ -1,6 +1,6 @@
-# Custom-UI browser prototype: SDK and MCP
+# Shared browser: SDK and MCP
 
-This is a prototype, not a product mode. It runs one native CEF window with
+`@suitecut/shared-browser` (`packages/shared-browser`) is a preview. It runs one native CEF window with
 SuiteCut's own tab strip and toolbar instead of Chrome's. Every tab is a full
 Chromium page in Alloy style. Nothing is streamed: the pages draw in the
 window, and a person can use the same tabs an agent is driving.
@@ -15,9 +15,9 @@ There is no remote debugging port.
 ## TypeScript SDK
 
 ```ts
-import { launchPrototypeBrowser } from './dist/prototype-browser.js'
+import { launchSharedBrowser } from '@suitecut/shared-browser'
 
-const browser = await launchPrototypeBrowser({ executablePath, url: 'https://example.com/' })
+const browser = await launchSharedBrowser({ executablePath, url: 'https://example.com/' })
 const tab = await browser.activeTab()
 console.log(await tab.snapshot()) // headings, text, and interactive elements with refs
 await tab.fillRef('e3', 'hello')
@@ -69,7 +69,7 @@ RenderDocument, or from the process swap that BackForwardCache makes.
 ## MCP server
 
 ```bash
-node dist/prototype-browser-mcp-cli.js --executable <path to suitecut-browser>
+npx -y @suitecut/shared-browser --executable <path to suitecut-browser>
 ```
 
 It speaks MCP over stdio. The browser starts on the first tool call, and again if
@@ -79,8 +79,8 @@ its window was closed. Example client configuration:
 {
   "mcpServers": {
     "suitecut-browser": {
-      "command": "node",
-      "args": ["<repo>/dist/prototype-browser-mcp-cli.js", "--executable", "<suitecut-browser>"]
+      "command": "npx",
+      "args": ["-y", "@suitecut/shared-browser", "--executable", "<suitecut-browser>"]
     }
   }
 }

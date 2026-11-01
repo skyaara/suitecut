@@ -16,7 +16,7 @@
 //
 // With --suitecut-prototype-control it reads one JSON command per line on stdin
 // and writes answers ({id, ok, result}) and events ({event, tab, ...}) on stdout.
-// src/prototype-browser.ts is the TypeScript client.
+// src/shared-browser.ts is the TypeScript client.
 namespace suitecut::browser::prototype {
 
 bool Requested(int argc, char** argv);

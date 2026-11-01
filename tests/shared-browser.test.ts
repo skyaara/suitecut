@@ -7,8 +7,8 @@ import { PassThrough } from 'node:stream'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import * as z from 'zod'
 
-import { servePrototypeBrowserMcp } from '../src/prototype-browser-mcp.js'
-import { launchPrototypeBrowser } from '../src/prototype-browser.js'
+import { serveSharedBrowserMcp } from '../src/shared-browser-mcp.js'
+import { launchSharedBrowser } from '../src/shared-browser.js'
 
 vi.mock('node:child_process', async (original) => ({
   ...(await original<{ ChildProcess: typeof ChildProcess }>()),
@@ -55,7 +55,7 @@ function fakeBrowser(
 
 const options = { executablePath: '/fake/suitecut-browser', profileDirectory: '/tmp/unused' }
 
-describe('prototype browser SDK', () => {
+describe('shared browser SDK', () => {
   afterEach(() => vi.mocked(spawn).mockReset())
 
   it('waits for a navigation to finish and reports load errors', async () => {
@@ -68,7 +68,7 @@ describe('prototype browser SDK', () => {
         })
       return { ok: true }
     })
-    const browser = await launchPrototypeBrowser(options)
+    const browser = await launchSharedBrowser(options)
     const result = await browser.tab(1).goto('https://missing.test/')
     expect(result).toEqual({ url: 'https://missing.test/', error: 'ERR_NAME_NOT_RESOLVED' })
     await browser.close()
@@ -86,7 +86,7 @@ describe('prototype browser SDK', () => {
       }
       return { ok: true, result: {} }
     })
-    const browser = await launchPrototypeBrowser(options)
+    const browser = await launchSharedBrowser(options)
     const tab = browser.tab(1)
     await tab.click(10, 10)
     await expect(tab.evaluate('1')).rejects.toThrow('A confirm dialog is open: "Submit?"')
@@ -100,7 +100,7 @@ describe('prototype browser SDK', () => {
   })
 })
 
-describe('prototype browser MCP server', () => {
+describe('shared browser MCP server', () => {
   afterEach(() => vi.mocked(spawn).mockReset())
 
   it('lists tools and runs them against the browser', async () => {
@@ -117,7 +117,7 @@ describe('prototype browser MCP server', () => {
     const input = new PassThrough()
     const output = new PassThrough()
     const replies = createInterface({ input: output })[Symbol.asyncIterator]()
-    const served = servePrototypeBrowserMcp({ browser: options, input, output })
+    const served = serveSharedBrowserMcp({ browser: options, input, output })
     const rpc = async (id: number, method: string, params: object) => {
       input.write(`${JSON.stringify({ jsonrpc: '2.0', id, method, params })}\n`)
       const next = await replies.next()

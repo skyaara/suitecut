@@ -10,7 +10,7 @@ import * as z from 'zod'
 import { toError, type UntrustedInput } from './untrusted.js'
 
 /**
- * Client for the custom-UI prototype browser: one native CEF window with
+ * Client for the SuiteCut shared browser: one native CEF window with
  * SuiteCut's own tab strip and toolbar, where every tab is a full Chromium
  * page. It drives the process started with `--suitecut-prototype-control`,
  * which reads one JSON command per line and writes replies and events.
@@ -22,16 +22,16 @@ const reply = z.object({ id: z.number(), ok: z.boolean(), result: z.json().optio
 const event = z.looseObject({ event: z.string(), tab: z.number().optional() })
 
 /** An event the browser reported, such as a load, popup, dialog or download. */
-export type PrototypeEvent = z.infer<typeof event> & { readonly sequence: number }
+export type SharedBrowserEvent = z.infer<typeof event> & { readonly sequence: number }
 
-export interface PrototypeTabInfo {
+export interface SharedTabInfo {
   readonly id: number
   readonly title: string
   readonly url: string
   readonly active: boolean
 }
 
-export interface PrototypeBrowserOptions {
+export interface SharedBrowserOptions {
   /** Path to the built `suitecut-browser` executable. */
   readonly executablePath: string
   /** First tab's address. Defaults to `about:blank`. */
@@ -40,7 +40,7 @@ export interface PrototypeBrowserOptions {
   readonly profileDirectory?: string
   /** How permission prompts are answered: our toolbar bar, or always allow or deny. */
   readonly permissions?: 'ask' | 'allow' | 'deny'
-  /** JavaScript dialogs: held until `PrototypeTab.answerDialog`, accepted, or shown natively. */
+  /** JavaScript dialogs: held until `SharedTab.answerDialog`, accepted, or shown natively. */
   readonly dialogs?: 'control' | 'accept' | 'native'
   readonly width?: number
   readonly height?: number
@@ -146,12 +146,11 @@ const snapshotResult = z.object({
   truncated: z.boolean(),
 })
 
-/** Launches the prototype browser and resolves once its first tab exists. */
-export async function launchPrototypeBrowser(
-  options: PrototypeBrowserOptions,
-): Promise<PrototypeBrowser> {
+/** Launches the shared browser and resolves once its first tab exists. */
+export async function launchSharedBrowser(options: SharedBrowserOptions): Promise<SharedBrowser> {
   const owned = options.profileDirectory === undefined
-  const profile = options.profileDirectory ?? (await mkdtemp(join(tmpdir(), 'suitecut-prototype-')))
+  const profile =
+    options.profileDirectory ?? (await mkdtemp(join(tmpdir(), 'suitecut-shared-browser-')))
   const args = [
     '--suitecut-prototype=tabs',
     `--suitecut-prototype-root=${profile}`,
@@ -168,11 +167,11 @@ export async function launchPrototypeBrowser(
   if (options.toolbar === false) args.push('--suitecut-prototype-toolbar=none')
   args.push(...(options.arguments ?? []))
   const child = spawn(options.executablePath, args, { stdio: ['pipe', 'pipe', 'pipe'] })
-  const browser = new PrototypeBrowser(child, profile, owned)
+  const browser = new SharedBrowser(child, profile, owned)
   try {
     const timeout = options.launchTimeout ?? 30_000
     const ready = await browser.waitForEvent((e) => e.event === 'ready', { timeout, since: 0 })
-    if (ready.tab === undefined) throw new Error('The prototype browser reported no first tab')
+    if (ready.tab === undefined) throw new Error('The shared browser reported no first tab')
     const first = ready.tab
     await browser
       .waitForEvent((e) => e.tab === first && e.event === 'loading' && e.loading === false, {
@@ -187,16 +186,16 @@ export async function launchPrototypeBrowser(
   }
 }
 
-export class PrototypeBrowser {
-  private readonly events: PrototypeEvent[] = []
-  private readonly listeners = new Set<(event: PrototypeEvent) => void>()
+export class SharedBrowser {
+  private readonly events: SharedBrowserEvent[] = []
+  private readonly listeners = new Set<(event: SharedBrowserEvent) => void>()
   private readonly pending = new Map<number, (message: z.infer<typeof reply>) => void>()
   private readonly exited: Promise<void>
   private nextId = 1
   private stderr = ''
   private alive = true
   /** Dialogs shown and not yet answered, by tab. */
-  readonly openDialogs = new Map<number, PrototypeEvent>()
+  readonly openDialogs = new Map<number, SharedBrowserEvent>()
   /** Tabs this client has driven, which keep rendering while hidden. */
   readonly driven = new Set<number>()
 
@@ -233,20 +232,20 @@ export class PrototypeBrowser {
   }
 
   /** Events reported since a cursor. */
-  eventsSince(since: number): readonly PrototypeEvent[] {
+  eventsSince(since: number): readonly SharedBrowserEvent[] {
     return this.events.slice(since)
   }
 
-  on(listener: (event: PrototypeEvent) => void): () => void {
+  on(listener: (event: SharedBrowserEvent) => void): () => void {
     this.listeners.add(listener)
     return () => this.listeners.delete(listener)
   }
 
   /** Resolves with the first event at or after `since` that matches, in order. */
   waitForEvent(
-    match: (event: PrototypeEvent) => boolean,
+    match: (event: SharedBrowserEvent) => boolean,
     { timeout = 30_000, since = this.cursor() }: { timeout?: number; since?: number } = {},
-  ): Promise<PrototypeEvent> {
+  ): Promise<SharedBrowserEvent> {
     for (const seen of this.events.slice(since)) if (match(seen)) return Promise.resolve(seen)
     return new Promise((resolve, reject) => {
       const timer = setTimeout(() => {
@@ -262,7 +261,7 @@ export class PrototypeBrowser {
       void this.exited.then(() => {
         clearTimeout(timer)
         stop()
-        reject(new Error('The prototype browser exited'))
+        reject(new Error('The shared browser exited'))
       })
     })
   }
@@ -273,7 +272,7 @@ export class PrototypeBrowser {
     args: Record<string, JsonValue> = {},
     timeout = 30_000,
   ): Promise<JsonValue | undefined> {
-    if (!this.alive) throw new Error('The prototype browser is not running')
+    if (!this.alive) throw new Error('The shared browser is not running')
     const id = this.nextId++
     const answer = await new Promise<z.infer<typeof reply>>((resolve, reject) => {
       const timer = setTimeout(() => {
@@ -290,28 +289,28 @@ export class PrototypeBrowser {
     return answer.result
   }
 
-  async tabs(): Promise<PrototypeTabInfo[]> {
+  async tabs(): Promise<SharedTabInfo[]> {
     const list = z
       .array(z.object({ tab: z.number(), title: z.string(), url: z.string(), active: z.boolean() }))
       .parse(await this.command('tabs'))
     return list.map(({ tab, ...rest }) => ({ id: tab, ...rest }))
   }
 
-  tab(id: number): PrototypeTab {
-    return new PrototypeTab(this, id)
+  tab(id: number): SharedTab {
+    return new SharedTab(this, id)
   }
 
-  async activeTab(): Promise<PrototypeTab> {
+  async activeTab(): Promise<SharedTab> {
     const active = (await this.tabs()).find((tab) => tab.active)
-    if (!active) throw new Error('The prototype browser has no active tab')
+    if (!active) throw new Error('The shared browser has no active tab')
     return this.tab(active.id)
   }
 
   /** Opens a tab in the foreground and waits for its first load. */
-  async newTab(url = 'about:blank', timeout = 30_000): Promise<PrototypeTab> {
+  async newTab(url = 'about:blank', timeout = 30_000): Promise<SharedTab> {
     const since = this.cursor()
     const id = z.number().parse(await this.command('open', { url }))
-    if (id === 0) throw new Error('The prototype browser is closing')
+    if (id === 0) throw new Error('The shared browser is closing')
     await this.waitForEvent((e) => e.tab === id && e.event === 'loading' && e.loading === false, {
       since,
       timeout,
@@ -353,7 +352,7 @@ export class PrototypeBrowser {
     }
     const seen = event.safeParse(parsed)
     if (!seen.success) return
-    const recorded: PrototypeEvent = { ...seen.data, sequence: this.events.length }
+    const recorded: SharedBrowserEvent = { ...seen.data, sequence: this.events.length }
     this.events.push(recorded)
     if (recorded.tab !== undefined) {
       if (recorded.event === 'dialog') this.openDialogs.set(recorded.tab, recorded)
@@ -367,11 +366,11 @@ export class PrototypeBrowser {
   }
 }
 
-export class PrototypeTab {
+export class SharedTab {
   private pointer = { x: 0, y: 0 }
 
   constructor(
-    readonly browser: PrototypeBrowser,
+    readonly browser: SharedBrowser,
     readonly id: number,
   ) {}
 

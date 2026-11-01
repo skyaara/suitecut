@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- Add `@suitecut/shared-browser` 0.1.0 (preview): one native browser window with
+  SuiteCut's own tabs that a person and an agent use together, with a TypeScript
+  SDK and the `shared-browser-mcp` stdio MCP server. Input is trusted, CDP runs
+  in-process, and permission prompts and dialogs wait for an answer.
+- Prepare `suitecut` and `@suitecut/browser-control` 2.1.0, and add
+  `pnpm release:check`, which checks every npm package's manifest, tarball and
+  registry version without publishing.
 - Add a complete real Song Maker example with isolated SDK tarball installation,
   external packages, browser actions and verified 1080p60 recording with page audio.
 - Preserve bounded inline resource URLs in network observations and retain

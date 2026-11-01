@@ -40,7 +40,7 @@ Never test a release by publishing another version. Use `npm pack` and the packa
 
 ## Browser-control and native SDK release gates
 
-The release includes the `suitecut` and `@suitecut/browser-control` npm packages,
+The release includes the `suitecut`, `@suitecut/browser-control` and `@suitecut/shared-browser` npm packages,
 the eight audio packages, and separate platform-specific C++20/C ABI/CLI distributions.
 Keep CEF and other browser runtimes outside the small SDK-only archives. The
 optional full-runtime archive is built separately with
@@ -62,7 +62,11 @@ The regression package is not enabled in CI. SDK source archives and static/shar
 consumer verification are described in the [SDK architecture](native/client/ARCHITECTURE.md).
 Keep generated build outputs, profiles, local signing policies and reports out of Git.
 
-Build `pnpm build:browser-control` as well as the root package. Ignore generated
+Build every workspace package with `pnpm build:packages` as well as the root package,
+then run `pnpm release:check`. It packs each npm package without publishing
+(`suitecut`, `@suitecut/browser-control` and `@suitecut/shared-browser`), checks
+its manifest and contents, and fails if the version is already on npm.
+`@suitecut/shared-browser` is versioned on its own 0.x line until its API settles. Ignore generated
 package `dist` directories during linting, then check the authored code with
 `pnpm lint`, `pnpm format:check`, `pnpm typecheck`, and `pnpm test -- --run`.
 Regenerate `native/shared/native_aria_formatter.h` and `native/shared/native_aria_json.h` with
