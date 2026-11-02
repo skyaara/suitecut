@@ -29,6 +29,15 @@
     - Requests past 8,192 open ones push out the oldest.
     - Too many sockets or auth challenges are no longer tracked; a challenge
       that can't be tracked is answered with CancelAuth.
+    - At 4,096 requests, the request table evicts its oldest request even if
+      it is unfinished (long polls, streams), and a network event over 1 MiB
+      is dropped.
+    - A HAR recording that reaches 2,048 entries stops growing instead of
+      ending the browser; worker and context journals drop a record they
+      can't hold.
+    - A frame suitecut can't track is left to Chromium.
+    - A widget mouse lease whose document navigated away is dropped, and
+      the next input takes a new one.
 - Stop an unwatched live viewer from slowing the browser down. A viewer
   subscribed to every frame for as long as it was open, so on an animated page
   the browser copied each paint and the host read it even with nobody

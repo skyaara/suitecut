@@ -29,11 +29,10 @@ void DeferredDevToolsFailure(int id) {
     auto callback = std::exchange(binding->second.callback, nullptr); binding_calls_.erase(binding);
     callback(false,"Native deferred binding dispatch failed"); return;
   }
+  // A refused command with no owner (an object release, a world or frame
+  // tree request) is dropped; whatever needs it asks again.
   utility_worlds_.erase(id); session_trees_.erase(id);
-  if (browser_ && !closing_page_) {
-    suitecut::browser::CloseBrowser(browser_, true);
-    Error("Native deferred protocol dispatch failed");
-  }
+  if (browser_ && !closing_page_) Degraded("Native deferred protocol dispatch failed");
 }
 void WakeDeferredDevTools() {
   if (devtools_dispatch_task_ || devtools_dispatch_.empty() || closing_page_) return;

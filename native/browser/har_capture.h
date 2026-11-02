@@ -86,6 +86,7 @@ class NativeHARCapture {
     }else if(method=="Network.loadingFinished"||method=="Network.loadingFailed")record.wire.Terminal(method=="Network.loadingFinished");
   }
   // Called before the existing request-body publication mutates raw metadata.
+  std::function<void(const std::string&)> degraded;
   void Seal(int context){pages_.Seal(context);const auto found=captures_.find(context);if(found!=captures_.end())found->second.sealed=true;}
   bool OriginalRequest(int context,const std::string&owner,const std::string&session,Dict params){
     if(disposed_||!captures_.contains(context)||captures_.at(context).sealed)return true;
@@ -122,7 +123,8 @@ class NativeHARCapture {
     if(found==records_.end()){
       if(captures_.at(context).sealed)return true;
       if(kind!="request"||!NativeURLGlobMatches(captures_.at(context).filter,request->GetString("url")))return true;
-      if(records_.size()>=2048){Fail("Native HAR entry capacity exceeded");return false;}
+      // A full capture stops growing for this context instead of failing the browser.
+      if(records_.size()>=2048){captures_.at(context).sealed=true;if(degraded)degraded("Native HAR entry capacity exceeded");return true;}
       auto record=std::make_shared<Record>();record->context=context;record->observed_ms=now_();record->owner=owner;record->pageref=pages_.Reference(context,owner);record->frame_allowed=actor->second.kind==OwnerKind::Page;record->request=request->Copy(false);record->wall_ms=wall_ms;record->generation=++serial_;if(reserve_)record->publication=reserve_(context);
       auto original=originals_.find(owner+"\n"+request->GetString("session").ToString()+"\n"+request->GetString("requestId").ToString());
       if(original!=originals_.end()){

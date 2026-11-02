@@ -66,6 +66,7 @@ class NativeNetworkArchives {
     const bool recorded=recording_.Observe(context,owner,event,wall);
     const bool traced=!traces_.contains(context)||tracing_.Observe(context,owner,event,wall);return recorded&&traced;
   }
+  void SetDegraded(std::function<void(const std::string&)> degraded){recording_.degraded=degraded;tracing_.degraded=std::move(degraded);}
   NativeHARCapture::PostPublication ReservePost(int context,const std::string&owner,const std::string&id){
     if(closed_)return {};
     auto recording=recording_.ReservePost(context,owner,id),tracing=tracing_.ReservePost(context,owner,id);

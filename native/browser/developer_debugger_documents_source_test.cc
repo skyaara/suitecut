@@ -71,6 +71,7 @@ class Source{
   bool SendKeysCleanupCommand(int){return false;}
   void MarkFinalReleaseSubmitted(int){}
   void Error(const char*error){close_requests.push_back(error);}
+  void Degraded(const std::string&){}
 #include "controllers/debugger/developer_debugger_documents_source.inc"
 #ifndef SUITECUT_DEVTOOLS_DISPATCH_TEST_INCLUDE
 #define SUITECUT_DEVTOOLS_DISPATCH_TEST_INCLUDE "controllers/debugger/devtools_dispatch.inc"

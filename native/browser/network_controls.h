@@ -79,6 +79,7 @@ class NetworkControls {
   }
   // Reports what a subcontrol dropped instead of failing the page.
   std::function<void(const std::string&)> degraded;
+  void Degrade(const std::string& error){if(degraded)degraded(error);}
 
   uint64_t QueuedPublication() const{return bodies_?bodies_->publication().QueuedCursor():0;}
   uint64_t PublishedPublication() const{return bodies_?bodies_->publication().PublishedCursor():0;}
@@ -667,18 +668,20 @@ class NetworkControls {
   bool Reserve(const std::string& key) {
     if(requests_.contains(key))return true;
     if(requests_.size()>=4096) {
-      const auto oldest=std::find_if(order_.begin(),order_.end(),[this](const std::string& candidate){const auto found=requests_.find(candidate);return found==requests_.end() || Evictable(found->second);});
-      if(oldest==order_.end()){failure_("Native network request metadata capacity exceeded");return false;}
+      auto oldest=std::find_if(order_.begin(),order_.end(),[this](const std::string& candidate){const auto found=requests_.find(candidate);return found==requests_.end() || Evictable(found->second);});
+      // With every row unfinished (long polls, streams), the oldest goes anyway.
+      if(oldest==order_.end()){oldest=order_.begin();Degrade("Native network request metadata capacity exceeded");}
       const auto old=requests_.find(*oldest);if(old!=requests_.end()){request_metadata_bytes_-=old->second.metadata_bytes;requests_.erase(old);}order_.erase(oldest);
     }
     order_.push_back(key);return true;
   }
   bool RetainMetadata(Request& request) {
     const size_t bytes=(request.info?Json(request.info).size():0)+(request.response?Json(request.response).size():0)+request.logical_id.size()+request.native_id.size()+request.session.size()+request.frame.size()+request.method.size()+request.url.size()+request.resource.size()+request.redirected_from.size()+request.error.size()+request.response_header_error.size()+request.request_header_error.size()+request.preflight_parent.size()+512;
-    if(bytes>33554432){failure_("Native request metadata exceeds the 32 MiB byte budget");return false;}
+    if(bytes>33554432){Degrade("Native request metadata exceeds the 32 MiB byte budget");return false;}
     while(bytes>33554432-(request_metadata_bytes_-request.metadata_bytes)) {
-      const auto oldest=std::find_if(order_.begin(),order_.end(),[&](const std::string& key){const auto found=requests_.find(key);return found==requests_.end() || (&found->second!=&request && Evictable(found->second));});
-      if(oldest==order_.end()){failure_("Native active request metadata byte budget exceeded");return false;}
+      auto oldest=std::find_if(order_.begin(),order_.end(),[&](const std::string& key){const auto found=requests_.find(key);return found==requests_.end() || (&found->second!=&request && Evictable(found->second));});
+      if(oldest==order_.end()){oldest=std::find_if(order_.begin(),order_.end(),[&](const std::string& key){const auto found=requests_.find(key);return found==requests_.end() || &found->second!=&request;});Degrade("Native active request metadata byte budget exceeded");}
+      if(oldest==order_.end())return false;
       const auto found=requests_.find(*oldest);if(found!=requests_.end()){request_metadata_bytes_-=found->second.metadata_bytes;requests_.erase(found);}order_.erase(oldest);
     }
     request_metadata_bytes_=request_metadata_bytes_-request.metadata_bytes+bytes;request.metadata_bytes=bytes;return true;
@@ -739,7 +742,7 @@ class NetworkControls {
       auto info=data->GetDictionary("request");
       if(info && (info->HasKey("postData") || info->HasKey("postDataBase64"))){info->Remove("postData");info->Remove("postDataBase64");info->SetBool("postDataUnavailable",true);json=Json(data);}
     }
-    if(json.size()>1048576){failure_("Native network event exceeds 1 MiB");return;}
+    if(json.size()>1048576){Degrade("Native network event exceeds 1 MiB");return;}
     history_.push_back({data->Copy(false),json.size()});history_bytes_+=json.size();
     while(history_.size()>256 || history_bytes_>4194304) {history_bytes_-=history_.front().bytes;history_.pop_front();}
     emit_(data);
@@ -880,7 +883,7 @@ class NetworkControls {
     const auto fetch=data->GetString("requestId").ToString();auto info=data->GetDictionary("request");
     if(fetch.empty()||!info)return;
     const auto url=info->GetString("url").ToString();
-    if(paused_.size()+rejected_.size()>=1024){auto params=CefDictionaryValue::Create();params->SetString("requestId",fetch);params->SetString("errorReason","BlockedByClient");send_(session,"Fetch.failRequest",params,[](bool,const std::string&){});failure_("Native paused route limit exceeded");return;}
+    if(paused_.size()+rejected_.size()>=1024){auto params=CefDictionaryValue::Create();params->SetString("requestId",fetch);params->SetString("errorReason","BlockedByClient");send_(session,"Fetch.failRequest",params,[](bool,const std::string&){});Degrade("Native paused route limit exceeded");return;}
     if(!invocation){if(auto parent=RouteRequest(data->GetString("networkId"),session))parent->route_selection_complete=true;ResolvePreflights();auto params=CefDictionaryValue::Create();params->SetString("requestId",fetch);send_(session,"Fetch.continueRequest",params,[this](bool,const std::string&){if(!disposed_&&routes_.empty()&&!matchers_->pending()&&paused_.empty())ConfigureAll([this](bool ok,const std::string&error,const std::string&){if(!ok&&!disposed_)failure_(error);});});return;}
     const auto replay=har_replays_.find(invocation->registration);const auto admitted_replay=replay==har_replays_.end()?NativeHARRouteRegistration::Policy{}:replay->second;const bool native_replay=bool(admitted_replay);
     auto har_info=har_replays_.empty()?nullptr:info->Copy(false);

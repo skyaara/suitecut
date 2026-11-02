@@ -18,17 +18,17 @@ auto Engine::worker_network() -> suitecut::NativeContextWorkerNetwork& { return 
 auto Engine::ContextWorkerNetwork(int context, const std::string& owner, Dict worker, Dict info)
     -> void {
   if (!worker_network_->Observe(context, owner, worker, info))
-    writer_.Error("Native context worker network observation rejected");
+    Degraded("Native context worker network observation rejected");
 }
 
 auto Engine::ContextNetwork(int page, Dict info) -> void {
   if (!context_network_->Observe(contexts_->ContextId(page), page, info))
-    writer_.Error("Native context network journal rejected payload");
+    Degraded("Native context network journal rejected payload");
 }
 
 auto Engine::ContextConsole(int page, Dict info) -> void {
   if (!context_console_->Observe(contexts_->ContextId(page), page, info))
-    writer_.Error("Native context console journal rejected payload");
+    Degraded("Native context console journal rejected payload");
 }
 
 auto Engine::AcceptedInspector() const noexcept
@@ -193,6 +193,10 @@ auto Engine::HTTPDiagnostics(Dict output) const -> void {
   output->SetInt("nativeTraceDOMPhysical", int(trace_dom_physical_));
   output->SetInt("nativeTraceProtocolPhysical", int(trace_physical_));
   output->SetInt("nativeTracePreviewPhysical", int(trace_preview_->PhysicalCount()));
+  auto degraded = CefDictionaryValue::Create();
+  for (const auto& [message, count] : degraded_)
+    degraded->SetDouble(message, static_cast<double>(count));
+  output->SetDictionary("engineDegraded", degraded);
   output->SetInt("nativeTraceSourcesPhysical", int(trace_sources_->PhysicalCount()));
   output->SetInt("nativeTraceBackgroundPhysical", int(trace_background_.PhysicalCount()));
   output->SetInt("nativeTraceBackgroundFailures", int(trace_background_.Failures()));

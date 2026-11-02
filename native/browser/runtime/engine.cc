@@ -18,6 +18,7 @@ Engine::Engine(Writer& writer, int width, int height, double scale, bool i420, i
       });
   network_archive_ = std::make_unique<suitecut::NativeNetworkArchives>(
       [] { return Now(); }, [this](const std::string& error) { writer_.Error(error.c_str()); });
+  network_archive_->SetDegraded([this](const std::string& error) { Degraded(error); });
   context_routes_ = std::make_unique<suitecut::NativeContextRoutes>(
       [this](const std::string& owner, const std::string& error) {
         HARPolicyFailure(owner, error);
@@ -30,7 +31,7 @@ Engine::Engine(Writer& writer, int width, int height, double scale, bool i420, i
   worker_network_ = std::make_unique<suitecut::NativeContextWorkerNetwork>(
       [this](int context, Dict worker, Dict event) {
         if (!context_network_->ObserveWorker(context, worker, event))
-          writer_.Error("Native context worker journal rejected actual metadata");
+          Degraded("Native context worker journal rejected actual metadata");
       });
   worker_network_->SetRouteEmitter(
       [this](int context, const std::string& owner, Dict worker, Dict event) {
@@ -41,7 +42,7 @@ Engine::Engine(Writer& writer, int width, int height, double scale, bool i420, i
     typed->SetDictionary(info->Copy(false));
     std::string json;
     if (!suitecut::DevToolsLosslessJSON(typed, json, 1048576)) {
-      writer_.Error("Native context console output limit exceeded");
+      Degraded("Native context console output limit exceeded");
       return;
     }
     writer_.Send(Header("contextconsole"), std::vector<uint8_t>(json.begin(), json.end()));
@@ -534,7 +535,7 @@ Engine::Engine(Writer& writer, int width, int height, double scale, bool i420, i
   worker_hooks.resource_request = [this, alive = alive_](int context, const std::string& owner,
                                                          const std::string& session, Dict raw) {
     if (*alive && !network_archive_->OriginalRequest(context, owner, session, raw))
-      writer_.Error("Native worker archive original request rejected");
+      Degraded("Native worker archive original request rejected");
     if (*alive && network_archive_->NeedsTick()) WakeTrace();
   };
   worker_hooks.resource_event = [this, alive = alive_](int context, const std::string& owner,
@@ -544,7 +545,7 @@ Engine::Engine(Writer& writer, int width, int height, double scale, bool i420, i
         kind != "requestfinished" && kind != "requestfailed")
       return;
     if (*alive && !network_archive_->Observe(context, owner, event, 0))
-      writer_.Error("Native worker archive metadata rejected");
+      Degraded("Native worker archive metadata rejected");
     if (*alive && network_archive_->NeedsTick()) WakeTrace();
   };
   worker_hooks.now = [] { return Now(); };
@@ -560,7 +561,7 @@ Engine::Engine(Writer& writer, int width, int height, double scale, bool i420, i
   };
   worker_hooks.console = [this](int context, Dict info) {
     if (!context_console_->ObserveWorker(context, info))
-      writer_.Error("Native context worker console journal rejected payload");
+      Degraded("Native context worker console journal rejected payload");
   };
   worker_hooks.predicate = [this](int context, Dict snapshot) {
     auto record = CefDictionaryValue::Create();
@@ -571,7 +572,7 @@ Engine::Engine(Writer& writer, int width, int height, double scale, bool i420, i
     typed->SetDictionary(record->Copy(false));
     std::string json;
     if (!suitecut::DevToolsLosslessJSON(typed, json, 1048576)) {
-      writer_.Error("Native context console predicate output limit exceeded");
+      Degraded("Native context console predicate output limit exceeded");
       return;
     }
     writer_.Send(Header("contextworkerpredicate"), std::vector<uint8_t>(json.begin(), json.end()));

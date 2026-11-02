@@ -113,7 +113,9 @@ auto Source::OnAcceleratedPaint(CefRefPtr<CefBrowser> browser, PaintElementType 
   auto& pixels = type == PET_VIEW ? view_ : popup_;
   if (!suitecut::CopyMacSurface(info.shared_texture_io_surface, visible.x, visible.y, width, height,
                                 pixels)) {
-    Error("Native IOSurface paint could not be copied safely");
+    // A surface that changed size mid-copy is skipped; the next paint replaces it.
+    Degraded("Native IOSurface paint could not be copied safely");
+    if (browser_) browser_->GetHost()->Invalidate(type);
     return;
   }
   native_paint_timestamp_ = captured;

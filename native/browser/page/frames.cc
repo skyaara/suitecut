@@ -70,7 +70,8 @@ auto Source::StoreFrame(Dict info, const char* event, const std::string& session
   const auto url = info->GetString("url").ToString() + info->GetString("urlFragment").ToString();
   if (id.empty() || id.size() > 128 || parent.size() > 128 || url.size() > kMaxObservedURL ||
       (!frame_states_.contains(id) && frame_states_.size() >= 1024)) {
-    Error("Native frame metadata limit exceeded");
+    // A frame suitecut can't track is left to Chromium; operations in it fail.
+    Degraded("Native frame metadata limit exceeded");
     return;
   }
   if (std::strcmp(event, "framenavigated") == 0) {
@@ -317,8 +318,9 @@ auto Source::EnsureUtilityWorld(const std::string& id) -> void {
   params->SetString("worldName", "__suitecut_dom__");
   utility_worlds_[call] = {id, frame->second.session, frame->second.loader};
   if (!SubmitDevTools(call, "Page.createIsolatedWorld", params, frame->second.session)) {
+    // The next operation that needs this frame's world asks for it again.
     utility_worlds_.erase(call);
-    Error("Native DOM execution world dispatch failed");
+    Degraded("Native DOM execution world dispatch failed");
   }
 }
 

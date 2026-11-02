@@ -186,9 +186,11 @@ auto Source::InitSnapshotTraffic(const std::string& method, Dict data, const std
   if (!method.starts_with("Network.")) return false;
   const auto key = session + "\n" + data->GetString("requestId").ToString();
   if (method == "Network.requestWillBeSent" && private_request) {
+    // The set only filters suitecut's own init traffic out of the page's;
+    // a full set forgets its entries rather than closing the page.
     if (init_snapshot_requests_.size() >= 1024) {
-      Error("Native init snapshot request tracking capacity exceeded");
-      return true;
+      init_snapshot_requests_.clear();
+      Degraded("Native init snapshot request tracking capacity exceeded");
     }
     init_snapshot_requests_.insert(key);
     return true;

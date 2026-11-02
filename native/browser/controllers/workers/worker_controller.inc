@@ -186,7 +186,8 @@ bool WorkerAttached(Dict data, const std::string& parent_session) {
     if(worker_websocket_required_&&worker_websocket_required_()){
       if(worker_websocket_failure_)worker_websocket_failure_("Native worker target identity or capacity invalid under WebSocket policy");
     }else if (!session.empty()) SendDevTools("Runtime.runIfWaitingForDebugger",nullptr,session);
-    Error("Native worker target identity or capacity invalid"); return true;
+    // The worker runs untracked; it was already resumed above.
+    Degraded("Native worker target identity or capacity invalid"); return true;
   }
   if(!WorkerEventAvailable()){
     if(worker_websocket_required_&&worker_websocket_required_()){if(worker_websocket_failure_)worker_websocket_failure_("Native worker event capacity exceeded under WebSocket policy");}

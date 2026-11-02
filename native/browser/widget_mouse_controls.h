@@ -18,7 +18,7 @@ class NativeWidgetMouse : public std::enable_shared_from_this<NativeWidgetMouse>
   using Send=std::function<void(const std::string&,const std::string&,Dict,Reply,double)>;
   struct Pin {std::string frame,loader,session,identity;uint64_t generation=0;
     bool operator==(const Pin&)const=default;};
-  struct Hooks {Send send;std::function<bool(const Pin&)>current;std::function<void(const std::string&)>fatal;std::function<double()>now;};
+  struct Hooks {Send send;std::function<bool(const Pin&)>current;std::function<void(const std::string&)>fatal;std::function<double()>now;std::function<void(const std::string&)>degraded;};
   explicit NativeWidgetMouse(Hooks hooks):hooks_(std::move(hooks)){}
   void Probe(Reply done){
     if(probed_){done(available_,available_?"":"Original-widget receipts require the custom CEF backend");return;}
@@ -42,7 +42,9 @@ class NativeWidgetMouse : public std::enable_shared_from_this<NativeWidgetMouse>
   void Dispatch(int owner,const Pin&pin,Dict event,double deadline,Reply done){
     if(!available()||pending_||finishing_||!event||!hooks_.current(pin)){
       done(false,!available()?"Original-widget receipts require the custom CEF backend":"Native widget mouse owner is unavailable or busy");return;}
-    if(!lease_.empty()&&pin_!=pin){Fail("Original mouse document changed while a native widget was leased");done(false,"Original mouse document changed");return;}
+    // A lease ends with its document: a navigation drops it and the next
+    // input acquires a new one, instead of disabling the widget path.
+    if(!lease_.empty()&&pin_!=pin)Lost("Original mouse document changed while a native widget was leased");
     owner_=owner;pin_=pin;event_=event->Copy(false);deadline_=deadline;dispatch_done_=std::move(done);
     if(!lease_.empty()){SendEvent();return;}
     // Ordinary clicks can leave the legacy drag interceptor enabled. Retire
@@ -51,7 +53,7 @@ class NativeWidgetMouse : public std::enable_shared_from_this<NativeWidgetMouse>
     hooks_.send(pin.session,"Input.setInterceptDrags",intercept,[self=shared_from_this()](bool ok,const std::string&){
       self->pending_=false;
       if(self->closed_){self->DispatchDone(false,"Native widget channel closed");self->FinishDone(false,"Native widget channel closed");return;}
-      if(!ok){self->Fail("Raw original-widget input could not retire the legacy drag interceptor");self->DispatchDone(false,"Native drag interceptor policy failed");return;}
+      if(!ok){self->Lost("Raw original-widget input could not retire the legacy drag interceptor");self->DispatchDone(false,"Native drag interceptor policy failed");if(self->finishing_)self->PumpFinish();return;}
       if(self->finishing_){self->DispatchDone(false,"Native widget operation canceled");self->PumpFinish();return;}
       self->Acquire();
     },deadline);
@@ -73,8 +75,9 @@ class NativeWidgetMouse : public std::enable_shared_from_this<NativeWidgetMouse>
   static Dict Parse(const std::string&json){if(json.size()>65536)return nullptr;const auto value=CefParseJSON(json,JSON_PARSER_RFC);return value&&value->GetType()==VTYPE_DICTIONARY?value->GetDictionary():nullptr;}
   static bool Keys(Dict value,std::initializer_list<const char*>names){if(!value||value->GetSize()!=names.size())return false;for(const auto*name:names)if(!value->HasKey(name))return false;return true;}
   void Fail(const std::string&error){available_=false;if(!closed_)hooks_.fatal(error);}
-  void DispatchDone(bool ok,const std::string&error){auto done=std::move(dispatch_done_);event_=nullptr;if(done)done(ok,error);}
-  void FinishDone(bool ok,const std::string&error){finishing_=false;cancel_=false;auto done=std::move(finish_done_);if(done)done(ok,error);}
+  void Lost(const std::string&error){lease_.clear();document_.clear();sequence_=0;buttons_=0;if(!closed_&&hooks_.degraded)hooks_.degraded(error);}
+  void DispatchDone(bool ok,const std::string&error){auto done=std::exchange(dispatch_done_, nullptr);event_=nullptr;if(done)done(ok,error);}
+  void FinishDone(bool ok,const std::string&error){finishing_=false;cancel_=false;auto done=std::exchange(finish_done_, nullptr);if(done)done(ok,error);}
   bool Current(){return !closed_&&hooks_.current(pin_);}
   void Acquire(){
     auto params=CefDictionaryValue::Create();params->SetString("frameId",pin_.frame);params->SetString("loaderId",pin_.loader);
@@ -84,14 +87,14 @@ class NativeWidgetMouse : public std::enable_shared_from_this<NativeWidgetMouse>
       const auto value=Parse(json);
       if(!ok||!Keys(value,{"lease","documentToken"})||value->GetType("lease")!=VTYPE_STRING||value->GetType("documentToken")!=VTYPE_STRING||
          value->GetString("lease").empty()||value->GetString("lease").length()>128||value->GetString("documentToken").empty()||value->GetString("documentToken").length()>128){
-        self->Fail("Native widget lease acquisition failed or returned malformed identity");self->DispatchDone(false,"Native widget lease acquisition failed");return;}
+        self->Lost("Native widget lease acquisition failed or returned malformed identity");self->DispatchDone(false,"Native widget lease acquisition failed");if(self->finishing_)self->PumpFinish();return;}
       self->lease_=value->GetString("lease");self->document_=value->GetString("documentToken");self->sequence_=0;
       if(self->finishing_){self->DispatchDone(false,"Native widget operation canceled");self->PumpFinish();return;}
       self->SendEvent();
     },deadline_);
   }
   void SendEvent(){
-    if(!Current()||lease_.empty()){Fail("Original mouse document is no longer current");DispatchDone(false,"Original mouse document is no longer current");return;}
+    if(!Current()||lease_.empty()){Lost("Original mouse document is no longer current");DispatchDone(false,"Original mouse document is no longer current");if(finishing_)PumpFinish();return;}
     if(finishing_){DispatchDone(false,"Native widget operation canceled");PumpFinish();return;}
     if(sequence_==std::numeric_limits<int>::max()){Fail("Native widget sequence exhausted");DispatchDone(false,"Native widget sequence exhausted");return;}
     auto params=CefDictionaryValue::Create();params->SetString("lease",lease_);params->SetInt("sequence",++sequence_);
@@ -120,8 +123,8 @@ class NativeWidgetMouse : public std::enable_shared_from_this<NativeWidgetMouse>
         if(renderer)self->buttons_=next;
         if(self->closed_){self->DispatchDone(false,"Native widget channel closed");self->FinishDone(false,"Native widget channel closed");return;}
         if((!renderer&&!nonblocking)||!self->Current()){
-          self->Fail("Original-widget mouse receipt did not establish delivery to the original live document");
-          self->DispatchDone(false,"Original-widget mouse delivery failed");return;
+          self->Lost("Original-widget mouse receipt did not establish delivery to the original live document");
+          self->DispatchDone(false,"Original-widget mouse delivery failed");if(self->finishing_)self->PumpFinish();return;
         }
         if(cleanup){self->PumpFinish();return;}
         self->DispatchDone(true,"");if(self->finishing_)self->PumpFinish();
@@ -131,7 +134,7 @@ class NativeWidgetMouse : public std::enable_shared_from_this<NativeWidgetMouse>
     if(!finishing_||pending_)return;
     if(closed_){FinishDone(false,"Native widget channel closed");return;}
     if(lease_.empty()){FinishDone(true,"");return;}
-    if(!Current()){Fail("Original mouse widget cannot be released after document loss");return;}
+    if(!Current()){Lost("Original mouse widget cannot be released after document loss");FinishDone(true,"");return;}
     if(buttons_){
       if(!cancel_){FinishDone(true,"");return;}
       const std::string button=buttons_&1?"left":buttons_&2?"right":"middle";const int bit=buttons_&1?1:buttons_&2?2:4;
@@ -143,7 +146,7 @@ class NativeWidgetMouse : public std::enable_shared_from_this<NativeWidgetMouse>
     auto params=CefDictionaryValue::Create();params->SetString("lease",lease_);pending_=true;
     hooks_.send(pin_.session,"Input.releaseMouseWidget",params,[self=shared_from_this()](bool ok,const std::string&json){
       self->pending_=false;if(self->closed_){self->FinishDone(false,"Native widget channel closed");return;}
-      const auto value=Parse(json);if(!ok||!Keys(value,{})){self->Fail("Native original-widget lease release was not acknowledged");return;}
+      const auto value=Parse(json);if(!ok||!Keys(value,{})){self->Lost("Native original-widget lease release was not acknowledged");self->FinishDone(true,"");return;}
       self->lease_.clear();self->document_.clear();self->sequence_=0;self->FinishDone(true,"");
     },cleanup_deadline_);
   }

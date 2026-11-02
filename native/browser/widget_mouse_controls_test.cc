@@ -38,7 +38,9 @@ int main(){assert(cef_api_hash(CEF_API_VERSION,0));
  dispatched=false;mouse->Dispatch(3,pin,event("mouseMoved","none"),1000,[&](bool ok,const auto&){dispatched=ok;});reply("Input.acquireMouseWidget",R"({"lease":"lease","documentToken":"document"})");reply("Input.dispatchMouseEventToWidget",ack(1,"browserAck",3));assert(dispatched);mouse->Finish(3,false,[](bool ok,const auto&){assert(ok);});reply("Input.releaseMouseWidget","{}");
  // A successful down retains the immutable native lease across SDK calls.
  dispatched=false;mouse->Dispatch(4,pin,event("mousePressed"),1000,[&](bool ok,const auto&){dispatched=ok;});reply("Input.acquireMouseWidget",R"({"lease":"lease","documentToken":"document"})");reply("Input.dispatchMouseEventToWidget",ack(1));assert(dispatched&&mouse->held());mouse->Finish(4,false,[](bool ok,const auto&){assert(ok);});assert(calls.empty());
- current=false;finished=false;mouse->Finish(4,true,[&](bool ok,const auto&){assert(!ok);finished=true;});assert(fatal==1&&!finished&&calls.empty());mouse->ChannelClosed();assert(finished&&!mouse->held());
+ // A held gesture whose document went away ends with that document: the lease
+ // is dropped and reported, not fatal.
+ current=false;finished=false;mouse->Finish(4,true,[&](bool ok,const auto&){assert(ok&&!finished);finished=true;});assert(fatal==0&&finished&&calls.empty()&&!mouse->held());mouse->ChannelClosed();
  auto stock=std::make_shared<Mouse>(hooks);ready=true;stock->Probe([&](bool ok,const auto&){ready=ok;});reply("Input.getMouseWidgetReceiptCapabilities","method absent",false);assert(!ready&&!stock->available());bool refused=false;stock->Dispatch(5,pin,event("mousePressed"),1000,[&](bool ok,const auto&error){assert(!ok&&!error.empty());refused=true;});assert(refused&&calls.empty());
  current=true;auto closing=std::make_shared<Mouse>(hooks);closing->Probe([](bool ok,const auto&){assert(ok);});reply("Input.getMouseWidgetReceiptCapabilities",probe);
  bool raw_retired=false,finish_retired=false;
@@ -47,5 +49,5 @@ int main(){assert(cef_api_hash(CEF_API_VERSION,0));
  assert(closing->physical()&&!raw_retired&&!finish_retired);
  reply("Input.acquireMouseWidget","actual inspector channel closed",false);
  assert(!closing->physical()&&raw_retired&&finish_retired&&calls.empty());
- std::cout<<"Native widget mouse: strict live capability contract, exact canceled native ACK ownership, original-lease cleanup, nonblocking distinction, resident held gesture, changed-document fail-close and stock unsupported PASS\n";
+ std::cout<<"Native widget mouse: strict live capability contract, exact canceled native ACK ownership, original-lease cleanup, nonblocking distinction, resident held gesture, changed-document lease drop and stock unsupported PASS\n";
 }
