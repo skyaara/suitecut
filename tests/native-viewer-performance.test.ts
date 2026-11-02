@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 import { setTimeout as delay } from 'node:timers/promises'
 
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { type NativeBrowserController } from '../src/native-browser-controller.js'
 import { type NativeVideoFrame } from '../src/native-browser.js'
@@ -198,6 +198,31 @@ describe('native viewer frame demand and lifecycle', () => {
     expect(response.status).toBe(200)
     await response.arrayBuffer()
     expect(f.viewer.state().frameSequence).toBe(1)
+  })
+
+  it('listens for native frames only while a client asks for them', async () => {
+    const f = await fixture()
+    f.emit()
+    expect(f.listeners.size).toBe(0)
+    expect((await f.frame()).status).toBe(200)
+    expect(f.listeners.size).toBe(1)
+    // The 1 s maintenance pass drops the subscription 5 s after the last request.
+    vi.useFakeTimers({ toFake: ['Date'] })
+    try {
+      vi.setSystemTime(Date.now() + 4000)
+      await delay(1100)
+      expect(f.listeners.size).toBe(1)
+      vi.setSystemTime(Date.now() + 2000)
+      await delay(1100)
+      expect(f.listeners.size).toBe(0)
+    } finally {
+      vi.useRealTimers()
+    }
+    f.emit()
+    const response = await f.frame()
+    expect(response.status).toBe(200)
+    await response.arrayBuffer()
+    expect(f.listeners.size).toBe(1)
   })
 
   it('closes pending polls and detaches native frame observers', async () => {

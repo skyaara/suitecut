@@ -2,6 +2,21 @@
 
 ## Unreleased
 
+- Stop an unwatched live viewer from slowing the browser down. A viewer
+  subscribed to every frame for as long as it was open, so on an animated page
+  the browser copied each paint and the host read it even with nobody
+  watching: on GitHub this took about half a core of Node and made commands
+  six times slower. The viewer now listens only while a client asks for
+  frames, and stops 5 s after the last request.
+- Keep the browser running on ad-heavy sites such as Allrecipes. Requests of
+  an iframe whose target went away never finished, so they filled the
+  page's 1,024-row response table and the whole browser closed with "Native
+  document response limit exceeded". Those requests now end with the target,
+  and a full table drops its oldest row instead.
+- Leave content hidden by `content-visibility: hidden`, such as
+  `hidden="until-found"` and Wikipedia's collapsed navigation boxes, out of AI
+  snapshots and `getByRole`, as Playwright does. Agents picked those links
+  from the snapshot and every click waited out its timeout.
 - Stop closing pages that contain a sandboxed iframe. Chrome runs a sandboxed
   frame in its own process, refuses `Debugger.enable` there because script is
   prohibited, and suitecut treated that refusal as a broken channel. A page

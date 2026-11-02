@@ -101,8 +101,11 @@ async function fixture(size = { width: 3840, height: 2160 }) {
   const sources = [1, 2].map((pageId) => {
     const viewport = { ...size }
     const listeners = new Set<(frame: NativeVideoFrame) => void>()
+    // As in the real source, a new subscription first receives the current view.
+    const last: { frame?: NativeVideoFrame } = {}
     return {
       pageId,
+      last,
       width: 3840,
       height: 2160,
       pixelFormat: 'bgra',
@@ -112,6 +115,7 @@ async function fixture(size = { width: 3840, height: 2160 }) {
       failure: new Promise<never>(() => undefined),
       onFrame(listener: (frame: NativeVideoFrame) => void) {
         listeners.add(listener)
+        if (last.frame) listener(last.frame)
         return () => listeners.delete(listener)
       },
       runAutomation: (command: string) =>
@@ -129,6 +133,10 @@ async function fixture(size = { width: 3840, height: 2160 }) {
         source,
         isClosed: () => false,
         viewportSize: () => source.viewport,
+        setViewportSize: (size: { width: number; height: number }) => {
+          Object.assign(source.viewport, size)
+          return Promise.resolve()
+        },
         context: () => ({}),
         url: () => 'https://example.test/',
       }) as object as NativePage,
@@ -174,6 +182,7 @@ async function fixture(size = { width: 3840, height: 2160 }) {
       droppedFrames: 0,
       pixelFormat: 'bgra',
     }
+    source.last.frame = frame
     for (const listener of source.listeners) listener(frame)
   }
   const frame = (after = 0) =>
@@ -182,6 +191,15 @@ async function fixture(size = { width: 3840, height: 2160 }) {
 }
 
 describe('native viewer cooperative packing ownership', () => {
+  it('resizes for a client that never asked for frames', async () => {
+    const f = await fixture({ width: 1280, height: 720 })
+    f.emit()
+    expect(f.sources[0]?.listeners.size).toBe(0)
+    await f.action({ type: 'takeover' })
+    await f.action({ type: 'resize', width: 1024, height: 640, mode: 'fixed' })
+    expect(f.sources[0]?.viewport).toEqual({ width: 1024, height: 640 })
+  })
+
   it('keeps asking a browser too busy to answer until the handover is idle', async () => {
     const f = await fixture()
     let slow = 2

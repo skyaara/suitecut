@@ -350,19 +350,8 @@ auto Source::NetworkEvent(const std::string& method, Dict data, const std::strin
     {
       auto info = data->GetDictionary("request");
       if (!info) return;
-      if (!documents_.contains(key) && documents_.size() >= 1024) {
-        auto oldest = std::find_if(document_order_.begin(), document_order_.end(),
-                                   [this](const std::string& candidate) {
-                                     const auto found = documents_.find(candidate);
-                                     return found != documents_.end() && found->second.finished;
-                                   });
-        if (oldest == document_order_.end()) {
-          Error("Native document response limit exceeded");
-          return;
-        }
-        documents_.erase(*oldest);
-        document_order_.erase(oldest);
-      }
+      if (!documents_.contains(key) && documents_.size() >= 1024)
+        suitecut::EvictDocument(documents_, document_order_);
       if (!documents_.contains(key)) document_order_.push_back(key);
       documents_[key] = {frame,
                          request,

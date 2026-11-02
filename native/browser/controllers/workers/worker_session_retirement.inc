@@ -38,6 +38,8 @@ void NativeTargetSessionDetached(const std::string& root){
       if(sockets_)sockets_->SessionDetached(child,Now());
       GeolocationDetach(child);
       if (network_) network_->SessionDetached(child);
+      for (const auto& frame : suitecut::RetireSessionRequests(active_requests_, documents_, child))
+        NetworkActivity(frame);
       for (auto it = session_trees_.begin(); it != session_trees_.end();) {
         if (it->second == child) it = session_trees_.erase(it); else ++it;
       }
@@ -62,4 +64,5 @@ void NativeTargetSessionDetached(const std::string& root){
         else Complete(id, false, "Native execution context destroyed by process swap");
       }
   }
+  CheckBodies();
 }

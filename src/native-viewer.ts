@@ -67,6 +67,8 @@ export interface NativeBrowserViewer {
   close(): Promise<void>
 }
 
+// A viewer keeps its frame subscription this long after a client last asked for a frame.
+const frameIdleMs = 5000
 const Options = z.strictObject({
   port: z.number().int().min(0).max(65535).default(0),
   network: z.boolean().default(false),
@@ -217,6 +219,10 @@ export async function createBrowserViewer(
   // once the page has recovered, whoever recovered it.
   let awaitingRecovery: NativePage | undefined
   let frameAttachment = 0
+  // Every frame costs the browser a copy of the paint and the host a read of
+  // it, so the viewer listens only while a client asks for frames.
+  let frameDemandAt = -Infinity
+  const geometryWaiters = new Set<() => void>()
   let closing: Promise<void> | undefined
   let actionBusy = false
   let activeAction: Promise<void> | undefined
@@ -304,6 +310,41 @@ export async function createBrowserViewer(
   function notifyFrames(): void {
     for (const notify of frameWaiters) notify()
   }
+  function framesWanted(): boolean {
+    return (
+      frameWaiters.size > 0 ||
+      encodeRequested ||
+      !!encoding ||
+      Date.now() - frameDemandAt < frameIdleMs
+    )
+  }
+  function demandFrames(): void {
+    frameDemandAt = Date.now()
+    if (detachFrame || !selected || selected.isClosed()) return
+    // A crashed page re-attaches once it has recovered, as in state().
+    if (awaitingRecovery && awaitingRecovery.source.state !== 'running') return
+    attachFrame()
+  }
+  function detachIdleFrames(): void {
+    if (!detachFrame || framesWanted()) return
+    detachFrame()
+    detachFrame = undefined
+    latest = undefined
+  }
+  async function frameGeometry(page: NativePage): Promise<void> {
+    demandFrames()
+    if (geometrySources.has(page)) return
+    await new Promise<void>((resolve) => {
+      const done = (): void => {
+        clearTimeout(timeout)
+        geometryWaiters.delete(done)
+        resolve()
+      }
+      const timeout = setTimeout(done, 2000)
+      timeout.unref()
+      geometryWaiters.add(done)
+    })
+  }
   function attachFrame(): void {
     releaseRGB()
     detachFrame?.()
@@ -322,10 +363,13 @@ export async function createBrowserViewer(
       page.source.failure.catch(() => {
         if (attachment === frameAttachment) awaitingRecovery = page
       })
+      if (!framesWanted()) return
       detachFrame = page.source.onFrame((frame) => {
         if (frame.pixelFormat !== 'bgra' || frame.width * frame.height > 3840 * 2160) return
-        if (frame.viewport !== undefined && frame.contentRect && selected)
+        if (frame.viewport !== undefined && frame.contentRect && selected) {
           geometrySources.add(selected)
+          for (const notify of geometryWaiters) notify()
+        }
         if (resizing) return
         if (syncViewport()) return
         const expected = selected?.viewportSize()
@@ -412,6 +456,7 @@ export async function createBrowserViewer(
     const page = currentPage(),
       before = page.viewportSize(),
       limits = viewportLimits()
+    if (before && !geometrySources.has(page)) await frameGeometry(page)
     if (!before || !geometrySources.has(page))
       throw new ViewerHTTPError(
         409,
@@ -748,6 +793,7 @@ export async function createBrowserViewer(
       return
     }
     if (request.method === 'GET' && url.pathname === '/frame') {
+      demandFrames()
       syncViewport()
       const generation = Number(url.searchParams.get('revision'))
       const after = Number(url.searchParams.get('after') ?? -1)
@@ -829,6 +875,7 @@ export async function createBrowserViewer(
   const maintenance = setInterval(() => {
     const now = Date.now()
     for (const [id, seen] of clients) if (id !== owner && now - seen > 60000) clients.delete(id)
+    detachIdleFrames()
     if (owner && gate.mode === 'human' && now - ownerSeen > 20000 && !actionBusy) {
       actionBusy = true
       activeAction = release(false)

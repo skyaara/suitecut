@@ -1109,6 +1109,9 @@ auto Source::DispatchCommand(int id, Dict message, const std::string& command, d
     response->SetInt("bodyWaits", static_cast<int>(body_waiters_.size()));
     response->SetInt("activeRequests", static_cast<int>(active_requests_.size()));
     response->SetInt("documentResponses", static_cast<int>(documents_.size()));
+    response->SetInt("pendingDocumentResponses",
+                     static_cast<int>(std::count_if(documents_.begin(), documents_.end(),
+                                                    [](const auto& row) { return !row.second.finished; })));
     response->SetInt("eventHistoryBytes", static_cast<int>(event_history_bytes_));
     int default_contexts = 0, dom_contexts = 0;
     for (const auto& [frame, state] : frame_states_) {

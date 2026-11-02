@@ -3,6 +3,7 @@
 #include <map>
 
 #include "context_menus.h"
+#include "network_request_rows.h"
 #include "page/window_mode.h"
 #include "runtime/engine.h"
 namespace suitecut::browser {

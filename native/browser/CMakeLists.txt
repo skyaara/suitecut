@@ -1250,6 +1250,12 @@ foreach(unroute_check har_work_receipts context_unroute_waits context_unroute_al
   add_test(NAME native-${unroute_name} COMMAND suitecut-${unroute_name}-test)
 endforeach()
 
+# Requests of detached targets retire; a full response table evicts instead of failing.
+add_executable(suitecut-network-request-rows-test network_request_rows_test.cc)
+target_compile_features(suitecut-network-request-rows-test PRIVATE cxx_std_20)
+target_compile_options(suitecut-network-request-rows-test PRIVATE -UNDEBUG -fexceptions -Wall -Wextra -Werror)
+add_test(NAME native-network-request-rows COMMAND suitecut-network-request-rows-test)
+
 # Actual native C++ task/captured-state lifetime; no Engine idle capability.
 add_executable(suitecut-accepted-task-work-test accepted_task_work_test.cc)
 target_compile_features(suitecut-accepted-task-work-test PRIVATE cxx_std_20)

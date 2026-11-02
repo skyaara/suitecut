@@ -294,7 +294,9 @@ inline constexpr char kSuiteCutDomQuery[] = R"JS(function(steps,start=document,o
   const hiddenStyles=options.accessibilityTools||options.engines&&Object.keys(options.engines).length?null:new Map();
   const hiddenStyle=node=>{if(!hiddenStyles)return getComputedStyle(node);let style=hiddenStyles.get(node);if(!style){const actual=getComputedStyle(node);style={display:actual.display,visibility:actual.visibility};hiddenStyles.set(node,style);}return style;};
   const hidden=node=>{
-    if(node.localName!=='option'){const ownStyle=hiddenStyle(node);if(ownStyle.visibility==='hidden'||ownStyle.visibility==='collapse')return true;}
+    if(node.localName!=='option'){const ownStyle=hiddenStyle(node);if(ownStyle.visibility==='hidden'||ownStyle.visibility==='collapse')return true;
+      // As in Playwright, content-visibility:hidden (hidden=until-found, collapsed sections) hides an element for ARIA.
+      if(ownStyle.display!=='contents'&&node.localName!=='slot'&&typeof node.checkVisibility==='function'&&!node.checkVisibility())return true;}
     for(let e=node;e;e=e.assignedSlot||parent(e)){
       const p=parent(e);if(p?.shadowRoot&&!e.assignedSlot&&e.getRootNode()!==p.shadowRoot)return true;
       if(e.getAttribute('aria-hidden')==='true'||hiddenStyle(e).display==='none')return true;
