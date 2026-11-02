@@ -44,7 +44,7 @@ inline constexpr char kSuiteCutDomQuery[] = R"JS(function(steps,start=document,o
   // It is constructed in the utility world, never read from selector IPC data.
   const diagnosticBudget=options.nativeDiagnosticsBudget;
   if(diagnosticBudget!==undefined&&(!diagnosticBudget||!Number.isSafeInteger(diagnosticBudget.remaining)||diagnosticBudget.remaining<0||diagnosticBudget.remaining>50000))throw new Error('Invalid native diagnostic query budget');
-  const tick=()=>{if(++work>1000000||(diagnosticBudget!==undefined&&diagnosticBudget.remaining===0))throw new Error('Native DOM query work limit exceeded');if(diagnosticBudget!==undefined)--diagnosticBudget.remaining;};
+  const tick=()=>{if(++work>20000000||(diagnosticBudget!==undefined&&diagnosticBudget.remaining===0))throw new Error('Native DOM query work limit exceeded');if(diagnosticBudget!==undefined)--diagnosticBudget.remaining;};
   const validating=options.validateOnly===true,validationElement=validating?document.createElement('div'):null;
   const parent=e=>{tick();return e.parentElement||(e.getRootNode().host||null);};
   const children=(root,light=false)=>{tick();return [...(root.children||[]),...(!light&&root.shadowRoot?root.shadowRoot.children:[])];};

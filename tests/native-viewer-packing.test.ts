@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { type NativeBrowserController } from '../src/native-browser-controller.js'
 import { type NativeVideoFrame } from '../src/native-browser.js'
 import { type NativePage } from '../src/native-page.js'
+import { NativeTimeoutError } from '../src/native-timeouts.js'
 import { createBrowserViewer, type NativeBrowserViewer } from '../src/native-viewer.js'
 
 import type * as PixelMethods from '../src/native-viewer-pixels.js'
@@ -19,6 +20,7 @@ const probes = vi.hoisted(() => ({
   hold: undefined as Promise<void> | undefined,
   inputs: [] as Buffer[],
   encode: vi.fn<() => Promise<Buffer>>(),
+  automation: undefined as ((command: string) => Promise<object> | undefined) | undefined,
 }))
 vi.mock('node:timers/promises', async (original) => {
   const actual = await original<typeof TimerMethods>()
@@ -77,6 +79,7 @@ beforeEach(() => {
   probes.packingStarts = probes.packingActive = probes.packingMax = 0
   probes.yielded = undefined
   probes.hold = undefined
+  probes.automation = undefined
   probes.inputs = []
   probes.encode.mockReset().mockResolvedValue(Buffer.from([255, 216, 255, 217]))
 })
@@ -112,6 +115,7 @@ async function fixture(size = { width: 3840, height: 2160 }) {
         return () => listeners.delete(listener)
       },
       runAutomation: (command: string) =>
+        probes.automation?.(command) ??
         Promise.resolve(
           command === 'viewerIdle'
             ? { viewerIdleVersion: 1, idle: true }
@@ -178,6 +182,21 @@ async function fixture(size = { width: 3840, height: 2160 }) {
 }
 
 describe('native viewer cooperative packing ownership', () => {
+  it('keeps asking a browser too busy to answer until the handover is idle', async () => {
+    const f = await fixture()
+    let slow = 2
+    const asked: string[] = []
+    probes.automation = (command) => {
+      asked.push(command)
+      if (command === 'viewerIdle' && slow-- > 0)
+        return Promise.reject(new NativeTimeoutError('Native browser command timed out'))
+      return undefined
+    }
+    await f.action({ type: 'takeover' })
+    expect(f.viewer.state().mode).toBe('human')
+    expect(asked.filter((command) => command === 'viewerIdle')).toHaveLength(3)
+  })
+
   it('awaits and cancels packing on close before starting a codec job', async () => {
     const f = await fixture(),
       packing = pausePacking()

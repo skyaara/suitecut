@@ -70,5 +70,35 @@ int main(){
  assert(scoped_owner->ReplyOrigin(*native_scoped.inspector_channel_,1,"")==first);
  native_scoped.NativeInspectorReply(1,"");assert(scoped_owner->LocatorHandlerReady(41));++controls;
  scoped->Unsupported();assert(!scoped->LocatorHandlerReady(41)&&!scoped->LocatorHandlerReady(43)&&!scoped->ReceiptLaneReady());++controls;
- assert(controls==38);std::cout<<"Accepted Inspector work: "<<controls<<" controlled policy/owner-reentrancy cases passed; no actual CEF/backend/Engine-idle proof\n";
+ // A detached child session retires what it was sent, and nothing else.
+ auto detach=std::make_shared<Work>();const auto detach_channel=*detach->Open(301,Work::Kind::Page);
+ const auto gone=*detach->Reserve(detach_channel,1,"child");assert(detach->Dispatch(gone,"child")&&detach->SendReturned(gone,true));
+ const auto sending=*detach->Reserve(detach_channel,2,"child");assert(detach->Dispatch(sending,"child"));
+ const auto queued=*detach->Reserve(detach_channel,3,"child");
+ const auto sibling=*detach->Reserve(detach_channel,4,"other");assert(detach->Dispatch(sibling,"other")&&detach->SendReturned(sibling,true));
+ assert(detach->ActualSessionDetached(detach_channel,"child")==1&&detach->Inspect().submitted==2&&detach->Inspect().queued==1);
+ assert(detach->ActualReply(detach_channel,1,"child")==Work::Reply::Unknown&&!detach->Inspect().poisoned);++controls;
+ assert(detach->SendReturned(sending,true)&&detach->Inspect().submitted==1);++controls;
+ assert(detach->ActualSessionDetached(detach_channel,"")==0&&detach->NeverDispatched(queued));
+ assert(detach->ActualReply(detach_channel,4,"other")==Work::Reply::Observed&&detach->ReceiptLaneReady());++controls;
+ detach->Label(sibling,"Runtime.releaseObject");
+ const auto labeled=*detach->Reserve(detach_channel,5,"child");detach->Label(labeled,"Runtime.releaseObject");
+ assert(detach->Blocker([](const auto&){return false;})=="Runtime.releaseObject queued in a detached child session");++controls;
+ // A command sent after its session detached is never answered either.
+ assert(detach->Dispatch(labeled,"child")&&detach->SendReturned(labeled,true)&&detach->ReceiptLaneReady());
+ const auto alive=*detach->Reserve(detach_channel,6,"other");assert(detach->Dispatch(alive,"other")&&detach->SendReturned(alive,true)&&!detach->ReceiptLaneReady());++controls;
+ // The context's worker channel names itself, so a stuck worker row is told apart.
+ {auto broker=std::make_shared<Work>();const auto channel=*broker->Open(302,Work::Kind::Broker);
+  const auto ticket=*broker->Reserve(channel,1,"worker");broker->Label(ticket,"Runtime.enable");assert(broker->Dispatch(ticket,"worker")&&broker->SendReturned(ticket,true));
+  assert(broker->Blocker([](const auto&){return false;})=="Runtime.enable awaiting its reply in a child session of the context's worker channel");
+  assert(broker->ActualSessionDetached(channel,"worker")==1&&broker->ReceiptLaneReady());}++controls;
+ // A worker's own startup command passes a viewer handover, never strict idle.
+ {auto resident=std::make_shared<Work>();const auto channel=*resident->Open(303,Work::Kind::Broker);const auto never=[](const auto&){return false;};
+  const auto boot=*resident->Reserve(channel,1,"worker");assert(resident->Dispatch(boot,"worker")&&resident->SendReturned(boot,true));
+  assert(!resident->ViewerReceiptLaneReady(never));resident->Resident(boot);
+  assert(resident->ViewerReceiptLaneReady(never)&&resident->Blocker(never).empty()&&!resident->ReceiptLaneReady());
+  const auto agent=*resident->Reserve(channel,2,"worker");assert(resident->Dispatch(agent,"worker")&&resident->SendReturned(agent,true));
+  assert(!resident->ViewerReceiptLaneReady(never));
+  assert(resident->ActualReply(channel,2,"worker")==Work::Reply::Observed&&resident->ActualReply(channel,1,"worker")==Work::Reply::Observed&&resident->ReceiptLaneReady());}++controls;
+ assert(controls==45);std::cout<<"Accepted Inspector work: "<<controls<<" controlled policy/owner-reentrancy cases passed; no actual CEF/backend/Engine-idle proof\n";
 }

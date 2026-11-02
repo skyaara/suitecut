@@ -153,10 +153,10 @@ describe('direct structured native semantic projection', () => {
       JSON.parse(JSON.stringify(formatNativeAriaJSON([{ role: 'textbox', name, text }]))),
     ).toEqual([{ role: 'textbox', name, text }])
     expect(() =>
-      formatNativeAriaJSON(Array.from({ length: 4097 }, () => ({ role: 'button' }))),
+      formatNativeAriaJSON(Array.from({ length: 65_537 }, () => ({ role: 'button' }))),
     ).toThrow(/node limit/u)
-    expect(() => formatNativeAriaJSON([{ role: 'textbox', text: 'x'.repeat(65536) }])).toThrow(
-      /64 KiB/u,
+    expect(() => formatNativeAriaJSON([{ role: 'textbox', text: 'x'.repeat(16_777_216) }])).toThrow(
+      /16 MiB/u,
     )
     const root: NativeAriaNode = { role: 'list' }
     let next = root
@@ -256,7 +256,7 @@ describe('structured native snapshot transport', () => {
       'snapshotReferences',
       expect.objectContaining({
         referenceFormat: 'json',
-        query: [{ engine: 'css', selector: 'body, frameset' }],
+        query: [{ engine: 'css', selector: ':root > body, :root > frameset' }],
         timeoutMs: 13,
       }),
       expect.any(AbortSignal),

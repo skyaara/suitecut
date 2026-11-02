@@ -47,6 +47,7 @@ class Engine {
   uint64_t AcceptedSourceTicket() const noexcept;
 #endif
   bool AcceptedWorkReady(bool viewer = false) const;
+  std::string AcceptedWorkBlocker(bool viewer = false) const;
   bool InspectorReceiptsReady(bool viewer) const;
   uint64_t RetainLocatorHandler(int page, CefRefPtr<Source> source);
   void WakeLocatorHandlers();

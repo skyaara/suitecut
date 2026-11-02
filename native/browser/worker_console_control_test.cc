@@ -117,6 +117,7 @@ class Source : public CefBaseRefCounted {
   void NetworkFatal(const std::string& error){Error(error.c_str());}
   void MaybeReady(){++lifetime_ready;}
   void NativeTargetSessionDetached(const std::string& session){WorkerDetached(session);}
+  void NativeInspectorResident(int){}
   #include "controllers/workers/worker_controller.inc"
   #include "controllers/workers/worker_target_lifetime.inc"
 #ifdef SUITECUT_CONTEXT_WORKER_CONSOLE_REFERENCE_TEST

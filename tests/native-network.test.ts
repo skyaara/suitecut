@@ -544,6 +544,22 @@ describe('native network ownership and transport', () => {
       errorReason: 'Failed',
     })
   })
+  it('keeps admission past the record limit from remeasuring every retained request', () => {
+    const f = fixture()
+    for (let index = 0; index < 4096; index++) {
+      const info = { ...f.info, id: String(index) }
+      f.emit({ event: 'requestfinished', sequence: index + 1, request: info })
+    }
+    const measure = vi.spyOn(NativeRequest.prototype, 'ownMetadataBytes')
+    for (let index = 4096; index < 4196; index++) {
+      const info = { ...f.info, id: String(index) }
+      f.emit({ event: 'requestfinished', sequence: index + 1, request: info })
+    }
+    expect(f.network.metadataDiagnostics().cachedRequests).toBe(4096)
+    // One measurement per admitted request, not one per retained request.
+    expect(measure.mock.calls.length).toBeLessThan(1000)
+    measure.mockRestore()
+  })
   it('evicts completed binding metadata by bytes while preserving externally held identity', () => {
     const f = fixture()
     let first: NativeRequest | undefined

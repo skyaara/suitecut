@@ -258,10 +258,10 @@ auto Source::ToolResult(int id, bool success, const void* result, size_t size,
     if (frame == frame_states_.end() || frame->second.session != session ||
         frame->second.loader != world.loader)
       return;
-    if (!success) {
-      Error("Native DOM execution world could not be created");
-      return;
-    }
+    // The frame usually navigated or went away mid-call, as ad frames do on
+    // CNN. Like Playwright, leave it without a utility world: the next
+    // operation that needs one asks again. Error() would end the browser.
+    if (!success) return;
     auto parsed =
         CefParseJSON(std::string(static_cast<const char*>(result), size), JSON_PARSER_RFC);
     auto response = parsed ? parsed->GetDictionary() : nullptr;
@@ -277,10 +277,8 @@ auto Source::ToolResult(int id, bool success, const void* result, size_t size,
                                                       NativeFrameDebuggerAttachment(session)};
     session_trees_.erase(boot);
     if (expected != session || !sessions_.contains(session)) return;
-    if (!success) {
-      Error("Native child frame bootstrap failed");
-      return;
-    }
+    // A child target that goes away before answering costs only its frames.
+    if (!success) return;
     auto parsed =
         CefParseJSON(std::string(static_cast<const char*>(result), size), JSON_PARSER_RFC);
     auto response = parsed ? parsed->GetDictionary() : nullptr;
@@ -492,7 +490,7 @@ auto Source::SubmitDevTools(int id, const std::string& method, Dict params,
   const auto json = Json(message);
   const bool final_release = method == "Input.dispatchMouseEvent" && params &&
                              params->GetString("type") == "mouseReleased";
-  NativeInspectorReserve(id, session);
+  NativeInspectorReserve(id, session, method);
   if (devtools_observer_depth_) {
     const bool queued =
         QueueDeferredDevTools(id, json, final_release, session, initial_tree, tree_attachment);

@@ -9,8 +9,9 @@ class Task : public CefTask {
  public:
   explicit Task(std::function<void()> callback,
                 suitecut::AcceptedTaskWork::Kind kind = suitecut::AcceptedTaskWork::Kind::Work,
-                suitecut::NativeWorkOrigin origin = suitecut::CurrentNativeWorkOrigin())
-      : native_work_(kind, suitecut::NativeProcessTaskWork(), origin),
+                suitecut::NativeWorkOrigin origin = suitecut::CurrentNativeWorkOrigin(),
+                std::source_location where = std::source_location::current())
+      : native_work_(kind, suitecut::NativeProcessTaskWork(), origin, where),
         callback_(std::move(callback)) {}
   void Execute() override {
     const suitecut::AcceptedTaskFrame native_frame(native_work_);

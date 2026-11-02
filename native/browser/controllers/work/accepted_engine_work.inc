@@ -8,26 +8,62 @@ bool Engine::InspectorReceiptsReady(bool viewer)const{
     return false;
   });
 }
-bool Engine::AcceptedWorkReady(bool viewer)const{
-  if(!locator_handler_leases_.empty()||closing_||operations_.Size()||!InspectorReceiptsReady(viewer)||
-     !suitecut::NativeTaskBarrierReady(AcceptedSourceTicket(),viewer)||!authentication_failures_.empty()||
-     authentication_.pending()||authentication_.physical()||geolocation_.pending()||
-     network_policy_.pending()||network_headers_.pending()||
-     websocket_routes_->Physical()||websocket_routes_->NeedsTick()||context_routes_->physical()||context_routes_->pending()||context_unroute_all_->pending()||
-     context_har_->physical()||context_har_->pending()||har_files_->Physical()||har_recording_->Physical()||
-     suitecut::GlobalRouteCallbackLeases().size()||suitecut::GlobalHARWorkLeases().physical()||
-     !contexts_->AcceptedWorkReady()||!workers_->AcceptedWorkReady()||!utilities_->AcceptedWorkReady()||
-     !http_->AcceptedWorkReady()||downloads_->NeedsTick()||recordings_->PhysicalCount()||context_video_->Physical()||
-     traces_->PhysicalCount()||trace_preview_->PhysicalCount()||trace_sources_->PhysicalCount()||
-     trace_background_.PhysicalCount()||trace_background_.Failures()||trace_physical_||trace_dom_physical_||
-     screenshot_inputs_->NeedsTick()||screenshot_comparisons_->NeedsTick()||
-     suitecut::NativeRequestBodyReads::Physical()||suitecut::NativePrivateResponseSession::Waiting()||
-     suitecut::NativePrivateResponseSession::Physical()||suitecut::NativeResponseStreams::Physical())return false;
+bool Engine::AcceptedWorkReady(bool viewer)const{return AcceptedWorkBlocker(viewer).empty();}
+// The first condition keeping native work from being ready, for diagnostics.
+std::string Engine::AcceptedWorkBlocker(bool viewer)const{
+  if(!locator_handler_leases_.empty())return "!locator_handler_leases_.empty()";
+  if(closing_)return "closing_";
+  if(operations_.Size())return "operations_.Size()";
+  if(!InspectorReceiptsReady(viewer))return "DevTools "+inspector_work_->Blocker([this,viewer](const auto& channel){
+    if(!viewer)return false;
+    for(const auto&[page,source]:sources_){(void)page;if(source->InspectorChannelCrashed(channel))return true;}
+    return false;
+  });
+  if(!suitecut::NativeTaskBarrierReady(AcceptedSourceTicket(),viewer)){
+    const auto why=suitecut::NativeTaskBarrierBlocker(AcceptedSourceTicket(),viewer);return why.empty()?"the task barrier":why;
+  }
+  if(!authentication_failures_.empty())return "!authentication_failures_.empty()";
+  if(authentication_.pending())return "authentication_.pending()";
+  if(authentication_.physical())return "authentication_.physical()";
+  if(geolocation_.pending())return "geolocation_.pending()";
+  if(network_policy_.pending())return "network_policy_.pending()";
+  if(network_headers_.pending())return "network_headers_.pending()";
+  if(websocket_routes_->Physical())return "websocket_routes_->Physical()";
+  if(websocket_routes_->NeedsTick())return "websocket_routes_->NeedsTick()";
+  if(context_routes_->physical())return "context_routes_->physical()";
+  if(context_routes_->pending())return "context_routes_->pending()";
+  if(context_unroute_all_->pending())return "context_unroute_all_->pending()";
+  if(context_har_->physical())return "context_har_->physical()";
+  if(context_har_->pending())return "context_har_->pending()";
+  if(har_files_->Physical())return "har_files_->Physical()";
+  if(har_recording_->Physical())return "har_recording_->Physical()";
+  if(suitecut::GlobalRouteCallbackLeases().size())return "suitecut::GlobalRouteCallbackLeases().size()";
+  if(suitecut::GlobalHARWorkLeases().physical())return "suitecut::GlobalHARWorkLeases().physical()";
+  if(const auto why=contexts_->AcceptedWorkBlocker(viewer))return std::string("context ")+why;
+  if(!workers_->AcceptedWorkReady())return "!workers_->AcceptedWorkReady()";
+  if(!utilities_->AcceptedWorkReady())return "!utilities_->AcceptedWorkReady()";
+  if(!http_->AcceptedWorkReady())return "!http_->AcceptedWorkReady()";
+  if(downloads_->NeedsTick())return "downloads_->NeedsTick()";
+  if(recordings_->PhysicalCount())return "recordings_->PhysicalCount()";
+  if(context_video_->Physical())return "context_video_->Physical()";
+  if(traces_->PhysicalCount())return "traces_->PhysicalCount()";
+  if(trace_preview_->PhysicalCount())return "trace_preview_->PhysicalCount()";
+  if(trace_sources_->PhysicalCount())return "trace_sources_->PhysicalCount()";
+  if(trace_background_.PhysicalCount())return "trace_background_.PhysicalCount()";
+  if(trace_background_.Failures())return "trace_background_.Failures()";
+  if(trace_physical_)return "trace_physical_";
+  if(trace_dom_physical_)return "trace_dom_physical_";
+  if(screenshot_inputs_->NeedsTick())return "screenshot_inputs_->NeedsTick()";
+  if(screenshot_comparisons_->NeedsTick())return "screenshot_comparisons_->NeedsTick()";
+  if(suitecut::NativeRequestBodyReads::Physical())return "suitecut::NativeRequestBodyReads::Physical()";
+  if(suitecut::NativePrivateResponseSession::Waiting())return "suitecut::NativePrivateResponseSession::Waiting()";
+  if(suitecut::NativePrivateResponseSession::Physical())return "suitecut::NativePrivateResponseSession::Physical()";
+  if(suitecut::NativeResponseStreams::Physical())return "suitecut::NativeResponseStreams::Physical()";
 #if defined(OS_LINUX)
-  if(streaming_->PhysicalCount())return false;
+  if(streaming_->PhysicalCount())return "streaming_->PhysicalCount()";
 #endif
-  for(const auto&[page,source]:sources_){(void)page;if(!source->AcceptedWorkReady(viewer))return false;}
-  return true;
+  for(const auto&[page,source]:sources_){(void)page;if(const auto why=source->AcceptedWorkBlocker(viewer))return why;}
+  return {};
 }
 #if defined(__linux__)
 void Engine::BindAcceptedWork(suitecut::runner::RetainedSourceEndpoint* endpoint){

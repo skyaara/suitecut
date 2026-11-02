@@ -9,6 +9,7 @@ import { subscribeNativeActionHook, type NativeBeforeStableHook } from './native
 import {
   captureNativeAriaSnapshot,
   captureNativeAriaSnapshotJSON,
+  NATIVE_DOCUMENT_BODY,
   type NativeAriaJSONNode,
   type NativeAriaSnapshotJSONOptions,
   type NativeAriaSnapshotOptions,
@@ -657,10 +658,10 @@ export class NativePage implements PresentationPage {
     return this.source.url
   }
   ariaSnapshot(options: NativeAriaSnapshotOptions = {}): Promise<string> {
-    return captureNativeAriaSnapshot(this.locator('body, frameset'), options)
+    return captureNativeAriaSnapshot(this.locator(NATIVE_DOCUMENT_BODY), options)
   }
   ariaSnapshotJSON(options: NativeAriaSnapshotJSONOptions = {}): Promise<NativeAriaJSONNode[]> {
-    return captureNativeAriaSnapshotJSON(this.locator('body, frameset'), options)
+    return captureNativeAriaSnapshotJSON(this.locator(NATIVE_DOCUMENT_BODY), options)
   }
   title(): Promise<string> {
     return this.evaluate(() => document.title)

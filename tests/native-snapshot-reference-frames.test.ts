@@ -84,7 +84,7 @@ describe('native retained frame forest merge', () => {
       next.children = [node]
       next = node
     }
-    for (const child of [[root], Array.from({ length: 4096 }, () => ({ role: 't' }))]) {
+    for (const child of [[root], Array.from({ length: 65_536 }, () => ({ role: 't' }))]) {
       const target = capture(),
         before = JSON.stringify(target)
       expect(() => apply(target, ownerRef, JSON.stringify(child))).toThrow(/depth|record/u)
@@ -98,13 +98,13 @@ describe('native retained frame forest merge', () => {
     const previous: NativeAriaNode[] = [{ role: 'text', text: 'Previous' }]
     owner.children = previous
     expect(() =>
-      apply(target, ownerRef, JSON.stringify([{ role: 'text', text: '界'.repeat(22000) }])),
-    ).toThrow(/64 KiB/u)
+      apply(target, ownerRef, JSON.stringify([{ role: 'text', text: '界'.repeat(5_600_000) }])),
+    ).toThrow(/16 MiB/u)
     expect(owner.children).toBe(previous)
     const empty = capture()
     expect(() =>
-      apply(empty, ownerRef, JSON.stringify([{ role: 'text', text: '界'.repeat(22000) }])),
-    ).toThrow(/64 KiB/u)
+      apply(empty, ownerRef, JSON.stringify([{ role: 'text', text: '界'.repeat(5_600_000) }])),
+    ).toThrow(/16 MiB/u)
     expect(Object.hasOwn(empty.forest[0]?.children?.[0] ?? {}, 'children')).toBe(false)
   })
   it('rejects malformed child encoding and scalar records without decoding author tag-shaped values', () => {

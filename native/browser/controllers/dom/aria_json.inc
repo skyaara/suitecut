@@ -30,11 +30,11 @@ void ReadAriaJSON(const std::shared_ptr<AriaJSONWork>& work,const std::string& c
     if(value->GetInt("count")==0){aria_json_work_.erase(work->owner);RetryContext(work->owner);return;}
     if(value->GetInt("count")!=1||value->GetType("json")!=VTYPE_STRING){Complete(work->owner,false,"Native structured accessibility result is invalid");return;}
     const auto snapshot=value->GetString("json").ToString();
-    const auto valid=snapshot.size()<=65536?CefParseJSON(suitecut::StorageJSONValidationProjection(snapshot),JSON_PARSER_RFC):nullptr;
+    const auto valid=snapshot.size()<=16777216?CefParseJSON(suitecut::StorageJSONValidationProjection(snapshot),JSON_PARSER_RFC):nullptr;
     if(!valid||valid->GetType()!=VTYPE_LIST){Complete(work->owner,false,"Native structured accessibility JSON exceeds bounds or is invalid");return;}
     auto response=CefDictionaryValue::Create();response->SetString("snapshotJSON",snapshot);
     if(AriaJSONCurrent(work))Complete(work->owner,true,"",Json(response));
-  },work->document->session,false,1048576,true);
+  },work->document->session,false,32*1048576,true);
 }
 void AriaJSONAction(int id,uint64_t generation,Dict config){
   if(!operations_.IsCurrent(id,generation))return;

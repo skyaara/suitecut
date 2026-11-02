@@ -197,9 +197,11 @@ auto Writer::Send(Dict header, std::vector<uint8_t> data, bool reply_credit) -> 
     if (!reply_credit) {
       const size_t bytes = json.size() + data.size();
       if (event_failed_) return;
-      if (event_count_ >= 4096 || bytes > 8 * 1048576 - event_bytes_) {
+      if (event_count_ >= kEventBacklog || bytes > kEventBacklogBytes - event_bytes_) {
         // An unread event stream cannot be losslessly retained forever. Fail
         // explicitly without dropping command replies or blocking CEF's UI.
+        // The bound is generous: a host that is busy for a moment while an
+        // ad-heavy page fires bursts of events must not lose the browser.
         event_failed_ = true;
         auto error = Header("error");
         error->SetInt("bytes", 0);
@@ -227,7 +229,8 @@ auto Writer::TryEvent(Dict header, std::vector<uint8_t> data) -> bool {
   const auto json = Json(header);
   std::lock_guard lock(mutex_);
   const auto bytes = json.size() + data.size();
-  if (stopping_ || event_failed_ || event_count_ >= 4096 || bytes > 8 * 1048576 - event_bytes_)
+  if (stopping_ || event_failed_ || event_count_ >= kEventBacklog ||
+      bytes > kEventBacklogBytes - event_bytes_)
     return false;
   publication_audit_.Published(header->GetString("type").ToString());
   ++event_count_;

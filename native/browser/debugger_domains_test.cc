@@ -30,6 +30,15 @@ struct Harness {
 int main(){
   assert(cef_api_hash(CEF_API_VERSION,0));
   size_t groups=0;
+  { // A frame that may not run script refuses Debugger.enable. Its leases fail
+    // and the session settles without closing the page's channel.
+    Harness h;size_t ready=0;std::string failure;
+    h.domains->Acquire("sandboxed",1,Domain::Kind::Factory,100,[&](bool ok,const std::string& error){if(ok)++ready;else failure=error;});
+    auto enable=h.Take("Debugger.enable");enable.reply(false,nullptr,"Script execution is prohibited");
+    assert(ready==0&&failure.find("script execution is prohibited")!=std::string::npos&&h.closes.empty()&&h.commands.empty()&&h.domains->PhysicalCount()==0);
+    // A later consumer asks the renderer again; another failure stays fatal.
+    h.domains->Acquire("sandboxed",2,Domain::Kind::Factory,100,[&](bool ok,const std::string&){if(ok)++ready;});
+    h.Take("Debugger.enable").reply(false,nullptr,"actual other protocol error");assert(h.closes.size()==1);++groups;}
   { // Pool real domain/skip ACKs and retain capture->release receipt chain.
     Harness h;size_t ready=0,arms=0,release=0,captures=0,resumed=0;Domain::Resume resume;
     h.Acquire(1,Domain::Kind::Coverage,ready);assert(ready==0);h.Ack("Debugger.enable");h.Skip(true);assert(ready==1&&!h.domains->NeedsTick());

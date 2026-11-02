@@ -79,7 +79,7 @@ describe('authored ARIA declarative grammar and semantic comparison', () => {
         result: {
           value: {
             matches: true,
-            actual: ['utf16', 'd800'.repeat(65537)],
+            actual: ['utf16', 'd800'.repeat(4_194_305)],
             count: 1,
           },
         },
@@ -349,10 +349,10 @@ describe('authored ARIA declarative grammar and semantic comparison', () => {
     expect(() => parseNativeAriaTemplate('- &self\n  - *self')).toThrow()
     expect(() => parseNativeAriaTemplate('x'.repeat(65537))).toThrow('64 KiB')
     expect(() =>
-      formatNativeAriaTree(Array.from({ length: 4097 }, () => ({ role: 'img' }))),
+      formatNativeAriaTree(Array.from({ length: 65_537 }, () => ({ role: 'img' }))),
     ).toThrow('bounds')
-    expect(() => formatNativeAriaTree([{ role: 'text', text: 'x'.repeat(32769) }])).toThrow(
-      '64 KiB',
+    expect(() => formatNativeAriaTree([{ role: 'text', text: 'x'.repeat(8_388_609) }])).toThrow(
+      '8 MiB',
     )
   })
 })

@@ -353,6 +353,8 @@ class SuiteCutContextWorkers::Client : public CefClient, public CefLifeSpanHandl
         const auto mapped=worker_sessions_.find(closed);
         if(mapped!=worker_sessions_.end()){const auto& target=worker_targets_.at(mapped->second);if((target.published||target.observed)&&!target.context_destroyed){if(detached_targets_.size()>=kWorkerTargets){Error("Native context worker detached target capacity exceeded");return true;}detached_targets_[target.id]=target;}}
         WorkerConsoleSessionRemoved(closed);WorkerDetached(closed);
+        // Chrome never answers what this session was sent; end those rows too.
+        NativeInspectorSessionDetached(closed);
         std::vector<DevToolsCallback> callbacks;for(auto it=controls_.begin();it!=controls_.end();)if(it->second.session==closed){callbacks.push_back(std::exchange(it->second.callback, nullptr));it=controls_.erase(it);}else ++it;
         for(auto& callback:callbacks)callback(false,"Actual native worker target session detached");
       }return true;
@@ -507,7 +509,7 @@ class SuiteCutContextWorkers::Client : public CefClient, public CefLifeSpanHandl
     auto packet=CefDictionaryValue::Create();packet->SetInt("id",id);packet->SetString("method",method);if(!session.empty())packet->SetString("sessionId",session);if(params)packet->SetDictionary("params",params->Copy(false));
     using Owner=suitecut::BrokerDispatchQueue::Owner;
     const auto owner=controls_.contains(id)?Owner::Control:worker_calls_.contains(id)?Owner::Bootstrap:devtools_.contains(id)?Owner::Operation:Owner::None;
-    NativeInspectorReserve(id,session);
+    NativeInspectorReserve(id,session,method);
     if(!dispatch_queue_.Push(id,Json(packet),owner,session)){
       NativeInspectorNeverDispatched(id);
       // A rejected resume/bootstrap must not leave an author target paused.

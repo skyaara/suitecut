@@ -73,11 +73,12 @@ describe('canonical native YAML over composed frame observations', () => {
       node.children = [child]
       node = child
     }
-    node.children = Array.from({ length: 240 }, () => ({ role: 'text', text: 'x' }))
+    // Deep indentation makes each YAML line far larger than its JSON node.
+    node.children = Array.from({ length: 60_000 }, () => ({ role: 'text', text: 'x'.repeat(40) }))
     const capture = merged([root]),
       before = JSON.stringify(capture)
-    expect(new TextEncoder().encode(before).byteLength).toBeLessThan(65536)
-    expect(() => format(capture)).toThrow(/64 KiB/u)
+    expect(new TextEncoder().encode(before).byteLength).toBeLessThan(16_777_216)
+    expect(() => format(capture)).toThrow(/8 MiB/u)
     expect(JSON.stringify(capture)).toBe(before)
   })
 })

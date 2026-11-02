@@ -178,7 +178,7 @@ class SuiteCutUtilityBrowsers::Client : public CefClient, public CefLifeSpanHand
   }
   #include "controllers/work/accepted_inspector_owner.inc"
   bool NativeUtilityExecute(int id,const char* method,Dict params){
-    const auto actual_browser=browser_;if(!actual_browser)return false;NativeInspectorReserve(id,"");
+    const auto actual_browser=browser_;if(!actual_browser)return false;NativeInspectorReserve(id,"",method);
     return NativeInspectorCall(id,"",[actual_browser,id,method,params]{return actual_browser->GetHost()->ExecuteDevToolsMethod(id,method,params)>0;});
   }
   void Close() {

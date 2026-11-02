@@ -8,6 +8,8 @@
 #include <exception>
 #include <mutex>
 #include <optional>
+#include <source_location>
+#include <string>
 namespace suitecut {
 // SuiteCut's actual C++ posted task objects only. This does not count renderer
 // timers or opaque CEF internal scheduling, and is not an Engine idle predicate.
@@ -18,9 +20,9 @@ class AcceptedTaskWork {
   struct Ticket {uint64_t instance=0,nonce=0;Kind kind=Kind::Work;bool operator==(const Ticket&)const=default;};
   struct Snapshot {size_t queued,executing,returned_held;uint64_t admitted,returned,destroyed,never_executed;bool poisoned;};
   AcceptedTaskWork():instance_(Instance()){if(!instance_)poisoned_=true;}
-  std::optional<Ticket> Constructed(Kind kind,NativeWorkOrigin origin=CurrentNativeWorkOrigin())noexcept{
+  std::optional<Ticket> Constructed(Kind kind,NativeWorkOrigin origin=CurrentNativeWorkOrigin(),std::source_location where=std::source_location::current())noexcept{
     std::lock_guard lock(mutex_);if(next_==UINT64_MAX){poisoned_=true;return std::nullopt;}
-    for(auto& row:rows_)if(!row.active){row={{instance_,++next_,kind},true,false,false,origin};return row.ticket;}
+    for(auto& row:rows_)if(!row.active){row={{instance_,++next_,kind},true,false,false,origin,where.file_name(),where.line()};return row.ticket;}
     poisoned_=true;return std::nullopt;
   }
   bool Entered(Ticket ticket)noexcept{
@@ -43,18 +45,21 @@ class AcceptedTaskWork {
     const Row* current=nullptr;
     for(const auto& row:rows_)if(row.active){
       if(row.ticket==*actual_current){current=&row;continue;}
-      // Only viewer handover may coexist with a bounded passive header-cache
-      // timer. Executing callbacks and all ordinary Work retain their fences.
-      if(viewer&&row.ticket.kind==Kind::PassiveNetworkMonitor&&(!row.entered||row.returned))continue;
-      // A genuine worker-startup monitor keeps its physical task/Source lease.
-      // A test-created watchdog retains Command origin and cannot use this
-      // exception, even after its logical command completed or it would no-op.
-      if(actual_worker_owner&&row.ticket.kind==Kind::WorkerMonitor&&
-         row.origin.kind==NativeWorkOrigin::Kind::ResidentWorker&&row.origin.source_lease==actual_worker_owner&&
-         (!row.entered||row.returned))continue;
-      return false;
+      if(!Exempt(row,actual_worker_owner,viewer))return false;
     }
     return current&&current->entered&&!current->returned;
+  }
+  // The first task a barrier waits on and where it was posted, for diagnostics.
+  std::string BarrierBlocker(std::optional<Ticket> actual_current,uint64_t actual_worker_owner=0,bool viewer=false)const{
+    std::lock_guard lock(mutex_);if(poisoned_)return "task ledger poisoned";
+    if(!actual_current||actual_current->kind!=Kind::BarrierCoordinator)return "no barrier task";
+    size_t waiting=0;const Row* first=nullptr;
+    for(const auto& row:rows_)if(row.active&&!(row.ticket==*actual_current)&&!Exempt(row,actual_worker_owner,viewer)){++waiting;if(!first)first=&row;}
+    if(!first)return {};
+    std::string file=first->file?first->file:"?";
+    if(const auto at=file.find("native/browser/");at!=std::string::npos)file.erase(0,at+15);
+    return "a task from "+file+":"+std::to_string(first->line)+(!first->entered?" queued":!first->returned?" running":" held")+
+           (waiting>1?" and "+std::to_string(waiting-1)+" more":"");
   }
   // Actual queued/executing/returned-held task rows retain this scope until
   // real captured-state destruction. Unrelated tasks have no scoped discharge.
@@ -81,7 +86,18 @@ class AcceptedTaskWork {
     while(value!=UINT64_MAX){if(sequence.compare_exchange_weak(value,value+1,std::memory_order_relaxed))return value+1;}
     return 0;
   }
-  struct Row {Ticket ticket;bool active=false,entered=false,returned=false;NativeWorkOrigin origin{};};
+  struct Row {Ticket ticket;bool active=false,entered=false,returned=false;NativeWorkOrigin origin{};const char* file=nullptr;uint_least32_t line=0;};
+  static bool Exempt(const Row& row,uint64_t actual_worker_owner,bool viewer)noexcept{
+    // Only viewer handover may coexist with a bounded passive header-cache
+    // timer. Executing callbacks and all ordinary Work retain their fences.
+    if(viewer&&row.ticket.kind==Kind::PassiveNetworkMonitor&&(!row.entered||row.returned))return true;
+    // A genuine worker-startup monitor keeps its physical task/Source lease.
+    // A test-created watchdog retains Command origin and cannot use this
+    // exception, even after its logical command completed or it would no-op.
+    return actual_worker_owner&&row.ticket.kind==Kind::WorkerMonitor&&
+           row.origin.kind==NativeWorkOrigin::Kind::ResidentWorker&&row.origin.source_lease==actual_worker_owner&&
+           (!row.entered||row.returned);
+  }
   Row* Find(Ticket ticket)noexcept{for(auto& row:rows_)if(row.active&&row.ticket==ticket)return &row;return nullptr;}
   mutable std::mutex mutex_;const uint64_t instance_;std::array<Row,kPending>rows_{};uint64_t next_=0,returned_=0,destroyed_=0,never_executed_=0;bool poisoned_=false;
 };
@@ -107,7 +123,7 @@ inline bool BindCurrentNativeLocatorHandlerTask(uint64_t invocation)noexcept{
 // its task object past Execute; those captures stay charged until destruction.
 class AcceptedTaskReceipt {
  public:
-  explicit AcceptedTaskReceipt(AcceptedTaskWork::Kind kind=AcceptedTaskWork::Kind::Work,AcceptedTaskWork& work=NativeProcessTaskWork(),NativeWorkOrigin origin=CurrentNativeWorkOrigin())noexcept:work_(work),ticket_(work.Constructed(kind,origin)){}
+  explicit AcceptedTaskReceipt(AcceptedTaskWork::Kind kind=AcceptedTaskWork::Kind::Work,AcceptedTaskWork& work=NativeProcessTaskWork(),NativeWorkOrigin origin=CurrentNativeWorkOrigin(),std::source_location where=std::source_location::current())noexcept:work_(work),ticket_(work.Constructed(kind,origin,where)){}
   AcceptedTaskReceipt(const AcceptedTaskReceipt&)=delete;AcceptedTaskReceipt& operator=(const AcceptedTaskReceipt&)=delete;
   ~AcceptedTaskReceipt(){if(ticket_&&!work_.Destroyed(*ticket_))work_.Unsupported();}
   AcceptedTaskWork& Work()const noexcept{return work_;}
@@ -133,5 +149,9 @@ class AcceptedTaskFrame {
 };
 inline bool NativeTaskBarrierReady(uint64_t actual_worker_owner=0,bool viewer=false)noexcept{
   const auto current=CurrentNativeTask();return current.work==&NativeProcessTaskWork()&&NativeProcessTaskWork().ReadyAtBarrier(current.ticket,actual_worker_owner,viewer);
+}
+inline std::string NativeTaskBarrierBlocker(uint64_t actual_worker_owner=0,bool viewer=false){
+  const auto current=CurrentNativeTask();if(current.work!=&NativeProcessTaskWork())return "not on a barrier task";
+  return NativeProcessTaskWork().BarrierBlocker(current.ticket,actual_worker_owner,viewer);
 }
 } // namespace suitecut

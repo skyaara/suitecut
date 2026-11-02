@@ -1185,7 +1185,14 @@ export class NativeNetwork {
     // under pressure instead of crediting a removal that did not free metadata.
     // Only this synchronous admission shares byte measurements; each removal
     // still recomputes reachability, and later observations measure afresh.
+    // Retained requests reuse the cost measured when they were last observed:
+    // measuring all 4096 again for every new request kept the host busy for
+    // tens of seconds on a news site, delaying every browser reply.
     const measurements = new Map<NativeRequest, number>([[request, cost]])
+    for (const [id, item] of this.requests) {
+      const known = this.requestCosts.get(id)
+      if (known !== undefined && item !== request) measurements.set(item, known)
+    }
     while (true) {
       const visited = new Set<NativeRequest>()
       let retained = 0

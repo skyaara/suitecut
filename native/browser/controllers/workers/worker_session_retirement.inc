@@ -50,6 +50,7 @@ void NativeTargetSessionDetached(const std::string& root){
       NativeFrameDebuggerDetached(child,debugger_attachment);
       NativeDeveloperWorkerChannelClosed(child,worker_debugger_attachment.observer,worker_debugger_attachment.generation);
       NativeWorkerDebuggerChannelDrained(child,worker_debugger_attachment);
+      NativeInspectorSessionDetached(child);
       // A target can disappear during a process swap while the logical frame
       // remains attached. Page.frameDetached(reason=remove) owns detachment.
       for (auto& [id, frame] : frame_states_) if (frame.session == child) frame.context = 0;

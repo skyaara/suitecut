@@ -84,6 +84,7 @@ bool WorkerBootstrapSend(const std::string& session, const std::string& method, 
   const double deadline=mapped==worker_sessions_.end()?Now()+30000:worker_targets_.at(mapped->second).deadline;
   worker_calls_.emplace(id,WorkerCall{session,std::move(callback),deadline});
   if (!SubmitDevTools(id,method,params,session)) { worker_calls_.erase(id); return false; }
+  NativeInspectorResident(id);
   WakeDeadlines(); return true;
 }
 bool WorkerToolResult(int id, bool ok, const void* data, size_t size, const std::string& session) {

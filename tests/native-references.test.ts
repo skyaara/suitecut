@@ -135,6 +135,30 @@ describe('native snapshot references: typed packet and host schema contracts', (
     })
     expect(runAutomation.mock.calls[0]?.[1]).not.toHaveProperty('frame')
   })
+  it('AI mode captures again when a navigation replaces the document, within the timeout', async () => {
+    const { page, runAutomation } = pageFixture()
+    runAutomation.mockRejectedValueOnce(
+      new Error('Native semantic reference snapshot document changed'),
+    )
+    expect(await page.locator('body').ariaSnapshot({ mode: 'ai', timeout: 5000 })).toContain(
+      `[ref=${reference}]`,
+    )
+    expect(runAutomation).toHaveBeenCalledTimes(2)
+    const retried = runAutomation.mock.calls[1]?.[1]?.timeoutMs
+    expect(retried).toBeGreaterThan(0)
+    expect(retried).toBeLessThanOrEqual(5000)
+    runAutomation.mockRejectedValueOnce(new Error('Native snapshot reference document changed'))
+    expect(await page.locator('body').ariaSnapshot({ mode: 'ai', timeout: 5000 })).toContain(
+      `[ref=${reference}]`,
+    )
+    expect(runAutomation).toHaveBeenCalledTimes(4)
+    runAutomation.mockRejectedValueOnce(
+      new Error('Native snapshot reference capture command failed'),
+    )
+    await expect(page.locator('body').ariaSnapshot({ mode: 'ai', timeout: 5000 })).rejects.toThrow(
+      'capture command failed',
+    )
+  })
   it('AI mode requests the fixed native capture command with original timeout and boxes', async () => {
     const { page, runAutomation } = pageFixture([
       { role: 'button', name: 'Go', ref: reference, box: [1, 2, 3, 4] },
@@ -189,14 +213,16 @@ describe('native snapshot references: typed packet and host schema contracts', (
     expect(() => parseNativeReferenceForest(JSON.stringify([nested]))).toThrow(/depth/u)
     expect(() =>
       parseNativeReferenceForest(
-        JSON.stringify(Array.from({ length: 4097 }, () => ({ role: 'text', text: 'a' }))),
+        JSON.stringify(Array.from({ length: 65_537 }, () => ({ role: 'text', text: 'a' }))),
       ),
     ).toThrow()
   })
   it('rejects byte overflow and unknown public capture modes', async () => {
     expect(() =>
-      parseNativeReferenceForest(JSON.stringify([{ role: 'text', text: '\u0800'.repeat(23000) }])),
-    ).toThrow(/64 KiB/u)
+      parseNativeReferenceForest(
+        JSON.stringify([{ role: 'text', text: '\u0800'.repeat(5_600_000) }]),
+      ),
+    ).toThrow(/16 MiB/u)
     const { page, runAutomation } = pageFixture()
     await expect(page.locator('body').ariaSnapshot({ mode: 'ai', timeout: -1 })).rejects.toThrow()
     expect(runAutomation).not.toHaveBeenCalled()

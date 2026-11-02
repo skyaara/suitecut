@@ -84,6 +84,7 @@ class Writer {
   std::deque<int> frame_order_;
   std::map<int, uint64_t> dropped_;
   size_t frame_bytes_ = 0;
+  static constexpr size_t kEventBacklog = 65536, kEventBacklogBytes = 64 * 1048576;
   size_t event_count_ = 0, event_bytes_ = 0, reply_bytes_ = 0;
   bool event_failed_ = false;
   std::atomic<bool> stopping_{false};

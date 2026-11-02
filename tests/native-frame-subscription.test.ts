@@ -298,6 +298,28 @@ describe('native raw-frame demand', () => {
     await browser.closed
   })
 
+  it('asks again when the browser is too busy to answer a subscription', async () => {
+    const browser = await launch()
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] })
+    try {
+      browser.onFrame(vi.fn())
+      await command(0, true)
+      await vi.advanceTimersByTimeAsync(30_001)
+      const retry = await vi.waitFor(() => {
+        const found = commands.filter((entry) => entry.command === 'frameSubscription')
+        expect(found).toHaveLength(2)
+        return found[1]!
+      })
+      expect(retry.enabled).toBe(true)
+      ack(retry)
+      await settle()
+      expect(browser.state).toBe('running')
+    } finally {
+      vi.useRealTimers()
+    }
+    await browser.close()
+  })
+
   it.each([false, true])(
     'reconciles a pending enable after renderer crash and late ACK (immediate recovery %s)',
     async (immediate) => {

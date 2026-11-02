@@ -2,6 +2,69 @@
 
 ## Unreleased
 
+- Stop closing pages that contain a sandboxed iframe. Chrome runs a sandboxed
+  frame in its own process, refuses `Debugger.enable` there because script is
+  prohibited, and suitecut treated that refusal as a broken channel. A page
+  with `<iframe sandbox srcdoc=…>` closed with "Debugger script-cache policy
+  failed". Now that frame just has no debugger.
+- Keep AI snapshots working on pages full of ad iframes. A snapshot read every
+  iframe and failed whole if any child navigated, detached, errored, never got
+  a document (a request that never answers, a lazy frame) or sat busy, so on
+  BBC and CNN every `ariaSnapshot({ mode: 'ai' })` timed out for minutes. As in
+  Playwright, such a child now leaves its iframe line empty. A child that
+  doesn't answer gets a third of the time left (at least 1 s) before the rest
+  of the page is captured without it.
+- Capture an AI snapshot again, within the same timeout, when a navigation
+  replaces the page's document mid-capture, and don't close the page when a
+  paused init snapshot for a child or already-replaced document can't be
+  delivered.
+- Raise AI snapshot bounds from 4,096 nodes and 64 KiB to 65,536 nodes and
+  16 MiB (8 MiB of YAML), and the DOM query work budget twentyfold, so long
+  pages such as GitHub file views, Hacker News threads and python.org's
+  changelog snapshot instead of failing with capacity or work-limit errors.
+- Snapshot pages built from nested framesets, such as Craigslist's forums.
+  The page's body was found with a selector that matched every nested
+  `<frameset>`, so strict resolution failed.
+- Stop the browser freezing on sites that use WebAuthn, such as npr.org. On
+  macOS 26.2 and later Chromium asked the system whether iCloud Keychain holds
+  passkeys with a synchronous call on the browser's UI thread, and when the
+  passkey agent was slow every command timed out. suitecut's bundle can't use
+  iCloud Keychain passkeys, so the check is off.
+- Keep the browser running when an iframe can't get its isolated world or
+  frame tree. On CNN an ad frame that went away mid-call ended the whole
+  browser with "Native DOM execution world could not be created". Now that
+  frame is skipped, as in Playwright, and the next operation that needs its
+  world asks again.
+- Let a person take control after an agent browsed sites full of ad iframes.
+  DevTools commands sent to an iframe whose target then detached are never
+  answered, and they counted as work in flight forever: after eBay, 490 of
+  them blocked every later handover in that browser. They now end when the
+  target detaches, on page and worker channels alike. Best Buy also starts
+  shared workers from `blob:` URLs that never run, and Chrome never answers
+  their startup commands; a handover no longer waits on a worker's own
+  startup. A snapshot held by an earlier document in the back/forward cache no
+  longer blocks a handover either.
+- Say what is still running when **Take control** can't transfer: the error
+  now ends with "(waiting on …)", naming the native work the handover waits
+  for, down to the source line that posted a pending native task.
+- Stop long sessions on busy sites from saturating the Node host. Once a
+  browser had seen 4,096 requests, each new one re-serialised the metadata of
+  every retained request to measure the cache, so on CNN the host spent most of
+  its CPU on bookkeeping. Every browser reply then waited, snapshots and
+  commands timed out, and handovers failed. Retained requests now reuse the
+  size measured when they were last observed.
+- Keep a page open when the browser is too slow to answer a live-frame
+  subscription. A timeout ended the whole browser with "Native frame
+  subscription failed"; the subscription is now asked for again.
+- Keep **Take control** and **Resume AI** waiting while a heavy page keeps the
+  browser busy. On CNN and BBC the browser's UI thread could take more than
+  two seconds to answer the handover's idle check, so the takeover failed with
+  "Native browser command timed out", and a failed release left the agent
+  waiting for a person who had already let go. A slow answer now counts as
+  busy, and the handover keeps asking until its own deadline.
+- Allow a 64 MiB / 65,536-event output backlog to the host. A video page on
+  BBC produced an event burst while the host was busy and the browser exited
+  with "Native event stream exceeded its bounded output budget".
 - Keep pages open when a frame fails to start, and keep the browser running
   when its first page crashes. A child frame that couldn't bootstrap its init
   scripts, usually an ad frame removed while it loaded, closed the whole page

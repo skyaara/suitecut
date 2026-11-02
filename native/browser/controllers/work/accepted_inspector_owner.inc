@@ -6,7 +6,10 @@ void NativeInspectorOpened(std::shared_ptr<suitecut::AcceptedInspectorWork> ledg
   if(inspector_channel_){if(inspector_work_)inspector_work_->Unsupported();return;}
   inspector_work_=std::move(ledger);if(inspector_work_)inspector_channel_=inspector_work_->Open(actual_browser,kind);
 }
-void NativeInspectorReserve(int command,std::string_view session){if(inspector_work_&&inspector_channel_)(void)inspector_work_->Reserve(*inspector_channel_,command,session);}
+void NativeInspectorReserve(int command,std::string_view session,std::string_view method={}){
+  if(!inspector_work_||!inspector_channel_)return;
+  if(const auto ticket=inspector_work_->Reserve(*inspector_channel_,command,session))inspector_work_->Label(*ticket,method);
+}
 void NativeInspectorNeverDispatched(int command){
   if(!inspector_work_||!inspector_channel_)return;
   if(const auto ticket=inspector_work_->Pending(*inspector_channel_,command))if(!inspector_work_->NeverDispatched(*ticket))inspector_work_->Unsupported();
@@ -35,6 +38,8 @@ suitecut::NativeWorkOrigin NativeInspectorReplyOrigin(int command,std::string_vi
   return inspector_work_&&inspector_channel_?inspector_work_->ReplyOrigin(*inspector_channel_,command,session):suitecut::NativeWorkOrigin{};
 }
 void NativeInspectorReply(int command,std::string_view session){if(inspector_work_&&inspector_channel_)(void)inspector_work_->ActualReply(*inspector_channel_,command,session);}
+void NativeInspectorResident(int command){if(inspector_work_&&inspector_channel_)if(const auto ticket=inspector_work_->Pending(*inspector_channel_,command))inspector_work_->Resident(*ticket);}
+void NativeInspectorSessionDetached(std::string_view session){if(inspector_work_&&inspector_channel_)(void)inspector_work_->ActualSessionDetached(*inspector_channel_,session);}
 void NativeInspectorClosed(int actual_browser){
   if(!inspector_work_||!inspector_channel_)return;
   if(inspector_channel_->browser!=actual_browser||!inspector_work_->ActualChannelClosed(*inspector_channel_)){inspector_work_->Unsupported();return;}

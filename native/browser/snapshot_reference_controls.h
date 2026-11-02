@@ -46,8 +46,8 @@ class SnapshotReferences {
   using Current=std::function<bool(int,uint64_t,const Document&)>;
   using Release=std::function<void(const Group&,std::function<void(bool,const std::string&)>)>;
   using Fatal=std::function<void(const std::string&)>;
-  static constexpr size_t kActiveNodes=4096,kResidentNodes=8192,kActiveGroups=64,kResidentGroups=128,kPhysicalReleases=32,kBorrows=64,kBytes=8*1024*1024;
-  static constexpr size_t kGlobalNodes=32768,kGlobalGroups=256,kGlobalInstalls=128,kGlobalReleases=64,kGlobalBorrows=128,kGlobalBytes=32*1024*1024;
+  static constexpr size_t kActiveNodes=65536,kResidentNodes=131072,kActiveGroups=64,kResidentGroups=128,kPhysicalReleases=32,kBorrows=64,kBytes=64*1024*1024;
+  static constexpr size_t kGlobalNodes=262144,kGlobalGroups=256,kGlobalInstalls=128,kGlobalReleases=64,kGlobalBorrows=128,kGlobalBytes=256*1024*1024;
   SnapshotReferences(std::string name_space,Current current,Release release,Fatal fatal)
     :namespace_(std::move(name_space)),current_(std::move(current)),release_(std::move(release)),fatal_(std::move(fatal)){}
   ~SnapshotReferences(){Destroyed();life_->alive=false;}

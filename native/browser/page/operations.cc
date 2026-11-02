@@ -63,6 +63,8 @@ auto Source::CompleteCountsInContext(const std::string& session, int context,
 }
 
 auto Source::Complete(int id, bool ok, const std::string& error, const std::string& json) -> void {
+  // A child iframe failing mid-snapshot leaves that iframe empty.
+  if (!ok && ReferenceFramesChildFailed(id)) return;
   engine_.websocket_routes().Cancel(id);
   const auto handler_owner = operations_.Get(id);
   const suitecut::NativeWorkOriginFrame handler_origin(engine_.LocatorHandlerCommandOrigin(

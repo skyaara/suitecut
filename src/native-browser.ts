@@ -1725,6 +1725,12 @@ export async function launchNativeBrowser(options: NativeBrowserOptions): Promis
               scheduleFrameSubscription(pageId)
               return
             }
+            // A heavy page can keep the browser from answering for a while.
+            // The change is idempotent, so ask again rather than end the page.
+            if (error instanceof NativeTimeoutError) {
+              scheduleFrameSubscription(pageId)
+              return
+            }
             if (page.state === 'running' && !stopping && !terminal && !exited)
               fail(new Error('Native frame subscription failed', { cause: error }))
           },

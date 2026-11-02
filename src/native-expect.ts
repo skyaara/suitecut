@@ -3,7 +3,7 @@ import { inspect } from 'node:util'
 
 import * as z from 'zod'
 
-import { assertNativeAriaSnapshot } from './native-aria.js'
+import { assertNativeAriaSnapshot, NATIVE_DOCUMENT_BODY } from './native-aria.js'
 import {
   hasNativeAssertionDeadline,
   nativeAssertionDeadlineKind,
@@ -1202,7 +1202,7 @@ export class NativePageAssertions {
   }
   toMatchAriaSnapshot(expected: string, options?: NativeAssertionOptions): Promise<void> {
     return assertNativeAriaSnapshot(
-      this.page.locator('body, frameset'),
+      this.page.locator(NATIVE_DOCUMENT_BODY),
       expected,
       options,
       this.isNot,
@@ -1533,7 +1533,7 @@ export function createNativeMatchers(): Record<
           throw new Error('Native DOM matcher requires a NativeLocator')
         const locator =
           target instanceof NativePage
-            ? target.locator(matcher === 'toMatchAriaSnapshot' ? 'body, frameset' : 'html')
+            ? target.locator(matcher === 'toMatchAriaSnapshot' ? NATIVE_DOCUMENT_BODY : 'html')
             : target
         const named = ['toHaveJSProperty', 'toHaveAttribute', 'toHaveCSS'].includes(matcher)
         const state = matcher.startsWith('toBe')

@@ -25,7 +25,9 @@ auto Source::WakeChildBootstrapDeadlines() -> void {
                        }
                        self->WakeChildBootstrapDeadlines();
                      }),
-                     1000);
+                     // Short ticks: a pending task keeps a handover waiting,
+                     // and CEF holds a delayed task until it is due.
+                     50);
 }
 
 auto Source::ChildBootstrapFinished(const std::string& session, const std::string& frame, bool ok,

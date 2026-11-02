@@ -123,7 +123,10 @@ class SuiteCutContextControls : public std::enable_shared_from_this<SuiteCutCont
   std::string RequestPolicyError(int context_id)const;
   uint32_t AllowedPermissions(int page_id, const std::string& origin) const;
   uint32_t AllowedMediaPermissions(int page_id, const std::string& origin) const;
-  bool AcceptedWorkReady()const;
+  bool AcceptedWorkReady()const{return !AcceptedWorkBlocker();}
+  // The first condition keeping context work from being ready, for diagnostics.
+  // A viewer handover also passes snapshots that earlier documents still hold.
+  const char* AcceptedWorkBlocker(bool viewer=false)const;
   size_t ContextCount() const { return contexts_.size(); }
   size_t PageCount() const { return pages_.size(); }
  private:

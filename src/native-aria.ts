@@ -399,7 +399,7 @@ export function matchNativeAriaTree(
     if (mode !== 'contain') continue
     for (const node of scope.nodes) {
       if (node.children?.length) queue.push({ nodes: node.children, depth: scope.depth + 1 })
-      if (queue.length > 4096) throw new Error('Native ARIA comparison scope limit exceeded')
+      if (queue.length > 65_536) throw new Error('Native ARIA comparison scope limit exceeded')
     }
   }
   return false
@@ -424,14 +424,14 @@ export function formatNativeAriaTree(
       : value
   const append = (line: string) => {
     bytes += line.length * 2 + 2
-    if (bytes > 65536) throw new Error('Native ARIA snapshot exceeds 64 KiB')
+    if (bytes > 16_777_216) throw new Error('Native ARIA snapshot exceeds 8 MiB')
     output.push(line)
   }
   const stack = nodes.map((node) => ({ node, depth: 0 })).reverse()
   while (stack.length) {
     const item = stack.pop()
     if (!item) break
-    if (++visited > 4096 || item.depth > 64)
+    if (++visited > 65_536 || item.depth > 64)
       throw new Error('Native ARIA snapshot traversal exceeds bounds')
     const { node, depth } = item
     const indent = '  '.repeat(depth)
@@ -512,7 +512,7 @@ export function formatNativeAriaJSON(
     if (!item) break
     if (item.depth > 64) throw new Error('Native ARIA JSON depth limit exceeded')
     for (const actual of item.values) {
-      if (++visited > 4096) throw new Error('Native ARIA JSON node limit exceeded')
+      if (++visited > 65_536) throw new Error('Native ARIA JSON node limit exceeded')
       if (actual.role === 'text') {
         const text = actual.text ?? actual.name ?? ''
         if (item.depth) item.output.push(text)
@@ -603,8 +603,8 @@ export function formatNativeAriaJSON(
       }
     }
   }
-  if (new TextEncoder().encode(JSON.stringify(result)).byteLength > 65_536)
-    throw new Error('Native ARIA JSON exceeds 64 KiB')
+  if (new TextEncoder().encode(JSON.stringify(result)).byteLength > 16_777_216)
+    throw new Error('Native ARIA JSON exceeds 16 MiB')
   return result
 }
 
@@ -614,12 +614,12 @@ const AriaResult = z.object({
       value: z.object({
         matches: z.boolean(),
         actual: z.union([
-          z.tuple([z.literal('primitive'), z.string().max(65536)]),
+          z.tuple([z.literal('primitive'), z.string().max(4_194_304)]),
           z.tuple([
             z.literal('utf16'),
             z
               .string()
-              .max(262144)
+              .max(16_777_216)
               .regex(/^(?:[0-9a-f]{4})*$/u),
           ]),
         ]),
@@ -679,7 +679,7 @@ export async function observeNativeAria(
   if (!value) throw new Error('Native accessibility observation unavailable')
   return {
     matches: value.matches,
-    actual: z.string().max(65536).parse(codec.decode(value.actual)),
+    actual: z.string().max(4_194_304).parse(codec.decode(value.actual)),
     count: value.count,
     ...(parsed.closedReason === undefined ? {} : { closedReason: parsed.closedReason }),
   }
@@ -687,16 +687,16 @@ export async function observeNativeAria(
 
 /** Validates only the fixed native semantic-forest schema, never author values. */
 export function parseNativeReferenceForest(serialized: string): NativeAriaNode[] {
-  z.string().max(65_536).parse(serialized)
-  if (new TextEncoder().encode(serialized).byteLength > 65_536)
-    throw new Error('Native ARIA reference forest exceeds 64 KiB')
+  z.string().max(16_777_216).parse(serialized)
+  if (new TextEncoder().encode(serialized).byteLength > 16_777_216)
+    throw new Error('Native ARIA reference forest exceeds 16 MiB')
   const header = z.strictObject({
     role: z
       .string()
       .max(128)
       .regex(/^[a-z][a-z0-9-]*$/u),
     name: z.string().max(65_536).optional(),
-    text: z.string().max(65_536).optional(),
+    text: z.string().max(16_777_216).optional(),
     ref: z
       .string()
       .max(192)
@@ -719,14 +719,14 @@ export function parseNativeReferenceForest(serialized: string): NativeAriaNode[]
     box: z
       .tuple([z.number().finite(), z.number().finite(), z.number().finite(), z.number().finite()])
       .optional(),
-    children: z.array(z.unknown()).max(4096).optional(),
+    children: z.array(z.unknown()).max(65_536).optional(),
   })
   const result: NativeAriaNode[] = []
   const pending = [
     {
       values: z
         .array(z.unknown())
-        .max(4096)
+        .max(65_536)
         .parse(JSON.parse(serialized) as UntrustedInput),
       output: result,
       depth: 0,
@@ -738,7 +738,7 @@ export function parseNativeReferenceForest(serialized: string): NativeAriaNode[]
     if (!level) break
     if (level.depth > 64) throw new Error('Native ARIA reference forest exceeds depth bounds')
     for (const value of level.values) {
-      if (++count > 4096) throw new Error('Native ARIA reference forest exceeds node bounds')
+      if (++count > 65_536) throw new Error('Native ARIA reference forest exceeds node bounds')
       const actual = header.parse(value)
       if (actual.role === 'text' && actual.ref !== undefined)
         throw new Error('Native ARIA text records cannot own Element references')
@@ -768,16 +768,16 @@ export function parseNativeReferenceForest(serialized: string): NativeAriaNode[]
 
 /** Validates the dedicated native-produced JSON tree without author tag decoding. */
 export function parseNativeAriaJSON(serialized: string): NativeAriaJSONNode[] {
-  z.string().max(65_536).parse(serialized)
-  if (new TextEncoder().encode(serialized).byteLength > 65_536)
-    throw new Error('Native ARIA JSON exceeds 64 KiB')
+  z.string().max(16_777_216).parse(serialized)
+  if (new TextEncoder().encode(serialized).byteLength > 16_777_216)
+    throw new Error('Native ARIA JSON exceeds 16 MiB')
   const header = z.strictObject({
     role: z
       .string()
       .max(128)
       .regex(/^[a-z][a-z0-9-]*$/u),
     name: z.string().max(65_536).optional(),
-    text: z.string().max(65_536).optional(),
+    text: z.string().max(16_777_216).optional(),
     checked: z.union([z.boolean(), z.literal('mixed')]).optional(),
     disabled: z.boolean().optional(),
     expanded: z.boolean().optional(),
@@ -805,14 +805,14 @@ export function parseNativeAriaJSON(serialized: string): NativeAriaJSONNode[] {
         height: z.number().finite().nonnegative(),
       })
       .optional(),
-    children: z.array(z.unknown()).max(4096).optional(),
+    children: z.array(z.unknown()).max(65_536).optional(),
   })
   const result: NativeAriaJSONNode[] = []
   const pending = [
     {
       values: z
         .array(z.unknown())
-        .max(4096)
+        .max(65_536)
         .parse(JSON.parse(serialized) as UntrustedInput),
       output: result as (NativeAriaJSONNode | string)[],
       depth: 0,
@@ -824,7 +824,7 @@ export function parseNativeAriaJSON(serialized: string): NativeAriaJSONNode[] {
     if (!item) break
     if (item.depth > 64) throw new Error('Native ARIA JSON exceeds depth bounds')
     for (const input of item.values) {
-      if (++visited > 4096) throw new Error('Native ARIA JSON exceeds node bounds')
+      if (++visited > 65_536) throw new Error('Native ARIA JSON exceeds node bounds')
       if (typeof input === 'string') {
         if (!item.depth) throw new Error('Native ARIA JSON root must contain nodes')
         item.output.push(input)
@@ -850,6 +850,47 @@ export function parseNativeAriaJSON(serialized: string): NativeAriaJSONNode[] {
     }
   }
   return result
+}
+
+/**
+ * `document.body` as a selector: the root's body or frameset. A page with
+ * nested framesets has several, and strict snapshot resolution needs one.
+ */
+export const NATIVE_DOCUMENT_BODY = ':root > body, :root > frameset'
+
+const changedDocument =
+  /snapshot (?:reference )?document changed|frame document changed|frame context unavailable/u
+
+/**
+ * A navigation can replace the document while an AI snapshot is captured. As
+ * in Playwright, capture again in the new document within the same timeout.
+ */
+async function captureCurrentDocument<T>(
+  locator: NativeLocator,
+  timeout: number | undefined,
+  signal: AbortSignal | undefined,
+  capture: (timeout: number | undefined) => Promise<T>,
+): Promise<T> {
+  const total = timeout ?? locator.page().defaultTimeout()
+  const deadline = total === 0 ? Infinity : Date.now() + total
+  for (let attempt = 0; ; ++attempt) {
+    try {
+      return await capture(
+        attempt === 0 || deadline === Infinity
+          ? timeout
+          : Math.max(1, Math.ceil(deadline - Date.now())),
+      )
+    } catch (error) {
+      if (
+        !(error instanceof Error) ||
+        !changedDocument.test(error.message) ||
+        Date.now() + 50 >= deadline ||
+        signal?.aborted
+      )
+        throw error
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    }
+  }
 }
 
 /** Captures native semantic JSON directly, with AI reference commit owned by C++. */
@@ -878,16 +919,18 @@ export async function captureNativeAriaSnapshotJSON(
     onAbort = () => controller.abort(abort())
   config.signal?.addEventListener('abort', onAbort, { once: true })
   try {
-    const reply = z.object({ snapshotJSON: z.string().max(65_536) }).parse(
+    const reply = z.object({ snapshotJSON: z.string().max(16_777_216) }).parse(
       config.mode === 'ai'
-        ? await locator.runReferenceSnapshot(
-            {
-              format: 'json',
-              ...(config.timeout === undefined ? {} : { timeout: config.timeout }),
-              ...(config.boxes === undefined ? {} : { boxes: config.boxes }),
-              ...(config.depth === undefined ? {} : { depth: config.depth }),
-            },
-            controller.signal,
+        ? await captureCurrentDocument(locator, config.timeout, controller.signal, (timeout) =>
+            locator.runReferenceSnapshot(
+              {
+                format: 'json',
+                ...(timeout === undefined ? {} : { timeout }),
+                ...(config.boxes === undefined ? {} : { boxes: config.boxes }),
+                ...(config.depth === undefined ? {} : { depth: config.depth }),
+              },
+              controller.signal,
+            ),
           )
         : await locator.runStructuredSnapshot({ ...config, signal: controller.signal }),
     )
@@ -911,18 +954,20 @@ export async function captureNativeAriaSnapshot(
     })
     .parse(options)
   if (config.mode === 'ai') {
-    const reply = z.object({ yamlJSON: z.string().max(393_218) }).parse(
-      await locator.runReferenceSnapshot({
-        ...(config.timeout === undefined ? {} : { timeout: config.timeout }),
-        ...(config.boxes === undefined ? {} : { boxes: config.boxes }),
-        ...(config.depth === undefined ? {} : { depth: config.depth }),
-      }),
+    const reply = z.object({ yamlJSON: z.string().max(25_165_826) }).parse(
+      await captureCurrentDocument(locator, config.timeout, undefined, (timeout) =>
+        locator.runReferenceSnapshot({
+          ...(timeout === undefined ? {} : { timeout }),
+          ...(config.boxes === undefined ? {} : { boxes: config.boxes }),
+          ...(config.depth === undefined ? {} : { depth: config.depth }),
+        }),
+      ),
     )
     // Fixed native formatting has already succeeded before reference commit.
     // JSON string encoding preserves actual isolated units without scalar tags.
     return z
       .string()
-      .max(65_536)
+      .max(8_388_608)
       .parse(JSON.parse(reply.yamlJSON) as UntrustedInput)
   }
   const observed = await observeNativeAria(locator, options)

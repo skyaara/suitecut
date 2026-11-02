@@ -14,7 +14,7 @@ inline constexpr char kSuiteCutNativeAriaJSON[] = R"JS(function formatNativeAria
         if (item.depth > 64)
             throw new Error('Native ARIA JSON depth limit exceeded');
         for (const actual of item.values) {
-            if (++visited > 4096)
+            if (++visited > 65_536)
                 throw new Error('Native ARIA JSON node limit exceeded');
             if (actual.role === 'text') {
                 const text = actual.text ?? actual.name ?? '';
@@ -112,7 +112,7 @@ inline constexpr char kSuiteCutNativeAriaJSON[] = R"JS(function formatNativeAria
             }
         }
     }
-    if (new TextEncoder().encode(JSON.stringify(result)).byteLength > 65_536)
-        throw new Error('Native ARIA JSON exceeds 64 KiB');
+    if (new TextEncoder().encode(JSON.stringify(result)).byteLength > 16_777_216)
+        throw new Error('Native ARIA JSON exceeds 16 MiB');
     return result;
 })JS";

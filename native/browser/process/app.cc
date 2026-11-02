@@ -23,6 +23,14 @@ auto App::OnBeforeCommandLineProcessing(const CefString&, CefRefPtr<CefCommandLi
   // Context storage state has one localStorage/IndexedDB/OPFS namespace per
   // origin, including third-party frames. Keep this browser policy explicit.
   std::vector<std::string> disabled_features{"ThirdPartyStoragePartitioning"};
+#if defined(__APPLE__)
+  // A WebAuthn request otherwise asks macOS whether iCloud Keychain holds
+  // passkeys with a synchronous XPC call on the UI thread. When the passkey
+  // agent is slow, the whole browser stops answering; on npr.org it froze for
+  // minutes. This bundle lacks Apple's passkey entitlement, so it cannot use
+  // iCloud Keychain anyway, and Chromium falls back to a local iCloud check.
+  disabled_features.emplace_back("WebAuthnICloudKeychainUseDeviceConfiguredForPasskeys");
+#endif
 #if defined(__linux__)
   if (command->GetSwitchValue("suitecut-headless") == "1") {
     // Chromium paint holding keeps a new primary page's input router inactive

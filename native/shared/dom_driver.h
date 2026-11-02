@@ -104,7 +104,7 @@ inline std::string SuiteCutDOMDriverSource() {
     const captured=snapshot(scope,query,{ai:true,boxes:request.accessibilityBoxes===true,captureReferences:true});
     const newRefs=new Map();if(++generation>Number.MAX_SAFE_INTEGER)throw new Error('Native snapshot generation limit exceeded');
     for(const [node,index] of captured.entries){const token='r'+prefix+'_'+generation+'_'+index;node.ref=token;newRefs.set(token,new WeakRef(captured.elements[index]));}
-    if(newRefs.size>4096)throw new Error('Native snapshot reference limit exceeded');refs=newRefs;
+    if(newRefs.size>65536)throw new Error('Native snapshot reference limit exceeded');refs=newRefs;
     const opts={mode:'ai',boxes:request.accessibilityBoxes===true};if(request.referenceDepth!==undefined)opts.depth=request.referenceDepth;
     if(request.referenceFormat==='json')return {ready:true,value:{snapshotJSON:JSON.stringify(jsonFormat(captured.forest,opts))}};
     return {ready:true,value:{yamlJSON:JSON.stringify(yamlFormat(captured.forest,opts))}};

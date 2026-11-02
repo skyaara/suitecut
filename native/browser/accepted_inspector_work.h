@@ -7,6 +7,7 @@
 #include <memory>
 #include <exception>
 #include <optional>
+#include <string>
 #include <string_view>
 namespace suitecut {
 // Process-owned CEF UI-thread ledger. It observes real queue/send/reply/channel
@@ -39,7 +40,9 @@ class AcceptedInspectorWork {
     auto* row=Find(ticket);if(!row||row->submitted||dispatches_==UINT64_MAX){poisoned_=true;return false;}
     if(session.size()!=row->session_size){poisoned_=true;return false;}
     for(size_t i=0;i<session.size();++i)if(session[i]!=row->session[i]){poisoned_=true;return false;}
-    row->submitted=true;--queued_;++submitted_;++dispatches_;return true;
+    row->submitted=true;--queued_;++submitted_;++dispatches_;
+    if(Detached(row->ticket.channel,session)){row->closed=true;++session_detached_;}
+    return true;
   }
   // Exact native queue removal/refusal before any backend call. Timeout alone
   // cannot retire Submitted work: it has no corresponding API here.
@@ -99,6 +102,23 @@ class AcceptedInspectorWork {
     }
     return false;
   }
+  // Actual Target.detachedFromTarget for one flattened child session. Chrome
+  // drops whatever that session was sent and never answers it, so this
+  // detach is the only boundary those submitted commands will see. Commands
+  // still queued are kept: sending them gets a session-not-found reply.
+  size_t ActualSessionDetached(Channel channel,std::string_view session)noexcept{
+    if(!Current(channel)||session.empty())return 0;
+    size_t retired=0;
+    for(auto& row:pending_)if(row.active&&row.submitted&&row.ticket.channel==channel&&row.session_size==session.size()&&
+                              std::string_view(row.session.data(),row.session_size)==session){
+      row.closed=true;++session_detached_;
+      if(row.returned){row.active=false;--submitted_;++retired;}
+    }
+    auto& slot=detached_[detached_next_++%detached_.size()];slot.channel=channel;
+    slot.size=session.size()<slot.session.size()?session.size():slot.session.size();
+    for(size_t i=0;i<slot.size;++i)slot.session[i]=session[i];
+    return retired;
+  }
   // Genuine CEF callback entry/stack return is a separate physical lane;
   // observing a reply cannot make its executing native callback idle.
   uint64_t BeginCallback(Channel channel)noexcept{
@@ -117,10 +137,33 @@ class AcceptedInspectorWork {
   // A viewer handover may pass commands already sent to a crashed renderer:
   // they can act on nothing, and recovery joins them before the page runs.
   // Queued commands still block, since they could reach the recovered page.
+  // A worker's own startup commands are resident page behaviour too: a shared
+  // worker that never starts never answers them, and their late reply only
+  // resumes or publishes that worker.
   template<class Crashed>bool ViewerReceiptLaneReady(Crashed&& crashed)const{
     if(poisoned_||callback_count_)return false;
-    for(const auto& row:pending_)if(row.active&&(!row.submitted||!crashed(row.ticket.channel)))return false;
+    for(const auto& row:pending_)if(ViewerWaits(row,crashed))return false;
     return true;
+  }
+  void Resident(const Ticket& ticket)noexcept{if(auto* row=Find(ticket))row->resident=true;}
+  // The first row a handover waits on, for diagnostics only.
+  template<class Crashed>std::string Blocker(Crashed&& crashed)const{
+    if(poisoned_)return "inspector ledger poisoned";
+    if(callback_count_)return "inspector callback running";
+    size_t waiting=0;const Record* first=nullptr;
+    for(const auto& row:pending_)if(ViewerWaits(row,crashed)){++waiting;if(!first)first=&row;}
+    if(!first)return {};
+    const std::string_view session(first->session.data(),first->session_size);
+    const auto kind=first->ticket.channel.kind;
+    return std::string(first->method.data(),first->method_size)+(first->submitted?" awaiting its reply":" queued")+
+           (session.empty()?"":Detached(first->ticket.channel,session)?" in a detached child session":" in a child session")+
+           (kind==Kind::Broker?" of the context's worker channel":kind==Kind::Utility?" of the utility channel":"")+
+           (waiting>1?" and "+std::to_string(waiting-1)+" more":"");
+  }
+  void Label(const Ticket& ticket,std::string_view method)noexcept{
+    auto* row=Find(ticket);if(!row)return;
+    row->method_size=method.size()<row->method.size()?method.size():row->method.size();
+    for(size_t i=0;i<row->method_size;++i)row->method[i]=method[i];
   }
   // Scoped observation only; it neither retires rows nor relaxes global idle.
   // Callback frames lack exact per-frame origins, so an executing real native
@@ -131,13 +174,24 @@ class AcceptedInspectorWork {
     return true;
   }
  private:
-  struct Record {Ticket ticket;NativeWorkOrigin origin;std::array<char,kSessionBytes> session{};size_t session_size=0;bool active=false,submitted=false,returned=false,replied=false,closed=false;};
+  struct Record {Ticket ticket;NativeWorkOrigin origin;std::array<char,kSessionBytes> session{};size_t session_size=0;std::array<char,64> method{};size_t method_size=0;bool active=false,submitted=false,returned=false,replied=false,closed=false,resident=false;};
+  template<class Crashed>static bool ViewerWaits(const Record& row,Crashed&& crashed){
+    return row.active&&!row.resident&&(!row.submitted||!crashed(row.ticket.channel));
+  }
+  struct DetachedSession {Channel channel;std::array<char,kSessionBytes> session{};size_t size=0;};
+  // The most recent genuine child session detaches, newest overwriting oldest.
+  bool Detached(Channel channel,std::string_view session)const noexcept{
+    if(session.empty())return false;
+    for(const auto& slot:detached_)if(slot.size&&slot.channel==channel&&std::string_view(slot.session.data(),slot.size)==session)return true;
+    return false;
+  }
+  std::array<DetachedSession,256> detached_{};size_t detached_next_=0;
   bool Current(Channel channel)const noexcept{for(const auto& value:channels_)if(value&&*value==channel)return true;return false;}
   Record* Find(const Ticket& ticket)noexcept{for(auto& row:pending_)if(row.active&&row.ticket==ticket)return &row;return nullptr;}
   std::optional<Channel> PoisonChannel()noexcept{poisoned_=true;return std::nullopt;}
   std::optional<Ticket> PoisonTicket()noexcept{poisoned_=true;return std::nullopt;}
   std::array<std::optional<Channel>,kChannels> channels_{};std::array<Record,kPending> pending_{};
   std::array<uint64_t,kCallbacks> callbacks_{};uint64_t next_callback_=0;size_t callback_count_=0;
-  uint64_t next_channel_=0,next_ticket_=0,dispatches_=0,accepted_=0,replied_=0,refused_=0,unwound_=0,not_dispatched_=0,channel_closed_=0;size_t channel_count_=0,queued_=0,submitted_=0;bool poisoned_=false;
+  uint64_t session_detached_=0,next_channel_=0,next_ticket_=0,dispatches_=0,accepted_=0,replied_=0,refused_=0,unwound_=0,not_dispatched_=0,channel_closed_=0;size_t channel_count_=0,queued_=0,submitted_=0;bool poisoned_=false;
 };
 } // namespace suitecut

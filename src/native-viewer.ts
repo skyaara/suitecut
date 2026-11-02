@@ -8,9 +8,10 @@ import { setTimeout as delay } from 'node:timers/promises'
 import * as z from 'zod'
 
 import { type NativeBrowserController } from './native-browser-controller.js'
-import { type NativeVideoFrame } from './native-browser.js'
+import { type NativeBrowser, type NativeVideoFrame } from './native-browser.js'
 import { nativeContextDeviceScaleFactor } from './native-context.js'
 import { type NativePage } from './native-page.js'
+import { NativeTimeoutError } from './native-timeouts.js'
 import { NativeViewerGate, type NativeViewerMode } from './native-viewer-gate.js'
 import { nativeViewerRGBAsync } from './native-viewer-pixels.js'
 import { nativeViewerHTML, nativeViewerScript, nativeViewerStyles } from './native-viewer-ui.js'
@@ -476,13 +477,43 @@ export async function createBrowserViewer(
     }
   }
   async function nativeIdle(signal: AbortSignal): Promise<void> {
-    do {
-      signal.throwIfAborted()
+    // The last native condition that kept work from settling, for the error.
+    let busy: string | undefined
+    const aborted = (): never => {
+      const reason = toError(signal.reason as UntrustedInput).message
+      throw new Error(busy ? `${reason} (waiting on ${busy})` : reason)
+    }
+    // While a heavy page loads, the browser's UI thread can take longer than
+    // one probe's budget to answer. That is busy, not failed: keep asking
+    // until the handover's own deadline.
+    const ask = (
+      source: Pick<NativeBrowser, 'runAutomation'>,
+      command: 'viewerIdle' | 'diagnostics',
+    ): Promise<UntrustedInput> =>
+      source.runAutomation(command, { timeoutMs: 2000 }, signal).catch((error: UntrustedInput) => {
+        if (signal.aborted) aborted()
+        if (error instanceof NativeTimeoutError) {
+          busy = 'the browser, which is too busy to answer'
+          return undefined
+        }
+        throw toError(error)
+      })
+    poll: do {
+      if (signal.aborted) aborted()
+      const answer = await ask(browser.source, 'viewerIdle')
+      if (answer === undefined) continue
       const result = z
-        .strictObject({ viewerIdleVersion: z.literal(1), idle: z.boolean() })
-        .parse(await browser.source.runAutomation('viewerIdle', { timeoutMs: 2000 }, signal))
+        .strictObject({
+          viewerIdleVersion: z.literal(1),
+          idle: z.boolean(),
+          busy: z.string().max(512).optional(),
+        })
+        .parse(answer)
+      busy = result.busy
       if (result.idle) {
         for (const page of pages()) {
+          const answer = await ask(page.source, 'diagnostics')
+          if (answer === undefined) continue poll
           const input = z
             .object({
               pressedKeys: z.number(),
@@ -490,7 +521,7 @@ export async function createBrowserViewer(
               mouseButtons: z.number(),
               touchContactHeld: z.boolean(),
             })
-            .parse(await page.source.runAutomation('diagnostics', { timeoutMs: 2000 }, signal))
+            .parse(answer)
           if (
             input.pressedKeys ||
             input.keyModifiers ||
@@ -503,9 +534,9 @@ export async function createBrowserViewer(
         }
         return
       }
-      await delay(20, undefined, { signal })
+      await delay(20, undefined, { signal }).catch(() => undefined)
     } while (!signal.aborted)
-    signal.throwIfAborted()
+    aborted()
   }
   async function takeover(clientId: string): Promise<void> {
     if (gate.mode !== 'agent' && !(gate.mode === 'human' && owner === null))

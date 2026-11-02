@@ -1231,6 +1231,10 @@ class App : public CefApp, public CefBrowserProcessHandler {
     // on the window's layer, instead of drawing into the window from the GPU
     // process. That is what recording reads (WindowFrames). Pages cannot tell.
     if (command_line->GetSwitchValue("suitecut-window-frames") != "off") disabled += ",RemoteCoreAnimationAPI";
+    // Otherwise a WebAuthn request asks macOS about iCloud Keychain passkeys
+    // with a synchronous XPC call on the UI thread, which can freeze the
+    // window. Without Apple's passkey entitlement this browser can't use them.
+    disabled += ",WebAuthnICloudKeychainUseDeviceConfiguredForPasskeys";
 #endif
     command_line->AppendSwitchWithValue("disable-features", disabled);
   }

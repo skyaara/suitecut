@@ -70,7 +70,9 @@ void Engine::Route(const std::string& line) {
                                    if (!*alive) return;
                                    auto result = CefDictionaryValue::Create();
                                    result->SetInt("viewerIdleVersion", 1);
-                                   result->SetBool("idle", AcceptedWorkReady(true));
+                                   const auto busy = AcceptedWorkBlocker(true);
+                                   result->SetBool("idle", busy.empty());
+                                   if (!busy.empty()) result->SetString("busy", busy);
                                    const auto json = Json(result);
                                    writer_.Reply(id, true, "",
                                                  std::vector<uint8_t>(json.begin(), json.end()));

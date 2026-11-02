@@ -21,7 +21,7 @@ class DebuggerDomains::Impl : public std::enable_shared_from_this<Impl> {
   struct PausePacket {Dict data;std::shared_ptr<PacketBudget> budget;~PausePacket(){data=nullptr;--budget->packets;}};
   struct Capture {std::shared_ptr<PausePacket> packet;uint64_t id=0,lease=0;double deadline=0;bool requested=false,expired=false,actual_resumed=false;Ready reply;std::string continuation="Debugger.resume";double continuation_deadline=0;};
   struct Session {
-    std::string id;bool enabled=false,busy=false,closing=false;std::optional<bool> skip, bounded_script_cache;
+    std::string id;bool enabled=false,busy=false,closing=false,scriptless=false;std::optional<bool> skip, bounded_script_cache;
     std::map<uint64_t,std::shared_ptr<Lease>> leases;std::optional<Capture> capture;std::shared_ptr<PausePacket> deferred_pause;double deferred_deadline=0;bool deferred_expired=false,deferred_rejected=false;uint64_t deferred_developer=0;double deferred_developer_deadline=0;DeveloperPauseDisposition deferred_disposition=DeveloperPauseDisposition::Foreign;
   };
   struct Call {std::shared_ptr<Session> session;std::string method;double retirement=0;Reply done;};
@@ -130,6 +130,7 @@ class DebuggerDomains::Impl : public std::enable_shared_from_this<Impl> {
       if(sessions_.size()>=kSessions){ready(false,"Native Debugger session capacity exceeded");return;}
       auto s=std::make_shared<Session>();s->id=session;found=sessions_.emplace(session,std::move(s)).first;
     }
+    found->second->scriptless=false;
     const auto s=found->second;if(s->closing){ready(false,"Native Debugger channel closure is pending");return;}
     for(const auto& [key,l]:s->leases)if(l->kind==kind&&!l->releasing){ready(false,"Native Debugger session already has this consumer kind");return;}
     auto l=std::make_shared<Lease>();l->id=id;l->kind=kind;l->deadline=deadline;l->ready=std::move(ready);l->developer_deadline=std::move(developer_deadline);l->developer_paused=std::move(developer_paused);l->developer_expired=std::move(developer_expired);l->developer_eligible=std::move(developer_eligible);s->leases.emplace(id,l);owners_.emplace(id,s);last_lease_=id;Pump();Wake();
@@ -252,8 +253,17 @@ class DebuggerDomains::Impl : public std::enable_shared_from_this<Impl> {
     // Reconfiguration preserves breakpoints, paused execution, and receipt pins.
     Send(s,"Debugger.enable",params,Budget(s),[this,s,bounded](bool ok,Dict,const std::string&error){
       if(ok){s->enabled=true;s->bounded_script_cache=bounded;}
+      // A frame that may not run script (a sandboxed iframe in its own process)
+      // refuses the Debugger domain. Nothing there can pause or need a script
+      // cache, so its leases fail on their own and the page stays open.
+      else if(error.find("Script execution is prohibited")!=std::string::npos){s->scriptless=true;again_=true;}
       else Close(s,"Actual native Debugger script-cache policy failed: "+error);
     });
+  }
+  void Scriptless(const std::shared_ptr<Session>& s){
+    std::vector<std::shared_ptr<Lease>> leases;for(const auto&[id,l]:s->leases)if(!l->releasing)leases.push_back(l);
+    for(const auto&l:leases){Fail(l,"Native Debugger is unavailable: script execution is prohibited in this frame");if(!Current(s))return;}
+    if(!leases.empty())again_=true;
   }
   void PumpSession(const std::shared_ptr<Session>& s){
     if(!Current(s)||s->busy||s->closing)return;
@@ -292,7 +302,7 @@ class DebuggerDomains::Impl : public std::enable_shared_from_this<Impl> {
       if(acquired_owner!=s->leases.end()){
         const auto lease=acquired_owner->second;
         if(lease->kind==Kind::Developer&&!lease->acquired&&!lease->releasing&&!s->capture->requested){
-          if(!s->enabled){Enable(s);return;}
+          if(!s->enabled){if(s->scriptless)Scriptless(s);else Enable(s);return;}
           if(!s->skip||*s->skip){auto params=CefDictionaryValue::Create();params->SetBool("skip",false);Send(s,"Debugger.setSkipAllPauses",params,Budget(s),[this,s](bool ok,Dict,const std::string&error){if(ok)s->skip=false;else Close(s,error);});return;}
           if(Expired(lease->deadline))Fail(lease,"Native developer Debugger acquisition exceeded its original deadline");
           else{lease->acquired=true;lease->deadline=0;Finish(lease->ready,true,"");}
@@ -312,7 +322,7 @@ class DebuggerDomains::Impl : public std::enable_shared_from_this<Impl> {
       if(s->enabled){Send(s,"Debugger.disable",nullptr,Budget(s),[this,s](bool ok,Dict,const std::string& error){if(ok){s->enabled=false;s->skip.reset();s->bounded_script_cache.reset();}else Close(s,"Actual native Debugger disable failed: "+error);});return;}
       std::vector<std::shared_ptr<Lease>> leases;for(const auto& [id,l]:s->leases){owners_.erase(id);leases.push_back(l);}s->leases.clear();sessions_.erase(s->id);for(const auto& l:leases)Finish(l->release_ready,true,"");return;
     }
-    if(!s->enabled){Enable(s);return;}
+    if(!s->enabled){if(s->scriptless)Scriptless(s);else Enable(s);return;}
     const bool skip=DesiredSkip(s);if(!s->skip||*s->skip!=skip){auto params=CefDictionaryValue::Create();params->SetBool("skip",skip);Send(s,"Debugger.setSkipAllPauses",params,Budget(s),[this,s,skip](bool ok,Dict,const std::string& error){if(ok)s->skip=skip;else Close(s,"Actual native Debugger skip policy failed: "+error);});return;}
     std::vector<std::shared_ptr<Lease>> leases;for(const auto& [id,l]:s->leases)leases.push_back(l);
     for(const auto& l:leases){

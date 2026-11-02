@@ -728,20 +728,42 @@ std::string SuiteCutContextControls::RequestPolicyError(int context)const{
   return found->second.request_policy?found->second.request_policy->Error():"";
 }
 
-bool SuiteCutContextControls::AcceptedWorkReady()const{
-  if(stopping_||!waits_.empty()||!cookie_cancellations_.empty()||
-     (cookies_&&cookies_->Physical())||(storage_&&!storage_->AcceptedWorkReady())||
-     (credentials_&&!credentials_->AcceptedWorkReady())||!credential_ready_->AcceptedWorkReady()||
-     !script_batches_.empty()||!script_acks_.empty()||!binding_batches_.empty()||
-     !snapshot_waits_.empty()||!snapshot_targets_.empty()||!snapshot_closing_.empty()||
-     snapshot_receipts_.AcceptedWork().pending_receipts)return false;
-  for(const auto&[id,context]:contexts_){(void)id;if(context.closing||!context.close_replies.empty())return false;}
-  for(const auto&[id,page]:pages_){(void)id;if(!page.browser||page.closing||page.before_unload.Pending()||page.created_reply||!page.close_replies.empty())return false;}
+const char* SuiteCutContextControls::AcceptedWorkBlocker(bool viewer)const{
+  if(stopping_)return "stopping";
+  if(!waits_.empty())return "waits";
+  if(!cookie_cancellations_.empty())return "cookie cancellations";
+  if(cookies_&&cookies_->Physical())return "cookies";
+  if(storage_&&!storage_->AcceptedWorkReady())return "storage";
+  if(credentials_&&!credentials_->AcceptedWorkReady())return "credentials";
+  if(!credential_ready_->AcceptedWorkReady())return "credential readiness";
+  if(!script_batches_.empty())return "init script batches";
+  if(!script_acks_.empty())return "init script acknowledgements";
+  if(!binding_batches_.empty())return "binding batches";
+  if(!snapshot_waits_.empty())return "init snapshot waits";
+  if(!snapshot_targets_.empty())return "init snapshot targets";
+  if(!snapshot_closing_.empty())return "init snapshot closing";
+  if(snapshot_receipts_.AcceptedWork().pending_receipts)return "init snapshot receipts";
+  for(const auto&[id,context]:contexts_){(void)id;if(context.closing||!context.close_replies.empty())return "context closing";}
+  for(const auto&[id,page]:pages_){
+    (void)id;
+    if(!page.browser)return "page without browser";
+    if(page.closing||!page.close_replies.empty())return "page closing";
+    if(page.before_unload.Pending())return "page beforeunload";
+    if(page.created_reply)return "page creation reply";
+  }
   for(const auto&[id,flight]:snapshot_flights_){
     (void)id;const auto peer=snapshot_peers_.find(flight.page);
-    if(!flight.acknowledged||!flight.installed||flight.released||peer==snapshot_peers_.end()||
-       !peer->second.ready||peer->second.pin!=flight.pin.owner||peer->second.installed!=flight.pin.version||
-       snapshot_publications_.Current(static_cast<int>(flight.pin.owner.context)).version!=flight.pin.version)return false;
+    // An earlier document, usually one kept in the back/forward cache, holds
+    // an installed snapshot until it is destroyed. It runs no automation.
+    if(viewer&&flight.acknowledged&&flight.installed&&!flight.released&&
+       (peer==snapshot_peers_.end()||peer->second.pin!=flight.pin.owner))continue;
+    if(!flight.acknowledged)return "init snapshot flight unacknowledged";
+    if(!flight.installed)return "init snapshot flight uninstalled";
+    if(flight.released)return "init snapshot flight released";
+    if(peer==snapshot_peers_.end())return "init snapshot flight without peer";
+    if(!peer->second.ready)return "init snapshot peer not ready";
+    if(peer->second.pin!=flight.pin.owner||peer->second.installed!=flight.pin.version)return "init snapshot peer pin mismatch";
+    if(snapshot_publications_.Current(static_cast<int>(flight.pin.owner.context)).version!=flight.pin.version)return "init snapshot publication superseded";
   }
-  return true; // All immutable resident mappings/definitions stay owned.
+  return nullptr; // All immutable resident mappings/definitions stay owned.
 }

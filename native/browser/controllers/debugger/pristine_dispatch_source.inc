@@ -354,16 +354,20 @@ void NativePausedSnapshot(const NativePristineKey&key,const std::string&call_fra
       // The slot is function-local and disappears when the bootstrap returns.
       auto info=engine_.contexts()->BrowserExtraInfo(page_id_);
       auto snapshot=info?info->GetDictionary("suitecutInitScripts"):nullptr;
-      if(call_frame.empty()||local_scope<0||!snapshot||!NativePristineCurrent(key)||Now()>=budget){NetworkFatal("Native paused snapshot identity or deadline unavailable");finish(false,"Native paused snapshot identity or deadline unavailable");return;}
+      // A paused document that navigated away, or a child frame such as an ad
+      // removed while it starts, costs that document only. As in Playwright,
+      // the page stays; only the current main document's failure is fatal.
+      const auto fatal=[this,key]{return NativePristineCurrent(key)&&key.frame==main_frame_id_;};
+      if(call_frame.empty()||local_scope<0||!snapshot||!NativePristineCurrent(key)||Now()>=budget){if(fatal())NetworkFatal("Native paused snapshot identity or deadline unavailable");finish(false,"Native paused snapshot identity or deadline unavailable");return;}
       auto body=CefValue::Create();body->SetDictionary(snapshot);
       auto value=CefDictionaryValue::Create();value->SetString("value",CefWriteJSON(body,JSON_WRITER_DEFAULT));
       auto delivery=CefDictionaryValue::Create();delivery->SetString("callFrameId",call_frame);
       delivery->SetInt("scopeNumber",local_scope);delivery->SetString("variableName","nativeSnapshot");delivery->SetDictionary("newValue",value);
-      if(!NativePristineSend(key,"Debugger.setVariableValue",delivery,budget,[this,key,budget,finish](bool delivered,Dict result,const std::string&failure){
+      if(!NativePristineSend(key,"Debugger.setVariableValue",delivery,budget,[this,key,budget,finish,fatal](bool delivered,Dict result,const std::string&failure){
         const bool accepted=delivered&&result&&!result->HasKey("exceptionDetails")&&NativePristineCurrent(key)&&Now()<budget;
-        if(!accepted){NetworkFatal("Native paused init snapshot delivery failed");finish(false,failure.empty()?"Native paused init snapshot delivery failed":failure);return;}
+        if(!accepted){if(fatal())NetworkFatal("Native paused init snapshot delivery failed");finish(false,failure.empty()?"Native paused init snapshot delivery failed":failure);return;}
         finish(true,"");
-      })){NetworkFatal("Native paused init snapshot delivery capacity exceeded");finish(false,"Native paused init snapshot delivery capacity exceeded");}
+      })){if(fatal())NetworkFatal("Native paused init snapshot delivery capacity exceeded");finish(false,"Native paused init snapshot delivery capacity exceeded");}
 }
 void NativePristinePaused(const std::string&session,Dict pause,double deadline,suitecut::DebuggerDomains::Resume resume){
   auto original_resume=std::move(resume);

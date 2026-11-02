@@ -46,7 +46,7 @@ void ReferenceRequest(const std::shared_ptr<SnapshotReferenceCapture>& work,cons
     }
     done(result);
   };
-  if(!work->ticket){DevTools(work->owner,method,params,std::move(callback),work->document.session,true,1048576,true);return;}
+  if(!work->ticket){DevTools(work->owner,method,params,std::move(callback),work->document.session,true,32*1048576,true);return;}
   auto lease=SnapshotReferences().Use(work->ticket);
   if(!lease){Complete(work->owner,false,"Native snapshot reference physical read capacity exceeded");return;}
   ReferenceSubmit(work->owner,work->generation,work->document.session,method,params,[]{return true;},

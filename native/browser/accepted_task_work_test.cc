@@ -111,5 +111,11 @@ int main(){
  {suitecut::AcceptedTaskReceipt monitor(Work::Kind::PassiveNetworkMonitor);
   {suitecut::AcceptedTaskReceipt coordinator(Work::Kind::BarrierCoordinator);const suitecut::AcceptedTaskFrame frame(coordinator);assert(!suitecut::NativeTaskBarrierReady()&&suitecut::NativeTaskBarrierReady(0,true));}
  }++controls;
- assert(controls==37);std::cout<<"Accepted native task work: "<<controls<<" C++ ownership/stack/captured-state controls passed; no CEF/global Engine idle proof\n";
+ {suitecut::AcceptedTaskReceipt coordinator(Work::Kind::BarrierCoordinator);const suitecut::AcceptedTaskFrame frame(coordinator);
+  assert(suitecut::NativeTaskBarrierBlocker().empty());
+  {suitecut::AcceptedTaskReceipt first,second;const auto why=suitecut::NativeTaskBarrierBlocker();
+   assert(why.find("a task from accepted_task_work_test.cc:")==0&&why.find(" queued and 1 more")!=std::string::npos);}
+  {suitecut::AcceptedTaskReceipt monitor(Work::Kind::PassiveNetworkMonitor);assert(suitecut::NativeTaskBarrierBlocker(0,true).empty()&&!suitecut::NativeTaskBarrierBlocker().empty());}
+ }assert(suitecut::NativeTaskBarrierBlocker()=="not on a barrier task");++controls;
+ assert(controls==38);std::cout<<"Accepted native task work: "<<controls<<" C++ ownership/stack/captured-state controls passed; no CEF/global Engine idle proof\n";
 }

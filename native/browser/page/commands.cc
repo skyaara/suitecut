@@ -99,6 +99,8 @@ auto Source::Command(const std::string& line) -> void {
       writer_.Reply(id, false, "Invalid cancellation target");
       return;
     }
+    // A caller's cancel ends the whole snapshot, never just one child frame.
+    reference_frame_batches_.erase(message->GetInt("target"));
     Complete(message->GetInt("target"), false, "Native operation canceled");
     writer_.Reply(id, true);
     return;
