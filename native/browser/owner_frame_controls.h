@@ -13,7 +13,8 @@ namespace suitecut {
 // Cross-page read-only CDP calls cannot borrow the remote page's public request
 // IDs. Their process cap survives cancellation/closure of the originating page;
 // only the actual remote ACK, submission failure or remote channel death retires
-// a call. A stuck remote renderer is closed by its own physical watchdog.
+// a call. A remote renderer that hasn't answered in 30 s gives the call's slot
+// back and is reported; a late answer then settles nothing.
 class OwnerFrameControls {
  public:
   using Clock=std::function<double()>;using Fail=std::function<void(const std::string&)>;
@@ -25,8 +26,12 @@ class OwnerFrameControls {
     const auto token=++life_->sequence;life_->entries.emplace(token,now_()+30000);++process_physical_;
     const auto life=life_;auto result=std::make_shared<Physical>();result->release=[life,token]{if(life->entries.erase(token))--process_physical_;};return result;
   }
-  void Failed(const std::string&error){if(life_->failed||life_->closed)return;life_->failed=true;fail_(error);}
-  void Tick(){if(life_->failed||life_->closed)return;for(const auto&[token,deadline]:life_->entries)if(now_()>=deadline){Failed("Native frame owner peer physical settlement deadline exceeded");return;}}
+  void Failed(const std::string&error){if(life_->failed||life_->closed)return;fail_(error);}
+  void Tick(){
+    if(life_->failed||life_->closed)return;
+    size_t expired=0;for(auto it=life_->entries.begin();it!=life_->entries.end();)if(now_()>=it->second){it=life_->entries.erase(it);--process_physical_;++expired;}else ++it;
+    if(expired)fail_("Native frame owner peer physical settlement deadline exceeded");
+  }
   bool Healthy()const{return !life_->closed&&!life_->failed;}
   bool NeedsTick()const{return !life_->closed&&!life_->failed&&!life_->entries.empty();}
   void Close(){if(life_->closed)return;life_->closed=true;process_physical_-=life_->entries.size();life_->entries.clear();}

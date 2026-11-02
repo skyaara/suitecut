@@ -56,7 +56,7 @@ void NativeTraceDOM(suitecut::TraceJournal::Lease lease,uint64_t call,const std:
   }
 }
 bool NativeTraceProtocolResult(int id,bool ok,const void* bytes,size_t size,const std::string& session){
-  const auto found=native_trace_protocol_.find(id);if(found==native_trace_protocol_.end())return false;if(found->second.session!=session){Error("Native trace protocol session mismatch");return true;}
+  const auto found=native_trace_protocol_.find(id);if(found==native_trace_protocol_.end())return false;if(found->second.session!=session){Degraded("Native trace protocol session mismatch");return true;}
   auto work=std::move(found->second);native_trace_protocol_.erase(found);NativeTracePhysicalRelease(work);if(work.reply){if(size>work.response_limit)work.reply(false,"Native trace DOM response byte capacity exceeded");else work.reply(ok,size?std::string(static_cast<const char*>(bytes),size):"{}");}return true;
 }
 bool NativeTraceDispatchReady(int id){const auto found=native_trace_protocol_.find(id);if(found==native_trace_protocol_.end())return false;if(!found->second.expired&&(found->second.deadline<=0||Now()<found->second.deadline))return true;auto work=std::move(found->second);native_trace_protocol_.erase(found);NativeTracePhysicalRelease(work);if(work.reply)work.reply(false,"Native trace DOM capture expired before dispatch");return false;}

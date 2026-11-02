@@ -39,6 +39,7 @@ std::optional<SnapshotReferenceDocument> document=SnapshotReferenceDocument{"mai
   static double Now(){return clock;}
   void WakeDeadlines(){++wakes;}
   void NetworkFatal(const std::string&e){fatal.push_back(e);}
+  void Degraded(const std::string&e){fatal.push_back(e);}
   static std::string Json(CefRefPtr<CefDictionaryValue>value){auto wrapper=CefValue::Create();wrapper->SetDictionary(value);return CefWriteJSON(wrapper,JSON_WRITER_DEFAULT).ToString();}
   void Complete(int id,bool ok,const std::string&e="",const std::string&json=""){
     if(ok&&!AssertionDeadlinePublicationCurrent(id))return;

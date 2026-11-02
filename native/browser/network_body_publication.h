@@ -19,6 +19,7 @@ struct NativeNetworkBodyQuota {
 inline NativeNetworkBodyQuota& GlobalNetworkBodyQuota(){static NativeNetworkBodyQuota quota;return quota;}
 class NativeNetworkBodyPublication {
  public:
+  std::function<void(const std::string&)> degraded;
   using Dict=CefRefPtr<CefDictionaryValue>;
   using Emit=std::function<bool(uint64_t,size_t,size_t,std::span<const uint8_t>,bool)>;
   using Publish=std::function<void(Dict)>;
@@ -119,8 +120,9 @@ class NativeNetworkBodyPublication {
     for(const auto& [id,deadline]:canceled) {
       if(!canceled_.erase(id))continue;
       if(emit_(id,0,0,{},true))continue;
+      // A cancellation the host hasn't taken in 30 s is dropped, not fatal.
+      if(now>=deadline){if(degraded)degraded("Native network body cancellation delivery deadline exceeded");continue;}
       canceled_.emplace(id,deadline);
-      if(now>=deadline)Fail("Native network body cancellation delivery deadline exceeded");
       break;
     }
     Pump();

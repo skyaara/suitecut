@@ -89,6 +89,7 @@ class Source : public CefBaseRefCounted {
   void WakeDeadlines() {}
   void AutoAttach(const std::string& session) {SendDevTools("Target.setAutoAttach",nullptr,session);}
   void Error(const char* error) {errors.push_back(error);}
+  void Degraded(const std::string& error) {errors.push_back(error);}
   Dict Header(const char* type) {auto header=CefDictionaryValue::Create();header->SetString("type",type);return header;}
   void JournalEvent(uint64_t,const std::string&,const std::string&) {}
   void SendPacket(Dict header,const std::vector<uint8_t>& payload) {

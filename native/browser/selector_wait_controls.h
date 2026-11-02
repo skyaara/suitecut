@@ -13,7 +13,9 @@
 namespace suitecut {
 // Selected-node commands and their real object groups stay admitted after
 // cancellation. Retry cannot enter a new attempt until old commands and the
-// sequential group-release acknowledgments have genuinely settled.
+// sequential group-release acknowledgments have genuinely settled. A renderer
+// that hasn't answered 30 s after cancellation is reported, not closed: the
+// commands settle when it answers or its channel dies, as in Playwright.
 class SelectorWaitControls {
  public:
   using Clock=std::function<double()>;

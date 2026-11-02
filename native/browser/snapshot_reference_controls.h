@@ -175,7 +175,16 @@ class SnapshotReferences {
   // Actual session/context destruction is separate from logical cancellation.
   void ChannelDestroyed(const std::string&session){std::vector<std::shared_ptr<Group>> candidates;for(const auto&[id,group]:groups_)if(group->document.session==session)candidates.push_back(group);for(const auto&group:candidates){group->channel_dead=true;borrows_-=group->borrows;GlobalState().borrows-=group->borrows;group->borrows=0;Remove(group);}Pump();}
   void DocumentDestroyed(const Document&document,double now){std::vector<std::shared_ptr<Group>> candidates;for(const auto&[id,group]:groups_)if(group->document==document)candidates.push_back(group);for(const auto&group:candidates){group->document_dead=true;group->late_install=group->dispatched&&!group->installed;Retire(group,now);}Pump();}
-  void Tick(double now){if(closed_||failed_)return;for(const auto&[id,group]:groups_)if(group->retiring&&now>=group->retirement_deadline){failed_=true;fatal_("Native snapshot reference physical retirement deadline exceeded");return;}Pump();}
+  // A retiring group whose release Chromium hasn't confirmed in 30 s, or whose
+  // release failed, is dropped and reported; the renderer frees it with its
+  // document. A late answer for a dropped group is ignored.
+  void Tick(double now){
+    if(closed_||failed_)return;
+    std::vector<std::shared_ptr<Group>> expired;for(const auto&[id,group]:groups_)if(group->retiring&&now>=group->retirement_deadline)expired.push_back(group);
+    for(const auto&group:expired)Remove(group);
+    if(!expired.empty())fatal_("Native snapshot reference physical retirement deadline exceeded");
+    Pump();
+  }
   // Only actual Source/browser destruction calls this (including the controller
   // destructor after its real owner dies), never logical page.close. All calls
   // are serialized on the CEF UI thread, including process-global accounting.
@@ -224,7 +233,7 @@ class SnapshotReferences {
         if(!life->alive||closed_)return;
         const auto found=groups_.find(next->ticket);if(found==groups_.end()||found->second!=next||!next->pending_release)return;
         next->pending_release=false;--physical_;--GlobalState().releases;
-        if(ok)Remove(next);else{next->release_failed=true;failed_=true;fatal_(error.empty()?"Native snapshot reference release failed":error);}
+        Remove(next);if(!ok)fatal_(error.empty()?"Native snapshot reference release failed":error);
         Pump();
       });
       if(failed_)break;

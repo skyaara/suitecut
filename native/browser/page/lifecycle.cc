@@ -38,6 +38,15 @@ auto Source::SendPacket(Dict header, std::vector<uint8_t> data) -> void {
 }
 
 auto Source::Error(const char* message) -> void {
+  // A Source failure belongs to its page: close that page with the reason and
+  // keep the browser and its other pages running. Only a page that has no CEF
+  // browser yet, or a first page that never became ready, fails the launch.
+  if (closing_page_) return;
+  if (browser_ && (page_id_ != 1 || ready_)) {
+    if (closed_reason_.empty()) closed_reason_ = message;
+    NetworkFatal(message);
+    return;
+  }
   auto header = Header("error");
   header->SetString("error", message);
   SendPacket(header);
@@ -364,6 +373,7 @@ auto Source::OnAfterCreated(CefRefPtr<CefBrowser> browser) -> void {
         Error(error.c_str());
         if (browser_) suitecut::browser::CloseBrowser(browser_, true);
       });
+  sockets_->degraded = [this](const std::string& error) { Degraded(error); };
   sockets_->SetObserver([this](Dict event, const std::vector<uint8_t>& bytes, double observed) {
     NativeTraceWebSocket(event, bytes, observed);
   });
@@ -417,6 +427,7 @@ auto Source::OnAfterCreated(CefRefPtr<CefBrowser> browser) -> void {
         if (canceled) header->SetBool("canceled", true);
         return writer_.TryEvent(header, std::vector<uint8_t>(bytes.begin(), bytes.end()));
       });
+  network_->degraded = [this](const std::string& error) { Degraded(error); };
   network_->SetBoundedSender([this](const std::string& session, const std::string& method,
                                     Dict params, suitecut::NetworkControls::Result done,
                                     double deadline) {

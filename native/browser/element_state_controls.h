@@ -12,6 +12,8 @@
 namespace suitecut {
 // Native admission outlives logical cancellation until the actual synchronous
 // renderer sampling call and private cleanup command acknowledge completion.
+// The renderer's sampler expires by itself, so a cleanup that fails or that
+// Chromium never answers retires the state and is reported, not fatal.
 class ElementStateControls {
  public:
   using Dict=CefRefPtr<CefDictionaryValue>;
@@ -43,10 +45,10 @@ class ElementStateControls {
   bool Accepts(int id,const std::string& session)const{const auto found=calls_.find(id);return found!=calls_.end()&&found->second->session==session;}
   bool Complete(int id,bool ok,const std::string& json,const std::string& session){
     const auto found=calls_.find(id);if(found==calls_.end())return false;auto state=found->second;
-    if(state->session!=session){fail_("Native element-state cleanup session mismatch");return true;}calls_.erase(found);
+    if(state->session!=session&&(ok||!session.empty())){fail_("Native element-state cleanup session mismatch");return true;}calls_.erase(found);
     if(state->gone)return true;
     auto parsed=json.size()<=65536?CefParseJSON(json,JSON_PARSER_RFC):nullptr;auto result=parsed?parsed->GetDictionary():nullptr;auto value=result?result->GetDictionary("result"):nullptr;
-    if(!ok||!result||result->HasKey("exceptionDetails")||!value||value->GetType("value")!=VTYPE_BOOL||!value->GetBool("value")){fail_("Native element-state renderer cleanup failed");return true;}
+    if(!ok||!result||result->HasKey("exceptionDetails")||!value||value->GetType("value")!=VTYPE_BOOL||!value->GetBool("value")){Retire(state);fail_("Native element-state renderer cleanup failed");return true;}
     Retire(state);return true;
   }
   void ContextDestroyed(const std::string& session,int context=0){
@@ -58,13 +60,14 @@ class ElementStateControls {
   void Tick(){
     bool expired=false;
     auto check=[this,&expired](const std::shared_ptr<State>& state){if(state->cleanup_deadline&&!state->expired&&now_()>=state->cleanup_deadline){state->expired=true;expired=true;}};
-    for(const auto&[owner,state]:states_)check(state);
+    std::vector<std::shared_ptr<State>> stale;
+    for(const auto&[owner,state]:states_){check(state);if(state->expired)stale.push_back(state);}
     for(const auto&[id,state]:calls_)check(state);
-    // Failure can synchronously close the source and clear both registries.
-    // Never invoke that external callback while traversing their iterators.
+    for(const auto& state:stale)Retire(state);
+    // The report runs outside both registries' iterators.
     if(expired)fail_("Native element-state physical cleanup deadline exceeded");
   }
-  bool NeedsTick()const{return !states_.empty()||!calls_.empty();}
+  bool NeedsTick()const{if(!states_.empty())return true;for(const auto&[id,state]:calls_)if(!state->expired)return true;return false;}
   bool Contains(int owner)const{return states_.contains(owner);}
   void FrameRemoved(const std::string& frame){std::vector<std::shared_ptr<State>> gone;for(const auto&[owner,state]:states_)if(state->frame==frame)gone.push_back(state);for(const auto& state:gone){state->gone=true;state->canceled=true;Retire(state);}}
   size_t Size()const{return states_.size();}size_t Pending()const{return calls_.size();}size_t PhysicalSize()const{return life_->physical+calls_.size();}
@@ -74,11 +77,11 @@ class ElementStateControls {
   void Retire(const std::shared_ptr<State>& state){const auto found=states_.find(state->owner);if(found!=states_.end()&&found->second==state)states_.erase(found);}
   void Cleanup(const std::shared_ptr<State>& state){
     if(state->gone){Retire(state);return;}if(state->releasing)return;state->releasing=true;
-    if(calls_.size()>=64){fail_("Native element-state cleanup capacity exceeded");return;}const int id=allocate_();if(!id){fail_("Native element-state command identity exhausted");return;}
+    if(calls_.size()>=64){Retire(state);fail_("Native element-state cleanup capacity exceeded");return;}const int id=allocate_();if(!id){Retire(state);fail_("Native element-state command identity exhausted");return;}
     auto params=CefDictionaryValue::Create();params->SetInt("contextId",state->context);params->SetBool("returnByValue",true);
     params->SetString("expression","("+std::string(kSuiteCutElementStateSampler)+")(null,null,"+Quote(key_)+","+Quote(state->token)+",0,true)");
     calls_.emplace(id,state);
-    if(!submit_(id,"Runtime.evaluate",params,state->session)){calls_.erase(id);fail_("Native element-state cleanup dispatch failed");}
+    if(!submit_(id,"Runtime.evaluate",params,state->session)){calls_.erase(id);Retire(state);fail_("Native element-state cleanup dispatch failed");}
   }
   std::string key_;Allocate allocate_;Submit submit_;Fail fail_;Clock now_;uint64_t serial_=0;std::shared_ptr<Life> life_=std::make_shared<Life>();
   std::map<int,std::shared_ptr<State>> states_,calls_;

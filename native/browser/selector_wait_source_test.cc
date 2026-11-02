@@ -23,6 +23,7 @@ struct Harness {
  void AssertionDeadlineReleaseFailed(int owner){deadline_release_failures.push_back(owner);}
  void ScreenshotAssertionReleaseFailed(int owner){screenshot_release_failures.push_back(owner);}
  void NetworkFatal(const std::string&error){errors.push_back(error);}
+ void Degraded(const std::string&error){errors.push_back(error);}
  int AllocateDevToolsId(){return ++next;}
  bool SubmitDevTools(int id,const std::string&method,Dict params,const std::string&session){sent.push_back({id,method,params->GetString("objectGroup").ToString(),session});return submit;}
  void NativeTargetSessionDetached(const std::string&session){detached.push_back(session);sessions_.erase(session);}

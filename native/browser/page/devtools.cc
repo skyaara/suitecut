@@ -112,7 +112,27 @@ auto Source::OnDevToolsMessage(CefRefPtr<CefBrowser> browser, const void* messag
     const bool success = !data->HasKey("error");
     auto result = data->GetDictionary(success ? "result" : "error");
     const auto json = result ? Json(result) : "{}";
-    ToolResult(id, success, json.data(), json.size(), session);
+    // Chromium answers a command sent to a child session that has already
+    // gone on the root channel, with -32001. That proves the session is gone:
+    // retire it as its detach would, and route the rejection to its command.
+    std::string routed = session;
+    if (!success && session.empty() && result && result->GetType("code") == VTYPE_INT &&
+        result->GetInt("code") == -32001) {
+      std::string expected;
+      if (const auto call = devtools_.find(id); call != devtools_.end()) expected = call->second.session;
+      else if (const auto call = network_calls_.find(id); call != network_calls_.end()) expected = call->second.session;
+      else if (const auto call = binding_calls_.find(id); call != binding_calls_.end()) expected = call->second.session;
+      else if (const auto call = worker_calls_.find(id); call != worker_calls_.end()) expected = call->second.session;
+      else if (const auto call = native_trace_protocol_.find(id); call != native_trace_protocol_.end()) expected = call->second.session;
+      if (!expected.empty() && !SelectorWaitRejectedSession(id, success, json.data(), json.size(), session)) {
+        Degraded("Chromium rejected a command for a detached session");
+        NativeTargetSessionDetached(expected);
+        routed = expected;
+      } else if (!expected.empty()) {
+        return true;
+      }
+    }
+    ToolResult(id, success, json.data(), json.size(), routed);
   } else if (data->GetType("method") == VTYPE_STRING) {
     auto params = data->GetDictionary("params");
     if (session.empty() && chrome_screencast_ && params &&
@@ -218,7 +238,7 @@ auto Source::ToolResult(int id, bool success, const void* result, size_t size,
   const auto binding_call = binding_calls_.find(id);
   if (binding_call != binding_calls_.end()) {
     if (binding_call->second.session != session) {
-      Error("Native binding protocol session mismatch");
+      Degraded("Native binding protocol session mismatch");
       return;
     }
     auto callback = std::exchange(binding_call->second.callback, nullptr);
@@ -232,7 +252,7 @@ auto Source::ToolResult(int id, bool success, const void* result, size_t size,
   const auto network_call = network_calls_.find(id);
   if (network_call != network_calls_.end()) {
     if (network_call->second.session != session) {
-      Error("Native network protocol session mismatch");
+      Degraded("Native network protocol session mismatch");
       return;
     }
     const bool expired = network_call->second.expired;
@@ -348,7 +368,7 @@ auto Source::ToolResult(int id, bool success, const void* result, size_t size,
   }
   if (found->second.session != session) {
     if (SelectorWaitRejectedSession(id, success, result, size, session)) return;
-    Error("Native protocol session mismatch");
+    Degraded("Native protocol session mismatch");
     return;
   }
   auto callback = std::exchange(found->second.callback, nullptr);

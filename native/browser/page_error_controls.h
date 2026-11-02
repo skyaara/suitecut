@@ -69,12 +69,18 @@ class PageErrorControls {
   bool Accepts(int id,const std::string& session)const{const auto found=calls_.find(id);return found!=calls_.end()&&found->second.state->session==session;}
   bool Complete(int id,bool ok,const std::string& json,const std::string& session){
     const auto found=calls_.find(id);if(found==calls_.end())return false;
-    if(found->second.state->session!=session){fail_("Native page error session mismatch");return true;}
+    if(found->second.state->session!=session&&(ok||!session.empty())){fail_("Native page error session mismatch");return true;}
     auto call=std::move(found->second);calls_.erase(found);--call.state->physical;
     auto parsed=json.size()<=kResponse?CefParseJSON(json,JSON_PARSER_RFC):nullptr;auto result=parsed?parsed->GetDictionary():nullptr;
     call.done(ok&&result,result);Retire(call.state);return true;
   }
-  void Tick(){for(auto& [id,state]:states_)if(!state->expired&&now_()>=state->deadline){state->expired=true;state->canceled=true;fail_("Native page error capture deadline exceeded");}}
+  // An error whose exact fields Chromium hasn't described in 30 s is published
+  // from its exception description instead, keeping later errors in order.
+  void Tick(){
+    std::vector<std::shared_ptr<State>> expired;for(auto& [id,state]:states_)if(!state->expired&&now_()>=state->deadline){state->expired=true;expired.push_back(state);}
+    for(const auto& state:expired)if(!state->ready&&!state->canceled)Publish(state,Described(state->details));
+    if(!expired.empty())fail_("Native page error capture deadline exceeded");
+  }
   bool NeedsTick()const{for(const auto& [id,state]:states_)if(!state->expired)return true;return false;}
   void ContextDestroyed(const std::string& session,int context=0){
     std::vector<std::shared_ptr<State>> gone;for(const auto& [id,state]:states_)if(state->session==session&&(!context||state->details->GetInt("executionContextId")==context))gone.push_back(state);
@@ -102,6 +108,7 @@ class PageErrorControls {
   }
   static std::string JSON(Dict value){auto wrapper=CefValue::Create();wrapper->SetDictionary(value);return CefWriteJSON(wrapper,JSON_WRITER_DEFAULT).ToString();}
   void Publish(const std::shared_ptr<State>& state,Dict metadata){
+    if(state->ready)return;
     const auto bytes=JSON(metadata).size();if(bytes>kResponse||bytes>kBytes-bytes_){Reject(state,"Native page error metadata capacity exceeded");return;}
     bytes_+=bytes;state->bytes+=bytes;state->metadata=metadata;state->ready=true;Flush();
   }
@@ -119,12 +126,12 @@ class PageErrorControls {
   void ReleaseRaw(const std::shared_ptr<State>& state){
     if(state->raw.empty()||state->raw_releasing)return;
     state->raw_releasing=true;auto params=CefDictionaryValue::Create();params->SetString("objectId",state->raw);
-    Request(state,"Runtime.releaseObject",params,[this,state](bool ok,Dict){if(ok)state->raw.clear();else if(!state->raw.empty())fail_("Native page error raw object release failed");Retire(state);});
+    Request(state,"Runtime.releaseObject",params,[this,state](bool ok,Dict){if(!ok&&!state->raw.empty())fail_("Native page error raw object release failed");state->raw.clear();Retire(state);});
   }
   void Cleanup(const std::shared_ptr<State>& state){
     ReleaseRaw(state);
     if(state->group_owned&&!state->group_releasing){state->group_releasing=true;auto params=CefDictionaryValue::Create();params->SetString("objectGroup",state->group);
-      Request(state,"Runtime.releaseObjectGroup",params,[this,state](bool ok,Dict){if(ok){state->group_owned=false;state->group_installed=false;}else if(state->group_owned)fail_("Native page error group release failed");Retire(state);});
+      Request(state,"Runtime.releaseObjectGroup",params,[this,state](bool ok,Dict){if(!ok&&state->group_owned)fail_("Native page error group release failed");state->group_owned=false;state->group_installed=false;Retire(state);});
     }Retire(state);
   }
   void Retire(const std::shared_ptr<State>& state){if(state->canceled&&!state->physical&&state->raw.empty()&&!state->group_owned){const auto found=states_.find(state->id);if(found!=states_.end()){bytes_-=state->bytes;states_.erase(found);}}}

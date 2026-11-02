@@ -24,7 +24,8 @@ int main(int argc,char**argv){
  controls.Event("Network.webSocketCreated",created,"actual-child-session",4);assert(emitted.back().first->GetString("socketId")=="2"&&controls.sockets()==2);controls.SessionDetached("actual-child-session",5);assert(emitted.back().first->GetString("event")=="close"&&controls.sockets()==1);
  bool timedout=false;assert(controls.Wait(2,"1","close",controls.sequence(),6,[&](bool ok,Dict,const Controls::Bytes&,const std::string&error){timedout=!ok&&!error.empty();}));controls.Tick(6);assert(timedout);
  assert(controls.Wait(3,"1","close",controls.sequence(),6,[](bool,Dict,const Controls::Bytes&,const std::string&){assert(false);}));controls.Cancel(3);controls.Tick(6);
- accept=false;controls.Event("Network.webSocketFrameReceived",params,"",10);controls.Tick(30010);assert(!failure.empty()&&controls.retained_bytes()==0);
+ // Output the host never takes is dropped after 30 s and reported, not fatal.
+ int dropped=0;controls.degraded=[&](const std::string& error){assert(error=="Native WebSocket output deadline exceeded");++dropped;};const auto queued=controls.pending();accept=false;controls.Event("Network.webSocketFrameReceived",params,"",10);controls.Tick(30010);assert(failure.empty()&&dropped==1&&controls.pending()<queued+1);controls.degraded={};
  // Accepted output must precede close completion; a blocked output cannot
  // complete a native wait, including a waiter registered from its journal.
  {bool accepted=false,closed=false,expired=false;int outputs=0;

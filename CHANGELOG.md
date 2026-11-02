@@ -2,6 +2,33 @@
 
 ## Unreleased
 
+- Stop suitecut's own bookkeeping from closing pages that Chrome loads fine.
+  In a 1,200-action soak across busy real sites, Chrome rendered every page.
+  Every page or browser death came from one of suitecut's internal checks
+  escalating a timing or size anomaly. Now:
+  - An internal error on one page closes only that page, with its reason. It
+    used to end the browser and every other page.
+  - Cancelled work stays tracked until Chromium answers. If Chromium hasn't
+    answered 30 s after cancellation, the work gives back its slot and is
+    counted in the page's native `degraded` diagnostics, as an unanswered CDP
+    call is in Playwright. This covers selector waits, element state, handle
+    disposal, owner frames, snapshot references, page errors,
+    authentication, and WebSocket and body output. On IKEA and
+    OpenStreetMap, this check closed the page 30 s after a slow wheel.
+  - A second debugger pause without `Debugger.resumed` supersedes the first.
+    Chromium sends no resume when a navigation replaces the paused document,
+    which closed Allrecipes pages after a click led to a sign-in page.
+  - Chromium's "Session with given id not found" reply for an iframe or
+    worker that has gone now retires that session. Before, it ended the
+    browser.
+  - Content a site controls is clipped or dropped instead of failing:
+    - WebSocket frames over 2 MiB keep their first 2 MiB and are marked
+      `truncated`.
+    - Console messages over 1 MB and source URLs over 8 KiB are clipped.
+    - Exceptions over 1 MiB and bursts of page errors are dropped.
+    - Requests past 8,192 open ones push out the oldest.
+    - Too many sockets or auth challenges are no longer tracked; a challenge
+      that can't be tracked is answered with CancelAuth.
 - Stop an unwatched live viewer from slowing the browser down. A viewer
   subscribed to every frame for as long as it was open, so on an animated page
   the browser copied each paint and the host read it even with nobody

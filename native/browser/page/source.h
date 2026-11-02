@@ -31,6 +31,12 @@ class Source : public CefClient,
   void StopReader();
   void SendPacket(Dict header, std::vector<uint8_t> data = {});
   void Error(const char* message);
+  // Counts a bookkeeping anomaly that Chromium itself survives (a reply that
+  // never came, an event out of order, a full table) without closing the page.
+  void Degraded(const std::string& message) {
+    const auto key = message.substr(0, 256);
+    if (degraded_.size() < 256 || degraded_.contains(key)) ++degraded_[key];
+  }
   CefRefPtr<CefFrameHandler> GetFrameHandler() override;
   void OnFrameCreated(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame) override;
   void OnFrameDestroyed(CefRefPtr<CefBrowser>, CefRefPtr<CefFrame> frame) override;
@@ -455,6 +461,7 @@ class Source : public CefClient,
   const int page_id_;
   bool closing_page_ = false;
   std::string closed_reason_;
+  std::map<std::string, uint64_t> degraded_;
   int width_, height_;
   const int capture_width_, capture_height_;
   double scale_;

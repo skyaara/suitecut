@@ -37,7 +37,7 @@ void DisposeNativeHandles(int id,Dict message){
     },
     [this](const auto& handle){const auto found=handles_.find(handle.id);if(found!=handles_.end()&&found->second.group==handle.group)handles_.erase(found);},
     [this](int owner,uint64_t generation,bool ok,const std::string& error){if(operations_.IsCurrent(owner,generation))Complete(owner,ok,error);},
-    [this](const std::string& error){Error(error.c_str());if(browser_&&!closing_page_)suitecut::browser::CloseBrowser(browser_, true);});
+    [this](const std::string& error){Degraded(error);});
   if(!handle_disposals_->Begin(id,operation->generation,std::move(handles),Now())){Complete(id,false,"Native handle disposal capacity exceeded");return;}
   WakeDeadlines();
 }

@@ -4,7 +4,7 @@
 // renderer processes. No selector/name/URL or generated author marker is used.
 std::unique_ptr<suitecut::OwnerFrameControls> owner_frame_controls_;
 suitecut::OwnerFrameControls& OwnerFramePeers(){
- if(!owner_frame_controls_)owner_frame_controls_=std::make_unique<suitecut::OwnerFrameControls>([]{return Now();},[this](const std::string&error){NetworkFatal(error);});
+ if(!owner_frame_controls_)owner_frame_controls_=std::make_unique<suitecut::OwnerFrameControls>([]{return Now();},[this](const std::string&error){Degraded(error);});
  return *owner_frame_controls_;
 }
 struct OwnerFrameReply {

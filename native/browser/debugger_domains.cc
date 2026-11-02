@@ -35,7 +35,7 @@ class DebuggerDomains::Impl : public std::enable_shared_from_this<Impl> {
   std::map<uint64_t,std::shared_ptr<Session>> owners_;std::map<uint64_t,Call> calls_;
   std::map<std::string,RawState> raw_;std::map<uint64_t,RawCall> raw_calls_;
   std::map<uint64_t,Receipt> receipts_;uint64_t identity_=0,last_lease_=0;bool pumping_=false,again_=false,closed_=false;size_t classifying_=0;
-  int unowned_pause_events_=0,deferred_unowned_pause_events_=0;
+  int unowned_pause_events_=0,deferred_unowned_pause_events_=0,superseded_pause_events_=0;bool implicit_resume_=false;
   static void ObservePause(int& count){if(count<std::numeric_limits<int>::max())++count;}
   static bool ScanValue(CefRefPtr<CefValue> value,size_t depth,size_t& nodes,size_t& units){
     if(!value||depth>24||++nodes>4096)return false;
@@ -192,7 +192,10 @@ class DebuggerDomains::Impl : public std::enable_shared_from_this<Impl> {
       if(pause.lease)ExpirePause(pause.lease,pause.packet?pause.packet->data:nullptr,"Native Debugger execution resumed before owned capture completed");
       Pump();Wake();return true;
     }
-    if(s->deferred_pause||s->deferred_rejected){Close(s,"Native Debugger delivered more than one deferred pause");return true;}
+    // Chromium doesn't send Debugger.resumed when a navigation or a renderer
+    // swap replaces the paused document, so a later pause supersedes an
+    // earlier one: the deferred pause is dropped and the new one classified.
+    if(s->deferred_pause||s->deferred_rejected){s->deferred_pause.reset();s->deferred_rejected=false;s->deferred_expired=false;s->deferred_developer=0;s->deferred_developer_deadline=0;ObservePause(superseded_pause_events_);}
     if(s->capture){
       if(s->capture->actual_resumed){
         // Only an actual owned breakpoint needs document capture authority.
@@ -201,6 +204,9 @@ class DebuggerDomains::Impl : public std::enable_shared_from_this<Impl> {
         if(!std::isfinite(deadline)||deadline<0){Close(s,"Native Debugger next-document pause has no valid original budget");return true;}
         s->deferred_pause=Packet(params);s->deferred_rejected=!s->deferred_pause;s->deferred_deadline=deadline;s->deferred_expired=false;DeferredDeveloper(s,params);if(!Current(s))return true;if(s->deferred_rejected)RejectedPause(s,params,"Native Debugger pause metadata capacity exceeded before copy");Wake();return true;
       }
+      // The earlier pause's execution ended without Debugger.resumed; settle it
+      // as resumed once, then classify this pause.
+      if(!implicit_resume_){implicit_resume_=true;ObservePause(superseded_pause_events_);Event("Debugger.resumed",nullptr,session);implicit_resume_=false;if(Current(s)&&(!s->capture||s->capture->actual_resumed))return Event(method,params,session,original,expiry_reported,retained_packet,original_developer,original_developer_id,original_disposition);if(!Current(s))return true;}
       Close(s,"Native Debugger delivered a second pause before actual execution resumed");return true;
     }
     const bool pending_arm=std::any_of(calls_.begin(),calls_.end(),[&](const auto& item){return item.second.session==s&&item.second.method=="Debugger.setBreakpointByUrl";});
@@ -402,5 +408,5 @@ void DebuggerDomains::Detached(const std::string& session){impl_->Detached(sessi
 void DebuggerDomains::Closed(){impl_->Closed();}
 bool DebuggerDomains::NeedsTick()const{for(const auto& [id,call]:impl_->raw_calls_){const auto state=impl_->raw_.find(call.session);if(state!=impl_->raw_.end()&&!state->second.closing)return true;}for(const auto& [id,call]:impl_->calls_)if(!call.session->closing)return true;for(const auto& [id,s]:impl_->sessions_){if(s->closing)continue;if(s->capture&&s->capture->deadline>0&&!s->capture->expired)return true;for(const auto& [key,l]:s->leases)if(((l->ready||l->arm_ready||(l->kind==Kind::Factory&&l->breakpoint.empty()&&!l->releasing))&&l->deadline>0)||(l->releasing&&l->cleanup>0))return true;}return false;}
 size_t DebuggerDomains::PhysicalCount()const{size_t pauses=0;for(const auto& [id,s]:impl_->sessions_)pauses+=s->capture.has_value()||bool(s->deferred_pause)||s->deferred_rejected;return impl_->calls_.size()+impl_->receipts_.size()+impl_->raw_calls_.size()+pauses;}
-void DebuggerDomains::Diagnostics(Dict output)const{size_t bounded_caches=0,historical_caches=0;for(const auto&[id,s]:impl_->sessions_)if(s->enabled&&s->bounded_script_cache){if(*s->bounded_script_cache)++bounded_caches;else ++historical_caches;}output->SetInt("nativeDebuggerFactoryScriptCacheSessions",int(bounded_caches));output->SetInt("nativeDebuggerHistoricalScriptCacheSessions",int(historical_caches));size_t factory_receipts=0,developer_receipts=0;for(const auto&[id,receipt]:impl_->receipts_){if(receipt.lease->kind==Kind::Developer)++developer_receipts;else ++factory_receipts;}size_t pauses=0;for(const auto& [id,s]:impl_->sessions_)pauses+=s->capture.has_value()||bool(s->deferred_pause)||s->deferred_rejected;output->SetInt("nativeDebuggerUnownedPauses",impl_->unowned_pause_events_);output->SetInt("nativeDebuggerDeferredUnownedPauses",impl_->deferred_unowned_pause_events_);output->SetInt("nativeDebuggerPausePackets",int(impl_->packet_budget_->packets));output->SetInt("nativeDebuggerRawOwners",int(impl_->raw_.size()));output->SetInt("nativeDebuggerRawPhysical",int(impl_->raw_calls_.size()));output->SetInt("nativeDebuggerSessions",int(impl_->sessions_.size()));output->SetInt("nativeDebuggerLeases",int(impl_->owners_.size()));output->SetInt("nativeDebuggerPhysical",int(impl_->calls_.size()));output->SetInt("nativeDebuggerFactoryReceipts",int(factory_receipts));output->SetInt("nativeDebuggerDeveloperReceipts",int(developer_receipts));output->SetInt("nativeDebuggerPauses",int(pauses));}
+void DebuggerDomains::Diagnostics(Dict output)const{size_t bounded_caches=0,historical_caches=0;for(const auto&[id,s]:impl_->sessions_)if(s->enabled&&s->bounded_script_cache){if(*s->bounded_script_cache)++bounded_caches;else ++historical_caches;}output->SetInt("nativeDebuggerFactoryScriptCacheSessions",int(bounded_caches));output->SetInt("nativeDebuggerHistoricalScriptCacheSessions",int(historical_caches));size_t factory_receipts=0,developer_receipts=0;for(const auto&[id,receipt]:impl_->receipts_){if(receipt.lease->kind==Kind::Developer)++developer_receipts;else ++factory_receipts;}size_t pauses=0;for(const auto& [id,s]:impl_->sessions_)pauses+=s->capture.has_value()||bool(s->deferred_pause)||s->deferred_rejected;output->SetInt("nativeDebuggerUnownedPauses",impl_->unowned_pause_events_);output->SetInt("nativeDebuggerDeferredUnownedPauses",impl_->deferred_unowned_pause_events_);output->SetInt("nativeDebuggerSupersededPauses",impl_->superseded_pause_events_);output->SetInt("nativeDebuggerPausePackets",int(impl_->packet_budget_->packets));output->SetInt("nativeDebuggerRawOwners",int(impl_->raw_.size()));output->SetInt("nativeDebuggerRawPhysical",int(impl_->raw_calls_.size()));output->SetInt("nativeDebuggerSessions",int(impl_->sessions_.size()));output->SetInt("nativeDebuggerLeases",int(impl_->owners_.size()));output->SetInt("nativeDebuggerPhysical",int(impl_->calls_.size()));output->SetInt("nativeDebuggerFactoryReceipts",int(factory_receipts));output->SetInt("nativeDebuggerDeveloperReceipts",int(developer_receipts));output->SetInt("nativeDebuggerPauses",int(pauses));}
 } // namespace suitecut

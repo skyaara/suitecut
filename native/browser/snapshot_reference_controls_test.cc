@@ -37,10 +37,10 @@ int main(){
     Harness h;h.Active();h.refs.InvalidateFrame(Harness::Doc().frame,1);h.refs.DocumentDestroyed(Harness::Doc(),2);assert(h.refs.Physical()==1&&h.refs.Resident()==1);h.AckAt(0);h.Empty();
   }
   {
-    Harness h;h.Active();h.refs.InvalidateFrame(Harness::Doc().frame,1);h.AckAt(0,false);assert(h.refs.Failed()&&h.errors.size()==1&&h.refs.Resident()==1&&h.refs.Physical()==0);assert(!h.Begin());h.AckAt(0);assert(h.errors.size()==1);h.refs.ChannelDestroyed("actualSession");h.Empty();
+    Harness h;h.Active();h.refs.InvalidateFrame(Harness::Doc().frame,1);h.AckAt(0,false);assert(!h.refs.Failed()&&h.errors.size()==1);h.Empty();h.AckAt(0);assert(h.errors.size()==1);assert(h.Begin());h.refs.ChannelDestroyed("actualSession");h.Empty();
   }
   {
-    Harness h;const auto id=h.Begin();assert(h.refs.Dispatched(id));h.refs.Cancel(1,1,0);h.refs.Tick(29999);assert(h.errors.empty());h.refs.Tick(30000);assert(h.errors.size()==1&&h.refs.InstallPhysical()==1&&h.refs.Resident()==1);h.refs.ChannelDestroyed("actualSession");h.Empty();
+    Harness h;const auto id=h.Begin();assert(h.refs.Dispatched(id));h.refs.Cancel(1,1,0);h.refs.Tick(29999);assert(h.errors.empty());h.refs.Tick(30000);assert(h.errors.size()==1);h.Empty();h.refs.Tick(40000);assert(h.errors.size()==1);h.refs.ChannelDestroyed("actualSession");h.Empty();
   }
   {
     Harness h;const auto first=h.Active();auto old=Harness::Doc(),fresh=old;fresh.context_generation++;fresh.main_unique="mainUnique2";fresh.utility_unique="utilityUnique2";assert(!h.refs.Lookup(h.refs.Reference(first,0),fresh));const auto next=h.Active(fresh,2,2);const auto current=h.refs.Reference(next,0);h.refs.DocumentDestroyed(old,2);assert(h.refs.Lookup(current,fresh));h.refs.ChannelDestroyed("actualSession");h.Empty();h.AckAt(0);h.Empty();

@@ -2,7 +2,7 @@
 std::unique_ptr<suitecut::SelectorWaitControls> selector_waits_;
 suitecut::SelectorWaitControls& SelectorWaits(){
   if(!selector_waits_)selector_waits_=std::make_unique<suitecut::SelectorWaitControls>([]{return Now();},
-    [this](const std::string& message){NetworkFatal(message);},
+    [this](const std::string& message){Degraded(message);},
     [this](int owner,const std::string& group,const std::string& session,std::function<void()> settled){
       // Only an actual Inspector channel-close receipt removes sessions_.
       // A prior group ACK can continue this sequential release after that close.
@@ -11,7 +11,7 @@ suitecut::SelectorWaitControls& SelectorWaits(){
       auto params=CefDictionaryValue::Create();params->SetString("objectGroup",group);
       auto completed=[this,owner,session,settled=std::move(settled)](bool ok,const std::string&error)mutable{
         if(!ok&&browser_&&(session.empty()||sessions_.contains(session))){AssertionDeadlineReleaseFailed(owner);ScreenshotAssertionReleaseFailed(owner);}
-        settled();if(!ok&&browser_&&(session.empty()||sessions_.contains(session)))NetworkFatal("Native selector wait object-group release failed: "+error.substr(0,1024));
+        settled();if(!ok&&browser_&&(session.empty()||sessions_.contains(session)))Degraded("Native selector wait object-group release failed");
       };
       DevToolsCall pending{owner,std::move(completed),session,true,kMaxResponseBytes,true};
       pending.selector_group_release=true;

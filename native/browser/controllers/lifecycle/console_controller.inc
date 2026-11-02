@@ -151,14 +151,18 @@
   }
   void ConsoleEvent(const std::string& type,const std::string& text,Dict location,double timestamp=-1,CefRefPtr<CefListValue> arguments=nullptr,const std::string& session="",int context=0) {
     if(!ready_)return;
-    if(text.size()>1000000||type.size()>64){Error("Native console message limit exceeded");return;}
+    if(type.size()>64){Degraded("Native console message limit exceeded");return;}
+    // A huge message or source URL is clipped at a UTF-8 boundary, as DevTools
+    // clips what it shows, instead of closing the page.
+    const auto clip=[](std::string value,size_t limit){if(value.size()<=limit)return value;size_t end=limit;while(end&&(static_cast<unsigned char>(value[end])&0xC0)==0x80)--end;value.resize(end);return value;};
+    if(text.size()>1000000){Degraded("Native console message limit exceeded");return ConsoleEvent(type,clip(text,1000000),location,timestamp,arguments,session,context);}
     auto info=CefDictionaryValue::Create();info->SetString("type",type);suitecut::DevToolsSetString(info,"text",text);
     info->SetDouble("sequence",static_cast<double>(event_sequence_+1));WorkerConsoleMetadata(info,session);
     info->SetDouble("timestamp",timestamp>=0&&std::isfinite(timestamp)?timestamp:ConsoleWallTime());
     auto source=CefDictionaryValue::Create();const auto url=location?suitecut::DevToolsString(location->GetValue("url")):"";
-    if(url.size()>8192){Error("Native console source limit exceeded");return;}
+    if(url.size()>8192)Degraded("Native console source limit exceeded");
     const int line=location?std::max(0,location->GetInt("lineNumber")):0;
-    suitecut::DevToolsSetString(source,"url",url);source->SetInt("line",line);source->SetInt("lineNumber",line);source->SetInt("columnNumber",location?std::max(0,location->GetInt("columnNumber")):0);info->SetDictionary("location",source);
+    suitecut::DevToolsSetString(source,"url",clip(url,8192));source->SetInt("line",line);source->SetInt("lineNumber",line);source->SetInt("columnNumber",location?std::max(0,location->GetInt("columnNumber")):0);info->SetDictionary("location",source);
     auto metadata=CefListValue::Create();std::vector<int> retained;
     if(arguments&&arguments->GetSize()>64)info->SetString("argumentsError","Native console argument capacity exceeded");
     else if(arguments)for(std::size_t index=0;index<arguments->GetSize();++index) {
@@ -171,8 +175,8 @@
       if(arguments)for(std::size_t i=retained.size();i<arguments->GetSize();++i){auto value=arguments->GetDictionary(i);if(value&&value->GetType("objectId")==VTYPE_STRING){auto release=CefDictionaryValue::Create();release->SetString("objectId",value->GetString("objectId"));SendDevTools("Runtime.releaseObject",release,session);}}
     }
     info->SetList("arguments",metadata);const auto retained_json=Json(info);auto typed=CefValue::Create();typed->SetDictionary(info->Copy(false));std::string json;
-    if(!suitecut::DevToolsLosslessJSON(typed,json,1048576)){for(const int handle:retained){DropConsoleArgument(handle);handles_.erase(handle);}Error("Native console payload limit exceeded");return;}
-    if(json.size()>1048576){for(const int handle:retained){DropConsoleArgument(handle);handles_.erase(handle);}Error("Native console payload limit exceeded");return;}
+    if(!suitecut::DevToolsLosslessJSON(typed,json,1048576)){for(const int handle:retained){DropConsoleArgument(handle);handles_.erase(handle);}Degraded("Native console payload limit exceeded");return;}
+    if(json.size()>1048576){for(const int handle:retained){DropConsoleArgument(handle);handles_.erase(handle);}Degraded("Native console payload limit exceeded");return;}
     NativeTraceConsole(info,arguments);
     const auto sequence=++event_sequence_;console_journal_.Push(sequence,retained_json);ReleaseEvictedConsoleArguments();
     auto header=Header("console");header->SetDouble("sequence",static_cast<double>(sequence));JournalEvent(sequence,"console",retained_json);

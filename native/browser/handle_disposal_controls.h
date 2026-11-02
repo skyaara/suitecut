@@ -11,7 +11,8 @@
 #include <vector>
 namespace suitecut {
 // Actual retained handle groups stay owned until release ACK or channel death.
-// Logical cancellation never cancels this bounded physical cleanup queue.
+// Logical cancellation never cancels this bounded physical cleanup queue. A
+// release Chromium hasn't acknowledged in 30 s is reported, not fatal.
 class HandleDisposalControls {
  public:
   struct Handle {int id;std::string group,session;};

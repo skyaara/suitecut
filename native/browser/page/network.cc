@@ -342,8 +342,15 @@ auto Source::NetworkEvent(const std::string& method, Dict data, const std::strin
   if (method == "Network.requestWillBeSent") {
     const auto frame = data->GetString("frameId").ToString();
     if (active_requests_.size() >= 8192 && !active_requests_.contains(key)) {
-      Error("Native active network request limit exceeded");
-      return;
+      // A full table forgets its oldest request, as Chromium would have long
+      // finished or abandoned it, instead of closing the page.
+      auto oldest = active_requests_.begin();
+      for (auto it = active_requests_.begin(); it != active_requests_.end(); ++it)
+        if (it->second.started < oldest->second.started) oldest = it;
+      const auto evicted = oldest->second.frame;
+      active_requests_.erase(oldest);
+      Degraded("Native active network request limit exceeded");
+      NetworkActivity(evicted);
     }
     active_requests_[key] = {frame, Now()};
     NetworkActivity(frame);

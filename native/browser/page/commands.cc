@@ -951,6 +951,10 @@ auto Source::DispatchCommand(int id, Dict message, const std::string& command, d
     response->SetInt("pendingNetworkCommands", static_cast<int>(network_calls_.size()));
     response->SetBool("networkFatalPending", network_fatal_ && network_fatal_->pending());
     response->SetBool("networkFatalCloseRequested", network_fatal_ && network_fatal_->requested());
+    auto degraded = CefDictionaryValue::Create();
+    for (const auto& [message, count] : degraded_)
+      degraded->SetDouble(message, static_cast<double>(count));
+    response->SetDictionary("degraded", degraded);
     size_t expired_network = 0;
     for (const auto& [request, call] : network_calls_)
       if (call.expired) ++expired_network;

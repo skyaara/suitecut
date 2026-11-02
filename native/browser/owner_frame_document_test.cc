@@ -18,8 +18,8 @@ int main(){
  {Harness h;h.Isolate();h.origin=false;h.Ack({true,{},"late-document",0});assert(!h.done&&h.read->GroupOwned()&&h.sent.back()==Read::Method::Release);h.Ack({true,{},{},0});assert(h.done==1&&!h.result.ok);}
  {Harness h;h.Document();h.origin=false;h.Ack({true,{},{},41});assert(!h.done&&h.sent.back()==Read::Method::Release);h.Ack({true,{},{},0});assert(h.done==1&&!h.result.ok);}
  {Harness h;h.Isolate();h.Ack({false,{},{},0});assert(h.sent.back()==Read::Method::Release&&!h.done);h.Ack({true,{},{},0});assert(h.done==1&&!h.result.ok);}
- {Harness h;h.Document();h.Ack({true,{},{},41});h.Ack({false,{},{},0});assert(h.fatal==1&&!h.done&&h.read->GroupOwned());h.read->ChannelClosed();assert(h.done==1&&!h.result.ok&&!h.read->GroupOwned());}
- {Harness h;h.Isolate();h.read->Tick(30000);assert(h.fatal==1&&!h.done&&h.read->GroupOwned());h.read->Tick(40000);assert(h.fatal==1);h.read->ChannelClosed();assert(h.done==1&&!h.result.ok);h.Ack({true,{},"late",0});assert(h.done==1);}
+ {Harness h;h.Document();h.Ack({true,{},{},41});h.Ack({false,{},{},0});assert(h.fatal==1&&h.done==1&&!h.result.ok&&!h.read->GroupOwned());h.read->ChannelClosed();assert(h.done==1);}
+ {Harness h;h.Isolate();h.read->Tick(30000);assert(h.fatal==1&&h.done==1&&!h.result.ok);h.read->Tick(40000);assert(h.fatal==1);h.read->ChannelClosed();assert(h.done==1);h.Ack({true,{},"late",0});assert(h.done==1);}
  {Harness h;h.Document();h.peer=false;h.Ack({true,{},{},41});assert(h.sent.back()==Read::Method::Release&&!h.done);h.read->ChannelClosed();assert(h.done==1&&!h.result.ok);h.Ack({true,{},{},0});assert(h.done==1);}
  {Harness h;h.Document();h.Ack({true,{},{},41});h.peer=false;h.Ack({true,{},{},0});assert(h.done==1&&!h.result.ok);}
  {Harness h;h.read->Start();h.Ack({false,{},{},0,"Actual native protocol error"});assert(h.done==1&&!h.result.ok&&h.result.error=="Actual native protocol error"&&!h.read->GroupOwned());}

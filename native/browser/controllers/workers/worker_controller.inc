@@ -89,7 +89,7 @@ bool WorkerBootstrapSend(const std::string& session, const std::string& method, 
 }
 bool WorkerToolResult(int id, bool ok, const void* data, size_t size, const std::string& session) {
   auto found = worker_calls_.find(id); if (found == worker_calls_.end()) return false;
-  if (found->second.session != session) { Error("Native worker protocol session mismatch"); return true; }
+  if (found->second.session != session) { Degraded("Native worker protocol session mismatch"); return true; }
   const bool expired=found->second.expired||Now()>=found->second.deadline;
   auto callback = std::exchange(found->second.callback, nullptr); worker_calls_.erase(found);
   if(expired)callback(false,"Native worker bootstrap original deadline expired");

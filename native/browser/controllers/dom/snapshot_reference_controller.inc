@@ -29,7 +29,7 @@ suitecut::SnapshotReferences& SnapshotReferences(){
         const auto found=devtools_.find(tool);if(found!=devtools_.end()){auto callback=std::exchange(found->second.callback, nullptr);devtools_.erase(found);callback(false,"");}
       }
       WakeDeadlines();
-    },[this](const std::string& error){NetworkFatal(error);});
+    },[this](const std::string& error){Degraded(error);});
   return *snapshot_references_;
 }
 void ReferenceRequest(const std::shared_ptr<SnapshotReferenceCapture>& work,const std::string& method,Dict params,std::function<void(Dict)> done){

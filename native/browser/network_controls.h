@@ -74,7 +74,11 @@ class NetworkControls {
 
     if(body_emit)bodies_=std::make_unique<NativeNetworkBodyControls>(std::move(body_emit),
       [this](Dict event){PublishReady(event);},[this](const std::string& error){failure_(error);});
+    authentication_->degraded=[this](const std::string& error){if(degraded)degraded(error);};
+    if(bodies_)bodies_->publication().degraded=authentication_->degraded;
   }
+  // Reports what a subcontrol dropped instead of failing the page.
+  std::function<void(const std::string&)> degraded;
 
   uint64_t QueuedPublication() const{return bodies_?bodies_->publication().QueuedCursor():0;}
   uint64_t PublishedPublication() const{return bodies_?bodies_->publication().PublishedCursor():0;}
