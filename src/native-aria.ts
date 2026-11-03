@@ -242,9 +242,8 @@ function ariaText(value: UntrustedInput, literal = false, property = false): Nat
   }
 }
 
-/** Parses bounded declarative YAML; aliases cannot create recursive templates. */
+/** Parses declarative YAML; aliases cannot create recursive templates. */
 export function parseNativeAriaTemplate(template: string): NativeAriaPattern {
-  if (template.length > 65536) throw new Error('Native ARIA template exceeds 64 KiB')
   const { isMap, isScalar, isSeq, parseDocument } = (yaml ??= require('yaml') as NonNullable<
     typeof yaml
   >)
@@ -695,7 +694,7 @@ export function parseNativeReferenceForest(serialized: string): NativeAriaNode[]
       .string()
       .max(128)
       .regex(/^[a-z][a-z0-9-]*$/u),
-    name: z.string().max(65_536).optional(),
+    name: z.string().optional(),
     text: z.string().max(16_777_216).optional(),
     ref: z
       .string()
@@ -713,9 +712,7 @@ export function parseNativeReferenceForest(serialized: string): NativeAriaNode[]
       )
       .optional(),
     invalidToken: z.enum(['grammar', 'spelling']).optional(),
-    properties: z
-      .record(z.string().regex(/^(?:url|placeholder)$/u), z.string().max(65_536))
-      .optional(),
+    properties: z.record(z.string().regex(/^(?:url|placeholder)$/u), z.string()).optional(),
     box: z
       .tuple([z.number().finite(), z.number().finite(), z.number().finite(), z.number().finite()])
       .optional(),
@@ -776,7 +773,7 @@ export function parseNativeAriaJSON(serialized: string): NativeAriaJSONNode[] {
       .string()
       .max(128)
       .regex(/^[a-z][a-z0-9-]*$/u),
-    name: z.string().max(65_536).optional(),
+    name: z.string().optional(),
     text: z.string().max(16_777_216).optional(),
     checked: z.union([z.boolean(), z.literal('mixed')]).optional(),
     disabled: z.boolean().optional(),
@@ -786,8 +783,8 @@ export function parseNativeAriaJSON(serialized: string): NativeAriaJSONNode[] {
     level: z.number().int().min(1).max(100000).optional(),
     pressed: z.union([z.boolean(), z.literal('mixed')]).optional(),
     selected: z.boolean().optional(),
-    url: z.string().max(65_536).optional(),
-    placeholder: z.string().max(65_536).optional(),
+    url: z.string().optional(),
+    placeholder: z.string().optional(),
     ref: z
       .string()
       .max(192)

@@ -28,7 +28,10 @@ struct InitSnapshotPin {
 };
 class InitSnapshotWire {
  public:
-  static constexpr size_t kHeader=64,kFrame=256,kPayload=8*1048576;
+  // One snapshot rides in one shared-memory region announced by one Chromium
+  // IPC message. Chromium refuses IPC messages over 128 MiB, so a payload
+  // stays under the same bound.
+  static constexpr size_t kHeader=64,kFrame=256,kPayload=128*1048576;
   static constexpr std::string_view kMessage="suitecutInitSnapshotRegionV1";
   struct View {InitSnapshotPin pin;std::string_view payload;};
   static bool ValidOwner(const InitSnapshotOwner&owner){
@@ -83,7 +86,8 @@ class InitSnapshotReceipts {
   // Every page keeps its installed region and may have one replacement in
   // flight, so this is twice the browser's 128-page limit. A lower bound let
   // long-lived popups exhaust it and close every page opened afterwards.
-  static constexpr size_t kTransfers=256,kBytes=64*1048576;
+  // Room for eight full payloads in flight; pages share one snapshot's bytes.
+  static constexpr size_t kTransfers=256,kBytes=8*InitSnapshotWire::kPayload;
   static constexpr double kRetirementGrace=30;
   enum class Status {Accepted,Rejected,Canceled,Expired,CloseRequired,RendererGone};
   struct Event {InitSnapshotPin pin;Status status;bool public_reply=false,region_installed=false;};

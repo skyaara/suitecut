@@ -347,7 +347,7 @@ describe('authored ARIA declarative grammar and semantic comparison', () => {
     )
     expect(() => parseNativeAriaTemplate('heading "one"')).toThrow('YAML sequence')
     expect(() => parseNativeAriaTemplate('- &self\n  - *self')).toThrow()
-    expect(() => parseNativeAriaTemplate('x'.repeat(65537))).toThrow('64 KiB')
+    expect(parseNativeAriaTemplate(`- heading "${'x'.repeat(1 << 20)}"`)).toBeTruthy()
     expect(() =>
       formatNativeAriaTree(Array.from({ length: 1_000_001 }, () => ({ role: 'img' }))),
     ).toThrow('bounds')

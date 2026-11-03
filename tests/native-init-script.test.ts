@@ -24,20 +24,20 @@ describe('native initialization source transport', () => {
     )
   })
 
-  it('rejects oversized escaped commands before sending them to the native process', async () => {
-    await expect(nativeInitScriptSource('"'.repeat(40000))).rejects.toThrow('envelope capacity')
-    await expect(nativeInitScriptSource('x'.repeat(65537))).rejects.toThrow('65536 bytes')
-    await expect(nativeInitScriptSource('\0')).rejects.toThrow('without nulls')
+  it('accepts scripts of any size and rejects nulls', async () => {
+    const big = '"'.repeat(4 * 1024 * 1024)
+    expect(await nativeInitScriptSource(big)).toBe(big)
+    await expect(nativeInitScriptSource('\0')).rejects.toThrow('no nulls')
   })
 
-  it('bounds file reads and closes descriptors on success and failure', async () => {
+  it('reads script files of any size', async () => {
     const directory = await mkdtemp(join(tmpdir(), 'suitecut-init-'))
     const path = join(directory, 'init.js')
     try {
       await writeFile(path, 'globalThis.fromFile = 123;')
       expect(await nativeInitScriptSource({ path })).toBe('globalThis.fromFile = 123;')
-      await writeFile(path, 'x'.repeat(65537))
-      await expect(nativeInitScriptSource({ path })).rejects.toThrow('65536 bytes')
+      await writeFile(path, 'x'.repeat(4 * 1024 * 1024))
+      expect(await nativeInitScriptSource({ path })).toHaveLength(4 * 1024 * 1024)
       await expect(nativeInitScriptSource({ path, content: 'x' })).rejects.toThrow('exactly one')
     } finally {
       await rm(directory, { recursive: true, force: true })

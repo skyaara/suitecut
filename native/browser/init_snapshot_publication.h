@@ -16,7 +16,7 @@ class InitSnapshotPublications {
     ~Body(){if(charged){state->bytes.fetch_sub(text.size());state->bodies.fetch_sub(1);}}
   };
  public:
-  static constexpr size_t kContexts=32,kBodies=64,kBytes=64*1048576;
+  static constexpr size_t kContexts=32,kBodies=64,kBytes=8*InitSnapshotWire::kPayload;
   struct Snapshot {uint64_t version=0;std::shared_ptr<const std::string>bytes;};
   using Accept=std::function<bool(std::shared_ptr<const std::string>)>;
   bool Commit(int context,std::string text,const Accept&accept){

@@ -6,11 +6,12 @@
 #include <string_view>
 #include <utility>
 
-// Private command lines include their newline in the 64 KiB bound. A terminal
-// error cannot be reset by later bytes. Delivery may reject a line under load.
+// Splits the host's private command stream into lines. A line is as long as
+// the host made it: Playwright sends evaluate arguments, setContent HTML and
+// fill text of any size. A NUL byte is a terminal error that later bytes
+// cannot reset. Delivery may reject a line under load.
 class SuiteCutCommandFramer {
  public:
-  static constexpr std::size_t kMaxLineBytes = 65536;
   template <typename Deliver>
   bool Push(std::string_view bytes, Deliver deliver) {
     if (failed_) return false;
@@ -21,9 +22,8 @@ class SuiteCutCommandFramer {
       const auto nul = bytes.substr(0, newline).find('\0');
       const auto end = std::min(newline, nul);
       const auto length = end == std::string_view::npos ? bytes.size() : end;
-      const auto available = kMaxLineBytes - 1 - pending_.size();
-      pending_.append(bytes.data(), std::min(length, available));
-      if (length > available || (end != std::string_view::npos && nul == end)) {
+      pending_.append(bytes.data(), length);
+      if (end != std::string_view::npos && nul == end) {
         failed_ = true;
         return false;
       }

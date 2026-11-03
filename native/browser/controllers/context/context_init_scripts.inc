@@ -80,11 +80,12 @@ void SuiteCutContextControls::RegisterInitScript(int context_id, int owner, cons
     for (const auto& id : ids) {
       auto frame = page.browser->GetFrameByIdentifier(id);
       if (frame && frame->IsValid()) targets.push_back({page_id, frame});
-      if (targets.size() > 1024) { reply(false, nullptr, "Native init script frame capacity exceeded"); return; }
+      if (targets.size() > 1024) { reply(false, nullptr, "addInitScript: more than 1024 frames are open in this context; suitecut installs a new init script in at most 1024 live frames at once. Close some pages or frames, or add the script before opening them"); return; }
     }
   }
-  // Each frame gets a full immutable snapshot. Bound queued native IPC bytes,
-  // including JSON escaping, before making any mutation or send observable.
+  // Each frame gets a full immutable snapshot in one Chromium IPC message.
+  // Check Chromium's 128 MiB message limit, including JSON escaping, before
+  // making any mutation or send observable.
   auto budget_value = InitScriptSnapshot(context_id); auto budget_list = CefListValue::Create();
   for (const auto& entry : proposed.Entries()) {
     auto value = CefDictionaryValue::Create(); value->SetString("source", entry.source); value->SetInt("id", entry.id);
@@ -93,14 +94,21 @@ void SuiteCutContextControls::RegisterInitScript(int context_id, int owner, cons
   budget_value->SetList("scripts", budget_list); budget_value->SetInt("contextId", context_id); budget_value->SetInt("version", proposed.Version());
   auto serialized = CefValue::Create(); serialized->SetDictionary(budget_value);
   const size_t message_bytes = CefWriteJSON(serialized, JSON_WRITER_DEFAULT).length() + 256;
-  constexpr size_t max_bytes = 64 * 1024 * 1024;
-  if (targets.size() > 1024 - script_acks_.size() ||
-      (targets.size() && message_bytes > (max_bytes - pending_script_bytes_) / targets.size()) ||
-      targets.size() > std::numeric_limits<uint64_t>::max() - next_script_ack_) {
-    reply(false, nullptr, "Native init script pending IPC capacity exceeded"); return;
+  constexpr size_t max_bytes = 128 * 1024 * 1024;
+  if (message_bytes > max_bytes) {
+    reply(false, nullptr, "addInitScript: this context's init scripts come to " + std::to_string(message_bytes >> 20) +
+          " MiB as JSON; Chromium carries at most 128 MiB to a frame in one IPC message. Use fewer or smaller init scripts"); return;
   }
-  if (!contexts_.at(context_id).init_scheme_registered || !CommitInitSnapshot(context_id,CefWriteJSON(serialized, JSON_WRITER_DEFAULT),owner)) {
-    reply(false, nullptr, "Native init snapshot bytes capacity exceeded or scheme unavailable"); return;
+  if (targets.size() > 1024 - script_acks_.size() ||
+      targets.size() > std::numeric_limits<uint64_t>::max() - next_script_ack_) {
+    reply(false, nullptr, "addInitScript: " + std::to_string(script_acks_.size()) + " frames have not yet confirmed an earlier init script and " +
+          std::to_string(targets.size()) + " more would pass suitecut's 1024 in-flight frames. Await the earlier addInitScript calls first"); return;
+  }
+  if (!contexts_.at(context_id).init_scheme_registered) {
+    reply(false, nullptr, "addInitScript: this context's init-script channel is not registered yet (the context is starting or closing)"); return;
+  }
+  if (!CommitInitSnapshot(context_id,CefWriteJSON(serialized, JSON_WRITER_DEFAULT),owner)) {
+    reply(false, nullptr, "addInitScript: suitecut could not publish the init scripts. More than 32 contexts with init scripts, 64 snapshot versions or 1 GiB of snapshots are held browser-wide; close unused contexts"); return;
   }
   scripts = std::move(proposed);
   if (targets.empty()) { reply(true, Result(context_id), ""); return; }
@@ -179,14 +187,14 @@ void SuiteCutContextControls::WakeInitScriptDeadlines() {
 }
 void SuiteCutContextControls::PumpInitScriptDeadlines() {
   script_deadline_timer_ = false;
-  std::set<int> expired_pages;
-  for (const auto& [token, ack] : script_acks_) if (!ack.owner && ack.deadline <= SuiteCutInitNow()) expired_pages.insert(ack.page);
-  for (const int page : expired_pages) {
-    InitScriptFrameDestroyed(page, "");
-    const auto found = pages_.find(page);
-    // An attached frame that cannot install its context snapshot must not keep
-    // silently running future documents with incomplete initialization.
-    if (found != pages_.end() && found->second.browser) suitecut::browser::CloseBrowser(found->second.browser, true);
+  // A busy renderer can take longer than 30 s to confirm a new frame's
+  // scripts; it still runs them when it gets there, as Chrome would. Stop
+  // waiting for that receipt and count it; only a renderer that reports a
+  // failed install closes its page.
+  for (auto it = script_acks_.begin(); it != script_acks_.end();) {
+    if (!it->second.owner && it->second.deadline <= SuiteCutInitNow()) {
+      pending_script_bytes_ -= it->second.bytes; it = script_acks_.erase(it); ++late_script_acks_;
+    } else ++it;
   }
   if (!script_acks_.empty()) WakeInitScriptDeadlines();
 }

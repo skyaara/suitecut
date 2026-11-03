@@ -13,14 +13,15 @@
 #include <random>
 #include <vector>
 
-// Deliberately retains the simple byte-at-a-time specification. Differential
+// Deliberately retains the simple byte-at-a-time specification: lines of any
+// length, a NUL is terminal. Differential
 // tests compare every transport boundary, error state and delivered byte.
 struct ReferenceFramer {
   std::string pending; bool failed=false;
   bool Push(std::string_view bytes, std::vector<std::string>& delivered, size_t reject) {
     if(failed)return false;
     for(char byte:bytes){if(byte=='\n'){delivered.push_back(std::move(pending));if(delivered.size()==reject){failed=true;return false;}pending.clear();}
-      else {if(byte=='\0'||pending.size()>=65535){failed=true;return false;}pending+=byte;}}
+      else {if(byte=='\0'){failed=true;return false;}pending+=byte;}}
     return true;
   }
 };

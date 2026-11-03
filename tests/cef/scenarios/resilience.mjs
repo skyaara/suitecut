@@ -240,6 +240,42 @@ export const resilience = [
       "A covered click with fallback 'js' lands through the cover; a disabled one still fails",
     )
   }),
+  test('resilience.large-inputs', ['resilience', 'protocol'], async (h) => {
+    // Playwright sends inputs of any size; commands used to stop at 64 KiB.
+    const { context, page } = await h.page()
+    page.setDefaultTimeout(30000)
+    await page.goto(h.fixture.origin + '/app')
+    const n = 16 * 1024 * 1024
+    const timings = {}
+    const time = async (name, run) => {
+      const started = Date.now()
+      const value = await run()
+      timings[name] = Date.now() - started
+      assert.equal(value, n, `${name} returned ${value}`)
+    }
+    await time('evaluate', () => page.evaluate((s) => s.length, 'a'.repeat(n)))
+    await time('setContent', async () => {
+      await page.setContent(`<textarea id="t"></textarea><p id="p">${'b'.repeat(n)}</p>`)
+      return page.evaluate(`document.querySelector('#p').textContent.length`)
+    })
+    await time('getByText', () =>
+      page
+        .getByText('b'.repeat(n))
+        .textContent()
+        .then((s) => s.length),
+    )
+    await time('fill', async () => {
+      await page.locator('#t').fill('c'.repeat(n))
+      return page.evaluate(`document.querySelector('#t').value.length`)
+    })
+    await time('addInitScript', async () => {
+      await context.addInitScript(`globalThis.big = ${JSON.stringify('d'.repeat(n))}`)
+      await page.goto(h.fixture.origin + '/app')
+      return page.evaluate('globalThis.big.length')
+    })
+    h.observe('ms', timings)
+    h.check('16 MiB evaluate, setContent, getByText, fill and addInitScript inputs arrive whole')
+  }),
   test('resilience.websocket-large-frames', ['resilience', 'network', 'websocket'], async (h) => {
     const { page } = await h.page()
     await page.goto(h.fixture.origin + '/app')

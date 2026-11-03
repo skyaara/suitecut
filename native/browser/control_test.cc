@@ -76,16 +76,15 @@ int main(int argc, char** argv) {
   Check(!operations.Begin(65, 0, 10));
   operations.Clear();
 
-  for (const std::size_t length : {0U, 1U, 65535U, 65536U, 65537U}) {
+  // Lines of any length arrive whole, as Playwright's do.
+  for (const std::size_t length : {0U, 1U, 65535U, 65536U, 65537U, 64U * 1048576U}) {
     SuiteCutCommandFramer framer;
     std::size_t delivered = 0;
-    const bool accepted = framer.Push(std::string(length, 'x') + '\n', [&](std::string line) {
+    Check(framer.Push(std::string(length, 'x') + '\n', [&](std::string line) {
       Check(line.size() == length); ++delivered; return true;
-    });
-    Check(accepted == (length < 65536));
-    Check(delivered == (accepted ? 1 : 0));
-    Check(framer.End() == accepted);
-    if (!accepted) Check(!framer.Push("valid\n", [](std::string) { return true; }));
+    }));
+    Check(delivered == 1);
+    Check(framer.End());
   }
   {
     SuiteCutCommandFramer framer;
@@ -125,7 +124,6 @@ int main(int argc, char** argv) {
       Check(framer.Push(std::string_view(stream).substr(offset, size), [&](std::string line) {
         actual.push_back(std::move(line)); return true;
       }));
-      Check(framer.BufferedBytes() < SuiteCutCommandFramer::kMaxLineBytes);
       offset += size;
     }
     Check(framer.End() && actual == expected);

@@ -1,12 +1,15 @@
 // SPDX-License-Identifier: MIT
 #pragma once
+#include <limits>
 #include "devtools_utf16.h"
 
 // Explicit protocol fields only. A JSON string inside an ordinary outer JSON
 // string survives CEF parsing without permitting private-tag author-object decode.
 namespace suitecut {
+// Unbounded unless a caller names a bound: Playwright sends fill text,
+// selectors and evaluate source of any length.
 inline bool InboundString(CefRefPtr<CefDictionaryValue> value,const std::string& key,
-                          std::string& output,size_t max_units=65536){
+                          std::string& output,size_t max_units=std::numeric_limits<size_t>::max()/8){
   if(!value)return false;
   const auto encoded=key+"JSON";
   if(value->HasKey(key)==value->HasKey(encoded))return false;

@@ -30,7 +30,7 @@ inline constexpr char kSuiteCutDomQuery[] = R"JS(function(steps,start=document,o
       if(encode){if(typeof value[key]==='string'&&!value[key].isWellFormed()){result[encoded]=JSON.stringify(value[key]);delete result[key];}}
       else if(Object.hasOwn(value,encoded)){
         if(Object.hasOwn(value,key)||typeof value[encoded]!=='string'||value[encoded].length>393218)throw new Error('Invalid native query string wire field');
-        const decoded=JSON.parse(value[encoded]);if(typeof decoded!=='string'||decoded.length>65536)throw new Error('Invalid native query string wire field');
+        const decoded=JSON.parse(value[encoded]);if(typeof decoded!=='string')throw new Error('Invalid native query string wire field');
         result[key]=decoded;delete result[encoded];
       }
     }
@@ -39,7 +39,7 @@ inline constexpr char kSuiteCutDomQuery[] = R"JS(function(steps,start=document,o
     return result;
   };
   steps=wire(steps);
-  let work=0,textBytes=0,nameBytes=0;
+  let work=0,nameBytes=0;
   // Native diagnostics shares this private budget across candidate alias queries.
   // It is constructed in the utility world, never read from selector IPC data.
   const diagnosticBudget=options.nativeDiagnosticsBudget;
@@ -243,7 +243,7 @@ inline constexpr char kSuiteCutDomQuery[] = R"JS(function(steps,start=document,o
     const memo=selectorTextMemo[light?1:0];
     if(memo.has(node))return memo.get(node);
     const stack=[[node,false]];let visits=0;
-    const save=(entry,full,chunks=[],skip=false)=>{textBytes+=(full.length+chunks.reduce((sum,value)=>sum+value.length,0))*2;if(textBytes>32*1024*1024)throw new Error('Native DOM text byte limit exceeded');memo.set(entry,{full,chunks,skip});};
+    const save=(entry,full,chunks=[],skip=false)=>{memo.set(entry,{full,chunks,skip});};
     while(stack.length){
       tick();const [entry,finished]=stack.pop();if(memo.has(entry))continue;
       if(++visits>3000000)throw new Error('Native DOM text node limit exceeded');
@@ -336,7 +336,6 @@ inline constexpr char kSuiteCutDomQuery[] = R"JS(function(steps,start=document,o
   // visible text. Non-string image/counter expressions need explicit alternate
   // text rather than invented text from CSS tokens.
   const pseudoContent=value=>{
-    if(value.length>65536)throw new Error('Native pseudo-content text limit exceeded');
     let quote='',depth=0,start=0;
     for(let i=0;i<value.length;i++){const c=value[i];if(quote){if(c==='\\')i++;else if(c===quote)quote='';continue;}if(c==='"'||c==="'")quote=c;else if(c==='(')depth++;else if(c===')')depth=Math.max(0,depth-1);else if(c==='/'&&!depth){start=i+1;break;}}
     let result='',i=start;const whitespace=c=>c===' '||c==='\t'||c==='\r'||c==='\n'||c==='\f';

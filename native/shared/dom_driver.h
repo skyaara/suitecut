@@ -39,7 +39,7 @@ inline std::string SuiteCutDOMDriverSource() {
   const editable=e=>{if(e.localName==='label'&&e.control)return e.control;return e;};
   const guardedFill=(e,value,request)=>{
     if(!(e instanceof HTMLInputElement||e instanceof HTMLTextAreaElement))throw new Error('Native guarded fill requires an input or textarea');
-    if(typeof value!=='string'||value.length>65536)throw new Error('Invalid or oversized native guarded fill value');
+    if(typeof value!=='string')throw new Error('Invalid native guarded fill value');
     guardOrigin(request);
     const prototype=e instanceof HTMLInputElement?HTMLInputElement.prototype:HTMLTextAreaElement.prototype;
     const setter=Object.getOwnPropertyDescriptor(prototype,'value')?.set;
@@ -66,7 +66,7 @@ inline std::string SuiteCutDOMDriverSource() {
       if(e instanceof HTMLInputElement&&!['text','search','url','tel','email','password','number','date','time','datetime-local','month','range','week','color'].includes(e.type))throw new Error('Input type cannot be filled');
       if(action==='fill'||action==='clear'){
         const value=action==='clear'?'':request.value;
-        if(typeof value!=='string'||value.length>65536)throw new Error('Invalid or oversized native fill value');
+        if(typeof value!=='string')throw new Error('Invalid native fill value');
         if(request.expectedOrigin!==undefined&&!(e instanceof HTMLInputElement||e instanceof HTMLTextAreaElement))throw new Error('Native guarded fill requires an input or textarea');
         if(e instanceof HTMLInputElement&&['date','time','datetime-local','month','range','week','color'].includes(e.type)){
           const probe=e.cloneNode();probe.value=value;if(value&&(!probe.value||(e.type==='range'&&Number(probe.value)!==Number(value))||(e.type==='color'&&probe.value.toLowerCase()!==value.toLowerCase())))throw new Error('Malformed value');

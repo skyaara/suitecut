@@ -660,22 +660,26 @@ describe('native browser lifecycle', () => {
     await browser.closed
   })
 
-  it('bounds command count and size', async () => {
+  it('writes commands of any size whole and bounds command count', async () => {
     const browser = await launch()
-    await expect(
-      browser.sendDevToolsCommand('Runtime.evaluate', { expression: 'x'.repeat(65536) }),
-    ).rejects.toThrow('64 KiB')
+    const big = browser
+      .sendDevToolsCommand('Runtime.evaluate', { expression: 'x'.repeat(8 * 1024 * 1024) })
+      .catch(() => undefined)
+    await vi.waitFor(() => expect(input.readableLength).toBeGreaterThan(8 * 1024 * 1024))
+    const line = (input.read() as Buffer).toString()
+    expect(line.endsWith('\n')).toBe(true)
+    expect(line.indexOf('\n')).toBe(line.length - 1)
+    expect(line).toContain('x'.repeat(8 * 1024 * 1024))
     const pending = Array.from({ length: 64 }, () =>
       browser.sendDevToolsCommand('Runtime.evaluate').catch(() => undefined),
     )
     await expect(browser.sendDevToolsCommand('Runtime.evaluate')).rejects.toThrow('Too many')
     await browser.close()
-    await Promise.all(pending)
+    await Promise.all([...pending, big])
   })
 
-  it('bounds transport bytes when a stalled reader receives canceled requests', async () => {
+  it('keeps running when a stalled reader receives large canceled requests', async () => {
     const browser = await launch()
-    let rejectedForPressure = false
     for (let i = 0; i < 100; i++) {
       const controller = new AbortController()
       const pending = browser.runAutomation(
@@ -687,13 +691,8 @@ describe('native browser lifecycle', () => {
       controller.abort(new Error('cancel transport stress'))
       const error = await rejected
       expect(error).toBeInstanceOf(Error)
-      if (error instanceof Error && error.message.includes('transport buffer is full')) {
-        rejectedForPressure = true
-        break
-      }
+      expect((error as Error).message).toContain('cancel transport stress')
     }
-    expect(rejectedForPressure).toBe(true)
-    expect(input.writableLength).toBeLessThan(4 * 1024 * 1024 + 4096)
     expect(browser.state).toBe('running')
     input.resume()
     await browser.close()
@@ -884,13 +883,15 @@ describe('native browser lifecycle', () => {
     expect(((await error) as Error).message).toBe('Actual generic timeout')
     await browser.close()
   })
-  it('bounds control input before writing a command rejected by the native framer', async () => {
+  it('writes a control command larger than the pipe budget once the pipe drains', async () => {
     const browser = await launch()
-    await expect(
-      browser.runAutomation('evaluate', { expression: 'x'.repeat(65536) }),
-    ).rejects.toThrow('64 KiB')
-    expect(input.read()).toBeNull()
+    const big = browser
+      .runAutomation('evaluate', { expression: 'x'.repeat(16 * 1024 * 1024) })
+      .catch(() => undefined)
+    await vi.waitFor(() => expect(input.readableLength).toBeGreaterThan(16 * 1024 * 1024))
+    expect((input.read() as Buffer).toString()).toContain('x'.repeat(16 * 1024 * 1024))
     expect(browser.state).toBe('running')
     await browser.close()
+    await big
   })
 })

@@ -58,7 +58,7 @@ inline constexpr char kSuiteCutDOMSemanticSnapshot[] = R"JS(function(scope,query
       // discoverable by reference/label without advertising a role query that
       // the standards-based matcher cannot resolve.
       const r=aiGeneric?'generic':frame.role;if(!native&&r&&(aiGeneric||!['none','presentation','generic'].includes(r))){
-        const node={role:r,name:name(e),children:result};if(options.captureReferences)referenceNodes.set(node,e);if(node.name.length>65536)node.name=node.name.slice(0,65536);const states={};if(tools.state(e,'disabled'))states.disabled=true;
+        const node={role:r,name:name(e),children:result};if(options.captureReferences)referenceNodes.set(node,e);const states={};if(tools.state(e,'disabled'))states.disabled=true;
         // Snapshot presence is distinct from selector matching's default false:
         // ordinary buttons have no toggle state; explicit false remains real.
         for(const key of ['checked','pressed','selected','expanded','level'])if(supports[key].includes(r)){if(key==='pressed'&&!['true','false','mixed'].includes(e.getAttribute('aria-pressed')))continue;const value=tools.state(e,key);if(value!==undefined&&(key!=='level'||(Number.isInteger(value)&&value>=1&&value<=100000)))states[key]=key==='checked'&&r==='radio'&&value==='mixed'?false:value;}

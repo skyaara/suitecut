@@ -1460,13 +1460,11 @@ export async function launchNativeBrowser(options: NativeBrowserOptions): Promis
     cleanup(): void
   }
   const controlQueue: QueuedNativeControl[] = []
-  let controlQueueBytes = 0
   let pumpingControls = false
   const removeControl = (job: QueuedNativeControl): boolean => {
     const index = controlQueue.indexOf(job)
     if (index < 0) return false
     controlQueue.splice(index, 1)
-    controlQueueBytes -= job.bytes
     job.cleanup()
     return true
   }
@@ -1501,7 +1499,14 @@ export async function launchNativeBrowser(options: NativeBrowserOptions): Promis
           )
           continue
         }
-        if (pending.size >= 128 || child.stdin.writableLength + job.bytes > 4 * 1024 * 1024) break
+        // A command larger than the pipe's soft budget still goes once the pipe
+        // has drained, as Playwright's transport writes any message whole.
+        if (
+          pending.size >= 128 ||
+          (child.stdin.writableLength > 0 &&
+            child.stdin.writableLength + job.bytes > 4 * 1024 * 1024)
+        )
+          break
         removeControl(job)
         const fields = job.deadline
           ? { ...job.fields, timeoutMs: Math.max(1, Math.ceil(job.deadline - Date.now())) }
@@ -1624,15 +1629,18 @@ export async function launchNativeBrowser(options: NativeBrowserOptions): Promis
         error instanceof Error ? error : new Error('Native control serialization failed'),
       )
     }
-    if (bytes > 65536) return Promise.reject(new Error('Native command exceeds 64 KiB'))
     if (
       !controlQueue.length &&
       pending.size < 128 &&
-      child.stdin.writableLength + bytes < 4 * 1024 * 1024
+      (!child.stdin.writableLength || child.stdin.writableLength + bytes < 4 * 1024 * 1024)
     )
       return dispatchRequest(command, fields, signal, pageId, retry)
-    if (controlQueue.length >= 128 || controlQueueBytes + bytes > 8 * 1024 * 1024)
-      return Promise.reject(new Error('Native control sender queue capacity exceeded'))
+    if (controlQueue.length >= 128)
+      return Promise.reject(
+        new Error(
+          'Native control sender queue capacity exceeded: 128 commands are already waiting for the browser to read its input pipe',
+        ),
+      )
     // Only queued controls need a detached snapshot. The serialized envelope is
     // already a JSON object; validating/cloning it again adds no wire safety.
     const snapshot = JSON.parse(serialized) as Record<string, UntrustedInput>
@@ -1665,7 +1673,6 @@ export async function launchNativeBrowser(options: NativeBrowserOptions): Promis
         },
       }
       controlQueue.push(job)
-      controlQueueBytes += bytes
       signal?.addEventListener('abort', abort, { once: true })
       if (deadline)
         timer = setTimeout(
@@ -1790,16 +1797,16 @@ export async function launchNativeBrowser(options: NativeBrowserOptions): Promis
         ? 128
         : 64
     if (pending.size >= capacity)
-      return Promise.reject(new Error('Too many pending native commands'))
+      return Promise.reject(
+        new Error(
+          `Too many pending native commands: ${pending.size} are awaiting a reply and suitecut allows ${capacity} at once`,
+        ),
+      )
     const id = ++nextId
     const message =
       withoutNativeRetryOperation(() =>
         JSON.stringify({ ...fields, pageId, version: NATIVE_PROTOCOL_VERSION, id, command }),
       ) + '\n'
-    const messageBytes = Buffer.byteLength(message)
-    if (messageBytes > 65_536) return Promise.reject(new Error('Native command exceeds 64 KiB'))
-    if (child.stdin.writableLength + messageBytes > 4 * 1024 * 1024)
-      return Promise.reject(new Error('Native command transport buffer is full'))
     const callbackLifetime =
       command === 'frameSubscription' ? undefined : locatorHandlerContexts?.capture(id, pageId)
     if (callbackLifetime) retainNativeRetryOperation(callbackLifetime)

@@ -33,7 +33,7 @@ class SuiteCutInitSnapshotStore : public std::enable_shared_from_this<SuiteCutIn
     if(!text)return false;
     std::lock_guard<std::mutex> lock(mutex_);
     const auto old = snapshots_.find(id); const size_t previous = old == snapshots_.end() ? 0 : old->second.text->size();
-    if ((!snapshots_.contains(id) && snapshots_.size() >= 32) || text->size() > 8 * 1048576 || text->size() > 64 * 1048576 - bytes_ + previous) return false;
+    // The handler streams the text, so no Chromium message bounds its size.
     // Allocate a new map node before changing accounting or accepted bytes.
     auto slot=old;if(slot==snapshots_.end())slot=snapshots_.emplace(id,Snapshot{}).first;
     const auto next=bytes_-previous+text->size();slot->second=Snapshot{context,std::move(text)};bytes_=next;return true;
@@ -44,7 +44,8 @@ class SuiteCutInitSnapshotStore : public std::enable_shared_from_this<SuiteCutIn
   }
   std::shared_ptr<Lease> Get(int id, CefRefPtr<CefRequestContext> actual) {
     std::lock_guard<std::mutex> lock(mutex_); const auto found = snapshots_.find(id);
-    if (found == snapshots_.end() || !actual || !found->second.context->IsSame(actual) || leases_ >= 64 || found->second.text->size() > 64 * 1048576 - lease_bytes_) return nullptr;
+    if (found == snapshots_.end() || !actual || !found->second.context->IsSame(actual)) return nullptr;
+    // Leases share the snapshot's text, so concurrent readers cost no bytes.
     ++leases_; lease_bytes_ += found->second.text->size();
     auto lease = std::make_shared<Lease>(); lease->text = found->second.text; lease->store = shared_from_this(); return lease;
   }

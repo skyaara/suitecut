@@ -428,7 +428,7 @@ bool SuiteCutContextControls::Handle(const std::string& action, Dict params, Rep
     if (utilities_) utilities_->Diagnostics(result);
     result->SetList("contexts", contexts); result->SetInt("pageCount", static_cast<int>(pages_.size())); result->SetInt("pendingEventWaits", static_cast<int>(waits_.size()));
     size_t snapshot_bytes = 0, snapshot_leases = 0, snapshot_lease_bytes = 0; init_snapshot_store_->Diagnostics(snapshot_bytes, snapshot_leases, snapshot_lease_bytes);
-    result->SetDouble("initSnapshotBytes", static_cast<double>(snapshot_bytes)); result->SetInt("initSnapshotLeases", static_cast<int>(snapshot_leases)); result->SetDouble("initSnapshotLeaseBytes", static_cast<double>(snapshot_lease_bytes));
+    result->SetDouble("initSnapshotBytes", static_cast<double>(snapshot_bytes)); result->SetInt("initSnapshotLeases", static_cast<int>(snapshot_leases)); result->SetDouble("initSnapshotLeaseBytes", static_cast<double>(snapshot_lease_bytes)); result->SetDouble("initScriptLateAcks", static_cast<double>(late_script_acks_));
     size_t binding_bytes = 0, binding_count = 0; for (const auto& [id,context] : contexts_) { binding_bytes += context.bindings.Bytes(); binding_count += context.bindings.Size(); }
     result->SetInt("contextBindings",static_cast<int>(binding_count)); result->SetDouble("contextBindingBytes",static_cast<double>(binding_bytes)); result->SetInt("pendingContextBindings",static_cast<int>(binding_batches_.size()));
     result->SetInt("pendingInitScriptRegistrations", static_cast<int>(script_batches_.size())); result->SetInt("pendingInitScriptAcks", static_cast<int>(script_acks_.size())); result->SetDouble("pendingInitScriptBytes", static_cast<double>(pending_script_bytes_));

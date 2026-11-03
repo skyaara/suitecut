@@ -195,7 +195,7 @@ class SuiteCutContextControls : public std::enable_shared_from_this<SuiteCutCont
   struct ScriptAck { int owner = 0, page = 0; std::string frame; size_t bytes = 0; double deadline = 0; };
   std::map<int, ScriptBatch> script_batches_;
   std::map<std::string, ScriptAck> script_acks_;
-  size_t pending_script_bytes_ = 0;
+  size_t pending_script_bytes_ = 0, late_script_acks_ = 0;
   uint64_t next_script_ack_ = 0;
   bool script_deadline_timer_ = false;
   void ApplySettings(Context& context, const std::string& origin);

@@ -1257,7 +1257,7 @@ auto Source::DispatchCommand(int id, Dict message, const std::string& command, d
 
 auto Source::ReadCommands() -> void {
   SuiteCutCommandFramer framer;
-  char buffer[4096];
+  static char buffer[1 << 16];
   while (!stopped_) {
     pollfd fd{STDIN_FILENO, POLLIN, 0};
     if (poll(&fd, 1, 100) <= 0) continue;

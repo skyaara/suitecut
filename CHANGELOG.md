@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+- Take inputs of any size, as Playwright does. A command to the browser used
+  to stop at 64 KiB, so `page.evaluate()` arguments, `setContent()` HTML,
+  `fill()` and `insertText()` text, `getByText()` strings, ARIA templates and
+  `addInitScript()` sources larger than that failed. All of them now pass
+  16 MiB. Init scripts stop only at 64 MiB per context, so their JSON fits
+  Chromium's 128 MiB IPC message, and the error names that limit. Large
+  commands sent from inside a DevTools callback no longer fail with "Could not
+  dispatch DevTools command", which also lets a default `ariaSnapshot()` of a
+  100,000-element page finish.
+- Keep a page open when a busy renderer takes more than 30 s to confirm a new
+  frame's init scripts. The page used to be closed; the frame still runs its
+  scripts, and `diagnostics` counts it as `initScriptLateAcks`.
 - Add `locator.click({ fallback: 'js' })`, an opt-in suitecut extension for
   agents. When the element stays covered, off-screen, hidden or moving for
   `fallbackAfter` ms (default 1000), the click stops waiting and runs
