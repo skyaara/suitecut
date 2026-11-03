@@ -78,6 +78,10 @@
       reload could not bring it back, so every later step failed. Calls made
       while the page is busy time out as they would in Chrome, and a
       `response.body()` that timed out can be read again once it answers.
+    - A document whose init script bootstrap fails, usually because a click
+      navigated away while it started, no longer closes the page. It is
+      reported as a console error and in diagnostics, as a child frame's
+      already was. lobste.rs closed the soak's page this way.
     - `tests/cef` `resilience.*` cases reproduce each of these volumes
       locally, and `pnpm soak:real-sites` replays the real-site soak that
       found them.

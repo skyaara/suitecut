@@ -87,15 +87,17 @@ auto Source::OnProcessMessageReceived(CefRefPtr<CefBrowser> browser, CefRefPtr<C
   if (sender == PID_RENDERER && message->GetName() == "suitecutInitScriptBootstrapError") {
     if (closing_page_ || !browser_) return true;
     const auto error = message->GetArgumentList()->GetString(0).ToString();
-    // A child frame that cannot bootstrap, usually an ad frame removed while
-    // it starts, costs that frame only. As in Playwright, the page stays.
-    if (frame && !frame->IsMain()) {
-      ConsoleEvent("error", "Native init script bootstrap failed in a child frame: " + error,
-                   nullptr);
-      return true;
-    }
-    Error(("Native init script bootstrap failed in the main frame: " + error).c_str());
-    if (browser_) suitecut::browser::CloseBrowser(browser_, true);
+    // A document that cannot bootstrap is usually being replaced: a click
+    // that navigates terminates its scripts, and an ad frame goes away while
+    // it starts. It costs that document only; as in Playwright, the page stays
+    // and the next document bootstraps on its own.
+    const bool main = !frame || frame->IsMain();
+    Degraded(main ? "Native init script bootstrap failed in the main frame"
+                  : "Native init script bootstrap failed in a child frame");
+    ConsoleEvent("error",
+                 std::string("Native init script bootstrap failed in ") +
+                     (main ? "the main frame: " : "a child frame: ") + error,
+                 nullptr);
     return true;
   }
   if (sender == PID_RENDERER && message->GetName() == "suitecutInitScriptError") {
