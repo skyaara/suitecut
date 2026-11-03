@@ -8,10 +8,12 @@
   from a disabled button or a stale ref. Like Playwright's call log, the
   timeout now names what it waited for: the element to be attached, visible,
   enabled, inside the viewport or editable, or the element that intercepts
-  pointer events, such as `<div class="themeBgImage">` on Goodreads. A deadline noticed partway through resolving a ref
-  keeps the same call log. The click still waits and lands once the cover
-  goes away, as in Playwright. A ref snapshot through the DOM driver also
-  takes up to 1,000,000 refs, up from 65,536.
+  pointer events, such as the Guardian's consent `<iframe>` or Goodreads'
+  `<div class="themeBgImage">`. A ref whose element a carousel or re-render
+  removed says so and asks for a new snapshot. A deadline noticed partway
+  through resolving a ref keeps the same call log. The click still waits and
+  lands once the cover goes away, as in Playwright. A ref snapshot through the
+  DOM driver also takes up to 1,000,000 refs, up from 65,536.
 - Stop suitecut's own bookkeeping from closing pages that Chrome loads fine.
   In a 1,200-action soak across busy real sites, Chrome rendered every page.
   Every page or browser death came from one of suitecut's internal checks

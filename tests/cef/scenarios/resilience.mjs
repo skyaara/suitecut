@@ -199,7 +199,19 @@ export const resilience = [
     await page.evaluate(`setTimeout(()=>document.getElementById('overlay').remove(),300)`)
     await click
     assert.equal(await page.locator('#go').textContent(), 'clicked')
-    h.check('A covered click names what covers it and lands once the cover is gone')
+    // Carousels re-render their slides; a ref to a removed element says so.
+    await page.evaluate(`document.getElementById('go').remove()`)
+    const stale = await page
+      .getByRef(ref)
+      .click({ timeout: 1500 })
+      .then(
+        () => null,
+        (e) => e,
+      )
+    assert.match(stale?.message ?? '', /no longer in the page; take a new snapshot/u)
+    h.check(
+      'A covered click names what covers it and lands once the cover is gone; a removed ref says so',
+    )
   }),
   test('resilience.websocket-large-frames', ['resilience', 'network', 'websocket'], async (h) => {
     const { page } = await h.page()

@@ -535,7 +535,12 @@ auto Source::LocatorAction(int id, std::uint64_t generation, const std::string& 
       (config->HasKey("diagnosticExpressionJSON")
            ? "return {strictError:" + QueryDiagnosticExpression(config, "list") + "};"
            : std::string("throw new Error('Strict locator matched multiple elements');")) +
-      "if(!list.length)return {ready:false,reason:'element to be attached'};const "
+      "if(!list.length)return {ready:false,reason:" +
+      std::string(QueryHasSnapshotReferences(config)
+                      ? "'element to be attached (the element this snapshot ref named is no "
+                        "longer in the page; take a new snapshot)'"
+                      : "'element to be attached'") +
+      "};const "
       "selected=list[0],textNode=selected.nodeType===3&&['click','tap','hover'].includes(" +
       Literal(action) +
       ");let e=textNode?selected.parentElement:selected;"
