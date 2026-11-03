@@ -23,14 +23,20 @@ class PageErrorControls {
   using Fail=std::function<void(const std::string&)>;
   using Preview=std::function<std::string(Dict)>;
   using Clock=std::function<double()>;
-  static constexpr size_t kCaptures=64,kCalls=128,kBytes=8*1048576,kResponse=1048576;
+  static constexpr size_t kCaptures=64,kBacklog=4096,kCalls=128,kBytes=8*1048576,kResponse=1048576;
   PageErrorControls(Allocate allocate,Submit submit,Emit emit,Fail fail,Preview preview,Clock now)
       :allocate_(std::move(allocate)),submit_(std::move(submit)),emit_(std::move(emit)),fail_(std::move(fail)),preview_(std::move(preview)),now_(std::move(now)){}
   void Start(Dict details,const std::string& session){
     if(!details)return;
     const auto exception=details->GetDictionary("exception");const auto bytes=JSON(details).size();
-    if(states_.size()>=kCaptures||bytes>kResponse||bytes>kBytes-bytes_||next_==std::numeric_limits<uint64_t>::max()){
-      fail_("Native page error capture capacity exceeded");return;
+    if(next_==std::numeric_limits<uint64_t>::max()){fail_("Native page error capture capacity exceeded");return;}
+    if(states_.size()>=kCaptures||bytes>kResponse||bytes>kBytes-bytes_){
+      // Playwright reports every pageerror. Past the capture budget, keep this
+      // one in order from its description alone, without its exception object.
+      if(states_.size()>=kBacklog||bytes>kResponse){fail_("Native page error capture capacity exceeded");return;}
+      fail_("Native page error was reported without its exception object");
+      auto state=std::make_shared<State>();state->id=++next_;state->details=details->Copy(false);state->session=session;state->metadata=Described(details);state->ready=true;
+      states_.emplace(state->id,state);Flush();return;
     }
     auto state=std::make_shared<State>();state->id=++next_;state->details=details->Copy(false);state->session=session;state->deadline=now_()+30000;state->bytes=bytes;
     state->raw=exception?exception->GetString("objectId").ToString():"";state->group="suitecut-page-error-"+std::to_string(state->id);

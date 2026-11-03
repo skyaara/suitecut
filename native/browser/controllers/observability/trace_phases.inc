@@ -34,7 +34,7 @@ void NativeTraceReadARIA(const suitecut::TracePhaseControls::Request& request,st
       if(!backend||!projector.Project(nodes,backend,forest,links,error)){fail(error.empty()?"Native trace accessibility root is absent":error);return;}
       ++native_trace_aria_readbacks_;batch->forests.emplace(document.frame,forest);if(--batch->remaining)return;
       auto combined=CefListValue::Create();size_t index=0;for(const auto& [frame,roots]:batch->forests)for(size_t i=0;i<roots->GetSize();++i)combined->SetValue(index++,roots->GetValue(i)->Copy());auto value=CefValue::Create();value->SetList(combined);std::string encoded;
-      if(!suitecut::DevToolsLosslessJSON(value,encoded,65536)){fail("Native trace accessibility forest exceeds 64 KiB");return;}
+      if(!suitecut::DevToolsLosslessJSON(value,encoded,8*1048576)){fail("Native trace accessibility forest exceeds 8 MiB");return;}
       batch->finished=true;auto done=std::exchange(batch->done, nullptr);if(done)done(true,std::move(encoded),"");
     });
   }
@@ -58,7 +58,9 @@ bool NativeTraceReadPhase(const suitecut::TracePhaseControls::Request& request,s
 }
 void NativeTracePhase(suitecut::TraceJournal::Lease lease,uint64_t call,const std::string& phase,double deadline,std::function<void()> done={}){
   const auto traces=engine_.traces();const auto options=traces->Configuration(lease.context);if(!options||(!options->action_png&&!options->aria)||!traces->ChunkCurrent(lease)||!browser_||closing_page_||native_trace_page_closing_){if(done)done();return;}
-  if(!native_trace_phases_){suitecut::TracePhaseControls::Hooks hooks;hooks.now=[]{return Now();};hooks.current=[this](auto scope){return engine_.traces()->ChunkCurrent(scope);};hooks.wake=[this]{WakeDeadlines();};hooks.error=[this](auto scope,const std::string& error){engine_.traces()->CaptureError(scope,error);};
+  // A phase snapshot that cannot be taken is skipped, as Playwright does,
+  // instead of failing the whole trace.
+  if(!native_trace_phases_){suitecut::TracePhaseControls::Hooks hooks;hooks.now=[]{return Now();};hooks.current=[this](auto scope){return engine_.traces()->ChunkCurrent(scope);};hooks.wake=[this]{WakeDeadlines();};hooks.error=[this](auto,const std::string& error){Degraded(error);};
     hooks.read=[this](const auto& request,auto reply){return NativeTraceReadPhase(request,std::move(reply));};
     hooks.captured=[this](const auto& request,auto result){const auto traces=engine_.traces();const auto emit=[&](const char* type,const std::string& file,std::vector<uint8_t> bytes){auto event=CefDictionaryValue::Create();event->SetString("type",type);event->SetString("callId","call@"+std::to_string(request.call));event->SetString("phase",request.phase);event->SetString("file",file);event->SetDouble("timestamp",Now());traces->Captured(request.scope,event,file,std::move(bytes));};const auto name="call@"+std::to_string(request.call)+"-"+request.phase;if(request.screen)emit("screenshot","screenshots/"+name+".png",std::move(result.png));if(request.aria)emit("aria-snapshot","aria/"+name+".json",std::vector<uint8_t>(result.aria.begin(),result.aria.end()));};native_trace_phases_=std::make_shared<suitecut::TracePhaseControls>(std::move(hooks));
   }

@@ -38,6 +38,21 @@
     - A frame suitecut can't track is left to Chromium.
     - A widget mouse lease whose document navigated away is dropped, and
       the next input takes a new one.
+    - Request and response header bookkeeping forgets its oldest request
+      when full, and that request reports its headers as unavailable.
+    - A request whose inline POST body doesn't fit is published without it.
+    - A frame created past the init-script tracking limit still gets its
+      scripts.
+    - Page errors past 64 in flight are still reported, in order, from
+      their description.
+    - A Debugger command Chromium leaves unanswered, including suitecut's
+      clean-world dispatch, resets that Debugger session instead of closing
+      the page.
+    - HAR recordings hold 16,384 entries and 64 MiB of metadata, up from
+      2,048 and 16 MiB, and stop growing past either instead of failing.
+    - Trace aria snapshots can be 8 MiB, up from 64 KiB, so busy pages keep
+      them. A snapshot that can't be taken is skipped instead of failing the
+      whole trace.
 - Stop an unwatched live viewer from slowing the browser down. A viewer
   subscribed to every frame for as long as it was open, so on an animated page
   the browser copied each paint and the host read it even with nobody

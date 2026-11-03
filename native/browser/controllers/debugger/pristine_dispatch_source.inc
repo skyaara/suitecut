@@ -78,9 +78,14 @@ suitecut::PristineDispatchFactories&NativePristineFactories(){
   };
     hooks.send=[this](const auto&owner,const auto&method,Dict params,double deadline,auto reply){return NativePristineSend(owner,method,params,deadline,std::move(reply));
   };
-    // Failed group-release ACKs run inside the native DevTools observer. Post
-    // teardown through the existing owner; only real OnBeforeClose retires it.
-    hooks.close_channel=[this](const std::string&,const std::string&error){NetworkFatal(error);};
+    // Failed group-release ACKs run inside the native DevTools observer. Reset
+    // that session's factories on the next tick and keep the page; late
+    // replies find no call and are ignored.
+    hooks.close_channel=[this](const std::string&session,const std::string&error){
+      Degraded(error);
+      if(std::find(native_pristine_resets_.begin(),native_pristine_resets_.end(),session)==native_pristine_resets_.end())native_pristine_resets_.push_back(session);
+      WakeDeadlines();
+  };
   hooks.wake=[this]{WakeDeadlines();
   };
   native_pristine_factories_=std::make_unique<suitecut::PristineDispatchFactories>(std::move(hooks));
@@ -530,14 +535,17 @@ void NativePristineClosed(){
   native_debugger_pause_deadline_={};
   native_debugger_pause_expired_={};
 }
+std::vector<std::string> native_pristine_resets_;
 void NativePristineTick(){
+  auto resets=std::move(native_pristine_resets_);native_pristine_resets_.clear();
+  for(const auto&session:resets)if(native_pristine_factories_)native_pristine_factories_->SessionClosed(session);
   if(native_pristine_factories_)native_pristine_factories_->Tick(Now());
   if(!native_pristine_initial_settled_&&native_pristine_initial_deadline_>0&&Now()>=native_pristine_initial_deadline_){native_pristine_initial_settled_=true;
   SettingsCommit();
   }
 }
 bool NativePristineNeedsTick()const{
-  return(native_pristine_factories_&&native_pristine_factories_->NeedsTick())||(!native_pristine_initial_settled_&&settings_bootstrap_&&native_pristine_initial_deadline_>0);
+  return !native_pristine_resets_.empty()||(native_pristine_factories_&&native_pristine_factories_->NeedsTick())||(!native_pristine_initial_settled_&&settings_bootstrap_&&native_pristine_initial_deadline_>0);
 }
 
 // Runtime/Page lifecycle notifications are native ownership evidence. Keep

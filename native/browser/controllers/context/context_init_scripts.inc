@@ -51,7 +51,14 @@ bool SuiteCutContextControls::InitScriptFrameCreated(int page_id, CefRefPtr<CefF
   if (!snapshot || (!snapshot->GetInt("version") && !snapshot->GetInt("bindingVersion"))) return true;
   auto value = CefValue::Create(); value->SetDictionary(snapshot);
   const size_t bytes = CefWriteJSON(value, JSON_WRITER_DEFAULT).length() + 256;
-  if (script_acks_.size() >= 1024 || bytes > 64 * 1024 * 1024 - pending_script_bytes_ || next_script_ack_ == std::numeric_limits<uint64_t>::max()) return false;
+  // Nothing waits on a new frame's ack; it only bounds retained bytes. Past
+  // that bound the frame still gets its scripts, untracked, and the caller
+  // reports it.
+  if (script_acks_.size() >= 1024 || bytes > 64 * 1024 * 1024 - pending_script_bytes_ || next_script_ack_ == std::numeric_limits<uint64_t>::max()) {
+    auto message = CefProcessMessage::Create("suitecutInitScripts");
+    message->GetArgumentList()->SetString(0, "untracked"); message->GetArgumentList()->SetDictionary(1, snapshot);
+    frame->SendProcessMessage(PID_RENDERER, message); return false;
+  }
   const auto token = std::to_string(++next_script_ack_);
   script_acks_.emplace(token, ScriptAck{0, page_id, frame->GetIdentifier().ToString(), bytes, SuiteCutInitNow() + 30}); pending_script_bytes_ += bytes;
   auto message = CefProcessMessage::Create("suitecutInitScripts");

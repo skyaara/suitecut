@@ -33,7 +33,11 @@ class NativeNetworkResponseExtras {
     auto found=chains_.find(key);
     if(found!=chains_.end()&&found->second.seen.contains(logical))return true;
     const size_t cost=logical.size()*(expected?2:1);
-    if(hops_>=4096||cost>byte_limit_-bytes_||(!chains_.contains(key)&&key.size()>byte_limit_-bytes_-cost))return Fail("Native "+kind_+" ExtraInfo hop capacity exceeded");
+    const auto alive=alive_;
+    while(hops_>=4096||cost>byte_limit_-bytes_||(!chains_.contains(key)&&key.size()>byte_limit_-bytes_-cost)){
+      if(!Evict(key)){Degrade("Native "+kind_+" ExtraInfo hop capacity exceeded");auto missing=missing_;missing(logical,"Native "+kind_+" ExtraInfo was not retained");return *alive;}
+      if(!*alive)return false;
+    }
     if(!Ensure(key,deadline))return false;
     auto&chain=chains_.at(key);chain.seen.insert(logical);++hops_;chain.bytes+=cost;bytes_+=cost;
     if(expected)chain.expected.push_back(logical);
@@ -43,7 +47,13 @@ class NativeNetworkResponseExtras {
     if(!Valid(key)||!headers)return Fail("Invalid native "+kind_+" ExtraInfo receipt");
     const auto canonical=Resolve(key);if(canonical!=key)return Receive(canonical,headers,deadline);
     auto wrapper=CefValue::Create();wrapper->SetDictionary(headers->Copy(false));const auto cost=CefWriteJSON(wrapper,JSON_WRITER_DEFAULT).ToString().size();
-    if(cost>1048576||receipts_>=4096||cost>byte_limit_-bytes_||(!chains_.contains(key)&&key.size()>byte_limit_-bytes_-cost))return Fail("Native "+kind_+" ExtraInfo receipt capacity exceeded");
+    // Chromium's own network stack rejects header blocks long before 1 MiB.
+    if(cost>1048576){Degrade("Native "+kind_+" ExtraInfo receipt exceeds 1 MiB");return true;}
+    const auto alive=alive_;
+    while(receipts_>=4096||cost>byte_limit_-bytes_||(!chains_.contains(key)&&key.size()>byte_limit_-bytes_-cost)){
+      if(!Evict(key)){Degrade("Native "+kind_+" ExtraInfo receipt capacity exceeded");return true;}
+      if(!*alive)return false;
+    }
     if(!Ensure(key,deadline))return false;
     auto&chain=chains_.at(key);chain.receipts.push_back({headers->Copy(false),cost});++receipts_;chain.bytes+=cost;bytes_+=cost;Drain(key);return true;
   }
@@ -61,12 +71,15 @@ class NativeNetworkResponseExtras {
     if(chain!=chains_.end())deadline=chain->second.deadline;
     for(const auto&[key,alias]:aliases_)if(alias.target==old_key)deadline=deadline?std::min(deadline,alias.deadline):alias.deadline;
     if(!std::isfinite(deadline)||deadline<=0)return Fail("Invalid native "+kind_+" ExtraInfo handoff deadline");
+    const auto alive=alive_;
+    while((aliases_.size()>=4096||bytes_+2*(old_key.size()+new_key.size())>byte_limit_)&&Evict(old_key,new_key))if(!*alive)return false;
     size_t next=bytes_;
     if(chain!=chains_.end())next=next-old_key.size()+new_key.size();
     for(const auto&[key,alias]:aliases_)if(alias.target==old_key&&key!=new_key)next=next-alias.target.size()+new_key.size();
     if(previous!=aliases_.end())next-=previous->first.size()+previous->second.target.size();
     const auto count=aliases_.size()-(previous!=aliases_.end()?1:0)+1;next+=old_key.size()+new_key.size();
-    if(count>4096||next>byte_limit_)return Fail("Native "+kind_+" ExtraInfo handoff metadata capacity exceeded");
+    // Unmoved ExtraInfo stays under the old key and reports missing at its deadline.
+    if(count>4096||next>byte_limit_){Degrade("Native "+kind_+" ExtraInfo handoff metadata capacity exceeded");return true;}
     // All admission is checked before mutating either the FIFO or alias graph.
     if(previous!=aliases_.end())aliases_.erase(previous);
     for(auto&[key,alias]:aliases_)if(alias.target==old_key){std::string target(new_key);alias.target.swap(target);}
@@ -77,6 +90,8 @@ class NativeNetworkResponseExtras {
   void SessionClosed(const std::string&session){std::vector<std::string>keys;for(const auto&[key,chain]:chains_)if(key.starts_with(session+"\n"))keys.push_back(key);const auto alive=alive_;for(const auto&key:keys){Drop(key,"Actual "+kind_+" ExtraInfo target closed");if(!*alive)return;}keys.clear();for(const auto&[key,alias]:aliases_)if(alias.target.starts_with(session+"\n"))keys.push_back(key);for(const auto&key:keys)EraseAlias(key);}
   void Tick(double now){std::vector<std::string>expired;for(const auto&[key,chain]:chains_)if(now>=chain.deadline)expired.push_back(key);const auto alive=alive_;for(const auto&key:expired){Drop(key,"Native "+kind_+" ExtraInfo retention deadline exceeded");if(!*alive)return;}expired.clear();for(const auto&[key,alias]:aliases_)if(now>=alias.deadline)expired.push_back(key);for(const auto&key:expired)EraseAlias(key);}
   void Clear(){if(closed_)return;closed_=true;*alive_=false;chains_.clear();aliases_.clear();bytes_=hops_=receipts_=0;}
+  // Reports what a full budget forgot instead of failing the page.
+  std::function<void(const std::string&)> degraded;
   bool NeedsTick()const{return !chains_.empty()||!aliases_.empty();}
   size_t bytes()const{return bytes_;}size_t hops()const{return hops_;}size_t receipts()const{return receipts_;}size_t aliases()const{return aliases_.size();}
  private:
@@ -88,11 +103,28 @@ class NativeNetworkResponseExtras {
   void DropAliases(const std::string&target){std::vector<std::string>keys;for(const auto&[key,alias]:aliases_)if(alias.target==target)keys.push_back(key);for(const auto&key:keys)EraseAlias(key);}
   static bool Valid(const std::string&key){return !key.empty()&&key.size()<=385;}
   bool Fail(const std::string&error){auto failure=failure_;failure(error);return false;}
+  void Degrade(const std::string&error){if(degraded)degraded(error);}
+  // A busy page can outgrow the budget with requests Chrome itself has long
+  // forgotten. Forget the oldest other chain or alias, reporting its headers
+  // missing, rather than failing the page.
+  bool Evict(const std::string&keep,const std::string&also=""){
+    auto oldest=chains_.end();
+    for(auto it=chains_.begin();it!=chains_.end();++it)if(it->first!=keep&&it->first!=also&&(oldest==chains_.end()||it->second.deadline<oldest->second.deadline))oldest=it;
+    if(oldest!=chains_.end()){const std::string key=oldest->first;Degrade("Native "+kind_+" ExtraInfo evicted the oldest chain");Drop(key,"Native "+kind_+" ExtraInfo evicted to stay within its budget");return true;}
+    auto alias=aliases_.end();
+    for(auto it=aliases_.begin();it!=aliases_.end();++it)if(it->first!=keep&&it->first!=also&&it->second.target!=keep&&it->second.target!=also&&(alias==aliases_.end()||it->second.deadline<alias->second.deadline))alias=it;
+    if(alias==aliases_.end())return false;
+    const std::string key=alias->first;Degrade("Native "+kind_+" ExtraInfo evicted the oldest alias");EraseAlias(key);return true;
+  }
   bool Ensure(const std::string&key,double deadline){
     if(closed_)return false;
     if(!std::isfinite(deadline)||deadline<=0)return Fail("Invalid native "+kind_+" ExtraInfo retention deadline");
     if(chains_.contains(key))return true;
-    if(chains_.size()>=4096||key.size()>byte_limit_-bytes_)return Fail("Native "+kind_+" ExtraInfo channel capacity exceeded");
+    const auto alive=alive_;
+    while(chains_.size()>=4096||key.size()>byte_limit_-bytes_){
+      if(!Evict(key))return Fail("Native "+kind_+" ExtraInfo channel capacity exceeded");
+      if(!*alive)return false;
+    }
     Chain chain;chain.deadline=deadline;chain.bytes=key.size();bytes_+=key.size();chains_.emplace(key,std::move(chain));return true;
   }
   void Drain(const std::string&key){

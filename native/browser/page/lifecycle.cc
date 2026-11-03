@@ -63,10 +63,8 @@ auto Source::OnFrameCreated(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> f
       return;
     }
   }
-  if (!engine_.contexts()->InitScriptFrameCreated(page_id_, frame)) {
-    Error("Native context init script IPC capacity exceeded");
-    suitecut::browser::CloseBrowser(browser, true);
-  }
+  if (!engine_.contexts()->InitScriptFrameCreated(page_id_, frame))
+    Degraded("Native context init script IPC sent untracked past its capacity");
 }
 
 auto Source::OnFrameDestroyed(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame) -> void {

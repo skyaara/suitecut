@@ -76,6 +76,7 @@ class NetworkControls {
       [this](Dict event){PublishReady(event);},[this](const std::string& error){failure_(error);});
     authentication_->degraded=[this](const std::string& error){if(degraded)degraded(error);};
     if(bodies_)bodies_->publication().degraded=authentication_->degraded;
+    request_extras_->degraded=authentication_->degraded;response_extras_->degraded=authentication_->degraded;
   }
   // Reports what a subcontrol dropped instead of failing the page.
   std::function<void(const std::string&)> degraded;

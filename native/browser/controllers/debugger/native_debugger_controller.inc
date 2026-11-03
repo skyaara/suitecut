@@ -5,6 +5,7 @@ std::shared_ptr<suitecut::DebuggerDomains> native_debugger_domains_;
 struct NativeDebuggerPhysicalCall {std::string session;double retirement=0;bool closing=false;};
 std::map<int,NativeDebuggerPhysicalCall> native_debugger_calls_;
 bool native_debugger_closing_requested_=false;
+std::vector<std::string> native_debugger_resets_;
 std::map<std::string,uint64_t> native_coverage_debugger_leases_;
 uint64_t native_debugger_next_lease_=0;
 std::function<double(const std::string&,Dict)> native_debugger_pause_deadline_;
@@ -52,16 +53,35 @@ void NativeDebuggerRequestClose(const std::string&error){
   native_debugger_closing_requested_=true;
   NetworkFatal(error);
 }
+// A Debugger session whose state can no longer be trusted is reset, not the
+// page: Debugger.disable resumes the renderer and clears its breakpoints, and
+// the domain owner forgets the session so the next lease starts fresh.
+void NativeDebuggerReset(const std::string& session,const std::string& error){
+  Degraded(error);
+  if(std::find(native_debugger_resets_.begin(),native_debugger_resets_.end(),session)==native_debugger_resets_.end())native_debugger_resets_.push_back(session);
+  WakeDeadlines();
+}
 void NativeDebuggerTick(){
+  auto resets=std::move(native_debugger_resets_);native_debugger_resets_.clear();
+  for(const auto& session:resets){
+    if(native_debugger_domains_)native_debugger_domains_->Detached(session);
+    if(browser_&&!closing_page_){const int id=AllocateDevToolsId();if(id)SubmitDevTools(id,"Debugger.disable",nullptr,session);}
+  }
   if(native_debugger_domains_)native_debugger_domains_->Tick(Now());
-  bool close=false;
-  for(auto&[id,call]:native_debugger_calls_)if(!call.closing&&Now()>=call.retirement){call.closing=true;close=true;}
-  // The watchdog requests actual closure; accepted callbacks and factory Holds
-  // remain physically reserved until their real ACK or actual channel death.
-  if(close)NativeDebuggerRequestClose("Native shared Debugger command exceeded its physical settlement grace");
+  // Like Playwright with an unanswered CDP call, give up on it and keep the
+  // page. A late reply finds no owner and is ignored.
+  std::vector<int> expired;
+  for(const auto&[id,call]:native_debugger_calls_)if(Now()>=call.retirement)expired.push_back(id);
+  for(const auto id:expired){
+    native_debugger_calls_.erase(id);
+    const auto found=devtools_.find(id);if(found==devtools_.end())continue;
+    auto done=std::exchange(found->second.callback,nullptr);devtools_.erase(found);
+    Degraded("Native shared Debugger command exceeded its physical settlement grace");
+    if(done)done(false,"{\"message\":\"Native shared Debugger command was not answered\"}");
+  }
 }
 bool NativeDebuggerNeedsTick()const{
-  return(native_debugger_domains_&&native_debugger_domains_->NeedsTick())||std::any_of(native_debugger_calls_.begin(),native_debugger_calls_.end(),[](const auto&entry){return !entry.second.closing;});
+  return !native_debugger_resets_.empty()||(native_debugger_domains_&&native_debugger_domains_->NeedsTick())||std::any_of(native_debugger_calls_.begin(),native_debugger_calls_.end(),[](const auto&entry){return !entry.second.closing;});
 }
 std::shared_ptr<suitecut::DebuggerDomains> NativeDebuggerDomains(){
   if(native_debugger_domains_)return native_debugger_domains_;
@@ -71,7 +91,7 @@ std::shared_ptr<suitecut::DebuggerDomains> NativeDebuggerDomains(){
   // budget; no default timer or prior navigation budget may authorize capture.
   hooks.pause_deadline=[this](const std::string& session,Dict params){return native_debugger_pause_deadline_?native_debugger_pause_deadline_(session,params):-1;};
   hooks.pause_expired=[this](uint64_t lease,Dict pause,const std::string& error){if(native_debugger_pause_expired_)native_debugger_pause_expired_(lease,pause,error);else NativeDebuggerRequestClose(error);};
-  hooks.close_channel=[this](const std::string&,const std::string& error){NativeDebuggerRequestClose(error);};
+  hooks.close_channel=[this](const std::string& session,const std::string& error){NativeDebuggerReset(session,error);};
   native_debugger_domains_=std::make_shared<suitecut::DebuggerDomains>(std::move(hooks));return native_debugger_domains_;
 }
 bool NativeDebuggerCoverageAcquire(const std::string& session,double deadline,suitecut::CoverageControls::ProtocolReply reply){

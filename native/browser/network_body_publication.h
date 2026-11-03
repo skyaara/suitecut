@@ -85,8 +85,14 @@ class NativeNetworkBodyPublication {
         for(const char*name:{"postData","postDataBase64","postDataBodyId","postDataUnavailable"}){
           request->Remove(name);if(fields&&fields->HasKey(name))request->SetValue(name,fields->GetValue(name)->Copy());
         }
-        auto wrapper=CefValue::Create();wrapper->SetDictionary(event.value->Copy(false));const auto bytes=CefWriteJSON(wrapper,JSON_WRITER_DEFAULT).ToString().size();
-        if(bytes>1048576||bytes>4194304-(event_bytes_-event.bytes)){Fail("Native prepared request metadata exceeds publication capacity");return false;}
+        auto wrapper=CefValue::Create();wrapper->SetDictionary(event.value->Copy(false));auto bytes=CefWriteJSON(wrapper,JSON_WRITER_DEFAULT).ToString().size();
+        if(bytes>1048576||bytes>4194304-(event_bytes_-event.bytes)){
+          // Publish the request without its inline body rather than failing the page.
+          for(const char*name:{"postData","postDataBase64","postDataEntries"})request->Remove(name);
+          if(!request->HasKey("postDataBodyId"))request->SetBool("postDataUnavailable",true);
+          if(degraded)degraded("Native prepared request metadata exceeds publication capacity");
+          wrapper->SetDictionary(event.value->Copy(false));bytes=CefWriteJSON(wrapper,JSON_WRITER_DEFAULT).ToString().size();
+        }
         event_bytes_=event_bytes_-event.bytes+bytes;event.bytes=bytes;
       }
       event.preparation=0;
@@ -95,11 +101,12 @@ class NativeNetworkBodyPublication {
   }
   bool Queue(Dict event,uint64_t preparation=0) {
     auto wrapped=CefValue::Create();wrapped->SetDictionary(event);const auto bytes=CefWriteJSON(wrapped,JSON_WRITER_DEFAULT).ToString().size();
-    if(queued_serial_>=9007199254740991ULL || bytes>1048576){Fail("Native network metadata publication capacity exceeded");return false;}
+    if(queued_serial_>=9007199254740991ULL){Fail("Native network metadata publication capacity exceeded");return false;}
+    if(bytes>1048576){if(degraded)degraded("Native network metadata event exceeds 1 MiB");return true;}
     // A slow POST read or body transfer at the head must not hold every later
     // event hostage. Like Playwright, publish it without its body instead.
     while(!events_.empty() && (events_.size()>=256 || bytes>4194304-event_bytes_) && Unblock()){}
-    if(events_.size()>=256 || bytes>4194304-event_bytes_){Fail("Native network metadata publication capacity exceeded");return false;}
+    if(events_.size()>=256 || bytes>4194304-event_bytes_){if(degraded)degraded("Native network metadata publication capacity exceeded");return true;}
     const auto owner=BodyId(event);
     if(owner && !reservations_.contains(owner) && !taken_.contains(owner)){auto request=event->GetDictionary("request");request->Remove("postDataBodyId");request->SetBool("postDataUnavailable",true);}
     events_.push_back({event->Copy(false),bytes,++queued_serial_,preparation});event_bytes_+=bytes;Pump();return true;

@@ -124,7 +124,7 @@ class NativeHARCapture {
       if(captures_.at(context).sealed)return true;
       if(kind!="request"||!NativeURLGlobMatches(captures_.at(context).filter,request->GetString("url")))return true;
       // A full capture stops growing for this context instead of failing the browser.
-      if(records_.size()>=2048){captures_.at(context).sealed=true;if(degraded)degraded("Native HAR entry capacity exceeded");return true;}
+      if(records_.size()>=kRecords){captures_.at(context).sealed=true;if(degraded)degraded("Native HAR entry capacity exceeded");return true;}
       auto record=std::make_shared<Record>();record->context=context;record->observed_ms=now_();record->owner=owner;record->pageref=pages_.Reference(context,owner);record->frame_allowed=actor->second.kind==OwnerKind::Page;record->request=request->Copy(false);record->wall_ms=wall_ms;record->generation=++serial_;if(reserve_)record->publication=reserve_(context);
       auto original=originals_.find(owner+"\n"+request->GetString("session").ToString()+"\n"+request->GetString("requestId").ToString());
       if(original!=originals_.end()){
@@ -150,7 +150,8 @@ class NativeHARCapture {
       record->header_receipt_taken=true;
       const auto wall=wall_now_();if(NativeHARCookieExpiry::ValidTime(wall))record->header_wall_ms=wall;
     }
-    if(!Budget(*record)){Fail("Native HAR metadata byte budget exceeded");return false;}
+    // An entry that outgrows the budget keeps what it has; the capture stops growing.
+    if(!Budget(*record)){if(const auto capture=captures_.find(context);capture!=captures_.end())capture->second.sealed=true;if(degraded)degraded("Native HAR metadata byte budget exceeded");return true;}
     // A body reply can precede the real redirect-hop ExtraInfo. Keep the
     // immutable snapshot open until those existing header receipts settle.
     if((record->terminal||record->response)&&HeadersPending(*record)&&!record->header_deadline)record->header_deadline=now_()+30000;
@@ -232,7 +233,10 @@ class NativeHARCapture {
   struct Original{int context=0;Bytes bytes;NativeHARResponseBytes wire;std::string wire_frame,wire_loader;size_t wire_cost=0;double wall_ms=-1,deadline=0,observed_ms=0;bool present=false,unavailable=false,text=false,absent=false;};
   struct Record{int context=0;std::string owner,pageref,error,body_error,header_error;Dict request,response;Publication publication;Bytes body,post;bool post_pending=false,post_available=false,post_unavailable=false,post_text=false,post_published=false,post_absent=false;double wall_ms=0,deadline=0,header_deadline=0,observed_ms=0,completed_ms=0;uint64_t generation=0;size_t cost=0;bool terminal=false,fetching=false,awaiting_headers=false,published=false,body_available=false,body_skipped=false,frame_allowed=false,header_receipt_taken=false,wire_coding_conflict=false;std::optional<double>header_wall_ms;NativeHARResponseBytes wire;std::string wire_id,wire_frame,wire_loader;std::optional<std::string>wire_coding;};
   static std::string Json(Dict dict){auto value=CefValue::Create();value->SetDictionary(dict->Copy(false));return CefWriteJSON(value,JSON_WRITER_DEFAULT);}
-  bool Budget(Record&record){const auto cost=Json(record.request).size()+(record.response?Json(record.response).size():0)+640+record.wire_id.capacity()+record.wire_frame.capacity()+record.wire_loader.capacity()+(record.wire_coding?record.wire_coding->capacity():0);if(cost>16777216-(metadata_bytes_-record.cost))return false;metadata_bytes_=metadata_bytes_-record.cost+cost;record.cost=cost;return true;}
+  // Playwright keeps a whole HAR in memory too; these only bound a recording
+  // that runs for hours, and stay well inside the 192 MiB export payload.
+  static constexpr size_t kRecords=16384,kMetadataBytes=64*1048576;
+  bool Budget(Record&record){const auto cost=Json(record.request).size()+(record.response?Json(record.response).size():0)+640+record.wire_id.capacity()+record.wire_frame.capacity()+record.wire_loader.capacity()+(record.wire_coding?record.wire_coding->capacity():0);if(cost>kMetadataBytes-(metadata_bytes_-record.cost))return false;metadata_bytes_=metadata_bytes_-record.cost+cost;record.cost=cost;return true;}
   static std::string Date(double ms){const auto whole=static_cast<time_t>(ms/1000);std::tm utc{};
 #ifdef _WIN32
     gmtime_s(&utc,&whole);

@@ -351,7 +351,7 @@ class SuiteCutContextWorkers::Client : public CefClient, public CefLifeSpanHandl
     if(method=="Target.detachedFromTarget") {
       for(const auto& closed:WorkerSessionClosures(params->GetString("sessionId").ToString())){
         const auto mapped=worker_sessions_.find(closed);
-        if(mapped!=worker_sessions_.end()){const auto& target=worker_targets_.at(mapped->second);if((target.published||target.observed)&&!target.context_destroyed){if(detached_targets_.size()>=kWorkerTargets){Error("Native context worker detached target capacity exceeded");return true;}detached_targets_[target.id]=target;}}
+        if(mapped!=worker_sessions_.end()){const auto& target=worker_targets_.at(mapped->second);if((target.published||target.observed)&&!target.context_destroyed){if(detached_targets_.size()<kWorkerTargets)detached_targets_[target.id]=target;else Degraded("Native context worker detached target capacity exceeded");}}
         WorkerConsoleSessionRemoved(closed);WorkerDetached(closed);
         // Chrome never answers what this session was sent; end those rows too.
         NativeInspectorSessionDetached(closed);
