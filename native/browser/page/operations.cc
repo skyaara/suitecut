@@ -325,13 +325,13 @@ auto Source::Deadlines() -> void {
     }
   }
   if (network_fatal_) network_fatal_->Tick();
-  bool network_expired = false;
+  // A busy renderer answers late, as it does in Chrome. Count it; the API call
+  // that waits on it times out on its own deadline and the page stays open.
   for (auto& [id, call] : network_calls_)
     if (!call.expired && Now() >= call.deadline) {
       call.expired = true;
-      network_expired = true;
+      Degraded("Native network command answered after its deadline");
     }
-  if (network_expired) NetworkFatal("Native network command deadline expired");
   WorkerTick();
   if (native_virtual_time_) native_virtual_time_->Tick(Now());
   if (bindings_) bindings_->Tick(Now());

@@ -129,6 +129,48 @@ export const resilience = [
     },
     240,
   ),
+  test(
+    'resilience.busy-main-thread',
+    ['resilience', 'network'],
+    async (h) => {
+      // IKEA product pages keep the main thread busy for most of a minute.
+      // Chrome answers DevTools late then; that used to close the page after 30 s.
+      const { page } = await h.page()
+      await page.goto(h.fixture.origin + '/app')
+      const response = page.waitForResponse((r) => r.url().endsWith('/resilience/item?n=1'))
+      await page.evaluate(`fetch('/resilience/item?n=1').then(r=>r.json())`)
+      const item = await response
+      const started = Date.now()
+      void page
+        .evaluate(`(()=>{const end=Date.now()+35000;while(Date.now()<end);})()`)
+        .catch(() => undefined)
+      const body = await item.body().then(
+        (bytes) => bytes.toString(),
+        (error) => error,
+      )
+      h.observe('body during busy loop', {
+        ms: Date.now() - started,
+        result: typeof body === 'string' ? body : String(body?.message ?? body),
+      })
+      // Calls made while the page is busy time out, as they would in Chrome.
+      await h.until(
+        () =>
+          page.evaluate('1+1').then(
+            (value) => value === 2,
+            () => false,
+          ),
+        'the page never answered after the busy loop',
+        60000,
+      )
+      assert(Date.now() - started > 30000, 'the busy loop ended before the 30 s deadline')
+      await alive(page)
+      assert.deepEqual(JSON.parse((await item.body()).toString()), { item: 1 })
+      h.check(
+        'A main thread busy for 35 s delays DevTools replies without closing the page, and bodies still read',
+      )
+    },
+    120,
+  ),
   test('resilience.websocket-large-frames', ['resilience', 'network', 'websocket'], async (h) => {
     const { page } = await h.page()
     await page.goto(h.fixture.origin + '/app')

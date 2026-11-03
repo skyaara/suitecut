@@ -475,11 +475,18 @@ export class NativeResponse {
   body(): Promise<Buffer> {
     if (this.info.status >= 300 && this.info.status < 400 && this.headers().location !== undefined)
       return Promise.reject(new Error('Response body is unavailable for redirect responses'))
-    this.bodyPromise ??= this.owner.responseBody(this.info, this.requestObject).then((result) => {
+    if (this.bodyPromise) return this.bodyPromise
+    const body = this.owner.responseBody(this.info, this.requestObject).then((result) => {
       const payload = z.object({ body: z.string(), base64Encoded: z.boolean() }).parse(result)
       return Buffer.from(payload.body, payload.base64Encoded ? 'base64' : 'utf8')
     })
-    return this.bodyPromise
+    // A read that timed out while the page was busy can succeed later; only
+    // a body that arrived is kept.
+    body.catch(() => {
+      if (this.bodyPromise === body) this.bodyPromise = undefined
+    })
+    this.bodyPromise = body
+    return body
   }
   async text(): Promise<string> {
     return (await this.body()).toString('utf8')

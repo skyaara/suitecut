@@ -178,6 +178,8 @@ async function start() {
   page.on('dialog', (dialog) => void dialog.dismiss().catch(() => undefined))
 }
 class BrowserDied extends Error {}
+// The browser is fine but the page is gone; start over like a browser death.
+class PageUnrecovered extends BrowserDied {}
 const viewerCall = async (path: string, body?: object) => {
   const response = await fetch(new URL(path, link.origin), {
     method: body ? 'POST' : 'GET',
@@ -281,7 +283,19 @@ const step = async (
       loopLagMs: takeLag(),
     })
     if (page.source.state === 'failed') {
-      await viewer.runAgent(() => page.reload({ timeout: 20000 })).catch(() => undefined)
+      // A crashed page that reload can't bring back is as dead as a closed one.
+      const failure = await viewer
+        .runAgent(() => page.reload({ timeout: 20000 }))
+        .then(
+          () => '',
+          (error: Error) => String(error?.message ?? error),
+        )
+      if (failure || page.source.state === 'failed') {
+        ++pageDeaths
+        issue(site, 'engine', `crashed page did not recover: ${failure || 'still failed'}`)
+        record({ site, name: 'recovery-failed', error: failure.slice(0, 600) })
+        throw new PageUnrecovered(failure || 'crashed page still failed after reload')
+      }
       issue(site, 'engine', 'recovered crashed page with reload')
     }
     return false
@@ -471,7 +485,7 @@ try {
         await visit(site)
       } catch (error) {
         if (!(error instanceof BrowserDied)) throw error
-        ++browserDeaths
+        if (!(error instanceof PageUnrecovered)) ++browserDeaths
         record({ site: host(site.url), name: 'browser-died', error: error.message.slice(0, 400) })
         closing = true
         await viewer.close().catch(() => undefined)

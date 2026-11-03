@@ -255,12 +255,10 @@ auto Source::ToolResult(int id, bool success, const void* result, size_t size,
       Degraded("Native network protocol session mismatch");
       return;
     }
-    const bool expired = network_call->second.expired;
     auto callback = std::exchange(network_call->second.callback, nullptr);
     network_calls_.erase(network_call);
-    if (expired)
-      callback(false, "Native network command deadline expired");
-    else if (size > kMaxResponseBytes)
+    // Chrome ran the command even when it answered late; deliver what it did.
+    if (size > kMaxResponseBytes)
       callback(false, "Native network protocol response limit exceeded");
     else
       callback(success, std::string(static_cast<const char*>(result), size));

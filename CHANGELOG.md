@@ -73,6 +73,11 @@
       "event journal cursor expired" while the host checked one response.
     - A request body the host has no room for reads as unavailable instead of
       ending the browser.
+    - A page whose main thread stays busy past 30 s, as IKEA product pages
+      do, stays open. A slow DevTools reply used to close it, and the soak's
+      reload could not bring it back, so every later step failed. Calls made
+      while the page is busy time out as they would in Chrome, and a
+      `response.body()` that timed out can be read again once it answers.
     - `tests/cef` `resilience.*` cases reproduce each of these volumes
       locally, and `pnpm soak:real-sites` replays the real-site soak that
       found them.
