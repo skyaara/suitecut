@@ -11,10 +11,10 @@ inline constexpr char kSuiteCutNativeAriaJSON[] = R"JS(function formatNativeAria
         const item = pending.pop();
         if (!item)
             break;
-        if (item.depth > 64)
+        if (item.depth > 512)
             throw new Error('Native ARIA JSON depth limit exceeded');
         for (const actual of item.values) {
-            if (++visited > 65_536)
+            if (++visited > 1_000_000)
                 throw new Error('Native ARIA JSON node limit exceeded');
             if (actual.role === 'text') {
                 const text = actual.text ?? actual.name ?? '';

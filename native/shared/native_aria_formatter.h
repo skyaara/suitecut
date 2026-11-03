@@ -23,7 +23,7 @@ inline constexpr char kSuiteCutNativeAriaFormatter[] = R"JS(function formatNativ
         const item = stack.pop();
         if (!item)
             break;
-        if (++visited > 65_536 || item.depth > 64)
+        if (++visited > 1_000_000 || item.depth > 512)
             throw new Error('Native ARIA snapshot traversal exceeds bounds');
         const { node, depth } = item;
         const indent = '  '.repeat(depth);
@@ -78,7 +78,7 @@ inline constexpr char kSuiteCutNativeAriaFormatter[] = R"JS(function formatNativ
             else
                 line += `: ${scalar(text)}`;
         }
-        if (depth >= (options.depth ?? 64))
+        if (depth >= (options.depth ?? 512))
             children = [];
         if (children.length || properties.length)
             line += ':';

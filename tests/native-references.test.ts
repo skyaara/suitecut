@@ -209,11 +209,11 @@ describe('native snapshot references: typed packet and host schema contracts', (
   })
   it('enforces actual tree depth and node budgets', () => {
     let nested: UntrustedInput = { role: 'button', ref: reference }
-    for (let depth = 0; depth < 66; ++depth) nested = { role: 'group', children: [nested] }
+    for (let depth = 0; depth < 514; ++depth) nested = { role: 'group', children: [nested] }
     expect(() => parseNativeReferenceForest(JSON.stringify([nested]))).toThrow(/depth/u)
     expect(() =>
       parseNativeReferenceForest(
-        JSON.stringify(Array.from({ length: 65_537 }, () => ({ role: 'text', text: 'a' }))),
+        JSON.stringify(Array.from({ length: 1_000_001 }, () => ({ role: 'text', text: 'a' }))),
       ),
     ).toThrow()
   })

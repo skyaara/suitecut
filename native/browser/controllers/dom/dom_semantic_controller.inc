@@ -29,7 +29,7 @@ void DOMSemanticFinish(const std::shared_ptr<DOMSemanticControls>& state){
       const auto capture=value->GetString("objectId").ToString();ax_captures_.erase(work->owner);state->reference_done(capture);return;
     }
     auto value=result->GetDictionary("result");if(!value||value->GetType("value")!=VTYPE_STRING){AXError(work,"Native semantic snapshot result unavailable");return;}
-    const auto serialized=value->GetString("value").ToString();if(serialized.size()>65536){AXError(work,"Native semantic snapshot exceeds 64 KiB");return;}
+    const auto serialized=value->GetString("value").ToString();if(serialized.size()>16777216){AXError(work,"Native semantic snapshot exceeds 16 MiB");return;}
     // JSON.stringify escapes isolated UTF16. Validate a separate projection,
     // keeping the exact original string for the actual renderer observation.
     auto valid=CefParseJSON(suitecut::StorageJSONValidationProjection(serialized),JSON_PARSER_RFC);if(!valid||valid->GetType()!=VTYPE_LIST){AXError(work,"Invalid native semantic snapshot forest");return;}

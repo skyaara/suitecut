@@ -230,6 +230,33 @@ export const resilience = [
     240,
   ),
   test(
+    'resilience.huge-snapshot',
+    ['resilience', 'snapshot'],
+    async (h) => {
+      // The full Python docs index is 44,000 elements; Playwright snapshots
+      // it whole. suitecut used to stop at 65,536 nodes and 64 levels.
+      const { page } = await h.page()
+      await page.goto(h.fixture.origin + '/resilience/large?rows=10000&longname=1', {
+        timeout: 60000,
+      })
+      const wide = await page.ariaSnapshot({ mode: 'ai', timeout: 90000 })
+      const last = wide.match(/- button "Add product 9999" \[ref=([^\]]+)\]/u)
+      assert(last, 'the last row is missing from the snapshot')
+      // Like Playwright, YAML leaves out names this long; it used to fail the snapshot.
+      assert(wide.includes('- button [ref='), 'the long-named button is missing')
+      await page.getByRef(last[1]).click()
+      await page.goto(h.fixture.origin + '/resilience/large?rows=10&depth=100')
+      const deep = await page.ariaSnapshot({ mode: 'ai', timeout: 60000 })
+      assert(deep.includes('Add product 9'), 'the page nested 100 levels deep is missing')
+      await alive(page)
+      h.observe('snapshot', { chars: wide.length, refs: wide.split('[ref=').length - 1 })
+      h.check(
+        'A 50,000-element page and one nested 100 levels deep snapshot whole and their refs act',
+      )
+    },
+    240,
+  ),
+  test(
     'resilience.trace-large-aria',
     ['resilience', 'artifacts'],
     async (h) => {

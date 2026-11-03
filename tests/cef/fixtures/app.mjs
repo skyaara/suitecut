@@ -122,9 +122,15 @@ export async function createFixture() {
       }
       if (url.pathname === '/resilience/large') {
         const rows = Math.min(Number(url.searchParams.get('rows')) || 1, 20000)
+        // Nesting deeper than 64 levels and a name longer than 64 KiB, as
+        // real pages have.
+        const depth = Math.min(Number(url.searchParams.get('depth')) || 0, 400)
+        const longName = url.searchParams.has('longname')
+          ? `<button aria-label="${'n'.repeat(70000)}">Long</button>`
+          : ''
         response.end(
           shell(
-            `<h1>Catalogue</h1><nav aria-label="Departments">${Array.from({ length: 40 }, (_, i) => `<a href="#d${i}">Department ${i}</a>`).join('')}</nav><table><tbody>${Array.from({ length: rows }, (_, i) => `<tr><td><a href="#p${i}">Product ${i}</a></td><td><button>Add product ${i}</button></td></tr>`).join('')}</tbody></table>`,
+            `${'<div>'.repeat(depth)}<h1>Catalogue</h1>${longName}<nav aria-label="Departments">${Array.from({ length: 40 }, (_, i) => `<a href="#d${i}">Department ${i}</a>`).join('')}</nav><table><tbody>${Array.from({ length: rows }, (_, i) => `<tr><td><a href="#p${i}">Product ${i}</a></td><td><button>Add product ${i}</button></td></tr>`).join('')}</tbody></table>${'</div>'.repeat(depth)}`,
           ),
         )
         return

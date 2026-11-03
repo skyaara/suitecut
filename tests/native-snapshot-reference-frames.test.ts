@@ -79,12 +79,12 @@ describe('native retained frame forest merge', () => {
   it('validates proposed depth and node bounds before mutating an owner record', () => {
     const root: NativeAriaNode = { role: 'generic' }
     let next = root
-    for (let i = 0; i < 64; i++) {
+    for (let i = 0; i < 512; i++) {
       const node: NativeAriaNode = { role: 'generic' }
       next.children = [node]
       next = node
     }
-    for (const child of [[root], Array.from({ length: 65_536 }, () => ({ role: 't' }))]) {
+    for (const child of [[root], Array.from({ length: 1_048_576 }, () => ({ role: 't' }))]) {
       const target = capture(),
         before = JSON.stringify(target)
       expect(() => apply(target, ownerRef, JSON.stringify(child))).toThrow(/depth|record/u)

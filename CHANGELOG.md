@@ -82,6 +82,11 @@
       navigated away while it started, no longer closes the page. It is
       reported as a console error and in diagnostics, as a child frame's
       already was. lobste.rs closed the soak's page this way.
+    - Locators and `ariaSnapshot()` work on pages of up to 1,000,000
+      elements nested up to 512 levels, up from 100,000 elements for every
+      CSS query and 65,536 nodes and 64 levels for snapshots. The full Python
+      docs index, 44,000 elements, used to fail every snapshot. An accessible
+      name over 64 KiB is cut there instead of failing the snapshot.
     - `tests/cef` `resilience.*` cases reproduce each of these volumes
       locally, and `pnpm soak:real-sites` replays the real-site soak that
       found them.

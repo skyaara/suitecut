@@ -35,11 +35,11 @@ void AXRequest(const std::shared_ptr<AXCapture>& work,const std::string& method,
   if(ax_physical_>=64){AXError(work,"Native accessibility physical command capacity exceeded");return;}
   ++ax_physical_;
   auto physical=std::make_shared<AXPhysicalLatch>();physical->release=[this]{--ax_physical_;};
-  const size_t limit=method=="Accessibility.getFullAXTree"?16*1048576:1048576;
+  const size_t limit=method=="Accessibility.getFullAXTree"?16*1048576:method=="Runtime.callFunctionOn"?40*1048576:1048576;
   DevTools(work->owner,method,params,[this,work,method,physical,done=std::move(done)](bool ok,const std::string& json)mutable{
     physical->Settle(); // The real native command has now physically settled.
     if(!AXCurrent(work))return;
-    const size_t limit=method=="Accessibility.getFullAXTree"?16*1048576:1048576;
+    const size_t limit=method=="Accessibility.getFullAXTree"?16*1048576:method=="Runtime.callFunctionOn"?40*1048576:1048576;
     if(json.size()>limit){AXError(work,"Native accessibility capture response byte limit exceeded");return;}
     auto parsed=CefParseJSON(json,JSON_PARSER_RFC);auto result=parsed?parsed->GetDictionary():nullptr;
     if(!ok||!result||result->HasKey("exceptionDetails")){

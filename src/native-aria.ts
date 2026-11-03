@@ -399,7 +399,7 @@ export function matchNativeAriaTree(
     if (mode !== 'contain') continue
     for (const node of scope.nodes) {
       if (node.children?.length) queue.push({ nodes: node.children, depth: scope.depth + 1 })
-      if (queue.length > 65_536) throw new Error('Native ARIA comparison scope limit exceeded')
+      if (queue.length > 1_000_000) throw new Error('Native ARIA comparison scope limit exceeded')
     }
   }
   return false
@@ -431,7 +431,7 @@ export function formatNativeAriaTree(
   while (stack.length) {
     const item = stack.pop()
     if (!item) break
-    if (++visited > 65_536 || item.depth > 64)
+    if (++visited > 1_000_000 || item.depth > 512)
       throw new Error('Native ARIA snapshot traversal exceeds bounds')
     const { node, depth } = item
     const indent = '  '.repeat(depth)
@@ -483,7 +483,7 @@ export function formatNativeAriaTree(
       if (children.length || properties.length) children = [{ role: 'text', text }, ...children]
       else line += `: ${scalar(text)}`
     }
-    if (depth >= (options.depth ?? 64)) children = []
+    if (depth >= (options.depth ?? 512)) children = []
     if (children.length || properties.length) line += ':'
     append(line)
     for (const [key, value] of properties) append(`${indent}  - /${key}: ${scalar(value, true)}`)
@@ -510,9 +510,9 @@ export function formatNativeAriaJSON(
   while (pending.length) {
     const item = pending.pop()
     if (!item) break
-    if (item.depth > 64) throw new Error('Native ARIA JSON depth limit exceeded')
+    if (item.depth > 512) throw new Error('Native ARIA JSON depth limit exceeded')
     for (const actual of item.values) {
-      if (++visited > 65_536) throw new Error('Native ARIA JSON node limit exceeded')
+      if (++visited > 1_000_000) throw new Error('Native ARIA JSON node limit exceeded')
       if (actual.role === 'text') {
         const text = actual.text ?? actual.name ?? ''
         if (item.depth) item.output.push(text)
@@ -719,14 +719,14 @@ export function parseNativeReferenceForest(serialized: string): NativeAriaNode[]
     box: z
       .tuple([z.number().finite(), z.number().finite(), z.number().finite(), z.number().finite()])
       .optional(),
-    children: z.array(z.unknown()).max(65_536).optional(),
+    children: z.array(z.unknown()).max(1_000_000).optional(),
   })
   const result: NativeAriaNode[] = []
   const pending = [
     {
       values: z
         .array(z.unknown())
-        .max(65_536)
+        .max(1_000_000)
         .parse(JSON.parse(serialized) as UntrustedInput),
       output: result,
       depth: 0,
@@ -736,9 +736,9 @@ export function parseNativeReferenceForest(serialized: string): NativeAriaNode[]
   while (pending.length) {
     const level = pending.pop()
     if (!level) break
-    if (level.depth > 64) throw new Error('Native ARIA reference forest exceeds depth bounds')
+    if (level.depth > 512) throw new Error('Native ARIA reference forest exceeds depth bounds')
     for (const value of level.values) {
-      if (++count > 65_536) throw new Error('Native ARIA reference forest exceeds node bounds')
+      if (++count > 1_000_000) throw new Error('Native ARIA reference forest exceeds node bounds')
       const actual = header.parse(value)
       if (actual.role === 'text' && actual.ref !== undefined)
         throw new Error('Native ARIA text records cannot own Element references')
@@ -805,14 +805,14 @@ export function parseNativeAriaJSON(serialized: string): NativeAriaJSONNode[] {
         height: z.number().finite().nonnegative(),
       })
       .optional(),
-    children: z.array(z.unknown()).max(65_536).optional(),
+    children: z.array(z.unknown()).max(1_000_000).optional(),
   })
   const result: NativeAriaJSONNode[] = []
   const pending = [
     {
       values: z
         .array(z.unknown())
-        .max(65_536)
+        .max(1_000_000)
         .parse(JSON.parse(serialized) as UntrustedInput),
       output: result as (NativeAriaJSONNode | string)[],
       depth: 0,
@@ -822,9 +822,9 @@ export function parseNativeAriaJSON(serialized: string): NativeAriaJSONNode[] {
   while (pending.length) {
     const item = pending.pop()
     if (!item) break
-    if (item.depth > 64) throw new Error('Native ARIA JSON exceeds depth bounds')
+    if (item.depth > 512) throw new Error('Native ARIA JSON exceeds depth bounds')
     for (const input of item.values) {
-      if (++visited > 65_536) throw new Error('Native ARIA JSON exceeds node bounds')
+      if (++visited > 1_000_000) throw new Error('Native ARIA JSON exceeds node bounds')
       if (typeof input === 'string') {
         if (!item.depth) throw new Error('Native ARIA JSON root must contain nodes')
         item.output.push(input)

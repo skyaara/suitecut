@@ -349,7 +349,7 @@ describe('authored ARIA declarative grammar and semantic comparison', () => {
     expect(() => parseNativeAriaTemplate('- &self\n  - *self')).toThrow()
     expect(() => parseNativeAriaTemplate('x'.repeat(65537))).toThrow('64 KiB')
     expect(() =>
-      formatNativeAriaTree(Array.from({ length: 65_537 }, () => ({ role: 'img' }))),
+      formatNativeAriaTree(Array.from({ length: 1_000_001 }, () => ({ role: 'img' }))),
     ).toThrow('bounds')
     expect(() => formatNativeAriaTree([{ role: 'text', text: 'x'.repeat(8_388_609) }])).toThrow(
       '8 MiB',

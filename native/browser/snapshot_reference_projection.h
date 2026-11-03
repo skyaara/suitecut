@@ -17,7 +17,7 @@ inline bool SnapshotReferenceForests(const std::string& original,
   if(original.size()>16777216||groups.empty()||groups.size()>32)
     return fail("Native snapshot reference publication exceeds bounds");
   size_t total=0;for(const auto&[prefix,count]:groups){
-    if(prefix.empty()||prefix.size()>160||count>65536||count>65536-total)
+    if(prefix.empty()||prefix.size()>160||count>1048576||count>1048576-total)
       return fail("Native snapshot reference publication exceeds bounds");
     total+=count;
     for(const auto&[other,unused]:groups)if(prefix!=other&&prefix.starts_with(other))
@@ -30,11 +30,11 @@ inline bool SnapshotReferenceForests(const std::string& original,
   std::vector<Level> pending{{forest,0}};size_t visited=0;std::map<std::string,std::set<size_t>> used;
   while(!pending.empty()){
     const auto level=pending.back();pending.pop_back();
-    if(level.depth>64||level.nodes->GetSize()>65536)
+    if(level.depth>512||level.nodes->GetSize()>1048576)
       return fail("Native snapshot reference forest exceeds traversal bounds");
     for(size_t index=0;index<level.nodes->GetSize();++index){
       const auto node=level.nodes->GetDictionary(index);
-      if(!node||++visited>65536||node->GetType("role")!=VTYPE_STRING)
+      if(!node||++visited>1048576||node->GetType("role")!=VTYPE_STRING)
         return fail("Native snapshot reference forest contains an invalid node");
       if(node->HasKey("ref")){
         if(node->GetType("ref")!=VTYPE_STRING)return fail("Native snapshot reference token is invalid");
@@ -68,7 +68,7 @@ inline bool SnapshotReferenceForests(const std::string& original,
   if(original.size()>16777216||groups.empty()||groups.size()>32)
     return fail("Native snapshot reference publication exceeds bounds");
   std::set<std::string> allowed,used;size_t total=0;
-  for(const auto& group:groups){if(group.size()>65536-total)return fail("Native snapshot reference publication exceeds bounds");total+=group.size();
+  for(const auto& group:groups){if(group.size()>1048576-total)return fail("Native snapshot reference publication exceeds bounds");total+=group.size();
     for(const auto& token:group)if(token.empty()||token.size()>192||!allowed.insert(token).second)
       return fail("Native snapshot reference ownership is invalid");}
   const auto value=CefParseJSON(StorageJSONValidationProjection(original),JSON_PARSER_RFC);
@@ -78,10 +78,10 @@ inline bool SnapshotReferenceForests(const std::string& original,
   std::vector<Level> pending{{forest,0}};size_t visited=0;
   while(!pending.empty()){
     const auto level=pending.back();pending.pop_back();
-    if(level.depth>64||level.nodes->GetSize()>65536)return fail("Native snapshot reference forest exceeds traversal bounds");
+    if(level.depth>512||level.nodes->GetSize()>1048576)return fail("Native snapshot reference forest exceeds traversal bounds");
     for(size_t index=0;index<level.nodes->GetSize();++index){
       const auto node=level.nodes->GetDictionary(index);
-      if(!node||++visited>65536||node->GetType("role")!=VTYPE_STRING)return fail("Native snapshot reference forest contains an invalid node");
+      if(!node||++visited>1048576||node->GetType("role")!=VTYPE_STRING)return fail("Native snapshot reference forest contains an invalid node");
       if(node->HasKey("ref")){
         if(node->GetType("ref")!=VTYPE_STRING)return fail("Native snapshot reference token is invalid");
         const auto token=node->GetString("ref").ToString();

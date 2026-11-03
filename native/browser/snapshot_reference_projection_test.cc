@@ -16,7 +16,7 @@ int main(){
   assert(!suitecut::SnapshotReferenceForest(R"([{"role":"button","children":"author"}])",prefix,0,error));
   assert(!suitecut::SnapshotReferenceForest("[17]",prefix,0,error));
   assert(!suitecut::SnapshotReferenceForest("{}",prefix,0,error));
-  std::string nested=R"({"role":"button"})";for(int i=0;i<66;++i)nested="{\"role\":\"group\",\"children\":["+nested+"]}";
+  std::string nested=R"({"role":"button"})";for(int i=0;i<514;++i)nested="{\"role\":\"group\",\"children\":["+nested+"]}";
   assert(!suitecut::SnapshotReferenceForest("["+nested+"]",prefix,0,error));
   assert(!suitecut::SnapshotReferenceForest(std::string(65537,' '),prefix,0,error));
   const std::map<std::string,size_t> aggregate{{prefix,1},{"rActualChild_18_",1}};

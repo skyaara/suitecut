@@ -153,14 +153,14 @@ describe('direct structured native semantic projection', () => {
       JSON.parse(JSON.stringify(formatNativeAriaJSON([{ role: 'textbox', name, text }]))),
     ).toEqual([{ role: 'textbox', name, text }])
     expect(() =>
-      formatNativeAriaJSON(Array.from({ length: 65_537 }, () => ({ role: 'button' }))),
+      formatNativeAriaJSON(Array.from({ length: 1_000_001 }, () => ({ role: 'button' }))),
     ).toThrow(/node limit/u)
     expect(() => formatNativeAriaJSON([{ role: 'textbox', text: 'x'.repeat(16_777_216) }])).toThrow(
       /16 MiB/u,
     )
     const root: NativeAriaNode = { role: 'list' }
     let next = root
-    for (let i = 0; i < 65; i++) {
+    for (let i = 0; i < 513; i++) {
       const child: NativeAriaNode = { role: 'list' }
       next.children = [child]
       next = child

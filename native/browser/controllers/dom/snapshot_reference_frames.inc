@@ -133,7 +133,7 @@ void ReferenceFramesMerge(const std::shared_ptr<SnapshotReferenceFrameBatch>& ba
 void ReferenceFramesPrepared(const std::shared_ptr<SnapshotReferenceFrameBatch>& batch,size_t index){
   if(!ReferenceFrameLive(batch,index))return;
   const auto work=batch->frames[index].work;const auto group=SnapshotReferences().GroupFor(work->ticket);
-  if(!group||group->nodes.size()>65536-batch->nodes){Complete(batch->owner,false,"Native aggregate snapshot node capacity exceeded");return;}
+  if(!group||group->nodes.size()>suitecut::SnapshotReferences::kActiveNodes-batch->nodes){Complete(batch->owner,false,"Native aggregate snapshot node capacity exceeded");return;}
   batch->nodes+=group->nodes.size();const auto references=group->references;
   auto params=CefDictionaryValue::Create();params->SetString("objectId",group->array);params->SetString("objectGroup",group->name);params->SetBool("returnByValue",true);
   params->SetString("functionDeclaration",kSuiteCutSnapshotReferencePublish);auto args=CefListValue::Create();auto arg=CefDictionaryValue::Create();auto tokens=CefListValue::Create();for(size_t i=0;i<references.size();++i)tokens->SetString(i,references[i]);arg->SetList("value",tokens);args->SetDictionary(0,arg);params->SetList("arguments",args);

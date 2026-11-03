@@ -44,13 +44,13 @@ inline constexpr char kSuiteCutDomQuery[] = R"JS(function(steps,start=document,o
   // It is constructed in the utility world, never read from selector IPC data.
   const diagnosticBudget=options.nativeDiagnosticsBudget;
   if(diagnosticBudget!==undefined&&(!diagnosticBudget||!Number.isSafeInteger(diagnosticBudget.remaining)||diagnosticBudget.remaining<0||diagnosticBudget.remaining>50000))throw new Error('Invalid native diagnostic query budget');
-  const tick=()=>{if(++work>20000000||(diagnosticBudget!==undefined&&diagnosticBudget.remaining===0))throw new Error('Native DOM query work limit exceeded');if(diagnosticBudget!==undefined)--diagnosticBudget.remaining;};
+  const tick=()=>{if(++work>200000000||(diagnosticBudget!==undefined&&diagnosticBudget.remaining===0))throw new Error('Native DOM query work limit exceeded');if(diagnosticBudget!==undefined)--diagnosticBudget.remaining;};
   const validating=options.validateOnly===true,validationElement=validating?document.createElement('div'):null;
   const parent=e=>{tick();return e.parentElement||(e.getRootNode().host||null);};
   const children=(root,light=false)=>{tick();return [...(root.children||[]),...(!light&&root.shadowRoot?root.shadowRoot.children:[])];};
   const enumerate=(root,light=false)=>{
     const out=[],stack=children(root,light).reverse();
-    while(stack.length){tick();const e=stack.pop();out.push(e);if(out.length>100000)throw new Error('Native DOM query node limit exceeded');const nested=children(e,light);for(let i=nested.length-1;i>=0;i--)stack.push(nested[i]);}
+    while(stack.length){tick();const e=stack.pop();out.push(e);if(out.length>1000000)throw new Error('Native DOM query node limit exceeded');const nested=children(e,light);for(let i=nested.length-1;i>=0;i--)stack.push(nested[i]);}
     return out;
   };
   const split=(text,commas)=>{
@@ -246,7 +246,7 @@ inline constexpr char kSuiteCutDomQuery[] = R"JS(function(steps,start=document,o
     const save=(entry,full,chunks=[],skip=false)=>{textBytes+=(full.length+chunks.reduce((sum,value)=>sum+value.length,0))*2;if(textBytes>32*1024*1024)throw new Error('Native DOM text byte limit exceeded');memo.set(entry,{full,chunks,skip});};
     while(stack.length){
       tick();const [entry,finished]=stack.pop();if(memo.has(entry))continue;
-      if(++visits>300000)throw new Error('Native DOM text node limit exceeded');
+      if(++visits>3000000)throw new Error('Native DOM text node limit exceeded');
       if(nativeNodeType(entry)===3){save(entry,entry.nodeValue||'');continue;}
       if(nativeNodeType(entry)!==1&&nativeNodeType(entry)!==11){save(entry,'',[],true);continue;}
       if(nativeNodeType(entry)===1&&selectorTextSkipped(entry)){save(entry,'',[],true);continue;}
@@ -311,7 +311,7 @@ inline constexpr char kSuiteCutDomQuery[] = R"JS(function(steps,start=document,o
     const flatParent=entry=>entry.assignedSlot||entry.parentElement||entry.getRootNode().host||null;
     const check=entry=>typeof Element.prototype.checkVisibility!=='function'||Element.prototype.checkVisibility.call(entry,{visibilityProperty:true});
     while(stack.length){
-      tick();const entry=stack.pop();if(seen.has(entry))continue;seen.add(entry);if(++nodes>100000)throw new Error('Native visibility node limit exceeded');
+      tick();const entry=stack.pop();if(seen.has(entry))continue;seen.add(entry);if(++nodes>1000000)throw new Error('Native visibility node limit exceeded');
       if(nativeNodeType(entry)===3){
         let ancestor=flatParent(entry),style=null,depth=0;
         while(ancestor){tick();if(++depth>256)throw new Error('Native visibility ancestor limit exceeded');style=getComputedStyle(ancestor);if(style.visibility==='hidden'||style.visibility==='collapse')break;if(style.display!=='contents')break;ancestor=flatParent(ancestor);}
@@ -322,7 +322,7 @@ inline constexpr char kSuiteCutDomQuery[] = R"JS(function(steps,start=document,o
       if(style.display==='contents'){
         const assigned=entry instanceof HTMLSlotElement?entry.assignedNodes({flatten:true}):null;
         const nested=assigned&&assigned.length?assigned:entry.shadowRoot?entry.shadowRoot.childNodes:entry.childNodes;
-        for(const child of nested){tick();if(stack.length>=100000)throw new Error('Native visibility pending node limit exceeded');stack.push(child);}continue;
+        for(const child of nested){tick();if(stack.length>=1000000)throw new Error('Native visibility pending node limit exceeded');stack.push(child);}continue;
       }
       if(style.visibility==='hidden'||style.visibility==='collapse'||!check(entry))continue;const box=entry.getBoundingClientRect();if(measure(box))return true;
     }
@@ -589,7 +589,7 @@ inline constexpr char kSuiteCutDomQuery[] = R"JS(function(steps,start=document,o
     }else if(step.engine==='custom'){
       if(hiddenStyles)hiddenStyles.clear();
       if(!customEngines.has(step.name)){const registration=options.engines?.[step.name];if(!options.engines||!Object.hasOwn(options.engines,step.name)||!registration||typeof registration.source!=='string')throw new Error('Unknown native selector engine: '+step.name);const factory=(0,eval)('('+registration.source+')');const engine=typeof factory==='function'?factory():factory;if(!engine||typeof engine.query!=='function'||typeof engine.queryAll!=='function')throw new Error('Native selector engine must define query and queryAll');customEngines.set(step.name,engine);}
-      const engine=customEngines.get(step.name),found=new Set();for(const root of roots){const nodes=engine.queryAll(root,step.selector);if(!nodes||typeof nodes[Symbol.iterator]!=='function')throw new Error('Native selector queryAll must return an iterable of elements');for(const node of nodes){tick();if(nativeQueryIntrinsics)nativeQueryIntrinsics.validateCustomNode(node,root);else if(!(node instanceof Element)||nativeOwnerDocument(node)!==(nativeNodeType(root)===9?root:nativeOwnerDocument(root)))throw new Error('Native selector returned an element outside its frame');found.add(node);if(found.size>100000)throw new Error('Native DOM query node limit exceeded');}}roots=[...found];
+      const engine=customEngines.get(step.name),found=new Set();for(const root of roots){const nodes=engine.queryAll(root,step.selector);if(!nodes||typeof nodes[Symbol.iterator]!=='function')throw new Error('Native selector queryAll must return an iterable of elements');for(const node of nodes){tick();if(nativeQueryIntrinsics)nativeQueryIntrinsics.validateCustomNode(node,root);else if(!(node instanceof Element)||nativeOwnerDocument(node)!==(nativeNodeType(root)===9?root:nativeOwnerDocument(root)))throw new Error('Native selector returned an element outside its frame');found.add(node);if(found.size>1000000)throw new Error('Native DOM query node limit exceeded');}}roots=[...found];
       if(hiddenStyles)hiddenStyles.clear();
     }else if(step.engine==='xpath'){
       const found=new Set();for(const root of roots){const expression=nativeNodeType(root)!==9&&step.selector.startsWith('/')?'.'+step.selector:step.selector;let result;try{result=document.evaluate(expression,root,null,XPathResult.ORDERED_NODE_ITERATOR_TYPE);}catch(cause){const original=nativeRegexReplace(nativeRegexReplace(step.selector,/\\/g,'\\\\'),/'/g,"\\'");throw new Error("Invalid XPath selector '"+original+"'",{cause});}let node;while((node=result.iterateNext()))if(nativeNodeType(node)===1)found.add(node);}roots=[...found];
