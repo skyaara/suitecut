@@ -6,6 +6,7 @@ import { races } from './races.mjs'
 import { artifacts } from './artifacts.mjs'
 import { capture } from './capture.mjs'
 import { recording } from './recording.mjs'
+import { resilience } from './resilience.mjs'
 
 export const scenarios = [
   ...application,
@@ -15,4 +16,5 @@ export const scenarios = [
   ...artifacts,
   ...capture,
   ...recording,
+  ...resilience,
 ]

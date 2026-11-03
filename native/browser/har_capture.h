@@ -104,7 +104,7 @@ class NativeHARCapture {
     original.unavailable=data.kind==NativePostData::Kind::Unavailable;original.absent=data.kind==NativePostData::Kind::Absent;
     if(data.kind==NativePostData::Kind::Text){auto rendered=request->GetString("postData").ToString();original.bytes.assign(rendered.begin(),rendered.end());original.present=true;original.text=true;}
     else if(data.kind==NativePostData::Kind::Binary){original.bytes=std::move(data.bytes);original.present=true;}
-    if(original.bytes.size()>16777216-original_bytes_-post_bytes_){original.bytes.clear();original.unavailable=true;original.present=false;}
+    if(original.bytes.size()>kRetainedBytes-original_bytes_-post_bytes_){original.bytes.clear();original.unavailable=true;original.present=false;}
     // Charge additional retained channel-pin string capacities separately from
     // real POST bytes; fixed Original/core objects retain the existing 512 cap.
     original.wire_cost=original.wire_frame.capacity()+original.wire_loader.capacity();
@@ -175,7 +175,7 @@ class NativeHARCapture {
         const auto found=records_.find(key);if(found==records_.end()||found->second->generation!=generation||!found->second->fetching)return;
         auto record=found->second;record->fetching=false;--pending_;
         if(!ok){record->body_error=error;Publish(record);return;}
-        if(bytes.size()>2097152||bytes.size()>16777216-body_bytes_){record->body_error="Actual response body exceeds native HAR retained-byte limit";Publish(record);return;}
+        if(bytes.size()>kBodyBytes||bytes.size()>kRetainedBytes-body_bytes_){record->body_error="Actual response body exceeds native HAR retained-byte limit";Publish(record);return;}
         record->body=std::move(bytes);record->body_available=true;body_bytes_+=record->body.size();Publish(record);
       });return true;
   }
@@ -190,7 +190,7 @@ class NativeHARCapture {
       *stored=true;const auto record=weak.lock();const auto found=records_.find(key);
       if(!record||found==records_.end()||found->second!=record||record->generation!=generation)return;
       post_bytes_-=record->post.size();Bytes().swap(record->post);record->post_available=false;record->post_absent=false;record->post_unavailable=true;
-      if(!available||bytes.size()>2097152||bytes.size()>16777216-post_bytes_-original_bytes_)return;
+      if(!available||bytes.size()>kBodyBytes||bytes.size()>kRetainedBytes-post_bytes_-original_bytes_)return;
       record->post=bytes;record->post_available=true;record->post_unavailable=false;record->post_text=text;post_bytes_+=record->post.size();
     };
     publication.receipt=[this,alive=alive_,physical=physical_,weak,key,generation,context,settled]{
@@ -235,7 +235,7 @@ class NativeHARCapture {
   static std::string Json(Dict dict){auto value=CefValue::Create();value->SetDictionary(dict->Copy(false));return CefWriteJSON(value,JSON_WRITER_DEFAULT);}
   // Playwright keeps a whole HAR in memory too; these only bound a recording
   // that runs for hours, and stay well inside the 192 MiB export payload.
-  static constexpr size_t kRecords=16384,kMetadataBytes=64*1048576;
+  static constexpr size_t kRecords=16384,kMetadataBytes=64*1048576,kBodyBytes=64*1048576,kRetainedBytes=512*1048576;
   bool Budget(Record&record){const auto cost=Json(record.request).size()+(record.response?Json(record.response).size():0)+640+record.wire_id.capacity()+record.wire_frame.capacity()+record.wire_loader.capacity()+(record.wire_coding?record.wire_coding->capacity():0);if(cost>kMetadataBytes-(metadata_bytes_-record.cost))return false;metadata_bytes_=metadata_bytes_-record.cost+cost;record.cost=cost;return true;}
   static std::string Date(double ms){const auto whole=static_cast<time_t>(ms/1000);std::tm utc{};
 #ifdef _WIN32

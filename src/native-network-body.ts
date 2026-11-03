@@ -5,9 +5,20 @@ import * as z from 'zod'
 
 import { type UntrustedInput } from './untrusted.js'
 
-const MAX_BODY = 2 * 1024 * 1024
-const MAX_RETAINED = 16 * 1024 * 1024
+// Bodies are as large as the page sends; these only bound memory. A body that
+// doesn't fit is dropped and reads as unavailable, as an evicted one does.
+const MAX_BODY = 64 * 1024 * 1024
+const MAX_RETAINED = 256 * 1024 * 1024
 const MAX_OWNERS = 128
+const MAX_PROCESS_RETAINED = 1024 * 1024 * 1024
+const MAX_PROCESS_OWNERS = 1024
+export const NATIVE_NETWORK_BODY_LIMITS = {
+  body: MAX_BODY,
+  retained: MAX_RETAINED,
+  owners: MAX_OWNERS,
+  processRetained: MAX_PROCESS_RETAINED,
+  processOwners: MAX_PROCESS_OWNERS,
+} as const
 const MAX_CHUNK = 24 * 1024
 const BodyPacket = z.strictObject({
   bodyId: z.string().regex(/^[1-9][0-9]{0,19}$/u),
@@ -33,7 +44,11 @@ export class NativeNetworkBodyArchive {
     return ++this.serial
   }
   reserve(bytes: number): boolean {
-    if (this.pendingOwners >= MAX_OWNERS || bytes > MAX_RETAINED - this.pendingBytes) return false
+    if (
+      this.pendingOwners >= MAX_PROCESS_OWNERS ||
+      bytes > MAX_PROCESS_RETAINED - this.pendingBytes
+    )
+      return false
     ++this.pendingOwners
     this.pendingBytes += bytes
     return true
@@ -84,8 +99,10 @@ export class NativeNetworkBodyArchive {
 export class NativeNetworkBodyReceiver {
   private readonly owners = new Map<string, BodyOwner>()
   private readonly consumed = new Map<string, WeakRef<Buffer>>()
+  private readonly dropped = new Map<string, { offset: number; totalBytes: number }>()
   private readonly scope: number
   private retained = 0
+  private droppedBodies = 0
   private closed = false
   constructor(
     private readonly acknowledge: NativeNetworkBodyAck,
@@ -94,8 +111,12 @@ export class NativeNetworkBodyReceiver {
   ) {
     this.scope = archive.scope()
   }
-  diagnostics(): { owners: number; retainedBytes: number } {
-    return { owners: this.owners.size, retainedBytes: this.retained }
+  diagnostics(): { owners: number; retainedBytes: number; droppedBodies: number } {
+    return {
+      owners: this.owners.size,
+      retainedBytes: this.retained,
+      droppedBodies: this.droppedBodies,
+    }
   }
   archiveDiagnostics(): { bodies: number; retainedBytes: number } {
     return this.archive.diagnostics(this.scope)
@@ -113,20 +134,33 @@ export class NativeNetworkBodyReceiver {
       }
       this.owners.delete(info.bodyId)
       this.consumed.delete(info.bodyId)
+      this.dropped.delete(info.bodyId)
       this.archive.remove(this.scope, info.bodyId)
       return
     }
     if (chunk.length > MAX_CHUNK) throw new Error('Native network body chunk exceeds 24 KiB')
+    if (this.skip(info, chunk)) return
     let owner = this.owners.get(info.bodyId)
     if (!owner) {
       if (info.offset || this.consumed.has(info.bodyId))
         throw new Error('Native network body transfer starts at an invalid offset')
       if (chunk.length > info.totalBytes || (!chunk.length && info.totalBytes !== 0))
         throw new Error('Native network body transfer offset or size mismatch')
-      if (this.owners.size >= MAX_OWNERS || info.totalBytes > MAX_RETAINED - this.retained)
-        throw new Error('Native network body receiver capacity exceeded')
-      if (!this.archive.reserve(info.totalBytes))
-        throw new Error('Native process network body receiver capacity exceeded')
+      if (
+        this.owners.size >= MAX_OWNERS ||
+        info.totalBytes > MAX_RETAINED - this.retained ||
+        !this.archive.reserve(info.totalBytes)
+      ) {
+        ++this.droppedBodies
+        while (this.dropped.size >= 4096) {
+          const oldest = this.dropped.keys().next().value
+          if (oldest === undefined) break
+          this.dropped.delete(oldest)
+        }
+        this.dropped.set(info.bodyId, { offset: 0, totalBytes: info.totalBytes })
+        this.skip(info, chunk)
+        return
+      }
       owner = { bytes: Buffer.allocUnsafe(info.totalBytes), offset: 0, ready: false }
       this.owners.set(info.bodyId, owner)
       this.retained += info.totalBytes
@@ -145,6 +179,23 @@ export class NativeNetworkBodyReceiver {
       owner.ready = true
       this.sendAcknowledgment(info.bodyId, 'received')
     }
+  }
+  /** Follows a dropped body to its end so native still gets its receipt. */
+  private skip(info: z.output<typeof BodyPacket>, chunk: Buffer): boolean {
+    const dropped = this.dropped.get(info.bodyId)
+    if (!dropped) return false
+    if (
+      dropped.totalBytes !== info.totalBytes ||
+      dropped.offset !== info.offset ||
+      chunk.length > dropped.totalBytes - dropped.offset
+    )
+      throw new Error('Native network body transfer offset or size mismatch')
+    dropped.offset += chunk.length
+    if (dropped.offset === dropped.totalBytes) {
+      this.dropped.delete(info.bodyId)
+      this.sendAcknowledgment(info.bodyId, 'received')
+    }
+    return true
   }
   consume(bodyId: string): void {
     if (this.owners.has(bodyId)) this.take(bodyId)

@@ -10,7 +10,9 @@ namespace suitecut {
 // bytes; the archive is readable by standard ZIP tools without a custom codec.
 class TraceArchive {
  public:
-  static constexpr size_t kEntries=4096,kEntryBytes=32*1024*1024,kBytes=128*1024*1024;
+  // Archives are written to disk. 65,535 is ZIP32's entry limit; the byte
+  // bounds only stop one archive from exhausting memory.
+  static constexpr size_t kEntries=65535,kEntryBytes=64*1024*1024,kBytes=1024*1024*1024;
   static bool ValidName(const std::string& name);
   bool Add(std::string name,std::vector<uint8_t> bytes,std::string& error);
   bool AddText(std::string name,const std::string& text,std::string& error);

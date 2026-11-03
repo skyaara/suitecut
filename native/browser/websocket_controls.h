@@ -18,6 +18,8 @@ namespace suitecut {
 // browser sockets; routing requires a separate native transport owner.
 class NativeWebSocketControls {
  public:
+  // Frame payloads travel in the packet's binary data, not its JSON header.
+  static constexpr size_t kFrameBytes=16*1048576;
   using Dict=CefRefPtr<CefDictionaryValue>;
   using Bytes=std::vector<uint8_t>;
   using Emit=std::function<bool(Dict,const Bytes&)>;
@@ -49,17 +51,18 @@ class NativeWebSocketControls {
       if(opcode!=1&&opcode!=2)return;
       if(frame->GetType("payloadData")!=VTYPE_STRING){Drop("Invalid native WebSocket payload");return;}
       auto rendered=frame->GetString("payloadData").ToString();Bytes bytes;bool truncated=false;
-      // A frame over 2 MiB keeps its first 2 MiB and is marked truncated.
-      if(opcode==1){if(rendered.size()>2097152){size_t end=2097152;while(end&&(static_cast<unsigned char>(rendered[end])&0xC0)==0x80)--end;rendered.resize(end);truncated=true;}bytes.assign(rendered.begin(),rendered.end());}
+      // Chrome delivers whole frames; one over 16 MiB keeps its first 16 MiB
+      // and is marked truncated.
+      if(opcode==1){if(rendered.size()>kFrameBytes){size_t end=kFrameBytes;while(end&&(static_cast<unsigned char>(rendered[end])&0xC0)==0x80)--end;rendered.resize(end);truncated=true;}bytes.assign(rendered.begin(),rendered.end());}
       else {
-        if(rendered.size()>2796200){rendered.resize(2796200);truncated=true;}
+        if(rendered.size()>(kFrameBytes+2)/3*4){rendered.resize((kFrameBytes+2)/3*4);truncated=true;}
         if(!rendered.empty()){
           auto decoded=CefBase64Decode(rendered);
-          if(!decoded||decoded->GetSize()>2097152){Drop("Invalid native WebSocket binary frame");return;}
+          if(!decoded||decoded->GetSize()>kFrameBytes){Drop("Invalid native WebSocket binary frame");return;}
           bytes.resize(decoded->GetSize());decoded->GetData(bytes.data(),bytes.size(),0);
         }
       }
-      auto event=Base(socket,method=="Network.webSocketFrameSent"?"framesent":"framereceived");event->SetInt("opcode",opcode);if(truncated){event->SetBool("truncated",true);Drop("Native WebSocket frame exceeds 2 MiB");}Publish(event,std::move(bytes),now);return;
+      auto event=Base(socket,method=="Network.webSocketFrameSent"?"framesent":"framereceived");event->SetInt("opcode",opcode);if(truncated){event->SetBool("truncated",true);Drop("Native WebSocket frame exceeds 16 MiB");}Publish(event,std::move(bytes),now);return;
     }
     if(method=="Network.webSocketFrameError") {
       auto event=Base(socket,"socketerror");auto error=params->GetString("errorMessage").ToString();
@@ -139,9 +142,9 @@ class NativeWebSocketControls {
     if(disposed_)return;
     if(sequence_>=9007199254740991ULL){Fail("Native WebSocket sequence exhausted");return;}
     event->SetDouble("sequence",double(++sequence_));auto wrapper=CefValue::Create();wrapper->SetDictionary(event->Copy(false));const auto cost=bytes.size()+CefWriteJSON(wrapper,JSON_WRITER_DEFAULT).length();
-    if(pending_.size()>=128||cost>16777216-pending_bytes_){Drop("Native WebSocket output ownership capacity exceeded");return;}
-    while(!journal_.empty()&&(cost>33554432-global_retained_bytes_||global_records_>=1024)){journal_bytes_-=journal_.front()->cost;journal_.pop_front();}
-    if(cost>33554432-global_retained_bytes_||global_records_>=1024){Drop("Native WebSocket global retained-byte capacity exceeded");return;}
+    if(pending_.size()>=128||cost>4*kFrameBytes-pending_bytes_){Drop("Native WebSocket output ownership capacity exceeded");return;}
+    while(!journal_.empty()&&(cost>8*kFrameBytes-global_retained_bytes_||global_records_>=1024)){journal_bytes_-=journal_.front()->cost;journal_.pop_front();}
+    if(cost>8*kFrameBytes-global_retained_bytes_||global_records_>=1024){Drop("Native WebSocket global retained-byte capacity exceeded");return;}
     auto record=std::make_shared<Record>();record->event=event;record->bytes=std::move(bytes);record->cost=cost;record->deadline=now+30000;global_retained_bytes_+=cost;++global_records_;
     while(!journal_.empty()&&(journal_.size()>=512||cost>4194304-journal_bytes_)){journal_bytes_-=journal_.front()->cost;journal_.pop_front();}
     if(cost<=4194304){journal_.push_back(record);journal_bytes_+=cost;}

@@ -96,6 +96,39 @@ export async function createFixture() {
         if (!response.destroyed) response.end(body ?? 'released:' + name)
         return
       }
+      // Real-site volumes, reproduced locally: see scenarios/resilience.mjs.
+      if (url.pathname === '/resilience/sink') {
+        const chunks = []
+        for await (const chunk of request) chunks.push(chunk)
+        const body = Buffer.concat(chunks)
+        json({ bytes: body.length, sha256: digest(body) })
+        return
+      }
+      if (url.pathname === '/resilience/item') {
+        json({ item: Number(url.searchParams.get('n')) })
+        return
+      }
+      if (url.pathname === '/resilience/frames') {
+        const count = Math.min(Number(url.searchParams.get('n')) || 1, 2000)
+        response.end(
+          shell(
+            Array.from(
+              { length: count },
+              (_, i) => `<iframe srcdoc="<p>frame ${i}</p>" style="width:4px;height:4px"></iframe>`,
+            ).join(''),
+          ),
+        )
+        return
+      }
+      if (url.pathname === '/resilience/large') {
+        const rows = Math.min(Number(url.searchParams.get('rows')) || 1, 20000)
+        response.end(
+          shell(
+            `<h1>Catalogue</h1><nav aria-label="Departments">${Array.from({ length: 40 }, (_, i) => `<a href="#d${i}">Department ${i}</a>`).join('')}</nav><table><tbody>${Array.from({ length: rows }, (_, i) => `<tr><td><a href="#p${i}">Product ${i}</a></td><td><button>Add product ${i}</button></td></tr>`).join('')}</tbody></table>`,
+          ),
+        )
+        return
+      }
       if (url.pathname === '/redirect') {
         response.writeHead(302, { Location: '/app' })
         response.end()
@@ -270,6 +303,56 @@ export async function createFixture() {
       if (!response.headersSent) response.writeHead(500)
       response.end('Fixture error')
     }
+  })
+  // A minimal WebSocket endpoint: on connect it sends one text and one binary
+  // frame of the requested size, then echoes the size of each message it gets.
+  server.on('upgrade', (request, socket) => {
+    const url = new URL(request.url, origin)
+    if (url.pathname !== '/resilience/ws') return socket.destroy()
+    const accept = createHash('sha1')
+      .update(request.headers['sec-websocket-key'] + '258EAFA5-E914-47DA-95CA-C5AB0DC85B11')
+      .digest('base64')
+    socket.write(
+      `HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Accept: ${accept}\r\n\r\n`,
+    )
+    const frame = (opcode, payload) => {
+      const head =
+        payload.length < 126 ? Buffer.from([0x80 | opcode, payload.length]) : Buffer.alloc(10)
+      if (payload.length >= 126) {
+        head[0] = 0x80 | opcode
+        head[1] = 127
+        head.writeBigUInt64BE(BigInt(payload.length), 2)
+      }
+      socket.write(Buffer.concat([head, payload]))
+    }
+    const bytes = Math.min(Number(url.searchParams.get('bytes')) || 16, 16 * 1024 * 1024)
+    frame(1, Buffer.from('t'.repeat(bytes)))
+    frame(2, Buffer.alloc(bytes, 0xab))
+    // Chrome sends a large message as fragments; echo the whole message's size.
+    let pending = Buffer.alloc(0),
+      message = 0
+    socket.on('data', (chunk) => {
+      pending = Buffer.concat([pending, chunk])
+      for (;;) {
+        if (pending.length < 2) return
+        let length = pending[1] & 127,
+          offset = 2
+        if (length === 126) [length, offset] = [pending.readUInt16BE(2), 4]
+        else if (length === 127) [length, offset] = [Number(pending.readBigUInt64BE(2)), 10]
+        if (pending.length < offset + 4 + length) return
+        const opcode = pending[0] & 15,
+          fin = pending[0] & 0x80
+        pending = pending.subarray(offset + 4 + length)
+        if (opcode === 8) return socket.end()
+        message += length
+        if (!fin) continue
+        frame(1, Buffer.from(String(message)))
+        message = 0
+      }
+    })
+    sockets.add(socket)
+    socket.on('error', () => undefined)
+    socket.on('close', () => sockets.delete(socket))
   })
   server.maxConnections = 64
   server.on('connection', (socket) => {

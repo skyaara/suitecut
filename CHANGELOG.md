@@ -22,10 +22,10 @@
     worker that has gone now retires that session. Before, it ended the
     browser.
   - Content a site controls is clipped or dropped instead of failing:
-    - WebSocket frames over 2 MiB keep their first 2 MiB and are marked
+    - WebSocket frames over 16 MiB keep their first 16 MiB and are marked
       `truncated`.
-    - Console messages over 1 MB and source URLs over 8 KiB are clipped.
-    - Exceptions over 1 MiB and bursts of page errors are dropped.
+    - Console messages over 8 MiB and source URLs over 8 KiB are clipped.
+    - Exceptions over 24 MiB and bursts of page errors are dropped.
     - Requests past 8,192 open ones push out the oldest.
     - Too many sockets or auth challenges are no longer tracked; a challenge
       that can't be tracked is answered with CancelAuth.
@@ -53,6 +53,29 @@
     - Trace aria snapshots can be 8 MiB, up from 64 KiB, so busy pages keep
       them. A snapshot that can't be taken is skipped instead of failing the
       whole trace.
+  - Deliver what Chrome and Playwright deliver instead of clipping it at
+    suitecut's own limits. The limits left only bound memory;
+    `native/browser/LIMITS.md` lists each one still to raise and how a page
+    reaches it.
+    - WebSocket frames up to 16 MiB arrive whole, up from 2 MiB, and so do
+      `waitForEvent` predicates on them. A frame over 2 MiB used to end the
+      browser, because the host rejected its `truncated` marker.
+    - Console messages up to 8 MiB and page errors up to 24 MiB arrive whole,
+      up from 1 MB and 1 MiB. A page error's description splits into `name`
+      and `message` as in Playwright.
+    - `request.postData()` returns bodies up to 64 MiB, up from 2 MiB. HAR
+      recordings keep request and response bodies up to 64 MiB, and 512 MiB
+      of them in all, up from 2 MiB and 16 MiB.
+    - HAR files hold 65,535 entries and 256 MiB, and trace archives 65,535
+      entries and 1 GiB, up from 4,096 entries and 32 MiB and 128 MiB.
+    - Event predicates, as in `waitForResponse(fn)`, read from a journal of
+      65,536 page events, up from 128. On a busy page they failed with
+      "event journal cursor expired" while the host checked one response.
+    - A request body the host has no room for reads as unavailable instead of
+      ending the browser.
+    - `tests/cef` `resilience.*` cases reproduce each of these volumes
+      locally, and `pnpm soak:real-sites` replays the real-site soak that
+      found them.
 - Stop an unwatched live viewer from slowing the browser down. A viewer
   subscribed to every frame for as long as it was open, so on an animated page
   the browser copied each paint and the host read it even with nobody

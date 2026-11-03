@@ -28,7 +28,7 @@ describe('native page error metadata', () => {
     expect(result.frame).toEqual(frame)
     expect(createNativePageError(result).name).toHaveLength(1024)
     expect(() =>
-      NativePageErrorInfoSchema.parse({ ...source, name: 'K'.repeat(1_000_001) }),
+      NativePageErrorInfoSchema.parse({ ...source, name: 'K'.repeat(8_388_609) }),
     ).toThrow()
   })
 })

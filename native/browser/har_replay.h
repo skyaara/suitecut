@@ -20,6 +20,7 @@ namespace suitecut {
 class NativeHARReplay {
  public:
   using Dict=CefRefPtr<CefDictionaryValue>;
+  static constexpr size_t kBodyBytes=64*1048576;
   struct Match {int status=0;std::string status_text;std::vector<std::pair<std::string,std::string>>headers;std::vector<uint8_t>body;};
   bool Load(Dict archive,std::string&error) {
     auto log=archive?archive->GetDictionary("log"):nullptr;auto entries=log?log->GetList("entries"):nullptr;
@@ -47,7 +48,7 @@ class NativeHARReplay {
       cost+=entry.url.size()+entry.method.size()+entry.post.size()+entry.match.body.size()+entry.match.status_text.size();
       for(const auto&[name,value]:entry.headers)cost+=name.size()+value.size();
       for(const auto&[name,value]:entry.match.headers)cost+=name.size()+value.size();
-      if(cost>32*1048576){error="Native HAR replay retained-byte limit exceeded";return false;}parsed.push_back(std::move(entry));
+      if(cost>512*1048576){error="Native HAR replay retained-byte limit exceeded";return false;}parsed.push_back(std::move(entry));
     }
     // Index existing entries rather than duplicating URLs, methods or bodies.
     // Original entry order is the final key, preserving first-match score ties.
@@ -110,10 +111,10 @@ class NativeHARReplay {
   static bool Bytes(Dict object,const char*encoding,std::vector<uint8_t>&bytes,std::string&error){
     if(object->GetType("text")!=VTYPE_STRING){error="Native HAR body text is absent";return false;}
     const auto text=object->GetString("text").ToString();const auto format=object->GetString(encoding).ToString();
-    if(format.empty()){if(text.size()>2097152){error="Native HAR body exceeds 2 MiB";return false;}bytes.assign(text.begin(),text.end());return true;}
-    if(format!="base64"||text.size()>2796204){error="Unsupported or excessive native HAR body encoding";return false;}
+    if(format.empty()){if(text.size()>kBodyBytes){error="Native HAR body exceeds 64 MiB";return false;}bytes.assign(text.begin(),text.end());return true;}
+    if(format!="base64"||text.size()>(kBodyBytes+2)/3*4){error="Unsupported or excessive native HAR body encoding";return false;}
     if(text.empty())return true;
-    const auto decoded=CefBase64Decode(text);if(!decoded||decoded->GetSize()>2097152){error="Invalid native HAR base64 body";return false;}
+    const auto decoded=CefBase64Decode(text);if(!decoded||decoded->GetSize()>kBodyBytes){error="Invalid native HAR base64 body";return false;}
     bytes.resize(decoded->GetSize());decoded->GetData(bytes.data(),bytes.size(),0);
     if(CefBase64Encode(bytes.data(),bytes.size())!=text){error="Invalid native HAR base64 body";return false;}return true;
   }

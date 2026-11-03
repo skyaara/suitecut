@@ -12,10 +12,11 @@
 // journal remain with Source's native scheduler.
 class SuiteCutEventPredicateController {
  public:
-  static constexpr std::size_t kCapacity=64, kMaxPayload=1048576, kPendingBytes=4*1048576;
-  // A genuine 2MiB WebSocket frame expands to base64 in its predicate snapshot.
-  // Other event callers keep the original1MiB bound; total ownership stays4MiB.
-  static constexpr std::size_t kWebSocketPayload=3*1048576;
+  // Console messages and page errors reach a predicate as whole as they reach
+  // listeners; a whole 16 MiB WebSocket frame expands to base64. The pending
+  // budget only bounds memory across every page's predicates.
+  static constexpr std::size_t kCapacity=64, kMaxPayload=24*1048576, kPendingBytes=4*kMaxPayload;
+  static constexpr std::size_t kWebSocketPayload=30*1048576;
   static constexpr std::uint64_t kMaxWireInteger=9007199254740991ULL;
   struct Scope { int owner; std::uint64_t generation; };
   struct Candidate { std::uint64_t token,sequence; std::string client_token,event,json; };

@@ -18,6 +18,11 @@ export const MAX_NATIVE_RESPONSE_PAYLOAD = 192 * 1024 * 1024
 // request event carries the URL the page actually used. Headers stay bounded
 // but leave room for that URL beside the event's other metadata.
 export const MAX_OBSERVED_DATA_URL = 1_048_576
+// Console messages, page errors and network records are as large as the page
+// makes them; this stays under MAX_NATIVE_PAYLOAD.
+export const MAX_NATIVE_EVENT_PAYLOAD = 24 * 1_048_576
+/** A 16 MiB WebSocket frame, base64 encoded, with its socket info. */
+export const MAX_NATIVE_SOCKET_PREDICATE_PAYLOAD = 30 * 1_048_576
 export const MAX_OBSERVED_URL = 2_097_152
 const MAX_HEADER = 4 * MAX_OBSERVED_URL
 const MAX_REENTRANT_CHUNKS = 4096
@@ -77,7 +82,7 @@ export const NativeConsoleInfoSchema = z.strictObject({
   worker: z.string().min(1).max(128).optional(),
   workerInfo: NativeWorkerInfoSchema.optional(),
   type: z.string().min(1).max(64),
-  text: z.string().max(1_000_000),
+  text: z.string().max(8_388_608),
   timestamp: z.number().finite().nonnegative().optional(),
   arguments: z
     .array(
@@ -364,7 +369,7 @@ export const NativePacketSchema = z.discriminatedUnion('type', [
   z.strictObject({
     ...base,
     type: z.literal('websocket'),
-    bytes: z.number().int().min(0).max(2_097_152),
+    bytes: z.number().int().min(0).max(16_777_216),
     socket: NativeWebSocketInfoSchema,
   }),
   z.strictObject({ ...base, type: z.literal('pageerror'), sequence: z.number().int().positive() }),
@@ -377,8 +382,8 @@ export const NativePacketSchema = z.discriminatedUnion('type', [
     ...base,
     type: z.literal('networkbody'),
     bodyId: z.string().regex(/^[1-9][0-9]{0,19}$/u),
-    offset: z.number().int().min(0).max(2_097_152),
-    totalBytes: z.number().int().min(0).max(2_097_152),
+    offset: z.number().int().min(0).max(67_108_864),
+    totalBytes: z.number().int().min(0).max(67_108_864),
     canceled: z.boolean().optional(),
   }),
   z.strictObject({ ...base, type: z.literal('httplookup') }),
@@ -410,8 +415,8 @@ export const NativePacketSchema = z.discriminatedUnion('type', [
       .regex(/^broker:[1-9][0-9]*$/u)
       .max(128),
     bodyId: z.string().regex(/^[1-9][0-9]{0,19}$/u),
-    offset: z.number().int().min(0).max(2_097_152),
-    totalBytes: z.number().int().min(0).max(2_097_152),
+    offset: z.number().int().min(0).max(67_108_864),
+    totalBytes: z.number().int().min(0).max(67_108_864),
     canceled: z.boolean().optional(),
   }),
   z.strictObject({
@@ -632,14 +637,17 @@ export class NativePacketDecoder {
         header.type === 'contextroute' ||
         header.type === 'dialog' ||
         header.type === 'binding') &&
-      (header.bytes === 0 || header.bytes > 1_048_576)
+      (header.bytes === 0 || header.bytes > MAX_NATIVE_EVENT_PAYLOAD)
     )
       throw new Error('Invalid native console payload length')
     if (header.type === 'eventpredicate') {
       const socket = ['websocket', 'framesent', 'framereceived', 'socketerror', 'close'].includes(
         header.event,
       )
-      if (header.bytes === 0 || header.bytes > (socket ? 3_145_728 : 1_048_576))
+      if (
+        header.bytes === 0 ||
+        header.bytes > (socket ? MAX_NATIVE_SOCKET_PREDICATE_PAYLOAD : MAX_NATIVE_EVENT_PAYLOAD)
+      )
         throw new Error('Invalid native event predicate payload length')
     }
     if (header.bytes === 0) {

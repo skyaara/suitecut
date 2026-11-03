@@ -26,8 +26,11 @@ auto Source::FrameJson(const FrameState& frame) -> Dict {
 
 auto Source::JournalEvent(uint64_t sequence, const std::string& event, const std::string& json)
     -> void {
-  while (!event_history_.empty() &&
-         (event_history_.size() >= 128 || event_history_bytes_ + json.size() > 4 * 1048576)) {
+  // waitForEvent predicates read this journal from their cursor. A busy page
+  // fires thousands of network events while one predicate round-trips to the
+  // host, so it holds far more than that; the bounds only cap memory.
+  while (!event_history_.empty() && (event_history_.size() >= 65536 ||
+                                     event_history_bytes_ + json.size() > 64 * 1048576)) {
     event_history_bytes_ -= event_history_.front().json.size();
     event_history_.pop_front();
   }

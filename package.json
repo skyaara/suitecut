@@ -167,6 +167,7 @@
     "test:native:cookies": "pnpm build && node scripts/verify-native-partitioned-cookies.mjs",
     "test:native:recovery": "pnpm build && node scripts/verify-native-page-recovery.mjs && node scripts/verify-native-page-recovery-deadlines.mjs && node scripts/verify-native-page-recovery-media.mjs",
     "test:cef": "python3 tests/cef",
+    "soak:real-sites": "tsx examples/real-sites/soak.ts",
     "test:cef:list": "python3 tests/cef --list",
     "test:cef:unit": "python3 -m unittest discover -s tests/cef/unit -p 'test_*.py'",
     "check:lfs": "node scripts/check-lfs-assets.mjs"

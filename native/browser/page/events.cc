@@ -8,7 +8,11 @@ auto Source::ToolEvent(const std::string& method, const void* params, size_t siz
       native_virtual_time_->BudgetExpired(Now());
     return;
   }
-  if (size > 1048576 && method == "Fetch.requestPaused") {
+  // Chrome hands DevTools whole console messages, exceptions and paused
+  // requests; each subsystem below bounds what it keeps. This only rejects
+  // events no page can reasonably produce.
+  constexpr size_t kMaxEvent = 32 * 1048576;
+  if (size > kMaxEvent && method == "Fetch.requestPaused") {
     auto parsed =
         CefParseJSON(std::string(static_cast<const char*>(params), size), JSON_PARSER_RFC);
     if (network_)
@@ -17,12 +21,12 @@ auto Source::ToolEvent(const std::string& method, const void* params, size_t siz
       Error("Native interception controller unavailable");
     return;
   }
-  if (method == "Runtime.exceptionThrown" && size > 1048576) {
-    // Like any other event over 1 MiB, an oversized exception is dropped.
+  if (method == "Runtime.exceptionThrown" && size > kMaxEvent) {
+    // Like any other event over 32 MiB, an oversized exception is dropped.
     Degraded("Native page error event limit exceeded");
     return;
   }
-  if (size > 1048576 ||
+  if (size > kMaxEvent ||
       (method != "Page.frameAttached" && method != "Page.frameNavigated" &&
        method != "Page.frameDetached" && method != "Page.navigatedWithinDocument" &&
        method != "Page.frameRequestedNavigation" && method != "Page.frameStartedNavigating" &&

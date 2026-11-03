@@ -36,14 +36,14 @@ class NativeResponseBodyReads {
       if(!reply)return;
       if(deadline&&now_()>=deadline){reply(false,{},"Native original response-body deadline exceeded");return;}
       if(!ok){reply(false,{},json.empty()?"Actual native response body is unavailable":json.substr(0,8192));return;}
-      if(json.size()>16*1048576){reply(false,{},"Native response body metadata exceeds limit");return;}
+      if(json.size()>96*1048576){reply(false,{},"Native response body metadata exceeds limit");return;}
       const auto parsed=CefParseJSON(json,JSON_PARSER_RFC);const auto body=parsed?parsed->GetDictionary():nullptr;
       if(!body||body->GetType("body")!=VTYPE_STRING||body->GetType("base64Encoded")!=VTYPE_BOOL){reply(false,{},"Invalid actual response-body metadata");return;}
       const auto text=body->GetString("body").ToString();Bytes bytes;
       if(body->GetBool("base64Encoded")){
-        if(text.size()>2796204){reply(false,{},"Actual response body exceeds 2 MiB");return;}
-        if(!text.empty()){const auto decoded=CefBase64Decode(text);if(!decoded||decoded->GetSize()>2097152){reply(false,{},"Invalid or excessive actual response-body bytes");return;}bytes.resize(decoded->GetSize());decoded->GetData(bytes.data(),bytes.size(),0);}
-      }else{if(text.size()>2097152){reply(false,{},"Actual response body exceeds 2 MiB");return;}bytes.assign(text.begin(),text.end());}
+        if(text.size()>(64*1048576+2)/3*4){reply(false,{},"Actual response body exceeds 64 MiB");return;}
+        if(!text.empty()){const auto decoded=CefBase64Decode(text);if(!decoded||decoded->GetSize()>64*1048576){reply(false,{},"Invalid or excessive actual response-body bytes");return;}bytes.resize(decoded->GetSize());decoded->GetData(bytes.data(),bytes.size(),0);}
+      }else{if(text.size()>64*1048576){reply(false,{},"Actual response body exceeds 64 MiB");return;}bytes.assign(text.begin(),text.end());}
       reply(true,std::move(bytes),"");
     });
     if(!closed_&&!reads_.empty())wake_();

@@ -1,0 +1,208 @@
+// SPDX-License-Identifier: MIT
+// Volumes real sites produce, reproduced locally. Each one used to close the
+// page or the browser through suitecut's own bookkeeping while Chrome loaded
+// the same page fine (see examples/real-sites/soak.ts). Chrome and Playwright
+// deliver all of it; so must suitecut, or at least keep the page alive.
+import assert from 'node:assert/strict'
+import { createHash } from 'node:crypto'
+import { readFile } from 'node:fs/promises'
+import { join } from 'node:path'
+
+import { test } from './helpers.mjs'
+
+const alive = async (page) => {
+  assert.equal(page.isClosed(), false, 'page closed')
+  assert.equal(await page.evaluate('1+1'), 2)
+}
+const degraded = async (h, page) => {
+  const diagnostics = await page.source.runAutomation('diagnostics')
+  h.observe('degraded', {
+    page: diagnostics.degraded ?? {},
+    engine: diagnostics.engineDegraded ?? {},
+  })
+}
+
+export const resilience = [
+  test(
+    'resilience.request-volume',
+    ['resilience', 'network'],
+    async (h) => {
+      const { page } = await h.page()
+      page.setDefaultTimeout(120000)
+      await page.goto(h.fixture.origin + '/app')
+      const count = 9000
+      let finished = 0
+      page.on('requestfinished', () => ++finished)
+      const last = page.waitForResponse(
+        (r) => r.url().endsWith(`/resilience/item?n=${count - 1}`),
+        {
+          timeout: 120000,
+        },
+      )
+      await page.evaluate(
+        `(async()=>{for(let i=0;i<${count};i+=200)await Promise.all(Array.from({length:Math.min(200,${count}-i)},(_,j)=>fetch('/resilience/item?n='+(i+j)).then(r=>r.json())))})()`,
+      )
+      assert.deepEqual(await (await last).json(), { item: count - 1 })
+      await h.until(() => finished >= count, 'not every request finished', 30000)
+      await alive(page)
+      await degraded(h, page)
+      h.check(
+        '9,000 requests, more than the request tables hold, all finish and the page stays open',
+      )
+    },
+    240,
+  ),
+  test('resilience.page-error-burst', ['resilience', 'errors'], async (h) => {
+    const { page } = await h.page()
+    await page.goto(h.fixture.origin + '/app')
+    const errors = []
+    page.on('pageerror', (error) => errors.push(error.message))
+    await page.evaluate(`for(let i=0;i<300;i++)setTimeout(()=>{throw new Error('burst '+i)})`)
+    await h.until(
+      () => errors.length >= 300,
+      `only ${errors.length} of 300 page errors arrived`,
+      60000,
+    )
+    assert.deepEqual(
+      errors,
+      Array.from({ length: 300 }, (_, i) => `burst ${i}`),
+    )
+    await alive(page)
+    await degraded(h, page)
+    h.check('300 page errors thrown at once all arrive, in order, and the page stays open')
+  }),
+  test('resilience.console-volume', ['resilience', 'console'], async (h) => {
+    const { page } = await h.page()
+    await page.goto(h.fixture.origin + '/app')
+    const messages = []
+    page.on('console', (message) => messages.push(message.text()))
+    await page.evaluate(
+      `for(let i=0;i<5000;i++)console.log('line '+i);console.log('x'.repeat(3*1024*1024))`,
+    )
+    await h.until(
+      () => messages.length >= 5001,
+      `only ${messages.length} of 5,001 messages arrived`,
+      60000,
+    )
+    assert.equal(messages[4999], 'line 4999')
+    assert.equal(messages[5000], 'x'.repeat(3 * 1024 * 1024))
+    await alive(page)
+    h.check('5,000 console messages and one of 3 MiB arrive whole and the page stays open')
+  }),
+  test('resilience.huge-exception', ['resilience', 'errors'], async (h) => {
+    const { page } = await h.page()
+    await page.goto(h.fixture.origin + '/app')
+    const errors = []
+    page.on('pageerror', (error) => errors.push(error.message))
+    await page.evaluate(`setTimeout(()=>{throw new Error('m'.repeat(2*1024*1024))})`)
+    await h.until(() => errors.length >= 1, 'the 2 MiB page error never arrived', 30000)
+    assert.equal(errors[0], 'm'.repeat(2 * 1024 * 1024))
+    await alive(page)
+    h.check('A page error with a 2 MiB message arrives whole and the page stays open')
+  }),
+  test(
+    'resilience.many-frames-init-script',
+    ['resilience', 'frames'],
+    async (h) => {
+      // Chrome itself stops at 1,000 frames per page; two such pages at once
+      // put more frames in flight than suitecut used to track.
+      const { page, context } = await h.page()
+      await context.addInitScript('globalThis.__resilienceInit=true')
+      const other = await context.newPage()
+      const url = h.fixture.origin + '/resilience/frames?n=1000'
+      await Promise.all([page.goto(url, { timeout: 120000 }), other.goto(url, { timeout: 120000 })])
+      for (const each of [page, other])
+        await h.until(
+          () =>
+            each.evaluate(
+              `[...document.querySelectorAll('iframe')].filter(f=>f.contentWindow?.__resilienceInit).length===1000`,
+            ),
+          'not every frame ran the init script',
+          60000,
+        )
+      await alive(page)
+      await alive(other)
+      await degraded(h, page)
+      h.check(
+        '2,000 iframes loading at once each run the context init script and both pages stay open',
+      )
+    },
+    240,
+  ),
+  test('resilience.websocket-large-frames', ['resilience', 'network', 'websocket'], async (h) => {
+    const { page } = await h.page()
+    await page.goto(h.fixture.origin + '/app')
+    const bytes = 3 * 1024 * 1024
+    const received = []
+    page.on('websocket', (socket) =>
+      socket.on('framereceived', (frame) =>
+        received.push(
+          typeof frame.payload === 'string' ? frame.payload.length : frame.payload.byteLength,
+        ),
+      ),
+    )
+    const sizes = await page.evaluate(
+      `new Promise((resolve,reject)=>{const s=new WebSocket(location.origin.replace('http','ws')+'/resilience/ws?bytes=${bytes}');s.binaryType='arraybuffer';const got=[];s.onmessage=e=>{got.push(typeof e.data==='string'?e.data.length:e.data.byteLength);if(got.length===2){s.send(new Uint8Array(${bytes}));}if(got.length===3){s.close();resolve(got)}};s.onerror=()=>reject(new Error('socket failed'))})`,
+    )
+    assert.deepEqual(sizes, [bytes, bytes, String(bytes).length])
+    await h.until(() => received.length >= 3, 'frames were not observed', 30000)
+    assert.deepEqual(received.slice(0, 2), [bytes, bytes])
+    await alive(page)
+    h.check('3 MiB WebSocket text and binary frames are observed whole and the page stays open')
+  }),
+  test('resilience.large-post-body', ['resilience', 'network'], async (h) => {
+    const { page } = await h.page()
+    await page.goto(h.fixture.origin + '/app')
+    const size = 3 * 1024 * 1024
+    const body = 'p'.repeat(size)
+    const request = page.waitForRequest((r) => r.url().endsWith('/resilience/sink'))
+    const result = await page.evaluate(
+      `fetch('/resilience/sink',{method:'POST',body:'p'.repeat(${size})}).then(r=>r.json())`,
+    )
+    assert.deepEqual(result, {
+      bytes: size,
+      sha256: createHash('sha256').update(body).digest('hex'),
+    })
+    assert.equal((await request).postData(), body)
+    await alive(page)
+    h.check('A 3 MiB POST body reaches the server and request.postData() returns it whole')
+  }),
+  test(
+    'resilience.har-volume',
+    ['resilience', 'network', 'artifacts'],
+    async (h) => {
+      const path = join(h.output, 'volume.har')
+      const { page, context } = await h.page({ recordHar: { path } })
+      page.setDefaultTimeout(120000)
+      await page.goto(h.fixture.origin + '/app')
+      await page.evaluate(
+        `(async()=>{for(let i=0;i<3000;i+=100)await Promise.all(Array.from({length:100},(_,j)=>fetch('/resilience/item?n='+(i+j))))})()`,
+      )
+      await alive(page)
+      await context.close()
+      const har = JSON.parse(await readFile(path, 'utf8'))
+      const items = har.log.entries.filter((e) => e.request.url.includes('/resilience/item'))
+      assert.equal(items.length, 3000)
+      h.check('A HAR recording keeps all 3,000 entries, more than the old 2,048 cap')
+    },
+    240,
+  ),
+  test(
+    'resilience.trace-large-aria',
+    ['resilience', 'artifacts'],
+    async (h) => {
+      const { page, context } = await h.page()
+      await context.tracing.start({ screenshots: false, snapshots: { aria: true } })
+      await page.goto(h.fixture.origin + '/resilience/large?rows=3000', { timeout: 60000 })
+      await page.getByRole('button', { name: 'Add product 2999' }).click()
+      const path = join(h.output, 'large-aria.zip')
+      await context.tracing.stop({ path })
+      const bytes = await readFile(path)
+      assert.equal(bytes.subarray(0, 4).toString('hex'), '504b0304')
+      assert(bytes.includes('aria/'), 'trace has no aria snapshot')
+      await alive(page)
+      h.check('Tracing a page whose accessibility tree is far over 64 KiB keeps its aria snapshots')
+    },
+    180,
+  ),
+]

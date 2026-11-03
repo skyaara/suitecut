@@ -38,8 +38,8 @@ int main() {
   controller.Cancel(1);assert(controller.PendingBytes()==3*Controller::kMaxPayload);
   assert(controller.Offer(5,2,1,"console",large)==Controller::Status::CandidateReady);
   controller.Clear();assert(controller.PendingBytes()==0&&controller.Size()==0);
-  // WebSocket base64 snapshots may exceed the generic1MiB limit, but share
-  // the same aggregate4MiB budget and exact cancel/late-ACK ownership.
+  // WebSocket base64 snapshots may exceed the generic limit, but share the
+  // same aggregate budget and exact cancel/late-ACK ownership.
   assert(!controller.Start(1,3,"socket","framereceived",0,0));
   assert(!controller.Start(1,3,"socket","framereceived",0,Controller::kWebSocketPayload+1));
   assert(controller.Start(1,3,"socket","framereceived",0,Controller::kWebSocketPayload));
@@ -48,7 +48,7 @@ int main() {
   assert(controller.Offer(2,3,1,"console",expanded)==Controller::Status::PayloadCapacity);
   assert(controller.Offer(1,3,1,"framereceived",expanded)==Controller::Status::CandidateReady);
   assert(controller.Offer(2,3,1,"console",large)==Controller::Status::CandidateReady);
-  assert(controller.PendingBytes()==Controller::kPendingBytes);
+  assert(controller.PendingBytes()==Controller::kWebSocketPayload+Controller::kMaxPayload);
   const auto ws=controller.Pending(1,3);assert(ws);const auto ws_token=ws->token;
   controller.Cancel(1);assert(controller.PendingBytes()==Controller::kMaxPayload);
   assert(controller.Answer(1,3,ws_token,"socket",true,matched)==Controller::Decision::Stale);

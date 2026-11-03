@@ -62,8 +62,8 @@ bool Commit(const std::string& path,const Bytes& bytes,const Action& action,std:
 bool Body(Dict value,const char* field,Bytes& bytes,std::string& error){
   if(value->GetType("text")!=VTYPE_STRING){error="Native HAR body text must be a string";return false;}
   const auto text=value->GetString("text").ToString(),encoding=value->GetString(field).ToString();
-  if(encoding.empty()){if(text.size()>NativeHARFiles::kBodyBytes){error="Native HAR body exceeds 2 MiB";return false;}bytes.assign(text.begin(),text.end());return true;}
-  if(encoding!="base64"||text.size()>2796204){error="Invalid native HAR body encoding or capacity";return false;}
+  if(encoding.empty()){if(text.size()>NativeHARFiles::kBodyBytes){error="Native HAR body exceeds 64 MiB";return false;}bytes.assign(text.begin(),text.end());return true;}
+  if(encoding!="base64"||text.size()>(NativeHARFiles::kBodyBytes+2)/3*4){error="Invalid native HAR body encoding or capacity";return false;}
   if(text.empty()){bytes.clear();return true;}auto decoded=CefBase64Decode(text);
   if(!decoded||decoded->GetSize()>NativeHARFiles::kBodyBytes){error="Invalid native HAR base64 body";return false;}
   bytes.resize(decoded->GetSize());decoded->GetData(bytes.data(),bytes.size(),0);
@@ -135,7 +135,7 @@ bool ZIP(const Bytes& bytes,const Action& action,Bytes& json,Resources& resource
     if(!names.insert(name).second||names.size()>NativeHARFiles::kResources||size<0||uint64_t(size)>NativeHARFiles::kJSONBytes)return fail("Invalid native HAR ZIP entry name, size, or count");
     if(name.ends_with('/')){if(size!=0||!TraceArchive::ValidName(name.substr(0,name.size()-1)))return fail("Invalid native HAR ZIP directory");continue;}
     if(!TraceArchive::ValidName(name))return fail("Invalid native HAR ZIP entry name");
-    const bool document=name.ends_with(".har")&&!name.starts_with("resources/");if(!document&&uint64_t(size)>NativeHARFiles::kBodyBytes)return fail("Native HAR ZIP resource exceeds 2 MiB");
+    const bool document=name.ends_with(".har")&&!name.starts_with("resources/");if(!document&&uint64_t(size)>NativeHARFiles::kBodyBytes)return fail("Native HAR ZIP resource exceeds 64 MiB");
     if(size_t(size)>NativeHARFiles::kJSONBytes-retained)return fail("Native HAR ZIP decoded-byte capacity exceeded");
     retained+=size_t(size);
     if(!reader->OpenFile(""))return fail("Native HAR ZIP entry cannot be opened");
@@ -151,7 +151,7 @@ bool NativeHARFiles::Read(const std::string& path,const Action& action,Dict& arc
   if(!Path(path,error))return false;
   Bytes bytes;if(!ReadBytes(path,kFileBytes,action,bytes,error))return false;Bytes json;Resources resources;
   const bool zipped=bytes.size()>=4&&bytes[0]=='P'&&bytes[1]=='K'&&bytes[2]==3&&bytes[3]==4;
-  if(zipped){if(!ZIP(bytes,action,json,resources,error))return false;}else{if(bytes.size()>kJSONBytes){error="Native HAR JSON exceeds 32 MiB";return false;}json=std::move(bytes);}
+  if(zipped){if(!ZIP(bytes,action,json,resources,error))return false;}else{if(bytes.size()>kJSONBytes){error="Native HAR JSON exceeds 256 MiB";return false;}json=std::move(bytes);}
   if(!Current(action,error))return false;
   auto parsed=CefParseJSON(std::string(json.begin(),json.end()),JSON_PARSER_RFC);auto result=parsed?parsed->GetDictionary():nullptr;
   if(!result){error="Native HAR archive is not a valid JSON object";return false;}
@@ -166,7 +166,7 @@ bool NativeHARFiles::Write(const std::string& path,Dict archive,Content content,
   if(!archive){error="Native HAR archive is unavailable";return false;}
   if(!Path(path,error)||!Current(action,error))return false;
   auto result=archive->Copy(false);Resources resources;if(!Attach(result,content,zipped,resources,action,error))return false;
-  auto wrapped=CefValue::Create();wrapped->SetDictionary(result);const auto json=CefWriteJSON(wrapped,JSON_WRITER_DEFAULT).ToString();if(json.size()>kJSONBytes){error="Native HAR JSON exceeds 32 MiB";return false;}
+  auto wrapped=CefValue::Create();wrapped->SetDictionary(result);const auto json=CefWriteJSON(wrapped,JSON_WRITER_DEFAULT).ToString();if(json.size()>kJSONBytes){error="Native HAR JSON exceeds 256 MiB";return false;}
   Bytes output;
   if(zipped){TraceArchive zip;if(!zip.AddText("har.har",json,error))return false;for(auto&[name,bytes]:resources)if(!zip.Add(name,std::move(bytes),error))return false;if(!zip.Encode(output,error))return false;}
   else{

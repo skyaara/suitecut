@@ -45,7 +45,7 @@ int main(){
   now=100;error.clear();assert(!Files::Read(empty,action,loaded,error,true));now=2;
   // Every decoded ZIP member consumes budget, even if no HAR entry references it.
   suitecut::TraceArchive zip;assert(zip.AddText("har.har",R"({"log":{"entries":[]}})",error));
-  for(size_t i=0;i<17;++i)assert(zip.Add("resources/unused-"+std::to_string(i)+".dat",std::vector<uint8_t>(Files::kBodyBytes,0),error));
+  for(size_t i=0;i<=Files::kJSONBytes/Files::kBodyBytes;++i)assert(zip.Add("resources/unused-"+std::to_string(i)+".dat",std::vector<uint8_t>(Files::kBodyBytes,0),error));
   std::vector<uint8_t> oversized;assert(zip.Encode(oversized,error));const auto large=(directory/"decoded-overflow.zip").string();{std::ofstream file(large,std::ios::binary);file.write(reinterpret_cast<const char*>(oversized.data()),oversized.size());}
   error.clear();assert(!Files::Read(large,action,loaded,error)&&error=="Native HAR ZIP decoded-byte capacity exceeded");
   std::filesystem::remove_all(directory);

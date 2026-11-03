@@ -42,7 +42,8 @@ const WaitOptions = z.strictObject({
 })
 const WaitResult = z.strictObject({
   info: NativeWebSocketInfoSchema,
-  payloadBase64: z.string().max(2_796_204),
+  // A whole frame: up to 16 MiB, base64 encoded.
+  payloadBase64: z.string().max(22_369_624),
 })
 /** Actual browser socket observation; payloads are genuine CDP bytes. */
 export class NativeWebSocket {

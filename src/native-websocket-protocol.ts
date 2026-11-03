@@ -12,6 +12,8 @@ export const NativeWebSocketInfoSchema = z.strictObject({
   sequence: z.number().int().positive(),
   opcode: z.union([z.literal(1), z.literal(2)]).optional(),
   error: z.string().max(8192).optional(),
+  // A frame past the native 16 MiB bound keeps its first 16 MiB.
+  truncated: z.literal(true).optional(),
 })
 export type NativeWebSocketInfo = z.infer<typeof NativeWebSocketInfoSchema>
 export interface NativeWebSocketMessage {

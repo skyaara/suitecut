@@ -6,7 +6,9 @@ import {
   NativePacketDecoder,
   NativeNetworkRequestSchema,
   NativeNetworkResponseSchema,
+  MAX_NATIVE_EVENT_PAYLOAD,
   MAX_NATIVE_RESPONSE_PAYLOAD,
+  MAX_NATIVE_SOCKET_PREDICATE_PAYLOAD,
   MAX_OBSERVED_DATA_URL,
   MAX_OBSERVED_URL,
   type NativePacket,
@@ -261,7 +263,7 @@ describe('native PCM reblocking', () => {
   })
 })
 
-it('permits bounded WebSocket base64 predicate snapshots without enlarging other event budgets', () => {
+it('permits whole 16 MiB WebSocket frames in predicate snapshots without enlarging other event budgets', () => {
   const header = {
     type: 'eventpredicate',
     pageId: 2,
@@ -271,18 +273,23 @@ it('permits bounded WebSocket base64 predicate snapshots without enlarging other
     clientToken: 'socket-test',
     sequence: 1,
   }
-  const bytes = Buffer.alloc(2_796_204, 32)
+  const bytes = Buffer.alloc(22_369_624, 32)
   const received: Buffer[] = []
   const decoder = new NativePacketDecoder((_, data) => received.push(data))
   decoder.push(packet({ ...header, event: 'framereceived' }, bytes))
   decoder.end()
   expect(received[0]?.equals(bytes)).toBe(true)
   expect(() =>
-    new NativePacketDecoder(() => undefined).push(packet({ ...header, event: 'console' }, bytes)),
+    new NativePacketDecoder(() => undefined).push(
+      packet({ ...header, event: 'console' }, Buffer.alloc(MAX_NATIVE_EVENT_PAYLOAD + 1)),
+    ),
   ).toThrow('predicate payload')
   expect(() =>
     new NativePacketDecoder(() => undefined).push(
-      packet({ ...header, event: 'framereceived' }, Buffer.alloc(3_145_729)),
+      packet(
+        { ...header, event: 'framereceived' },
+        Buffer.alloc(MAX_NATIVE_SOCKET_PREDICATE_PAYLOAD + 1),
+      ),
     ),
   ).toThrow('predicate payload')
 })

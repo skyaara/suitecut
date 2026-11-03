@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 #pragma once
+#include <cctype>
 #include <algorithm>
 #include <functional>
 #include <limits>
@@ -23,7 +24,7 @@ class PageErrorControls {
   using Fail=std::function<void(const std::string&)>;
   using Preview=std::function<std::string(Dict)>;
   using Clock=std::function<double()>;
-  static constexpr size_t kCaptures=64,kBacklog=4096,kCalls=128,kBytes=8*1048576,kResponse=1048576;
+  static constexpr size_t kCaptures=64,kBacklog=4096,kCalls=128,kBytes=64*1048576,kResponse=24*1048576;
   PageErrorControls(Allocate allocate,Submit submit,Emit emit,Fail fail,Preview preview,Clock now)
       :allocate_(std::move(allocate)),submit_(std::move(submit)),emit_(std::move(emit)),fail_(std::move(fail)),preview_(std::move(preview)),now_(std::move(now)){}
   void Start(Dict details,const std::string& session){
@@ -109,7 +110,14 @@ class PageErrorControls {
   Dict Described(Dict details){
     const auto exception=details->GetDictionary("exception");
     const auto text=exception?(exception->HasKey("description")?DevToolsString(exception->GetValue("description")):exception->GetString("type")=="string"?DevToolsString(exception->GetValue("value")):preview_(exception)):DevToolsString(details->GetValue("text"));
-    auto metadata=CefDictionaryValue::Create();metadata->SetString("name","Error");DevToolsSetString(metadata,"message",text);DevToolsSetString(metadata,"stack",text);
+    // V8 describes an Error as its stack: "Name: message\n    at ...". Split
+    // it the way Playwright does when it reads the description.
+    std::string name="Error",message=text;
+    const auto colon=text.find(": ");const auto frames=text.find("\n    at ");
+    if(colon!=std::string::npos&&colon>=5&&colon<256&&(frames==std::string::npos||colon<frames)&&text.compare(colon-5,5,"Error")==0&&std::all_of(text.begin(),text.begin()+colon,[](unsigned char c){return std::isalnum(c)||c=='_';})){
+      name=text.substr(0,colon);message=text.substr(colon+2,frames==std::string::npos?std::string::npos:frames-colon-2);
+    }
+    auto metadata=CefDictionaryValue::Create();DevToolsSetString(metadata,"name",name);DevToolsSetString(metadata,"message",message);DevToolsSetString(metadata,"stack",text);
     return metadata;
   }
   static std::string JSON(Dict value){auto wrapper=CefValue::Create();wrapper->SetDictionary(value);return CefWriteJSON(wrapper,JSON_WRITER_DEFAULT).ToString();}

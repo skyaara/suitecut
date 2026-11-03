@@ -19,17 +19,17 @@ int main() {
   assert(id && transfers.size()==1 && transfers.bytes()==original.size());
   transfers.Tick(0);assert(received.empty() && callbacks==0 && transfers.bytes()==original.size());assert(!transfers.Flush());
   // The last accepted chunk completes the owner and frees its copy at once.
-  backpressure=false;for(size_t tick=0;received[*id].size()<original.size();++tick){assert(tick<100);assert(callbacks==0);transfers.Tick(0);}
+  backpressure=false;for(size_t tick=0;received[*id].size()<original.size();++tick){assert(tick<=Transfers::kBodyLimit/(16*Transfers::kChunkBytes)+1);assert(callbacks==0);transfers.Tick(0);}
   assert(received[*id]==original && callbacks==1 && transfers.size()==0 && transfers.bytes()==0);assert(transfers.Issued(*id) && !transfers.Issued(*id+1) && !transfers.Issued(0));
   backpressure=true;const auto expired=transfers.Begin({0,255,13,10},50,[&](uint64_t,bool ok,const std::string& error){assert(!ok && !error.empty());assert(transfers.bytes()==0);++callbacks;});assert(expired);transfers.Tick(49);assert(callbacks==1);transfers.Tick(50);assert(callbacks==2 && transfers.size()==0);
   std::vector<uint64_t> owners;
-  for(size_t i=0;i<8;++i){auto owner=transfers.Begin(original,100,[](uint64_t,bool,const std::string&){});assert(owner);owners.push_back(*owner);}
+  for(size_t i=0;i<Transfers::kByteBudget/Transfers::kBodyLimit;++i){auto owner=transfers.Begin(original,100,[](uint64_t,bool,const std::string&){});assert(owner);owners.push_back(*owner);}
   assert(transfers.bytes()==Transfers::kByteBudget);assert(!transfers.Begin({1},100,[](uint64_t,bool,const std::string&){}));
   assert(transfers.Cancel(owners.front()));assert(transfers.bytes()==Transfers::kByteBudget-Transfers::kBodyLimit);
   transfers.Clear();assert(transfers.size()==0 && transfers.bytes()==0);
   for(size_t i=0;i<Transfers::kOwnerLimit;++i)assert(transfers.Begin({},100,[](uint64_t,bool,const std::string&){}));
   assert(!transfers.Begin({},100,[](uint64_t,bool,const std::string&){}));transfers.Clear();
-  for(size_t i=0;i<8;++i)assert(transfers.Begin(original,100,[](uint64_t,bool,const std::string&){}));
+  for(size_t i=0;i<Transfers::kByteBudget/Transfers::kBodyLimit;++i)assert(transfers.Begin(original,100,[](uint64_t,bool,const std::string&){}));
   transfers.Clear();
   std::optional<uint64_t> replacement;
   const auto reentrant=transfers.Begin(original,100,[&](uint64_t,bool ok,const std::string&){assert(!ok);assert(transfers.bytes()==0);replacement=transfers.Begin(original,100,[](uint64_t,bool,const std::string&){});});

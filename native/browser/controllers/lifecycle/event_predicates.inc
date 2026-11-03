@@ -8,7 +8,9 @@
     if(event_predicates_.Pending(id,generation))return;
     const auto cursor=event_predicates_.Cursor(id,generation);if(!cursor)return;
     if(!event_history_.empty()&&*cursor<event_history_.front().sequence-1){Complete(id,false,"Native event journal cursor expired during host predicate");return;}
-    for(const auto& record:event_history_) {
+    const auto first=std::upper_bound(event_history_.begin(),event_history_.end(),*cursor,[](std::uint64_t value,const auto& record){return value<record.sequence;});
+    for(auto record_it=first;record_it!=event_history_.end();++record_it) {
+      const auto& record=*record_it;
       const auto result=event_predicates_.Offer(id,generation,record.sequence,record.event,record.json);
       if(result==SuiteCutEventPredicateController::Status::PayloadCapacity){Complete(id,false,"Native event predicate payload capacity exceeded");return;}
       if(result!=SuiteCutEventPredicateController::Status::CandidateReady)continue;
@@ -17,7 +19,7 @@
       header->SetDouble("token",static_cast<double>(candidate->token));header->SetDouble("sequence",static_cast<double>(candidate->sequence));
       header->SetString("clientToken",candidate->client_token);header->SetString("event",candidate->event);
       std::string public_json=candidate->json;
-      if((candidate->event=="console"||candidate->event=="pageerror")){const auto value=CefParseJSON(candidate->json,JSON_PARSER_RFC);public_json.clear();if(!value||!suitecut::DevToolsLosslessJSON(value,public_json,1048576)){Complete(id,false,"Native runtime event predicate output limit exceeded");return;}}
+      if((candidate->event=="console"||candidate->event=="pageerror")){const auto value=CefParseJSON(candidate->json,JSON_PARSER_RFC);public_json.clear();if(!value||!suitecut::DevToolsLosslessJSON(value,public_json,SuiteCutEventPredicateController::kMaxPayload)){Complete(id,false,"Native runtime event predicate output limit exceeded");return;}}
       SendPacket(header,std::vector<uint8_t>(public_json.begin(),public_json.end()));return;
     }
   }
@@ -46,6 +48,6 @@
     if(decision==SuiteCutEventPredicateController::Decision::Stale){writer_.Reply(reply_id,false,"Native event predicate continuation is stale");return;}
     writer_.Reply(reply_id,true);
     if(operations_.IsExpired(target,generation,Now())){Complete(target,false,"Native event predicate Timeout exceeded");return;}
-    if(decision==SuiteCutEventPredicateController::Decision::Matched){if(console){const auto value=CefParseJSON(json,JSON_PARSER_RFC);json.clear();if(!value||!suitecut::DevToolsLosslessJSON(value,json,1048576)){Complete(target,false,"Native runtime event predicate output limit exceeded");return;}}Complete(target,true,"",json);}
+    if(decision==SuiteCutEventPredicateController::Decision::Matched){if(console){const auto value=CefParseJSON(json,JSON_PARSER_RFC);json.clear();if(!value||!suitecut::DevToolsLosslessJSON(value,json,SuiteCutEventPredicateController::kMaxPayload)){Complete(target,false,"Native runtime event predicate output limit exceeded");return;}}Complete(target,true,"",json);}
     else PollEventPredicate(target,generation);
   }

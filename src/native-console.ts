@@ -128,10 +128,10 @@ export async function clearNativeConsoleMessages(page: NativePage): Promise<void
 }
 
 export const NativePageErrorInfoSchema = z.object({
-  name: z.string().max(1_000_000),
+  name: z.string().max(8_388_608),
   frame: NativeFrameInfoSchema.optional(),
-  message: z.string().max(1_000_000),
-  stack: z.string().max(1_000_000),
+  message: z.string().max(8_388_608),
+  stack: z.string().max(8_388_608),
 })
 export type NativePageErrorInfo = z.infer<typeof NativePageErrorInfoSchema>
 export function createNativePageError(record: NativePageErrorInfo): Error {
