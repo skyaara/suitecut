@@ -276,6 +276,28 @@ export const resilience = [
     h.observe('ms', timings)
     h.check('16 MiB evaluate, setContent, getByText, fill and addInitScript inputs arrive whole')
   }),
+  test('resilience.ai-snapshot-many-frames', ['resilience', 'dom'], async (h) => {
+    // An AI snapshot used to fail past 31 iframes; Blink allows 1000 per page.
+    const { page } = await h.page()
+    page.setDefaultTimeout(30000)
+    const frames = 40
+    await page.setContent(
+      Array.from(
+        { length: frames },
+        (_, i) => `<iframe srcdoc="<button>Frame ${i}</button>" width=80 height=40></iframe>`,
+      ).join(''),
+    )
+    await page.waitForFunction(
+      `[...document.querySelectorAll('iframe')].every((f) => f.contentDocument?.querySelector('button'))`,
+    )
+    const started = Date.now()
+    const snapshot = await page.ariaSnapshot({ mode: 'ai' })
+    h.observe('ms', Date.now() - started)
+    const buttons = snapshot.match(/button "Frame \d+" \[ref=s\d+e\d+\]/gu) ?? []
+    assert.equal(buttons.length, frames, snapshot.slice(0, 2000))
+    await page.getByRef(/\[ref=(s\d+e\d+)\]/u.exec(buttons.at(-1))[1]).click()
+    h.check(`an AI snapshot covers ${frames} iframes and its refs click`)
+  }),
   test('resilience.websocket-large-frames', ['resilience', 'network', 'websocket'], async (h) => {
     const { page } = await h.page()
     await page.goto(h.fixture.origin + '/app')

@@ -259,6 +259,48 @@ describe('authored ARIA declarative grammar and semantic comparison', () => {
     expect(JSON.stringify(nodes)).toBe(before)
   })
 
+  it('drops AI names that only repeat what the children show, and keeps the rest', () => {
+    const row: NativeAriaNode = {
+      role: 'row',
+      name: '1. Story title (example.com)',
+      children: [
+        { role: 'cell', name: '1.' },
+        {
+          role: 'cell',
+          name: 'Story title (example.com)',
+          children: [
+            { role: 'link', name: 'Story title', properties: { url: '/item' } },
+            { role: 'text', text: '(example.com)' },
+          ],
+        },
+      ],
+    }
+    expect(formatNativeAriaTree([row], { mode: 'ai' })).toBe(
+      [
+        '- row:',
+        '  - cell "1."',
+        '  - cell:',
+        '    - link "Story title":',
+        '      - /url: /item',
+        '    - text: (example.com)',
+      ].join('\n'),
+    )
+    expect(formatNativeAriaTree([row])).toContain('- row "1. Story title (example.com)":')
+    // A name the children do not spell out (aria-label, pseudo content) stays.
+    expect(
+      formatNativeAriaTree(
+        [{ role: 'link', name: 'Open menu', children: [{ role: 'img', name: 'icon' }] }],
+        { mode: 'ai' },
+      ),
+    ).toBe('- link "Open menu":\n  - img "icon"')
+    expect(
+      formatNativeAriaTree(
+        [{ role: 'listitem', name: 'Step one', children: [{ role: 'text', text: 'one' }] }],
+        { mode: 'ai' },
+      ),
+    ).toBe('- listitem "Step one": one')
+  })
+
   it('emits valid YAML for actual text with properties and only heading levels', () => {
     const nodes: NativeAriaNode[] = [
       {
@@ -339,7 +381,7 @@ describe('authored ARIA declarative grammar and semantic comparison', () => {
     expect(JSON.stringify(nodes)).toBe(before)
   })
 
-  it('rejects malformed grammar, recursive aliases and excess input/traversal', () => {
+  it('rejects malformed grammar and recursive aliases, and formats any size', () => {
     expect(() => parseNativeAriaTemplate('- checkbox [checked=5]')).toThrow('boolean or "mixed"')
     expect(() => parseNativeAriaTemplate('- heading /unfinished')).toThrow('Unterminated regex')
     expect(() => parseNativeAriaTemplate('- heading [level=]')).toThrow(
@@ -348,11 +390,11 @@ describe('authored ARIA declarative grammar and semantic comparison', () => {
     expect(() => parseNativeAriaTemplate('heading "one"')).toThrow('YAML sequence')
     expect(() => parseNativeAriaTemplate('- &self\n  - *self')).toThrow()
     expect(parseNativeAriaTemplate(`- heading "${'x'.repeat(1 << 20)}"`)).toBeTruthy()
-    expect(() =>
-      formatNativeAriaTree(Array.from({ length: 1_000_001 }, () => ({ role: 'img' }))),
-    ).toThrow('bounds')
-    expect(() => formatNativeAriaTree([{ role: 'text', text: 'x'.repeat(8_388_609) }])).toThrow(
-      '8 MiB',
+    expect(
+      formatNativeAriaTree(Array.from({ length: 1_000_001 }, () => ({ role: 'img' }))).split('\n'),
+    ).toHaveLength(1_000_001)
+    expect(formatNativeAriaTree([{ role: 'text', text: 'x'.repeat(8_388_609) }])).toHaveLength(
+      8_388_609 + 8,
     )
   })
 })

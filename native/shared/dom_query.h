@@ -39,7 +39,7 @@ inline constexpr char kSuiteCutDomQuery[] = R"JS(function(steps,start=document,o
     return result;
   };
   steps=wire(steps);
-  let work=0,nameBytes=0;
+  let work=0;
   // Native diagnostics shares this private budget across candidate alias queries.
   // It is constructed in the utility world, never read from selector IPC data.
   const diagnosticBudget=options.nativeDiagnosticsBudget;
@@ -290,10 +290,24 @@ inline constexpr char kSuiteCutDomQuery[] = R"JS(function(steps,start=document,o
     return Object.hasOwn(implicitRoles,tag)?implicitRoles[tag]:'';
   };
   // Custom selector callbacks may synchronously change styles between steps.
-  // Otherwise these fields are reusable only during this atomic observation.
-  const hiddenStyles=options.accessibilityTools||options.engines&&Object.keys(options.engines).length?null:new Map();
+  // Otherwise these fields are reusable only during this atomic observation:
+  // a query, or one snapshot walk (snapshot:true) that never touches the DOM.
+  // Accessibility tools handed out for later use read the page afresh.
+  const hiddenStyles=options.engines&&Object.keys(options.engines).length||options.accessibilityTools&&options.snapshot!==true?null:new Map();
+  const hiddenResults=hiddenStyles&&new Map(),pseudoResults=hiddenStyles&&[new Map(),new Map()];
+  // element.labels.length walks the whole tree scope for <label> elements each
+  // time its live list is collected, which made every button on a large page
+  // cost a document scan. Index each tree scope's labels once instead; the
+  // order and control matching are the same as labels.
+  const labelIndex=hiddenStyles&&new Map();
+  // A custom engine may change the page, so nothing seen before it is kept.
+  const clearCaches=()=>{if(!hiddenStyles)return;hiddenStyles.clear();hiddenResults.clear();pseudoResults[0].clear();pseudoResults[1].clear();labelIndex.clear();};
+  const labelsOf=node=>{const own=node.labels;if(!own||!labelIndex)return own;const root=node.getRootNode();let index=labelIndex.get(root);
+    if(!index){index=new Map();if(typeof root.querySelectorAll==='function')for(const label of root.querySelectorAll('label')){const control=label.control;if(!control)continue;let list=index.get(control);if(!list)index.set(control,list=[]);list.push(label);}labelIndex.set(root,index);}
+    return index.get(node)||[];};
   const hiddenStyle=node=>{if(!hiddenStyles)return getComputedStyle(node);let style=hiddenStyles.get(node);if(!style){const actual=getComputedStyle(node);style={display:actual.display,visibility:actual.visibility};hiddenStyles.set(node,style);}return style;};
-  const hidden=node=>{
+  const hidden=node=>{if(!hiddenResults)return hiddenUncached(node);let value=hiddenResults.get(node);if(value===undefined){value=hiddenUncached(node);hiddenResults.set(node,value);}return value;};
+  const hiddenUncached=node=>{
     if(node.localName!=='option'){const ownStyle=hiddenStyle(node);if(ownStyle.visibility==='hidden'||ownStyle.visibility==='collapse')return true;
       // As in Playwright, content-visibility:hidden (hidden=until-found, collapsed sections) hides an element for ARIA.
       if(ownStyle.display!=='contents'&&node.localName!=='slot'&&typeof node.checkVisibility==='function'&&!node.checkVisibility())return true;}
@@ -345,7 +359,8 @@ inline constexpr char kSuiteCutDomQuery[] = R"JS(function(steps,start=document,o
       }if(!closed)return '';
     }return result;
   };
-  const pseudo=(node,kind)=>{const style=getComputedStyle(node,kind),value=style.content;if(style.display==='none'||style.visibility==='hidden'||style.visibility==='collapse'||!value||value==='none'||value==='normal')return '';const content=pseudoContent(value);return style.display!=='contents'&&!style.display.startsWith('inline')?' '+content+' ':content;};
+  const pseudo=(node,kind)=>{if(!pseudoResults)return pseudoUncached(node,kind);const cache=pseudoResults[kind==='::before'?0:1];let value=cache.get(node);if(value===undefined){value=pseudoUncached(node,kind);cache.set(node,value);}return value;};
+  const pseudoUncached=(node,kind)=>{const style=getComputedStyle(node,kind),value=style.content;if(style.display==='none'||style.visibility==='hidden'||style.visibility==='collapse'||!value||value==='none'||value==='normal')return '';const content=pseudoContent(value);return style.display!=='contents'&&!style.display.startsWith('inline')?' '+content+' ':content;};
   // Record a title consumed by this exact root name computation. Equal strings
   // from separate label/content sources still permit a real title description.
   const nameTitle=(node,titleSource)=>{const value=node.getAttribute('title')||'';if(value&&titleSource)titleSource.used=true;return value;};
@@ -366,7 +381,7 @@ inline constexpr char kSuiteCutDomQuery[] = R"JS(function(steps,start=document,o
         if(r==='combobox'||r==='listbox'){const selected=tag==='select'?[...node.selectedOptions]:enumerate(node).filter(e=>role(e)==='option'&&e.getAttribute('aria-selected')==='true');return selected.map(e=>name(e,{referenced:true},seen,depth+1)).join(' ');}
         return node.getAttribute('aria-valuetext')||node.getAttribute('aria-valuenow')||node.value||'';
       }
-      if(node.labels?.length)return normalize([...node.labels].map(label=>name(label,{referenced:true},seen,depth+1)).join(' '));
+      const labels=labelsOf(node);if(labels?.length)return normalize([...labels].map(label=>name(label,{referenced:true},seen,depth+1)).join(' '));
       if(['img','area'].includes(tag))return normalize(node.getAttribute('alt')||nameTitle(node,titleSource)||'');
       if(tag==='input'&&node.type==='file')return normalize(options.nativeControls?.get(node)?.[0]?.name||nameTitle(node,titleSource)||'');
       if(tag==='input'&&node.type==='image')return normalize(node.getAttribute('alt')||nameTitle(node,titleSource)||'Submit');
@@ -377,13 +392,13 @@ inline constexpr char kSuiteCutDomQuery[] = R"JS(function(steps,start=document,o
       if(context.referenced||context.embedded||contentRoles.has(r)){
         let nodes=node.localName==='slot'&&node.assignedNodes().length?node.assignedNodes({flatten:true}):node.shadowRoot?[...node.shadowRoot.childNodes]:[...node.childNodes];
         const owned=nativeRegexSplit((node.getAttribute('aria-owns')||'').trim(),/\s+/).filter(Boolean).map(id=>byId(node,id)).filter(e=>e&&!nodes.includes(e));nodes=[...nodes,...owned];
-        let result=pseudo(node,'::before');for(const child of nodes){const value=name(child,{referenced:context.referenced,embedded:true},seen,depth+1);const display=nativeNodeType(child)===1?getComputedStyle(child).display:'';const block=owned.includes(child)||(!!display&&display!=='contents'&&!display.startsWith('inline'));result+=(block?' ':'')+value+(block?' ':'');}result+=pseudo(node,'::after');
+        let result=pseudo(node,'::before');for(const child of nodes){const value=name(child,{referenced:context.referenced,embedded:true},seen,depth+1);const display=nativeNodeType(child)===1?hiddenStyle(child).display:'';const block=owned.includes(child)||(!!display&&display!=='contents'&&!display.startsWith('inline'));result+=(block?' ':'')+value+(block?' ':'');}result+=pseudo(node,'::after');
         if(normalize(result))return context.embedded?result:normalize(result);
       }
       return normalize(nameTitle(node,titleSource)||(['textbox','searchbox'].includes(r)?node.getAttribute('placeholder'):'')||'');
     }finally{seen.delete(node);}
   };
-  const name=(...args)=>{const value=computeName(...args);nameBytes+=value.length*2;if(nameBytes>32*1024*1024)throw new Error('Native accessible-name byte limit exceeded');return value;};
+  const name=(...args)=>computeName(...args);
   const disabled=node=>{
     if(node.matches(':disabled'))return true;
     for(let e=node;e;e=parent(e)){const value=e.getAttribute('aria-disabled');if(value==='true')return true;if(value==='false')return false;}return false;
@@ -529,7 +544,7 @@ inline constexpr char kSuiteCutDomQuery[] = R"JS(function(steps,start=document,o
       }
       for(const raw of stage){
         const step={...raw};
-        if(step.engine==='reference'&&(typeof step.ref!=='string'||step.ref.length>192||!nativeRegexTest(/^r[A-Za-z0-9]{1,64}_[1-9][0-9]*_(?:0|[1-9][0-9]*)$/,step.ref)))throw new Error('Invalid native snapshot reference token');
+        if(step.engine==='reference'&&(typeof step.ref!=='string'||step.ref.length>192||!nativeRegexTest(/^s[1-9][0-9]*e(?:0|[1-9][0-9]*)$/,step.ref)))throw new Error('Invalid native snapshot reference token');
         if(['and','or','chain','capture'].includes(step.engine))step.query=normalizePlan(step.query,depth+1);
         if(step.engine==='capture')step.descendants=normalizePlan(step.descendants,depth+1);
         if(step.engine==='filter'){
@@ -586,10 +601,10 @@ inline constexpr char kSuiteCutDomQuery[] = R"JS(function(steps,start=document,o
       if(parsed.length!==1||parsed[0].engine!=='css'){const found=new Set();for(const root of roots)for(const e of run(parsed,root,depth+1))found.add(e);roots=[...found];continue;}
       const found=new Set();for(const root of roots)for(const e of css(root,step.selector))found.add(e);roots=[...found];
     }else if(step.engine==='custom'){
-      if(hiddenStyles)hiddenStyles.clear();
+      clearCaches();
       if(!customEngines.has(step.name)){const registration=options.engines?.[step.name];if(!options.engines||!Object.hasOwn(options.engines,step.name)||!registration||typeof registration.source!=='string')throw new Error('Unknown native selector engine: '+step.name);const factory=(0,eval)('('+registration.source+')');const engine=typeof factory==='function'?factory():factory;if(!engine||typeof engine.query!=='function'||typeof engine.queryAll!=='function')throw new Error('Native selector engine must define query and queryAll');customEngines.set(step.name,engine);}
       const engine=customEngines.get(step.name),found=new Set();for(const root of roots){const nodes=engine.queryAll(root,step.selector);if(!nodes||typeof nodes[Symbol.iterator]!=='function')throw new Error('Native selector queryAll must return an iterable of elements');for(const node of nodes){tick();if(nativeQueryIntrinsics)nativeQueryIntrinsics.validateCustomNode(node,root);else if(!(node instanceof Element)||nativeOwnerDocument(node)!==(nativeNodeType(root)===9?root:nativeOwnerDocument(root)))throw new Error('Native selector returned an element outside its frame');found.add(node);if(found.size>1000000)throw new Error('Native DOM query node limit exceeded');}}roots=[...found];
-      if(hiddenStyles)hiddenStyles.clear();
+      clearCaches();
     }else if(step.engine==='xpath'){
       const found=new Set();for(const root of roots){const expression=nativeNodeType(root)!==9&&step.selector.startsWith('/')?'.'+step.selector:step.selector;let result;try{result=document.evaluate(expression,root,null,XPathResult.ORDERED_NODE_ITERATOR_TYPE);}catch(cause){const original=nativeRegexReplace(nativeRegexReplace(step.selector,/\\/g,'\\\\'),/'/g,"\\'");throw new Error("Invalid XPath selector '"+original+"'",{cause});}let node;while((node=result.iterateNext()))if(nativeNodeType(node)===1)found.add(node);}roots=[...found];
     }else if(['text','role','label','placeholder','alt','title','testId'].includes(step.engine)){
@@ -598,7 +613,7 @@ inline constexpr char kSuiteCutDomQuery[] = R"JS(function(steps,start=document,o
         let matched=false;
         if(step.engine==='text')matched=smallestTextMatch(e,step);
         if(step.engine==='role')matched=roleMatches(e,step);
-        if(step.engine==='label')matched=!!(e.labels?.length||e.getAttribute('aria-label')||e.getAttribute('aria-labelledby'))&&matchText(name(e,{referenced:true}),step);
+        if(step.engine==='label')matched=!!(labelsOf(e)?.length||e.getAttribute('aria-label')||e.getAttribute('aria-labelledby'))&&matchText(name(e,{referenced:true}),step);
         if(step.engine==='placeholder')matched=matchText(e.getAttribute('placeholder')||'',step)&&e.hasAttribute('placeholder');
         if(step.engine==='alt')matched=matchText(e.getAttribute('alt')||'',step)&&e.hasAttribute('alt');
         if(step.engine==='title')matched=matchText(e.getAttribute('title')||'',step)&&e.hasAttribute('title');

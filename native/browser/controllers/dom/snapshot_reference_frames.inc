@@ -103,9 +103,9 @@ void ReferenceFramesFinish(const std::shared_ptr<SnapshotReferenceFrameBatch>& b
     if(!value||value->GetType("value")!=VTYPE_STRING){Complete(batch->owner,false,"Native aggregate snapshot serialized observation unavailable");return;}
     const auto snapshot=value->GetString("value").ToString();
     const auto root=batch->frames.front().work;
-    const size_t bound=root->json?16777216:25165826;
-    const auto valid=snapshot.size()<=bound?CefParseJSON(suitecut::StorageJSONValidationProjection(snapshot),JSON_PARSER_RFC):nullptr;
-    if(!valid||valid->GetType()!=(root->json?VTYPE_LIST:VTYPE_STRING)){Complete(batch->owner,false,"Native aggregate snapshot serialization exceeds bounds or is invalid");return;}
+    // JSON.stringify of our own formatter; the host parses and checks it.
+    const char open=root->json?'[':'"',close=root->json?']':'"';
+    if(snapshot.size()<2||snapshot.front()!=open||snapshot.back()!=close){Complete(batch->owner,false,"Native aggregate snapshot serialization is invalid");return;}
     auto response=CefDictionaryValue::Create();response->SetString(root->json?"snapshotJSON":"yamlJSON",snapshot);const auto json=Json(response);
     if(!ReferenceFramesCurrent(batch))return;
     batch->publication_tickets=tickets;batch->publication_ready=true;
@@ -126,7 +126,7 @@ void ReferenceFramesMerge(const std::shared_ptr<SnapshotReferenceFrameBatch>& ba
   ReferenceRequest(parent,"Runtime.callFunctionOn",params,[this,batch,index,parent_index=child.parent](Dict result){
     const auto value=result->GetDictionary("result");
     if(!value||value->GetType("value")!=VTYPE_STRING){Complete(batch->owner,false,"Native aggregate snapshot merge unavailable");return;}
-    const auto forest=value->GetString("value").ToString();if(forest.size()>16777216){Complete(batch->owner,false,"Native aggregate snapshot exceeds 16 MiB");return;}
+    const auto forest=value->GetString("value").ToString();
     batch->frames[parent_index].forest=forest;batch->frames[index].merged=true;ReferenceFramesMerge(batch);
   });
 }
@@ -143,7 +143,7 @@ void ReferenceFramesPrepared(const std::shared_ptr<SnapshotReferenceFrameBatch>&
     if(!value||value->GetType("value")!=VTYPE_STRING){Complete(batch->owner,false,"Native aggregate snapshot prepared forest unavailable");return;}
     const auto forest=value->GetString("value").ToString();std::vector<size_t> frames;std::string error;
     if(!suitecut::SnapshotReferenceFrameIndices(forest,references,frames,error)){Complete(batch->owner,false,error);return;}
-    if(frames.size()>31-batch->edges.size()){Complete(batch->owner,false,"Native aggregate snapshot frame capacity exceeded");return;}
+    if(frames.size()>suitecut::SnapshotReferences::kFrames-1-batch->edges.size()){Complete(batch->owner,false,"AI snapshot covers at most "+std::to_string(suitecut::SnapshotReferences::kFrames-1)+" iframes, Chromium's own frames-per-page limit; this page has more");return;}
     batch->frames[index].forest=forest;for(const auto node:frames)batch->edges.push_back({index,node});
     if(index){batch->active_edge=false;batch->active=0;}
     ReferenceFramesNext(batch);
@@ -162,7 +162,8 @@ void ReferenceFramesCapture(const std::shared_ptr<SnapshotReferenceFrameBatch>& 
   const auto document=ReferenceDocument(child);
   if(!document){const std::weak_ptr<SnapshotReferenceFrameBatch> weak=batch;
     CefPostDelayedTask(TID_UI,new Task([self=CefRefPtr<Source>(this),weak,seq,parent_index,node_index,child,attached]{if(const auto batch=weak.lock())self->ReferenceFramesCapture(batch,seq,parent_index,node_index,child,attached);}),10);return;}
-  if(batch->frames.size()>=32||!batch->seen.insert(child).second){Complete(batch->owner,false,"Native aggregate snapshot frame cycle or capacity exceeded");return;}
+  if(batch->frames.size()>=suitecut::SnapshotReferences::kFrames){Complete(batch->owner,false,"AI snapshot covers at most "+std::to_string(suitecut::SnapshotReferences::kFrames-1)+" iframes, Chromium's own frames-per-page limit; this page has more");return;}
+  if(!batch->seen.insert(child).second){Complete(batch->owner,false,"Native aggregate snapshot frame cycle");return;}
   auto work=std::make_shared<SnapshotReferenceCapture>();work->owner=batch->owner;work->generation=batch->generation;work->document=*document;
   const auto root=batch->frames.front().work;work->json=root->json;work->boxes=root->boxes;work->depth=root->depth;
   const size_t index=batch->frames.size();ReferenceFramesAttach(batch,work,index);batch->frames.push_back({work,"",parent_index,SnapshotReferences().GroupFor(parent->ticket)->references.at(node_index)});batch->active=index;
@@ -202,9 +203,9 @@ void ReferenceFramesDescribe(const std::shared_ptr<SnapshotReferenceFrameBatch>&
     const auto node=result->GetDictionary("node");
     if(!node||node->GetType("backendNodeId")!=VTYPE_INT||node->GetInt("backendNodeId")!=backend||node->GetInt("nodeType")!=1||
        (node->GetString("nodeName")!="IFRAME"&&node->GetString("nodeName")!="FRAME")){Complete(batch->owner,false,"Native aggregate snapshot iframe backend identity changed");return;}
-    if(node->GetType("frameId")!=VTYPE_STRING||node->GetString("frameId").empty()){
-      const std::weak_ptr<SnapshotReferenceFrameBatch> weak=batch;
-      CefPostDelayedTask(TID_UI,new Task([self=CefRefPtr<Source>(this),weak,seq,edge]{if(const auto batch=weak.lock())self->ReferenceFramesDescribe(batch,seq,edge);}),10);return;}
+    // An owner without a content frame (the page removed the iframe after the
+    // capture) gets none later; Playwright shows such an iframe empty too.
+    if(node->GetType("frameId")!=VTYPE_STRING||node->GetString("frameId").empty()){ReferenceFramesAbandon(batch);return;}
     ReferenceFramesCapture(batch,seq,edge.parent,edge.index,node->GetString("frameId").ToString());
   });
 }

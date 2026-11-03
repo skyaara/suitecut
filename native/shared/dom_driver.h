@@ -16,7 +16,7 @@ inline std::string SuiteCutDOMDriverSource() {
   const reset=()=>{if(owner!==document){owner=document;generation=0;refs.clear();identities=new WeakMap();nextIdentity=0;prefix=nonce();}};
   const parent=e=>e.assignedSlot||e.parentElement||e.getRootNode().host||null;
   const reference=(root,token)=>{
-    reset();if(typeof token!=='string'||!/^r[A-Za-z0-9]{1,64}_[1-9][0-9]*_(?:0|[1-9][0-9]*)$/.test(token))throw new Error('Invalid native snapshot reference token');
+    reset();if(typeof token!=='string'||!/^s[1-9][0-9]*e(?:0|[1-9][0-9]*)$/.test(token))throw new Error('Invalid native snapshot reference token');
     const e=refs.get(token)?.deref();if(!e||!e.isConnected||e.ownerDocument!==document)throw new Error('Native snapshot reference is stale or unavailable');
     if(root.nodeType!==9){let contained=false;for(let n=e;n;n=parent(n))if(n===root){contained=true;break;}if(!contained)return [];}
     return [e];

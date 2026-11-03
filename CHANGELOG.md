@@ -2,6 +2,24 @@
 
 ## Unreleased
 
+- Make AI snapshots faster and smaller. A 25,000-element page takes 3-5 s
+  instead of 17.6 s, 100,000 elements finish instead of timing out, and a
+  default `ariaSnapshot()` of 100,000 elements takes 6-10 s instead of 75 s.
+  Names were computed with a whole-document `<label>` walk per element, styles
+  were read again for every check, and the reference forest was parsed three
+  times. AI snapshots also use fewer tokens: refs are short (`s1e5` instead of
+  `r` plus 32 hex digits), a name that only repeats its children's text is left
+  out (rows, cells, card links), and same-origin links are written as paths.
+  Hacker News is 18% smaller, BBC News 26%, Wikipedia and GitHub 6%. Default
+  and `toMatchAriaSnapshot()` output are unchanged. Refs from earlier versions
+  no longer resolve.
+- Snapshot pages of any size and depth. The 8 MiB YAML, 16 MiB JSON and
+  1,000,000-node caps are gone, the `depth` option is no longer capped at 64,
+  and an AI snapshot covers up to 1,000 iframes, Blink's own per-page limit,
+  where it used to fail past 31.
+- Stop an AI snapshot from waiting on an iframe the page has removed. BBC News
+  removes one after load, and about one snapshot in three waited a third of
+  its timeout (20 s) for it; it now shows that iframe empty, as Playwright does.
 - Take inputs of any size, as Playwright does. A command to the browser used
   to stop at 64 KiB, so `page.evaluate()` arguments, `setContent()` HTML,
   `fill()` and `insertText()` text, `getByText()` strings, ARIA templates and

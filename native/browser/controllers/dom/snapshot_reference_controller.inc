@@ -46,7 +46,7 @@ void ReferenceRequest(const std::shared_ptr<SnapshotReferenceCapture>& work,cons
     }
     done(result);
   };
-  if(!work->ticket){DevTools(work->owner,method,params,std::move(callback),work->document.session,true,32*1048576,true);return;}
+  if(!work->ticket){DevTools(work->owner,method,params,std::move(callback),work->document.session,true,kMaxResponseBytes,true);return;}
   auto lease=SnapshotReferences().Use(work->ticket);
   if(!lease){Complete(work->owner,false,"Native snapshot reference physical read capacity exceeded");return;}
   ReferenceSubmit(work->owner,work->generation,work->document.session,method,params,[]{return true;},
@@ -102,7 +102,7 @@ void BeginReferenceSnapshot(int id,Dict message){
   if(operations_.IsExpired(id,operation->generation,Now())){Complete(id,false,"Native operation timed out");return;}
   for(const char* reserved:{"nativeQueryNodes","nativeSelectorWaitState","nativeAccessibilitySnapshot","nativeSemanticSnapshotJson","formNode"})if(message->HasKey(reserved)){Complete(id,false,"Invalid reserved native reference snapshot field");return;}
   if(message->HasKey("referenceFormat")&&(message->GetType("referenceFormat")!=VTYPE_STRING||message->GetString("referenceFormat")!="json")){Complete(id,false,"Invalid native reference snapshot format");return;}
-  if(message->HasKey("referenceDepth")&&(message->GetType("referenceDepth")!=VTYPE_INT||message->GetInt("referenceDepth")<0||message->GetInt("referenceDepth")>64)){Complete(id,false,"Invalid native reference snapshot depth option");return;}
+  if(message->HasKey("referenceDepth")&&(message->GetType("referenceDepth")!=VTYPE_INT||message->GetInt("referenceDepth")<0)){Complete(id,false,"Invalid native reference snapshot depth option");return;}
   if(message->HasKey("accessibilityBoxes")&&message->GetType("accessibilityBoxes")!=VTYPE_BOOL){Complete(id,false,"Invalid native reference snapshot boxes option");return;}
   if(const auto path=message->GetList("framePath");path&&path->GetSize()){
     ResolveFramePath(id,operation->generation,message,0,FrameId(message),[this,id](Dict resolved){BeginReferenceSnapshot(id,resolved);});return;

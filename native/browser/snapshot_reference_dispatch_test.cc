@@ -12,6 +12,7 @@
 #include <set>
 struct Harness {
   using Dict=CefRefPtr<CefDictionaryValue>;
+  static constexpr size_t kMaxResponseBytes=192*1048576;
   using SnapshotReferenceDocument=suitecut::SnapshotReferences::Document;
   using Callback=std::function<void(bool,const std::string&)>;
   struct DevToolsCall {int owner;Callback callback;std::string session;bool retain_after_cancel=false;size_t response_limit=0;bool retained_control=false,lossless_scalars=false;};
@@ -31,7 +32,7 @@ struct Harness {
   void WakeDeadlines(){}
   bool SubmitDevTools(int id,const std::string&,Dict params,const std::string&){
     ++submissions;assert(params);assert(devtools_.contains(id));
-    const auto& call=devtools_.at(id);assert(call.retain_after_cancel&&call.retained_control&&call.lossless_scalars&&call.response_limit==32*1048576);
+    const auto& call=devtools_.at(id);assert(call.retain_after_cancel&&call.retained_control&&call.lossless_scalars&&call.response_limit==kMaxResponseBytes);
     if(synchronous)Ack(id,synchronous_ok);
     return submit_ok;
   }

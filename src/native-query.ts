@@ -48,7 +48,7 @@ export function nativeReferenceQuery(ref: string): NativeQueryStep {
     ref: z
       .string()
       .max(192)
-      .regex(/^r[A-Za-z0-9]{1,64}_[1-9][0-9]*_(?:0|[1-9][0-9]*)$/u)
+      .regex(/^s[1-9][0-9]*e(?:0|[1-9][0-9]*)$/u)
       .parse(ref),
   }
 }

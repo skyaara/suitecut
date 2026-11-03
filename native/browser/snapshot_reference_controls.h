@@ -46,8 +46,11 @@ class SnapshotReferences {
   using Current=std::function<bool(int,uint64_t,const Document&)>;
   using Release=std::function<void(const Group&,std::function<void(bool,const std::string&)>)>;
   using Fatal=std::function<void(const std::string&)>;
-  static constexpr size_t kActiveNodes=1048576,kResidentNodes=2097152,kActiveGroups=64,kResidentGroups=128,kPhysicalReleases=32,kBorrows=64,kBytes=1024ULL*1024*1024;
-  static constexpr size_t kGlobalNodes=4194304,kGlobalGroups=256,kGlobalInstalls=128,kGlobalReleases=64,kGlobalBorrows=128,kGlobalBytes=4096ULL*1024*1024;
+  // Blink allows 1000 frames per page (Page::kMaxNumberOfFrames); one AI snapshot
+  // holds a group per frame, so groups are sized from that.
+  static constexpr size_t kFrames=1001;
+  static constexpr size_t kActiveNodes=1048576,kResidentNodes=2097152,kActiveGroups=2*kFrames,kResidentGroups=4*kFrames,kPhysicalReleases=32,kBorrows=64,kBytes=1024ULL*1024*1024;
+  static constexpr size_t kGlobalNodes=4194304,kGlobalGroups=8*kFrames,kGlobalInstalls=128,kGlobalReleases=64,kGlobalBorrows=128,kGlobalBytes=4096ULL*1024*1024;
   SnapshotReferences(std::string name_space,Current current,Release release,Fatal fatal)
     :namespace_(std::move(name_space)),current_(std::move(current)),release_(std::move(release)),fatal_(std::move(fatal)){}
   ~SnapshotReferences(){Destroyed();life_->alive=false;}
@@ -56,7 +59,7 @@ class SnapshotReferences {
     std::set<int>unique;for(const auto&node:nodes)if(node.backend<=0||node.type!=1||!unique.insert(node.backend).second)return 0;
     const size_t bytes=document.frame.size()+document.session.size()+document.loader.size()+document.main_unique.size()+document.utility_unique.size()+namespace_.size()+2048+nodes.size()*(sizeof(Node)+sizeof(std::string)+704);
     if(bytes>kBytes-resident_bytes_||bytes>kGlobalBytes-GlobalState().bytes)return 0;
-    auto group=std::make_shared<Group>();group->ticket=++sequence_;group->generation=generation;group->owner=owner;group->document=std::move(document);group->nodes=std::move(nodes);group->deadline=deadline;group->bytes=bytes;group->name="suitecut-snapshot-"+namespace_+"-"+std::to_string(group->ticket);
+    auto group=std::make_shared<Group>();group->ticket=++GlobalState().sequence;group->generation=generation;group->owner=owner;group->document=std::move(document);group->nodes=std::move(nodes);group->deadline=deadline;group->bytes=bytes;group->name="suitecut-snapshot-"+namespace_+"-"+std::to_string(group->ticket);
     // Only reuse identities in the currently published exact document. No
     // historical backend map survives omission/navigation, bounding ownership
     // by resident groups and preventing a stale token from naming a new node.
@@ -65,7 +68,7 @@ class SnapshotReferences {
       for(size_t i=0;i<other->nodes.size();++i)previous.emplace(other->nodes[i].backend,other->references[i]);
     group->references.reserve(group->nodes.size());
     for(size_t i=0;i<group->nodes.size();++i){const auto old=previous.find(group->nodes[i].backend);
-      group->references.push_back(old==previous.end()?"r"+namespace_+"_"+std::to_string(group->ticket)+"_"+std::to_string(i):old->second);}
+      group->references.push_back(old==previous.end()?"s"+std::to_string(group->ticket)+"e"+std::to_string(i):old->second);}
     resident_bytes_+=bytes;resident_nodes_+=group->nodes.size();GlobalState().bytes+=bytes;GlobalState().nodes+=group->nodes.size();++GlobalState().groups;groups_.emplace(group->ticket,group);return group->ticket;
   }
   // Source calls immediately before the genuine group-install command dispatch.
@@ -104,7 +107,7 @@ class SnapshotReferences {
   // before retiring any previously successful publication. Physical borrows and
   // old-group release receipts remain independently owned after that switch.
   bool CommitBatch(const std::vector<uint64_t>& tickets,double now){
-    if(closed_||failed_||tickets.empty()||tickets.size()>32)return false;
+    if(closed_||failed_||tickets.empty()||tickets.size()>kFrames)return false;
     std::vector<std::shared_ptr<Group>> batch;std::set<uint64_t> seen;
     std::map<std::string,std::shared_ptr<Group>> frames;bool valid=std::isfinite(now);
     for(const auto ticket:tickets){
@@ -150,7 +153,7 @@ class SnapshotReferences {
     }
     Pump();return true;
   }
-  std::string Prefix(uint64_t ticket)const{return groups_.contains(ticket)?"r"+namespace_+"_"+std::to_string(ticket)+"_":std::string();}
+  std::string Prefix(uint64_t ticket)const{return groups_.contains(ticket)?"s"+std::to_string(ticket)+"e":std::string();}
   std::string Reference(uint64_t ticket,size_t index)const{const auto found=groups_.find(ticket);return found!=groups_.end()&&found->second->active&&index<found->second->nodes.size()?Token(*found->second,index):std::string();}
   std::shared_ptr<const Group> GroupFor(uint64_t ticket)const{const auto found=groups_.find(ticket);return found==groups_.end()?nullptr:found->second;}
   bool NeedsTick()const{if(closed_||failed_)return false;for(const auto&[id,group]:groups_)if(group->retiring)return true;return false;}
@@ -193,7 +196,9 @@ class SnapshotReferences {
   size_t InstallPhysical()const{size_t result=0;for(const auto&[id,group]:groups_)if(group->dispatched&&!group->installed)++result;return result;}
   size_t Active()const{return active_nodes_;}size_t Resident()const{return resident_nodes_;}size_t Groups()const{return groups_.size();}size_t Bytes()const{return resident_bytes_;}size_t Physical()const{return physical_;}size_t Borrows()const{return borrows_;}bool Failed()const{return failed_;}
  private:
-  struct Global{size_t nodes=0,groups=0,bytes=0,installs=0,releases=0,borrows=0;};
+  // Tickets count browser-wide, so a ref like s3e15 names one element in one
+  // page: an agent that sends it to another page gets "unknown", not a stranger.
+  struct Global{size_t nodes=0,groups=0,bytes=0,installs=0,releases=0,borrows=0;uint64_t sequence=0;};
   static Global& GlobalState(){static Global state;return state;}
   struct Life{bool alive=true;};
   bool ValidNamespace()const{return !namespace_.empty()&&namespace_.size()<=64&&std::all_of(namespace_.begin(),namespace_.end(),[](unsigned char c){return(c>='a'&&c<='z')||(c>='A'&&c<='Z')||(c>='0'&&c<='9');});}

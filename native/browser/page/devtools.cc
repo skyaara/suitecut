@@ -385,9 +385,10 @@ auto Source::ToolResult(int id, bool success, const void* result, size_t size,
                                 size <= response_limit;
   if (retained && !artifact_regular) {
     if (size > response_limit)
-      callback(false, response_limit == kMaxResponseBytes
-                          ? "{\"message\":\"Native artifact protocol response exceeds 192 MiB\"}"
-                          : "{\"message\":\"Native DevTools response byte limit exceeded\"}");
+      callback(false, "{\"message\":\"Native DevTools response of " +
+                          std::to_string(size / 1048576) + " MiB exceeds suitecut's " +
+                          std::to_string(response_limit / 1048576) +
+                          " MiB limit for this command\"}");
     else
       callback(success, size ? std::string(static_cast<const char*>(result), size) : "{}");
     return;

@@ -5,7 +5,32 @@
 // repository formatter generator after changing that function.
 inline constexpr char kSuiteCutNativeAriaFormatter[] = R"JS(function formatNativeAriaTree(nodes, options = {}) {
     const output = [];
-    let visited = 0, bytes = 0;
+    const squeeze = (value) => value.replace(/\s+/gu, '');
+    // Whether a name only repeats the text its rendered children already show.
+    // The walk stops once it has read past the name, so it stays cheap.
+    const repeatsChildren = (name, children) => {
+        const target = squeeze(name);
+        let seen = 0;
+        let steps = target.length * 4 + 64;
+        const pending = [...children].reverse();
+        while (pending.length) {
+            const node = pending.pop();
+            if (!node || --steps < 0)
+                return false;
+            const own = node.role === 'text' ? (node.text ?? node.name ?? '') : (node.text ?? '');
+            const grand = node.role === 'text' ? [] : (node.children ?? []);
+            const piece = squeeze(own || (grand.length ? '' : (node.name ?? '')));
+            if (!target.startsWith(piece, seen))
+                return false;
+            seen += piece.length;
+            for (let index = grand.length - 1; index >= 0; --index) {
+                const child = grand[index];
+                if (child)
+                    pending.push(child);
+            }
+        }
+        return seen === target.length;
+    };
     const scalar = (value, property = false) => /:(?:\s|$)|[\n\r[\]{}]|^[,'"#&*!>|%@`-]/u.test(value) ||
         /^(?:true|false|yes|no|y|n|on|off|null|~|[-+]?\d+(?:\.\d+)?(?:e[-+]?\d+)?|\.inf|\.nan)$/iu.test(value) ||
         (!property && value.startsWith('/')) ||
@@ -13,9 +38,6 @@ inline constexpr char kSuiteCutNativeAriaFormatter[] = R"JS(function formatNativ
         ? JSON.stringify(value)
         : value;
     const append = (line) => {
-        bytes += line.length * 2 + 2;
-        if (bytes > 16_777_216)
-            throw new Error('Native ARIA snapshot exceeds 8 MiB');
         output.push(line);
     };
     const stack = nodes.map((node) => ({ node, depth: 0 })).reverse();
@@ -23,16 +45,33 @@ inline constexpr char kSuiteCutNativeAriaFormatter[] = R"JS(function formatNativ
         const item = stack.pop();
         if (!item)
             break;
-        if (++visited > 1_000_000 || item.depth > 512)
-            throw new Error('Native ARIA snapshot traversal exceeds bounds');
         const { node, depth } = item;
         const indent = '  '.repeat(depth);
         if (node.role === 'text') {
             append(`${indent}- text: ${scalar(node.text ?? node.name ?? '')}`);
             continue;
         }
+        const properties = Object.entries(node.properties ?? {});
+        let children = node.children ?? [];
+        let text = node.text && node.text !== node.name ? node.text : undefined;
+        if (children.length === 1 && children[0]?.role === 'text' && !node.text) {
+            const value = children[0].text ?? children[0].name ?? '';
+            if (value !== node.name)
+                text = value;
+            children = [];
+        }
+        const inlineText = text !== undefined && !children.length && !properties.length;
+        if (text !== undefined && !inlineText)
+            children = [{ role: 'text', text }, ...children];
+        if (depth >= (options.depth ?? Infinity))
+            children = [];
         // Keep full names available for matching; bound repeated YAML name previews.
-        const namePreview = node.name && node.name.length <= 1000 ? node.name : undefined;
+        // AI snapshots also drop a name its children already spell out.
+        const namePreview = node.name &&
+            node.name.length <= 1000 &&
+            !(options.mode === 'ai' && children.length && repeatsChildren(node.name, children))
+            ? node.name
+            : undefined;
         let line = `${indent}- ${node.role}${namePreview ? ` ${JSON.stringify(namePreview)}` : ''}`;
         for (const key of [
             'checked',
@@ -58,28 +97,12 @@ inline constexpr char kSuiteCutNativeAriaFormatter[] = R"JS(function formatNativ
             line += ` [box=${node.box.join(',')}]`;
         }
         if (options.mode === 'ai' && node.ref !== undefined) {
-            if (!/^r[A-Za-z0-9]{1,64}_[1-9][0-9]*_(?:0|[1-9][0-9]*)$/u.test(node.ref) ||
-                node.ref.length > 192)
+            if (!/^s[1-9][0-9]*e(?:0|[1-9][0-9]*)$/u.test(node.ref) || node.ref.length > 192)
                 throw new Error('Invalid native ARIA reference token');
             line += ` [ref=${node.ref}]`;
         }
-        const properties = Object.entries(node.properties ?? {});
-        let children = node.children ?? [];
-        let text = node.text && node.text !== node.name ? node.text : undefined;
-        if (children.length === 1 && children[0]?.role === 'text' && !node.text) {
-            const value = children[0].text ?? children[0].name ?? '';
-            if (value !== node.name)
-                text = value;
-            children = [];
-        }
-        if (text !== undefined) {
-            if (children.length || properties.length)
-                children = [{ role: 'text', text }, ...children];
-            else
-                line += `: ${scalar(text)}`;
-        }
-        if (depth >= (options.depth ?? 512))
-            children = [];
+        if (inlineText && text !== undefined)
+            line += `: ${scalar(text)}`;
         if (children.length || properties.length)
             line += ':';
         append(line);

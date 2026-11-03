@@ -14,7 +14,7 @@ import { type NativeBrowser } from '../src/native-browser.js'
 import { NativePage } from '../src/native-page.js'
 import { type UntrustedInput } from '../src/untrusted.js'
 
-const reference = 'rActualSource1_2_0'
+const reference = 's2e0'
 
 describe('direct structured native semantic projection', () => {
   it('preserves genuine names, state flags, properties and sole text content without YAML parsing', () => {
@@ -146,18 +146,18 @@ describe('direct structured native semantic projection', () => {
       ]),
     ).toEqual([{ role: 'generic' }])
   })
-  it('preserves isolated units and ordinary tag-shaped strings while bounding actual serialized bytes and nodes', () => {
+  it('preserves isolated units and ordinary tag-shaped strings at any size and depth', () => {
     const name = '\ud800',
       text = '{"__suitecutNativeUTF16Scalar":"d800"}'
     expect(
       JSON.parse(JSON.stringify(formatNativeAriaJSON([{ role: 'textbox', name, text }]))),
     ).toEqual([{ role: 'textbox', name, text }])
-    expect(() =>
+    expect(
       formatNativeAriaJSON(Array.from({ length: 1_000_001 }, () => ({ role: 'button' }))),
-    ).toThrow(/node limit/u)
-    expect(() => formatNativeAriaJSON([{ role: 'textbox', text: 'x'.repeat(16_777_216) }])).toThrow(
-      /16 MiB/u,
-    )
+    ).toHaveLength(1_000_001)
+    expect(
+      formatNativeAriaJSON([{ role: 'textbox', text: 'x'.repeat(16_777_216) }])[0]?.text,
+    ).toHaveLength(16_777_216)
     const root: NativeAriaNode = { role: 'list' }
     let next = root
     for (let i = 0; i < 513; i++) {
@@ -165,7 +165,7 @@ describe('direct structured native semantic projection', () => {
       next.children = [child]
       next = child
     }
-    expect(() => formatNativeAriaJSON([root])).toThrow(/depth limit/u)
+    expect(JSON.stringify(formatNativeAriaJSON([root])).split('"list"')).toHaveLength(515)
   })
   it('keeps the exact C++ utility-world formatter identical to the canonical authored function', async () => {
     const source = await readFile(new URL('../src/native-aria.ts', import.meta.url), 'utf8')
@@ -290,7 +290,7 @@ describe('structured native snapshot transport', () => {
   })
   it('rejects unknown or unsupported options before native admission', async () => {
     const { page, runAutomation } = nativeFixture('[]')
-    for (const options of [{ mode: 'expect' }, { depth: 65 }, { timeout: -1 }, { force: true }])
+    for (const options of [{ mode: 'expect' }, { depth: -1 }, { timeout: -1 }, { force: true }])
       await expect(page.ariaSnapshotJSON(options as never)).rejects.toThrow()
     expect(runAutomation).not.toHaveBeenCalled()
   })

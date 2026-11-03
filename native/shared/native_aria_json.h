@@ -6,16 +6,11 @@
 inline constexpr char kSuiteCutNativeAriaJSON[] = R"JS(function formatNativeAriaJSON(nodes, options = {}) {
     const result = [];
     const pending = [{ values: nodes, output: result, depth: 0 }];
-    let visited = 0;
     while (pending.length) {
         const item = pending.pop();
         if (!item)
             break;
-        if (item.depth > 512)
-            throw new Error('Native ARIA JSON depth limit exceeded');
         for (const actual of item.values) {
-            if (++visited > 1_000_000)
-                throw new Error('Native ARIA JSON node limit exceeded');
             if (actual.role === 'text') {
                 const text = actual.text ?? actual.name ?? '';
                 if (item.depth)
@@ -77,8 +72,7 @@ inline constexpr char kSuiteCutNativeAriaJSON[] = R"JS(function formatNativeAria
                 };
             }
             if (options.mode === 'ai' && actual.ref !== undefined) {
-                if (!/^r[A-Za-z0-9]{1,64}_[1-9][0-9]*_(?:0|[1-9][0-9]*)$/u.test(actual.ref) ||
-                    actual.ref.length > 192)
+                if (!/^s[1-9][0-9]*e(?:0|[1-9][0-9]*)$/u.test(actual.ref) || actual.ref.length > 192)
                     throw new Error('Invalid native ARIA JSON reference token');
                 node.ref = actual.ref;
             }
@@ -112,7 +106,5 @@ inline constexpr char kSuiteCutNativeAriaJSON[] = R"JS(function formatNativeAria
             }
         }
     }
-    if (new TextEncoder().encode(JSON.stringify(result)).byteLength > 16_777_216)
-        throw new Error('Native ARIA JSON exceeds 16 MiB');
     return result;
 })JS";

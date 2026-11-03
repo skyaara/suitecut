@@ -30,11 +30,11 @@ void ReadAriaJSON(const std::shared_ptr<AriaJSONWork>& work,const std::string& c
     if(value->GetInt("count")==0){aria_json_work_.erase(work->owner);RetryContext(work->owner);return;}
     if(value->GetInt("count")!=1||value->GetType("json")!=VTYPE_STRING){Complete(work->owner,false,"Native structured accessibility result is invalid");return;}
     const auto snapshot=value->GetString("json").ToString();
-    const auto valid=snapshot.size()<=16777216?CefParseJSON(suitecut::StorageJSONValidationProjection(snapshot),JSON_PARSER_RFC):nullptr;
-    if(!valid||valid->GetType()!=VTYPE_LIST){Complete(work->owner,false,"Native structured accessibility JSON exceeds bounds or is invalid");return;}
+    // JSON.stringify of our own formatter; the host parses and checks it.
+    if(snapshot.size()<2||snapshot.front()!='['||snapshot.back()!=']'){Complete(work->owner,false,"Native structured accessibility JSON is invalid");return;}
     auto response=CefDictionaryValue::Create();response->SetString("snapshotJSON",snapshot);
     if(AriaJSONCurrent(work))Complete(work->owner,true,"",Json(response));
-  },work->document->session,false,32*1048576,true);
+  },work->document->session,false,kMaxResponseBytes,true);
 }
 void AriaJSONAction(int id,uint64_t generation,Dict config){
   if(!operations_.IsCurrent(id,generation))return;
@@ -43,7 +43,7 @@ void AriaJSONAction(int id,uint64_t generation,Dict config){
   if(!SelectorWaits().Admit(id,generation)){Complete(id,false,"Native structured accessibility physical capacity exceeded");return;}
   if(config->HasKey("nativeHandle")){Complete(id,false,"Invalid native structured snapshot root");return;}
   if((config->HasKey("accessibilityBoxes")&&config->GetType("accessibilityBoxes")!=VTYPE_BOOL)||
-     (config->HasKey("snapshotDepth")&&(config->GetType("snapshotDepth")!=VTYPE_INT||config->GetInt("snapshotDepth")<0||config->GetInt("snapshotDepth")>64))){Complete(id,false,"Invalid native structured accessibility options");return;}
+     (config->HasKey("snapshotDepth")&&(config->GetType("snapshotDepth")!=VTYPE_INT||config->GetInt("snapshotDepth")<0))){Complete(id,false,"Invalid native structured accessibility options");return;}
   if(!PrepareSnapshotReferenceScope(id,config))return;
   if(const auto path=config->GetList("framePath");path&&path->GetSize()){
     ResolveFramePath(id,generation,config,0,FrameId(config),[this,id,generation](Dict resolved){AriaJSONAction(id,generation,resolved);});return;

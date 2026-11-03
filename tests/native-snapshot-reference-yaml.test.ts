@@ -21,8 +21,8 @@ async function literal(file: string): Promise<UntrustedInput> {
 }
 const merge = await literal('snapshot_reference_frames.h')
 const formatter = await literal('native_aria_formatter.h')
-const owner = 'rActualMain_1_0',
-  child = 'rActualChild_2_0'
+const owner = 's1e0',
+  child = 's2e0'
 function merged(children: NativeAriaNode[]): { forest: NativeAriaNode[] } {
   if (typeof merge !== 'function') throw new Error('Missing native merge')
   const capture = {
@@ -65,7 +65,7 @@ describe('canonical native YAML over composed frame observations', () => {
       `- iframe [ref=${owner}]:\n  - textbox "\\ud800" [ref=${child}]: ${JSON.stringify(text)}`,
     )
   })
-  it('enforces YAML output bounds independently of the smaller genuine JSON forest', () => {
+  it('formats YAML far larger than its JSON forest whole', () => {
     const root: NativeAriaNode = { role: 'group' }
     let node = root
     for (let i = 0; i < 55; i++) {
@@ -77,8 +77,9 @@ describe('canonical native YAML over composed frame observations', () => {
     node.children = Array.from({ length: 60_000 }, () => ({ role: 'text', text: 'x'.repeat(40) }))
     const capture = merged([root]),
       before = JSON.stringify(capture)
-    expect(new TextEncoder().encode(before).byteLength).toBeLessThan(16_777_216)
-    expect(() => format(capture)).toThrow(/8 MiB/u)
+    const yaml = format(capture)
+    expect(yaml.length).toBeGreaterThan(2 * before.length)
+    expect(yaml.split('\n')).toHaveLength(60_057)
     expect(JSON.stringify(capture)).toBe(before)
   })
 })

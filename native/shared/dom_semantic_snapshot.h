@@ -4,17 +4,26 @@
 // alter Chromium's independent raw Accessibility.getFullAXTree capture.
 inline constexpr char kSuiteCutDOMSemanticSnapshot[] = R"JS(function(scope,query,options={}){
   if(!(scope instanceof Element))throw new Error('Native semantic snapshot requires an element');
-  const tools=query([],scope,{accessibilityTools:true,nativeControls:options.nativeControls});let work=0,visitedCount=0,outputCount=0,textUnits=0;const counted=new WeakSet(),fileControls=[],referenceNodes=new WeakMap(),passwordControls=new Set();
+  const tools=query([],scope,{accessibilityTools:true,snapshot:true,nativeControls:options.nativeControls});let work=0;const fileControls=[],referenceNodes=new WeakMap(),passwordControls=new Set();
   if(options.captureReferences!==undefined&&typeof options.captureReferences!=='boolean')throw new Error('Invalid native semantic reference capture option');
-  const tick=()=>{if(++work>200000000)throw new Error('Native semantic snapshot work limit exceeded');};
+  // Counts work only; cycles are caught where they can occur.
+  const tick=()=>{++work;};
   const styles=new WeakMap(),roles=new WeakMap();
   const style=e=>{tick();let value=styles.get(e);if(!value){value=getComputedStyle(e);styles.set(e,value);}return value;};
   const role=e=>{tick();let value=roles.get(e);if(value===undefined){value=['iframe','frame'].includes(e.localName)?'iframe':tools.role(e);roles.set(e,value);}return value;};
   const parent=e=>e.assignedSlot||e.parentElement||e.getRootNode().host||null;
-  const hidden=e=>{if(tools.hidden(e))return true;let depth=0;for(let p=e;p;p=parent(p)){tick();if(++depth>512)throw new Error('Native semantic snapshot ancestor depth limit exceeded');const s=style(p);if(s.display==='none'||s.visibility==='hidden'||s.visibility==='collapse'||p.getAttribute('aria-hidden')==='true')return true;const up=parent(p);if(up?.localName==='details'&&!up.open&&p!==up.querySelector('summary'))return true;}return false;};
+  // Whether an element or an ancestor hides it, cached per element: the walk
+  // visits parents first, so each answer costs one style read.
+  const hiddenChain=new WeakMap();
+  const selfHidden=p=>{const s=style(p);if(s.display==='none'||s.visibility==='hidden'||s.visibility==='collapse'||p.getAttribute('aria-hidden')==='true')return true;const up=parent(p);return up?.localName==='details'&&!up.open&&p!==up.querySelector('summary');};
+  const chainHidden=e=>{const path=[];let p=e,known=false;while(p&&!hiddenChain.has(p)){tick();path.push(p);p=parent(p);}if(p)known=hiddenChain.get(p);for(let i=path.length-1;i>=0;--i){known=known||selfHidden(path[i]);hiddenChain.set(path[i],known);}return known;};
+  const hidden=e=>tools.hidden(e)||chainHidden(e);
+  // AI snapshots write same-origin absolute links as their path, which the page URL resolves.
+  // Only a '/' path keeps its meaning; a <base> on another origin would change it.
+  let baseOrigin;const sameOriginPath=href=>{const origin=location.origin;if(baseOrigin===undefined){try{baseOrigin=new URL(document.baseURI).origin;}catch{baseOrigin=null;}}return origin!=='null'&&baseOrigin===origin&&href.startsWith(origin+'/')&&href[origin.length+1]!=='/'?href.slice(origin.length):href;};
   const physical=e=>{tick();if(e.localName==='iframe'||e.localName==='frame')return [];if(e.localName==='slot'){const assigned=e.assignedNodes({flatten:true});return assigned.length?[...assigned]:[...e.childNodes];}return [...(e.shadowRoot?e.shadowRoot.childNodes:e.childNodes)];};
   const owners=new WeakMap(),owned=new WeakMap();const indexed=new Set(),index=[scope.ownerDocument.documentElement];
-  while(index.length){tick();const e=index.pop();if(!e||indexed.has(e))continue;indexed.add(e);if(++visitedCount>1000000)throw new Error('Native semantic snapshot DOM node limit exceeded');if(e.nodeType!==1)continue;
+  while(index.length){tick();const e=index.pop();if(!e||indexed.has(e))continue;indexed.add(e);if(e.nodeType!==1)continue;
     if(options.ai===true&&e instanceof HTMLInputElement&&e.type==='password')passwordControls.add(e);
     const targets=[];for(const id of (e.getAttribute('aria-owns')||'').trim().split(/\s+/).filter(Boolean)){tick();const target=tools.byId(e,id);if(!target||owners.has(target)||target===e||target.contains(e))continue;let cyclic=false,steps=0;for(let p=e;p;p=owners.get(p)||parent(p)){tick();if(++steps>1024)throw new Error('Native semantic ownership depth limit exceeded');if(p===target){cyclic=true;break;}}if(!cyclic){owners.set(target,e);targets.push(target);}}
     owned.set(e,targets);const nested=physical(e);for(let i=nested.length-1;i>=0;--i)index.push(nested[i]);
@@ -28,8 +37,8 @@ inline constexpr char kSuiteCutDOMSemanticSnapshot[] = R"JS(function(scope,query
   const pseudo=(e,kind)=>{tick();return tools.pseudo(e,kind);};
   const box=e=>{tick();let rect;if(e.nodeType===3){const range=e.ownerDocument.createRange();range.selectNodeContents(e);rect=range.getBoundingClientRect();range.detach();}else rect=e.getBoundingClientRect();return [rect.x,rect.y,rect.width,rect.height];};
   const mergeBox=(a,b)=>{if(!a||!b)return a||b;if(a[2]===0&&a[3]===0)return b;if(b[2]===0&&b[3]===0)return a;const x=Math.min(a[0],b[0]),y=Math.min(a[1],b[1]);return [x,y,Math.max(a[0]+a[2],b[0]+b[2])-x,Math.max(a[1]+a[3],b[1]+b[3])-y];};
-  const append=(out,node)=>{tick();if(node.role==='text'&&out.at(-1)?.role==='text'){const last=out.at(-1);last.text+=node.text;if(options.boxes)last.box=mergeBox(last.box,node.box);return;}if(!counted.has(node)){counted.add(node);if(++outputCount>1000000)throw new Error('Native semantic snapshot node limit exceeded');}out.push(node);};
-  const text=(out,value,e)=>{if(!value)return;if((textUnits+=value.length)>16777216)throw new Error('Native semantic snapshot text limit exceeded');const node={role:'text',text:value};if(options.boxes)node.box=box(e);append(out,node);};
+  const append=(out,node)=>{tick();if(node.role==='text'&&out.at(-1)?.role==='text'){const last=out.at(-1);last.text+=node.text;if(options.boxes)last.box=mergeBox(last.box,node.box);return;}out.push(node);};
+  const text=(out,value,e)=>{if(!value)return;const node={role:'text',text:value};if(options.boxes)node.box=box(e);append(out,node);};
   const supports={checked:['checkbox','menuitemcheckbox','menuitemradio','radio','switch'],pressed:['button'],selected:['gridcell','option','row','tab','rowheader','columnheader','treeitem'],expanded:['application','button','checkbox','combobox','gridcell','link','listbox','menuitem','row','rowheader','tab','treeitem'],level:['heading','listitem','row','treeitem']};
   const stack=[{element:scope,entered:false,next:0,result:[],depth:0}],active=new Set(),emitted=new Set();let forest=[];
   while(stack.length){tick();const frame=stack.at(-1),e=frame.element;
@@ -71,7 +80,7 @@ inline constexpr char kSuiteCutDOMSemanticSnapshot[] = R"JS(function(scope,query
           node.editable=query([],e,{elementStateOnly:true}).editable===true;
         }
         if(Object.keys(states).length)node.states=states;
-        const properties={};if(r==='link'&&e.hasAttribute('href'))properties.url=e.getAttribute('href');
+        const properties={};if(r==='link'&&e.hasAttribute('href'))properties.url=options.captureReferences===true?sameOriginPath(e.getAttribute('href')):e.getAttribute('href');
         if((e instanceof HTMLInputElement||e instanceof HTMLTextAreaElement)&&(['textbox','searchbox'].includes(r)||aiGeneric)){if(!(e instanceof HTMLInputElement&&e.type==='password'))node.text=tools.normalize(e.value);const placeholder=e.getAttribute('placeholder');if(placeholder&&tools.normalize(placeholder)!==tools.normalize(node.name))properties.placeholder=placeholder;node.children=[];}
         if(Object.keys(properties).length)node.properties=properties;if(options.boxes)node.box=box(e);
         if(node.children.length===1&&node.children[0].role==='text'&&tools.normalize(node.children[0].text)===tools.normalize(node.name))node.children=[];
@@ -81,6 +90,6 @@ inline constexpr char kSuiteCutDOMSemanticSnapshot[] = R"JS(function(scope,query
     active.delete(e);stack.pop();const destination=stack.length?stack.at(-1).result:forest;for(const node of result)append(destination,node);
   }
   if(options.collectNativeControls)return fileControls;
-  const lists=[forest];let finalCount=0;while(lists.length){tick();const list=lists.pop();for(let i=0;i<list.length;){if(++finalCount>1000000)throw new Error('Native semantic snapshot node limit exceeded');const node=list[i];if(node.role==='text'){node.text=tools.normalize(node.text);if(!node.text){list.splice(i,1);continue;}}if(node.children)lists.push(node.children);++i;}}
-  if(new TextEncoder().encode(JSON.stringify(forest)).byteLength>16777216)throw new Error('Native semantic snapshot exceeds 16 MiB');if(options.captureReferences){const elements=[],entries=[],elementIndexes=new Map(),pending=[...forest].reverse();while(pending.length){tick();const node=pending.pop(),element=referenceNodes.get(node);if(element){let index=elementIndexes.get(element);if(index===undefined){if(elements.length>=1000000)throw new Error('Native semantic reference limit exceeded');index=elements.length;elementIndexes.set(element,index);elements.push(element);}entries.push([node,index]);}if(node.children)for(let i=node.children.length-1;i>=0;--i)pending.push(node.children[i]);}return {forest,elements,entries};}return forest;
+  const lists=[forest];while(lists.length){tick();const list=lists.pop();for(let i=0;i<list.length;){const node=list[i];if(node.role==='text'){node.text=tools.normalize(node.text);if(!node.text){list.splice(i,1);continue;}}if(node.children)lists.push(node.children);++i;}}
+  if(options.captureReferences){const elements=[],entries=[],elementIndexes=new Map(),pending=[...forest].reverse();while(pending.length){tick();const node=pending.pop(),element=referenceNodes.get(node);if(element){let index=elementIndexes.get(element);if(index===undefined){if(elements.length>=1000000)throw new Error('Native semantic reference limit exceeded');index=elements.length;elementIndexes.set(element,index);elements.push(element);}entries.push([node,index]);}if(node.children)for(let i=node.children.length-1;i>=0;--i)pending.push(node.children[i]);}return {forest,elements,entries};}return forest;
 })JS";

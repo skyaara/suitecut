@@ -14,8 +14,8 @@ const header = await readFile(
 const literal = /R"JS\(([\s\S]*)\)JS";/u.exec(header)?.[1]
 if (!literal) throw new Error('Missing native frame merge helper')
 const merge = new Script(`(${literal})`).runInNewContext({ TextEncoder }) as UntrustedInput
-const ownerRef = 'rActualMain_1_0',
-  childRef = 'rActualChild_2_0'
+const ownerRef = 's1e0',
+  childRef = 's2e0'
 function capture(): { forest: NativeAriaNode[] } {
   return { forest: [{ role: 'generic', children: [{ role: 'iframe', ref: ownerRef }] }] }
 }
@@ -45,7 +45,7 @@ describe('native retained frame forest merge', () => {
   })
   it('composes nested actual frame forests without changing their reference spelling', () => {
     const child = { forest: [{ role: 'iframe', ref: childRef }] }
-    const leaf = [{ role: 'button', name: 'Actual nested child', ref: 'rNested_3_0' }]
+    const leaf = [{ role: 'button', name: 'Actual nested child', ref: 's3e0' }]
     const childJSON = apply(child, childRef, JSON.stringify(leaf))
     expect(JSON.parse(apply(capture(), ownerRef, childJSON))).toEqual([
       {
@@ -76,36 +76,22 @@ describe('native retained frame forest merge', () => {
       expect(JSON.stringify(target)).toBe(before)
     }
   })
-  it('validates proposed depth and node bounds before mutating an owner record', () => {
+  it('merges child frames as deep and as large as the page renders', () => {
     const root: NativeAriaNode = { role: 'generic' }
     let next = root
-    for (let i = 0; i < 512; i++) {
+    for (let i = 0; i < 2_000; i++) {
       const node: NativeAriaNode = { role: 'generic' }
       next.children = [node]
       next = node
     }
-    for (const child of [[root], Array.from({ length: 1_048_576 }, () => ({ role: 't' }))]) {
-      const target = capture(),
-        before = JSON.stringify(target)
-      expect(() => apply(target, ownerRef, JSON.stringify(child))).toThrow(/depth|record/u)
-      expect(JSON.stringify(target)).toBe(before)
+    for (const child of [[root], Array.from({ length: 1_048_577 }, () => ({ role: 't' }))]) {
+      const target = capture()
+      expect(() => apply(target, ownerRef, JSON.stringify(child))).not.toThrow()
     }
-  })
-  it('rolls back exactly the previous children when genuine UTF8 output exceeds the byte cap', () => {
-    const target = capture(),
-      owner = target.forest[0]?.children?.[0]
-    if (!owner) throw new Error('Missing test owner')
-    const previous: NativeAriaNode[] = [{ role: 'text', text: 'Previous' }]
-    owner.children = previous
-    expect(() =>
+    const target = capture()
+    expect(
       apply(target, ownerRef, JSON.stringify([{ role: 'text', text: '界'.repeat(5_600_000) }])),
-    ).toThrow(/16 MiB/u)
-    expect(owner.children).toBe(previous)
-    const empty = capture()
-    expect(() =>
-      apply(empty, ownerRef, JSON.stringify([{ role: 'text', text: '界'.repeat(5_600_000) }])),
-    ).toThrow(/16 MiB/u)
-    expect(Object.hasOwn(empty.forest[0]?.children?.[0] ?? {}, 'children')).toBe(false)
+    ).toContain('界'.repeat(5_600_000))
   })
   it('rejects malformed child encoding and scalar records without decoding author tag-shaped values', () => {
     for (const child of ['{', '{}', '[17]', '[null]']) {

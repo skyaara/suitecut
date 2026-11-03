@@ -4,7 +4,7 @@
 // context. The native registry supplies exact tokens after real backend validation.
 // This mutates native snapshot records only; it never changes author DOM nodes.
 inline constexpr char kSuiteCutSnapshotReferencePublish[] = R"JS(function(references){
-  if(!Array.isArray(references)||references.length>1048576||new Set(references).size!==references.length||references.some(ref=>typeof ref!=='string'||ref.length>192||!/^r[A-Za-z0-9]{1,64}_[1-9][0-9]*_(0|[1-9][0-9]*)$/.test(ref)))throw new Error('Invalid native snapshot references');
+  if(!Array.isArray(references)||references.length>1048576||new Set(references).size!==references.length||references.some(ref=>typeof ref!=='string'||ref.length>192||!/^s[1-9][0-9]*e(0|[1-9][0-9]*)$/.test(ref)))throw new Error('Invalid native snapshot references');
   if(!this||!Array.isArray(this.forest)||!Array.isArray(this.elements)||!Array.isArray(this.entries)||this.forest.length>1048576||this.elements.length>1048576||this.entries.length>1048576)throw new Error('Invalid native snapshot reference capture');
   if(references.length!==this.elements.length)throw new Error('Native snapshot reference count changed');
   const records=new Set(),seenElements=new Set(),seenEntries=new Set(),used=new Set(),pending=[...this.forest];let count=0,work=0;
@@ -13,5 +13,5 @@ inline constexpr char kSuiteCutSnapshotReferencePublish[] = R"JS(function(refere
   for(const entry of this.entries){if(!Array.isArray(entry)||entry.length!==2||!records.has(entry[0])||seenEntries.has(entry[0])||!Number.isInteger(entry[1])||entry[1]<0||entry[1]>=this.elements.length)throw new Error('Invalid native snapshot reference mapping');seenEntries.add(entry[0]);used.add(entry[1]);}
   if(used.size!==this.elements.length)throw new Error('Incomplete native snapshot reference mapping');
   for(const [node,index]of this.entries)node.ref=references[index];
-  const json=JSON.stringify(this.forest);if(new TextEncoder().encode(json).byteLength>16777216)throw new Error('Native snapshot reference forest exceeds 16 MiB');return json;
+  return JSON.stringify(this.forest);
 })JS";

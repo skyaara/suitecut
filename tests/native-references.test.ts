@@ -10,7 +10,7 @@ import { createNativePage, NativeFrame } from '../src/native-page.js'
 import { nativeQueryDescription, nativeReferenceQuery } from '../src/native-query.js'
 import { type UntrustedInput } from '../src/untrusted.js'
 
-const reference = 'rActualNativeNamespace_123_0'
+const reference = 's123e0'
 function pageFixture(forest: UntrustedInput = [{ role: 'button', name: 'Go', ref: reference }]) {
   const runAutomation = vi.fn(
     (_command: string, _params?: Record<string, UntrustedInput>): Promise<UntrustedInput> =>
@@ -72,13 +72,7 @@ describe('native snapshot references: typed packet and host schema contracts', (
     expect(nativeQueryDescription([nativeReferenceQuery(reference)])).toBe(
       `getByRef('${reference}')`,
     )
-    for (const invalid of [
-      'button',
-      'rName_0_0',
-      'rName_1_01',
-      'rName_1_0] injected',
-      'rName\ud800_1_0',
-    ])
+    for (const invalid of ['button', 's0e0', 's1e01', 's1e0] injected', 's1\ud800e0', 'rName_1_0'])
       expect(() => nativeReferenceQuery(invalid)).toThrow()
   })
   it('keeps a Page reference as native AST data without guessing a frame or CSS selector', async () => {
@@ -207,22 +201,22 @@ describe('native snapshot references: typed packet and host schema contracts', (
       parseNativeReferenceForest('[{"role":"button","properties":{"ref":"author"}}]'),
     ).toThrow()
   })
-  it('enforces actual tree depth and node budgets', () => {
+  it('accepts forests as deep and as large as the page renders', () => {
     let nested: UntrustedInput = { role: 'button', ref: reference }
-    for (let depth = 0; depth < 514; ++depth) nested = { role: 'group', children: [nested] }
-    expect(() => parseNativeReferenceForest(JSON.stringify([nested]))).toThrow(/depth/u)
-    expect(() =>
+    for (let depth = 0; depth < 2_000; ++depth) nested = { role: 'group', children: [nested] }
+    expect(() => parseNativeReferenceForest(JSON.stringify([nested]))).not.toThrow()
+    expect(
       parseNativeReferenceForest(
         JSON.stringify(Array.from({ length: 1_000_001 }, () => ({ role: 'text', text: 'a' }))),
       ),
-    ).toThrow()
-  })
-  it('rejects byte overflow and unknown public capture modes', async () => {
-    expect(() =>
+    ).toHaveLength(1_000_001)
+  }, 60_000)
+  it('takes forests of any size and rejects unknown public capture modes', async () => {
+    expect(
       parseNativeReferenceForest(
         JSON.stringify([{ role: 'text', text: '\u0800'.repeat(5_600_000) }]),
-      ),
-    ).toThrow(/16 MiB/u)
+      )[0]?.text,
+    ).toHaveLength(5_600_000)
     const { page, runAutomation } = pageFixture()
     await expect(page.locator('body').ariaSnapshot({ mode: 'ai', timeout: -1 })).rejects.toThrow()
     expect(runAutomation).not.toHaveBeenCalled()
