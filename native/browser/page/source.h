@@ -306,6 +306,8 @@ class Source : public CefClient,
   void CompleteCountsInContext(const std::string& session, int context = 0,
                                const std::string& identity = "");
   void Complete(int id, bool ok, const std::string& error = "", const std::string& json = "");
+  // A locator timeout with its call log, as Playwright reports it.
+  std::string LocatorTimeout(int id);
   void WakeDeadlines();
   bool BindingCommandsNeedTick() const;
   void Deadlines();

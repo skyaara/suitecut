@@ -171,6 +171,36 @@ export const resilience = [
     },
     120,
   ),
+  test('resilience.covered-click-reason', ['resilience', 'input'], async (h) => {
+    // Real sites cover links with sticky banners. A click that cannot land
+    // must say what covers it, as Playwright does, not just time out.
+    const { page } = await h.page()
+    await page.goto(h.fixture.origin + '/app')
+    await page.evaluate(
+      `document.body.innerHTML='<button id="go" onclick="this.textContent=\\'clicked\\'">Go</button><div id="overlay" class="sticky banner" style="position:fixed;inset:0;background:#0003"></div>'`,
+    )
+    const snapshot = await page.ariaSnapshot({ mode: 'ai' })
+    const ref = snapshot.match(/- button "Go" \[ref=([^\]]+)\]/u)?.[1]
+    assert(ref, 'the covered button is missing from the snapshot')
+    const error = await page
+      .getByRef(ref)
+      .click({ timeout: 1500 })
+      .then(
+        () => null,
+        (e) => e,
+      )
+    assert(error, 'a covered click succeeded')
+    assert.match(
+      error.message,
+      /<div id="overlay" class="sticky banner"> intercepts pointer events/u,
+    )
+    // The click still waits, so it lands once the cover goes away.
+    const click = page.getByRef(ref).click({ timeout: 10000 })
+    await page.evaluate(`setTimeout(()=>document.getElementById('overlay').remove(),300)`)
+    await click
+    assert.equal(await page.locator('#go').textContent(), 'clicked')
+    h.check('A covered click names what covers it and lands once the cover is gone')
+  }),
   test('resilience.websocket-large-frames', ['resilience', 'network', 'websocket'], async (h) => {
     const { page } = await h.page()
     await page.goto(h.fixture.origin + '/app')

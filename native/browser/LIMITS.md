@@ -493,6 +493,8 @@ browser-use on the same sites:
   levels, Blink's own parser depth, and a longer name is cut at 64 KiB.
 - `src/native-aria.ts` and its native copies in `native/shared/native_aria_*.h`:
   the same node and depth bounds, and `depth` defaulted to 64.
+- `native/shared/dom_driver.h`: a ref snapshot through the driver failed past
+  65,536 refs. Now 1,000,000, like the others.
 - Still open: a snapshot's text is capped at 8 MiB (16 MiB of UTF-16), so a
   page of about 100,000 elements fails, and suitecut's AI snapshot is about 3x
   slower than agent-browser's on 25,000 elements.

@@ -62,7 +62,19 @@ auto Source::CompleteCountsInContext(const std::string& session, int context,
   for (const int id : ids) CompleteCountZero(id);
 }
 
+auto Source::LocatorTimeout(int id) -> std::string {
+  return "Native operation timed out (Timeout exceeded)\nCall log:\n - " + locator_logs_[id] +
+         (locator_waits_.contains(id) ? "\n - waiting for " + locator_waits_[id] : "");
+}
+
 auto Source::Complete(int id, bool ok, const std::string& error, const std::string& json) -> void {
+  // Deadlines noticed mid-step say only "timed out"; keep the call log so
+  // the caller still learns what the action was waiting for.
+  if (!ok && locator_logs_.contains(id) &&
+      (error == "Native operation timed out" || error.ends_with(": Native operation timed out"))) {
+    Complete(id, false, LocatorTimeout(id), json);
+    return;
+  }
   // A child iframe failing mid-snapshot leaves that iframe empty.
   if (!ok && ReferenceFramesChildFailed(id)) return;
   engine_.websocket_routes().Cancel(id);
@@ -373,9 +385,7 @@ auto Source::Deadlines() -> void {
     } else if (!ArtifactTimeoutMessage(id).empty()) {
       Complete(id, false, ArtifactTimeoutMessage(id));
     } else if (locator_logs_.contains(id)) {
-      Complete(id, false,
-               "Native operation timed out (Timeout exceeded)\nCall log:\n - " + locator_logs_[id] +
-                   (locator_waits_.contains(id) ? "\n - waiting for " + locator_waits_[id] : ""));
+      Complete(id, false, LocatorTimeout(id));
     } else
       Complete(id, false, "Native operation timed out");
   }

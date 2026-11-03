@@ -623,8 +623,8 @@ auto Source::LocatorAction(int id, std::uint64_t generation, const std::string& 
       "if((textNode&&!selected.isConnected)||!e.isConnected){" +
       std::string(config->HasKey("nativeHandle")
                       ? "throw new Error('Element is not attached to the DOM');"
-                      : "return {ready:false};") +
-      "}if(!visible())return {ready:false};const b=bounds();"
+                      : "return {ready:false,reason:'element to be attached'};") +
+      "}if(!visible())return {ready:false,reason:'element to be visible'};const b=bounds();"
       "if(!" +
       std::string(config->GetBool("force") ? "true" : "false") + "&&" + Literal(action) +
       "!=='fill'&&" + Literal(action) +
@@ -643,7 +643,8 @@ auto Source::LocatorAction(int id, std::uint64_t generation, const std::string& 
       "2;y=(Math.max(0,r.top)+Math.min(innerHeight,r.bottom))/2;}}"
       "if(x<0||y<0||x>=innerWidth||y>=innerHeight){if(" +
       std::string(config->GetBool("force") ? "true" : "false") +
-      ")throw new Error('Element is outside of the viewport');return {ready:false};}"
+      ")throw new Error('Element is outside of the viewport');return {ready:false,reason:'element "
+      "to be inside the viewport'};}"
       "if(!" +
       std::string(config->GetBool("force") ? "true" : "false") + "&&" + Literal(action) +
       "!=='fill'&&" + Literal(action) +
@@ -652,7 +653,11 @@ auto Source::LocatorAction(int id, std::uint64_t generation, const std::string& 
       "child=target.shadowRoot.elementsFromPoint(x,y)[0];if(!child||child===target)break;target="
       "child;}let receives=false;for(let "
       "n=target;n;n=n.assignedSlot||n.parentElement||n.getRootNode().host){if(n===e){receives=true;"
-      "break;}}if(!receives)return {ready:false};}"
+      "break;}}if(!receives){let tag='nothing';if(target){tag='<'+target.localName;for(const "
+      "name of ['id','class','role','aria-label']){const "
+      "value=target.getAttribute(name);if(value)tag+=' '+name+'='+JSON.stringify(value.slice(0,"
+      "80));}tag+='>';}return {ready:false,reason:'element to receive pointer events\\n - '+tag+' "
+      "intercepts pointer events'};}}"
       "if(" +
       Literal(action) + "==='clear'){const result=(" + std::string(kSuiteCutClearDom) +
       ")(e);if(!result.ready||result.done)return result;}"
@@ -660,7 +665,7 @@ auto Source::LocatorAction(int id, std::uint64_t generation, const std::string& 
       Literal(action) +
       "==='fill'){"
       "if(e instanceof HTMLInputElement||e instanceof HTMLTextAreaElement){"
-      "if(e.readOnly)return {ready:false};const text=" +
+      "if(e.readOnly)return {ready:false,reason:'element to be editable'};const text=" +
       Literal(text) +
       ";"
       "if(e instanceof HTMLInputElement){const type=e.type;"
