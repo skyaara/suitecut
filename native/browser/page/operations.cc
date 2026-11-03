@@ -215,6 +215,7 @@ auto Source::Complete(int id, bool ok, const std::string& error, const std::stri
   locator_attempts_.erase(id);
   locator_logs_.erase(id);
   locator_waits_.erase(id);
+  click_fallback_at_.erase(id);
   expect_results_.erase(id);
   first_observations_.erase(id);
   lazy_queries_.erase(id);

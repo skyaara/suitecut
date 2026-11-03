@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- Add `locator.click({ fallback: 'js' })`, an opt-in suitecut extension for
+  agents. When the element stays covered, off-screen, hidden or moving for
+  `fallbackAfter` ms (default 1000), the click stops waiting and runs
+  `element.click()` instead, as browser-use does. Disabled elements, refs
+  whose element is gone and every other timeout still fail as usual, and a
+  click that may already have reached the page is never sent again. Without
+  the option `click()` behaves as in Playwright.
 - Say why a click, hover or fill timed out. On real sites most of suitecut's
   10 s click timeouts ended with only "waiting for element actionability" or a
   bare "Native operation timed out", so an agent could not tell a covered link

@@ -777,6 +777,20 @@ auto Source::LocatorAction(int id, std::uint64_t generation, const std::string& 
       locator_waits_[id] = state->GetType("reason") == VTYPE_STRING
                                ? state->GetString("reason").ToString().substr(0, 1024)
                                : "element actionability";
+      // The host clicks with element.click() instead, as browser-use does,
+      // once the element has stayed covered, off-screen, hidden or moving.
+      const auto& wait = locator_waits_[id];
+      if (const auto at = click_fallback_at_.find(id);
+          at != click_fallback_at_.end() && Now() >= at->second &&
+          (wait.starts_with("element to receive pointer events") ||
+           wait.starts_with("element to be inside the viewport") ||
+           wait.starts_with("element to be visible") ||
+           wait.starts_with("element position to be stable"))) {
+        Complete(id, false,
+                 "Native click fallback\nCall log:\n - " + locator_logs_[id] + "\n - waiting for " +
+                     wait);
+        return;
+      }
       if (pointer_work) {
         // No button has been pressed. Yield the mouse lane so an overlay's
         // locator handler (or another queued gesture) can run before retrying
@@ -806,6 +820,15 @@ auto Source::LocatorAction(int id, std::uint64_t generation, const std::string& 
                          }),
                          20);
       return;
+    }
+    // Ready now: a later deadline must not report an earlier wait, and says
+    // the action may already have reached the page.
+    locator_waits_.erase(id);
+    if ((action == "click" || action == "tap" || action == "hover") && !config->GetBool("trial") &&
+        locator_logs_.contains(id)) {
+      auto& log = locator_logs_[id];
+      const auto line = "\n - performing " + action + " action";
+      if (!log.ends_with(line)) log += line;
     }
     if (action == "focus") {
       Complete(id, true);

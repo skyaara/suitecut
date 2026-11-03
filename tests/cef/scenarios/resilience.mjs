@@ -213,6 +213,33 @@ export const resilience = [
       'A covered click names what covers it and lands once the cover is gone; a removed ref says so',
     )
   }),
+  test('resilience.covered-click-fallback', ['resilience', 'input'], async (h) => {
+    // browser-use clicks a covered element with element.click(); suitecut does
+    // so only when asked, after a normal click has waited fallbackAfter ms.
+    const { page } = await h.page()
+    await page.goto(h.fixture.origin + '/app')
+    await page.evaluate(
+      `document.body.innerHTML='<button id="go" onclick="this.textContent=\\'clicked\\'">Go</button><button id="off" disabled>Off</button><div id="overlay" style="position:fixed;inset:0;background:#0003"></div>'`,
+    )
+    const started = Date.now()
+    await page.locator('#go').click({ fallback: 'js', fallbackAfter: 300, timeout: 5000 })
+    const ms = Date.now() - started
+    assert.equal(await page.locator('#go').textContent(), 'clicked')
+    assert(ms < 3000, `the fallback took ${ms} ms`)
+    assert.equal(await page.locator('#overlay').count(), 1)
+    const error = await page
+      .locator('#off')
+      .click({ force: false, fallback: 'js', fallbackAfter: 300, timeout: 1500 })
+      .then(
+        () => null,
+        (e) => e,
+      )
+    assert.match(error?.message ?? '', /waiting for element to be enabled/u)
+    h.observe('fallback', { ms })
+    h.check(
+      "A covered click with fallback 'js' lands through the cover; a disabled one still fails",
+    )
+  }),
   test('resilience.websocket-large-frames', ['resilience', 'network', 'websocket'], async (h) => {
     const { page } = await h.page()
     await page.goto(h.fixture.origin + '/app')

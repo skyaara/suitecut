@@ -786,6 +786,7 @@ auto Source::OnBeforeClose(CefRefPtr<CefBrowser> actual_browser) -> void {
   locator_attempts_.clear();
   locator_logs_.clear();
   locator_waits_.clear();
+  click_fallback_at_.clear();
   locator_modifiers_.clear();
   send_keys_physical_.clear();
   send_keys_physical_count_ = 0;

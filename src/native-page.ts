@@ -3116,8 +3116,17 @@ export interface NativeClickOptions {
   noWaitAfter?: boolean
   beforeStable?: NativeBeforeStableHook
   signal?: AbortSignal
+  /**
+   * A suitecut extension, not in Playwright. `'js'` clicks the element with
+   * `element.click()`, as browser-use does, once a normal click has waited
+   * `fallbackAfter` ms (default 1000) on the element being covered, off-screen,
+   * hidden or moving. Disabled elements and refs whose element is gone still
+   * wait and fail as usual. Single left clicks only.
+   */
+  fallback?: 'js'
+  fallbackAfter?: number
 }
-const ClickOptionsSchema = z.strictObject({
+const PointerOptionsSchema = z.strictObject({
   timeout: z.number().int().min(0).max(120_000).optional(),
   button: z.enum(['left', 'middle', 'right']).optional(),
   clickCount: z.number().int().min(1).max(1000).optional(),
@@ -3134,7 +3143,11 @@ const ClickOptionsSchema = z.strictObject({
   beforeStable: z.custom<NativeBeforeStableHook>((value) => typeof value === 'function').optional(),
   signal: z.instanceof(AbortSignal).optional(),
 })
-const TapOptionsSchema = ClickOptionsSchema.omit({
+const ClickOptionsSchema = PointerOptionsSchema.extend({
+  fallback: z.literal('js').optional(),
+  fallbackAfter: z.number().int().min(0).max(120_000).optional(),
+})
+const TapOptionsSchema = PointerOptionsSchema.omit({
   button: true,
   clickCount: true,
   delay: true,
@@ -3143,7 +3156,11 @@ const TapOptionsSchema = ClickOptionsSchema.omit({
 
 export type NativeTapOptions = z.input<typeof TapOptionsSchema>
 
-const HoverOptionsSchema = ClickOptionsSchema.omit({ button: true, clickCount: true, delay: true })
+const HoverOptionsSchema = PointerOptionsSchema.omit({
+  button: true,
+  clickCount: true,
+  delay: true,
+})
 export type NativeHoverOptions = z.input<typeof HoverOptionsSchema>
 
 const ScrollOptionsSchema = z.strictObject({
@@ -4174,14 +4191,45 @@ export class NativeLocator implements PresentationLocator<NativePage> {
   }
 
   async click(options: NativeClickOptions = {}): Promise<void> {
-    return this.pointerAction('click', ClickOptionsSchema.parse(options))
+    const { fallback, fallbackAfter, ...config } = ClickOptionsSchema.parse(options)
+    if (fallback === undefined) return this.pointerAction('click', config)
+    if (
+      config.trial ||
+      config.position ||
+      config.modifiers?.length ||
+      (config.button ?? 'left') !== 'left' ||
+      (config.clickCount ?? 1) !== 1
+    )
+      throw new Error(
+        "click: fallback 'js' supports only a single left click without trial, position or modifiers",
+      )
+    try {
+      return await this.pointerAction('click', config, { fallbackAfterMs: fallbackAfter ?? 1000 })
+    } catch (error) {
+      // The native click stops waiting and asks for the fallback; any other
+      // failure, timeouts included, stays the click's own.
+      if (
+        !(error instanceof Error) ||
+        !error.message.startsWith('Native click fallback\n') ||
+        config.signal?.aborted
+      )
+        throw error
+    }
+    await this.evaluate((element) => {
+      if (typeof (element as HTMLElement).click === 'function') (element as HTMLElement).click()
+      else
+        element.dispatchEvent(
+          new MouseEvent('click', { bubbles: true, cancelable: true, composed: true }),
+        )
+    })
   }
   async tap(options: NativeTapOptions = {}): Promise<void> {
     return this.pointerAction('tap', TapOptionsSchema.parse(options))
   }
   private async pointerAction(
     action: 'click' | 'tap' | 'hover',
-    config: z.output<typeof ClickOptionsSchema>,
+    config: z.output<typeof PointerOptionsSchema>,
+    extra: Record<string, UntrustedInput> = {},
   ): Promise<void> {
     const controller = new AbortController()
     const abort = (started: boolean) => {
@@ -4208,7 +4256,7 @@ export class NativeLocator implements PresentationLocator<NativePage> {
     try {
       if (config.beforeStable)
         hook = subscribeNativeActionHook(this.owner.source, config.beforeStable, controller)
-      const params: Record<string, UntrustedInput> = { ...config }
+      const params: Record<string, UntrustedInput> = { ...config, ...extra }
       delete params.beforeStable
       if (hook) {
         params.pauseBeforeStable = true

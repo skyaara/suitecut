@@ -1215,6 +1215,8 @@ auto Source::DispatchCommand(int id, Dict message, const std::string& command, d
     }
     locator_logs_[id] = action + " action" + (config->GetBool("trial") ? " (trial run)" : "") +
                         "\n - resolving " + selector.substr(0, 1024);
+    if (action == "click" && config->HasKey("fallbackAfterMs") && !config->GetBool("trial"))
+      click_fallback_at_[id] = Now() + std::clamp(Number(config, "fallbackAfterMs"), 0.0, 120000.0);
     if (config->HasKey("nativeHandle")) {
       if (config->GetType("nativeHandle") != VTYPE_INT) {
         Complete(id, false, "Invalid native element handle");
