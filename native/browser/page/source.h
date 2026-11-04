@@ -259,6 +259,7 @@ class Source : public CefClient,
   void ImportFrameTree(Dict tree, const std::string& session = "", int observed_tree = 0);
   bool http_user_agent_pending_ = false;
   void MaybeReady();
+  bool PopupDocumentCommitted() const;
   void DetachFrame(const std::string& root);
   void InvalidateFrameHandles(const std::string& frame);
   std::string FrameId(Dict message);

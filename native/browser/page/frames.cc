@@ -134,6 +134,7 @@ auto Source::StoreFrame(Dict info, const char* event, const std::string& session
     ObserveRestoredDocument(id);
   }
   CheckNavigations();
+  if (!ready_ && id == main_frame_id_ && PopupDocumentCommitted()) MaybeReady();
 }
 
 auto Source::ImportFrameTree(Dict tree, const std::string& session, int observed_tree) -> void {
@@ -149,13 +150,23 @@ auto Source::ImportFrameTree(Dict tree, const std::string& session, int observed
     }
 }
 
+// A popup's first document is the page it opened, not a blank one, so the
+// popup is ready once that document commits. Waiting for its load event held
+// every command on the new tab until the site's last image arrived.
+auto Source::PopupDocumentCommitted() const -> bool {
+  if (blank_tab_ || !engine_.contexts()->IsPopup(page_id_)) return false;
+  const auto frame = frame_states_.find(main_frame_id_);
+  return frame != frame_states_.end() && !frame->second.url.empty() &&
+         frame->second.url != "about:blank";
+}
+
 auto Source::MaybeReady() -> void {
   if (ready_ || !native_websocket_policy_root_ready_ || !native_worker_discovery_ready_ ||
       !private_response_ready_ ||
       (private_response_ && private_response_->parent_close_requested()) || !geolocation_ready_ ||
       !initial_empty_ready_ || settings_bootstrap_ || (settings_page_ && !settings_applied_) ||
-      !authentication_ready_ || !network_policy_ready_ || !initial_loaded_ ||
-      main_frame_id_.empty())
+      !authentication_ready_ || !network_policy_ready_ ||
+      (!initial_loaded_ && !PopupDocumentCommitted()) || main_frame_id_.empty())
     return;
   const auto frame = frame_states_.find(main_frame_id_);
   if (frame == frame_states_.end()) return;

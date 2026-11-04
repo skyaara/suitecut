@@ -120,6 +120,15 @@ export async function createFixture() {
         )
         return
       }
+      if (url.pathname === '/resilience/held-image') {
+        // The image waits on a gate, so the page's load event waits with it.
+        response.end(
+          shell(
+            `<h1>Held page</h1><img alt="Held" src="/gate/${encodeURIComponent(url.searchParams.get('gate') ?? 'image')}">`,
+          ),
+        )
+        return
+      }
       if (url.pathname === '/resilience/large') {
         const rows = Math.min(Number(url.searchParams.get('rows')) || 1, 20000)
         // Nesting deeper than 64 levels and a name longer than 64 KiB, as

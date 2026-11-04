@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Let a tab that a link or `window.open()` opens take commands as soon as its
+  page commits. It used to wait for the page's load event, so on a site with
+  slow images every snapshot, click and `page.url()` on the new tab waited
+  too, and `page.url()` read `about:blank` meanwhile. A Coursera course page
+  opened from search took 20 to 30 s before its first snapshot.
 - Add `ariaSnapshot({ mode: 'ai', interactive: true })`, a snapshot of only
   what an agent can act on: links, buttons, fields and other controls, with
   the headings and named landmarks around them, and no text or URLs. Refs are

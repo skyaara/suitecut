@@ -288,6 +288,29 @@ export const resilience = [
       assert.match(snapshot, new RegExp(`- button "${name}" \\[ref=`, 'u'))
     h.check('Pseudo-element content joins names only when it is shown')
   }),
+  test('resilience.popup-ready-before-load', ['resilience', 'lifecycle'], async (h) => {
+    // A tab a link opens takes commands once its document commits; an image
+    // that never arrives must not hold them until the load event.
+    const { page } = await h.page()
+    await page.goto(h.fixture.origin + '/app')
+    await page.evaluate(
+      `document.body.innerHTML='<a href="/resilience/held-image?gate=popup-image" target="_blank">Open</a>'`,
+    )
+    const pending = page.waitForEvent('popup', { timeout: 8000 })
+    await page.locator('a').click()
+    const popup = await pending
+    await h.fixture.gate('popup-image').entered.promise
+    const started = Date.now()
+    const snapshot = await popup.ariaSnapshot({ mode: 'ai', timeout: 5000 })
+    const ms = Date.now() - started
+    assert.match(snapshot, /heading "Held page"/u)
+    assert.match(popup.url(), /\/resilience\/held-image/u)
+    assert(ms < 3000, `the popup snapshot waited ${ms} ms`)
+    const loaded = popup.waitForLoadState('load', { timeout: 8000 })
+    h.fixture.gate('popup-image').release.resolve('')
+    await loaded
+    h.check('A popup takes commands before its load event')
+  }),
   test('resilience.file-input-snapshot', ['resilience', 'input'], async (h) => {
     // A file input's button comes from Chromium, so a snapshot of a page with
     // one reads it separately; every snapshot kind must still succeed.
