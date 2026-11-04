@@ -28,6 +28,12 @@
   Chromium sent them. Each used to be parsed, written back to JSON and parsed
   again on the browser's main thread; a snapshot now costs the browser process
   about 15 ms of CPU instead of 36 ms.
+- Read a pseudo-element's `content` before its `display` and `visibility`
+  when computing accessible names. Most `::before` and `::after` have no
+  content, and each further read of their style costs a style lookup. AI
+  snapshots took 50 ms instead of 85 ms on Wikipedia, 53 ms instead of 63 ms on
+  GitHub and 32 ms instead of 42 ms on BBC News, and role locators with a name
+  gain the same way. Names are unchanged.
 - Format interactive AI snapshots (`ariaSnapshot({ mode: 'ai', interactive:
   true })`) inside the browser, so only the finished text reaches Node instead
   of the whole element tree, which Node used to check and format. The text is

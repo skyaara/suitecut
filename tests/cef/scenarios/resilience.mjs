@@ -272,6 +272,22 @@ export const resilience = [
     }
     h.check('Shared scripts work across documents and frames and stay out of the page world')
   }),
+  test('resilience.pseudo-element-names', ['resilience', 'input'], async (h) => {
+    // A ::before or ::after with content joins the accessible name unless it
+    // is not displayed or hidden; a block one is set apart by spaces.
+    const { page } = await h.page()
+    await page.goto(h.fixture.origin + '/app')
+    await page.evaluate(
+      `document.head.insertAdjacentHTML('beforeend','<style>#a::before{content:"Open "}#b::before{content:"Hidden";display:none}#c::after{content:"Gone";visibility:hidden}#d::before{content:"Block";display:block}#e::after{content:none}</style>');document.body.innerHTML='<button id="a">file</button><button id="b">Two</button><button id="c">Three</button><button id="d">four</button><button id="e">Five</button>'`,
+    )
+    const expected = ['Open file', 'Two', 'Three', 'Block four', 'Five']
+    for (const name of expected)
+      assert.equal(await page.getByRole('button', { name, exact: true }).count(), 1, name)
+    const snapshot = await page.ariaSnapshot({ mode: 'ai', interactive: true })
+    for (const name of expected)
+      assert.match(snapshot, new RegExp(`- button "${name}" \\[ref=`, 'u'))
+    h.check('Pseudo-element content joins names only when it is shown')
+  }),
   test('resilience.covered-click-fallback', ['resilience', 'input'], async (h) => {
     // browser-use clicks a covered element with element.click(); suitecut does
     // so only when asked, after a normal click has waited fallbackAfter ms.

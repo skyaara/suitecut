@@ -360,7 +360,9 @@ inline constexpr char kSuiteCutDomQuery[] = R"JS(function(steps,start=document,o
     }return result;
   };
   const pseudo=(node,kind)=>{if(!pseudoResults)return pseudoUncached(node,kind);const cache=pseudoResults[kind==='::before'?0:1];let value=cache.get(node);if(value===undefined){value=pseudoUncached(node,kind);cache.set(node,value);}return value;};
-  const pseudoUncached=(node,kind)=>{const style=getComputedStyle(node,kind),value=style.content;if(style.display==='none'||style.visibility==='hidden'||style.visibility==='collapse'||!value||value==='none'||value==='normal')return '';const content=pseudoContent(value);return style.display!=='contents'&&!style.display.startsWith('inline')?' '+content+' ':content;};
+  // Most pseudo-elements have no content, so read it first: each further
+  // property read of a pseudo-element's style costs a style lookup.
+  const pseudoUncached=(node,kind)=>{const style=getComputedStyle(node,kind),value=style.content;if(!value||value==='none'||value==='normal')return '';if(style.display==='none'||style.visibility==='hidden'||style.visibility==='collapse')return '';const content=pseudoContent(value);return style.display!=='contents'&&!style.display.startsWith('inline')?' '+content+' ':content;};
   // Record a title consumed by this exact root name computation. Equal strings
   // from separate label/content sources still permit a real title description.
   const nameTitle=(node,titleSource)=>{const value=node.getAttribute('title')||'';if(value&&titleSource)titleSource.used=true;return value;};
