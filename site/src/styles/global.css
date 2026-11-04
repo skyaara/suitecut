@@ -16,20 +16,15 @@
   --code: var(--font-mono);
   /* suitecut's colourway: the logo's chrome on the checks, record red for the highlighter. */
   --chrome: linear-gradient(180deg, #ffffff 0%, #e6e9ed 46%, #cdd2d9 54%, #eef0f3 100%);
-  --sheet: var(--card-width);
-  --gutter: var(--space-16);
+  /* The wide sheet suitecut has always had; Deli Paper's narrow card is for prose sites. */
+  --sheet: 72rem;
+  --gutter: clamp(1.25rem, 8vw, 8rem);
   font-family: var(--sans);
   font-weight: 500;
   color: var(--ink);
   background: var(--desk);
   font-synthesis: none;
   -webkit-font-smoothing: antialiased;
-}
-
-@media (max-width: 720px) {
-  :root {
-    --gutter: var(--space-6);
-  }
 }
 
 * {
@@ -278,8 +273,8 @@ a:hover {
 .prose {
   min-width: 0;
   color: var(--ink);
-  font-size: 20px;
-  line-height: 32px;
+  font-size: 18px;
+  line-height: 28px;
 }
 
 /* display: the one hero headline. */
@@ -294,14 +289,14 @@ a:hover {
   text-wrap: balance;
 }
 
-/* title: light, so type does the work. */
+/* title: sized for the wide sheet. */
 .prose h2 {
-  margin: var(--space-30) 0 var(--space-6);
+  margin: var(--space-18) 0 var(--space-5);
   color: var(--heading);
-  font-size: 24px;
-  font-weight: 400;
-  letter-spacing: -0.4px;
-  line-height: 28px;
+  font-size: 2rem;
+  font-weight: 500;
+  letter-spacing: -0.5px;
+  line-height: 2.25rem;
 }
 
 /* subhead */
@@ -767,13 +762,6 @@ a:hover {
 
   .page {
     padding-top: 3.5rem;
-  }
-}
-
-@media (max-width: 720px) {
-  .prose {
-    font-size: 18px;
-    line-height: 28px;
   }
 }
 
