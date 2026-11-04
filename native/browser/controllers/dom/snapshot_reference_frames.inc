@@ -96,7 +96,11 @@ void ReferenceFramesFinish(const std::shared_ptr<SnapshotReferenceFrameBatch>& b
   if(!suitecut::SnapshotReferenceForests(batch->frames.front().forest,groups,error)){Complete(batch->owner,false,error);return;}
   const auto root=batch->frames.front().work;const auto group=SnapshotReferences().GroupFor(root->ticket);
   auto params=CefDictionaryValue::Create();params->SetString("objectId",group->array);params->SetString("objectGroup",group->name);params->SetBool("returnByValue",true);
-  params->SetString("functionDeclaration","function(){return JSON.stringify(("+std::string(root->json?kSuiteCutNativeAriaJSON:kSuiteCutNativeAriaFormatter)+")(this.forest,{mode:'ai',boxes:"+std::string(root->boxes?"true":"false")+(root->depth<0?std::string():",depth:"+std::to_string(root->depth))+"}));}");
+  const std::string boxes=root->boxes?"true":"false",options="{mode:'ai',boxes:"+boxes+(root->depth<0?std::string():",depth:"+std::to_string(root->depth))+"}";
+  // An interactive snapshot is formatted here too, so only its text leaves the page.
+  const std::string format=root->interactive?"("+std::string(kSuiteCutNativeAriaInteractive)+")(("+kSuiteCutNativeAriaJSON+")(this.forest,"+options+"),{boxes:"+boxes+"})"
+    :"("+std::string(root->json?kSuiteCutNativeAriaJSON:kSuiteCutNativeAriaFormatter)+")(this.forest,"+options+")";
+  params->SetString("functionDeclaration","function(){return JSON.stringify("+format+");}");
   ReferenceRequest(root,"Runtime.callFunctionOn",params,[this,batch,tickets=std::move(tickets)](Dict result){
     if(!ReferenceFramesCurrent(batch))return;
     const auto value=result->GetDictionary("result");
@@ -104,9 +108,9 @@ void ReferenceFramesFinish(const std::shared_ptr<SnapshotReferenceFrameBatch>& b
     const auto snapshot=value->GetString("value").ToString();
     const auto root=batch->frames.front().work;
     // JSON.stringify of our own formatter; the host parses and checks it.
-    const char open=root->json?'[':'"',close=root->json?']':'"';
+    const bool tree=root->json&&!root->interactive;const char open=tree?'[':'"',close=tree?']':'"';
     if(snapshot.size()<2||snapshot.front()!=open||snapshot.back()!=close){Complete(batch->owner,false,"Native aggregate snapshot serialization is invalid");return;}
-    auto response=CefDictionaryValue::Create();response->SetString(root->json?"snapshotJSON":"yamlJSON",snapshot);const auto json=Json(response);
+    auto response=CefDictionaryValue::Create();response->SetString(tree?"snapshotJSON":"yamlJSON",snapshot);const auto json=Json(response);
     if(!ReferenceFramesCurrent(batch))return;
     batch->publication_tickets=tickets;batch->publication_ready=true;
     Complete(batch->owner,true,"",json);

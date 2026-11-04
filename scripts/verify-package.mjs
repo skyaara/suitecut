@@ -116,6 +116,7 @@ try {
     'native/browser/cmake/RuntimeModules.cmake',
     'native/browser/page/source.h',
     'native/shared/native_aria_formatter.h',
+    'native/shared/native_aria_interactive.h',
     'native/shared/native_aria_json.h',
     'scripts/sign-native-macos.py',
     'scripts/native_macos_signing.py',

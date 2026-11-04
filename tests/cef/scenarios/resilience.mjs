@@ -250,7 +250,7 @@ export const resilience = [
     // in suitecut's isolated world. A new document and an iframe each get
     // their own copy, and the page's own world never sees them.
     const { page } = await h.page()
-    const names = `['__suitecutDomQuery','__suitecutSemanticSnapshot','__suitecutAriaJSON','__suitecutAriaFormatter','__suitecutQueryDiagnostics'].filter(name=>name in globalThis)`
+    const names = `['__suitecutDomQuery','__suitecutSemanticSnapshot','__suitecutAriaJSON','__suitecutAriaFormatter','__suitecutAriaInteractive','__suitecutQueryDiagnostics'].filter(name=>name in globalThis)`
     for (const round of [1, 2]) {
       await page.goto(h.fixture.origin + '/app')
       await page.evaluate(

@@ -45,15 +45,16 @@ function pageFixture(forest: UntrustedInput = [{ role: 'button', name: 'Go', ref
 }
 
 describe('native snapshot references: typed packet and host schema contracts', () => {
-  it('keeps the fixed native precommit formatter identical to its canonical authored SDK source', async () => {
+  it.each([
+    ['formatNativeAriaTree', 'native_aria_formatter.h'],
+    ['formatNativeAriaJSON', 'native_aria_json.h'],
+    ['formatNativeAriaInteractive', 'native_aria_interactive.h'],
+  ])('keeps the native %s identical to its canonical authored SDK source', async (name, file) => {
     const source = await readFile(new URL('../src/native-aria.ts', import.meta.url), 'utf8')
-    const header = await readFile(
-      new URL('../native/shared/native_aria_formatter.h', import.meta.url),
-      'utf8',
-    )
+    const header = await readFile(new URL(`../native/shared/${file}`, import.meta.url), 'utf8')
     const parsed = ts.createSourceFile('native-aria.ts', source, ts.ScriptTarget.Latest, true)
     const declaration = parsed.statements.find(
-      (node) => ts.isFunctionDeclaration(node) && node.name?.text === 'formatNativeAriaTree',
+      (node) => ts.isFunctionDeclaration(node) && node.name?.text === name,
     )
     if (!declaration || !ts.isFunctionDeclaration(declaration))
       throw new Error('Missing canonical authored formatter')
@@ -166,6 +167,30 @@ describe('native snapshot references: typed packet and host schema contracts', (
       accessibilityBoxes: true,
     })
     expect(runAutomation.mock.calls[0]?.[1]).not.toHaveProperty('function')
+  })
+  it('interactive AI mode asks the browser for its finished text', async () => {
+    const { page, runAutomation } = pageFixture()
+    runAutomation.mockResolvedValueOnce({
+      yamlJSON: JSON.stringify(`- button "Go" [ref=${reference}]`),
+    })
+    expect(await page.locator('body').ariaSnapshot({ mode: 'ai', interactive: true })).toBe(
+      `- button "Go" [ref=${reference}]`,
+    )
+    expect(runAutomation.mock.calls[0]?.[1]).toMatchObject({
+      referenceFormat: 'json',
+      referenceInteractive: true,
+    })
+  })
+  it('interactive AI mode formats the JSON tree a browser without that option sends', async () => {
+    const { page, runAutomation } = pageFixture()
+    runAutomation.mockResolvedValueOnce({
+      snapshotJSON: JSON.stringify([
+        { role: 'main', children: [{ role: 'button', name: 'Go', ref: reference }] },
+      ]),
+    })
+    expect(await page.locator('body').ariaSnapshot({ mode: 'ai', interactive: true })).toBe(
+      `- button "Go" [ref=${reference}]`,
+    )
   })
   it('default YAML omits reference metadata while AI YAML prints validated tokens', () => {
     const forest = parseNativeReferenceForest(

@@ -624,54 +624,57 @@ export function formatNativeAriaJSON(
   return result
 }
 
-const INTERACTIVE_ROLES = new Set([
-  'button',
-  'checkbox',
-  'combobox',
-  'link',
-  'listbox',
-  'menuitem',
-  'menuitemcheckbox',
-  'menuitemradio',
-  'option',
-  'radio',
-  'scrollbar',
-  'searchbox',
-  'slider',
-  'spinbutton',
-  'switch',
-  'tab',
-  'textbox',
-  'treeitem',
-])
-// Containers kept for context when they are named and hold a control.
-const CONTEXT_ROLES = new Set([
-  'alertdialog',
-  'banner',
-  'complementary',
-  'contentinfo',
-  'dialog',
-  'form',
-  'grid',
-  'iframe',
-  'main',
-  'menu',
-  'menubar',
-  'navigation',
-  'radiogroup',
-  'region',
-  'search',
-  'tablist',
-  'tabpanel',
-  'toolbar',
-  'tree',
-])
-
-/** Formats only actionable nodes of an AI JSON snapshot, as agent-browser's `snapshot -i`. */
+/**
+ * Formats only actionable nodes of an AI JSON snapshot, as agent-browser's
+ * `snapshot -i`. The browser runs this same function, compiled into
+ * native/shared/native_aria_interactive.h, so it must not use anything outside it.
+ */
 export function formatNativeAriaInteractive(
   nodes: NativeAriaJSONNode[],
   options: { boxes?: boolean } = {},
 ): string {
+  const interactiveRoles = new Set([
+    'button',
+    'checkbox',
+    'combobox',
+    'link',
+    'listbox',
+    'menuitem',
+    'menuitemcheckbox',
+    'menuitemradio',
+    'option',
+    'radio',
+    'scrollbar',
+    'searchbox',
+    'slider',
+    'spinbutton',
+    'switch',
+    'tab',
+    'textbox',
+    'treeitem',
+  ])
+  // Containers kept for context when they are named and hold a control.
+  const contextRoles = new Set([
+    'alertdialog',
+    'banner',
+    'complementary',
+    'contentinfo',
+    'dialog',
+    'form',
+    'grid',
+    'iframe',
+    'main',
+    'menu',
+    'menubar',
+    'navigation',
+    'radiogroup',
+    'region',
+    'search',
+    'tablist',
+    'tabpanel',
+    'toolbar',
+    'tree',
+  ])
   const output: string[] = []
   const textOf = (node: NativeAriaJSONNode | string, limit: number): string => {
     let text = ''
@@ -694,7 +697,7 @@ export function formatNativeAriaInteractive(
   }
   const short = (value: string) => (value.length > 100 ? `${value.slice(0, 99)}…` : value)
   const kept = (node: NativeAriaJSONNode) =>
-    INTERACTIVE_ROLES.has(node.role) ||
+    interactiveRoles.has(node.role) ||
     node.editable === true ||
     (node.cursor === 'pointer' && node.ref !== undefined)
   const line = (node: NativeAriaJSONNode, depth: number) => {
@@ -760,12 +763,12 @@ export function formatNativeAriaInteractive(
       const inside = stack.at(-1)?.control ?? false
       // A pointer cursor inside a control is the control's own, not another one.
       const pointerOnly =
-        !INTERACTIVE_ROLES.has(node.role) && node.editable !== true && node.cursor === 'pointer'
+        !interactiveRoles.has(node.role) && node.editable !== true && node.cursor === 'pointer'
       const own = kept(node) && !(inside && pointerOnly)
       const self =
         own ||
         node.role === 'heading' ||
-        (CONTEXT_ROLES.has(node.role) && (!!node.name || node.role === 'dialog'))
+        (contextRoles.has(node.role) && (!!node.name || node.role === 'dialog'))
       enter(node, self ? depthOf() : -1, own, inside || own)
     }
     for (let index = roots.length - 1; index >= 0; --index) {
@@ -1117,13 +1120,25 @@ export async function captureNativeAriaSnapshot(
   if (config.interactive && config.mode !== 'ai')
     throw new Error("ariaSnapshot: 'interactive' requires mode: 'ai'")
   if (config.mode === 'ai' && config.interactive) {
-    const nodes = await captureNativeAriaSnapshotJSON(locator, {
-      mode: 'ai',
-      ...(config.timeout === undefined ? {} : { timeout: config.timeout }),
-      ...(config.depth === undefined ? {} : { depth: config.depth }),
-      ...(config.boxes === undefined ? {} : { boxes: config.boxes }),
+    // The browser formats the snapshot itself and sends only the text; one
+    // that predates this sends the JSON tree, which is formatted here.
+    const reply = z
+      .union([z.object({ yamlJSON: z.string() }), z.object({ snapshotJSON: z.string() })])
+      .parse(
+        await captureCurrentDocument(locator, config.timeout, undefined, (timeout) =>
+          locator.runReferenceSnapshot({
+            format: 'json',
+            interactive: true,
+            ...(timeout === undefined ? {} : { timeout }),
+            ...(config.boxes === undefined ? {} : { boxes: config.boxes }),
+            ...(config.depth === undefined ? {} : { depth: config.depth }),
+          }),
+        ),
+      )
+    if ('yamlJSON' in reply) return z.string().parse(JSON.parse(reply.yamlJSON) as UntrustedInput)
+    return formatNativeAriaInteractive(parseNativeAriaJSON(reply.snapshotJSON), {
+      boxes: config.boxes ?? false,
     })
-    return formatNativeAriaInteractive(nodes, { boxes: config.boxes ?? false })
   }
   if (config.mode === 'ai') {
     const reply = z.object({ yamlJSON: z.string() }).parse(

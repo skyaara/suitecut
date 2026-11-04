@@ -166,6 +166,7 @@
 #include "snapshot_reference_frames.h"
 #include "../shared/native_aria_formatter.h"
 #include "../shared/native_aria_json.h"
+#include "../shared/native_aria_interactive.h"
 #include "storage_utf16.h"
 #include "query_node_transfer.h"
 #include "owner_frame_controls.h"

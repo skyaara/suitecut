@@ -28,6 +28,13 @@
   Chromium sent them. Each used to be parsed, written back to JSON and parsed
   again on the browser's main thread; a snapshot now costs the browser process
   about 15 ms of CPU instead of 36 ms.
+- Format interactive AI snapshots (`ariaSnapshot({ mode: 'ai', interactive:
+  true })`) inside the browser, so only the finished text reaches Node instead
+  of the whole element tree, which Node used to check and format. The text is
+  unchanged. Node uses about half the CPU per snapshot on Wikipedia (5.6 ms
+  instead of 11.7 ms), and snapshots were 8 to 14% faster on five of seven
+  benchmark pages and about the same on BBC News and react.dev. An older
+  browser build still sends the tree, which Node formats as before.
 - Make viewport screenshots about 2.5 times as fast, with the same pixels.
   Fonts and two animation frames are awaited only when animations are
   disabled or a style is injected, since Chromium renders a fresh frame for

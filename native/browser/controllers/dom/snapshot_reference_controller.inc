@@ -105,6 +105,8 @@ void BeginReferenceSnapshot(int id,Dict message){
   if(operations_.IsExpired(id,operation->generation,Now())){Complete(id,false,"Native operation timed out");return;}
   for(const char* reserved:{"nativeQueryNodes","nativeSelectorWaitState","nativeAccessibilitySnapshot","nativeSemanticSnapshotJson","formNode"})if(message->HasKey(reserved)){Complete(id,false,"Invalid reserved native reference snapshot field");return;}
   if(message->HasKey("referenceFormat")&&(message->GetType("referenceFormat")!=VTYPE_STRING||message->GetString("referenceFormat")!="json")){Complete(id,false,"Invalid native reference snapshot format");return;}
+  // Interactive output keeps the JSON capture and changes only the final format.
+  if(message->HasKey("referenceInteractive")&&(message->GetType("referenceInteractive")!=VTYPE_BOOL||(message->GetBool("referenceInteractive")&&message->GetString("referenceFormat")!="json"))){Complete(id,false,"Invalid native reference snapshot interactive option");return;}
   if(message->HasKey("referenceDepth")&&(message->GetType("referenceDepth")!=VTYPE_INT||message->GetInt("referenceDepth")<0)){Complete(id,false,"Invalid native reference snapshot depth option");return;}
   if(message->HasKey("accessibilityBoxes")&&message->GetType("accessibilityBoxes")!=VTYPE_BOOL){Complete(id,false,"Invalid native reference snapshot boxes option");return;}
   if(const auto path=message->GetList("framePath");path&&path->GetSize()){
@@ -115,7 +117,7 @@ void BeginReferenceSnapshot(int id,Dict message){
     if(!ReferenceTemporaryGroups(id)){Complete(id,false,"Native reference snapshot temporary-group ownership unavailable");return;}
     const auto document=ReferenceDocument(operation_frames_[id]);
     if(!document){Complete(id,false,"Native reference snapshot document identity unavailable");return;}
-    auto work=std::make_shared<SnapshotReferenceCapture>();work->owner=id;work->generation=generation;work->document=*document;work->capture=capture;work->boxes=message->GetBool("accessibilityBoxes");work->json=message->GetString("referenceFormat")=="json";work->depth=message->HasKey("referenceDepth")?message->GetInt("referenceDepth"):-1;
+    auto work=std::make_shared<SnapshotReferenceCapture>();work->owner=id;work->generation=generation;work->document=*document;work->capture=capture;work->boxes=message->GetBool("accessibilityBoxes");work->json=message->GetString("referenceFormat")=="json";work->interactive=message->GetBool("referenceInteractive");work->depth=message->HasKey("referenceDepth")?message->GetInt("referenceDepth"):-1;
     ReadReferenceSnapshot(work,[this,id]{RetryContext(id);});
   });
 }

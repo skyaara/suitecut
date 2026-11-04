@@ -621,6 +621,7 @@ auto Source::ShareScripts(const std::string& method, Dict params, const std::str
       {"__suitecutSemanticSnapshot", kSuiteCutDOMSemanticSnapshot},
       {"__suitecutAriaJSON", kSuiteCutNativeAriaJSON},
       {"__suitecutAriaFormatter", kSuiteCutNativeAriaFormatter},
+      {"__suitecutAriaInteractive", kSuiteCutNativeAriaInteractive},
       {"__suitecutQueryDiagnostics", kSuiteCutQueryDiagnostics}};
   const char* field = method == "Runtime.evaluate" ? "expression" : "functionDeclaration";
   if (sharing_scripts_ || params->GetType(field) != VTYPE_STRING) return params;

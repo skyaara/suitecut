@@ -3348,7 +3348,13 @@ export class NativeLocator implements PresentationLocator<NativePage> {
 
   /** Internal native capture: no author callback can manufacture references. */
   runReferenceSnapshot(
-    options: { timeout?: number; boxes?: boolean; depth?: number; format?: 'json' } = {},
+    options: {
+      timeout?: number
+      boxes?: boolean
+      depth?: number
+      format?: 'json'
+      interactive?: boolean
+    } = {},
     signal?: AbortSignal,
   ): Promise<UntrustedInput> {
     return this.owner.runAutomation(
@@ -3360,6 +3366,7 @@ export class NativeLocator implements PresentationLocator<NativePage> {
         timeoutMs: options.timeout,
         accessibilityBoxes: options.boxes ?? false,
         ...(options.format === undefined ? {} : { referenceFormat: options.format }),
+        ...(options.interactive ? { referenceInteractive: true } : {}),
         ...(options.depth === undefined ? {} : { referenceDepth: options.depth }),
         ...(this.nativeHandle === undefined ? {} : { nativeRootHandle: this.nativeHandle }),
       },
