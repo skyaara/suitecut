@@ -33,8 +33,9 @@ void DOMSemanticFinish(const std::shared_ptr<DOMSemanticControls>& state){
     params->SetString("functionDeclaration","function(files,probe){"+std::string(kDOMSemanticFileProbe)+"const nativeControls=new WeakMap(),forests=JSON.parse("+DOMSemanticQuote(native)+");for(let i=0;i<files.length;i++)nativeControls.set(files[i],forests[i]);const capture=this.length?("+std::string(kSuiteCutDOMSemanticSnapshot)+")(this[0],("+std::string(kSuiteCutDomQuery)+"),{captureReferences:true,ai:"+(state->message->GetString("referenceFormat")=="json"?"true":"false")+",boxes:"+(state->message->GetBool("accessibilityBoxes")?"true":"false")+",nativeControls}):{forest:[],elements:[],entries:[]};capture.scopeCount=this.length;return capture;}");
   }
   auto args=CefListValue::Create();auto arg=CefDictionaryValue::Create();if(state->files.empty())arg->SetList("value",CefListValue::Create());else arg->SetString("objectId",state->files);args->SetDictionary(0,arg);
-  auto probe=CefDictionaryValue::Create();probe->SetBool("value",std::exchange(state->probe,false));args->SetDictionary(1,probe);params->SetList("arguments",args);
-  AXRequest(work,"Runtime.callFunctionOn",params,[this,state,work,probed=probe->GetBool("value")](Dict result){
+  // Read the flag before SetDictionary: CEF invalidates a dictionary it adopts.
+  const bool probed=std::exchange(state->probe,false);auto probe=CefDictionaryValue::Create();probe->SetBool("value",probed);args->SetDictionary(1,probe);params->SetList("arguments",args);
+  AXRequest(work,"Runtime.callFunctionOn",params,[this,state,work,probed](Dict result){
     if(const auto value=result->GetDictionary("result");probed&&value&&value->GetString("type")=="boolean"){DOMSemanticCollectFileControls(state);return;}
     if(state->reference_done){
       const auto value=result->GetDictionary("result");

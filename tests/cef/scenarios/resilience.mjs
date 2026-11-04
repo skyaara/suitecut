@@ -288,6 +288,20 @@ export const resilience = [
       assert.match(snapshot, new RegExp(`- button "${name}" \\[ref=`, 'u'))
     h.check('Pseudo-element content joins names only when it is shown')
   }),
+  test('resilience.file-input-snapshot', ['resilience', 'input'], async (h) => {
+    // A file input's button comes from Chromium, so a snapshot of a page with
+    // one reads it separately; every snapshot kind must still succeed.
+    const { page } = await h.page()
+    await page.goto(h.fixture.origin + '/app')
+    await page.evaluate(
+      `document.body.innerHTML='<label>Photo <input type="file"></label><button>Search</button>'`,
+    )
+    for (const options of [{}, { mode: 'ai' }, { mode: 'ai', interactive: true }]) {
+      const snapshot = await page.ariaSnapshot(options)
+      assert.match(snapshot, /button "Search"/u, JSON.stringify(options))
+    }
+    h.check('Pages with a file input can be snapshotted in every mode')
+  }),
   test('resilience.covered-click-fallback', ['resilience', 'input'], async (h) => {
     // browser-use clicks a covered element with element.click(); suitecut does
     // so only when asked, after a normal click has waited fallbackAfter ms.
