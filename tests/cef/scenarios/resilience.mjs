@@ -213,6 +213,38 @@ export const resilience = [
       'A covered click names what covers it and lands once the cover is gone; a removed ref says so',
     )
   }),
+  test('resilience.removed-link-ref', ['resilience', 'input'], async (h) => {
+    // GitHub re-renders its sidebar after a soft navigation, removing the link
+    // a fresh snapshot named. A removed <a> is its own root, and its `host` is
+    // the URL's host, not a shadow host: walks must not step into that string.
+    const { page } = await h.page()
+    await page.goto(h.fixture.origin + '/app')
+    await page.evaluate(
+      `document.body.innerHTML='<nav><a id="labels" href="https://example.test/labels"><span>Labels</span></a></nav>'`,
+    )
+    const snapshot = await page.ariaSnapshot({ mode: 'ai' })
+    const ref = snapshot.match(/- link "Labels" \[ref=([^\]]+)\]/u)?.[1]
+    assert(ref, 'the link is missing from the snapshot')
+    const handle = await page.locator('#labels').elementHandle()
+    const span = await page.locator('#labels span').elementHandle()
+    await page.evaluate(`document.getElementById('labels').remove()`)
+    const target = page.getByRef(ref)
+    for (const act of [
+      () => target.click({ timeout: 1500 }),
+      () => target.hover({ timeout: 1500 }),
+    ]) {
+      const error = await act().then(
+        () => null,
+        (e) => e,
+      )
+      assert.match(error?.message ?? '', /no longer in the page; take a new snapshot/u)
+    }
+    assert.equal(await page.getByRef(ref).count(), 0)
+    assert.equal(await handle.boundingBox(), null)
+    assert.equal(await span.boundingBox(), null)
+    assert.equal(await handle.isVisible(), false)
+    h.check('A ref or handle to a removed link reports it is gone instead of a TypeError')
+  }),
   test('resilience.covered-click-fallback', ['resilience', 'input'], async (h) => {
     // browser-use clicks a covered element with element.click(); suitecut does
     // so only when asked, after a normal click has waited fallbackAfter ms.

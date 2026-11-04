@@ -21,7 +21,7 @@ void DOMSemanticFinish(const std::shared_ptr<DOMSemanticControls>& state){
     params->SetBool("returnByValue",false);
     params->SetString("functionDeclaration","function(files){const nativeControls=new WeakMap(),forests=JSON.parse("+DOMSemanticQuote(native)+");for(let i=0;i<files.length;i++)nativeControls.set(files[i],forests[i]);const capture=this.length?("+std::string(kSuiteCutDOMSemanticSnapshot)+")(this[0],("+std::string(kSuiteCutDomQuery)+"),{captureReferences:true,ai:"+(state->message->GetString("referenceFormat")=="json"?"true":"false")+",boxes:"+(state->message->GetBool("accessibilityBoxes")?"true":"false")+",nativeControls}):{forest:[],elements:[],entries:[]};capture.scopeCount=this.length;return capture;}");
   }
-  auto args=CefListValue::Create();auto arg=CefDictionaryValue::Create();arg->SetString("objectId",state->files);args->SetDictionary(0,arg);params->SetList("arguments",args);
+  auto args=CefListValue::Create();auto arg=CefDictionaryValue::Create();if(state->files.empty())arg->SetList("value",CefListValue::Create());else arg->SetString("objectId",state->files);args->SetDictionary(0,arg);params->SetList("arguments",args);
   AXRequest(work,"Runtime.callFunctionOn",params,[this,state,work](Dict result){
     if(state->reference_done){
       const auto value=result->GetDictionary("result");
@@ -53,17 +53,28 @@ void DOMSemanticReadControl(const std::shared_ptr<DOMSemanticControls>& state){
   });
 }
 void DOMSemanticCollectControls(const std::shared_ptr<DOMSemanticControls>& state){
+  // Most pages have no file input, and running the whole semantic snapshot
+  // just to learn that doubled the cost of a snapshot. A plain
+  // shadow-including walk answers it in a few ms, without sending the 70 KB
+  // snapshot source; only a page with one runs the exact walk, which picks the
+  // visible ones, as before.
+  const auto work=state->capture;auto check=CefDictionaryValue::Create();check->SetString("objectId",work->array);check->SetBool("returnByValue",true);
+  check->SetString("functionDeclaration","function(){if(!this.length)return false;const stack=[this[0]];"
+      "while(stack.length){const node=stack.pop();if(node instanceof HTMLInputElement&&node.type==='file')return true;"
+      "if(node.shadowRoot)stack.push(node.shadowRoot);const children=node.children;if(children)for(let i=children.length-1;i>=0;--i)stack.push(children[i]);}"
+      "return false;}");
+  AXRequest(work,"Runtime.callFunctionOn",check,[this,state,work](Dict result){
+    const auto remote=result->GetDictionary("result");
+    if(!remote||remote->GetType("value")!=VTYPE_BOOL){AXError(work,"Native UA control check unavailable");return;}
+    if(!remote->GetBool("value")){DOMSemanticFinish(state);return;}
+    DOMSemanticCollectFileControls(state);
+  });
+}
+void DOMSemanticCollectFileControls(const std::shared_ptr<DOMSemanticControls>& state){
   const auto work=state->capture;auto params=CefDictionaryValue::Create();params->SetString("objectId",work->array);params->SetString("objectGroup","suitecut-automation-"+std::to_string(work->owner));
   // The retained array contains actual scoped composed-DOM file controls, not
   // IDs/names synthesized from author HTML or platform language assumptions.
-  // Most pages have no file input, and running the whole semantic snapshot
-  // just to learn that doubled the cost of a snapshot. A plain
-  // shadow-including walk answers it in a few ms; when it finds one, the exact
-  // snapshot walk picks the visible ones, as before.
-  params->SetString("functionDeclaration","function(){if(!this.length)return [];const root=this[0],stack=[root];let any=false;"
-      "while(stack.length){const node=stack.pop();if(node instanceof HTMLInputElement&&node.type==='file'){any=true;break;}"
-      "if(node.shadowRoot)stack.push(node.shadowRoot);const children=node.children;if(children)for(let i=children.length-1;i>=0;--i)stack.push(children[i]);}"
-      "return any?("+std::string(kSuiteCutDOMSemanticSnapshot)+")(root,("+std::string(kSuiteCutDomQuery)+"),{collectNativeControls:true}):[];}");
+  params->SetString("functionDeclaration","function(){return this.length?("+std::string(kSuiteCutDOMSemanticSnapshot)+")(this[0],("+std::string(kSuiteCutDomQuery)+"),{collectNativeControls:true}):[];}");
   AXRequest(work,"Runtime.callFunctionOn",params,[this,state,work](Dict result){
     const auto files=result->GetDictionary("result");if(!files||files->GetString("subtype")!="array"||files->GetType("objectId")!=VTYPE_STRING){AXError(work,"Native UA control array unavailable");return;}state->files=files->GetString("objectId").ToString();
     auto params=CefDictionaryValue::Create();params->SetString("objectId",state->files);params->SetBool("ownProperties",true);

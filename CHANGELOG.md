@@ -10,10 +10,27 @@
   agent-browser's `snapshot -i` of the same page.
 - Make `ariaSnapshot()` about twice as fast on pages without a file input.
   Every snapshot used to walk the page twice, the first time only to find
-  `<input type="file">` elements; a plain DOM walk now answers that first.
-  Viewport PNG screenshots skip PNG's slowest compression. On the five
-  benchmark pages the median snapshot went from 287 to 153 ms and the median
-  screenshot from 221 to 167 ms.
+  `<input type="file">` elements; a short DOM walk now answers that first,
+  without sending the 70 KB snapshot script. On the five benchmark pages the
+  median snapshot went from 287 to 140 ms.
+- Make viewport screenshots about 2.5 times as fast, with the same pixels.
+  Fonts and two animation frames are awaited only when animations are
+  disabled or a style is injected, since Chromium renders a fresh frame for
+  every capture anyway. The caret is hidden only when an editable element has
+  focus, the steps that prepare frames run in parallel, the whole viewport is
+  captured without a clip, and PNGs are encoded with Chromium's fast setting.
+  On the five benchmark pages the median screenshot went from 221 to 80 ms.
+- Normalize a locator's query plan once instead of on every retry of an
+  action, which sent about 60 KB of script each time.
+- Fix `node.getRootNode is not a function` when acting on a ref or handle
+  whose `<a>` or `<area>` had been removed from the page. The walk up from an
+  element took a removed link's URL host for a shadow host. GitHub's sidebar
+  hit this after every soft navigation. The CDP and BiDi clients had the same
+  walk and are fixed too.
+- Retry a locator action whose element leaves the page between being found
+  and being acted on, as Playwright does, instead of failing with "Element is
+  not attached to the DOM". A snapshot ref still fails within about a second,
+  with the hint to take a new snapshot, and an element handle fails at once.
 - Fail a click, fill or other action on a snapshot ref within about a second
   once its element has left the page, instead of waiting out the whole
   timeout. The error says to take a new snapshot. An element that a re-render
@@ -45,8 +62,9 @@
   awaited in the main document only.
 - Add `benchmarks/`: one command, `node benchmarks/run.mjs`, that measures
   suitecut, agent-browser and browser-use on the same five public pages and
-  five read-only tasks (launch, snapshot speed and tokens, screenshot speed,
-  and whether each task reaches its goal). Every script and every raw result
+  eight read-only tasks, three of them across several pages (launch, snapshot
+  speed and tokens, screenshot speed, whether each task reaches its goal, and
+  why any step needed a retry). Every script and every raw result
   is in the repository.
 - Make AI snapshots faster and smaller. A 25,000-element page takes 3-5 s
   instead of 17.6 s, 100,000 elements finish instead of timing out, and a

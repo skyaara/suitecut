@@ -11,7 +11,7 @@ inline constexpr char kSuiteCutDOMSemanticSnapshot[] = R"JS(function(scope,query
   const styles=new WeakMap(),roles=new WeakMap();
   const style=e=>{tick();let value=styles.get(e);if(!value){value=getComputedStyle(e);styles.set(e,value);}return value;};
   const role=e=>{tick();let value=roles.get(e);if(value===undefined){value=['iframe','frame'].includes(e.localName)?'iframe':tools.role(e);roles.set(e,value);}return value;};
-  const parent=e=>e.assignedSlot||e.parentElement||e.getRootNode().host||null;
+  const parent=e=>e.assignedSlot||e.parentElement||(e.parentNode?.nodeType===11&&e.parentNode.host)||null;
   // Whether an element or an ancestor hides it, cached per element: the walk
   // visits parents first, so each answer costs one style read.
   const hiddenChain=new WeakMap();

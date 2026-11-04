@@ -1,13 +1,13 @@
 {
   "environment": {
-    "date": "2026-11-03T23:56:27.635Z",
+    "date": "2026-11-04T02:30:26.744Z",
     "os": "darwin 27.0.0",
     "cpu": "Apple M4",
     "cores": 10,
     "memoryGB": 16,
     "node": "v24.20.0",
     "suitecut": "2.1.0",
-    "commit": "5b52e1f-dirty",
+    "commit": "6f08324-dirty",
     "agentBrowser": "0.37.1",
     "browserUse": "0.13.14",
     "chrome": "Google Chrome 156.0.8078.80"
@@ -93,75 +93,145 @@
         }
       ],
       "done": "bbc\\.(com|co\\.uk)/sport"
+    },
+    {
+      "name": "wikipedia-hops",
+      "goal": "Follow Wikipedia links from Web browser to Google Chrome, Chromium and Blink",
+      "url": "https://en.wikipedia.org/wiki/Web_browser",
+      "steps": [
+        {
+          "click": {
+            "role": "link",
+            "name": "^Google Chrome$"
+          },
+          "until": "wiki/Google_Chrome"
+        },
+        {
+          "click": {
+            "role": "link",
+            "name": "^Chromium( \\(web browser\\))?$"
+          },
+          "until": "wiki/Chromium"
+        },
+        {
+          "click": {
+            "role": "link",
+            "name": "^Blink$"
+          }
+        }
+      ],
+      "done": "wikipedia\\.org/wiki/Blink_\\(browser_engine\\)"
+    },
+    {
+      "name": "mdn-hops",
+      "goal": "From MDN HTML, open the elements reference, then the <a> element",
+      "url": "https://developer.mozilla.org/en-US/docs/Web/HTML",
+      "steps": [
+        {
+          "click": {
+            "role": "link",
+            "name": "^(HTML )?elements( reference)?$"
+          },
+          "until": "Elements?$"
+        },
+        {
+          "click": {
+            "role": "link",
+            "name": "^<a>$"
+          }
+        }
+      ],
+      "done": "developer\\.mozilla\\.org/en-US/docs/Web/HTML/(Reference/)?Elements?/a$"
+    },
+    {
+      "name": "github-hops",
+      "goal": "Open the Issues tab of microsoft/playwright, then its Labels",
+      "url": "https://github.com/microsoft/playwright",
+      "steps": [
+        {
+          "click": {
+            "role": "link",
+            "name": "^Issues"
+          },
+          "until": "playwright/issues"
+        },
+        {
+          "click": {
+            "role": "link",
+            "name": "^Labels$"
+          }
+        }
+      ],
+      "done": "github\\.com/microsoft/playwright/labels"
     }
   ],
   "rounds": 3,
   "runs": [
     {
       "tool": "suitecut",
-      "launchMs": 1084.42775,
-      "closeMs": 222.80233299999963,
+      "launchMs": 5108.724041,
+      "closeMs": 478.0150419999991,
       "sites": [
         {
           "url": "https://news.ycombinator.com/",
           "host": "news.ycombinator.com",
-          "loadMs": 1269.2047920000002,
+          "loadMs": 1427.1931670000004,
           "snapshot": {
-            "ms": 111.6700420000002,
+            "ms": 127.34387500000048,
             "all": [
-              111.6700420000002,
-              104.12004199999956,
-              112.27412500000082
+              135.5005000000001,
+              127.34387500000048,
+              116.00141699999949
             ],
-            "chars": 8421
+            "chars": 8439
           },
           "snapshotFull": {
-            "ms": 97.14124999999967,
+            "ms": 106.4955000000009,
             "all": [
-              137.20116600000074,
-              95.47933399999965,
-              97.14124999999967
+              103.24524999999994,
+              110.69008300000132,
+              106.4955000000009
             ],
-            "chars": 37739
+            "chars": 37962
           },
           "screenshot": {
-            "ms": 136.641208,
+            "ms": 64.71587499999987,
             "all": [
-              151.5684170000004,
-              128.88062499999978,
-              136.641208
+              70.21579199999906,
+              64.71587499999987,
+              63.72416700000031
             ],
-            "bytes": 226248
+            "bytes": 227809
           }
         },
         {
           "url": "https://en.wikipedia.org/wiki/Web_browser",
           "host": "en.wikipedia.org",
-          "loadMs": 2604.47275,
+          "loadMs": 2470.081459000001,
           "snapshot": {
-            "ms": 90.82445800000096,
+            "ms": 214.05654200000026,
             "all": [
-              121.8765000000003,
-              90.76558400000067,
-              90.82445800000096
+              214.05654200000026,
+              208.4985830000005,
+              222.34287500000028
             ],
             "chars": 20645
           },
           "snapshotFull": {
-            "ms": 79.61370899999929,
+            "ms": 186.4532080000008,
             "all": [
-              79.26491600000008,
-              82.36700000000019,
-              79.61370899999929
+              185.75316700000076,
+              186.4532080000008,
+              190.43120799999997
             ],
             "chars": 79662
           },
           "screenshot": {
-            "ms": 117.72970899999927,
+            "ms": 95.97624999999971,
             "all": [
-              112.76833400000032,
-              117.72970899999927,
-              118.58158300000105
+              86.32529199999954,
+              95.97624999999971,
+              104.12970800000039
             ],
             "bytes": 262023
           }
@@ -169,1064 +239,97 @@
         {
           "url": "https://developer.mozilla.org/en-US/docs/Web/HTML",
           "host": "developer.mozilla.org",
-          "loadMs": 980.2328749999997,
+          "loadMs": 1194.230875000001,
           "snapshot": {
-            "ms": 52.92399999999907,
-            "all": [
-              52.92399999999907,
-              44.17895800000042,
-              80.8782089999986
-            ],
-            "chars": 7159
-          },
-          "snapshotFull": {
-            "ms": 64.01749999999993,
-            "all": [
-              66.31966699999975,
-              64.01749999999993,
-              59.211583999998766
-            ],
-            "chars": 29812
-          },
-          "screenshot": {
-            "ms": 116.55137500000092,
-            "all": [
-              124.69541700000082,
-              116.55137500000092,
-              115.82645899999989
-            ],
-            "bytes": 228212
-          }
-        },
-        {
-          "url": "https://www.bbc.com/news",
-          "host": "www.bbc.com",
-          "loadMs": 5133.720583999999,
-          "snapshot": {
-            "ms": 72.56374999999389,
-            "all": [
-              20380.509250000003,
-              64.28945799999929,
-              72.56374999999389
-            ],
-            "chars": 13352
-          },
-          "snapshotFull": {
-            "ms": 42.57487499999843,
-            "all": [
-              47.690042000001995,
-              42.57487499999843,
-              42.15299999999843
-            ],
-            "chars": 27129
-          },
-          "screenshot": {
-            "ms": 239.36450000000332,
-            "all": [
-              243.30695800000103,
-              229.02408400000422,
-              239.36450000000332
-            ],
-            "bytes": 203507
-          }
-        },
-        {
-          "url": "https://github.com/microsoft/playwright",
-          "host": "github.com",
-          "loadMs": 1634.833375000002,
-          "snapshot": {
-            "ms": 83.37808400000358,
-            "all": [
-              111.01470800000243,
-              83.37808400000358,
-              78.2086249999993
-            ],
-            "chars": 13974
-          },
-          "snapshotFull": {
-            "ms": 73.24862500000017,
-            "all": [
-              73.24862500000017,
-              71.28691699999763,
-              74.40541600000142
-            ],
-            "chars": 52159
-          },
-          "screenshot": {
-            "ms": 166.8344169999982,
-            "all": [
-              146.8201670000053,
-              181.05662500000471,
-              166.8344169999982
-            ],
-            "bytes": 185893
-          }
-        }
-      ],
-      "tasks": [
-        {
-          "name": "hn-open-comments",
-          "ok": true,
-          "ms": 585.0187090000036,
-          "snapshots": 1,
-          "chars": 8648,
-          "snapshotMs": 56.868875000000116,
-          "retries": 0
-        },
-        {
-          "name": "wikipedia-search",
-          "ok": true,
-          "ms": 874.275916999999,
-          "snapshots": 1,
-          "chars": 10768,
-          "snapshotMs": 82.13091700000223,
-          "retries": 0
-        },
-        {
-          "name": "mdn-open-reference",
-          "ok": true,
-          "ms": 262.9390829999975,
-          "snapshots": 1,
-          "chars": 6831,
-          "snapshotMs": 65.35404099999869,
-          "retries": 0
-        },
-        {
-          "name": "github-open-issues",
-          "ok": true,
-          "ms": 1381.2179170000018,
-          "snapshots": 1,
-          "chars": 12862,
-          "snapshotMs": 211.60704200000328,
-          "retries": 0
-        },
-        {
-          "name": "bbc-open-sport",
-          "ok": true,
-          "ms": 1785.7487499999988,
-          "snapshots": 2,
-          "chars": 28768,
-          "snapshotMs": 358.5880410000027,
-          "retries": 1
-        }
-      ],
-      "round": 0,
-      "load1": 5.92138671875
-    },
-    {
-      "tool": "agent-browser",
-      "version": "0.37.1",
-      "launchMs": 1480.327042,
-      "closeMs": 976.5138750000006,
-      "sites": [
-        {
-          "url": "https://news.ycombinator.com/",
-          "host": "news.ycombinator.com",
-          "loadMs": 1366.7558330000002,
-          "snapshot": {
-            "ms": 28.13445799999954,
-            "all": [
-              56.85016700000051,
-              28.13445799999954,
-              25.936125000000175
-            ],
-            "chars": 13600
-          },
-          "snapshotFull": {
-            "ms": 24.186374999999316,
-            "all": [
-              24.186374999999316,
-              26.43633300000056,
-              23.66241600000012
-            ],
-            "chars": 27539
-          },
-          "screenshot": {
-            "ms": 49.072957999999744,
-            "all": [
-              49.072957999999744,
-              43.38745899999958,
-              50.19733300000007
-            ],
-            "bytes": 190825
-          }
-        },
-        {
-          "url": "https://en.wikipedia.org/wiki/Web_browser",
-          "host": "en.wikipedia.org",
-          "loadMs": 836.5514999999996,
-          "snapshot": {
-            "ms": 66.20458400000007,
-            "all": [
-              98.2344579999999,
-              66.20458400000007,
-              59.61775000000034
-            ],
-            "chars": 20060
-          },
-          "snapshotFull": {
-            "ms": 59.027125000000524,
-            "all": [
-              59.817833000000064,
-              57.84804199999962,
-              59.027125000000524
-            ],
-            "chars": 87819
-          },
-          "screenshot": {
-            "ms": 46.00566700000036,
-            "all": [
-              46.00566700000036,
-              45.44454200000018,
-              51.00283399999989
-            ],
-            "bytes": 242256
-          }
-        },
-        {
-          "url": "https://developer.mozilla.org/en-US/docs/Web/HTML",
-          "host": "developer.mozilla.org",
-          "loadMs": 640.800792,
-          "snapshot": {
-            "ms": 17.45954200000051,
-            "all": [
-              19.502167000000554,
-              17.43737500000134,
-              17.45954200000051
-            ],
-            "chars": 6349
-          },
-          "snapshotFull": {
-            "ms": 17.15637500000048,
-            "all": [
-              17.124291999998604,
-              17.15637500000048,
-              17.483249999999316
-            ],
-            "chars": 24177
-          },
-          "screenshot": {
-            "ms": 46.190999999998894,
-            "all": [
-              33.762792000001355,
-              46.190999999998894,
-              51.18170800000007
-            ],
-            "bytes": 186761
-          }
-        },
-        {
-          "url": "https://www.bbc.com/news",
-          "host": "www.bbc.com",
-          "loadMs": 778.3284999999996,
-          "snapshot": {
-            "ms": 32.64733299999898,
-            "all": [
-              43.83529200000157,
-              32.64733299999898,
-              31.166124999999738
-            ],
-            "chars": 27404
-          },
-          "snapshotFull": {
-            "ms": 31.793416999998954,
-            "all": [
-              31.60699999999997,
-              31.793416999998954,
-              36.52812500000073
-            ],
-            "chars": 42824
-          },
-          "screenshot": {
-            "ms": 46.86024999999972,
-            "all": [
-              37.473667000000205,
-              49.12237500000083,
-              46.86024999999972
-            ],
-            "bytes": 41118
-          }
-        },
-        {
-          "url": "https://github.com/microsoft/playwright",
-          "host": "github.com",
-          "loadMs": 1112.3250000000007,
-          "snapshot": {
-            "ms": 47.218666999999186,
-            "all": [
-              68.4521249999998,
-              45.96787500000028,
-              47.218666999999186
-            ],
-            "chars": 22781
-          },
-          "snapshotFull": {
-            "ms": 44.05149999999958,
-            "all": [
-              44.96037500000057,
-              44.05149999999958,
-              42.490625000000364
-            ],
-            "chars": 43553
-          },
-          "screenshot": {
-            "ms": 46.3109170000007,
-            "all": [
-              39.72179099999994,
-              46.3109170000007,
-              51.71308400000089
-            ],
-            "bytes": 157003
-          }
-        }
-      ],
-      "tasks": [
-        {
-          "name": "hn-open-comments",
-          "ok": true,
-          "ms": 963.086292,
-          "snapshots": 1,
-          "chars": 13600,
-          "snapshotMs": 33.488375000000815,
-          "retries": 0
-        },
-        {
-          "name": "wikipedia-search",
-          "ok": true,
-          "ms": 1955.3525420000005,
-          "snapshots": 1,
-          "chars": 9941,
-          "snapshotMs": 38.226458000001,
-          "retries": 0
-        },
-        {
-          "name": "mdn-open-reference",
-          "ok": true,
-          "ms": 489.080915999999,
-          "snapshots": 1,
-          "chars": 6059,
-          "snapshotMs": 22.780792000001384,
-          "retries": 0
-        },
-        {
-          "name": "github-open-issues",
-          "ok": true,
-          "ms": 867.586083000002,
-          "snapshots": 1,
-          "chars": 22781,
-          "snapshotMs": 53.91095800000039,
-          "retries": 0
-        },
-        {
-          "name": "bbc-open-sport",
-          "ok": true,
-          "ms": 2739.505833000003,
-          "snapshots": 1,
-          "chars": 27404,
-          "snapshotMs": 376.84333400000105,
-          "retries": 0
-        }
-      ],
-      "round": 0,
-      "load1": 5.52783203125
-    },
-    {
-      "tool": "browser-use",
-      "version": "0.13.14",
-      "launchMs": 859.9845420122147,
-      "closeMs": 187.79683303833008,
-      "sites": [
-        {
-          "url": "https://news.ycombinator.com/",
-          "host": "news.ycombinator.com",
-          "loadMs": 1160.1598329544067,
-          "snapshot": {
-            "ms": 102.97316694259644,
-            "all": [
-              102.97316694259644,
-              107.02325010299683,
-              63.925665974617004
-            ],
-            "chars": 13047
-          },
-          "screenshot": {
-            "ms": 47.47320806980133,
-            "all": [
-              40.01212501525879,
-              47.47320806980133,
-              51.2491250038147
-            ],
-            "bytes": 190867
-          }
-        },
-        {
-          "url": "https://en.wikipedia.org/wiki/Web_browser",
-          "host": "en.wikipedia.org",
-          "loadMs": 571.5203340053558,
-          "snapshot": {
-            "ms": 240.16387498378754,
-            "all": [
-              225.41183400154114,
-              240.16387498378754,
-              267.9328329563141
-            ],
-            "chars": 11105
-          },
-          "screenshot": {
-            "ms": 53.70662498474121,
-            "all": [
-              52.19862496852875,
-              61.885375022888184,
-              53.70662498474121
-            ],
-            "bytes": 224802
-          }
-        },
-        {
-          "url": "https://developer.mozilla.org/en-US/docs/Web/HTML",
-          "host": "developer.mozilla.org",
-          "loadMs": 228.26495897769928,
-          "snapshot": {
-            "ms": 107.43624997138977,
-            "all": [
-              107.43624997138977,
-              193.17962503433228,
-              73.99320805072784
-            ],
-            "chars": 7041
-          },
-          "screenshot": {
-            "ms": 49.664916038513184,
-            "all": [
-              37.417500019073486,
-              49.664916038513184,
-              49.71175003051758
-            ],
-            "bytes": 227442
-          }
-        },
-        {
-          "url": "https://www.bbc.com/news",
-          "host": "www.bbc.com",
-          "loadMs": 652.8098750114441,
-          "snapshot": {
-            "ms": 423.79391598701477,
-            "all": [
-              423.79391598701477,
-              364.9256249666214,
-              447.2970839738846
-            ],
-            "chars": 4190
-          },
-          "screenshot": {
-            "ms": 73.97770893573761,
-            "all": [
-              73.97770893573761,
-              63.17575013637543,
-              134.69274985790253
-            ],
-            "bytes": 275325
-          }
-        },
-        {
-          "url": "https://github.com/microsoft/playwright",
-          "host": "github.com",
-          "loadMs": 1406.780916929245,
-          "snapshot": {
-            "ms": 254.60179197788239,
-            "all": [
-              254.60179197788239,
-              248.20870804786682,
-              492.13787496089935
-            ],
-            "chars": 21545
-          },
-          "screenshot": {
-            "ms": 49.309791922569275,
-            "all": [
-              56.40270805358887,
-              45.88141703605652,
-              49.309791922569275
-            ],
-            "bytes": 157077
-          }
-        }
-      ],
-      "tasks": [
-        {
-          "name": "hn-open-comments",
-          "ok": true,
-          "ms": 1285.7178338766098,
-          "snapshots": 1,
-          "chars": 13046,
-          "snapshotMs": 83.3718330860138,
-          "retries": 0
-        },
-        {
-          "name": "wikipedia-search",
-          "ok": true,
-          "ms": 1070.3162078857422,
-          "snapshots": 1,
-          "chars": 12172,
-          "snapshotMs": 131.94245791435242,
-          "retries": 0
-        },
-        {
-          "name": "mdn-open-reference",
-          "ok": true,
-          "ms": 1018.7211250066757,
-          "snapshots": 1,
-          "chars": 5989,
-          "snapshotMs": 124.07179093360901,
-          "retries": 0
-        },
-        {
-          "name": "github-open-issues",
-          "ok": true,
-          "ms": 3131.5889999866486,
-          "snapshots": 1,
-          "chars": 17825,
-          "snapshotMs": 1267.5970839262009,
-          "retries": 0
-        },
-        {
-          "name": "bbc-open-sport",
-          "ok": true,
-          "ms": 4348.268124938011,
-          "snapshots": 1,
-          "chars": 3818,
-          "snapshotMs": 852.0316659212112,
-          "retries": 0
-        }
-      ],
-      "round": 0,
-      "load1": 5.283203125
-    },
-    {
-      "tool": "agent-browser",
-      "version": "0.37.1",
-      "launchMs": 1928.2695,
-      "closeMs": 1005.0018330000021,
-      "sites": [
-        {
-          "url": "https://news.ycombinator.com/",
-          "host": "news.ycombinator.com",
-          "loadMs": 1410.56225,
-          "snapshot": {
-            "ms": 69.70350000000053,
-            "all": [
-              124.88224999999966,
-              63.23383400000057,
-              69.70350000000053
-            ],
-            "chars": 13600
-          },
-          "snapshotFull": {
-            "ms": 73.5308329999998,
-            "all": [
-              73.5308329999998,
-              67.21804099999918,
-              122.65312500000073
-            ],
-            "chars": 27539
-          },
-          "screenshot": {
-            "ms": 100.4054159999996,
-            "all": [
-              129.11179100000027,
-              100.4054159999996,
-              88.15762499999983
-            ],
-            "bytes": 190825
-          }
-        },
-        {
-          "url": "https://en.wikipedia.org/wiki/Web_browser",
-          "host": "en.wikipedia.org",
-          "loadMs": 1068.1855839999998,
-          "snapshot": {
-            "ms": 202.469916,
-            "all": [
-              174.43533299999945,
-              202.469916,
-              212.77670799999942
-            ],
-            "chars": 20060
-          },
-          "snapshotFull": {
-            "ms": 205.1159579999985,
-            "all": [
-              226.17016599999988,
-              205.1159579999985,
-              202.85933299999851
-            ],
-            "chars": 87819
-          },
-          "screenshot": {
-            "ms": 74.57083299999977,
-            "all": [
-              74.57083299999977,
-              88.01449999999932,
-              73.76045799999883
-            ],
-            "bytes": 242256
-          }
-        },
-        {
-          "url": "https://developer.mozilla.org/en-US/docs/Web/HTML",
-          "host": "developer.mozilla.org",
-          "loadMs": 553.5076250000002,
-          "snapshot": {
-            "ms": 98.11808299999939,
-            "all": [
-              102.99325000000135,
-              98.11808299999939,
-              96.49354099999982
-            ],
-            "chars": 6418
-          },
-          "snapshotFull": {
-            "ms": 115.63512499999888,
-            "all": [
-              234.3886249999996,
-              103.81345799999872,
-              115.63512499999888
-            ],
-            "chars": 24315
-          },
-          "screenshot": {
-            "ms": 262.53866599999856,
-            "all": [
-              1830.5274579999987,
-              262.53866599999856,
-              123.50087499999972
-            ],
-            "bytes": 226463
-          }
-        },
-        {
-          "url": "https://www.bbc.com/news",
-          "host": "www.bbc.com",
-          "loadMs": 5767.272790999999,
-          "snapshot": {
-            "ms": 112.94283299999734,
-            "all": [
-              204.24216700000034,
-              96.5744999999988,
-              112.94283299999734
-            ],
-            "chars": 27396
-          },
-          "snapshotFull": {
-            "ms": 160.6598750000012,
-            "all": [
-              156.68545799999993,
-              160.6598750000012,
-              169.30066600000282
-            ],
-            "chars": 41552
-          },
-          "screenshot": {
-            "ms": 78.50737500000105,
-            "all": [
-              106.92954199999804,
-              78.50737500000105,
-              66.50720799999908
-            ],
-            "bytes": 37267
-          }
-        },
-        {
-          "url": "https://github.com/microsoft/playwright",
-          "host": "github.com",
-          "loadMs": 10226.722415999997,
-          "snapshot": {
-            "ms": 120.51408300000185,
-            "all": [
-              121.48624999999447,
-              120.51408300000185,
-              117.80329199999687
-            ],
-            "chars": 22781
-          },
-          "snapshotFull": {
-            "ms": 182.39183400000184,
-            "all": [
-              154.5844999999972,
-              195.98099999999977,
-              182.39183400000184
-            ],
-            "chars": 43553
-          },
-          "screenshot": {
-            "ms": 92.13570899999468,
-            "all": [
-              144.05654199999844,
-              78.85529200000019,
-              92.13570899999468
-            ],
-            "bytes": 157117
-          }
-        }
-      ],
-      "tasks": [
-        {
-          "name": "hn-open-comments",
-          "ok": true,
-          "ms": 1156.7959580000024,
-          "snapshots": 1,
-          "chars": 13600,
-          "snapshotMs": 103.74895799999649,
-          "retries": 0
-        },
-        {
-          "name": "wikipedia-search",
-          "ok": true,
-          "ms": 4468.398458000003,
-          "snapshots": 1,
-          "chars": 9941,
-          "snapshotMs": 104.99083399999654,
-          "retries": 0
-        },
-        {
-          "name": "mdn-open-reference",
-          "ok": true,
-          "ms": 1108.8253330000007,
-          "snapshots": 1,
-          "chars": 6059,
-          "snapshotMs": 150.1796250000043,
-          "retries": 0
-        },
-        {
-          "name": "github-open-issues",
-          "ok": true,
-          "ms": 5045.169207999999,
-          "snapshots": 1,
-          "chars": 22781,
-          "snapshotMs": 206.68433400000504,
-          "retries": 0
-        },
-        {
-          "name": "bbc-open-sport",
-          "ok": true,
-          "ms": 4466.920875000003,
-          "snapshots": 1,
-          "chars": 27367,
-          "snapshotMs": 150.17262499999924,
-          "retries": 0
-        }
-      ],
-      "round": 1,
-      "load1": 6.11181640625
-    },
-    {
-      "tool": "browser-use",
-      "version": "0.13.14",
-      "launchMs": 1784.1571669578552,
-      "closeMs": 128.3745001554489,
-      "sites": [
-        {
-          "url": "https://news.ycombinator.com/",
-          "host": "news.ycombinator.com",
-          "loadMs": 2504.295249938965,
-          "snapshot": {
-            "ms": 220.6519170999527,
-            "all": [
-              220.6519170999527,
-              262.5468748807907,
-              192.333958029747
-            ],
-            "chars": 13045
-          },
-          "screenshot": {
-            "ms": 108.12454104423523,
-            "all": [
-              108.12454104423523,
-              98.45762503147125,
-              139.59320902824402
-            ],
-            "bytes": 190146
-          }
-        },
-        {
-          "url": "https://en.wikipedia.org/wiki/Web_browser",
-          "host": "en.wikipedia.org",
-          "loadMs": 1366.7326669692993,
-          "snapshot": {
-            "ms": 359.6033339500427,
-            "all": [
-              359.6033339500427,
-              339.5640000104904,
-              575.9670829772949
-            ],
-            "chars": 11103
-          },
-          "screenshot": {
-            "ms": 83.29691708087921,
-            "all": [
-              84.78712499141693,
-              71.17812514305115,
-              83.29691708087921
-            ],
-            "bytes": 224802
-          }
-        },
-        {
-          "url": "https://developer.mozilla.org/en-US/docs/Web/HTML",
-          "host": "developer.mozilla.org",
-          "loadMs": 714.0768340826035,
-          "snapshot": {
-            "ms": 356.5237089395523,
-            "all": [
-              173.12516605854034,
-              418.3481251001358,
-              356.5237089395523
-            ],
-            "chars": 6958
-          },
-          "screenshot": {
-            "ms": 93.99029195308685,
-            "all": [
-              135.9953329563141,
-              93.99029195308685,
-              80.54620897769928
-            ],
-            "bytes": 189520
-          }
-        },
-        {
-          "url": "https://www.bbc.com/news",
-          "host": "www.bbc.com",
-          "loadMs": 5257.712582945824,
-          "snapshot": {
-            "ms": 268.0975420475006,
-            "all": [
-              269.7349579334259,
-              268.0975420475006,
-              257.27874994277954
-            ],
-            "chars": 4154
-          },
-          "screenshot": {
-            "ms": 54.10941696166992,
-            "all": [
-              54.10941696166992,
-              50.08779203891754,
-              60.59012496471405
-            ],
-            "bytes": 42215
-          }
-        },
-        {
-          "url": "https://github.com/microsoft/playwright",
-          "host": "github.com",
-          "loadMs": 3212.475333094597,
-          "snapshot": {
-            "ms": 527.3479580879211,
-            "all": [
-              527.3479580879211,
-              440.0410418510437,
-              802.6030840873718
-            ],
-            "chars": 21545
-          },
-          "screenshot": {
-            "ms": 71.82937490940094,
-            "all": [
-              95.21995806694031,
-              71.82937490940094,
-              63.24162495136261
-            ],
-            "bytes": 156683
-          }
-        }
-      ],
-      "tasks": [
-        {
-          "name": "hn-open-comments",
-          "ok": true,
-          "ms": 1418.9605001211166,
-          "snapshots": 1,
-          "chars": 13043,
-          "snapshotMs": 155.08312499523163,
-          "retries": 0
-        },
-        {
-          "name": "wikipedia-search",
-          "ok": true,
-          "ms": 1273.4589998722076,
-          "snapshots": 1,
-          "chars": 12178,
-          "snapshotMs": 301.44662499427795,
-          "retries": 0
-        },
-        {
-          "name": "mdn-open-reference",
-          "ok": true,
-          "ms": 1172.329374909401,
-          "snapshots": 1,
-          "chars": 5988,
-          "snapshotMs": 196.38808298110962,
-          "retries": 0
-        },
-        {
-          "name": "github-open-issues",
-          "ok": true,
-          "ms": 2344.9520829916,
-          "snapshots": 1,
-          "chars": 10340,
-          "snapshotMs": 766.9829580783844,
-          "retries": 0
-        },
-        {
-          "name": "bbc-open-sport",
-          "ok": true,
-          "ms": 3296.2466250658035,
-          "snapshots": 1,
-          "chars": 3831,
-          "snapshotMs": 465.3494999408722,
-          "retries": 0
-        }
-      ],
-      "round": 1,
-      "load1": 15.5947265625
-    },
-    {
-      "tool": "suitecut",
-      "launchMs": 2019.307833,
-      "closeMs": 939.3316250000062,
-      "sites": [
-        {
-          "url": "https://news.ycombinator.com/",
-          "host": "news.ycombinator.com",
-          "loadMs": 1376.2535830000002,
-          "snapshot": {
-            "ms": 175.98033299999952,
-            "all": [
-              200.71079200000077,
-              175.98033299999952,
-              169.64779199999975
-            ],
-            "chars": 8421
-          },
-          "snapshotFull": {
-            "ms": 147.98425000000043,
-            "all": [
-              125.94650000000001,
-              147.98425000000043,
-              304.3835419999996
-            ],
-            "chars": 37739
-          },
-          "screenshot": {
-            "ms": 190.97470900000008,
-            "all": [
-              190.97470900000008,
-              148.08024999999998,
-              197.0884590000005
-            ],
-            "bytes": 225784
-          }
-        },
-        {
-          "url": "https://en.wikipedia.org/wiki/Web_browser",
-          "host": "en.wikipedia.org",
-          "loadMs": 1082.733666,
-          "snapshot": {
-            "ms": 301.4667079999999,
-            "all": [
-              351.76079200000095,
-              301.4667079999999,
-              255.89899999999943
-            ],
-            "chars": 20645
-          },
-          "snapshotFull": {
-            "ms": 243.6946250000001,
-            "all": [
-              267.9165000000012,
-              242.20487499999945,
-              243.6946250000001
-            ],
-            "chars": 79662
-          },
-          "screenshot": {
-            "ms": 164.91516600000068,
-            "all": [
-              173.90104200000133,
-              164.91516600000068,
-              164.1729170000017
-            ],
-            "bytes": 262023
-          }
-        },
-        {
-          "url": "https://developer.mozilla.org/en-US/docs/Web/HTML",
-          "host": "developer.mozilla.org",
-          "loadMs": 711.6231670000016,
-          "snapshot": {
-            "ms": 117.7388749999991,
-            "all": [
-              129.73241699999926,
-              117.7388749999991,
-              117.07250000000022
+            "ms": 109.95162500000151,
+            "all": [
+              116.09095800000068,
+              109.95162500000151,
+              97.8729170000006
             ],
             "chars": 7216
           },
           "snapshotFull": {
-            "ms": 104.35195899999962,
+            "ms": 89.27658399999927,
             "all": [
-              105.20187500000065,
-              97.41158300000097,
-              104.35195899999962
+              95.13199999999779,
+              88.75191699999777,
+              89.27658399999927
             ],
-            "chars": 29870
+            "chars": 29886
           },
           "screenshot": {
-            "ms": 146.7455829999999,
+            "ms": 71.15779200000179,
             "all": [
-              150.92133300000023,
-              146.7455829999999,
-              146.14745799999946
+              71.15779200000179,
+              96.60991700000159,
+              69.00862499999857
             ],
-            "bytes": 273466
+            "bytes": 274665
           }
         },
         {
           "url": "https://www.bbc.com/news",
           "host": "www.bbc.com",
-          "error": "page.goto: Timeout 45000ms exceeded.\nnavigating to \"https://www.bbc.com/news\", waiting until \"load\""
+          "loadMs": 4296.808958000001,
+          "snapshot": {
+            "ms": 139.98808400000053,
+            "all": [
+              324.51737499999945,
+              139.98808400000053,
+              124.80487499999799
+            ],
+            "chars": 14262
+          },
+          "snapshotFull": {
+            "ms": 159.0635000000002,
+            "all": [
+              123.59654200000296,
+              159.0635000000002,
+              208.26708299999882
+            ],
+            "chars": 29766
+          },
+          "screenshot": {
+            "ms": 50.19845900000291,
+            "all": [
+              65.21304099999907,
+              48.533166999997775,
+              50.19845900000291
+            ],
+            "bytes": 60314
+          }
         },
         {
           "url": "https://github.com/microsoft/playwright",
           "host": "github.com",
-          "loadMs": 3387.9067089999953,
+          "loadMs": 4546.461374999999,
           "snapshot": {
-            "ms": 329.99566600000253,
+            "ms": 201.73862499999814,
             "all": [
-              562.8454590000038,
-              329.99566600000253,
-              307.3147920000047
+              227.00587500000256,
+              199.4337499999965,
+              201.73862499999814
             ],
-            "chars": 13974
+            "chars": 13999
           },
           "snapshotFull": {
-            "ms": 265.72074999999313,
+            "ms": 177.39245799999844,
             "all": [
-              275.39274999999907,
-              265.72074999999313,
-              225.56304100000125
+              182.02537500000108,
+              172.91062500000044,
+              177.39245799999844
             ],
-            "chars": 52159
+            "chars": 52185
           },
           "screenshot": {
-            "ms": 340.42554100000416,
+            "ms": 90.33250000000044,
             "all": [
-              271.83208300000115,
-              340.42554100000416,
-              388.8572920000006
+              90.33250000000044,
+              98.43354200000249,
+              66.26950000000215
             ],
-            "bytes": 185629
+            "bytes": 186367
           }
         }
       ],
@@ -1234,100 +337,850 @@
         {
           "name": "hn-open-comments",
           "ok": true,
-          "ms": 1427.3237080000108,
+          "ms": 724.6008330000041,
           "snapshots": 1,
-          "chars": 8648,
-          "snapshotMs": 240.23933399999805,
-          "retries": 0
+          "chars": 8666,
+          "snapshotMs": 124.01587499999732,
+          "retries": 0,
+          "retryErrors": []
         },
         {
           "name": "wikipedia-search",
           "ok": true,
-          "ms": 6122.059332999997,
+          "ms": 1111.1640830000033,
           "snapshots": 1,
-          "chars": 11926,
-          "snapshotMs": 248.71266599999217,
-          "retries": 0
+          "chars": 11931,
+          "snapshotMs": 246.65145800000028,
+          "retries": 0,
+          "retryErrors": []
         },
         {
           "name": "mdn-open-reference",
           "ok": true,
-          "ms": 1133.9094170000026,
+          "ms": 922.5748749999984,
           "snapshots": 1,
           "chars": 6831,
-          "snapshotMs": 202.0104580000043,
-          "retries": 0
+          "snapshotMs": 137.2637920000052,
+          "retries": 0,
+          "retryErrors": []
         },
         {
           "name": "github-open-issues",
           "ok": true,
-          "ms": 3412.2164170000033,
+          "ms": 2287.131792,
           "snapshots": 1,
-          "chars": 13974,
-          "snapshotMs": 704.457917000007,
-          "retries": 0
+          "chars": 9812,
+          "snapshotMs": 478.04262500000186,
+          "retries": 0,
+          "retryErrors": []
         },
         {
           "name": "bbc-open-sport",
           "ok": true,
-          "ms": 4668.958583,
+          "ms": 2677.7157920000027,
           "snapshots": 2,
-          "chars": 28784,
-          "snapshotMs": 2506.6665420000063,
-          "retries": 1
+          "chars": 28418,
+          "snapshotMs": 1006.8503750000018,
+          "retries": 1,
+          "retryErrors": [
+            "The element this snapshot ref named is no longer in the page; take a new snapshot"
+          ]
+        },
+        {
+          "name": "wikipedia-hops",
+          "ok": true,
+          "ms": 3232.8307920000007,
+          "snapshots": 3,
+          "chars": 148531,
+          "snapshotMs": 2289.9096259999933,
+          "retries": 0,
+          "retryErrors": []
+        },
+        {
+          "name": "mdn-hops",
+          "ok": true,
+          "ms": 1269.4654169999994,
+          "snapshots": 2,
+          "chars": 25743,
+          "snapshotMs": 526.9019570000019,
+          "retries": 0,
+          "retryErrors": []
+        },
+        {
+          "name": "github-hops",
+          "ok": true,
+          "ms": 3602.9010409999973,
+          "snapshots": 2,
+          "chars": 18182,
+          "snapshotMs": 1572.6634169999961,
+          "retries": 0,
+          "retryErrors": []
         }
       ],
-      "round": 1,
-      "load1": 12.322265625
+      "round": 0,
+      "load1": 31.9208984375
     },
     {
-      "tool": "browser-use",
-      "version": "0.13.14",
-      "launchMs": 4363.37424993515,
-      "closeMs": 138.7699579000473,
+      "tool": "agent-browser",
+      "version": "0.37.1",
+      "launchMs": 2147.198875,
+      "closeMs": 792.2479170000006,
       "sites": [
         {
           "url": "https://news.ycombinator.com/",
           "host": "news.ycombinator.com",
-          "loadMs": 1361.0928329229355,
+          "loadMs": 1393.7141660000002,
           "snapshot": {
-            "ms": 341.4855830669403,
+            "ms": 53.54241599999932,
             "all": [
-              343.3410841226578,
-              341.4855830669403,
-              222.67974996566772
+              76.9380000000001,
+              53.36700000000019,
+              53.54241599999932
             ],
-            "chars": 13045
+            "chars": 13640
+          },
+          "snapshotFull": {
+            "ms": 55.80829199999971,
+            "all": [
+              55.80829199999971,
+              53.65745900000002,
+              56.31791700000031
+            ],
+            "chars": 27583
           },
           "screenshot": {
-            "ms": 129.44087493419647,
+            "ms": 79.23262499999964,
             "all": [
-              129.44087493419647,
-              134.18137502670288,
-              107.30737495422363
+              75.78587500000049,
+              79.23262499999964,
+              82.91458299999977
             ],
-            "bytes": 190136
+            "bytes": 191487
           }
         },
         {
           "url": "https://en.wikipedia.org/wiki/Web_browser",
           "host": "en.wikipedia.org",
-          "loadMs": 2052.7754999399185,
+          "loadMs": 947.5844580000003,
           "snapshot": {
-            "ms": 689.2055000066757,
+            "ms": 150.440125000001,
             "all": [
-              725.4902089834213,
-              657.3577910661697,
-              689.2055000066757
+              159.27808399999958,
+              150.440125000001,
+              145.645708
+            ],
+            "chars": 20060
+          },
+          "snapshotFull": {
+            "ms": 147.60704199999964,
+            "all": [
+              147.7803330000006,
+              147.60704199999964,
+              145.213667
+            ],
+            "chars": 87819
+          },
+          "screenshot": {
+            "ms": 80.64245800000026,
+            "all": [
+              75.30216699999983,
+              80.64245800000026,
+              82.52837499999987
+            ],
+            "bytes": 242256
+          }
+        },
+        {
+          "url": "https://developer.mozilla.org/en-US/docs/Web/HTML",
+          "host": "developer.mozilla.org",
+          "loadMs": 738.6445839999997,
+          "snapshot": {
+            "ms": 45.237333000000945,
+            "all": [
+              48.728791999999885,
+              42.591583999999784,
+              45.237333000000945
+            ],
+            "chars": 6444
+          },
+          "snapshotFull": {
+            "ms": 44.3342500000017,
+            "all": [
+              49.258749999999054,
+              44.3342500000017,
+              42.71491699999933
+            ],
+            "chars": 24367
+          },
+          "screenshot": {
+            "ms": 85.5412499999984,
+            "all": [
+              90.73870899999929,
+              75.19720799999959,
+              85.5412499999984
+            ],
+            "bytes": 228113
+          }
+        },
+        {
+          "url": "https://www.bbc.com/news",
+          "host": "www.bbc.com",
+          "loadMs": 3563.1031249999996,
+          "snapshot": {
+            "ms": 86.50425000000178,
+            "all": [
+              112.38958400000047,
+              79.72891700000037,
+              86.50425000000178
+            ],
+            "chars": 27000
+          },
+          "snapshotFull": {
+            "ms": 84.63983300000109,
+            "all": [
+              94.73016600000119,
+              78.09337499999674,
+              84.63983300000109
+            ],
+            "chars": 42622
+          },
+          "screenshot": {
+            "ms": 106.93058299999757,
+            "all": [
+              106.93058299999757,
+              95.69404099999883,
+              110.4106249999968
+            ],
+            "bytes": 276332
+          }
+        },
+        {
+          "url": "https://github.com/microsoft/playwright",
+          "host": "github.com",
+          "loadMs": 2858.9687909999993,
+          "snapshot": {
+            "ms": 94.07350000000224,
+            "all": [
+              96.76858300000094,
+              93.10962500000096,
+              94.07350000000224
+            ],
+            "chars": 22805
+          },
+          "snapshotFull": {
+            "ms": 94.88720900000044,
+            "all": [
+              91.2501250000023,
+              94.88720900000044,
+              95.0276249999988
+            ],
+            "chars": 43598
+          },
+          "screenshot": {
+            "ms": 66.71099999999933,
+            "all": [
+              76.23791599999822,
+              63.895958000000974,
+              66.71099999999933
+            ],
+            "bytes": 157721
+          }
+        }
+      ],
+      "tasks": [
+        {
+          "name": "hn-open-comments",
+          "ok": true,
+          "ms": 1123.1156250000022,
+          "snapshots": 1,
+          "chars": 13640,
+          "snapshotMs": 46.17908299999908,
+          "retries": 0,
+          "retryErrors": []
+        },
+        {
+          "name": "wikipedia-search",
+          "ok": true,
+          "ms": 1242.1449169999978,
+          "snapshots": 1,
+          "chars": 11025,
+          "snapshotMs": 53.39033299999937,
+          "retries": 0,
+          "retryErrors": []
+        },
+        {
+          "name": "mdn-open-reference",
+          "ok": true,
+          "ms": 538.7479999999996,
+          "snapshots": 1,
+          "chars": 6086,
+          "snapshotMs": 43.63904199999888,
+          "retries": 0,
+          "retryErrors": []
+        },
+        {
+          "name": "github-open-issues",
+          "ok": true,
+          "ms": 1337.0462079999998,
+          "snapshots": 1,
+          "chars": 22805,
+          "snapshotMs": 113.6117919999997,
+          "retries": 0,
+          "retryErrors": []
+        },
+        {
+          "name": "bbc-open-sport",
+          "ok": true,
+          "ms": 2272.2789999999986,
+          "snapshots": 1,
+          "chars": 27028,
+          "snapshotMs": 236.66412500000297,
+          "retries": 0,
+          "retryErrors": []
+        },
+        {
+          "name": "wikipedia-hops",
+          "ok": true,
+          "ms": 3708.8821250000037,
+          "snapshots": 3,
+          "chars": 333536,
+          "snapshotMs": 2712.3392080000012,
+          "retries": 0,
+          "retryErrors": []
+        },
+        {
+          "name": "mdn-hops",
+          "ok": true,
+          "ms": 1026.7375420000026,
+          "snapshots": 2,
+          "chars": 55046,
+          "snapshotMs": 198.03704100000323,
+          "retries": 0,
+          "retryErrors": []
+        },
+        {
+          "name": "github-hops",
+          "ok": true,
+          "ms": 2579.139583999997,
+          "snapshots": 2,
+          "chars": 22469,
+          "snapshotMs": 822.1545000000042,
+          "retries": 0,
+          "retryErrors": []
+        }
+      ],
+      "round": 0,
+      "load1": 20.95166015625
+    },
+    {
+      "tool": "browser-use",
+      "version": "0.13.14",
+      "launchMs": 1364.09070789814,
+      "closeMs": 120.7927919626236,
+      "sites": [
+        {
+          "url": "https://news.ycombinator.com/",
+          "host": "news.ycombinator.com",
+          "loadMs": 1176.177749991417,
+          "snapshot": {
+            "ms": 187.09829211235046,
+            "all": [
+              187.09829211235046,
+              204.52625000476837,
+              142.96591699123383
+            ],
+            "chars": 13038
+          },
+          "screenshot": {
+            "ms": 79.79204201698303,
+            "all": [
+              79.79204201698303,
+              75.39558398723602,
+              82.35929107666016
+            ],
+            "bytes": 192008
+          }
+        },
+        {
+          "url": "https://en.wikipedia.org/wiki/Web_browser",
+          "host": "en.wikipedia.org",
+          "loadMs": 1502.4494588375092,
+          "snapshot": {
+            "ms": 507.63645911216736,
+            "all": [
+              523.359209060669,
+              507.63645911216736,
+              497.305624961853
             ],
             "chars": 11106
           },
           "screenshot": {
-            "ms": 105.15349996089935,
+            "ms": 85.17687499523163,
             "all": [
-              123.60945904254913,
-              105.15349996089935,
-              97.04787504673004
+              89.13750004768372,
+              79.65387487411499,
+              85.17687499523163
+            ],
+            "bytes": 224790
+          }
+        },
+        {
+          "url": "https://developer.mozilla.org/en-US/docs/Web/HTML",
+          "host": "developer.mozilla.org",
+          "loadMs": 368.434249997139,
+          "snapshot": {
+            "ms": 165.78516590595245,
+            "all": [
+              165.78516590595245,
+              332.3104170560837,
+              154.410542011261
+            ],
+            "chars": 7024
+          },
+          "screenshot": {
+            "ms": 65.34904205799103,
+            "all": [
+              59.525583148002625,
+              65.34904205799103,
+              67.65137505531311
+            ],
+            "bytes": 187052
+          }
+        },
+        {
+          "url": "https://www.bbc.com/news",
+          "host": "www.bbc.com",
+          "loadMs": 2232.1849579811096,
+          "snapshot": {
+            "ms": 102.74874997138977,
+            "all": [
+              102.74874997138977,
+              100.09470808506012,
+              105.2725419998169
+            ],
+            "chars": 3758
+          },
+          "screenshot": {
+            "ms": 33.787874937057495,
+            "all": [
+              30.858707904815674,
+              33.787874937057495,
+              49.25349986553192
+            ],
+            "bytes": 41162
+          }
+        },
+        {
+          "url": "https://github.com/microsoft/playwright",
+          "host": "github.com",
+          "loadMs": 1092.7433749437332,
+          "snapshot": {
+            "ms": 249.4027500152588,
+            "all": [
+              225.6695840358734,
+              249.4027500152588,
+              422.195916056633
+            ],
+            "chars": 21564
+          },
+          "screenshot": {
+            "ms": 48.85425007343292,
+            "all": [
+              48.85425007343292,
+              43.97574996948242,
+              49.69283306598663
+            ],
+            "bytes": 157359
+          }
+        }
+      ],
+      "tasks": [
+        {
+          "name": "hn-open-comments",
+          "ok": true,
+          "ms": 1289.7501250505447,
+          "snapshots": 1,
+          "chars": 13032,
+          "snapshotMs": 86.20308291912079,
+          "retries": 0,
+          "retryErrors": []
+        },
+        {
+          "name": "wikipedia-search",
+          "ok": true,
+          "ms": 1414.9851669073105,
+          "snapshots": 1,
+          "chars": 12061,
+          "snapshotMs": 393.0599590539932,
+          "retries": 0,
+          "retryErrors": []
+        },
+        {
+          "name": "mdn-open-reference",
+          "ok": true,
+          "ms": 1207.5889999866486,
+          "snapshots": 1,
+          "chars": 5987,
+          "snapshotMs": 221.6087909936905,
+          "retries": 0,
+          "retryErrors": []
+        },
+        {
+          "name": "github-open-issues",
+          "ok": true,
+          "ms": 2093.284208059311,
+          "snapshots": 1,
+          "chars": 17830,
+          "snapshotMs": 666.7787499427795,
+          "retries": 0,
+          "retryErrors": []
+        },
+        {
+          "name": "bbc-open-sport",
+          "ok": true,
+          "ms": 2742.174040913582,
+          "snapshots": 1,
+          "chars": 3760,
+          "snapshotMs": 243.40416705608368,
+          "retries": 0,
+          "retryErrors": []
+        },
+        {
+          "name": "wikipedia-hops",
+          "ok": true,
+          "ms": 7142.450041055679,
+          "snapshots": 3,
+          "chars": 43180,
+          "snapshotMs": 4440.922498822212,
+          "retries": 0,
+          "retryErrors": []
+        },
+        {
+          "name": "mdn-hops",
+          "ok": true,
+          "ms": 2329.892040848732,
+          "snapshots": 2,
+          "chars": 12777,
+          "snapshotMs": 567.0724170207977,
+          "retries": 0,
+          "retryErrors": []
+        },
+        {
+          "name": "github-hops",
+          "ok": true,
+          "ms": 3885.543041944504,
+          "snapshots": 2,
+          "chars": 35030,
+          "snapshotMs": 1776.6447499990463,
+          "retries": 0,
+          "retryErrors": []
+        }
+      ],
+      "round": 0,
+      "load1": 15.6298828125
+    },
+    {
+      "tool": "agent-browser",
+      "version": "0.37.1",
+      "launchMs": 1434.5051250000001,
+      "closeMs": 877.0030419999966,
+      "sites": [
+        {
+          "url": "https://news.ycombinator.com/",
+          "host": "news.ycombinator.com",
+          "loadMs": 1567.1482919999999,
+          "snapshot": {
+            "ms": 52.262416000000485,
+            "all": [
+              59.91558299999997,
+              52.262416000000485,
+              50.84141700000055
+            ],
+            "chars": 13640
+          },
+          "snapshotFull": {
+            "ms": 50.97862499999974,
+            "all": [
+              51.20154199999979,
+              50.97862499999974,
+              50.91920899999968
+            ],
+            "chars": 27583
+          },
+          "screenshot": {
+            "ms": 68.94337499999983,
+            "all": [
+              68.94337499999983,
+              84.66187499999978,
+              63.145542000000205
+            ],
+            "bytes": 191200
+          }
+        },
+        {
+          "url": "https://en.wikipedia.org/wiki/Web_browser",
+          "host": "en.wikipedia.org",
+          "loadMs": 832.6583329999994,
+          "snapshot": {
+            "ms": 138.42200000000048,
+            "all": [
+              152.04479100000026,
+              137.2838330000004,
+              138.42200000000048
+            ],
+            "chars": 20060
+          },
+          "snapshotFull": {
+            "ms": 139.2338749999999,
+            "all": [
+              136.33795799999916,
+              141.78404200000023,
+              139.2338749999999
+            ],
+            "chars": 87819
+          },
+          "screenshot": {
+            "ms": 80.97358400000121,
+            "all": [
+              76.394459000001,
+              80.97358400000121,
+              84.36299999999937
+            ],
+            "bytes": 242256
+          }
+        },
+        {
+          "url": "https://developer.mozilla.org/en-US/docs/Web/HTML",
+          "host": "developer.mozilla.org",
+          "loadMs": 623.9834169999995,
+          "snapshot": {
+            "ms": 42.82337499999994,
+            "all": [
+              44.77270800000042,
+              40.814666000000216,
+              42.82337499999994
+            ],
+            "chars": 6432
+          },
+          "snapshotFull": {
+            "ms": 42.51258299999972,
+            "all": [
+              42.64775000000009,
+              42.51258299999972,
+              41.91362500000105
+            ],
+            "chars": 24343
+          },
+          "screenshot": {
+            "ms": 81.10058299999946,
+            "all": [
+              81.10058299999946,
+              82.01324999999997,
+              80.82491699999991
+            ],
+            "bytes": 227281
+          }
+        },
+        {
+          "url": "https://www.bbc.com/news",
+          "host": "www.bbc.com",
+          "loadMs": 2914.946667,
+          "snapshot": {
+            "ms": 75.16645900000003,
+            "all": [
+              97.54554199999984,
+              75.16645900000003,
+              73.08458299999984
+            ],
+            "chars": 27048
+          },
+          "snapshotFull": {
+            "ms": 75.63949999999932,
+            "all": [
+              75.63949999999932,
+              75.5324580000015,
+              86.5692080000008
+            ],
+            "chars": 42716
+          },
+          "screenshot": {
+            "ms": 66.02666599999975,
+            "all": [
+              75.60874999999942,
+              66.02666599999975,
+              61.24920799999927
+            ],
+            "bytes": 42208
+          }
+        },
+        {
+          "url": "https://github.com/microsoft/playwright",
+          "host": "github.com",
+          "loadMs": 5661.001584,
+          "snapshot": {
+            "ms": 46.549041000002035,
+            "all": [
+              46.09437500000058,
+              46.549041000002035,
+              46.99641700000211
+            ],
+            "chars": 22799
+          },
+          "snapshotFull": {
+            "ms": 47.25433300000077,
+            "all": [
+              46.404334000002564,
+              47.25433300000077,
+              47.84504199999719
+            ],
+            "chars": 43586
+          },
+          "screenshot": {
+            "ms": 48.93162500000108,
+            "all": [
+              38.8147089999984,
+              48.93162500000108,
+              50.15920900000128
+            ],
+            "bytes": 157728
+          }
+        }
+      ],
+      "tasks": [
+        {
+          "name": "hn-open-comments",
+          "ok": true,
+          "ms": 753.3553330000032,
+          "snapshots": 1,
+          "chars": 13640,
+          "snapshotMs": 24.453874999999243,
+          "retries": 0,
+          "retryErrors": []
+        },
+        {
+          "name": "wikipedia-search",
+          "ok": true,
+          "ms": 1015.5743750000001,
+          "snapshots": 1,
+          "chars": 11025,
+          "snapshotMs": 41.996415999998135,
+          "retries": 0,
+          "retryErrors": []
+        },
+        {
+          "name": "mdn-open-reference",
+          "ok": true,
+          "ms": 462.8987080000006,
+          "snapshots": 1,
+          "chars": 6059,
+          "snapshotMs": 25.29699999999866,
+          "retries": 0,
+          "retryErrors": []
+        },
+        {
+          "name": "github-open-issues",
+          "ok": true,
+          "ms": 1033.1591249999983,
+          "snapshots": 1,
+          "chars": 22798,
+          "snapshotMs": 67.34637500000099,
+          "retries": 0,
+          "retryErrors": []
+        },
+        {
+          "name": "bbc-open-sport",
+          "ok": true,
+          "ms": 1931.6692079999993,
+          "snapshots": 1,
+          "chars": 27164,
+          "snapshotMs": 59.53450000000157,
+          "retries": 0,
+          "retryErrors": []
+        },
+        {
+          "name": "wikipedia-hops",
+          "ok": true,
+          "ms": 1647.1932500000003,
+          "snapshots": 3,
+          "chars": 192217,
+          "snapshotMs": 883.5148750000008,
+          "retries": 0,
+          "retryErrors": []
+        },
+        {
+          "name": "mdn-hops",
+          "ok": true,
+          "ms": 591.911500000002,
+          "snapshots": 2,
+          "chars": 55046,
+          "snapshotMs": 116.4913340000021,
+          "retries": 0,
+          "retryErrors": []
+        },
+        {
+          "name": "github-hops",
+          "ok": true,
+          "ms": 2174.7241250000006,
+          "snapshots": 3,
+          "chars": 44387,
+          "snapshotMs": 748.6835420000025,
+          "retries": 1,
+          "retryErrors": [
+            "agent-browser click @e89: 1 ✗ Element '@e89' is covered by <span#_R_tllld85_--label> at its click point, so the input would land on that element instead. Dismiss or interact with the covering element first (it is often a dialog, banner, or sticky header)."
+          ]
+        }
+      ],
+      "round": 1,
+      "load1": 11.24365234375
+    },
+    {
+      "tool": "browser-use",
+      "version": "0.13.14",
+      "launchMs": 896.5514590740204,
+      "closeMs": 111.51600003242493,
+      "sites": [
+        {
+          "url": "https://news.ycombinator.com/",
+          "host": "news.ycombinator.com",
+          "loadMs": 1148.7407499551773,
+          "snapshot": {
+            "ms": 73.02254104614258,
+            "all": [
+              73.02254104614258,
+              94.82504105567932,
+              69.98424994945526
+            ],
+            "chars": 13036
+          },
+          "screenshot": {
+            "ms": 46.91612493991852,
+            "all": [
+              43.22479200363159,
+              46.91612493991852,
+              49.873416900634766
+            ],
+            "bytes": 191707
+          }
+        },
+        {
+          "url": "https://en.wikipedia.org/wiki/Web_browser",
+          "host": "en.wikipedia.org",
+          "loadMs": 519.8526250123978,
+          "snapshot": {
+            "ms": 242.3249158859253,
+            "all": [
+              227.27829098701477,
+              242.3249158859253,
+              262.9317909479141
+            ],
+            "chars": 11105
+          },
+          "screenshot": {
+            "ms": 51.114625096321106,
+            "all": [
+              51.114625096321106,
+              50.531999945640564,
+              65.58870804309845
             ],
             "bytes": 224800
           }
@@ -1335,22 +1188,22 @@
         {
           "url": "https://developer.mozilla.org/en-US/docs/Web/HTML",
           "host": "developer.mozilla.org",
-          "loadMs": 572.021292090416,
+          "loadMs": 279.76020789146423,
           "snapshot": {
-            "ms": 218.33183300495148,
+            "ms": 83.86929190158844,
             "all": [
-              637.7489169836044,
-              214.69725000858307,
-              218.33183300495148
+              83.86929190158844,
+              219.10758292675018,
+              81.50620806217194
             ],
-            "chars": 7020
+            "chars": 7018
           },
           "screenshot": {
-            "ms": 106.83816695213318,
+            "ms": 49.78629195690155,
             "all": [
-              106.83816695213318,
-              108.8384999036789,
-              94.05600011348724
+              46.71362495422363,
+              49.964625000953674,
+              49.78629195690155
             ],
             "bytes": 227859
           }
@@ -1358,47 +1211,47 @@
         {
           "url": "https://www.bbc.com/news",
           "host": "www.bbc.com",
-          "loadMs": 3385.2205830812454,
+          "loadMs": 2258.8185420036316,
           "snapshot": {
-            "ms": 368.0332499742508,
+            "ms": 255.91429090499878,
             "all": [
-              372.7219579219818,
-              368.0332499742508,
-              293.72637498378754
+              319.72350013256073,
+              255.91429090499878,
+              243.57649993896484
             ],
-            "chars": 4223
+            "chars": 4739
           },
           "screenshot": {
-            "ms": 129.81870794296265,
+            "ms": 94.06462502479553,
             "all": [
-              129.81870794296265,
-              124.6716251373291,
-              131.71479201316833
+              122.2037079334259,
+              94.06462502479553,
+              82.34800004959106
             ],
-            "bytes": 133619
+            "bytes": 276072
           }
         },
         {
           "url": "https://github.com/microsoft/playwright",
           "host": "github.com",
-          "loadMs": 2352.646208047867,
+          "loadMs": 762.242917060852,
           "snapshot": {
-            "ms": 643.1590830087662,
+            "ms": 297.20791697502136,
             "all": [
-              643.1590830087662,
-              599.5015419721603,
-              1092.0692080259323
+              296.06524991989136,
+              297.20791697502136,
+              422.22041606903076
             ],
-            "chars": 21520
+            "chars": 21543
           },
           "screenshot": {
-            "ms": 95.96774995326996,
+            "ms": 50.26370894908905,
             "all": [
-              139.40749990940094,
-              95.96774995326996,
-              95.01875007152557
+              56.02029204368591,
+              44.01791703701019,
+              50.26370894908905
             ],
-            "bytes": 156883
+            "bytes": 157359
           }
         }
       ],
@@ -1406,117 +1259,152 @@
         {
           "name": "hn-open-comments",
           "ok": true,
-          "ms": 1901.4404579401016,
+          "ms": 1276.5825830698013,
           "snapshots": 1,
-          "chars": 13040,
-          "snapshotMs": 219.34270799160004,
-          "retries": 0
+          "chars": 13032,
+          "snapshotMs": 86.78029203414917,
+          "retries": 0,
+          "retryErrors": []
         },
         {
           "name": "wikipedia-search",
           "ok": true,
-          "ms": 2293.3993340730667,
+          "ms": 1094.02716588974,
           "snapshots": 1,
-          "chars": 12044,
-          "snapshotMs": 535.0329999923706,
-          "retries": 0
+          "chars": 12059,
+          "snapshotMs": 149.1990840435028,
+          "retries": 0,
+          "retryErrors": []
         },
         {
           "name": "mdn-open-reference",
           "ok": true,
-          "ms": 1433.6525830030441,
+          "ms": 929.0035840272903,
           "snapshots": 1,
           "chars": 5989,
-          "snapshotMs": 283.74291706085205,
-          "retries": 0
+          "snapshotMs": 94.88262510299683,
+          "retries": 0,
+          "retryErrors": []
         },
         {
           "name": "github-open-issues",
           "ok": true,
-          "ms": 3749.4067920446396,
+          "ms": 1471.2797499895096,
           "snapshots": 1,
-          "chars": 21529,
-          "snapshotMs": 974.2548340559006,
-          "retries": 0
+          "chars": 17826,
+          "snapshotMs": 406.8252079486847,
+          "retries": 0,
+          "retryErrors": []
         },
         {
           "name": "bbc-open-sport",
           "ok": true,
-          "ms": 4312.164833068848,
+          "ms": 2222.4457499980927,
           "snapshots": 1,
-          "chars": 4174,
-          "snapshotMs": 336.2543339729309,
-          "retries": 0
+          "chars": 3886,
+          "snapshotMs": 160.9560420513153,
+          "retries": 0,
+          "retryErrors": []
+        },
+        {
+          "name": "wikipedia-hops",
+          "ok": true,
+          "ms": 5116.267082929611,
+          "snapshots": 3,
+          "chars": 43189,
+          "snapshotMs": 2578.438540816307,
+          "retries": 0,
+          "retryErrors": []
+        },
+        {
+          "name": "mdn-hops",
+          "ok": true,
+          "ms": 1891.5615838766098,
+          "snapshots": 2,
+          "chars": 12777,
+          "snapshotMs": 291.5740840435028,
+          "retries": 0,
+          "retryErrors": []
+        },
+        {
+          "name": "github-hops",
+          "ok": true,
+          "ms": 2896.1464170217514,
+          "snapshots": 2,
+          "chars": 35008,
+          "snapshotMs": 1003.9307090044022,
+          "retries": 0,
+          "retryErrors": []
         }
       ],
-      "round": 2,
-      "load1": 14.96044921875
+      "round": 1,
+      "load1": 9.61669921875
     },
     {
       "tool": "suitecut",
-      "launchMs": 2123.6134589999997,
-      "closeMs": 535.4187499999971,
+      "launchMs": 1126.084875,
+      "closeMs": 510.05574999999953,
       "sites": [
         {
           "url": "https://news.ycombinator.com/",
           "host": "news.ycombinator.com",
-          "loadMs": 1631.1090409999997,
+          "loadMs": 1444.816666,
           "snapshot": {
-            "ms": 150.72820899999988,
+            "ms": 84.51383299999998,
             "all": [
-              204.3226250000007,
-              150.72820899999988,
-              148.00416700000005
+              132.09033399999953,
+              84.51383299999998,
+              81.25658300000032
             ],
-            "chars": 8421
+            "chars": 8439
           },
           "snapshotFull": {
-            "ms": 139.57658300000003,
+            "ms": 66.64008300000023,
             "all": [
-              139.57658300000003,
-              135.65308300000015,
-              151.8705829999999
+              80.8090830000001,
+              66.64008300000023,
+              64.7911669999994
             ],
-            "chars": 37739
+            "chars": 37962
           },
           "screenshot": {
-            "ms": 167.2072079999998,
+            "ms": 50.51204200000029,
             "all": [
-              216.08950000000004,
-              157.09358399999928,
-              167.2072079999998
+              65.31454200000007,
+              41.075042000000394,
+              50.51204200000029
             ],
-            "bytes": 225576
+            "bytes": 227387
           }
         },
         {
           "url": "https://en.wikipedia.org/wiki/Web_browser",
           "host": "en.wikipedia.org",
-          "loadMs": 1064.0242499999995,
+          "loadMs": 543.9705839999997,
           "snapshot": {
-            "ms": 265.4669590000012,
+            "ms": 137.65583400000014,
             "all": [
-              290.61741599999914,
-              265.4669590000012,
-              254.7009160000016
+              137.65583400000014,
+              134.98866699999962,
+              144.45908300000065
             ],
             "chars": 20645
           },
           "snapshotFull": {
-            "ms": 242.83837499999936,
+            "ms": 157.75770900000043,
             "all": [
-              225.76637500000106,
-              242.83837499999936,
-              245.816499999999
+              157.75770900000043,
+              149.20266600000014,
+              161.41133400000035
             ],
             "chars": 79662
           },
           "screenshot": {
-            "ms": 165.4818749999995,
+            "ms": 85.80154099999982,
             "all": [
-              165.4818749999995,
-              176.62066699999923,
-              154.90845900000022
+              78.85249999999996,
+              99.89637499999935,
+              85.80154099999982
             ],
             "bytes": 262023
           }
@@ -1524,97 +1412,97 @@
         {
           "url": "https://developer.mozilla.org/en-US/docs/Web/HTML",
           "host": "developer.mozilla.org",
-          "loadMs": 1403.199834000001,
+          "loadMs": 1950.8306660000007,
           "snapshot": {
-            "ms": 154.31395899999916,
+            "ms": 71.43895899999916,
             "all": [
-              188.54966699999932,
-              154.31395899999916,
-              154.09145799999897
+              82.77345799999966,
+              71.43895899999916,
+              71.24912500000028
             ],
-            "chars": 7196
+            "chars": 7202
           },
           "snapshotFull": {
-            "ms": 159.18995900000118,
+            "ms": 68.86108299999978,
             "all": [
-              135.867083000001,
-              162.8836250000004,
-              159.18995900000118
+              68.86108299999978,
+              73.12587499999972,
+              65.40312500000073
             ],
             "chars": 29851
           },
           "screenshot": {
-            "ms": 200.9027500000011,
+            "ms": 71.99566600000071,
             "all": [
-              174.79449999999997,
-              200.9027500000011,
-              217.16825000000063
+              71.99566600000071,
+              63.8276249999999,
+              83.37804199999846
             ],
-            "bytes": 272474
+            "bytes": 272954
           }
         },
         {
           "url": "https://www.bbc.com/news",
           "host": "www.bbc.com",
-          "loadMs": 5204.622291999998,
+          "loadMs": 2625.770624999999,
           "snapshot": {
-            "ms": 4181.337916000004,
+            "ms": 193.06324999999924,
             "all": [
-              8255.703084,
-              4181.337916000004,
-              3872.6607090000034
+              219.99033399999826,
+              174.94133299999885,
+              193.06324999999924
             ],
-            "chars": 14442
+            "chars": 14439
           },
           "snapshotFull": {
-            "ms": 197.45650000000023,
+            "ms": 153.0916670000006,
             "all": [
-              827.9888750000027,
-              197.45650000000023,
-              192.23129199999676
+              149.97258299999885,
+              153.0916670000006,
+              154.28987499999857
             ],
-            "chars": 29840
+            "chars": 31033
           },
           "screenshot": {
-            "ms": 369.38029200000165,
+            "ms": 80.0892500000009,
             "all": [
-              296.6560830000017,
-              369.38029200000165,
-              687.3903750000027
+              80.96433400000024,
+              80.0892500000009,
+              67.1817919999994
             ],
-            "bytes": 251253
+            "bytes": 185624
           }
         },
         {
           "url": "https://github.com/microsoft/playwright",
           "host": "github.com",
-          "loadMs": 4446.730042000003,
+          "loadMs": 1259.718041,
           "snapshot": {
-            "ms": 256.5671250000014,
+            "ms": 129.5773330000011,
             "all": [
-              308.09254099999816,
-              256.5671250000014,
-              253.43733399999473
+              132.05587500000183,
+              129.5773330000011,
+              126.14566600000035
             ],
-            "chars": 13968
+            "chars": 13989
           },
           "snapshotFull": {
-            "ms": 226.9091249999983,
+            "ms": 120.36095900000146,
             "all": [
-              220.21708300000319,
-              250.6770830000023,
-              226.9091249999983
+              117.35529099999985,
+              120.36095900000146,
+              131.03945799999929
             ],
-            "chars": 52155
+            "chars": 52175
           },
           "screenshot": {
-            "ms": 343.92470799999865,
+            "ms": 48.56037500000093,
             "all": [
-              259.92366700000275,
-              343.92470799999865,
-              359.0928750000021
+              78.57437500000015,
+              48.56037500000093,
+              48.32662500000151
             ],
-            "bytes": 185917
+            "bytes": 186323
           }
         }
       ],
@@ -1622,118 +1510,618 @@
         {
           "name": "hn-open-comments",
           "ok": true,
-          "ms": 1218.3324579999971,
+          "ms": 640.9245420000007,
           "snapshots": 1,
-          "chars": 8648,
-          "snapshotMs": 380.3926670000001,
-          "retries": 0
+          "chars": 8666,
+          "snapshotMs": 92.6807919999992,
+          "retries": 0,
+          "retryErrors": []
         },
         {
           "name": "wikipedia-search",
           "ok": true,
-          "ms": 1927.4910000000018,
+          "ms": 1184.8488749999997,
           "snapshots": 1,
-          "chars": 11926,
-          "snapshotMs": 352.6701249999969,
-          "retries": 0
+          "chars": 11638,
+          "snapshotMs": 159.89879099999962,
+          "retries": 0,
+          "retryErrors": []
         },
         {
           "name": "mdn-open-reference",
           "ok": true,
-          "ms": 1196.879875000006,
+          "ms": 422.60349999999744,
           "snapshots": 1,
           "chars": 6831,
-          "snapshotMs": 253.4632500000007,
-          "retries": 0
+          "snapshotMs": 88.75583299999926,
+          "retries": 0,
+          "retryErrors": []
         },
         {
           "name": "github-open-issues",
           "ok": true,
-          "ms": 3488.652167,
+          "ms": 1477.8983329999974,
           "snapshots": 1,
-          "chars": 10090,
-          "snapshotMs": 709.0328330000048,
-          "retries": 0
+          "chars": 12862,
+          "snapshotMs": 504.0044999999991,
+          "retries": 0,
+          "retryErrors": []
         },
         {
           "name": "bbc-open-sport",
           "ok": true,
-          "ms": 2106.3563340000037,
-          "snapshots": 1,
-          "chars": 14339,
-          "snapshotMs": 996.8809590000019,
-          "retries": 0
+          "ms": 2585.854124999998,
+          "snapshots": 2,
+          "chars": 28496,
+          "snapshotMs": 907.6542499999996,
+          "retries": 1,
+          "retryErrors": [
+            "The element this snapshot ref named is no longer in the page; take a new snapshot"
+          ]
+        },
+        {
+          "name": "wikipedia-hops",
+          "ok": true,
+          "ms": 3035.943500000001,
+          "snapshots": 3,
+          "chars": 112803,
+          "snapshotMs": 1878.6930829999983,
+          "retries": 0,
+          "retryErrors": []
+        },
+        {
+          "name": "mdn-hops",
+          "ok": true,
+          "ms": 1283.6884169999976,
+          "snapshots": 2,
+          "chars": 25743,
+          "snapshotMs": 579.1785419999978,
+          "retries": 0,
+          "retryErrors": []
+        },
+        {
+          "name": "github-hops",
+          "ok": true,
+          "ms": 3768.546666000002,
+          "snapshots": 3,
+          "chars": 28234,
+          "snapshotMs": 1625.2832080000007,
+          "retries": 1,
+          "retryErrors": [
+            "click: Error: Element is not attached to the DOM"
+          ]
         }
       ],
-      "round": 2,
-      "load1": 17.2509765625
+      "round": 1,
+      "load1": 7.67529296875
     },
     {
-      "tool": "agent-browser",
-      "version": "0.37.1",
-      "launchMs": 2114.9241660000002,
-      "closeMs": 871.2025829999984,
+      "tool": "browser-use",
+      "version": "0.13.14",
+      "launchMs": 1488.948832988739,
+      "closeMs": 239.00308299064636,
       "sites": [
         {
           "url": "https://news.ycombinator.com/",
           "host": "news.ycombinator.com",
-          "loadMs": 1470.7837089999998,
+          "loadMs": 1367.0996669530869,
           "snapshot": {
-            "ms": 69.94629200000054,
+            "ms": 163.87683284282684,
             "all": [
-              103.40520800000013,
-              69.94629200000054,
-              64.18904199999997
+              163.87683284282684,
+              194.63487493991852,
+              140.64562487602234
             ],
-            "chars": 13600
-          },
-          "snapshotFull": {
-            "ms": 69.7383749999999,
-            "all": [
-              69.7383749999999,
-              72.16616599999998,
-              65.9090839999999
-            ],
-            "chars": 27539
+            "chars": 13033
           },
           "screenshot": {
-            "ms": 92.47258299999976,
+            "ms": 80.12829101085663,
             "all": [
-              92.47258299999976,
-              95.74041600000055,
-              84.04945800000041
+              78.76054215431213,
+              80.12829101085663,
+              80.36591601371765
             ],
-            "bytes": 189937
+            "bytes": 191516
           }
         },
         {
           "url": "https://en.wikipedia.org/wiki/Web_browser",
           "host": "en.wikipedia.org",
-          "loadMs": 1094.9544589999996,
+          "loadMs": 852.2790828943253,
           "snapshot": {
-            "ms": 71.00295900000128,
+            "ms": 511.35829198360443,
             "all": [
-              71.20391700000073,
-              63.73583400000098,
-              71.00295900000128
+              545.2995829582214,
+              511.35829198360443,
+              507.7619169950485
+            ],
+            "chars": 11106
+          },
+          "screenshot": {
+            "ms": 86.17516696453094,
+            "all": [
+              94.28208303451538,
+              70.78612494468689,
+              86.17516696453094
+            ],
+            "bytes": 224800
+          }
+        },
+        {
+          "url": "https://developer.mozilla.org/en-US/docs/Web/HTML",
+          "host": "developer.mozilla.org",
+          "loadMs": 590.416708946228,
+          "snapshot": {
+            "ms": 191.41991710662842,
+            "all": [
+              191.41991710662842,
+              404.2818750143051,
+              183.6117080450058
+            ],
+            "chars": 7057
+          },
+          "screenshot": {
+            "ms": 73.32983303070068,
+            "all": [
+              73.32983303070068,
+              78.09816598892212,
+              68.29100000858307
+            ],
+            "bytes": 187135
+          }
+        },
+        {
+          "url": "https://www.bbc.com/news",
+          "host": "www.bbc.com",
+          "loadMs": 2637.3783329725266,
+          "snapshot": {
+            "ms": 400.9442080259323,
+            "all": [
+              400.9442080259323,
+              4341.453999996185,
+              365.0320420265198
+            ],
+            "chars": 4746
+          },
+          "screenshot": {
+            "ms": 81.3396669626236,
+            "all": [
+              119.88404190540314,
+              80.5847499370575,
+              81.3396669626236
+            ],
+            "bytes": 276130
+          }
+        },
+        {
+          "url": "https://github.com/microsoft/playwright",
+          "host": "github.com",
+          "loadMs": 1039.4330841302872,
+          "snapshot": {
+            "ms": 511.5288749933243,
+            "all": [
+              511.5288749933243,
+              488.9316668510437,
+              779.550125002861
+            ],
+            "chars": 21539
+          },
+          "screenshot": {
+            "ms": 86.84945797920227,
+            "all": [
+              95.65587508678436,
+              86.84945797920227,
+              66.28083395957947
+            ],
+            "bytes": 157359
+          }
+        }
+      ],
+      "tasks": [
+        {
+          "name": "hn-open-comments",
+          "ok": true,
+          "ms": 1572.9995419979095,
+          "snapshots": 1,
+          "chars": 13033,
+          "snapshotMs": 209.72762501239777,
+          "retries": 0,
+          "retryErrors": []
+        },
+        {
+          "name": "wikipedia-search",
+          "ok": true,
+          "ms": 1419.236958026886,
+          "snapshots": 1,
+          "chars": 12060,
+          "snapshotMs": 385.08808302879333,
+          "retries": 0,
+          "retryErrors": []
+        },
+        {
+          "name": "mdn-open-reference",
+          "ok": true,
+          "ms": 1173.7920829057693,
+          "snapshots": 1,
+          "chars": 5989,
+          "snapshotMs": 197.14262509346008,
+          "retries": 0,
+          "retryErrors": []
+        },
+        {
+          "name": "github-open-issues",
+          "ok": true,
+          "ms": 2191.277125120163,
+          "snapshots": 1,
+          "chars": 17839,
+          "snapshotMs": 660.6613750457764,
+          "retries": 0,
+          "retryErrors": []
+        },
+        {
+          "name": "bbc-open-sport",
+          "ok": true,
+          "ms": 3375.2711659669876,
+          "snapshots": 1,
+          "chars": 4125,
+          "snapshotMs": 438.60145795345306,
+          "retries": 0,
+          "retryErrors": []
+        },
+        {
+          "name": "wikipedia-hops",
+          "ok": true,
+          "ms": 7460.084083914757,
+          "snapshots": 3,
+          "chars": 43180,
+          "snapshotMs": 4674.059874892235,
+          "retries": 0,
+          "retryErrors": []
+        },
+        {
+          "name": "mdn-hops",
+          "ok": true,
+          "ms": 2331.510749936104,
+          "snapshots": 2,
+          "chars": 12777,
+          "snapshotMs": 605.6312079429626,
+          "retries": 0,
+          "retryErrors": []
+        },
+        {
+          "name": "github-hops",
+          "ok": true,
+          "ms": 3889.9526249170303,
+          "snapshots": 2,
+          "chars": 36318,
+          "snapshotMs": 2004.5903329849243,
+          "retries": 0,
+          "retryErrors": []
+        }
+      ],
+      "round": 2,
+      "load1": 7.78662109375
+    },
+    {
+      "tool": "suitecut",
+      "launchMs": 1507.328292,
+      "closeMs": 658.6345000000001,
+      "sites": [
+        {
+          "url": "https://news.ycombinator.com/",
+          "host": "news.ycombinator.com",
+          "loadMs": 1172.6274160000003,
+          "snapshot": {
+            "ms": 151.40091699999994,
+            "all": [
+              197.27170800000022,
+              151.40091699999994,
+              119.65599999999995
+            ],
+            "chars": 8439
+          },
+          "snapshotFull": {
+            "ms": 115.0767079999996,
+            "all": [
+              110.47825000000012,
+              131.6312080000007,
+              115.0767079999996
+            ],
+            "chars": 37962
+          },
+          "screenshot": {
+            "ms": 83.90050000000065,
+            "all": [
+              82.43312500000047,
+              86.46016700000018,
+              83.90050000000065
+            ],
+            "bytes": 227443
+          }
+        },
+        {
+          "url": "https://en.wikipedia.org/wiki/Web_browser",
+          "host": "en.wikipedia.org",
+          "loadMs": 682.4953340000002,
+          "snapshot": {
+            "ms": 206.90870799999902,
+            "all": [
+              224.32116700000006,
+              206.3881249999995,
+              206.90870799999902
+            ],
+            "chars": 20645
+          },
+          "snapshotFull": {
+            "ms": 185.48033299999952,
+            "all": [
+              184.95941700000003,
+              185.48033299999952,
+              198.70379200000025
+            ],
+            "chars": 79662
+          },
+          "screenshot": {
+            "ms": 100.38445800000045,
+            "all": [
+              111.63933400000133,
+              100.38445800000045,
+              91.53900000000067
+            ],
+            "bytes": 262023
+          }
+        },
+        {
+          "url": "https://developer.mozilla.org/en-US/docs/Web/HTML",
+          "host": "developer.mozilla.org",
+          "loadMs": 674.3457499999986,
+          "snapshot": {
+            "ms": 107.68995800000084,
+            "all": [
+              126.23620800000026,
+              107.68995800000084,
+              99.45270900000105
+            ],
+            "chars": 7191
+          },
+          "snapshotFull": {
+            "ms": 90.82183299999997,
+            "all": [
+              102.52249999999913,
+              90.12733299999854,
+              90.82183299999997
+            ],
+            "chars": 29834
+          },
+          "screenshot": {
+            "ms": 74.67916699999842,
+            "all": [
+              74.67916699999842,
+              81.33016599999974,
+              71.73995800000012
+            ],
+            "bytes": 271405
+          }
+        },
+        {
+          "url": "https://www.bbc.com/news",
+          "host": "www.bbc.com",
+          "loadMs": 2681.3371669999997,
+          "snapshot": {
+            "ms": 247.79724999999962,
+            "all": [
+              247.79724999999962,
+              157.37774999999965,
+              298.4378749999996
+            ],
+            "chars": 14306
+          },
+          "snapshotFull": {
+            "ms": 219.40049999999974,
+            "all": [
+              244.76679200000217,
+              219.40049999999974,
+              127.61099999999715
+            ],
+            "chars": 29817
+          },
+          "screenshot": {
+            "ms": 124.23420899999837,
+            "all": [
+              159.32916699999987,
+              114.50154199999815,
+              124.23420899999837
+            ],
+            "bytes": 145936
+          }
+        },
+        {
+          "url": "https://github.com/microsoft/playwright",
+          "host": "github.com",
+          "loadMs": 1657.2918339999997,
+          "snapshot": {
+            "ms": 212.7129590000004,
+            "all": [
+              253.69120900000053,
+              205.4335409999985,
+              212.7129590000004
+            ],
+            "chars": 13989
+          },
+          "snapshotFull": {
+            "ms": 192.50066700000025,
+            "all": [
+              202.34300000000076,
+              182.4663330000003,
+              192.50066700000025
+            ],
+            "chars": 52175
+          },
+          "screenshot": {
+            "ms": 97.5817500000012,
+            "all": [
+              112.19416699999783,
+              94.54641600000105,
+              97.5817500000012
+            ],
+            "bytes": 186367
+          }
+        }
+      ],
+      "tasks": [
+        {
+          "name": "hn-open-comments",
+          "ok": true,
+          "ms": 761.8262919999979,
+          "snapshots": 1,
+          "chars": 8666,
+          "snapshotMs": 129.18845900000088,
+          "retries": 0,
+          "retryErrors": []
+        },
+        {
+          "name": "wikipedia-search",
+          "ok": true,
+          "ms": 1237.5795829999988,
+          "snapshots": 1,
+          "chars": 11931,
+          "snapshotMs": 261.20437500000116,
+          "retries": 0,
+          "retryErrors": []
+        },
+        {
+          "name": "mdn-open-reference",
+          "ok": true,
+          "ms": 704.5913330000003,
+          "snapshots": 1,
+          "chars": 6831,
+          "snapshotMs": 192.62637499999983,
+          "retries": 0,
+          "retryErrors": []
+        },
+        {
+          "name": "github-open-issues",
+          "ok": true,
+          "ms": 2045.1842499999984,
+          "snapshots": 1,
+          "chars": 12862,
+          "snapshotMs": 630.9104169999991,
+          "retries": 0,
+          "retryErrors": []
+        },
+        {
+          "name": "bbc-open-sport",
+          "ok": true,
+          "ms": 3133.5397919999996,
+          "snapshots": 2,
+          "chars": 28499,
+          "snapshotMs": 1171.180623999997,
+          "retries": 1,
+          "retryErrors": [
+            "The element this snapshot ref named is no longer in the page; take a new snapshot"
+          ]
+        },
+        {
+          "name": "wikipedia-hops",
+          "ok": true,
+          "ms": 4247.252291999997,
+          "snapshots": 3,
+          "chars": 228030,
+          "snapshotMs": 3203.337583000004,
+          "retries": 0,
+          "retryErrors": []
+        },
+        {
+          "name": "mdn-hops",
+          "ok": true,
+          "ms": 1354.2724999999991,
+          "snapshots": 2,
+          "chars": 25743,
+          "snapshotMs": 605.7120829999985,
+          "retries": 0,
+          "retryErrors": []
+        },
+        {
+          "name": "github-hops",
+          "ok": false,
+          "ms": 23840.475874999996,
+          "snapshots": 2,
+          "chars": 21232,
+          "snapshotMs": 1474.262416999998,
+          "retries": 0,
+          "retryErrors": [],
+          "error": "URL did not reach github\\.com/microsoft/playwright/labels; last https://github.com/microsoft/playwright/issues"
+        }
+      ],
+      "round": 2,
+      "load1": 9.2001953125
+    },
+    {
+      "tool": "agent-browser",
+      "version": "0.37.1",
+      "launchMs": 2289.401917,
+      "closeMs": 749.0348749999976,
+      "sites": [
+        {
+          "url": "https://news.ycombinator.com/",
+          "host": "news.ycombinator.com",
+          "loadMs": 1349.1438750000002,
+          "snapshot": {
+            "ms": 59.47050000000036,
+            "all": [
+              67.95487500000036,
+              57.85591700000077,
+              59.47050000000036
+            ],
+            "chars": 13640
+          },
+          "snapshotFull": {
+            "ms": 55.49037500000031,
+            "all": [
+              54.39704099999926,
+              56.39308299999993,
+              55.49037500000031
+            ],
+            "chars": 27583
+          },
+          "screenshot": {
+            "ms": 73.61574999999993,
+            "all": [
+              112.38741600000048,
+              73.61574999999993,
+              68.85558299999957
+            ],
+            "bytes": 191075
+          }
+        },
+        {
+          "url": "https://en.wikipedia.org/wiki/Web_browser",
+          "host": "en.wikipedia.org",
+          "loadMs": 967.6702919999998,
+          "snapshot": {
+            "ms": 149.72083300000122,
+            "all": [
+              167.94520799999918,
+              143.80704199999855,
+              149.72083300000122
             ],
             "chars": 20060
           },
           "snapshotFull": {
-            "ms": 71.23691700000018,
+            "ms": 146.6165000000001,
             "all": [
-              69.39520799999991,
-              71.23691700000018,
-              72.15424999999959
+              146.6165000000001,
+              143.10000000000036,
+              154.51579200000015
             ],
             "chars": 87819
           },
           "screenshot": {
-            "ms": 54.072917000001326,
+            "ms": 78.91512499999953,
             "all": [
-              54.072917000001326,
-              62.328332999999475,
-              52.018082999999024
+              80.2349579999991,
+              78.32429199999933,
+              78.91512499999953
             ],
             "bytes": 242256
           }
@@ -1741,97 +2129,97 @@
         {
           "url": "https://developer.mozilla.org/en-US/docs/Web/HTML",
           "host": "developer.mozilla.org",
-          "loadMs": 804.9779589999998,
+          "loadMs": 824.3249169999999,
           "snapshot": {
-            "ms": 64.93929200000093,
+            "ms": 45.223416999999245,
             "all": [
-              65.28395799999998,
-              64.93929200000093,
-              53.3918330000015
+              51.35499999999956,
+              44.38375000000087,
+              45.223416999999245
             ],
-            "chars": 6382
+            "chars": 6445
           },
           "snapshotFull": {
-            "ms": 59.46308300000055,
+            "ms": 46.27229199999965,
             "all": [
-              93.91229100000055,
-              57.62175000000025,
-              59.46308300000055
+              46.179416999999376,
+              47.07195800000045,
+              46.27229199999965
             ],
-            "chars": 24243
+            "chars": 24369
           },
           "screenshot": {
-            "ms": 105.78108399999837,
+            "ms": 82.92975000000115,
             "all": [
-              119.8705000000009,
-              102.20558300000084,
-              105.78108399999837
+              83.34354099999837,
+              75.98712500000147,
+              82.92975000000115
             ],
-            "bytes": 224414
+            "bytes": 227676
           }
         },
         {
           "url": "https://www.bbc.com/news",
           "host": "www.bbc.com",
-          "loadMs": 2437.7625829999997,
+          "loadMs": 1421.89775,
           "snapshot": {
-            "ms": 128.49795900000026,
+            "ms": 267.932417,
             "all": [
-              569.7866670000003,
-              126.42954100000134,
-              128.49795900000026
+              267.932417,
+              159.7093330000007,
+              296.33508299999994
             ],
-            "chars": 27497
+            "chars": 27185
           },
           "snapshotFull": {
-            "ms": 193.22379200000069,
+            "ms": 101.19950000000063,
             "all": [
-              146.66479200000322,
-              193.22379200000069,
-              331.0068749999991
+              101.19950000000063,
+              95.40483300000051,
+              132.9108750000014
             ],
-            "chars": 43000
+            "chars": 42780
           },
           "screenshot": {
-            "ms": 68.75929099999848,
+            "ms": 65.03462500000023,
             "all": [
-              57.62158400000044,
-              68.75929099999848,
-              116.7664999999979
+              64.799417000002,
+              70.4217499999977,
+              65.03462500000023
             ],
-            "bytes": 33663
+            "bytes": 41910
           }
         },
         {
           "url": "https://github.com/microsoft/playwright",
           "host": "github.com",
-          "loadMs": 23605.763417,
+          "loadMs": 4013.080833,
           "snapshot": {
-            "ms": 88.91554100000212,
+            "ms": 109.43295899999794,
             "all": [
-              88.91554100000212,
-              80.27187499999854,
-              195.63474999999744
+              121.11908300000141,
+              104.87062499999956,
+              109.43295899999794
             ],
-            "chars": 22779
+            "chars": 22776
           },
           "snapshotFull": {
-            "ms": 91.6216659999991,
+            "ms": 110.12962499999776,
             "all": [
-              111.63762499999575,
-              91.07883299999958,
-              91.6216659999991
+              113.96716599999854,
+              107.70362500000192,
+              110.12962499999776
             ],
-            "chars": 43549
+            "chars": 43540
           },
           "screenshot": {
-            "ms": 66.98775000000023,
+            "ms": 88.21295900000041,
             "all": [
-              67.39687499999854,
-              66.98775000000023,
-              66.05845799999952
+              111.04475000000093,
+              88.21295900000041,
+              63.461708999999246
             ],
-            "bytes": 156615
+            "bytes": 157728
           }
         }
       ],
@@ -1839,51 +2227,86 @@
         {
           "name": "hn-open-comments",
           "ok": true,
-          "ms": 873.8506250000064,
+          "ms": 881.0212920000013,
           "snapshots": 1,
-          "chars": 13600,
-          "snapshotMs": 44.519333000003826,
-          "retries": 0
+          "chars": 13640,
+          "snapshotMs": 59.06366700000217,
+          "retries": 0,
+          "retryErrors": []
         },
         {
           "name": "wikipedia-search",
           "ok": true,
-          "ms": 1393.2588329999999,
+          "ms": 1103.9267919999984,
           "snapshots": 1,
-          "chars": 11020,
-          "snapshotMs": 75.7747920000038,
-          "retries": 0
+          "chars": 11025,
+          "snapshotMs": 98.67829100000017,
+          "retries": 0,
+          "retryErrors": []
         },
         {
           "name": "mdn-open-reference",
           "ok": true,
-          "ms": 660.3923750000031,
+          "ms": 674.4323750000003,
           "snapshots": 1,
-          "chars": 6086,
-          "snapshotMs": 79.21862500000134,
-          "retries": 0
+          "chars": 6059,
+          "snapshotMs": 64.48662500000137,
+          "retries": 0,
+          "retryErrors": []
         },
         {
           "name": "github-open-issues",
           "ok": true,
-          "ms": 2650.639167000001,
+          "ms": 1854.5740420000002,
           "snapshots": 1,
-          "chars": 23778,
-          "snapshotMs": 277.1556249999994,
-          "retries": 0
+          "chars": 22776,
+          "snapshotMs": 136.3194169999988,
+          "retries": 0,
+          "retryErrors": []
         },
         {
           "name": "bbc-open-sport",
           "ok": true,
-          "ms": 4313.724833,
+          "ms": 2564.5404579999995,
           "snapshots": 1,
-          "chars": 27499,
-          "snapshotMs": 716.7699169999978,
-          "retries": 0
+          "chars": 27068,
+          "snapshotMs": 238.76666699999987,
+          "retries": 0,
+          "retryErrors": []
+        },
+        {
+          "name": "wikipedia-hops",
+          "ok": true,
+          "ms": 3271.9654999999984,
+          "snapshots": 3,
+          "chars": 254962,
+          "snapshotMs": 2277.261876000004,
+          "retries": 0,
+          "retryErrors": []
+        },
+        {
+          "name": "mdn-hops",
+          "ok": true,
+          "ms": 858.0634999999966,
+          "snapshots": 2,
+          "chars": 55046,
+          "snapshotMs": 197.40574999999808,
+          "retries": 0,
+          "retryErrors": []
+        },
+        {
+          "name": "github-hops",
+          "ok": true,
+          "ms": 2408.714374999996,
+          "snapshots": 2,
+          "chars": 22905,
+          "snapshotMs": 790.1906249999956,
+          "retries": 0,
+          "retryErrors": []
         }
       ],
       "round": 2,
-      "load1": 42.4619140625
+      "load1": 11.80908203125
     }
   ]
 }

@@ -56,4 +56,36 @@ export const tasks = [
     steps: [{ click: { role: 'link', name: '^Sport$' } }],
     done: 'bbc\\.(com|co\\.uk)/sport',
   },
+  // Longer flows: three pages, a fresh snapshot on each, as an agent browses.
+  {
+    name: 'wikipedia-hops',
+    goal: 'Follow Wikipedia links from Web browser to Google Chrome, Chromium and Blink',
+    url: 'https://en.wikipedia.org/wiki/Web_browser',
+    steps: [
+      { click: { role: 'link', name: '^Google Chrome$' }, until: 'wiki/Google_Chrome' },
+      { click: { role: 'link', name: '^Chromium( \\(web browser\\))?$' }, until: 'wiki/Chromium' },
+      { click: { role: 'link', name: '^Blink$' } },
+    ],
+    done: 'wikipedia\\.org/wiki/Blink_\\(browser_engine\\)',
+  },
+  {
+    name: 'mdn-hops',
+    goal: 'From MDN HTML, open the elements reference, then the <a> element',
+    url: 'https://developer.mozilla.org/en-US/docs/Web/HTML',
+    steps: [
+      { click: { role: 'link', name: '^(HTML )?elements( reference)?$' }, until: 'Elements?$' },
+      { click: { role: 'link', name: '^<a>$' } },
+    ],
+    done: 'developer\\.mozilla\\.org/en-US/docs/Web/HTML/(Reference/)?Elements?/a$',
+  },
+  {
+    name: 'github-hops',
+    goal: 'Open the Issues tab of microsoft/playwright, then its Labels',
+    url: 'https://github.com/microsoft/playwright',
+    steps: [
+      { click: { role: 'link', name: '^Issues' }, until: 'playwright/issues' },
+      { click: { role: 'link', name: '^Labels$' } },
+    ],
+    done: 'github\\.com/microsoft/playwright/labels',
+  },
 ]

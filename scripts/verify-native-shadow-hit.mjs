@@ -33,7 +33,7 @@ try {
   const logic = z
     .string()
     .parse(
-      /let target=document\.elementFromPoint\(x,y\);while\(target&&target.shadowRoot\)\{[\s\S]*?if\(!receives\)return \{ready:false\};/u.exec(
+      /let target=document\.elementFromPoint\(x,y\);while\(target&&target.shadowRoot\)\{[\s\S]*?if\(!receives\)\{[\s\S]*?intercepts pointer events'\};\}/u.exec(
         text,
       )?.[0],
     )

@@ -72,6 +72,18 @@ async def main():
             found.append({'role': role, 'name': (name or '').strip(), 'ref': index})
         return found
 
+    async def wait_for_url(pattern):
+        # waitForURL in common.mjs: the page URL must match within 20 s.
+        expected = re.compile(pattern)
+        deadline = now() + 20000
+        current = ''
+        while now() < deadline:
+            current = await session.get_current_page_url()
+            if expected.search(current):
+                return
+            await asyncio.sleep(0.1)
+        raise RuntimeError(f'URL did not reach {pattern}; last {current}')
+
     async def dispatch(event):
         async def run():
             sent = session.event_bus.dispatch(event)
@@ -100,7 +112,7 @@ async def main():
                 site['error'] = str(error)[:500]
             result['sites'].append(site)
         for task in config['tasks']:
-            entry = {'name': task['name'], 'ok': False, 'snapshots': 0, 'chars': 0, 'snapshotMs': 0, 'retries': 0}
+            entry = {'name': task['name'], 'ok': False, 'snapshots': 0, 'chars': 0, 'snapshotMs': 0, 'retries': 0, 'retryErrors': []}
             start = now()
             try:
                 await session.navigate_to(task['url'])
@@ -130,22 +142,16 @@ async def main():
                                 await dispatch(ClickElementEvent(node=node))
                             else:
                                 await dispatch(TypeTextEvent(node=node, text=step['text']))
+                            if step.get('until'):
+                                await wait_for_url(step['until'])
                             break
-                        except Exception:
+                        except Exception as error:
                             if attempt:
                                 raise
                             entry['retries'] += 1
-                done = re.compile(task['done'])
-                deadline = now() + 20000
-                current = ''
-                while now() < deadline:
-                    current = await session.get_current_page_url()
-                    if done.search(current):
-                        entry['ok'] = True
-                        break
-                    await asyncio.sleep(0.1)
-                if not entry['ok']:
-                    raise RuntimeError(f"URL did not reach {task['done']}; last {current}")
+                            entry['retryErrors'].append(str(error).split('\n')[0])
+                await wait_for_url(task['done'])
+                entry['ok'] = True
             except Exception as error:
                 entry['error'] = str(error)[:500]
             entry['ms'] = now() - start

@@ -20,7 +20,7 @@ inline constexpr char kSuiteCutQueryDiagnostics[] = R"JS(function(nodes,expressi
   const resolve=query=>{const key=JSON.stringify(query);if(cache.has(key))return cache.get(key);let result=[];if(queries++<32&&spend()&&tools.remaining()>0)try{const actual=tools.query(query);if(Array.isArray(actual))result=actual;}catch{}cache.set(key,result);return result;};
   const exact=(query,node)=>{const actual=resolve(query);return actual.length===1&&actual[0]===node;};
   const indexed=(query,alias,node,firstOnly=false)=>{const actual=resolve(query),index=actual.indexOf(node);if(index<0||firstOnly&&index!==0)return undefined;return actual.length===1?alias:index===0?alias+'.first()':alias+'.nth('+index+')';};
-  const parent=node=>node.parentElement||(node.getRootNode().host||null);
+  const parent=node=>node.parentElement||((node.parentNode?.nodeType===11&&node.parentNode.host)||null);
   const css=node=>{const values=[];if(node.id&&node.id.length<=128)values.push('#'+CSS.escape(node.id));if(node.localName.length<=128)values.push(CSS.escape(node.localName));for(let index=0;index<Math.min(node.classList.length,3);++index){const value=node.classList[index];if(value.length<=128)values.push('.'+CSS.escape(value));}return [...new Set(values)];};
   const structure=node=>{
     const parts=[];let current=node;

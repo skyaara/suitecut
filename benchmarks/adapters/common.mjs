@@ -140,6 +140,7 @@ export async function play(task, tool) {
     chars: 0,
     snapshotMs: 0,
     retries: 0,
+    retryErrors: [],
   }
   try {
     await tool.goto(task.url)
@@ -162,10 +163,12 @@ export async function play(task, tool) {
           if (!found) throw new Error(`No ${target.role} named /${target.name}/ in the snapshot`)
           if ('click' in step) await tool.click(found.ref)
           else await tool.fill(found.ref, step.text)
+          if ('until' in step && step.until) await waitForURL(tool.url, step.until)
           break
         } catch (error) {
           if (attempt > 0) throw error
           result.retries++
+          result.retryErrors.push(message(error).split('\n')[0] ?? '')
         }
       }
     }

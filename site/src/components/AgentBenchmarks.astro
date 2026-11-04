@@ -76,8 +76,8 @@ const behind = columns.flatMap(([key, label, unit]) => {
 
 <h2 id="agents">suitecut, agent-browser and browser-use</h2>
 <p>
-  The same five public pages and five read-only tasks, run by each tool from a cold start. Every
-  script and every raw result is in
+  The same {hosts.length} public pages and {tasks.length} read-only tasks, three of them across several
+  pages, run by each tool from a cold start. Every script and every raw result is in
   <a href={repo}>benchmarks/</a>, and the whole run is one command.
 </p>
 <p class="muted">
@@ -97,11 +97,11 @@ const behind = columns.flatMap(([key, label, unit]) => {
         <th>Tool</th>
         <th>Launch</th>
         <th>Snapshot</th>
-        <th>Snapshot tokens, 5 pages</th>
+        <th>Snapshot tokens, {hosts.length} pages</th>
         <th>Screenshot</th>
         <th>Tasks passed</th>
         <th>Task time</th>
-        <th>Task tokens, 5 tasks</th>
+        <th>Task tokens, {tasks.length} tasks</th>
       </tr>
     </thead>
     <tbody>

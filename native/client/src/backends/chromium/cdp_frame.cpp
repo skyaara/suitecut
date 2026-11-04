@@ -221,13 +221,13 @@ Json CdpFrameScope::map_point(double x,double y,bool force,Deadline deadline) {
         if(!this.isConnected)throw new Error('Native iframe owner is detached');
         this.scrollIntoView({block:'center',inline:'center',behavior:'instant'});
         const r=this.getBoundingClientRect(),s=getComputedStyle(this);
-        let transformDepth=0;for(let n=this;n;n=n.parentElement||n.getRootNode().host||null){if(++transformDepth>64)throw new Error('Native iframe transform ancestor depth limit exceeded');const style=getComputedStyle(n),matrix=style.transform==='none'?null:new DOMMatrixReadOnly(style.transform);if(style.perspective!=='none'||(matrix&&(Math.abs(matrix.b)>1e-8||Math.abs(matrix.c)>1e-8||matrix.a<=0||matrix.d<=0||!matrix.is2D)))throw new Error('Native pointer targeting does not support rotated, skewed or perspective iframe owners');}
+        let transformDepth=0;for(let n=this;n;n=n.parentElement||(n.parentNode?.nodeType===11&&n.parentNode.host)||null){if(++transformDepth>64)throw new Error('Native iframe transform ancestor depth limit exceeded');const style=getComputedStyle(n),matrix=style.transform==='none'?null:new DOMMatrixReadOnly(style.transform);if(style.perspective!=='none'||(matrix&&(Math.abs(matrix.b)>1e-8||Math.abs(matrix.c)>1e-8||matrix.a<=0||matrix.d<=0||!matrix.is2D)))throw new Error('Native pointer targeting does not support rotated, skewed or perspective iframe owners');}
         const sx=this.offsetWidth?r.width/this.offsetWidth:0,sy=this.offsetHeight?r.height/this.offsetHeight:0;
         if(!sx||!sy||s.visibility==='hidden'||s.display==='none')return {ready:false};
         if(x<0||y<0||x>=this.clientWidth||y>=this.clientHeight)return {ready:false};
         const px=r.left+(this.clientLeft+x)*sx,py=r.top+(this.clientTop+y)*sy;
         if(px<0||py<0||px>=innerWidth||py>=innerHeight)return {ready:false};
-        if(!force){let hit=document.elementFromPoint(px,py);for(let depth=0;hit?.shadowRoot&&depth<64;depth++){const next=hit.shadowRoot.elementFromPoint(px,py);if(!next||next===hit)break;hit=next;}let receives=false;for(let n=hit;n;n=n.assignedSlot||n.parentElement||n.getRootNode().host||null)if(n===this){receives=true;break;}if(!receives)return {ready:false};}
+        if(!force){let hit=document.elementFromPoint(px,py);for(let depth=0;hit?.shadowRoot&&depth<64;depth++){const next=hit.shadowRoot.elementFromPoint(px,py);if(!next||next===hit)break;hit=next;}let receives=false;for(let n=hit;n;n=n.assignedSlot||n.parentElement||(n.parentNode?.nodeType===11&&n.parentNode.host)||null)if(n===this){receives=true;break;}if(!receives)return {ready:false};}
         return {ready:true,x:px,y:py};
       })JS"},
       {"arguments",Json::array{Json{{"value",x}},Json{{"value",y}},Json{{"value",force}}}}},deadline);

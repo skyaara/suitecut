@@ -153,8 +153,16 @@ auto Source::QueryNodesInWorld(int id, Dict message, bool to_utility,
                     "',strict:" + std::string(message->GetBool("strict") ? "true" : "false") +
                     "});return plan;})()");
           }
-          DevTools(
-              id, "Runtime.evaluate", params,
+          // A plan depends only on the query and the registered selector
+          // engines, so a repeated locator (every snapshot and actionability
+          // retry) reuses it instead of compiling the 60 KB engine again.
+          auto plan_key = CefWriteJSON(query, JSON_WRITER_DEFAULT).ToString() + '\x1f' +
+                          Json(options) + '\x1f' +
+                          (message->HasKey("nativeSelectorWaitState")
+                               ? message->GetString("nativeSelectorWaitState").ToString() +
+                                     (message->GetBool("strict") ? "1" : "0")
+                               : std::string());
+          auto planned =
               [this, id, generation, current, main, utility, destination, group, session, root,
                grouped = message->HasKey("nativeSelectorWaitState"),
                done = std::move(done)](bool ok, const std::string& json) mutable {
@@ -242,7 +250,21 @@ auto Source::QueryNodesInWorld(int id, Dict message, bool to_utility,
                                std::function<void(std::string)> done) {
                       ResolveSnapshotReference(id, token, scope, std::move(done));
                     });
-              });
+              };
+          if (const auto cached = query_plans_.find(plan_key); cached != query_plans_.end()) {
+            planned(true, cached->second);
+            return;
+          }
+          DevTools(id, "Runtime.evaluate", params,
+                   [this, plan_key = std::move(plan_key), planned = std::move(planned)](
+                       bool ok, const std::string& json) mutable {
+                     if (ok && json.size() <= 65536 &&
+                         json.find("\"exceptionDetails\"") == std::string::npos) {
+                       if (query_plans_.size() >= 512) query_plans_.clear();
+                       query_plans_.emplace(plan_key, json);
+                     }
+                     planned(ok, json);
+                   });
         };
         if (message->HasKey("nativeRootHandle")) {
           if (message->GetType("nativeRootHandle") != VTYPE_INT) {
@@ -519,6 +541,12 @@ auto Source::LocatorAction(int id, std::uint64_t generation, const std::string& 
   config->Remove("resumeBeforeStable");
   const char* alignments[] = {"'center'", "'end'", "'start'", "'nearest'"};
   const auto alignment = pointer_work ? "'nearest'" : alignments[locator_attempts_[id]++ % 4];
+  const std::string detached =
+      QueryHasSnapshotReferences(config)
+          ? "'element to be attached (the element this snapshot ref named is no longer in the "
+            "page; take a new snapshot)'"
+          : "'element to be attached'";
+  const bool one_element = config->HasKey("nativeHandle") || config->HasKey("formNode");
   // Authored DOM logic: inspect current state on each attempt. C++ owns the
   // operation, deadline, retry scheduling and input dispatch.
   const auto expression =
@@ -535,17 +563,17 @@ auto Source::LocatorAction(int id, std::uint64_t generation, const std::string& 
       (config->HasKey("diagnosticExpressionJSON")
            ? "return {strictError:" + QueryDiagnosticExpression(config, "list") + "};"
            : std::string("throw new Error('Strict locator matched multiple elements');")) +
-      "if(!list.length)return {ready:false,reason:" +
-      std::string(QueryHasSnapshotReferences(config)
-                      ? "'element to be attached (the element this snapshot ref named is no "
-                        "longer in the page; take a new snapshot)'"
-                      : "'element to be attached'") +
-      "};const "
+      "if(!list.length)return {ready:false,reason:" + detached + "};const "
       "selected=list[0],textNode=selected.nodeType===3&&['click','tap','hover'].includes(" +
       Literal(action) +
       ");let e=textNode?selected.parentElement:selected;"
-      "if(!selected.isConnected||!e)throw new Error('Element is not attached to the "
-      "DOM');if(e.nodeType!==1)throw new Error('Node is not an Element');"
+      // A locator's element can leave between resolving it and this check, as
+      // a re-render replaces it; like Playwright, resolve it again. A handle
+      // or form node names one element, so it fails.
+      "if(!selected.isConnected||!e)" +
+      (one_element ? std::string("throw new Error('Element is not attached to the DOM');")
+                   : "return {ready:false,reason:" + detached + "};") +
+      "if(e.nodeType!==1)throw new Error('Node is not an Element');"
       "if(['fill','clear'].includes(" +
       Literal(action) + "))e=(" + std::string(kSuiteCutEditableTarget) +
       ")(e);"
@@ -657,7 +685,7 @@ auto Source::LocatorAction(int id, std::uint64_t generation, const std::string& 
       "target=document.elementFromPoint(x,y);while(target&&target.shadowRoot){const "
       "child=target.shadowRoot.elementsFromPoint(x,y)[0];if(!child||child===target)break;target="
       "child;}let receives=false;for(let "
-      "n=target;n;n=n.assignedSlot||n.parentElement||n.getRootNode().host){if(n===e){receives=true;"
+      "n=target;n;n=n.assignedSlot||n.parentElement||(n.parentNode?.nodeType===11&&n.parentNode.host)){if(n===e){receives=true;"
       "break;}}if(!receives){let tag='nothing';if(target){tag='<'+target.localName;for(const "
       "name of ['id','class','role','aria-label']){const "
       "value=target.getAttribute(name);if(value)tag+=' '+name+'='+JSON.stringify(value.slice(0,"

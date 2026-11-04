@@ -190,7 +190,7 @@ class SuiteCutArtifactController {
   }
 
  private:
-  struct Job { Dict config; int context; double scale; bool background = false; bool style = false; bool waiting_fonts = false; bool waiting_hook = false; bool viewport_override = false; bool physical_view_lease = false; bool documents = false; bool documents_ready = false; std::string preparation_expression={};std::shared_ptr<void> input = {};
+  struct Job { Dict config; int context; double scale; bool background = false; bool style = false; bool waiting_fonts = false; bool waiting_hook = false; bool viewport_override = false; bool physical_view_lease = false; bool documents = false; bool documents_ready = false; int preparing = 0; std::string preparation_expression={};std::shared_ptr<void> input = {};
     double viewport_width = 0, viewport_height = 0; uint64_t token = 0; Dict viewport_metrics; };
   static Dict ViewportMetrics(const Job&job){
     // Mobile layout innerWidth can differ from the actual device viewport.
@@ -262,6 +262,9 @@ class SuiteCutArtifactController {
     // This promise changes no DOM, even if it settles late.
     const bool wait_for_paint = found->second.config->GetString("action") == "pdf" ||
         found->second.config->GetBool("beforeScreenshot");
+    // A plain screenshot awaits fonts in ScreenshotReady, after its
+    // preparation, as Playwright does; waiting here too only adds a round trip.
+    if (!wait_for_paint) { found->second.waiting_fonts = false; BeforeScreenshotReady(owner); return; }
     auto params = CefDictionaryValue::Create(); params->SetInt("contextId", found->second.context);
     params->SetString("expression", "(async()=>{await document.fonts.ready;" +
         std::string(wait_for_paint ? "await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));" : "") +
@@ -317,11 +320,20 @@ class SuiteCutArtifactController {
     if (caret == "hide") css += "\n*{caret-color:transparent!important}";
     if (css.empty() && animations == "allow" && !config->HasKey("masks")) { PrepareBackground(owner); return; }
     job.style = true; // Set before dispatch, including a synchronous CDP reply.
+    // The background override and the stylesheet are independent: send both
+    // at once and render when both have answered, saving a round trip.
+    job.preparing = 2;
     auto params = CefDictionaryValue::Create(); params->SetInt("contextId", job.context);
     params->SetBool("returnByValue", true);
     params->SetString("expression", "(()=>{const m=globalThis.__suitecutArtifactStyles?" "?="
         "new Map();const resources={styles:[],animations:[],masks:[],carets:[]};m.set(" + std::to_string(owner) + ",resources);"
-        "const css=" + Quote(css) + ";const roots=[document];let visited=0;"
+        // Only a focused editable element draws a caret. Hiding it with a
+        // page-wide sheet restyles the whole page (about 50 ms on GitHub), so
+        // a caret-only sheet is applied just when this document has one.
+        "const caretOnly=" + std::string(config->GetString("style").empty() && caret == "hide" ? "true" : "false") + ","
+        "focused=()=>{if(document.designMode==='on')return true;let e=document.activeElement;while(e?.shadowRoot?.activeElement)e=e.shadowRoot.activeElement;"
+        "return !!e&&(e.isContentEditable||e instanceof HTMLTextAreaElement||(e instanceof HTMLInputElement&&!['button','submit','reset','checkbox','radio','file','image','color','range','hidden'].includes(e.type)));};"
+        "const css=caretOnly&&!focused()?'':" + Quote(css) + ";const roots=[document];let visited=0;"
         "if(css||" + std::string(animations == "disabled" ? "true" : "false") + "){"
         "for(let i=0;i<roots.length;i++){const root=roots[i];const walker=document.createTreeWalker(root,NodeFilter.SHOW_ELEMENT);"
         "let node;while(node=walker.nextNode()){if(++visited>100000)throw new Error('Screenshot DOM traversal limit exceeded');"
@@ -337,12 +349,14 @@ class SuiteCutArtifactController {
         "else if(animation.playState==='running'||animation.playState==='paused'){resources.animations.push({animation,"
         "currentTime:animation.currentTime,state:animation.playState});animation.cancel();}}}return true})()");
     job.preparation_expression = params->GetString("expression").ToString();
-    SendRequest(owner, "Runtime.evaluate", params, ResponseStage::Boolean, [this, owner, token = jobs_.at(owner).token](bool ok, const std::string& json) {
+    const auto token = job.token;
+    SendRequest(owner, "Runtime.evaluate", params, ResponseStage::Boolean, [this, owner, token](bool ok, const std::string& json) {
       if (!Current(owner, token)) return;
       auto result = Parse(json);
       if (!ok || !result || result->HasKey("exceptionDetails")) { Fail(owner, "Native screenshot stylesheet failed"); return; }
-      PrepareBackground(owner);
+      Prepared(owner);
     });
+    if (Current(owner, token)) PrepareBackground(owner);
   }
   void PrepareDocuments(int owner) {
     auto& job = jobs_.at(owner); job.documents = true; job.waiting_fonts = true; const auto token = job.token;
@@ -366,17 +380,30 @@ class SuiteCutArtifactController {
         [this, owner, token = jobs_.at(owner).token](bool ok, const std::string&) {
       if (!Current(owner, token)) return;
       if (!ok) { Fail(owner, "Native screenshot background override failed"); return; }
-      ScreenshotReady(owner);
+      Prepared(owner);
     });
+  }
+  // One preparation step answered; render once every step has.
+  void Prepared(int owner) {
+    auto& job = jobs_.at(owner);
+    if (job.preparing > 1) { --job.preparing; return; }
+    job.preparing = 0;
+    ScreenshotReady(owner);
   }
   void ScreenshotReady(int owner) {
     auto& job = jobs_.at(owner); job.waiting_fonts = true;
     // Render root preparation before discovering descendants: a page callback
     // can attach an iframe in response to even a caret stylesheet mutation.
     // Render once more after descendant preparation before taking the image.
+    // Page.captureScreenshot renders a new frame from the current DOM itself,
+    // so only finished animations and an author stylesheet, whose events and
+    // observers run in a rendering step, need frames rendered first. A caret
+    // sheet changes no layout; two frames cost about 33 ms per pass.
+    const bool render = job.config->GetString("animations") == "disabled" ||
+        !job.config->GetString("style").empty();
     auto params = CefDictionaryValue::Create(); params->SetInt("contextId", job.context);
-    params->SetString("expression", "(async()=>{document.documentElement.getBoundingClientRect();"
-        "await document.fonts.ready;await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));"
+    params->SetString("expression", std::string("(async()=>{document.documentElement.getBoundingClientRect();"
+        "await document.fonts.ready;") + (render ? "await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));" : "") +
         "return {width:innerWidth,height:innerHeight}})()");
     params->SetBool("awaitPromise", true); params->SetBool("returnByValue", true);
     SendRequest(owner, "Runtime.evaluate", params, ResponseStage::Viewport, [this, owner, token = jobs_.at(owner).token](bool ok, const std::string& json) {
@@ -452,7 +479,14 @@ class SuiteCutArtifactController {
       // Encode with fast zlib settings, as agent-browser and browser-use do: the
       // pixels are the same and a 1280x720 PNG takes about 70 ms less.
       params->SetBool("optimizeForSpeed", true);
-      params->SetDictionary("clip", clip);
+      // A plain viewport capture at its own scale needs no clip, and Chromium
+      // takes it about twice as fast without one on large pages (GitHub).
+      double zoom = 1;
+      Number(viewport, "scale", zoom);
+      const bool whole_viewport = !config->GetBool("fullPage") && !config->HasKey("clip") &&
+          !config->HasKey("element") && zoom == 1 &&
+          (config->GetString("scale") == "device" || job.scale == 1);
+      if (!whole_viewport) params->SetDictionary("clip", clip);
       double page_x = 0, page_y = 0;
       if (!Number(viewport, "pageX", page_x) || !Number(viewport, "pageY", page_y)) {
         Fail(owner, "Native screenshot viewport offset unavailable"); return;

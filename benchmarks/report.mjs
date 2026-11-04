@@ -93,6 +93,7 @@ function summarize(tool) {
           ms: median(passed.map((entry) => entry.ms)),
           tokens: tokens(median(passed.map((entry) => entry.chars))),
           retries: rows.reduce((total, entry) => total + entry.retries, 0),
+          retryErrors: [...new Set(rows.flatMap((entry) => entry.retryErrors))],
           errors: [...new Set(rows.filter((entry) => !entry.ok).map((entry) => entry.error ?? ''))],
         },
       ]
@@ -141,7 +142,7 @@ const lines = [
   '',
   '## Summary',
   '',
-  '| Tool | Launch ms | Snapshot ms | Snapshot tokens (5 pages) | Screenshot ms | Tasks passed | Retries | Task ms | Task tokens (5 tasks) |',
+  `| Tool | Launch ms | Snapshot ms | Snapshot tokens (${String(data.sites.length)} pages) | Screenshot ms | Tasks passed | Retries | Task ms | Task tokens (${String(data.tasks.length)} tasks) |`,
   '|---|--:|--:|--:|--:|--:|--:|--:|--:|',
   ...Object.entries(summary).map(
     ([tool, row]) =>
@@ -188,6 +189,13 @@ const problems = Object.entries(summary).flatMap(([tool, row]) => [
   ),
 ])
 lines.push(problems.length ? problems.join('\n') : 'None.', '')
+// A retry is a step whose first try failed; say why, so a retried column is not a mystery.
+const retried = Object.entries(summary).flatMap(([tool, row]) =>
+  Object.entries(row.perTask).flatMap(([name, task]) =>
+    task.retryErrors.map((error) => `- ${tool} ${name}: ${error.slice(0, 300)}`),
+  ),
+)
+lines.push('## Retries', '', retried.length ? retried.join('\n') : 'None.', '')
 const markdown = lines.join('\n')
 writeFileSync(join(dirname(file), 'results.md'), markdown)
 writeFileSync(

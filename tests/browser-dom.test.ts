@@ -83,6 +83,9 @@ class DOMElement {
   getRootNode(): DOMRoot {
     return this.parentElement?.getRootNode() ?? this.root!
   }
+  get parentNode(): DOMElement | DOMRoot | null {
+    return this.parentElement ?? this.root ?? null
+  }
   matches(selector: string) {
     return selector === ':disabled'
       ? this.disabled
@@ -108,7 +111,11 @@ class DOMElement {
 class DOMRoot {
   elements: DOMElement[] = []
   hit: DOMElement | null = null
-  constructor(readonly host: DOMElement | null = null) {}
+  // A shadow root is a document fragment; the document root is a document.
+  readonly nodeType: number
+  constructor(readonly host: DOMElement | null = null) {
+    this.nodeType = host ? 11 : 9
+  }
   append(...elements: DOMElement[]) {
     for (const element of elements) {
       element.root = this

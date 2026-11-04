@@ -9,7 +9,9 @@ export const Task = z.object({
   url: z.string(),
   steps: z.array(
     z.union([
-      z.object({ click: Target }),
+      // `until`: wait for the URL to match before the next step, after a click
+      // that loads another page.
+      z.object({ click: Target, until: z.string().optional() }),
       z.object({ fill: Target, text: z.string() }),
       z.object({ press: z.string() }),
     ]),
@@ -41,6 +43,8 @@ export const TaskRun = z.object({
   snapshotMs: z.number(),
   /** Steps that needed a second snapshot and try. */
   retries: z.number().default(0),
+  /** Why each retried step's first try failed. */
+  retryErrors: z.array(z.string()).default([]),
   error: z.string().optional(),
 })
 export const Run = z.object({

@@ -33,8 +33,12 @@ use the median call.
     viewport, so it is not a whole-page snapshot.
 - **Screenshot**: a viewport PNG.
 
-**Tasks** ([`tasks.mjs`](tasks.mjs)): short read-only flows, such as opening the comments of
-the top Hacker News story, or searching Wikipedia and reaching the article. Before each step
+**Tasks** ([`tasks.mjs`](tasks.mjs)): eight read-only flows. Five are one or two steps, such
+as opening the comments of the top Hacker News story, or searching Wikipedia and reaching
+the article. Three cross several pages: Wikipedia from Web browser through Google Chrome
+and Chromium to Blink, MDN from HTML through the elements reference to `<a>`, and GitHub
+from microsoft/playwright through Issues to Labels. A step that loads another page waits
+for its URL (`until`) before the next snapshot. Before each step
 the adapter reads a snapshot and picks the first element whose ARIA role and name match the
 step, then clicks or fills it by the tool's own ref. Every tool gets 5 s per action
 (`ACTION_MS` in [`adapters/common.mjs`](adapters/common.mjs)); a step whose action fails

@@ -56,7 +56,8 @@ export function browserDOM(
       ? normalize(actual) === normalize(expected)
       : normalize(actual).toLocaleLowerCase().includes(normalize(expected).toLocaleLowerCase())
   const parent = (element: Element): Element | null =>
-    element.parentElement ?? (element.getRootNode() as ShadowRoot).host ?? null
+    element.parentElement ??
+    (element.parentNode?.nodeType === 11 ? ((element.parentNode as ShadowRoot).host ?? null) : null)
   const disabled = (element: Element) => {
     if (element.matches(':disabled')) return true
     for (let current: Element | null = element; current; current = parent(current)) {

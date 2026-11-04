@@ -46,7 +46,7 @@ inline constexpr char kSuiteCutDomQuery[] = R"JS(function(steps,start=document,o
   if(diagnosticBudget!==undefined&&(!diagnosticBudget||!Number.isSafeInteger(diagnosticBudget.remaining)||diagnosticBudget.remaining<0||diagnosticBudget.remaining>50000))throw new Error('Invalid native diagnostic query budget');
   const tick=()=>{if(++work>200000000||(diagnosticBudget!==undefined&&diagnosticBudget.remaining===0))throw new Error('Native DOM query work limit exceeded');if(diagnosticBudget!==undefined)--diagnosticBudget.remaining;};
   const validating=options.validateOnly===true,validationElement=validating?document.createElement('div'):null;
-  const parent=e=>{tick();return e.parentElement||(e.getRootNode().host||null);};
+  const parent=e=>{tick();return e.parentElement||((e.parentNode?.nodeType===11&&e.parentNode.host)||null);};
   const children=(root,light=false)=>{tick();return [...(root.children||[]),...(!light&&root.shadowRoot?root.shadowRoot.children:[])];};
   const enumerate=(root,light=false)=>{
     const out=[],stack=children(root,light).reverse();
@@ -322,7 +322,7 @@ inline constexpr char kSuiteCutDomQuery[] = R"JS(function(steps,start=document,o
     if(!(node instanceof Element)||!node.isConnected)return geometry?null:false;
     const stack=[node],seen=new Set(),boxes=[];let nodes=0;
     const measure=box=>{if(box.width<=0||box.height<=0)return false;if(!geometry)return true;boxes.push([box.x,box.y,box.right,box.bottom]);return false;};
-    const flatParent=entry=>entry.assignedSlot||entry.parentElement||entry.getRootNode().host||null;
+    const flatParent=entry=>entry.assignedSlot||entry.parentElement||(entry.parentNode?.nodeType===11&&entry.parentNode.host)||null;
     const check=entry=>typeof Element.prototype.checkVisibility!=='function'||Element.prototype.checkVisibility.call(entry,{visibilityProperty:true});
     while(stack.length){
       tick();const entry=stack.pop();if(seen.has(entry))continue;seen.add(entry);if(++nodes>1000000)throw new Error('Native visibility node limit exceeded');
