@@ -108,8 +108,11 @@ class SuiteCutHTTPControls : public std::enable_shared_from_this<SuiteCutHTTPCon
   void StopStorage(int owner,const std::string& error,bool reply);
   struct Response {int context=0,status=0;std::string url,status_text,method;std::vector<std::pair<std::string,std::string>> headers;std::vector<uint8_t> body;std::string remote_ip;int remote_port=0;std::optional<suitecut::HTTPConnectionSecurity> security;suitecut::HTTPConnectionTiming timing;};
   struct Upload {int context=0;double updated=0;std::vector<uint8_t> bytes;};
-  static constexpr size_t kMaxUpload=8*1048576,kUploadBudget=16*1048576;
-  static constexpr size_t kMaxBody=64*1048576,kBodyBudget=128*1048576;
+  // Request and response bodies of any size, as in Playwright: memory is the
+  // only bound. The host sends uploads in chunks of at most kChunkBytes.
+  static constexpr size_t kMaxUpload=size_t{1}<<48,kUploadBudget=kMaxUpload;
+  static constexpr size_t kMaxBody=size_t{1}<<48,kBodyBudget=kMaxBody;
+  static constexpr size_t kChunkBytes=8*1048576,kChunkBase64=(kChunkBytes+2)/3*4;
   static bool URL(const std::string& url);
   static std::string Origin(const std::string& url);
   static bool Headers(CefRefPtr<CefListValue> input,CefRequest::HeaderMap& output);

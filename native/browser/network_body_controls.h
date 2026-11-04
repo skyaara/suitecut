@@ -38,11 +38,11 @@ class NativeNetworkBodyControls {
   Prepared PrepareOverride(Dict request,double deadline) {
     if(!request || request->GetType("postDataBase64")!=VTYPE_STRING)return Prepare(request,deadline,false);
     const auto encoded=request->GetString("postDataBase64").ToString();
-    if(encoded.size()>(64*1048576+2)/3*4){Unavailable(request);return Prepared::Unavailable;}
+    if(encoded.size()>(192*1048576+2)/3*4){Unavailable(request);return Prepared::Unavailable;}
     std::vector<uint8_t> bytes;
     if(!encoded.empty()) {
       auto decoded=CefBase64Decode(encoded);
-      if(!decoded || decoded->GetSize()>64*1048576){Unavailable(request);return Prepared::Unavailable;}
+      if(!decoded || decoded->GetSize()>192*1048576){Unavailable(request);return Prepared::Unavailable;}
       bytes.resize(decoded->GetSize());decoded->GetData(bytes.data(),bytes.size(),0);
     }
     const auto body=publication_.Begin(std::move(bytes),deadline);

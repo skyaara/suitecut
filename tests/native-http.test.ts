@@ -174,18 +174,19 @@ describe('native API request serialization and response ownership', () => {
   it('serializes binary uploads through control packets bounded by the native framer', async () => {
     const f = sourceFixture(),
       api = new NativeAPIRequestContext(f.source)
-    const body = Buffer.alloc(100_003, 129)
+    const body = Buffer.alloc(8 * 1024 * 1024 * 2 + 3, 129)
     await api.put('https://api.test/binary', { data: body })
     const chunks = f.calls.filter((params) => params.action === 'upload')
-    expect(chunks).toHaveLength(5)
+    expect(chunks).toHaveLength(3)
     expect(
       Buffer.concat(
         chunks.map((params) =>
           Buffer.from(typeof params.body === 'string' ? params.body : '', 'base64'),
         ),
-      ),
-    ).toEqual(body)
-    for (const chunk of chunks) expect(Buffer.byteLength(JSON.stringify(chunk))).toBeLessThan(65536)
+      ).equals(body),
+    ).toBe(true)
+    for (const chunk of chunks)
+      expect(Buffer.byteLength(JSON.stringify(chunk))).toBeLessThan(12 * 1024 * 1024)
     expect(f.calls.at(-1)).toMatchObject({
       action: 'fetch',
       method: 'PUT',
@@ -506,13 +507,11 @@ describe('native API context browser-default compatibility boundary', () => {
 })
 
 describe('native API bounded-upload diagnostics', () => {
-  it('retains the public method context on a genuine pre-wire body-budget rejection', async () => {
+  it('uploads bodies past the old 8 MiB cap', async () => {
     const f = sourceFixture(),
       api = new NativeAPIRequestContext(f.source)
-    await expect(
-      api.post('https://actual-native.test/refuse', { data: Buffer.alloc(8 * 1024 * 1024 + 1) }),
-    ).rejects.toThrow('apiRequestContext.post: Native API upload exceeds 8 MiB')
-    expect(f.calls).toHaveLength(0)
+    await api.post('https://actual-native.test/large', { data: Buffer.alloc(8 * 1024 * 1024 + 1) })
+    expect(f.calls.filter((params) => params.action === 'upload')).toHaveLength(2)
     await api.dispose()
   })
 })

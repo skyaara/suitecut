@@ -136,19 +136,21 @@ int main() {
     source->ArtifactDocuments(1,"(()=>true)()",[&done](bool,const std::string&) { ++done; }); source->Ack();
     auto late = std::move(source->calls.front()); source->calls.pop_front();
     source->sessions_.erase("oopif"); source->frame_states_["beta"].context = 0;
-    DrainTasks(); assert(source->retries == 1 && done == 0 && source->artifact_document_work_.empty());
+    // A child whose renderer goes away is captured as it is, as in Playwright,
+    // instead of restarting the whole screenshot.
+    DrainTasks(); assert(source->retries == 0 && done == 1);
     const auto current = source->operations_.Get(1);
-    assert(current && current->generation == original->generation && current->deadline_ms == 150);
-    assert(source->operations_.IsExpired(1,original->generation,150));
+    assert(current && current->generation == original->generation);
     // The removed renderer must not receive cleanup. Its document was destroyed;
     // the still-live same-process document is restored in its original context.
+    source->ArtifactDocumentCleanup(1,false);
     assert(source->fires.size() == 1 && source->fires.front().session.empty());
     source->sessions_["replacement"] = "beta";
     source->frame_states_["beta"] = {"beta","main","replacement","new-loader",9,10};
     ++source->artifact_attempts_[1]; source->ArtifactDocuments(1,"(()=>true)()",[&done](bool ok,const std::string&) { assert(ok); ++done; });
     const auto count = source->calls.size(); late.callback(true,"{\"result\":{\"value\":true}}"); assert(source->calls.size() == count);
     source->Ack(); assert(source->calls.front().session == "replacement" && source->calls.front().params->GetInt("contextId") == 10);
-    source->Ack(); assert(done == 1);
+    source->Ack(); assert(done == 2);
     source->ArtifactDocumentCleanup(1,false); assert(source->operations_.Finish(1)); DrainTasks();
   }
   {
@@ -169,11 +171,13 @@ int main() {
   }
   {
     auto source = CefRefPtr<Source>(new Source()); source->Admit(1); int done = 0;
-    source->ArtifactDocuments(1,"(()=>true)()",[&done,raw = source.get()](bool ok,const std::string& error) {
-      assert(!ok && error == "Native screenshot child-document preparation failed"); ++done; raw->ArtifactDocumentCleanup(1,false);
+    // A child that returns something other than a boolean is skipped.
+    source->ArtifactDocuments(1,"(()=>true)()",[&done,raw = source.get()](bool ok,const std::string&) {
+      assert(ok); ++done; raw->ArtifactDocumentCleanup(1,false);
     });
     auto bad = std::move(source->calls.front()); source->calls.pop_front(); bad.callback(true,"{\"result\":{\"value\":null}}");
-    assert(done == 1 && source->fires.size() == 1 && source->artifact_document_work_.empty());
+    assert(done == 0); source->Ack();
+    assert(done == 1 && source->fires.size() == 2 && source->artifact_document_work_.empty());
     assert(source->operations_.Finish(1)); DrainTasks();
   }
   {
@@ -190,11 +194,13 @@ int main() {
   {
     auto source = CefRefPtr<Source>(new Source()); source->Admit(1); int done = 0;
     source->frame_states_["alpha"].context = 0; source->frame_states_["alpha"].utility_context = 0;
-    // The committed URL and milestone identify an existing document. Temporary
-    // context recreation must still wait rather than omit its style/font work.
-    source->ArtifactDocuments(1,"(()=>true)()",[&done](bool,const std::string&) { ++done; });
-    assert(source->calls.empty() && !scheduled.empty()); source->ArtifactDocumentCleanup(1,false);
-    assert(source->operations_.Finish(1)); DrainTasks(); assert(done == 0 && source->fires.empty());
+    // The committed URL and milestone identify an existing document. Context
+    // recreation waits briefly, then the child is captured as it is.
+    source->ArtifactDocuments(1,"(()=>true)()",[&done](bool ok,const std::string&) { assert(ok); ++done; });
+    assert(source->calls.empty() && !scheduled.empty());
+    while (source->calls.empty()) { assert(!scheduled.empty()); auto task = scheduled.front(); scheduled.pop_front(); task->Execute(); }
+    assert(source->calls.front().session == "oopif"); source->Ack(); assert(done == 1);
+    source->ArtifactDocumentCleanup(1,false); assert(source->operations_.Finish(1)); DrainTasks();
   }
   {
     auto source = CefRefPtr<Source>(new Source()); source->Admit(1); int done = 0;
@@ -212,5 +218,5 @@ int main() {
     source->ArtifactDocumentCleanup(1,false);assert(source->fires.size()==2);
     assert(source->operations_.Finish(1));DrainTasks();
   }
-  std::puts("Native artifact document ownership, per-session restoration, cancellation, swapped-target retry and original deadline passed");
+  std::puts("Native artifact document ownership, per-session restoration, cancellation and non-stalling children passed");
 }

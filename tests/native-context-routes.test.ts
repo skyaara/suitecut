@@ -106,7 +106,7 @@ describe('native context route handler ownership', () => {
         .fn<NonNullable<NativeNetworkTransport['routeCallback']>>()
         .mockResolvedValue(undefined)
     const handler: NativeRouteHandler = async (route) => {
-      await route.fulfill({ body: Buffer.alloc(30_000, 7) })
+      await route.fulfill({ body: Buffer.alloc(8 * 1024 * 1024 + 1, 7) })
     }
     await routes.route('**/wire', handler)
     const id = registration(contextCommand.mock.calls[0]![0])

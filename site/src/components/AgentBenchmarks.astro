@@ -1,0 +1,271 @@
+---
+import summary from '../../../benchmarks/results/summary.json'
+import { tasks } from '../../../benchmarks/tasks.mjs'
+import CodeBlock from './CodeBlock.astro'
+
+interface Row {
+  version?: string
+  runs: number
+  launchMs?: number
+  snapshotMs?: number
+  snapshotTokens: number
+  fullSnapshotTokens: number
+  screenshotMs?: number
+  tasksPassed: number
+  tasksRun: number
+  retries?: number
+  taskMs?: number
+  taskTokens: number
+  perSite: Record<
+    string,
+    {
+      snapshotMs?: number
+      snapshotTokens?: number
+      fullSnapshotTokens?: number
+      screenshotMs?: number
+      loadMs?: number
+    }
+  >
+  perTask: Record<
+    string,
+    { passed: number; runs: number; ms?: number; tokens?: number; errors: string[] }
+  >
+}
+const tools = summary.tools as Record<string, Row>
+const names = Object.keys(tools)
+const env = summary.environment as Record<string, string | number | undefined>
+const repo = 'https://github.com/skyaara/suitecut/blob/main/benchmarks'
+const show = (value?: number) =>
+  value === undefined ? '–' : Math.round(value).toLocaleString('en-US')
+const seconds = (value?: number) => (value === undefined ? '–' : `${(value / 1000).toFixed(1)} s`)
+// The best value in a column, so it can be marked.
+const best = (key: keyof Row, lower = true) => {
+  const values = names
+    .map((name) => tools[name]?.[key])
+    .filter((value): value is number => typeof value === 'number')
+  return lower ? Math.min(...values) : Math.max(...values)
+}
+const mark = (key: keyof Row, value: unknown, lower = true) =>
+  value === best(key, lower) ? 'accent' : ''
+const hosts = Object.keys(tools[names[0] ?? '']?.perSite ?? {})
+const command = 'node benchmarks/run.mjs --rounds 3'
+// Every column suitecut does not win, worded from the data, so the page never hides one.
+const columns: [keyof Row, string, string][] = [
+  ['launchMs', 'Launch', 'ms'],
+  ['snapshotMs', 'Snapshot', 'ms'],
+  ['snapshotTokens', 'Snapshot tokens', 'tokens'],
+  ['screenshotMs', 'Screenshot', 'ms'],
+  ['taskMs', 'Task time', 'ms'],
+  ['taskTokens', 'Task tokens', 'tokens'],
+]
+const ours = tools.suitecut
+const behind = columns.flatMap(([key, label, unit]) => {
+  const value = ours?.[key]
+  if (typeof value !== 'number') return []
+  const leader = names.find((name) => name !== 'suitecut' && tools[name]?.[key] === best(key))
+  // browser-use reads only the viewport and 1000 px around it, not the whole page.
+  const partial =
+    leader === 'browser-use' && unit === 'tokens'
+      ? ' (browser-use reads only around the viewport)'
+      : ''
+  return leader
+    ? [`${label}: ${leader} ${show(best(key))} ${unit}, suitecut ${show(value)} ${unit}${partial}`]
+    : []
+})
+---
+
+<h2 id="agents">suitecut, agent-browser and browser-use</h2>
+<p>
+  The same five public pages and five read-only tasks, run by each tool from a cold start. Every
+  script and every raw result is in
+  <a href={repo}>benchmarks/</a>, and the whole run is one command.
+</p>
+<p class="muted">
+  {String(env.date).slice(0, 10)} · {env.cpu} · {env.memoryGB} GB · {env.os} · suitecut {
+    env.suitecut
+  }
+  ({env.commit}) · agent-browser {env.agentBrowser} · browser-use {env.browserUse} on {env.chrome} · {
+    summary.rounds
+  }
+  rounds per tool
+</p>
+
+<div class="table-scroll">
+  <table>
+    <thead>
+      <tr>
+        <th>Tool</th>
+        <th>Launch</th>
+        <th>Snapshot</th>
+        <th>Snapshot tokens, 5 pages</th>
+        <th>Screenshot</th>
+        <th>Tasks passed</th>
+        <th>Task time</th>
+        <th>Task tokens, 5 tasks</th>
+      </tr>
+    </thead>
+    <tbody>
+      {
+        names.map((name) => {
+          const row = tools[name]!
+          return (
+            <tr>
+              <td>{name}</td>
+              <td class={mark('launchMs', row.launchMs)}>{show(row.launchMs)} ms</td>
+              <td class={mark('snapshotMs', row.snapshotMs)}>{show(row.snapshotMs)} ms</td>
+              <td class={mark('snapshotTokens', row.snapshotTokens)}>{show(row.snapshotTokens)}</td>
+              <td class={mark('screenshotMs', row.screenshotMs)}>{show(row.screenshotMs)} ms</td>
+              <td class={mark('tasksPassed', row.tasksPassed, false)}>
+                {row.tasksPassed}/{row.tasksRun}
+                {row.retries ? <span class="muted"> · {row.retries} retried</span> : null}
+              </td>
+              <td class={mark('taskMs', row.taskMs)}>{seconds(row.taskMs)}</td>
+              <td class={mark('taskTokens', row.taskTokens)}>{show(row.taskTokens)}</td>
+            </tr>
+          )
+        })
+      }
+    </tbody>
+  </table>
+</div>
+<p class="muted">
+  Medians. Bold is the best in each column. Tokens are characters ÷ 4 of the text an agent reads.
+</p>
+{
+  behind.length > 0 && (
+    <>
+      <h3>Where suitecut is behind</h3>
+      <ul>
+        {behind.map((line) => (
+          <li>{line}</li>
+        ))}
+      </ul>
+    </>
+  )
+}
+
+<h3>Tasks</h3>
+<div class="table-scroll">
+  <table>
+    <thead>
+      <tr>
+        <th>Task</th>
+        {names.map((name) => <th>{name}</th>)}
+      </tr>
+    </thead>
+    <tbody>
+      {
+        tasks.map((task) => (
+          <tr>
+            <td>
+              {task.goal}
+              <br />
+              <span class="muted">
+                <code>{task.name}</code>
+              </span>
+            </td>
+            {names.map((name) => {
+              const row = tools[name]?.perTask[task.name]
+              return (
+                <td>
+                  {row ? `${row.passed}/${row.runs}` : '–'}
+                  <br />
+                  <span class="muted">
+                    {seconds(row?.ms)} · {show(row?.tokens)} tokens
+                  </span>
+                </td>
+              )
+            })}
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+</div>
+
+<h3>Pages</h3>
+<div class="table-scroll">
+  <table>
+    <thead>
+      <tr>
+        <th>Page</th>
+        {names.map((name) => <th>{name}</th>)}
+      </tr>
+    </thead>
+    <tbody>
+      {
+        hosts.map((host) => (
+          <tr>
+            <td>{host}</td>
+            {names.map((name) => {
+              const row = tools[name]?.perSite[host]
+              return (
+                <td>
+                  {show(row?.snapshotTokens)} tokens
+                  <br />
+                  <span class="muted">
+                    snapshot {show(row?.snapshotMs)} ms · screenshot {show(row?.screenshotMs)} ms
+                  </span>
+                </td>
+              )
+            })}
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+</div>
+
+<h3>How it is measured</h3>
+<ul>
+  <li>
+    Each round starts every tool with a new browser and an empty profile, headless at 1280×720 and a
+    scale factor of 1. The tool order rotates each round.
+  </li>
+  <li>
+    Each page is loaded to its <code>load</code> event and left for 1.5 s, then snapshotted and screenshotted
+    3 times each; the tables use the median call.
+  </li>
+  <li>
+    The snapshot is the text each tool gives an agent: suitecut
+    <code>ariaSnapshot(&#123; mode: 'ai', interactive: true &#125;)</code>, agent-browser
+    <code>snapshot -i</code> (the mode its documentation recommends) and browser-use
+    <code>llm_representation()</code>. browser-use leaves out elements more than 1000 px outside the
+    viewport, so its snapshot does not cover the whole page.
+  </li>
+  <li>
+    A task reads a snapshot before each step and acts on the first element whose role and name
+    match, using the tool's own ref. Each action may take 5 s; one that fails gets a new snapshot
+    and one more try, as an agent would, and is counted as retried. A task passes when the URL
+    reaches the goal within 20 s. There is no LLM: the same choices are made for every tool, so only
+    the browser layer is measured.
+  </li>
+  <li>
+    browser-use runs with its extensions off (one hides cookie banners), so every tool loads the
+    same page. agent-browser times include starting its CLI per command, as an agent calls it.
+  </li>
+  <li>
+    These are live sites over a home connection on a working machine; network time and load vary.
+    The raw <a href={`${repo}/results/results.json`}>results.json</a> keeps every call and the load average
+    of each round.
+  </li>
+</ul>
+
+<h3>Run it yourself</h3>
+<CodeBlock label="Terminal" code={command} />
+<p>
+  <a href={`${repo}/README.md`}>benchmarks/README.md</a> has the setup for each tool. The pieces:
+  <a href={`${repo}/run.mjs`}>run.mjs</a>, <a href={`${repo}/tasks.mjs`}>tasks.mjs</a>,
+  <a href={`${repo}/adapters/suitecut.mjs`}>suitecut</a>,
+  <a href={`${repo}/adapters/agent-browser.mjs`}>agent-browser</a> and
+  <a href={`${repo}/adapters/browser_use.py`}>browser-use</a> adapters, and
+  <a href={`${repo}/report.mjs`}>report.mjs</a>. What changed in suitecut is in the
+  <a href="https://github.com/skyaara/suitecut/blob/main/CHANGELOG.md">changelog</a>.
+</p>
+
+<style>
+  td.accent {
+    color: var(--ink-strong);
+    font-weight: 600;
+  }
+</style>

@@ -576,7 +576,7 @@ auto Source::EnableSession(const std::string& session) -> void {
   auto network = CefDictionaryValue::Create();
   network->SetInt("maxTotalBufferSize", 128 * 1048576);
   network->SetInt("maxResourceBufferSize", 128 * 1048576);
-  network->SetInt("maxPostDataSize", 2097152);
+  network->SetInt("maxPostDataSize", 192 * 1048576);
   if (session.empty())
     NativeHARPrimaryEnable(network);
   else

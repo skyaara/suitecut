@@ -1,4 +1,5 @@
 ---
+import AgentBenchmarks from '../../components/AgentBenchmarks.astro'
 import CodeBlock from '../../components/CodeBlock.astro'
 import BaseLayout from '../../layouts/BaseLayout.astro'
 import {
@@ -15,7 +16,7 @@ const format = (value: number) =>
 
 <BaseLayout
   title="Benchmarks · suitecut"
-  description="Measured native CEF 156 capture throughput and native client latency, with host, workload and reproduction command."
+  description="suitecut against agent-browser and browser-use on real pages and tasks, native CEF 156 capture throughput and native client latency, with host, workload and reproduction command."
   current="benchmarks"
 >
   <article class="page prose">
@@ -24,6 +25,8 @@ const format = (value: number) =>
       Only the latest valid measurements on the CEF 156 engine are published. Each one names its
       commit, host and workload, and how to run it again.
     </p>
+
+    <AgentBenchmarks />
 
     <h2 id="recording">1080p120 recording</h2>
     <p class="muted">{captureHost}</p>

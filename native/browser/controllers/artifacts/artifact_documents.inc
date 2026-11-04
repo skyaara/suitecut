@@ -13,6 +13,7 @@ struct ArtifactDocumentWork {
   std::set<std::string> seen;
   std::vector<ArtifactDocumentResource> resources;
   size_t index = 0;
+  int waits = 0;
   bool pending = false;
 };
 std::map<int, std::shared_ptr<ArtifactDocumentWork>> artifact_document_work_;
@@ -48,6 +49,19 @@ void ArtifactDocuments(int id, const std::string& expression, SuiteCutArtifactCo
   work->attempt = artifact_attempts_.at(id); work->expression = expression; work->done = std::move(done);
   artifact_document_work_[id] = work; ArtifactDocumentsNext(work);
 }
+// Child documents are prepared as Playwright does, without stalling: a frame
+// that has no document yet, navigates away or throws is captured as it is.
+// Fonts are awaited in the main document only.
+void ArtifactDocumentsSkip(const std::shared_ptr<ArtifactDocumentWork>& work) {
+  work->pending = false; ++work->pending_token; work->waits = 0;
+  operation_sessions_[work->owner] = ""; operation_frames_[work->owner] = main_frame_id_;
+  ++work->index; ArtifactDocumentsNext(work);
+}
+// A new realm usually appears within a few frames of being requested.
+void ArtifactDocumentsWait(const std::shared_ptr<ArtifactDocumentWork>& work) {
+  if (++work->waits > 10) { ArtifactDocumentsSkip(work); return; }
+  CefPostDelayedTask(TID_UI,new Task([self = CefRefPtr<Source>(this),work] { self->ArtifactDocumentsNext(work); }),10);
+}
 void ArtifactDocumentsNext(const std::shared_ptr<ArtifactDocumentWork>& work) {
   if (!ArtifactDocumentsCurrent(work)) return;
   // Reconcile genuine newly attached children before finishing the native tree
@@ -59,16 +73,16 @@ void ArtifactDocumentsNext(const std::shared_ptr<ArtifactDocumentWork>& work) {
   }
   if (work->index == work->frames.size()) { ArtifactDocumentsFinish(work,true,""); return; }
   const auto id = work->frames[work->index]; const auto frame = frame_states_.find(id);
-  if (frame == frame_states_.end() || !Descendant(id,main_frame_id_)) { ++work->index; ArtifactDocumentsNext(work); return; }
+  if (frame == frame_states_.end() || !Descendant(id,main_frame_id_)) { ArtifactDocumentsSkip(work); return; }
   // A provisional/stalled child navigation can have no current document realm.
   // Capture its current blank presentation; do not wait for the network commit.
   if (!frame->second.context && frame->second.url.empty() && !frame->second.milestones.contains("commit")) {
-    ++work->index; ArtifactDocumentsNext(work); return;
+    ArtifactDocumentsSkip(work); return;
   }
   EnsureUtilityWorld(id);
   if (!frame->second.context || !frame->second.utility_context ||
       (!frame->second.session.empty() && !sessions_.contains(frame->second.session))) {
-    CefPostDelayedTask(TID_UI,new Task([self = CefRefPtr<Source>(this),work] { self->ArtifactDocumentsNext(work); }),10); return;
+    ArtifactDocumentsWait(work); return;
   }
   const auto resource = ArtifactDocumentResource{id,frame->second.session,frame->second.loader,frame->second.utility_context};
   // Record ownership before dispatch. Even an already canceled Runtime result
@@ -84,7 +98,7 @@ void ArtifactDocumentsNext(const std::shared_ptr<ArtifactDocumentWork>& work) {
     if (std::none_of(work->resources.begin(),work->resources.end(),same)) work->resources.push_back(resource);
   }
   auto params = CefDictionaryValue::Create(); params->SetInt("contextId",resource.context);
-  params->SetString("expression","(async()=>{if(!document.documentElement)return false;" + work->expression + ";await document.fonts.ready;return true})()");
+  params->SetString("expression","(async()=>{if(!document.documentElement)return false;" + work->expression + ";return true})()");
   params->SetBool("awaitPromise",true); params->SetBool("returnByValue",true);
   work->pending = true; const auto token = ++work->pending_token;
   operation_sessions_[work->owner] = resource.session;
@@ -96,26 +110,22 @@ void ArtifactDocumentsNext(const std::shared_ptr<ArtifactDocumentWork>& work) {
     work->pending = false; operation_sessions_[work->owner] = ""; operation_frames_[work->owner] = main_frame_id_;
     const auto frame = frame_states_.find(resource.frame);
     if (frame == frame_states_.end() || frame->second.utility_context != resource.context || frame->second.session != resource.session || frame->second.loader != resource.loader) {
-      RetryContext(work->owner); return;
+      ArtifactDocumentsSkip(work); return;
     }
     auto parsed = CefParseJSON(json,JSON_PARSER_RFC); auto result = parsed ? parsed->GetDictionary() : nullptr;
     auto remote = result ? result->GetDictionary("result") : nullptr;
+    // A child that throws, for example after its page replaced the realm, is
+    // captured without preparation rather than failing the screenshot.
     if (!ok || !remote || result->HasKey("exceptionDetails") || remote->GetType("value") != VTYPE_BOOL) {
-      // Preserve a bounded real renderer diagnostic instead of hiding the
-      // failing document/exception behind the preparation stage alone.
-      const auto exception = result ? result->GetDictionary("exceptionDetails") : nullptr;
-      const auto actual = exception ? exception->GetDictionary("exception") : nullptr;
-      const auto detail = actual ? actual->GetString("description").ToString() : std::string{};
-      ArtifactDocumentsFinish(work,false,"Native screenshot child-document preparation failed" +
-          (detail.empty() ? std::string{} : ": " + detail.substr(0,1024))); return;
+      ArtifactDocumentsSkip(work); return;
     }
     if (!remote->GetBool("value")) {
       // Runtime can expose the new utility realm before the HTML parser has
-      // created its root. No stylesheet has been applied yet; wait under the
-      // same operation/generation/deadline and recheck the actual document.
-      CefPostDelayedTask(TID_UI,new Task([self = CefRefPtr<Source>(this),work] { self->ArtifactDocumentsNext(work); }),10); return;
+      // created its root. No stylesheet has been applied yet; wait briefly
+      // and recheck the actual document.
+      ArtifactDocumentsWait(work); return;
     }
-    ++work->index; ArtifactDocumentsNext(work);
+    ArtifactDocumentsSkip(work);
   });
   if (operations_.IsCurrent(work->owner,work->generation)) operation_sessions_[work->owner] = "";
   if (ArtifactDocumentsCurrent(work) && work->pending && token == work->pending_token) ArtifactDocumentsWatch(work,resource,token);
@@ -125,7 +135,7 @@ void ArtifactDocumentsWatch(const std::shared_ptr<ArtifactDocumentWork>& work, c
   const auto frame = frame_states_.find(resource.frame);
   if (frame == frame_states_.end() || !frame->second.context || frame->second.utility_context != resource.context ||
       frame->second.session != resource.session || frame->second.loader != resource.loader ||
-      (!resource.session.empty() && !sessions_.contains(resource.session))) { RetryContext(work->owner); return; }
+      (!resource.session.empty() && !sessions_.contains(resource.session))) { ArtifactDocumentsSkip(work); return; }
   // A detached OOPIF can drop a pending CDP promise without returning a result.
   // Watch its native metadata while waiting, always under the original deadline.
   CefPostDelayedTask(TID_UI,new Task([self = CefRefPtr<Source>(this),work,resource,token] { self->ArtifactDocumentsWatch(work,resource,token); }),10);

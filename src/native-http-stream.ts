@@ -16,7 +16,8 @@ interface Identity {
 
 type Value = string | number | boolean | NativeMultipartFile | Blob | ReadStream
 export type NativeStreamMultipartInput = Record<string, Value> | FormData
-const MAX_BYTES = 8 * 1024 * 1024
+// Uploads of any size, as in Playwright, sent in chunks of this size.
+const UPLOAD_CHUNK = 8 * 1024 * 1024
 // Host I/O is separate from native byte/curl ownership. A user-visible timeout
 // never releases a slot occupied by a ReadStream or promise still settling.
 const physicalJobs = new Set<NativeMultipartStreamJob>()
@@ -67,13 +68,12 @@ export class NativeMultipartStreamJob {
           stream.closed ||
           stream.readableEncoding !== null ||
           stream.readableObjectMode ||
-          stream.readableHighWaterMark > MAX_BYTES ||
           !(typeof stream.path === 'string' || Buffer.isBuffer(stream.path)) ||
           stream._destroy !== ReadStream.prototype._destroy,
       )
     )
       throw new Error(
-        'Native multipart requires distinct available binary ReadStreams with a path, original destruction hook and at most 8 MiB highWaterMark',
+        'Native multipart requires distinct available binary ReadStreams with a path and original destruction hook',
       )
     if (physicalJobs.size >= 16 || streams.length > 128 - physicalStreams.size)
       throw new Error('Native multipart host physical stream capacity exceeded')
@@ -88,7 +88,6 @@ export class NativeMultipartStreamJob {
           : typeof item === 'object'
             ? item.buffer.length
             : Buffer.byteLength(String(item))
-      if (bytes > MAX_BYTES - known) throw new Error('Native API upload exceeds 8 MiB')
       known += bytes
     }
     const zeroIdentities = new Map<ReadStream, Identity>()
@@ -223,10 +222,9 @@ export class NativeMultipartStreamJob {
     const parts: Record<string, UntrustedInput>[] = []
     let total = 0
     const append = async (buffer: Buffer): Promise<void> => {
-      if (buffer.length > MAX_BYTES - total) throw new Error('Native API upload exceeds 8 MiB')
-      for (let offset = 0; offset < buffer.length; offset += 24 * 1024) {
+      for (let offset = 0; offset < buffer.length; offset += UPLOAD_CHUNK) {
         this.abort.signal.throwIfAborted()
-        await send(buffer.subarray(offset, offset + 24 * 1024), this.abort.signal)
+        await send(buffer.subarray(offset, offset + UPLOAD_CHUNK), this.abort.signal)
       }
       total += buffer.length
     }
@@ -267,8 +265,6 @@ export class NativeMultipartStreamJob {
           ...(mimeType === undefined ? {} : { mimeType }),
           ...(inferMime ? { inferMime: true } : {}),
         })
-        if (Buffer.byteLength(JSON.stringify(parts)) > 48 * 1024)
-          throw new Error('Native multipart metadata exceeds 48 KiB')
       }
     } catch (error) {
       this.stop(error instanceof Error ? error : new Error('Native multipart host stream failed'))

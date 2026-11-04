@@ -791,6 +791,22 @@ auto Source::LocatorAction(int id, std::uint64_t generation, const std::string& 
                      wait);
         return;
       }
+      // A snapshot ref names one element. Out of the page for a second, it is
+      // not coming back: fail now, so the agent takes a new snapshot instead
+      // of waiting out its whole timeout. A node moved by a re-render is back
+      // well within that second.
+      if (wait.starts_with("element to be attached (the element this snapshot ref")) {
+        const auto since = stale_reference_since_.try_emplace(id, Now()).first->second;
+        if (Now() - since >= 1000) {
+          Complete(id, false,
+                   "The element this snapshot ref named is no longer in the page; take a new "
+                   "snapshot\nCall log:\n - " +
+                       locator_logs_[id] + "\n - waiting for " + wait);
+          return;
+        }
+      } else {
+        stale_reference_since_.erase(id);
+      }
       if (pointer_work) {
         // No button has been pressed. Yield the mouse lane so an overlay's
         // locator handler (or another queued gesture) can run before retrying

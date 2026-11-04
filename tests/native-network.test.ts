@@ -165,7 +165,7 @@ describe('native network ownership and transport', () => {
         })
       return Promise.resolve({})
     })
-    const body = Buffer.alloc(48 * 1024 + 3, 255)
+    const body = Buffer.alloc(8 * 1024 * 1024 + 3, 255)
     const route = new NativeRoute(
       f.network,
       'actual-pause',
@@ -182,7 +182,8 @@ describe('native network ownership and transport', () => {
     const chunks = f.commands
       .filter((entry) => entry.action === 'bodyChunk')
       .map((entry) => Buffer.from(entry.body as string, 'base64'))
-    expect(Buffer.concat(chunks)).toEqual(body)
+    expect(chunks).toHaveLength(2)
+    expect(Buffer.concat(chunks).equals(body)).toBe(true)
     expect(f.commands.at(-1)).toMatchObject({ action: 'fetch', bodyUpload: true, timeoutMs: 100 })
     expect(route.isHandled()).toBe(false)
   })
@@ -491,11 +492,11 @@ describe('native network ownership and transport', () => {
     const f = fixture(),
       request = new NativeRequest(f.network, f.info),
       route = new NativeRoute(f.network, 'pause-1', request)
-    const body = Buffer.alloc(100_001)
+    const body = Buffer.alloc(2 * 8 * 1024 * 1024 + 1)
     for (let index = 0; index < body.length; index++) body[index] = index % 256
     await route.fulfill({ body, contentType: 'application/octet-stream' })
     const uploads = f.commands.filter((command) => command.action === 'bodyChunk')
-    expect(uploads).toHaveLength(5)
+    expect(uploads).toHaveLength(3)
     const combined = Buffer.concat(
       uploads.map((command) =>
         Buffer.from(typeof command.body === 'string' ? command.body : '', 'base64'),
@@ -503,7 +504,7 @@ describe('native network ownership and transport', () => {
     )
     expect(combined.equals(body)).toBe(true)
     for (const command of uploads)
-      expect(Buffer.byteLength(JSON.stringify(command))).toBeLessThan(65536)
+      expect(Buffer.byteLength(JSON.stringify(command))).toBeLessThan(12 * 1024 * 1024)
     expect(f.commands.at(-1)).toMatchObject({
       action: 'fulfill',
       routeId: 'pause-1',
@@ -566,12 +567,10 @@ describe('native network ownership and transport', () => {
     f.network.on('request', (request) => {
       first ??= request
     })
-    for (let index = 0; index < 40; index++) {
-      const info = {
-        ...f.info,
-        id: String(index),
-        postData: 'x'.repeat(1024 * 1024),
-      }
+    // One shared string: the retention limit counts bytes, not allocations.
+    const postData = 'x'.repeat(8 * 1024 * 1024)
+    for (let index = 0; index < 130; index++) {
+      const info = { ...f.info, id: String(index), postData }
       f.emit({ event: 'request', sequence: index * 2 + 1, request: info })
       f.emit({
         event: 'requestfinished',
@@ -579,8 +578,10 @@ describe('native network ownership and transport', () => {
         request: info,
       })
     }
-    expect(f.network.metadataDiagnostics().cachedRequests).toBeLessThan(40)
-    expect(f.network.metadataDiagnostics().cachedRequestBytes).toBeLessThanOrEqual(32 * 1024 * 1024)
+    expect(f.network.metadataDiagnostics().cachedRequests).toBeLessThan(130)
+    expect(f.network.metadataDiagnostics().cachedRequestBytes).toBeLessThanOrEqual(
+      5 * 192 * 1024 * 1024,
+    )
     let replay: NativeRequest | undefined
     f.network.on('request', (request) => {
       replay = request

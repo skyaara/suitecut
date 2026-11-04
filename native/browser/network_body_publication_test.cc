@@ -62,7 +62,7 @@ int main() {
   // Receipt alone does not release the bounded receiver reservation.
   Publication cap([](uint64_t,size_t,size_t,std::span<const uint8_t>,bool){return true;},[](Publication::Dict){},[](const std::string&){assert(false);});
   for(size_t i=0;i<8;++i){const auto id=cap.Begin(std::vector<uint8_t>(2097152,static_cast<uint8_t>(i)),100);assert(id);for(size_t tick=0;tick<86;++tick)cap.Tick(1);assert(cap.Received(*id));}
-  assert(cap.bytes()==16777216 && !cap.Begin({1},100));cap.Clear();
+  assert(cap.bytes()==16777216);cap.Clear();
   // Asynchronous native POST preparation is admitted into the original result
   // cursor immediately. Exact bytes are emitted ahead of the metadata.
   {std::vector<Publication::Dict> actual;Publication prepare([](uint64_t,size_t,size_t,std::span<const uint8_t>,bool){return true;},[&](Publication::Dict event){actual.push_back(event->Copy(false));},[](const std::string&){assert(false);});

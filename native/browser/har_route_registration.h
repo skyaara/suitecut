@@ -43,7 +43,8 @@ class NativeHARRouteRegistration {
  private:
   struct Use{size_t bytes,references;};
   NativeHARRouteRegistration(std::shared_ptr<const NativeHARReplay>archive,bool fallback,NativeRouteRegistrationOrder order):archive_(std::move(archive)),fallback_(fallback),order_(order){}
-  static constexpr size_t kBytes=67108864;
+  // Archives held by HAR routes, browser-wide: as large as one HAR file suitecut reads.
+  static constexpr size_t kBytes=1024*1048576;
   inline static std::map<const NativeHARReplay*,Use>archives_;
   inline static size_t retained_=0,policies_=0;
   mutable std::weak_ptr<bool>manager_;mutable int context_=0;mutable bool bound_=false;

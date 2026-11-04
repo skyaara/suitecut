@@ -134,7 +134,7 @@ export default tseslint.config(
     },
   },
   {
-    files: ['scripts/**/*.mjs'],
+    files: ['scripts/**/*.mjs', 'benchmarks/**/*.mjs'],
     rules: {
       'jsdoc/no-types': 'off',
       'jsdoc/check-tag-names': ['error', { typed: false }],

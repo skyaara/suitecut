@@ -45,7 +45,11 @@ import { type NativeWorkerInfo } from './native-worker-protocol.js'
 import { type NativeWorker } from './native-worker.js'
 import { toError, type UntrustedInput } from './untrusted.js'
 
-const MAX_ROUTE_BODY = 2 * 1024 * 1024
+// Bodies of any size, as in Playwright; larger ones go up in chunks of this size.
+const ROUTE_BODY_CHUNK = 8 * 1024 * 1024
+// Finished requests are kept for request.postData() and friends up to this
+// many bytes, then the oldest go first: five of the largest bodies.
+const REQUEST_RETENTION_BYTES = 5 * 192 * 1024 * 1024
 interface NetworkWaitOptions {
   timeout?: number | undefined
   signal?: AbortSignal | undefined
@@ -172,8 +176,12 @@ export class NativeRequest {
     return this.previous !== undefined || this.next !== undefined
   }
   ownMetadataBytes(): number {
+    // The body is measured by length: serializing it only to count it cost
+    // about 5 ms per MiB on every request event.
+    const { postData, ...request } = this.info
     return (
-      Buffer.byteLength(JSON.stringify({ request: this.info, response: this.responseInfo })) +
+      Buffer.byteLength(JSON.stringify({ request, response: this.responseInfo })) +
+      (postData === undefined ? 0 : Buffer.byteLength(postData)) +
       (this.originalBody?.length ?? 0)
     )
   }
@@ -551,8 +559,7 @@ export class NativeRoute {
       }
       if (parsed.postData !== undefined) {
         const body = Buffer.from(parsed.postData)
-        if (body.length > MAX_ROUTE_BODY) throw new Error('Native route body exceeds 2 MiB')
-        if (body.length <= 24 * 1024) params.postData = body.toString('base64')
+        if (body.length <= ROUTE_BODY_CHUNK) params.postData = body.toString('base64')
         else {
           await this.upload(body, params)
           params.bodyUpload = true
@@ -595,8 +602,7 @@ export class NativeRoute {
     if (parsed.headers !== undefined) params.headers = headerArray(parsed.headers)
     if (parsed.postData !== undefined) {
       const data = Buffer.from(parsed.postData)
-      if (data.length > MAX_ROUTE_BODY) throw new Error('Native route body exceeds 2 MiB')
-      if (data.length <= 24 * 1024) params.postData = data.toString('base64')
+      if (data.length <= ROUTE_BODY_CHUNK) params.postData = data.toString('base64')
       else {
         await this.upload(data)
         params.bodyUpload = true
@@ -624,15 +630,7 @@ export class NativeRoute {
     else if (parsed.path !== undefined) {
       const file = await open(parsed.path, 'r')
       try {
-        const allocation = Buffer.alloc(MAX_ROUTE_BODY + 1)
-        let length = 0
-        while (length < allocation.length) {
-          const chunk = await file.read(allocation, length, allocation.length - length, null)
-          if (!chunk.bytesRead) break
-          length += chunk.bytesRead
-        }
-        if (length > MAX_ROUTE_BODY) throw new Error('Native route body exceeds 2 MiB')
-        body = allocation.subarray(0, length)
+        body = await file.readFile()
       } finally {
         await file.close()
       }
@@ -642,19 +640,18 @@ export class NativeRoute {
       body = Buffer.from(json)
       headers['content-type'] ??= 'application/json'
     }
-    if (body.length > MAX_ROUTE_BODY) throw new Error('Native route body exceeds 2 MiB')
     if (parsed.contentType !== undefined) headers['content-type'] = parsed.contentType
     // The replaced body has its own framing; stale upstream encodings cannot describe it.
     delete headers['content-encoding']
     delete headers['transfer-encoding']
     headers['content-length'] = String(body.length)
-    if (body.length > 24 * 1024) await this.upload(body)
+    if (body.length > ROUTE_BODY_CHUNK) await this.upload(body)
     await this.resolve({
       action: 'fulfill',
       status: parsed.status ?? parsed.response?.status() ?? 200,
       ...(parsed.statusText === undefined ? {} : { statusText: parsed.statusText }),
       headers: headerArray(headers),
-      ...(body.length <= 24 * 1024 ? { body: body.toString('base64') } : { bodyUpload: true }),
+      ...(body.length <= ROUTE_BODY_CHUNK ? { body: body.toString('base64') } : { bodyUpload: true }),
     })
   }
   private async upload(body: Buffer, fetchOptions?: Record<string, UntrustedInput>): Promise<void> {
@@ -663,11 +660,11 @@ export class NativeRoute {
       routeId: this.id,
       ...(fetchOptions === undefined ? {} : { fetchOptions: { ...fetchOptions } }),
     })
-    for (let offset = 0; offset < body.length; offset += 24 * 1024)
+    for (let offset = 0; offset < body.length; offset += ROUTE_BODY_CHUNK)
       await this.command({
         action: 'bodyChunk',
         routeId: this.id,
-        body: body.subarray(offset, offset + 24 * 1024).toString('base64'),
+        body: body.subarray(offset, offset + ROUTE_BODY_CHUNK).toString('base64'),
       })
   }
   private async resolve(config: Record<string, UntrustedInput>): Promise<void> {
@@ -1184,7 +1181,7 @@ export class NativeNetwork {
     }
     if (
       !request.hasRedirectLinks() &&
-      this.requestBytes + this.linkedRequestBytes <= 32 * 1024 * 1024 &&
+      this.requestBytes + this.linkedRequestBytes <= REQUEST_RETENTION_BYTES &&
       this.requests.size <= 4096
     )
       return
@@ -1205,7 +1202,7 @@ export class NativeNetwork {
       let retained = 0
       for (const item of this.requests.values())
         retained += item.retainedMetadataBytes(visited, measurements)
-      if (retained <= 32 * 1024 * 1024 && this.requests.size <= 4096) {
+      if (retained <= REQUEST_RETENTION_BYTES && this.requests.size <= 4096) {
         this.linkedRequestBytes = retained - this.requestBytes
         break
       }
@@ -1215,8 +1212,12 @@ export class NativeNetwork {
           oldest = id
           break
         }
-      if (oldest === undefined)
-        throw new Error('Native request binding metadata exceeds 32 MiB or 4096 active records')
+      // Requests still in flight are kept whatever their size; only finished
+      // ones are let go.
+      if (oldest === undefined) {
+        this.linkedRequestBytes = retained - this.requestBytes
+        break
+      }
       this.requests.delete(oldest)
       this.requestBytes -= this.requestCosts.get(oldest) ?? 0
       this.requestCosts.delete(oldest)

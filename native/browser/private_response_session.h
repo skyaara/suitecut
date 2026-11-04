@@ -50,8 +50,8 @@ class NativePrivateResponseSession {
         if(!session_.empty()&&session_!=attached){Fail("Private body Inspector attachment identity mismatch");return;}
         session_=std::move(attached);attaching_=false;
         if(detaching_||now_()>=deadline_){Detach("Private body initialization deadline exceeded");return;}
-        auto params=CefDictionaryValue::Create();params->SetInt("maxTotalBufferSize",8*1048576);
-        params->SetInt("maxResourceBufferSize",2097152);params->SetBool("enableDurableMessages",true);
+        auto params=CefDictionaryValue::Create();params->SetInt("maxTotalBufferSize",256*1048576);
+        params->SetInt("maxResourceBufferSize",128*1048576);params->SetBool("enableDurableMessages",true);
         if(!Inner("Network.enable",params,deadline_,[this,alive](bool ok,const std::string&){
           if(!*alive||closed_)return;
           if(!ok||now_()>=deadline_){Detach("Private body Network enable failed or expired");return;}
@@ -151,13 +151,15 @@ class NativePrivateResponseSession {
   }
   static Dict Parse(bool ok,const std::string&text){if(!ok)return nullptr;const auto value=CefParseJSON(text,JSON_PARSER_RFC);return value?value->GetDictionary():nullptr;}
   static std::string JSON(Dict value){if(!value)return "{}";auto wrapper=CefValue::Create();wrapper->SetDictionary(value->Copy(false));return CefWriteJSON(wrapper,JSON_WRITER_DEFAULT).ToString();}
+  // A DevTools response carries at most 192 MiB, the host transport maximum.
+  static constexpr size_t kBodyBytes=192*1048576;
   static bool ValidBody(Dict value){
     if(value->GetType("body")!=VTYPE_STRING||value->GetType("base64Encoded")!=VTYPE_BOOL)return false;
     const auto body=value->GetString("body").ToString();
-    if(!value->GetBool("base64Encoded"))return body.size()<=2097152;
-    if(body.size()>2796204||body.size()%4)return false;
+    if(!value->GetBool("base64Encoded"))return body.size()<=kBodyBytes;
+    if(body.size()>(kBodyBytes+2)/3*4||body.size()%4)return false;
     if(body.empty())return true;
-    const auto decoded=CefBase64Decode(body);if(!decoded||decoded->GetSize()>2097152)return false;
+    const auto decoded=CefBase64Decode(body);if(!decoded||decoded->GetSize()>kBodyBytes)return false;
     std::vector<unsigned char>bytes(decoded->GetSize());decoded->GetData(bytes.data(),bytes.size(),0);
     return CefBase64Encode(bytes.data(),bytes.size()).ToString()==body;
   }

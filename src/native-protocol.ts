@@ -19,10 +19,10 @@ export const MAX_NATIVE_RESPONSE_PAYLOAD = 192 * 1024 * 1024
 // but leave room for that URL beside the event's other metadata.
 export const MAX_OBSERVED_DATA_URL = 1_048_576
 // Console messages, page errors and network records are as large as the page
-// makes them; this stays under MAX_NATIVE_PAYLOAD.
-export const MAX_NATIVE_EVENT_PAYLOAD = 24 * 1_048_576
-/** A 16 MiB WebSocket frame, base64 encoded, with its socket info. */
-export const MAX_NATIVE_SOCKET_PREDICATE_PAYLOAD = 30 * 1_048_576
+// makes them, up to the size of the largest DevTools response.
+export const MAX_NATIVE_EVENT_PAYLOAD = MAX_NATIVE_RESPONSE_PAYLOAD
+/** A WebSocket frame, base64 encoded, with its socket info. */
+export const MAX_NATIVE_SOCKET_PREDICATE_PAYLOAD = MAX_NATIVE_RESPONSE_PAYLOAD
 export const MAX_OBSERVED_URL = 2_097_152
 const MAX_HEADER = 4 * MAX_OBSERVED_URL
 const MAX_REENTRANT_CHUNKS = 4096
@@ -31,7 +31,7 @@ const MAX_REENTRANT_BYTES = MAX_NATIVE_RESPONSE_PAYLOAD + MAX_HEADER + 4
 const base = {
   version: z.literal(NATIVE_PROTOCOL_VERSION),
   pageId: z.number().int().positive().optional(),
-  bytes: z.number().int().min(0).max(MAX_NATIVE_PAYLOAD),
+  bytes: z.number().int().min(0).max(Math.max(MAX_NATIVE_PAYLOAD, MAX_NATIVE_RESPONSE_PAYLOAD)),
 }
 const timestamp = z.number().finite().nonnegative()
 export const NativeFrameInfoSchema = z
@@ -608,7 +608,8 @@ export class NativePacketDecoder {
     }
     if (
       (header.type === 'networkbody' || header.type === 'contextnetworkbody') &&
-      (header.bytes > 24_576 || (header.canceled && header.bytes))
+      // Native sends request bodies in chunks of at most 8 MiB.
+      (header.bytes > 8 * 1024 * 1024 || (header.canceled && header.bytes))
     )
       throw new Error('Invalid native network body packet length')
     if (header.type === 'audio' && header.bytes !== header.frames * 4)

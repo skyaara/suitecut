@@ -20,7 +20,7 @@ it('reads actual file ranges as bounded raw chunks with ordered native metadata'
     const job = new NativeMultipartStreamJob({ first: 'John', stream, tail: true })
     const chunks: Buffer[] = []
     const parts = await job.pump((chunk) => {
-      expect(chunk.length).toBeLessThanOrEqual(24 * 1024)
+      expect(chunk.length).toBeLessThanOrEqual(8 * 1024 * 1024)
       chunks.push(Buffer.from(chunk))
       return Promise.resolve()
     })
@@ -162,19 +162,24 @@ it('bounds host jobs and rejects duplicate stream ownership without adopting exc
   }
 })
 
-it('rejects oversized host read buffers before adopting or reading caller streams', async () => {
+it('takes host read buffers of any size and sends them in 8 MiB chunks', async () => {
   const directory = await mkdtemp(join(tmpdir(), 'suitecut-stream-read-budget-'))
-  const path = join(directory, 'bounded.bin')
-  await writeFile(path, 'actual')
-  const stream = createReadStream(path, { highWaterMark: 8 * 1024 * 1024 + 1 })
+  const path = join(directory, 'large.bin')
+  const bytes = Buffer.alloc(8 * 1024 * 1024 + 5, 7)
+  await writeFile(path, bytes)
+  const stream = createReadStream(path, { highWaterMark: 16 * 1024 * 1024 })
   try {
-    expect(() => new NativeMultipartStreamJob({ stream })).toThrow('highWaterMark')
-    expect(stream.destroyed).toBe(false)
+    const job = new NativeMultipartStreamJob({ stream })
+    const chunks: Buffer[] = []
+    await job.pump((chunk) => {
+      expect(chunk.length).toBeLessThanOrEqual(8 * 1024 * 1024)
+      chunks.push(Buffer.from(chunk))
+      return Promise.resolve()
+    })
+    await job.closed
+    expect(Buffer.concat(chunks).equals(bytes)).toBe(true)
     expect(NativeMultipartStreamJob.physical()).toEqual({ jobs: 0, streams: 0 })
   } finally {
-    const closed = new Promise<void>((resolve) => stream.once('close', resolve))
-    stream.destroy()
-    await closed
     await rm(directory, { recursive: true, force: true })
   }
 })

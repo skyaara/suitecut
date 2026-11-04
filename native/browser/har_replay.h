@@ -20,7 +20,7 @@ namespace suitecut {
 class NativeHARReplay {
  public:
   using Dict=CefRefPtr<CefDictionaryValue>;
-  static constexpr size_t kBodyBytes=64*1048576;
+  static constexpr size_t kBodyBytes=192*1048576;
   struct Match {int status=0;std::string status_text;std::vector<std::pair<std::string,std::string>>headers;std::vector<uint8_t>body;};
   bool Load(Dict archive,std::string&error) {
     auto log=archive?archive->GetDictionary("log"):nullptr;auto entries=log?log->GetList("entries"):nullptr;
@@ -111,7 +111,7 @@ class NativeHARReplay {
   static bool Bytes(Dict object,const char*encoding,std::vector<uint8_t>&bytes,std::string&error){
     if(object->GetType("text")!=VTYPE_STRING){error="Native HAR body text is absent";return false;}
     const auto text=object->GetString("text").ToString();const auto format=object->GetString(encoding).ToString();
-    if(format.empty()){if(text.size()>kBodyBytes){error="Native HAR body exceeds 64 MiB";return false;}bytes.assign(text.begin(),text.end());return true;}
+    if(format.empty()){if(text.size()>kBodyBytes){error="Native HAR body exceeds 192 MiB, the largest response body Chromium returns to suitecut";return false;}bytes.assign(text.begin(),text.end());return true;}
     if(format!="base64"||text.size()>(kBodyBytes+2)/3*4){error="Unsupported or excessive native HAR body encoding";return false;}
     if(text.empty())return true;
     const auto decoded=CefBase64Decode(text);if(!decoded||decoded->GetSize()>kBodyBytes){error="Invalid native HAR base64 body";return false;}

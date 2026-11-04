@@ -39,7 +39,8 @@ import type { UntrustedInput } from './untrusted.js'
 
 const REQUEST_CONTEXT_CLOSED =
   'Target page, context or browser has been closed (Request context disposed.)'
-const MAX_UPLOAD = 8 * 1024 * 1024
+// Uploads of any size, as in Playwright, sent in chunks of this size.
+const UPLOAD_CHUNK = 8 * 1024 * 1024
 const HeadersSchema = z.record(z.string(), z.string())
 const Scalar = z.union([z.string(), z.number().finite(), z.boolean()])
 const CredentialsSchema = z.strictObject({
@@ -218,7 +219,6 @@ async function multipartInput(
       entries.push([name, item])
     }
   }
-  if (entries.length > 1024) throw new Error('Native multipart supports at most 1024 parts')
   for (const [name, item] of entries) {
     let buffer: Buffer, filename: string | undefined, mime: string | undefined
     if (typeof item === 'object' && !(item instanceof Blob)) {
@@ -226,12 +226,10 @@ async function multipartInput(
       filename = item.name
       mime = item.mimeType ?? 'application/octet-stream'
     } else if (typeof item === 'object' && item instanceof Blob) {
-      if (item.size > MAX_UPLOAD) throw new Error('Native API upload exceeds 8 MiB')
       buffer = Buffer.from(await item.arrayBuffer())
       filename = item instanceof File ? item.name : 'blob'
       mime = item.type || 'application/octet-stream'
     } else buffer = Buffer.from(String(item))
-    if (buffer.length > MAX_UPLOAD - total) throw new Error('Native API upload exceeds 8 MiB')
     parts.push({
       name,
       offset: total,
@@ -241,8 +239,6 @@ async function multipartInput(
     total += buffer.length
     chunks.push(buffer)
   }
-  if (Buffer.byteLength(JSON.stringify(parts)) > 48 * 1024)
-    throw new Error('Native multipart metadata exceeds 48 KiB')
   return { body: Buffer.concat(chunks, total), parts }
 }
 const ResponseTimingSchema = z.strictObject({
@@ -968,8 +964,6 @@ export class NativeAPIRequestContext {
         for (const name of Object.keys(headers))
           if (name.toLowerCase() === 'content-type') delete headers[name]
       }
-      if (body && body.length > MAX_UPLOAD)
-        throw new Error(`apiRequestContext.${apiName}: Native API upload exceeds 8 MiB`)
       const signal = AbortSignal.any([
         this.lifecycle.signal,
         ...(this.source.processSignal ? [this.source.processSignal] : []),
@@ -1073,14 +1067,14 @@ export class NativeAPIRequestContext {
           throw error
         }
       }
-      if (body && body.length > 24 * 1024) {
+      if (body && body.length > UPLOAD_CHUNK) {
         const id = randomUUID()
-        for (let offset = 0; offset < body.length; offset += 24 * 1024)
+        for (let offset = 0; offset < body.length; offset += UPLOAD_CHUNK)
           await this.command(
             {
               action: 'upload',
               uploadId: id,
-              body: body.subarray(offset, offset + 24 * 1024).toString('base64'),
+              body: body.subarray(offset, offset + UPLOAD_CHUNK).toString('base64'),
             },
             signal,
           )

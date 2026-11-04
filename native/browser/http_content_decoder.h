@@ -25,7 +25,7 @@ class NativeHTTPContentDecoder {
  public:
   using Sink=std::function<bool(std::span<const unsigned char>)>;
   using Continue=std::function<bool()>;
-  static constexpr size_t kPerCodecBytes=20*1024*1024,kGlobalCodecBytes=64*1024*1024,kDecodedBytes=64*1024*1024;
+  static constexpr size_t kPerCodecBytes=20*1024*1024,kGlobalCodecBytes=64*1024*1024,kDecodedBytes=size_t{1}<<48;
  private:
   // Library allocation requests, including our allocation header, are charged
   // before malloc. Allocator arena/RSS overhead is not this retained-byte count.
@@ -61,7 +61,7 @@ class NativeHTTPContentDecoder {
     ~Stage(){if(z_ready)inflateEnd(&z);if(b)BrotliDecoderDestroyInstance(b);}
     bool ZInit(int bits){z={};z.zalloc=Memory::ZAllocate;z.zfree=Memory::ZFree;z.opaque=&memory;z_ready=inflateInit2(&z,bits)==Z_OK;return z_ready;}
     bool Init(){if(kind==Kind::Brotli){b=BrotliDecoderCreateInstance(Memory::BAllocate,Memory::BFree,&memory);return b&&BrotliDecoderSetParameter(b,BROTLI_DECODER_PARAM_LARGE_WINDOW,0);}return ZInit(kind==Kind::Deflate?MAX_WBITS:MAX_WBITS+16);}
-    bool Emit(size_t count,const Sink&next,std::string&error){if(count>kDecodedBytes-produced){error="Native HTTP decoded stage exceeds 64 MiB";return false;}produced+=count;if(count&&!next({output.data(),count})){if(error.empty())error="Native HTTP decoded body was rejected";return false;}return true;}
+    bool Emit(size_t count,const Sink&next,std::string&error){if(count>kDecodedBytes-produced){error="Native HTTP decoded stage exceeds the body limit";return false;}produced+=count;if(count&&!next({output.data(),count})){if(error.empty())error="Native HTTP decoded body was rejected";return false;}return true;}
     bool ZPush(std::span<const unsigned char>input,const Sink&next,std::string&error){
       if(input.size()>std::numeric_limits<uInt>::max()){error="Native HTTP compressed chunk exceeds native input limit";return false;}
       z.next_in=const_cast<Bytef*>(input.data());z.avail_in=static_cast<uInt>(input.size());

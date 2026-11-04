@@ -528,6 +528,8 @@ class Source : public CefClient,
   std::map<int, std::string> locator_logs_, locator_waits_;
   // When a click asked to fall back to element.click() stops waiting.
   std::map<int, double> click_fallback_at_;
+  // When an action's snapshot ref was first seen out of the page.
+  std::map<int, double> stale_reference_since_;
   std::map<int, std::string> expect_results_;
   std::map<int, double> first_observations_;
   std::map<int, Dict> lazy_queries_;

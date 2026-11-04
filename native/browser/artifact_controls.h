@@ -449,6 +449,9 @@ class SuiteCutArtifactController {
       auto params = CefDictionaryValue::Create(); params->SetString("format", config->GetString("format"));
       if (config->HasKey("quality")) params->SetInt("quality", config->GetInt("quality"));
       params->SetBool("fromSurface", true);
+      // Encode with fast zlib settings, as agent-browser and browser-use do: the
+      // pixels are the same and a 1280x720 PNG takes about 70 ms less.
+      params->SetBool("optimizeForSpeed", true);
       params->SetDictionary("clip", clip);
       double page_x = 0, page_y = 0;
       if (!Number(viewport, "pageX", page_x) || !Number(viewport, "pageY", page_y)) {

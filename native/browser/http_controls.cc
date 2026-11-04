@@ -169,7 +169,7 @@ void SuiteCutHTTPControls::Handle(int owner,Dict params,Reply reply,double origi
   if(action=="appendPreparedMultipart"||action=="commitMultipart"){PreparedMultipart(owner,context_id,params,std::move(reply));return;}
   if(action=="upload") {
     const auto id=params->GetString("uploadId").ToString(),body=params->GetString("body").ToString();
-    if(id.empty() || id.size()>128 || preparations_.Contains(id) || body.size()>32768 || (!uploads_.contains(id) && uploads_.size()>=16)){reply(false,nullptr,"Native API upload limit exceeded");return;}
+    if(id.empty() || id.size()>128 || preparations_.Contains(id) || body.size()>kChunkBase64 || (!uploads_.contains(id) && uploads_.size()>=16)){reply(false,nullptr,"Native API upload limit exceeded");return;}
     const auto data=CefBase64Decode(body);if(!data){reply(false,nullptr,"Invalid API body base64");return;}
     auto& upload=uploads_[id];
     if(upload.context && upload.context!=context_id){reply(false,nullptr,"API upload belongs to another context");return;}
@@ -253,8 +253,8 @@ void SuiteCutHTTPControls::PreparedMultipart(int owner,int context,Dict params,R
   if(state->deadline&&hooks_.now()>=state->deadline){const auto error=TimeoutError(state->owner);Stop(state->owner,error);reply(false,nullptr,error);return;}
   const auto fail=[this,state,reply](const std::string&error){Stop(state->owner,error);reply(false,nullptr,error);};
   if(params->GetString("action")=="appendPreparedMultipart"){
-    const auto body=params->GetString("body").ToString();if(body.empty()||body.size()>32768){fail("Invalid native multipart source chunk");return;}
-    const auto bytes=CefBase64Decode(body);if(!bytes||bytes->GetSize()>24576||bytes->GetSize()>kMaxUpload-state->upload.size()||bytes->GetSize()>kUploadBudget-upload_bytes_-active_upload_bytes_){fail("Native multipart source byte budget exceeded");return;}
+    const auto body=params->GetString("body").ToString();if(body.empty()||body.size()>kChunkBase64){fail("Invalid native multipart source chunk");return;}
+    const auto bytes=CefBase64Decode(body);if(!bytes||bytes->GetSize()>kChunkBytes||bytes->GetSize()>kMaxUpload-state->upload.size()||bytes->GetSize()>kUploadBudget-upload_bytes_-active_upload_bytes_){fail("Native multipart source byte budget exceeded");return;}
     std::string error;if(!suitecut::AppendNativeHTTPUpload(state->upload,bytes->GetSize(),RetainedUploadCapacity(),kMaxUpload,kUploadBudget,[bytes](uint8_t*target,size_t size){return bytes->GetData(target,size,0)==size;},error)){fail(error);return;}
     active_upload_bytes_+=bytes->GetSize();reply(true,CefDictionaryValue::Create(),"");return;
   }

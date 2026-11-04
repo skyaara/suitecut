@@ -20,6 +20,7 @@
 #include <charconv>
 #include "route_callback_leases.h"
 #include "network_body_controls.h"
+#include "har_files.h"
 #include "network_post_preparation.h"
 #include "network_response_extras.h"
 #include "network_response_details.h"
@@ -35,6 +36,11 @@ namespace suitecut {
 // language SDK: Fetch interception, matching, deadlines and ownership live here.
 class NetworkControls {
  public:
+  // The host takes an event as large as a DevTools response, so a route sees a
+  // request body of any size Chromium uploads, as in Playwright.
+  static constexpr size_t kEventBytes=192*1048576;
+  // Chrome's url::kMaxURLChars.
+  static constexpr size_t kURLBytes=2*1048576;
   using Dict = CefRefPtr<CefDictionaryValue>;
   using Result = std::function<void(bool, const std::string&)>;
   using Send = std::function<void(const std::string&, const std::string&, Dict, Result)>;
@@ -99,7 +105,7 @@ class NetworkControls {
           pause.har_post_attempted=true;if(fields->HasKey("postDataBase64"))pause.public_prepared=false;auto staged=pause.request;staged.info=pause.request.info->Copy(false);update(staged);auto har=pause.har_info?pause.har_info->Copy(false):nullptr;
           if(har){for(const char*name:{"postData","postDataBase64","postDataBodyId","postDataEntries","postDataUnavailable"})har->Remove(name);if(available){if(text)har->SetString("postData",std::string(bytes.begin(),bytes.end()));else har->SetString("postDataBase64",CefBase64Encode(bytes.data(),bytes.size()));}else har->SetBool("postDataUnavailable",true);}
           auto fetch_body=pause.fetch_body;if(fields->HasKey("postDataBodyId")&&available)fetch_body=std::make_shared<const std::vector<uint8_t>>(bytes);
-          const auto cost=(fetch_body?fetch_body->capacity():0)+pause.plan.bytes()+pause.original_url.capacity()+Json(staged.info).size()+Json(pause.overrides).size()+(har?Json(har).size():0);if(cost>16777216-(pause_metadata_bytes_-pause.metadata_bytes)){failure_("Native asynchronous request body pause metadata capacity exceeded");return;}pause_metadata_bytes_=pause_metadata_bytes_-pause.metadata_bytes+cost;pause.metadata_bytes=cost;pause.request=std::move(staged);pause.har_info=std::move(har);pause.fetch_body=std::move(fetch_body);
+          const auto cost=(fetch_body?fetch_body->capacity():0)+pause.plan.bytes()+pause.original_url.capacity()+Json(staged.info).size()+Json(pause.overrides).size()+(har?Json(har).size():0);pause_metadata_bytes_=pause_metadata_bytes_-pause.metadata_bytes+cost;pause.metadata_bytes=cost;pause.request=std::move(staged);pause.har_info=std::move(har);pause.fetch_body=std::move(fetch_body);
           if(pause.replay_done)resume.push_back(key);
         }
         if(const auto current=FindLogical(id))Publish(BaseEvent("requestupdated",*current));
@@ -127,7 +133,8 @@ class NetworkControls {
     return BindReplayPolicy(id,pattern,NativeHARRouteRegistration::Create(std::move(replay),fallback,order),std::move(done),deadline,context);
   }
   bool BindReplayPolicy(const std::string&id,const std::string&pattern,NativeHARRouteRegistration::Policy policy,Result done,double deadline=0,bool context=false) {
-    if(disposed_||!policy||har_replays_.size()>=16||policy->archive()->bytes()>67108864-har_replay_bytes_||!routes_.Register(id,pattern,0,context,false,policy->order())){done(false,"Invalid or excessive native HAR route");return false;}
+    if(!disposed_&&policy&&policy->archive()->bytes()>NativeHARFiles::kFileBytes-har_replay_bytes_){done(false,"Native HAR replay archives on this page exceed 1 GiB, the largest HAR file suitecut reads");return false;}
+    if(disposed_||!policy||har_replays_.size()>=16||!routes_.Register(id,pattern,0,context,false,policy->order())){done(false,"Invalid or excessive native HAR route");return false;}
     har_replay_bytes_+=policy->archive()->bytes();har_replays_.emplace(id,policy);
     ConfigureAll([this,id,policy,done=std::move(done)](bool ok,const std::string&error,const std::string&)mutable{
       auto actual=std::move(policy);
@@ -277,7 +284,7 @@ class NetworkControls {
   bool NeedsTick(bool viewer=false) const { return (route_fetch_physical_&&*route_fetch_physical_) || matchers_->pending() || page_removals_->pending() || preflights_->NeedsTick() || (!viewer&&(request_extras_->NeedsTick() || response_extras_->NeedsTick())) || authentication_->NeedsTick(viewer) || !paused_.empty() || !rejected_.empty() || !waiters_.empty() || (bodies_ && bodies_->publication().NeedsTick()); }
   // Source invokes this before dropping an oversized Fetch.requestPaused packet.
   // Retain physical interception ownership until Chromium acknowledges rejection.
-  void RejectOversizedPause(Dict data,const std::string& session,const std::string& reason="Native intercepted request metadata exceeds 1 MiB; actual request aborted",bool report=true,std::shared_ptr<NativeHARFetchWork>work={}) {
+  void RejectOversizedPause(Dict data,const std::string& session,const std::string& reason="Native intercepted request exceeds 192 MiB, the largest message the host takes; actual request aborted",bool report=true,std::shared_ptr<NativeHARFetchWork>work={}) {
     if(disposed_)return;
     const auto fetch=data?data->GetString("requestId").ToString():std::string{};
     if(fetch.empty() || fetch.size()>256){failure_("Invalid oversized native interception identifier");return;}
@@ -498,10 +505,8 @@ class NetworkControls {
       if(found==paused_.end()){done(false,"Route is already handled or no longer available","");return;}
       if(found->second.fetch_upload_deadline&&now_()>=found->second.fetch_upload_deadline){done(false,"Native route fetch upload original deadline expired","");return;}
       const auto encoded=config->GetString("body").ToString();
-      if(encoded.size()>32768){done(false,"Native route upload chunk exceeds 24 KiB","");return;}
       const auto decoded=CefBase64Decode(encoded);if(!decoded){done(false,"Invalid route body base64","");return;}
       const size_t bytes=decoded->GetSize();
-      if(found->second.body.size()+bytes>2097152 || upload_bytes_+bytes>8388608){done(false,"Native route upload capacity exceeded","");return;}
       const size_t offset=found->second.body.size();found->second.body.resize(offset+bytes);
       decoded->GetData(found->second.body.data()+offset,bytes,0);upload_bytes_+=bytes;done(true,"","{}");return;
     }
@@ -646,7 +651,6 @@ class NetworkControls {
     }
     auto config=CefDictionaryValue::Create();config->SetString("routeId",id);const auto match=policy->archive()->Lookup(pause.har_info?pause.har_info:pause.request.info);
     if(!match){if(policy->fallback())Resolve(config,"fallback",std::move(done),operation,actual_deadline,generation);else{config->SetString("errorReason","Failed");Resolve(config,"abort",std::move(done),operation,actual_deadline,generation);}return;}
-    if(match->body.size()>8388608-upload_bytes_){config->SetString("errorReason","BlockedByClient");Resolve(config,"abort",[done=std::move(done)](bool,const std::string&,const std::string&){done(false,"Native HAR fulfillment body capacity exceeded","");},operation,actual_deadline,generation);return;}
     upload_bytes_+=match->body.size();pause.body=match->body;config->SetBool("bodyUpload",true);config->SetInt("status",match->status);config->SetString("statusText",match->status_text);auto headers=CefListValue::Create();size_t i=0;
     for(const auto&[name,value]:match->headers){auto header=CefDictionaryValue::Create();header->SetString("name",name);header->SetString("value",value);headers->SetDictionary(i++,header);}config->SetList("headers",headers);Resolve(config,"fulfill",std::move(done),operation,actual_deadline,generation);
   }
@@ -678,8 +682,8 @@ class NetworkControls {
   }
   bool RetainMetadata(Request& request) {
     const size_t bytes=(request.info?Json(request.info).size():0)+(request.response?Json(request.response).size():0)+request.logical_id.size()+request.native_id.size()+request.session.size()+request.frame.size()+request.method.size()+request.url.size()+request.resource.size()+request.redirected_from.size()+request.error.size()+request.response_header_error.size()+request.request_header_error.size()+request.preflight_parent.size()+512;
-    if(bytes>33554432){Degrade("Native request metadata exceeds the 32 MiB byte budget");return false;}
-    while(bytes>33554432-(request_metadata_bytes_-request.metadata_bytes)) {
+    if(bytes>kEventBytes){Degrade("Native request metadata exceeds 192 MiB, the largest message the host takes");return false;}
+    while(bytes>kEventBytes-(request_metadata_bytes_-request.metadata_bytes)) {
       auto oldest=std::find_if(order_.begin(),order_.end(),[&](const std::string& key){const auto found=requests_.find(key);return found==requests_.end() || (&found->second!=&request && Evictable(found->second));});
       if(oldest==order_.end()){oldest=std::find_if(order_.begin(),order_.end(),[&](const std::string& key){const auto found=requests_.find(key);return found==requests_.end() || &found->second!=&request;});Degrade("Native active request metadata byte budget exceeded");}
       if(oldest==order_.end())return false;
@@ -739,11 +743,11 @@ class NetworkControls {
     if(disposed_)return;
     data->SetDouble("sequence",static_cast<double>(++sequence_));
     auto json=Json(data);
-    if(json.size()>1048576 && data->GetString("event")!="route") {
+    if(json.size()>kEventBytes && data->GetString("event")!="route") {
       auto info=data->GetDictionary("request");
       if(info && (info->HasKey("postData") || info->HasKey("postDataBase64"))){info->Remove("postData");info->Remove("postDataBase64");info->SetBool("postDataUnavailable",true);json=Json(data);}
     }
-    if(json.size()>1048576){Degrade("Native network event exceeds 1 MiB");return;}
+    if(json.size()>kEventBytes){Degrade("Native network event exceeds 192 MiB, the largest message the host takes");return;}
     history_.push_back({data->Copy(false),json.size()});history_bytes_+=json.size();
     while(history_.size()>256 || history_bytes_>4194304) {history_bytes_-=history_.front().bytes;history_.pop_front();}
     emit_(data);
@@ -901,9 +905,8 @@ class NetworkControls {
     Paused pause{fetch,session,deadline,{},std::move(plan),std::move(request),CefDictionaryValue::Create()};
     pause.fetch_body=std::move(fetch_body);
     pause.original_url=url;pause.har_info=std::move(har_info);pause.public_prepared=!native_replay;pause.replay_policy=admitted_replay;if(admitted_replay)pause.replay_deadline=deadline;
-    if(!native_replay&&Json(BaseEvent("route",pause.request)).size()>1048576-2048){RejectOversizedPause(data,session);return;}
+    if(!native_replay&&Json(BaseEvent("route",pause.request)).size()>kEventBytes-2048){RejectOversizedPause(data,session,"Native intercepted request exceeds 192 MiB, the largest message the host takes; actual request aborted");return;}
     pause.metadata_bytes=(pause.fetch_body?pause.fetch_body->capacity():0)+pause.plan.bytes()+pause.original_url.capacity()+Json(pause.request.info).size()+Json(pause.overrides).size()+(pause.har_info?Json(pause.har_info).size():0);
-    if(pause.metadata_bytes>16777216-pause_metadata_bytes_){RejectOversizedPause(data,session,"Native paused request metadata budget exceeded; actual request aborted");return;}
     if(native_replay){pause_metadata_bytes_+=pause.metadata_bytes;paused_.emplace(id,std::move(pause));MarkAdmittedPolicy(id);ResolvePreflights();if(read_post){const auto&actual=paused_.at(id);post_reads_->Prepare(logical,actual.request.session,actual.request.native_id,actual.deadline,FindLogical(logical)!=nullptr);}ReplayPaused(id,invocation->registration,[this,alive=alive_,failure=failure_](bool ok,const std::string&error,const std::string&){if(!ok&&*alive&&!disposed_)failure(error);});if(read_post)post_reads_->Start(logical);wake_();return;}
     if(!GlobalRouteCallbackLeases().Available()){RejectOversizedPause(data,session,"Native route callback lease capacity exceeded; actual request aborted");return;}
     auto event=RouteEvent(id,pause,*invocation);
@@ -934,7 +937,7 @@ class NetworkControls {
     } else if(action=="fulfill") {
       const int status=config->GetInt("status");if(status<100 || status>599){done(false,"Invalid route response status","");return;}
       params->SetInt("responseCode",status);if(config->HasKey("statusText"))params->SetString("responsePhrase",config->GetString("statusText"));
-      if(config->HasKey("body")){const auto body=config->GetString("body").ToString();if(body.size()>2796204){done(false,"Native route body exceeds 2 MiB","");return;}params->SetString("body",body);}
+      if(config->HasKey("body")){const auto body=config->GetString("body").ToString();params->SetString("body",body);}
       auto headers=config->GetList("headers");if(headers)params->SetList("responseHeaders",headers->Copy());method="Fetch.fulfillRequest";
     } else {
       for(const auto* key:{"url","method","postData"})if(config->HasKey(key))params->SetString(key,config->GetString(key));
@@ -946,26 +949,25 @@ class NetworkControls {
     }
     if(action=="continue" || action=="fallback") {
       if(action=="fallback" && NextNeedsCallback(pause.plan) && !GlobalRouteCallbackLeases().Available()){done(false,"Native route callback lease capacity exceeded; request remains owned for retry","");return;}
-      for(const auto* key:{"url","method"})if(params->HasKey(key)){const auto value=params->GetString(key).ToString();if(value.empty() || value.size()>(std::string(key)=="url"?8192:128)){done(false,"Invalid native route override","");return;}}
-      if(params->HasKey("postData")){const auto encoded=params->GetString("postData").ToString();auto decoded=encoded.empty()?nullptr:CefBase64Decode(encoded);if(encoded.size()>2796204 || (!encoded.empty() && !decoded) || (decoded && decoded->GetSize()>2097152)){done(false,"Invalid native route post data","");return;}}
+      for(const auto* key:{"url","method"})if(params->HasKey(key)){const auto value=params->GetString(key).ToString();if(value.empty() || value.size()>(std::string(key)=="url"?kURLBytes:128)){done(false,"Invalid native route override","");return;}}
+      if(params->HasKey("postData")){const auto encoded=params->GetString("postData").ToString();auto decoded=encoded.empty()?nullptr:CefBase64Decode(encoded);if(!encoded.empty() && !decoded){done(false,"Invalid native route post data","");return;}}
       auto staged_fetch_body=pause.fetch_body;
       if(params->HasKey("postData")){auto exact=CefDictionaryValue::Create();exact->SetString("postDataBase64",params->GetString("postData"));auto captured=CaptureNativePostData(exact);staged_fetch_body=std::make_shared<const std::vector<uint8_t>>(std::move(captured.bytes));}
       auto staged_request=pause.request;staged_request.info=staged_request.info->Copy(false);UpdateRequest(staged_request,params);if(params->HasKey("postData"))PrepareBody(staged_request.info,pause.deadline);
       auto staged_har_info=pause.har_info?pause.har_info->Copy(false):nullptr;if(staged_har_info){auto actual=pause.request;actual.info=staged_har_info;UpdateRequest(actual,params);}
       auto staged_overrides=params->Copy(false);staged_overrides->Remove("requestId");
-      if(action=="fallback" && pause.public_prepared && NextNeedsCallback(pause.plan) && Json(BaseEvent("route",staged_request)).size()>1048576-2048){done(false,"Native fallback body metadata exceeds 1 MiB; request remains owned for retry","");return;}
+      if(action=="fallback" && pause.public_prepared && NextNeedsCallback(pause.plan) && Json(BaseEvent("route",staged_request)).size()>kEventBytes-2048){done(false,"Native fallback request exceeds 192 MiB, the largest message the host takes; request remains owned for retry","");return;}
       const auto metadata_bytes=(staged_fetch_body?staged_fetch_body->capacity():0)+pause.plan.bytes()+pause.original_url.capacity()+Json(staged_request.info).size()+Json(staged_overrides).size()+(staged_har_info?Json(staged_har_info).size():0);
-      if(metadata_bytes>16777216-(pause_metadata_bytes_-pause.metadata_bytes)){done(false,"Native paused request metadata budget exceeded","");return;}
       pause_metadata_bytes_=pause_metadata_bytes_-pause.metadata_bytes+metadata_bytes;pause.metadata_bytes=metadata_bytes;
       pause.fetch_body=std::move(staged_fetch_body);pause.request=std::move(staged_request);pause.overrides=std::move(staged_overrides);pause.har_info=std::move(staged_har_info);
       if(auto native=FindLogical(pause.request.logical_id)) {
         auto staged=*native;staged.info=staged.info->Copy(false);UpdateRequest(staged,params);if(params->HasKey("postData")) {for(const auto* field:{"postData","postDataBase64","postDataBodyId","postDataUnavailable"})staged.info->Remove(field);for(const auto* field:{"postData","postDataBase64","postDataBodyId","postDataUnavailable"})if(pause.request.info->HasKey(field))staged.info->SetValue(field,pause.request.info->GetValue(field)->Copy());}
         *native=std::move(staged);if(!RetainMetadata(*native)){done(false,"Native request metadata byte budget exceeded","");return;}auto updated=BaseEvent("requestupdated",*native);
-        if(Json(updated).size()>1048576){auto info=updated->GetDictionary("request");info->Remove("postData");info->Remove("postDataBase64");info->SetBool("postDataUnavailable",true);}
+        if(Json(updated).size()>kEventBytes){auto info=updated->GetDictionary("request");info->Remove("postData");info->Remove("postDataBase64");info->SetBool("postDataUnavailable",true);}
         Publish(updated);
       }
       if(action=="fallback") {
-        if(pause.public_prepared && NextNeedsCallback(pause.plan) && Json(BaseEvent("route",pause.request)).size()>1048576-2048){const auto fetch=pause.fetch_id,session=pause.session;auto work=std::move(pause.har_work);upload_bytes_-=pause.body.size();pause_metadata_bytes_-=pause.metadata_bytes;CancelRouteFetches(found->first);paused_.erase(found);auto rejected=CefDictionaryValue::Create();rejected->SetString("requestId",fetch);RejectOversizedPause(rejected,session,"Native fallback request metadata exceeds 1 MiB",true,std::move(work));done(false,"Native fallback request metadata exceeds 1 MiB","");return;}
+        if(pause.public_prepared && NextNeedsCallback(pause.plan) && Json(BaseEvent("route",pause.request)).size()>kEventBytes-2048){const auto fetch=pause.fetch_id,session=pause.session;auto work=std::move(pause.har_work);upload_bytes_-=pause.body.size();pause_metadata_bytes_-=pause.metadata_bytes;CancelRouteFetches(found->first);paused_.erase(found);auto rejected=CefDictionaryValue::Create();rejected->SetString("requestId",fetch);RejectOversizedPause(rejected,session,"Native fallback request exceeds 192 MiB, the largest message the host takes",true,std::move(work));done(false,"Native fallback request exceeds 192 MiB, the largest message the host takes","");return;}
         SelectFallback(id,std::move(done),operation,original_deadline,generation);return;
       }
       method="Fetch.continueRequest";

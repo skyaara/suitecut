@@ -7,10 +7,12 @@ import { type UntrustedInput } from './untrusted.js'
 
 // Bodies are as large as the page sends; these only bound memory. A body that
 // doesn't fit is dropped and reads as unavailable, as an evicted one does.
-const MAX_BODY = 64 * 1024 * 1024
-const MAX_RETAINED = 256 * 1024 * 1024
+// A body is as large as the DevTools response that read it.
+const MAX_BODY = 192 * 1024 * 1024
+// Five whole bodies per page, 960 MiB.
+const MAX_RETAINED = 5 * MAX_BODY
 const MAX_OWNERS = 128
-const MAX_PROCESS_RETAINED = 1024 * 1024 * 1024
+const MAX_PROCESS_RETAINED = 4 * 1024 * 1024 * 1024
 const MAX_PROCESS_OWNERS = 1024
 export const NATIVE_NETWORK_BODY_LIMITS = {
   body: MAX_BODY,
@@ -19,7 +21,7 @@ export const NATIVE_NETWORK_BODY_LIMITS = {
   processRetained: MAX_PROCESS_RETAINED,
   processOwners: MAX_PROCESS_OWNERS,
 } as const
-const MAX_CHUNK = 24 * 1024
+const MAX_CHUNK = 8 * 1024 * 1024
 const BodyPacket = z.strictObject({
   bodyId: z.string().regex(/^[1-9][0-9]{0,19}$/u),
   offset: z.number().int().min(0).max(MAX_BODY),
@@ -138,7 +140,7 @@ export class NativeNetworkBodyReceiver {
       this.archive.remove(this.scope, info.bodyId)
       return
     }
-    if (chunk.length > MAX_CHUNK) throw new Error('Native network body chunk exceeds 24 KiB')
+    if (chunk.length > MAX_CHUNK) throw new Error('Native network body chunk exceeds 8 MiB')
     if (this.skip(info, chunk)) return
     let owner = this.owners.get(info.bodyId)
     if (!owner) {

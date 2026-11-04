@@ -2,6 +2,52 @@
 
 ## Unreleased
 
+- Add `ariaSnapshot({ mode: 'ai', interactive: true })`, a snapshot of only
+  what an agent can act on: links, buttons, fields and other controls, with
+  the headings and named landmarks around them, and no text or URLs. Refs are
+  the same as in the full AI snapshot, so `page.getByRef()` takes either.
+  Hacker News is 8,500 characters instead of 37,800, about 40% smaller than
+  agent-browser's `snapshot -i` of the same page.
+- Make `ariaSnapshot()` about twice as fast on pages without a file input.
+  Every snapshot used to walk the page twice, the first time only to find
+  `<input type="file">` elements; a plain DOM walk now answers that first.
+  Viewport PNG screenshots skip PNG's slowest compression. On the five
+  benchmark pages the median snapshot went from 287 to 153 ms and the median
+  screenshot from 221 to 167 ms.
+- Fail a click, fill or other action on a snapshot ref within about a second
+  once its element has left the page, instead of waiting out the whole
+  timeout. The error says to take a new snapshot. An element that a re-render
+  moves and puts back within that second is still acted on. On BBC News,
+  whose navigation re-renders after load, a stale ref used to cost the full
+  action timeout.
+- Measure a request's retained metadata without serializing its body, which
+  cost about 5 ms per MiB of `postData` on every request event.
+- Take network bodies of any size, as Playwright does. Up to 192 MiB each, the
+  largest response Chromium's DevTools returns, now works for:
+  - `route.fulfill({ body })` and `route.fulfill({ path })`
+  - `route.continue({ postData })`, and a route handler reading a large upload
+  - `route.fetch()` with a large `postData` or response
+  - `request.postData()` and `response.body()`
+  - `recordHar` and `routeFromHAR` bodies, and HAR archives up to 1 GiB per page
+  - `APIRequestContext` uploads and responses, multipart forms and streams
+  These used to fail past 2 MiB per body (8 MiB per page for route uploads,
+  16 MiB for request bodies in flight), mostly as "Failed to fetch". Bodies
+  also travel in 8 MiB chunks instead of 24 KiB ones, so a 16 MiB
+  `response.body()` takes about 1 s instead of several. A request whose
+  metadata outgrows what suitecut keeps no longer closes the browser. A message
+  sent through `routeWebSocket()` still stops at 2 MiB, which suitecut's
+  Chromium patch holds, and the error now says so.
+- Stop a screenshot from waiting forever on a page whose iframes keep
+  reloading. On BBC News, `page.screenshot()` waited out its 30 s timeout
+  "waiting for fonts to load" in about one run in three. iframes are now
+  prepared as Playwright prepares them: one without a document yet, one that
+  navigates away and one that throws are captured as they are, and fonts are
+  awaited in the main document only.
+- Add `benchmarks/`: one command, `node benchmarks/run.mjs`, that measures
+  suitecut, agent-browser and browser-use on the same five public pages and
+  five read-only tasks (launch, snapshot speed and tokens, screenshot speed,
+  and whether each task reaches its goal). Every script and every raw result
+  is in the repository.
 - Make AI snapshots faster and smaller. A 25,000-element page takes 3-5 s
   instead of 17.6 s, 100,000 elements finish instead of timing out, and a
   default `ariaSnapshot()` of 100,000 elements takes 6-10 s instead of 75 s.

@@ -75,31 +75,30 @@ describe('native request-body byte publications', () => {
       receiver.receive({ bodyId: '2', offset: 1, totalBytes: 3 }, Buffer.from([1])),
     ).toThrow('offset')
     expect(() =>
-      receiver.receive({ bodyId: '3', offset: 0, totalBytes: 25000 }, Buffer.alloc(25000)),
-    ).toThrow('24 KiB')
+      receiver.receive(
+        { bodyId: '3', offset: 0, totalBytes: 8 * 1024 * 1024 + 1 },
+        Buffer.alloc(8 * 1024 * 1024 + 1),
+      ),
+    ).toThrow('8 MiB')
   })
-  it('bounds replay bytes independently from pending delivery and preserves held byte identity', () => {
+  it('bounds replay entries independently from pending delivery and preserves held byte identity', () => {
     const receiver = new NativeNetworkBodyReceiver(
       () => Promise.resolve(),
       () => undefined,
     )
-    const chunk = Buffer.alloc(24 * 1024, 255)
-    const count = Limits.retained / Limits.body + 1
+    const count = 4097
     let held: Buffer | undefined
     for (let id = 1; id <= count; id++) {
-      for (let offset = 0; offset < Limits.body; offset += chunk.length)
-        receiver.receive(
-          { bodyId: String(id), offset, totalBytes: Limits.body },
-          chunk.subarray(0, Math.min(chunk.length, Limits.body - offset)),
-        )
+      receiver.receive({ bodyId: String(id), offset: 0, totalBytes: 2 }, Buffer.from([id % 256, 1]))
       const actual = receiver.take(String(id))
-      if (id === 1) held = actual
+      if (id === count) held = actual
     }
     expect(receiver.archiveDiagnostics()).toEqual({
       bodies: count - 1,
-      retainedBytes: Limits.retained,
+      retainedBytes: 2 * (count - 1),
     })
-    expect(receiver.take('1')).toBe(held)
+    expect(() => receiver.take('1')).toThrow('unavailable')
+    expect(receiver.take(String(count))).toBe(held)
     receiver.close()
     expect(receiver.archiveDiagnostics()).toEqual({ bodies: 0, retainedBytes: 0 })
   })

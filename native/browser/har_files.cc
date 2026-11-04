@@ -62,7 +62,7 @@ bool Commit(const std::string& path,const Bytes& bytes,const Action& action,std:
 bool Body(Dict value,const char* field,Bytes& bytes,std::string& error){
   if(value->GetType("text")!=VTYPE_STRING){error="Native HAR body text must be a string";return false;}
   const auto text=value->GetString("text").ToString(),encoding=value->GetString(field).ToString();
-  if(encoding.empty()){if(text.size()>NativeHARFiles::kBodyBytes){error="Native HAR body exceeds 64 MiB";return false;}bytes.assign(text.begin(),text.end());return true;}
+  if(encoding.empty()){if(text.size()>NativeHARFiles::kBodyBytes){error="Native HAR body exceeds 192 MiB, the largest response body Chromium returns to suitecut";return false;}bytes.assign(text.begin(),text.end());return true;}
   if(encoding!="base64"||text.size()>(NativeHARFiles::kBodyBytes+2)/3*4){error="Invalid native HAR body encoding or capacity";return false;}
   if(text.empty()){bytes.clear();return true;}auto decoded=CefBase64Decode(text);
   if(!decoded||decoded->GetSize()>NativeHARFiles::kBodyBytes){error="Invalid native HAR base64 body";return false;}

@@ -6,7 +6,7 @@
     if(context<1||owner.empty()||owner.size()>128||!event||(event->GetString("event")!="route"&&event->GetString("event")!="routematch"))return;
     auto record=CefDictionaryValue::Create();record->SetInt("contextId",context);record->SetString("owner",owner);record->SetDictionary("network",event->Copy(false));
     if(worker)record->SetDictionary("worker",worker->Copy(false));else if(page>0)record->SetInt("pageId",page);else return;
-    const auto json=Json(record);if(json.size()>1048576){HARPolicyFailure(owner,"Native context route packet exceeds 1 MiB; actual request owner must close");return;}
+    const auto json=Json(record);if(json.size()>suitecut::NetworkControls::kEventBytes){HARPolicyFailure(owner,"Native context route packet exceeds 192 MiB, the largest message the host takes; actual request owner must close");return;}
     writer_.Send(Header("contextroute"),std::vector<uint8_t>(json.begin(),json.end()));
   }
   void ContextRouteMutation(int context,const std::string&mutation,bool applied,const std::vector<std::string>&ids){

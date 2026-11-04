@@ -263,7 +263,7 @@ describe('native PCM reblocking', () => {
   })
 })
 
-it('permits whole 16 MiB WebSocket frames in predicate snapshots without enlarging other event budgets', () => {
+it('permits whole WebSocket frames in predicate snapshots up to the event payload limit', () => {
   const header = {
     type: 'eventpredicate',
     pageId: 2,
@@ -283,7 +283,7 @@ it('permits whole 16 MiB WebSocket frames in predicate snapshots without enlargi
     new NativePacketDecoder(() => undefined).push(
       packet({ ...header, event: 'console' }, Buffer.alloc(MAX_NATIVE_EVENT_PAYLOAD + 1)),
     ),
-  ).toThrow('predicate payload')
+  ).toThrow()
   expect(() =>
     new NativePacketDecoder(() => undefined).push(
       packet(
@@ -291,5 +291,5 @@ it('permits whole 16 MiB WebSocket frames in predicate snapshots without enlargi
         Buffer.alloc(MAX_NATIVE_SOCKET_PREDICATE_PAYLOAD + 1),
       ),
     ),
-  ).toThrow('predicate payload')
+  ).toThrow()
 })

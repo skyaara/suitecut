@@ -74,7 +74,7 @@ void SDKBrowserHARWait(int id,uint64_t generation) {
   }
   auto limits=CefDictionaryValue::Create();limits->SetString("scope","page");limits->SetString("content",sdk_har_content_);
   limits->SetString("admissionScope","context");limits->SetBool("oneCapturePerContext",true);
-  limits->SetInt("responseBodyLimitBytes",2097152);limits->SetInt("retainedResponseBodyBudgetBytes",16777216);
+  limits->SetInt("responseBodyLimitBytes",192*1048576);limits->SetInt("retainedResponseBodyBudgetBytes",1024*1048576);
   limits->SetString("budgetScope","engine");result->SetDictionary("_suitecut",limits);
   Complete(id,true,"",Json(result));
 }

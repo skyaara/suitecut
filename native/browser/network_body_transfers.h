@@ -24,7 +24,9 @@ class NativeNetworkBodyTransfers {
   using Emit=std::function<bool(uint64_t,size_t,size_t,std::span<const uint8_t>)>;
   using Done=std::function<void(uint64_t,bool,const std::string&)>;
   // Bodies leave in 24 KiB chunks, so these only bound retained memory.
-  static constexpr size_t kBodyLimit=64*1048576,kByteBudget=256*1048576,kOwnerLimit=128,kChunkBytes=24576;
+  // A body is as large as the DevTools response that read it (192 MiB), and
+  // it reaches the host in 8 MiB chunks.
+  static constexpr size_t kBodyLimit=192*1048576,kByteBudget=1024*1048576,kOwnerLimit=128,kChunkBytes=8*1048576;
   explicit NativeNetworkBodyTransfers(Emit emit):emit_(std::move(emit)){}
   std::optional<uint64_t> Begin(std::vector<uint8_t> bytes,double deadline,Done done) {
     if(bytes.size()>kBodyLimit || bytes.size()>kByteBudget-byte_count_ || entries_.size()>=kOwnerLimit || !std::isfinite(deadline) || deadline<0 || !done || serial_==UINT64_MAX)return std::nullopt;

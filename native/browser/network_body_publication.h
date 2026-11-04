@@ -11,13 +11,17 @@ namespace suitecut {
 // Native FIFO publication. Byte reservations mirror the receiver's capacity
 // until it consumes a body; transport backpressure applies explicitly. A body
 // read or transfer that cannot finish in time costs that body, never the page.
+// In-flight bodies across all pages share the host's 1 GiB transfer budget.
 struct NativeNetworkBodyQuota {
+  static constexpr size_t kBytes=1024*1048576;
   size_t bytes=0,owners=0,preparations=0;
-  bool Reserve(size_t count) {if(owners>=128 || count>16777216-bytes)return false;++owners;bytes+=count;return true;}
+  bool Reserve(size_t count) {if(owners>=128 || count>kBytes-bytes)return false;++owners;bytes+=count;return true;}
   void Release(size_t count) {--owners;bytes-=count;}
 };
 inline NativeNetworkBodyQuota& GlobalNetworkBodyQuota(){static NativeNetworkBodyQuota quota;return quota;}
 class NativeNetworkBodyPublication {
+  // An event is as large as the host takes; the queue holds a few of them.
+  static constexpr size_t kEventBytes=192*1048576,kQueueBytes=1024*1048576;
  public:
   std::function<void(const std::string&)> degraded;
   using Dict=CefRefPtr<CefDictionaryValue>;
@@ -86,7 +90,7 @@ class NativeNetworkBodyPublication {
           request->Remove(name);if(fields&&fields->HasKey(name))request->SetValue(name,fields->GetValue(name)->Copy());
         }
         auto wrapper=CefValue::Create();wrapper->SetDictionary(event.value->Copy(false));auto bytes=CefWriteJSON(wrapper,JSON_WRITER_DEFAULT).ToString().size();
-        if(bytes>1048576||bytes>4194304-(event_bytes_-event.bytes)){
+        if(bytes>kEventBytes||bytes>kQueueBytes-(event_bytes_-event.bytes)){
           // Publish the request without its inline body rather than failing the page.
           for(const char*name:{"postData","postDataBase64","postDataEntries"})request->Remove(name);
           if(!request->HasKey("postDataBodyId"))request->SetBool("postDataUnavailable",true);
@@ -102,11 +106,11 @@ class NativeNetworkBodyPublication {
   bool Queue(Dict event,uint64_t preparation=0) {
     auto wrapped=CefValue::Create();wrapped->SetDictionary(event);const auto bytes=CefWriteJSON(wrapped,JSON_WRITER_DEFAULT).ToString().size();
     if(queued_serial_>=9007199254740991ULL){Fail("Native network metadata publication capacity exceeded");return false;}
-    if(bytes>1048576){if(degraded)degraded("Native network metadata event exceeds 1 MiB");return true;}
+    if(bytes>kEventBytes){if(degraded)degraded("Native network metadata event exceeds 192 MiB, the largest message the host takes");return true;}
     // A slow POST read or body transfer at the head must not hold every later
     // event hostage. Like Playwright, publish it without its body instead.
-    while(!events_.empty() && (events_.size()>=256 || bytes>4194304-event_bytes_) && Unblock()){}
-    if(events_.size()>=256 || bytes>4194304-event_bytes_){if(degraded)degraded("Native network metadata publication capacity exceeded");return true;}
+    while(!events_.empty() && (events_.size()>=256 || bytes>kQueueBytes-event_bytes_) && Unblock()){}
+    if(events_.size()>=256 || bytes>kQueueBytes-event_bytes_){if(degraded)degraded("Native network metadata publication capacity exceeded");return true;}
     const auto owner=BodyId(event);
     if(owner && !reservations_.contains(owner) && !taken_.contains(owner)){auto request=event->GetDictionary("request");request->Remove("postDataBodyId");request->SetBool("postDataUnavailable",true);}
     events_.push_back({event->Copy(false),bytes,++queued_serial_,preparation});event_bytes_+=bytes;Pump();return true;

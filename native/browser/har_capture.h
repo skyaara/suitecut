@@ -235,7 +235,7 @@ class NativeHARCapture {
   static std::string Json(Dict dict){auto value=CefValue::Create();value->SetDictionary(dict->Copy(false));return CefWriteJSON(value,JSON_WRITER_DEFAULT);}
   // Playwright keeps a whole HAR in memory too; these only bound a recording
   // that runs for hours, and stay well inside the 192 MiB export payload.
-  static constexpr size_t kRecords=16384,kMetadataBytes=64*1048576,kBodyBytes=64*1048576,kRetainedBytes=512*1048576;
+  static constexpr size_t kRecords=16384,kMetadataBytes=64*1048576,kBodyBytes=192*1048576,kRetainedBytes=1024*1048576;
   bool Budget(Record&record){const auto cost=Json(record.request).size()+(record.response?Json(record.response).size():0)+640+record.wire_id.capacity()+record.wire_frame.capacity()+record.wire_loader.capacity()+(record.wire_coding?record.wire_coding->capacity():0);if(cost>kMetadataBytes-(metadata_bytes_-record.cost))return false;metadata_bytes_=metadata_bytes_-record.cost+cost;record.cost=cost;return true;}
   static std::string Date(double ms){const auto whole=static_cast<time_t>(ms/1000);std::tm utc{};
 #ifdef _WIN32

@@ -46,7 +46,8 @@ function encode(payload: NativeWebSocketRoutePayload): { opcode: 1 | 2; payloadB
         ? payload
         : undefined
   if (!bytes) throw new Error('Native WebSocket payload must be a string or Buffer')
-  if (bytes.length > 2_097_152) throw new Error('Native WebSocket route payload exceeds 2 MiB')
+  // suitecut's Chromium WebSocket routing patch holds at most 2 MiB per message.
+  if (bytes.length > 2_097_152) throw new Error(`Native WebSocket route payload is ${(bytes.length / 1048576).toFixed(1)} MiB; suitecut's Chromium WebSocket routing holds at most 2 MiB per routed message. Messages that are not routed have no limit.`)
   return { opcode: typeof payload === 'string' ? 1 : 2, payloadBase64: bytes.toString('base64') }
 }
 

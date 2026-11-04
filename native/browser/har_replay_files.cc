@@ -9,7 +9,7 @@ std::atomic_size_t retained=0;
 struct Reservation {
   size_t bytes=0;
   ~Reservation(){retained.fetch_sub(bytes,std::memory_order_acq_rel);}
-  bool Reserve(size_t value){auto current=retained.load(std::memory_order_acquire);do{if(value>67108864-current)return false;}while(!retained.compare_exchange_weak(current,current+value,std::memory_order_acq_rel));bytes=value;return true;}
+  bool Reserve(size_t value){auto current=retained.load(std::memory_order_acquire);do{if(value>NativeHARFiles::kFileBytes-current)return false;}while(!retained.compare_exchange_weak(current,current+value,std::memory_order_acq_rel));bytes=value;return true;}
 };
 struct RetainedReplay {Reservation quota;std::shared_ptr<NativeHARReplay>data;};
 }

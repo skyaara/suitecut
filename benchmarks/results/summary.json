@@ -1,0 +1,331 @@
+{
+  "environment": {
+    "date": "2026-11-03T23:56:27.635Z",
+    "os": "darwin 27.0.0",
+    "cpu": "Apple M4",
+    "cores": 10,
+    "memoryGB": 16,
+    "node": "v24.20.0",
+    "suitecut": "2.1.0",
+    "commit": "5b52e1f-dirty",
+    "agentBrowser": "0.37.1",
+    "browserUse": "0.13.14",
+    "chrome": "Google Chrome 156.0.8078.80"
+  },
+  "rounds": 3,
+  "tools": {
+    "suitecut": {
+      "version": "2.1.0",
+      "runs": 3,
+      "failedRuns": [],
+      "launchMs": 2019.307833,
+      "closeMs": 535.4187499999971,
+      "loadMs": 1517.1544375000003,
+      "snapshotMs": 152.52108399999952,
+      "snapshotTokens": 16033.25,
+      "fullSnapshotTokens": 56973.875,
+      "screenshotMs": 167.020812499999,
+      "siteErrors": [
+        "www.bbc.com: page.goto: Timeout 45000ms exceeded.\nnavigating to \"https://www.bbc.com/news\", waiting until \"load\""
+      ],
+      "tasksPassed": 15,
+      "tasksRun": 15,
+      "retries": 2,
+      "taskMs": 1427.3237080000108,
+      "taskTokens": 17258.75,
+      "perSite": {
+        "news.ycombinator.com": {
+          "n": 3,
+          "loadMs": 1376.2535830000002,
+          "snapshotMs": 150.72820899999988,
+          "snapshotTokens": 2105.25,
+          "fullSnapshotMs": 139.57658300000003,
+          "fullSnapshotTokens": 9434.75,
+          "screenshotMs": 167.2072079999998
+        },
+        "en.wikipedia.org": {
+          "n": 3,
+          "loadMs": 1082.733666,
+          "snapshotMs": 265.4669590000012,
+          "snapshotTokens": 5161.25,
+          "fullSnapshotMs": 242.83837499999936,
+          "fullSnapshotTokens": 19915.5,
+          "screenshotMs": 164.91516600000068
+        },
+        "developer.mozilla.org": {
+          "n": 3,
+          "loadMs": 980.2328749999997,
+          "snapshotMs": 117.7388749999991,
+          "snapshotTokens": 1799,
+          "fullSnapshotMs": 104.35195899999962,
+          "fullSnapshotTokens": 7462.75,
+          "screenshotMs": 146.7455829999999
+        },
+        "www.bbc.com": {
+          "n": 2,
+          "loadMs": 5169.1714379999985,
+          "snapshotMs": 2126.950832999999,
+          "snapshotTokens": 3474.25,
+          "fullSnapshotMs": 120.01568749999933,
+          "fullSnapshotTokens": 7121.125,
+          "screenshotMs": 304.3723960000025
+        },
+        "github.com": {
+          "n": 3,
+          "loadMs": 3387.9067089999953,
+          "snapshotMs": 256.5671250000014,
+          "snapshotTokens": 3493.5,
+          "fullSnapshotMs": 226.9091249999983,
+          "fullSnapshotTokens": 13039.75,
+          "screenshotMs": 340.42554100000416
+        }
+      },
+      "perTask": {
+        "hn-open-comments": {
+          "passed": 3,
+          "runs": 3,
+          "ms": 1218.3324579999971,
+          "tokens": 2162,
+          "retries": 0,
+          "errors": []
+        },
+        "wikipedia-search": {
+          "passed": 3,
+          "runs": 3,
+          "ms": 1927.4910000000018,
+          "tokens": 2981.5,
+          "retries": 0,
+          "errors": []
+        },
+        "mdn-open-reference": {
+          "passed": 3,
+          "runs": 3,
+          "ms": 1133.9094170000026,
+          "tokens": 1707.75,
+          "retries": 0,
+          "errors": []
+        },
+        "github-open-issues": {
+          "passed": 3,
+          "runs": 3,
+          "ms": 3412.2164170000033,
+          "tokens": 3215.5,
+          "retries": 0,
+          "errors": []
+        },
+        "bbc-open-sport": {
+          "passed": 3,
+          "runs": 3,
+          "ms": 2106.3563340000037,
+          "tokens": 7192,
+          "retries": 2,
+          "errors": []
+        }
+      }
+    },
+    "agent-browser": {
+      "version": "0.37.1",
+      "runs": 3,
+      "failedRuns": [],
+      "launchMs": 1928.2695,
+      "closeMs": 976.5138750000006,
+      "loadMs": 1112.3250000000007,
+      "snapshotMs": 69.94629200000054,
+      "snapshotTokens": 22556.75,
+      "fullSnapshotTokens": 56494.5,
+      "screenshotMs": 68.75929099999848,
+      "siteErrors": [],
+      "tasksPassed": 15,
+      "tasksRun": 15,
+      "retries": 0,
+      "taskMs": 1393.2588329999999,
+      "taskTokens": 19946.25,
+      "perSite": {
+        "news.ycombinator.com": {
+          "n": 3,
+          "loadMs": 1410.56225,
+          "snapshotMs": 69.70350000000053,
+          "snapshotTokens": 3400,
+          "fullSnapshotMs": 69.7383749999999,
+          "fullSnapshotTokens": 6884.75,
+          "screenshotMs": 92.47258299999976
+        },
+        "en.wikipedia.org": {
+          "n": 3,
+          "loadMs": 1068.1855839999998,
+          "snapshotMs": 71.00295900000128,
+          "snapshotTokens": 5015,
+          "fullSnapshotMs": 71.23691700000018,
+          "fullSnapshotTokens": 21954.75,
+          "screenshotMs": 54.072917000001326
+        },
+        "developer.mozilla.org": {
+          "n": 3,
+          "loadMs": 640.800792,
+          "snapshotMs": 64.93929200000093,
+          "snapshotTokens": 1595.5,
+          "fullSnapshotMs": 59.46308300000055,
+          "fullSnapshotTokens": 6060.75,
+          "screenshotMs": 105.78108399999837
+        },
+        "www.bbc.com": {
+          "n": 3,
+          "loadMs": 2437.7625829999997,
+          "snapshotMs": 112.94283299999734,
+          "snapshotTokens": 6851,
+          "fullSnapshotMs": 160.6598750000012,
+          "fullSnapshotTokens": 10706,
+          "screenshotMs": 68.75929099999848
+        },
+        "github.com": {
+          "n": 3,
+          "loadMs": 10226.722415999997,
+          "snapshotMs": 88.91554100000212,
+          "snapshotTokens": 5695.25,
+          "fullSnapshotMs": 91.6216659999991,
+          "fullSnapshotTokens": 10888.25,
+          "screenshotMs": 66.98775000000023
+        }
+      },
+      "perTask": {
+        "hn-open-comments": {
+          "passed": 3,
+          "runs": 3,
+          "ms": 963.086292,
+          "tokens": 3400,
+          "retries": 0,
+          "errors": []
+        },
+        "wikipedia-search": {
+          "passed": 3,
+          "runs": 3,
+          "ms": 1955.3525420000005,
+          "tokens": 2485.25,
+          "retries": 0,
+          "errors": []
+        },
+        "mdn-open-reference": {
+          "passed": 3,
+          "runs": 3,
+          "ms": 660.3923750000031,
+          "tokens": 1514.75,
+          "retries": 0,
+          "errors": []
+        },
+        "github-open-issues": {
+          "passed": 3,
+          "runs": 3,
+          "ms": 2650.639167000001,
+          "tokens": 5695.25,
+          "retries": 0,
+          "errors": []
+        },
+        "bbc-open-sport": {
+          "passed": 3,
+          "runs": 3,
+          "ms": 4313.724833,
+          "tokens": 6851,
+          "retries": 0,
+          "errors": []
+        }
+      }
+    },
+    "browser-use": {
+      "version": "0.13.14",
+      "runs": 3,
+      "failedRuns": [],
+      "launchMs": 1784.1571669578552,
+      "closeMs": 138.7699579000473,
+      "loadMs": 1366.7326669692993,
+      "snapshotMs": 341.4855830669403,
+      "snapshotTokens": 14226.25,
+      "fullSnapshotTokens": 0,
+      "screenshotMs": 83.29691708087921,
+      "siteErrors": [],
+      "tasksPassed": 15,
+      "tasksRun": 15,
+      "retries": 0,
+      "taskMs": 1901.4404579401016,
+      "taskTokens": 13215,
+      "perSite": {
+        "news.ycombinator.com": {
+          "n": 3,
+          "loadMs": 1361.0928329229355,
+          "snapshotMs": 220.6519170999527,
+          "snapshotTokens": 3261.25,
+          "screenshotMs": 108.12454104423523
+        },
+        "en.wikipedia.org": {
+          "n": 3,
+          "loadMs": 1366.7326669692993,
+          "snapshotMs": 359.6033339500427,
+          "snapshotTokens": 2776.25,
+          "screenshotMs": 83.29691708087921
+        },
+        "developer.mozilla.org": {
+          "n": 3,
+          "loadMs": 572.021292090416,
+          "snapshotMs": 218.33183300495148,
+          "snapshotTokens": 1755,
+          "screenshotMs": 93.99029195308685
+        },
+        "www.bbc.com": {
+          "n": 3,
+          "loadMs": 3385.2205830812454,
+          "snapshotMs": 368.0332499742508,
+          "snapshotTokens": 1047.5,
+          "screenshotMs": 73.97770893573761
+        },
+        "github.com": {
+          "n": 3,
+          "loadMs": 2352.646208047867,
+          "snapshotMs": 527.3479580879211,
+          "snapshotTokens": 5386.25,
+          "screenshotMs": 71.82937490940094
+        }
+      },
+      "perTask": {
+        "hn-open-comments": {
+          "passed": 3,
+          "runs": 3,
+          "ms": 1418.9605001211166,
+          "tokens": 3260.75,
+          "retries": 0,
+          "errors": []
+        },
+        "wikipedia-search": {
+          "passed": 3,
+          "runs": 3,
+          "ms": 1273.4589998722076,
+          "tokens": 3043,
+          "retries": 0,
+          "errors": []
+        },
+        "mdn-open-reference": {
+          "passed": 3,
+          "runs": 3,
+          "ms": 1172.329374909401,
+          "tokens": 1497.25,
+          "retries": 0,
+          "errors": []
+        },
+        "github-open-issues": {
+          "passed": 3,
+          "runs": 3,
+          "ms": 3131.5889999866486,
+          "tokens": 4456.25,
+          "retries": 0,
+          "errors": []
+        },
+        "bbc-open-sport": {
+          "passed": 3,
+          "runs": 3,
+          "ms": 4312.164833068848,
+          "tokens": 957.75,
+          "retries": 0,
+          "errors": []
+        }
+      }
+    }
+  }
+}
