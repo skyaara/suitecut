@@ -532,6 +532,12 @@ class Source : public CefClient,
   std::map<int, double> stale_reference_since_;
   // Normalized locator plans by query and selector engines (see dom.cc).
   std::map<std::string, std::string> query_plans_;
+  // Isolated-world documents that already hold a shared script (devtools.cc).
+  std::set<std::string> shared_scripts_;
+  // Commands whose replies skip the value tree (devtools.cc).
+  std::set<int> raw_replies_;
+  bool sharing_scripts_ = false;
+  Dict ShareScripts(const std::string& method, Dict params, const std::string& session);
   std::map<int, std::string> expect_results_;
   std::map<int, double> first_observations_;
   std::map<int, Dict> lazy_queries_;

@@ -1,6 +1,98 @@
 // SPDX-License-Identifier: MIT
 #include "page/source.h"
+
+#include <charconv>
+#include <string_view>
 namespace suitecut::browser {
+namespace {
+// Reads a plain successful reply, {"id":…,"result":{…}} with an optional
+// sessionId, without building a value tree. Anything else, including text with
+// an escaped UTF-16 surrogate, which the lossless path below handles, is left
+// to the full parse.
+auto ScanReply(std::string_view text, int& id, std::string& session, std::string_view& result)
+    -> bool {
+  for (size_t at = text.find("\\u"); at != std::string_view::npos; at = text.find("\\u", at + 2))
+    if (at + 3 < text.size() && (text[at + 2] == 'd' || text[at + 2] == 'D') &&
+        std::string_view("89abcdefABCDEF").find(text[at + 3]) != std::string_view::npos)
+      return false;
+  size_t at = 0;
+  const auto space = [&] {
+    while (at < text.size() && (text[at] == ' ' || text[at] == '\n' || text[at] == '\r' ||
+                                text[at] == '\t'))
+      ++at;
+  };
+  // Skips one JSON value; strings and nesting are tracked, literals run to a delimiter.
+  const auto skip = [&]() -> bool {
+    if (at >= text.size()) return false;
+    if (text[at] == '"') {
+      for (++at; at < text.size(); ++at)
+        if (text[at] == '\\')
+          ++at;
+        else if (text[at] == '"')
+          return ++at, true;
+      return false;
+    }
+    if (text[at] == '{' || text[at] == '[') {
+      int depth = 0;
+      for (; at < text.size(); ++at) {
+        const char c = text[at];
+        if (c == '"') {
+          for (++at; at < text.size() && text[at] != '"'; ++at)
+            if (text[at] == '\\') ++at;
+          if (at >= text.size()) return false;
+        } else if (c == '{' || c == '[') {
+          ++depth;
+        } else if ((c == '}' || c == ']') && --depth == 0) {
+          return ++at, true;
+        }
+      }
+      return false;
+    }
+    while (at < text.size() && text[at] != ',' && text[at] != '}' && text[at] != ' ') ++at;
+    return true;
+  };
+  bool has_id = false;
+  space();
+  if (at >= text.size() || text[at++] != '{') return false;
+  for (;;) {
+    space();
+    if (at >= text.size() || text[at] != '"') return false;
+    const size_t key_start = ++at;
+    while (at < text.size() && text[at] != '"' && text[at] != '\\') ++at;
+    if (at >= text.size() || text[at] != '"') return false;
+    const auto key = text.substr(key_start, at - key_start);
+    ++at;
+    space();
+    if (at >= text.size() || text[at++] != ':') return false;
+    space();
+    const size_t value_start = at;
+    if (!skip()) return false;
+    const auto value = text.substr(value_start, at - value_start);
+    if (key == "id") {
+      const auto parsed = std::from_chars(value.data(), value.data() + value.size(), id);
+      if (parsed.ec != std::errc() || parsed.ptr != value.data() + value.size()) return false;
+      has_id = true;
+    } else if (key == "result") {
+      if (value.empty() || value.front() != '{') return false;
+      result = value;
+    } else if (key == "sessionId") {
+      if (value.size() < 2 || value.find('\\') != std::string_view::npos) return false;
+      session = std::string(value.substr(1, value.size() - 2));
+    } else {
+      return false;
+    }
+    space();
+    if (at < text.size() && text[at] == ',') {
+      ++at;
+      continue;
+    }
+    if (at >= text.size() || text[at++] != '}') return false;
+    space();
+    return at == text.size() && has_id && !result.empty();
+  }
+}
+}  // namespace
+
 auto Source::OnDevToolsMessage(CefRefPtr<CefBrowser> browser, const void* message, size_t size)
     -> bool {
   if (auto tab = AdoptedTab(browser)) return tab->OnDevToolsMessage(browser, message, size);
@@ -13,8 +105,22 @@ auto Source::OnDevToolsMessage(CefRefPtr<CefBrowser> browser, const void* messag
     Error("Native protocol message limit exceeded");
     return true;
   }
+  // A command's reply used to be parsed, written back to JSON and parsed again
+  // by its callback, three passes over results that reach 100 KB.
+  if (!raw_replies_.empty()) {
+    int id = 0;
+    std::string session;
+    std::string_view result;
+    if (ScanReply(std::string_view(static_cast<const char*>(message), size), id, session,
+                  result) &&
+        raw_replies_.erase(id)) {
+      ToolResult(id, true, result.data(), result.size(), session);
+      return true;
+    }
+  }
   auto parsed = CefParseJSON(std::string(static_cast<const char*>(message), size), JSON_PARSER_RFC);
   auto data = parsed ? parsed->GetDictionary() : nullptr;
+  if (data && data->GetType("id") == VTYPE_INT) raw_replies_.erase(data->GetInt("id"));
   if (!data) {
     // An actual Inspector reply can contain a JavaScript isolated UTF16
     // scalar that CEF dictionaries cannot represent. Parse a separate
@@ -496,9 +602,97 @@ auto Source::AllocateDevToolsId() -> int {
   return !browser_ || next_devtools_ == std::numeric_limits<int>::max() ? 0 : ++next_devtools_;
 }
 
+// The query engine and the semantic snapshot are 60 KB and 12 KB of script
+// that nearly every locator action and snapshot embeds (with the 8 KB strict
+// mode diagnostics and the snapshot formatters). Sending and compiling them
+// on every call cost about a fifth of a snapshot and half of a locator
+// check. In
+// Source's isolated world, which page script cannot reach, each document
+// gets one copy that cannot be overwritten, and later calls name it. Calls in
+// the main world still carry the source, so a page never sees a new global.
+auto Source::ShareScripts(const std::string& method, Dict params, const std::string& session)
+    -> Dict {
+  struct Script {
+    const char* name;
+    std::string_view source;
+  };
+  static constexpr Script kScripts[] = {
+      {"__suitecutDomQuery", kSuiteCutDomQuery},
+      {"__suitecutSemanticSnapshot", kSuiteCutDOMSemanticSnapshot},
+      {"__suitecutAriaJSON", kSuiteCutNativeAriaJSON},
+      {"__suitecutAriaFormatter", kSuiteCutNativeAriaFormatter},
+      {"__suitecutQueryDiagnostics", kSuiteCutQueryDiagnostics}};
+  const char* field = method == "Runtime.evaluate" ? "expression" : "functionDeclaration";
+  if (sharing_scripts_ || params->GetType(field) != VTYPE_STRING) return params;
+  auto text = params->GetString(field).ToString();
+  if (text.size() < 4096) return params;
+  int context = 0;
+  if (method == "Runtime.evaluate") {
+    if (params->GetType("contextId") == VTYPE_INT) context = params->GetInt("contextId");
+  } else if (params->GetType("executionContextId") == VTYPE_INT) {
+    context = params->GetInt("executionContextId");
+  } else if (params->GetType("objectId") == VTYPE_STRING) {
+    // V8 writes a remote object ID as isolate.context.object.
+    const auto object = params->GetString("objectId").ToString();
+    const auto first = object.find('.');
+    const auto second = first == std::string::npos ? first : object.find('.', first + 1);
+    if (second != std::string::npos)
+      std::from_chars(object.data() + first + 1, object.data() + second, context);
+  }
+  if (context <= 0) return params;
+  const std::string* identity = nullptr;
+  for (const auto& [frame, state] : frame_states_)
+    if (state.utility_context == context && state.session == session &&
+        !state.utility_identity.empty()) {
+      identity = &state.utility_identity;
+      break;
+    }
+  if (!identity) return params;
+  bool changed = false;
+  for (const auto& script : kScripts) {
+    auto at = text.find(script.source);
+    if (at == std::string::npos) continue;
+    const auto key = *identity + '\x1f' + script.name;
+    if (!shared_scripts_.contains(key)) {
+      // Commands on one session run in order, so the copy exists before the
+      // command that names it.
+      auto install = CefDictionaryValue::Create();
+      install->SetInt("contextId", context);
+      install->SetString("expression",
+                         "Object.prototype.hasOwnProperty.call(globalThis,'" +
+                             std::string(script.name) + "')||Object.defineProperty(globalThis,'" +
+                             script.name + "',{value:(" + std::string(script.source) + ")});0");
+      sharing_scripts_ = true;
+      const bool sent = SendDevTools("Runtime.evaluate", install, session) != 0;
+      sharing_scripts_ = false;
+      if (!sent) continue;
+      if (shared_scripts_.size() >= 4096) shared_scripts_.clear();
+      shared_scripts_.insert(key);
+    }
+    const std::string name = script.name;
+    do {
+      text.replace(at, script.source.size(), name);
+      at = text.find(script.source, at + name.size());
+    } while (at != std::string::npos);
+    changed = true;
+  }
+  if (!changed) return params;
+  auto shared = params->Copy(false);
+  shared->SetString(field, text);
+  return shared;
+}
+
 auto Source::SubmitDevTools(int id, const std::string& method, Dict params,
                             const std::string& session) -> bool {
   if (!id || !browser_) return false;
+  if (params && (method == "Runtime.evaluate" || method == "Runtime.callFunctionOn"))
+    params = ShareScripts(method, params, session);
+  // Their callbacks only parse the result, so it reaches them as sent.
+  if (method.starts_with("Runtime.") || method.starts_with("DOM.") ||
+      method.starts_with("Accessibility.") || method == "Page.captureScreenshot") {
+    if (raw_replies_.size() >= 65536) raw_replies_.clear();
+    raw_replies_.insert(id);
+  }
   const bool initial_tree = native_frame_debugger_trees_.Contains(id);
   const auto tree_attachment = native_frame_debugger_trees_.ExpectedAttachment(id, session);
   auto message = CefDictionaryValue::Create();

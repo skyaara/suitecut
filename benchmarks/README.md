@@ -18,7 +18,8 @@ tools rotates each round, so none always runs first. Every tool runs headless at
 a device scale factor of 1.
 
 **Pages** ([`tasks.mjs`](tasks.mjs)): Hacker News, Wikipedia "Web browser", MDN HTML, BBC
-News and GitHub `microsoft/playwright`. For each page the tool loads it (waiting for the
+News, GitHub `microsoft/playwright`, the Python `asyncio` docs and the React tutorial. For
+each page the tool loads it (waiting for the
 `load` event), waits 1.5 s, then takes 3 snapshots and 3 viewport screenshots. The tables
 use the median call.
 
@@ -33,18 +34,30 @@ use the median call.
     viewport, so it is not a whole-page snapshot.
 - **Screenshot**: a viewport PNG.
 
-**Tasks** ([`tasks.mjs`](tasks.mjs)): eight read-only flows. Five are one or two steps, such
-as opening the comments of the top Hacker News story, or searching Wikipedia and reaching
-the article. Three cross several pages: Wikipedia from Web browser through Google Chrome
-and Chromium to Blink, MDN from HTML through the elements reference to `<a>`, and GitHub
-from microsoft/playwright through Issues to Labels. A step that loads another page waits
-for its URL (`until`) before the next snapshot. Before each step
+**Tasks** ([`tasks.mjs`](tasks.mjs)): eleven read-only flows. Six are one or two steps, such
+as opening the comments of the top Hacker News story, searching Wikipedia and reaching the
+article, or opening `package.json` from a GitHub file list. Five cross several pages:
+
+- Wikipedia from Web browser through Google Chrome and Chromium to Blink
+- MDN from HTML through the elements reference to `<a>`
+- GitHub from microsoft/playwright through Issues to Labels
+- the Python docs through the library reference to `asyncio`
+- the React tutorial through Thinking in React to Adding Interactivity
+
+GitHub and react.dev change pages without loading a new document, as many apps do. A step
+that loads another page waits for its URL (`until`) before the next snapshot. Before each step
 the adapter reads a snapshot and picks the first element whose ARIA role and name match the
 step, then clicks or fills it by the tool's own ref. Every tool gets 5 s per action
 (`ACTION_MS` in [`adapters/common.mjs`](adapters/common.mjs)); a step whose action fails
 takes a new snapshot and tries once more, as an agent would, and counts as a retry. A task
 passes when the page URL reaches the goal within 20 s. Task time runs from navigation to the goal; task tokens add up every
 snapshot read along the way.
+
+**CPU and memory**: while a run goes, [`run.mjs`](run.mjs) samples every process it started
+every 0.5 s with `ps`: the adapter, the browser and all its helper processes, and
+agent-browser's daemon, which detaches from the command that starts it. CPU is the sum of
+each process's CPU time; memory is the peak of their summed resident sizes, which counts
+pages that processes share more than once, for every tool alike.
 
 No LLM is involved: a model would add its own latency, cost and randomness, and the same
 choices are made for every tool. What is measured is what the browser layer costs an agent.

@@ -87,11 +87,14 @@ void InstallReferenceSnapshot(const std::shared_ptr<SnapshotReferenceCapture>& w
     if(done)done();else PublishReferenceSnapshot(work);
   });
 }
-void ReadReferenceSnapshot(const std::shared_ptr<SnapshotReferenceCapture>& work){
+// Reads the capture's elements, or calls empty() when its scope matched
+// nothing yet, in one round trip; a busy page makes each one costly.
+void ReadReferenceSnapshot(const std::shared_ptr<SnapshotReferenceCapture>& work,std::function<void()> empty){
   if(!ReferenceCurrent(work))return;
-  auto params=CefDictionaryValue::Create();params->SetString("objectId",work->capture);params->SetString("functionDeclaration","function(){return this.elements;}");params->SetString("objectGroup","suitecut-automation-"+std::to_string(work->owner));
+  auto params=CefDictionaryValue::Create();params->SetString("objectId",work->capture);params->SetString("functionDeclaration","function(){if(this.scopeCount===0)return null;if(this.scopeCount!==1)throw new Error('Native reference snapshot scope count unavailable');return this.elements;}");params->SetString("objectGroup","suitecut-automation-"+std::to_string(work->owner));
   auto serialization=CefDictionaryValue::Create();serialization->SetString("serialization","deep");serialization->SetInt("maxDepth",1);auto additional=CefDictionaryValue::Create();additional->SetInt("maxNodeDepth",0);serialization->SetDictionary("additionalParameters",additional);params->SetDictionary("serializationOptions",serialization);
-  ReferenceRequest(work,"Runtime.callFunctionOn",params,[this,work](Dict result){
+  ReferenceRequest(work,"Runtime.callFunctionOn",params,[this,work,empty=std::move(empty)](Dict result){
+    if(const auto remote=result->GetDictionary("result");remote&&remote->GetString("subtype")=="null"){empty();return;}
     std::vector<suitecut::SnapshotReferences::Node> nodes;std::string error;
     if(!suitecut::SnapshotReferenceNodes(result,nodes,error)){Complete(work->owner,false,error);return;}
     InstallReferenceSnapshot(work,std::move(nodes));
@@ -113,13 +116,7 @@ void BeginReferenceSnapshot(int id,Dict message){
     const auto document=ReferenceDocument(operation_frames_[id]);
     if(!document){Complete(id,false,"Native reference snapshot document identity unavailable");return;}
     auto work=std::make_shared<SnapshotReferenceCapture>();work->owner=id;work->generation=generation;work->document=*document;work->capture=capture;work->boxes=message->GetBool("accessibilityBoxes");work->json=message->GetString("referenceFormat")=="json";work->depth=message->HasKey("referenceDepth")?message->GetInt("referenceDepth"):-1;
-    auto params=CefDictionaryValue::Create();params->SetString("objectId",capture);params->SetString("functionDeclaration","function(){return this.scopeCount;}");params->SetBool("returnByValue",true);
-    ReferenceRequest(work,"Runtime.callFunctionOn",params,[this,work](Dict result){
-      const auto value=result->GetDictionary("result");
-      if(!value||value->GetType("value")!=VTYPE_INT||(value->GetInt("value")!=0&&value->GetInt("value")!=1)){Complete(work->owner,false,"Native reference snapshot scope count unavailable");return;}
-      if(!value->GetInt("value")){RetryContext(work->owner);return;}
-      ReadReferenceSnapshot(work);
-    });
+    ReadReferenceSnapshot(work,[this,id]{RetryContext(id);});
   });
 }
 #include "snapshot_reference_frames.inc"

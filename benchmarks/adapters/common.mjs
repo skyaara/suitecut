@@ -147,6 +147,7 @@ export async function play(task, tool) {
     for (const step of task.steps) {
       if ('press' in step) {
         await tool.press(step.press)
+        if (step.until) await waitForURL(tool.url, step.until)
         continue
       }
       const target = 'click' in step ? step.click : step.fill

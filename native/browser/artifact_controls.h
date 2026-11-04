@@ -606,6 +606,15 @@ class SuiteCutArtifactController {
     if(screenshot&&assertion_captured_&&assertion_captured_(owner,token,ok,json)){Pump();return;}
     const auto current = jobs_.find(owner);
     if (current == jobs_.end() || current->second.token != token) { Pump(); return; }
+    // Chromium's reply is already the {"data":"<base64>"} the host reads, and
+    // base64 needs no escapes; parsing and rewriting a large PNG cost more
+    // than encoding it.
+    constexpr std::string_view prefix = "{\"data\":\"";
+    if (ok && json.size() > prefix.size() + 2 && json.starts_with(prefix) && json.ends_with("\"}") &&
+        json.size() - prefix.size() - 2 <= ((128 * 1048576 + 2) / 3) * 4 &&
+        json.find_first_not_of("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=", prefix.size()) == json.size() - 2) {
+      finish_(owner, true, "", json); return;
+    }
     auto result = Parse(json);
     if (!ok) {
       const auto error = result && result->GetType("message") == VTYPE_STRING

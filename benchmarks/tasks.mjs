@@ -10,6 +10,8 @@ export const sites = [
   'https://developer.mozilla.org/en-US/docs/Web/HTML',
   'https://www.bbc.com/news',
   'https://github.com/microsoft/playwright',
+  'https://docs.python.org/3/library/asyncio.html',
+  'https://react.dev/learn',
 ]
 
 /**
@@ -87,5 +89,33 @@ export const tasks = [
       { click: { role: 'link', name: '^Labels$' } },
     ],
     done: 'github\\.com/microsoft/playwright/labels',
+  },
+  {
+    name: 'python-docs-hops',
+    goal: 'From the Python docs, open the library reference, then asyncio',
+    url: 'https://docs.python.org/3/',
+    steps: [
+      { click: { role: 'link', name: '^Library reference$' }, until: 'library/(index\\.html)?$' },
+      { click: { role: 'link', name: '^asyncio — ' } },
+    ],
+    done: 'docs\\.python\\.org/3/library/asyncio\\.html',
+  },
+  // react.dev and GitHub navigate in the page, without loading a new document.
+  {
+    name: 'react-hops',
+    goal: 'From the React tutorial, open Thinking in React, then Adding Interactivity',
+    url: 'https://react.dev/learn',
+    steps: [
+      { click: { role: 'link', name: '^Thinking in React$' }, until: 'learn/thinking-in-react' },
+      { click: { role: 'link', name: '^Adding Interactivity$' } },
+    ],
+    done: 'react\\.dev/learn/adding-interactivity',
+  },
+  {
+    name: 'github-open-file',
+    goal: 'Open package.json in the microsoft/playwright file list',
+    url: 'https://github.com/microsoft/playwright',
+    steps: [{ click: { role: 'link', name: '^package\\.json(, \\(File\\))?$' } }],
+    done: 'github\\.com/microsoft/playwright/blob/[^/]+/package\\.json$',
   },
 ]

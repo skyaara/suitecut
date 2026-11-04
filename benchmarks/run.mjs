@@ -3,12 +3,13 @@
 //   node benchmarks/run.mjs [--rounds 3] [--tools suitecut,agent-browser,browser-use]
 // Each round starts every tool cold (new browser, new profile) and rotates the
 // order so no tool always runs first. Results land in benchmarks/results/.
-import { execFileSync, spawnSync } from 'node:child_process'
+import { execFileSync, spawn, spawnSync } from 'node:child_process'
 import console from 'node:console'
 import { mkdirSync, readFileSync, statfsSync, writeFileSync } from 'node:fs'
 import { cpus, loadavg, release, totalmem } from 'node:os'
 import { dirname, join } from 'node:path'
 import process from 'node:process'
+import { clearInterval, clearTimeout, setInterval, setTimeout } from 'node:timers'
 import { fileURLToPath } from 'node:url'
 import { parseArgs } from 'node:util'
 
@@ -85,6 +86,81 @@ const environment = {
     ['--version'],
   ),
 }
+/**
+ * Every process with its parent, resident memory (KiB), CPU time (s) and command.
+ * @returns {{ pid: number, ppid: number, rss: number, cpu: number, command: string }[]} The table.
+ */
+const processes = () =>
+  (quiet('ps', ['-A', '-o', 'pid=,ppid=,rss=,time=,command=']) ?? '')
+    .split('\n')
+    .flatMap((line) => {
+      const match =
+        /^\s*(\d+)\s+(\d+)\s+(\d+)\s+(?:(\d+)-)?(?:(\d+):)?(\d+):([\d.]+)\s+(.*)$/u.exec(line)
+      if (!match) return []
+      const [, pid, ppid, rss, days, hours, minutes, seconds, command] = match
+      const cpu =
+        Number(days ?? 0) * 86400 +
+        Number(hours ?? 0) * 3600 +
+        Number(minutes) * 60 +
+        Number(seconds)
+      return [
+        { pid: Number(pid), ppid: Number(ppid), rss: Number(rss), cpu, command: command ?? '' },
+      ]
+    })
+/**
+ * Runs one adapter while sampling every process it starts, including
+ * agent-browser's daemon, which detaches from its caller. CPU time sums each
+ * process's last sample; memory is the peak of the summed resident sizes.
+ * @param {string} command The adapter program.
+ * @param {string[]} args Its arguments.
+ * @returns {Promise<{ stdout: string, stderr: string, cpuSeconds: number, peakMemoryMB: number }>} Its output and footprint.
+ */
+function profile(command, args) {
+  const before = new Set(processes().map((row) => row.pid))
+  const child = spawn(command, args, { stdio: ['ignore', 'pipe', 'pipe'] })
+  let stdout = ''
+  let stderr = ''
+  child.stdout.on('data', (chunk) => (stdout += String(chunk)))
+  child.stderr.on('data', (chunk) => (stderr += String(chunk)))
+  /** @type {Map<number, number>} */
+  const cpu = new Map()
+  let peak = 0
+  const sample = () => {
+    const table = processes()
+    const roots = new Set([child.pid ?? -1])
+    for (const row of table)
+      if (!before.has(row.pid) && row.ppid === 1 && row.command.includes('agent-browser'))
+        roots.add(row.pid)
+    /** @type {Map<number, number[]>} */
+    const children = new Map()
+    for (const row of table) children.set(row.ppid, [...(children.get(row.ppid) ?? []), row.pid])
+    const owned = new Set()
+    const stack = [...roots]
+    while (stack.length) {
+      const pid = stack.pop() ?? -1
+      if (owned.has(pid)) continue
+      owned.add(pid)
+      stack.push(...(children.get(pid) ?? []))
+    }
+    let rss = 0
+    for (const row of table)
+      if (owned.has(row.pid)) {
+        rss += row.rss
+        cpu.set(row.pid, Math.max(cpu.get(row.pid) ?? 0, row.cpu))
+      }
+    peak = Math.max(peak, rss)
+  }
+  const timer = setInterval(sample, 500)
+  const limit = setTimeout(() => child.kill('SIGKILL'), 900000)
+  return new Promise((done) => {
+    child.on('close', () => {
+      clearInterval(timer)
+      clearTimeout(limit)
+      const cpuSeconds = [...cpu.values()].reduce((total, value) => total + value, 0)
+      done({ stdout, stderr, cpuSeconds, peakMemoryMB: peak / 1024 })
+    })
+  })
+}
 /** @type {BenchRun[]} */
 const runs = []
 for (let round = 0; round < rounds; round++) {
@@ -100,11 +176,7 @@ for (let round = 0; round < rounds; round++) {
     )
     const [command, args] = adapter
     const load = loadavg()[0] ?? 0
-    const child = spawnSync(command, [...args, config], {
-      encoding: 'utf8',
-      timeout: 900000,
-      maxBuffer: 1 << 26,
-    })
+    const child = await profile(command, [...args, config])
     const line = child.stdout
       .trim()
       .split('\n')
@@ -118,6 +190,8 @@ for (let round = 0; round < rounds; round++) {
         })
     run.round = round
     run.load1 = load
+    run.cpuSeconds = child.cpuSeconds
+    run.peakMemoryMB = child.peakMemoryMB
     runs.push(run)
     const passed = run.tasks.filter((task) => task.ok).length
     const status = run.error

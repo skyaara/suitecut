@@ -16,6 +16,8 @@ interface Row {
   retries?: number
   taskMs?: number
   taskTokens: number
+  cpuSeconds?: number
+  peakMemoryMB?: number
   perSite: Record<
     string,
     {
@@ -48,6 +50,7 @@ const best = (key: keyof Row, lower = true) => {
 const mark = (key: keyof Row, value: unknown, lower = true) =>
   value === best(key, lower) ? 'accent' : ''
 const hosts = Object.keys(tools[names[0] ?? '']?.perSite ?? {})
+const hops = tasks.filter((task) => task.steps.some((step) => 'until' in step)).length
 const command = 'node benchmarks/run.mjs --rounds 3'
 // Every column suitecut does not win, worded from the data, so the page never hides one.
 const columns: [keyof Row, string, string][] = [
@@ -57,6 +60,8 @@ const columns: [keyof Row, string, string][] = [
   ['screenshotMs', 'Screenshot', 'ms'],
   ['taskMs', 'Task time', 'ms'],
   ['taskTokens', 'Task tokens', 'tokens'],
+  ['cpuSeconds', 'CPU per run', 's'],
+  ['peakMemoryMB', 'Peak memory', 'MB'],
 ]
 const ours = tools.suitecut
 const behind = columns.flatMap(([key, label, unit]) => {
@@ -76,8 +81,9 @@ const behind = columns.flatMap(([key, label, unit]) => {
 
 <h2 id="agents">suitecut, agent-browser and browser-use</h2>
 <p>
-  The same {hosts.length} public pages and {tasks.length} read-only tasks, three of them across several
-  pages, run by each tool from a cold start. Every script and every raw result is in
+  The same {hosts.length} public pages and {tasks.length} read-only tasks, {hops} of them across several
+  pages, run by each tool from a cold start. While each run goes, every process it starts is sampled for
+  CPU time and memory. Every script and every raw result is in
   <a href={repo}>benchmarks/</a>, and the whole run is one command.
 </p>
 <p class="muted">
@@ -102,6 +108,8 @@ const behind = columns.flatMap(([key, label, unit]) => {
         <th>Tasks passed</th>
         <th>Task time</th>
         <th>Task tokens, {tasks.length} tasks</th>
+        <th>CPU per run</th>
+        <th>Peak memory</th>
       </tr>
     </thead>
     <tbody>
@@ -121,6 +129,8 @@ const behind = columns.flatMap(([key, label, unit]) => {
               </td>
               <td class={mark('taskMs', row.taskMs)}>{seconds(row.taskMs)}</td>
               <td class={mark('taskTokens', row.taskTokens)}>{show(row.taskTokens)}</td>
+              <td class={mark('cpuSeconds', row.cpuSeconds)}>{show(row.cpuSeconds)} s</td>
+              <td class={mark('peakMemoryMB', row.peakMemoryMB)}>{show(row.peakMemoryMB)} MB</td>
             </tr>
           )
         })
@@ -130,6 +140,9 @@ const behind = columns.flatMap(([key, label, unit]) => {
 </div>
 <p class="muted">
   Medians. Bold is the best in each column. Tokens are characters ÷ 4 of the text an agent reads.
+  CPU is the total for one run of every page and task, across the browser, its renderers and the
+  driver; memory is the peak of their summed resident sizes, which counts shared pages more than
+  once.
 </p>
 {
   behind.length > 0 && (

@@ -66,9 +66,14 @@ class Harness final:public CefBaseRefCounted {
  }
  bool ReferenceTemporaryGroups(int){return true;}
  void CaptureDOMSemantic(int,Dict config,std::function<void(const std::string&,const std::string&)>,std::function<void(const std::string&)>done){captures.push_back({config,std::move(done)});}
- void ReadReferenceSnapshot(const std::shared_ptr<SnapshotReferenceCapture>& work){
-  const int backend=work->document.frame=="child"?20:30;
-  work->ticket=refs.Begin(work->owner,work->generation,work->document,{{backend,1}},1000,now);assert(work->ticket&&refs.Dispatched(work->ticket));install.push_back(work);
+ // The elements read: Count(0) answers a scope that matched nothing yet,
+ // Count() the elements.
+ void ReadReferenceSnapshot(const std::shared_ptr<SnapshotReferenceCapture>& work,std::function<void()> empty){
+  ReferenceRequest(work,"Runtime.callFunctionOn",CefDictionaryValue::Create(),[this,work,empty=std::move(empty)](Dict result){
+   if(!result->GetDictionary("result")->GetInt("value")){empty();return;}
+   const int backend=work->document.frame=="child"?20:30;
+   work->ticket=refs.Begin(work->owner,work->generation,work->document,{{backend,1}},1000,now);assert(work->ticket&&refs.Dispatched(work->ticket));install.push_back(work);
+  });
  }
  void Installed(){assert(!install.empty());auto work=install.front();install.erase(install.begin());const bool retained=refs.Installed(work->ticket,true,"actual-child-retained-array",now);if(!ReferenceCurrent(work))return;assert(retained);auto done=std::move(work->installed_done);done();}
  void Ack(Dict result){assert(!calls.empty());auto call=std::move(calls.front());calls.erase(calls.begin());if(ReferenceCurrent(call.work))call.done(result);call.borrow.reset();}

@@ -245,6 +245,33 @@ export const resilience = [
     assert.equal(await handle.isVisible(), false)
     h.check('A ref or handle to a removed link reports it is gone instead of a TypeError')
   }),
+  test('resilience.shared-scripts', ['resilience', 'input'], async (h) => {
+    // The query engine and snapshot scripts are installed once per document
+    // in suitecut's isolated world. A new document and an iframe each get
+    // their own copy, and the page's own world never sees them.
+    const { page } = await h.page()
+    const names = `['__suitecutDomQuery','__suitecutSemanticSnapshot','__suitecutAriaJSON','__suitecutAriaFormatter','__suitecutQueryDiagnostics'].filter(name=>name in globalThis)`
+    for (const round of [1, 2]) {
+      await page.goto(h.fixture.origin + '/app')
+      await page.evaluate(
+        `document.body.innerHTML='<button id="main" onclick="this.textContent=\\'main ${round}\\'">Main</button><iframe srcdoc="<button onclick=&quot;this.textContent=\\'frame ${round}\\'&quot;>Inner</button>"></iframe>'`,
+      )
+      await page.frameLocator('iframe').getByRole('button', { name: 'Inner' }).waitFor()
+      const snapshot = await page.ariaSnapshot({ mode: 'ai' })
+      const inner = snapshot.match(/- button "Inner" \[ref=([^\]]+)\]/u)?.[1]
+      assert(inner, `round ${round}: the iframe button is missing from the snapshot`)
+      await page.getByRef(inner).click()
+      await page.getByRole('button', { name: 'Main' }).click()
+      assert.equal(await page.locator('#main').textContent(), `main ${round}`)
+      assert.equal(
+        await page.frameLocator('iframe').locator('button').textContent(),
+        `frame ${round}`,
+      )
+      assert.deepEqual(await page.evaluate(names), [])
+      for (const frame of page.frames()) assert.deepEqual(await frame.evaluate(names), [])
+    }
+    h.check('Shared scripts work across documents and frames and stay out of the page world')
+  }),
   test('resilience.covered-click-fallback', ['resilience', 'input'], async (h) => {
     // browser-use clicks a covered element with element.click(); suitecut does
     // so only when asked, after a normal click has waited fallbackAfter ms.

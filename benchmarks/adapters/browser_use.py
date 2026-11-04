@@ -119,6 +119,8 @@ async def main():
                 for step in task['steps']:
                     if 'press' in step:
                         await dispatch(SendKeysEvent(keys=step['press']))
+                        if step.get('until'):
+                            await wait_for_url(step['until'])
                         continue
                     target = step.get('click') or step.get('fill')
                     role = re.compile(f"^(?:{target['role']})$")

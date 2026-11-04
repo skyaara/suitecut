@@ -13,6 +13,21 @@
   `<input type="file">` elements; a short DOM walk now answers that first,
   without sending the 70 KB snapshot script. On the five benchmark pages the
   median snapshot went from 287 to 140 ms.
+- Send the query engine, the snapshot walker and the snapshot formatters to
+  each document once instead of with every call. Every locator action and
+  snapshot used to carry 60 to 150 KB of script, which the page compiled
+  again each time. They now live in suitecut's isolated world, where page
+  script cannot reach or change them; calls in the page's own world still carry
+  the source, so a page never sees a new global. Snapshots are about a fifth
+  faster and locator checks two to three times as fast.
+- Take a snapshot in seven round trips to the page instead of nine: the check
+  for file inputs runs inside the snapshot call, and the elements are read
+  with the scope count. A page that is still busy after a navigation answers
+  each round trip late, so this matters most right after a click.
+- Hand Runtime, DOM, Accessibility and screenshot replies to their callbacks as
+  Chromium sent them. Each used to be parsed, written back to JSON and parsed
+  again on the browser's main thread; a snapshot now costs the browser process
+  about 15 ms of CPU instead of 36 ms.
 - Make viewport screenshots about 2.5 times as fast, with the same pixels.
   Fonts and two animation frames are awaited only when animations are
   disabled or a style is injected, since Chromium renders a fresh frame for
@@ -61,10 +76,11 @@
   navigates away and one that throws are captured as they are, and fonts are
   awaited in the main document only.
 - Add `benchmarks/`: one command, `node benchmarks/run.mjs`, that measures
-  suitecut, agent-browser and browser-use on the same five public pages and
-  eight read-only tasks, three of them across several pages (launch, snapshot
-  speed and tokens, screenshot speed, whether each task reaches its goal, and
-  why any step needed a retry). Every script and every raw result
+  suitecut, agent-browser and browser-use on the same seven public pages and
+  eleven read-only tasks, five of them across several pages (launch, snapshot
+  speed and tokens, screenshot speed, whether each task reaches its goal, why
+  any step needed a retry, and the CPU time and peak memory of every process
+  each run starts). Every script and every raw result
   is in the repository.
 - Make AI snapshots faster and smaller. A 25,000-element page takes 3-5 s
   instead of 17.6 s, 100,000 elements finish instead of timing out, and a

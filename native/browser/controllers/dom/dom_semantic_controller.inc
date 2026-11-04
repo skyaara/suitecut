@@ -1,11 +1,22 @@
 // SPDX-License-Identifier: MIT
 std::string DOMSemanticQuote(const std::string& json){auto value=CefValue::Create();value->SetString(json);return CefWriteJSON(value,JSON_WRITER_DEFAULT).ToString();}
+// Most pages have no file input, and running the whole semantic snapshot
+// just to learn that doubled the cost of a snapshot. So the snapshot call
+// first runs a plain shadow-including walk; only when it finds one does the
+// call return false, and the exact walk that picks the visible ones runs, as
+// before. Checking inside the same call saves a round trip, which waits on the
+// page's main thread.
+static constexpr char kDOMSemanticFileProbe[]="if(probe&&this.length){const stack=[this[0]];"
+    "while(stack.length){const node=stack.pop();if(node instanceof HTMLInputElement&&node.type==='file')return false;"
+    "if(node.shadowRoot)stack.push(node.shadowRoot);const children=node.children;if(children)for(let i=children.length-1;i>=0;--i)stack.push(children[i]);}}";
 struct DOMSemanticControls {
   std::shared_ptr<AXCapture> capture;
   Dict message;
   std::string files;
   std::vector<std::string> nodes;
   size_t next=0;
+  // Whether the next Finish first checks for file inputs (see below).
+  bool probe=false;
   CefRefPtr<CefListValue> forests=CefListValue::Create();
   std::function<void(const std::string&,const std::string&)> done;
   std::function<void(const std::string&)> reference_done;
@@ -16,13 +27,15 @@ void DOMSemanticFinish(const std::shared_ptr<DOMSemanticControls>& state){
   if(!suitecut::DevToolsLosslessJSON(forest_value,native)){AXError(work,"Native UA control metadata exceeds 64 KiB");return;}
   if(native.size()>65536){AXError(work,"Native UA control metadata exceeds 64 KiB");return;}
   auto params=CefDictionaryValue::Create();params->SetString("objectId",work->array);params->SetBool("returnByValue",true);params->SetString("objectGroup","suitecut-automation-"+std::to_string(work->owner));
-  params->SetString("functionDeclaration","function(files){const nativeControls=new WeakMap(),forests=JSON.parse("+DOMSemanticQuote(native)+");for(let i=0;i<files.length;i++)nativeControls.set(files[i],forests[i]);return JSON.stringify(this.length?("+std::string(kSuiteCutDOMSemanticSnapshot)+")(this[0],("+std::string(kSuiteCutDomQuery)+"),{boxes:"+(state->message->GetBool("accessibilityBoxes")?"true":"false")+",nativeControls}):[]);}");
+  params->SetString("functionDeclaration","function(files,probe){"+std::string(kDOMSemanticFileProbe)+"const nativeControls=new WeakMap(),forests=JSON.parse("+DOMSemanticQuote(native)+");for(let i=0;i<files.length;i++)nativeControls.set(files[i],forests[i]);return JSON.stringify(this.length?("+std::string(kSuiteCutDOMSemanticSnapshot)+")(this[0],("+std::string(kSuiteCutDomQuery)+"),{boxes:"+(state->message->GetBool("accessibilityBoxes")?"true":"false")+",nativeControls}):[]);}");
   if(state->reference_done){
     params->SetBool("returnByValue",false);
-    params->SetString("functionDeclaration","function(files){const nativeControls=new WeakMap(),forests=JSON.parse("+DOMSemanticQuote(native)+");for(let i=0;i<files.length;i++)nativeControls.set(files[i],forests[i]);const capture=this.length?("+std::string(kSuiteCutDOMSemanticSnapshot)+")(this[0],("+std::string(kSuiteCutDomQuery)+"),{captureReferences:true,ai:"+(state->message->GetString("referenceFormat")=="json"?"true":"false")+",boxes:"+(state->message->GetBool("accessibilityBoxes")?"true":"false")+",nativeControls}):{forest:[],elements:[],entries:[]};capture.scopeCount=this.length;return capture;}");
+    params->SetString("functionDeclaration","function(files,probe){"+std::string(kDOMSemanticFileProbe)+"const nativeControls=new WeakMap(),forests=JSON.parse("+DOMSemanticQuote(native)+");for(let i=0;i<files.length;i++)nativeControls.set(files[i],forests[i]);const capture=this.length?("+std::string(kSuiteCutDOMSemanticSnapshot)+")(this[0],("+std::string(kSuiteCutDomQuery)+"),{captureReferences:true,ai:"+(state->message->GetString("referenceFormat")=="json"?"true":"false")+",boxes:"+(state->message->GetBool("accessibilityBoxes")?"true":"false")+",nativeControls}):{forest:[],elements:[],entries:[]};capture.scopeCount=this.length;return capture;}");
   }
-  auto args=CefListValue::Create();auto arg=CefDictionaryValue::Create();if(state->files.empty())arg->SetList("value",CefListValue::Create());else arg->SetString("objectId",state->files);args->SetDictionary(0,arg);params->SetList("arguments",args);
-  AXRequest(work,"Runtime.callFunctionOn",params,[this,state,work](Dict result){
+  auto args=CefListValue::Create();auto arg=CefDictionaryValue::Create();if(state->files.empty())arg->SetList("value",CefListValue::Create());else arg->SetString("objectId",state->files);args->SetDictionary(0,arg);
+  auto probe=CefDictionaryValue::Create();probe->SetBool("value",std::exchange(state->probe,false));args->SetDictionary(1,probe);params->SetList("arguments",args);
+  AXRequest(work,"Runtime.callFunctionOn",params,[this,state,work,probed=probe->GetBool("value")](Dict result){
+    if(const auto value=result->GetDictionary("result");probed&&value&&value->GetString("type")=="boolean"){DOMSemanticCollectFileControls(state);return;}
     if(state->reference_done){
       const auto value=result->GetDictionary("result");
       if(!value||value->GetString("type")!="object"||value->GetType("objectId")!=VTYPE_STRING||value->GetString("objectId").empty()){AXError(work,"Native semantic reference capture unavailable");return;}
@@ -53,22 +66,7 @@ void DOMSemanticReadControl(const std::shared_ptr<DOMSemanticControls>& state){
   });
 }
 void DOMSemanticCollectControls(const std::shared_ptr<DOMSemanticControls>& state){
-  // Most pages have no file input, and running the whole semantic snapshot
-  // just to learn that doubled the cost of a snapshot. A plain
-  // shadow-including walk answers it in a few ms, without sending the 70 KB
-  // snapshot source; only a page with one runs the exact walk, which picks the
-  // visible ones, as before.
-  const auto work=state->capture;auto check=CefDictionaryValue::Create();check->SetString("objectId",work->array);check->SetBool("returnByValue",true);
-  check->SetString("functionDeclaration","function(){if(!this.length)return false;const stack=[this[0]];"
-      "while(stack.length){const node=stack.pop();if(node instanceof HTMLInputElement&&node.type==='file')return true;"
-      "if(node.shadowRoot)stack.push(node.shadowRoot);const children=node.children;if(children)for(let i=children.length-1;i>=0;--i)stack.push(children[i]);}"
-      "return false;}");
-  AXRequest(work,"Runtime.callFunctionOn",check,[this,state,work](Dict result){
-    const auto remote=result->GetDictionary("result");
-    if(!remote||remote->GetType("value")!=VTYPE_BOOL){AXError(work,"Native UA control check unavailable");return;}
-    if(!remote->GetBool("value")){DOMSemanticFinish(state);return;}
-    DOMSemanticCollectFileControls(state);
-  });
+  state->probe=true;DOMSemanticFinish(state);
 }
 void DOMSemanticCollectFileControls(const std::shared_ptr<DOMSemanticControls>& state){
   const auto work=state->capture;auto params=CefDictionaryValue::Create();params->SetString("objectId",work->array);params->SetString("objectGroup","suitecut-automation-"+std::to_string(work->owner));

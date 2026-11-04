@@ -10,10 +10,10 @@ export const Task = z.object({
   steps: z.array(
     z.union([
       // `until`: wait for the URL to match before the next step, after a click
-      // that loads another page.
+      // or key press that loads another page.
       z.object({ click: Target, until: z.string().optional() }),
       z.object({ fill: Target, text: z.string() }),
-      z.object({ press: z.string() }),
+      z.object({ press: z.string(), until: z.string().optional() }),
     ]),
   ),
   done: z.string(),
@@ -57,6 +57,10 @@ export const Run = z.object({
   error: z.string().optional(),
   round: z.number().optional(),
   load1: z.number().optional(),
+  /** CPU time of every process the run started, sampled every 0.5 s. */
+  cpuSeconds: z.number().optional(),
+  /** Peak of their summed resident memory. */
+  peakMemoryMB: z.number().optional(),
 })
 export const Results = z.object({
   environment: z.record(z.string(), z.union([z.string(), z.number()]).optional()),

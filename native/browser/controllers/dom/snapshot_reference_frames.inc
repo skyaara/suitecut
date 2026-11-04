@@ -180,16 +180,11 @@ void ReferenceFramesReadChild(const std::shared_ptr<SnapshotReferenceFrameBatch>
     const auto batch=weak.lock();if(!batch||!ReferenceFrameLive(batch,index))return;
     if(!ReferenceTemporaryGroups(batch->owner)){Complete(batch->owner,false,"Native aggregate snapshot temporary-group ownership unavailable");return;}
     const auto work=batch->frames[index].work;work->capture=capture;
-    auto params=CefDictionaryValue::Create();params->SetString("objectId",capture);params->SetString("functionDeclaration","function(){return this.scopeCount;}");params->SetBool("returnByValue",true);
-    ReferenceRequest(work,"Runtime.callFunctionOn",params,[this,weak,index](Dict result){
+    // A loading document can temporarily have no body. Reobserve only this
+    // same pinned document under the unchanged original native deadline.
+    ReadReferenceSnapshot(work,[this,weak,index]{
       const auto batch=weak.lock();if(!batch||!ReferenceFrameLive(batch,index))return;
-      const auto value=result->GetDictionary("result");
-      if(!value||value->GetType("value")!=VTYPE_INT||value->GetInt("value")<0||value->GetInt("value")>1){Complete(batch->owner,false,"Native aggregate snapshot child scope unavailable");return;}
-      // A loading document can temporarily have no body. Reobserve only this
-      // same pinned document under the unchanged original native deadline.
-      if(!value->GetInt("value")){
-        CefPostDelayedTask(TID_UI,new Task([self=CefRefPtr<Source>(this),weak,index]{if(const auto batch=weak.lock())self->ReferenceFramesReadChild(batch,index);}),10);return;}
-      ReadReferenceSnapshot(batch->frames[index].work);
+      CefPostDelayedTask(TID_UI,new Task([self=CefRefPtr<Source>(this),weak,index]{if(const auto batch=weak.lock())self->ReferenceFramesReadChild(batch,index);}),10);
     });
   });
 }
