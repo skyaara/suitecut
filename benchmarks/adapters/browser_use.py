@@ -18,6 +18,8 @@ from browser_use.browser.events import ClickElementEvent, SendKeysEvent, TypeTex
 from browser_use.browser.profile import BrowserProfile
 from browser_use.browser.session import BrowserSession
 
+# RETRY_MS in common.mjs: how long a step waits before its retry.
+RETRY_MS = 500
 # ACTION_MS in common.mjs: how long one action may take before the step retries.
 ACTION_MS = 5000
 
@@ -152,6 +154,7 @@ async def main():
                                 raise
                             entry['retries'] += 1
                             entry['retryErrors'].append(str(error).split('\n')[0])
+                            await asyncio.sleep(RETRY_MS / 1000)
                 await wait_for_url(task['done'])
                 entry['ok'] = True
             except Exception as error:

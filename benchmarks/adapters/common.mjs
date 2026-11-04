@@ -17,6 +17,11 @@ import { Config } from '../schema.mjs'
  */
 /** How long any tool may take on one click, fill or key press before the step retries. */
 export const ACTION_MS = 5000
+/**
+ * How long a step waits before its retry, as an agent that saw a page still
+ * loading would wait before looking again.
+ */
+export const RETRY_MS = 500
 export const now = () => performance.now()
 
 /**
@@ -170,6 +175,7 @@ export async function play(task, tool) {
           if (attempt > 0) throw error
           result.retries++
           result.retryErrors.push(message(error).split('\n')[0] ?? '')
+          await delay(RETRY_MS)
         }
       }
     }

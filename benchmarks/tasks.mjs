@@ -92,13 +92,13 @@ export const tasks = [
   },
   {
     name: 'python-docs-hops',
-    goal: 'From the Python docs, open the library reference, then asyncio',
+    goal: 'From the Python docs, open the library reference, then the re module',
     url: 'https://docs.python.org/3/',
     steps: [
       { click: { role: 'link', name: '^Library reference$' }, until: 'library/(index\\.html)?$' },
-      { click: { role: 'link', name: '^asyncio — ' } },
+      { click: { role: 'link', name: '^re — ' } },
     ],
-    done: 'docs\\.python\\.org/3/library/asyncio\\.html',
+    done: 'docs\\.python\\.org/3/library/re\\.html',
   },
   // react.dev and GitHub navigate in the page, without loading a new document.
   {

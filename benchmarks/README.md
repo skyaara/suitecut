@@ -41,7 +41,7 @@ article, or opening `package.json` from a GitHub file list. Five cross several p
 - Wikipedia from Web browser through Google Chrome and Chromium to Blink
 - MDN from HTML through the elements reference to `<a>`
 - GitHub from microsoft/playwright through Issues to Labels
-- the Python docs through the library reference to `asyncio`
+- the Python docs through the library reference to `re`
 - the React tutorial through Thinking in React to Adding Interactivity
 
 GitHub and react.dev change pages without loading a new document, as many apps do. A step
@@ -49,7 +49,8 @@ that loads another page waits for its URL (`until`) before the next snapshot. Be
 the adapter reads a snapshot and picks the first element whose ARIA role and name match the
 step, then clicks or fills it by the tool's own ref. Every tool gets 5 s per action
 (`ACTION_MS` in [`adapters/common.mjs`](adapters/common.mjs)); a step whose action fails
-takes a new snapshot and tries once more, as an agent would, and counts as a retry. A task
+waits 0.5 s (`RETRY_MS`), takes a new snapshot and tries once more, as an agent that saw a
+page still loading would, and counts as a retry. A task
 passes when the page URL reaches the goal within 20 s. Task time runs from navigation to the goal; task tokens add up every
 snapshot read along the way.
 
@@ -66,6 +67,8 @@ choices are made for every tool. What is measured is what the browser layer cost
 
 - Every tool gets the same pages, tasks, viewport and timeouts, and only the role and name it
   shows in its own snapshot.
+- Every element a task clicks is on the first screen, because browser-use lists only the
+  elements near the viewport, and scrolling is not what the tasks measure.
 - browser-use runs with its default extensions off, one of which hides cookie banners, so all
   tools load the same page.
 - agent-browser times include starting its CLI for each command, as an agent calls it.
