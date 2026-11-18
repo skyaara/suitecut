@@ -18,4 +18,11 @@ Json session_request(const SessionOptions&,const Json& request,bool start,const 
 void serve_session(const SessionOptions&,int listener,int ready,
                    const std::function<Json(const Json&)>& call,
                    const std::function<void()>& close);
+// Like serve_session, but each connection runs on its own thread (at most
+// |connections| at once) so a slow request, such as an agent's wait, never
+// holds up another client's. |call| must be safe to run concurrently. A
+// connection may carry several requests in turn until its client closes it.
+void serve_shared_session(const SessionOptions&,int listener,int ready,int connections,
+                          const std::function<Json(const Json&)>& call,
+                          const std::function<void()>& close);
 } // namespace suitecut::control

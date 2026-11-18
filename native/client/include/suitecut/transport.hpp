@@ -27,6 +27,9 @@ struct LaunchOptions {
   std::string profile; // Empty creates an owned temporary profile.
   std::vector<std::string> arguments;
   int width = 1280, height = 720;
+  // Device pixels per CSS pixel for the SuiteCut engine: 1 or 2. A viewer on
+  // a Retina display draws a page at 2 without scaling it.
+  int scale = 1;
   double frames_per_second = 60;
   bool headless = true;
   std::chrono::milliseconds startup_timeout{30000};
@@ -70,6 +73,9 @@ class Transport {
   Packet wait_ready(int page_id,
                     std::chrono::milliseconds timeout = std::chrono::milliseconds{30000});
   ClientStats stats() const;
+  // The SuiteCut engine's process, for a viewer that checks who sent it a
+  // frame. Empty for an attached or CDP/BiDi browser.
+  std::optional<int> process_id() const;
   void close();
  private:
   struct Impl;
