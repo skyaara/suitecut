@@ -10,11 +10,10 @@
 namespace suitecut {
 namespace {
 std::atomic<size_t> process_breakpoints{0};
-constexpr size_t kPerSession=16,kProcess=128;
 constexpr double kCleanup=30000;
 std::string Quote(const std::string&text){return DevToolsQuoteUnits(CefString(text).ToString16());}
 bool Location(DeveloperDebuggerBreakpoints::Dict value,std::string&script,int&line,int&column){
-  if(!value||value->GetType("scriptId")!=VTYPE_STRING||value->GetString("scriptId").empty()||value->GetString("scriptId").length()>128||
+  if(!value||value->GetType("scriptId")!=VTYPE_STRING||value->GetString("scriptId").empty()||
      value->GetType("lineNumber")!=VTYPE_INT||value->GetInt("lineNumber")<0||
      (value->HasKey("columnNumber")&&(value->GetType("columnNumber")!=VTYPE_INT||value->GetInt("columnNumber")<0)))return false;
   script=value->GetString("scriptId").ToString();line=value->GetInt("lineNumber");column=value->HasKey("columnNumber")?value->GetInt("columnNumber"):0;return true;
@@ -85,11 +84,10 @@ class DeveloperDebuggerBreakpoints::Impl:public std::enable_shared_from_this<Imp
     std::string script;int line=0,column=0;
     if(!reply)return;
     if(closed_||closing_||close_requested_||owner<1||!std::isfinite(deadline)||deadline<0||Expired(deadline)||!hooks_.current()||
-       !Location(location,script,line,column)||!hooks_.owns_script(script)||records_.size()>=kPerSession||serial_==9007199254740991ULL){
-      reply(false,"","Native debugger breakpoint requires bounded actual current author script ownership");return;
+       !Location(location,script,line,column)||!hooks_.owns_script(script)||serial_==9007199254740991ULL){
+      reply(false,"","Native debugger breakpoint requires actual current author script ownership");return;
     }
-    size_t count=process_breakpoints.load();while(count<kProcess&&!process_breakpoints.compare_exchange_weak(count,count+1)){}
-    if(count>=kProcess){reply(false,"","Native debugger process breakpoint capacity exceeded");return;}
+    ++process_breakpoints;
     auto record=std::make_shared<Record>();record->serial=++serial_;record->owner=owner;record->deadline=deadline;
     record->script=script;record->reply=std::move(reply);record->token=hooks_.session+":breakpoint:"+std::to_string(record->serial);
     records_.emplace(record->token,record);physical_self_=shared_from_this();
@@ -117,9 +115,9 @@ class DeveloperDebuggerBreakpoints::Impl:public std::enable_shared_from_this<Imp
       // Without its genuine ID, only an actual channel close proves cleanup.
       std::string resolved;int line=0,column=0;
       if(!result||result->GetType("breakpointId")!=VTYPE_STRING||result->GetString("breakpointId").empty()||
-         result->GetString("breakpointId").length()>512||result->GetType("actualLocation")!=VTYPE_DICTIONARY||
+         result->GetType("actualLocation")!=VTYPE_DICTIONARY||
          !Location(result->GetDictionary("actualLocation"),resolved,line,column)||resolved!=record->script){
-        self->Fatal(record,"Actual native debugger breakpoint reply has no bounded matching identity");return;
+        self->Fatal(record,"Actual native debugger breakpoint reply has no matching identity");return;
       }
       record->native_id=result->GetString("breakpointId").ToString();
       for(const auto&[token,prior]:self->records_)if(prior!=record&&prior->native_id==record->native_id){

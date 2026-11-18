@@ -42,7 +42,7 @@ struct ScreenshotComparisons::Pending{
 namespace {
 bool Number(CefRefPtr<CefDictionaryValue> value,const char* key,double& number){const auto type=value->GetType(key);if(type!=VTYPE_DOUBLE&&type!=VTYPE_INT)return false;number=type==VTYPE_INT?value->GetInt(key):value->GetDouble(key);return std::isfinite(number);}
 bool Base64(const std::string& text){
-  if(text.empty()||text.size()%4||text.size()>((kScreenshotComparisonPNGBytes+2)/3)*4)return false;
+  if(text.empty()||text.size()%4)return false;
   size_t padding=0;for(size_t i=0;i<text.size();++i){const unsigned char c=text[i];if(c=='='){if(i+2<text.size()||++padding>2)return false;}else if(padding||!((c>='A'&&c<='Z')||(c>='a'&&c<='z')||(c>='0'&&c<='9')||c=='+'||c=='/'))return false;}return true;
 }
 struct DecodedPNG{std::vector<uint8_t> bytes;std::shared_ptr<ScreenshotByteBudget::Lease> lease;};
@@ -53,8 +53,8 @@ DecodedPNG Decode(const std::string& text,const std::shared_ptr<ScreenshotByteBu
   const size_t padding=text.ends_with("==")?2:text.ends_with("=")?1:0;
   if((padding==2&&(sextet(text[text.size()-3])&15))||(padding==1&&(sextet(text[text.size()-2])&3))){error="Native screenshot comparison PNG base64 is not canonical";return {};}
   const size_t length=text.size()/4*3-padding;DecodedPNG decoded;decoded.lease=budget->Reserve(length*2);
-  if(!decoded.lease){error="Native screenshot comparison64MiB binary input budget exceeded";return {};}
-  auto binary=CefBase64Decode(text);if(!binary||binary->GetSize()!=length||length>kScreenshotComparisonPNGBytes){error="Native screenshot comparison PNG input exceeds2MiB or is invalid";return {};}
+  if(!decoded.lease){error="Native screenshot comparison binary input accounting overflowed";return {};}
+  auto binary=CefBase64Decode(text);if(!binary||binary->GetSize()!=length){error="Native screenshot comparison PNG input is invalid";return {};}
   decoded.bytes.resize(length);if(binary->GetData(decoded.bytes.data(),length,0)!=length){error="Native screenshot comparison PNG base64 is invalid";return {};}
   binary=nullptr;decoded.lease->Shrink(length);return decoded;
 }
@@ -62,8 +62,8 @@ DecodedPNG Decode(const std::string& text,const std::shared_ptr<ScreenshotByteBu
 ScreenshotComparisons::ScreenshotComparisons(Hooks hooks):hooks_(std::move(hooks)),budget_(std::make_shared<ScreenshotByteBudget>()){}
 ScreenshotComparisons::~ScreenshotComparisons(){for(auto& [key,record]:records_){record->capture={};record->reply={};}records_.clear();}
 std::shared_ptr<ScreenshotComparisons::Encoded> ScreenshotComparisons::Input(const std::string& value,std::string& error){
-  if(!Base64(value)){error="Native screenshot comparison expects bounded canonical PNG base64";return {};}
-  auto lease=budget_->Reserve(value.size());if(!lease){error="Native screenshot comparison64MiB byte budget exceeded";return {};}
+  if(!Base64(value)){error="Native screenshot comparison expects canonical PNG base64";return {};}
+  auto lease=budget_->Reserve(value.size());if(!lease){error="Native screenshot comparison byte accounting overflowed";return {};}
   auto input=std::make_shared<Encoded>();input->text=value;input->lease=std::move(lease);return input;
 }
 bool ScreenshotComparisons::Contains(int page,int owner)const{return records_.contains({page,owner});}
@@ -74,20 +74,20 @@ void ScreenshotComparisons::HandlePrepared(int context,int page,int owner,Dict c
 }
 void ScreenshotComparisons::Begin(int context,int page,int owner,Dict config,std::shared_ptr<ScreenshotInputs::Data> input,double deadline,Capture capture,Reply reply,std::shared_ptr<AssertionObserver> assertion){
   if(!reply)return;
-  if(context<=0||page<=0||owner<=0||!config||!capture||std::isnan(deadline)||deadline<=0||records_.size()+finalizations_.size()>=16||(hooks_.available&&!hooks_.available())||Contains(page,owner)||generation_==std::numeric_limits<uint64_t>::max()){
-    reply(false,nullptr,"Invalid native screenshot comparison owner, deadline, or16-owner capacity");return;
+  if(context<=0||page<=0||owner<=0||!config||!capture||std::isnan(deadline)||deadline<=0||(hooks_.available&&!hooks_.available())||Contains(page,owner)||generation_==std::numeric_limits<uint64_t>::max()){
+    reply(false,nullptr,"Invalid native screenshot comparison owner or deadline");return;
   }
   auto record=std::make_shared<Record>();record->key={page,owner};record->context=context;record->deadline=deadline;record->capture=std::move(capture);record->reply=std::move(reply);record->generation=++generation_;record->assertion=std::move(assertion);
   double threshold=0,max_pixels=0,max_ratio=0;
   if((!input&&config->GetType("expected")!=VTYPE_STRING)||config->GetType("screenshot")!=VTYPE_DICTIONARY||!Number(config,"threshold",threshold)||threshold<0||threshold>1||config->GetType("isNot")!=VTYPE_BOOL||
-     (config->HasKey("maxDiffPixels")&&(!Number(config,"maxDiffPixels",max_pixels)||max_pixels<0||max_pixels>kScreenshotComparisonPixels||std::floor(max_pixels)!=max_pixels))||
+     (config->HasKey("maxDiffPixels")&&(!Number(config,"maxDiffPixels",max_pixels)||max_pixels<0||max_pixels>9007199254740991.0||std::floor(max_pixels)!=max_pixels))||
      (config->HasKey("maxDiffPixelRatio")&&(!Number(config,"maxDiffPixelRatio",max_ratio)||max_ratio<0||max_ratio>1))){record->reply(false,nullptr,"Invalid native screenshot comparison options");return;}
   record->threshold=threshold;record->max_pixels=size_t(max_pixels);record->max_ratio=max_ratio;record->has_pixels=config->HasKey("maxDiffPixels");record->has_ratio=config->HasKey("maxDiffPixelRatio");record->is_not=config->GetBool("isNot");
   std::string error;
   if(input){int width=0,height=0;if(!input->reservation||input->reservation->owner!=budget_||input->reservation->bytes.load(std::memory_order_acquire)<input->png.capacity()+input->config.size()||!ScreenshotPNGDimensions(input->png,width,height,error)){record->reply(false,nullptr,error.empty()?"Native screenshot prepared PNG has no byte reservation":error);return;}record->prepared=std::move(input);}
   else{record->expected_input=Input(config->GetString("expected").ToString(),error);if(!record->expected_input){record->reply(false,nullptr,error);return;}}
   const auto screenshot=config->GetDictionary("screenshot");auto serial=CefValue::Create();serial->SetDictionary(screenshot->Copy(false));const auto text=CefWriteJSON(serial,JSON_WRITER_DEFAULT).ToString();
-  if(text.empty()||text.size()>1048576||(record->config_lease=budget_->Reserve(text.size()))==nullptr){record->reply(false,nullptr,"Native screenshot assertion options exceed1MiB or shared byte budget");return;}
+  if(text.empty()||(record->config_lease=budget_->Reserve(text.size()))==nullptr){record->reply(false,nullptr,"Native screenshot assertion options are empty or overflow byte accounting");return;}
   if(record->prepared){std::string().swap(record->prepared->config);record->prepared->reservation->Shrink(record->prepared->png.capacity());}
   record->screenshot=screenshot->Copy(false);record->screenshot->SetString("action","screenshot");record->screenshot->SetString("format","png");records_[record->key]=record;
   if(record->assertion){record->phase=Record::Phase::Baseline;Compute(record);}else CaptureNext(record);
@@ -132,9 +132,9 @@ void ScreenshotComparisons::Compute(const std::shared_ptr<Record>& record){
         // pair as part of the same physical job; stability still gates success.
         if((!work->delta.dimensions_match||work->delta.different)&&!work->canceled.load(std::memory_order_acquire)&&clock()<work->original_deadline){
           auto diff=ScreenshotDifferenceImage(*work->expected,*work->image,work->threshold,work->budget,work->error);
-          // Opposite aspect ratios can have a bounded input but oversized diff
-          // canvas. Keep their truthful dimension mismatch without a diff PNG.
-          if(!diff&&work->error.find("canvas exceeds")!=std::string::npos)work->error.clear();
+          // A diff canvas whose byte size cannot be represented keeps the
+          // truthful dimension mismatch without a diff PNG.
+          if(!diff&&work->error.find("canvas size overflows")!=std::string::npos)work->error.clear();
           else if(diff)work->diff_png=EncodeScreenshotPNG(*diff,work->budget,work->native_images,work->diff_lease,work->error);
         }
       }
@@ -144,8 +144,8 @@ void ScreenshotComparisons::Compute(const std::shared_ptr<Record>& record){
   });}catch(...){accepted=false;}
   if(!accepted){
     pending_.erase(work->id);work->physical_owner.reset();
-    if(work->assertion)work->assertion->settled(work->id,false,false,"Native screenshot comparison background capacity is unavailable");
-    Fail(record,"Native screenshot comparison background capacity is unavailable");
+    if(work->assertion)work->assertion->settled(work->id,false,false,"Native screenshot comparison background executor did not accept the work");
+    Fail(record,"Native screenshot comparison background executor did not accept the work");
   }
 }
 void ScreenshotComparisons::FinishPhysical(uint64_t id){
@@ -209,8 +209,8 @@ void ScreenshotComparisons::PageClosed(int page){std::vector<Key> closed;for(con
 bool ScreenshotComparisons::ContextReady(int context)const{for(const auto& [key,record]:records_)if(record->context==context)return false;for(const auto& [id,work]:pending_)if(work->context==context)return false;for(const auto&[id,work]:finalizations_){(void)id;if(work->context==context)return false;}return true;}
 void ScreenshotComparisons::Deadline(int page,int owner){const auto found=records_.find({page,owner});if(found!=records_.end())Finish(found->second,false,true);}
 bool ScreenshotComparisons::QueueFinalization(const std::shared_ptr<Finalization>&work,std::string&error){
-  if(work->context<1||work->key.first<1||work->key.second<1||!std::isfinite(work->deadline)||work->deadline<=hooks_.now()||records_.size()+finalizations_.size()>=16||
-     !work->assertion||!work->assertion->admit||!work->assertion->submitting||!work->assertion->settled||job_generation_==UINT64_MAX){error="Invalid native screenshot finalization owner/deadline/capacity";return false;}
+  if(work->context<1||work->key.first<1||work->key.second<1||!std::isfinite(work->deadline)||work->deadline<=hooks_.now()||
+     !work->assertion||!work->assertion->admit||!work->assertion->submitting||!work->assertion->settled||job_generation_==UINT64_MAX){error="Invalid native screenshot finalization owner or deadline";return false;}
   for(const auto&[id,held]:finalizations_){(void)id;if(held->key==work->key&&held->sample==work->sample&&held->kind==work->kind){error="Duplicate native screenshot finalization receipt";return false;}}
   work->publication->error.reserve(4096);
   work->id=++job_generation_;work->physical_owner=shared_from_this();
@@ -230,7 +230,7 @@ bool ScreenshotComparisons::ValidateCaptured(int context,int page,int owner,uint
 }
 bool ScreenshotComparisons::WriteArtifacts(int context,int page,int owner,const std::string&root,const std::string&actual,const std::string&diff,double deadline,std::shared_ptr<AssertionObserver>assertion,ArtifactReply reply,std::string&error){
   try{
-  if(root.empty()||root.size()>32768||!reply){error="Invalid native screenshot artifact output admission";return false;}
+  if(root.empty()||!reply){error="Invalid native screenshot artifact output admission";return false;}
   auto work=std::make_shared<Finalization>();work->context=context;work->key={page,owner};work->deadline=deadline;work->assertion=std::move(assertion);work->kind=AssertionWork::Files;work->root=root;work->reply=std::move(reply);
   work->actual=Input(actual,error);if(!work->actual)return false;
   if(!diff.empty()){work->diff=Input(diff,error);if(!work->diff)return false;}

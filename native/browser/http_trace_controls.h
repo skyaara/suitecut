@@ -52,7 +52,7 @@ class HTTPTraceControls {
   void Handle(int owner,int context,Dict params,double deadline,TraceControls::Reply reply){controls_->Handle(owner,context,params,deadline,std::move(reply));}
   void Before(int owner,int context,Dict params){
     const auto scope=controls_->CaptureLease(context);if(!scope.context)return;
-    if(calls_.size()>=64||calls_.contains(owner)){controls_->CaptureError(scope,"Native HTTP trace pending action capacity exceeded");return;}
+    if(calls_.contains(owner)){controls_->CaptureError(scope,"Native HTTP trace action owner is already pending");return;}
     const auto call=controls_->NextCall();if(!call){controls_->CaptureError(scope,"Native HTTP trace action identity exhausted");return;}
     auto before=CefDictionaryValue::Create();before->SetString("type","before");before->SetString("callId","call@"+std::to_string(call));before->SetString("class","APIRequestContext");before->SetString("method","fetch");before->SetDouble("startTime",hooks_.now());
     const auto url=params->GetString("url").ToString(),method=params->GetString("method").ToString();before->SetString("apiName",method+" "+DisplayURL(url));auto arguments=CefDictionaryValue::Create();arguments->SetString("url",url);arguments->SetString("method",method);before->SetDictionary("params",arguments);if(auto stack=params->GetList("traceStack"))before->SetList("stack",stack->Copy());
@@ -63,10 +63,9 @@ class HTTPTraceControls {
   // invented. A later transport observer may enrich them with exact wire data.
   void Request(int owner,uint64_t generation,const std::string& url,const std::string& method,Dict headers,std::span<const uint8_t> upload){
     const auto call=calls_.find(owner);if(call==calls_.end()||!controls_->ChunkCurrent(call->second.scope))return;const auto scope=call->second.scope;if(!capture_.Active(scope.context))return;
-    if(transfers_.size()>=64){controls_->CaptureError(scope,"Native HTTP trace transfer capacity exceeded");return;}
     const auto identity=std::to_string(owner)+":"+std::to_string(generation);const auto actor="api:"+std::to_string(scope.context);
     if(!owners_.contains(scope.context)){
-      if(!capture_.Attach(scope.context,actor,[this](const std::string&,const std::string& id,double,NativeHARCapture::BodyReply reply){if(!reading_||reading_->identity!=id){reply(false,{},"Actual native HTTP body observation is unavailable");return;}if(reading_->bytes.size()>2097152){reply(false,{},"Actual native HTTP trace body exceeds 2 MiB");return;}reply(true,Bytes(reading_->bytes.begin(),reading_->bytes.end()),"");},NativeHARCapture::OwnerKind::APIRequestContext)){controls_->CaptureError(scope,"Native HTTP trace resource owner is unavailable");return;}owners_[scope.context]=actor;
+      if(!capture_.Attach(scope.context,actor,[this](const std::string&,const std::string& id,double,NativeHARCapture::BodyReply reply){if(!reading_||reading_->identity!=id){reply(false,{},"Actual native HTTP body observation is unavailable");return;}reply(true,Bytes(reading_->bytes.begin(),reading_->bytes.end()),"");},NativeHARCapture::OwnerKind::APIRequestContext)){controls_->CaptureError(scope,"Native HTTP trace resource owner is unavailable");return;}owners_[scope.context]=actor;
     }
     auto request=CefDictionaryValue::Create();request->SetString("id",identity);request->SetString("requestId",identity);request->SetString("session","");request->SetString("url",url);request->SetString("method",method);request->SetString("resourceType","Fetch");request->SetDictionary("headers",headers->Copy(false));auto timing=CefDictionaryValue::Create();timing->SetDouble("responseEnd",-1);request->SetDictionary("timing",timing);
     auto original=CefDictionaryValue::Create();original->SetString("requestId",identity);original->SetDouble("wallTime",Wall()/1000);auto raw=request->Copy(false);if(!upload.empty()){auto entries=CefListValue::Create();auto part=CefDictionaryValue::Create();part->SetString("bytes",CefBase64Encode(upload.data(),upload.size()));entries->SetDictionary(0,part);raw->SetList("postDataEntries",entries);}original->SetDictionary("request",raw);

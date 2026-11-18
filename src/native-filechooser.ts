@@ -132,11 +132,6 @@ export class NativeFileChooserEvents {
         info.multiple,
       )
     })()
-    // Keep delivery/wait races bounded; handles retain their normal explicit disposal lifetime.
-    if (this.opened.size >= 64) {
-      const oldest = this.opened.keys().next().value
-      if (oldest !== undefined) this.opened.delete(oldest)
-    }
     this.opened.set(info.id, pending)
     return pending
   }

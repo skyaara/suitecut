@@ -124,7 +124,7 @@ class SuiteCutRendererApp : public CefApp, public CefRenderProcessHandler {
     const auto native = parsed && parsed->GetType() == VTYPE_DICTIONARY ? parsed->GetDictionary() : nullptr;
     if (!native || native->GetInt("contextId") != context_id || !Apply(native)) {
       auto message = CefProcessMessage::Create(initial?"suitecutInitialEmptyFailure":"suitecutInitScriptBootstrapError");
-      message->GetArgumentList()->SetString(0, "context snapshot: " + (failure ? failure->GetMessage().ToString().substr(0, 4096) : std::string("Native init script snapshot is unavailable")));
+      message->GetArgumentList()->SetString(0, "context snapshot: " + (failure ? failure->GetMessage().ToString() : std::string("Native init script snapshot is unavailable")));
       frame->SendProcessMessage(PID_BROWSER, message); return false;
     }
     }
@@ -133,7 +133,7 @@ class SuiteCutRendererApp : public CefApp, public CefRenderProcessHandler {
     if(snapshot->credentials_installed){
       CefRefPtr<CefV8Value>value;CefRefPtr<CefV8Exception>error;
       if(!context->Eval(suitecut::kNativeCredentialScript.source,suitecut::kNativeCredentialScript.name,1,value,error)){
-        auto message=CefProcessMessage::Create(initial?"suitecutInitialEmptyFailure":"suitecutInitScriptBootstrapError");message->GetArgumentList()->SetString(0,"credentials: "+(error?error->GetMessage().ToString().substr(0,4096):std::string("Native credential readiness failed")));frame->SendProcessMessage(PID_BROWSER,message);return false;
+        auto message=CefProcessMessage::Create(initial?"suitecutInitialEmptyFailure":"suitecutInitScriptBootstrapError");message->GetArgumentList()->SetString(0,"credentials: "+(error?error->GetMessage().ToString():std::string("Native credential readiness failed")));frame->SendProcessMessage(PID_BROWSER,message);return false;
       }
     }
     // Queued inherited bindings exist before context init scripts or author code.
@@ -141,7 +141,7 @@ class SuiteCutRendererApp : public CefApp, public CefRenderProcessHandler {
       CefRefPtr<CefV8Value> value; CefRefPtr<CefV8Exception> error;
       if (!context->Eval(binding.source,"suitecut:context-binding:"+std::to_string(binding.id),1,value,error)) {
         auto message = CefProcessMessage::Create(initial?"suitecutInitialEmptyFailure":"suitecutInitScriptBootstrapError");
-        message->GetArgumentList()->SetString(0,"binding: "+(error ? error->GetMessage().ToString().substr(0,4096) : std::string("Native context binding bootstrap failed")));
+        message->GetArgumentList()->SetString(0,"binding: "+(error ? error->GetMessage().ToString() : std::string("Native context binding bootstrap failed")));
         frame->SendProcessMessage(PID_BROWSER,message); return false;
       }
     }
@@ -149,7 +149,7 @@ class SuiteCutRendererApp : public CefApp, public CefRenderProcessHandler {
       CefRefPtr<CefV8Value> value; CefRefPtr<CefV8Exception> error;
       if (!context->Eval(script.source, "suitecut:init-script:" + std::to_string(script.id), 1, value, error)) {
         auto message = CefProcessMessage::Create("suitecutInitScriptError"); auto args = message->GetArgumentList();
-        args->SetString(0, error ? error->GetMessage().ToString().substr(0, 4096) : "Native init script evaluation failed");
+        args->SetString(0, error ? error->GetMessage().ToString() : "Native init script evaluation failed");
         frame->SendProcessMessage(PID_BROWSER, message);
       }
     }
@@ -190,9 +190,8 @@ class SuiteCutRendererApp : public CefApp, public CefRenderProcessHandler {
     const auto input = value->GetList("scripts");
     if (value->GetType("bindingVersion") != VTYPE_INT || value->GetType("bindings") != VTYPE_LIST) return false;
     const int binding_version = value->GetInt("bindingVersion"); const auto bindings = value->GetList("bindings");
-    if (binding_version < 0 || !bindings || bindings->GetSize() > SuiteCutContextBindings::kMaxEntries) return false;
-    if (id <= 0 || version < 0 || !input || input->GetSize() > SuiteCutInitScripts::kMaxScripts ||
-        (!contexts_.contains(id) && contexts_.size() >= 32)) return false;
+    if (binding_version < 0 || !bindings) return false;
+    if (id <= 0 || version < 0 || !input) return false;
     if(value->GetType("credentialVersion")!=VTYPE_INT||value->GetInt("credentialVersion")<0||value->GetType("credentialsInstalled")!=VTYPE_BOOL)return false;
     const int credential_version=value->GetInt("credentialVersion");
     const auto previous = contexts_.find(id);
@@ -200,22 +199,22 @@ class SuiteCutRendererApp : public CefApp, public CefRenderProcessHandler {
       if (previous->second->version > version || previous->second->binding_version > binding_version||previous->second->credential_version>credential_version) return true;
       if (previous->second->version == version && previous->second->binding_version == binding_version&&previous->second->credential_version==credential_version) return true;
     }
-    auto snapshot = std::make_shared<Snapshot>(); snapshot->version = version;snapshot->credential_version=credential_version;snapshot->credentials_installed=value->GetBool("credentialsInstalled"); size_t bytes = 0;
+    auto snapshot = std::make_shared<Snapshot>(); snapshot->version = version;snapshot->credential_version=credential_version;snapshot->credentials_installed=value->GetBool("credentialsInstalled");
     for (size_t index = 0; index < input->GetSize(); ++index) {
       const auto item = input->GetDictionary(index);
       if (!item || item->GetType("id") != VTYPE_INT || item->GetInt("id") != static_cast<int>(index + 1) || item->GetType("source") != VTYPE_STRING) return false;
       const auto source = item->GetString("source").ToString();
-      if (source.empty() || source.find('\0') != std::string::npos || source.size() > SuiteCutInitScripts::kMaxScriptBytes || source.size() > SuiteCutInitScripts::kMaxBytes - bytes) return false;
-      bytes += source.size(); snapshot->entries.push_back({item->GetInt("id"), source});
+      if (source.empty() || source.find('\0') != std::string::npos) return false;
+      snapshot->entries.push_back({item->GetInt("id"), source});
     }
     if (static_cast<int>(snapshot->entries.size()) != version) return false;
-    snapshot->binding_version = binding_version; size_t binding_bytes = 0; std::set<int> binding_ids;
+    snapshot->binding_version = binding_version; std::set<int> binding_ids;
     for (size_t index = 0; index < bindings->GetSize(); ++index) {
       const auto entry = bindings->GetDictionary(index);
       if (!entry || entry->GetType("id") != VTYPE_INT || entry->GetInt("id") <= 0 || !binding_ids.insert(entry->GetInt("id")).second || entry->GetType("source") != VTYPE_STRING) return false;
       const auto source = entry->GetString("source").ToString();
-      if (source.empty() || source.find('\0') != std::string::npos || source.size() > SuiteCutContextBindings::kMaxEntryBytes || source.size() > SuiteCutContextBindings::kMaxBytes-binding_bytes) return false;
-      binding_bytes += source.size(); snapshot->bindings.push_back({entry->GetInt("id"),source});
+      if (source.empty() || source.find('\0') != std::string::npos) return false;
+      snapshot->bindings.push_back({entry->GetInt("id"),source});
     }
     contexts_[id] = std::move(snapshot); return true;
   }

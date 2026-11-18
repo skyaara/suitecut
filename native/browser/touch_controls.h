@@ -20,7 +20,7 @@ class SuiteCutTouchControls {
   void Configure(int owner,bool enabled){ Enqueue(owner,true,enabled,0,0); }
   void ConfigureBootstrap(bool enabled,Reply done){Enqueue(0,true,enabled,0,0,std::move(done));}
   void Tap(int owner,double x,double y){
-    if(!std::isfinite(x)||!std::isfinite(y)||std::abs(x)>1000000||std::abs(y)>1000000){
+    if(!std::isfinite(x)||!std::isfinite(y)){
       hooks_.complete(owner,false,"Invalid native touch coordinate");return;
     }
     Enqueue(owner,false,false,x,y);
@@ -45,7 +45,6 @@ class SuiteCutTouchControls {
   bool enabled_=false,physical_=false,held_=false,closed_=false;
   void Enqueue(int owner,bool configure,bool enabled,double x,double y,Reply done={}){
     if(closed_){if(done)done(false,"Native touch page is closed");else hooks_.complete(owner,false,"Native touch page is closed");return;}
-    if(queue_.size()+(active_?1:0)>=64){if(done)done(false,"Native touch operation capacity exceeded");else hooks_.complete(owner,false,"Native touch operation capacity exceeded");return;}
     queue_.push_back(std::make_shared<Work>(Work{owner,configure,enabled,x,y,std::move(done)}));Pump();
   }
   void Finish(const std::shared_ptr<Work>& work,bool ok,const std::string& error){

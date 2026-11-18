@@ -238,8 +238,8 @@ function createHandle(page: NativePage, response: UntrustedInput): NativeJSHandl
       handle: z.number().int().positive(),
       preview: z.string(),
       node: z.boolean(),
-      guid: z.string().max(128).optional(),
-      frame: z.string().max(128).optional(),
+      guid: z.string().optional(),
+      frame: z.string().optional(),
     })
     .parse(response)
   const currentFrame = page instanceof NativeFrame ? page.identity() : page.mainFrame().identity()
@@ -284,11 +284,6 @@ export class NativeConsoleMessage {
       const existing = identities.get(sequence)?.deref()
       if (existing) return existing
       identities.set(sequence, new WeakRef(this))
-      while (identities.size > 256) {
-        const oldest = identities.keys().next().value
-        if (oldest === undefined) break
-        identities.delete(oldest)
-      }
     }
     // Bind argument ownership at the actual console observation, so delayed
     // args() cannot adopt old opaque handles into a later control channel.
@@ -384,7 +379,7 @@ export interface NativeNavigationOptions {
 const NavigationOptionsSchema = z.strictObject({
   timeout: z.number().int().min(0).max(120_000).optional(),
   waitUntil: z.enum(['commit', 'domcontentloaded', 'load', 'networkidle']).optional(),
-  referer: z.string().max(8192).optional(),
+  referer: z.string().optional(),
 })
 type FrameEventName = NativeAutomationEvent['event']
 type RequestEventName = 'request' | 'requestfinished' | 'requestfailed'
@@ -957,7 +952,7 @@ export class NativePage implements PresentationPage {
   close(options: { reason?: string; runBeforeUnload?: boolean } = {}): Promise<void> {
     const config = z
       .strictObject({
-        reason: z.string().max(4096).optional(),
+        reason: z.string().optional(),
         runBeforeUnload: z.boolean().optional(),
       })
       .parse(options)
@@ -1046,10 +1041,6 @@ export class NativePage implements PresentationPage {
   }
   private rememberDetached(id: string, frame: NativeFrame): void {
     this.detachedFrames.set(id, new WeakRef(frame))
-    if (this.detachedFrames.size > 1024) {
-      const oldest = this.detachedFrames.keys().next().value
-      if (oldest !== undefined) this.detachedFrames.delete(oldest)
-    }
   }
   on(event: 'popup' | 'close' | 'crash', listener: PageListener): this
   on(event: 'filechooser', listener: FileChooserListener): this
@@ -2603,9 +2594,7 @@ export class NativeJSHandle {
   async [collectHandleProperties](owned?: NativeJSHandle[]): Promise<Map<string, NativeJSHandle>> {
     const names = await this.evaluate((value) => {
       if (value === null || (typeof value !== 'object' && typeof value !== 'function')) return []
-      const keys = Object.keys(value)
-      if (keys.length > 1024) throw new Error('Native handle property limit exceeded')
-      return keys
+      return Object.keys(value)
     })
     const properties = new Map<string, NativeJSHandle>()
     try {
@@ -2665,7 +2654,7 @@ export class NativeElementHandle extends NativeJSHandle {
   async ownerFrame(): Promise<NativeFrame | null> {
     this.assertUsable(this.source)
     const result = z
-      .object({ pageId: z.number().int().positive(), frame: z.string().min(1).max(256) })
+      .object({ pageId: z.number().int().positive(), frame: z.string().min(1) })
       .nullable()
       .parse(await this.owner.runAutomation('handle', { action: 'ownerFrame', handle: this.id }))
     if (result === null) return null
@@ -3129,14 +3118,11 @@ export interface NativeClickOptions {
 const PointerOptionsSchema = z.strictObject({
   timeout: z.number().int().min(0).max(120_000).optional(),
   button: z.enum(['left', 'middle', 'right']).optional(),
-  clickCount: z.number().int().min(1).max(1000).optional(),
+  clickCount: z.number().int().min(1).optional(),
   delay: z.number().int().min(0).max(120_000).optional(),
-  steps: z.number().int().min(1).max(10000).optional(),
+  steps: z.number().int().min(1).optional(),
   position: z.strictObject({ x: z.number().finite(), y: z.number().finite() }).optional(),
-  modifiers: z
-    .array(z.enum(['Alt', 'Control', 'ControlOrMeta', 'Meta', 'Shift']))
-    .max(5)
-    .optional(),
+  modifiers: z.array(z.enum(['Alt', 'Control', 'ControlOrMeta', 'Meta', 'Shift'])).optional(),
   force: z.boolean().optional(),
   trial: z.boolean().optional(),
   noWaitAfter: z.boolean().optional(),
@@ -3340,10 +3326,7 @@ export class NativeLocator implements PresentationLocator<NativePage> {
       this.query.length > 1 && first?.engine === 'css' && first.selector === ':scope'
         ? this.query.slice(1)
         : this.query
-    const encoded = JSON.stringify(nativeQueryDescription(query, this.framePath))
-    return encoded.length <= 16_384 && new TextEncoder().encode(encoded).byteLength <= 16_384
-      ? encoded
-      : JSON.stringify('')
+    return JSON.stringify(nativeQueryDescription(query, this.framePath))
   }
 
   /** Internal native capture: no author callback can manufacture references. */
@@ -4115,14 +4098,11 @@ export class NativeLocator implements PresentationLocator<NativePage> {
     options: NativeDispatchEventOptions = {},
   ): Promise<void> {
     const config = DispatchEventOptionsSchema.parse(options)
-    z.string().min(1).max(256).parse(type)
+    z.string().min(1).parse(type)
     if (!eventInit || typeof eventInit !== 'object' || Array.isArray(eventInit))
       throw new Error('dispatchEvent: eventInit must be an object')
     const { encoded, handles } = evaluationArgument(this.owner, { type, eventInit })
     const eventInitJSON = JSON.stringify(encoded)
-    if (new TextEncoder().encode(eventInitJSON).byteLength > 16_384)
-      throw new Error('dispatchEvent: Native eventInit exceeds 16 KiB')
-    if (handles.length > 32) throw new Error('dispatchEvent: Native eventInit exceeds 32 handles')
     await this.owner.runAutomation(
       'locator',
       {
@@ -4374,7 +4354,7 @@ export class NativeLocator implements PresentationLocator<NativePage> {
         diagnosticExpressionJSON: this.queryDiagnosticExpression(),
         strict: this.strict,
         ...(this.nativeHandle !== undefined ? { nativeHandle: this.nativeHandle } : {}),
-        key: z.string().min(1).max(128).parse(key),
+        key: z.string().min(1).parse(key),
         delay: config.delay ?? 0,
         timeoutMs: config.timeout,
       },

@@ -7,7 +7,7 @@
 inline std::optional<int> ParseSuiteCutFrameRate(std::string_view text) {
   int fps = 0;
   const auto parsed = std::from_chars(text.data(), text.data() + text.size(), fps);
-  if (parsed.ec != std::errc() || parsed.ptr != text.data() + text.size() || fps < 1 || fps > 120)
+  if (parsed.ec != std::errc() || parsed.ptr != text.data() + text.size() || fps < 1)
     return std::nullopt;
   return fps;
 }

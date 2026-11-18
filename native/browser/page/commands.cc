@@ -57,7 +57,7 @@ auto Source::Command(const std::string& line) -> void {
     AcknowledgeConsoleDelivery(id, message);
     return;
   }
-  // Raw-frame observation remains available at operation capacity and does
+  // Raw-frame observation stays outside the operation registry and does
   // not acquire an authored DOM/input operation or change rendering cadence.
   if (command == "frameSubscription") {
     if (message->GetType("enabled") != VTYPE_BOOL) {
@@ -92,7 +92,7 @@ auto Source::Command(const std::string& line) -> void {
     ContinueEventPredicate(id, message);
     return;
   }
-  // Cancellation is control traffic: it remains available at operation capacity.
+  // Cancellation is control traffic: it never enters the operation registry.
   if (command == "cancel") {
     if (message->GetType("target") != VTYPE_INT || message->GetInt("target") < 1 ||
         message->GetInt("target") == id) {
@@ -134,7 +134,7 @@ auto Source::Command(const std::string& line) -> void {
           ? operations_.BeginControl(id, Now(), timeout)
           : operations_.Begin(id, Now(), timeout);
   if (!operation) {
-    writer_.Reply(id, false, "Too many pending native operations");
+    writer_.Reply(id, false, "Invalid or duplicate native operation");
     return;
   }
   if (!deadline_timer_active_) {
@@ -146,7 +146,7 @@ auto Source::Command(const std::string& line) -> void {
         10);
   }
   if (!engine_.TrackLocatorHandlerCommand(id, page_id_, operation->generation)) {
-    Complete(id, false, "Native locator handler command capacity exceeded");
+    Complete(id, false, "Duplicate native locator handler command ID");
     return;
   }
   if (command == "evaluate" || command == "queryEvaluate" || command == "locator" ||
@@ -266,8 +266,7 @@ auto Source::DispatchCommand(int id, Dict message, const std::string& command, d
       return;
     }
     if ((message->HasKey("diagnosticExpressionJSON") &&
-         (message->GetType("diagnosticExpressionJSON") != VTYPE_STRING ||
-          message->GetString("diagnosticExpressionJSON").length() > 16384)) ||
+         message->GetType("diagnosticExpressionJSON") != VTYPE_STRING) ||
         (message->HasKey("strictDiagnostics") &&
          (message->GetType("strictDiagnostics") != VTYPE_BOOL ||
           (message->GetBool("strictDiagnostics") &&
@@ -328,7 +327,7 @@ auto Source::DispatchCommand(int id, Dict message, const std::string& command, d
     auto config = message->Copy(false);
     if (message->GetBool("visibilitySnapshot")) {
       if (!visibility_snapshots_.Admit(id, operation->generation)) {
-        Complete(id, false, "Native visibility snapshot capacity exceeded");
+        Complete(id, false, "Invalid native visibility snapshot owner");
         return;
       }
       // This native mode has a fixed boolean result; arbitrary author
@@ -451,7 +450,7 @@ auto Source::DispatchCommand(int id, Dict message, const std::string& command, d
               result->SetString("payloadBase64", CefBase64Encode(bytes.data(), bytes.size()));
               Complete(id, true, "", Json(result));
             }))
-      Complete(id, false, "Invalid native WebSocket event wait or capacity exceeded");
+      Complete(id, false, "Invalid or duplicate native WebSocket event wait");
   } else if (command == "har") {
     const auto action = message->GetString("action").ToString();
     if (action == "record") {
@@ -469,8 +468,8 @@ auto Source::DispatchCommand(int id, Dict message, const std::string& command, d
                pattern = message->HasKey("url") ? message->GetString("url").ToString() : "**",
                not_found = message->HasKey("notFound") ? message->GetString("notFound").ToString()
                                                        : "abort";
-    if (registration.empty() || registration.size() > 128 || pattern.empty() ||
-        pattern.size() > 8192 || (not_found != "abort" && not_found != "fallback")) {
+    if (registration.empty() || pattern.empty() ||
+        (not_found != "abort" && not_found != "fallback")) {
       Complete(id, false, "Invalid native HAR replay registration");
       return;
     }
@@ -582,7 +581,7 @@ auto Source::DispatchCommand(int id, Dict message, const std::string& command, d
     }
     const int width = message->GetInt("width"), height = message->GetInt("height");
     if (message->GetType("width") != VTYPE_INT || message->GetType("height") != VTYPE_INT ||
-        width < 1 || height < 1 || width > 3840 / scale_ || height > 2160 / scale_) {
+        width < 1 || height < 1) {
       Complete(id, false, "Invalid native viewport dimensions");
       return;
     }
@@ -616,7 +615,7 @@ auto Source::DispatchCommand(int id, Dict message, const std::string& command, d
   } else if (command == "responseBody") {
     const auto session = message->GetString("session").ToString();
     const auto request = message->GetString("requestId").ToString();
-    if (session.size() > 128 || request.empty() || request.size() > 256 ||
+    if (request.empty() ||
         (!session.empty() && !sessions_.contains(session) && !worker_sessions_.contains(session))) {
       Complete(id, false, "Native response context is unavailable");
       return;
@@ -673,8 +672,7 @@ auto Source::DispatchCommand(int id, Dict message, const std::string& command, d
       return;
     }
     if (message->HasKey("frame") &&
-        (message->GetType("frame") != VTYPE_STRING || message->GetString("frame").empty() ||
-         message->GetString("frame").length() > 256)) {
+        (message->GetType("frame") != VTYPE_STRING || message->GetString("frame").empty())) {
       Complete(id, false, "Invalid native Inspector frame identity");
       return;
     }
@@ -755,10 +753,6 @@ auto Source::DispatchCommand(int id, Dict message, const std::string& command, d
           return;
         }
         if (success && method == "Page.getFrameTree") {
-          if (json.size() > 1048576) {
-            Complete(id, false, "Native Inspector frame tree exceeds 1 MiB");
-            return;
-          }
           const auto frame = frame_states_.find(FrameId(message));
           if (message->HasKey("frame") &&
               (frame == frame_states_.end() || frame->second.session != operation_sessions_[id] ||
@@ -770,7 +764,7 @@ auto Source::DispatchCommand(int id, Dict message, const std::string& command, d
           std::string output;
           if (!suitecut::InspectorFrameTreeJSON(parsed ? parsed->GetDictionary() : nullptr,
                                                 output)) {
-            Complete(id, false, "Invalid or oversized native Inspector frame tree");
+            Complete(id, false, "Invalid native Inspector frame tree");
             return;
           }
           if (operations_.IsExpired(id, generation, Now())) {
@@ -795,7 +789,7 @@ auto Source::DispatchCommand(int id, Dict message, const std::string& command, d
                               std::move(actual_reply));
       } else
         DevTools(id, method, message->GetDictionary("params"), std::move(actual_reply),
-                 std::nullopt, false, method == "Page.getFrameTree" ? 1048576 : kMaxResponseBytes,
+                 std::nullopt, false, std::numeric_limits<size_t>::max(),
                  method == "Page.getFrameTree");
     };
     if (message->HasKey("frame"))
@@ -858,11 +852,6 @@ auto Source::DispatchCommand(int id, Dict message, const std::string& command, d
         Complete(id, false, "Invalid native event sequence");
         return;
       }
-      if (!event_history_.empty() &&
-          after < static_cast<double>(event_history_.front().sequence - 1)) {
-        Complete(id, false, "Native event journal capacity exceeded before wait registration");
-        return;
-      }
       for (const auto& record : event_history_)
         if (static_cast<double>(record.sequence) > after && record.event == event) {
           Complete(id, true, "", record.json);
@@ -891,7 +880,7 @@ auto Source::DispatchCommand(int id, Dict message, const std::string& command, d
         return;
       }
       if (!SelectorWaits().Admit(id, operation->generation)) {
-        Complete(id, false, "Native selector-wait capacity exceeded");
+        Complete(id, false, "Native selector-wait owner is closed, canceled or stale");
         return;
       }
       auto config = message->Copy(false);
@@ -1199,8 +1188,7 @@ auto Source::DispatchCommand(int id, Dict message, const std::string& command, d
     auto config = message->Copy(false);
     const auto text = action == "clear" ? std::string() : config->GetString("value").ToString();
     if (config->HasKey("diagnosticExpressionJSON") &&
-        (config->GetType("diagnosticExpressionJSON") != VTYPE_STRING ||
-         config->GetString("diagnosticExpressionJSON").length() > 16384)) {
+        config->GetType("diagnosticExpressionJSON") != VTYPE_STRING) {
       Complete(id, false, "Invalid native action diagnostic expression");
       return;
     }
@@ -1208,13 +1196,12 @@ auto Source::DispatchCommand(int id, Dict message, const std::string& command, d
          config->GetType("pauseBeforeStable") != VTYPE_BOOL) ||
         (config->GetBool("pauseBeforeStable") &&
          (config->GetType("clientToken") != VTYPE_STRING ||
-          config->GetString("clientToken").ToString().empty() ||
-          config->GetString("clientToken").ToString().size() > 128))) {
+          config->GetString("clientToken").ToString().empty()))) {
       Complete(id, false, "Invalid native action hook identity");
       return;
     }
     locator_logs_[id] = action + " action" + (config->GetBool("trial") ? " (trial run)" : "") +
-                        "\n - resolving " + selector.substr(0, 1024);
+                        "\n - resolving " + selector;
     if (action == "click" && config->HasKey("fallbackAfterMs") && !config->GetBool("trial"))
       click_fallback_at_[id] = Now() + std::clamp(Number(config, "fallbackAfterMs"), 0.0, 120000.0);
     if (config->HasKey("nativeHandle")) {
@@ -1231,7 +1218,7 @@ auto Source::DispatchCommand(int id, Dict message, const std::string& command, d
     }
     if (config->HasKey("modifiers")) {
       auto modifiers = config->GetList("modifiers");
-      if (!modifiers || modifiers->GetSize() > 5) {
+      if (!modifiers) {
         Complete(id, false, "Invalid native input modifiers");
         return;
       }

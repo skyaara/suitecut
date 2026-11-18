@@ -36,7 +36,6 @@ class NativeHARWorkLeases {
   using Failure=std::function<void(const std::string&)>;
   enum class Kind {ReplayFetch,PostRead};
   struct Admission {std::shared_ptr<const NativeHARWorkReceipt> receipt;Ack acknowledge;Failure observe_failure;};
-  static constexpr size_t kCapacity=2048,kSnapshotCapacity=128;
   NativeHARWorkLeases()=default;
   NativeHARWorkLeases(const NativeHARWorkLeases&)=delete;
   NativeHARWorkLeases&operator=(const NativeHARWorkLeases&)=delete;
@@ -44,30 +43,30 @@ class NativeHARWorkLeases {
   // the state/archive alive even after the receiver object is destroyed.
   ~NativeHARWorkLeases(){for(const auto&[id,entry]:state_->entries){(void)id;entry.receipt->unavailable_=true;}}
   std::optional<Admission> Issue(uint64_t scope,const std::string&session,Policy policy,Kind kind){
-    if(!scope||session.size()>128||!policy||state_->serial==UINT64_MAX||state_->entries.size()>=kCapacity)return {};
-    const auto token=state_->serial+1;auto receipt=std::shared_ptr<NativeHARWorkReceipt>(new NativeHARWorkReceipt);receipt->error_.reserve(2048);auto state=state_;
+    if(!scope||!policy||state_->serial==UINT64_MAX)return {};
+    const auto token=state_->serial+1;auto receipt=std::shared_ptr<NativeHARWorkReceipt>(new NativeHARWorkReceipt);auto state=state_;
     // Build all potentially allocating observer/callback data before admitting
     // the physical entry. Dropping an ACK closure is deliberately not an ACK.
     Ack acknowledge=[state,token,scope](bool ok,const std::string&error){
       const auto found=state->entries.find(token);if(found==state->entries.end()||found->second.scope!=scope)return;
       auto receipt=found->second.receipt;
-      if(!ok&&!receipt->failed_){receipt->error_.assign(error.data(),std::min<size_t>(error.size(),2048));receipt->failed_=true;}
+      if(!ok&&!receipt->failed_){receipt->error_=error;receipt->failed_=true;}
       receipt->settled_=true;state->entries.erase(found);
     };
     Failure observe_failure=[state,token,scope](const std::string&error){
       const auto found=state->entries.find(token);if(found==state->entries.end()||found->second.scope!=scope)return;
       auto receipt=found->second.receipt;if(receipt->failed_)return;
-      receipt->error_.assign(error.data(),std::min<size_t>(error.size(),2048));receipt->failed_=true;
+      receipt->error_=error;receipt->failed_=true;
     };
     state_->entries.emplace(token,Entry{scope,session,std::move(policy),kind,receipt});state_->serial=token;
     return Admission{std::move(receipt),std::move(acknowledge),std::move(observe_failure)};
   }
   // Snapshot is exact policy identity, not URL/id/archive equality. The manager
   // predicate must use the native context's actual admitted policy ownership.
-  std::optional<NativeHARWorkSnapshot> Capture(const std::function<bool(const Policy&)>&matches,size_t maximum=kSnapshotCapacity)const{
-    if(!matches||maximum>kSnapshotCapacity)return {};
+  std::optional<NativeHARWorkSnapshot> Capture(const std::function<bool(const Policy&)>&matches)const{
+    if(!matches)return {};
     NativeHARWorkSnapshot snapshot;
-    for(const auto&[id,entry]:state_->entries){(void)id;if(!matches(entry.policy))continue;if(snapshot.size()>=maximum)return {};snapshot.push_back(entry.receipt);}
+    for(const auto&[id,entry]:state_->entries){(void)id;if(matches(entry.policy))snapshot.push_back(entry.receipt);}
     return snapshot;
   }
   void ObserverUnavailable(uint64_t scope){for(const auto&[id,entry]:state_->entries){(void)id;if(entry.scope==scope)entry.receipt->unavailable_=true;}}

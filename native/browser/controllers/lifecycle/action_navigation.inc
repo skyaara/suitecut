@@ -31,7 +31,7 @@ bool ActionNavigationEvent(const std::string& method, Dict data) {
   const auto wait = action_navigations_.find(mouse_input_);
   if (wait == action_navigations_.end()) return true;
   const auto baseline = wait->second.baseline.find(frame);
-  if (baseline == wait->second.baseline.end() || wait->second.intents.size() >= 64) return true;
+  if (baseline == wait->second.baseline.end()) return true;
   auto [intent,inserted]=wait->second.intents.try_emplace(frame,ActionNavigationIntent{baseline->second.sequence,baseline->second.loader});
   (void)inserted;if(data->GetType("url")==VTYPE_STRING)intent->second.url=data->GetString("url");
   // A child click can navigate its parent, which then removes the child's old

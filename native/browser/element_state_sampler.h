@@ -8,14 +8,13 @@ inline constexpr const char* kSuiteCutElementStateSampler=R"JS(function(element,
     if(dispose)return true;
     // Keep the physical registry in a closure. A user-supplied isolated-world
     // selector can see global property names, but cannot clear the private Map
-    // and strand RAF/timer/node ownership outside the bounded registry.
+    // and strand RAF/timer/node ownership outside the private registry.
     sampleState=(()=>{const store=new Map();return function(element,observe,token,ttl,dispose){
   const remove=()=>{const state=store.get(token);if(!state)return;store.delete(token);if(state.raf)cancelAnimationFrame(state.raf);clearTimeout(state.timer);state.node=null;};
   if(dispose){remove();return true;}
   const current=observe(element);let state=store.get(token);
   const equal=(a,b)=>a&&b&&a.every((value,index)=>value===b[index]);
   if(!state){
-    if(store.size>=64)throw new Error('Native renderer element-state capacity exceeded');
     state={node:element,raf:0,timer:0,last:null,samples:0,stable:false};store.set(token,state);
     state.timer=setTimeout(remove,Math.max(1,Math.min(120000,ttl)));
   }

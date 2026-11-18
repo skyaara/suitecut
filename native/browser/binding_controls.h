@@ -16,7 +16,8 @@
 
 namespace suitecut {
 // Runtime.addBinding remains private CEF traffic. The native page owns renderer
-// call identities, context epochs, cancellation, admission bounds and deadlines.
+// call identities, context epochs, cancellation and deadlines. Nothing here
+// caps how many bindings, calls or bytes a page uses.
 class BindingControls {
  public:
   using Dict = CefRefPtr<CefDictionaryValue>;
@@ -50,7 +51,7 @@ class BindingControls {
   }
   void RegisterInherited(int owner,Dict config,Done done){
     std::string inherited_name;
-    if(owner<=0||pending_.contains(owner)||!config||!InboundString(config,"name",inherited_name,256)||config->GetType("bridge")!=VTYPE_STRING||config->GetType("installer")!=VTYPE_STRING||config->GetType("codec")!=VTYPE_STRING||config->GetType("handle")!=VTYPE_BOOL||!InheritedBridge(config->GetString("bridge").ToString())){done(false,"Invalid native context binding registration","");return;}
+    if(owner<=0||pending_.contains(owner)||!config||!InboundString(config,"name",inherited_name)||config->GetType("bridge")!=VTYPE_STRING||config->GetType("installer")!=VTYPE_STRING||config->GetType("codec")!=VTYPE_STRING||config->GetType("handle")!=VTYPE_BOOL||!InheritedBridge(config->GetString("bridge").ToString())){done(false,"Invalid native context binding registration","");return;}
     std::string error;auto entry=CreateEntry(inherited_name,config->GetString("bridge"),config->GetString("installer"),config->GetString("codec"),config->GetBool("handle"),true,error);
     if(!entry){done(false,error,"");return;}
     StartInstallation(owner,entry,std::move(done));
@@ -64,10 +65,9 @@ class BindingControls {
     if(disposed_) { if(done)done(false,"Native binding page is closed");return; }
     const auto waiting=session_installations_.find(session);
     if(waiting!=session_installations_.end()){
-      if(done){if(waiting->second->waiters.size()>=64){done(false,"Native binding session readiness capacity exceeded");return;}waiting->second->waiters.push_back(std::move(done));}return;
+      if(done)waiting->second->waiters.push_back(std::move(done));return;
     }
     if(!sessions_.insert(session).second){const auto error=session_errors_.find(session);if(done)done(error==session_errors_.end(),error==session_errors_.end()?"":error->second);return;}
-    if(sessions_.size()>1024){sessions_.erase(session);if(done)done(false,"Native binding session capacity exceeded");return;}
     auto work=std::make_shared<SessionInstallation>();work->session=session;
     for(const auto& [name,entry]:registrations_)work->entries.push_back(entry);
     if(done)work->waiters.push_back(std::move(done));
@@ -84,7 +84,6 @@ class BindingControls {
   void ContextAvailable(Dict frame, const std::string& session, int context) {
     if (disposed_ || context <= 0 || !frame || frame->GetString("id").empty()) return;
     const auto key = std::make_pair(session, context);
-    if (!contexts_.contains(key) && contexts_.size() >= 1024) return;
     contexts_[key] = {frame->Copy(false), session, context};
     for (const auto& [name, entry] : registrations_) {
       EvaluateInstaller(entry,contexts_.at(key),[](bool,const std::string&){});
@@ -132,7 +131,6 @@ class BindingControls {
     if(found==calls_.end()){error="Native binding call is no longer active";return false;}
     auto& call=found->second;
     if(!call.entry->handle||call.argument_requested||now_()>=call.deadline||!contexts_.contains({call.target.session,call.target.context})){error="Native binding argument handle is unavailable";return false;}
-    if(arguments_.size()>=64){error="Native binding argument control capacity exceeded";return false;}
     call.argument_requested=true;arguments_[owner]=id;
     output=CefDictionaryValue::Create();output->SetString("action","create");output->SetString("frame",call.target.frame);
     output->SetInt("bindingArgumentContext",call.target.context);output->SetString("bindingArgumentSession",call.target.session);
@@ -173,7 +171,7 @@ class BindingControls {
     if (action == "stage") { Stage(message,std::move(done)); return; }
     if(message->HasKey("bridge")||message->HasKey("state")){done(false,"Native binding bridge identities are native-owned","");return;}
     std::string name;
-    if (!InboundString(message,"name",name,256) || name.empty()) { done(false, "Invalid native binding name", ""); return; }
+    if (!InboundString(message,"name",name) || name.empty()) { done(false, "Invalid native binding name", ""); return; }
     if (action == "remove") {
       const auto found = registrations_.find(name);
       if(found!=registrations_.end()&&found->second->inherited){done(false,"Native context binding disposal is context-owned","");return;}
@@ -200,7 +198,7 @@ class BindingControls {
     const auto found = contexts_.find({session, context});
     if (found == contexts_.end()) return; // Only an actual default frame context can call a public binding.
     const auto payload = data->GetString("payload").ToString();
-    auto parsed = payload.size() <= 1048576 ? CefParseJSON(payload, JSON_PARSER_RFC) : nullptr;
+    auto parsed = CefParseJSON(payload, JSON_PARSER_RFC);
     auto args = parsed ? parsed->GetDictionary() : nullptr;
     const auto nonce = args ? args->GetString("contextNonce").ToString() : "";
     if(nonce.size() != 32 || !std::all_of(nonce.begin(),nonce.end(),[](char c) { return (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f'); })) return;
@@ -215,9 +213,6 @@ class BindingControls {
       if(!(remaining>=1&&remaining<=30000))return;
     }
     Target target{found->second.frame->GetString("id").ToString(), session, context};
-    if (calls_.size() >= 128 || bytes_ + payload.size() > 8388608) {
-      Reject(*entry, target, client, nonce, "Native binding callback capacity exceeded"); return;
-    }
     const auto id = scope_ + "-binding-" + std::to_string(++call_sequence_);
     calls_[id] = {entry, target, client, payload.size(), now_() + remaining}; calls_[id].nonce = nonce; bytes_ += payload.size();
     auto event = CefDictionaryValue::Create(); event->SetString("event", "call"); event->SetString("id", id);
@@ -256,14 +251,14 @@ class BindingControls {
     Done done;
   };
   static bool InheritedBridge(const std::string& bridge){
-    return bridge.starts_with("__suitecut_context_binding_")&&bridge.size()<=512&&std::all_of(bridge.begin(),bridge.end(),[](unsigned char c){return (c>='a'&&c<='z')||(c>='A'&&c<='Z')||(c>='0'&&c<='9')||c=='_'||c=='-';});
+    return bridge.starts_with("__suitecut_context_binding_")&&std::all_of(bridge.begin(),bridge.end(),[](unsigned char c){return (c>='a'&&c<='z')||(c>='A'&&c<='Z')||(c>='0'&&c<='9')||c=='_'||c=='-';});
   }
   std::shared_ptr<Entry> CreateEntry(const std::string& name,const std::string& bridge,const std::string& installer,const std::string& codec,bool handle,bool inherited,std::string& error){
     if(disposed_){error="Native binding page is closed";return {};}
-    if(name.empty()||SuiteCutBindingNameUnits(name)>256){error="Invalid native binding name";return {};}
+    if(name.empty()||SuiteCutBindingNameUnits(name)==std::numeric_limits<size_t>::max()){error="Invalid native binding name";return {};}
     if(registrations_.contains(name)){error="Function "+Quote(name)+" has been already registered";return {};}
     const size_t bytes=installer.size()+codec.size();
-    if(!bytes||installer.empty()||codec.empty()||bytes>1048576||source_bytes_+bytes>4194304||registrations_.size()>=64){error="Native binding registration capacity exceeded";return {};}
+    if(installer.empty()||codec.empty()){error="Invalid native binding registration";return {};}
     for(const auto& [key,entry]:registrations_)if(entry->bridge==bridge){error="Native binding bridge is already registered";return {};}
     auto entry=std::make_shared<Entry>();entry->name=name;entry->bridge=bridge;entry->state=bridge+"_state";entry->installer=installer;entry->codec=codec;entry->handle=handle;entry->inherited=inherited;
     registrations_[name]=entry;source_bytes_+=bytes;return entry;
@@ -288,7 +283,6 @@ class BindingControls {
     });
   }
   void Install(std::shared_ptr<Entry> entry, const std::string& session, Result done) {
-    if(physical_installations_>=1024){done(false,"Native binding physical installation capacity exceeded");return;}
     ++entry->installations;++physical_installations_;
     Result finish = [this, entry, done = std::move(done)](bool ok, const std::string& json) {
       if (entry->installations) --entry->installations;
@@ -330,13 +324,13 @@ class BindingControls {
     });
   }
   void EvaluateInstaller(const std::shared_ptr<Entry>& entry,const Context& target,Result done){
-    if(installer_groups_.size()>=1024||installer_group_sequence_==std::numeric_limits<uint64_t>::max()){done(false,"Native binding installer group capacity exceeded");return;}
+    if(installer_group_sequence_==std::numeric_limits<uint64_t>::max()){done(false,"Native binding installer group sequence exhausted");return;}
     auto group=std::make_shared<InstallerGroup>();group->token=++installer_group_sequence_;group->session=target.session;group->context=target.id;group->name=entry->bridge+"_installation_"+std::to_string(group->token);installer_groups_[group->token]=group;
     auto params=CefDictionaryValue::Create();params->SetInt("contextId",target.id);params->SetString("expression",Installer(*entry));params->SetBool("returnByValue",true);params->SetString("objectGroup",group->name);
     send_(target.session,"Runtime.evaluate",params,[this,group,done=std::move(done)](bool ok,const std::string& json){
       // These trusted Source failures mean no Inspector command was submitted.
       // Protocol failures/exceptionDetails still require a real group release.
-      if(!ok&&(json=="Native binding command capacity exceeded or page closed"||json=="Native binding command dispatch failed")){if(group->active){group->active=false;installer_groups_.erase(group->token);}done(ok,json);return;}
+      if(!ok&&(json=="Could not allocate native binding command or page closed"||json=="Native binding command dispatch failed")){if(group->active){group->active=false;installer_groups_.erase(group->token);}done(ok,json);return;}
       // Private exceptions can allocate Inspector handles. Ownership persists
       // through cancellation and until an actual release ack/context teardown.
       ReleaseInstallerGroup(group);done(ok,json);
@@ -374,7 +368,7 @@ class BindingControls {
   }
   void ReleaseEntryBytes(const std::shared_ptr<Entry>& entry) {
     // Timed-out registrations retain their source admission until physical
-    // script installation commands settle, so late acknowledgments stay bounded.
+    // script installation commands settle, so late acknowledgments stay counted.
     if (!disposed_ && !entry->active && !entry->installations && entry->accounted) {
       source_bytes_ -= entry->installer.size() + entry->codec.size(); entry->accounted = false;
     }
@@ -424,12 +418,9 @@ class BindingControls {
       fail("Invalid native binding result chunk sequence");return;
     }
     const auto data = message->GetString("data").ToString();
-    if(data.size() > 32768) {fail("Native binding result chunk exceeds 24 KiB");return;}
     auto binary = CefBase64Decode(data);
     const auto size = binary ? binary->GetSize() : 0;
-    if(!size || size > 24576 || size > 1048576-call.result.size() || size > 8388608-result_bytes_) {
-      fail("Native binding staged result capacity exceeded");return;
-    }
+    if(!size) {fail("Invalid native binding result chunk");return;}
     const auto offset = call.result.size(); call.result.resize(offset+size);
     binary->GetData(call.result.data()+offset,size,0);
     result_bytes_ += size; ++call.next_chunk; call.sealed = message->GetBool("final");
@@ -439,14 +430,13 @@ class BindingControls {
     const auto id = message->GetString("bindingCallId").ToString();
     const auto found = calls_.find(id);
     if (found == calls_.end()) { done(false, "Native binding call is no longer active", ""); return; }
-    if (message->GetType("success") != VTYPE_BOOL || (!message->HasKey("value") && !message->GetBool("staged")) || message->GetType("handles") != VTYPE_LIST || message->GetList("handles")->GetSize() > 1024) {
+    if (message->GetType("success") != VTYPE_BOOL || (!message->HasKey("value") && !message->GetBool("staged")) || message->GetType("handles") != VTYPE_LIST) {
       done(false, "Invalid native binding callback result", ""); return;
     }
     const auto call = found->second;
     const bool staged = message->GetBool("staged");
     auto value = staged ? call.result : CefWriteJSON(message->GetValue("value"), JSON_WRITER_DEFAULT).ToString();
     if(staged && (!call.sealed || !CefParseJSON(value,JSON_PARSER_RFC))) { CancelCall(id,"Invalid native binding staged result",true);done(false,"Invalid native binding staged result","");return; }
-    if (value.size() > 1048576) { CancelCall(id, "Native binding callback result exceeds 1 MiB", true); done(false,"Native binding callback result exceeds 1 MiB","");return; }
     auto params = CefDictionaryValue::Create(); params->SetInt("executionContextId", call.target.context);
     params->SetString("functionDeclaration", "function(...handles){const state=globalThis[" + Quote(call.entry->state) + "];if(!state)throw new Error('Native binding context is unavailable');const values=[];for(let i=0;i<handles.length;i++)values[i]=handles[i].value;state.settle(" + std::to_string(static_cast<uint64_t>(call.client)) + "," + (message->GetBool("success") ? "true" : "false") + ",JSON.parse(" + Quote(value) + "),values," + Quote(call.nonce) + ");}");
     params->SetBool("returnByValue",true); params->SetBool("awaitPromise",false);

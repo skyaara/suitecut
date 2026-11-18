@@ -41,7 +41,6 @@ bool ScreenshotAssertionRememberFrame(suitecut::ScreenshotAssertionRetirement::I
     const auto actual=ReferenceDocument(frame);if(!actual)return false;
     const auto pinned=found->second.documents.find(frame);
     if(pinned!=found->second.documents.end())return pinned->second==*actual;
-    if(found->second.documents.size()>=1024)return false;
     found->second.documents.emplace(frame,*actual);return true;
   }catch(const std::bad_alloc&){return false;}
 }

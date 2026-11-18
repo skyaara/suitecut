@@ -35,20 +35,20 @@ inline std::string SuiteCutFormatConsoleArray(const std::string& description,
   const auto append=[&](const std::string& text) {
     if(!first) output+=", ";
     first=false;
-    output.append(text,0,std::min(text.size(),std::size_t(65534)-std::min(output.size(),std::size_t(65534))));
+    output+=text;
   };
   const auto holes=[&](std::uint64_t count) {
     if(count) append(count==1 ? "empty" : "empty x "+std::to_string(count));
   };
   std::uint64_t next=0, preceding=0;
   bool ordered=true, seen=false;
-  for(std::size_t i=0;i<properties.size() && i<32;++i) {
+  for(std::size_t i=0;i<properties.size();++i) {
     const auto index=SuiteCutConsoleArrayIndex(properties[i].name);
     if(!index) continue;
     if(seen && *index<=preceding) ordered=false;
     seen=true; preceding=*index;
   }
-  for(std::size_t i=0;i<properties.size() && i<32 && output.size()<65530;++i) {
+  for(std::size_t i=0;i<properties.size();++i) {
     const auto& property=properties[i];
     const auto index=SuiteCutConsoleArrayIndex(property.name);
     if(index) {
@@ -57,12 +57,11 @@ inline std::string SuiteCutFormatConsoleArray(const std::string& description,
       next=std::max(next,*index+1);
     } else append(property.name+": "+property.value);
   }
-  if(overflow || properties.size()>32) append("…");
+  if(overflow) append("…");
   else if(ordered) {
     const auto length=SuiteCutConsoleArrayLength(description);
     if(length && *length>next) holes(*length-next);
   }
-  if(output.size()>65535) output.resize(65535);
   return output+"]";
 }
 #endif

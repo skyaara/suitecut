@@ -26,12 +26,12 @@ int main() {
   assert(book.Closed(*retry, 3));
   assert(book.ContextGone(1) && book.size() == 0);
 
-  for (int context = 1; context <= int(Book::kContexts); ++context) {
+  // No context cap: cursors past the former 32 are admitted.
+  for (int context = 1; context <= 40; ++context) {
     const auto lease = book.Acquire(context); assert(lease); assert(book.Uncreated(*lease));
   }
-  assert(book.size() == Book::kContexts && !book.Acquire(33));
-  assert(book.ContextGone(2)); assert(book.Acquire(33));
-  assert(book.size() == Book::kContexts);
+  assert(book.size() == 40 && book.Acquire(41));
+  assert(book.ContextGone(2)); assert(book.size() == 40);
 
   Book bounded;
   const auto lease = bounded.Acquire(7); assert(lease);

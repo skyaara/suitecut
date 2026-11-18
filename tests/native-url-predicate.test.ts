@@ -73,7 +73,7 @@ it('executes the actual host closure with a URL and releases subscriptions after
   expect(listeners.size).toBe(0)
 })
 
-it('retains physical capacity for cancelled unresolved callbacks and recovers only after actual settlement', async () => {
+it('runs callbacks past the old 64 unresolved physical callbacks across sources', async () => {
   const { source, listeners } = fixture()
   const resolvers: ((value: boolean) => void)[] = []
   const neverSettled = () =>
@@ -83,23 +83,13 @@ it('retains physical capacity for cancelled unresolved callbacks and recovers on
   for (let i = 0; i < 64; ++i) await runNativeURLPredicate(source, neverSettled, { timeout: 1 })
   expect(resolvers).toHaveLength(64)
   const independent = fixture()
-  await expect(
-    runNativeURLPredicate(independent.source, neverSettled, { timeout: 1 }),
-  ).rejects.toThrow('physical callback capacity')
-  expect(resolvers).toHaveLength(64)
-  await expect(runNativeURLPredicate(source, neverSettled, { timeout: 1 })).rejects.toThrow(
-    'physical callback capacity',
-  )
-  expect(resolvers).toHaveLength(64)
-  const resolve = resolvers[0]
-  if (!resolve) throw new Error('Missing physical callback')
-  resolve(true)
-  await Promise.resolve()
-  await Promise.resolve()
-  await runNativeURLPredicate(source, neverSettled, { timeout: 1 })
+  await runNativeURLPredicate(independent.source, neverSettled, { timeout: 1 })
   expect(resolvers).toHaveLength(65)
+  await runNativeURLPredicate(source, neverSettled, { timeout: 1 })
+  expect(resolvers).toHaveLength(66)
   for (const finish of resolvers) finish(false)
   await Promise.resolve()
   await Promise.resolve()
   expect(listeners.size).toBe(0)
+  expect(independent.listeners.size).toBe(0)
 })

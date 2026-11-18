@@ -23,10 +23,10 @@ inline std::string SuiteCutDOMDriverSource() {
   };
   const referenceFactory='function(){return {query:(root,token)=>globalThis.__suitecutNativeChromeDOM1.reference(root,token)[0]||null,queryAll:(root,token)=>globalThis.__suitecutNativeChromeDOM1.reference(root,token)}}';
   const options={registryKey:'__suitecutNativeChromeRefEngines1',engines:{__suitecut_reference:{source:referenceFactory}}};
-  const translate=(steps,depth=0)=>{if(depth>64)throw new Error('Native reference query nesting limit exceeded');return steps.map(raw=>{
+  const translate=steps=>steps.map(raw=>{
     const step={...raw};if(step.engine==='reference')return {engine:'custom',name:'__suitecut_reference',selector:step.ref};
-    for(const key of ['query','has','hasNot','descendants'])if(Array.isArray(step[key]))step[key]=translate(step[key],depth+1);return step;
-  });};
+    for(const key of ['query','has','hasNot','descendants'])if(Array.isArray(step[key]))step[key]=translate(step[key]);return step;
+  });
   const guardOrigin=request=>{
     if(request.expectedOrigin===undefined)return;
     if(typeof request.expectedOrigin!=='string'||!request.expectedOrigin.length)throw new Error('Invalid native guarded action origin');
@@ -83,7 +83,7 @@ inline std::string SuiteCutDOMDriverSource() {
     if(action==='scrollIntoViewIfNeeded')return {ready:true,identity:id(e)};
     if(action==='selectOption'){
       if(!(e instanceof HTMLSelectElement))throw new Error('Element is not a select');
-      const choices=request.options;if(!Array.isArray(choices)||choices.length>4096)throw new Error('Invalid native select options');
+      const choices=request.options;if(!Array.isArray(choices))throw new Error('Invalid native select options');
       const selected=[];for(const choice of choices){if(!choice||typeof choice!=='object'||(!['valueOrLabel','value','label','index'].some(key=>Object.hasOwn(choice,key)))||(choice.index!==undefined&&(!Number.isInteger(choice.index)||choice.index<0)))throw new Error('Invalid native select option');const match=[...e.options].find((o,i)=>choice.valueOrLabel!==undefined?(o.value===choice.valueOrLabel||o.label===choice.valueOrLabel):(choice.value===undefined||o.value===choice.value)&&(choice.label===undefined||o.label===choice.label)&&(choice.index===undefined||i===choice.index));if(!match)return {ready:false,reason:'select options to be present'};selected.push(match);}
       if(!e.multiple&&selected.length>1)throw new Error('Cannot select multiple options in a single select');
       for(const o of e.options)o.selected=selected.includes(o);if(!selected.length)e.selectedIndex=-1;
@@ -94,17 +94,17 @@ inline std::string SuiteCutDOMDriverSource() {
     const x=position?r.left+parseFloat(getComputedStyle(e).borderLeftWidth)+position.x:(Math.max(0,r.left)+Math.min(innerWidth,r.right))/2;
     const y=position?r.top+parseFloat(getComputedStyle(e).borderTopWidth)+position.y:(Math.max(0,r.top)+Math.min(innerHeight,r.bottom))/2;
     if(!(Number.isFinite(x)&&Number.isFinite(y))||x<0||y<0||x>=innerWidth||y>=innerHeight)return {ready:false,reason:'element inside viewport'};
-    if(!force){let hit=document.elementFromPoint(x,y);for(let depth=0;hit?.shadowRoot&&depth<64;depth++){const inner=hit.shadowRoot.elementFromPoint(x,y);if(!inner||inner===hit)break;hit=inner;}let receives=false;for(let n=hit;n;n=parent(n))if(n===e){receives=true;break;}if(!receives&&request.dragging===true){const source=dragSource?.deref();if(source&&source.isConnected)for(let n=hit;n;n=parent(n))if(n===source){receives=true;break;}}if(!receives)return {ready:false,reason:'element to receive pointer events'};}
+    if(!force){let hit=document.elementFromPoint(x,y);while(hit?.shadowRoot){const inner=hit.shadowRoot.elementFromPoint(x,y);if(!inner||inner===hit)break;hit=inner;}let receives=false;for(let n=hit;n;n=parent(n))if(n===e){receives=true;break;}if(!receives&&request.dragging===true){const source=dragSource?.deref();if(source&&source.isConnected)for(let n=hit;n;n=parent(n))if(n===source){receives=true;break;}}if(!receives)return {ready:false,reason:'element to receive pointer events'};}
     return {ready:true,identity:id(e),x,y,box:[r.x,r.y,r.width,r.height]};
   };
   const observe=request=>{
     if(request.referenceFormat!==undefined&&!['json','yaml'].includes(request.referenceFormat))throw new Error('Invalid native reference snapshot format');
     const scope=one(request);if(!scope)return {ready:false};
-    if(request.referenceDepth!==undefined&&(!Number.isInteger(request.referenceDepth)||request.referenceDepth<0||request.referenceDepth>64))throw new Error('Invalid native reference snapshot depth');
+    if(request.referenceDepth!==undefined&&(!Number.isInteger(request.referenceDepth)||request.referenceDepth<0))throw new Error('Invalid native reference snapshot depth');
     const captured=snapshot(scope,query,{ai:true,boxes:request.accessibilityBoxes===true,captureReferences:true});
-    const newRefs=new Map();if(++generation>Number.MAX_SAFE_INTEGER)throw new Error('Native snapshot generation limit exceeded');
+    const newRefs=new Map();if(++generation>Number.MAX_SAFE_INTEGER)throw new Error('Native snapshot generation counter overflowed');
     for(const [node,index] of captured.entries){const token='r'+prefix+'_'+generation+'_'+index;node.ref=token;newRefs.set(token,new WeakRef(captured.elements[index]));}
-    if(newRefs.size>1000000)throw new Error('Native snapshot reference limit exceeded');refs=newRefs;
+    refs=newRefs;
     const opts={mode:'ai',boxes:request.accessibilityBoxes===true};if(request.referenceDepth!==undefined)opts.depth=request.referenceDepth;
     if(request.referenceFormat==='json')return {ready:true,value:{snapshotJSON:JSON.stringify(jsonFormat(captured.forest,opts))}};
     return {ready:true,value:{yamlJSON:JSON.stringify(yamlFormat(captured.forest,opts))}};
@@ -118,7 +118,7 @@ inline std::string SuiteCutDOMDriverSource() {
     if(state==='hidden')return !actual.visible;if(state==='disabled')return !actual.enabled;
     if(state==='checked')return checked(editable(e));return actual[state]===true;
   };
-  const read=request=>{if(request.elementState)return {ready:true,value:elementState(request)};if(request.count)return {ready:true,value:['primitive',resolve(request).length]};const e=one(request);if(!e)return {ready:false};if(typeof request.function!=='string'||request.function.length>65536)throw new Error('Invalid native DOM getter');return {ready:true,value:(0,eval)('('+request.function+')')(e)};};
+  const read=request=>{if(request.elementState)return {ready:true,value:elementState(request)};if(request.count)return {ready:true,value:['primitive',resolve(request).length]};const e=one(request);if(!e)return {ready:false};if(typeof request.function!=='string')throw new Error('Invalid native DOM getter');return {ready:true,value:(0,eval)('('+request.function+')')(e)};};
   const verifyChecked=request=>{const e=one(request);return !!e&&checked(editable(e))===request.checked;};
   Object.defineProperty(globalThis,'__suitecutNativeChromeDOM1',{value:{inspect,observe,read,reference,verifyChecked,element:one,all:resolve,elementState,markDragSource:request=>{const e=one(request);dragSource=e?new WeakRef(e):null;return true;}}});return true;
 })())JS";

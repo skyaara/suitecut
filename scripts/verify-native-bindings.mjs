@@ -94,13 +94,16 @@ try {
   )
   await largeHandle.dispose()
   await page.exposeFunction('oversizedValue', () => 'x'.repeat(2 * 1024 * 1024))
-  await assert.rejects(page.evaluate('oversizedValue()'), /result exceeds 1 MiB/u)
+  assert.equal(
+    await page.evaluate('oversizedValue().then(value=>value.length)'),
+    2 * 1024 * 1024,
+  )
   const stagedState = z
     .object({ bindingResultBytes: z.number() })
     .parse(await page.source.runAutomation('diagnostics'))
   assert.equal(stagedState.bindingResultBytes, 0)
   checks.push('chunked Unicode result preserves exact native handle identity')
-  checks.push('oversized result rejects and staged bytes return to zero')
+  checks.push('a 2 MiB result passes whole and staged bytes return to zero')
   await assert.rejects(
     page.exposeFunction('multiply', () => 0),
     /already registered/u,

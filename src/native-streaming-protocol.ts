@@ -3,11 +3,11 @@ import * as z from 'zod'
 
 const count = z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER)
 export const NativeStreamingInfoSchema = z.strictObject({
-  clientToken: z.string().min(1).max(128),
-  id: z.string().min(1).max(128),
+  clientToken: z.string().min(1),
+  id: z.string().min(1),
   phase: z.enum(['starting', 'streaming', 'reconnecting', 'stopping', 'complete', 'failed']),
-  failure: z.string().max(16384),
-  diagnostics: z.string().max(8192),
+  failure: z.string(),
+  diagnostics: z.string(),
   firstCapturedTimestampMs: z.number().finite().min(-1).optional(),
   attemptNumber: count.optional(),
   reconnectAttempts: count.optional(),
@@ -18,7 +18,7 @@ export const NativeStreamingInfoSchema = z.strictObject({
   cumulativeMuxedBytes: count.optional(),
   disconnectedVideoFrames: count.optional(),
   disconnectedAudioFrames: count.optional(),
-  lastAttemptFailure: z.string().max(16384).optional(),
+  lastAttemptFailure: z.string().optional(),
   attempts: z
     .array(
       z.strictObject({
@@ -31,14 +31,13 @@ export const NativeStreamingInfoSchema = z.strictObject({
         encodedFrames: count,
         audioSubmittedFrames: count,
         muxedBytes: count,
-        failure: z.string().max(1024),
-        diagnostics: z.string().max(1024),
+        failure: z.string(),
+        diagnostics: z.string(),
         diagnosticTruncated: z.boolean(),
         childReaped: z.boolean(),
         childExitObserved: z.boolean(),
       }),
     )
-    .max(8)
     .optional(),
   firstTimestampMs: z.number().finite().min(-1),
   durationMs: z.number().finite().nonnegative(),
@@ -67,7 +66,7 @@ export const NativeStreamingInfoSchema = z.strictObject({
   muxedProgressObserved: z.boolean(),
   physicalEncoderPid: z.number().int().nonnegative(),
   selectedPageId: z.number().int().positive().optional(),
-  framesPerSecond: z.number().finite().min(1).max(120).optional(),
+  framesPerSecond: z.number().finite().min(1).optional(),
   timestampMs: z.number().finite().nonnegative().optional(),
 })
 export type NativeStreamingInfo = z.infer<typeof NativeStreamingInfoSchema>

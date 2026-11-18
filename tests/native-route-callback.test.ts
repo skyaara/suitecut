@@ -40,11 +40,11 @@ describe('physical authored route callback leases', () => {
     expect(f.acknowledgments).toEqual(['start', 'finish'])
     expect(nativeRouteCallbackPhysicalCount(f.process.signal)).toBe(0)
   })
-  it('retains all 128 externally held unresolved closures after their page closes', async () => {
+  it('admits closures past the old 128 cap and retains them all after their page closes', async () => {
     const f = transport(),
       resolvers: (() => void)[] = [],
       calls: Promise<void>[] = []
-    for (let index = 1; index <= 128; index++)
+    for (let index = 1; index <= 129; index++)
       calls.push(
         invokeNativeRouteCallback(
           f.source,
@@ -53,17 +53,9 @@ describe('physical authored route callback leases', () => {
         ),
       )
     await Promise.resolve()
-    expect(resolvers).toHaveLength(128)
+    expect(resolvers).toHaveLength(129)
     f.page.abort(new Error('actual page closed'))
-    expect(nativeRouteCallbackPhysicalCount(f.process.signal)).toBe(128)
-    let overflowCalled = false
-    await expect(
-      invokeNativeRouteCallback(f.source, { invocation: '129', token: '129', scope: '1' }, () => {
-        overflowCalled = true
-      }),
-    ).rejects.toThrow('capacity')
-    expect(overflowCalled).toBe(false)
-    expect(nativeRouteCallbackPhysicalCount(f.process.signal)).toBe(128)
+    expect(nativeRouteCallbackPhysicalCount(f.process.signal)).toBe(129)
     for (const resolve of resolvers) resolve()
     await Promise.all(calls)
     expect(nativeRouteCallbackPhysicalCount(f.process.signal)).toBe(0)

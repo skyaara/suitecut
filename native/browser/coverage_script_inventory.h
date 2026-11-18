@@ -11,11 +11,10 @@
 namespace suitecut {
 // Actual Inspector metadata only, independent of whether coverage currently owns
 // a Profiler lease. No source bytes, execution counts, or protocol ACKs are made
-// by this inventory. Limits cover retained JSON bytes; not an absolute heap cap.
+// by this inventory. Bytes/Scripts are diagnostics counters, never admission caps.
 class CoverageScriptInventory {
  public:
   using Dict=CefRefPtr<CefDictionaryValue>;
-  static constexpr size_t kSessions=2049,kScripts=8192,kPerSession=2048,kBytes=8*1048576,kEntryBytes=65536;
   void Observe(const std::string& method,Dict params,const std::string& session){
     if(method=="Runtime.executionContextsCleared"){Detached(session);return;}
     if(method=="Runtime.executionContextDestroyed"){
@@ -26,23 +25,22 @@ class CoverageScriptInventory {
       return;
     }
     if(method!="Debugger.scriptParsed"||!params)return;
-    if(session.size()>128){failed_=true;return;}
     auto found=sessions_.find(session);
-    if(found==sessions_.end()){if(sessions_.size()>=kSessions){failed_=true;return;}found=sessions_.emplace(session,Session{}).first;}
+    if(found==sessions_.end())found=sessions_.emplace(session,Session{}).first;
     auto& target=found->second;if(target.failed)return;
     if(params->GetType("executionContextId")!=VTYPE_INT||params->GetInt("executionContextId")<=0)return;
     if(params->GetType("scriptLanguage")==VTYPE_STRING&&params->GetString("scriptLanguage")!="JavaScript")return;
-    if(params->GetType("scriptId")!=VTYPE_STRING||params->GetString("scriptId").length()>256){target.failed=true;return;}
+    if(params->GetType("scriptId")!=VTYPE_STRING){target.failed=true;return;}
     const auto id=params->GetString("scriptId").ToString();if(id.empty()){target.failed=true;return;}
     auto selected=CefDictionaryValue::Create();selected->SetString("scriptId",id);selected->SetInt("executionContextId",params->GetInt("executionContextId"));
     for(const char* key:{"url","embedderName","hash","scriptLanguage"})if(params->HasKey(key)){
-      const auto value=params->GetValue(key);if(!BoundedString(value)){target.failed=true;return;}selected->SetValue(key,value->Copy());
+      const auto value=params->GetValue(key);if(!ValidString(value)){target.failed=true;return;}selected->SetValue(key,value->Copy());
     }
     if(!selected->HasKey("url")){target.failed=true;return;}
     if(params->HasKey("hasSourceURL")){if(params->GetType("hasSourceURL")!=VTYPE_BOOL){target.failed=true;return;}selected->SetBool("hasSourceURL",params->GetBool("hasSourceURL"));}
     auto boxed=CefValue::Create();boxed->SetDictionary(selected);const auto json=CefWriteJSON(boxed,JSON_WRITER_DEFAULT).ToString();
     const auto prior=target.scripts.find(id);const auto old=prior==target.scripts.end()?0:prior->second.json.size();
-    if(json.empty()||json.size()>kEntryBytes||json.size()>kBytes-(bytes_-old)||(prior==target.scripts.end()&&(scripts_>=kScripts||target.scripts.size()>=kPerSession))){target.failed=true;return;}
+    if(json.empty()){target.failed=true;return;}
     const int context=params->GetInt("executionContextId");
     const int previous_context=prior==target.scripts.end()?0:prior->second.context;
     const bool native=prior!=target.scripts.end()&&previous_context==context&&prior->second.native_owned;
@@ -62,7 +60,7 @@ class CoverageScriptInventory {
   // Their ownership bit comes from MarkNative, never authored script metadata.
   bool Snapshot(const std::string& session,std::vector<Dict>& output,std::string& error,double deadline=0,double (*now)()=nullptr,bool include_native=false)const{
     output.clear();const auto found=sessions_.find(session);
-    if(failed_||(found!=sessions_.end()&&found->second.failed)){error="Actual native coverage script inventory metadata capacity or identity failed";return false;}
+    if(failed_||(found!=sessions_.end()&&found->second.failed)){error="Actual native coverage script inventory metadata identity failed";return false;}
     if(found==sessions_.end())return true;
     for(const auto& [id,script]:found->second.scripts){if(script.native_owned&&!include_native)continue;if(deadline>0&&now&&now()>=deadline){output.clear();error="Native coverage original deadline expired during inventory seed";return false;}auto value=CefParseJSON(script.json,JSON_PARSER_RFC);auto entry=value?value->GetDictionary():nullptr;if(!entry){output.clear();error="Retained native script inventory JSON is unavailable";return false;}auto retained=entry->Copy(false);if(script.native_owned)retained->SetBool("suitecutNativeOwned",true);output.push_back(retained);}
     return true;
@@ -70,7 +68,7 @@ class CoverageScriptInventory {
   // Only the caller's validated native getProperties FunctionLocation receipt
   // may invoke this. The inventory itself never guesses ownership from bytes.
   bool MarkNative(const std::string& session,int context,const std::string& id){
-    if(failed_||context<=0||id.empty()||id.size()>256)return false;
+    if(failed_||context<=0||id.empty())return false;
     const auto target=sessions_.find(session);if(target==sessions_.end()||target->second.failed)return false;
     const auto script=target->second.scripts.find(id);if(script==target->second.scripts.end()||script->second.context!=context)return false;
     if(!script->second.native_owned&&!Bump(target->second,context))return false;
@@ -80,7 +78,7 @@ class CoverageScriptInventory {
   // read/pause. Native scripts remain queryable here; coverage Snapshot still
   // excludes attested native scripts. No URL/source-byte ownership inference.
   bool Contains(const std::string& session,int context,const std::string& id)const{
-    if(failed_||context<=0||id.empty()||id.size()>256)return false;
+    if(failed_||context<=0||id.empty())return false;
     const auto target=sessions_.find(session);if(target==sessions_.end()||target->second.failed)return false;
     const auto script=target->second.scripts.find(id);
     return script!=target->second.scripts.end()&&script->second.context==context;
@@ -88,7 +86,7 @@ class CoverageScriptInventory {
   // Actual scriptParsed association for native scoped pause classification.
   // Attestation is a deny-only fact, never proof of author mutation authority.
   bool ScriptContext(const std::string&session,const std::string&id,int&context,bool&attested)const{
-    context=0;attested=false;if(failed_||id.empty()||id.size()>256)return false;
+    context=0;attested=false;if(failed_||id.empty())return false;
     const auto target=sessions_.find(session);if(target==sessions_.end()||target->second.failed)return false;
     const auto script=target->second.scripts.find(id);if(script==target->second.scripts.end())return false;
     context=script->second.context;attested=script->second.native_owned;return true;
@@ -113,7 +111,7 @@ class CoverageScriptInventory {
     output=Page{};
     if(context<=0||failed_){error="Actual native debugger script inventory is unavailable";return false;}
     const auto target=sessions_.find(session);
-    if(target!=sessions_.end()&&target->second.failed){error="Actual native debugger script inventory capacity failed";return false;}
+    if(target!=sessions_.end()&&target->second.failed){error="Actual native debugger script inventory identity failed";return false;}
     const auto revision=target==sessions_.end()?0:ContextRevision(target->second,context);
     if(check_revision&&expected_revision!=revision){error="Native debugger script inventory changed; restart enumeration";return false;}
     output.revision=revision;output.json="[";
@@ -122,12 +120,10 @@ class CoverageScriptInventory {
       if(it->second.context!=context)continue;
       if(output.count==64){output.more=true;break;}
       auto value=CefParseJSON(it->second.json,JSON_PARSER_RFC);auto metadata=value?value->GetDictionary():nullptr;std::string entry;
-      if(!metadata||!DebuggerScriptMetadata::Build(metadata,it->second.native_owned,entry)){output=Page{};error="Actual native debugger script metadata exceeds its projection bound";return false;}
+      if(!metadata||!DebuggerScriptMetadata::Build(metadata,it->second.native_owned,entry)){output=Page{};error="Actual native debugger script metadata could not be projected";return false;}
       const size_t needed=entry.size()+(output.count?1:0)+1;
-      if(needed>(512*1024-1024)-output.json.size()){
-        if(!output.count){output=Page{};error="Actual native debugger script entry exceeds page byte bound";return false;}
-        output.more=true;break;
-      }
+      // Page splitting only: a first entry larger than the page target is still published whole.
+      if(output.count&&output.json.size()+needed>512*1024-1024){output.more=true;break;}
       if(output.count)output.json+=',';
       output.json+=entry;output.last=it->first;++output.count;
     }
@@ -140,12 +136,12 @@ class CoverageScriptInventory {
   void Clear(){sessions_.clear();bytes_=scripts_=0;failed_=false;}
   size_t Bytes()const{return bytes_;}size_t Scripts()const{return scripts_;}
  private:
-  static bool BoundedString(CefRefPtr<CefValue> value){
+  static bool ValidString(CefRefPtr<CefValue> value){
     if(!value){return false;}
-    if(value->GetType()==VTYPE_STRING)return value->GetString().length()<=32768;
+    if(value->GetType()==VTYPE_STRING)return true;
     if(value->GetType()!=VTYPE_DICTIONARY){return false;}
     const auto tag=value->GetDictionary();
-    if(tag->GetSize()!=1||tag->GetType(kDevToolsUTF16Tag)!=VTYPE_STRING||tag->GetString(kDevToolsUTF16Tag).length()>4*32768)return false;
+    if(tag->GetSize()!=1||tag->GetType(kDevToolsUTF16Tag)!=VTYPE_STRING)return false;
     std::u16string units;return DevToolsReadTag(value,units);
   }
   struct Script{int context;std::string json;bool native_owned=false;};struct Session{std::map<std::string,Script> scripts;std::map<int,uint64_t>revisions;bool failed=false;};

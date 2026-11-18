@@ -19,11 +19,13 @@ int main() {
   assert(!controls.Wait(6,1,"request",2,30,[](bool,Controls::Dict,const std::string&){}));
   controls.Cancel(2);assert(controls.waiters()==0);
   for(int index=0;index<600;++index){assert(controls.Observe(2,3,event));}
-  assert(controls.records()==512 && controls.bytes()<=8388608);
-  bool lost=false;assert(controls.Wait(7,2,"request",0,30,[&](bool ok,Controls::Dict,const std::string& error){lost=!ok && error.find("journal capacity")!=std::string::npos;}));assert(lost);
+  {auto huge=CefDictionaryValue::Create();huge->SetString("event","request");auto big=CefDictionaryValue::Create();big->SetString("url","https://native.test/"+std::string(2*1048576,'u'));huge->SetDictionary("request",big);assert(controls.Observe(2,3,huge));}
+  // Nothing is evicted: every record stays until its context closes, and a cursor-0 waiter replays the first one.
+  assert(controls.records()==601 && controls.bytes()>2*1048576);
+  bool replayed=false;assert(controls.Wait(7,2,"request",0,30,[&](bool ok,Controls::Dict record,const std::string&){replayed=ok&&record->GetDictionary("network")->GetDictionary("request")->GetString("id")=="actual-native-identity";}));assert(replayed);
   // Native completion removes ownership before a synchronous close callback.
   assert(controls.Wait(8,2,"response",static_cast<double>(controls.sequence()),30,[&](bool ok,Controls::Dict,const std::string&){assert(ok);controls.Clear();}));event->SetString("event","response");assert(controls.Observe(2,3,event));assert(controls.waiters()==0 && controls.records()==0);
-  auto worker=CefDictionaryValue::Create();worker->SetString("id","actual-worker-target");worker->SetString("url","https://native.test/sw.js");worker->SetString("type","service_worker");
+  auto worker=CefDictionaryValue::Create();worker->SetString("id","actual-worker-target");worker->SetString("url","https://native.test/sw.js?"+std::string(10000,'q'));worker->SetString("type","service_worker");
   const auto cursor=controls.sequence();bool worker_seen=false;
   assert(controls.Wait(9,9,"response",double(cursor),100,[&](bool ok,Controls::Dict value,const std::string&){worker_seen=ok;assert(!value->HasKey("pageId")&&value->GetDictionary("worker")->GetString("id")=="actual-worker-target");}));
   assert(controls.ObserveWorker(9,worker,event));assert(worker_seen&&controls.waiters()==0);

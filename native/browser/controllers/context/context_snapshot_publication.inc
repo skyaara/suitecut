@@ -8,7 +8,6 @@ double SuiteCutContextControls::SnapshotDeadline(int owner)const{
 }
 bool SuiteCutContextControls::CommitInitSnapshot(int context,std::string text,int owner){
   const auto found=contexts_.find(context);if(found==contexts_.end()||found->second.closing)return false;
-  if(owner>0&&!snapshot_targets_.contains(owner)&&snapshot_targets_.size()>=64)return false;
   const auto before=snapshot_publications_.Current(context).version;
   std::shared_ptr<SnapshotTarget>target;
   bool inserted=false;
@@ -63,7 +62,7 @@ SuiteCutContextControls::Reply SuiteCutContextControls::SnapshotReply(int owner,
   };
 }
 void SuiteCutContextControls::SnapshotAwait(int owner,int context,uint64_t generation,double deadline,Dict result,Reply reply){
-  if(owner<=0||snapshot_waits_.contains(owner)||snapshot_waits_.size()>=64){reply(false,nullptr,"Native shared snapshot waiter capacity exceeded");return;}
+  if(owner<=0||snapshot_waits_.contains(owner)){reply(false,nullptr,"Native shared snapshot waiter owner is invalid or already waiting");return;}
   const auto expected=snapshot_targets_.find(owner);
   if(expected==snapshot_targets_.end()){reply(true,result,"");return;}
   const auto target=expected->second;snapshot_targets_.erase(expected);
@@ -125,8 +124,7 @@ bool SuiteCutContextControls::SnapshotMessage(int page,CefRefPtr<CefFrame>frame,
     if(!frame->IsMain()||!frame->IsValid()||!actual||actual->GetIdentifier()!=frame->GetIdentifier().ToString()||channel!=frame->GetIdentifier().ToString()||snapshot_next_epoch_==std::numeric_limits<uint64_t>::max())return true;
     auto peer=snapshot_peers_.find(page);
     if(peer==snapshot_peers_.end()||peer->second.request!=request||peer->second.pin.frame!=channel){
-      // One receiver per page, up to the browser's 128-page limit.
-      if(snapshot_peers_.size()>=128&&peer==snapshot_peers_.end())return true;
+      // One receiver per page.
       SnapshotPeer next;next.pin={static_cast<uint64_t>(context),static_cast<uint64_t>(target->second.browser->GetIdentifier()),++snapshot_next_epoch_,frame->GetIdentifier().ToString()};next.request=request;next.route=frame->GetIdentifier().ToString();
       snapshot_peers_.insert_or_assign(page,std::move(next));peer=snapshot_peers_.find(page);
     }

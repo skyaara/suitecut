@@ -21,8 +21,9 @@ int main(){
  controls->Handle(3,7,"clearCookies",Parse(R"({"filter":{"name":"chip"}})"),3456,done);call=std::move(calls.front());calls.pop_front();call.reply(true,raw,"");assert(calls.size()==1);call=std::move(calls.front());calls.pop_front();assert(call.method==suitecut::CookieMethod::Delete&&call.deadline==3456&&call.params->GetString("name")=="chip"&&!call.params->GetDictionary("partitionKey")->GetBool("hasCrossSiteAncestor"));call.reply(true,Parse("{}"),"");assert(controls->Physical()==0&&complete==3);
  // A canceled get must retain its physical admission and never fan out deletes.
  controls->Handle(4,7,"clearCookies",Parse(R"({"filter":{"domain":"localhost"}})"),4567,done);controls->Cancel(4);assert(controls->Physical()==1);call=std::move(calls.front());calls.pop_front();call.reply(true,raw,"");assert(calls.empty()&&controls->Physical()==0&&complete==3);
- int closed=0;for(int owner=1;owner<=64;++owner){controls->Handle(owner,7,"cookies",Parse("{}"),5000,[&](bool ok,Dict,const std::string& error){assert(!ok&&error=="Native cookie context closed");++closed;});}
- assert(controls->Physical()==64&&calls.size()==64);int rejected=0;controls->Handle(65,7,"cookies",Parse("{}"),5000,[&](bool ok,Dict,const std::string&){assert(!ok);++rejected;});assert(rejected==1);controls->Closed(7);assert(controls->Physical()==64&&closed==64);while(!calls.empty()){call=std::move(calls.front());calls.pop_front();call.reply(false,nullptr,"Actual channel close");}assert(controls->Physical()==0&&complete==3);
+ int closed=0;for(int owner=1;owner<=200;++owner){controls->Handle(owner,7,"cookies",Parse("{}"),5000,[&](bool ok,Dict,const std::string& error){assert(!ok&&error=="Native cookie context closed");++closed;});}
+ // No concurrent cookie operation cap: all 200 reach the actual channel.
+ assert(controls->Physical()==200&&calls.size()==200);controls->Closed(7);assert(controls->Physical()==200&&closed==200);while(!calls.empty()){call=std::move(calls.front());calls.pop_front();call.reply(false,nullptr,"Actual channel close");}assert(controls->Physical()==0&&complete==3);
  // Public URL selection agrees with the actual native loopback cookie wire
  // policy, while external HTTP and domain/path boundaries remain restricted.
  for(const auto* host:{"localhost","127.0.0.1","[::1]"}){

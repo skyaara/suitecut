@@ -86,10 +86,7 @@ try {
   assert.equal(results.filter((result) => result.status === 'rejected').length, 64)
   assert.equal(finish.length, 64)
   assert.equal(nativeURLPredicatePhysicalCount(source), 64)
-  await assert.rejects(
-    expectNative(page).toHaveURL(() => true, { timeout: 20 }),
-    /physical callback capacity/,
-  )
+  await expectNative(page).toHaveURL(() => true, { timeout: 1000 })
   const first = finish.shift()
   assert(first)
   first(false)

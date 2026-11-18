@@ -5,12 +5,12 @@ std::shared_ptr<suitecut::CredentialPage> credentials_;
 void CredentialPrepare() {
   const auto store=engine_.contexts()->CredentialReadyStore();
   if(!store->Register(browser_->GetIdentifier(),browser_->GetHost()->GetRequestContext())){
-    Error("Native credential readiness capacity exceeded");suitecut::browser::CloseBrowser(browser_, true);return;
+    Error("Native credential readiness registration failed");suitecut::browser::CloseBrowser(browser_, true);return;
   }
   credentials_=std::make_shared<suitecut::CredentialPage>(
     [this](const std::string&session,const std::string&method,Dict params,suitecut::CredentialPage::Result done){
       const int id=AllocateDevToolsId();
-      if(!id||network_calls_.size()>=1024){done(false,"Native credential physical command capacity exceeded");return;}
+      if(!id){done(false,"Native credential physical command id unavailable");return;}
       network_calls_.emplace(id,NetworkCall{session,[this,done=std::move(done)](bool ok,const std::string&json){
         if(!ok&&json=="Native network command deadline expired"){
           if(browser_){engine_.contexts()->CredentialReadyStore()->Ready(browser_->GetIdentifier(),false);suitecut::browser::CloseBrowser(browser_, true);}
@@ -43,14 +43,14 @@ bool CredentialEvent(const std::string&method,Dict data,const std::string&sessio
   if(method!="WebAuthn.credentialAdded"&&method!="WebAuthn.credentialAsserted")return true;
   const auto value=data->GetDictionary("credential");if(!value){Error("Native WebAuthn credential event missing credential");return true;}
   suitecut::VirtualCredential credential;std::string error;
-  auto decode=[&](const char*name,size_t limit,std::string&output){
+  auto decode=[&](const char*name,std::string&output){
     if(value->GetType(name)!=VTYPE_STRING)return false;
     auto encoded=value->GetString(name).ToString();for(auto&ch:encoded){if(ch=='+')ch='-';else if(ch=='/')ch='_';}while(!encoded.empty()&&encoded.back()=='=')encoded.pop_back();
-    std::vector<unsigned char>bytes;if(!suitecut::CredentialDecodeBase64URL(encoded,limit,bytes))return false;
+    std::vector<unsigned char>bytes;if(!suitecut::CredentialDecodeBase64URL(encoded,bytes))return false;
     output=suitecut::CredentialBase64URL(bytes.data(),bytes.size());return true;
   };
   const auto type=value->GetType("signCount");const double count=type==VTYPE_INT?value->GetInt("signCount"):type==VTYPE_DOUBLE?value->GetDouble("signCount"):-1;
-  if(value->GetType("rpId")!=VTYPE_STRING||!decode("credentialId",1024,credential.id)||!decode("userHandle",64,credential.user_handle)||!decode("privateKey",16384,credential.private_key)||!std::isfinite(count)||count<0||count>4294967295.0||std::floor(count)!=count){Error("Invalid native WebAuthn credential event");if(browser_)suitecut::browser::CloseBrowser(browser_, true);return true;}
+  if(value->GetType("rpId")!=VTYPE_STRING||!decode("credentialId",credential.id)||!decode("userHandle",credential.user_handle)||!decode("privateKey",credential.private_key)||!std::isfinite(count)||count<0||count>4294967295.0||std::floor(count)!=count){Error("Invalid native WebAuthn credential event");if(browser_)suitecut::browser::CloseBrowser(browser_, true);return true;}
   credential.rp_id=value->GetString("rpId");credential.sign_count=static_cast<uint32_t>(count);
   if(!suitecut::VirtualCredentialPublicKey(credential.private_key,credential.public_key,error)){
     Error(error.c_str());if(browser_)suitecut::browser::CloseBrowser(browser_, true);return true;

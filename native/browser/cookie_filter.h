@@ -21,10 +21,9 @@ inline bool ValidateCookieFilter(CookieFilterDict filter,bool&regex,std::string&
   CefDictionaryValue::KeyList keys;filter->GetKeys(keys);
   for(const auto&key:keys){
     const auto field=key.ToString();if(field!="name"&&field!="domain"&&field!="path"){error="Unknown native cookie filter field";return false;}
-    if(filter->GetType(key)==VTYPE_STRING){if(filter->GetString(key).length()>8192){error="Native cookie filter string capacity exceeded";return false;}continue;}
+    if(filter->GetType(key)==VTYPE_STRING)continue;
     auto pattern=filter->GetDictionary(key);if(!pattern||pattern->GetSize()!=2||pattern->GetType("sourceJSON")!=VTYPE_STRING||pattern->GetType("flags")!=VTYPE_STRING){error="Native cookie filter must be a string or regular expression";return false;}
     const auto source=pattern->GetString("sourceJSON").ToString(),flags=pattern->GetString("flags").ToString();
-    if(source.size()>32768||flags.size()>8){error="Native cookie regular expression capacity exceeded";return false;}
     if(!CookiePatternJSONString(source)){error="Invalid native cookie regular expression source";return false;}
     std::string seen;for(const char flag:flags){if(std::string("dgimsuvy").find(flag)==std::string::npos||seen.find(flag)!=std::string::npos){error="Invalid native cookie regular expression flags";return false;}seen+=flag;}
     if(flags.find('u')!=std::string::npos&&flags.find('v')!=std::string::npos){error="Incompatible native cookie regular expression flags";return false;}regex=true;
@@ -39,10 +38,10 @@ inline bool ValidateCookieFilterParameters(CookieFilterDict params,const std::st
 inline bool BuildCookieFilterEvaluation(CookieFilterDict input,double deadline,double now,CookieFilterDict&output,std::string&error){
   error.clear();if(!input||!std::isfinite(now)||!std::isfinite(deadline)||deadline<0||(deadline&&now>=deadline)){error="Native cookie original deadline expired before filtering";return false;}
   bool regex=false;const auto filter=input->GetDictionary("filter");const auto cookies=input->GetList("cookies");
-  if(!ValidateCookieFilter(filter,regex,error)||!regex||!cookies||cookies->GetSize()>4096){if(error.empty())error="Invalid native cookie regular expression input";return false;}
+  if(!ValidateCookieFilter(filter,regex,error)||!regex||!cookies){if(error.empty())error="Invalid native cookie regular expression input";return false;}
   auto payload=CefDictionaryValue::Create();payload->SetDictionary("filter",filter->Copy(false));auto fields=CefListValue::Create();
   for(size_t i=0;i<cookies->GetSize();++i){const auto cookie=cookies->GetDictionary(i);if(!cookie){error="Invalid native cookie filter record";return false;}auto item=CefDictionaryValue::Create();for(const auto*field:{"name","domain","path"}){if(cookie->GetType(field)!=VTYPE_STRING){error="Invalid native cookie filter field value";return false;}item->SetString(field,cookie->GetString(field));}fields->SetDictionary(i,item);}
-  payload->SetList("cookies",fields);auto value=CefValue::Create();value->SetDictionary(payload);const auto json=CefWriteJSON(value,JSON_WRITER_DEFAULT).ToString();if(json.size()>1048576){error="Native cookie filter input byte capacity exceeded";return false;}
+  payload->SetList("cookies",fields);auto value=CefValue::Create();value->SetDictionary(payload);const auto json=CefWriteJSON(value,JSON_WRITER_DEFAULT).ToString();
   // This runs only in the genuine context-private broker realm. V8 owns RegExp
   // syntax/flags/UTF16 semantics and its real execution timeout bounds backtracking.
   const auto expression=R"JS(((input)=>{const patterns=Object.entries(input.filter).map(([field,value])=>[field,typeof value==='string'?value:new RegExp(JSON.parse(value.sourceJSON),value.flags)]);const matches=[];for(let i=0;i<input.cookies.length;++i){const cookie=input.cookies[i];if(patterns.every(([field,value])=>{if(typeof value==='string')return cookie[field]===value;value.lastIndex=0;return value.test(cookie[field]);}))matches.push(i);}return {matches};})( )JS"+json+")";

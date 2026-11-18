@@ -35,8 +35,6 @@ export interface NativeEventPredicateOptions {
 }
 
 const counts = new WeakMap<AbortSignal, { pending: number }>()
-let physicalPending = 0
-const capacity = 64
 
 /** Counts actual outstanding host closures; cancelling IPC cannot settle them. */
 export function nativeEventPredicatePhysicalCount(source: NativeEventPredicateSource): number {
@@ -85,11 +83,6 @@ export async function waitNativeEventPredicate<T>(
     let accepted: { value: T } | undefined
     const compare = bindNativeRetryContinuation(
       async (snapshot: NativeEventPredicateSnapshot): Promise<void> => {
-        if (physicalPending >= capacity) {
-          action.abort(new Error('Native event predicate physical host callback capacity exceeded'))
-          return
-        }
-        ++physicalPending
         ++physical.pending
         const raw = Promise.resolve().then(async () => {
           const value = await decode(snapshot.value)
@@ -101,11 +94,9 @@ export async function waitNativeEventPredicate<T>(
         retainNativeRetryOperation(raw)
         void raw.then(
           () => {
-            --physicalPending
             --physical.pending
           },
           () => {
-            --physicalPending
             --physical.pending
           },
         )

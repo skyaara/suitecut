@@ -66,10 +66,7 @@ export class NativeDialogEvents {
     const detach = source.onDialogMessage((info) => {
       const dialog = this.opened.get(info.id) ?? new NativeDialog(page, info)
       if (info.state === 'closed') this.opened.delete(info.id)
-      else {
-        if (this.opened.size >= 64) throw new Error('Native dialog registry capacity exceeded')
-        this.opened.set(info.id, dialog)
-      }
+      else this.opened.set(info.id, dialog)
       const listeners = [...(info.state === 'closed' ? this.closedListeners : this.listeners)]
       if (listeners.length) for (const listener of listeners) listener(dialog)
       else if (info.state !== 'closed')

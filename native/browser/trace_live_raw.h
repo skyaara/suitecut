@@ -17,14 +17,11 @@ class TraceLiveRaw : public std::enable_shared_from_this<TraceLiveRaw> {
  public:
   using Lease=TraceJournal::Lease;
   using State=std::shared_ptr<TraceRawFiles::Live>;
-  static constexpr size_t kPhysical=4,kBytes=128*1024*1024;
   static constexpr double kWindow=100;
   struct Hooks {
     std::string directory;
     std::function<double()> now;
     std::function<bool(std::function<void()>)> background,post;
-    std::function<size_t(Lease)> bytes;
-    std::function<size_t()> capacity,budget;
     std::function<bool(Lease,TraceArchive&,std::string&)> snapshot;
     std::function<void(Lease,const std::string&)> error;
     std::function<void(int)> settled;
@@ -50,11 +47,8 @@ class TraceLiveRaw : public std::enable_shared_from_this<TraceLiveRaw> {
     std::vector<uint64_t> complete;for(const auto& [id,job]:jobs_)if(job->completed.load(std::memory_order_acquire))complete.push_back(id);
     for(const auto id:complete){const auto found=jobs_.find(id);if(found==jobs_.end())continue;auto job=found->second;bytes_-=job->bytes;jobs_.erase(found);const auto current=records_.find(job->record->lease.context);if(current!=records_.end()&&current->second==job->record&&!job->canceled&&!job->ok){current->second->dirty=false;current->second->failed=true;if(hooks_.error)hooks_.error(job->record->lease,job->error);}if(hooks_.settled)hooks_.settled(job->record->lease.context);}
     for(const auto& [context,record]:records_){
-      if(jobs_.size()>=(hooks_.capacity?std::min(kPhysical,hooks_.capacity()):kPhysical))break;
       if(record->failed||record->paused||!record->dirty||record->due>now||Busy(context))continue;
-      const auto estimate=hooks_.bytes(record->lease);if(estimate>kBytes){record->failed=true;record->dirty=false;hooks_.error(record->lease,"Native live trace snapshot capacity exceeded");continue;}const auto budget=hooks_.budget?std::min(kBytes,hooks_.budget()):kBytes;if(bytes_>budget||estimate>budget-bytes_)continue;
       TraceArchive archive;std::string error;if(!hooks_.snapshot(record->lease,archive,error)){record->failed=true;record->dirty=false;hooks_.error(record->lease,error);continue;}
-      if(archive.Bytes()>budget-bytes_){record->due=now+kWindow;continue;}
       auto job=std::make_shared<Job>();job->record=record;job->bytes=archive.Bytes();job->deadline=now+30000;if(generation_>=9007199254740991ULL){record->failed=true;hooks_.error(record->lease,"Native live trace writer identity exceeded");continue;}job->expires=std::chrono::steady_clock::now()+std::chrono::seconds(30);const auto id=++generation_;jobs_[id]=job;bytes_+=job->bytes;record->dirty=false;
       const auto weak=weak_from_this();const auto post=hooks_.post;const auto directory=hooks_.directory;
       auto work=[weak,post,directory,job,archive=std::move(archive)]()mutable{

@@ -18,12 +18,12 @@ class NativeContextNetworkPolicy {
   using Apply=std::function<void(bool,Result)>;
   ~NativeContextNetworkPolicy(){Clear();}
   bool Seed(int context,bool offline) {
-    if(context<1 || (states_.size()>=32 && !states_.contains(context)))return false;
+    if(context<1)return false;
     auto [entry,inserted]=states_.emplace(context,State{offline,0});
     return inserted || entry->second.offline==offline;
   }
   bool Attach(int context,const std::string& page,Apply apply,Result ready) {
-    if(!states_.contains(context) || page.empty() || page.size()>128 || !apply || !ready || targets_.size()>=192 || targets_.contains(page))return false;
+    if(!states_.contains(context) || page.empty() || !apply || !ready || targets_.contains(page))return false;
     targets_.emplace(page,Target{context,++serial_,0,std::move(apply),std::move(ready)});
     const auto& state=states_.at(context);
     if(!state.offline && !state.owner){auto callback=std::move(targets_.at(page).ready);callback(true,"");return true;}
@@ -32,7 +32,7 @@ class NativeContextNetworkPolicy {
   }
   bool Set(int owner,int context,bool offline,double deadline,Result done) {
     const auto state=states_.find(context);
-    if(owner<1 || !std::isfinite(deadline) || deadline<0 || state==states_.end() || state->second.owner || !done || batches_.size()>=64 || batches_.contains(owner))return false;
+    if(owner<1 || !std::isfinite(deadline) || deadline<0 || state==states_.end() || state->second.owner || !done || batches_.contains(owner))return false;
     state->second.offline=offline;state->second.owner=owner;
     Batch batch;batch.context=context;batch.generation=++serial_;batch.deadline=deadline;batch.done=std::move(done);
     for(const auto& [page,target]:targets_)if(target.context==context)batch.pending.insert(page);

@@ -145,4 +145,20 @@ describe('native point picking transport, no browser hit-test claim', () => {
     await expect(page.pickLocator({ x: -1, y: 0 })).rejects.toThrow()
     expect(runAutomation).not.toHaveBeenCalled()
   })
+  it('decodes suggestion recipes past the old 16 KiB byte bound whole', () => {
+    const selector = '中'.repeat(6000)
+    const decoded = decodeNativeLocatorSuggestions({
+      ...packet(),
+      suggestions: [
+        {
+          kind: 'css',
+          query: [{ engine: 'css', selector }],
+          code: 'frame.locator("...")',
+          matches: 1,
+          sameNode: true,
+        },
+      ],
+    })
+    expect(decoded.suggestions[0]?.query).toEqual([{ engine: 'css', selector }])
+  })
 })

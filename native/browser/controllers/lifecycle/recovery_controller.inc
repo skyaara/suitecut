@@ -22,13 +22,13 @@
   }
   void RendererRecoveryHandlerTick() {
     if(!RendererRecoveryHandlerPending()||recovery_handler_retiring_)return;
-    std::array<uint64_t,SuiteCutOperationRegistry::kTotalCapacity> observing{};size_t count=0;
+    std::vector<uint64_t> observing;
     for(const auto&[id,nav]:navigations_)if(nav.recovery)if(const auto operation=operations_.Get(id)) {
       const auto invocation=engine_.LocatorHandlerCommandOrigin(id,page_id_,operation->generation).locator_handler_invocation;
-      if(invocation&&count<observing.size())observing[count++]=invocation;
+      if(invocation)observing.push_back(invocation);
     }
     bool abandoned=false;
-    for(const auto&[invocation,receipt]:recovery_handler_receipts_){(void)receipt;if(std::find(observing.begin(),observing.begin()+count,invocation)==observing.begin()+count){abandoned=true;break;}}
+    for(const auto&[invocation,receipt]:recovery_handler_receipts_){(void)receipt;if(std::find(observing.begin(),observing.end(),invocation)==observing.end()){abandoned=true;break;}}
     if(abandoned&&!recovery_handler_cleanup_deadline_)recovery_handler_cleanup_deadline_=Now()+30000;
     // New observers cannot renew the physical cleanup bound of an abandoned
     // native reload. Only the observed recovery barrier or OnBeforeClose ends it.
@@ -95,7 +95,6 @@
     }
     const auto invocation=suitecut::CurrentNativeWorkOrigin().locator_handler_invocation;
     if(invocation&&!recovery_handler_receipts_.contains(invocation)) {
-      if(recovery_handler_receipts_.size()>=64){Complete(id,false,"Native renderer recovery handler capacity exceeded");return;}
       recovery_handler_receipts_.emplace(invocation,suitecut::RetainNativeLocatorHandlerAsync());
     }
     const bool dispatch = !recovery_requested_;

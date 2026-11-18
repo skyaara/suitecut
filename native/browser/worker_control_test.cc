@@ -80,7 +80,7 @@ class Source : public CefBaseRefCounted {
     return SubmitDevTools(++next_call,method,params,session)?next_call:0;
   }
   void DevTools(int owner,const std::string& method,Dict params,DevToolsCallback callback,std::optional<std::string> session=std::nullopt,bool retained=false,size_t limit=16*1048576,bool lossless_scalars=false) {
-    assert(operations_.Contains(owner)&&limit<=16*1048576);
+    (void)limit;assert(operations_.Contains(owner));
     assert(!lossless_scalars||method=="Runtime.getProperties");
     devtools_.emplace(++next_call,DevToolsCall{owner,std::move(callback),session.value_or(operation_sessions_[owner]),method,params,retained});
   }
@@ -221,10 +221,11 @@ int main() {
   }
   {
     auto source=CefRefPtr<Source>(new Source());Attach(source);
+    // No physical command limit: the 65th command past the old bound is sent.
     for(int i=1;i<=64;++i){source->Admit(i);auto request=Request("evaluate");request->SetString("expression","new Promise(()=>{})");source->WorkerRun(i,request);source->Complete(i,false,"cancel");}
     assert(source->worker_physical_==64);
     source->Admit(65);auto request=Request("evaluate");request->SetString("expression","1");source->WorkerRun(65,request);
-    assert(!source->completions.back().ok&&source->worker_physical_==64);
+    assert(source->worker_physical_==65);
     assert(source->WorkerDetached("worker-session-A"));assert(source->worker_physical_==0&&source->devtools_.empty()&&source->worker_handles_.empty());
   }
   {
@@ -363,17 +364,16 @@ int main() {
 
   {
     auto source=CefRefPtr<Source>(new Source());source->worker_context_channel_=true;
-    for(int i=0;i<1024;++i){
+    // No tracked-worker limit: every worker past the old 1024 bound is tracked.
+    for(int i=0;i<1100;++i){
       const auto id="retained-observed-"+std::to_string(i),session="retained-session-"+std::to_string(i);
       auto data=Parse(R"({"targetInfo":{"type":"worker","url":"http://fixture.test/observed.js"}})");data->GetDictionary("targetInfo")->SetString("targetId",id);data->SetString("sessionId",session);
       assert(source->WorkerAttached(data,"actual-context-parent"));RunOne();auto request=CefDictionaryValue::Create();source->WorkerAttributeNetwork("Network.requestWillBeSent",request,session);
       source->WorkerBootstrapFailed(id,source->worker_targets_.at(id).generation,"controlled logical setup failure");
     }
-    assert(source->worker_targets_.size()==1024&&source->events.empty()&&source->worker_calls_.size()==2048);
-    auto extra=Parse(R"({"targetInfo":{"type":"worker","targetId":"over-capacity","url":"http://fixture.test/extra.js"},"sessionId":"over-capacity-session"})");assert(source->WorkerAttached(extra,"actual-context-parent"));
-    assert(source->worker_targets_.size()==1024&&!source->worker_targets_.contains("over-capacity")&&scheduled.empty());
+    assert(source->worker_targets_.size()==1100&&source->events.empty()&&source->worker_calls_.size()==2200);
     source->WorkerClear();assert(source->worker_targets_.empty()&&source->worker_calls_.empty());
-    assert(source->events.size()==1024);for(const auto& event:source->events)assert(event->GetString("event")=="channelclosed");
+    assert(source->events.size()==1100);for(const auto& event:source->events)assert(event->GetString("event")=="channelclosed");
   }
 
   {
@@ -451,8 +451,9 @@ int main() {
       const auto id="controlled-lifetime-"+std::to_string(index),session="controlled-lifetime-session-"+std::to_string(index);
       source->legacy_handoffs.clear();source->network_->script_handoffs.clear();source->events.clear();Attach(source,"worker",id.c_str(),session.c_str());assert(source->WorkerDetached(session));assert(source->native_detached_workers_.size()==size_t(index+1));
     }
+    // No retention limit: a detached worker past the old 1024 bound is kept, without closing the page.
     source->legacy_handoffs.clear();source->network_->script_handoffs.clear();source->events.clear();Attach(source,"worker","controlled-over-capacity","controlled-over-capacity-session");assert(source->WorkerDetached("controlled-over-capacity-session"));
-    assert(source->native_detached_workers_.size()==1024&&!source->errors.empty()&&source->errors.back().find("capacity")!=std::string::npos);
+    assert(source->native_detached_workers_.size()==1025&&source->native_detached_workers_.contains("controlled-over-capacity"));for(const auto& error:source->errors)assert(error.find("capacity")==std::string::npos);
     source->closing_page_=true;source->NativeWorkerTargetOwnerClosed();source->WorkerClear();assert(source->native_detached_workers_.empty()&&source->worker_targets_.empty()&&source->worker_calls_.empty());
   }
   {

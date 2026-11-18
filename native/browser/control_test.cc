@@ -72,8 +72,9 @@ int main(int argc, char** argv) {
   Check(reused && !operations.IsCurrent(1, first->generation));
   Check(!operations.IsExpired(1, reused->generation, 100000));
   operations.Clear();
-  for (int id = 1; id <= 64; ++id) Check(operations.Begin(id, 0, 10).has_value());
-  Check(!operations.Begin(65, 0, 10));
+  // No operation count cap: well past the old 64 ordinary operations.
+  for (int id = 1; id <= 200; ++id) Check(operations.Begin(id, 0, 10).has_value());
+  Check(operations.Size() == 200);
   operations.Clear();
 
   // Lines of any length arrive whole, as Playwright's do.

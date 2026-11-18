@@ -134,7 +134,7 @@ bool NativeDropSend(const NativeDropCore::Scope& scope,
     auto callback = std::move(*receipt);
     if (callback) callback(ok ? NativeDropCore::Outcome::Acknowledged
                              : NativeDropCore::Outcome::Error,
-                           ok ? "" : json.substr(0, 4096));
+                           ok ? "" : json);
     NativeDropRetired();
   };
   // Register before submission. Do not use DevTools(owner,...): selector-wait
@@ -249,8 +249,8 @@ bool NativeDropBegin(int owner, uint64_t generation, Dict data,
     return false;
   }
   native_drop_failed_owner_ = owner; native_drop_payload_.reset();
-  NetworkFatal("Native drag completion exceeds its bounded admission");
-  Complete(owner, false, "Native drag completion exceeds its bounded admission");
+  NetworkFatal("Native drag completion admission was refused");
+  Complete(owner, false, "Native drag completion admission was refused");
   return false;
 }
 void NativeDropCancel(int owner) {

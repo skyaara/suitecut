@@ -20,9 +20,9 @@ int main() {
   auto continuation=registry.Take(1,1,*first,"client");
   assert(continuation && registry.Size()==0); (*continuation)(true); assert(calls==1);
   assert(!registry.Take(1,1,*first,"client"));
-  for(int owner=1;owner<=64;++owner) assert(registry.Pause(owner,2,"client",[](bool){}));
-  assert(!registry.Pause(65,2,"client",[](bool){}));
-  registry.Cancel(32); assert(registry.Pause(65,2,"client",[](bool){}));
+  for(int owner=1;owner<=500;++owner) assert(registry.Pause(owner,2,"client",[](bool){}));
+  assert(registry.Size()==500 && !registry.Pause(32,2,"client",[](bool){}));
+  { const std::string long_token(4096,'c'); const auto token=registry.Pause(501,2,long_token,[](bool){}); assert(token && registry.Take(501,2,*token,long_token)); }
   registry.Clear(); assert(registry.Size()==0);
   auto resource=std::make_shared<int>(7); std::weak_ptr<int> weak=resource;
   assert(registry.Pause(1,3,"resource",[resource](bool){assert(*resource==7);}));

@@ -26,10 +26,10 @@ class NativeRequestBodyReads {
   ~NativeRequestBodyReads(){Close();}
   void Read(const std::string&session,const std::string&request,double deadline,Reply reply,Receipt receipt={}){
     if(!reply){if(receipt)receipt();return;}
-    if(closed_||session.size()>128||request.empty()||request.size()>256||!std::isfinite(deadline)||deadline<0||(deadline&&now_()>=deadline)){
+    if(closed_||request.empty()||!std::isfinite(deadline)||deadline<0||(deadline&&now_()>=deadline)){
       reply(false,{},false,closed_?"Native request-body owner is closed":"Invalid or expired native request-body owner");if(receipt)receipt();return;
     }
-    if(reads_.size()>=64||global_>=128||serial_>=9007199254740991ULL){reply(false,{},false,"Native physical request-body reader capacity exceeded");if(receipt)receipt();return;}
+    if(serial_>=9007199254740991ULL){reply(false,{},false,"Native physical request-body reader serial exhausted");if(receipt)receipt();return;}
     const auto id=++serial_;reads_.emplace(id,ReadState{deadline,std::move(reply),std::move(receipt)});++global_;
     const auto alive=alive_;auto send=send_;
     send(session,request,deadline,[this,alive,id](bool ok,const std::string&json){
@@ -41,15 +41,13 @@ class NativeRequestBodyReads {
       reads_.erase(found);--global_;
       if(!reply)return;
       if(deadline&&now_()>=deadline){reply(false,{},false,"Native original request-body deadline exceeded");return;}
-      if(!ok){reply(false,{},false,json.empty()?"Actual native request body is unavailable":json.substr(0,8192));return;}
-      if(json.size()>96*1048576){reply(false,{},false,"Native request body metadata exceeds limit");return;}
+      if(!ok){reply(false,{},false,json.empty()?"Actual native request body is unavailable":json);return;}
       const auto parsed=CefParseJSON(json,JSON_PARSER_RFC);const auto body=parsed?parsed->GetDictionary():nullptr;
       if(!body||body->GetType("postData")!=VTYPE_STRING||body->GetType("base64Encoded")!=VTYPE_BOOL){reply(false,{},false,"Invalid actual request-body metadata");return;}
       const auto text=body->GetString("postData").ToString();Bytes bytes;
       if(body->GetBool("base64Encoded")){
-        if(text.size()>(64*1048576+2)/3*4){reply(false,{},false,"Actual request body exceeds 64 MiB");return;}
-        if(!text.empty()){const auto decoded=CefBase64Decode(text);if(!decoded||decoded->GetSize()>64*1048576){reply(false,{},false,"Invalid or excessive actual request-body bytes");return;}bytes.resize(decoded->GetSize());decoded->GetData(bytes.data(),bytes.size(),0);if(CefBase64Encode(bytes.data(),bytes.size())!=text){reply(false,{},false,"Noncanonical native request-body base64");return;}}
-      }else{if(text.size()>64*1048576){reply(false,{},false,"Actual request body exceeds 64 MiB");return;}bytes.assign(text.begin(),text.end());}
+        if(!text.empty()){const auto decoded=CefBase64Decode(text);if(!decoded){reply(false,{},false,"Invalid actual request-body bytes");return;}bytes.resize(decoded->GetSize());decoded->GetData(bytes.data(),bytes.size(),0);if(CefBase64Encode(bytes.data(),bytes.size())!=text){reply(false,{},false,"Noncanonical native request-body base64");return;}}
+      }else bytes.assign(text.begin(),text.end());
       reply(true,std::move(bytes),!body->GetBool("base64Encoded"),"");
     });
     if(!*alive)return;

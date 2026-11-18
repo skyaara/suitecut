@@ -15,9 +15,6 @@ class DebuggerDomains {
   using Reply=std::function<void(bool,Dict,const std::string&)>;
   using Resume=std::function<void(Ready)>;
   using Paused=std::function<void(Dict,double,Resume)>;
-  // Only internal factory consumers use the bounded cache of collected-script
-  // sources. Explicit debugger/coverage consumers retain historical sources.
-  static constexpr int kFactoryScriptCacheBytes = 8 * 1024 * 1024;
   enum class Kind { Coverage, Factory, Developer };
   enum class Continuation { Resume, StepOver, StepInto, StepOut };
   using Continue=std::function<void(Continuation,double,Ready)>;

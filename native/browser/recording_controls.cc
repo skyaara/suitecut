@@ -34,13 +34,6 @@ std::string RecordingControls::StartImpl(int owner, int page, int context, Media
     if (owner && (record.ready.contains(owner) || record.stopped.contains(owner))) throw std::runtime_error("Duplicate native recording command");
   }
   if (sequence_ == std::numeric_limits<uint64_t>::max()) throw std::runtime_error("Native recording identity exhausted");
-  while (records_.size() >= 256) {
-    auto removable = records_.end();
-    for (auto candidate = records_.begin(); candidate != records_.end(); ++candidate)
-      if (!candidate->second.pipeline) { removable = candidate; break; }
-    if (removable == records_.end()) throw std::runtime_error("Native recording registry capacity exceeded");
-    records_.erase(removable);
-  }
   const std::string id = "recording-" + std::to_string(++sequence_);
   Record record;
   record.page = page; record.context = context; record.automatic = automatic; record.viewport_frames = options.dynamic_viewport; record.result.output_path = options.output_path;
@@ -159,12 +152,8 @@ void RecordingControls::Stop(int owner, const std::string& id, double timestamp,
     std::lock_guard lock(mutex_);
     const auto found = records_.find(id);
     if (found == records_.end() || owner <= 0 || !reply) throw std::runtime_error("Invalid native recording stop");
-    size_t waiters = 0;
-    for (const auto& [key, record] : records_) {
+    for (const auto& [key, record] : records_)
       if (record.ready.contains(owner) || record.stopped.contains(owner)) throw std::runtime_error("Duplicate native recording command");
-      waiters += record.ready.size() + record.stopped.size();
-    }
-    if (waiters >= 128) throw std::runtime_error("Native recording wait capacity exceeded");
     pipeline = found->second.pipeline; result = found->second.result;
     if (pipeline) {found->second.stopped.emplace(owner, BindNativeLocatorHandlerAsync(std::move(reply)));if(auto receipt=RetainNativeLocatorHandlerAsync())found->second.handler_stopped.emplace(owner,std::move(receipt));found->second.phase = "stopping"; }
   }

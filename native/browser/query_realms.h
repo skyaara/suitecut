@@ -4,7 +4,7 @@
 #include <string_view>
 #include <vector>
 
-// Bounded authored scanner for selector syntax only. JSON nesting is decoded
+// Authored scanner for selector syntax only. JSON nesting is decoded
 // solely to choose genuine native execution worlds, never to rewrite values.
 class SuiteCutQueryRealms {
  public:
@@ -22,7 +22,7 @@ class SuiteCutQueryRealms {
   static bool JSONString(std::string_view value,std::string& output,size_t& work){
     if(value.size()<2||value.front()!='"'||value.back()!='"')return false;
     for(size_t i=1;i+1<value.size();++i){
-      if(++work>1000000)return false;
+      ++work;
       const unsigned char c=value[i];if(c=='"'||c<32)return false;
       if(c!='\\'){output+=static_cast<char>(c);continue;}if(++i+1>=value.size())return false;
       const char escaped=value[i];
@@ -40,7 +40,6 @@ class SuiteCutQueryRealms {
     return true;
   }
   static void Scan(std::string_view selector,int nesting,size_t& work,std::vector<std::string>& result){
-    if(nesting>64||selector.size()>65536||work>1000000)return;
     size_t start=0;int depth=0;char quote=0;bool escaped=false,regex=false,character_class=false;
     const auto body_start=[&](){const auto part=selector.substr(start);const auto equal=part.find('=');if(equal==std::string_view::npos)return std::string_view::npos;auto name=Trim(part.substr(0,equal));if(!name.empty()&&name.front()=='*')name.remove_prefix(1);return name=="text"||name=="text:light"?start+equal+1:std::string_view::npos;};
     auto text_start=body_start();
@@ -53,7 +52,7 @@ class SuiteCutQueryRealms {
       if(Name(name))result.emplace_back(name);
     };
     for(size_t i=0;i<selector.size();++i){
-      if(++work>1000000)return;
+      ++work;
       const char c=selector[i];
       if(escaped){escaped=false;continue;}if(c=='\\'){escaped=true;continue;}
       if(quote){if(c==quote)quote=0;continue;}

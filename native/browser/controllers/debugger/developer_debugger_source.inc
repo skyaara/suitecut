@@ -9,7 +9,7 @@ suitecut::DeveloperDebuggerControls::Document NativeDeveloperDocument()const{
 }
 bool NativeDeveloperOwnsPause(Dict packet,const suitecut::DeveloperDebuggerControls::Document&owner)const{
   if(NativeDeveloperDocument()!=owner||!packet||packet->GetType("callFrames")!=VTYPE_LIST)return false;
-  const auto frames=packet->GetList("callFrames");if(!frames->GetSize()||frames->GetSize()>64)return false;
+  const auto frames=packet->GetList("callFrames");if(!frames->GetSize())return false;
   for(size_t i=0;i<frames->GetSize();++i){
     if(frames->GetType(i)!=VTYPE_DICTIONARY)return false;
     const auto frame=frames->GetDictionary(i);if(frame->GetType("location")!=VTYPE_DICTIONARY)return false;

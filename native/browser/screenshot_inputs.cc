@@ -25,24 +25,20 @@ struct ScreenshotInputs::Pending{
  std::shared_ptr<ScreenshotInputs>physical_owner;std::atomic_bool canceled=false,done=false;
 };
 namespace {
-constexpr size_t kConfigLimit=1024*1024,kChunkLimit=24*1024;
-// Count native protocol structure before CEF allocates dictionary/list nodes.
-// CEF remains the authoritative JSON/UTF8 parser; this scan only bounds work.
+// File reads are split into pieces of this size; nothing is rejected by it.
+constexpr size_t kChunkLimit=24*1024;
+// Checks bracket/quote balance before CEF parses. CEF remains the authoritative
+// JSON/UTF8 parser and enforces its own nesting limit; nothing is capped here.
 bool ConfigurationBudget(const std::string&text,double deadline,const std::function<double()>&now,std::string&error){
- bool quoted=false,escaped=false,atom=false;size_t depth=0,work=0,nodes=0,entries=0,processed=0;
+ bool quoted=false,escaped=false;size_t depth=0,processed=0;
  const auto expired=[&]{if(deadline>0&&now()>=deadline){error="Native artifact original deadline expired during configuration input";return true;}return false;};
- const auto node=[&]{if(++nodes>100000){error="Native artifact configuration node/entry work budget exceeded";return false;}return true;};
  for(unsigned char unit:text){
   // Long HTML/CSS string bodies still consume the original preparation clock.
   if((processed++&4095)==0&&expired())return false;
   if(quoted){if(escaped)escaped=false;else if(unit=='\\')escaped=true;else if(unit=='"')quoted=false;continue;}
-  if(unit==' '||unit=='\t'||unit=='\r'||unit=='\n'){atom=false;continue;}
-  if(++work>1000000){error="Native artifact configuration structure exceeds its work budget";return false;}
-  if(unit=='"'){if(!node())return false;quoted=true;atom=false;}
-  else if(unit=='{'||unit=='['){if(!node())return false;atom=false;if(++depth>256){error="Native artifact configuration exceeds256 nesting levels";return false;}}
-  else if(unit=='}'||unit==']'){atom=false;if(!depth){error="Invalid native artifact configuration structure";return false;}--depth;}
-  else if(unit==','||unit==':'){atom=false;if(++entries>100000){error="Native artifact configuration node/entry work budget exceeded";return false;}}
-  else if(!atom){if(!node())return false;atom=true;}
+  if(unit=='"')quoted=true;
+  else if(unit=='{'||unit=='[')++depth;
+  else if(unit=='}'||unit==']'){if(!depth){error="Invalid native artifact configuration structure";return false;}--depth;}
  }
  if(quoted||escaped||depth){error="Invalid native artifact configuration structure";return false;}
  return !expired();
@@ -62,7 +58,7 @@ void Read(const std::string&path,std::shared_ptr<ScreenshotInputs::Data>data,con
  if(descriptor<0){error=IO("open",errno);return;}
  struct FD{int value;~FD(){close(value);}}fd{descriptor};struct stat before{},after{};
  if(fstat(descriptor,&before)!=0){error=IO("stat",errno);return;}
- if(!S_ISREG(before.st_mode)||before.st_size<33||uint64_t(before.st_size)>kScreenshotComparisonPNGBytes){error="Native screenshot baseline must be a regular PNG file of at most2MiB";return;}
+ if(!S_ISREG(before.st_mode)||before.st_size<33){error="Native screenshot baseline must be a regular PNG file";return;}
  data->png.resize(size_t(before.st_size)+1);size_t count=0;
  while(count<data->png.size()){
   if(canceled.load(std::memory_order_acquire))return;
@@ -80,13 +76,16 @@ ScreenshotInputs::ScreenshotInputs(std::shared_ptr<ScreenshotByteBudget>budget,H
 ScreenshotInputs::~ScreenshotInputs(){for(auto&[token,record]:records_)record->reply={};}
 ScreenshotInputs::Ticket ScreenshotInputs::Prepare(Owner owner,const std::string&client,bool file,size_t png_bytes,size_t config_bytes,double deadline,std::string&error,Purpose purpose){
  const bool configuration=purpose==Purpose::Screenshot||purpose==Purpose::PDF;
- if((purpose!=Purpose::Comparison&&!configuration)||(configuration&&(file||png_bytes))||client.empty()||client.size()>128||client.find('\0')!=std::string::npos||owner.context<=0||owner.page<=0||!owner.source||AdmissionCount()>=16||(hooks_.available&&!hooks_.available())||!config_bytes||config_bytes>(configuration?16*kConfigLimit:kConfigLimit)||(!configuration&&!file&&(!png_bytes||png_bytes>kScreenshotComparisonPNGBytes))||(file&&png_bytes)||!std::isfinite(deadline)||deadline<0||generation_==std::numeric_limits<uint64_t>::max()){
-  error="Invalid native screenshot input owner, size, deadline or bounded capacity";return {};
+ if((purpose!=Purpose::Comparison&&!configuration)||(configuration&&(file||png_bytes))||client.empty()||client.find('\0')!=std::string::npos||owner.context<=0||owner.page<=0||!owner.source||(hooks_.available&&!hooks_.available())||!config_bytes||(!configuration&&!file&&!png_bytes)||(file&&png_bytes)||!std::isfinite(deadline)||deadline<0||generation_==std::numeric_limits<uint64_t>::max()){
+  error="Invalid native screenshot input owner, size or deadline";return {};
  }
  for(const auto&[token,record]:records_)if(record->owner.page==owner.page&&record->client==client){error="Duplicate native screenshot preparation client token";return {};}
  if(deadline>0&&hooks_.now()>=deadline){error=Expired(purpose);return {};}
- auto lease=budget_->Reserve((file?kScreenshotComparisonPNGBytes+1:png_bytes)+config_bytes*(configuration?4:2));if(!lease){error="Native screenshot input64MiB shared byte budget exceeded";return {};}
- auto record=std::make_shared<Record>();record->owner=owner;record->purpose=purpose;record->client=client;record->file=file;record->png_size=png_bytes;record->config_size=config_bytes;record->deadline=deadline;record->token="nativeScreenshotInput:"+std::to_string(++generation_);record->data=std::make_shared<Data>();record->data->reservation=std::move(lease);record->data->config.reserve(config_bytes);if(!file)record->data->png.resize(png_bytes);records_[record->token]=record;
+ const size_t png_reserve=file?0:png_bytes,config_factor=configuration?4:2;
+ if(config_bytes>(std::numeric_limits<size_t>::max()-png_reserve)/config_factor){error="Native screenshot input byte ledger would overflow";return {};}
+ auto lease=budget_->Reserve(png_reserve+config_bytes*config_factor);if(!lease){error="Native screenshot input byte ledger would overflow";return {};}
+ auto record=std::make_shared<Record>();record->owner=owner;record->purpose=purpose;record->client=client;record->file=file;record->png_size=png_bytes;record->config_size=config_bytes;record->deadline=deadline;record->token="nativeScreenshotInput:"+std::to_string(++generation_);record->data=std::make_shared<Data>();record->data->reservation=std::move(lease);records_[record->token]=record;
+ // Buffers grow with received chunks; a declared size alone allocates nothing.
  if(hooks_.wake)hooks_.wake();
  return {record->token,deadline};
 }
@@ -97,10 +96,10 @@ std::shared_ptr<ScreenshotInputs::Record> ScreenshotInputs::Find(Owner owner,con
 }
 bool ScreenshotInputs::Append(Owner owner,const std::string&token,bool config,size_t offset,const std::vector<uint8_t>&bytes,std::string&error){
  const auto record=Find(owner,token,error);if(!record)return false;
- if(record->claimed||bytes.empty()||bytes.size()>kChunkLimit||(!config&&record->file)){error="Invalid native screenshot input chunk or already-claimed token";return false;}
+ if(record->claimed||bytes.empty()||(!config&&record->file)){error="Invalid native screenshot input chunk or already-claimed token";return false;}
  auto& received=config?record->config_received:record->png_received;const size_t total=config?record->config_size:record->png_size;
  if(offset!=received||bytes.size()>total-received){error="Native screenshot input chunk offset/length is duplicate, out of order or oversized";return false;}
- if(config)record->data->config.append(reinterpret_cast<const char*>(bytes.data()),bytes.size());else std::memcpy(record->data->png.data()+received,bytes.data(),bytes.size());received+=bytes.size();return true;
+ if(config)record->data->config.append(reinterpret_cast<const char*>(bytes.data()),bytes.size());else record->data->png.insert(record->data->png.end(),bytes.begin(),bytes.end());received+=bytes.size();return true;
 }
 bool ScreenshotInputs::Inspect(Owner owner,const std::string&token,std::string&json,std::string&error,Purpose purpose,std::shared_ptr<Data>* retention){
  const auto record=Find(owner,token,error);if(!record)return false;
@@ -124,7 +123,7 @@ bool ScreenshotInputs::Claim(Owner owner,const std::string&token,const std::stri
  StartFile(record);if(hooks_.wake)hooks_.wake();return true;
 }
 void ScreenshotInputs::StartFile(const std::shared_ptr<Record>&record){
- if(!record->claimed||!record->file||record->physical||pending_.size()>=2||(hooks_.physical_available&&!hooks_.physical_available()))return;
+ if(!record->claimed||!record->file||record->physical||(hooks_.physical_available&&!hooks_.physical_available()))return;
  if(generation_==std::numeric_limits<uint64_t>::max()){Finish(record,"Native screenshot input generation exhausted");return;}
  if(record->deadline>0&&hooks_.now()>=record->deadline){Finish(record,Expired(record->purpose));return;}
  const auto owner=record->owner;const auto token=record->token;const auto path=record->path;

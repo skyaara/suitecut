@@ -13,4 +13,5 @@ int main(){
   bool closed=false;assert(policy.Set(2,2,false,100,[&](bool ok,const std::string& error){closed=!ok&&!error.empty();}));policy.Closed(2);assert(closed);initial(true,"");assert(policy.targets()==2);
   bool expired=false;assert(policy.Set(3,1,true,10,[&](bool ok,const std::string& error){expired=!ok&&!error.empty();}));policy.Tick(10);assert(expired && policy.pending()==0);
   assert(policy.Set(4,1,true,0,[](bool,const std::string&){assert(false);}));policy.Cancel(4);policy.Tick(100);assert(policy.pending()==0);policy.Clear();assert(policy.targets()==0);
+  {Policy many;for(int context=1;context<=64;++context)assert(many.Seed(context,false));for(int page=0;page<400;++page)assert(many.Attach(1+page%64,"page:"+std::to_string(page)+std::string(200,'k'),[](bool,Policy::Result done){done(true,"");},[](bool ok,const std::string&){assert(ok);}));assert(many.targets()==400);}
 }

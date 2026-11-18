@@ -9,10 +9,10 @@ import { NativeFormActions } from '../src/native-form.js'
 import { type UntrustedInput } from '../src/untrusted.js'
 
 describe('native form argument boundary', () => {
-  it('rejects traversing memory upload names and oversized packets before dispatch', async () => {
-    let calls = 0
-    const actions = new NativeFormActions(() => {
-      ++calls
+  it('rejects traversing memory upload names before dispatch and sends large uploads to native', async () => {
+    const calls: Record<string, UntrustedInput>[] = []
+    const actions = new NativeFormActions((params) => {
+      calls.push(params)
       return Promise.resolve(null)
     })
     await expect(
@@ -22,14 +22,20 @@ describe('native form argument boundary', () => {
         buffer: Buffer.from('x'),
       }),
     ).rejects.toThrow()
+    expect(calls).toHaveLength(0)
+    // The fake dispatcher returns no upload token, so only the begin packet is observed.
     await expect(
       actions.setInputFiles({
         name: 'large.bin',
         mimeType: '',
         buffer: Buffer.alloc(128 * 1024 * 1024 + 1),
       }),
-    ).rejects.toThrow('128 MiB')
-    expect(calls).toBe(0)
+    ).rejects.toThrow()
+    expect(calls).toHaveLength(1)
+    expect(calls[0]).toMatchObject({
+      action: 'uploadBegin',
+      files: [{ name: 'large.bin', mimeType: '', size: 128 * 1024 * 1024 + 1 }],
+    })
   })
 
   it('validates all paths before an upload starts and keeps binary bytes intact', async () => {

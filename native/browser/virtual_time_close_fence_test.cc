@@ -48,7 +48,8 @@ int main(){
   {
     Fence f;std::vector<Fence::Owner> too_many;
     for(int i=1;i<=65;++i)too_many.push_back({i,static_cast<uint64_t>(i),1000});
-    assert(!f.RendererTerminated(too_many,0));assert(!f.RendererTerminated({{1,1,1},{1,2,2}},0));
+    {Fence g;assert(g.RendererTerminated(too_many,0)&&g.HeldOwners()==65);}
+    assert(!f.RendererTerminated({{1,1,1},{1,2,2}},0));
     assert(!f.RendererTerminated({{0,1,1}},0));assert(!f.RendererTerminated({{1,0,1}},0));
     assert(!f.RendererTerminated({{1,1,-1}},0));assert(!f.RendererTerminated({{1,1,std::numeric_limits<double>::infinity()}},0));
     assert(!f.RendererTerminated({{1,1,1}},std::numeric_limits<double>::quiet_NaN()));

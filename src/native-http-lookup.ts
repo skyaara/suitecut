@@ -38,7 +38,7 @@ const Addresses = z
   .array(
     z
       .strictObject({
-        address: z.string().min(1).max(64),
+        address: z.string().min(1),
         family: z.union([z.literal(4), z.literal(6)]),
       })
       .refine(
@@ -47,7 +47,6 @@ const Addresses = z
       ),
   )
   .min(1)
-  .max(16)
 interface PhysicalCall {
   active: boolean
   readonly abort: AbortController
@@ -97,8 +96,6 @@ export class NativeHTTPLookups {
   }
   async withLookup<T>(callback: NativeHTTPLookup, run: (key: string) => Promise<T>): Promise<T> {
     if (this.closed) throw new Error('Native HTTP lookup process has closed')
-    if (this.registered.size >= 128)
-      throw new Error('Native HTTP lookup registration capacity exceeded')
     const key = randomUUID()
     this.registered.set(key, {
       callback,
@@ -124,15 +121,9 @@ export class NativeHTTPLookups {
     if (this.closed || this.physical.has(id)) return
     const registration = this.registered.get(event.lookupKey),
       callback = registration?.callback
-    if (!callback || physicalCallbacks.size >= 128) {
+    if (!callback) {
       void this.source
-        .resolveLookup(
-          event,
-          [],
-          callback
-            ? 'Native HTTP physical lookup callback capacity exceeded'
-            : 'Native HTTP lookup callback is unavailable',
-        )
+        .resolveLookup(event, [], 'Native HTTP lookup callback is unavailable')
         .catch(() => undefined)
       return
     }
@@ -148,13 +139,13 @@ export class NativeHTTPLookups {
           callback(event.hostname, { signal: call.abort.signal }),
         )
         addresses = withoutNativeRetryOperation(() => {
-          if (!Array.isArray(value) || value.length > 16)
-            throw new Error('Native HTTP lookup requires at most 16 IP addresses')
+          if (!Array.isArray(value))
+            throw new Error('Native HTTP lookup requires an array of IP addresses')
           return Addresses.parse(value)
         })
       } catch (failure) {
         try {
-          error = withoutNativeRetryOperation(() => String(failure).slice(0, 4096))
+          error = withoutNativeRetryOperation(() => String(failure))
         } catch {
           error = 'Native HTTP lookup callback failed with an unprintable value'
         }

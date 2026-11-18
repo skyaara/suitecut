@@ -15,7 +15,7 @@ class NativeNetworkFatalTeardown {
   ~NativeNetworkFatalTeardown(){Closed();}
   void Fail(const std::string&error){
     if(closed_||pending_)return;
-    pending_=true;error_=error.substr(0,8192);Schedule();
+    pending_=true;error_=error;Schedule();
   }
   void Tick(){if(pending_&&!requested_&&!scheduled_)Schedule();}
   bool pending()const{return pending_;}bool requested()const{return requested_;}

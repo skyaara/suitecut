@@ -86,19 +86,25 @@ describe('native dispatchEvent admission', () => {
     expect(decoded.eventInit.detail.units).toBe('\ud800')
     expect(Object.is(decoded.eventInit.detail.negativeZero, -0)).toBe(true)
   })
-  it('rejects invalid or oversized payloads and foreign/disposed handles before transport', async () => {
+  it('rejects invalid payloads and foreign/disposed handles before transport and sends large payloads', async () => {
     const f = fixture(),
       foreign = new NativeJSHandle(fixture().page, 9, 'JSHandle@object')
     await expect(f.page.dispatchEvent('x', '', {})).rejects.toThrow()
     await expect(f.page.dispatchEvent('x', 'click', null)).rejects.toThrow('eventInit')
-    await expect(
-      f.page.dispatchEvent('x', 'custom', { detail: 'x'.repeat(17_000) }),
-    ).rejects.toThrow('16 KiB')
     await expect(f.page.dispatchEvent('x', 'click', { relatedTarget: foreign })).rejects.toThrow()
     await expect(
       f.page.locator('x').dispatchEvent('click', {}, { strict: false } as never),
     ).rejects.toThrow()
     expect(f.runAutomation).not.toHaveBeenCalled()
+    const detail = 'x'.repeat(17_000)
+    await f.page.dispatchEvent('x', 'custom', { detail })
+    expect(f.runAutomation).toHaveBeenCalledTimes(1)
+    const decoded = createNativeValueCodec().decode(
+      JSON.parse(
+        z.string().parse(f.runAutomation.mock.calls[0]?.[1]?.eventInitJSON),
+      ) as UntrustedInput,
+    ) as { eventInit: { detail: string } }
+    expect(decoded.eventInit.detail).toBe(detail)
   })
   it('keeps caller abort identity and native timeout classification', async () => {
     const f = fixture(),

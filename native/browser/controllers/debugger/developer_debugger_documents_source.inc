@@ -45,7 +45,7 @@ bool NativeFrameDebuggerObserved(){
     hooks.close_channel=[this](const auto&,const std::string&error){NativeDebuggerRequestClose(error);};
     hooks.wake=[this]{WakeDeadlines();};
     native_frame_debugger_scopes_=suitecut::FrameDebuggerScopes::Create(host,std::move(hooks));
-    if(!native_frame_debugger_documents_->Available()||!native_frame_debugger_scopes_){NativeFrameDebuggerMetadataFailure("Native debugger observed-document scope capacity unavailable");return false;}
+    if(!native_frame_debugger_documents_->Available()||!native_frame_debugger_scopes_){NativeFrameDebuggerMetadataFailure("Native debugger observed-document scope unavailable");return false;}
     return true;
   }catch(const std::bad_alloc&){NativeFrameDebuggerMetadataFailure("Native debugger observed-document allocation failed");return false;}
 }

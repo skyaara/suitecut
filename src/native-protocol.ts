@@ -12,38 +12,20 @@ import { NativeWorkerControlSchema, NativeWorkerInfoSchema } from './native-work
 import { type UntrustedInput } from './untrusted.js'
 
 export const NATIVE_PROTOCOL_VERSION = 1
-export const MAX_NATIVE_PAYLOAD = 3840 * 2160 * 4
-export const MAX_NATIVE_RESPONSE_PAYLOAD = 192 * 1024 * 1024
-// Chrome loads URLs up to url::kMaxURLChars, and a frame, navigation or
-// request event carries the URL the page actually used. Headers stay bounded
-// but leave room for that URL beside the event's other metadata.
-export const MAX_OBSERVED_DATA_URL = 1_048_576
-// Console messages, page errors and network records are as large as the page
-// makes them, up to the size of the largest DevTools response.
-export const MAX_NATIVE_EVENT_PAYLOAD = MAX_NATIVE_RESPONSE_PAYLOAD
-/** A WebSocket frame, base64 encoded, with its socket info. */
-export const MAX_NATIVE_SOCKET_PREDICATE_PAYLOAD = MAX_NATIVE_RESPONSE_PAYLOAD
-export const MAX_OBSERVED_URL = 2_097_152
-const MAX_HEADER = 4 * MAX_OBSERVED_URL
-const MAX_REENTRANT_CHUNKS = 4096
-const MAX_REENTRANT_BYTES = MAX_NATIVE_RESPONSE_PAYLOAD + MAX_HEADER + 4
 
 const base = {
   version: z.literal(NATIVE_PROTOCOL_VERSION),
   pageId: z.number().int().positive().optional(),
-  bytes: z.number().int().min(0).max(Math.max(MAX_NATIVE_PAYLOAD, MAX_NATIVE_RESPONSE_PAYLOAD)),
+  bytes: z.number().int().min(0),
 }
 const timestamp = z.number().finite().nonnegative()
 export const NativeFrameInfoSchema = z
   .strictObject({
-    id: z.string().min(1).max(128),
-    parentId: z.string().max(128),
-    name: z.string().max(1024).optional(),
-    nameJSON: z
-      .string()
-      .max(1024 * 6 + 2)
-      .optional(),
-    url: z.string().max(MAX_OBSERVED_URL),
+    id: z.string().min(1),
+    parentId: z.string(),
+    name: z.string().optional(),
+    nameJSON: z.string().optional(),
+    url: z.string(),
     navigationSequence: z.number().int().nonnegative().optional(),
   })
   .transform((value, context) => {
@@ -61,11 +43,8 @@ export const NativeFrameInfoSchema = z
         return z.NEVER
       }
     }
-    if (typeof name !== 'string' || name.length > 1024) {
-      context.addIssue({
-        code: 'custom',
-        message: 'Invalid native frame name string or unit limit',
-      })
+    if (typeof name !== 'string') {
+      context.addIssue({ code: 'custom', message: 'Invalid native frame name string' })
       return z.NEVER
     }
     return { ...frame, name }
@@ -79,58 +58,43 @@ export const NativeAutomationEventSchema = z.strictObject({
 export type NativeAutomationEvent = z.infer<typeof NativeAutomationEventSchema>
 export const NativeConsoleInfoSchema = z.strictObject({
   sequence: z.number().int().positive().optional(),
-  worker: z.string().min(1).max(128).optional(),
+  worker: z.string().min(1).optional(),
   workerInfo: NativeWorkerInfoSchema.optional(),
-  type: z.string().min(1).max(64),
-  text: z.string().max(8_388_608),
+  type: z.string().min(1),
+  text: z.string(),
   timestamp: z.number().finite().nonnegative().optional(),
   arguments: z
     .array(
       z.strictObject({
         handle: z.number().int().positive(),
-        guid: z.string().max(256),
-        preview: z.string().max(8192),
+        guid: z.string(),
+        preview: z.string(),
         node: z.boolean(),
-        frame: z.string().max(128).optional(),
-        worker: z.string().min(1).max(128).optional(),
+        frame: z.string().optional(),
+        worker: z.string().min(1).optional(),
         workerControl: NativeWorkerControlSchema.optional(),
       }),
     )
-    .max(64)
     .optional(),
-  argumentsError: z.string().max(512).optional(),
+  argumentsError: z.string().optional(),
   location: z.strictObject({
     line: z.number().int().nonnegative().optional(),
-    url: z.string().max(8192),
+    url: z.string(),
     lineNumber: z.number().int().nonnegative(),
     columnNumber: z.number().int().nonnegative(),
   }),
 })
 export type NativeConsoleInfo = z.infer<typeof NativeConsoleInfoSchema>
-// Inline images/fonts are genuine browser requests. Their observed data URLs
-// can exceed the command URL limit. The packet framing already bounds them, so
-// an oversized one is retained as a bounded prefix rather than failing the
-// whole session. A long GET form or tracking request is an ordinary page
-// action too, so those are kept whole and only a longer one is malformed.
-const NativeObservedNetworkURLSchema = z
-  .string()
-  .refine((value) => value.length <= MAX_OBSERVED_URL || value.startsWith('data:'), {
-    message: `Observed non-data network URLs must not exceed ${MAX_OBSERVED_URL} characters`,
-  })
-  .transform((value) => {
-    if (value.length <= MAX_OBSERVED_DATA_URL || !value.startsWith('data:')) return value
-    // Never keep a lone high surrogate from a split astral character.
-    const last = value.charCodeAt(MAX_OBSERVED_DATA_URL - 1)
-    return value.slice(0, MAX_OBSERVED_DATA_URL - (last >= 0xd800 && last <= 0xdbff ? 1 : 0))
-  })
+// Observed request URLs, data URLs included, are kept whole as the page used them.
+const NativeObservedNetworkURLSchema = z.string()
 export const NativeNetworkRequestSchema = z.object({
-  id: z.string().min(1).max(256),
-  requestId: z.string().max(256),
-  session: z.string().max(256),
-  frameId: z.string().max(128),
+  id: z.string().min(1),
+  requestId: z.string(),
+  session: z.string(),
+  frameId: z.string(),
   url: NativeObservedNetworkURLSchema,
-  method: z.string().max(128),
-  resourceType: z.string().max(128),
+  method: z.string(),
+  resourceType: z.string(),
   postDataBodyId: z
     .string()
     .regex(/^[1-9][0-9]{0,19}$/u)
@@ -138,30 +102,29 @@ export const NativeNetworkRequestSchema = z.object({
   postDataOwner: z
     .string()
     .regex(/^(?:page|broker):[1-9][0-9]*$/u)
-    .max(128)
     .optional(),
-  postDataBase64: z.string().max(2_796_204).optional(),
+  postDataBase64: z.string().optional(),
   postDataUnavailable: z.boolean().optional(),
   headers: NativeObservedHeadersSchema,
   headersReady: z.boolean().optional(),
-  postData: z.string().max(1_048_576).optional(),
+  postData: z.string().optional(),
   isNavigationRequest: z.boolean(),
   serviceWorker: z.boolean().optional(),
   workerInfo: NativeWorkerInfoSchema.optional(),
   contextWorker: z.boolean().optional(),
   navigationFrameUnavailable: z.boolean().optional(),
-  blockedReason: z.string().max(128).optional(),
+  blockedReason: z.string().optional(),
   timing: z.record(z.string(), z.number()).optional(),
-  redirectedFrom: z.string().max(256).optional(),
+  redirectedFrom: z.string().optional(),
 })
 export const NativeResponseServerAddrSchema = z.strictObject({
-  ipAddress: z.string().min(1).max(128),
+  ipAddress: z.string().min(1),
   port: z.number().int().min(1).max(65535),
 })
 export const NativeResponseSecurityDetailsSchema = z.strictObject({
-  issuer: z.string().max(8192),
-  protocol: z.string().max(128),
-  subjectName: z.string().max(8192),
+  issuer: z.string(),
+  protocol: z.string(),
+  subjectName: z.string(),
   validFrom: z.number(),
   validTo: z.number(),
 })
@@ -169,17 +132,17 @@ export const NativeNetworkResponseSchema = z.object({
   headersReady: z.boolean().optional(),
   url: NativeObservedNetworkURLSchema,
   status: z.number().int().min(0).max(999),
-  statusText: z.string().max(1024),
+  statusText: z.string(),
   headers: NativeObservedHeadersSchema,
-  requestId: z.string().max(256),
-  session: z.string().max(256),
-  frameId: z.string().max(128),
-  method: z.string().max(128),
+  requestId: z.string(),
+  session: z.string(),
+  frameId: z.string(),
+  method: z.string(),
   fromServiceWorker: z.boolean().optional(),
   mimeType: z.string().optional(),
   serverAddr: NativeResponseServerAddrSchema.optional(),
   securityDetails: NativeResponseSecurityDetailsSchema.optional(),
-  protocol: z.string().max(128).optional(),
+  protocol: z.string().optional(),
   timing: z.record(z.string(), z.number()).optional(),
 })
 export const NativeNetworkInfoSchema = z.discriminatedUnion('event', [
@@ -188,9 +151,9 @@ export const NativeNetworkInfoSchema = z.discriminatedUnion('event', [
     event: z.literal('routematch'),
     sequence: z.number().int().positive().max(Number.MAX_SAFE_INTEGER),
     matcher: z.strictObject({
-      id: z.string().min(1).max(128),
-      registrationId: z.string().min(1).max(128),
-      url: z.string().min(1).max(8192),
+      id: z.string().min(1),
+      registrationId: z.string().min(1),
+      url: z.string().min(1),
       callbackScope: z.string().regex(/^[1-9][0-9]{0,19}$/u),
       callbackToken: z.string().regex(/^[1-9][0-9]{0,19}$/u),
     }),
@@ -207,11 +170,11 @@ export const NativeNetworkInfoSchema = z.discriminatedUnion('event', [
     sequence: z.number().int().positive(),
     request: NativeNetworkRequestSchema,
     response: NativeNetworkResponseSchema.optional(),
-    errorText: z.string().max(4096).optional(),
+    errorText: z.string().optional(),
     route: z
       .object({
-        id: z.string().max(128),
-        registrationId: z.string().max(128),
+        id: z.string(),
+        registrationId: z.string(),
         callbackScope: z
           .string()
           .regex(/^[1-9][0-9]{0,19}$/u)
@@ -227,12 +190,12 @@ export const NativeNetworkInfoSchema = z.discriminatedUnion('event', [
   z.object({
     event: z.literal('routeexpired'),
     sequence: z.number().int().positive(),
-    routeId: z.string().max(128),
+    routeId: z.string(),
   }),
   z.object({
     event: z.literal('routeerror'),
     sequence: z.number().int().positive(),
-    errorText: z.string().max(4096),
+    errorText: z.string(),
   }),
 ])
 export type NativeNetworkInfo = z.infer<typeof NativeNetworkInfoSchema>
@@ -244,12 +207,12 @@ export const NativeContextEventSchema = z.strictObject({
   sequence: z.number().int().positive().optional(),
   pageId: z.number().int().positive().optional(),
   openerId: z.number().int().positive().optional(),
-  closedReason: z.string().max(16384).optional(),
+  closedReason: z.string().optional(),
   video: NativeVideoDescriptorSchema.optional(),
 })
 export type NativeContextEvent = z.infer<typeof NativeContextEventSchema>
 export const NativeActionStageSchema = z.strictObject({
-  clientToken: z.string().min(1).max(128),
+  clientToken: z.string().min(1),
   id: z.number().int().positive(),
   generation: z.number().int().positive(),
   token: z.number().int().positive(),
@@ -266,11 +229,11 @@ export const NativeLocatorHandlerStageSchema = NativeActionStageSchema.omit({ st
 export type NativeLocatorHandlerStage = z.infer<typeof NativeLocatorHandlerStageSchema>
 
 export const NativeURLPredicateSchema = z.strictObject({
-  clientToken: z.string().min(1).max(128),
+  clientToken: z.string().min(1),
   id: z.number().int().positive(),
   generation: z.number().int().positive(),
   token: z.number().int().positive(),
-  url: z.string().max(8192),
+  url: z.string(),
 })
 export type NativeURLPredicate = z.infer<typeof NativeURLPredicateSchema>
 export const NativeEventPredicateHeaderSchema = NativeActionStageSchema.omit({
@@ -301,16 +264,16 @@ export const NativeEventPredicateHeaderSchema = NativeActionStageSchema.omit({
 })
 export const NativeDialogInfoSchema = z.strictObject({
   state: z.enum(['opened', 'closed']).default('opened'),
-  id: z.string().min(1).max(32),
+  id: z.string().min(1),
   type: z.enum(['alert', 'confirm', 'prompt', 'beforeunload']),
-  url: z.string().max(8192),
-  message: z.string().max(524288),
-  defaultValue: z.string().max(262144),
+  url: z.string(),
+  message: z.string(),
+  defaultValue: z.string(),
 })
 export type NativeDialogInfo = z.infer<typeof NativeDialogInfoSchema>
 export const NativeFileChooserInfoSchema = z.strictObject({
-  id: z.string().min(1).max(256),
-  frame: z.string().min(1).max(128),
+  id: z.string().min(1),
+  frame: z.string().min(1),
   backendNodeId: z.number().int().positive(),
   multiple: z.boolean(),
 })
@@ -323,9 +286,9 @@ export const NativePacketSchema = z.discriminatedUnion('type', [
     capabilities: NativeBrowserCapabilitiesSchema.optional(),
     video: NativeVideoDescriptorSchema.optional(),
     timestampMs: timestamp,
-    cefVersion: z.string().max(128),
-    captureWidth: z.number().int().min(1).max(3840).optional(),
-    captureHeight: z.number().int().min(1).max(2160).optional(),
+    cefVersion: z.string(),
+    captureWidth: z.number().int().min(1).optional(),
+    captureHeight: z.number().int().min(1).optional(),
     viewport: z
       .strictObject({ width: z.number().int().positive(), height: z.number().int().positive() })
       .nullable()
@@ -369,7 +332,6 @@ export const NativePacketSchema = z.discriminatedUnion('type', [
   z.strictObject({
     ...base,
     type: z.literal('websocket'),
-    bytes: z.number().int().min(0).max(16_777_216),
     socket: NativeWebSocketInfoSchema,
   }),
   z.strictObject({ ...base, type: z.literal('pageerror'), sequence: z.number().int().positive() }),
@@ -382,8 +344,8 @@ export const NativePacketSchema = z.discriminatedUnion('type', [
     ...base,
     type: z.literal('networkbody'),
     bodyId: z.string().regex(/^[1-9][0-9]{0,19}$/u),
-    offset: z.number().int().min(0).max(67_108_864),
-    totalBytes: z.number().int().min(0).max(67_108_864),
+    offset: z.number().int().min(0),
+    totalBytes: z.number().int().min(0),
     canceled: z.boolean().optional(),
   }),
   z.strictObject({ ...base, type: z.literal('httplookup') }),
@@ -399,24 +361,20 @@ export const NativePacketSchema = z.discriminatedUnion('type', [
     ...base,
     ...NativeWebSocketRouteEnvelopeSchema.shape,
     type: z.literal('websocketroute'),
-    bytes: z.number().int().min(0).max(2_097_152),
   }),
   z.strictObject({
     ...base,
     type: z.literal('contextroutemutation'),
-    bytes: z.number().int().positive().max(65_536),
+    bytes: z.number().int().positive(),
   }),
   z.strictObject({
     ...base,
     type: z.literal('contextnetworkbody'),
     contextId: z.number().int().positive(),
-    owner: z
-      .string()
-      .regex(/^broker:[1-9][0-9]*$/u)
-      .max(128),
+    owner: z.string().regex(/^broker:[1-9][0-9]*$/u),
     bodyId: z.string().regex(/^[1-9][0-9]{0,19}$/u),
-    offset: z.number().int().min(0).max(67_108_864),
-    totalBytes: z.number().int().min(0).max(67_108_864),
+    offset: z.number().int().min(0),
+    totalBytes: z.number().int().min(0),
     canceled: z.boolean().optional(),
   }),
   z.strictObject({
@@ -437,7 +395,7 @@ export const NativePacketSchema = z.discriminatedUnion('type', [
   z.strictObject({
     ...base,
     type: z.literal('navigation'),
-    url: z.string().max(MAX_OBSERVED_URL),
+    url: z.string(),
   }),
   z
     .strictObject({
@@ -445,22 +403,21 @@ export const NativePacketSchema = z.discriminatedUnion('type', [
       type: z.literal('frame'),
       pixelFormat: z.enum(['bgra', 'i420']).default('bgra'),
       timestampMs: timestamp,
-      width: z.number().int().min(1).max(3840),
-      height: z.number().int().min(1).max(2160),
-      // CSS bounds account for the smallest supported 0.25 device scale.
+      width: z.number().int().min(1),
+      height: z.number().int().min(1),
       viewport: z
         .strictObject({
-          width: z.number().int().min(1).max(15360),
-          height: z.number().int().min(1).max(8640),
+          width: z.number().int().min(1),
+          height: z.number().int().min(1),
         })
         .nullable()
         .optional(),
       contentRect: z
         .strictObject({
-          x: z.number().int().min(0).max(3839),
-          y: z.number().int().min(0).max(2159),
-          width: z.number().int().min(1).max(3840),
-          height: z.number().int().min(1).max(2160),
+          x: z.number().int().min(0),
+          y: z.number().int().min(0),
+          width: z.number().int().min(1),
+          height: z.number().int().min(1),
         })
         .optional(),
       dropped: z.number().int().nonnegative(),
@@ -482,13 +439,12 @@ export const NativePacketSchema = z.discriminatedUnion('type', [
   z.strictObject({
     ...base,
     type: z.literal('response'),
-    bytes: z.number().int().min(0).max(MAX_NATIVE_RESPONSE_PAYLOAD),
     id: z.number().int().positive(),
     ok: z.boolean(),
     navigation: NativeFrameInfoSchema.optional(),
-    error: z.string().max(4096).optional(),
+    error: z.string().optional(),
   }),
-  z.strictObject({ ...base, type: z.literal('error'), error: z.string().max(4096) }),
+  z.strictObject({ ...base, type: z.literal('error'), error: z.string() }),
   z.strictObject({
     ...base,
     type: z.literal('pagerecovered'),
@@ -503,12 +459,12 @@ export const NativePacketSchema = z.discriminatedUnion('type', [
     sequence: z.number().int().positive().optional(),
     pageId: z.number().int().min(1),
     bytes: z.literal(0),
-    error: z.string().max(4096),
+    error: z.string(),
   }),
 ])
 export type NativePacket = z.infer<typeof NativePacketSchema>
 
-/** Incrementally decodes length-prefixed packets with bounded allocation and no quadratic concatenation. */
+/** Incrementally decodes length-prefixed packets with no quadratic concatenation. */
 export class NativePacketDecoder {
   private readonly length = Buffer.allocUnsafe(4)
   private target: Buffer = this.length
@@ -519,7 +475,6 @@ export class NativePacketDecoder {
   private pushing = false
   private pending: (Buffer | undefined)[] | undefined
   private pendingIndex = 0
-  private pendingBytes = 0
 
   constructor(private readonly receive: (header: NativePacket, payload: Buffer) => void) {}
 
@@ -527,17 +482,9 @@ export class NativePacketDecoder {
     if (this.disposed) throw new Error('Native packet decoder is disposed')
     if (this.pushing) {
       if (!chunk.length) return
-      if (
-        this.pendingBytes + chunk.length > MAX_REENTRANT_BYTES ||
-        (this.pending?.length ?? 0) - this.pendingIndex >= MAX_REENTRANT_CHUNKS
-      ) {
-        this.dispose()
-        throw new Error('Native packet reentrant queue limit exceeded')
-      }
       // The caller can reuse its read buffer when push returns. Own deferred bytes.
       const pending = (this.pending ??= [])
       pending.push(Buffer.from(chunk))
-      this.pendingBytes += chunk.length
       return
     }
     this.pushing = true
@@ -554,8 +501,7 @@ export class NativePacketDecoder {
           this.offset = 0
           if (this.phase === 'length') {
             const size = this.length.readUInt32LE()
-            if (size < 2 || size > MAX_HEADER)
-              throw new Error('Invalid native packet header length')
+            if (size < 2) throw new Error('Invalid native packet header length')
             if (input.length - cursor >= size) {
               // Parse headers already present in the read buffer without allocating and copying them.
               const json = input.toString('utf8', cursor, cursor + size)
@@ -578,7 +524,6 @@ export class NativePacketDecoder {
         const next = this.pending[this.pendingIndex]
         this.pending[this.pendingIndex++] = undefined
         if (!next) break
-        this.pendingBytes -= next.length
         input = next
         // Keep a long chain of receiver-fed reads bounded without quadratic Array.shift().
         if (this.pendingIndex >= 1024) {
@@ -608,8 +553,8 @@ export class NativePacketDecoder {
     }
     if (
       (header.type === 'networkbody' || header.type === 'contextnetworkbody') &&
-      // Native sends request bodies in chunks of at most 8 MiB.
-      (header.bytes > 8 * 1024 * 1024 || (header.canceled && header.bytes))
+      header.canceled &&
+      header.bytes
     )
       throw new Error('Invalid native network body packet length')
     if (header.type === 'audio' && header.bytes !== header.frames * 4)
@@ -638,19 +583,11 @@ export class NativePacketDecoder {
         header.type === 'contextroute' ||
         header.type === 'dialog' ||
         header.type === 'binding') &&
-      (header.bytes === 0 || header.bytes > MAX_NATIVE_EVENT_PAYLOAD)
+      header.bytes === 0
     )
       throw new Error('Invalid native console payload length')
-    if (header.type === 'eventpredicate') {
-      const socket = ['websocket', 'framesent', 'framereceived', 'socketerror', 'close'].includes(
-        header.event,
-      )
-      if (
-        header.bytes === 0 ||
-        header.bytes > (socket ? MAX_NATIVE_SOCKET_PREDICATE_PAYLOAD : MAX_NATIVE_EVENT_PAYLOAD)
-      )
-        throw new Error('Invalid native event predicate payload length')
-    }
+    if (header.type === 'eventpredicate' && header.bytes === 0)
+      throw new Error('Invalid native event predicate payload length')
     if (header.bytes === 0) {
       this.reset()
       this.receive(header, Buffer.alloc(0))
@@ -679,7 +616,6 @@ export class NativePacketDecoder {
   private clearPending(): void {
     this.pending = undefined
     this.pendingIndex = 0
-    this.pendingBytes = 0
   }
 
   private reset(): void {

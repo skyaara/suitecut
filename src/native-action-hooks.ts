@@ -12,8 +12,6 @@ import { runNativeMatcherUserPromise } from './native-soft-assertions.js'
 
 export type NativeBeforeStableHook = () => void | Promise<void>
 const physicalCounts = new WeakMap<AbortSignal, { pending: number }>()
-let physicalPending = 0
-const physicalCapacity = 64
 
 /** Actual user closures remain pending even when their native owner is cancelled. */
 export function nativeActionHookPhysicalCount(source: NativeBrowser): number {
@@ -42,21 +40,14 @@ export function subscribeNativeActionHook(
   let pendingToken = 0
   let lastToken = 0
   const run = bindNativeRetryContinuation(async (stage: NativeActionStage): Promise<void> => {
-    if (physicalPending >= physicalCapacity) {
-      action.abort(new Error('Native action hook physical callback capacity exceeded'))
-      return
-    }
-    ++physicalPending
     ++physical.pending
     const raw = runNativeMatcherUserPromise(callback)
     retainNativeRetryOperation(raw)
     void raw.then(
       () => {
-        --physicalPending
         --physical.pending
       },
       () => {
-        --physicalPending
         --physical.pending
       },
     )

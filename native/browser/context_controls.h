@@ -145,7 +145,6 @@ class SuiteCutContextControls : public std::enable_shared_from_this<SuiteCutCont
     std::vector<Reply> close_replies;
     std::deque<int> pending_tabs;  // newPage requests a Chrome window is opening as tabs
     std::set<std::string> origins;
-    bool origins_overflow = false;
     std::set<std::string> clipboard_write_origins;
     std::map<std::string, std::set<std::string>> content_permissions;
     suitecut::NativePermissionScopes<cef_content_setting_values_t> storage_permission_scopes;
@@ -199,7 +198,6 @@ class SuiteCutContextControls : public std::enable_shared_from_this<SuiteCutCont
   uint64_t next_script_ack_ = 0;
   bool script_deadline_timer_ = false;
   void ApplySettings(Context& context, const std::string& origin);
-  bool FailPermissionScopes(int context,const std::string& reason);
   struct Page {
     suitecut::PageBeforeUnload before_unload;
     bool download_close_started = false;

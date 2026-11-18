@@ -75,7 +75,6 @@ describe('render request schema validation', () => {
 
   it.each([
     { output: { framesPerSecond: 0 } },
-    { output: { framesPerSecond: 121 } },
     { output: { framesPerSecond: 0.5 } },
     { output: { width: 3840 } },
     { output: { width: 3839, height: 2160 } },

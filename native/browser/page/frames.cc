@@ -26,14 +26,8 @@ auto Source::FrameJson(const FrameState& frame) -> Dict {
 
 auto Source::JournalEvent(uint64_t sequence, const std::string& event, const std::string& json)
     -> void {
-  // waitForEvent predicates read this journal from their cursor. A busy page
-  // fires thousands of network events while one predicate round-trips to the
-  // host, so it holds far more than that; the bounds only cap memory.
-  while (!event_history_.empty() && (event_history_.size() >= 65536 ||
-                                     event_history_bytes_ + json.size() > 64 * 1048576)) {
-    event_history_bytes_ -= event_history_.front().json.size();
-    event_history_.pop_front();
-  }
+  // waitForEvent predicates read this journal from their cursor. Nothing is
+  // evicted; the journal is released with its page.
   event_history_.push_back({sequence, event, json});
   event_history_bytes_ += json.size();
   PumpEventPredicates();
@@ -66,15 +60,13 @@ auto Source::StoreFrame(Dict info, const char* event, const std::string& session
   }
   std::string name;
   if (!suitecut::ReadInspectorFrameName(info, name)) {
-    Error("Native frame name metadata encoding or unit limit exceeded");
+    Error("Native frame name metadata encoding is invalid");
     return;
   }
   // Chromium reports a committed frame's fragment separately from its URL.
   const auto url = info->GetString("url").ToString() + info->GetString("urlFragment").ToString();
-  if (id.empty() || id.size() > 128 || parent.size() > 128 || url.size() > kMaxObservedURL ||
-      (!frame_states_.contains(id) && frame_states_.size() >= 1024)) {
-    // A frame suitecut can't track is left to Chromium; operations in it fail.
-    Degraded("Native frame metadata limit exceeded");
+  if (id.empty()) {
+    Degraded("Native frame metadata has no frame id");
     return;
   }
   if (std::strcmp(event, "framenavigated") == 0) {
@@ -143,7 +135,7 @@ auto Source::ImportFrameTree(Dict tree, const std::string& session, int observed
   StoreFrame(info, "", session);
   NativeFrameDebuggerInitialAssociated(observed_tree, info->GetString("id").ToString(), session);
   auto children = tree->GetList("childFrames");
-  if (children && frame_states_.size() < 1024)
+  if (children)
     for (size_t i = 0; i < children->GetSize(); ++i) {
       auto child = children->GetDictionary(i);
       if (child) ImportFrameTree(child, session, observed_tree);
@@ -175,8 +167,8 @@ auto Source::MaybeReady() -> void {
     if (http_user_agent_pending_) return;
     http_user_agent_pending_ = true;
     const int id = AllocateDevToolsId();
-    if (!id || network_calls_.size() >= 1024) {
-      NetworkFatal("Native HTTP user-agent discovery capacity exceeded");
+    if (!id) {
+      NetworkFatal("Native HTTP user-agent discovery command unavailable");
       return;
     }
     network_calls_.emplace(
@@ -187,7 +179,7 @@ auto Source::MaybeReady() -> void {
                           const auto result = value ? value->GetDictionary() : nullptr;
                           const auto agent =
                               result ? result->GetString("userAgent").ToString() : "";
-                          if (agent.empty() || agent.size() > 8192) {
+                          if (agent.empty()) {
                             NetworkFatal("Native browser user-agent discovery failed");
                             return;
                           }
@@ -318,10 +310,6 @@ auto Source::EnsureUtilityWorld(const std::string& id) -> void {
     if (world.frame == id && world.session == frame->second.session &&
         world.loader == frame->second.loader)
       return;
-  if (utility_worlds_.size() >= 1024) {
-    Error("Native DOM execution world limit exceeded");
-    return;
-  }
   const int call = AllocateDevToolsId();
   if (!call) {
     Error("Native DOM execution world command unavailable");
@@ -430,7 +418,7 @@ auto Source::ResolveFramePath(int id, uint64_t generation, Dict message, size_t 
     done(resolved);
     return;
   }
-  if (path->GetSize() > 32 || path->GetType(index) != VTYPE_LIST) {
+  if (path->GetType(index) != VTYPE_LIST) {
     Complete(id, false, "Invalid native frame locator path");
     return;
   }

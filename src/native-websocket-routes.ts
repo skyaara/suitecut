@@ -69,8 +69,6 @@ export class NativeWebSocketRoutes {
   async route(url: NativeRouteURLMatcher, handler: NativeWebSocketRouteHandler): Promise<void> {
     this.assertOpen()
     if (typeof handler !== 'function') throw new Error('Native WebSocket route requires a handler')
-    if (this.registrations.size >= 128)
-      throw new Error('Native WebSocket route registration capacity exceeded')
     const id = randomUUID(),
       entry = { policy: new NativeRouteURLMatcherPolicy(url), handler, active: true }
     this.registrations.set(id, entry)
@@ -204,8 +202,8 @@ export class NativeWebSocketRoutes {
       }
       await invokeNativeRouteCallback(callbackTransport, info.callback, async () => {
         if (info.stage === 'created') {
-          if (this.sockets.has(key) || this.sockets.size >= 1024)
-            throw new Error('Native routed WebSocket socket ownership capacity exceeded')
+          if (this.sockets.has(key))
+            throw new Error('Native routed WebSocket socket ownership is duplicated')
           const socket = new NativeRoutedWebSocket(
             { command: (_id, operation, fields) => this.socketCommand(info, operation, fields) },
             info.requestId,
@@ -302,7 +300,6 @@ export class NativeWebSocketRoutes {
     }
   }
   private record(error: UntrustedInput): void {
-    if (this.failures.length >= 128) this.failures.shift()
     this.failures.push(toError(error))
   }
   private assertOpen(): void {

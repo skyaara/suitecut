@@ -36,7 +36,7 @@ void BlurAction(int id,uint64_t generation,Dict config) {
   if(!operations_.IsCurrent(id,generation)||!browser_)return;
   // Fixed handles also retain every real DOM-adoption/blur/release ACK. An
   // aborted operation cannot be retired while its utility command is in flight.
-  if(!SelectorWaits().Admit(id,generation)){Complete(id,false,"Native blur physical capacity exceeded");return;}
+  if(!SelectorWaits().Admit(id,generation)){Complete(id,false,"Native blur admission unavailable or channel closed");return;}
   const auto path=config->GetList("framePath");
   if(path&&path->GetSize()){
     ResolveFramePath(id,generation,config,0,FrameId(config),[this,id,generation](Dict resolved){BlurAction(id,generation,resolved);});return;

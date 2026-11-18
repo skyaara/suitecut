@@ -2,16 +2,15 @@
 // Included inside Source and the controlled Source-wrapper test host.
 bool SnapshotReferenceTokens(Dict message,std::vector<std::string>& tokens){
   const auto query=message->GetList("query");if(!query)return true;
-  struct Level{CefRefPtr<CefListValue> query;size_t depth;};std::vector<Level> pending{{query,0}};size_t work=0;
+  struct Level{CefRefPtr<CefListValue> query;size_t depth;};std::vector<Level> pending{{query,0}};
   while(!pending.empty()){
-    const auto level=pending.back();pending.pop_back();if(level.depth>64||level.query->GetSize()>64)return false;
+    const auto level=pending.back();pending.pop_back();
     for(size_t i=0;i<level.query->GetSize();++i){
-      if(++work>4096)return false;
       const auto step=level.query->GetDictionary(i);if(!step)continue;
       const auto engine=step->GetString("engine").ToString();
       if(engine=="reference"){
         if(step->GetType("ref")!=VTYPE_STRING)return false;
-        const auto token=step->GetString("ref").ToString();if(token.empty()||token.size()>192)return false;tokens.push_back(token);
+        const auto token=step->GetString("ref").ToString();if(token.empty())return false;tokens.push_back(token);
       }
       const std::vector<std::string> children=engine=="filter"?std::vector<std::string>{"has","hasNot"}:
         engine=="capture"?std::vector<std::string>{"query","descendants"}:

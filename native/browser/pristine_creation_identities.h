@@ -9,12 +9,11 @@ namespace suitecut {
 // contextsCleared. A Runtime re-enable snapshot is not a fresh author realm.
 class PristineCreationIdentities {
  public:
-  enum class Observation { Fresh, Known, Capacity };
+  enum class Observation { Fresh, Known, Invalid };
   Observation Observe(uint64_t session_epoch,const std::string& identity){
-    if(!session_epoch||identity.empty()||identity.size()>256)return Observation::Capacity;
+    if(!session_epoch||identity.empty())return Observation::Invalid;
     const auto key=std::make_pair(session_epoch,identity);
     if(known_.contains(key))return Observation::Known;
-    if(known_.size()>=4096)return Observation::Capacity;
     known_.insert(key);return Observation::Fresh;
   }
   // Only actual context destruction/session death can forget a known realm.

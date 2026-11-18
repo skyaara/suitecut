@@ -3,6 +3,8 @@
 #undef NDEBUG
 #endif
 #include <cassert>
+#include <string>
+#include <vector>
 #include "include/cef_api_hash.h"
 #include "har_replay.h"
 #include "http_multipart.h"
@@ -13,7 +15,7 @@ Dict Archive(CefRefPtr<CefListValue>entries){auto archive=CefDictionaryValue::Cr
 void Multipart(){
  const std::string left="recordedBoundary0123456789",right="actualBoundary9876543210";std::vector<unsigned char>input;for(unsigned i=0;i<256;++i)input.push_back(static_cast<unsigned char>(i));
  const std::vector<suitecut::NativeHTTPMultipartPart>parts={{"same","","",0,2,false},{"same","","",2,2,false},{"file","actual.bin","application/octet-stream",4,input.size()-4,true}};
- const auto encode=[&](const std::string&boundary,const auto&fields){std::vector<unsigned char>body;std::string error;assert(suitecut::EncodeNativeHTTPMultipart(input,fields,boundary,2097152,body,error));return CefBase64Encode(body.data(),body.size()).ToString();};
+ const auto encode=[&](const std::string&boundary,const auto&fields){std::vector<unsigned char>body;std::string error;assert(suitecut::EncodeNativeHTTPMultipart(input,fields,boundary,body,error));return CefBase64Encode(body.data(),body.size()).ToString();};
  const auto recorded=encode(left,parts),actual=encode(right,parts);assert(recorded!=actual);auto entry=Entry(recorded,"T0s=","multipart");entry->GetDictionary("request")->SetList("headers",Headers({{"Content-Type","multipart/form-data; boundary=\""+left+"\""}}));auto entries=CefListValue::Create();entries->SetDictionary(0,entry);Replay replay;std::string error;const auto archive=Archive(entries);entries=archive->GetDictionary("log")->GetList("entries");entry=entries->GetDictionary(0);assert(entry->IsValid()&&entries->IsValid()&&replay.Load(archive,error));
  auto request=CefDictionaryValue::Create();request->SetString("url","https://native.test/actual");request->SetString("method","POST");request->SetString("postDataBase64",actual);auto headers=CefDictionaryValue::Create();headers->SetString("content-type","multipart/form-data; boundary="+right);request->SetDictionary("headers",headers);headers=request->GetDictionary("headers");assert(headers->IsValid());const auto original=request->Copy(false),original_entry=entry->Copy(false);const auto match=replay.Lookup(request);assert(match&&match->body==std::vector<uint8_t>({'O','K'}));assert(request->IsEqual(original)&&entry->IsEqual(original_entry));
  // Duplicate or absent outer type cannot authorize boundary equivalence.
@@ -58,4 +60,10 @@ int main(){assert(cef_api_hash(CEF_API_VERSION,0));Replay replay;std::string err
  }
  HeaderScoringAndIndex();
  Multipart();
+ // No suitecut entry, URL, method, header-count, header-byte or body cap: a
+ // value past each old bound loads and replays whole.
+ {Replay large;std::vector<std::pair<std::string,std::string>>many;for(int i=0;i<600;++i)many.emplace_back("x-header-"+std::to_string(i),std::string(256,'v'));
+  const std::string url="https://native.test/"+std::string(16384,'u'),method="CUSTOM"+std::string(128,'M'),text(3*1048576,'b');auto entries=CefListValue::Create();
+  for(size_t i=0;i<4100;++i){auto entry=Entry("","","v");entry->GetDictionary("request")->SetString("url",i?"https://native.test/"+std::to_string(i):url);entry->GetDictionary("request")->SetString("method",method);entry->GetDictionary("request")->Remove("postData");if(!i){entry->GetDictionary("request")->SetList("headers",Headers(many));entry->GetDictionary("response")->GetDictionary("content")->SetString("text",text);entry->GetDictionary("response")->GetDictionary("content")->Remove("encoding");}entries->SetDictionary(i,entry);}
+  std::string error;assert(large.Load(Archive(entries),error)&&large.size()==4100);auto incoming=CefDictionaryValue::Create();incoming->SetString("url",url);incoming->SetString("method",method);auto match=large.Lookup(incoming);assert(match&&match->body.size()==text.size());}
 }

@@ -2,7 +2,6 @@
 /** Resolves relative URL patterns while preserving syntax that URL parsing would encode. */
 export function resolveNativeURLGlob(pattern: string, baseURL?: string): string {
   if (baseURL === undefined || pattern.startsWith('*')) return pattern
-  if (pattern.length > 8192) throw new Error('Native URL glob exceeds 8192 characters')
   let prefix = 'suitecutglobtoken'
   const occupied = (pattern + baseURL).toLowerCase()
   while (occupied.includes(prefix)) prefix += 'x'
@@ -17,16 +16,13 @@ export function resolveNativeURLGlob(pattern: string, baseURL?: string): string 
   return resolved
 }
 
-/** Bounded, authored URL glob matching for synchronous native metadata lookup. */
+/** Authored URL glob matching for synchronous native metadata lookup. */
 export function nativeURLGlobMatcher(pattern: string): (url: string) => boolean {
-  if (pattern.length > 8192) throw new Error('Native URL glob exceeds 8192 characters')
   const pending = [pattern]
   const alternatives: string[] = []
-  let examined = 0
   while (pending.length) {
     const current = pending.pop()
     if (current === undefined) throw new Error('Native URL glob expansion state is unavailable')
-    if (++examined > 1024) throw new Error('Native URL glob expansion capacity exceeded')
     let expanded = false
     for (let begin = 0; begin < current.length; begin++) {
       if (current.charAt(begin) === '\\') {
@@ -54,8 +50,6 @@ export function nativeURLGlobMatcher(pattern: string): (url: string) => boolean 
       }
       if (end === current.length || !choices.length) continue
       choices.push(current.slice(start, end))
-      if (choices.length + pending.length + alternatives.length > 256)
-        throw new Error('Native URL glob alternative capacity exceeded')
       for (const choice of choices)
         pending.push(current.slice(0, begin) + choice + current.slice(end + 1))
       expanded = true
@@ -89,10 +83,6 @@ export function nativeURLGlobMatcher(pattern: string): (url: string) => boolean 
     }
   })
   return (url) => {
-    if (url.length > 8192) throw new Error('Native frame URL exceeds lookup capacity')
-    // A lookup budget belongs to this invocation, not to the lifetime of a
-    // registration reused by pages, redirects and repeated navigation.
-    let work = 0
     for (const plan of plans) {
       if (plan.exact !== undefined) {
         if (plan.exact === url) return true
@@ -110,9 +100,6 @@ export function nativeURLGlobMatcher(pattern: string): (url: string) => boolean 
       let next = new Uint8Array(length + 1)
       previous[0] = 1
       for (const token of plan.tokens) {
-        work += length + 1
-        if (work > 32 * 1024 * 1024)
-          throw new Error('Native URL glob lookup work capacity exceeded')
         next.fill(0)
         if (typeof token === 'boolean') {
           next[0] = previous[0] ?? 0

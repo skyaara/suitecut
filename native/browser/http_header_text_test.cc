@@ -25,7 +25,8 @@ int main(){
   for(unsigned unit=0;unit<=65535;++unit){const std::u16string value(1,static_cast<char16_t>(unit));const bool valid=unit==9||(unit>=32&&unit<=255&&unit!=127);assert(suitecut::HTTPEncodeHeaderValue(value,encoded)==valid);if(valid)assert(encoded.size()==1&&static_cast<unsigned char>(encoded[0])==unit);else assert(encoded.empty());}
   assert(!suitecut::HTTPEncodeHeaderValue(u"valid-prefix\r\nInjected: header",encoded)&&encoded.empty());
   assert(!suitecut::HTTPEncodeHeaderValue(u"\u043d\u0435\u0434\u043e\u043f\u0443\u0441\u0442\u0438\u043c\u043e\u0435",encoded)&&encoded.empty());
-  assert(!suitecut::HTTPEncodeHeaderValue(std::u16string(65537,u'a'),encoded)&&encoded.empty());
+  // No header value length cap: past the old 65536 units encodes whole.
+  assert(suitecut::HTTPEncodeHeaderValue(std::u16string(262144,u'a'),encoded)&&encoded.size()==262144);
   assert(suitecut::HTTPEncodeHeaderValue(std::u16string(65536,u'a'),encoded)&&encoded.size()==65536);
   std::cout<<"Native HTTP Location uses actual UTF-8 before genuine CEF URL resolution; Latin-1 headers, malformed encoding and raw bytes retained\n";
 }

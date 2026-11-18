@@ -20,10 +20,10 @@ bool SuiteCutContextControls::SeedPageBindings(int page, std::string& error) {
 }
 void SuiteCutContextControls::RegisterContextBinding(int context, int owner, Dict params, Reply reply) {
   std::string name;
-  if (owner <= 0 || binding_batches_.contains(owner) || binding_batches_.size() >= 64 ||
-      !suitecut::InboundString(params,"name",name,256) || params->GetType("installer") != VTYPE_STRING ||
+  if (owner <= 0 || binding_batches_.contains(owner) ||
+      !suitecut::InboundString(params,"name",name) || params->GetType("installer") != VTYPE_STRING ||
       params->GetType("codec") != VTYPE_STRING || params->GetType("handle") != VTYPE_BOOL ||
-      params->HasKey("bridge") || params->HasKey("state")) { reply(false,nullptr,"Invalid native context binding registration or capacity exceeded"); return; }
+      params->HasKey("bridge") || params->HasKey("state")) { reply(false,nullptr,"Invalid native context binding registration"); return; }
   auto& registry = contexts_.at(context).bindings;
   SuiteCutContextBindings::Entry entry; std::string error;
   if (!registry.Add(binding_namespace_ + "_" + std::to_string(context),name,params->GetString("installer"),params->GetString("codec"),params->GetBool("handle"),entry,error)) {
@@ -32,7 +32,7 @@ void SuiteCutContextControls::RegisterContextBinding(int context, int owner, Dic
   const auto quote = [](const std::string& text) { return suitecut::InboundQuote(text); };
   const auto bootstrap = "(" + entry.installer + ")(" + quote(entry.name) + "," + quote(entry.bridge) + "," + quote(entry.state) + ",(" + entry.codec + ")," + (entry.handle ? "true" : "false") + ",true)";
   if (!registry.SetBootstrap(entry.name,entry.id,bootstrap) || !RefreshInitSnapshot(context,owner)) {
-    registry.Remove(entry.name,entry.id); reply(false,nullptr,"Native context binding snapshot capacity exceeded"); return;
+    registry.Remove(entry.name,entry.id); reply(false,nullptr,"Native context binding snapshot refresh failed"); return;
   }
   BindingBatch batch; batch.context = context; batch.entry = entry.id; batch.name = entry.name; batch.bridge = entry.bridge; batch.reply = std::move(reply);
   for (const auto& [page_id,page] : pages_) if (page.context == context && page.browser && !page.closing) batch.pages.insert(page_id);

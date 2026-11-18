@@ -19,7 +19,6 @@ class NativeContextWorkerCursors {
   // so these actual retirement receipts have a finite reserved upper bound.
   static constexpr uint64_t kRetirementSequences = 3 * kTargets;
   static constexpr uint64_t kAdmissionSequence = kMaxSequence - kRetirementSequences;
-  static constexpr size_t kContexts = 32;
   struct Lease {
     int context = 0;
     uint64_t token = 0;
@@ -28,9 +27,7 @@ class NativeContextWorkerCursors {
   std::optional<Lease> Acquire(int context) {
     if (context < 1 || next_token_ == std::numeric_limits<uint64_t>::max()) return {};
     const auto found = entries_.find(context);
-    if (found == entries_.end()) {
-      if (entries_.size() >= kContexts) return {};
-    } else if (found->second.active || found->second.invalid || found->second.sequence >= kAdmissionSequence) return {};
+    if (found != entries_.end() && (found->second.active || found->second.invalid || found->second.sequence >= kAdmissionSequence)) return {};
     const uint64_t initial = found == entries_.end() ? 0 : found->second.sequence;
     const uint64_t token = ++next_token_;
     entries_[context] = Entry{initial, token, true, false};

@@ -17,27 +17,22 @@ namespace suitecut {
 // Match its receipt FIFO only to hops explicitly marked by genuine protocol
 // redirectHasExtraInfo/hasExtraInfo. A late receipt can never become the next
 // hop's headers merely because that request is currently in the map. Request
-// and response receipts each use their own bounded instance and native stream.
+// and response receipts each use their own instance and native stream.
 class NativeNetworkResponseExtras {
  public:
   using Dict=CefRefPtr<CefDictionaryValue>;
   using Apply=std::function<void(const std::string&,Dict)>;
   using Missing=std::function<void(const std::string&,const std::string&)>;
-  NativeNetworkResponseExtras(Apply apply,Missing missing,std::function<void(const std::string&)>failure,std::string kind="response",size_t byte_limit=8388608)
-      :kind_(std::move(kind)),byte_limit_(byte_limit),apply_(std::move(apply)),missing_(std::move(missing)),failure_(std::move(failure)){}
+  NativeNetworkResponseExtras(Apply apply,Missing missing,std::function<void(const std::string&)>failure,std::string kind="response")
+      :kind_(std::move(kind)),apply_(std::move(apply)),missing_(std::move(missing)),failure_(std::move(failure)){}
   ~NativeNetworkResponseExtras(){Clear();}
   bool Expect(const std::string&key,const std::string&logical,bool expected,double deadline){
-    if(!Valid(key)||logical.empty()||logical.size()>256)return Fail("Invalid native "+kind_+" ExtraInfo hop identity");
+    if(!Valid(key)||logical.empty())return Fail("Invalid native "+kind_+" ExtraInfo hop identity");
     const auto canonical=Resolve(key);if(canonical!=key)return Expect(canonical,logical,expected,deadline);
     if(!expected)return true;
     auto found=chains_.find(key);
     if(found!=chains_.end()&&found->second.seen.contains(logical))return true;
     const size_t cost=logical.size()*(expected?2:1);
-    const auto alive=alive_;
-    while(hops_>=4096||cost>byte_limit_-bytes_||(!chains_.contains(key)&&key.size()>byte_limit_-bytes_-cost)){
-      if(!Evict(key)){Degrade("Native "+kind_+" ExtraInfo hop capacity exceeded");auto missing=missing_;missing(logical,"Native "+kind_+" ExtraInfo was not retained");return *alive;}
-      if(!*alive)return false;
-    }
     if(!Ensure(key,deadline))return false;
     auto&chain=chains_.at(key);chain.seen.insert(logical);++hops_;chain.bytes+=cost;bytes_+=cost;
     if(expected)chain.expected.push_back(logical);
@@ -47,18 +42,11 @@ class NativeNetworkResponseExtras {
     if(!Valid(key)||!headers)return Fail("Invalid native "+kind_+" ExtraInfo receipt");
     const auto canonical=Resolve(key);if(canonical!=key)return Receive(canonical,headers,deadline);
     auto wrapper=CefValue::Create();wrapper->SetDictionary(headers->Copy(false));const auto cost=CefWriteJSON(wrapper,JSON_WRITER_DEFAULT).ToString().size();
-    // Chromium's own network stack rejects header blocks long before 1 MiB.
-    if(cost>1048576){Degrade("Native "+kind_+" ExtraInfo receipt exceeds 1 MiB");return true;}
-    const auto alive=alive_;
-    while(receipts_>=4096||cost>byte_limit_-bytes_||(!chains_.contains(key)&&key.size()>byte_limit_-bytes_-cost)){
-      if(!Evict(key)){Degrade("Native "+kind_+" ExtraInfo receipt capacity exceeded");return true;}
-      if(!*alive)return false;
-    }
     if(!Ensure(key,deadline))return false;
     auto&chain=chains_.at(key);chain.receipts.push_back({headers->Copy(false),cost});++receipts_;chain.bytes+=cost;bytes_+=cost;Drain(key);return true;
   }
   void Complete(const std::string&key){const auto canonical=Resolve(key);const auto found=chains_.find(canonical);if(found==chains_.end()){DropAliases(canonical);return;}found->second.complete=true;Retire(canonical);}
-  // Only the existing native exact-ID handoff can create these bounded aliases.
+  // Only the existing native exact-ID handoff can create these aliases.
   // ExtraInfo can stay on the original network observer after response/body
   // ownership has migrated, including after the active request has finished.
   bool Move(const std::string&old_key,const std::string&new_key,double deadline=0){
@@ -71,16 +59,11 @@ class NativeNetworkResponseExtras {
     if(chain!=chains_.end())deadline=chain->second.deadline;
     for(const auto&[key,alias]:aliases_)if(alias.target==old_key)deadline=deadline?std::min(deadline,alias.deadline):alias.deadline;
     if(!std::isfinite(deadline)||deadline<=0)return Fail("Invalid native "+kind_+" ExtraInfo handoff deadline");
-    const auto alive=alive_;
-    while((aliases_.size()>=4096||bytes_+2*(old_key.size()+new_key.size())>byte_limit_)&&Evict(old_key,new_key))if(!*alive)return false;
     size_t next=bytes_;
     if(chain!=chains_.end())next=next-old_key.size()+new_key.size();
     for(const auto&[key,alias]:aliases_)if(alias.target==old_key&&key!=new_key)next=next-alias.target.size()+new_key.size();
     if(previous!=aliases_.end())next-=previous->first.size()+previous->second.target.size();
-    const auto count=aliases_.size()-(previous!=aliases_.end()?1:0)+1;next+=old_key.size()+new_key.size();
-    // Unmoved ExtraInfo stays under the old key and reports missing at its deadline.
-    if(count>4096||next>byte_limit_){Degrade("Native "+kind_+" ExtraInfo handoff metadata capacity exceeded");return true;}
-    // All admission is checked before mutating either the FIFO or alias graph.
+    next+=old_key.size()+new_key.size();
     if(previous!=aliases_.end())aliases_.erase(previous);
     for(auto&[key,alias]:aliases_)if(alias.target==old_key){std::string target(new_key);alias.target.swap(target);}
     aliases_.emplace(old_key,Alias{new_key,deadline});
@@ -90,7 +73,7 @@ class NativeNetworkResponseExtras {
   void SessionClosed(const std::string&session){std::vector<std::string>keys;for(const auto&[key,chain]:chains_)if(key.starts_with(session+"\n"))keys.push_back(key);const auto alive=alive_;for(const auto&key:keys){Drop(key,"Actual "+kind_+" ExtraInfo target closed");if(!*alive)return;}keys.clear();for(const auto&[key,alias]:aliases_)if(alias.target.starts_with(session+"\n"))keys.push_back(key);for(const auto&key:keys)EraseAlias(key);}
   void Tick(double now){std::vector<std::string>expired;for(const auto&[key,chain]:chains_)if(now>=chain.deadline)expired.push_back(key);const auto alive=alive_;for(const auto&key:expired){Drop(key,"Native "+kind_+" ExtraInfo retention deadline exceeded");if(!*alive)return;}expired.clear();for(const auto&[key,alias]:aliases_)if(now>=alias.deadline)expired.push_back(key);for(const auto&key:expired)EraseAlias(key);}
   void Clear(){if(closed_)return;closed_=true;*alive_=false;chains_.clear();aliases_.clear();bytes_=hops_=receipts_=0;}
-  // Reports what a full budget forgot instead of failing the page.
+  // Assigned by NetworkControls; no ExtraInfo budget remains to report on.
   std::function<void(const std::string&)> degraded;
   bool NeedsTick()const{return !chains_.empty()||!aliases_.empty();}
   size_t bytes()const{return bytes_;}size_t hops()const{return hops_;}size_t receipts()const{return receipts_;}size_t aliases()const{return aliases_.size();}
@@ -101,30 +84,12 @@ class NativeNetworkResponseExtras {
   std::string Resolve(const std::string&key)const{const auto found=aliases_.find(key);return found==aliases_.end()?key:found->second.target;}
   void EraseAlias(const std::string&key){const auto found=aliases_.find(key);if(found==aliases_.end())return;bytes_-=found->first.size()+found->second.target.size();aliases_.erase(found);}
   void DropAliases(const std::string&target){std::vector<std::string>keys;for(const auto&[key,alias]:aliases_)if(alias.target==target)keys.push_back(key);for(const auto&key:keys)EraseAlias(key);}
-  static bool Valid(const std::string&key){return !key.empty()&&key.size()<=385;}
+  static bool Valid(const std::string&key){return !key.empty();}
   bool Fail(const std::string&error){auto failure=failure_;failure(error);return false;}
-  void Degrade(const std::string&error){if(degraded)degraded(error);}
-  // A busy page can outgrow the budget with requests Chrome itself has long
-  // forgotten. Forget the oldest other chain or alias, reporting its headers
-  // missing, rather than failing the page.
-  bool Evict(const std::string&keep,const std::string&also=""){
-    auto oldest=chains_.end();
-    for(auto it=chains_.begin();it!=chains_.end();++it)if(it->first!=keep&&it->first!=also&&(oldest==chains_.end()||it->second.deadline<oldest->second.deadline))oldest=it;
-    if(oldest!=chains_.end()){const std::string key=oldest->first;Degrade("Native "+kind_+" ExtraInfo evicted the oldest chain");Drop(key,"Native "+kind_+" ExtraInfo evicted to stay within its budget");return true;}
-    auto alias=aliases_.end();
-    for(auto it=aliases_.begin();it!=aliases_.end();++it)if(it->first!=keep&&it->first!=also&&it->second.target!=keep&&it->second.target!=also&&(alias==aliases_.end()||it->second.deadline<alias->second.deadline))alias=it;
-    if(alias==aliases_.end())return false;
-    const std::string key=alias->first;Degrade("Native "+kind_+" ExtraInfo evicted the oldest alias");EraseAlias(key);return true;
-  }
   bool Ensure(const std::string&key,double deadline){
     if(closed_)return false;
     if(!std::isfinite(deadline)||deadline<=0)return Fail("Invalid native "+kind_+" ExtraInfo retention deadline");
     if(chains_.contains(key))return true;
-    const auto alive=alive_;
-    while(chains_.size()>=4096||key.size()>byte_limit_-bytes_){
-      if(!Evict(key))return Fail("Native "+kind_+" ExtraInfo channel capacity exceeded");
-      if(!*alive)return false;
-    }
     Chain chain;chain.deadline=deadline;chain.bytes=key.size();bytes_+=key.size();chains_.emplace(key,std::move(chain));return true;
   }
   void Drain(const std::string&key){
@@ -137,7 +102,7 @@ class NativeNetworkResponseExtras {
   }
   void Retire(const std::string&key){const auto found=chains_.find(key);if(found==chains_.end()||!found->second.complete||!found->second.expected.empty()||!found->second.receipts.empty())return;bytes_-=found->second.bytes;hops_-=found->second.seen.size();chains_.erase(found);DropAliases(key);}
   void Drop(const std::string&key,const std::string&error){const auto found=chains_.find(key);if(found==chains_.end())return;auto expected=std::move(found->second.expected);bytes_-=found->second.bytes;hops_-=found->second.seen.size();receipts_-=found->second.receipts.size();chains_.erase(found);DropAliases(key);const auto alive=alive_;auto missing=missing_;for(const auto&logical:expected){missing(logical,error);if(!*alive)return;}}
-  const std::string kind_;const size_t byte_limit_;
+  const std::string kind_;
   Apply apply_;Missing missing_;std::function<void(const std::string&)>failure_;std::map<std::string,Chain>chains_;std::map<std::string,Alias>aliases_;
   size_t bytes_=0,hops_=0,receipts_=0;bool closed_=false;std::shared_ptr<bool>alive_=std::make_shared<bool>(true);
 };

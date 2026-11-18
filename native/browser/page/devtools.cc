@@ -101,10 +101,6 @@ auto Source::OnDevToolsMessage(CefRefPtr<CefBrowser> browser, const void* messag
   if (std::getenv("SUITECUT_NATIVE_PROTOCOL_DIAGNOSTICS") && diagnostic_messages_++ < 2000)
     std::fprintf(stderr, "native received: %.*s\n", static_cast<int>(std::min(size, size_t(2048))),
                  static_cast<const char*>(message));
-  if (size > kMaxResponseBytes + 65536) {
-    Error("Native protocol message limit exceeded");
-    return true;
-  }
   // A command's reply used to be parsed, written back to JSON and parsed again
   // by its callback, three passes over results that reach 100 KB.
   if (!raw_replies_.empty()) {
@@ -328,16 +324,13 @@ auto Source::ToolResult(int id, bool success, const void* result, size_t size,
   }
   if (element_states_ &&
       element_states_->Complete(
-          id, success && size <= 65536,
-          size && size <= 65536 ? std::string(static_cast<const char*>(result), size) : "{}",
+          id, success, size ? std::string(static_cast<const char*>(result), size) : "{}",
           session))
     return;
   if (page_errors_ &&
-      page_errors_->Complete(id, success && size <= suitecut::PageErrorControls::kResponse,
-                             size && size <= suitecut::PageErrorControls::kResponse
-                                 ? std::string(static_cast<const char*>(result), size)
-                                 : "{}",
-                             session))
+      page_errors_->Complete(
+          id, success, size ? std::string(static_cast<const char*>(result), size) : "{}",
+          session))
     return;
   if (NativeTraceProtocolResult(id, success, result, size, session)) return;
   if (WorkerToolResult(id, success, result, size, session)) return;
@@ -349,10 +342,7 @@ auto Source::ToolResult(int id, bool success, const void* result, size_t size,
     }
     auto callback = std::exchange(binding_call->second.callback, nullptr);
     binding_calls_.erase(binding_call);
-    if (size > 1048576)
-      callback(false, "Native binding protocol response limit exceeded");
-    else
-      callback(success, size ? std::string(static_cast<const char*>(result), size) : "{}");
+    callback(success, size ? std::string(static_cast<const char*>(result), size) : "{}");
     return;
   }
   const auto network_call = network_calls_.find(id);
@@ -364,10 +354,7 @@ auto Source::ToolResult(int id, bool success, const void* result, size_t size,
     auto callback = std::exchange(network_call->second.callback, nullptr);
     network_calls_.erase(network_call);
     // Chrome ran the command even when it answered late; deliver what it did.
-    if (size > kMaxResponseBytes)
-      callback(false, "Native network protocol response limit exceeded");
-    else
-      callback(success, std::string(static_cast<const char*>(result), size));
+    callback(success, std::string(static_cast<const char*>(result), size));
     return;
   }
   if (std::getenv("SUITECUT_NATIVE_PROTOCOL_DIAGNOSTICS") && !success &&
@@ -414,7 +401,7 @@ auto Source::ToolResult(int id, bool success, const void* result, size_t size,
     NativeFrameDebuggerTreeReceipt frame_tree_receipt{this, id, session,
                                                       NativeFrameDebuggerAttachment(session)};
     bootstrap_tree_ = 0;
-    if (!success || size > 1048576) {
+    if (!success) {
       Error("Native frame bootstrap failed");
       return;
     }
@@ -435,7 +422,7 @@ auto Source::ToolResult(int id, bool success, const void* result, size_t size,
   if (found == devtools_.end()) {
     // A canceled/expired evaluation can finish later. Its returned object
     // must not become an unowned remote reference in the renderer.
-    if (success && size <= 1048576 && size > 0) {
+    if (success && size > 0) {
       auto parsed =
           CefParseJSON(std::string(static_cast<const char*>(result), size), JSON_PARSER_RFC);
       auto response = parsed ? parsed->GetDictionary() : nullptr;
@@ -478,7 +465,6 @@ auto Source::ToolResult(int id, bool success, const void* result, size_t size,
   auto callback = std::exchange(found->second.callback, nullptr);
   const int owner = found->second.owner;
   const bool retained = found->second.retain_after_cancel;
-  const size_t response_limit = found->second.response_limit;
   const auto artifact_generation = found->second.artifact_generation;
   const bool artifact_capture = found->second.artifact_capture;
   devtools_.erase(found);
@@ -487,23 +473,12 @@ auto Source::ToolResult(int id, bool success, const void* result, size_t size,
   // callback, without ever acting on a replacement owner.
   const bool artifact_regular = artifact_generation && !artifact_capture &&
                                 operations_.IsCurrent(owner, artifact_generation) &&
-                                !operations_.IsExpired(owner, artifact_generation, Now()) &&
-                                size <= response_limit;
+                                !operations_.IsExpired(owner, artifact_generation, Now());
   if (retained && !artifact_regular) {
-    if (size > response_limit)
-      callback(false, "{\"message\":\"Native DevTools response of " +
-                          std::to_string(size / 1048576) + " MiB exceeds suitecut's " +
-                          std::to_string(response_limit / 1048576) +
-                          " MiB limit for this command\"}");
-    else
-      callback(success, size ? std::string(static_cast<const char*>(result), size) : "{}");
+    callback(success, size ? std::string(static_cast<const char*>(result), size) : "{}");
     return;
   }
   if (!operations_.Contains(owner)) return;
-  if (size > kMaxResponseBytes) {
-    Complete(owner, false, "Native DevTools response exceeds 192 MiB");
-    return;
-  }
   const auto bytes = static_cast<const uint8_t*>(result);
   const auto json = size ? std::string(reinterpret_cast<const char*>(bytes), size) : "{}";
   if (image_streams_)
@@ -667,7 +642,6 @@ auto Source::ShareScripts(const std::string& method, Dict params, const std::str
       const bool sent = SendDevTools("Runtime.evaluate", install, session) != 0;
       sharing_scripts_ = false;
       if (!sent) continue;
-      if (shared_scripts_.size() >= 4096) shared_scripts_.clear();
       shared_scripts_.insert(key);
     }
     const std::string name = script.name;
@@ -691,7 +665,6 @@ auto Source::SubmitDevTools(int id, const std::string& method, Dict params,
   // Their callbacks only parse the result, so it reaches them as sent.
   if (method.starts_with("Runtime.") || method.starts_with("DOM.") ||
       method.starts_with("Accessibility.") || method == "Page.captureScreenshot") {
-    if (raw_replies_.size() >= 65536) raw_replies_.clear();
     raw_replies_.insert(id);
   }
   const bool initial_tree = native_frame_debugger_trees_.Contains(id);
@@ -835,7 +808,7 @@ auto Source::DevTools(int owner, const std::string& method, Dict params, DevTool
     const auto entry = operations_.Get(owner);
     auto physical = element_states_->Begin(owner);
     if (!entry || !physical) {
-      Complete(owner, false, "Native element-state physical capacity exceeded");
+      Complete(owner, false, "Native element-state operation is no longer active");
       return;
     }
     retained_control = true;
@@ -852,7 +825,7 @@ auto Source::DevTools(int owner, const std::string& method, Dict params, DevTool
         (params && params->GetType("objectGroup") == VTYPE_STRING &&
          !selector_waits_->Group(owner, params->GetString("objectGroup").ToString(),
                                  wait_session))) {
-      Complete(owner, false, "Native selector wait object-group capacity exceeded");
+      Complete(owner, false, "Native selector wait object group is invalid or the wait is no longer active");
       return;
     }
     // This family transfers the duplicate generic eval tracker before the
@@ -868,7 +841,7 @@ auto Source::DevTools(int owner, const std::string& method, Dict params, DevTool
     const auto entry = operations_.Get(owner);
     auto physical = selector_waits_->Begin(owner);
     if (!entry || !physical) {
-      Complete(owner, false, "Native selector-wait physical capacity exceeded: " + method);
+      Complete(owner, false, "Native selector wait is no longer active: " + method);
       return;
     }
     retained_control = true;
@@ -921,7 +894,7 @@ auto Source::DevTools(int owner, const std::string& method, Dict params, DevTool
   // CEF may deliver a same-document result synchronously during submission.
   // Register ownership before calling into it, including nested callbacks.
   devtools_.emplace(assigned, DevToolsCall{owner, std::move(callback), session, physical,
-                                           std::min(response_limit, kMaxResponseBytes),
+                                           response_limit,
                                            retained_control, lossless_scalars, artifact_generation,
                                            artifact_physical && artifact_generation != 0});
   if (!SubmitDevTools(assigned, method, params, session)) {

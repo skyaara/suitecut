@@ -18,7 +18,7 @@ void ArtifactBeforeScreenshot(int id, Dict config, SuiteCutArtifactController::C
       done(true, "");
     });
   });
-  if (!token) { done(false, "Native screenshot pause capacity or identity is invalid"); return; }
+  if (!token) { done(false, "Native screenshot pause was not admitted (invalid or duplicate identity)"); return; }
   auto packet = Header("actionstage");packet->SetInt("id",id);
   packet->SetDouble("generation",static_cast<double>(generation));packet->SetDouble("token",static_cast<double>(*token));
   packet->SetString("clientToken",client_token);packet->SetString("stage","beforeScreenshot");SendPacket(packet);

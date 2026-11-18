@@ -44,8 +44,8 @@ const UPLOAD_CHUNK = 8 * 1024 * 1024
 const HeadersSchema = z.record(z.string(), z.string())
 const Scalar = z.union([z.string(), z.number().finite(), z.boolean()])
 const CredentialsSchema = z.strictObject({
-  username: z.string().max(8192),
-  password: z.string().max(8192),
+  username: z.string(),
+  password: z.string(),
   origin: z.url().optional(),
   send: z.enum(['always', 'unauthorized']).optional(),
 })
@@ -53,29 +53,17 @@ const HTTPContextOptionsSchema = z.strictObject({
   storageState: z.union([z.string(), NativeStorageStateInputSchema]).optional(),
   baseURL: z.string().optional(),
   extraHTTPHeaders: HeadersSchema.optional(),
-  userAgent: z.string().max(8192).optional(),
+  userAgent: z.string().optional(),
   timeout: z.number().int().min(0).max(120_000).optional(),
-  httpCredentials: z.union([CredentialsSchema, z.array(CredentialsSchema).max(64)]).optional(),
-  extraCACertificates: z
-    .array(
-      z
-        .string()
-        .min(1)
-        .max(32 * 1024),
-    )
-    .max(16)
-    .refine(
-      (values) => values.reduce((bytes, value) => bytes + Buffer.byteLength(value), 0) <= 32 * 1024,
-      'Extra CA certificates exceed 32 KiB',
-    )
-    .optional(),
+  httpCredentials: z.union([CredentialsSchema, z.array(CredentialsSchema)]).optional(),
+  extraCACertificates: z.array(z.string().min(1)).optional(),
   ignoreHTTPSErrors: z.boolean().optional(),
   proxy: z
     .strictObject({
-      server: z.string().min(1).max(4096),
-      bypass: z.string().max(4096).optional(),
-      username: z.string().max(8192).optional(),
-      password: z.string().max(8192).optional(),
+      server: z.string().min(1),
+      bypass: z.string().optional(),
+      username: z.string().optional(),
+      password: z.string().optional(),
     })
     .optional(),
   failOnStatusCode: z.boolean().optional(),
@@ -83,9 +71,8 @@ const HTTPContextOptionsSchema = z.strictObject({
     .number()
     .int()
     .min(0, "'maxRedirects' must be greater than or equal to '0'")
-    .max(100)
     .optional(),
-  maxRetries: z.number().int().min(0).max(100).optional(),
+  maxRetries: z.number().int().min(0).optional(),
 })
 // Generic runner context defaults may accompany a request-context creation.
 // Validate recognized browser-only fields without claiming page emulation or
@@ -102,21 +89,15 @@ const ContextOptionsSchema = HTTPContextOptionsSchema.extend({
   hasTouch: z.boolean().optional(),
   isMobile: z.boolean().optional(),
   offline: z.boolean().optional(),
-  locale: z.string().min(1).max(128).optional(),
-  timezoneId: z.string().min(1).max(256).optional(),
-  deviceScaleFactor: z.number().finite().min(0.25).max(4).optional(),
+  locale: z.string().min(1).optional(),
+  timezoneId: z.string().min(1).optional(),
+  deviceScaleFactor: z.number().finite().positive().optional(),
   viewport: z
-    .strictObject({
-      width: z.number().int().positive().max(3840),
-      height: z.number().int().positive().max(2160),
-    })
+    .strictObject({ width: z.number().int().positive(), height: z.number().int().positive() })
     .nullable()
     .optional(),
   screen: z
-    .strictObject({
-      width: z.number().int().positive().max(3840),
-      height: z.number().int().positive().max(2160),
-    })
+    .strictObject({ width: z.number().int().positive(), height: z.number().int().positive() })
     .optional(),
 }).transform((config) =>
   withoutNativeRetryOperation(() => HTTPContextOptionsSchema.strip().parse(config)),
@@ -145,7 +126,7 @@ export interface NativeAPIRequestOptions {
 }
 const OptionsSchema = z.strictObject({
   lookup: z.custom<NativeHTTPLookup>((value) => typeof value === 'function').optional(),
-  method: z.string().min(1).max(32).optional(),
+  method: z.string().min(1).optional(),
   headers: HeadersSchema.optional(),
   params: z
     .union([z.record(z.string(), Scalar.optional()), z.instanceof(URLSearchParams), z.string()])
@@ -177,9 +158,8 @@ const OptionsSchema = z.strictObject({
     .number()
     .int()
     .min(0, "'maxRedirects' must be greater than or equal to '0'")
-    .max(100)
     .optional(),
-  maxRetries: z.number().int().min(0).max(100).optional(),
+  maxRetries: z.number().int().min(0).optional(),
   ignoreHTTPSErrors: z.boolean().optional(),
   signal: z.instanceof(AbortSignal).optional(),
 })
@@ -702,12 +682,12 @@ export class NativeAPIRequestContext {
     }
   }
   async addCookies(cookies: NativeCookieInput[]): Promise<void> {
-    const values = withoutNativeRetryOperation(() => z.array(z.unknown()).max(1024).parse(cookies))
+    const values = withoutNativeRetryOperation(() => z.array(z.unknown()).parse(cookies))
     await this.command({ action: 'addCookies', cookies: values })
   }
   async cookies(urls: string | string[] = []): Promise<NativeStorageState['cookies']> {
     const list = withoutNativeRetryOperation(() =>
-      z.union([z.string(), z.array(z.string()).max(128)]).parse(urls),
+      z.union([z.string(), z.array(z.string())]).parse(urls),
     )
     return z
       .object({ cookies: NativeStorageStateSchema.shape.cookies })

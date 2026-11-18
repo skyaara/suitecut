@@ -6,7 +6,7 @@ import { NativeWorkerInfoSchema } from './native-worker-protocol.js'
 
 const Base = {
   contextId: z.number().int().positive(),
-  owner: z.string().min(1).max(128),
+  owner: z.string().min(1),
   network: NativeNetworkInfoSchema.refine(
     (value) =>
       (value.event === 'route' && value.route !== undefined) || value.event === 'routematch',
@@ -23,8 +23,8 @@ export type NativeContextRouteInfo = z.infer<typeof NativeContextRouteInfoSchema
 /** Policy admission is distinct from the actual all-target control ACK. */
 export const NativeContextRouteMutationSchema = z.strictObject({
   contextId: z.number().int().positive(),
-  mutationId: z.string().min(1).max(128),
+  mutationId: z.string().min(1),
   phase: z.enum(['admitted', 'applied']),
-  registrationIds: z.array(z.string().min(1).max(128)).max(256),
+  registrationIds: z.array(z.string().min(1)),
 })
 export type NativeContextRouteMutation = z.infer<typeof NativeContextRouteMutationSchema>

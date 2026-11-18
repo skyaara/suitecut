@@ -18,12 +18,11 @@ class VisibilitySnapshotControls {
   bool Admit(int owner,uint64_t generation){
     if(owner<=0||!generation)return false;
     const auto found=states_.find(owner);if(found!=states_.end())return found->second.generation==generation;
-    if(states_.size()>=64)return false;
     Scope scope;scope.owner=owner;scope.generation=generation;states_.emplace(owner,std::move(scope));return true;
   }
   bool Bind(int owner,uint64_t generation,const std::string& frame,const std::string& session,const std::string& loader,int context,const std::string& identity){
     const auto found=states_.find(owner);
-    if(found==states_.end()||found->second.generation!=generation||frame.empty()||frame.size()>128||session.size()>256||loader.size()>256||identity.size()>256||context<0||(context>0&&identity.empty()))return false;
+    if(found==states_.end()||found->second.generation!=generation||frame.empty()||context<0||(context>0&&identity.empty()))return false;
     const bool validated=found->second.validated;found->second={owner,context,generation,frame,session,loader,identity,validated};return true;
   }
   std::optional<Scope> Get(int owner)const{const auto found=states_.find(owner);if(found==states_.end())return{};return found->second;}

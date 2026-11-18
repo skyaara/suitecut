@@ -16,7 +16,6 @@ class TraceJournal {
   struct Options {bool screenshots=false,dom=false,action_png=false,aria=false,sources=false;std::string name;};
   struct StackFrame {std::string file,function;int line=0,column=0;};
   struct Lease {int context=0;uint64_t session=0,chunk=0;};
-  static constexpr size_t kContexts=128,kJournalBytes=16*1024*1024,kNetworkBytes=16*1024*1024,kCalls=4096,kGlobalBytes=256*1024*1024;
   bool Start(int context,Options options,const std::string& context_event,std::string& error);
   bool StartChunk(int context,const std::string& context_event,std::string& error);
   bool Snapshot(Lease lease,TraceArchive& archive,std::string& error) const;

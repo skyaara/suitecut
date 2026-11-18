@@ -105,10 +105,6 @@ export class NativeWorkWatermarkInbox {
       !equal(header, entry.expected)
     )
       throw new Error('Native Source watermark acknowledgment lacks exact original observation')
-    if (this.completed.size === 64) {
-      this.poisoned = true
-      throw new Error('Native Source watermark history capacity exhausted')
-    }
     this.completed.add(header.barrier)
     this.entries.delete(header.barrier)
   }
@@ -117,10 +113,6 @@ export class NativeWorkWatermarkInbox {
       throw new Error('Stale or poisoned native Source watermark')
     let entry = this.entries.get(barrier)
     if (!entry) {
-      if (this.entries.size === 8) {
-        this.poisoned = true
-        throw new Error('Native Source watermark inflight capacity exhausted')
-      }
       entry = { sent: false }
       this.entries.set(barrier, entry)
     }

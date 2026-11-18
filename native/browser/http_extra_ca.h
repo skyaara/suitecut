@@ -4,31 +4,31 @@
 #include <openssl/pem.h>
 #include <openssl/ssl.h>
 #include <openssl/x509err.h>
+#include <climits>
 #include <memory>
 #include <string>
 #include <string_view>
 #include <vector>
 
 namespace suitecut {
-// Immutable additional trust anchors for an API context. Input limits bound
-// certificate data; OpenSSL's live TLS allocations have their own lifetime.
+// Immutable additional trust anchors for an API context. suitecut sets no
+// certificate count or byte limit; OpenSSL enforces its own.
 class NativeHTTPExtraCA {
  public:
-  static constexpr size_t kMaxCertificates=16,kMaxInputBytes=32*1024;
   static std::shared_ptr<const NativeHTTPExtraCA> Parse(const std::vector<std::string>&input,std::string&error){
-    if(input.size()>kMaxCertificates){error="Native API extra CA certificate limit exceeded";return {};}
     auto result=std::shared_ptr<NativeHTTPExtraCA>(new NativeHTTPExtraCA);
-    size_t total=0;
     for(const auto&pem:input){
-      if(pem.size()>kMaxInputBytes-total||pem.find('\0')!=std::string::npos){error="Native API extra CA input exceeds 32 KiB or contains NUL";return {};}
-      total+=pem.size();std::string_view remaining=pem;
+      if(pem.find('\0')!=std::string::npos){error="Native API extra CA input contains NUL";return {};}
+      std::string_view remaining=pem;
       while(!remaining.empty()){
         while(!remaining.empty()&&Space(remaining.front()))remaining.remove_prefix(1);
         if(remaining.empty())break;
         constexpr std::string_view begin="-----BEGIN CERTIFICATE-----",end="-----END CERTIFICATE-----";
         const auto finish=remaining.find(end);
-        if(!remaining.starts_with(begin)||finish==std::string_view::npos||result->certificates_.size()>=kMaxCertificates){error="Native API extra CA requires at most16 PEM certificates without other data";return {};}
+        if(!remaining.starts_with(begin)||finish==std::string_view::npos){error="Native API extra CA requires PEM certificates without other data";return {};}
         const auto block=remaining.substr(0,finish+end.size());
+        // OpenSSL's memory BIO takes an int length; that is its own limit.
+        if(block.size()>static_cast<size_t>(INT_MAX)){error="Native API extra CA PEM block is larger than OpenSSL accepts";return {};}
         std::unique_ptr<BIO,decltype(&BIO_free)> bio(BIO_new_mem_buf(block.data(),static_cast<int>(block.size())),BIO_free);
         std::shared_ptr<X509> certificate(bio?PEM_read_bio_X509(bio.get(),nullptr,nullptr,nullptr):nullptr,X509_free);
         if(!certificate){ERR_clear_error();error="Native API extra CA contains an invalid PEM certificate";return {};}

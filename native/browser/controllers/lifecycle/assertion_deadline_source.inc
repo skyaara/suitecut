@@ -68,7 +68,7 @@ bool AssertionDeadlineObserve(int id,uint64_t generation,bool ok,const std::stri
   if(!assertion_deadlines_.Get(id,generation))return true;
   if(!AssertionDeadlineCurrent(id,generation)){AssertionDeadlineFailure(id,generation,"Native assertion document changed");return false;}
   const auto parsed=CefParseJSON(json,JSON_PARSER_RFC);const auto result=parsed&&parsed->GetType()==VTYPE_DICTIONARY?parsed->GetDictionary():nullptr;
-  if(!ok||!result){AssertionDeadlineFailure(id,generation,"Native assertion protocol response failed: "+json.substr(0,2048));return false;}
+  if(!ok||!result){AssertionDeadlineFailure(id,generation,"Native assertion protocol response failed: "+json);return false;}
   if(result->HasKey("exceptionDetails")){
     const auto details=result->GetDictionary("exceptionDetails");const auto exception=details?details->GetDictionary("exception"):nullptr;
     const auto error=exception?suitecut::DevToolsString(exception->GetValue("description")):details?suitecut::DevToolsString(details->GetValue("text")):std::string{};

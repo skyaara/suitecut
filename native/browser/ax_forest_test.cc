@@ -52,11 +52,13 @@ int main(){
   };
   check_failure(R"JSON([{"nodeId":"root","backendDOMNodeId":1,"role":{"value":"generic"},"childIds":["root"]}])JSON","cycle");
   check_failure(R"JSON([{"nodeId":"root","backendDOMNodeId":1,"role":{"value":"list"},"childIds":[42]}])JSON","child identity");
-  check_failure("[{\"nodeId\":\"root\",\"backendDOMNodeId\":1,\"role\":{\"value\":\"button\"},\"name\":{\"value\":\""+std::string(70000,'x')+"\"}}]","64 KiB");
+  {auto big=CefParseJSON("[{\"nodeId\":\"root\",\"backendDOMNodeId\":1,\"role\":{\"value\":\"button\"},\"name\":{\"value\":\""+std::string(70000,'x')+"\"}}]",JSON_PARSER_RFC);
+   SuiteCutAXForest whole;CefRefPtr<CefListValue> output;std::vector<SuiteCutAXForest::Link> targets;std::string reason;
+   assert(whole.Project(big->GetList(),1,output,targets,reason));assert(output->GetDictionary(0)->GetString("name").ToString().size()==70000);}
   auto deep=CefListValue::Create();
   for(int i=0;i<65;i++){auto node=CefDictionaryValue::Create();node->SetString("nodeId",std::to_string(i));if(!i)node->SetInt("backendDOMNodeId",1);auto role=CefDictionaryValue::Create();role->SetString("value","generic");node->SetDictionary("role",role);if(i<64){auto ids=CefListValue::Create();ids->SetString(0,std::to_string(i+1));node->SetList("childIds",ids);}deep->SetDictionary(i,node);}
   SuiteCutAXForest depth;CefRefPtr<CefListValue> unused;std::vector<SuiteCutAXForest::Link> unused_links;std::string depth_error;
-  assert(!depth.Project(deep,1,unused,unused_links,depth_error));assert(depth_error.find("depth limit")!=std::string::npos);
+  assert(depth.Project(deep,1,unused,unused_links,depth_error));
   assert(SuiteCutAXForest::Normalize(" a \xc2\xa0 b\xe2\x80\x8b ")=="a b");
   {
   const auto project=[](const std::string& json){auto raw=CefParseJSON(json,JSON_PARSER_RFC);SuiteCutAXForest projector;CefRefPtr<CefListValue> forest;std::vector<SuiteCutAXForest::Link> links;std::string error;assert(projector.Project(raw->GetList(),1,forest,links,error));return forest;};

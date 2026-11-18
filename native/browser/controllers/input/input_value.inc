@@ -17,7 +17,7 @@ void InputValueResult(int id,uint64_t generation,bool ok,const std::string& json
     auto exception=details?details->GetDictionary("exception"):nullptr;
     auto error=exception?exception->GetString("description").ToString():result?result->GetString("message").ToString():std::string();
     if(error.empty())error="Native input value could not be read";
-    error=error.substr(0,error.find('\n'));Complete(id,false,"inputValue: "+error.substr(0,1024));return;
+    error=error.substr(0,error.find('\n'));Complete(id,false,"inputValue: "+error);return;
   }
   auto remote=result->GetDictionary("result");auto value=remote?remote->GetValue("value"):nullptr;
   std::u16string units;
@@ -26,8 +26,8 @@ void InputValueResult(int id,uint64_t generation,bool ok,const std::string& json
     Complete(id,false,"Native input value primitive is unavailable");return;
   }
   std::string encoded;
-  if(!suitecut::DevToolsLosslessJSON(value,encoded,kMaxResponseBytes)){
-    Complete(id,false,"Native input value exceeds the response limit");return;
+  if(!suitecut::DevToolsLosslessJSON(value,encoded)){
+    Complete(id,false,"Native input value could not be encoded");return;
   }
   if(InputValueCurrent(id,generation))Complete(id,true,"",encoded);
 }
@@ -67,7 +67,7 @@ void InputValueFixed(int id,uint64_t generation,Dict config) {
 
 void InputValueAction(int id,uint64_t generation,Dict config) {
   if(!InputValueCurrent(id,generation)||!browser_)return;
-  if(!SelectorWaits().Admit(id,generation)){Complete(id,false,"Native input value physical capacity exceeded");return;}
+  if(!SelectorWaits().Admit(id,generation)){Complete(id,false,"Native input value admission unavailable or channel closed");return;}
   const auto path=config->GetList("framePath");
   if(path&&path->GetSize()){
     ResolveFramePath(id,generation,config,0,FrameId(config),[this,id,generation](Dict resolved){InputValueAction(id,generation,resolved);});return;

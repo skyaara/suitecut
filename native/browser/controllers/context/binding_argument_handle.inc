@@ -10,7 +10,6 @@ void BindingArgumentMetadata(int id,const std::string& wrapper,const std::string
     if(!ok||!result||result->HasKey("exceptionDetails")||!summary||summary->GetType("type")!=VTYPE_STRING||(summary->GetType("preview")!=VTYPE_STRING&&summary->GetType("preview")!=VTYPE_DICTIONARY)){done(false,json);return;}
     auto finish=[done=std::move(done)](Dict value,const std::string& error="")mutable{
       if(!value){done(false,error);return;}
-      const auto description=suitecut::DevToolsString(value->GetValue("description"));if(description.size()>256)suitecut::DevToolsSetString(value,"description",suitecut::DevToolsTruncateWTF8(description,256));
       auto field=CefDictionaryValue::Create();field->SetString("name","value");field->SetDictionary("value",value);
       auto fields=CefListValue::Create();fields->SetDictionary(0,field);auto result=CefDictionaryValue::Create();result->SetList("result",fields);
       done(true,Json(result));

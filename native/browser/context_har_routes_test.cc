@@ -3,6 +3,7 @@
 #undef NDEBUG
 #endif
 #include <cassert>
+#include <string>
 #include <vector>
 #include "include/cef_api_hash.h"
 #include "context_har_routes.h"
@@ -53,26 +54,28 @@ int main(){
   actual[0](true,"");assert(old_reply==0&&new_reply==0&&actual.size()==3&&reused.pending()==1);actual[2](true,"");assert(new_reply==1&&old_reply==0);actual[1](true,"");assert(reused.physical()==0);reused.Clear();
  }
 
- // Real immutable CEF-decoded archives reserve before mutation. Sharing one
- // object does not duplicate the global allocation but still counts per route
- // for each future Source's actual 64 MiB replay policy limit.
+ // Real immutable CEF-decoded archives are accounted, never capped: sharing one
+ // object does not duplicate the global charge, and large archives past the old
+ // 64 MiB per-context/global budgets still install.
  const auto make_large=[](){auto archive=CefDictionaryValue::Create();auto log=CefDictionaryValue::Create();auto entries=CefListValue::Create();const std::string body(2097152,'x');for(size_t i=0;i<12;++i){auto entry=CefDictionaryValue::Create();auto request=CefDictionaryValue::Create();request->SetString("method","GET");request->SetString("url","https://native.test/actual-"+std::to_string(i));request->SetList("headers",CefListValue::Create());entry->SetDictionary("request",request);auto response=CefDictionaryValue::Create();response->SetInt("status",200);response->SetList("headers",CefListValue::Create());auto content=CefDictionaryValue::Create();content->SetString("text",body);response->SetDictionary("content",content);entry->SetDictionary("response",response);entries->SetDictionary(i,entry);}log->SetList("entries",entries);archive->SetDictionary("log",log);auto result=std::make_shared<suitecut::NativeHARReplay>();std::string error;assert(result->Load(archive,error)&&result->bytes()>24*1048576);return result;};
  auto first=make_large(),second=make_large(),third=make_large();Policy capacity_policy([](const std::string&,const std::string&){assert(false);});assert(capacity_policy.Seed(1)&&capacity_policy.Seed(2)&&capacity_policy.Seed(3));int admitted=0;const auto admit=[&](bool ok,const std::string&){assert(ok);++admitted;};
  assert(capacity_policy.Install(10,1,{"same-object-a","**",first,false},0,admit));assert(capacity_policy.Install(11,1,{"same-object-b","**",first,false},0,admit));assert(capacity_policy.retained_bytes()==first->bytes());const auto first_bytes=capacity_policy.retained_bytes();
- assert(!capacity_policy.Install(12,1,{"local-overflow","**",first,false},0,admit));assert(capacity_policy.pending()==0&&capacity_policy.retained_bytes()==first_bytes&&admitted==2);
- assert(capacity_policy.Install(13,2,{"another-context","**",second,false},0,admit));const auto both=capacity_policy.retained_bytes();assert(!capacity_policy.Install(14,3,{"global-overflow","**",third,false},0,admit));assert(capacity_policy.pending()==0&&capacity_policy.retained_bytes()==both&&admitted==3);
- capacity_policy.Closed(1);assert(capacity_policy.retained_bytes()==second->bytes());assert(capacity_policy.Install(15,3,{"after-real-policy-release","**",third,false},0,admit));capacity_policy.Closed(2);capacity_policy.Closed(3);assert(capacity_policy.retained_bytes()==0&&admitted==4);capacity_policy.Clear();
+ assert(capacity_policy.Install(12,1,{"same-object-c","**",first,false},0,admit));assert(capacity_policy.pending()==0&&capacity_policy.retained_bytes()==first_bytes&&admitted==3);
+ assert(capacity_policy.Install(13,2,{"another-context","**",second,false},0,admit));assert(capacity_policy.Install(14,3,{"third-context","**",third,false},0,admit));assert(capacity_policy.pending()==0&&capacity_policy.retained_bytes()==first->bytes()+second->bytes()+third->bytes()&&admitted==5);
+ for(int route=0;route<64;++route)assert(capacity_policy.Install(100+route,1,{"many-"+std::to_string(route)+std::string(256,'r'),"**",first,false},0,admit));assert(admitted==69);
+ for(int context=4;context<=64;++context)assert(capacity_policy.Seed(context));for(int target=0;target<512;++target)assert(capacity_policy.Attach(4,"owner:"+std::to_string(target)+std::string(256,'o'),[](auto,const auto&,double,auto done){done(true,"");},[](bool ok,const auto&){assert(ok);}));assert(capacity_policy.targets()==512);
+ capacity_policy.Closed(1);assert(capacity_policy.retained_bytes()==second->bytes()+third->bytes());capacity_policy.Closed(2);capacity_policy.Closed(3);assert(capacity_policy.retained_bytes()==0);capacity_policy.Clear();
 
  // The physical-policy ledger remains charged through retained immutable
- // owners after logical context policies are gone; distinct images cannot
- // bypass its 64 MiB bound, while references to one real image share charge.
+ // owners after logical context policies are gone; it has no byte or count
+ // cap, and references to one real image share charge.
  {
   using ArchivePolicy=suitecut::NativeHARRouteRegistration;
   assert(ArchivePolicy::retained_bytes()==0);auto a=ArchivePolicy::Create(first,false),b=ArchivePolicy::Create(second,true);assert(a&&b);
   const auto bytes=ArchivePolicy::retained_bytes();auto shared=ArchivePolicy::Create(first,true);assert(shared&&ArchivePolicy::retained_bytes()==bytes&&ArchivePolicy::retained_archives()==2);
-  assert(!ArchivePolicy::Create(third,false)&&ArchivePolicy::retained_bytes()==bytes);a.reset();assert(!ArchivePolicy::Create(third,false));shared.reset();auto admitted=ArchivePolicy::Create(third,false);assert(admitted);b.reset();admitted.reset();assert(ArchivePolicy::retained_bytes()==0&&ArchivePolicy::retained_policies()==0);
-  std::vector<ArchivePolicy::Policy>descriptors;for(size_t i=0;i<4096;++i){auto policy=ArchivePolicy::Create(replay,false);assert(policy);descriptors.push_back(std::move(policy));}
-  assert(ArchivePolicy::retained_policies()==4096&&ArchivePolicy::retained_archives()==1&&!ArchivePolicy::Create(replay,false));descriptors.clear();assert(ArchivePolicy::retained_policies()==0&&ArchivePolicy::retained_archives()==0);
+  auto admitted=ArchivePolicy::Create(third,false);assert(admitted&&ArchivePolicy::retained_bytes()==bytes+third->bytes()&&ArchivePolicy::retained_archives()==3);a.reset();shared.reset();b.reset();admitted.reset();assert(ArchivePolicy::retained_bytes()==0&&ArchivePolicy::retained_policies()==0);
+  std::vector<ArchivePolicy::Policy>descriptors;for(size_t i=0;i<8192;++i){auto policy=ArchivePolicy::Create(replay,false);assert(policy);descriptors.push_back(std::move(policy));}
+  assert(ArchivePolicy::retained_policies()==8192&&ArchivePolicy::retained_archives()==1);descriptors.clear();assert(ArchivePolicy::retained_policies()==0&&ArchivePolicy::retained_archives()==0);
  }
 
 }

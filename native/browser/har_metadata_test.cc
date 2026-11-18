@@ -15,7 +15,7 @@ void PostMetadata(const char*type,const char*text,const char*coding,bool body_ok
  auto raw=Parse(R"({"requestId":"actual-post","wallTime":1700000000})");raw->SetDictionary("request",request->Copy(false));assert(capture.OriginalRequest(1,"actual-owner","actual-session",raw));
  request->SetString("id","logical-post");request->SetString("requestId","actual-post");request->SetString("session","actual-session");auto event=Parse(R"({"event":"request"})");event->SetDictionary("request",request->Copy(false));assert(capture.Observe(1,"actual-owner",event,1700000000000));
  auto response=Parse(R"({"status":200,"headers":{"Content-Type":"text/plain","Content-Length":"2"},"requestId":"actual-post","session":"actual-session"})");response->SetBool("_nativeHeadersObserved",observed);response->SetBool("headersReady",ready);if(coding){if(std::string(coding)=="mixed-list"){auto values=CefListValue::Create();values->SetString(0,"identity");values->SetString(1,"gzip");response->GetDictionary("headers")->SetList("Content-Encoding",values);}else response->GetDictionary("headers")->SetString("Content-Encoding",coding);}event->SetDictionary("response",response);event->SetString("event","requestfinished");assert(capture.Observe(1,"actual-owner",event,1700000000000));assert(body);body(body_ok,body_ok?Capture::Bytes{'O','K'}:Capture::Bytes{},body_ok?"":"Actual body read failure");
- auto entry=capture.Export(1)->GetDictionary("log")->GetList("entries")->GetDictionary(0)->Copy(false);auto post=entry->GetDictionary("request")->GetDictionary("postData");assert(post&&post->GetString("text")==text);auto params=post->GetList("params");if(oversized){assert(!params&&post->GetString("_paramsError")=="Native HAR form parameter capacity exceeded");capture.Stop(1);capture.Detach("actual-owner");assert(capture.retained_bytes()==0&&capture.physical()==0);return;}assert(params);
+ auto entry=capture.Export(1)->GetDictionary("log")->GetList("entries")->GetDictionary(0)->Copy(false);auto post=entry->GetDictionary("request")->GetDictionary("postData");assert(post&&post->GetString("text")==text);auto params=post->GetList("params");if(oversized){assert(params&&params->GetSize()==4096&&!post->HasKey("_paramsError"));capture.Stop(1);capture.Detach("actual-owner");assert(capture.retained_bytes()==0&&capture.physical()==0);return;}assert(params);
  if(std::string(type).starts_with("Application/X-WWW-Form-Urlencoded")){
   assert(params->GetSize()==6);const char*names[]={"a","a","empty","token","flag","literal"};const char*values[]={"one two","✓","","a=b","","#hash"};for(size_t i=0;i<6;++i){assert(params->GetDictionary(i)->GetString("name")==names[i]);assert(params->GetDictionary(i)->GetString("value")==values[i]);}
  }else assert(params->GetSize()==0);
@@ -40,5 +40,6 @@ int main(){
  PostMetadata("text/plain","Hello",nullptr,false);
  PostMetadata("text/plain","Hello",nullptr,true,false);
  PostMetadata("text/plain","Hello",nullptr,true,true,false);
- std::string excessive;for(int i=0;i<257;++i)excessive+="a=b&";PostMetadata("application/x-www-form-urlencoded",excessive.c_str(),nullptr,true,true,true,true);
+ // No suitecut form-parameter cap: every pair past the old 256 bound is listed.
+ std::string excessive;for(int i=0;i<4096;++i)excessive+="a=b&";PostMetadata("application/x-www-form-urlencoded",excessive.c_str(),nullptr,true,true,true,true);
 }

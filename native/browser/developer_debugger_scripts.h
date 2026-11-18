@@ -47,10 +47,10 @@ class DeveloperDebuggerScripts {
       Clear();error="Native debugger script document/enumeration changed before publication";return false;
     }
     if(Expired(deadline)){error="Native debugger original deadline expired before script page publication";return false;}
-    if(page.count>64||page.json.size()>512*1024||page.json.size()<2||page.json.front()!='['||page.json.back()!=']'||
-       (page.count&&(page.last.empty()||page.last.size()>256||page.last<=after))||(page.more&&!page.count)||
+    if(page.json.size()<2||page.json.front()!='['||page.json.back()!=']'||
+       (page.count&&(page.last.empty()||page.last<=after))||(page.more&&!page.count)||
        (expected&&page.revision!=revision_)){
-      Clear();error="Actual native debugger script page identity/bounds failed";return false;
+      Clear();error="Actual native debugger script page identity failed";return false;
     }
     if(!expected)revision_=page.revision;
     std::string next;
@@ -68,11 +68,10 @@ class DeveloperDebuggerScripts {
       if(previous)successor=next;
     }
     std::string prepared="{\"scripts\":"+page.json+(next.empty()?"":",\"next\":"+Quote(next))+"}";
-    if(prepared.size()>512*1024){error="Native debugger script page exceeds total byte bound";return false;}
     if(Expired(deadline)){error="Native debugger original deadline expired during script page serialization";return false;}
     if(create){
       Reservation reservation;
-      if(!reservation.Admit()){error="Native debugger script cursor process capacity exceeded";return false;}
+      reservation.Admit();
       // Extract/insert uses the same allocator and a non-throwing string
       // comparison. No allocation remains after the staged node is accepted.
       auto inserted=cursors_.insert(staged.extract(staged.begin()));
@@ -91,7 +90,7 @@ class DeveloperDebuggerScripts {
   }
   struct Reservation{
     bool admitted=false,committed=false;
-    bool Admit(){size_t count=positions_.load();while(count<256&&!positions_.compare_exchange_weak(count,count+1)){}admitted=count<256;return admitted;}
+    void Admit(){++positions_;admitted=true;}
     ~Reservation(){if(admitted&&!committed)--positions_;}
   };
   struct Position{std::string after,next;};

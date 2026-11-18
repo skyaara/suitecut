@@ -23,7 +23,6 @@ import { type UntrustedInput } from './untrusted.js'
 const UnrouteOptions = z.strictObject({
   behavior: z.enum(['default', 'wait', 'ignoreErrors']).optional(),
 })
-let pendingMutations = 0
 interface Mutation {
   admitted: boolean
   applied: boolean
@@ -35,7 +34,7 @@ interface Mutation {
   authorizeIgnore?: ((ids: ReadonlySet<string>) => void) | undefined
   hostReceipts?: NativeRouteInvocationWait | undefined
 }
-const Options = z.strictObject({ times: z.number().int().positive().max(1_000_000).optional() })
+const Options = z.strictObject({ times: z.number().int().positive().optional() })
 /** A handler is registered once per actual context. Native admission owns uses. */
 export class NativeContextRoutes {
   private readonly handlers = new Map<
@@ -58,7 +57,6 @@ export class NativeContextRoutes {
   ): Promise<void> {
     const parsed = Options.parse(options)
     if (typeof handler !== 'function') throw new Error('Native context route requires a handler')
-    if (this.handlers.size >= 128) throw new Error('Native context route handler capacity exceeded')
     const registrationId = randomUUID()
     const policy = new NativeRouteURLMatcherPolicy(url)
     this.handlers.set(registrationId, { policy, handler })
@@ -104,7 +102,6 @@ export class NativeContextRoutes {
       return
     }
     if (!this.detachMutations) throw new Error('Native route mutation receipts are unavailable')
-    if (pendingMutations >= 64) throw new Error('Native route mutation observer capacity exceeded')
     const mutationId = randomUUID()
     let settle: Mutation['settle'] = () => undefined
     const outcome = new Promise<boolean>((resolve) => {
@@ -121,7 +118,6 @@ export class NativeContextRoutes {
     }
     if (behavior === 'ignoreErrors') mutation.authorizeIgnore = this.invocations.armIgnore(outcome)
     this.mutations.set(mutationId, mutation)
-    ++pendingMutations
     try {
       await this.command({ action: 'remove', registrationIds: [], behavior, mutationId })
       if (mutation.closed) throw new Error('Native context closed before removal observer delivery')
@@ -135,10 +131,7 @@ export class NativeContextRoutes {
       throw error
     } finally {
       mutation.hostReceipts?.cancel()
-      if (this.mutations.get(mutationId) === mutation) {
-        this.mutations.delete(mutationId)
-        --pendingMutations
-      }
+      if (this.mutations.get(mutationId) === mutation) this.mutations.delete(mutationId)
     }
   }
   private receiveMutation(value: NativeContextRouteMutation): void {
@@ -199,7 +192,6 @@ export class NativeContextRoutes {
       mutation.closed = true
       mutation.hostReceipts?.cancel()
       mutation.settle(false)
-      --pendingMutations
     }
     this.mutations.clear()
   }

@@ -31,8 +31,6 @@ export class NativeLocatorHandlerContexts {
   }
   capture(id: number, page: number): Promise<void> | undefined {
     if (!this.listeners.get(page)?.size) return
-    if (this.actions.size >= 256)
-      throw new Error('Native locator handler retained action capacity exceeded')
     let resolve!: () => void
     const lifetime = new Promise<void>((accept) => {
       resolve = accept

@@ -146,8 +146,6 @@ export class BrowserWire {
     const timeout = options.timeoutMs ?? this.timeoutMs
     if (!Number.isFinite(timeout) || timeout <= 0 || timeout > 2_147_483_647)
       return Promise.reject(new Error('Invalid browser command timeout'))
-    if (this.pending.size >= 2048)
-      return Promise.reject(new Error('Browser protocol pending command limit reached'))
     const id = ++this.nextId
     let encoded: string
     try {
@@ -161,8 +159,6 @@ export class BrowserWire {
       return Promise.reject(toError(error as UntrustedInput))
     }
     const bytes = Buffer.byteLength(encoded)
-    if (bytes > 8 * 1024 * 1024 || this.socket.bufferedAmount + bytes > 16 * 1024 * 1024)
-      return Promise.reject(new Error('Browser protocol outgoing byte budget exceeded'))
     return new Promise((resolve, reject) => {
       const cancel = (error: Error): void => {
         const entry = this.pending.get(id)
@@ -217,8 +213,6 @@ export class BrowserWire {
     try {
       if (typeof event.data !== 'string') throw new Error('Expected text browser protocol packet')
       const bytes = Buffer.byteLength(event.data)
-      if (bytes > 64 * 1024 * 1024)
-        throw new Error('Browser protocol incoming byte budget exceeded')
       this.counters.received++
       this.counters.receivedBytes += bytes
       const packet = protocolRecord(JSON.parse(event.data) as UntrustedInput, 'packet')

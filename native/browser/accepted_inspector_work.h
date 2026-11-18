@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 #include "accepted_work_origin.h"
-#include <array>
 #include <cstdint>
 #include <cstddef>
 #include <memory>
@@ -9,14 +8,15 @@
 #include <optional>
 #include <string>
 #include <string_view>
+#include <vector>
 namespace suitecut {
 // Process-owned CEF UI-thread ledger. It observes real queue/send/reply/channel
-// boundaries independently of logical operation registries. Capacity failure
-// poisons idle authority while existing backend behavior can continue normally.
+// boundaries independently of logical operation registries. Every table grows
+// with the actual work; a broken receipt poisons idle authority while existing
+// backend behavior can continue normally.
 // It is one required Engine lane, never an Engine idle predicate by itself.
 class AcceptedInspectorWork {
  public:
-  static constexpr size_t kChannels=256,kPending=4096,kSessionBytes=128,kCallbacks=64;
   enum class Kind {Page,Broker,Utility};
   struct Channel {uint64_t nonce=0;int browser=0;Kind kind=Kind::Page;bool operator==(const Channel&)const=default;};
   struct Ticket {uint64_t nonce=0;Channel channel;int command=0;bool operator==(const Ticket&)const=default;};
@@ -25,21 +25,22 @@ class AcceptedInspectorWork {
   std::optional<Channel> Open(int actual_browser,Kind kind)noexcept{
     if(actual_browser<=0||next_channel_==UINT64_MAX)return PoisonChannel();
     for(const auto& value:channels_)if(value&&value->browser==actual_browser)return PoisonChannel();
-    for(auto& value:channels_)if(!value){value=Channel{++next_channel_,actual_browser,kind};++channel_count_;return value;}
-    return PoisonChannel();
+    const Channel created{++next_channel_,actual_browser,kind};++channel_count_;
+    for(auto& value:channels_)if(!value){value=created;return created;}
+    channels_.emplace_back(created);return created;
   }
   std::optional<Ticket> Reserve(Channel channel,int command,std::string_view session,NativeWorkOrigin origin=CurrentNativeWorkOrigin())noexcept{
-    if(!Current(channel)||command<=0||session.size()>kSessionBytes||next_ticket_==UINT64_MAX)return PoisonTicket();
+    if(!Current(channel)||command<=0||next_ticket_==UINT64_MAX)return PoisonTicket();
     for(const auto& row:pending_)if(row.active&&row.ticket.channel==channel&&row.ticket.command==command)return PoisonTicket();
-    for(auto& row:pending_)if(!row.active){row={};row.active=true;row.ticket={++next_ticket_,channel,command};row.origin=origin;row.session_size=session.size();for(size_t i=0;i<session.size();++i)row.session[i]=session[i];++queued_;return row.ticket;}
-    return PoisonTicket();
+    Record created{};created.active=true;created.ticket={++next_ticket_,channel,command};created.origin=origin;created.session.assign(session);++queued_;
+    for(auto& row:pending_)if(!row.active){row=std::move(created);return row.ticket;}
+    pending_.push_back(std::move(created));return pending_.back().ticket;
   }
   // Called immediately before the real CEF send, including deferred sends.
   // A synchronous/reentrant actual reply can safely observe Submitted already.
   bool Dispatch(const Ticket& ticket,std::string_view session)noexcept{
     auto* row=Find(ticket);if(!row||row->submitted||dispatches_==UINT64_MAX){poisoned_=true;return false;}
-    if(session.size()!=row->session_size){poisoned_=true;return false;}
-    for(size_t i=0;i<session.size();++i)if(session[i]!=row->session[i]){poisoned_=true;return false;}
+    if(session!=row->session){poisoned_=true;return false;}
     row->submitted=true;--queued_;++submitted_;++dispatches_;
     if(Detached(row->ticket.channel,session)){row->closed=true;++session_detached_;}
     return true;
@@ -70,8 +71,7 @@ class AcceptedInspectorWork {
   NativeWorkOrigin ReplyOrigin(Channel channel,int command,std::string_view session)const noexcept{
     if(!Current(channel))return {};
     for(const auto& row:pending_)if(row.active&&row.ticket.channel==channel&&row.ticket.command==command){
-      if(!row.submitted||row.replied||row.session_size!=session.size())return {};
-      for(size_t i=0;i<session.size();++i)if(session[i]!=row.session[i])return {};
+      if(!row.submitted||row.replied||row.session!=session)return {};
       return row.origin;
     }
     return {};
@@ -79,8 +79,7 @@ class AcceptedInspectorWork {
   Reply ActualReply(Channel channel,int command,std::string_view session)noexcept{
     if(!Current(channel))return Reply::Foreign;
     for(auto& row:pending_)if(row.active&&row.ticket.channel==channel&&row.ticket.command==command){
-      if(session.size()!=row.session_size)return Reply::Foreign;
-      for(size_t i=0;i<session.size();++i)if(session[i]!=row.session[i])return Reply::Foreign;
+      if(row.session!=session)return Reply::Foreign;
       if(!row.submitted)return Reply::NotDispatched;
       if(row.replied)return Reply::Unknown;
       row.replied=true;++replied_;
@@ -98,6 +97,7 @@ class AcceptedInspectorWork {
         if(!row.submitted){--queued_;row.active=false;}
         else if(row.returned){--submitted_;row.active=false;}
       }
+      std::erase_if(detached_,[&](const DetachedSession& slot){return slot.channel==channel;});
       value.reset();--channel_count_;return true;
     }
     return false;
@@ -109,22 +109,20 @@ class AcceptedInspectorWork {
   size_t ActualSessionDetached(Channel channel,std::string_view session)noexcept{
     if(!Current(channel)||session.empty())return 0;
     size_t retired=0;
-    for(auto& row:pending_)if(row.active&&row.submitted&&row.ticket.channel==channel&&row.session_size==session.size()&&
-                              std::string_view(row.session.data(),row.session_size)==session){
+    for(auto& row:pending_)if(row.active&&row.submitted&&row.ticket.channel==channel&&row.session==session){
       row.closed=true;++session_detached_;
       if(row.returned){row.active=false;--submitted_;++retired;}
     }
-    auto& slot=detached_[detached_next_++%detached_.size()];slot.channel=channel;
-    slot.size=session.size()<slot.session.size()?session.size():slot.session.size();
-    for(size_t i=0;i<slot.size;++i)slot.session[i]=session[i];
+    if(!Detached(channel,session))detached_.push_back({channel,std::string(session)});
     return retired;
   }
   // Genuine CEF callback entry/stack return is a separate physical lane;
   // observing a reply cannot make its executing native callback idle.
   uint64_t BeginCallback(Channel channel)noexcept{
     if(!Current(channel)||next_callback_==UINT64_MAX){poisoned_=true;return 0;}
-    for(auto& callback:callbacks_)if(!callback){callback=++next_callback_;++callback_count_;return callback;}
-    poisoned_=true;return 0;
+    const uint64_t created=++next_callback_;++callback_count_;
+    for(auto& callback:callbacks_)if(!callback){callback=created;return created;}
+    callbacks_.push_back(created);return created;
   }
   bool CallbackReturned(uint64_t receipt)noexcept{
     if(!receipt)return false;
@@ -153,17 +151,16 @@ class AcceptedInspectorWork {
     size_t waiting=0;const Record* first=nullptr;
     for(const auto& row:pending_)if(ViewerWaits(row,crashed)){++waiting;if(!first)first=&row;}
     if(!first)return {};
-    const std::string_view session(first->session.data(),first->session_size);
+    const std::string_view session(first->session);
     const auto kind=first->ticket.channel.kind;
-    return std::string(first->method.data(),first->method_size)+(first->submitted?" awaiting its reply":" queued")+
+    return first->method+(first->submitted?" awaiting its reply":" queued")+
            (session.empty()?"":Detached(first->ticket.channel,session)?" in a detached child session":" in a child session")+
            (kind==Kind::Broker?" of the context's worker channel":kind==Kind::Utility?" of the utility channel":"")+
            (waiting>1?" and "+std::to_string(waiting-1)+" more":"");
   }
   void Label(const Ticket& ticket,std::string_view method)noexcept{
     auto* row=Find(ticket);if(!row)return;
-    row->method_size=method.size()<row->method.size()?method.size():row->method.size();
-    for(size_t i=0;i<row->method_size;++i)row->method[i]=method[i];
+    row->method.assign(method);
   }
   // Scoped observation only; it neither retires rows nor relaxes global idle.
   // Callback frames lack exact per-frame origins, so an executing real native
@@ -174,24 +171,24 @@ class AcceptedInspectorWork {
     return true;
   }
  private:
-  struct Record {Ticket ticket;NativeWorkOrigin origin;std::array<char,kSessionBytes> session{};size_t session_size=0;std::array<char,64> method{};size_t method_size=0;bool active=false,submitted=false,returned=false,replied=false,closed=false,resident=false;};
+  struct Record {Ticket ticket;NativeWorkOrigin origin;std::string session,method;bool active=false,submitted=false,returned=false,replied=false,closed=false,resident=false;};
   template<class Crashed>static bool ViewerWaits(const Record& row,Crashed&& crashed){
     return row.active&&!row.resident&&(!row.submitted||!crashed(row.ticket.channel));
   }
-  struct DetachedSession {Channel channel;std::array<char,kSessionBytes> session{};size_t size=0;};
-  // The most recent genuine child session detaches, newest overwriting oldest.
+  struct DetachedSession {Channel channel;std::string session;};
+  // Every genuine child session detach, kept until its channel closes.
   bool Detached(Channel channel,std::string_view session)const noexcept{
     if(session.empty())return false;
-    for(const auto& slot:detached_)if(slot.size&&slot.channel==channel&&std::string_view(slot.session.data(),slot.size)==session)return true;
+    for(const auto& slot:detached_)if(slot.channel==channel&&slot.session==session)return true;
     return false;
   }
-  std::array<DetachedSession,256> detached_{};size_t detached_next_=0;
+  std::vector<DetachedSession> detached_;
   bool Current(Channel channel)const noexcept{for(const auto& value:channels_)if(value&&*value==channel)return true;return false;}
   Record* Find(const Ticket& ticket)noexcept{for(auto& row:pending_)if(row.active&&row.ticket==ticket)return &row;return nullptr;}
   std::optional<Channel> PoisonChannel()noexcept{poisoned_=true;return std::nullopt;}
   std::optional<Ticket> PoisonTicket()noexcept{poisoned_=true;return std::nullopt;}
-  std::array<std::optional<Channel>,kChannels> channels_{};std::array<Record,kPending> pending_{};
-  std::array<uint64_t,kCallbacks> callbacks_{};uint64_t next_callback_=0;size_t callback_count_=0;
+  std::vector<std::optional<Channel>> channels_;std::vector<Record> pending_;
+  std::vector<uint64_t> callbacks_;uint64_t next_callback_=0;size_t callback_count_=0;
   uint64_t session_detached_=0,next_channel_=0,next_ticket_=0,dispatches_=0,accepted_=0,replied_=0,refused_=0,unwound_=0,not_dispatched_=0,channel_closed_=0;size_t channel_count_=0,queued_=0,submitted_=0;bool poisoned_=false;
 };
 } // namespace suitecut

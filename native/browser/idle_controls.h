@@ -33,11 +33,11 @@ class NativeIdleControls:public std::enable_shared_from_this<NativeIdleControls>
   NativeIdleControls(Send send,Sessions sessions,Live live,std::function<double()>now)
     :send_(std::move(send)),sessions_(std::move(sessions)),live_(std::move(live)),now_(std::move(now)){}
   bool Apply(int owner,uint64_t generation,std::optional<State>state,double deadline,Result done){
-    if(owner<1||generation==0||closed_||!ValidDeadline(deadline)||!done||Size()>=64||Owns(owner,generation))return false;
+    if(owner<1||generation==0||closed_||!ValidDeadline(deadline)||!done||Owns(owner,generation))return false;
     auto work=std::make_shared<Work>();work->owner=owner;work->generation=generation;work->state=state;work->deadline=deadline;work->done=std::move(done);queue_.push_back(work);Pump();return true;
   }
   bool Child(const std::string&session,double deadline,Result done){
-    if(session.empty()||session.size()>128||closed_||!ValidDeadline(deadline)||!done||Size()>=64)return false;
+    if(session.empty()||closed_||!ValidDeadline(deadline)||!done)return false;
     auto work=std::make_shared<Work>();work->child=true;work->sessions.push_back(session);work->deadline=deadline;work->done=std::move(done);queue_.push_back(work);Pump();return true;
   }
   void Cancel(int owner,uint64_t generation){

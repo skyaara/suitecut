@@ -31,5 +31,11 @@ int main(){
   if(std::llround(missing*120/1000)!=21602)return 10;
   // A genuine arbitrary quiet interval must retain its original duration.
   if(!near(cadence.Map(21602*8.333+100,180120,true,21603,120)-missing,100))return 11;
+  // No 120 Hz cap on the restoration: 240 Hz (4166 us) keeps every slot too.
+  SuiteCutCaptureClock fast;fast.Map(0,0,true,0,240);
+  for(uint64_t i=1;i<=43200;++i){
+    const double mapped=fast.Map(i*4.166,i*1000.0/240+1,true,i,240);
+    if(std::llround(mapped*240/1000)!=static_cast<long long>(i))return 14;
+  }
   std::puts("Native capture clock tests passed");
 }

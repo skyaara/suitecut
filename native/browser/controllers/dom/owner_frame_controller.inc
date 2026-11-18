@@ -15,7 +15,7 @@ struct OwnerFrameReply {
 struct OwnerFrameCandidate {CefRefPtr<Source>source;std::string frame;};
 struct OwnerFrameWork {
  int owner=0,handle=0,context=0,utility=0,backend=0;uint64_t generation=0,context_generation=0;
- std::string frame,session,loader,node,isolate,context_identity,utility_identity;size_t index=0,requests=0;
+ std::string frame,session,loader,node,isolate,context_identity,utility_identity;size_t index=0;
  std::vector<OwnerFrameCandidate>candidates;
 };
 bool OwnerFrameCurrent(const std::shared_ptr<OwnerFrameWork>&work){
@@ -48,7 +48,7 @@ void OwnerFrameDocumentCommand(const std::shared_ptr<OwnerFrameDocumentJob>&job,
   if(value.ok&&method==Read::Method::Describe){auto node=result->GetDictionary("node");if(node&&node->GetInt("nodeType")==9&&node->GetType("backendNodeId")==VTYPE_INT)value.backend=node->GetInt("backendNodeId");else value.ok=false;}
   done(std::move(value));
  };
- devtools_.emplace(call,DevToolsCall{0,[reply](bool ok,const std::string&json){reply->Settle(ok,json);},job->session,true,1048576,true,method==Read::Method::Describe||method==Read::Method::Document});WakeDeadlines();
+ devtools_.emplace(call,DevToolsCall{0,[reply](bool ok,const std::string&json){reply->Settle(ok,json);},job->session,true,kMaxResponseBytes,true,method==Read::Method::Describe||method==Read::Method::Document});WakeDeadlines();
  if(!SubmitDevTools(call,command,params,job->session)){const auto found=devtools_.find(call);if(found!=devtools_.end()){auto failed=std::exchange(found->second.callback, nullptr);devtools_.erase(found);failed(false,"{}");}}
 }
 bool OwnerFrameCandidateCurrent(CefRefPtr<Source>peer,const std::string&frame,int context,int utility,const std::string&session,const std::string&loader){
@@ -59,9 +59,8 @@ void OwnerFrameReadCandidate(const std::shared_ptr<OwnerFrameWork>&work,const Ow
  auto peer=candidate.source;const auto frame=peer->frame_states_.find(candidate.frame);
  if(!peer->browser_||peer->closing_page_||frame==peer->frame_states_.end()||(!frame->second.session.empty()&&!peer->sessions_.contains(frame->second.session))){OwnerFrameNext(work);return;}
  if(!frame->second.context||!frame->second.utility_context){peer->EnsureUtilityWorld(candidate.frame);CefPostDelayedTask(TID_UI,new Task([self=CefRefPtr<Source>(this),work,candidate]{if(self->OwnerFrameCurrent(work))self->OwnerFrameReadCandidate(work,candidate);}),10);return;}
- if(++work->requests>4096){Complete(work->owner,false,"Native element owner frame work limit exceeded");return;}
  auto physical=SelectorWaits().Begin(work->owner);auto remote=peer->OwnerFramePeers().Begin();
- if(!physical||!remote){Complete(work->owner,false,"Native element owner frame physical capacity exceeded");return;}
+ if(!physical||!remote){Complete(work->owner,false,"Native element owner frame peer is unavailable");return;}
  const int token=peer->AllocateDevToolsId();if(!token){Complete(work->owner,false,"Native element owner frame command identity exhausted");return;}
  const int context=frame->second.context,utility=frame->second.utility_context;
  const auto session=frame->second.session,loader=frame->second.loader,frame_id=candidate.frame;
@@ -99,7 +98,7 @@ void OwnerFrameOriginIsolate(const std::shared_ptr<OwnerFrameWork>&work,int back
  DevTools(work->owner,"Runtime.getIsolateId",CefDictionaryValue::Create(),[this,work](bool ok,const std::string&json){
   if(!OwnerFrameCurrent(work))return;
   auto parsed=CefParseJSON(json,JSON_PARSER_RFC);auto result=parsed?parsed->GetDictionary():nullptr;
-  if(!ok||!result||result->GetType("id")!=VTYPE_STRING||result->GetString("id").empty()||result->GetString("id").length()>256){Complete(work->owner,false,"Native element owner renderer identity unavailable");return;}work->isolate=result->GetString("id");OwnerFrameNext(work);
+  if(!ok||!result||result->GetType("id")!=VTYPE_STRING||result->GetString("id").empty()){Complete(work->owner,false,"Native element owner renderer identity unavailable");return;}work->isolate=result->GetString("id");OwnerFrameNext(work);
  });
 }
 void OwnerFrameResolveOrigin(const std::shared_ptr<OwnerFrameWork>&work,int backend,int type,const std::string&group,std::function<void(const std::string&)>done){
@@ -118,7 +117,7 @@ void OwnerFrameResolveOrigin(const std::shared_ptr<OwnerFrameWork>&work,int back
      auto node=result->GetDictionary(method==Origin::Method::Resolve?"object":"result");value.node=node&&node->GetString("type")=="object"&&node->GetString("subtype")=="node";if(node&&node->GetType("objectId")==VTYPE_STRING)value.object=node->GetString("objectId");
     }else if(value.ok){auto node=result->GetDictionary("node");if(node&&node->GetType("nodeType")==VTYPE_INT&&node->GetType("backendNodeId")==VTYPE_INT){value.type=node->GetInt("nodeType");value.backend=node->GetInt("backendNodeId");}}
     reply(std::move(value));
-   },std::nullopt,false,1048576,true);
+   },std::nullopt,false,kMaxResponseBytes,true);
   },[this,work]{return OwnerFrameCurrent(work);},
   [this,work,done=std::move(done)](Origin::Result result){if(!OwnerFrameCurrent(work))return;if(!result.ok){Complete(work->owner,false,result.error);return;}if(result.no_owner){Complete(work->owner,true,"","null");return;}done(result.object);},backend,type);
  transaction->Start();
@@ -136,7 +135,7 @@ void OwnerFramePrepared(int id,uint64_t generation,int handle_id,const std::stri
   // context peers. The identity comparison, never this order, decides ownership.
   work->candidates.push_back({this,frame_id});
   const auto peers=engine_.OwnerFrameSources(page_id_);
-  for(auto peer:peers)for(const auto&[id,state]:peer->frame_states_){if(peer.get()==this&&id==frame_id)continue;if(id.size()>256||work->candidates.size()>=4096){Complete(work->owner,false,"Native element owner frame inventory limit exceeded");return;}work->candidates.push_back({peer,id});}
+  for(auto peer:peers)for(const auto&[id,state]:peer->frame_states_){if(peer.get()==this&&id==frame_id)continue;work->candidates.push_back({peer,id});}
   if(!OwnerFrameCurrent(work))return;
   const auto group="suitecut-automation-"+std::to_string(id);evaluation_groups_[id].insert(work->session);
   auto original=CefDictionaryValue::Create();original->SetString("objectId",node);original->SetInt("depth",0);
@@ -161,7 +160,7 @@ void OwnerFramePrepared(int id,uint64_t generation,int handle_id,const std::stri
     auto parsed=CefParseJSON(json,JSON_PARSER_RFC);auto result=parsed?parsed->GetDictionary():nullptr;auto node=result?result->GetDictionary("node"):nullptr;
      if(!ok||!node||node->GetInt("nodeType")!=9||node->GetType("backendNodeId")!=VTYPE_INT||node->GetInt("backendNodeId")<=0){Complete(work->owner,false,"Native element owner document backend unavailable");return;}OwnerFrameOriginIsolate(work,node->GetInt("backendNodeId"));
     });
-   },std::nullopt,false,1048576,true);
+   },std::nullopt,false,kMaxResponseBytes,true);
   });
   });
 }
@@ -170,7 +169,7 @@ void ElementOwnerFrame(int id,Dict config){
  const auto entry=operations_.Get(id);if(!entry)return;const auto found=handles_.find(handle_id);
  if(found==handles_.end()||found->second.node_id.empty()){Complete(id,false,"Native element owner requires an actual retained DOM node");return;}
  if(found->second.frame_id!=FrameId(config)){Complete(id,false,"Native handle belongs to a different frame context");return;}
- if(!SelectorWaits().Admit(id,entry->generation)){Complete(id,false,"Native element owner preparation capacity exceeded");return;}
+ if(!SelectorWaits().Admit(id,entry->generation)){Complete(id,false,"Native element owner preparation could not be admitted");return;}
  const auto node=found->second.node_id,frame_id=found->second.frame_id;
  WithFrame(id,frame_id,[this,id,generation=entry->generation,handle_id,node,frame_id](int utility){
   OwnerFramePrepared(id,generation,handle_id,node,frame_id,utility);

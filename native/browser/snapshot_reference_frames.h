@@ -4,7 +4,7 @@
 // Child forests are exact JSON strings from other native captures, never DOM
 // attributes or author callback results. No author node is modified here.
 inline constexpr char kSuiteCutSnapshotReferenceMerge[] = R"JS(function(ref,childJSON){
-  if(typeof ref!=='string'||ref.length>192||typeof childJSON!=='string'||!this||!Array.isArray(this.forest))throw new Error('Invalid native frame snapshot merge');
+  if(typeof ref!=='string'||typeof childJSON!=='string'||!this||!Array.isArray(this.forest))throw new Error('Invalid native frame snapshot merge');
   const child=JSON.parse(childJSON);if(!Array.isArray(child))throw new Error('Invalid native child snapshot forest');
   let target=null;const pending=[{nodes:this.forest,depth:0}],seen=new Set();
   while(pending.length){const {nodes,depth}=pending.pop();for(const node of nodes){if(!node||typeof node!=='object'||seen.has(node))throw new Error('Invalid native frame snapshot record');seen.add(node);if(node.ref===ref){if(node.role!=='iframe'||target)throw new Error('Native frame snapshot owner is ambiguous');target=node;}if(node.children!==undefined){if(!Array.isArray(node.children))throw new Error('Invalid native frame snapshot children');pending.push({nodes:node.children,depth:depth+1});}}}

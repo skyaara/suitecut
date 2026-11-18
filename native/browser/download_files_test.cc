@@ -4,6 +4,7 @@
 #endif
 #include <cassert>
 #include <fstream>
+#include <limits>
 #include <thread>
 #include "download_files.h"
 #include "download_budget.h"
@@ -31,13 +32,15 @@ int main(){
   assert(!CopyDownloadFile(files->path(),"relative.bin",canceled,0,[]{return 0.;}).ok);
   bool escaped=false;try{files->Adopt("/tmp/unowned-download");}catch(const std::runtime_error&){escaped=true;}assert(escaped);
   for(const auto& entry:std::filesystem::directory_iterator(std::filesystem::path(destination).parent_path()))assert(!entry.path().filename().string().starts_with(".suitecut-download-save-"));
-  auto quota=std::make_shared<DownloadQuota>(64);
-  {auto lease=std::make_shared<DownloadQuotaLease>(quota);assert(lease->Add(64));assert(!lease->Add(1));assert(!lease->ReduceTo(65));assert(quota->Used()==64);assert(lease->ReduceTo(4));assert(quota->Used()==4);}
+  // Accounting only: no per-file (former 256 MiB) or total (former 1 GiB) cap.
+  auto quota=std::make_shared<DownloadQuota>();
+  {auto lease=std::make_shared<DownloadQuotaLease>(quota);assert(lease->Add(64));assert(lease->Add(4ull<<30));assert(!lease->ReduceTo((4ull<<30)+65));assert(quota->Used()==(4ull<<30)+64);assert(lease->ReduceTo(4));assert(quota->Used()==4);
+   assert(!lease->Add(std::numeric_limits<std::uint64_t>::max()));assert(lease->Bytes()==4&&quota->Used()==4);}
   assert(quota->Used()==0);
   std::vector<std::thread> workers;std::vector<std::shared_ptr<DownloadQuotaLease>> leases(32);
-  for(size_t i=0;i<leases.size();++i)workers.emplace_back([&,i]{auto lease=std::make_shared<DownloadQuotaLease>(quota);lease->Add(4);leases[i]=lease;});
+  for(size_t i=0;i<leases.size();++i)workers.emplace_back([&,i]{auto lease=std::make_shared<DownloadQuotaLease>(quota);assert(lease->Add(512ull<<20));leases[i]=lease;});
   for(auto& worker:workers){worker.join();}
-  assert(quota->Used()<=64);leases.clear();assert(quota->Used()==0);
+  assert(quota->Used()==32*(512ull<<20));leases.clear();assert(quota->Used()==0);
   files.reset();assert(!std::filesystem::exists(directory));
   for(int i=0;i<10000;++i){
     auto owner=std::make_shared<DownloadFiles>(root);const auto path=owner->directory();

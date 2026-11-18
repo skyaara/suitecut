@@ -2,7 +2,7 @@
 // Included inside NetworkControls. Native pause/snapshot ownership stays here.
   void MatchResult(Dict config,Done done){
       if(!config->HasKey("callbackScope")||config->GetType("routeId")!=VTYPE_STRING||config->GetType("registrationId")!=VTYPE_STRING||config->GetType("callbackToken")!=VTYPE_STRING){done(false,"Invalid native URL matcher result identity","");return;}
-      uint64_t token=0;const auto text=config->GetString("callbackToken").ToString();if(text.size()>20||config->GetString("routeId").length()>128||config->GetString("registrationId").length()>128){done(false,"Native matcher identity exceeds its bounds","");return;}const auto parsed=std::from_chars(text.data(),text.data()+text.size(),token);
+      uint64_t token=0;const auto text=config->GetString("callbackToken").ToString();const auto parsed=std::from_chars(text.data(),text.data()+text.size(),token);
       const bool invalid=config->GetType("invalid")==VTYPE_BOOL&&config->GetBool("invalid");
       if(!token||text.size()>20||parsed.ec!=std::errc{}||parsed.ptr!=text.data()+text.size()||(invalid?config->HasKey("matched"):config->GetType("matched")!=VTYPE_BOOL)){done(false,"Invalid native URL matcher result","");return;}
       NativeRouteMatcherSelections::Ticket ticket;ticket.id=config->GetString("routeId");ticket.registration=config->GetString("registrationId");ticket.scope=callback_scope_;ticket.token=token;
@@ -23,7 +23,7 @@
     auto candidate=routes_.Peek(plan);
     if(!candidate||!candidate->host_matcher){auto invocation=routes_.Next(plan);AdmitPause(data,session,std::move(plan),deadline,std::move(invocation));return;}
     const auto bytes=NativeNetworkPreflights::RetainedBytes(data);
-    if(!bytes||paused_.size()+rejected_.size()+matchers_->pending()>=1024){RejectOversizedPause(data,session,"Native URL matcher pause capacity exceeded");return;}
+    if(!bytes){RejectOversizedPause(data,session,"Native URL matcher pause metadata could not be measured");return;}
     auto actual=data->Copy(false);const auto request=actual->GetDictionary("request");if(!request)return;
     const bool accepted=matchers_->Select(std::move(plan),request->GetString("url"),deadline,now_(),*bytes,
       [this,actual,session,deadline](auto invocation,auto plan,const std::string&error,NativeRouteMatcherSelections::Failure failure){
@@ -32,7 +32,7 @@
         if(!error.empty()){if(auto parent=RouteRequest(actual->GetString("networkId"),session)){parent->route_selection_complete=true;parent->route_selection_failed=true;}ResolvePreflights();RejectOversizedPause(actual,session,error,failure!=NativeRouteMatcherSelections::Failure::InvalidResult);return;}
         AdmitPause(actual,session,std::move(plan),deadline,std::move(invocation));
       },[this,actual](const auto&ticket){EmitMatcher(ticket,actual);},session);
-    if(!accepted)RejectOversizedPause(actual,session,"Native URL matcher selection metadata capacity exceeded");
+    if(!accepted)RejectOversizedPause(actual,session,"Native URL matcher selection was rejected");
     wake_();
   }
   struct MatcherOperation {std::string ticket,route;int operation=0;uint64_t generation=0;};
@@ -51,13 +51,13 @@
     done=[this,deadline,reply=std::move(done)](bool ok,const std::string&error,const std::string&json){if(ok&&now_()>=deadline)reply(false,"Native fallback exceeded its original operation deadline","");else reply(ok,error,json);};
     auto candidate=routes_.Peek(pause.plan);
     if(!candidate||!candidate->host_matcher){auto invocation=routes_.Next(pause.plan);FallbackReady(id,std::move(invocation),std::move(done),deadline,operation,generation);return;}
-    if(operation<0||(operation>0&&!generation)||matcher_operations_.contains(id)||matcher_operations_.size()>=128){done(false,"Native host matcher fallback requires its actual bounded operation","");return;}
+    if(operation<0||(operation>0&&!generation)||matcher_operations_.contains(id)){done(false,"Native host matcher fallback requires its actual operation","");return;}
     auto actual=std::make_shared<MatcherOperation>();actual->route=id;actual->operation=operation;actual->generation=generation;
     matcher_operations_.emplace(id,actual);pause.matching=true;
     auto projection=CefDictionaryValue::Create();
     if(auto worker=pause.request.info->GetDictionary("workerInfo"))projection->SetDictionary("suitecutWorkerInfo",worker->Copy(false));
     projection->SetBool("suitecutContextWorker",pause.request.info->GetBool("contextWorker"));
-    const auto retained=NativeNetworkPreflights::RetainedBytes(projection);if(!retained){matcher_operations_.erase(id);pause.matching=false;done(false,"Native matcher worker projection exceeds its metadata bound","");return;}
+    const auto retained=NativeNetworkPreflights::RetainedBytes(projection);if(!retained){matcher_operations_.erase(id);pause.matching=false;done(false,"Native matcher worker projection could not be measured","");return;}
     const bool accepted=matchers_->Select(pause.plan,pause.original_url,deadline,now_(),*retained+512,
       [this,actual,done,deadline](auto invocation,auto plan,const std::string&error,NativeRouteMatcherSelections::Failure failure){
         const auto current=matcher_operations_.find(actual->route);if(current==matcher_operations_.end()||current->second!=actual)return;
@@ -71,7 +71,7 @@
         }
         FallbackReady(actual->route,std::move(invocation),done,deadline,actual->operation,actual->generation);
       },[this,actual,projection](const auto&ticket){actual->ticket=ticket.id;EmitMatcher(ticket,projection);},pause.session);
-    if(!accepted){matcher_operations_.erase(id);pause.matching=false;done(false,"Native fallback matcher capacity exceeded; request remains owned for retry","");}
+    if(!accepted){matcher_operations_.erase(id);pause.matching=false;done(false,"Native fallback matcher selection was rejected; request remains owned for retry","");}
     wake_();
   }
   void FallbackReady(const std::string&id,std::optional<NativeRouteRegistry::Invocation>invocation,Done done,double deadline=0,int operation=0,uint64_t generation=0){
@@ -82,7 +82,7 @@
           if(har_replays_.contains(invocation->registration)){paused_.emplace(next_id,std::move(next_pause));ReplayPaused(next_id,invocation->registration,std::move(done),deadline,operation,generation);wake_();return;}
           if(!next_pause.public_prepared){PrepareBody(next_pause.request.info,next_pause.deadline);next_pause.public_prepared=true;const auto metadata=(next_pause.fetch_body?next_pause.fetch_body->capacity():0)+next_pause.plan.bytes()+next_pause.original_url.capacity()+Json(next_pause.request.info).size()+Json(next_pause.overrides).size()+(next_pause.har_info?Json(next_pause.har_info).size():0);pause_metadata_bytes_=pause_metadata_bytes_-next_pause.metadata_bytes+metadata;next_pause.metadata_bytes=metadata;}
           auto event=RouteEvent(next_id,next_pause,*invocation);
-          if(!event || Json(event).size()>NetworkControls::kEventBytes){if(event){const auto owner=event->GetDictionary("route");uint64_t token=0;const auto nonce=owner->GetString("callbackToken").ToString();const auto parsed=std::from_chars(nonce.data(),nonce.data()+nonce.size(),token);if(parsed.ec==std::errc{} && parsed.ptr==nonce.data()+nonce.size())GlobalRouteCallbackLeases().Finish(token,callback_scope_,next_id);}pause_metadata_bytes_-=next_pause.metadata_bytes;auto rejected=CefDictionaryValue::Create();rejected->SetString("requestId",next_pause.fetch_id);RejectOversizedPause(rejected,next_pause.session,"Native fallback request metadata exceeds 1 MiB",true,std::move(next_pause.har_work));done(false,"Native fallback request metadata exceeds 1 MiB","");return;}
+          if(!event){pause_metadata_bytes_-=next_pause.metadata_bytes;auto rejected=CefDictionaryValue::Create();rejected->SetString("requestId",next_pause.fetch_id);RejectOversizedPause(rejected,next_pause.session,"Native fallback route callback could not be issued",true,std::move(next_pause.har_work));done(false,"Native fallback route callback could not be issued","");return;}
           paused_.emplace(next_id,std::move(next_pause));Publish(event);wake_();done(true,"","{}");return;
         }
 

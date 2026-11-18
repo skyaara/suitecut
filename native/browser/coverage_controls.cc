@@ -2,6 +2,7 @@
 #include "coverage_controls.h"
 #include <algorithm>
 #include <cmath>
+#include <cstdint>
 #include <deque>
 #include <map>
 #include <iomanip>
@@ -33,13 +34,13 @@ class CoverageControls::Impl : public std::enable_shared_from_this<Impl> {
     bool terminal=false;std::string agent,capture;std::set<int> author_contexts;std::map<std::pair<int,std::string>,bool> known_scripts;CefRefPtr<CefListValue> measured;std::string error,output;
   };
   struct Call{std::shared_ptr<Record> record;double deadline=0,retirement=0;};
-  static constexpr size_t kScripts=2048,kTextBytes=16*1048576,kPhysical=32,kReaders=4;
   std::map<std::string,std::string> native_scripts_;Hooks hooks_;std::map<Kind,std::shared_ptr<Record>> records_;std::map<uint64_t,Call> calls_;uint64_t next_=0;bool closed_=false,closing_channel_=false;
   static bool Boolean(Dict params,const char* name,bool& value){if(!params->HasKey(name))return true;if(params->GetType(name)!=VTYPE_BOOL)return false;value=params->GetBool(name);return true;}
   static bool Text(CefRefPtr<CefValue> value,std::string& text,size_t* count=nullptr){std::u16string units;if(!value||(value->GetType()!=VTYPE_STRING&&!DevToolsReadTag(value,units)))return false;text=DevToolsString(value);if(count)*count=value->GetType()==VTYPE_STRING?value->GetString().ToString16().size():units.size();return true;}
   bool Current(const std::shared_ptr<Record>& record)const{const auto found=records_.find(record->kind);return !closed_&&found!=records_.end()&&found->second==record;}
-  bool Reserve(const std::shared_ptr<Record>& record,size_t bytes){if(hooks_.reserve_payload&&!hooks_.reserve_payload(bytes))return false;if(hooks_.reserve_payload)record->reserved+=bytes;return true;}
-  void Error(const std::shared_ptr<Record>& record,const std::string& error){if(record->error.empty())record->error=error.substr(0,8192);}
+  // Accounting only: shared payload bytes are reported, never used to refuse coverage data.
+  void Reserve(const std::shared_ptr<Record>& record,size_t bytes){if(hooks_.reserve_payload&&hooks_.reserve_payload(bytes))record->reserved+=bytes;}
+  void Error(const std::shared_ptr<Record>& record,const std::string& error){if(record->error.empty())record->error=error;}
   void Wake(){if(hooks_.wake)hooks_.wake();}
   void CloseChannel(const std::string& error){if(!closing_channel_){closing_channel_=true;if(hooks_.close_channel)hooks_.close_channel(error);}}
   void Owner(const std::shared_ptr<Record>& record,bool ok,const std::string& error,const std::string& json=""){
@@ -52,7 +53,7 @@ class CoverageControls::Impl : public std::enable_shared_from_this<Impl> {
   }
   void Send(const std::shared_ptr<Record>& record,const std::string& method,Dict params,double deadline,std::function<void(bool,Dict,const std::string&)> done){
     if(!Current(record)){return;}
-    if(calls_.size()>=kPhysical||next_>=9007199254740991ULL){done(false,nullptr,"Native coverage physical command capacity/identity exceeded");return;}
+    if(next_>=9007199254740991ULL){done(false,nullptr,"Native coverage physical command identity exceeded");return;}
     const auto token=++next_;const auto observed=hooks_.now();const auto retirement=(deadline>0?deadline:observed+30000)+30000;
     calls_.emplace(token,Call{record,deadline,retirement});++record->physical;const auto weak=weak_from_this();
     ProtocolReply reply=[weak,record,token,done=std::move(done)](bool ok,Dict result,const std::string& error)mutable{
@@ -103,24 +104,24 @@ class CoverageControls::Impl : public std::enable_shared_from_this<Impl> {
         if(!record->error.empty()){Fail(record,record->error);return;}
         std::string decode_error;if(!Retained(record,result,decode_error)){Fail(record,decode_error);return;}record->phase=Phase::Cleaning;Cleanup(record);return;
       }
-      auto measured=result?result->GetList(record->kind==Kind::JS?"result":"ruleUsage"):nullptr;if(measured){auto boxed=CefValue::Create();boxed->SetList(measured->Copy());const auto retained=CefWriteJSON(boxed,JSON_WRITER_DEFAULT).ToString().size();if(!Reserve(record,retained)){Fail(record,"Native coverage shared measurement payload capacity exceeded");return;}record->measured=measured->Copy();}
+      auto measured=result?result->GetList(record->kind==Kind::JS?"result":"ruleUsage"):nullptr;if(measured){auto boxed=CefValue::Create();boxed->SetList(measured->Copy());Reserve(record,CefWriteJSON(boxed,JSON_WRITER_DEFAULT).ToString().size());record->measured=measured->Copy();}
       if(!record->measured){Fail(record,"Actual native coverage result is unavailable");return;}MaybeBuild(record);
     });
   }
   static bool Identity(Dict params,const char* field,std::string& output){
     if(!params||params->GetType(field)!=VTYPE_STRING)return false;
-    output=params->GetString(field).ToString();return !output.empty()&&output.size()<=256&&output.find('\0')==std::string::npos;
+    output=params->GetString(field).ToString();return !output.empty()&&output.find('\0')==std::string::npos;
   }
   bool Retained(const std::shared_ptr<Record>& record,Dict result,std::string& error){
     if(!result||result->GetString("agentId")!=record->agent||result->GetString("captureId")!=record->capture||result->GetType("final")!=VTYPE_BOOL||!result->GetBool("final")){error="Native retained coverage final capture/agent receipt is missing or stale";return false;}
     auto raw=CefValue::Create();raw->SetDictionary(result->Copy(false));std::string payload;
-    if(!DevToolsLosslessJSON(raw,payload,8*1048576)||!Reserve(record,payload.size()*3)){error="Retained native coverage measurement exceeds its shared payload capacity";return false;}
+    if(!DevToolsLosslessJSON(raw,payload,SIZE_MAX)){error="Retained native coverage measurement is not lossless JSON";return false;}Reserve(record,payload.size()*3);
     Dict normalized;bool unknown=false;
     const auto select=[record,&unknown](int context,const std::string& id){const auto found=record->known_scripts.find({context,id});if(found==record->known_scripts.end()){unknown=true;return false;}return found->second;};
     const bool decoded=record->kind==Kind::JS?CoverageRetention::JavaScript(result,select,normalized,error):CoverageRetention::CSS(result,normalized,error);
     if(!decoded||unknown){if(unknown)error="Retained JavaScript script has no attested author/native identity";return false;}
     auto entries=normalized->GetList("result");for(size_t n=0;n<entries->GetSize();++n){auto entry=entries->GetDictionary(n);entry->SetString("agentId",record->agent);entry->SetString("captureId",record->capture);entry->SetString("sessionId",hooks_.target_session);if(!hooks_.target_id.empty())entry->SetString("targetId",hooks_.target_id);}
-    auto boxed=CefValue::Create();boxed->SetList(entries->Copy());if(!DevToolsLosslessJSON(boxed,record->output,2*1048576)||!Reserve(record,record->output.size())){error="Retained native coverage output exceeds its shared payload capacity";return false;}return true;
+    auto boxed=CefValue::Create();boxed->SetList(entries->Copy());if(!DevToolsLosslessJSON(boxed,record->output,SIZE_MAX)){error="Retained native coverage output is not lossless JSON";return false;}Reserve(record,record->output.size());return true;
   }
   bool FinalReceipt(const std::string& action,std::string& output,std::string& error)const{
     const auto found=records_.find(action=="startJS"||action=="stopJS"?Kind::JS:Kind::CSS);
@@ -145,7 +146,7 @@ class CoverageControls::Impl : public std::enable_shared_from_this<Impl> {
       }
       if(method=="Debugger.enable"&&hooks_.script_inventory){
         std::vector<Dict> scripts;std::string error;
-        if(!hooks_.script_inventory(record->deadline,scripts,error)||scripts.size()>kScripts){Fail(record,error.empty()?"Native coverage script inventory exceeds capture capacity":error);return;}
+        if(!hooks_.script_inventory(record->deadline,scripts,error)){Fail(record,error.empty()?"Native coverage script inventory is unavailable":error);return;}
         for(const auto& script:scripts){if(!Current(record)||record->phase!=Phase::Starting)return;if(record->deadline>0&&hooks_.now()>=record->deadline){Fail(record,"Native coverage original deadline expired during inventory seed");return;}Event("Debugger.scriptParsed",script);}
       }
       Start(record);
@@ -168,13 +169,13 @@ class CoverageControls::Impl : public std::enable_shared_from_this<Impl> {
     if(kind==Kind::JS){
       if(!record->reset){
         const auto key=std::make_pair(params->GetInt("executionContextId"),params->GetString("scriptId").ToString());
-        if(key.first<=0||key.second.empty()||key.second.size()>256||(!record->known_scripts.contains(key)&&record->known_scripts.size()>=kScripts)){Error(record,"Retained native coverage identity inventory capacity exceeded");return;}
-        if(!record->known_scripts.contains(key)&&!Reserve(record,key.second.size()+96)){Error(record,"Retained native coverage inventory exceeds its shared payload capacity");return;}
+        if(key.first<=0||key.second.empty()){Error(record,"Invalid retained native coverage script identity");return;}
+        if(!record->known_scripts.contains(key))Reserve(record,key.second.size()+96);
         record->known_scripts.try_emplace(key,false);
       }
       const int context=params->GetInt("executionContextId");bool author=hooks_.author_context(context);
       if(!record->reset){
-        if(author&&!record->author_contexts.contains(context)){if(record->author_contexts.size()>=kScripts){Error(record,"Retained coverage author-context capacity exceeded");return;}record->author_contexts.insert(context);}
+        if(author)record->author_contexts.insert(context);
         author=author||record->author_contexts.contains(context);
       }
       if(!author)return;
@@ -189,9 +190,8 @@ class CoverageControls::Impl : public std::enable_shared_from_this<Impl> {
     }else{
       auto header=params->GetDictionary("header");if(!header)return;const auto origin=header->GetString("origin").ToString();if(origin!="regular")return;id=header->GetString("styleSheetId");if(!Text(header->GetValue("sourceURL"),url)){Error(record,"Native coverage stylesheet URL is unavailable");return;}if(url.empty())return;
     }
-    if(id.empty()||id.size()>256){Error(record,"Invalid native coverage source identity");return;}if(record->sources.contains(id))return;
-    if(record->sources.size()>=kScripts){Error(record,"Native coverage source capacity exceeded");return;}
-    if(!Reserve(record,id.size()+url.size())){Error(record,"Native coverage shared source metadata capacity exceeded");return;}
+    if(id.empty()){Error(record,"Invalid native coverage source identity");return;}if(record->sources.contains(id))return;
+    Reserve(record,id.size()+url.size());
     record->sources.emplace(id,Source{id,url,"",0,record->epoch,hooks_.now()+30000,false,kind==Kind::JS?params->GetInt("executionContextId"):0,false});
     if(!record->reset){if(kind==Kind::JS)record->known_scripts[{params->GetInt("executionContextId"),id}]=true;return;}
     record->queue.emplace_back(id,record->epoch);Pump(record);Wake();
@@ -205,14 +205,14 @@ class CoverageControls::Impl : public std::enable_shared_from_this<Impl> {
   }
   void Pump(const std::shared_ptr<Record>& record){
     if(!Current(record)||record->phase==Phase::Cleaning)return;
-    while(record->reading<kReaders&&!record->queue.empty()&&calls_.size()<kPhysical){
+    while(!record->queue.empty()){
       const auto [id,epoch]=record->queue.front();record->queue.pop_front();const auto source=record->sources.find(id);if(source==record->sources.end()||source->second.epoch!=epoch||source->second.native_owned)continue;
       if(hooks_.now()>=source->second.deadline){Error(record,"Native coverage source read timed out before dispatch");continue;}
       auto params=CefDictionaryValue::Create();params->SetString(record->kind==Kind::JS?"scriptId":"styleSheetId",id);const auto deadline=source->second.deadline;++record->reading;
       Send(record,record->kind==Kind::JS?"Debugger.getScriptSource":"CSS.getStyleSheetText",params,deadline,[this,record,id,epoch](bool ok,Dict result,const std::string& error){
         --record->reading;const auto source=record->sources.find(id);if(!Current(record)||record->phase==Phase::Cleaning||source==record->sources.end()||source->second.epoch!=epoch||source->second.native_owned)return;
         std::string text;size_t units=0;if(!ok||!result||!Text(result->GetValue(record->kind==Kind::JS?"scriptSource":"text"),text,&units)){Error(record,error.empty()?"Actual native coverage source text is unavailable":error);return;}
-        if(text.size()>kTextBytes-record->text_bytes){Error(record,"Native coverage source byte capacity exceeded");return;}if(!Reserve(record,text.size())){Error(record,"Native coverage shared source payload capacity exceeded");return;}record->text_bytes+=text.size();source->second.text=std::move(text);source->second.units=units;source->second.fetched=true;
+        Reserve(record,text.size());record->text_bytes+=text.size();source->second.text=std::move(text);source->second.units=units;source->second.fetched=true;
       });
     }
     MaybeBuild(record);
@@ -238,28 +238,27 @@ bool CoverageCount(CefRefPtr<CefDictionaryValue> value,const char* key,double& o
 void CoverageControls::Impl::MaybeBuild(const std::shared_ptr<Record>& record){
   if(!Current(record)||!record->reset||record->phase!=Phase::Stopping||!record->frozen||record->reading||!record->queue.empty())return;
   if(!record->error.empty()){Fail(record,record->error);return;}
-  auto entries=CefListValue::Create();size_t range_count=0;
+  auto entries=CefListValue::Create();
   const auto fail=[this,record](const std::string& error){Fail(record,error);};
   if(record->kind==Kind::JS){
-    if(record->measured->GetSize()>kScripts){fail("Native JavaScript coverage entry capacity exceeded");return;}
     for(size_t i=0;i<record->measured->GetSize();++i){
       auto measured=record->measured->GetDictionary(i);if(!measured||measured->GetType("scriptId")!=VTYPE_STRING){fail("Invalid actual JavaScript coverage identity");return;}const auto id=measured->GetString("scriptId").ToString();const auto found=record->sources.find(id);if(found==record->sources.end())continue;const auto& source=found->second;if(source.native_owned)continue;if(!source.fetched){fail("Actual JavaScript coverage source was not captured");return;}
-      auto functions=measured->GetList("functions");if(!functions||functions->GetSize()>16384){fail("Invalid actual JavaScript coverage functions");return;}auto projected=CefListValue::Create();
+      auto functions=measured->GetList("functions");if(!functions){fail("Invalid actual JavaScript coverage functions");return;}auto projected=CefListValue::Create();
       for(size_t f=0;f<functions->GetSize();++f){
-        auto function=functions->GetDictionary(f);std::string name;if(!function||!Text(function->GetValue("functionName"),name)||function->GetType("isBlockCoverage")!=VTYPE_BOOL){fail("Invalid actual JavaScript coverage function metadata");return;}auto ranges=function->GetList("ranges");if(!ranges||ranges->GetSize()>16384-range_count){fail("Native JavaScript coverage range capacity exceeded");return;}range_count+=ranges->GetSize();auto selected_ranges=CefListValue::Create();
+        auto function=functions->GetDictionary(f);std::string name;if(!function||!Text(function->GetValue("functionName"),name)||function->GetType("isBlockCoverage")!=VTYPE_BOOL){fail("Invalid actual JavaScript coverage function metadata");return;}auto ranges=function->GetList("ranges");if(!ranges){fail("Invalid actual JavaScript coverage ranges");return;}auto selected_ranges=CefListValue::Create();
         for(size_t n=0;n<ranges->GetSize();++n){auto range=ranges->GetDictionary(n);int start=0,end=0;double count=0;if(!CoverageOffset(range,"startOffset",start)||!CoverageOffset(range,"endOffset",end)||end<start||size_t(end)>source.units||!CoverageCount(range,"count",count)){fail("Invalid actual JavaScript coverage range");return;}auto selected=CefDictionaryValue::Create();selected->SetInt("startOffset",start);selected->SetInt("endOffset",end);selected->SetDouble("count",count);selected_ranges->SetDictionary(n,selected);}
         auto selected=CefDictionaryValue::Create();DevToolsSetString(selected,"functionName",name);selected->SetBool("isBlockCoverage",function->GetBool("isBlockCoverage"));selected->SetList("ranges",selected_ranges);projected->SetDictionary(f,selected);
       }
       auto entry=CefDictionaryValue::Create();entry->SetString("scriptId",source.id);DevToolsSetString(entry,"url",source.url);DevToolsSetString(entry,"source",source.text);entry->SetList("functions",projected);entries->SetDictionary(entries->GetSize(),entry);
     }
   }else{
-    if(record->measured->GetSize()>16384){fail("Native CSS coverage rule capacity exceeded");return;}std::map<std::string,std::vector<CSSCoverageRule>> rules;
+    std::map<std::string,std::vector<CSSCoverageRule>> rules;
     for(size_t n=0;n<record->measured->GetSize();++n){auto rule=record->measured->GetDictionary(n);if(!rule||rule->GetType("styleSheetId")!=VTYPE_STRING){fail("Invalid actual CSS coverage source identity");return;}const auto id=rule->GetString("styleSheetId").ToString();const auto source=record->sources.find(id);if(source==record->sources.end())continue;int start=0,end=0;if(!CoverageOffset(rule,"startOffset",start)||!CoverageOffset(rule,"endOffset",end)||end<start||size_t(end)>source->second.units||rule->GetType("used")!=VTYPE_BOOL){fail("Invalid actual CSS coverage rule");return;}rules[id].push_back({start,end,rule->GetBool("used")});}
     for(const auto& [id,source]:record->sources){
       if(!source.fetched){fail("Actual CSS coverage source was not captured");return;}std::vector<CSSCoverageRange> ranges;std::string error;if(!CSSCoverageRanges(rules[id],ranges,error)){fail(error);return;}auto selected=CefListValue::Create();for(const auto& range:ranges){auto item=CefDictionaryValue::Create();item->SetInt("start",range.start);item->SetInt("end",range.end);selected->SetDictionary(selected->GetSize(),item);}auto entry=CefDictionaryValue::Create();DevToolsSetString(entry,"url",source.url);DevToolsSetString(entry,"text",source.text);entry->SetList("ranges",selected);entries->SetDictionary(entries->GetSize(),entry);
     }
   }
-  auto value=CefValue::Create();value->SetList(entries);if(!DevToolsLosslessJSON(value,record->output,2*1048576)){fail("Native coverage response exceeds 2 MiB");return;}if(!Reserve(record,record->output.size())){fail("Native coverage shared output payload capacity exceeded");return;}record->phase=Phase::Cleaning;Cleanup(record);
+  auto value=CefValue::Create();value->SetList(entries);if(!DevToolsLosslessJSON(value,record->output,SIZE_MAX)){fail("Native coverage response is not lossless JSON");return;}Reserve(record,record->output.size());record->phase=Phase::Cleaning;Cleanup(record);
 }
 void CoverageControls::Impl::Cleanup(const std::shared_ptr<Record>& record){
   if(!Current(record)||record->phase!=Phase::Cleaning||record->physical||record->settling||closing_channel_)return;

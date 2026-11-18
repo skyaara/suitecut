@@ -239,12 +239,12 @@ describe('native diagnostic expression provenance', () => {
   })
 })
 
-it('bounds diagnostic packet data without changing the actual large native selector', async () => {
+it('sends whole diagnostic packet data with the actual large native selector', async () => {
   const { page, runAutomation } = fixture(),
     selector = 'a'.repeat(20_000)
   await page.locator(selector).textContent()
   expect(runAutomation.mock.lastCall?.[1]).toMatchObject({
-    diagnosticExpressionJSON: JSON.stringify(''),
+    diagnosticExpressionJSON: JSON.stringify(`locator('${selector}')`),
     query: [{ engine: 'css', selector }],
   })
 })

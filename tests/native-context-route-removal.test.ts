@@ -42,7 +42,7 @@ function fixture() {
 }
 
 describe('native context removal admission and ACK receipts', () => {
-  it('releases handler capacity at actual admission while waiting through the original native operation', async () => {
+  it('registers past the old 128 handlers before admission while waiting through the original native operation', async () => {
     const f = fixture(),
       ids: string[] = []
     for (let index = 0; index < 128; ++index) {
@@ -60,7 +60,7 @@ describe('native context removal admission and ACK receipts', () => {
     expect(f.command).toHaveBeenLastCalledWith(
       expect.objectContaining({ behavior: 'wait', registrationIds: [] }),
     )
-    await expect(f.routes.route('**/new', vi.fn())).rejects.toThrow('capacity')
+    await f.routes.route('**/before-admission', vi.fn())
     f.publish('admitted', ids)
     f.publish('applied', ids)
     await f.routes.route('**/new', vi.fn())

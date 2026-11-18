@@ -34,7 +34,6 @@ function record(value: UntrustedInput): value is Fields {
 }
 /** Encode only explicitly selected protocol string fields; never inspect author arguments. */
 export function encodeNativeStringFields(command: string, fields: Fields): Fields {
-  let work = 0
   const strings = (input: Fields, keys: readonly string[]): Fields => {
     const result = { ...input }
     for (const key of keys) {
@@ -47,33 +46,45 @@ export function encodeNativeStringFields(command: string, fields: Fields): Field
     }
     return result
   }
-  const query = (input: UntrustedInput, depth: number): UntrustedInput => {
-    if (++work > 100000 || depth > 256) throw new Error('Native query wire limit exceeded')
-    if (Array.isArray(input)) return input.map((item: UntrustedInput) => query(item, depth + 1))
-    if (!record(input)) return input
-    const result = strings(input, queryStrings)
-    for (const key of queryLists)
-      if (Array.isArray(input[key])) result[key] = query(input[key], depth + 1)
-    for (const key of patterns) {
-      const value = input[key]
-      if (record(value)) result[key] = strings(value, ['text', 'pattern', 'flags'])
+  // A cyclic query is malformed; fail with a clear error instead of exhausting the stack.
+  const ancestors = new Set<object>()
+  const visit = <T>(input: object, walk: () => T): T => {
+    if (ancestors.has(input)) throw new Error('Native query wire is cyclic')
+    ancestors.add(input)
+    try {
+      return walk()
+    } finally {
+      ancestors.delete(input)
     }
-    return result
   }
-  const scope = (input: Fields, depth: number): Fields => {
-    if (++work > 100000 || depth > 256) throw new Error('Native query wire limit exceeded')
-    const result = strings(input, ['selector'])
-    for (const key of ['query', 'framePath'])
-      if (Array.isArray(input[key])) result[key] = query(input[key], depth + 1)
-    for (const key of ['target', 'element'])
-      if (record(input[key])) result[key] = scope(input[key], depth + 1)
-    if (Array.isArray(input.masks))
-      result.masks = input.masks.map((mask: UntrustedInput) =>
-        record(mask) ? scope(mask, depth + 1) : mask,
-      )
-    return result
+  const query = (input: UntrustedInput): UntrustedInput => {
+    if (Array.isArray(input))
+      return visit(input, () => input.map((item: UntrustedInput) => query(item)))
+    if (!record(input)) return input
+    return visit(input, () => {
+      const result = strings(input, queryStrings)
+      for (const key of queryLists) if (Array.isArray(input[key])) result[key] = query(input[key])
+      for (const key of patterns) {
+        const value = input[key]
+        if (record(value)) result[key] = strings(value, ['text', 'pattern', 'flags'])
+      }
+      return result
+    })
   }
-  const result = scope(fields, 0)
+  const scope = (input: Fields): Fields =>
+    visit(input, () => {
+      const result = strings(input, ['selector'])
+      for (const key of ['query', 'framePath'])
+        if (Array.isArray(input[key])) result[key] = query(input[key])
+      for (const key of ['target', 'element'])
+        if (record(input[key])) result[key] = scope(input[key])
+      if (Array.isArray(input.masks))
+        result.masks = input.masks.map((mask: UntrustedInput) =>
+          record(mask) ? scope(mask) : mask,
+        )
+      return result
+    })
+  const result = scope(fields)
   if (
     command === 'bindings' &&
     typeof fields.action === 'string' &&
@@ -99,7 +110,6 @@ export function decodeNativeBindingName(input: {
     throw new Error('Invalid native binding name wire identity')
   const value: UntrustedInput =
     input.nameJSON === undefined ? input.name : (JSON.parse(input.nameJSON) as UntrustedInput)
-  if (typeof value !== 'string' || !value.length || value.length > 256)
-    throw new Error('Invalid native binding name')
+  if (typeof value !== 'string' || !value.length) throw new Error('Invalid native binding name')
   return value
 }

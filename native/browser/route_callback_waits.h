@@ -18,10 +18,8 @@ class NativeRouteCallbackWaits {
   NativeRouteCallbackWaits(const NativeRouteCallbackWaits&)=delete;
   NativeRouteCallbackWaits& operator=(const NativeRouteCallbackWaits&)=delete;
   bool Reserve(int operation,int context,uint64_t generation,NativeRouteCallbackSnapshot snapshot,double deadline,Reply reply){
-    if(closed_||operation<1||context<1||!generation||!reply||!std::isfinite(deadline)||deadline<0||entries_.size()>=64||entries_.contains(operation)||snapshot.size()>128)return false;
-    if(snapshot.capacity()>131072/sizeof(NativeRouteCallbackSnapshot::value_type))return false;
+    if(closed_||operation<1||context<1||!generation||!reply||!std::isfinite(deadline)||deadline<0||entries_.contains(operation))return false;
     const auto bytes=snapshot.capacity()*sizeof(NativeRouteCallbackSnapshot::value_type);
-    if(bytes>131072-bytes_)return false;
     for(const auto&receipt:snapshot)if(!receipt)return false;
     bytes_+=bytes;entries_.emplace(operation,Entry{context,generation,std::move(snapshot),deadline,bytes,std::move(reply),false});return true;
   }
@@ -35,7 +33,7 @@ class NativeRouteCallbackWaits {
     auto reply=std::exchange(found->second.reply, nullptr);bytes_-=found->second.bytes;entries_.erase(found);reply(false,error);
   }
   // Convenience for a snapshot whose actual remove ACK already arrived. The
-  // production two-stage adapter reserves capacity before mutating policy.
+  // production two-stage adapter reserves the observer before mutating policy.
   bool Wait(int operation,int context,NativeRouteCallbackSnapshot snapshot,double deadline,Reply reply){
     if(!Reserve(operation,context,1,std::move(snapshot),deadline,std::move(reply)))return false;
     Applied(operation,1);return true;

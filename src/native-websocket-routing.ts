@@ -11,18 +11,18 @@ interface RouteTransport {
   cleanup?(params: Record<string, UntrustedInput>): Promise<UntrustedInput>
   timeout(): number
 }
-const Identity = z.string().min(1).max(128)
+const Identity = z.string().min(1)
 const Token = z.string().regex(/^[1-9][0-9]{0,15}$/u)
 const Receipt = z.strictObject({ routingToken: Token, revision: z.literal(1) })
 const Event = z.strictObject({
   routingToken: Token,
   requestId: Identity,
   stage: z.enum(['created', 'message', 'closed']),
-  url: z.string().max(8192),
-  messageId: z.string().max(32),
+  url: z.string(),
+  messageId: z.string(),
   outgoing: z.boolean(),
   opcode: z.number().int(),
-  payloadBase64: z.string().max(2_796_204),
+  payloadBase64: z.string(),
 })
 const WaitOptions = z.strictObject({
   timeout: z.number().int().min(0).max(2_147_483_647).optional(),
@@ -46,8 +46,6 @@ function encode(payload: NativeWebSocketRoutePayload): { opcode: 1 | 2; payloadB
         ? payload
         : undefined
   if (!bytes) throw new Error('Native WebSocket payload must be a string or Buffer')
-  // suitecut's Chromium WebSocket routing patch holds at most 2 MiB per message.
-  if (bytes.length > 2_097_152) throw new Error(`Native WebSocket route payload is ${(bytes.length / 1048576).toFixed(1)} MiB; suitecut's Chromium WebSocket routing holds at most 2 MiB per routed message. Messages that are not routed have no limit.`)
   return { opcode: typeof payload === 'string' ? 1 : 2, payloadBase64: bytes.toString('base64') }
 }
 
@@ -211,8 +209,6 @@ export class NativeRoutedWebSocket {
         reason: z.string().default(''),
       })
       .parse(options)
-    if (Buffer.byteLength(value.reason) > 123)
-      throw new Error('Native WebSocket close reason exceeds 123 UTF-8 bytes')
     await this.command('close', value)
   }
   abort(): Promise<void> {
@@ -320,7 +316,7 @@ export class NativeWebSocketRouting {
       if (event.routingToken !== token || this.token !== token)
         throw new Error('Native WebSocket route event generation changed')
       if (event.stage === 'created') {
-        if (this.sockets.has(event.requestId) || this.sockets.size >= 128)
+        if (this.sockets.has(event.requestId))
           throw new Error('Invalid native WebSocket route socket ownership')
         const socket = new NativeRoutedWebSocket(this, event.requestId, event.url)
         this.sockets.set(event.requestId, socket)
@@ -336,7 +332,7 @@ export class NativeWebSocketRouting {
       if ((event.opcode !== 1 && event.opcode !== 2) || !event.messageId)
         throw new Error('Invalid native WebSocket route message identity')
       const bytes = Buffer.from(event.payloadBase64, 'base64')
-      if (bytes.length > 2_097_152 || bytes.toString('base64') !== event.payloadBase64)
+      if (bytes.toString('base64') !== event.payloadBase64)
         throw new Error('Invalid native WebSocket route payload encoding')
       return {
         event: 'message',

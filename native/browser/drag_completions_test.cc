@@ -58,7 +58,9 @@ int main(){int groups=0;
  {Fixture f;assert(f.Begin());auto duplicate=f.calls[0].reply;f.Ack();duplicate(Core::Outcome::Acknowledged,"");assert(f.sends==2&&f.core->Pending()==1);f.Ack();duplicate(Core::Outcome::Acknowledged,"");assert(f.results.size()==1&&f.budget->records==0);++groups;}
  {Fixture f;f.synchronous=true;assert(f.Begin(Core::Kind::Helper));assert(f.sends==3&&f.results.size()==1&&f.results[0].ok&&f.budget->records==0);++groups;}
  {Fixture f;assert(f.Begin());const auto old=f.calls[0].reply;f.core->ChannelClosed();assert(f.budget->records==0&&f.budget->bytes==0&&!f.core->Busy());old(Core::Outcome::Acknowledged,"");assert(f.results.empty()&&f.sends==1);assert(!f.Begin());++groups;}
- {auto budget=std::make_shared<Core::Budget>();budget->max_records=2;budget->max_bytes=20;Fixture a(budget),b(budget),c(budget);assert(a.Begin(Core::Kind::Manual,0,7)&&b.Begin(Core::Kind::Manual,0,12));assert(!c.Begin(Core::Kind::Manual,0,1));a.Ack();a.Ack();assert(c.Begin(Core::Kind::Manual,0,8));assert(budget->records==2&&budget->bytes==20);++groups;}
+ // Shared accounting only: no record count or byte cap, and a payload past
+ // the former 1 MiB per-drop limit is admitted whole.
+ {auto budget=std::make_shared<Core::Budget>();Fixture a(budget),b(budget),c(budget);assert(a.Begin(Core::Kind::Manual,0,7)&&b.Begin(Core::Kind::Manual,0,12)&&c.Begin(Core::Kind::Manual,0,2097152));assert(budget->records==3&&budget->bytes==7+12+2097152);a.Ack();a.Ack();assert(budget->records==2&&budget->bytes==12+2097152);++groups;}
  {Fixture f;assert(f.Begin());auto different=f.scope;++different.incarnation;assert(!f.core->Begin(different,Core::Kind::Manual,1,0,std::make_shared<int>(1)));assert(f.sends==1&&f.budget->records==1);++groups;}
  {Fixture f;f.now=10;assert(!f.Begin(Core::Kind::Manual,10));assert(f.sends==0&&f.budget->records==0);++groups;}
  {Fixture f;assert(f.Begin(Core::Kind::Helper));f.current=false;f.core->Cancel(f.scope);f.Ack();assert(f.sends==1&&f.closes==1&&f.budget->records==1&&f.results.empty());++groups;}

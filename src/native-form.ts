@@ -42,10 +42,6 @@ export type NativeInputFiles =
   string | readonly string[] | NativeFilePayload | readonly NativeFilePayload[]
 
 type Dispatch = (params: Record<string, UntrustedInput>) => Promise<UntrustedInput>
-function assertMetadataSize(value: UntrustedInput): void {
-  if (Buffer.byteLength(JSON.stringify(value), 'utf8') > 32 * 1024)
-    throw new Error('Native form metadata exceeds the 32 KiB control command limit')
-}
 const formOptions = z.strictObject({
   timeout: z.number().int().min(0).max(120_000).optional(),
   force: z.boolean().optional(),
@@ -127,7 +123,6 @@ export class NativeFormActions {
         throw result.error
       },
     )
-    assertMetadataSize(choices)
     return z.array(z.string()).parse(
       await this.dispatch({
         action: 'selectOption',
@@ -150,11 +145,8 @@ export class NativeFormActions {
         () =>
           (Array.isArray(files) ? Array.from(files) : [files]) as (string | NativeFilePayload)[],
       )
-      if (list.length > 1000)
-        throw new Error('Native file upload is limited to 1000 files per command')
       const paths: { path: string; directory: boolean }[] = []
       const payloads: NativeFilePayload[] = []
-      let bytes = 0
       for (const entry of list) {
         if (typeof entry === 'string') {
           const path = resolve(entry)
@@ -169,21 +161,15 @@ export class NativeFormActions {
                 name: z
                   .string()
                   .min(1)
-                  .max(255)
                   .refine(
                     (name) => !/[/\\\0]/u.test(name) && name !== '.' && name !== '..',
                     'File name must be a basename',
                   ),
-                mimeType: z.string().max(255),
+                mimeType: z.string(),
                 buffer: z.instanceof(Buffer),
               })
               .parse(entry),
           )
-          bytes += parsed.buffer.length
-          if (bytes > 128 * 1024 * 1024)
-            throw new Error(
-              'In-memory uploads exceed the native staging limit of 128 MiB; use file paths for larger uploads',
-            )
           payloads.push(
             nativeRetryInvocation()
               ? { ...parsed, buffer: withoutNativeRetryOperation(() => Buffer.from(parsed.buffer)) }
@@ -198,7 +184,6 @@ export class NativeFormActions {
       if (directories.length && paths.length > 1)
         throw new Error('File paths must be all files or a single directory')
       if (!payloads.length) {
-        assertMetadataSize(paths)
         await this.dispatch({
           action: 'setInputFiles',
           files: paths,
@@ -211,11 +196,9 @@ export class NativeFormActions {
         mimeType,
         size: buffer.length,
       }))
-      assertMetadataSize(metadata)
       const token = z
         .string()
         .min(1)
-        .max(128)
         .parse(
           await this.dispatch({
             action: 'uploadBegin',

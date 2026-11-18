@@ -28,9 +28,7 @@ class NativeContextConsoleControls {
     if(context<1 || (page<1&&!worker_owned) || (worker_owned&&page!=0) || !console || !std::isfinite(console->GetDouble("sequence")) || console->GetDouble("sequence")<1 || std::floor(console->GetDouble("sequence"))!=console->GetDouble("sequence") || console->GetDouble("sequence")>9007199254740991.0 || sequence_==9007199254740991ULL)return false;
     auto record=CefDictionaryValue::Create();record->SetInt("contextId",context);if(worker_owned)record->SetNull("pageId");else record->SetInt("pageId",page);record->SetDouble("sequence",static_cast<double>(sequence_+1));record->SetDictionary("console",console->Copy(false));
     auto wrapped=CefValue::Create();wrapped->SetDictionary(record);const auto bytes=CefWriteJSON(wrapped,JSON_WRITER_DEFAULT).ToString().size();
-    if(bytes>1048576)return false;
     ++sequence_;
-    while(!journal_.empty() && (journal_.size()>=512 || bytes>8388608-journal_bytes_)){journal_bytes_-=journal_.front().bytes;journal_.pop_front();}
     journal_.push_back({record,bytes});journal_bytes_+=bytes;
     std::vector<Reply> completed;
     for(auto it=waiters_.begin();it!=waiters_.end();) {
@@ -39,8 +37,7 @@ class NativeContextConsoleControls {
     emit_(record);for(auto& reply:completed)reply(true,record->Copy(false),"");return true;
   }
   bool Wait(int owner,int context,double after,double deadline,Reply reply) {
-    if(owner<1 || context<1 || !reply || !std::isfinite(after) || after<0 || std::floor(after)!=after || after>static_cast<double>(sequence_) || !std::isfinite(deadline) || deadline<0 || waiters_.size()>=128 || waiters_.contains(owner))return false;
-    if(!journal_.empty() && after<journal_.front().value->GetDouble("sequence")-1){reply(false,nullptr,"Native context console journal capacity exceeded before registration");return true;}
+    if(owner<1 || context<1 || !reply || !std::isfinite(after) || after<0 || std::floor(after)!=after || after>static_cast<double>(sequence_) || !std::isfinite(deadline) || deadline<0 || waiters_.contains(owner))return false;
     Waiter waiter{context,after,deadline,std::move(reply)};
     for(const auto& record:journal_)if(Matches(waiter,record.value)){waiter.reply(true,record.value->Copy(false),"");return true;}
     waiters_.emplace(owner,std::move(waiter));return true;

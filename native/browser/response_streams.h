@@ -15,7 +15,7 @@
 namespace suitecut {
 // Optional byte retention for genuinely streamed image resources. This never
 // enables Network durable messages and never retains Document resources.
-// Physical command receipts live independently of bounded cache entries.
+// Physical command receipts live independently of cache entries.
 class NativeResponseStreams {
  public:
   using Dict=CefRefPtr<CefDictionaryValue>;
@@ -28,7 +28,7 @@ class NativeResponseStreams {
   void Event(const std::string&method,Dict actual,const std::string&session){
     if(closed_||!actual)return;
     const auto request=actual->GetString("requestId").ToString();
-    if(request.empty()||request.size()>256||session.size()>128)return;
+    if(request.empty())return;
     if(method=="Network.requestWillBeSent"){
       Discard(session,request);
       // Chromium's streaming bit spans a physical redirect ID. Re-enabling on
@@ -41,11 +41,11 @@ class NativeResponseStreams {
     else if(method=="Network.loadingFailed")Finished(session,request,false);
   }
   bool Start(const std::string&session,const std::string&request,const std::string&type,double deadline){
-    if(closed_||type!="Image"||session.size()>128||request.empty()||request.size()>256||!std::isfinite(deadline)||deadline<=now_())return false;
+    if(closed_||type!="Image"||request.empty()||!std::isfinite(deadline)||deadline<=now_())return false;
     Tick(now_());
     const auto key=session+"\n"+request;
     if(entries_.contains(key))return true;
-    if(physical_.size()>=64||global_physical_>=128||entries_.size()>=128||global_entries_>=256||serial_>=9007199254740991ULL)return false;
+    if(serial_>=9007199254740991ULL)return false;
     const auto token=++serial_;Entry entry;entry.token=token;entry.deadline=deadline;
     entries_.emplace(key,std::move(entry));++global_entries_;physical_.emplace(token,PhysicalState{key,session,deadline});++global_physical_;
     const auto alive=alive_;auto send=send_;
@@ -55,11 +55,11 @@ class NativeResponseStreams {
       const auto key=found->second.key;const auto deadline=found->second.deadline;
       physical_.erase(found);--global_physical_;
       auto entry=entries_.find(key);if(entry==entries_.end()||entry->second.token!=token)return;
-      if(!ok||now_()>=deadline||json.size()>2796300){Erase(key);return;}
+      if(!ok||now_()>=deadline){Erase(key);return;}
       const auto parsed=CefParseJSON(json,JSON_PARSER_RFC);const auto value=parsed?parsed->GetDictionary():nullptr;
       if(!value||value->GetType("bufferedData")!=VTYPE_STRING){Erase(key);return;}
       auto prefix=Decode(value->GetString("bufferedData").ToString());
-      if(!prefix||prefix->size()>kBody-entry->second.suffix.size()||!Admit(prefix->capacity())){Erase(key);return;}
+      if(!prefix){Erase(key);return;}
       entry->second.prefix=std::move(*prefix);entry->second.acknowledged=true;Charge(entry->second.prefix.capacity());
     });
     if(*alive&&!physical_.empty())wake_();
@@ -72,20 +72,16 @@ class NativeResponseStreams {
     const auto type=actual->GetType("dataLength");
     if(type!=VTYPE_INT&&type!=VTYPE_DOUBLE){Erase(key);return;}
     const double length=type==VTYPE_INT?actual->GetInt("dataLength"):actual->GetDouble("dataLength");
-    if(!std::isfinite(length)||length<0||length>kBody||std::floor(length)!=length){Erase(key);return;}
+    if(!std::isfinite(length)||length<0||std::floor(length)!=length){Erase(key);return;}
     if(actual->GetType("data")!=VTYPE_STRING){if(length>0)Erase(key);return;}
     auto chunk=Decode(actual->GetString("data").ToString());if(!chunk||chunk->size()!=static_cast<size_t>(length)){Erase(key);return;}
     auto&entry=found->second;
-    if(chunk->size()>kBody-entry.prefix.size()-entry.suffix.size()){Erase(key);return;}
     const auto required=entry.suffix.size()+chunk->size();
     if(required>entry.suffix.capacity()){
-      const auto capacity=std::min(kBody,std::max(required,std::max(size_t(1024),entry.suffix.capacity()*2)));
-      const auto added=capacity-entry.suffix.capacity();if(!Admit(added)){Erase(key);return;}
+      const auto capacity=std::max(required,std::max(size_t(1024),entry.suffix.capacity()*2));
       Bytes grown;grown.reserve(capacity);
-      // Account allocator-reported capacity before attaching the replacement;
-      // rejection cannot refund an allocation that was never charged.
+      // Account allocator-reported capacity before attaching the replacement.
       const auto actual_added=grown.capacity()-entry.suffix.capacity();
-      if(!Admit(actual_added)){Erase(key);return;}
       grown.insert(grown.end(),entry.suffix.begin(),entry.suffix.end());
       entry.suffix.swap(grown);Charge(actual_added);
     }
@@ -115,7 +111,6 @@ class NativeResponseStreams {
   }
   // Called only from the existing exact-ID native session handoff.
   bool Move(const std::string&old_session,const std::string&new_session,const std::string&request){
-    if(new_session.size()>128)return false;
     const auto old=old_session+"\n"+request,next=new_session+"\n"+request;
     if(old==next||!entries_.contains(old))return true;
     if(entries_.contains(next))return false;
@@ -141,20 +136,18 @@ class NativeResponseStreams {
   size_t physical()const{return physical_.size();}size_t entries()const{return entries_.size();}size_t bytes()const{return bytes_;}
   // Completed cache entries do not keep a 100 Hz owner timer alive. Their
   // fixed age is checked by Body; storage is swept on admission, existing
-  // owner ticks, or actual Close, under the same strict retained byte bounds.
+  // owner ticks, or actual Close.
   bool NeedsTick()const{return !physical_.empty();}
  private:
-  static constexpr size_t kBody=2097152,kBytes=16*1048576,kGlobalBytes=32*1048576;
   struct Entry{uint64_t token=0;double deadline=0;Bytes prefix,suffix;bool acknowledged=false,finished=false;};
   struct PhysicalState{std::string key,session;double deadline;};
   static std::optional<Bytes> Decode(const std::string&text){
-    if(text.size()>2796204||text.size()%4)return std::nullopt;
+    if(text.size()%4)return std::nullopt;
     if(text.empty())return Bytes{};
-    auto data=CefBase64Decode(text);if(!data||data->GetSize()>kBody)return std::nullopt;Bytes bytes(data->GetSize());data->GetData(bytes.data(),bytes.size(),0);
+    auto data=CefBase64Decode(text);if(!data)return std::nullopt;Bytes bytes(data->GetSize());data->GetData(bytes.data(),bytes.size(),0);
     if(CefBase64Encode(bytes.data(),bytes.size()).ToString()!=text)return std::nullopt;
     return bytes;
   }
-  bool Admit(size_t bytes)const{return bytes<=kBytes-bytes_&&bytes<=kGlobalBytes-global_bytes_;}
   void Charge(size_t bytes){bytes_+=bytes;global_bytes_+=bytes;}
   void Erase(const std::string&key){const auto found=entries_.find(key);if(found==entries_.end())return;const auto bytes=found->second.prefix.capacity()+found->second.suffix.capacity();bytes_-=bytes;global_bytes_-=bytes;entries_.erase(found);--global_entries_;}
   Send send_;std::function<double()>now_;std::function<void()>wake_;bool closed_=false;uint64_t serial_=0;size_t bytes_=0;

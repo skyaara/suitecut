@@ -110,16 +110,16 @@ int main(){
     h.Ack(old.channel.session,"Debugger.enable");h.Ack(old.channel.session,"Debugger.disable");assert(!h.results.contains(1));
     h.Open(3,next);h.Ready(next.channel.session);h.Close(4,next,h.Token(3));++groups;
   }
-  { // Eight live records are bounded independently of the retained metadata.
-    Host h;std::vector<Scopes::Pin>pins;for(int i=0;i<8;++i){pins.push_back(h.Observe("frame"+std::to_string(i),"session"+std::to_string(i),10+i));h.Open(1+i,pins.back());h.Ready(pins.back().channel.session);}
-    const auto extra=h.Observe("extra","another-session",99);h.Open(9,extra);assert(!h.results.at(9).ok&&h.calls.empty()&&h.targets->Live()==8);
-    for(int i=0;i<8;++i){h.Close(20+i,pins[i],h.Token(1+i));}
+  { // Live records have no suitecut count cap.
+    Host h;std::vector<Scopes::Pin>pins;for(int i=0;i<12;++i){pins.push_back(h.Observe("frame"+std::to_string(i),"session"+std::to_string(i),10+i));h.Open(1+i,pins.back());h.Ready(pins.back().channel.session);}
+    assert(h.targets->Live()==12);
+    for(int i=0;i<12;++i){h.Close(20+i,pins[i],h.Token(1+i));}
     assert(!h.targets->Live());++groups;
   }
-  { // Only real completed records may be evicted; an old token then fails.
+  { // Completed records are never evicted; an old token still closes idempotently.
     Host h;std::string first;Scopes::Pin pin;
-    for(int i=0;i<34;++i){pin=h.Observe("child","actual-session",8,uint64_t(i+1));const int owner=10+i*2;h.Open(owner,pin);h.Ready(pin.channel.session);if(!i)first=h.Token(owner);h.Close(owner+1,pin,h.Token(owner));assert(h.targets->Records()<=32);}
-    h.Run(1000,pin.frame,first,"close",0);assert(!h.results.at(1000).ok&&h.calls.empty());++groups;
+    for(int i=0;i<34;++i){pin=h.Observe("child","actual-session",8,uint64_t(i+1));const int owner=10+i*2;h.Open(owner,pin);h.Ready(pin.channel.session);if(!i)first=h.Token(owner);h.Close(owner+1,pin,h.Token(owner));assert(h.targets->Records()==size_t(i+1));}
+    h.Run(1000,pin.frame,first,"close",0);assert(h.results.at(1000).ok&&h.calls.empty());++groups;
   }
   { // The real controlled channel boundary has already drained its domain
     // callbacks. Manager fanout then needs no heap, even under actual new denial.

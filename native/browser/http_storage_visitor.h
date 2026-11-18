@@ -17,7 +17,6 @@ class NativeHTTPStorageVisitor : public CefCookieVisitor {
   using Done=std::function<void(Dict,const std::string&)>;
   using Post=std::function<void(std::function<void()>)>;
   struct Control {std::atomic<bool> canceled{false};};
-  static constexpr size_t kByteLimit=1048576,kBudget=16777216;
   NativeHTTPStorageVisitor(std::shared_ptr<Control> control,std::shared_ptr<std::atomic<size_t>> budget,Post post,Done done)
       :control_(std::move(control)),budget_(std::move(budget)),post_(std::move(post)),done_(BindNativeLocatorHandlerAsync(std::move(done))),cookies_(CefListValue::Create()){}
   ~NativeHTTPStorageVisitor() override {
@@ -30,9 +29,8 @@ class NativeHTTPStorageVisitor : public CefCookieVisitor {
     if(control_->canceled.load())return false;
     auto item=Cookie(cookie);auto wrapper=CefValue::Create();wrapper->SetDictionary(item);
     const size_t bytes=CefWriteJSON(wrapper,JSON_WRITER_DEFAULT).ToString().size();
-    if(cookies_->GetSize()>=4096 || bytes>kByteLimit-bytes_){error_="Native API storage cookies exceed 1 MiB or 4096 entries";return false;}
-    auto retained=budget_->load();
-    do{if(bytes>kBudget-retained){error_="Native API storage cookie byte budget exceeded";return false;}}while(!budget_->compare_exchange_weak(retained,retained+bytes));
+    // Byte accounting for diagnostics only; no cookie count or byte limit.
+    budget_->fetch_add(bytes);
     bytes_+=bytes;cookies_->SetDictionary(cookies_->GetSize(),item);return true;
   }
   void Reject(){error_="CEF cookie storage is unavailable";}

@@ -20,8 +20,8 @@ int main(){int groups=0;
   bytes.push_back(0);assert(!Wire::Decode(bytes));++groups;}
  {Pin pin{Actual(),7,3};std::vector<uint8_t>original(Wire::Size(pin,2));assert(Wire::Encode(original,pin,"{}"));
   for(auto offset:{size_t{0},size_t{8},size_t{12},size_t{56},size_t{60}}){auto bytes=original;bytes[offset]^=0xff;assert(!Wire::Decode(bytes));}++groups;}
- {Pin pin{Actual(),7,3};assert(!Wire::Size(pin,0)&&!Wire::Size(pin,Wire::kPayload+1));
-  pin.owner.frame=std::string(Wire::kFrame+1,'f');assert(!Wire::Size(pin,2));
+ {Pin pin{Actual(),7,3};assert(!Wire::Size(pin,0)&&Wire::Size(pin,128*1048576+1)); // past the former 128 MiB payload cap
+  pin.owner.frame=std::string(257,'f');assert(Wire::Size(pin,2)); // past the former 256-byte frame cap
   pin.owner=Actual();pin.owner.frame.push_back('\0');assert(!Wire::Size(pin,2));
   pin.owner=Actual();pin.owner.renderer_epoch=0;assert(!Wire::Size(pin,2));
   pin.owner=Actual();pin.version=0;assert(!Wire::Size(pin,2));++groups;}
@@ -49,12 +49,11 @@ int main(){int groups=0;
   assert(r.RendererGone(8,18).empty()&&r.RendererGone(9,19).empty()&&r.Physical()==2);
   const auto events=r.RendererGone(8,19);assert(events.size()==1&&events[0].status==Status::RendererGone&&events[0].public_reply&&r.Physical()==1);
   assert(!r.Acknowledge(*pin,true,4)&&r.Acknowledge(*fresh,true,4)&&r.Bytes()>0);assert(r.Released(*fresh)&&r.Bytes()==0);++groups;}
- {Receipts r;std::vector<Pin>pins;for(size_t i=0;i<Receipts::kTransfers;++i){auto pin=r.Reserve(Actual(),i+1,2,0,1);assert(pin&&r.Submitted(pin->transfer,1));pins.push_back(*pin);}
-  assert(!r.Reserve(Actual(),100,2,0,1));for(const auto&pin:pins)assert(r.Cancel(pin.transfer,2));assert(!r.Reserve(Actual(),100,2,0,2)&&r.Physical()==Receipts::kTransfers);
-  assert(r.Acknowledge(pins.front(),true,3)&&!r.Reserve(Actual(),100,2,0,3));assert(r.Released(pins.front())&&r.Reserve(Actual(),100,2,0,3));++groups;}
- {Receipts r;std::vector<Pin>pins;for(size_t i=0;i<7;++i){auto pin=r.Reserve(Actual(),i+1,Wire::kPayload,0,1);assert(pin&&r.Submitted(pin->transfer,1));pins.push_back(*pin);}
-  assert(!r.Reserve(Actual(),8,Wire::kPayload,0,1)&&r.Bytes()<Receipts::kBytes);
-  assert(r.Acknowledge(pins.front(),true,2)&&!r.Reserve(Actual(),8,Wire::kPayload,0,2));assert(r.Released(pins.front())&&r.Reserve(Actual(),8,Wire::kPayload,0,2));++groups;}
+ // Past the former transfer-count and byte caps: every reservation is admitted.
+ {Receipts r;constexpr size_t past=257;for(size_t i=0;i<past;++i){auto pin=r.Reserve(Actual(),i+1,2,0,1);assert(pin&&r.Submitted(pin->transfer,1));}
+  assert(r.Physical()==past);++groups;}
+ {Receipts r;constexpr size_t payload=128*1048576;for(size_t i=0;i<9;++i){auto pin=r.Reserve(Actual(),i+1,payload,0,1);assert(pin&&r.Submitted(pin->transfer,1));}
+  assert(r.Bytes()>8*payload);++groups;}
  {Receipts r;for(double bad:{-1.,std::numeric_limits<double>::infinity(),std::numeric_limits<double>::quiet_NaN()}){assert(!r.Reserve(Actual(),1,2,bad,1)&&!r.Reserve(Actual(),1,2,0,bad));}
   assert(!r.Reserve(Actual(),1,2,1,1)&&r.Physical()==0);++groups;}
  {Receipts r;auto pin=r.Reserve(Actual(),1,2,10,1);assert(pin&&r.Submitted(pin->transfer,1));const auto bytes=r.Bytes();

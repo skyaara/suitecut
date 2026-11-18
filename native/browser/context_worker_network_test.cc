@@ -47,5 +47,9 @@ int main(){
  assert(body_events.size()==2&&body_events[0]->GetString("event")=="request"&&body_events[1]->GetString("event")=="requestupdated");
  assert(body_events[0]->GetDictionary("request")->GetString("id")==body_events[1]->GetDictionary("request")->GetString("id"));
  assert(body_events[1]->GetDictionary("request")->GetString("postDataOwner")=="broker:2"&&body_events[1]->GetDictionary("request")->GetString("postDataBodyId")=="23");
-
+ // No owner, record, alias, or byte cap: 300 owners and 5000 distinct requests stay until their context closes.
+ {Controls many([](int,Dict,Dict){});for(int owner=0;owner<300;++owner)assert(many.Attach(1,"page:"+std::to_string(owner)+std::string(200,'o'),false,[](int,Dict,double,Controls::Reply){},[](const std::string&,const std::string&,double,std::function<void(bool,Controls::Bytes,const std::string&)>){},[](int){}));
+  auto big=CefDictionaryValue::Create();big->SetString("id",std::string(300,'W'));big->SetString("url","http://native.test/w.js");big->SetString("type","worker");
+  for(int index=0;index<5000;++index){auto event=Event("request",(std::to_string(index)+std::string(300,'l')).c_str(),"S");event->GetDictionary("request")->SetString("requestId",std::to_string(index)+std::string(300,'n'));assert(many.Observe(1,"page:0"+std::string(200,'o'),big,event));}
+  assert(many.records()==5000&&many.aliases()==5000);many.Closed(1);assert(many.records()==0);}
 }

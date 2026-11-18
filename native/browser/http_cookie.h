@@ -20,7 +20,7 @@ inline std::string CookieLower(std::string value){for(auto& c:value)c=static_cas
 // Raw response cookie attributes are parsed into the real CEF cookie manager;
 // response headers always remain the actual received fields, never jar output.
 inline std::optional<NativeHTTPCookie> ParseNativeHTTPCookie(const std::string& raw,const std::string& host,const std::string& request_path,double now) {
-  if(raw.empty() || raw.size()>4096 || raw.find_first_of("\r\n")!=std::string::npos || raw.find('\0')!=std::string::npos)return std::nullopt;
+  if(raw.empty() || raw.find_first_of("\r\n")!=std::string::npos || raw.find('\0')!=std::string::npos)return std::nullopt;
   const auto end=raw.find(';'),equal=raw.find('=');if(equal==std::string::npos || (end!=std::string::npos && equal>end))return std::nullopt;
   NativeHTTPCookie cookie;cookie.name=CookieTrim(raw.substr(0,equal));cookie.value=CookieTrim(raw.substr(equal+1,end==std::string::npos?std::string::npos:end-equal-1));
   if(cookie.name.empty())return std::nullopt;

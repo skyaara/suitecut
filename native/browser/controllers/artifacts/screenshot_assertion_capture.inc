@@ -25,7 +25,7 @@ bool ScreenshotAssertionCaptureEnter(suitecut::ScreenshotAssertionRetirement::Id
   const auto entry=screenshot_assertion_retirement_.Get(identity);
   const auto document=ReferenceDocument(frame);const auto scope=screenshot_assertion_scopes_.find(identity.owner);
   if(!entry||entry->frozen||!sample||!artifact_generation||command<1||scope==screenshot_assertion_scopes_.end()||scope->second.identity!=identity||!scope->second.prepared||!document||document->session!=session||
-     (entry->original_deadline&&Now()>=entry->original_deadline)||!ScreenshotAssertionRememberFrame(identity,frame)||screenshot_assertion_captures_.size()>=32)return false;
+     (entry->original_deadline&&Now()>=entry->original_deadline)||!ScreenshotAssertionRememberFrame(identity,frame))return false;
   try{return screenshot_assertion_captures_.emplace(std::make_pair(identity.owner,sample),ScreenshotAssertionCaptureProof{identity,*document,sample,artifact_generation,command}).second;}catch(const std::bad_alloc&){return false;}
 }
 bool ScreenshotAssertionCaptureReceipt(suitecut::ScreenshotAssertionRetirement::Identity identity,uint64_t sample,int command,const std::string&session,bool received,bool valid){

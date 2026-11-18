@@ -27,10 +27,8 @@ export interface NativeURLPattern {
   test(url: string): boolean
 }
 
-const snapshots = z.object({ matches: z.boolean(), url: z.string().max(8192) })
+const snapshots = z.object({ matches: z.boolean(), url: z.string() })
 const physicalCallbacks = new WeakMap<AbortSignal, { pending: number }>()
-const physicalCapacity = 64
-let totalPhysicalCallbacks = 0
 
 /** Actual outstanding user closures; IPC cancellation does not decrease this count. */
 export function nativeURLPredicatePhysicalCount(source: NativeBrowser): number {
@@ -81,12 +79,7 @@ export async function runNativeURLPredicate(
       disposed = false
     const compare = bindNativeRetryContinuation(
       async (snapshot: NativeURLPredicateSnapshot): Promise<void> => {
-        if (totalPhysicalCallbacks >= physicalCapacity) {
-          action.abort(new Error('Native URL host predicate physical callback capacity exceeded'))
-          return
-        }
         ++physical.pending
-        ++totalPhysicalCallbacks
         // Observe the original promise independently: cancellation ends the IPC
         // owner, but cannot pretend to stop an arbitrary user's async closure.
         const raw = runNativeMatcherUserPromise(() => predicate(new URL(snapshot.url)))
@@ -94,11 +87,9 @@ export async function runNativeURLPredicate(
         void raw.then(
           () => {
             --physical.pending
-            --totalPhysicalCallbacks
           },
           () => {
             --physical.pending
-            --totalPhysicalCallbacks
           },
         )
         try {

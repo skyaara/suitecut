@@ -71,7 +71,7 @@ void WakeDeferredDevTools() {
 bool QueueDeferredDevTools(int id, std::string json, bool final_release,const std::string& session,bool initial_tree,uint64_t tree_attachment) {
   // Commands sent from inside a DevTools callback wait here for the callback
   // to return. Chromium takes a protocol message of any size, so this does too.
-  if (closing_page_ || session.size()>128) return false;
+  if (closing_page_) return false;
   const auto charge=json.size()+session.size();
   devtools_dispatch_.push_back({id,std::move(json),devtools_.contains(id),final_release,native_trace_protocol_.contains(id),session,initial_tree,tree_attachment});
   devtools_dispatch_bytes_ += charge;

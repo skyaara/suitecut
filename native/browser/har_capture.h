@@ -45,13 +45,13 @@ class NativeHARCapture {
   }
   ~NativeHARCapture(){Clear();}
   bool Start(int context,const std::string&filter="**"){
-    if(disposed_||context<1||filter.empty()||filter.size()>8192||captures_.contains(context)||captures_.size()>=16)return false;
+    if(disposed_||context<1||filter.empty()||captures_.contains(context))return false;
     if(!pages_.Start(context))return false;
     captures_.emplace(context,Capture{filter});return true;
   }
   bool Active(int context)const{return !disposed_&&captures_.contains(context);}
   bool Attach(int context,const std::string&owner,BodyFetch fetch,OwnerKind kind=OwnerKind::Page){
-    if(disposed_||context<1||owner.empty()||owner.size()>128||!fetch||owners_.contains(owner)||owners_.size()>=192)return false;
+    if(disposed_||context<1||owner.empty()||!fetch||owners_.contains(owner))return false;
     owners_.emplace(owner,Owner{context,std::move(fetch),kind});return true;
   }
   bool PageCreated(int context,const std::string&owner,const std::string&id,double wall){const auto actor=owners_.find(owner);return actor!=owners_.end()&&actor->second.context==context&&actor->second.kind==OwnerKind::Page&&pages_.Created(context,owner,id,wall);}
@@ -70,7 +70,7 @@ class NativeHARCapture {
   void ResponseBytes(int context,const std::string&owner,const std::string&method,Dict data,const std::string&session){
     if(disposed_||!session.empty()||!data)return;
     const auto actor=owners_.find(owner);if(actor==owners_.end()||actor->second.context!=context||actor->second.kind!=OwnerKind::Page)return;
-    const auto id=data->GetString("requestId").ToString();if(id.empty()||id.size()>256)return;
+    const auto id=data->GetString("requestId").ToString();if(id.empty())return;
     std::shared_ptr<Record> selected;
     for(auto&[key,record]:records_)if(record->owner==owner&&record->context==context&&record->wire_id==id){if(selected){selected->wire.Invalidate();record->wire.Invalidate();return;}selected=record;}
     if(!selected)return;
@@ -85,7 +85,8 @@ class NativeHARCapture {
       double decoded=0,encoded=0;if(!RawNumber(data,"dataLength",decoded)||!RawNumber(data,"encodedDataLength",encoded))record.wire.Invalidate();else record.wire.Data(decoded,encoded);
     }else if(method=="Network.loadingFinished"||method=="Network.loadingFailed")record.wire.Terminal(method=="Network.loadingFinished");
   }
-  // Called before the existing request-body publication mutates raw metadata.
+  // Kept for NetworkArchives::SetDegraded; suitecut no longer seals a capture
+  // on its own entry/byte caps, so nothing here invokes it.
   std::function<void(const std::string&)> degraded;
   void Seal(int context){pages_.Seal(context);const auto found=captures_.find(context);if(found!=captures_.end())found->second.sealed=true;}
   bool OriginalRequest(int context,const std::string&owner,const std::string&session,Dict params){
@@ -96,20 +97,16 @@ class NativeHARCapture {
     const auto key=owner+"\n"+session+"\n"+params->GetString("requestId").ToString();
     for(auto&[stored,record]:records_)if(record->owner==owner&&record->wire_id==params->GetString("requestId").ToString())record->wire.Invalidate();
     if(originals_.contains(key)){originals_.at(key).wire.Invalidate();return true;}
-    if(originals_.size()>=512)return false;
     auto data=CaptureNativePostData(request);Original original;original.context=context;original.observed_ms=now_();original.wall_ms=Number(params,"wallTime")*1000;original.deadline=now_()+30000;
-    original.wire.Begin(actor->second.kind==OwnerKind::Page&&actor->second.primary_ready&&session.empty()&&!params->HasKey("redirectResponse")&&params->GetType("frameId")==VTYPE_STRING&&!params->GetString("frameId").empty()&&params->GetString("frameId").length()<=256&&params->GetType("loaderId")==VTYPE_STRING&&params->GetString("loaderId").length()<=256);
-    if(params->GetString("frameId").length()<=256)original.wire_frame=params->GetString("frameId").ToString();
-    if(params->GetString("loaderId").length()<=256)original.wire_loader=params->GetString("loaderId").ToString();
+    original.wire.Begin(actor->second.kind==OwnerKind::Page&&actor->second.primary_ready&&session.empty()&&!params->HasKey("redirectResponse")&&params->GetType("frameId")==VTYPE_STRING&&!params->GetString("frameId").empty()&&params->GetType("loaderId")==VTYPE_STRING);
+    original.wire_frame=params->GetString("frameId").ToString();
+    original.wire_loader=params->GetString("loaderId").ToString();
     original.unavailable=data.kind==NativePostData::Kind::Unavailable;original.absent=data.kind==NativePostData::Kind::Absent;
     if(data.kind==NativePostData::Kind::Text){auto rendered=request->GetString("postData").ToString();original.bytes.assign(rendered.begin(),rendered.end());original.present=true;original.text=true;}
     else if(data.kind==NativePostData::Kind::Binary){original.bytes=std::move(data.bytes);original.present=true;}
-    if(original.bytes.size()>kRetainedBytes-original_bytes_-post_bytes_){original.bytes.clear();original.unavailable=true;original.present=false;}
-    // Charge additional retained channel-pin string capacities separately from
-    // real POST bytes; fixed Original/core objects retain the existing 512 cap.
+    // Account retained channel-pin string capacities separately from real POST
+    // bytes (diagnostics only; nothing is capped).
     original.wire_cost=original.wire_frame.capacity()+original.wire_loader.capacity();
-    if(original.wire_cost>1048576-original_wire_bytes_){original.wire.Invalidate();std::string().swap(original.wire_frame);std::string().swap(original.wire_loader);original.wire_cost=original.wire_frame.capacity()+original.wire_loader.capacity();}
-    if(original.wire_cost>1048576-original_wire_bytes_)return false;
     original_wire_bytes_+=original.wire_cost;original_bytes_+=original.bytes.size();originals_.emplace(key,std::move(original));return true;
   }
   // wall_ms is the actual observed request wall clock, not the monotonic CDP clock.
@@ -117,14 +114,12 @@ class NativeHARCapture {
     if(disposed_||!captures_.contains(context))return true;
     const auto actor=owners_.find(owner);auto request=event?event->GetDictionary("request"):nullptr;
     if(actor==owners_.end()||actor->second.context!=context||!request||!std::isfinite(wall_ms)||wall_ms<0)return false;
-    const auto id=request->GetString("id").ToString();if(id.empty()||id.size()>256)return false;
+    const auto id=request->GetString("id").ToString();if(id.empty())return false;
     const auto kind=event->GetString("event").ToString();const auto key=owner+"\n"+id;
     auto found=records_.find(key);
     if(found==records_.end()){
       if(captures_.at(context).sealed)return true;
       if(kind!="request"||!NativeURLGlobMatches(captures_.at(context).filter,request->GetString("url")))return true;
-      // A full capture stops growing for this context instead of failing the browser.
-      if(records_.size()>=kRecords){captures_.at(context).sealed=true;if(degraded)degraded("Native HAR entry capacity exceeded");return true;}
       auto record=std::make_shared<Record>();record->context=context;record->observed_ms=now_();record->owner=owner;record->pageref=pages_.Reference(context,owner);record->frame_allowed=actor->second.kind==OwnerKind::Page;record->request=request->Copy(false);record->wall_ms=wall_ms;record->generation=++serial_;if(reserve_)record->publication=reserve_(context);
       auto original=originals_.find(owner+"\n"+request->GetString("session").ToString()+"\n"+request->GetString("requestId").ToString());
       if(original!=originals_.end()){
@@ -150,8 +145,7 @@ class NativeHARCapture {
       record->header_receipt_taken=true;
       const auto wall=wall_now_();if(NativeHARCookieExpiry::ValidTime(wall))record->header_wall_ms=wall;
     }
-    // An entry that outgrows the budget keeps what it has; the capture stops growing.
-    if(!Budget(*record)){if(const auto capture=captures_.find(context);capture!=captures_.end())capture->second.sealed=true;if(degraded)degraded("Native HAR metadata byte budget exceeded");return true;}
+    Account(*record);
     // A body reply can precede the real redirect-hop ExtraInfo. Keep the
     // immutable snapshot open until those existing header receipts settle.
     if((record->terminal||record->response)&&HeadersPending(*record)&&!record->header_deadline)record->header_deadline=now_()+30000;
@@ -164,7 +158,6 @@ class NativeHARCapture {
     record->terminal=true;record->completed_ms=now_();
     if(!record->response){record->error="Actual native request completed without response metadata";Publish(record);return true;}
     if(record->publication.capture_body&&!record->publication.capture_body(record->request->Copy(false),record->response->Copy(false))){record->body_skipped=true;Publish(record);return true;}
-    if(physical_->count>=64){record->body_error="Native HAR physical body reader capacity exceeded";Publish(record);return true;}
     record->fetching=true;record->deadline=now_()+30000;++pending_;++physical_->count;++physical_->contexts[context];
     const auto generation=record->generation;auto fetch=actor->second.fetch;
     fetch(record->response->GetString("session"),record->response->GetString("requestId"),record->deadline,
@@ -175,13 +168,12 @@ class NativeHARCapture {
         const auto found=records_.find(key);if(found==records_.end()||found->second->generation!=generation||!found->second->fetching)return;
         auto record=found->second;record->fetching=false;--pending_;
         if(!ok){record->body_error=error;Publish(record);return;}
-        if(bytes.size()>kBodyBytes||bytes.size()>kRetainedBytes-body_bytes_){record->body_error="Actual response body exceeds native HAR retained-byte limit";Publish(record);return;}
         record->body=std::move(bytes);record->body_available=true;body_bytes_+=record->body.size();Publish(record);
       });return true;
   }
   PostPublication ReservePost(int context,const std::string&owner,const std::string&id){
     const auto key=owner+"\n"+id;const auto found=records_.find(key);
-    if(disposed_||found==records_.end()||found->second->context!=context||found->second->published||found->second->post_available||found->second->post_pending||physical_->count>=64)return {};
+    if(disposed_||found==records_.end()||found->second->context!=context||found->second->published||found->second->post_available||found->second->post_pending)return {};
     auto record=found->second;record->post_pending=true;++post_pending_;++physical_->count;++physical_->contexts[context];
     const auto generation=record->generation;const std::weak_ptr<Record> weak=record;const auto stored=std::make_shared<bool>(false),settled=std::make_shared<bool>(false);
     PostPublication publication;
@@ -190,7 +182,7 @@ class NativeHARCapture {
       *stored=true;const auto record=weak.lock();const auto found=records_.find(key);
       if(!record||found==records_.end()||found->second!=record||record->generation!=generation)return;
       post_bytes_-=record->post.size();Bytes().swap(record->post);record->post_available=false;record->post_absent=false;record->post_unavailable=true;
-      if(!available||bytes.size()>kBodyBytes||bytes.size()>kRetainedBytes-post_bytes_-original_bytes_)return;
+      if(!available)return;
       record->post=bytes;record->post_available=true;record->post_unavailable=false;record->post_text=text;post_bytes_+=record->post.size();
     };
     publication.receipt=[this,alive=alive_,physical=physical_,weak,key,generation,context,settled]{
@@ -233,10 +225,8 @@ class NativeHARCapture {
   struct Original{int context=0;Bytes bytes;NativeHARResponseBytes wire;std::string wire_frame,wire_loader;size_t wire_cost=0;double wall_ms=-1,deadline=0,observed_ms=0;bool present=false,unavailable=false,text=false,absent=false;};
   struct Record{int context=0;std::string owner,pageref,error,body_error,header_error;Dict request,response;Publication publication;Bytes body,post;bool post_pending=false,post_available=false,post_unavailable=false,post_text=false,post_published=false,post_absent=false;double wall_ms=0,deadline=0,header_deadline=0,observed_ms=0,completed_ms=0;uint64_t generation=0;size_t cost=0;bool terminal=false,fetching=false,awaiting_headers=false,published=false,body_available=false,body_skipped=false,frame_allowed=false,header_receipt_taken=false,wire_coding_conflict=false;std::optional<double>header_wall_ms;NativeHARResponseBytes wire;std::string wire_id,wire_frame,wire_loader;std::optional<std::string>wire_coding;};
   static std::string Json(Dict dict){auto value=CefValue::Create();value->SetDictionary(dict->Copy(false));return CefWriteJSON(value,JSON_WRITER_DEFAULT);}
-  // Playwright keeps a whole HAR in memory too; these only bound a recording
-  // that runs for hours, and stay well inside the 192 MiB export payload.
-  static constexpr size_t kRecords=16384,kMetadataBytes=64*1048576,kBodyBytes=192*1048576,kRetainedBytes=1024*1048576;
-  bool Budget(Record&record){const auto cost=Json(record.request).size()+(record.response?Json(record.response).size():0)+640+record.wire_id.capacity()+record.wire_frame.capacity()+record.wire_loader.capacity()+(record.wire_coding?record.wire_coding->capacity():0);if(cost>kMetadataBytes-(metadata_bytes_-record.cost))return false;metadata_bytes_=metadata_bytes_-record.cost+cost;record.cost=cost;return true;}
+  // Retained metadata is accounted for diagnostics only; nothing is capped.
+  void Account(Record&record){const auto cost=Json(record.request).size()+(record.response?Json(record.response).size():0)+640+record.wire_id.capacity()+record.wire_frame.capacity()+record.wire_loader.capacity()+(record.wire_coding?record.wire_coding->capacity():0);metadata_bytes_=metadata_bytes_-record.cost+cost;record.cost=cost;}
   static std::string Date(double ms){const auto whole=static_cast<time_t>(ms/1000);std::tm utc{};
 #ifdef _WIN32
     gmtime_s(&utc,&whole);
@@ -267,12 +257,7 @@ class NativeHARCapture {
     const auto end=mime.find(';');const bool form=Lower(Trim(mime.substr(0,end)))=="application/x-www-form-urlencoded";
     auto params=CefListValue::Create();
     if(form){
-      // Bound transient CEF pairs before allocating them. Excess metadata is
-      // explicitly unavailable; the genuine body remains intact, never
-      // relabeled as an empty form or silently truncated.
-      constexpr size_t limit=256;size_t count=0,begin=0;
-      while(begin<text.size()){const auto next=text.find('&',begin);if(next!=begin&&++count>limit){post->SetString("_paramsError","Native HAR form parameter capacity exceeded");return;}if(next==std::string::npos)break;begin=next+1;}
-      begin=0;while(begin<text.size()){
+      size_t begin=0;while(begin<text.size()){
         const auto next=text.find('&',begin);const auto item=text.substr(begin,next==std::string::npos?std::string::npos:next-begin);
         if(!item.empty()){const auto equal=item.find('=');auto pair=CefDictionaryValue::Create();pair->SetString("name",Decode(item.substr(0,equal)));pair->SetString("value",equal==std::string::npos?"":Decode(item.substr(equal+1)));params->SetDictionary(params->GetSize(),pair);}
         if(next==std::string::npos)break;
@@ -288,7 +273,7 @@ class NativeHARCapture {
   static bool HeadersObservedReady(Dict response){return response&&response->GetType("_nativeHeadersObserved")==VTYPE_BOOL&&response->GetBool("_nativeHeadersObserved")&&response->GetType("headersReady")==VTYPE_BOOL&&response->GetBool("headersReady")&&response->GetDictionary("headers");}
   static bool RawNumber(Dict object,const char*key,double&value){if(object->GetType(key)==VTYPE_INT)value=object->GetInt(key);else if(object->GetType(key)==VTYPE_DOUBLE)value=object->GetDouble(key);else return false;return std::isfinite(value);}
   static std::optional<std::string> ContentCoding(Dict response){
-    std::string result;for(const auto&[name,value]:HeaderPairs(response))if(Lower(name)=="content-encoding"){const auto coding=Lower(Trim(value));const size_t comma=result.empty()?0:1;if(coding.size()+comma>4096-result.size())return std::nullopt;if(comma)result+=",";result+=coding;}
+    std::string result;for(const auto&[name,value]:HeaderPairs(response))if(Lower(name)=="content-encoding"){const auto coding=Lower(Trim(value));if(!result.empty())result+=",";result+=coding;}
     return result;
   }
   static std::optional<uint64_t> EncodedBody(const Record&record){

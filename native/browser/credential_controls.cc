@@ -28,7 +28,7 @@ bool CredentialControls::Parse(Dict value,VirtualCredential&item,std::string&err
   item.id=value->GetString("id");item.rp_id=value->GetString("rpId");item.user_handle=value->GetString("userHandle");item.private_key=value->GetString("privateKey");item.public_key=value->GetString("publicKey");return Count(value,item.sign_count,error)&&ValidateVirtualCredential(item,error);
 }
 size_t CredentialControls::Bytes(const std::vector<VirtualCredential>&items){size_t bytes=0;for(const auto&item:items)bytes+=CredentialStore::Bytes(item);return bytes;}
-void CredentialControls::ContextCreated(int context){if(context>0&&!profiles_.contains(context)&&profiles_.size()<32)profiles_.emplace(context,Profile{});}
+void CredentialControls::ContextCreated(int context){if(context>0&&!profiles_.contains(context))profiles_.emplace(context,Profile{});}
 void CredentialControls::ContextClosed(int context){
   const auto found=profiles_.find(context);if(found==profiles_.end())return;const auto queue=found->second.queue;profiles_.erase(found);
   for(const auto&item:queue){const auto active=work_.find(item->owner);if(active==work_.end())continue;retained_bytes_-=item->bytes;work_.erase(active);auto reply=std::exchange(item->reply, nullptr);if(reply&&!item->canceled)reply(false,nullptr,"Native credential context closed");}
@@ -40,7 +40,7 @@ std::shared_ptr<const CredentialPage::Config>CredentialControls::Config(int cont
 }
 CredentialControls::Dict CredentialControls::Capture(int context)const{auto result=CefDictionaryValue::Create();auto items=CefListValue::Create();const auto found=profiles_.find(context);if(found!=profiles_.end())for(const auto&item:found->second.store.Get())items->SetDictionary(items->GetSize(),Record(item));result->SetList("credentials",items);return result;}
 bool CredentialControls::ValidateState(CefRefPtr<CefListValue>input,std::string&error)const{
-  if(!input||input->GetSize()>CredentialStore::kMaxCredentials){error="Invalid native credential storage state or capacity exceeded";return false;}CredentialStore proposed;
+  if(!input){error="Invalid native credential storage state";return false;}CredentialStore proposed;
   for(size_t index=0;index<input->GetSize();++index){VirtualCredential item;if(!Parse(input->GetDictionary(index),item,error)||!proposed.Add(std::move(item),error))return false;}return true;
 }
 void CredentialControls::Restore(int owner,int context,CefRefPtr<CefListValue>input,bool installed,Reply reply){
@@ -52,12 +52,11 @@ void CredentialControls::Handle(int owner,int context,const std::string&action,D
   if(action!="create"&&action!="get"&&action!="delete"&&action!="install"){reply(false,nullptr,"Unknown native credentials action");return;}
   if(!params){reply(false,nullptr,"Invalid native credentials parameters");return;}
   auto value=CefValue::Create();value->SetDictionary(params);const size_t parameter_bytes=CefWriteJSON(value,JSON_WRITER_DEFAULT).ToString().size();
-  if(parameter_bytes>1048576){reply(false,nullptr,"Native credential parameters capacity exceeded");return;}
   auto item=std::make_shared<Work>();item->owner=owner;item->context=context;item->action=action;item->params=params;item->bytes=2*parameter_bytes;item->reply=std::move(reply);Enqueue(item);
 }
 void CredentialControls::Enqueue(std::shared_ptr<Work>item){
   if(closed_||item->owner==0||!profiles_.contains(item->context)||!hooks_.open(item->context)){item->reply(false,nullptr,"Native credential context is closed");return;}
-  if(work_.contains(item->owner)||work_.size()>=64||item->bytes>32*1048576-retained_bytes_){item->reply(false,nullptr,"Native credential operation capacity exceeded");return;}
+  if(work_.contains(item->owner)){item->reply(false,nullptr,"Native credential operation is already pending");return;}
   retained_bytes_+=item->bytes;work_[item->owner]=item;profiles_.at(item->context).queue.push_back(item);Pump(item->context);
 }
 void CredentialControls::Pump(int context){const auto found=profiles_.find(context);if(found==profiles_.end()||found->second.queue.empty()||found->second.queue.front()->started)return;Start(found->second.queue.front());}
@@ -97,7 +96,7 @@ void CredentialControls::Start(std::shared_ptr<Work>item){
     if(!changed){Finish(item,true,nullptr,"");return;}
   }
   if(profile.version>=static_cast<uint64_t>(std::numeric_limits<int>::max()-1)){Finish(item,false,nullptr,"Native credential version exhausted");return;}
-  const size_t extra=3*(item->before.Bytes()+item->proposed.Bytes());if(extra>32*1048576-retained_bytes_){Finish(item,false,nullptr,"Native credential retained bytes capacity exceeded");return;}item->bytes+=extra;retained_bytes_+=extra;
+  const size_t extra=3*(item->before.Bytes()+item->proposed.Bytes());item->bytes+=extra;retained_bytes_+=extra;
   Dispatch(item,false);
 }
 void CredentialControls::Dispatch(std::shared_ptr<Work>item,bool rollback){
@@ -143,7 +142,7 @@ bool CredentialControls::Observed(int context,int page,const VirtualCredential&c
     if(previous->rp_id!=credential.rp_id||previous->private_key!=credential.private_key||previous->user_handle!=credential.user_handle){error="Native credential observation identity changed";return false;}
     if(previous->sign_count>=credential.sign_count)return true;
   }
-  if(work_.size()>=64||next_observation_==std::numeric_limits<int>::min()||Bytes({credential})>32*1048576-retained_bytes_){error="Native credential observation capacity exceeded";return false;}
+  if(next_observation_==std::numeric_limits<int>::min()){error="Native credential observation serial exhausted";return false;}
   auto item=std::make_shared<Work>();item->owner=next_observation_--;item->context=context;item->observed_page=page;item->action="observed";item->input={credential};item->bytes=Bytes(item->input);
   item->reply=[weak=weak_from_this(),context](bool ok,Dict,const std::string&error){if(!ok)if(const auto self=weak.lock())if(self->hooks_.fatal)self->hooks_.fatal(context,error);};Enqueue(item);return true;
 }

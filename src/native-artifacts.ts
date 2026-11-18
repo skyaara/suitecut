@@ -17,14 +17,13 @@ import { type UntrustedInput } from './untrusted.js'
 const PathSchema = z
   .string()
   .min(1)
-  .max(32_768)
   .refine((path) => !path.includes('\0'))
 const TimeoutSchema = z.number().int().min(0).max(120_000)
 const ClipSchema = z.strictObject({
   x: z.number().finite(),
   y: z.number().finite(),
-  width: z.number().positive('Expected options.clip.width to be greater than 0').max(32_768),
-  height: z.number().positive('Expected options.clip.height to be greater than 0').max(32_768),
+  width: z.number().positive('Expected options.clip.width to be greater than 0'),
+  height: z.number().positive('Expected options.clip.height to be greater than 0'),
 })
 export interface NativeScreenshotMask {
   nativeScreenshotDescriptor(): {
@@ -60,12 +59,9 @@ const ScreenshotSchema = z.strictObject({
   scale: z.enum(['css', 'device']).default('device'),
   caret: z.enum(['hide', 'initial']).default('hide'),
   animations: z.enum(['allow', 'disabled']).default('allow'),
-  style: z
-    .string()
-    .max(1024 * 1024)
-    .optional(),
-  mask: z.array(MaskSchema).max(1024).optional(),
-  maskColor: z.string().min(1).max(4096).default('#FF00FF'),
+  style: z.string().optional(),
+  mask: z.array(MaskSchema).optional(),
+  maskColor: z.string().min(1).default('#FF00FF'),
   beforeScreenshot: BeforeScreenshotSchema.optional(),
   __testHookBeforeScreenshot: BeforeScreenshotSchema.optional(),
   timeout: TimeoutSchema.optional(),
@@ -84,17 +80,11 @@ const PDFSchema = z.strictObject({
   path: PathSchema.optional(),
   scale: z.number().min(0.1).max(2).default(1),
   displayHeaderFooter: z.boolean().default(false),
-  headerTemplate: z
-    .string()
-    .max(1024 * 1024)
-    .default(''),
-  footerTemplate: z
-    .string()
-    .max(1024 * 1024)
-    .default(''),
+  headerTemplate: z.string().default(''),
+  footerTemplate: z.string().default(''),
   printBackground: z.boolean().default(false),
   landscape: z.boolean().default(false),
-  pageRanges: z.string().max(4096).default(''),
+  pageRanges: z.string().default(''),
   format: z
     .string()
     .transform((format, context) => {
@@ -131,7 +121,7 @@ export type NativeArtifactRunner = (
 ) => Promise<UntrustedInput>
 
 const ArtifactResultSchema = z.strictObject({
-  data: z.string().max(Math.ceil((128 * 1024 * 1024) / 3) * 4),
+  data: z.string(),
 })
 const PAPER_INCHES = {
   Letter: [8.5, 11],
@@ -170,7 +160,6 @@ function decodeArtifact(value: UntrustedInput, kind: 'png' | 'jpeg' | 'webp' | '
   if (!data.length || data.length % 4 !== 0 || !/^[A-Za-z\d+/]*={0,2}$/.test(data))
     throw new Error('Invalid native artifact encoding')
   const bytes = Buffer.from(data, 'base64')
-  if (bytes.length > 128 * 1024 * 1024) throw new Error('Native artifact exceeds 128 MiB')
   const valid =
     kind === 'png'
       ? bytes.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]))
@@ -315,8 +304,8 @@ export async function printNativePDF(
     const [paperWidth, paperHeight] = config.format
       ? PAPER_INCHES[config.format]
       : [inches(config.width ?? '8.5in'), inches(config.height ?? '11in')]
-    if (paperWidth <= 0 || paperHeight <= 0 || paperWidth > 200 || paperHeight > 200)
-      throw new Error('PDF paper dimensions must be greater than zero and at most 200 inches')
+    if (paperWidth <= 0 || paperHeight <= 0)
+      throw new Error('PDF paper dimensions must be greater than zero')
     const params: Record<string, UntrustedInput> = { ...config }
     for (const key of ['path', 'timeout', 'format', 'width', 'height', 'margin']) delete params[key]
     const request = {

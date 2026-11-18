@@ -21,7 +21,7 @@ std::unique_ptr<suitecut::DeveloperDebuggerControls>NativeDeveloperFrameControl(
   hooks.pause_eligibility=[this](auto token,Dict packet){return NativeDeveloperScopedPause(token,packet);};
   hooks.owns_pause=[this,pin,owner](Dict packet,const auto&actual){
     if(actual!=owner||!NativeFrameDebuggerPinCurrent(pin)||!packet||packet->GetType("callFrames")!=VTYPE_LIST)return false;
-    const auto frames=packet->GetList("callFrames");if(!frames->GetSize()||frames->GetSize()>64)return false;
+    const auto frames=packet->GetList("callFrames");if(!frames->GetSize())return false;
     for(size_t i=0;i<frames->GetSize();++i){
       if(frames->GetType(i)!=VTYPE_DICTIONARY)return false;
       const auto frame=frames->GetDictionary(i);if(frame->GetType("location")!=VTYPE_DICTIONARY)return false;
@@ -60,7 +60,7 @@ void NativeDeveloperFramesEnsure(){
 void NativeDeveloperFrameCommand(int owner,Dict params){
   const auto operation=operations_.Get(owner);if(!operation)return;
   const auto generation=operation->generation;const double deadline=operation->deadline_ms;
-  if(params->GetType("action")!=VTYPE_STRING||params->GetType("frame")!=VTYPE_STRING||params->GetString("frame").empty()||params->GetString("frame").length()>256||params->HasKey("frameId")||params->HasKey("framePath")){
+  if(params->GetType("action")!=VTYPE_STRING||params->GetType("frame")!=VTYPE_STRING||params->GetString("frame").empty()||params->HasKey("frameId")||params->HasKey("framePath")){
     Complete(owner,false,"Native frame debugger requires an action and one actual frame ID");return;
   }
   const auto requested=params->GetString("frame").ToString();

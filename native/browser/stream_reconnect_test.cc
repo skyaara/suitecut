@@ -110,7 +110,7 @@ int main(int argc,char**argv){const int helper=suitecut::MediaEncoderHelperMain(
   Receiver receiver(directory,"four-offline-owners",false);std::vector<std::unique_ptr<suitecut::StreamPipeline>> owners;
   for(int index=0;index<4;++index){auto o=options(receiver.port);o.reconnect->initial_delay=3s;o.reconnect->max_delay=3s;auto live=std::make_unique<suitecut::StreamPipeline>(o);live->Frame(Picture(),now());owners.push_back(std::move(live));}
   Until([&]{for(const auto& live:owners)if(!live->Snapshot().reconnecting)return false;return true;});
-  bool refused=false;try{suitecut::StreamPipeline excess(options(receiver.port));}catch(const std::exception& error){refused=std::string(error.what()).find("capacity")!=std::string::npos;}assert(refused);
+  {auto o=options(receiver.port);o.reconnect->initial_delay=3s;o.reconnect->max_delay=3s;auto excess=std::make_unique<suitecut::StreamPipeline>(o);excess->Frame(Picture(),now());owners.push_back(std::move(excess));}  // No concurrency cap: a fifth owner is admitted.
   for(const auto& live:owners)live->Cancel("Actual offline native owner close");
   for(const auto& live:owners){live->Join();const auto result=live->Snapshot();assert(result.physical_encoder_pid==0&&result.captured_frame_bytes==0);}
   Dump(records,"four-offline-owners",owners.front()->Snapshot());
@@ -119,7 +119,7 @@ int main(int argc,char**argv){const int helper=suitecut::MediaEncoderHelperMain(
   Receiver receiver(directory,"bounded-history",true);std::atomic<unsigned> ready{0};auto o=options(receiver.port);suitecut::StreamPipeline live(o,{},[&](const auto&){++ready;});live.Frame(Picture(),now());
   Until([&]{return ready==1;});
   for(unsigned cycle=1;cycle<=9;++cycle){receiver.Break();Until([&]{return ready==cycle+1;});}
-  live.Stop(Clock::now()+5s);live.Join();Until([&]{return receiver.closed==10;});assert(receiver.eof>=1);const auto result=live.Snapshot();assert(result.failure.empty()&&result.attempt_number==10&&result.reconnect_attempts==9&&result.attempts.size()==8);assert(result.attempts.front().number==3&&result.attempts.back().number==10);assert(result.first_captured_timestamp_ms<result.first_timestamp_ms);assert(result.physical_encoder_pid==0&&result.captured_frame_bytes==0);Dump(records,"bounded-history",result);
+  live.Stop(Clock::now()+5s);live.Join();Until([&]{return receiver.closed==10;});assert(receiver.eof>=1);const auto result=live.Snapshot();assert(result.failure.empty()&&result.attempt_number==10&&result.reconnect_attempts==9&&result.attempts.size()==10);assert(result.attempts.front().number==1&&result.attempts.back().number==10);assert(result.first_captured_timestamp_ms<result.first_timestamp_ms);assert(result.physical_encoder_pid==0&&result.captured_frame_bytes==0);Dump(records,"bounded-history",result);
  }
  {
   Receiver receiver(directory,"bounded-owning-thread-callbacks",true);CallbackQueue queue;suitecut::StreamingControls::Hooks hooks;hooks.dispatch=[&](auto action){queue.Push(std::move(action));};auto controls=std::make_shared<suitecut::StreamingControls>(hooks);bool acknowledged=false,complete=false;auto o=options(receiver.port);
@@ -128,7 +128,7 @@ int main(int argc,char**argv){const int helper=suitecut::MediaEncoderHelperMain(
   for(unsigned cycle=1;cycle<=9;++cycle){Until([&]{return receiver.connections==cycle;});receiver.Break();Until([&]{const auto actual=controls->Status(id);return actual.attempt_number==cycle+1&&actual.encoded_frames>0;});assert(queue.Size()==1);}
   assert(!acknowledged&&controls->PhysicalCount()==1&&!controls->ContextReady(903));
   controls->Stop(904,id,Clock::now()+5s,[&](const auto&,const auto&result){assert(result.failure.empty()&&result.physical_encoder_pid==0);complete=true;});Until([&]{return controls->Status(id).physical_encoder_pid==0&&queue.Size()==2;});assert(controls->PhysicalCount()==1&&!controls->ContextReady(903));
-  Until([&]{queue.One();return acknowledged&&complete;});Until([&]{return receiver.closed==10;});assert(queue.Size()==0&&controls->PhysicalCount()==0&&controls->ContextReady(903));const auto result=controls->Status(id);assert(result.attempt_number==10&&result.attempts.size()==8);Dump(records,"bounded-owning-thread-callbacks",result);
+  Until([&]{queue.One();return acknowledged&&complete;});Until([&]{return receiver.closed==10;});assert(queue.Size()==0&&controls->PhysicalCount()==0&&controls->ContextReady(903));const auto result=controls->Status(id);assert(result.attempt_number==10&&result.attempts.size()==10);Dump(records,"bounded-owning-thread-callbacks",result);
  }
  {
   Receiver receiver(directory,"parent-death",true);assert(prctl(PR_SET_CHILD_SUBREAPER,1)==0);int reports[2];assert(pipe(reports)==0);

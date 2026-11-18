@@ -97,7 +97,7 @@ inline constexpr char kSuiteCutNativeAriaFormatter[] = R"JS(function formatNativ
             line += ` [box=${node.box.join(',')}]`;
         }
         if (options.mode === 'ai' && node.ref !== undefined) {
-            if (!/^s[1-9][0-9]*e(?:0|[1-9][0-9]*)$/u.test(node.ref) || node.ref.length > 192)
+            if (!/^s[1-9][0-9]*e(?:0|[1-9][0-9]*)$/u.test(node.ref))
                 throw new Error('Invalid native ARIA reference token');
             line += ` [ref=${node.ref}]`;
         }

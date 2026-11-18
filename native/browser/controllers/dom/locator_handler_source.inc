@@ -68,12 +68,12 @@
   void LocatorHandlerRegister(int id,Dict message) {
     auto target=message->GetDictionary("target");uint64_t times=0;
     const auto client=message->GetString("clientToken").ToString();
-    if(!target||client.empty()||client.size()>128||target->HasKey("nativeRootHandle")||
+    if(!target||client.empty()||target->HasKey("nativeRootHandle")||
        target->GetType("query")!=VTYPE_LIST||target->GetType("strict")!=VTYPE_BOOL||
        (message->HasKey("times")&&!ActionHookInteger(message,"times",times))||
-       (message->HasKey("noWaitAfter")&&message->GetType("noWaitAfter")!=VTYPE_BOOL)||locator_handlers_.size()>=64||
+       (message->HasKey("noWaitAfter")&&message->GetType("noWaitAfter")!=VTYPE_BOOL)||
        locator_handler_next_==SuiteCutActionPauseRegistry::kMaxWireInteger) {
-      writer_.Reply(id,false,"Invalid native locator handler or registration capacity exceeded");return;
+      writer_.Reply(id,false,"Invalid native locator handler registration");return;
     }
     target=target->Copy(false);
     if(target->HasKey("nativeHandle")) {
@@ -123,8 +123,6 @@
       if(ActionHookInteger(message,"invocationToken",invocation)&&invocation==active->token) {
         LocatorHandlerRemovalReply(id,false,"A locator handler cannot await its own removal; registration disabled");return;
       }
-      size_t pending=0;for(const auto&[key,ids]:locator_handler_removals_){(void)key;pending+=ids.size();}
-      if(pending>=64){LocatorHandlerRemovalReply(id,false,"Native locator handler removal capacity exceeded; registration disabled");return;}
       locator_handler_removals_[handler].push_back(id);return;
     }
     locator_handlers_.erase(found);LocatorHandlerRemovalReply(id,true);
@@ -133,7 +131,6 @@
     if(locator_handler_resuming_==std::pair{id,generation}) {locator_handler_resuming_={};return false;}
     if(locator_handler_work_.contains(id))return true;
     if(locator_handlers_.empty()||config->GetBool("force")||locator_handler_active_)return false;
-    if(locator_handler_work_.size()>=64){Complete(id,false,"Native locator handler action capacity exceeded");return true;}
     const auto op=operations_.Get(id);if(!op||op->generation!=generation)return true;
     auto work=std::make_shared<LocatorHandlerWork>();work->owner=id;work->generation=generation;work->deadline=op->deadline_ms;work->resume=std::move(resume);
     locator_handler_work_.emplace(id,work);WakeDeadlines();LocatorHandlerObserve(work);return true;
@@ -208,7 +205,7 @@
     if(front_only){if(!work->raw||!work->front_pending||!work->operations.empty())return false;work->front_pending=false;}
     else {
       std::string authored_error;
-      if(work->raw||(!message->GetBool("ok")&&!suitecut::InboundString(message,"error",authored_error,8192))||message->GetBool("operationsPending")!=!work->operations.empty()||message->GetType("ok")!=VTYPE_BOOL||message->GetType("operationsPending")!=VTYPE_BOOL)return false;
+      if(work->raw||(!message->GetBool("ok")&&!suitecut::InboundString(message,"error",authored_error))||message->GetBool("operationsPending")!=!work->operations.empty()||message->GetType("ok")!=VTYPE_BOOL||message->GetType("operationsPending")!=VTYPE_BOOL)return false;
       work->raw=true;work->ok=message->GetBool("ok");work->error=suitecut::InboundDisplay(authored_error);work->front_pending=message->GetBool("operationsPending");
       work->phase=LocatorHandlerWork::Phase::Draining;
     }
@@ -222,7 +219,7 @@
       if(!ActionHookInteger(message,"operationToken",operation)||!work->operations.erase(operation))return false;
       writer_.Reply(reply,true);return true;
     }
-    if(work->raw||work->aborted||(work->deadline&&Now()>=work->deadline)||work->operations.size()>=128||work->next_operation==SuiteCutActionPauseRegistry::kMaxWireInteger)return false;
+    if(work->raw||work->aborted||(work->deadline&&Now()>=work->deadline)||work->next_operation==SuiteCutActionPauseRegistry::kMaxWireInteger)return false;
     operation=++work->next_operation;work->operations.insert(operation);
     const auto json="{\"operationToken\":"+std::to_string(operation)+"}";
     writer_.Reply(reply,true,"",std::vector<uint8_t>(json.begin(),json.end()));return true;
@@ -253,7 +250,7 @@
         if(physical)continue;
         if(!work->handler->enabled){work->phase=LocatorHandlerWork::Phase::Observing;LocatorHandlerObserve(work);continue;}
         const auto token=engine_.RetainLocatorHandler(page_id_,this);
-        if(!token){Complete(work->owner,false,"Native locator handler invocation capacity exceeded");continue;}
+        if(!token){Complete(work->owner,false,"Native locator handler invocation is already active or its serial is exhausted");continue;}
         work->token=token;work->phase=LocatorHandlerWork::Phase::Calling;locator_handler_active_=work;
         if(work->handler->limited)--work->handler->remaining;
         LocatorHandlerEvent(work,"locatorHandlerRun");

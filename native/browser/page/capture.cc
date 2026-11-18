@@ -23,7 +23,7 @@ namespace suitecut::browser {
     native_capture_snapshot_.reset();
 #endif
   }
-  if (width <= 0 || height <= 0 || width > 3840 || height > 2160) {
+  if (width <= 0 || height <= 0) {
     (type == PET_VIEW ? view_damage_valid_ : popup_damage_valid_) = false;
     return;
   }
@@ -173,7 +173,7 @@ auto Source::OnAudioStreamPacket(CefRefPtr<CefBrowser> browser, const float** da
                                  int64_t pts)
     -> void {
   if (auto tab = AdoptedTab(browser)) return tab->OnAudioStreamPacket(browser, data, frames, pts);
-  if (!audio_valid_ || frames < 1 || frames > 4096) return;
+  if (!audio_valid_ || frames < 1) return;
   const double received = Now();
   const double epoch =
       std::chrono::duration<double, std::milli>(std::chrono::system_clock::now().time_since_epoch())
@@ -194,7 +194,7 @@ auto Source::OnAudioStreamPacket(CefRefPtr<CefBrowser> browser, const float** da
     for (int channel = 0; channel < 2; ++channel) {
       const float value = std::isfinite(data[channel][frame]) ? data[channel][frame] : 0;
       const int sample = static_cast<int>(std::clamp(value, -1.0f, 1.0f) * 32767);
-      const auto offset = static_cast<size_t>(frame * 2 + channel) * 2;
+      const auto offset = (static_cast<size_t>(frame) * 2 + channel) * 2;
       pcm[offset] = static_cast<uint8_t>(sample & 255);
       pcm[offset + 1] = static_cast<uint8_t>((sample >> 8) & 255);
     }
@@ -251,8 +251,10 @@ auto Source::ChromeScreencastStart() -> void {
   auto params = CefDictionaryValue::Create();
   params->SetString("format", "jpeg");
   params->SetInt("quality", 90);
-  params->SetInt("maxWidth", std::min(capture_width_ > 0 ? capture_width_ : 1920, 3840));
-  params->SetInt("maxHeight", std::min(capture_height_ > 0 ? capture_height_ : 1080, 2160));
+  // Only the actual capture extent is requested; without one, Chromium sends
+  // its own full-size frames. suitecut imposes no screencast size cap.
+  if (capture_width_ > 0) params->SetInt("maxWidth", capture_width_);
+  if (capture_height_ > 0) params->SetInt("maxHeight", capture_height_);
   chrome_screencast_requested_ms_ = Now();
   SendDevTools("Page.startScreencast", params);
 }
@@ -308,7 +310,7 @@ auto Source::ChromeScreencastFrame(Dict params) -> void {
   if (!image->AddJPEG(1.0f, bytes.data(), bytes.size())) return;
   const auto bitmap =
       image->GetAsBitmap(1.0f, CEF_COLOR_TYPE_BGRA_8888, CEF_ALPHA_TYPE_OPAQUE, width, height);
-  if (!bitmap || width <= 0 || height <= 0 || width > 3840 || height > 2160 ||
+  if (!bitmap || width <= 0 || height <= 0 ||
       bitmap->GetSize() != static_cast<size_t>(width) * height * 4)
     return;
   const double captured = Now();
@@ -363,8 +365,8 @@ auto Source::ChromeScreencastFrame(Dict params) -> void {
       const int start = std::max(0, -left);
       const int end = std::min(popup_width_, frame_width_ - left);
       if (end <= start) continue;
-      std::memcpy(output.data() + ((top + y) * frame_width_ + left + start) * 4,
-                  popup_.data() + (y * popup_width_ + start) * 4,
+      std::memcpy(output.data() + (static_cast<size_t>(top + y) * frame_width_ + static_cast<size_t>(left + start)) * 4,
+                  popup_.data() + (static_cast<size_t>(y) * popup_width_ + start) * 4,
                   static_cast<size_t>(end - start) * 4);
     }
   }

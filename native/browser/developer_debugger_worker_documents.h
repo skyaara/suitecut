@@ -20,25 +20,23 @@ class DeveloperDebuggerWorkerDocuments {
     // Native observation serial only, never a Chromium document/loader ID.
     uint64_t observation=0;bool operator==(const Pin&)const=default;
   };
-  static constexpr size_t kRecords=128,kBytes=1048576;
   explicit DeveloperDebuggerWorkerDocuments(Host actual):host_(std::move(actual)){
-    unavailable_=!Text(host_.source,128)||!host_.observer;
+    unavailable_=!Text(host_.source)||!host_.observer;
   }
   DeveloperDebuggerWorkerDocuments(const DeveloperDebuggerWorkerDocuments&)=delete;
   DeveloperDebuggerWorkerDocuments&operator=(const DeveloperDebuggerWorkerDocuments&)=delete;
   bool Attached(Attachment actual,const std::string&actual_kind,std::string&error){
-    if(!Available()||actual.host!=host_||actual_kind!="worker"||!Text(actual.target,128)||!Text(actual.session,128)||
-       actual.parent_session.size()>128||actual.parent_session.find('\0')!=std::string::npos||!actual.generation||actual.generation<=last_generation_){
+    if(!Available()||actual.host!=host_||actual_kind!="worker"||!Text(actual.target)||!Text(actual.session)||
+       actual.parent_session.find('\0')!=std::string::npos||!actual.generation||actual.generation<=last_generation_){
       error="Native dedicated-worker debugger requires an actual same-Source attachment receipt";return false;
     }
-    if(records_.size()>=kRecords||records_.contains(actual.session)){
-      error="Native dedicated-worker debugger attachment is duplicate or metadata capacity is full";return false;
+    if(records_.contains(actual.session)){
+      error="Native dedicated-worker debugger attachment is duplicate";return false;
     }
     for(const auto&[session,record]:records_)if(record.attachment.target==actual.target){
       error="Native dedicated-worker debugger previous target attachment has not retired";return false;
     }
     const size_t bytes=AttachmentBytes(actual);
-    if(bytes>kBytes-bytes_){error="Native dedicated-worker debugger metadata payload exceeds its bound";return false;}
     // All fallible allocations precede metadata publication/accounting.
     std::map<std::string,Record>staged;
     auto session=actual.session;
@@ -48,12 +46,11 @@ class DeveloperDebuggerWorkerDocuments {
   }
   bool ContextCreated(const Attachment&actual,int context,std::string unique,std::string&error){
     auto record=Find(actual);
-    if(!record||context<=0||!Text(unique,256)||observations_==UINT64_MAX){
+    if(!record||context<=0||!Text(unique)||observations_==UINT64_MAX){
       error="Native dedicated-worker debugger requires exact actual Runtime unique-context metadata";return false;
     }
     if(record->context==context&&record->unique==unique)return true;
     const auto old=record->unique.size(),next=unique.size();
-    if(next>kBytes-(bytes_-old)){error="Native dedicated-worker debugger Runtime metadata payload exceeds its bound";return false;}
     // Passed-by-value unique is already owned before publication. Swapping is
     // non-allocating and the old immutable pin cannot become current again.
     record->unique.swap(unique);record->context=context;record->observation=++observations_;
@@ -92,7 +89,7 @@ class DeveloperDebuggerWorkerDocuments {
   size_t Payload()const noexcept{return bytes_;}
  private:
   struct Record{Attachment attachment;int context=0;std::string unique;uint64_t observation=0;size_t bytes=0;};
-  static bool Text(const std::string&text,size_t max){return !text.empty()&&text.size()<=max&&text.find('\0')==std::string::npos;}
+  static bool Text(const std::string&text){return !text.empty()&&text.find('\0')==std::string::npos;}
   static size_t AttachmentBytes(const Attachment&actual){return sizeof(Record)+actual.host.source.size()+actual.target.size()+actual.session.size()*2+actual.parent_session.size();}
   Record*Find(const Attachment&actual){if(!Available())return nullptr;const auto found=records_.find(actual.session);return found!=records_.end()&&found->second.attachment==actual?&found->second:nullptr;}
   const Record*Find(const Attachment&actual)const{if(!Available())return nullptr;const auto found=records_.find(actual.session);return found!=records_.end()&&found->second.attachment==actual?&found->second:nullptr;}

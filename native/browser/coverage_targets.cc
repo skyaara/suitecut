@@ -14,9 +14,8 @@ class CoverageTargets::Impl : public std::enable_shared_from_this<Impl> {
   using Kind=bool; // true is actual JS coverage, false actual CSS coverage.
   enum class Phase{Starting,Active,Stopping,Cleaning,Failed};
   enum class State{Starting,Active,Stopping,Finalized,Absent};
-  static constexpr size_t kTargets=32,kObservedTargets=2049,kPayload=48*1048576,kResult=2*1048576;
   struct Payload{size_t bytes=0;};
-  struct Record{Kind kind=true;Phase phase=Phase::Starting;Dict options;int owner=0;double deadline=0;Reply reply;std::map<std::string,State> states;std::map<std::string,std::string> results;size_t result_bytes=0;std::string error,loss;bool scheduling=false,retain_error=false,include_workers=false,reset=true;};
+  struct Record{Kind kind=true;Phase phase=Phase::Starting;Dict options;int owner=0;double deadline=0;Reply reply;std::map<std::string,State> states;std::map<std::string,std::string> results;std::string error,loss;bool scheduling=false,retain_error=false,include_workers=false,reset=true;};
   struct Target{std::string id;std::shared_ptr<CoverageControls> controls;bool alive=true,current_document=true,worker=false;double deadline=0;std::vector<Ready> ready;std::set<Kind> startup,cleanup;};
   explicit Impl(Hooks hooks):hooks_(std::move(hooks)),payload_(std::make_shared<Payload>()){
     CoverageDispatch::Hooks dispatch;dispatch.now=hooks_.now;dispatch.send=hooks_.send;dispatch.wake=hooks_.wake;dispatch_=std::make_shared<CoverageDispatch>(std::move(dispatch));
@@ -32,7 +31,7 @@ class CoverageTargets::Impl : public std::enable_shared_from_this<Impl> {
     if(hooks_.debugger_acquire)hooks.debugger_acquire=[acquire=hooks_.debugger_acquire,session](double deadline,CoverageControls::ProtocolReply reply){return acquire(session,deadline,std::move(reply));};
     if(hooks_.debugger_release)hooks.debugger_release=[release=hooks_.debugger_release,session](double deadline,CoverageControls::ProtocolReply reply){return release(session,deadline,std::move(reply));};
     hooks.close_channel=[close=hooks_.close_channel,session](const std::string& error){close(session,error);};
-    hooks.reserve_payload=[budget=payload_](size_t bytes){if(bytes>kPayload-budget->bytes)return false;budget->bytes+=bytes;return true;};hooks.release_payload=[budget=payload_](size_t bytes){budget->bytes-=bytes;};
+    hooks.reserve_payload=[budget=payload_](size_t bytes){budget->bytes+=bytes;return true;};hooks.release_payload=[budget=payload_](size_t bytes){budget->bytes-=bytes;};
     target->controls=std::make_shared<CoverageControls>(std::move(hooks));return target;
   }
   void ReplyOwner(const std::shared_ptr<Record>& record,bool ok,const std::string& error,const std::string& json=""){
@@ -40,7 +39,7 @@ class CoverageTargets::Impl : public std::enable_shared_from_this<Impl> {
   }
   void Fail(const std::shared_ptr<Record>& record,const std::string& error){
     if(!Current(record)||record->phase==Phase::Cleaning)return;
-    record->retain_error=!record->owner&&record->phase==Phase::Active;record->phase=Phase::Cleaning;if(record->error.empty())record->error=error.substr(0,8192);
+    record->retain_error=!record->owner&&record->phase==Phase::Active;record->phase=Phase::Cleaning;if(record->error.empty())record->error=error;
     // Stop dispatch before abort callbacks may synchronously complete a domain.
     dispatch_->CancelQueued(Start(record->kind),record->error);
     std::vector<std::shared_ptr<Target>> targets;for(const auto& [session,state]:record->states){const auto found=targets_.find(session);if(found!=targets_.end())targets.push_back(found->second);}for(const auto& target:targets)target->controls->Abort(Start(record->kind),record->error);
@@ -50,7 +49,7 @@ class CoverageTargets::Impl : public std::enable_shared_from_this<Impl> {
     if(json.size()<2||json.front()!='['||json.back()!=']'){error="Actual native coverage target returned an invalid array";return false;}
     bool quoted=false,escape=false,expect=true;size_t depth=0,count=0;
     for(size_t i=1;i+1<json.size();++i){const char c=json[i];if(quoted){if(escape)escape=false;else if(c=='\\')escape=true;else if(c=='"')quoted=false;continue;}if(!depth){if(c==' '||c=='\n'||c=='\r'||c=='\t')continue;if(c=='{'&&expect){++depth;++count;expect=false;continue;}if(c==','&&!expect){expect=true;continue;}error="Actual native coverage entry is not an object";return false;}if(c=='"'){quoted=true;continue;}if(c=='{'||c=='[')++depth;else if(c=='}'||c==']')--depth;}
-    if(quoted||depth||(count&&expect)||count>2048-entries){error="Native coverage target result entry capacity exceeded";return false;}if(json.size()-2+(entries&&count?1:0)>kResult-output.size()-1){error="Native combined coverage result exceeds 2 MiB";return false;}
+    if(quoted||depth||(count&&expect)){error="Actual native coverage target returned a malformed array";return false;}
     if(count){if(entries)output+=',';output.append(json,1,json.size()-2);entries+=count;}return true;
   }
   void Complete(const std::shared_ptr<Record>& record){
@@ -65,7 +64,6 @@ class CoverageTargets::Impl : public std::enable_shared_from_this<Impl> {
   bool Eligible(const std::shared_ptr<Record>& record,const std::shared_ptr<Target>& target)const{return target->alive&&target->current_document&&(!target->worker||(record->kind&&record->include_workers));}
   void StartTarget(const std::shared_ptr<Record>& record,const std::string& session,double deadline){
     const auto found=targets_.find(session);if(!Current(record)||found==targets_.end()||!Eligible(record,found->second))return;const auto target=found->second;const auto owner=Owner();if(!owner){Fail(record,"Native coverage internal operation identity exceeded");return;}
-    if(!record->reset&&record->states.size()>=2048){Fail(record,"Native retained coverage lifetime target capacity exceeded");return;}
     target->startup.insert(record->kind);record->states[session]=State::Starting;auto params=record->options->Copy(false);params->SetString("action",Start(record->kind));const auto weak=weak_from_this();
     target->controls->Handle(owner,params,deadline,[weak,record,target,session](bool ok,const std::string& error,const std::string&){if(const auto self=weak.lock()){
       target->startup.erase(record->kind);if(!ok)target->cleanup.insert(record->kind);
@@ -73,10 +71,8 @@ class CoverageTargets::Impl : public std::enable_shared_from_this<Impl> {
     }});
   }
   bool SaveResult(const std::shared_ptr<Record>& record,const std::string& session,const std::shared_ptr<Target>&,const std::string& result){
-    if(record->results.contains(session)||record->results.size()>=2048){Fail(record,"Native retained coverage target result identity/capacity exceeded");return false;}
-    const auto& json=result;
-    if(json.size()>kResult+2*kTargets-record->result_bytes){Fail(record,"Native combined coverage response exceeds 2 MiB");return false;}
-    record->result_bytes+=json.size();record->results[session]=json;return true;
+    if(record->results.contains(session)){Fail(record,"Native retained coverage target result identity collision");return false;}
+    record->results[session]=result;return true;
   }
   void StopTarget(const std::shared_ptr<Record>& record,const std::string& session){
     const auto found=targets_.find(session);if(!Current(record)||found==targets_.end()||!found->second->alive)return;const auto target=found->second;const auto owner=Owner();if(!owner){Fail(record,"Native coverage internal operation identity exceeded");return;}
@@ -101,7 +97,6 @@ class CoverageTargets::Impl : public std::enable_shared_from_this<Impl> {
       if(found!=records_.end()){reply(false,"Native coverage is enabled or its actual target cleanup is pending","");return;}
       if(params->HasKey("includeWorkers")&&(!kind||params->GetType("includeWorkers")!=VTYPE_BOOL)){reply(false,"includeWorkers is a boolean JavaScript-only native coverage option; worker CSS is unsupported","");return;}
       auto record=std::make_shared<Record>();record->kind=kind;record->include_workers=kind&&params->GetBool("includeWorkers");record->reset=!params->HasKey("resetOnNavigation")||params->GetBool("resetOnNavigation");
-      size_t target_count=0;for(const auto& [session,target]:targets_)if(Eligible(record,target))++target_count;if(target_count>kTargets){reply(false,"Native coverage target capacity exceeded","");return;}
       record->options=params->Copy(false);record->options->Remove("includeWorkers");record->owner=owner;record->deadline=deadline;record->reply=std::move(reply);record->scheduling=true;records_[kind]=record;std::vector<std::string> sessions;for(const auto& [session,target]:targets_)if(Eligible(record,target))sessions.push_back(session);for(const auto& session:sessions){if(record->phase==Phase::Cleaning)break;StartTarget(record,session,deadline);}record->scheduling=false;Complete(record);return;
     }
     if(found==records_.end()){reply(false,"Native coverage is not enabled","");return;}const auto record=found->second;if(record->phase==Phase::Failed){const auto error=record->error;records_.erase(found);reply(false,error,"");return;}if(record->phase!=Phase::Active){reply(false,"Native coverage is starting, stopping or physically cleaning up","");return;}record->owner=owner;record->deadline=deadline;record->reply=std::move(reply);record->phase=Phase::Stopping;
@@ -114,15 +109,12 @@ class CoverageTargets::Impl : public std::enable_shared_from_this<Impl> {
     const bool expired=target->deadline>0&&hooks_.now()>=target->deadline;auto replies=std::move(target->ready);for(auto& reply:replies)if(reply)reply(!expired,expired?"Native coverage target bootstrap exceeded its original deadline":"");
   }
   void Attached(const std::string& session,const std::string& id,double deadline,Ready ready,bool worker=false){
-    if(closed_||session.empty()||session.size()>128||id.empty()||id.size()>256||!std::isfinite(deadline)||deadline<0||(deadline&&hooks_.now()>=deadline)){if(ready)ready(false,"Invalid or expired actual native coverage target identity");return;}
-    auto found=targets_.find(session);if(found!=targets_.end()){if(found->second->id!=id||found->second->worker!=worker||found->second->ready.size()>=4){if(ready)ready(false,"Actual native coverage target identity/callback collision");return;}if(ready){found->second->deadline=found->second->deadline&&deadline?std::min(found->second->deadline,deadline):deadline?deadline:found->second->deadline;found->second->ready.push_back(std::move(ready));}ReadyTarget(found->second);return;}
-    if(targets_.size()>=kObservedTargets){if(ready)ready(false,"Native coverage observed target registry capacity exceeded");return;}const auto target=NewTarget(session,id);target->worker=worker;target->deadline=deadline;if(ready)target->ready.push_back(std::move(ready));targets_[session]=target;
+    if(closed_||session.empty()||id.empty()||!std::isfinite(deadline)||deadline<0||(deadline&&hooks_.now()>=deadline)){if(ready)ready(false,"Invalid or expired actual native coverage target identity");return;}
+    auto found=targets_.find(session);if(found!=targets_.end()){if(found->second->id!=id||found->second->worker!=worker){if(ready)ready(false,"Actual native coverage target identity collision");return;}if(ready){found->second->deadline=found->second->deadline&&deadline?std::min(found->second->deadline,deadline):deadline?deadline:found->second->deadline;found->second->ready.push_back(std::move(ready));}ReadyTarget(found->second);return;}
+    const auto target=NewTarget(session,id);target->worker=worker;target->deadline=deadline;if(ready)target->ready.push_back(std::move(ready));targets_[session]=target;
     // Stop freezes admission at its native invocation. A later target is still
     // paused before author execution, so it belongs to the next recording.
     std::vector<std::shared_ptr<Record>> active;for(const auto& [kind,record]:records_)if((record->phase==Phase::Active||record->phase==Phase::Starting)&&Eligible(record,target))active.push_back(record);
-    // Each recording counts only its actual eligible targets: idle workers
-    // never constrain ordinary CSS or the default document-only JS capture.
-    for(auto it=active.begin();it!=active.end();){size_t count=0;for(const auto& [actual,entry]:targets_)if(Eligible(*it,entry))++count;if(count>kTargets){Fail(*it,"Native coverage target capacity exceeded");it=active.erase(it);}else ++it;}
     for(const auto& record:active)target->startup.insert(record->kind);
     for(const auto& record:active){const auto budget=record->owner&&record->deadline?deadline?std::min(deadline,record->deadline):record->deadline:deadline;StartTarget(record,session,budget);}ReadyTarget(target);Wake();
   }
@@ -167,7 +159,7 @@ class CoverageTargets::Impl : public std::enable_shared_from_this<Impl> {
     // claimed loss from the new document, nor admit late old-document sources.
     for(const auto& [session,target]:targets_){if(!session.empty())target->current_document=false;target->controls->Navigated();}
     std::vector<std::shared_ptr<Record>> records;for(const auto& [kind,record]:records_)records.push_back(record);
-    for(const auto& record:records){if(!record->reset)continue;if(record->phase==Phase::Stopping)Fail(record,"Actual main document navigated while native coverage was being collected");else if(record->phase==Phase::Active){record->loss.clear();record->results.clear();record->result_bytes=0;}}
+    for(const auto& record:records){if(!record->reset)continue;if(record->phase==Phase::Stopping)Fail(record,"Actual main document navigated while native coverage was being collected");else if(record->phase==Phase::Active){record->loss.clear();record->results.clear();}}
   }
   void Cancel(int owner){std::vector<std::shared_ptr<Record>> records;for(const auto& [kind,record]:records_)if(record->owner==owner)records.push_back(record);for(const auto& record:records)Fail(record,"Native coverage operation canceled");}
   void Tick(double now){dispatch_->Tick(now);std::vector<std::shared_ptr<Record>> records;for(const auto& [kind,record]:records_)records.push_back(record);for(const auto& record:records)if(Current(record)&&record->owner&&record->deadline&&now>=record->deadline)Fail(record,"Native coverage operation exceeded its original deadline");std::vector<std::shared_ptr<Target>> targets;for(const auto& [session,target]:targets_)targets.push_back(target);for(const auto& target:targets)if(target->alive){target->controls->Tick(now);ReadyTarget(target);}Prune();}

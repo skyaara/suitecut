@@ -152,11 +152,11 @@ try {
   checks.push(
     'Supported 900 KB body survives native chunked fallback, next-handler admission and actual origin echo',
   )
-  let nativeCapacityError = ''
+  const overTwoMiB = Buffer.alloc(2 * 1024 * 1024 + 1, 255)
   await page.route(
     '**/retry',
     async (route, request) => {
-      assert.deepEqual(request.postDataBuffer(), Buffer.from([0, 255, 13, 10]))
+      assert.deepEqual(request.postDataBuffer(), overTwoMiB)
       await route.continue()
     },
     { times: 1 },
@@ -164,13 +164,7 @@ try {
   await page.route(
     '**/retry',
     async (route) => {
-      try {
-        await route.fallback({ method: 'POST', postData: Buffer.alloc(2 * 1024 * 1024 + 1, 255) })
-      } catch (error) {
-        nativeCapacityError = error instanceof Error ? error.message : 'Unknown native rejection'
-      }
-      assert.match(nativeCapacityError, /body exceeds 2 MiB/u)
-      await route.fallback({ method: 'POST', postData: Buffer.from([0, 255, 13, 10]) })
+      await route.fallback({ method: 'POST', postData: overTwoMiB })
     },
     { times: 1 },
   )
@@ -179,10 +173,10 @@ try {
       `fetch(${JSON.stringify(`${origin}/retry`)}).then(response=>response.json())`,
     ),
   )
-  assert.equal(retried.body, 'AP8NCg==')
+  assert.deepEqual(Buffer.from(retried.body, 'base64'), overTwoMiB)
   assert.equal(retried.method, 'POST')
   checks.push(
-    'actual out-of-bound fallback rejects before consuming the next handler and permits retry on the same physical pause',
+    'Fallback body over 2 MiB has no native cap; next handler and actual origin receive it whole',
   )
   // Fetch completion and the DevTools continuation ACK cross separate channels.
   // Require actual physical retirement; never infer it from the response receipt.

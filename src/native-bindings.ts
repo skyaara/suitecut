@@ -36,17 +36,17 @@ function hostPhysicalBytes(): number {
 const NativeBindingWireSchema = z.discriminatedUnion('event', [
   z.object({
     event: z.literal('call'),
-    id: z.string().min(1).max(96),
-    name: z.string().min(1).max(256).optional(),
-    nameJSON: z.string().max(1538).optional(),
+    id: z.string().min(1),
+    name: z.string().min(1).optional(),
+    nameJSON: z.string().optional(),
     frame: NativeFrameInfoSchema,
     args: z.unknown(),
     handle: z.boolean().optional(),
   }),
   z.object({
     event: z.literal('canceled'),
-    id: z.string().min(1).max(96),
-    error: z.string().max(4096),
+    id: z.string().min(1),
+    error: z.string(),
   }),
 ])
 export const NativeBindingEventSchema = NativeBindingWireSchema.transform((event, context) => {
@@ -112,22 +112,6 @@ function installNativeBinding(
   // Context snapshots install before native default-context bookkeeping. Only
   // the later native installer may connect their early author calls.
   if (allowDeferred) raw = undefined
-  const queueKey = Symbol.for('suitecut.nativeBindingDeferredOwnership.v1')
-  const previousQueue = Reflect.get(globalThis, queueKey) as UntrustedInput
-  if (previousQueue !== undefined && !(previousQueue instanceof Map))
-    throw new Error('Native binding deferred ownership registry is invalid')
-  const queued =
-    previousQueue === undefined ? new Map<object, number>() : (previousQueue as Map<object, number>)
-  if (previousQueue === undefined) Object.defineProperty(globalThis, queueKey, { value: queued })
-  const queuedBytes = () => {
-    let bytes = 0
-    for (const value of queued.values()) {
-      if (!Number.isSafeInteger(value) || value < 0)
-        throw new Error('Native binding deferred ownership entry is invalid')
-      bytes += value
-    }
-    return bytes
-  }
   const codec = codecFactory()
   const nonceBytes = new Uint8Array(16)
   crypto.getRandomValues(nonceBytes)
@@ -142,7 +126,6 @@ function installNativeBinding(
       payload: string
       deadline: number
       timer: ReturnType<typeof setTimeout> | undefined
-      queueToken: object
     }
   >()
   let sequence = 0
@@ -152,7 +135,6 @@ function installNativeBinding(
     const call = pending.get(id)
     if (!call) return undefined
     pending.delete(id)
-    queued.delete(call.queueToken)
     if (call.timer !== undefined) clearTimeout(call.timer)
     call.payload = ''
     return call
@@ -173,7 +155,6 @@ function installNativeBinding(
       for (const [id, call] of pending) {
         if (!call.payload) continue
         const remaining = Math.ceil(call.deadline - now())
-        queued.delete(call.queueToken)
         if (remaining <= 0) {
           clearCall(id)?.reject(timeout())
           continue
@@ -237,10 +218,6 @@ function installNativeBinding(
         reject(new Error('Native binding was disposed'))
         return
       }
-      if (pending.size >= 128) {
-        reject(new Error('Native binding renderer call capacity exceeded'))
-        return
-      }
       if (++sequence > Number.MAX_SAFE_INTEGER) {
         reject(new Error('Native binding call sequence exhausted'))
         return
@@ -260,13 +237,8 @@ function installNativeBinding(
           throw new Error(
             'serializedArgs is not an array. This can happen when Array.prototype.toJSON is defined incorrectly',
           )
-        const bytes = new TextEncoder().encode(payload).byteLength
-        if (bytes > 1024 * 1024) throw new Error('Native binding arguments exceed 1 MiB')
         const deferred = typeof raw !== 'function'
-        if (deferred && (queued.size >= 128 || queuedBytes() + bytes > 8 * 1024 * 1024))
-          throw new Error('Native binding deferred call capacity exceeded')
-        const id = sequence,
-          queueToken = {}
+        const id = sequence
         const deadline = now() + 30000
         const timer = allowDeferred
           ? setTimeout(() => clearCall(id)?.reject(timeout()), 30000)
@@ -278,10 +250,8 @@ function installNativeBinding(
           payload: deferred ? payload : '',
           deadline,
           timer,
-          queueToken,
         })
-        if (deferred) queued.set(queueToken, bytes)
-        else Reflect.apply(raw as (payload: string) => void, globalThis, [payload])
+        if (!deferred) Reflect.apply(raw as (payload: string) => void, globalThis, [payload])
       } catch (error) {
         clearCall(sequence)
         // Host code may throw null or another non-Error value; preserve it.
@@ -360,13 +330,11 @@ export class NativeBindings {
     handle = false,
   ): Promise<NativeExposedBinding> {
     this.transport.signal.throwIfAborted()
-    z.string().min(1).max(256).parse(name)
+    z.string().min(1).parse(name)
     if (typeof callback !== 'function')
       throw new Error('Native binding callback must be a function')
     if (this.registrations.has(name))
       throw new Error(`page.exposeFunction: Function "${name}" has been already registered`)
-    if (this.registrations.size >= 64)
-      throw new Error('Native binding registration capacity exceeded')
     if (handle && (!binding || !this.retainedArgument))
       throw new Error('Native binding handle argument creator is unavailable')
     const registration = { callback, binding, handle, inherited: false }
@@ -401,7 +369,7 @@ export class NativeBindings {
     handle = false,
   ): void {
     this.transport.signal.throwIfAborted()
-    z.string().min(1).max(256).parse(name)
+    z.string().min(1).parse(name)
     z.boolean().parse(binding)
     z.boolean().parse(handle)
     if (typeof callback !== 'function')
@@ -419,8 +387,6 @@ export class NativeBindings {
         return
       throw new Error(`Function "${name}" has been already registered`)
     }
-    if (this.registrations.size >= 64)
-      throw new Error('Native binding registration capacity exceeded')
     this.registrations.set(name, { callback, binding, handle, inherited: true })
   }
   /** Native context removal owns browser disposal; physical user work remains admitted until settlement. */
@@ -446,13 +412,8 @@ export class NativeBindings {
   private dispatch(event: Extract<NativeBindingEvent, { event: 'call' }>): void {
     const registration = this.registrations.get(event.name)
     const bytes = Buffer.byteLength(JSON.stringify(event.args), 'utf8')
-    if (
-      !registration ||
-      this.physical.has(event.id) ||
-      hostPhysicalSlots.size >= 128 ||
-      hostPhysicalBytes() + bytes > 8 * 1024 * 1024
-    ) {
-      void this.reply(event.id, false, new Error('Native host binding callback capacity exceeded'))
+    if (!registration || this.physical.has(event.id)) {
+      void this.reply(event.id, false, new Error('Native host binding callback is unavailable'))
       return
     }
     const token = new AbortController()
@@ -466,7 +427,6 @@ export class NativeBindings {
           throw new Error('Native binding argument mode does not match its registration')
         const args = z
           .array(z.unknown())
-          .max(100000)
           .parse(createNativeValueCodec().decode(event.args as UntrustedInput))
         if (registration.handle) {
           const value = await this.sendReplyControl(
@@ -515,8 +475,6 @@ export class NativeBindings {
       : this.transport.signal
     ownerSignal.throwIfAborted()
     if (this.replyActive >= 64) {
-      if (this.replyQueue.length >= 128)
-        throw new Error('Native binding acknowledgment queue capacity exceeded')
       await new Promise<void>((resolve, reject) => {
         const admit = () => {
           cleanup()
@@ -562,15 +520,7 @@ export class NativeBindings {
       handles.length = 0
       success = false
     }
-    let serialized = Buffer.from(JSON.stringify(encoded), 'utf8')
-    if (serialized.length > 1024 * 1024) {
-      encoded = createNativeValueCodec().encode(
-        new Error('Native binding callback result exceeds 1 MiB'),
-      )
-      serialized = Buffer.from(JSON.stringify(encoded), 'utf8')
-      success = false
-      handles.length = 0
-    }
+    const serialized = Buffer.from(JSON.stringify(encoded), 'utf8')
     try {
       if (serialized.length <= 24 * 1024) {
         await this.sendReplyControl({

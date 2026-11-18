@@ -46,11 +46,11 @@ int main(){
  }
  {
   Harness h;int released=0,canceled=0,retained=0;
-  for(int i=0;i<128;++i){h.leases->Acquire("","raw",1000,[&](bool ok,const std::string&){assert(!ok);++canceled;});h.leases->Release("","raw",[&](bool ok,const std::string&){assert(ok);++released;});}
-  assert(h.calls.size()==1&&h.leases->Physical()==1&&h.leases->PendingReleases()==128&&h.leases->Owners()==0&&released==0&&canceled==128);
-  h.leases->Acquire("","retained",1000,[&](bool ok,const std::string&){assert(ok);++retained;});int rejected=0;h.leases->Release("","retained",[&](bool ok,const std::string&error){assert(!ok&&error.find("capacity")!=std::string::npos);++rejected;});
-  assert(rejected==1&&h.leases->Owners()==1&&h.leases->PendingReleases()==128&&retained==0);
-  h.Ack("DOM.enable");assert(retained==1&&released==128&&h.leases->PendingReleases()==0&&h.calls.empty());
+  for(int i=0;i<200;++i){h.leases->Acquire("","raw",1000,[&](bool ok,const std::string&){assert(!ok);++canceled;});h.leases->Release("","raw",[&](bool ok,const std::string&){assert(ok);++released;});}
+  assert(h.calls.size()==1&&h.leases->Physical()==1&&h.leases->PendingReleases()==200&&h.leases->Owners()==0&&released==0&&canceled==200);
+  h.leases->Acquire("","retained",1000,[&](bool ok,const std::string&){assert(ok);++retained;});
+  assert(h.leases->Owners()==1&&h.leases->PendingReleases()==200&&retained==0);
+  h.Ack("DOM.enable");assert(retained==1&&released==200&&h.leases->PendingReleases()==0&&h.calls.empty());
   h.leases->Release("","retained",[](bool ok,const std::string&){assert(ok);});h.Ack("DOM.disable");assert(h.leases->Owners()==0&&h.leases->PendingReleases()==0&&h.leases->Physical()==0);++checks;
  }
  {

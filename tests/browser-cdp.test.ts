@@ -395,7 +395,7 @@ describe('CDP browser adapter', () => {
     await mock.wire.close()
   })
 
-  it('bounds pending native input and recovers its budget when work settles', async () => {
+  it('queues native input past the old 256 cap and runs all of it in order', async () => {
     const mock = fakeWire()
     const driver = createCDPDriver(mock.wire)
     await driver.initialize()
@@ -418,11 +418,14 @@ describe('CDP browser adapter', () => {
     })
     const active = driver.insertText('p1', 'first')
     await entered
-    const queued = Array.from({ length: 255 }, () => driver.insertText('p1', 'queued'))
-    await expect(driver.insertText('p1', 'overflow')).rejects.toThrow('input queue limit')
+    const queued = Array.from({ length: 300 }, () => driver.insertText('p1', 'queued'))
     release()
     await Promise.all([active, ...queued])
-    await driver.insertText('p1', 'budget recovered')
+    expect(
+      mock.calls
+        .filter((call) => call.method === 'Input.insertText')
+        .map((call) => call.params.text),
+    ).toEqual(['first', ...Array.from({ length: 300 }, () => 'queued')])
     await mock.wire.close()
   })
 

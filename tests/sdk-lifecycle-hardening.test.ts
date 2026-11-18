@@ -122,31 +122,41 @@ describe('SDK lifecycle hardening', () => {
 
   it('snapshots queued controls without retaining caller mutations and preserves original queued deadlines', async () => {
     const f = await fixture()
-    const commands: { id: number; command: string; bodyId?: string }[] = []
-    f.input.on('data', (chunk: Buffer) => {
-      commands.push(JSON.parse(chunk.toString()) as (typeof commands)[number])
+    // An unread command past the 4 MiB pipe budget makes later controls wait in the sender queue.
+    f.input.pause()
+    const big = f.browser.runAutomation('networkBody', {
+      bodyId: 'x'.repeat(5 * 1024 * 1024),
+      timeoutMs: 0,
     })
-    const busy = Array.from({ length: 128 }, () =>
-      f.browser.runAutomation('networkBody', { bodyId: 'busy', timeoutMs: 0 }),
-    )
+    await vi.waitFor(() => expect(f.input.writableLength).toBeGreaterThan(4 * 1024 * 1024))
     vi.useFakeTimers()
     const expires = f.browser.runAutomation('networkBody', { bodyId: 'expired', timeoutMs: 10 })
     const expired = expect(expires).rejects.toThrow('deadline expired while queued')
     await vi.advanceTimersByTimeAsync(10)
     await expired
-    expect(commands).toHaveLength(128)
+    vi.useRealTimers()
     const fields = { bodyId: 'original', timeoutMs: 30000 }
     const queued = f.browser.runAutomation('networkBody', fields)
     fields.bodyId = 'mutated'
-    expect(commands).toHaveLength(128)
-    for (const command of [...commands]) f.emit({ type: 'response', id: command.id, ok: true })
-    await Promise.all(busy)
-    await Promise.resolve()
-    const actual = commands.find((command) => command.bodyId === 'original')
-    expect(actual).toBeDefined()
-    f.emit({ type: 'response', id: actual!.id, ok: true })
-    await queued
-    vi.useRealTimers()
+    let text = ''
+    const commands = () =>
+      text
+        .split('\n')
+        .filter(Boolean)
+        .map((line) => JSON.parse(line) as { id: number; command: string; bodyId?: string })
+    f.input.on('data', (chunk: Buffer) => {
+      text += chunk.toString()
+    })
+    f.input.resume()
+    await vi.waitFor(() =>
+      expect(commands().find((command) => command.bodyId === 'original')).toBeDefined(),
+    )
+    expect(commands().map((command) => command.bodyId?.slice(0, 8))).toEqual([
+      'xxxxxxxx',
+      'original',
+    ])
+    for (const command of commands()) f.emit({ type: 'response', id: command.id, ok: true })
+    await Promise.all([big, queued])
     await f.browser.close()
   })
 

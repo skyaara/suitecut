@@ -19,7 +19,6 @@ namespace suitecut {
 class NativeWebSocketControls {
  public:
   // Frame payloads travel in the packet's binary data, not its JSON header.
-  static constexpr size_t kFrameBytes=16*1048576;
   using Dict=CefRefPtr<CefDictionaryValue>;
   using Bytes=std::vector<uint8_t>;
   using Emit=std::function<bool(Dict,const Bytes&)>;
@@ -33,13 +32,13 @@ class NativeWebSocketControls {
   void Event(const std::string& method,Dict params,const std::string& session,double now) {
     if(disposed_||!params||!method.starts_with("Network.webSocket"))return;
     const auto request=params->GetString("requestId").ToString();
-    if(request.empty()||request.size()>128||session.size()>128){Drop("Invalid native WebSocket identity");return;}
+    if(request.empty()){Drop("Invalid native WebSocket identity");return;}
     const auto key=session+"\n"+request;
     if(method=="Network.webSocketCreated") {
       if(sockets_.contains(key))return;
       const auto url=params->GetString("url").ToString();
-      if(sockets_.size()>=128||global_sockets_>=512||url.size()>8192||!(url.starts_with("ws://")||url.starts_with("wss://"))){Drop("Native WebSocket identity capacity exceeded");return;}
-      Socket socket{std::to_string(++serial_),session,request,url};sockets_.emplace(key,std::move(socket));++global_sockets_;
+      if(!(url.starts_with("ws://")||url.starts_with("wss://"))){Drop("Invalid native WebSocket URL");return;}
+      Socket socket{std::to_string(++serial_),session,request,url};sockets_.emplace(key,std::move(socket));
       Publish(Base(sockets_.at(key),"created"),{},now);return;
     }
     auto found=sockets_.find(key);if(found==sockets_.end())return;
@@ -50,31 +49,27 @@ class NativeWebSocketControls {
       // Browser-control frames are observed separately from authored messages.
       if(opcode!=1&&opcode!=2)return;
       if(frame->GetType("payloadData")!=VTYPE_STRING){Drop("Invalid native WebSocket payload");return;}
-      auto rendered=frame->GetString("payloadData").ToString();Bytes bytes;bool truncated=false;
-      // Chrome delivers whole frames; one over 16 MiB keeps its first 16 MiB
-      // and is marked truncated.
-      if(opcode==1){if(rendered.size()>kFrameBytes){size_t end=kFrameBytes;while(end&&(static_cast<unsigned char>(rendered[end])&0xC0)==0x80)--end;rendered.resize(end);truncated=true;}bytes.assign(rendered.begin(),rendered.end());}
+      const auto rendered=frame->GetString("payloadData").ToString();Bytes bytes;
+      // Chrome delivers whole frames; they are passed through whole.
+      if(opcode==1)bytes.assign(rendered.begin(),rendered.end());
       else {
-        if(rendered.size()>(kFrameBytes+2)/3*4){rendered.resize((kFrameBytes+2)/3*4);truncated=true;}
         if(!rendered.empty()){
           auto decoded=CefBase64Decode(rendered);
-          if(!decoded||decoded->GetSize()>kFrameBytes){Drop("Invalid native WebSocket binary frame");return;}
+          if(!decoded){Drop("Invalid native WebSocket binary frame");return;}
           bytes.resize(decoded->GetSize());decoded->GetData(bytes.data(),bytes.size(),0);
         }
       }
-      auto event=Base(socket,method=="Network.webSocketFrameSent"?"framesent":"framereceived");event->SetInt("opcode",opcode);if(truncated){event->SetBool("truncated",true);Drop("Native WebSocket frame exceeds 16 MiB");}Publish(event,std::move(bytes),now);return;
+      auto event=Base(socket,method=="Network.webSocketFrameSent"?"framesent":"framereceived");event->SetInt("opcode",opcode);Publish(event,std::move(bytes),now);return;
     }
     if(method=="Network.webSocketFrameError") {
-      auto event=Base(socket,"socketerror");auto error=params->GetString("errorMessage").ToString();
-      if(error.size()>8192){error.resize(8192);Drop("Native WebSocket error exceeds limit");}
-      event->SetString("error",error);Publish(event,{},now);return;
+      auto event=Base(socket,"socketerror");
+      event->SetString("error",params->GetString("errorMessage"));Publish(event,{},now);return;
     }
-    if(method=="Network.webSocketClosed") {auto event=Base(socket,"close");sockets_.erase(found);--global_sockets_;Publish(event,{},now);}
+    if(method=="Network.webSocketClosed") {auto event=Base(socket,"close");sockets_.erase(found);Publish(event,{},now);}
   }
   bool Wait(int owner,const std::string& socket,const std::string& event,double after,double deadline,Reply reply) {
-    if(disposed_||owner<1||(socket.empty()&&event!="created")||socket.size()>20||!Allowed(event)||!std::isfinite(after)||after<0||std::floor(after)!=after||after>double(sequence_)||!std::isfinite(deadline)||deadline<0||!reply||waiters_.size()>=128||waiters_.contains(owner))return false;
+    if(disposed_||owner<1||(socket.empty()&&event!="created")||!Allowed(event)||!std::isfinite(after)||after<0||std::floor(after)!=after||after>double(sequence_)||!std::isfinite(deadline)||deadline<0||!reply||waiters_.contains(owner))return false;
     if(!socket.empty()&&!Issued(socket))return false;
-    if(!journal_.empty()&&after<journal_.front()->event->GetDouble("sequence")-1){reply(false,nullptr,{},"Native WebSocket journal capacity exceeded");return true;}
     Waiter waiter{socket,event,after,deadline,std::move(reply)};
     for(const auto& record:journal_)if(record->delivered){
       if(Matches(waiter,record->event)){waiter.reply(true,record->event,record->bytes,"");return true;}
@@ -90,7 +85,7 @@ class NativeWebSocketControls {
   void Cancel(int owner){waiters_.erase(owner);}
   void SessionDetached(const std::string& session,double now){
     std::vector<std::string> closed;for(const auto& [key,socket]:sockets_)if(socket.session==session)closed.push_back(key);
-    for(const auto& key:closed){auto event=Base(sockets_.at(key),"close");sockets_.erase(key);--global_sockets_;Publish(event,{},now);}
+    for(const auto& key:closed){auto event=Base(sockets_.at(key),"close");sockets_.erase(key);Publish(event,{},now);}
   }
   void Tick(double now) {
     if(disposed_)return;
@@ -115,17 +110,14 @@ class NativeWebSocketControls {
     }
     if(!pending_.empty())wake_();
   }
-  void Clear(){disposed_=true;global_sockets_-=sockets_.size();sockets_.clear();pending_.clear();journal_.clear();waiters_.clear();pending_bytes_=journal_bytes_=0;}
+  void Clear(){disposed_=true;sockets_.clear();pending_.clear();journal_.clear();waiters_.clear();pending_bytes_=journal_bytes_=0;}
   uint64_t sequence()const{return sequence_;}
   size_t sockets()const{return sockets_.size();}
   size_t pending()const{return pending_.size();}
   size_t retained_bytes()const{return pending_bytes_+journal_bytes_;}
  private:
   struct Socket{std::string id,session,request,url;};
-  struct Record{
-    Dict event;Bytes bytes;size_t cost=0;double deadline=0;bool delivered=false;
-    ~Record(){global_retained_bytes_-=cost;--global_records_;}
-  };
+  struct Record{Dict event;Bytes bytes;size_t cost=0;double deadline=0;bool delivered=false;};
   struct Waiter{std::string socket,event;double after,deadline;Reply reply;};
   static bool Allowed(const std::string& event){return event=="created"||event=="framesent"||event=="framereceived"||event=="socketerror"||event=="close";}
   static bool Matches(const Waiter& wait,Dict event){return (wait.socket.empty()||event->GetString("socketId")==wait.socket)&&event->GetString("event")==wait.event&&event->GetDouble("sequence")>wait.after;}
@@ -135,24 +127,20 @@ class NativeWebSocketControls {
   bool PendingClose(const std::string& socket)const{return std::any_of(pending_.begin(),pending_.end(),[&](const auto& record){return record->event->GetString("event")=="close"&&record->event->GetString("socketId")==socket;});}
   Dict Base(const Socket& socket,const std::string& kind){auto event=CefDictionaryValue::Create();event->SetString("socketId",socket.id);event->SetString("sessionId",socket.session);event->SetString("requestId",socket.request);event->SetString("url",socket.url);event->SetString("event",kind);return event;}
   void Fail(const std::string& error){Clear();failure_(error);}
-  // Content a site controls (sockets, frame sizes, bursts the host is slow to
-  // read) is dropped or clipped and reported, never fatal.
+  // Malformed content a site controls, or output the host never takes, is
+  // dropped and reported, never fatal.
   void Drop(const std::string& error){if(degraded)degraded(error);}
   void Publish(Dict event,Bytes bytes,double now){
     if(disposed_)return;
     if(sequence_>=9007199254740991ULL){Fail("Native WebSocket sequence exhausted");return;}
     event->SetDouble("sequence",double(++sequence_));auto wrapper=CefValue::Create();wrapper->SetDictionary(event->Copy(false));const auto cost=bytes.size()+CefWriteJSON(wrapper,JSON_WRITER_DEFAULT).length();
-    if(pending_.size()>=128||cost>4*kFrameBytes-pending_bytes_){Drop("Native WebSocket output ownership capacity exceeded");return;}
-    while(!journal_.empty()&&(cost>8*kFrameBytes-global_retained_bytes_||global_records_>=1024)){journal_bytes_-=journal_.front()->cost;journal_.pop_front();}
-    if(cost>8*kFrameBytes-global_retained_bytes_||global_records_>=1024){Drop("Native WebSocket global retained-byte capacity exceeded");return;}
-    auto record=std::make_shared<Record>();record->event=event;record->bytes=std::move(bytes);record->cost=cost;record->deadline=now+30000;global_retained_bytes_+=cost;++global_records_;
-    while(!journal_.empty()&&(journal_.size()>=512||cost>4194304-journal_bytes_)){journal_bytes_-=journal_.front()->cost;journal_.pop_front();}
-    if(cost<=4194304){journal_.push_back(record);journal_bytes_+=cost;}
+    // The journal keeps every event until the page's controls are cleared.
+    auto record=std::make_shared<Record>();record->event=event;record->bytes=std::move(bytes);record->cost=cost;record->deadline=now+30000;
+    journal_.push_back(record);journal_bytes_+=cost;
     pending_.push_back(record);pending_bytes_+=cost;
     if(observe_)observe_(record->event->Copy(false),record->bytes,now);
     Tick(now);
   }
-  inline static size_t global_sockets_=0,global_retained_bytes_=0,global_records_=0;
   Observe observe_;Emit emit_;std::function<void()> wake_;std::function<void(const std::string&)> failure_;
   bool disposed_=false;uint64_t serial_=0,sequence_=0;size_t pending_bytes_=0,journal_bytes_=0;
   std::map<std::string,Socket>sockets_;std::deque<std::shared_ptr<Record>>pending_,journal_;std::map<int,Waiter>waiters_;

@@ -25,16 +25,16 @@
       const bool array=subtype=="array";
       if(array) {
         std::vector<SuiteCutConsoleArrayProperty> items;
-        for(std::size_t i=0;i<std::min(properties->GetSize(),std::size_t(32));++i) {
+        for(std::size_t i=0;i<properties->GetSize();++i) {
           const auto property=properties->GetDictionary(i);if(!property)continue;
           auto child=property->GetDictionary("valuePreview");
           const auto rendered=child?ConsolePreview(child,depth+1):property->GetString("type")=="function"?"Function":suitecut::DevToolsString(property->GetValue("value"));
           items.push_back({suitecut::DevToolsString(property->GetValue("name")),rendered});
         }
-        const auto text=SuiteCutFormatConsoleArray(description,items,preview->GetBool("overflow")||properties->GetSize()>32);return suitecut::DevToolsTruncateWTF8(text,text.size());
+        return SuiteCutFormatConsoleArray(description,items,preview->GetBool("overflow"));
       }
       std::string text="{";
-      for(std::size_t i=0;i<std::min(properties->GetSize(),std::size_t(32));++i) {
+      for(std::size_t i=0;i<properties->GetSize();++i) {
         const auto property=properties->GetDictionary(i);if(!property)continue;
         if(i)text+=", ";
         if(!array)text+=suitecut::DevToolsString(property->GetValue("name"))+": ";
@@ -42,7 +42,6 @@
         if(child)text+=ConsolePreview(child,depth+1);
         else if(property->GetString("type")=="function")text+="Function";
         else text+=suitecut::DevToolsString(property->GetValue("value"));
-        if(text.size()>65536){text=suitecut::DevToolsTruncateWTF8(text,65536);break;}
       }
       if(preview->GetBool("overflow"))text+=", …";
       return text+(array?"]":"}");
@@ -94,8 +93,8 @@
   }
   Dict RetainConsoleArgument(Dict argument,const std::string& session,int context) {
     if(worker_sessions_.contains(session))return WorkerConsoleRetain(argument,session,context);
-    if(!argument||handles_.size()+pending_handle_groups_.size()>=1024||next_handle_==std::numeric_limits<int>::max())return nullptr;
-    const auto bytes=Json(argument).size();if(bytes>1048576||console_argument_bytes_+bytes>4194304)return nullptr;
+    if(!argument||next_handle_==std::numeric_limits<int>::max())return nullptr;
+    const auto bytes=Json(argument).size();
     const auto frame=std::find_if(frame_states_.begin(),frame_states_.end(),[&](const auto& item){return item.second.session==session&&(item.second.context==context||item.second.utility_context==context);});
     if(frame==frame_states_.end())return nullptr;
     const int handle=++next_handle_;const std::string group="suitecut-handle-"+std::to_string(handle);
@@ -103,7 +102,7 @@
     handles_.emplace(handle,ObjectHandle{"",group,frame->first,context,session,node?argument->GetString("objectId").ToString():"",frame->second.context==context?frame->second.context_identity:frame->second.utility_identity,native_pristine_renderer_epoch_});
     console_arguments_.emplace(handle,ConsoleRawArgument{argument->Copy(false),frame->first,session,context,bytes,false,event_sequence_+1,false});console_argument_bytes_+=bytes;
     auto metadata=CefDictionaryValue::Create();metadata->SetInt("handle",handle);metadata->SetString("guid",HandleGuid(handle));
-    suitecut::DevToolsSetString(metadata,"preview",suitecut::DevToolsTruncateWTF8(ConsolePreview(argument),8192));metadata->SetBool("node",node);metadata->SetString("frame",frame->first);return metadata;
+    suitecut::DevToolsSetString(metadata,"preview",ConsolePreview(argument));metadata->SetBool("node",node);metadata->SetString("frame",frame->first);return metadata;
   }
   void MaterializeConsoleArgument(int owner,int handle,std::function<void()> done) {
     const auto raw=console_arguments_.find(handle);const auto stored=handles_.find(handle);
@@ -141,7 +140,7 @@
         const auto fields=result?result->GetList("result"):nullptr;const auto stored=handles_.find(handle);
         if(ok&&fields&&stored!=handles_.end())for(std::size_t i=0;i<fields->GetSize();++i){const auto field=fields->GetDictionary(i);const auto value=field?field->GetDictionary("value"):nullptr;if(field&&field->GetString("name")=="value"&&value&&value->GetType("objectId")==VTYPE_STRING){stored->second.node_id=value->GetString("objectId");finish();return;}}
         Complete(owner,false,"Native console DOM argument identity was lost");
-      },std::nullopt,false,1048576,true);
+      },std::nullopt,false,kMaxResponseBytes,true);
     });
   }
   bool MaterializeConsoleArguments(int owner,Dict message,std::function<void()> done) {
@@ -151,23 +150,16 @@
   }
   void ConsoleEvent(const std::string& type,const std::string& text,Dict location,double timestamp=-1,CefRefPtr<CefListValue> arguments=nullptr,const std::string& session="",int context=0) {
     if(!ready_)return;
-    if(type.size()>64){Degraded("Native console message limit exceeded");return;}
-    // A huge message or source URL is clipped at a UTF-8 boundary, as DevTools
-    // clips what it shows, instead of closing the page.
-    const auto clip=[](std::string value,size_t limit){if(value.size()<=limit)return value;size_t end=limit;while(end&&(static_cast<unsigned char>(value[end])&0xC0)==0x80)--end;value.resize(end);return value;};
-    if(text.size()>8388608){Degraded("Native console message limit exceeded");return ConsoleEvent(type,clip(text,8388608),location,timestamp,arguments,session,context);}
     auto info=CefDictionaryValue::Create();info->SetString("type",type);suitecut::DevToolsSetString(info,"text",text);
     info->SetDouble("sequence",static_cast<double>(event_sequence_+1));WorkerConsoleMetadata(info,session);
     info->SetDouble("timestamp",timestamp>=0&&std::isfinite(timestamp)?timestamp:ConsoleWallTime());
     auto source=CefDictionaryValue::Create();const auto url=location?suitecut::DevToolsString(location->GetValue("url")):"";
-    if(url.size()>8192)Degraded("Native console source limit exceeded");
     const int line=location?std::max(0,location->GetInt("lineNumber")):0;
-    suitecut::DevToolsSetString(source,"url",clip(url,8192));source->SetInt("line",line);source->SetInt("lineNumber",line);source->SetInt("columnNumber",location?std::max(0,location->GetInt("columnNumber")):0);info->SetDictionary("location",source);
+    suitecut::DevToolsSetString(source,"url",url);source->SetInt("line",line);source->SetInt("lineNumber",line);source->SetInt("columnNumber",location?std::max(0,location->GetInt("columnNumber")):0);info->SetDictionary("location",source);
     auto metadata=CefListValue::Create();std::vector<int> retained;
-    if(arguments&&arguments->GetSize()>64)info->SetString("argumentsError","Native console argument capacity exceeded");
-    else if(arguments)for(std::size_t index=0;index<arguments->GetSize();++index) {
+    if(arguments)for(std::size_t index=0;index<arguments->GetSize();++index) {
       const auto argument=arguments->GetDictionary(index);auto handle=RetainConsoleArgument(argument,session,context);
-      if(!handle){info->SetString("argumentsError","Native console argument retention capacity or context is unavailable");break;}
+      if(!handle){info->SetString("argumentsError","Native console argument context is unavailable");break;}
       retained.push_back(handle->GetInt("handle"));metadata->SetDictionary(index,handle);
     }
     if(info->HasKey("argumentsError")) {
@@ -175,8 +167,7 @@
       if(arguments)for(std::size_t i=retained.size();i<arguments->GetSize();++i){auto value=arguments->GetDictionary(i);if(value&&value->GetType("objectId")==VTYPE_STRING){auto release=CefDictionaryValue::Create();release->SetString("objectId",value->GetString("objectId"));SendDevTools("Runtime.releaseObject",release,session);}}
     }
     info->SetList("arguments",metadata);const auto retained_json=Json(info);auto typed=CefValue::Create();typed->SetDictionary(info->Copy(false));std::string json;
-    if(!suitecut::DevToolsLosslessJSON(typed,json,24*1048576)){for(const int handle:retained){DropConsoleArgument(handle);handles_.erase(handle);}Degraded("Native console payload limit exceeded");return;}
-    if(json.size()>24*1048576){for(const int handle:retained){DropConsoleArgument(handle);handles_.erase(handle);}Degraded("Native console payload limit exceeded");return;}
+    if(!suitecut::DevToolsLosslessJSON(typed,json)){for(const int handle:retained){DropConsoleArgument(handle);handles_.erase(handle);}Degraded("Native console payload could not be serialized");return;}
     NativeTraceConsole(info,arguments);
     const auto sequence=++event_sequence_;console_journal_.Push(sequence,retained_json);ReleaseEvictedConsoleArguments();
     auto header=Header("console");header->SetDouble("sequence",static_cast<double>(sequence));JournalEvent(sequence,"console",retained_json);
@@ -194,7 +185,7 @@
   void ConsoleNavigation(){console_journal_.Navigation(event_sequence_);page_error_journal_.Navigation(event_sequence_);}
   void ClaimConsoleArguments(int reply_id,Dict message) {
     const auto ids=message->GetList("handles");
-    if(!ids||ids->GetSize()>64){writer_.Reply(reply_id,false,"Invalid native console argument claim");return;}
+    if(!ids){writer_.Reply(reply_id,false,"Invalid native console argument claim");return;}
     for(std::size_t index=0;index<ids->GetSize();++index)if(ids->GetType(index)!=VTYPE_INT||ids->GetInt(index)<1){writer_.Reply(reply_id,false,"Invalid native console argument claim");return;}
     for(std::size_t index=0;index<ids->GetSize();++index){const auto found=console_arguments_.find(ids->GetInt(index));if(found!=console_arguments_.end())found->second.claimed=true;WorkerConsoleClaim(ids->GetInt(index));}
     writer_.Reply(reply_id,true);
@@ -214,5 +205,5 @@
     if(filter!="all"&&filter!="since-navigation"){Complete(owner,false,"Unknown native console journal filter");return;}
     auto list=CefListValue::Create();const auto records=(action=="errors"?page_error_journal_:console_journal_).Read(filter=="all");
     for(std::size_t index=0;index<records.size();++index){const auto value=CefParseJSON(records[index],JSON_PARSER_RFC);if(value)list->SetValue(index,value);}
-    auto value=CefValue::Create();value->SetList(list);std::string public_json;if(!suitecut::DevToolsLosslessJSON(value,public_json,8*1048576)){Complete(owner,false,"Native console journal output limit exceeded");return;}Complete(owner,true,"",public_json);
+    auto value=CefValue::Create();value->SetList(list);std::string public_json;if(!suitecut::DevToolsLosslessJSON(value,public_json)){Complete(owner,false,"Native console journal could not be serialized");return;}Complete(owner,true,"",public_json);
   }

@@ -39,17 +39,19 @@ int main(){
  assert(requests.Lookup(1,false,"http://a/same",0).classification==Class::document);
  auto redirects=requests.Begin(1,15,"bounded",true,"GET","http://a/0");
  for(int index=1;index<100;++index)requests.Redirect(redirects,"http://a/"+std::to_string(index));
+ // No redirect-chain cap: every redirect URL is retained.
  assert(requests.Lookup(1,true,"http://a/31",0).present);
- assert(!requests.Lookup(1,true,"http://a/32",0).present);
+ assert(requests.Lookup(1,true,"http://a/99",0).present);
  requests.PageClosed(1);assert(requests.Size()==0);
  auto longurl=requests.Begin(1,16,"main",true,"GET",std::string(9000,'x'));
- assert(!requests.Lookup(1,true,std::string(9000,'x'),0).present);requests.End(longurl);
+ assert(requests.Lookup(1,true,std::string(9000,'x'),0).present);requests.End(longurl);
  requests.Clear();assert(requests.Size()==0);
- assert(!requests.Begin(1,17,std::string(129,'x'),true,"GET","http://a/") );
+ assert(requests.Begin(1,17,std::string(129,'x'),true,"GET","http://a/") );requests.Clear();
  auto worker=[&requests](int page){for(int index=0;index<10000;++index){auto entry=requests.Begin(page,index,"frame",true,"GET","http://a/thread");if(entry){requests.Response(entry,"http://a/thread",true);requests.End(entry);}requests.Lookup(page,true,"http://a/thread",0);}};
  std::thread first(worker,2),second(worker,3);first.join();second.join();
- assert(requests.Size()<=Requests::kCapacity);requests.Clear();
- for(size_t index=0;index<Requests::kCapacity;++index)assert(requests.Begin(4,index,"frame",true,"GET","http://a/full"));
- assert(!requests.Begin(4,999,"frame",true,"GET","http://a/full"));
+ assert(requests.Size()==20000);requests.Clear();
+ // No retention cap: entries past the old 512 are admitted and kept until page close.
+ for(size_t index=0;index<1024;++index)assert(requests.Begin(4,index,"frame",true,"GET","http://a/full"));
+ assert(requests.Begin(4,999,"frame",true,"GET","http://a/full"));assert(requests.Size()==1025);
  requests.PageClosed(4);assert(requests.Size()==0);
 }

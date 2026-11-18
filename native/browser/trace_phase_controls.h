@@ -31,7 +31,7 @@ class TracePhaseControls final:public std::enable_shared_from_this<TracePhaseCon
   };
   explicit TracePhaseControls(Hooks hooks):hooks_(std::move(hooks)){}
   bool Submit(Request request,Done done={}){
-    if(closed_||request.scope.context<1||!request.scope.session||!request.scope.chunk||!request.call||request.call>9007199254740991ULL||(!request.screen&&!request.aria)||!std::isfinite(request.deadline)||request.deadline<=hooks_.now()||(request.phase!="before"&&request.phase!="action"&&request.phase!="after")||next_>=9007199254740991ULL||jobs_.size()>=32)return false;
+    if(closed_||request.scope.context<1||!request.scope.session||!request.scope.chunk||!request.call||request.call>9007199254740991ULL||(!request.screen&&!request.aria)||!std::isfinite(request.deadline)||request.deadline<=hooks_.now()||(request.phase!="before"&&request.phase!="action"&&request.phase!="after")||next_>=9007199254740991ULL)return false;
     request.token=++next_;const auto token=request.token;jobs_.emplace(token,Job{std::move(request),std::move(done)});queue_.push_back(token);if(hooks_.wake)hooks_.wake();Pump();return true;
   }
   bool Pending(int context)const{for(const auto& [token,job]:jobs_)if(job.request.scope.context==context)return true;return false;}
@@ -47,7 +47,7 @@ class TracePhaseControls final:public std::enable_shared_from_this<TracePhaseCon
   void Finish(uint64_t token,bool ok,Result result,const std::string& error){
     const auto found=jobs_.find(token);if(found==jobs_.end())return;const auto request=found->second.request;std::string failure=error;if(hooks_.now()>=request.deadline){ok=false;failure="Native trace phase capture deadline expired";}auto done=std::exchange(found->second.done, nullptr);
     if(hooks_.current(request.scope)){
-      if(ok&&((request.screen&&(result.png.empty()||result.png.size()>8*1048576))||(request.aria&&(result.aria.empty()||result.aria.size()>8*1048576)))){ok=false;failure="Native trace phase payload byte limit exceeded";}
+      if(ok&&((request.screen&&result.png.empty())||(request.aria&&result.aria.empty()))){ok=false;failure="Native trace phase payload is empty";}
       if(ok)hooks_.captured(request,std::move(result));else if(!failure.empty())hooks_.error(request.scope,failure);
     }
     jobs_.erase(token);queue_.erase(std::remove(queue_.begin(),queue_.end(),token),queue_.end());if(done)done();Pump();if(hooks_.wake)hooks_.wake();
@@ -55,7 +55,6 @@ class TracePhaseControls final:public std::enable_shared_from_this<TracePhaseCon
   void Pump(){
     if(pumping_){return;}pumping_=true;
     for(const auto token:std::vector<uint64_t>(queue_.begin(),queue_.end())){
-      size_t issued=0;for(const auto& [id,job]:jobs_)issued+=job.issued;if(issued>=2)break;
       const auto found=jobs_.find(token);if(found==jobs_.end()||found->second.issued)continue;
       const auto request=found->second.request;if(!hooks_.current(request.scope)||hooks_.now()>=request.deadline)continue;
       found->second.issued=true;const auto weak=weak_from_this();const bool accepted=hooks_.read(request,[weak,token](bool ok,Result result,const std::string& error){if(const auto self=weak.lock())self->Finish(token,ok,std::move(result),error);});

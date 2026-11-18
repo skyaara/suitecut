@@ -27,7 +27,6 @@ class NativeLocatorHandlerAsyncWork {
     auto& state=State();std::lock_guard lock(state.mutex);
     auto found=state.pending.find(origin_.locator_handler_invocation);
     if(found==state.pending.end()) {
-      if(state.pending.size()>=64)std::terminate();
       state.pending.emplace(origin_.locator_handler_invocation,1);
     } else {
       if(found->second==std::numeric_limits<size_t>::max())std::terminate();

@@ -19,8 +19,8 @@ int main(){assert(cef_api_hash(CEF_API_VERSION,0));std::string error;
   invalid(R"JSON({"kind":"attribute","query":[{"engine":"alt","text":"Actual","exact":false}]})JSON");invalid(R"JSON({"kind":"attribute","query":[{"engine":"alt","text":"Actual","exact":"true"}]})JSON");
   invalid(R"JSON({"kind":"role","query":[{"engine":"role","role":"button","name":{"pattern":"Actual","flags":""}}]})JSON");
   invalid(R"JSON({"kind":"role","query":[{"engine":"role","role":"forged role","name":{"text":"Actual","exact":true}}]})JSON");
-  invalid(R"JSON({"kind":"path","query":[]})JSON");std::string many="{\"kind\":\"path\",\"query\":[";for(int i=0;i<65;++i){if(i)many+=',';many+=R"JSON({"engine":"css","selector":"button"})JSON";}many+="]}";invalid(many);
-  invalid(std::string(32769,'x'));invalid("{\"kind\":\"id\",\"query\":[{\"engine\":\"css\",\"selector\":\"#"+std::string(16400,'x')+"\"}]}");
+  invalid(R"JSON({"kind":"path","query":[]})JSON");std::string many="{\"kind\":\"path\",\"query\":[";for(int i=0;i<65;++i){if(i)many+=',';many+=R"JSON({"engine":"css","selector":"button"})JSON";}many+="]}";valid(many);
+  invalid(std::string(32769,'x'));valid("{\"kind\":\"id\",\"query\":[{\"engine\":\"css\",\"selector\":\"#"+std::string(40000,'x')+"\"}]}");
   invalid(R"JSON({"kind":"testId","query":[{"engine":"testId","attribute":"data-real","text":{"__suitecutNativeUTF16Scalar":"d800"},"exact":true}]})JSON");
   std::cout<<"PASS16 controlled real-CEF normalized builtin AST shape/byte/engine/Unicode/tag-collision groups; no browser identity or installed normalization claim\n";
 }

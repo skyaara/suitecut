@@ -65,10 +65,10 @@ const EvaluationSchema = z.object({
 })
 const HandleSchema = z.strictObject({
   handle: z.number().int().positive(),
-  guid: z.string().min(1).max(256),
-  preview: z.string().max(8192),
+  guid: z.string().min(1),
+  preview: z.string(),
   node: z.literal(false),
-  worker: z.string().min(1).max(128),
+  worker: z.string().min(1),
   workerControl: NativeWorkerControlSchema.optional(),
 })
 function functionBody(fn: { toString(): string } | string): string {
@@ -544,9 +544,7 @@ export class NativeWorkerHandle {
   async getProperties(): Promise<Map<string, NativeWorkerHandle>> {
     const names = await this.evaluate((value) => {
       if (value === null || (typeof value !== 'object' && typeof value !== 'function')) return []
-      const names = Object.keys(value)
-      if (names.length > 1024) throw new Error('Native worker property capacity exceeded')
-      return names
+      return Object.keys(value)
     })
     const properties = new Map<string, NativeWorkerHandle>()
     try {
@@ -666,18 +664,11 @@ export class NativeWorkerEvents {
   private retainObserved(worker: NativeWorker): void {
     for (const [id, reference] of this.observedWorkers)
       if (!reference.deref()) this.observedWorkers.delete(id)
-    if (!this.observedWorkers.has(worker.info.id) && this.observedWorkers.size >= 1024)
-      throw new Error('Native observed worker identity capacity exceeded')
     this.attachLifecycle()
     this.observedWorkers.set(worker.info.id, new WeakRef(worker))
   }
   private rememberClosed(worker: NativeWorker): void {
     this.closedWorkers.set(worker.info.id, new WeakRef(worker))
-    while (this.closedWorkers.size > 1024) {
-      const oldest = this.closedWorkers.keys().next().value
-      if (oldest === undefined) break
-      this.closedWorkers.delete(oldest)
-    }
   }
   private detachSettledLifecycle(): void {
     if (!this.logicallyAborted) return
@@ -845,9 +836,6 @@ export class NativeWorkerEvents {
     for (const [id, reference] of this.observedWorkers)
       if (!reference.deref()) this.observedWorkers.delete(id)
     // A retained observation must keep receiving genuine lifecycle events.
-    // Do not evict a live object merely to admit a new target.
-    if (this.observedWorkers.size >= 1024)
-      throw new Error('Native observed worker identity capacity exceeded')
     const worker = new NativeWorker(this.owner, info)
     this.retainObserved(worker)
     return worker

@@ -24,7 +24,7 @@ struct Harness{
    // with a fixed-width leading range and translates it on the next receipt.
    if(expire)now=100;
    if(change)current=false;
-   if(malformed)page.count=65;
+   if(malformed)page.json="{}";
    return true;
   };
   // Replace numeric fixture adapter with lexically ordered real positions.
@@ -45,6 +45,6 @@ int main(){size_t groups=0;
  {Harness h;std::string json,error;h.change=true;assert(!h.Read("",json,error)&&h.scripts->Retained()==0);++groups;}
  {Harness h;std::string json,error;h.malformed=true;assert(!h.Read("",json,error)&&h.scripts->Retained()==0);++groups;}
  {Harness h;std::string json,error;h.records=0;assert(h.Read("",json,error)&&json=="{\"scripts\":[]}"&&h.scripts->Retained()==0);++groups;}
- {Harness h;h.records=100000;std::string json,error,cursor;for(size_t i=0;i<256;++i){assert(h.Read(cursor,json,error));cursor=Next(json);assert(!cursor.empty());}assert(h.scripts->Retained()==256&&!h.Read(cursor,json,error));assert(error.find("capacity")!=std::string::npos);Harness other("other");assert(!other.Read("",json,error)&&Scripts::ProcessRetained()==256);h.scripts->Clear();assert(Scripts::ProcessRetained()==0&&other.Read("",json,error));++groups;}
+ {Harness h;h.records=100000;std::string json,error,cursor;for(size_t i=0;i<300;++i){assert(h.Read(cursor,json,error));cursor=Next(json);assert(!cursor.empty());}assert(h.scripts->Retained()==300&&Scripts::ProcessRetained()==300);h.scripts->Clear();assert(Scripts::ProcessRetained()==0);++groups;}
  assert(Scripts::ProcessRetained()==0);std::cout<<"developer script positions "<<groups<<" groups passed\n";
 }

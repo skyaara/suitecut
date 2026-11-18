@@ -50,7 +50,7 @@ class NativeNetworkArchives {
   }
   bool Active(int context)const{return !closed_&&(recording_.Active(context)||traces_.contains(context));}
   bool Attach(int context,const std::string&owner,BodyFetch fetch,OwnerKind kind=OwnerKind::Page){
-    if(closed_||owners_.contains(owner)||owners_.size()>=192||!fetch)return false;
+    if(closed_||owners_.contains(owner)||!fetch)return false;
     if(!recording_.Attach(context,owner,fetch,kind))return false;
     if(!tracing_.Attach(context,owner,std::move(fetch),kind)){recording_.Detach(owner);return false;}
     owners_.insert(owner);return true;

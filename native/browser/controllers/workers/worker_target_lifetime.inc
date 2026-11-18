@@ -8,7 +8,6 @@ void NativeWorkerTargetDiscoveryStart(){
   native_worker_discovery_started_=true;
   worker_channel_detached_=[this](const WorkerTarget& target){
     if(!target.published&&!target.observed)return false;
-    if(!native_detached_workers_.contains(target.id)&&native_detached_workers_.size()>=1024){NetworkFatal("Native detached worker lifetime capacity exceeded");return false;}
     native_detached_workers_[target.id]=target;return true;
   };
   auto params=CefDictionaryValue::Create();params->SetBool("discover",true);
@@ -29,7 +28,7 @@ void NativeWorkerCloseWaiters(const WorkerTarget& target){
 }
 bool NativeWorkerTargetDestroyed(Dict actual){
   if(!native_worker_discovery_started_||!actual||actual->GetType("targetId")!=VTYPE_STRING)return false;
-  const auto id=actual->GetString("targetId").ToString();if(id.empty()||id.size()>128)return false;
+  const auto id=actual->GetString("targetId").ToString();if(id.empty())return false;
   if(const auto current=worker_targets_.find(id);current!=worker_targets_.end()){
     // This exact owned target was destroyed, independently of Inspector detach.
     // Capture its actual session before the existing physical teardown mutates it.

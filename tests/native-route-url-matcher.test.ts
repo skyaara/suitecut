@@ -181,11 +181,14 @@ describe('actual authored route URL matcher bridge', () => {
     expect(settled).toBe(false)
     policy.dispose()
   })
-  it('bounds live registration metadata and releases quota exactly once', () => {
+  it('admits live registrations past the old 1024 cap and disposes each one idempotently', () => {
     const policies: NativeRouteURLMatcherPolicy[] = []
     try {
-      for (let i = 0; i < 1024; ++i) policies.push(new NativeRouteURLMatcherPolicy(() => true))
-      expect(() => new NativeRouteURLMatcherPolicy(() => true)).toThrow('capacity')
+      for (let i = 0; i < 1025; ++i) policies.push(new NativeRouteURLMatcherPolicy(() => true))
+      expect(policies.every((policy) => policy.host)).toBe(true)
+      const long = 'x'.repeat(8193)
+      policies.push(new NativeRouteURLMatcherPolicy(long))
+      expect(policies.at(-1)?.nativePattern).toBe(long)
     } finally {
       for (const policy of policies) {
         policy.dispose()

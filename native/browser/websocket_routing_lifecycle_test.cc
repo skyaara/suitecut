@@ -42,11 +42,16 @@ class RoutingLifecycle {
     if(reject_dispatch){reply(false,"Native network command dispatch failed");return;}
     calls.push_back({std::move(reply)});
   }
-  void DevTools(int,const std::string&,Dict,std::function<void(bool,const std::string&)>,std::optional<std::string>,bool,size_t){}
+  std::vector<Dict> commands;
+  void DevTools(int,const std::string&,Dict params,std::function<void(bool,const std::string&)>,std::optional<std::string>,bool){commands.push_back(params);}
 #include "controllers/network/websocket_routing.inc"
   void Enable(int id){operations_.live[id]=1;auto input=CefDictionaryValue::Create();input->SetString("action","routeEnable");NativeWebSocketRouteCommand(id,1,input);}
   void Disable(int id){operations_.live[id]=1;auto input=CefDictionaryValue::Create();input->SetString("action","routeDisable");input->SetString("routingToken",std::to_string(native_routed_epoch_));NativeWebSocketRouteCommand(id,1,input);}
-  static std::string Supported(){return "{\"revision\":1,\"maxSockets\":128,\"maxPendingMessages\":64,\"maxPendingBytes\":2097152}";}
+  static std::string Supported(){return "{\"revision\":1}";}
+  void Routed(const std::string& request,const std::string& stage,const std::string& message="",const std::string& payload="",int opcode=0){
+    auto e=CefDictionaryValue::Create();e->SetString("requestId",request);e->SetString("stage",stage);e->SetString("url",stage=="created"?"wss://example.test/"+request:"");
+    e->SetString("messageId",message);e->SetBool("outgoing",false);e->SetInt("opcode",opcode);e->SetString("payloadBase64",payload);NativeWebSocketRouteEvent(e,"");
+  }
   void Ack(size_t index,bool ok=true,const std::string& value=Supported()){auto done=std::move(calls.at(index).reply);assert(done);done(ok,value);}
 };
 int main(){
@@ -94,5 +99,18 @@ int main(){
   {
     RoutingLifecycle h;h.Enable(1);h.Ack(0,false,"{\"code\":-32601,\"message\":\"Method not found\"}");
     assert(!h.retired&&!h.native_routed_configuring_&&!h.results.at(1)&&h.calls.size()==1);
+  }
+  {
+    // Socket counts, queue depth, id/URL/payload/reason sizes are not ours to bound.
+    RoutingLifecycle h;h.Enable(1);h.Ack(0);assert(h.results.at(1)&&h.native_routed_active_);
+    for(int i=0;i<200;++i)h.Routed("socket-"+std::to_string(i)+std::string(200,'r'),"created");
+    std::vector<uint8_t> big(3*1048576+1,0x5a);const std::string encoded=CefBase64Encode(big.data(),big.size()).ToString();
+    h.Routed("socket-0"+std::string(200,'r'),"message",std::string(64,'m'),encoded,2);
+    assert(h.native_routed_failure_.empty()&&h.native_routed_active_&&h.native_routed_sockets_.size()==200&&h.native_routed_events_.size()==201);
+    assert(h.native_routed_events_.back().data->GetString("payloadBase64").ToString()==encoded);
+    h.operations_.live[2]=1;auto command=CefDictionaryValue::Create();command->SetString("action","routeCommand");command->SetString("routingToken",std::to_string(h.native_routed_epoch_));
+    command->SetString("requestId","socket-0"+std::string(200,'r'));command->SetString("operation","close");command->SetString("messageId",std::string(64,'m'));command->SetString("payloadBase64",encoded);command->SetString("reason",std::string(200,'x'));
+    h.NativeWebSocketRouteCommand(2,1,command);assert(!h.results.contains(2)&&h.commands.size()==1);
+    assert(h.commands.back()->GetString("reason").ToString().size()==200&&h.commands.back()->GetString("payloadBase64").ToString()==encoded);
   }
 }

@@ -260,7 +260,7 @@ describe('native browser lifecycle', () => {
     await browser.closed
   })
 
-  it.each([0, -1, 121, 29.97, Number.NaN, Number.POSITIVE_INFINITY])(
+  it.each([0, -1, 29.97, Number.NaN, Number.POSITIVE_INFINITY])(
     'rejects invalid capture FPS %s before spawning',
     async (fps) => {
       await expect(
@@ -365,7 +365,8 @@ describe('native browser lifecycle', () => {
     const lostCheck = expect(lost).rejects.toThrow('renderer terminated')
     const childFailure = expect(second.failure).rejects.toThrow('renderer terminated')
     const healthy = browser.sendDevToolsCommand('Runtime.evaluate')
-    input.read()
+    // Each write is its own readable chunk; discard both the lost and healthy commands.
+    while (input.read() !== null);
     let closed = false
     void second.closed.then(() => {
       closed = true
@@ -660,7 +661,7 @@ describe('native browser lifecycle', () => {
     await browser.closed
   })
 
-  it('writes commands of any size whole and bounds command count', async () => {
+  it('writes commands of any size whole and sends commands past the old pending cap', async () => {
     const browser = await launch()
     const big = browser
       .sendDevToolsCommand('Runtime.evaluate', { expression: 'x'.repeat(8 * 1024 * 1024) })
@@ -670,10 +671,14 @@ describe('native browser lifecycle', () => {
     expect(line.endsWith('\n')).toBe(true)
     expect(line.indexOf('\n')).toBe(line.length - 1)
     expect(line).toContain('x'.repeat(8 * 1024 * 1024))
-    const pending = Array.from({ length: 64 }, () =>
+    const pending = Array.from({ length: 200 }, () =>
       browser.sendDevToolsCommand('Runtime.evaluate').catch(() => undefined),
     )
-    await expect(browser.sendDevToolsCommand('Runtime.evaluate')).rejects.toThrow('Too many')
+    let sent = ''
+    await vi.waitFor(() => {
+      for (let chunk; (chunk = input.read() as Buffer | null) !== null;) sent += chunk.toString()
+      expect(sent.split('\n').filter(Boolean)).toHaveLength(200)
+    })
     await browser.close()
     await Promise.all([...pending, big])
   })
@@ -698,10 +703,28 @@ describe('native browser lifecycle', () => {
     await browser.close()
   })
 
+  it('launches physical frames past the old 3840x2160 cap with any positive device scale', async () => {
+    const promise = launchNativeBrowser({
+      executablePath: path,
+      width: 3840,
+      height: 2160,
+      deviceScaleFactor: 2.5,
+    })
+    await vi.waitFor(() => expect(spawn).toHaveBeenCalled())
+    expect(vi.mocked(spawn).mock.calls[0]?.[1]).toContain('--suitecut-scale=2.5')
+    emit({ type: 'ready', timestampMs: 1, cefVersion: 'test' })
+    const browser = await promise
+    await browser.close()
+  })
+
   it('does not spawn for invalid physical dimensions or an already aborted signal', async () => {
-    await expect(
-      launchNativeBrowser({ executablePath: path, width: 3840, deviceScaleFactor: 2 }),
-    ).rejects.toThrow()
+    for (const invalid of [
+      { width: 1 },
+      { width: 3840.5 },
+      { deviceScaleFactor: 0 },
+      { deviceScaleFactor: Number.NaN },
+    ])
+      await expect(launchNativeBrowser({ executablePath: path, ...invalid })).rejects.toThrow()
     await expect(
       launchNativeBrowser({ executablePath: path, signal: AbortSignal.abort() }),
     ).rejects.toThrow()

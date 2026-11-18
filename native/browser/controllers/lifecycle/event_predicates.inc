@@ -7,19 +7,18 @@
     if(websocket_predicates_.contains(id)){PollWebSocketPredicate(id,generation);return;}
     if(event_predicates_.Pending(id,generation))return;
     const auto cursor=event_predicates_.Cursor(id,generation);if(!cursor)return;
-    if(!event_history_.empty()&&*cursor<event_history_.front().sequence-1){Complete(id,false,"Native event journal cursor expired during host predicate");return;}
     const auto first=std::upper_bound(event_history_.begin(),event_history_.end(),*cursor,[](std::uint64_t value,const auto& record){return value<record.sequence;});
     for(auto record_it=first;record_it!=event_history_.end();++record_it) {
       const auto& record=*record_it;
       const auto result=event_predicates_.Offer(id,generation,record.sequence,record.event,record.json);
-      if(result==SuiteCutEventPredicateController::Status::PayloadCapacity){Complete(id,false,"Native event predicate payload capacity exceeded");return;}
+      if(result==SuiteCutEventPredicateController::Status::InvalidPayload){Complete(id,false,"Native event predicate payload or sequence is invalid");return;}
       if(result!=SuiteCutEventPredicateController::Status::CandidateReady)continue;
       const auto candidate=event_predicates_.Pending(id,generation);if(!candidate)return;
       auto header=Header("eventpredicate");header->SetInt("id",id);header->SetDouble("generation",static_cast<double>(generation));
       header->SetDouble("token",static_cast<double>(candidate->token));header->SetDouble("sequence",static_cast<double>(candidate->sequence));
       header->SetString("clientToken",candidate->client_token);header->SetString("event",candidate->event);
       std::string public_json=candidate->json;
-      if((candidate->event=="console"||candidate->event=="pageerror")){const auto value=CefParseJSON(candidate->json,JSON_PARSER_RFC);public_json.clear();if(!value||!suitecut::DevToolsLosslessJSON(value,public_json,SuiteCutEventPredicateController::kMaxPayload)){Complete(id,false,"Native runtime event predicate output limit exceeded");return;}}
+      if((candidate->event=="console"||candidate->event=="pageerror")){const auto value=CefParseJSON(candidate->json,JSON_PARSER_RFC);public_json.clear();if(!value||!suitecut::DevToolsLosslessJSON(value,public_json)){Complete(id,false,"Native runtime event predicate output could not be serialized");return;}}
       SendPacket(header,std::vector<uint8_t>(public_json.begin(),public_json.end()));return;
     }
   }
@@ -33,7 +32,7 @@
       if((type!=VTYPE_INT&&type!=VTYPE_DOUBLE)||!std::isfinite(value)||value<0||std::floor(value)!=value||value>static_cast<double>(event_sequence_)){Complete(id,false,"Invalid native event predicate cursor");return;}
       after=static_cast<std::uint64_t>(value);
     }
-    if(config->GetType("clientToken")!=VTYPE_STRING||!event_predicates_.Start(id,generation,config->GetString("clientToken"),event,after)){Complete(id,false,"Native event predicate capacity or identity is invalid");return;}
+    if(config->GetType("clientToken")!=VTYPE_STRING||!event_predicates_.Start(id,generation,config->GetString("clientToken"),event,after)){Complete(id,false,"Native event predicate identity is invalid");return;}
     if(event=="crash")crash_wait_owners_.insert(id);
     PollEventPredicate(id,generation);
   }
@@ -48,6 +47,6 @@
     if(decision==SuiteCutEventPredicateController::Decision::Stale){writer_.Reply(reply_id,false,"Native event predicate continuation is stale");return;}
     writer_.Reply(reply_id,true);
     if(operations_.IsExpired(target,generation,Now())){Complete(target,false,"Native event predicate Timeout exceeded");return;}
-    if(decision==SuiteCutEventPredicateController::Decision::Matched){if(console){const auto value=CefParseJSON(json,JSON_PARSER_RFC);json.clear();if(!value||!suitecut::DevToolsLosslessJSON(value,json,SuiteCutEventPredicateController::kMaxPayload)){Complete(target,false,"Native runtime event predicate output limit exceeded");return;}}Complete(target,true,"",json);}
+    if(decision==SuiteCutEventPredicateController::Decision::Matched){if(console){const auto value=CefParseJSON(json,JSON_PARSER_RFC);json.clear();if(!value||!suitecut::DevToolsLosslessJSON(value,json)){Complete(target,false,"Native runtime event predicate output could not be serialized");return;}}Complete(target,true,"",json);}
     else PollEventPredicate(target,generation);
   }

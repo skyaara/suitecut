@@ -232,10 +232,7 @@ async function observeNativeAssertion(
     if (options.useInnerText && node instanceof HTMLElement) return node.innerText
     const parts: string[] = [],
       stack: Node[] = [node]
-    let visited = 0
     while (stack.length) {
-      if (++visited > 100_000)
-        throw new Error('Native assertion text traversal exceeds 100000 nodes')
       const current = stack.pop()
       if (!current) break
       if (current.nodeType === Node.TEXT_NODE) parts.push(current.nodeValue ?? '')
@@ -608,10 +605,10 @@ const optionsSchema = z.strictObject({
   indeterminate: z.boolean().optional(),
   attached: z.boolean().optional(),
   ratio: z.number().min(0).max(1).optional(),
-  pseudo: z.string().min(1).max(256).optional(),
+  pseudo: z.string().min(1).optional(),
 })
 const observationSchema = z.object({
-  closedReason: z.string().max(8192).optional(),
+  closedReason: z.string().optional(),
   result: z
     .object({
       value: z
@@ -619,7 +616,7 @@ const observationSchema = z.object({
           matches: z.boolean(),
           actual: z.unknown(),
           count: z.number().int().min(0).optional(),
-          preview: z.string().max(1024).optional(),
+          preview: z.string().optional(),
           truncated: z.boolean().optional(),
         })
         .optional(),

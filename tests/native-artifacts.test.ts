@@ -119,10 +119,11 @@ describe('native artifact boundaries', () => {
     )
   })
 
-  it('bounds custom print geometry before allocating native output', async () => {
+  it('rejects empty print geometry but passes large geometry to the native engine', async () => {
     const run = vi.fn().mockResolvedValue({ data: pdf.toString('base64') })
-    await expect(printNativePDF(run, { width: '100000in' })).rejects.toThrow('200 inches')
     await expect(printNativePDF(run, { height: 0 })).rejects.toThrow('greater than zero')
     expect(run).not.toHaveBeenCalled()
+    await printNativePDF(run, { width: '100000in' })
+    expect(run).toHaveBeenCalledWith(expect.objectContaining({ paperWidth: 100000 }))
   })
 })

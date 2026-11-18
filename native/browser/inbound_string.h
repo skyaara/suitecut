@@ -26,7 +26,7 @@ inline bool InboundString(CefRefPtr<CefDictionaryValue> value,const std::string&
 inline std::string InboundString(CefRefPtr<CefDictionaryValue> value,const std::string& key){std::string out;InboundString(value,key,out);return out;}
 inline std::string InboundQuote(const std::string& value){
   auto dict=CefDictionaryValue::Create();DevToolsSetString(dict,"v",value);auto scalar=dict->GetValue("v");std::string out;
-  return DevToolsLosslessJSON(scalar,out,1048576)?out:std::string();
+  return DevToolsLosslessJSON(scalar,out,std::numeric_limits<size_t>::max())?out:std::string();
 }
 inline std::string InboundDisplay(const std::string& text){
   auto dict=CefDictionaryValue::Create();DevToolsSetString(dict,"v",text);std::u16string units;

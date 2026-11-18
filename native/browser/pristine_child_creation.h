@@ -11,7 +11,7 @@ class PristineChildCreation {
  public:
   PristineChildCreation()=default;
   PristineChildCreation(bool actual_waiting,std::string frame,double original_deadline)
-      :frame_(std::move(frame)),deadline_(original_deadline),valid_(actual_waiting&&!frame_.empty()&&frame_.size()<=128&&std::isfinite(deadline_)&&deadline_>0),held_(valid_){}
+      :frame_(std::move(frame)),deadline_(original_deadline),valid_(actual_waiting&&!frame_.empty()&&std::isfinite(deadline_)&&deadline_>0),held_(valid_){}
   bool BindLease(uint64_t actual_lease){
     if(!valid_||consumed_||!actual_lease||(lease_&&lease_!=actual_lease))return false;
     lease_=actual_lease;return true;
@@ -30,7 +30,7 @@ class PristineChildCreation {
   bool Held()const{return held_;}
  private:
   bool Current(const std::string&frame,const std::string&identity,uint64_t lease,double now)const{
-    return valid_&&!consumed_&&lease_&&lease_==lease&&frame_==frame&&!identity.empty()&&identity.size()<=256&&std::isfinite(now)&&now<deadline_;
+    return valid_&&!consumed_&&lease_&&lease_==lease&&frame_==frame&&!identity.empty()&&std::isfinite(now)&&now<deadline_;
   }
   std::string frame_,identity_;
   double deadline_=0;uint64_t lease_=0;

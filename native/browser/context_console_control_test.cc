@@ -23,8 +23,13 @@ int main() {
   assert(controls.Wait(5,3,1,0,[&](bool ok,Controls::Dict record,const std::string& error){assert(!ok&&!record&&error.find("closed")!=std::string::npos);++replies;}));
   controls.Closed(2);assert(controls.records()==0&&controls.waiters()==1);controls.Closed(3);assert(controls.waiters()==0&&replies==4);
   for(int i=0;i<600;++i){assert(controls.Observe(4,8,console));}
-  assert(controls.records()==512&&controls.bytes()<=8388608);
-  assert(controls.Wait(6,4,0,0,[&](bool ok,Controls::Dict record,const std::string& error){assert(!ok&&!record&&error.find("capacity")!=std::string::npos);++replies;}));
+  // No journal count or byte cap: nothing is evicted until the context closes.
+  assert(controls.records()==600);
+  auto large=CefDictionaryValue::Create();large->SetDouble("sequence",1);large->SetString("text",std::string(2*1048576,'x'));
+  assert(controls.Observe(4,8,large));assert(controls.records()==601&&controls.bytes()>2*1048576);
+  assert(controls.Wait(6,4,0,0,[&](bool ok,Controls::Dict record,const std::string& error){assert(ok&&record->GetDouble("sequence")==2&&error.empty());++replies;}));
+  for(int owner=100;owner<300;++owner)assert(controls.Wait(owner,4,controls.sequence(),0,[](bool,Controls::Dict,const std::string&){}));
+  assert(controls.waiters()==200);
   assert(!controls.Wait(6,4,controls.sequence()+1,0,reply));
   controls.Clear();assert(controls.waiters()==0&&controls.records()==0&&controls.bytes()==0);
   Controls worker_controls([](Controls::Dict record){assert(record->GetType("pageId")==VTYPE_NULL&&record->GetInt("contextId")==11);});

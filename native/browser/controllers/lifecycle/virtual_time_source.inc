@@ -69,7 +69,7 @@ void NativeVirtualTimeRendererTerminated(){
   for(const auto id:crash_wait_owners_)if(const auto operation=operations_.Get(id))
     owners.push_back({id,operation->generation,operation->deadline_ms});
   if(!native_virtual_time_close_fence_.RendererTerminated(owners,Now())){
-    if(closed_reason_.empty())closed_reason_="Native virtual-time crash close observer capacity or identity failed";
+    if(closed_reason_.empty())closed_reason_="Native virtual-time crash close observer identity failed";
   }
   native_virtual_time_->TargetChanged();
 }
@@ -94,7 +94,7 @@ void NativeVirtualTimeDispatch(const suitecut::NativeVirtualTime::Dispatch& call
     if(ok&&call.kind==Kind::ObservePerformance){
       auto value=CefParseJSON(json,JSON_PARSER_RFC);auto data=value?value->GetDictionary():nullptr;
       auto metrics=data?data->GetList("metrics"):nullptr;
-      if(metrics&&metrics->GetSize()<=128)for(size_t i=0;i<metrics->GetSize();++i){
+      if(metrics)for(size_t i=0;i<metrics->GetSize();++i){
         auto metric=metrics->GetDictionary(i);
         if(metric&&metric->GetString("name")=="Timestamp"&&(metric->GetType("value")==VTYPE_DOUBLE||metric->GetType("value")==VTYPE_INT)){
           const double measured=metric->GetType("value")==VTYPE_INT?metric->GetInt("value"):metric->GetDouble("value");
@@ -188,7 +188,7 @@ void NativeVirtualTimeCommand(int id,uint64_t generation,Dict message){
   }
   EnsureNativeVirtualTime();const auto operation=operations_.Get(id);
   if(!operation||!native_virtual_time_->Begin({id,generation,kind,value,operation->deadline_ms==0?std::numeric_limits<double>::max():operation->deadline_ms,context},Now())){
-    Complete(id,false,"Invalid native virtual-time request, expired deadline, or 64-owner capacity exceeded");return;
+    Complete(id,false,"Invalid native virtual-time request, expired deadline, or duplicate owner");return;
   }
   WakeDeadlines();
 }

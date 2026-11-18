@@ -26,8 +26,8 @@ int main(int argc,char** argv) {
   auto removed=registry.Match("https://native.test/original");registry.Remove("late");
   assert(registry.Next(removed)->registration=="old");assert(!registry.Next(removed));
   registry.Clear();
-  for(int i=0;i<256;++i)assert(registry.Register(std::to_string(i),"**/*",0));
-  assert(!registry.Register("overflow","**/*",0));assert(!registry.Register("0","**/*",0));
+  for(int i=0;i<1000;++i)assert(registry.Register(std::to_string(i),"**/*",0));
+  assert(registry.Register(std::string(300,'x'),"https://native.test/"+std::string(8000,'p'),0));assert(registry.size()==1001);assert(!registry.Register("0","**/*",0));
   registry.Clear();
   assert(registry.Register("page-old","**/*",0));assert(registry.Register("context-old","**/*",0,true));assert(registry.Register("page-new","**/*",0));assert(registry.Register("context-new","**/*",0,true));
   auto scoped=registry.Match("https://native.test/original");for(const auto*id:{"page-new","page-old","context-new","context-old"})assert(registry.Next(scoped)->registration==id);

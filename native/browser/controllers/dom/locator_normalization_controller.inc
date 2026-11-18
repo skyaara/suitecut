@@ -31,7 +31,7 @@ void CaptureLocatorNormalization(const std::shared_ptr<LocatorNormalizationWork>
       const auto details=result?result->GetDictionary("exceptionDetails"):nullptr;
       const auto exception=details?details->GetDictionary("exception"):nullptr;
       const auto error=exception?suitecut::DevToolsString(exception->GetValue("description")):result?result->GetString("message").ToString():"";
-      Complete(work->owner,false,error.empty()?"Native locator normalization capture failed":error.substr(0,4096));return;
+      Complete(work->owner,false,error.empty()?"Native locator normalization capture failed":error);return;
     }
     int backend=0;std::string metadata,error;
     if(!suitecut::LocatorNormalizationCapture(result,backend,metadata,error)){Complete(work->owner,false,error);return;}
@@ -41,9 +41,7 @@ void CaptureLocatorNormalization(const std::shared_ptr<LocatorNormalizationWork>
     provenance->SetInt("mainContext",work->document.main);provenance->SetInt("utilityContext",work->document.utility);
     provenance->SetString("documentGeneration",std::to_string(work->document.context_generation));provenance->SetInt("backendNodeId",backend);
     auto response=CefDictionaryValue::Create();response->SetString("metadataJSON",metadata);response->SetDictionary("provenance",provenance);
-    const auto serialized=Json(response);
-    if(serialized.size()>65536){Complete(work->owner,false,"Native normalized locator reply exceeds byte bounds");return;}
-    if(LocatorNormalizationCurrent(work))Complete(work->owner,true,"",serialized);
+    if(LocatorNormalizationCurrent(work))Complete(work->owner,true,"",Json(response));
   },work->document.session,true,262144,true);
 }
 void BeginLocatorNormalization(int owner,Dict message){
@@ -52,7 +50,7 @@ void BeginLocatorNormalization(int owner,Dict message){
   for(const char* field:{"nativeQueryNodes","nativeRootHandle","nativeHandle","nativeSelectorWaitState","nativeAccessibilitySnapshot","nativeSemanticSnapshotJson","formNode"})
     if(message->HasKey(field)){Complete(owner,false,"Invalid reserved native locator normalization field");return;}
   if(message->GetType("query")!=VTYPE_LIST){Complete(owner,false,"Native locator normalization requires a query AST");return;}
-  if(!SelectorWaits().Admit(owner,operation->generation)){Complete(owner,false,"Native locator normalization physical capacity exceeded");return;}
+  if(!SelectorWaits().Admit(owner,operation->generation)){Complete(owner,false,"Native locator normalization admission unavailable or channel closed");return;}
   if(const auto path=message->GetList("framePath");path&&path->GetSize()){
     ResolveFramePath(owner,operation->generation,message,0,FrameId(message),[this,owner](Dict resolved){BeginLocatorNormalization(owner,resolved);});return;
   }
@@ -71,7 +69,7 @@ void BeginLocatorNormalization(int owner,Dict message){
         const auto details=result?result->GetDictionary("exceptionDetails"):nullptr;
         const auto exception=details?details->GetDictionary("exception"):nullptr;
         const auto error=exception?suitecut::DevToolsString(exception->GetValue("description")):result?result->GetString("message").ToString():"";
-        Complete(work->owner,false,error.empty()?"Native locator normalization selected-node execution failed":error.substr(0,4096));return;
+        Complete(work->owner,false,error.empty()?"Native locator normalization selected-node execution failed":error);return;
       }
       if(remote->GetType("objectId")!=VTYPE_STRING){locator_waits_[work->owner]="element to be attached before locator normalization";RetryContext(work->owner);return;}
       if(remote->GetString("subtype")!="node"){Complete(work->owner,false,"Native locator normalization selected value is not a DOM node");return;}

@@ -47,7 +47,7 @@ function fixture() {
 }
 
 describe('native binding host callback ownership', () => {
-  it('retains bounded physical slots after logical cancellation until host work settles', async () => {
+  it('retains physical slots after logical cancellation and admits calls past the old 128 cap', async () => {
     const { bindings, replies, call, cancel } = fixture()
     const complete: ((value: number) => void)[] = []
     let invoked = 0
@@ -64,18 +64,22 @@ describe('native binding host callback ownership', () => {
       cancel(`call-${i}`)
     }
     expect(bindings.diagnostics()).toMatchObject({ logical: 0, physical: 128 })
-    call('rejected')
+    call('admitted')
     await Promise.resolve()
-    expect(invoked).toBe(128)
-    expect(replies.filter((reply) => reply.action === 'resolve')).toHaveLength(1)
-    expect(replies.at(-1)).toMatchObject({ bindingCallId: 'rejected', success: false })
+    expect(invoked).toBe(129)
+    expect(bindings.diagnostics()).toMatchObject({ logical: 1, physical: 129 })
+    expect(replies.filter((reply) => reply.action === 'resolve')).toHaveLength(0)
     for (const resolve of complete) resolve(1)
-    await Promise.resolve()
-    await Promise.resolve()
-    expect(bindings.diagnostics()).toMatchObject({ logical: 0, physical: 0, physicalBytes: 0 })
-    expect(replies.filter((reply) => reply.action === 'resolve')).toHaveLength(1)
+    await expect
+      .poll(() => bindings.diagnostics())
+      .toMatchObject({ logical: 0, physical: 0, physicalBytes: 0 })
+    await expect.poll(() => replies.filter((reply) => reply.action === 'resolve')).toHaveLength(1)
+    expect(replies.find((reply) => reply.action === 'resolve')).toMatchObject({
+      bindingCallId: 'admitted',
+      success: true,
+    })
   })
-  it('bounds physical argument bytes even when callbacks never settle', async () => {
+  it('admits physical argument bytes past the old 8 MiB budget', async () => {
     const { bindings, call, cancel, replies } = fixture()
     let invoked = 0
     const complete: ((value: number) => void)[] = []
@@ -90,16 +94,16 @@ describe('native binding host callback ownership', () => {
       cancel(`bytes-${i}`)
     }
     await Promise.resolve()
-    expect(invoked).toBe(8)
-    expect(bindings.diagnostics()).toMatchObject({ logical: 0, physical: 8 })
-    expect(bindings.diagnostics().physicalBytes).toBeLessThanOrEqual(8 * 1024 * 1024)
-    expect(replies.filter((reply) => reply.action === 'resolve')).toHaveLength(2)
+    expect(invoked).toBe(10)
+    expect(bindings.diagnostics()).toMatchObject({ logical: 0, physical: 10 })
+    expect(bindings.diagnostics().physicalBytes).toBeGreaterThan(8 * 1024 * 1024)
+    expect(replies.filter((reply) => reply.action === 'resolve')).toHaveLength(0)
     for (const resolve of complete) resolve(1)
-    await Promise.resolve()
-    await Promise.resolve()
-    expect(NativeBindings.hostDiagnostics()).toEqual({ physical: 0, physicalBytes: 0 })
+    await expect
+      .poll(() => NativeBindings.hostDiagnostics())
+      .toEqual({ physical: 0, physicalBytes: 0 })
   })
-  it('holds the process quota across canceled sources until raw host work settles', async () => {
+  it('counts raw host work across canceled sources without blocking another source', async () => {
     const first = fixture(),
       second = fixture()
     const complete: ((value: number) => void)[] = []
@@ -118,22 +122,15 @@ describe('native binding host callback ownership', () => {
       invoked++
       return 42
     })
-    second.call('source-two-blocked')
-    await Promise.resolve()
-    expect(invoked).toBe(0)
-    expect(second.replies.at(-1)).toMatchObject({
-      bindingCallId: 'source-two-blocked',
-      success: false,
-    })
-    for (const resolve of complete) resolve(1)
-    await Promise.resolve()
-    await Promise.resolve()
-    expect(NativeBindings.hostDiagnostics()).toEqual({ physical: 0, physicalBytes: 0 })
     second.call('source-two-admitted')
+    await expect.poll(() => invoked).toBe(1)
+    await expect
+      .poll(() => second.replies.find((reply) => reply.action === 'resolve'))
+      .toMatchObject({ bindingCallId: 'source-two-admitted', success: true })
+    for (const resolve of complete) resolve(1)
     await expect
       .poll(() => NativeBindings.hostDiagnostics())
       .toEqual({ physical: 0, physicalBytes: 0 })
-    expect(invoked).toBe(1)
   })
   it('preserves thrown null and prevents late replies after page closure', async () => {
     const { bindings, controller, call, replies } = fixture()

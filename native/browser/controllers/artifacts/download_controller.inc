@@ -16,7 +16,6 @@ void FlushDownloadEvents(){
 }
 void DownloadPublish(Dict info){
   if(!ready_){
-    if(pending_download_events_.size()>=512){Error("Native startup download event capacity exceeded");return;}
     pending_download_events_.push_back(info->Copy(false));return;
   }
   const bool created=info->GetString("event")=="created";

@@ -16,23 +16,21 @@ class PristineDispatchFactories::Impl:public std::enable_shared_from_this<Impl>{
     std::vector<Waiter>waiters;bool retired=false,capturing=true,releasing=false,failed_release=false,group_possible=false,realm_destroyed=false;
   };
   struct Call{std::shared_ptr<Record>record;Reply reply;double watchdog=0;bool closing=false;};
-  static constexpr size_t kContexts=1024,kCalls=64,kWaiters=64;
   Hooks hooks;uint64_t next_record=0,next_call=0,next_ticket=0;bool closed=false;
   std::map<Ticket,Authorization>authorizations;
   std::map<uint64_t,std::shared_ptr<Record>>records;std::map<uint64_t,Call>calls;
   explicit Impl(Hooks h):hooks(std::move(h)){}
-  static bool Valid(const Context&c){return c.context>0&&!c.frame.empty()&&c.frame.size()<=128&&!c.identity.empty()&&c.identity.size()<=256&&c.loader.size()<=128&&c.session.size()<=256;}
+  static bool Valid(const Context&c){return c.context>0&&!c.frame.empty()&&!c.identity.empty();}
   static bool Expired(double deadline,double now){return deadline!=0&&now>=deadline;}
   bool Current(const std::shared_ptr<Record>&r)const{return !closed&&!r->retired&&hooks.current(r->owner);}
-  size_t WaiterCount()const{size_t count=0;for(const auto&[id,r]:records)count+=r->waiters.size();return count;}
   void FailWaiters(const std::shared_ptr<Record>&r,const std::string&error){auto waiters=std::move(r->waiters);r->waiters.clear();for(auto&w:waiters)w.ready(false,std::nullopt,error);}
   void Retire(const std::shared_ptr<Record>&r,const std::string&error){
     if(r->retired)return;
-    r->retired=true;r->error=error.substr(0,1024);FailWaiters(r,r->error);
+    r->retired=true;r->error=error;FailWaiters(r,r->error);
     if(!r->capturing)Release(r);
   }
   bool Send(const std::shared_ptr<Record>&r,const std::string&method,Dict params,double deadline,Reply reply){
-    if(closed||calls.size()>=kCalls||next_call==std::numeric_limits<uint64_t>::max()){reply(false,nullptr,"Native pristine physical capacity exceeded or channel closed");return false;}
+    if(closed||next_call==std::numeric_limits<uint64_t>::max()){reply(false,nullptr,"Native pristine channel closed or call identity exhausted");return false;}
     const auto id=++next_call;calls.emplace(id,Call{r,std::move(reply),method=="Runtime.releaseObjectGroup"?deadline:(deadline?deadline+30000:hooks.now()+30000)});hooks.wake();
     auto settled=[self=shared_from_this(),id](bool ok,Dict result,const std::string&error){
       const auto found=self->calls.find(id);if(found==self->calls.end())return;
@@ -52,12 +50,12 @@ class PristineDispatchFactories::Impl:public std::enable_shared_from_this<Impl>{
     Send(r,"Runtime.releaseObjectGroup",params,hooks.now()+30000,[self=shared_from_this(),r](bool ok,Dict,const std::string&error){
       r->releasing=false;
       if(ok||r->realm_destroyed){self->records.erase(r->id);return;}
-      r->failed_release=true;self->hooks.close_channel(r->owner.session,error.empty()?"Native pristine group release failed":error.substr(0,1024));
+      r->failed_release=true;self->hooks.close_channel(r->owner.session,error.empty()?"Native pristine group release failed":error);
     });
   }
   Ticket Expect(Context owner,Barrier barrier,double deadline){
     if(closed||!Valid(owner)||!std::isfinite(deadline)||deadline<0||Expired(deadline,hooks.now())||!hooks.current(owner)||
-      (barrier!=Barrier::InitialSettingsHold&&barrier!=Barrier::NewDocumentBootstrap)||authorizations.size()>=kContexts||next_ticket==std::numeric_limits<uint64_t>::max())return 0;
+      (barrier!=Barrier::InitialSettingsHold&&barrier!=Barrier::NewDocumentBootstrap)||next_ticket==std::numeric_limits<uint64_t>::max())return 0;
     for(const auto&[id,authorization]:authorizations)if(authorization.owner==owner)return 0;
     const auto ticket=++next_ticket;authorizations.emplace(ticket,Authorization{std::move(owner),barrier,deadline});return ticket;
   }
@@ -68,7 +66,7 @@ class PristineDispatchFactories::Impl:public std::enable_shared_from_this<Impl>{
     if(authorization->second.consumed){
       const auto owner=authorization->second.owner;for(const auto&[id,r]:records)if(r->owner==owner&&!r->retired){
         if(!r->object.empty()&&Current(r)){ready(true,Factory{r->owner,r->object,r->group},"");return;}
-        if(r->capturing&&Current(r)&&WaiterCount()<kWaiters){r->waiters.push_back({authorization->second.deadline,std::move(ready)});return;}
+        if(r->capturing&&Current(r)){r->waiters.push_back({authorization->second.deadline,std::move(ready)});return;}
       }
       ready(false,std::nullopt,"Native pristine bootstrap admission was already consumed");return;
     }
@@ -80,17 +78,16 @@ class PristineDispatchFactories::Impl:public std::enable_shared_from_this<Impl>{
     if(Expired(deadline,hooks.now())){ready(false,std::nullopt,"Native pristine capture original deadline exceeded");return;}
     for(const auto&[id,r]:records)if(r->owner==owner&&!r->retired){
       if(!r->object.empty()){ready(true,Factory{r->owner,r->object,r->group},"");return;}
-      if(WaiterCount()>=kWaiters){ready(false,std::nullopt,"Native pristine waiter capacity exceeded");return;}
       r->waiters.push_back({deadline,std::move(ready)});return;
     }
-    if(records.size()>=kContexts||calls.size()>=kCalls||WaiterCount()>=kWaiters||next_record==std::numeric_limits<uint64_t>::max()){ready(false,std::nullopt,"Native pristine capture capacity exceeded");return;}
+    if(next_record==std::numeric_limits<uint64_t>::max()){ready(false,std::nullopt,"Native pristine capture identity exhausted");return;}
     auto r=std::make_shared<Record>();r->id=++next_record;r->owner=std::move(owner);r->group="suitecut-pristine-dispatch-"+std::to_string(r->id);r->waiters.push_back({deadline,std::move(ready)});records.emplace(r->id,r);
     auto params=CefDictionaryValue::Create();params->SetString("uniqueContextId",r->owner.identity);params->SetString("expression",kSuiteCutPristineDispatchFactory);params->SetString("objectGroup",r->group);params->SetBool("returnByValue",false);params->SetBool("silent",true);params->SetBool("disableBreaks",true);
     Send(r,"Runtime.evaluate",params,deadline,[self=shared_from_this(),r](bool ok,Dict result,const std::string&error){
       r->capturing=false;
       if(!self->Current(r)){self->Retire(r,"Native pristine document changed");self->Release(r);return;}
       auto remote=result?result->GetDictionary("result"):nullptr;
-      if(!ok||!result||result->HasKey("exceptionDetails")||!remote||remote->GetString("type")!="function"||remote->GetType("objectId")!=VTYPE_STRING||remote->GetString("objectId").ToString().empty()||remote->GetString("objectId").ToString().size()>4096){self->Retire(r,error.empty()?"Native pristine function capture failed":error);return;}
+      if(!ok||!result||result->HasKey("exceptionDetails")||!remote||remote->GetString("type")!="function"||remote->GetType("objectId")!=VTYPE_STRING||remote->GetString("objectId").ToString().empty()){self->Retire(r,error.empty()?"Native pristine function capture failed":error);return;}
       r->object=remote->GetString("objectId").ToString();auto waiters=std::move(r->waiters);r->waiters.clear();size_t admitted=0;
       for(auto&w:waiters){
         if(self->Expired(w.deadline,self->hooks.now()))w.ready(false,std::nullopt,"Native pristine capture original deadline exceeded");
@@ -113,7 +110,7 @@ class PristineDispatchFactories::Impl:public std::enable_shared_from_this<Impl>{
     // Mark every affected record before invoking any reentrant waiter. This is
     // actual V8 destruction, never synthesized session or command settlement.
     for(const auto&r:selected){r->realm_destroyed=true;r->group_possible=false;}
-    for(const auto&r:selected){r->retired=true;r->error=reason.substr(0,1024);FailWaiters(r,r->error);records.erase(r->id);}
+    for(const auto&r:selected){r->retired=true;r->error=reason;FailWaiters(r,r->error);records.erase(r->id);}
     // calls deliberately remains unchanged, including an accepted release.
   }
   void SessionClosed(const std::string&session){

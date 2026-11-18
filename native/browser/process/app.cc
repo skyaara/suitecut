@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: MIT
 #include "process/app.h"
+#include <climits>
+#include <cmath>
 namespace suitecut::browser {
 App::App(Writer& writer) : writer_(writer), startup_started_(Now()) {}
 
@@ -88,8 +90,10 @@ auto App::OnContextInitialized() -> void {
   const int fps = *parsed_fps;
   const double scale = std::atof(command->GetSwitchValue("suitecut-scale").ToString().c_str());
   const auto pixel_format = command->GetSwitchValue("suitecut-pixel-format").ToString();
-  if (width < 2 || height < 2 || (scale != 1 && scale != 2) || width * scale > 3840 ||
-      height * scale > 2160) {
+  // No suitecut size or scale cap; CEF enforces its own. The physical extent
+  // must still fit the int BGRA row stride used by capture.
+  if (width < 2 || height < 2 || !std::isfinite(scale) || scale <= 0 ||
+      std::ceil(width * scale) + 1 > INT_MAX / 4 || std::ceil(height * scale) + 1 > INT_MAX / 4) {
     CefQuitMessageLoop();
     return;
   }

@@ -28,23 +28,23 @@ int main(){
  // A migrated cache keeps its in-flight command's original physical session.
  assert(stream.Start("original","moving","Image",100));assert(stream.Move("original","destination","moving"));stream.SessionClosed("destination");assert(stream.physical()==1);stream.SessionClosed("original");assert(stream.physical()==0);acks[3](true,R"({"bufferedData":"AA=="})");assert(stream.entries()==0);
  assert(stream.Start("","bad","Image",100));acks[4](true,R"({"bufferedData":"not-base64"})");assert(stream.entries()==0&&stream.bytes()==0);
- // Reaching the exact resource bound is valid; another genuine byte drops
- // only optional byte retention, while its physical receipt remains owned.
- assert(stream.Start("","bounded","Image",100));std::vector<uint8_t>block(1048576,255);const auto encoded=CefBase64Encode(block.data(),block.size()).ToString();stream.Data("","bounded",Chunk(encoded));stream.Data("","bounded",Chunk(encoded));assert(stream.bytes()==2097152);stream.Data("","bounded",Chunk("AA=="));assert(stream.entries()==0&&stream.bytes()==0&&stream.physical()==1);acks[5](true,R"({"bufferedData":""})");assert(stream.physical()==0);
+ // No per-resource bound: a byte past the former 2 MiB limit is retained too.
+ assert(stream.Start("","bounded","Image",100));std::vector<uint8_t>block(1048576,255);const auto encoded=CefBase64Encode(block.data(),block.size()).ToString();stream.Data("","bounded",Chunk(encoded));stream.Data("","bounded",Chunk(encoded));assert(stream.bytes()==2097152);stream.Data("","bounded",Chunk("AA=="));assert(stream.entries()==1&&stream.bytes()>2097152&&stream.physical()==1);acks[5](true,R"({"bufferedData":""})");assert(stream.physical()==0);
+ stream.Finished("","bounded",true);assert(stream.Body("","bounded")->size()==2097153);stream.Discard("","bounded");assert(stream.entries()==0&&stream.bytes()==0);
  assert(stream.Start("","missing-span","Image",100));auto absent=CefDictionaryValue::Create();absent->SetInt("dataLength",5);stream.Data("","missing-span",absent);assert(stream.entries()==0&&stream.physical()==1);acks[6](true,R"({"bufferedData":""})");assert(stream.physical()==0);
  // Redirects sharing an already-streaming physical ID are deliberately
  // excluded: a second buffered prefix could overlap genuine streamed spans.
  auto initial=CefDictionaryValue::Create();initial->SetString("requestId","redirect");initial->SetString("type","Image");stream.Event("Network.requestWillBeSent",initial,"");const auto before_redirect=acks.size();auto redirected=initial->Copy(false);redirected->SetDictionary("redirectResponse",CefDictionaryValue::Create());stream.Event("Network.requestWillBeSent",redirected,"");assert(acks.size()==before_redirect&&stream.entries()==0&&stream.physical()==1);acks.back()(true,R"({"bufferedData":"AA=="})");assert(stream.physical()==0);
- // Full retained-byte and physical quotas are real independent ledgers.
+ // No retained-byte or physical quota: past the former 16 MiB and 64-read limits.
  std::vector<Streams::Result>budget_acks;Streams budget([&](const auto&,const auto&,double,Streams::Result done){budget_acks.push_back(std::move(done));},[&]{return now;},[]{});
  std::vector<uint8_t>whole(2097152,1);const auto whole64=CefBase64Encode(whole.data(),whole.size()).ToString();
  for(int i=0;i<8;++i){assert(budget.Start("","cache"+std::to_string(i),"Image",100));budget_acks.back()(true,"{\"bufferedData\":\""+whole64+"\"}");budget.Finished("","cache"+std::to_string(i),true);}
  assert(budget.bytes()==16*1048576&&budget.entries()==8&&budget.physical()==0);
- assert(budget.Start("","overflow","Image",100));budget_acks.back()(true,R"({"bufferedData":"AA=="})");assert(budget.bytes()==16*1048576&&budget.entries()==8&&budget.physical()==0);budget.Close();
+ assert(budget.Start("","overflow","Image",100));budget_acks.back()(true,R"({"bufferedData":"AA=="})");assert(budget.bytes()>16*1048576&&budget.entries()==9&&budget.physical()==0);budget.Close();
  std::vector<Streams::Result>physical_acks;Streams held([&](const auto&,const auto&,double,Streams::Result done){physical_acks.push_back(std::move(done));},[&]{return now;},[]{});
  for(int i=0;i<64;++i){assert(held.Start("","held"+std::to_string(i),"Image",100));}
- assert(!held.Start("","over-physical","Image",100)&&held.physical()==64);
- held.Tick(100);assert(held.entries()==0&&held.physical()==64);for(auto&ack:physical_acks)ack(true,R"({"bufferedData":""})");assert(held.physical()==0);held.Close();
+ assert(held.Start("","over-physical","Image",100)&&held.physical()==65);
+ held.Tick(100);assert(held.entries()==0&&held.physical()==65);for(auto&ack:physical_acks)ack(true,R"({"bufferedData":""})");assert(held.physical()==0);held.Close();
  // A synchronous transport callback may destroy the owning native collector.
  std::unique_ptr<Streams>owner;owner=std::make_unique<Streams>([&](const auto&,const auto&,double,Streams::Result done){owner.reset();done(true,R"({"bufferedData":""})");},[&]{return now;},[]{});owner->Start("","reentrant","Image",100);
  stream.Close();assert(stream.bytes()==0&&stream.physical()==0);

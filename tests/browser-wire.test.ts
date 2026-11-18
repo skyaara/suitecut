@@ -123,16 +123,16 @@ describe('multiplexed browser protocol wire', () => {
     await wire.close()
   })
 
-  it('enforces byte and pending-command budgets before sending more work', async () => {
+  it('sends work past the old byte and pending-command budgets', async () => {
     const { wire, socket } = await connection()
     socket.bufferedAmount = 16 * 1024 * 1024
-    await expect(wire.request('full')).rejects.toThrow('byte budget')
-    expect(wire.stats().pending).toBe(0)
+    const full = wire.request('full').catch(() => undefined)
+    expect(wire.stats().pending).toBe(1)
     socket.bufferedAmount = 0
-    const pending = Array.from({ length: 2048 }, () => wire.request('wait').catch(() => undefined))
-    await expect(wire.request('overflow')).rejects.toThrow('pending command limit')
+    const pending = Array.from({ length: 2049 }, () => wire.request('wait').catch(() => undefined))
+    expect(wire.stats().pending).toBe(2050)
     await wire.close()
-    await Promise.all(pending)
+    await Promise.all([full, ...pending])
     expect(wire.stats().pending).toBe(0)
   })
 

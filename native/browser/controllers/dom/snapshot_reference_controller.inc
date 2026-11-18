@@ -24,7 +24,7 @@ suitecut::SnapshotReferences& SnapshotReferences(){
       if(!group.document.session.empty()&&!sessions_.contains(group.document.session)){ack(true,"");return;}
       const int tool=AllocateDevToolsId();if(!tool){ack(false,"Native snapshot reference release ID exhausted");return;}
       auto params=CefDictionaryValue::Create();params->SetString("objectGroup",group.name);const auto session=group.document.session;
-      devtools_.emplace(tool,DevToolsCall{0,[ack=std::move(ack)](bool ok,const std::string&)mutable{ack(ok,ok?"":"Native snapshot reference group release failed");},session,true,65536,true,false});
+      devtools_.emplace(tool,DevToolsCall{0,[ack=std::move(ack)](bool ok,const std::string&)mutable{ack(ok,ok?"":"Native snapshot reference group release failed");},session,true,kMaxResponseBytes,true,false});
       if(!SubmitDevTools(tool,"Runtime.releaseObjectGroup",params,session)){
         const auto found=devtools_.find(tool);if(found!=devtools_.end()){auto callback=std::exchange(found->second.callback, nullptr);devtools_.erase(found);callback(false,"");}
       }
@@ -35,20 +35,19 @@ suitecut::SnapshotReferences& SnapshotReferences(){
 void ReferenceRequest(const std::shared_ptr<SnapshotReferenceCapture>& work,const std::string& method,Dict params,std::function<void(Dict)> done){
   if(!ReferenceCurrent(work))return;
   if(work->before_request&&!work->before_request())return;
-  if(++work->requests>work->request_limit){Complete(work->owner,false,"Native snapshot reference capture work limit exceeded");return;}
   auto callback=[this,work,done=std::move(done)](bool ok,const std::string& json)mutable{
     if(!ReferenceCurrent(work))return;
     const auto parsed=CefParseJSON(json,JSON_PARSER_RFC);const auto result=parsed?parsed->GetDictionary():nullptr;
     if(!ok||!result||result->HasKey("exceptionDetails")){
       const auto details=result?result->GetDictionary("exceptionDetails"):nullptr;const auto exception=details?details->GetDictionary("exception"):nullptr;
       const auto cause=exception?suitecut::DevToolsString(exception->GetValue("description")):result?result->GetString("message").ToString():"";
-      Complete(work->owner,false,cause.empty()?"Native snapshot reference capture command failed":cause.substr(0,4096));return;
+      Complete(work->owner,false,cause.empty()?"Native snapshot reference capture command failed":cause);return;
     }
     done(result);
   };
   if(!work->ticket){DevTools(work->owner,method,params,std::move(callback),work->document.session,true,kMaxResponseBytes,true);return;}
   auto lease=SnapshotReferences().Use(work->ticket);
-  if(!lease){Complete(work->owner,false,"Native snapshot reference physical read capacity exceeded");return;}
+  if(!lease){Complete(work->owner,false,"Native snapshot reference capture is unavailable");return;}
   ReferenceSubmit(work->owner,work->generation,work->document.session,method,params,[]{return true;},
     [callback=std::move(callback),lease=std::move(lease)](bool submitted,bool ok,const std::string& json)mutable{
       // Settlement occurs even when the original operation disappeared. Keep
@@ -64,7 +63,7 @@ void InstallReferenceSnapshot(const std::shared_ptr<SnapshotReferenceCapture>& w
   if(!ReferenceCurrent(work))return;
   const auto operation=operations_.Get(work->owner);if(!operation)return;
   work->ticket=SnapshotReferences().Begin(work->owner,work->generation,work->document,std::move(nodes),operation->deadline_ms,Now());
-  if(!work->ticket){Complete(work->owner,false,"Native snapshot reference resident capacity exceeded");return;}
+  if(!work->ticket){Complete(work->owner,false,"Native snapshot reference reservation failed");return;}
   const auto group=SnapshotReferences().GroupFor(work->ticket);
   if(!group){Complete(work->owner,false,"Native snapshot reference staging ownership unavailable");return;}
   auto params=CefDictionaryValue::Create();params->SetString("objectId",work->capture);params->SetString("functionDeclaration","function(){return this;}");params->SetString("objectGroup",group->name);params->SetBool("returnByValue",false);
@@ -138,7 +137,7 @@ void ResolveSnapshotReference(int id,const std::string& token,const SuiteCutQuer
     ReferenceRequest(work,"DOM.describeNode",params,[this,work,scope,target,backend,done=std::move(done)](Dict result)mutable{
       const auto node=result->GetDictionary("node");if(!node||node->GetType("backendNodeId")!=VTYPE_INT||node->GetInt("backendNodeId")!=backend||node->GetType("nodeType")!=VTYPE_INT||node->GetInt("nodeType")!=1){Complete(work->owner,false,"Native snapshot reference backend identity changed");return;}
       auto params=CefDictionaryValue::Create();params->SetString("objectId",target);params->SetString("objectGroup","suitecut-automation-"+std::to_string(work->owner));
-      params->SetString("functionDeclaration","function(scopes){let work=0;for(const scope of scopes){if(++work>100000)throw new Error('Native snapshot reference scope work limit exceeded');let depth=0;for(let node=this;node;node=node.assignedSlot||node.parentNode||(node.nodeType===11&&node.host)||null){if(++depth>256||++work>100000)throw new Error('Native snapshot reference ancestry limit exceeded');if(node===scope)return [this];}}return [];}");
+      params->SetString("functionDeclaration","function(scopes){for(const scope of scopes){for(let node=this;node;node=node.assignedSlot||node.parentNode||(node.nodeType===11&&node.host)||null){if(node===scope)return [this];}}return [];}");
       auto args=CefListValue::Create();auto arg=CefDictionaryValue::Create();arg->SetString("objectId",scope.object);args->SetDictionary(0,arg);params->SetList("arguments",args);
       ReferenceRequest(work,"Runtime.callFunctionOn",params,[this,work,scope,done=std::move(done)](Dict result)mutable{
         const auto array=result->GetDictionary("result");if(!array||array->GetString("subtype")!="array"||array->GetType("objectId")!=VTYPE_STRING){Complete(work->owner,false,"Native snapshot reference scoped array unavailable");return;}

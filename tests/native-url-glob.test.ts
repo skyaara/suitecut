@@ -42,8 +42,11 @@ describe('native frame URL glob lookup', () => {
     expect(nativeURLGlobMatcher('**/{literal}')('https://a.test/{literal}')).toBe(true)
     expect(nativeURLGlobMatcher('')('')).toBe(true)
   })
-  it('rejects explosive expansion and excessive comparison work explicitly', () => {
-    expect(() => nativeURLGlobMatcher('{a,b}'.repeat(10))).toThrow('capacity')
-    expect(() => nativeURLGlobMatcher('*a'.repeat(3000))('a'.repeat(8192))).toThrow('work capacity')
+  it('expands and compares past the old alternative and work caps', () => {
+    const expanded = nativeURLGlobMatcher('{a,b}'.repeat(10))
+    expect(expanded('abababbbaa')).toBe(true)
+    expect(expanded('abababbbac')).toBe(false)
+    expect(nativeURLGlobMatcher('*a'.repeat(3000))('a'.repeat(8192))).toBe(true)
+    expect(nativeURLGlobMatcher('x'.repeat(8193))('x'.repeat(8193))).toBe(true)
   })
 })

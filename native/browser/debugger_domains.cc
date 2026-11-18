@@ -28,7 +28,6 @@ class DebuggerDomains::Impl : public std::enable_shared_from_this<Impl> {
   struct RawState {bool tainted=false,closing=false;size_t pending=0;};
   struct RawCall {std::string session,method;double retirement=0;};
   struct Receipt {std::shared_ptr<Session> session;std::shared_ptr<Lease> lease;};
-  static constexpr size_t kSessions=2049,kLeases=4098,kPhysical=64,kReceipts=128;
   explicit Impl(Hooks hooks):hooks_(std::move(hooks)){}
   std::shared_ptr<PacketBudget> packet_budget_=std::make_shared<PacketBudget>();
   Hooks hooks_;std::map<std::string,std::shared_ptr<Session>> sessions_;
@@ -37,23 +36,23 @@ class DebuggerDomains::Impl : public std::enable_shared_from_this<Impl> {
   std::map<uint64_t,Receipt> receipts_;uint64_t identity_=0,last_lease_=0;bool pumping_=false,again_=false,closed_=false;size_t classifying_=0;
   int unowned_pause_events_=0,deferred_unowned_pause_events_=0,superseded_pause_events_=0;bool implicit_resume_=false;
   static void ObservePause(int& count){if(count<std::numeric_limits<int>::max())++count;}
-  static bool ScanValue(CefRefPtr<CefValue> value,size_t depth,size_t& nodes,size_t& units){
-    if(!value||depth>24||++nodes>4096)return false;
+  static bool ScanValue(CefRefPtr<CefValue> value){
+    if(!value)return false;
     switch(value->GetType()){
-      case VTYPE_STRING:{const auto size=value->GetString().length();if(size>131072-units)return false;units+=size;return true;}
-      case VTYPE_DICTIONARY:return ScanDictionary(value->GetDictionary(),depth,nodes,units);
-      case VTYPE_LIST:{auto list=value->GetList();if(!list||list->GetSize()>4096-nodes)return false;for(size_t i=0;i<list->GetSize();++i)if(!ScanValue(list->GetValue(i),depth+1,nodes,units))return false;return true;}
+      case VTYPE_STRING:return true;
+      case VTYPE_DICTIONARY:return ScanDictionary(value->GetDictionary());
+      case VTYPE_LIST:{auto list=value->GetList();if(!list)return false;for(size_t i=0;i<list->GetSize();++i)if(!ScanValue(list->GetValue(i)))return false;return true;}
       case VTYPE_NULL:case VTYPE_BOOL:case VTYPE_INT:case VTYPE_DOUBLE:return true;
       default:return false;
     }
   }
-  static bool ScanDictionary(Dict dictionary,size_t depth,size_t& nodes,size_t& units){
-    if(!dictionary||depth>24||dictionary->GetSize()>4096-nodes)return false;
+  static bool ScanDictionary(Dict dictionary){
+    if(!dictionary)return false;
     CefDictionaryValue::KeyList keys;dictionary->GetKeys(keys);
-    for(const auto& key:keys){const auto size=key.length();if(size>131072-units)return false;units+=size;if(!ScanValue(dictionary->GetValue(key),depth+1,nodes,units))return false;}return true;
+    for(const auto& key:keys)if(!ScanValue(dictionary->GetValue(key)))return false;return true;
   }
   std::shared_ptr<PausePacket> Packet(Dict data){
-    size_t nodes=1,units=0;if(packet_budget_->packets>=64||!ScanDictionary(data,0,nodes,units))return {};
+    if(!ScanDictionary(data))return {};
     ++packet_budget_->packets;auto packet=std::make_shared<PausePacket>();packet->budget=packet_budget_;packet->data=data->Copy(false);return packet;
   }
   void RejectedPause(const std::shared_ptr<Session>& s,Dict params,const std::string& error){
@@ -112,7 +111,6 @@ class DebuggerDomains::Impl : public std::enable_shared_from_this<Impl> {
   }
   void Send(const std::shared_ptr<Session>& s,const std::string& method,Dict params,double deadline,Reply done){
     if(!Current(s)||s->busy||s->closing)return;
-    if(calls_.size()+raw_calls_.size()>=kPhysical)return;
     const auto token=Next();if(!token){Close(s,"Native Debugger receipt identity exhausted");return;}
     s->busy=true;calls_.emplace(token,Call{s,method,(deadline>0?deadline:hooks_.now()+30000)+30000,std::move(done)});
     auto weak=weak_from_this();Reply reply=[weak,token](bool ok,Dict data,const std::string& error){if(auto self=weak.lock()){
@@ -124,10 +122,9 @@ class DebuggerDomains::Impl : public std::enable_shared_from_this<Impl> {
   }
   void Acquire(const std::string& session,uint64_t id,Kind kind,double deadline,Ready ready,DeveloperDeadline developer_deadline={},DeveloperPaused developer_paused={},DeveloperExpired developer_expired={},DeveloperEligibility developer_eligible={}){
     if(!ready)return;
-    if((kind==Kind::Developer&&(!developer_deadline||!developer_paused||!developer_expired))||closed_||!id||id<=last_lease_||owners_.contains(id)||session.size()>128||!std::isfinite(deadline)||deadline<0||Expired(deadline)||owners_.size()>=kLeases){ready(false,"Invalid, duplicate, expired or full native Debugger lease");return;}
+    if((kind==Kind::Developer&&(!developer_deadline||!developer_paused||!developer_expired))||closed_||!id||id<=last_lease_||owners_.contains(id)||!std::isfinite(deadline)||deadline<0||Expired(deadline)){ready(false,"Invalid, duplicate or expired native Debugger lease");return;}
     if(raw_.contains(session)){ready(false,"Native Debugger lease conflicts with raw Inspector ownership; an actual uncontended Debugger.disable ACK is required");return;}
     auto found=sessions_.find(session);if(found==sessions_.end()){
-      if(sessions_.size()>=kSessions){ready(false,"Native Debugger session capacity exceeded");return;}
       auto s=std::make_shared<Session>();s->id=session;found=sessions_.emplace(session,std::move(s)).first;
     }
     found->second->scriptless=false;
@@ -143,7 +140,7 @@ class DebuggerDomains::Impl : public std::enable_shared_from_this<Impl> {
     // Factory breakpoint provenance is verified again by the consumer before
     // capture; this bounded channel permits only an exact URL+line breakpoint.
     CefDictionaryValue::KeyList keys;params->GetKeys(keys);const auto url=params->GetString("url").ToString();
-    if(keys.size()!=3||params->GetType("url")!=VTYPE_STRING||url.empty()||url.size()>256||params->GetType("lineNumber")!=VTYPE_INT||params->GetInt("lineNumber")<0||params->GetType("columnNumber")!=VTYPE_INT||params->GetInt("columnNumber")<0){ready(false,"Invalid exact native Debugger breakpoint parameters");return;}
+    if(keys.size()!=3||params->GetType("url")!=VTYPE_STRING||url.empty()||params->GetType("lineNumber")!=VTYPE_INT||params->GetInt("lineNumber")<0||params->GetType("columnNumber")!=VTYPE_INT||params->GetInt("columnNumber")<0){ready(false,"Invalid exact native Debugger breakpoint parameters");return;}
     l->arm=params->Copy(false);l->paused=std::move(paused);l->arm_ready=std::move(ready);Pump();Wake();
   }
   void Release(uint64_t id,double deadline,Ready ready){
@@ -154,7 +151,7 @@ class DebuggerDomains::Impl : public std::enable_shared_from_this<Impl> {
     Pump();Wake();
   }
   uint64_t Hold(uint64_t id){
-    auto [s,l]=Find(id);if(!s||!l||(l->kind!=Kind::Factory&&l->kind!=Kind::Developer)||!l->acquired||s->closing||receipts_.size()>=kReceipts||(l->releasing&&!l->holds))return 0;
+    auto [s,l]=Find(id);if(!s||!l||(l->kind!=Kind::Factory&&l->kind!=Kind::Developer)||!l->acquired||s->closing||(l->releasing&&!l->holds))return 0;
     auto receipt=Next();if(!receipt)return 0;receipts_.emplace(receipt,Receipt{s,l});++l->holds;Wake();return receipt;
   }
   void Retire(uint64_t receipt){auto found=receipts_.find(receipt);if(found==receipts_.end())return;--found->second.lease->holds;receipts_.erase(found);Pump();Wake();}
@@ -202,7 +199,7 @@ class DebuggerDomains::Impl : public std::enable_shared_from_this<Impl> {
         // An unowned author pause resumes under a bounded background budget.
         const auto deadline=HasOwnedHit(s,params)&&hooks_.pause_deadline?hooks_.pause_deadline(session,params):hooks_.now()+30000;
         if(!std::isfinite(deadline)||deadline<0){Close(s,"Native Debugger next-document pause has no valid original budget");return true;}
-        s->deferred_pause=Packet(params);s->deferred_rejected=!s->deferred_pause;s->deferred_deadline=deadline;s->deferred_expired=false;DeferredDeveloper(s,params);if(!Current(s))return true;if(s->deferred_rejected)RejectedPause(s,params,"Native Debugger pause metadata capacity exceeded before copy");Wake();return true;
+        s->deferred_pause=Packet(params);s->deferred_rejected=!s->deferred_pause;s->deferred_deadline=deadline;s->deferred_expired=false;DeferredDeveloper(s,params);if(!Current(s))return true;if(s->deferred_rejected)RejectedPause(s,params,"Native Debugger pause metadata could not be copied");Wake();return true;
       }
       // The earlier pause's execution ended without Debugger.resumed; settle it
       // as resumed once, then classify this pause.
@@ -213,7 +210,7 @@ class DebuggerDomains::Impl : public std::enable_shared_from_this<Impl> {
     if(pending_arm){
       const auto deadline=hooks_.pause_deadline?hooks_.pause_deadline(session,params):hooks_.now()+30000;
       if(!std::isfinite(deadline)||deadline<0){Close(s,"Native Debugger pending-arm pause has no valid document budget");return true;}
-      s->deferred_pause=Packet(params);s->deferred_rejected=!s->deferred_pause;s->deferred_deadline=deadline;s->deferred_expired=false;DeferredDeveloper(s,params);if(!Current(s))return true;if(s->deferred_rejected)RejectedPause(s,params,"Native Debugger pause metadata capacity exceeded before copy");Wake();return true;
+      s->deferred_pause=Packet(params);s->deferred_rejected=!s->deferred_pause;s->deferred_deadline=deadline;s->deferred_expired=false;DeferredDeveloper(s,params);if(!Current(s))return true;if(s->deferred_rejected)RejectedPause(s,params,"Native Debugger pause metadata could not be copied");Wake();return true;
     }
     auto hits=params->GetList("hitBreakpoints");std::shared_ptr<Lease> owner;
     if(hits)for(size_t i=0;i<std::min<size_t>(hits->GetSize(),64);++i)if(hits->GetType(i)==VTYPE_STRING){const auto hit=hits->GetString(i).ToString();for(const auto& [id,l]:s->leases)if(!l->releasing&&!l->breakpoint.empty()&&l->breakpoint==hit){if(owner&&owner!=l){Close(s,"Native Debugger pause has multiple owned breakpoint consumers");return true;}owner=l;}}
@@ -236,7 +233,7 @@ class DebuggerDomains::Impl : public std::enable_shared_from_this<Impl> {
     // Deferred replay is the same retained packet, not another browser event.
     if(!owner){ObservePause(unowned_pause_events_);if(original)ObservePause(deferred_unowned_pause_events_);}
     auto packet=owner?(retained_packet?retained_packet:Packet(params)):std::shared_ptr<PausePacket>();
-    if(owner&&!packet){const auto rejected=owner->id;owner.reset();ExpirePause(rejected,params,"Native Debugger pause metadata capacity exceeded before copy");}
+    if(owner&&!packet){const auto rejected=owner->id;owner.reset();ExpirePause(rejected,params,"Native Debugger pause metadata could not be copied");}
     s->capture=Capture{packet,capture,owner?owner->id:0,deadline,!owner,false,false,{}};
     if(rejected){ExpirePause(rejected->id,params,"Native scoped debugger pause has unsupported or stale frame ownership");if(!Current(s))return true;}
     if(owner&&Expired(deadline)){s->capture->expired=true;s->capture->requested=true;if(!expiry_reported||owner->kind==Kind::Developer)ExpirePause(owner->id,packet->data,"Native Debugger pause was already expired before capture admission");}
@@ -254,8 +251,7 @@ class DebuggerDomains::Impl : public std::enable_shared_from_this<Impl> {
   }
   void Enable(const std::shared_ptr<Session>& s){
     const bool bounded=BoundedScriptCache(s);auto params=CefDictionaryValue::Create();
-    if(bounded)params->SetInt("maxScriptsCacheSize",kFactoryScriptCacheBytes);
-    // V8 applies maxScriptsCacheSize before its already-enabled early return.
+    // No maxScriptsCacheSize: V8 keeps its own default collected-script cache.
     // Reconfiguration preserves breakpoints, paused execution, and receipt pins.
     Send(s,"Debugger.enable",params,Budget(s),[this,s,bounded](bool ok,Dict,const std::string&error){
       if(ok){s->enabled=true;s->bounded_script_cache=bounded;}
@@ -338,7 +334,7 @@ class DebuggerDomains::Impl : public std::enable_shared_from_this<Impl> {
       if(l->arm&&l->arm_ready){
         if(Expired(l->deadline)){Fail(l,"Native Debugger breakpoint arm exceeded its original deadline");again_=true;continue;}
         Send(s,"Debugger.setBreakpointByUrl",l->arm,l->deadline,[this,s,l](bool ok,Dict data,const std::string& error){
-          if(ok){const auto id=data?data->GetString("breakpointId").ToString():std::string();if(id.empty()||id.size()>512){Close(s,"Actual native Debugger breakpoint identity is invalid");return;}l->breakpoint=id;l->arm=nullptr;}
+          if(ok){const auto id=data?data->GetString("breakpointId").ToString():std::string();if(id.empty()){Close(s,"Actual native Debugger breakpoint identity is invalid");return;}l->breakpoint=id;l->arm=nullptr;}
           if(!ok||Expired(l->deadline)||l->releasing){Fail(l,!ok?error:"Native Debugger breakpoint arm exceeded its original deadline");return;}
           l->deadline=0;Finish(l->arm_ready,true,"");
         });return;
@@ -346,9 +342,8 @@ class DebuggerDomains::Impl : public std::enable_shared_from_this<Impl> {
     }
   }
   uint64_t BeginRaw(const std::string& session,const std::string& method,double deadline){
-    if(closed_||session.size()>128||method.rfind("Debugger.",0)!=0||method.size()>256||sessions_.contains(session)||!std::isfinite(deadline)||deadline<0||Expired(deadline)||calls_.size()+raw_calls_.size()>=kPhysical)return 0;
+    if(closed_||method.rfind("Debugger.",0)!=0||sessions_.contains(session)||!std::isfinite(deadline)||deadline<0||Expired(deadline))return 0;
     const auto existing=raw_.find(session);if(existing!=raw_.end()&&existing->second.closing)return 0;
-    if(existing==raw_.end()&&raw_.size()>=kSessions)return 0;
     const auto receipt=Next();if(!receipt)return 0;
     ++raw_[session].pending;raw_calls_.emplace(receipt,RawCall{session,method,(deadline>0?deadline:hooks_.now()+30000)+30000});Wake();return receipt;
   }

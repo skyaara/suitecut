@@ -14,7 +14,7 @@ void LocatorPickAt(const std::shared_ptr<LocatorSuggestionWork>&work,int x,int y
     auto resolve=CefDictionaryValue::Create();resolve->SetInt("backendNodeId",work->picked_backend);resolve->SetInt("executionContextId",work->document.utility);resolve->SetString("objectGroup","suitecut-automation-"+std::to_string(work->owner));
     LocatorSuggestionSend(work,"DOM.resolveNode",resolve,[this,work](bool ok,const std::string&json){
       const auto parsed=CefParseJSON(json,JSON_PARSER_RFC);const auto result=parsed?parsed->GetDictionary():nullptr;const auto node=result?result->GetDictionary("object"):nullptr;
-      if(!ok||!result||result->HasKey("exceptionDetails")||!node||node->GetString("subtype")!="node"||node->GetType("objectId")!=VTYPE_STRING||node->GetString("objectId").empty()||node->GetString("objectId").length()>4096){Complete(work->owner,false,"Native picked backend node cannot be adopted in the captured utility realm");return;}
+      if(!ok||!result||result->HasKey("exceptionDetails")||!node||node->GetString("subtype")!="node"||node->GetType("objectId")!=VTYPE_STRING||node->GetString("objectId").empty()){Complete(work->owner,false,"Native picked backend node cannot be adopted in the captured utility realm");return;}
       work->node=node->GetString("objectId").ToString();LocatorSuggestionObserve(work);
     });
   });
@@ -29,7 +29,7 @@ void LocatorPickCoordinates(const std::shared_ptr<LocatorSuggestionWork>&work,in
   std::map<std::string,std::string>parent_edges;
   std::string cursor=document.frame;
   while(true){
-    if(work->ancestors.size()>=64||work->ancestors.contains(cursor)){Complete(work->owner,false,"Native picking frame ancestry is cyclic or exceeds its bound");return;}
+    if(work->ancestors.contains(cursor)){Complete(work->owner,false,"Native picking frame ancestry is cyclic");return;}
     const auto frame=frame_states_.find(cursor);const auto pin=ReferenceDocument(cursor);
     if(frame==frame_states_.end()||!pin||pin->session!=document.session){Complete(work->owner,false,"Native picking frame transform identity is unavailable");return;}
     work->ancestors.emplace(cursor,*pin);parent_edges.emplace(cursor,frame->second.parent);
@@ -57,7 +57,7 @@ void LocatorPickCoordinates(const std::shared_ptr<LocatorSuggestionWork>&work,in
       LocatorSuggestionSend(work,"DOM.getBoxModel",box,[this,work,x,y,root,width,height](bool ok,const std::string&json){
         const auto parsed=CefParseJSON(json,JSON_PARSER_RFC);const auto result=parsed?parsed->GetDictionary():nullptr;const auto model=result?result->GetDictionary("model"):nullptr;
         std::array<double,8>content{},mapped{},point{double(x),double(y),double(x),double(y),double(x),double(y),double(x),double(y)};
-        if(!ok||!suitecut::ElementBoundsReadQuad(model?model->GetList("content"):nullptr,content)||!suitecut::MapElementBoundsQuad(point,content,width,height,mapped)||mapped[0]<0||mapped[1]<0||mapped[0]>1000000||mapped[1]>1000000){Complete(work->owner,false,"Native picking frame content transform is unavailable");return;}
+        if(!ok||!suitecut::ElementBoundsReadQuad(model?model->GetList("content"):nullptr,content)||!suitecut::MapElementBoundsQuad(point,content,width,height,mapped)||mapped[0]<0||mapped[1]<0){Complete(work->owner,false,"Native picking frame content transform is unavailable");return;}
         // CDP's hit test accepts integer pixels. Report the actual native rounded
         // Inspector coordinates, separately from requested local coordinates.
         LocatorPickAt(work,static_cast<int>(std::llround(mapped[0])),static_cast<int>(std::llround(mapped[1])),root);
@@ -67,10 +67,10 @@ void LocatorPickCoordinates(const std::shared_ptr<LocatorSuggestionWork>&work,in
 }
 void BeginLocatorPick(int owner,Dict message){
   const auto operation=operations_.Get(owner);if(!operation)return;
-  if(message->GetType("x")!=VTYPE_INT||message->GetType("y")!=VTYPE_INT||message->GetInt("x")<0||message->GetInt("y")<0||message->GetInt("x")>1000000||message->GetInt("y")>1000000){Complete(owner,false,"Native point picking requires bounded integer viewport coordinates");return;}
+  if(message->GetType("x")!=VTYPE_INT||message->GetType("y")!=VTYPE_INT||message->GetInt("x")<0||message->GetInt("y")<0){Complete(owner,false,"Native point picking requires non-negative integer viewport coordinates");return;}
   for(const char*key:{"nativeHandle","nativeRootHandle","nativeQueryNodes","framePath","query","selector","point"})if(message->HasKey(key)){Complete(owner,false,"Native point picking cannot borrow another selection or handle");return;}
   if(operations_.IsExpired(owner,operation->generation,Now())){Complete(owner,false,"Native point picking original deadline expired");return;}
-  if(!SelectorWaits().Admit(owner,operation->generation)){Complete(owner,false,"Native point picking physical capacity exceeded");return;}
+  if(!SelectorWaits().Admit(owner,operation->generation)){Complete(owner,false,"Native point picking admission unavailable or channel closed");return;}
   const auto frame=FrameId(message);const auto generation=operation->generation;const int x=message->GetInt("x"),y=message->GetInt("y");
   WithFrame(owner,frame,[this,owner,generation,frame,x,y](int){
     if(!operations_.IsCurrent(owner,generation))return;

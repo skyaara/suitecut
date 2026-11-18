@@ -37,7 +37,7 @@ void CheckBusyWorkers(size_t workers){
     }
     Await([&]{return active.load()==limit;});
     assert(jobs.WorkerCount()==limit);assert(jobs.PhysicalCount()==8);
-    assert(!jobs.Submit([]{}));assert(peak==limit);
+    assert(jobs.Submit([]{}));assert(jobs.PhysicalCount()==9);assert(peak==limit);
     release.set_value();Await([&]{return jobs.PhysicalCount()==0;});
     assert(jobs.WorkerCount()==limit);
   };
@@ -68,8 +68,8 @@ int main(){
     started.get_future().wait();
     // Accepted canceled queued jobs execute their actual native retirement path.
     assert(jobs.Submit([&]{assert(canceled.load());++finished;}));
-    assert(jobs.PhysicalCount()==2);assert(!jobs.Submit([]{}));canceled=true;
-    release.set_value();Await([&]{return jobs.PhysicalCount()==0;});assert(finished==2);
+    assert(jobs.PhysicalCount()==2);assert(jobs.Submit([&]{++finished;}));assert(jobs.PhysicalCount()==3);canceled=true;
+    release.set_value();Await([&]{return jobs.PhysicalCount()==0;});assert(finished==3);
     assert(jobs.Submit([]{throw std::runtime_error("actual worker failure");}));
     Await([&]{return jobs.PhysicalCount()==0;});assert(jobs.Failures()==1);
   }
@@ -86,7 +86,7 @@ int main(){
       assert(jobs.Submit([owner=std::move(held),origin]{assert(suitecut::CurrentNativeWorkOrigin()==origin);}));
     }
     destroying.get_future().wait();
-    assert(jobs.PhysicalCount()==1);assert(!jobs.Submit([]{}));
+    assert(jobs.PhysicalCount()==1);assert(jobs.Submit([]{}));assert(jobs.PhysicalCount()==2);
     assert(!suitecut::NativeLocatorHandlerAsyncWork::Ready(origin.locator_handler_invocation));
     destroy.set_value();Await([&]{return jobs.PhysicalCount()==0;});
     assert(suitecut::NativeLocatorHandlerAsyncWork::Ready(origin.locator_handler_invocation));

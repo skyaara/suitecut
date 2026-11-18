@@ -38,11 +38,10 @@ class HTTPVisitor : public CefCookieVisitor {
     const auto domain=CefString(&cookie.domain).ToString(),path=CefString(&cookie.path).ToString(),name=CefString(&cookie.name).ToString(),value=CefString(&cookie.value).ToString();
     double expires=0;if(cookie.has_expires){cef_time_t time{};cef_time_from_basetime(cookie.expires,&time);cef_time_to_doublet(&time,&expires);}
     auto record=std::string(cookie.httponly?"#HttpOnly_":"")+domain+"\t"+(!domain.empty() && domain.front()=='.'?"TRUE":"FALSE")+"\t"+path+"\t"+(cookie.secure?"TRUE":"FALSE")+"\t"+std::to_string(static_cast<int64_t>(expires))+"\t"+name+"\t"+value;
-    if(cookies_.size()>=4096 || record.size()>1048576-bytes_){error_="Native HTTP cookie snapshot limit exceeded";return false;}
-    bytes_+=record.size();cookies_.push_back(std::move(record));return true;
+    cookies_.push_back(std::move(record));return true;
   }
   void Reject(){error_="CEF cookie storage is unavailable";}
- private:Done done_;std::vector<std::string> cookies_;size_t bytes_=0;std::string error_;IMPLEMENT_REFCOUNTING(HTTPVisitor);
+ private:Done done_;std::vector<std::string> cookies_;std::string error_;IMPLEMENT_REFCOUNTING(HTTPVisitor);
 };
 class HTTPSaveCallback : public CefSetCookieCallback {
  public:explicit HTTPSaveCallback(std::function<void()> callback):callback_(suitecut::BindNativeLocatorHandlerAsync(std::move(callback))){}void OnComplete(bool) override {if(!complete_.exchange(true))callback_();}
@@ -50,16 +49,14 @@ class HTTPSaveCallback : public CefSetCookieCallback {
 };
 }
 std::string SuiteCutHTTPControls::Lower(std::string value) {for(auto& c:value)c=static_cast<char>(std::tolower(static_cast<unsigned char>(c)));return value;}
-bool SuiteCutHTTPControls::URL(const std::string& url) {CefURLParts parts;return url.size()<=8192 && CefParseURL(url,parts) && (CefString(&parts.scheme)=="http" || CefString(&parts.scheme)=="https") && parts.host.length;}
+bool SuiteCutHTTPControls::URL(const std::string& url) {CefURLParts parts;return CefParseURL(url,parts) && (CefString(&parts.scheme)=="http" || CefString(&parts.scheme)=="https") && parts.host.length;}
 std::string SuiteCutHTTPControls::Origin(const std::string& url) {CefURLParts parts;if(!CefParseURL(url,parts))return "";return CefString(&parts.scheme).ToString()+"://"+CefString(&parts.host).ToString()+":"+(parts.port.length?CefString(&parts.port).ToString():CefString(&parts.scheme)=="https"?"443":"80");}
 bool SuiteCutHTTPControls::Headers(CefRefPtr<CefListValue> input,CefRequest::HeaderMap& output) {
   if(!input)return true;
-  if(input->GetSize()>1024)return false;
-  size_t bytes=0;
   for(size_t i=0;i<input->GetSize();++i) {
     auto entry=input->GetDictionary(i);if(!entry || entry->GetType("name")!=VTYPE_STRING || entry->GetType("value")!=VTYPE_STRING)return false;
-    const auto name=entry->GetString("name").ToString(),value=entry->GetString("value").ToString();bytes+=name.size()+value.size();
-    if(name.empty() || bytes>65536 || value.find_first_of("\r\n")!=std::string::npos || value.find('\0')!=std::string::npos)return false;
+    const auto name=entry->GetString("name").ToString(),value=entry->GetString("value").ToString();
+    if(name.empty() || value.find_first_of("\r\n")!=std::string::npos || value.find('\0')!=std::string::npos)return false;
     for(const unsigned char c:name)if(c<=32 || c>=127 || std::string("()<>@,;:\\\"/[]?={}").find(static_cast<char>(c))!=std::string::npos)return false;
     std::string wire_value;if(!suitecut::HTTPEncodeHeaderValue(entry->GetString("value").ToString16(),wire_value))return false;
     output.emplace(name,value);
@@ -108,7 +105,6 @@ void SuiteCutHTTPControls::Handle(int owner,Dict params,Reply reply,double origi
   if(closed_){reply(false,nullptr,"Native HTTP engine is closed");return;}
   const auto action=params->GetString("action").ToString();
   if(action=="create") {
-    if(contexts_.size()>=64){reply(false,nullptr,"Native API request context limit exceeded");return;}
     Context context;
     if(params->GetString("scope")=="page") {const auto browser=hooks_.page_context(params->GetInt("pageId"));context.cef=browser.cef;context.browser_context=browser.id;}
     else if(params->GetString("scope")=="context") {const auto browser=hooks_.browser_context(params->GetInt("browserContextId"));context.cef=browser.cef;context.browser_context=browser.id;}
@@ -136,7 +132,7 @@ void SuiteCutHTTPControls::Handle(int owner,Dict params,Reply reply,double origi
   }
   if(action=="resolveLookup"){
     const auto input=params->GetList("addresses");std::vector<suitecut::HTTPLookupControls::Address>addresses;
-    if(input&&input->GetSize()<=16)for(size_t i=0;i<input->GetSize();++i){const auto value=input->GetDictionary(i);if(!value||value->GetType("address")!=VTYPE_STRING||value->GetType("family")!=VTYPE_INT){reply(false,nullptr,"Malformed native HTTP lookup answer");return;}addresses.push_back({value->GetString("address"),value->GetInt("family")});}
+    if(input)for(size_t i=0;i<input->GetSize();++i){const auto value=input->GetDictionary(i);if(!value||value->GetType("address")!=VTYPE_STRING||value->GetType("family")!=VTYPE_INT){reply(false,nullptr,"Malformed native HTTP lookup answer");return;}addresses.push_back({value->GetString("address"),value->GetInt("family")});}
     const double generation=params->GetType("lookupGeneration")==VTYPE_INT?params->GetInt("lookupGeneration"):params->GetDouble("lookupGeneration");
     if(!std::isfinite(generation)||generation<1||generation>9007199254740991.0||generation!=std::floor(generation)){reply(false,nullptr,"Invalid native HTTP lookup generation");return;}
     const bool accepted=lookups_.Resolve(params->GetInt("lookupOwner"),params->GetInt("apiContextId"),static_cast<uint64_t>(generation),hooks_.now(),std::move(addresses),params->GetString("error").ToString());reply(accepted,CefDictionaryValue::Create(),accepted?"":"Native HTTP lookup no longer owns this request");return;
@@ -169,24 +165,24 @@ void SuiteCutHTTPControls::Handle(int owner,Dict params,Reply reply,double origi
   if(action=="appendPreparedMultipart"||action=="commitMultipart"){PreparedMultipart(owner,context_id,params,std::move(reply));return;}
   if(action=="upload") {
     const auto id=params->GetString("uploadId").ToString(),body=params->GetString("body").ToString();
-    if(id.empty() || id.size()>128 || preparations_.Contains(id) || body.size()>kChunkBase64 || (!uploads_.contains(id) && uploads_.size()>=16)){reply(false,nullptr,"Native API upload limit exceeded");return;}
+    if(id.empty() || preparations_.Contains(id)){reply(false,nullptr,"Native API upload identity is invalid or already preparing");return;}
     const auto data=CefBase64Decode(body);if(!data){reply(false,nullptr,"Invalid API body base64");return;}
     auto& upload=uploads_[id];
     if(upload.context && upload.context!=context_id){reply(false,nullptr,"API upload belongs to another context");return;}
     upload.context=context_id;upload.updated=hooks_.now();hooks_.wake();
     const size_t bytes=data->GetSize();std::string error;
-    if(!suitecut::AppendNativeHTTPUpload(upload.bytes,bytes,RetainedUploadCapacity(),kMaxUpload,kUploadBudget,[data](uint8_t*target,size_t size){return data->GetData(target,size,0)==size;},error)){reply(false,nullptr,error);return;}
+    if(!suitecut::AppendNativeHTTPUpload(upload.bytes,bytes,[data](uint8_t*target,size_t size){return data->GetData(target,size,0)==size;},error)){reply(false,nullptr,error);return;}
     upload_bytes_+=bytes;
     reply(true,CefDictionaryValue::Create(),"");return;
   }
   if(action!="fetch"&&action!="fetchMultipart"&&action!="prepareMultipart"){reply(false,nullptr,"Unsupported native HTTP action");return;}
   if((action=="fetchMultipart")!=params->HasKey("multipartParts")){reply(false,nullptr,"Native multipart fields require the explicit multipart fetch operation");return;}
-  if(active_.size()+storage_queries_.size()>=64 || active_.contains(owner) || storage_queries_.contains(owner)){reply(false,nullptr,"Native HTTP request operation limit exceeded");return;}
+  if(active_.contains(owner) || storage_queries_.contains(owner)){reply(false,nullptr,"Native HTTP request owner is already active");return;}
   auto state=std::make_shared<State>();state->owner=owner;state->context=context_id;state->generation=++generation_;state->reply=std::move(reply);state->physical_lease=std::move(physical_lease);
   state->url=params->GetString("url").ToString();state->method=params->GetString("method").ToString();state->remaining_redirects=params->GetInt("maxRedirects");state->fail_status=params->GetBool("failOnStatusCode");state->follow_redirects=state->remaining_redirects>0;
   if(params->HasKey("apiName")){const auto name=params->GetString("apiName").ToString();if(name!="fetch"&&name!="get"&&name!="head"&&name!="post"&&name!="put"&&name!="patch"&&name!="delete"){state->reply(false,nullptr,"Invalid native API operation name");return;}state->api_name=name;}
   state->deadline=original_deadline;
-  if(params->HasKey("lookupKey")){state->lookup_key=params->GetString("lookupKey");if(params->GetType("lookupKey")!=VTYPE_STRING||state->lookup_key.empty()||state->lookup_key.size()>128||!hooks_.lookup_event){state->reply(false,nullptr,"Invalid or unavailable native HTTP lookup provider");return;}}
+  if(params->HasKey("lookupKey")){state->lookup_key=params->GetString("lookupKey");if(params->GetType("lookupKey")!=VTYPE_STRING||state->lookup_key.empty()||!hooks_.lookup_event){state->reply(false,nullptr,"Invalid or unavailable native HTTP lookup provider");return;}}
   state->policy=context->second.policy;
   if(!context->second.owned&&context->second.browser_context&&hooks_.context_policy){
     suitecut::NativeHTTPRequestPolicy current;current.extra_ca=context->second.policy.extra_ca;if(hooks_.default_user_agent)current.user_agent=hooks_.default_user_agent();
@@ -195,10 +191,10 @@ void SuiteCutHTTPControls::Handle(int owner,Dict params,Reply reply,double origi
     state->policy=std::move(current);
   }
   state->timeout_ms=params->HasKey("timeoutMs")?params->GetInt("timeoutMs"):30000;
-  state->retries=params->GetInt("maxRetries");if((params->HasKey("maxRetries")&&params->GetType("maxRetries")!=VTYPE_INT)||state->retries<0||state->retries>100){state->reply(false,nullptr,"Invalid native API retry limit");return;}
+  state->retries=params->GetInt("maxRetries");if((params->HasKey("maxRetries")&&params->GetType("maxRetries")!=VTYPE_INT)||state->retries<0){state->reply(false,nullptr,"Invalid native API retry count");return;}
   state->ignore_https_errors=state->policy.ignore_https_errors;
   if(params->HasKey("ignoreHTTPSErrors")){if(params->GetType("ignoreHTTPSErrors")!=VTYPE_BOOL){state->reply(false,nullptr,"Native API ignoreHTTPSErrors must be boolean");return;}state->ignore_https_errors=params->GetBool("ignoreHTTPSErrors");}
-  if(!URL(state->url) || state->method.empty() || state->method.size()>32 || state->remaining_redirects<0 || state->remaining_redirects>100){state->reply(false,nullptr,"Invalid native API request URL, method or redirect limit");return;}
+  if(!URL(state->url) || state->method.empty() || state->remaining_redirects<0){state->reply(false,nullptr,"Invalid native API request URL, method or redirect count");return;}
   for(const unsigned char c:state->method)if(c<=32 || c>=127){state->reply(false,nullptr,"Invalid native API request method");return;}
   if(context->second.browser_context&&hooks_.context_headers){const auto inherited=hooks_.context_headers(context->second.browser_context);if(inherited){CefDictionaryValue::KeyList keys;inherited->GetKeys(keys);for(const auto&name:keys)state->headers.emplace(name,inherited->GetString(name));}}
   Merge(state->headers,context->second.headers);CefRequest::HeaderMap overrides;
@@ -215,33 +211,28 @@ void SuiteCutHTTPControls::Handle(int owner,Dict params,Reply reply,double origi
   }
   if(params->HasKey("body")) {
     const auto encoded=params->GetString("body").ToString();auto body=encoded.empty()?nullptr:CefBase64Decode(encoded);
-    if((!encoded.empty() && !body) || (body && body->GetSize()>kMaxUpload)){state->reply(false,nullptr,"Invalid native API body");return;}
-    if(body){const auto retained=RetainedUploadCapacity();if(retained>kUploadBudget||body->GetSize()>kUploadBudget-retained){state->reply(false,nullptr,"Native API active upload capacity exceeded");return;}state->upload.resize(body->GetSize());if(state->upload.capacity()>kUploadBudget-retained){state->reply(false,nullptr,"Native API active upload capacity exceeded");return;}body->GetData(state->upload.data(),state->upload.size(),0);}
+    if(!encoded.empty() && !body){state->reply(false,nullptr,"Invalid native API body");return;}
+    if(body){state->upload.resize(body->GetSize());body->GetData(state->upload.data(),state->upload.size(),0);}
   } else if(params->HasKey("uploadId")) {
     const auto upload=uploads_.find(params->GetString("uploadId").ToString());
     if(upload==uploads_.end() || upload->second.context!=context_id){state->reply(false,nullptr,"Native API upload is unavailable");return;}
     upload_bytes_-=upload->second.bytes.size();state->upload=std::move(upload->second.bytes);uploads_.erase(upload);
   }
-  if(params->HasKey("multipartParts")){std::string error;if(!Multipart(state,params->GetList("multipartParts"),kUploadBudget-upload_bytes_-active_upload_bytes_,error)){state->reply(false,nullptr,error);return;}}
-  const auto retained_upload=RetainedUploadCapacity();
-  if(retained_upload>kUploadBudget||state->upload.capacity()>kUploadBudget-retained_upload||state->upload.size()>kUploadBudget-upload_bytes_-active_upload_bytes_){state->reply(false,nullptr,"Native API active upload budget exceeded");return;}
+  if(params->HasKey("multipartParts")){std::string error;if(!Multipart(state,params->GetList("multipartParts"),error)){state->reply(false,nullptr,error);return;}}
   Remove(state->headers,"content-length");
   active_upload_bytes_+=state->upload.size();active_[owner]=state;if(tracing_)tracing_->Before(owner,context_id,params);Start(state);
 }
-bool SuiteCutHTTPControls::Multipart(const std::shared_ptr<State>&state,CefRefPtr<CefListValue>entries,size_t available,std::string&error){
+bool SuiteCutHTTPControls::Multipart(const std::shared_ptr<State>&state,CefRefPtr<CefListValue>entries,std::string&error){
     std::vector<suitecut::NativeHTTPMultipartPart>parts;
-    if(!entries||entries->GetSize()>1024){error="Invalid or excessive native multipart parts";return false;}
+    if(!entries){error="Invalid native multipart parts";return false;}
     for(size_t index=0;index<entries->GetSize();++index){
       const auto item=entries->GetDictionary(index);if(!item||item->GetType("name")!=VTYPE_STRING||item->GetType("offset")!=VTYPE_INT||item->GetType("size")!=VTYPE_INT||item->GetInt("offset")<0||item->GetInt("size")<0||(item->HasKey("filename")&&item->GetType("filename")!=VTYPE_STRING)||(item->HasKey("mimeType")&&item->GetType("mimeType")!=VTYPE_STRING)){error="Malformed native multipart field";return false;}
       suitecut::NativeHTTPMultipartPart part;part.name=item->GetString("name");part.offset=size_t(item->GetInt("offset"));part.size=size_t(item->GetInt("size"));part.file=item->HasKey("filename");part.filename=item->GetString("filename");part.mime=item->GetString("mimeType");if(item->HasKey("inferMime")){if(item->GetType("inferMime")!=VTYPE_BOOL||!part.file){error="Invalid native multipart MIME inference";return false;}if(item->GetBool("inferMime")&&part.mime.empty()){const auto dot=part.filename.find_last_of('.');if(dot!=std::string::npos&&dot+1<part.filename.size())part.mime=CefGetMimeType(part.filename.substr(dot+1)).ToString();}}parts.push_back(std::move(part));
     }
     std::string boundary;bool safe=false;
-    for(size_t attempt=0;attempt<8&&!safe;++attempt){unsigned char random[16];if(RAND_bytes(random,sizeof(random))!=1){error="Native multipart boundary entropy is unavailable";return false;}boundary="scut--";for(const auto byte:random){boundary+="0123456789abcdef"[byte>>4];boundary+="0123456789abcdef"[byte&15];}safe=std::search(state->upload.begin(),state->upload.end(),boundary.begin(),boundary.end())==state->upload.end();}
+    while(!safe){unsigned char random[16];if(RAND_bytes(random,sizeof(random))!=1){error="Native multipart boundary entropy is unavailable";return false;}boundary="scut--";for(const auto byte:random){boundary+="0123456789abcdef"[byte>>4];boundary+="0123456789abcdef"[byte&15];}safe=std::search(state->upload.begin(),state->upload.end(),boundary.begin(),boundary.end())==state->upload.end();}
     std::vector<unsigned char>encoded;
-    size_t retained=RetainedUploadCapacity();const auto resident=active_.find(state->owner);if(resident==active_.end()||resident->second!=state)retained+=state->upload.capacity();
-    if(retained>kUploadBudget){error="Native API active upload capacity exceeded";return false;}
-    if(!safe||!suitecut::EncodeNativeHTTPMultipart(state->upload,parts,boundary,kMaxUpload,encoded,error,kUploadBudget-retained)){if(error.empty())error="Native multipart boundary collision limit exceeded";return false;}
-    if(encoded.size()>available){error="Native API active upload budget exceeded";return false;}
+    if(!suitecut::EncodeNativeHTTPMultipart(state->upload,parts,boundary,encoded,error))return false;
     state->upload.swap(encoded);Remove(state->headers,"content-type");state->headers.emplace("content-type","multipart/form-data; boundary="+boundary);
     return true;
 }
@@ -253,13 +244,13 @@ void SuiteCutHTTPControls::PreparedMultipart(int owner,int context,Dict params,R
   if(state->deadline&&hooks_.now()>=state->deadline){const auto error=TimeoutError(state->owner);Stop(state->owner,error);reply(false,nullptr,error);return;}
   const auto fail=[this,state,reply](const std::string&error){Stop(state->owner,error);reply(false,nullptr,error);};
   if(params->GetString("action")=="appendPreparedMultipart"){
-    const auto body=params->GetString("body").ToString();if(body.empty()||body.size()>kChunkBase64){fail("Invalid native multipart source chunk");return;}
-    const auto bytes=CefBase64Decode(body);if(!bytes||bytes->GetSize()>kChunkBytes||bytes->GetSize()>kMaxUpload-state->upload.size()||bytes->GetSize()>kUploadBudget-upload_bytes_-active_upload_bytes_){fail("Native multipart source byte budget exceeded");return;}
-    std::string error;if(!suitecut::AppendNativeHTTPUpload(state->upload,bytes->GetSize(),RetainedUploadCapacity(),kMaxUpload,kUploadBudget,[bytes](uint8_t*target,size_t size){return bytes->GetData(target,size,0)==size;},error)){fail(error);return;}
+    const auto body=params->GetString("body").ToString();if(body.empty()){fail("Invalid native multipart source chunk");return;}
+    const auto bytes=CefBase64Decode(body);if(!bytes){fail("Invalid native multipart source base64");return;}
+    std::string error;if(!suitecut::AppendNativeHTTPUpload(state->upload,bytes->GetSize(),[bytes](uint8_t*target,size_t size){return bytes->GetData(target,size,0)==size;},error)){fail(error);return;}
     active_upload_bytes_+=bytes->GetSize();reply(true,CefDictionaryValue::Create(),"");return;
   }
   const size_t previous=state->upload.size();std::string error;
-  if(!Multipart(state,params->GetList("multipartParts"),kUploadBudget-upload_bytes_-active_upload_bytes_+previous,error)){fail(error);return;}
+  if(!Multipart(state,params->GetList("multipartParts"),error)){fail(error);return;}
   active_upload_bytes_=active_upload_bytes_-previous+state->upload.size();state->preparing=false;state->preparation_token.clear();preparations_.Cancel(state->owner);Remove(state->headers,"content-length");
   Start(state);reply(true,CefDictionaryValue::Create(),"");
 }
@@ -296,7 +287,7 @@ void SuiteCutHTTPControls::CookiesReady(int owner,uint64_t generation,std::strin
     const auto self=weak.lock();if(!self)return;const auto found=self->active_.find(owner);if(found==self->active_.end()||found->second->generation!=generation)return;
     if(!error.empty()){self->Stop(owner,found->second->deadline&&self->hooks_.now()>=found->second->deadline?self->TimeoutError(owner):error);return;}
     request.lookup=suitecut::NativeCurlTransport::Request::Lookup{host,port,std::move(addresses)};self->SendRequest(found->second,std::move(request));
-  }))Stop(owner,"Native HTTP host lookup capacity exceeded or invalid destination");
+  }))Stop(owner,"Native HTTP host lookup owner is busy or the destination is invalid");
 }
 void SuiteCutHTTPControls::SendRequest(const std::shared_ptr<State>& state,suitecut::NativeCurlTransport::Request request){
   if((state->stream_prepared||state->physical_lease)&&state->deadline&&hooks_.now()>=state->deadline){Stop(state->owner,TimeoutError(state->owner));return;}
@@ -339,18 +330,12 @@ void SuiteCutHTTPControls::SendRequest(const std::shared_ptr<State>& state,suite
   else if(tracing_)tracing_->Request(owner,generation,state->url,state->method,HTTPTraceHeaders(state->headers),state->upload);
   hooks_.wake();
 }
-size_t SuiteCutHTTPControls::RetainedResponseCapacity()const {
-  size_t retained=0;
-  for(const auto&[owner,state]:active_)retained+=state->body.capacity();
-  for(const auto&[id,response]:responses_)retained+=response.body.capacity();
-  return retained;
-}
 bool SuiteCutHTTPControls::Data(int owner,uint64_t generation,const void* bytes,size_t size) {
   const auto found=active_.find(owner);if(found==active_.end() || found->second->generation!=generation)return false;
   auto& state=*found->second;
   if(!bytes){active_body_bytes_-=state.body.size();std::vector<uint8_t>().swap(state.body);return true;}
   std::string allocation_error;
-  if(!suitecut::AppendNativeHTTPUpload(state.body,size,RetainedResponseCapacity(),kMaxBody,kBodyBudget,[bytes](uint8_t*target,size_t amount){std::memcpy(target,bytes,amount);return true;},allocation_error)){state.error="Native API response body budget exceeded";return false;}
+  if(!suitecut::AppendNativeHTTPUpload(state.body,size,[bytes](uint8_t*target,size_t amount){std::memcpy(target,bytes,amount);return true;},allocation_error)){state.error="Native API response body could not be retained";return false;}
   active_body_bytes_+=size;return true;
 }
 void SuiteCutHTTPControls::Complete(int owner,uint64_t generation,suitecut::NativeCurlTransport::Response response) {
@@ -408,7 +393,6 @@ void SuiteCutHTTPControls::Finish(const std::shared_ptr<State>& state,suitecut::
   }
   if(redirect && state->remaining_redirects==0 && state->follow_redirects){Stop(owner,"Max redirect count exceeded");return;}
   if(state->fail_status && (status<200 || status>=400)){std::string error=std::to_string(status)+" "+HTTPHeaderText(response.status_text);if(state->method!="HEAD"&&!state->body.empty())error+="\nResponse text:\n"+std::string(reinterpret_cast<const char*>(state->body.data()),std::min<size_t>(state->body.size(),1000));Stop(owner,error);return;}
-  if(responses_.size()>=128){Stop(owner,"Native API response cache capacity exceeded; dispose responses");return;}
   Response saved;saved.context=state->context;saved.status=status;saved.url=response.url.empty()?state->url:response.url;saved.status_text=HTTPHeaderText(response.status_text);saved.method=std::move(response.method);saved.headers=std::move(headers);saved.body=std::move(state->body);saved.remote_ip=std::move(response.remote_ip);saved.remote_port=response.remote_port;saved.security=std::move(response.security);saved.timing=response.timing;
   active_body_bytes_-=saved.body.size();body_bytes_+=saved.body.size();const auto id=std::to_string(++next_response_);responses_[id]=std::move(saved);auto result=Metadata(id,responses_.at(id));
   active_upload_bytes_-=state->upload.size();std::vector<uint8_t>().swap(state->upload);active_.erase(owner);if(tracing_)tracing_->After(owner,true,result,"");state->reply(true,result,"");
@@ -436,8 +420,7 @@ void SuiteCutHTTPControls::Clear(){
 }
 void SuiteCutHTTPControls::StopStorage(int owner,const std::string& error,bool respond) {const auto found=storage_queries_.find(owner);if(found==storage_queries_.end())return;auto done=std::exchange(found->second.reply, nullptr);found->second.canceled->canceled.store(true);storage_queries_.erase(found);if(respond)done(false,nullptr,error);}
 void SuiteCutHTTPControls::Tick(double now) {transport_.Tick();ProfileTick(now);if(tracing_)tracing_->Tick(now);std::vector<int> expired;for(const auto& [owner,query]:storage_queries_)if(now>=query.deadline)expired.push_back(owner);for(const int owner:expired)StopStorage(owner,"Native API storage query deadline exceeded",true);for(auto it=uploads_.begin();it!=uploads_.end();)if(now-it->second.updated>=30000){upload_bytes_-=it->second.bytes.size();it=uploads_.erase(it);}else ++it;}
-size_t SuiteCutHTTPControls::RetainedUploadCapacity()const{size_t bytes=0;for(const auto&[id,upload]:uploads_)bytes+=upload.bytes.capacity();for(const auto&[id,state]:active_)bytes+=state->upload.capacity();return bytes;}
-void SuiteCutHTTPControls::Diagnostics(Dict result) const {result->SetDouble("httpAPIOriginsAllocatedBytes",static_cast<double>(origins_budget_->Bytes()));result->SetDouble("httpAPIOriginsPeakAllocatedBytes",static_cast<double>(origins_budget_->Peak()));size_t origin_count=0,pending_origins=0;for(const auto&[id,context]:contexts_){(void)id;if(context.origins)origin_count+=context.origins->Size();}for(const auto&[id,command]:scope_commands_){(void)id;if(command.origins)pending_origins+=command.origins->Size();}result->SetDouble("httpAPIOriginsEntries",static_cast<double>(origin_count));result->SetDouble("httpAPIOriginsPendingEntries",static_cast<double>(pending_origins));result->SetDouble("httpAPICookieAllocatedBytes",static_cast<double>(jar_budget_->Bytes()));result->SetDouble("httpAPICookiePeakAllocatedBytes",static_cast<double>(jar_budget_->Peak()));size_t api_cookie_entries=0;for(const auto&[id,context]:contexts_){(void)id;if(context.jar)api_cookie_entries+=context.jar->Size();}result->SetDouble("httpAPICookieEntries",static_cast<double>(api_cookie_entries));result->SetDouble("httpRetainedUploadCapacity",static_cast<double>(RetainedUploadCapacity()));result->SetInt("httpUploadPreparations",static_cast<int>(preparations_.Size()));result->SetInt("httpLookupRequests",static_cast<int>(lookups_.Size()));result->SetDouble("httpCookieMetadataBytes",static_cast<double>(metadata_bytes_->load()));result->SetInt("httpProfilePhysical",static_cast<int>(PhysicalProfiles()));result->SetInt("httpScopeCommands",static_cast<int>(scope_commands_.size()));if(tracing_)tracing_->Diagnostics(result);result->SetInt("httpStorageQueries",static_cast<int>(storage_queries_.size()));result->SetDouble("httpStorageCookieBytes",static_cast<double>(storage_cookie_bytes_->load()));result->SetInt("httpCookieVisits",static_cast<int>(pending_cookie_visits_));result->SetInt("httpCookieCallbacks",static_cast<int>(pending_cookie_saves_));result->SetInt("httpTransfers",static_cast<int>(transport_.size()));result->SetInt("httpContexts",static_cast<int>(contexts_.size()));result->SetInt("httpActive",static_cast<int>(active_.size()));result->SetInt("httpResponses",static_cast<int>(responses_.size()));result->SetInt("httpUploads",static_cast<int>(uploads_.size()));result->SetDouble("httpRetainedBodyCapacity",static_cast<double>(RetainedResponseCapacity()));result->SetDouble("httpRetainedBodyBytes",static_cast<double>(body_bytes_));result->SetDouble("httpActiveBodyBytes",static_cast<double>(active_body_bytes_));result->SetDouble("httpUploadBytes",static_cast<double>(upload_bytes_));result->SetDouble("httpActiveUploadBytes",static_cast<double>(active_upload_bytes_));}
+void SuiteCutHTTPControls::Diagnostics(Dict result) const {result->SetDouble("httpAPIOriginsAllocatedBytes",static_cast<double>(origins_budget_->Bytes()));result->SetDouble("httpAPIOriginsPeakAllocatedBytes",static_cast<double>(origins_budget_->Peak()));size_t origin_count=0,pending_origins=0;for(const auto&[id,context]:contexts_){(void)id;if(context.origins)origin_count+=context.origins->Size();}for(const auto&[id,command]:scope_commands_){(void)id;if(command.origins)pending_origins+=command.origins->Size();}result->SetDouble("httpAPIOriginsEntries",static_cast<double>(origin_count));result->SetDouble("httpAPIOriginsPendingEntries",static_cast<double>(pending_origins));result->SetDouble("httpAPICookieAllocatedBytes",static_cast<double>(jar_budget_->Bytes()));result->SetDouble("httpAPICookiePeakAllocatedBytes",static_cast<double>(jar_budget_->Peak()));size_t api_cookie_entries=0;for(const auto&[id,context]:contexts_){(void)id;if(context.jar)api_cookie_entries+=context.jar->Size();}result->SetDouble("httpAPICookieEntries",static_cast<double>(api_cookie_entries));result->SetInt("httpUploadPreparations",static_cast<int>(preparations_.Size()));result->SetInt("httpLookupRequests",static_cast<int>(lookups_.Size()));result->SetDouble("httpCookieMetadataBytes",static_cast<double>(metadata_bytes_->load()));result->SetInt("httpProfilePhysical",static_cast<int>(PhysicalProfiles()));result->SetInt("httpScopeCommands",static_cast<int>(scope_commands_.size()));if(tracing_)tracing_->Diagnostics(result);result->SetInt("httpStorageQueries",static_cast<int>(storage_queries_.size()));result->SetDouble("httpStorageCookieBytes",static_cast<double>(storage_cookie_bytes_->load()));result->SetInt("httpCookieVisits",static_cast<int>(pending_cookie_visits_));result->SetInt("httpCookieCallbacks",static_cast<int>(pending_cookie_saves_));result->SetInt("httpTransfers",static_cast<int>(transport_.size()));result->SetInt("httpContexts",static_cast<int>(contexts_.size()));result->SetInt("httpActive",static_cast<int>(active_.size()));result->SetInt("httpResponses",static_cast<int>(responses_.size()));result->SetInt("httpUploads",static_cast<int>(uploads_.size()));result->SetDouble("httpRetainedBodyBytes",static_cast<double>(body_bytes_));result->SetDouble("httpActiveBodyBytes",static_cast<double>(active_body_bytes_));result->SetDouble("httpUploadBytes",static_cast<double>(upload_bytes_));result->SetDouble("httpActiveUploadBytes",static_cast<double>(active_upload_bytes_));}
 
 std::string SuiteCutHTTPControls::TimeoutError(int owner)const{const auto found=active_.find(owner);if(found==active_.end())return {};return "apiRequestContext."+found->second->api_name+": Timeout "+std::to_string(found->second->timeout_ms)+"ms exceeded";}
 

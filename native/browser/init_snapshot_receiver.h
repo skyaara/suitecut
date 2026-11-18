@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 #include "init_snapshot_transport.h"
-#include <array>
 #include <memory>
 #include <tuple>
+#include <vector>
 
 namespace suitecut {
 // Renderer-thread only. Admission comes from actual native browser/frame/epoch
@@ -14,7 +14,8 @@ class InitSnapshotReceiver {
  private:
   struct State {
     struct Slot {InitSnapshotPin pin;size_t bytes=0;bool occupied=false,released=false;};
-    std::array<Slot,InitSnapshotReceipts::kTransfers>slots{};
+    // Grows on demand; a released slot is reused. Leases address by index.
+    std::vector<Slot>slots;
     size_t bytes=0,count=0;
   };
  public:
@@ -36,12 +37,11 @@ class InitSnapshotReceiver {
       state_(std::move(state)),slot_(slot),region_(std::move(region)),pin_(std::move(view.pin)),payload_(view.payload){}
     std::shared_ptr<State>state_;size_t slot_;Region region_;InitSnapshotPin pin_;std::string_view payload_;
   };
-  enum class Status {Installed,Duplicate,NotAdmitted,Malformed,Stale,Conflict,Capacity,Expired};
+  enum class Status {Installed,Duplicate,NotAdmitted,Malformed,Stale,Conflict,Expired};
   struct Result {Status status;std::shared_ptr<const Lease>lease;};
   bool Admit(const InitSnapshotOwner&owner){
     if(!InitSnapshotWire::ValidOwner(owner))return false;
     auto key=Key(owner);if(owners_.contains(key))return true;
-    if(owners_.size()>=InitSnapshotReceipts::kTransfers)return false;
     owners_.emplace(std::move(key),Record{});return true;
   }
   Result Install(Region region,const InitSnapshotPin&expected,double deadline,double now){
@@ -57,8 +57,8 @@ class InitSnapshotReceiver {
       return {Status::Conflict,{}};
     }
     if(expected.transfer<=record.transfer)return {Status::Conflict,{}};
-    if(state_->count>=state_->slots.size()||region.bytes.size()>InitSnapshotReceipts::kBytes-state_->bytes)return {Status::Capacity,{}};
-    size_t slot=0;while(state_->slots[slot].occupied)++slot;
+    size_t slot=0;while(slot<state_->slots.size()&&state_->slots[slot].occupied)++slot;
+    if(slot==state_->slots.size())state_->slots.emplace_back();
     State::Slot pending{expected,region.bytes.size(),true,false};
     auto lease=std::shared_ptr<const Lease>(new Lease(state_,slot,std::move(region),std::move(*view)));
     // No callbacks run during commit; allocation succeeded before mutation.

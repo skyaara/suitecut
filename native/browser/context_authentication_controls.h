@@ -27,7 +27,7 @@ class NativeContextAuthenticationSnapshot {
  private:
   mutable std::mutex mutex_;std::shared_ptr<const NativeContextCredentials>value_;
 };
-// Bounded UI-thread policy fanout. Cancellation/timeout retires only the reply;
+// UI-thread policy fanout. Cancellation/timeout retires only the reply;
 // real ClearHttpAuthCredentials and Fetch configuration receipts remain owned
 // until their actual callback or exact native target destruction.
 class NativeContextAuthenticationControls {
@@ -37,7 +37,6 @@ class NativeContextAuthenticationControls {
   using Result=std::function<void(bool,const std::string&)>;
   using Apply=std::function<void(Value,Result)>;
   using Prepare=std::function<void(Result)>;
-  static constexpr size_t kContexts=32,kTargets=192,kUpdates=64;
   // Receipt times must use the same clock domain as the caller's deadlines.
   // Requiring an explicit clock prevents absolute/relative epoch substitution.
   explicit NativeContextAuthenticationControls(std::function<double()> now):now_(std::move(now)){}
@@ -47,24 +46,22 @@ class NativeContextAuthenticationControls {
   void SetSettled(std::function<void(int)> settled){settled_=std::move(settled);}
   ~NativeContextAuthenticationControls(){Clear();}
   static bool Valid(const NativeContextCredentials&value){
-    if(value.size()>64)return false;
-    size_t bytes=0;
-    for(const auto&item:value){if(item.username.size()>4096||item.password.size()>4096||item.origin.size()>8192||item.username.find('\0')!=std::string::npos||item.password.find('\0')!=std::string::npos||item.origin.find('\0')!=std::string::npos)return false;bytes+=item.username.size()+item.password.size()+item.origin.size();if(bytes>65536)return false;}return true;
+    for(const auto&item:value){if(item.username.find('\0')!=std::string::npos||item.password.find('\0')!=std::string::npos||item.origin.find('\0')!=std::string::npos)return false;}return true;
   }
   bool Seed(int context,NativeContextCredentials value){
-    if(context<1||states_.contains(context)||states_.size()>=kContexts||!Valid(value))return false;
+    if(context<1||states_.contains(context)||!Valid(value))return false;
     auto snapshot=std::make_shared<NativeContextAuthenticationSnapshot>(std::make_shared<const NativeContextCredentials>(std::move(value)));states_.emplace(context,State{std::move(snapshot)});return true;
   }
   Snapshot Get(int context)const{const auto found=states_.find(context);return found==states_.end()?nullptr:found->second.snapshot;}
   bool Attach(int context,const std::string&key,Apply apply,Result ready){
-    const auto found=states_.find(context);if(found==states_.end()||found->second.closing||key.empty()||key.size()>128||!apply||!ready||targets_.size()>=kTargets||targets_.contains(key)||serial_==std::numeric_limits<uint64_t>::max())return false;
+    const auto found=states_.find(context);if(found==states_.end()||found->second.closing||key.empty()||!apply||!ready||targets_.contains(key)||serial_==std::numeric_limits<uint64_t>::max())return false;
     targets_.emplace(key,Target{context,++serial_,std::move(apply),std::move(ready)});
     const int owner=found->second.owner;const auto update=updates_.find(owner);if(update!=updates_.end()){update->second.pending.insert(key);if(update->second.preparing)return true;}
     Dispatch(key);return true;
   }
   bool Set(int owner,int context,NativeContextCredentials value,double deadline,Prepare prepare,Result done){
     if(!now_)return false;
-    const auto found=states_.find(context);if(owner<1||found==states_.end()||found->second.closing||found->second.owner||!Valid(value)||!std::isfinite(deadline)||deadline<0||!prepare||!done||updates_.contains(owner)||updates_.size()>=kUpdates||serial_==std::numeric_limits<uint64_t>::max()||found->second.revision==std::numeric_limits<uint64_t>::max())return false;
+    const auto found=states_.find(context);if(owner<1||found==states_.end()||found->second.closing||found->second.owner||!Valid(value)||!std::isfinite(deadline)||deadline<0||!prepare||!done||updates_.contains(owner)||serial_==std::numeric_limits<uint64_t>::max()||found->second.revision==std::numeric_limits<uint64_t>::max())return false;
     for(const auto&[key,target]:targets_){(void)key;if(target.context==context&&target.revision==std::numeric_limits<uint64_t>::max())return false;}
     auto&state=found->second;state.snapshot->Set(std::make_shared<const NativeContextCredentials>(std::move(value)));++state.revision;state.owner=owner;
     Update update;update.context=context;update.generation=++serial_;update.deadline=deadline;update.done=std::move(done);update.preparing=true;
@@ -74,7 +71,7 @@ class NativeContextAuthenticationControls {
       if(!*alive)return;
       const auto found=updates_.find(owner);if(found==updates_.end()||found->second.generation!=generation||!found->second.preparing)return;
       found->second.preparing=false;if(!ok){
-        found->second.success=false;found->second.error=error.substr(0,4096);
+        found->second.success=false;found->second.error=error;
         const auto state=states_.find(found->second.context);if(state!=states_.end()){state->second.closing=true;state->second.snapshot->Set(nullptr);}
         std::vector<Result>ready;for(auto&[key,target]:targets_){(void)key;if(target.context==found->second.context&&target.ready)ready.push_back(std::exchange(target.ready, nullptr));}
         for(auto&callback:ready)callback(false,error);
@@ -127,7 +124,7 @@ class NativeContextAuthenticationControls {
       auto ready=std::exchange(target->second.ready, nullptr);if(ready)ready(ok,error);
       if(!*alive)return;
       const auto current=updates_.find(owner);
-      if(current!=updates_.end()&&current->second.generation==update_generation){current->second.pending.erase(key);if(!ok){current->second.success=false;if(current->second.error.empty())current->second.error=error.substr(0,4096);}if(!current->second.preparing&&current->second.pending.empty())Finish(owner);}
+      if(current!=updates_.end()&&current->second.generation==update_generation){current->second.pending.erase(key);if(!ok){current->second.success=false;if(current->second.error.empty())current->second.error=error;}if(!current->second.preparing&&current->second.pending.empty())Finish(owner);}
       Notify(context);
     });
   }

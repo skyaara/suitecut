@@ -27,7 +27,7 @@ class NativeNetworkPostPreparation {
       :publication_(publication),read_(std::move(read)),reserve_(std::move(reserve)),apply_(std::move(apply)){}
   ~NativeNetworkPostPreparation(){Clear();}
   uint64_t Prepare(const std::string&logical,const std::string&session,const std::string&request,double deadline,bool publish=true){
-    if(closed_||!read_||logical.empty()||logical.size()>256||session.size()>128||request.empty()||request.size()>256)return 0;
+    if(closed_||!read_||logical.empty()||request.empty())return 0;
     const auto found=jobs_.find(logical);if(found!=jobs_.end())return found->second.gate;
     const auto gate=publication_.Prepare(deadline);if(!gate)return 0;
     jobs_.emplace(logical,Job{*gate,session,request,deadline,false,std::make_shared<bool>(true),publish});return *gate;
@@ -40,7 +40,6 @@ class NativeNetworkPostPreparation {
     if(found->second.owners->settled)return true;
     auto&owners=found->second.owners->values;
     for(const auto&known:owners)if(known.owner.get()==owner.get())return true;
-    if(owners.size()>=16)return false;
     owners.push_back({std::move(owner),{}});return true;
   }
   bool RetainHAR(const std::string&logical,uint64_t scope,NativeHARRouteRegistration::Policy policy){
@@ -48,10 +47,9 @@ class NativeNetworkPostPreparation {
     auto retained=found->second.owners;if(retained->settled)return true;
     auto&owners=retained->values;auto known=std::find_if(owners.begin(),owners.end(),[&](const Retention&entry){return entry.owner.get()==policy.get();});
     if(known!=owners.end()&&known->acknowledge)return true;
-    if(known==owners.end()&&owners.size()>=16)return false;
     // Reserve storage BEFORE issuing physical work. The subsequent moves of
     // shared_ptr/std::function cannot leave an admitted receipt unrecorded.
-    owners.reserve(16);known=std::find_if(owners.begin(),owners.end(),[&](const Retention&entry){return entry.owner.get()==policy.get();});
+    owners.reserve(owners.size()+1);known=std::find_if(owners.begin(),owners.end(),[&](const Retention&entry){return entry.owner.get()==policy.get();});
     auto work=GlobalHARWorkLeases().Issue(scope,found->second.session,policy,NativeHARWorkLeases::Kind::PostRead);if(!work)return false;
     if(known!=owners.end())known->acknowledge=std::exchange(work->acknowledge, nullptr);
     else owners.push_back({std::move(policy),std::exchange(work->acknowledge, nullptr)});
@@ -66,7 +64,7 @@ class NativeNetworkPostPreparation {
     auto read=read_;
     read(job.session,job.request,job.deadline,
       [this,alive=alive_,logical,valid=job.valid,gate=job.gate,deadline=job.deadline,publish=job.publish,owners=job.owners,data=std::move(reservation.data)](bool ok,Bytes bytes,bool text,const std::string&error){
-        if(!owners->observed&&!owners->settled){owners->observed=true;owners->ok=ok;owners->error.assign(error.data(),std::min<size_t>(2048,error.size()));}
+        if(!owners->observed&&!owners->settled){owners->observed=true;owners->ok=ok;owners->error=error;}
         // Even after logical metadata cancellation, the original record receives
         // its honest data outcome. Its separate physical receipt settles later.
         if(!*valid){ok=false;Bytes().swap(bytes);text=false;}
@@ -96,7 +94,7 @@ class NativeNetworkPostPreparation {
   size_t pending()const{return jobs_.size();}
  private:
   struct Retention{std::shared_ptr<const void>owner;NativeHARWorkLeases::Ack acknowledge;};
-  struct Retentions{Retentions(){error.reserve(2048);}bool settled=false,observed=false,ok=false;std::string error;std::vector<Retention>values;};
+  struct Retentions{bool settled=false,observed=false,ok=false;std::string error;std::vector<Retention>values;};
   struct Job{uint64_t gate;std::string session,request;double deadline;bool started;std::shared_ptr<bool>valid=std::make_shared<bool>(true);bool publish=true;std::shared_ptr<Retentions>owners=std::make_shared<Retentions>();};
   NativeNetworkBodyPublication&publication_;Read read_;Reserve reserve_;Apply apply_;std::map<std::string,Job>jobs_;
   bool closed_=false;std::shared_ptr<bool>alive_=std::make_shared<bool>(true);

@@ -8,7 +8,7 @@ const identity = z.strictObject({
   session: z.number().int().positive().max(Number.MAX_SAFE_INTEGER),
   chunk: z.number().int().positive().max(Number.MAX_SAFE_INTEGER),
 })
-const text = z.string().max(512)
+const text = z.string()
 const startOptions = z.strictObject({
   name: text.optional(),
   title: text.optional(),
@@ -30,14 +30,13 @@ const saveOptions = z.strictObject({
   path: z
     .string()
     .min(1)
-    .max(4096)
     .refine((value) => !value.includes('\0'))
     .optional(),
 })
 const groupOptions = z.strictObject({
   location: z
     .strictObject({
-      file: z.string().min(1).max(4096),
+      file: z.string().min(1),
       line: z.number().int().positive().optional(),
       column: z.number().int().positive().optional(),
     })

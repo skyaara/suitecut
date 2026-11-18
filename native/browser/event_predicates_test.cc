@@ -29,28 +29,24 @@ int main() {
   const auto accepted=controller.Pending(1,1);assert(accepted);
   assert(controller.Answer(1,1,accepted->token,"client",true,matched)==Controller::Decision::Matched);
   assert(matched=="{\"text\":\"accepted\"}"&&controller.Size()==0&&controller.PendingBytes()==0);
-  for(int id=1;id<=64;++id)assert(controller.Start(id,2,"client","console",0));
-  assert(!controller.Start(65,2,"client","console",0));
-  const std::string large(Controller::kMaxPayload,'x');
-  for(int id=1;id<=4;++id)assert(controller.Offer(id,2,1,"console",large)==Controller::Status::CandidateReady);
-  assert(controller.PendingBytes()==Controller::kPendingBytes);
-  assert(controller.Offer(5,2,1,"console",large)==Controller::Status::PayloadCapacity);
-  controller.Cancel(1);assert(controller.PendingBytes()==3*Controller::kMaxPayload);
-  assert(controller.Offer(5,2,1,"console",large)==Controller::Status::CandidateReady);
+  // No predicate count or payload byte limit: past the old 64 predicates and
+  // 24 MiB / 96 MiB budgets every candidate is offered whole.
+  for(int id=1;id<=256;++id)assert(controller.Start(id,2,"client","console",0));
+  const std::string large(25*1048576,'x');
+  for(int id=1;id<=5;++id)assert(controller.Offer(id,2,1,"console",large)==Controller::Status::CandidateReady);
+  assert(controller.PendingBytes()==5*large.size());
+  controller.Cancel(1);assert(controller.PendingBytes()==4*large.size());
+  assert(controller.Pending(5,2)&&controller.Pending(5,2)->json.size()==large.size());
   controller.Clear();assert(controller.PendingBytes()==0&&controller.Size()==0);
-  // WebSocket base64 snapshots may exceed the generic limit, but share the
-  // same aggregate budget and exact cancel/late-ACK ownership.
-  assert(!controller.Start(1,3,"socket","framereceived",0,0));
-  assert(!controller.Start(1,3,"socket","framereceived",0,Controller::kWebSocketPayload+1));
-  assert(controller.Start(1,3,"socket","framereceived",0,Controller::kWebSocketPayload));
+  // WebSocket base64 snapshots share the same exact cancel/late-ACK ownership.
+  assert(controller.Start(1,3,"socket","framereceived",0));
   assert(controller.Start(2,3,"generic","console",0));
-  const std::string expanded(Controller::kWebSocketPayload,'b');
-  assert(controller.Offer(2,3,1,"console",expanded)==Controller::Status::PayloadCapacity);
+  const std::string expanded(31*1048576,'b');
   assert(controller.Offer(1,3,1,"framereceived",expanded)==Controller::Status::CandidateReady);
-  assert(controller.Offer(2,3,1,"console",large)==Controller::Status::CandidateReady);
-  assert(controller.PendingBytes()==Controller::kWebSocketPayload+Controller::kMaxPayload);
+  assert(controller.Offer(2,3,1,"console",expanded)==Controller::Status::CandidateReady);
+  assert(controller.PendingBytes()==2*expanded.size());
   const auto ws=controller.Pending(1,3);assert(ws);const auto ws_token=ws->token;
-  controller.Cancel(1);assert(controller.PendingBytes()==Controller::kMaxPayload);
+  controller.Cancel(1);assert(controller.PendingBytes()==expanded.size());
   assert(controller.Answer(1,3,ws_token,"socket",true,matched)==Controller::Decision::Stale);
   controller.Clear();assert(controller.PendingBytes()==0);
   std::mt19937_64 random(0x1a7e);

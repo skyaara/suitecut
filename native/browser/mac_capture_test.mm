@@ -14,7 +14,9 @@ int main(){@autoreleasepool {
   suitecut::MacCapturePool pool;
   std::vector<std::shared_ptr<suitecut::MacCaptureFrame>> owned;
   for(int i=0;i<8;++i){auto frame=pool.Copy(source,0,0,1920,1080);assert(frame);owned.push_back(std::move(frame));}
-  assert(!pool.Copy(source,0,0,1920,1080));
+  // The pool's byte budget sizes only its idle cache: a ninth live frame past
+  // the former 64 MiB refusal is still copied.
+  {auto extra=pool.Copy(source,0,0,1920,1080);assert(extra);}
   owned.erase(owned.begin());
   auto reused=pool.Copy(source,0,0,1920,1080);assert(reused);
   std::vector<uint8_t> copied;assert(reused->Read(copied));

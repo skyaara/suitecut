@@ -24,7 +24,6 @@ interface Mutation {
   wait?: NativeRouteInvocationWaitReservation | undefined
   settle(applied: boolean): void
 }
-let pending = 0
 /** Page policy removal shares no Context-policy counter or callback selection. */
 export class NativePageRouteRemovals {
   private readonly mutations = new Map<string, Mutation>()
@@ -36,7 +35,6 @@ export class NativePageRouteRemovals {
   ) {}
   async remove(behavior: 'wait' | 'ignoreErrors'): Promise<void> {
     if (this.closed) throw new Error('Native Page route removal owner is closed')
-    if (pending >= 64) throw new Error('Native Page route removal observation capacity exceeded')
     const id = randomUUID()
     let settle: Mutation['settle'] = () => undefined
     const outcome = new Promise<boolean>((done) => {
@@ -55,7 +53,6 @@ export class NativePageRouteRemovals {
     if (behavior === 'wait') state.wait = this.invocations.reserveWait()
     if (behavior === 'ignoreErrors') state.authorizeIgnore = this.invocations.armIgnore(outcome)
     this.mutations.set(id, state)
-    ++pending
     try {
       await this.command({ action: 'removeRoute', registrationId: '', behavior, mutationId: id })
       if (state.closed) throw new Error('Native Page closed before removal observer delivery')
@@ -72,7 +69,6 @@ export class NativePageRouteRemovals {
     } finally {
       state.wait?.cancel()
       this.mutations.delete(id)
-      --pending
     }
   }
   receive(value: NativePageRouteMutation): void {

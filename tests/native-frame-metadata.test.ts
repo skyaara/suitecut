@@ -33,19 +33,14 @@ describe('selected native frame name wire contract', () => {
     ])
       expect(NativeFrameInfoSchema.safeParse({ ...frame, ...extra }).success).toBe(false)
   })
-  it('bounds actual decoded UTF16 units and encoded token length independently', () => {
+  it('decodes names past the old 1024-unit and token-length caps whole', () => {
     expect(
-      NativeFrameInfoSchema.parse({ ...frame, nameJSON: JSON.stringify('\ud800'.repeat(1024)) })
+      NativeFrameInfoSchema.parse({ ...frame, nameJSON: JSON.stringify('\ud800'.repeat(1025)) })
         .name,
-    ).toHaveLength(1024)
+    ).toBe('\ud800'.repeat(1025))
     expect(
-      NativeFrameInfoSchema.safeParse({ ...frame, nameJSON: JSON.stringify('\ud800'.repeat(1025)) })
-        .success,
-    ).toBe(false)
-    expect(
-      NativeFrameInfoSchema.safeParse({ ...frame, nameJSON: JSON.stringify('x'.repeat(1025)) })
-        .success,
-    ).toBe(false)
+      NativeFrameInfoSchema.parse({ ...frame, nameJSON: JSON.stringify('x'.repeat(100_000)) }).name,
+    ).toBe('x'.repeat(100_000))
     expect(NativeFrameInfoSchema.safeParse({ ...frame, nameJSON: ' '.repeat(6147) }).success).toBe(
       false,
     )

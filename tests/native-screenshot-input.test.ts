@@ -54,7 +54,7 @@ describe('bounded native screenshot input transport', () => {
       Buffer.concat(fixture.chunks.filter((c) => c.section === 'png').map((c) => c.bytes)),
     ).toEqual(Buffer.alloc(131077, 17))
   })
-  it('bounds native config encoding before output allocation while preserving exact JSON string units', async () => {
+  it('encodes native config past the old 1 MiB cap while preserving exact JSON string units', async () => {
     const fixture = new InputFixture(),
       text = '\u0000\b\t\n\f\r"\\é中😀\ud800'
     await runNativeScreenshotInput(
@@ -87,15 +87,10 @@ describe('bounded native screenshot input transport', () => {
       ),
     ).rejects.toThrow('plain protocol')
     expect(called).toBe(false)
-    await expect(
-      runNativeScreenshotInput(
-        fixture.run,
-        fixture.source,
-        Buffer.alloc(33),
-        { text: '\u0000'.repeat(200000) },
-        0,
-      ),
-    ).rejects.toThrow('exceeds1MiB')
+    const large = new InputFixture(),
+      big = '\u0000'.repeat(200000)
+    await runNativeScreenshotInput(large.run, large.source, Buffer.alloc(33), { text: big }, 0)
+    expect(large.config()).toEqual({ text: big })
   })
   it('uses native watch expiry to cancel an already queued chunk without an SDK retry timer', async () => {
     const fixture = new InputFixture()
@@ -143,7 +138,7 @@ describe('bounded native screenshot input transport', () => {
       timeoutMs: 0,
     })
   })
-  it('rejects staged host concurrency beyond16 and drains every accepted operation on cancellation', async () => {
+  it('admits staged host work past the old 16 and drains every accepted operation on cancellation', async () => {
     const fixture = new InputFixture()
     const controllers = Array.from({ length: 16 }, () => new AbortController())
     const run: NativeArtifactRunner = (_params, signal) =>
@@ -156,13 +151,12 @@ describe('bounded native screenshot input transport', () => {
       runNativeScreenshotInput(run, fixture.source, Buffer.alloc(33), {}, 0, controller.signal),
     )
     const observed = Promise.allSettled(pending)
-    await expect(
-      runNativeScreenshotInput(fixture.run, fixture.source, Buffer.alloc(33), {}, 0),
-    ).rejects.toThrow('staging capacity')
+    await runNativeScreenshotInput(fixture.run, fixture.source, Buffer.alloc(33), {}, 0)
     for (const controller of controllers) controller.abort(new Error('bounded cleanup'))
     expect((await observed).every((item) => item.status === 'rejected')).toBe(true)
     await new Promise((resolve) => setImmediate(resolve))
-    expect(fixture.actions.filter((a) => a.action === 'discard')).toHaveLength(16)
+    // 16 canceled operations plus the completed extra one each retire their native lease.
+    expect(fixture.actions.filter((a) => a.action === 'discard')).toHaveLength(17)
     await runNativeScreenshotInput(fixture.run, fixture.source, Buffer.alloc(33), {}, 0)
   })
   it('reports a late cleanup failure before the next admission on the same actual transport', async () => {
@@ -196,21 +190,16 @@ describe('bounded native screenshot input transport', () => {
     fixture.source.runContext = recovered.source.runContext
     await runNativeScreenshotInput(fixture.run, fixture.source, Buffer.alloc(33), {}, 0)
   })
-  it('rejects absent/foreign actual page ownership and oversized config before native preparation', async () => {
+  it('rejects absent/foreign actual page ownership before native preparation and sends large config', async () => {
     const fixture = new InputFixture()
     await expect(
       runNativeScreenshotInput(fixture.run, { pageId: 0 }, Buffer.alloc(33), {}, 0),
     ).rejects.toThrow('actual page')
-    await expect(
-      runNativeScreenshotInput(
-        fixture.run,
-        fixture.source,
-        Buffer.alloc(33),
-        { style: 'x'.repeat(1048576) },
-        0,
-      ),
-    ).rejects.toThrow('exceeds1MiB')
     expect(fixture.actions).toHaveLength(0)
+    const large = new InputFixture(),
+      style = 'x'.repeat(1048576)
+    await runNativeScreenshotInput(large.run, large.source, Buffer.alloc(33), { style }, 0)
+    expect(large.config()).toEqual({ style })
     await expect(
       runNativeScreenshotInput(
         () => Promise.resolve({ token: 'real', contextId: 3, pageId: 8 }),

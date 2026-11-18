@@ -52,7 +52,7 @@ bool SnapshotMessage(CefRefPtr<CefBrowser>browser,CefRefPtr<CefFrame>frame,CefPr
   }
   if(!owner.snapshot_epoch)return true;
   const auto region=message->GetSharedMemoryRegion();
-  if(!region||!region->IsValid()||!region->Memory()||region->Size()>suitecut::InitSnapshotWire::kHeader+suitecut::InitSnapshotWire::kFrame+suitecut::InitSnapshotWire::kPayload)return true;
+  if(!region||!region->IsValid()||!region->Memory())return true;
   auto view=suitecut::InitSnapshotWire::Decode({static_cast<const uint8_t*>(region->Memory()),region->Size()});
   const suitecut::InitSnapshotOwner expected{static_cast<uint64_t>(owner.context),static_cast<uint64_t>(browser->GetIdentifier()),owner.snapshot_epoch,owner.snapshot_frame_id};
   if(!view||view->pin.owner!=expected)return true;

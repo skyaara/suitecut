@@ -166,7 +166,6 @@ function heldRead(path) {
 }
 const diagnosticsSchema = z.object({
   httpUploadPreparations: z.number(),
-  httpRetainedUploadCapacity: z.number(),
   httpActive: z.number(),
   httpTransfers: z.number(),
   httpActiveUploadBytes: z.number(),
@@ -288,7 +287,6 @@ try {
       assert.equal(canceled.httpUploadPreparations, 0)
       assert.equal(canceled.httpActive, 0)
       assert.equal(canceled.httpActiveUploadBytes, 0)
-      assert.equal(canceled.httpRetainedUploadCapacity, 0)
       assert.equal(received.length, before)
       assert.equal(held.stream.closed, false)
       assert.deepEqual(NativeMultipartStreamJob.physical(), { jobs: 1, streams: 1 })

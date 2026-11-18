@@ -101,7 +101,7 @@ class DownloadFiles {
 
 struct DownloadCopyResult {bool ok=false;std::string error;std::uint64_t bytes=0;};
 inline DownloadCopyResult CopyDownloadFile(const std::string& source,const std::string& destination,
-    const std::atomic<bool>& canceled,double deadline,const std::function<double()>& now,std::uint64_t limit=256ull*1048576){
+    const std::atomic<bool>& canceled,double deadline,const std::function<double()>& now){
   std::string temporary;
   const auto cleanup=[&]{if(!temporary.empty())unlink(temporary.c_str());};
   const auto interrupted=[&]()->std::string{
@@ -110,7 +110,7 @@ inline DownloadCopyResult CopyDownloadFile(const std::string& source,const std::
     return "";
   };
   try{
-    if(destination.empty()||destination.size()>4096||destination.find('\0')!=std::string::npos||!std::filesystem::path(destination).is_absolute())
+    if(destination.empty()||destination.find('\0')!=std::string::npos||!std::filesystem::path(destination).is_absolute())
       throw std::invalid_argument("Native download saveAs requires an absolute destination path");
     if(const auto error=interrupted();!error.empty())return {false,error,0};
     std::filesystem::create_directories(std::filesystem::path(destination).parent_path());
@@ -118,7 +118,6 @@ inline DownloadCopyResult CopyDownloadFile(const std::string& source,const std::
     struct stat metadata{};
     if(input.get()<0||fstat(input.get(),&metadata)||!S_ISREG(metadata.st_mode)||metadata.st_size<0)throw std::runtime_error("Native download source is unavailable");
     const auto expected=static_cast<std::uint64_t>(metadata.st_size);
-    if(expected>limit)throw std::runtime_error("Native download source exceeds its reserved copy budget");
     std::string pattern=(std::filesystem::path(destination).parent_path()/".suitecut-download-save-XXXXXX").string();
     std::vector<char> name(pattern.begin(),pattern.end());name.push_back('\0');
     DownloadDescriptor output(mkstemp(name.data()));

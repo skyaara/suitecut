@@ -34,9 +34,9 @@ class OwnerFrameDocument:public std::enable_shared_from_this<OwnerFrameDocument>
   }
   void Acknowledged(Method method,Reply reply){
    if(method==Method::Release){if(!reply.ok){if(!failed_){failed_=true;fatal_("Native owner document object-group release failed");}Finish(false);return;}group_=false;Finish(success_&&origin_()&&peer_());return;}
-   if(!reply.ok||!origin_()||!peer_()){error_=reply.error.empty()?"Native owner document protocol read failed":std::move(reply.error);if(error_.size()>4096)error_="Native owner document protocol diagnostic limit exceeded";Cleanup(false);return;}
-   if(method==Method::Isolate){if(reply.isolate.empty()||reply.isolate.size()>256){Finish(false);return;}isolate_=std::move(reply.isolate);if(isolate_!=wanted_){Finish(true);return;}Call(Method::Document,{});return;}
-   if(method==Method::Document){if(reply.object.empty()||reply.object.size()>4096){Cleanup(false);return;}Call(Method::Describe,reply.object);return;}
+   if(!reply.ok||!origin_()||!peer_()){error_=reply.error.empty()?"Native owner document protocol read failed":std::move(reply.error);Cleanup(false);return;}
+   if(method==Method::Isolate){if(reply.isolate.empty()){Finish(false);return;}isolate_=std::move(reply.isolate);if(isolate_!=wanted_){Finish(true);return;}Call(Method::Document,{});return;}
+   if(method==Method::Document){if(reply.object.empty()){Cleanup(false);return;}Call(Method::Describe,reply.object);return;}
    if(method==Method::Describe){if(reply.backend<=0){Cleanup(false);return;}backend_=reply.backend;Cleanup(true);}
   }
   void Cleanup(bool success){success_=success;if(group_){Call(Method::Release,{});return;}Finish(success);}

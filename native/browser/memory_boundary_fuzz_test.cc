@@ -65,7 +65,7 @@ int main(int argc, char** argv) {
     }
     assert(Decoder::GlobalBytes() == 0 && Decoder::Instances() == 0);
     {
-      // Random content plus tight allocation budgets, arbitrary chunking,
+      // Random content, arbitrary chunking,
       // sink rejection, explicit cancellation and genuine truncated EOF.
       Bytes mutated = compressed;
       switch (iteration % 3) {
@@ -74,8 +74,7 @@ int main(int argc, char** argv) {
         case 2: for (auto& byte : mutated) byte = random(); break;
       }
       size_t delivered = 0;
-      Decoder decoder([&](auto chunk) { delivered += chunk.size(); return iteration % 7 != 0; },
-                      iteration % 5 == 0 ? 32768 : Decoder::kPerCodecBytes);
+      Decoder decoder([&](auto chunk) { delivered += chunk.size(); return iteration % 7 != 0; });
       if (decoder.Configure(encoding[kind])) {
         for (size_t offset = 0; offset < mutated.size();) {
           const size_t count = std::min(mutated.size() - offset, size_t(1 + random() % 511));
@@ -84,7 +83,8 @@ int main(int argc, char** argv) {
         }
         decoder.Finish();
       }
-      assert(delivered <= Decoder::kDecodedBytes && decoder.bytes() <= Decoder::kPerCodecBytes);
+      assert(decoder.bytes() <= decoder.peak());
+      (void)delivered;
       peak_codec_bytes = std::max(peak_codec_bytes, decoder.peak());
       decoder.Cancel();
       assert(Decoder::GlobalBytes() == 0 && Decoder::Instances() == 0);
@@ -116,11 +116,11 @@ int main(int argc, char** argv) {
       std::vector<suitecut::NativeHTTPMultipartPart> parts{{"field", "", "", 0, input.size(), false}};
       Bytes wire;
       std::string error;
-      assert(suitecut::EncodeNativeHTTPMultipart(input, parts, "nativeMemoryBoundary1234", 65536, wire, error));
+      assert(suitecut::EncodeNativeHTTPMultipart(input, parts, "nativeMemoryBoundary1234", wire, error));
       assert(wire.size() >= input.size());
       parts[0].offset = size_t(random()) << 32 | random();
       if (!parts[0].offset) parts[0].offset = 1;
-      assert(!suitecut::EncodeNativeHTTPMultipart(input, parts, "nativeMemoryBoundary1234", 65536, wire, error));
+      assert(!suitecut::EncodeNativeHTTPMultipart(input, parts, "nativeMemoryBoundary1234", wire, error));
       assert(wire.empty() && wire.capacity() == 0);
       ++multipart_cases;
     }
@@ -130,14 +130,14 @@ int main(int argc, char** argv) {
       const auto projected = suitecut::StorageJSONValidationProjection(arbitrary);
       assert(projected.size() == arbitrary.size());
       assert(suitecut::StorageJSONValidationProjection(projected) == projected);
-      auto budget = std::make_shared<suitecut::ScreenshotByteBudget>(65536);
+      auto budget = std::make_shared<suitecut::ScreenshotByteBudget>();
       std::vector<std::shared_ptr<suitecut::ScreenshotByteBudget::Lease>> leases;
       size_t owned = 0;
       for (unsigned action = 0; action < 16; ++action) {
         const size_t bytes = random() % 8192;
         auto lease = budget->Reserve(bytes);
-        assert(bool(lease) == (bytes <= 65536 - owned));
-        if (lease) { owned += bytes; leases.push_back(std::move(lease)); }
+        assert(lease);  // No byte limit: every reservation is admitted.
+        owned += bytes; leases.push_back(std::move(lease));
         assert(budget->Used() == owned);
         if (!leases.empty() && random() % 3 == 0) {
           const size_t remaining = random() % (leases.back()->bytes + 1);

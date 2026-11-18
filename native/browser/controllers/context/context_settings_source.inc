@@ -54,7 +54,7 @@ void SettingsPrepare(){
         });return;
       }
       const int id=AllocateDevToolsId();
-      if(!id||network_calls_.size()>=1024||closing_page_){done(false,"Native context settings command capacity exceeded or page closed");return;}
+      if(!id||closing_page_){done(false,"Native context settings command unavailable or page closed");return;}
       if(method=="Emulation.setLocaleOverride"&&session.empty()&&engine_.contexts()->IsPopup(page_id_)){
         auto original=std::move(done);done=[this,original=std::move(original)](bool ok,const std::string&error){
           if(ok||error.find("Another locale override is already in effect")==std::string::npos){original(ok,error);return;}
@@ -82,7 +82,7 @@ void SettingsPrepare(){
   SettingsStart();
 }
 void SettingsReadCommand(const std::string&method,Dict params,suitecut::ContextSettingsPage::Result done){
-  const int id=AllocateDevToolsId();if(!id||network_calls_.size()>=1024||closing_page_){done(false,"Native settings read capacity exceeded or page closed");return;}
+  const int id=AllocateDevToolsId();if(!id||closing_page_){done(false,"Native settings read unavailable or page closed");return;}
   network_calls_.emplace(id,NetworkCall{"",std::move(done),Now()+30000});WakeDeadlines();
   if(!SubmitDevTools(id,method,params,"")){auto found=network_calls_.find(id);if(found!=network_calls_.end()){auto callback=std::exchange(found->second.callback, nullptr);network_calls_.erase(found);callback(false,"Native settings read dispatch failed");}}
 }
@@ -147,7 +147,7 @@ void SettingsAuthenticate(){
       if(!ok){self->SettingsFail("Native context authentication initialization failed: "+error);return;}
       self->authentication_ready_=true;self->SettingsCommit();self->MaybeReady();
     });
-  if(!accepted)SettingsFail("Native context authentication target capacity exceeded");
+  if(!accepted)SettingsFail("Native context authentication target registration failed");
 }
 void SettingsChild(const std::string&session,suitecut::ContextSettingsPage::Result done){
   if(!context_settings_||!context_settings_->RendererOverrides()){GeolocationAttach(session,std::move(done));return;}

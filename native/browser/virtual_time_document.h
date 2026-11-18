@@ -18,9 +18,9 @@ class NativeVirtualTimeDocument {
     bool operator==(const Identity&)const=default;
   };
   bool Pin(Identity identity){
-    if(identity_||identity.frame.empty()||identity.frame.size()>128||
+    if(identity_||identity.frame.empty()||
        !identity.session.empty()||identity.unique_context.empty()||
-       identity.unique_context.size()>256||identity.context<=0||!identity.renderer_epoch)return false;
+       identity.context<=0||!identity.renderer_epoch)return false;
     identity_=std::move(identity);return true;
   }
   bool Current(const Identity& identity)const{return identity_&&*identity_==identity;}

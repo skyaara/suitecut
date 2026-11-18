@@ -192,13 +192,17 @@ try {
       document.body.appendChild(button)
     }
   })
-  await assert.rejects(page.ariaSnapshot({ mode: 'ai' }), /64 KiB|limit exceeded/u)
-  assert.equal(await page.getByRef(owned).evaluate((element) => element.id), 'owned')
+  const whole = await page.ariaSnapshot({ mode: 'ai' })
+  assert((whole.match(/- button "x"/gu) ?? []).length >= 650)
+  assert.equal(
+    await page.getByRef(named(whole, 'Owned actual')).evaluate((element) => element.id),
+    'owned',
+  )
   await page
     .locator('.overflow')
     .evaluateAll((elements) => elements.forEach((element) => element.remove()))
   checks.push(
-    'a genuine bounded capture/publication failure preserves the last successful snapshot refs and retires failed staging work',
+    'a 650-button page snapshot publishes whole with no byte limit and its refs resolve',
   )
   const newer = await page.locator('#alpha').ariaSnapshot({ mode: 'ai' }),
     newAlpha = named(newer, 'Alpha actual')

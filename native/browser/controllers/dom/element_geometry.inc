@@ -108,7 +108,7 @@ void ElementBoundsSelect(const std::shared_ptr<ElementBoundsWork>& work){
   operation_frames_[work->owner]=work->frame;operation_sessions_[work->owner]=document.session;
   if(!work->node.empty()){
     evaluation_groups_[work->owner].insert(document.session);
-    if(!ReferenceTemporaryGroups(work->owner)){Complete(work->owner,false,"Native element geometry temporary-group capacity exceeded");return;}
+    if(!ReferenceTemporaryGroups(work->owner)){Complete(work->owner,false,"Native element geometry temporary group unavailable");return;}
     SuiteCutQueryNodeTransfer::AdoptNode(
       [this,work,document](const std::string& method,Dict params,SuiteCutQueryNodeTransfer::Result done){ElementBoundsSend(work,document.session,method,params,std::move(done));},
       [this,work]{return ElementBoundsCurrent(work);},
@@ -123,13 +123,12 @@ void ElementBoundsSelect(const std::shared_ptr<ElementBoundsWork>& work){
       if(!ok||!result||result->HasKey("exceptionDetails")||!remote){auto details=result?result->GetDictionary("exceptionDetails"):nullptr;auto exception=details?details->GetDictionary("exception"):nullptr;Complete(work->owner,false,exception?suitecut::DevToolsString(exception->GetValue("description")):"Native element geometry selection failed");return;}
       if(remote->GetString("type")=="undefined"||remote->GetString("subtype")=="null"){locator_waits_[work->owner]="element to be attached before boundingBox";RetryContext(work->owner);return;}
       if(remote->GetString("subtype")!="node"||remote->GetType("objectId")!=VTYPE_STRING){Complete(work->owner,false,"Native element geometry selection is not a DOM node");return;}
-      if(!ReferenceTemporaryGroups(work->owner)){Complete(work->owner,false,"Native element geometry temporary-group capacity exceeded");return;}
+      if(!ReferenceTemporaryGroups(work->owner)){Complete(work->owner,false,"Native element geometry temporary group unavailable");return;}
       work->node=remote->GetString("objectId").ToString();ElementBoundsLayout(work);
     });
 }
 void ElementBoundsPrepare(const std::shared_ptr<ElementBoundsWork>& work,const std::string& frame){
   if(!ElementBoundsCurrent(work))return;
-  if(work->documents.size()>=64){Complete(work->owner,false,"Native element geometry frame-depth limit exceeded");return;}
   WithFrame(work->owner,frame,[this,work,frame](int){
     if(!ElementBoundsCurrent(work))return;
     const auto document=ReferenceDocument(frame);const auto state=frame_states_.find(frame);
@@ -143,7 +142,7 @@ void ElementBoundsStart(int id,uint64_t generation,Dict config,const std::string
   if(!operations_.IsCurrent(id,generation))return;
   if(operations_.IsExpired(id,generation,Now())){Complete(id,false,"boundingBox: Native operation timed out");return;}
   element_bounds_operations_.insert(id);
-  if(!SelectorWaits().Admit(id,generation)){Complete(id,false,"Native element geometry physical capacity exceeded");return;}
+  if(!SelectorWaits().Admit(id,generation)){Complete(id,false,"Native element geometry wait unavailable");return;}
   auto work=std::make_shared<ElementBoundsWork>();work->owner=id;work->generation=generation;
   work->frame=FrameId(config);work->node=node;work->config=config;
   element_bounds_work_[id]=work;
@@ -159,7 +158,7 @@ void ElementBoundsAction(int id,uint64_t generation,Dict config){
   if(!operations_.IsCurrent(id,generation))return;
   if(operations_.IsExpired(id,generation,Now())){Complete(id,false,"boundingBox: Native operation timed out");return;}
   element_bounds_operations_.insert(id);
-  if(!SelectorWaits().Admit(id,generation)){Complete(id,false,"Native element geometry physical capacity exceeded");return;}
+  if(!SelectorWaits().Admit(id,generation)){Complete(id,false,"Native element geometry wait unavailable");return;}
   if(!PrepareSnapshotReferenceScope(id,config))return;
   const auto path=config->GetList("framePath");
   if(path&&path->GetSize()){ResolveFramePath(id,generation,config,0,FrameId(config),[this,id,generation](Dict resolved){ElementBoundsAction(id,generation,resolved);});return;}

@@ -21,19 +21,18 @@ class NativeContextNetworkHeaders {
   using Apply=std::function<void(Dict,Result)>;
   ~NativeContextNetworkHeaders(){Clear();}
   static bool Valid(Dict headers){
-    if(!headers||headers->GetSize()>512)return false;
-    auto wrapper=CefValue::Create();wrapper->SetDictionary(headers->Copy(false));if(CefWriteJSON(wrapper,JSON_WRITER_DEFAULT).ToString().size()>65536)return false;
+    if(!headers)return false;
     CefDictionaryValue::KeyList keys;headers->GetKeys(keys);for(const auto&key:keys){const auto name=key.ToString();if(name.empty()||headers->GetType(key)!=VTYPE_STRING)return false;
       for(unsigned char c:name)if(!((c>='a'&&c<='z')||(c>='A'&&c<='Z')||(c>='0'&&c<='9')||std::string("!#$%&'*+-.^_`|~").find(char(c))!=std::string::npos))return false;
       const auto value=headers->GetString(key).ToString();if(value.find_first_of("\r\n")!=std::string::npos||value.find('\0')!=std::string::npos)return false;
     }return true;
   }
   bool Seed(int context,Dict headers) {
-    if(context<1 || states_.contains(context) || states_.size()>=32 || !Valid(headers))return false;
+    if(context<1 || states_.contains(context) || !Valid(headers))return false;
     states_.emplace(context,State{headers->Copy(false),0});return true;
   }
   bool Attach(int context,const std::string& page,Apply apply,Result ready) {
-    if(!states_.contains(context) || page.empty() || page.size()>128 || !apply || !ready || targets_.size()>=192 || targets_.contains(page))return false;
+    if(!states_.contains(context) || page.empty() || !apply || !ready || targets_.contains(page))return false;
     targets_.emplace(page,Target{context,++serial_,0,std::move(apply),std::move(ready)});
     const auto& state=states_.at(context);
     if(!state.headers->GetSize() && !state.owner){auto callback=std::move(targets_.at(page).ready);callback(true,"");return true;}
@@ -42,7 +41,7 @@ class NativeContextNetworkHeaders {
   }
   bool Set(int owner,int context,Dict headers,double deadline,Result done) {
     const auto state=states_.find(context);
-    if(owner<1 || !std::isfinite(deadline) || deadline<0 || state==states_.end() || !Valid(headers) || state->second.owner || !done || batches_.size()>=64 || batches_.contains(owner))return false;
+    if(owner<1 || !std::isfinite(deadline) || deadline<0 || state==states_.end() || !Valid(headers) || state->second.owner || !done || batches_.contains(owner))return false;
     state->second.headers=headers->Copy(false);state->second.owner=owner;
     Batch batch;batch.context=context;batch.generation=++serial_;batch.deadline=deadline;batch.done=std::move(done);
     for(const auto& [page,target]:targets_)if(target.context==context)batch.pending.insert(page);

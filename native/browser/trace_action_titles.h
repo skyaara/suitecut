@@ -14,7 +14,7 @@ inline std::string TraceSelectorTitle(const std::string& selector){
   return "text="+TraceQuoted(text);
 }
 inline std::string TraceQueryText(CefRefPtr<CefListValue> query,size_t depth=0){
-  if(!query||query->GetSize()>128||depth>16){return "";}std::string selector;
+  if(!query){return "";}std::string selector;
   for(size_t index=0;index<query->GetSize();++index){auto clause=query->GetDictionary(index);if(!clause)return "";const auto engine=clause->GetString("engine").ToString();std::string step;
     if(engine=="css"){step=TraceSelectorTitle(clause->GetString("selector"));if(step==":scope"&&query->GetSize()>1)continue;}
     else if(engine=="text"||engine=="label"||engine=="placeholder"||engine=="alt"||engine=="title"||engine=="testId")step=engine+"="+TraceQueryPattern(clause);
@@ -23,7 +23,7 @@ inline std::string TraceQueryText(CefRefPtr<CefListValue> query,size_t depth=0){
     else if(engine=="nth")step="nth="+std::to_string(clause->GetInt("index"));
     else if(engine=="and"||engine=="or"||engine=="chain")step=engine+"("+TraceQueryText(clause->GetList("query"),depth+1)+")";
     else{auto value=CefValue::Create();value->SetDictionary(clause->Copy(false));step=engine+"("+CefWriteJSON(value,JSON_WRITER_DEFAULT).ToString()+")";}
-    if(step.empty()){return "";}if(!selector.empty()){selector+=" >> ";}selector+=step;if(selector.size()>8192){return "";}
+    if(step.empty()){return "";}if(!selector.empty()){selector+=" >> ";}selector+=step;
   }return selector;
 }
 inline std::string TraceLocatorTitle(CefRefPtr<CefDictionaryValue> request){

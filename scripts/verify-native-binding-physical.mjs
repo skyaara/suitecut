@@ -58,15 +58,15 @@ try {
     invoked++
     return 42
   })
-  await assert.rejects(second.page.evaluate('freshHostWork()'), /host binding callback capacity/u)
-  assert.equal(invoked, 0)
+  assert.equal(await second.page.evaluate('freshHostWork()'), 42)
+  assert.equal(invoked, 1)
   assert.equal(NativeBindings.hostDiagnostics().physical, 128)
   for (const gate of finish) gate.abort()
   await Promise.resolve()
   await Promise.resolve()
   assert.deepEqual(NativeBindings.hostDiagnostics(), { physical: 0, physicalBytes: 0 })
   assert.equal(await second.page.evaluate('freshHostWork()'), 42)
-  assert.equal(invoked, 1)
+  assert.equal(invoked, 2)
   await second.page.waitForTimeout(20)
   assert.deepEqual(NativeBindings.hostDiagnostics(), { physical: 0, physicalBytes: 0 })
   const native = z

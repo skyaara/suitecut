@@ -133,12 +133,14 @@ try {
   const capacityHandles = []
   console.log(`Completed ${handleIterations} nested/property handle cycles`)
   for (let index = 0; index < 1024; index++) capacityHandles.push(await page.evaluateHandle('42'))
-  await assert.rejects(page.evaluateHandle('42'), /handle limit exceeded/)
+  const pastOldLimit = await page.evaluateHandle('42')
+  assert.equal(await pastOldLimit.jsonValue(), 42)
+  await pastOldLimit.dispose()
   for (const handle of capacityHandles) await handle.dispose()
   const capacityRecovery = await page.evaluateHandle('42')
   assert.equal(await capacityRecovery.jsonValue(), 42)
   await capacityRecovery.dispose()
-  console.log('Completed handle-capacity saturation and recovery')
+  console.log('Completed 1025 live handles with no handle limit')
   const lateHandleIterations = 1000
   for (let index = 0; index < lateHandleIterations; index++) {
     const controller = new AbortController()

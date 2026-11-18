@@ -47,7 +47,6 @@ export function nativeReferenceQuery(ref: string): NativeQueryStep {
     engine: 'reference',
     ref: z
       .string()
-      .max(192)
       .regex(/^s[1-9][0-9]*e(?:0|[1-9][0-9]*)$/u)
       .parse(ref),
   }
@@ -154,9 +153,8 @@ export function nativeQueryDescription(
     `'${value.replaceAll('\\', '\\\\').replaceAll("'", "\\'").replaceAll('\n', '\\n').replaceAll('\r', '\\r')}'`
   const pattern = (value: NativeTextPattern): string =>
     'pattern' in value ? `/${value.pattern}/${value.flags}` : quote(value.text)
-  const describe = (steps: NativeQueryStep[], depth = 0): string => {
-    if (depth > 64) return '<native locator nesting limit>'
-    return steps
+  const describe = (steps: NativeQueryStep[]): string =>
+    steps
       .map((step) => {
         switch (step.engine) {
           case 'reference':
@@ -183,9 +181,9 @@ export function nativeQueryDescription(
             return `getByRole(${quote(step.role)}${step.name ? `, { name: ${pattern(step.name)} }` : ''})`
           case 'and':
           case 'or':
-            return `${step.engine}(${describe(step.query, depth + 1)})`
+            return `${step.engine}(${describe(step.query)})`
           case 'chain':
-            return `locator(${describe(step.query, depth + 1)})`
+            return `locator(${describe(step.query)})`
           case 'filter':
             return 'filter(...)'
           case 'invalid':
@@ -193,6 +191,5 @@ export function nativeQueryDescription(
         }
       })
       .join('.')
-  }
   return [...framePath.map((path) => `${describe(path)}.contentFrame()`), describe(query)].join('.')
 }

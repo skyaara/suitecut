@@ -49,7 +49,7 @@ bool ParseCookie(Dict value, CookieInput& input, std::string& error) {
     if ((field == "httpOnly" || field == "secure") && value->GetType(key) != VTYPE_BOOL) { error = "Cookie boolean attribute has invalid type"; return false; }
   }
   const auto name = value->GetString("name").ToString(), content = value->GetString("value").ToString();
-  if (name.size() + content.size() > 4096 || name.find_first_of(";\r\n") != std::string::npos || content.find_first_of(";\r\n") != std::string::npos) { error = "Cookie attributes exceed 4096 bytes or contain disallowed characters"; return false; }
+  if (name.find_first_of(";\r\n") != std::string::npos || content.find_first_of(";\r\n") != std::string::npos) { error = "Cookie attributes contain disallowed characters"; return false; }
   const auto domain = value->GetString("domain").ToString(), path = value->GetString("path").ToString();
   input.url = value->GetString("url").ToString();
   if (!input.url.empty()) {
@@ -68,7 +68,7 @@ bool ParseCookie(Dict value, CookieInput& input, std::string& error) {
   if (value->HasKey("expires")) {
     if (value->GetType("expires") != VTYPE_DOUBLE && value->GetType("expires") != VTYPE_INT) { error = "Cookie expires must be a finite Unix timestamp or -1"; return false; }
     const double expires = value->GetType("expires") == VTYPE_INT ? value->GetInt("expires") : value->GetDouble("expires");
-    if (!std::isfinite(expires) || (expires < 0 && expires != -1) || expires > 253402300799.0) { error = "Invalid cookie expiration"; return false; }
+    if (!std::isfinite(expires) || (expires < 0 && expires != -1)) { error = "Invalid cookie expiration"; return false; }
     if (expires >= 0) {
       cef_time_t time{};
       if (!cef_time_from_doublet(expires, &time) || !cef_time_to_basetime(&time, &input.cookie.expires)) { error = "Cookie expiration could not be represented"; return false; }
@@ -132,8 +132,6 @@ class CookieVisitor : public CefCookieVisitor {
     }
     if (clear_) { remove = true; return true; }
     const auto value = CefString(&cookie.value).ToString();
-    bytes_ += name.size() + value.size() + domain.size() + path.size() + 256;
-    if (list_->GetSize() >= 4096 || bytes_ > 1048576) { error_ = "Cookie result exceeds bounded native output"; return false; }
     auto item = CefDictionaryValue::Create(); item->SetString("name", name); item->SetString("value", value); item->SetString("domain", domain); item->SetString("path", path);
     double expiration = -1;
     if (cookie.has_expires) { cef_time_t time{}; cef_time_from_basetime(cookie.expires, &time); cef_time_to_doublet(&time, &expiration); }
@@ -147,7 +145,7 @@ class CookieVisitor : public CefCookieVisitor {
     auto reply = std::move(reply_); auto result = CefDictionaryValue::Create(); result->SetList("cookies", list_);
     reply(!*canceled_ && error_.empty(), result, *canceled_ ? "Native cookie query canceled" : error_);
   }
-  std::vector<std::string> urls_; Dict filter_; bool clear_; Reply reply_; CefRefPtr<CefListValue> list_; size_t bytes_ = 0; std::string error_; std::shared_ptr<bool> canceled_;
+  std::vector<std::string> urls_; Dict filter_; bool clear_; Reply reply_; CefRefPtr<CefListValue> list_; std::string error_; std::shared_ptr<bool> canceled_;
   IMPLEMENT_REFCOUNTING(CookieVisitor);
 };
 uint32_t Permission(const std::string& name) {
@@ -188,23 +186,22 @@ void SuiteCutContextControls::SetUtilities(std::shared_ptr<SuiteCutUtilityBrowse
   hooks.context = [weak = weak_from_this()](int context) { const auto self = weak.lock(); return self ? self->RequestContextForContext(context) : nullptr; };
   hooks.origins = [weak = weak_from_this()](int context, std::vector<std::string>& origins) {
     const auto self = weak.lock(); if (!self) return false;
-    const auto found = self->contexts_.find(context); if (found == self->contexts_.end() || found->second.origins_overflow) return false;
+    const auto found = self->contexts_.find(context); if (found == self->contexts_.end()) return false;
     origins.assign(found->second.origins.begin(), found->second.origins.end()); return true;
   };
   hooks.cookies = [weak = weak_from_this()](int owner, int context, const std::string& action, Dict params, Reply reply) {
     const auto self = weak.lock(); if (!self) { reply(false, nullptr, "Native storage context is closed"); return; }
     params->SetInt("contextId", context); params->SetInt("internalOwner", owner); self->Handle(action, params, std::move(reply));
   };
-  hooks.validate_context_cookies=[weak=weak_from_this()](int owner,int context,Dict state,std::string&error){const auto self=weak.lock();if(!self)return false;const auto found=self->contexts_.find(context);if(found==self->contexts_.end())return false;if(found->second.internal){if(self->hooks_.validate_internal_storage)return self->hooks_.validate_internal_storage(owner,context,state,self->hooks_.cookie_deadline?self->hooks_.cookie_deadline(owner):0,error);if(!self->hooks_.validate_internal_cookies){error="Native internal cookie validation unavailable";return false;}return self->hooks_.validate_internal_cookies(owner,context,state->GetList("cookies"),self->hooks_.cookie_deadline?self->hooks_.cookie_deadline(owner):0,error);}const auto cookies=state->GetList("cookies");if(!cookies||cookies->GetSize()>4096){error="Native storage cookie capacity exceeded";return false;}for(size_t i=0;i<cookies->GetSize();++i){CookieInput input;if(!ParseCookie(cookies->GetDictionary(i),input,error))return false;}return true;};
+  hooks.validate_context_cookies=[weak=weak_from_this()](int owner,int context,Dict state,std::string&error){const auto self=weak.lock();if(!self)return false;const auto found=self->contexts_.find(context);if(found==self->contexts_.end())return false;if(found->second.internal){if(self->hooks_.validate_internal_storage)return self->hooks_.validate_internal_storage(owner,context,state,self->hooks_.cookie_deadline?self->hooks_.cookie_deadline(owner):0,error);if(!self->hooks_.validate_internal_cookies){error="Native internal cookie validation unavailable";return false;}return self->hooks_.validate_internal_cookies(owner,context,state->GetList("cookies"),self->hooks_.cookie_deadline?self->hooks_.cookie_deadline(owner):0,error);}const auto cookies=state->GetList("cookies");if(!cookies){error="Native storage cookies must be a list";return false;}for(size_t i=0;i<cookies->GetSize();++i){CookieInput input;if(!ParseCookie(cookies->GetDictionary(i),input,error))return false;}return true;};
   hooks.validate_cookies = [](Dict state, std::string& error) {
-    const auto cookies = state->GetList("cookies"); if (!cookies || cookies->GetSize() > 4096) { error = "Native storage cookie capacity exceeded"; return false; }
+    const auto cookies = state->GetList("cookies"); if (!cookies) { error = "Native storage cookies must be a list"; return false; }
     for (size_t index = 0; index < cookies->GetSize(); ++index) { CookieInput input; if (!ParseCookie(cookies->GetDictionary(index), input, error)) return false; }
     return true;
   };
   hooks.record_origin = [weak = weak_from_this()](int context, const std::string& origin) {
     const auto self = weak.lock(); if (!self) return;
     const auto found = self->contexts_.find(context); if (found == self->contexts_.end()) return;
-    if (!found->second.origins.contains(origin) && found->second.origins.size() >= 1024) { found->second.origins_overflow = true; return; }
     found->second.origins.insert(origin); self->ApplySettings(found->second, origin);
   };
   hooks.validate_credentials=[weak=weak_from_this()](Dict state,std::string&error){const auto self=weak.lock();if(!self)return false;return !state->HasKey("credentials")||self->credentials_->ValidateState(state->GetList("credentials"),error);};
@@ -226,7 +223,7 @@ bool SuiteCutContextControls::InitializeDefault(CefRefPtr<CefRequestContext> con
 }
 int SuiteCutContextControls::ReservePage(int context, int opener, int popup_id) {
   const auto entry = contexts_.find(context);
-  if (stopping_ || entry == contexts_.end() || entry->second.closing || pages_.size() >= 128 || next_page_ == std::numeric_limits<int>::max()) return 0;
+  if (stopping_ || entry == contexts_.end() || entry->second.closing || next_page_ == std::numeric_limits<int>::max()) return 0;
   const int id = ++next_page_; Page page; page.context = context; page.opener = opener; page.popup_id = popup_id;
   pages_.emplace(id, std::move(page)); return id;
 }
@@ -360,7 +357,7 @@ SuiteCutContextControls::Dict SuiteCutContextControls::PageResult(int context,in
 void SuiteCutContextControls::Emit(const char* event, int context, int page, int opener,const std::string&reason) {
   auto info = PageResult(context, page); info->SetString("event", event);if(!reason.empty())info->SetString("closedReason",reason); if (opener) info->SetInt("openerId", opener);
   info->SetDouble("sequence", static_cast<double>(++sequence_));
-  journal_.push_back(info->Copy(false)); if (journal_.size() > 256) journal_.pop_front();
+  journal_.push_back(info->Copy(false));
   if (hooks_.event) hooks_.event(info);
   std::vector<int> completed;
   for (const auto& [owner, wait] : waits_) if (Matches(wait, info)) completed.push_back(owner);
@@ -411,11 +408,10 @@ bool SuiteCutContextControls::Handle(const std::string& action, Dict params, Rep
     const int owner = params->GetInt("internalOwner"); EventWait wait;
     wait.event = params->GetString("event"); wait.page = params->GetInt("pageId"); wait.context = params->GetInt("contextId");
     const double after = params->GetType("afterSequence") == VTYPE_INT ? params->GetInt("afterSequence") : params->GetDouble("afterSequence");
-    if (owner < 1 || waits_.size() >= 64 || (wait.event != "popup" && wait.event != "close" && wait.event != "page" && wait.event != "contextclose") ||
+    if (owner < 1 || (wait.event != "popup" && wait.event != "close" && wait.event != "page" && wait.event != "contextclose") ||
         !std::isfinite(after) || after < 0 || std::floor(after) != after || after > static_cast<double>(sequence_)) {
-      reply(false, nullptr, "Invalid native context event wait or capacity exceeded"); return true;
+      reply(false, nullptr, "Invalid native context event wait"); return true;
     }
-    if (!journal_.empty() && after < journal_.front()->GetDouble("sequence") - 1) { reply(false, nullptr, "Native context event journal capacity exceeded before registration"); return true; }
     for (const auto& event : journal_) if (event->GetDouble("sequence") > after && Matches(wait, event)) { reply(true, event->Copy(false), ""); return true; }
     wait.reply = std::move(reply); waits_[owner] = std::move(wait); return true;
   }
@@ -436,7 +432,7 @@ bool SuiteCutContextControls::Handle(const std::string& action, Dict params, Rep
   }
   if ((action=="create"||action=="newOwnedPage")&&params->HasKey("acceptDownloads")&&params->GetType("acceptDownloads")!=VTYPE_BOOL){reply(false,nullptr,"acceptDownloads must be a boolean");return true;}
   if (action == "newOwnedPage") {
-    if (stopping_ || contexts_.size() >= 32 || pages_.size() >= 128 || next_context_ == std::numeric_limits<int>::max()) { reply(false, nullptr, "Native context/page capacity exceeded or browser closing"); return true; }
+    if (stopping_ || next_context_ == std::numeric_limits<int>::max()) { reply(false, nullptr, "Native context identifiers exhausted or browser closing"); return true; }
     suitecut::ContextSettings native_settings;std::string settings_error;
     if(!suitecut::ContextSettings::Parse(params,native_settings,settings_error)){reply(false,nullptr,settings_error);return true;}
     CefRequestContextSettings settings; settings.persist_session_cookies = false;
@@ -452,14 +448,14 @@ bool SuiteCutContextControls::Handle(const std::string& action, Dict params, Rep
     credentials_->ContextCreated(id);
     if (!RegisterInitContext(id)) { credentials_->ContextClosed(id);if(hooks_.context_removed)hooks_.context_removed(id);contexts_.erase(id); reply(false, nullptr, "Native init snapshot registration failed"); return true; }
     const int page_id = ReservePage(id, 0, 0);
-    if (!page_id) { init_snapshot_store_->Drop(id);snapshot_publications_.Drop(id);credentials_->ContextClosed(id);if(hooks_.context_removed)hooks_.context_removed(id);contexts_.erase(id); reply(false, nullptr, "Native page capacity exceeded"); return true; }
+    if (!page_id) { init_snapshot_store_->Drop(id);snapshot_publications_.Drop(id);credentials_->ContextClosed(id);if(hooks_.context_removed)hooks_.context_removed(id);contexts_.erase(id); reply(false, nullptr, "Native page reservation failed"); return true; }
     contexts_.at(id).owned_page = page_id; pages_.at(page_id).created_reply = std::move(reply);
     pages_.at(page_id).creation_deadline=hooks_.operation_deadline?hooks_.operation_deadline(params->GetInt("internalOwner")):0;
     if (!hooks_.create_page || !hooks_.create_page(page_id, id, cef)) PageCreationFailed(page_id, "CEF browser creation failed");
     return true;
   }
   if (action == "create") {
-    if (stopping_ || contexts_.size() >= 32 || next_context_ == std::numeric_limits<int>::max()) { reply(false, nullptr, "Native context capacity exceeded or browser closing"); return true; }
+    if (stopping_ || next_context_ == std::numeric_limits<int>::max()) { reply(false, nullptr, "Native context identifiers exhausted or browser closing"); return true; }
     // Empty cache_path selects an independent off-the-record storage partition.
     suitecut::ContextSettings native_settings;std::string settings_error;
     if(!suitecut::ContextSettings::Parse(params,native_settings,settings_error)){reply(false,nullptr,settings_error);return true;}
@@ -478,7 +474,7 @@ bool SuiteCutContextControls::Handle(const std::string& action, Dict params, Rep
     reply(true, Result(id), ""); return true;
   }
   if (action == "closePage" || action == "close") {
-    if (params->HasKey("reason") && (params->GetType("reason") != VTYPE_STRING || params->GetString("reason").ToString().size() > 16384 || params->GetString("reason").ToString().find('\0') != std::string::npos)) {
+    if (params->HasKey("reason") && (params->GetType("reason") != VTYPE_STRING || params->GetString("reason").ToString().find('\0') != std::string::npos)) {
       reply(false, nullptr, "Invalid native closure reason"); return true;
     }
   }
@@ -501,7 +497,6 @@ bool SuiteCutContextControls::Handle(const std::string& action, Dict params, Rep
       // the context/page or finalize resources before genuine DoClose approval.
       reply(true,Result(context,params->GetInt("pageId")),"");return true;
     }
-    if (page->second.close_replies.size() >= 64) { reply(false, nullptr, "Too many pending page closure requests"); return true; }
     page->second.close_replies.push_back(std::move(reply));
     if(hooks_.operation_deadline&&!page->second.close_deadline)page->second.close_deadline=hooks_.operation_deadline(params->GetInt("internalOwner"));
     BeginPageClose(params->GetInt("pageId"), params->GetString("reason").ToString());
@@ -514,7 +509,6 @@ bool SuiteCutContextControls::Handle(const std::string& action, Dict params, Rep
   }
   auto& context = found->second;
   if (action == "close") {
-    if (context.close_replies.size() >= 64) { reply(false, nullptr, "Too many pending context closure requests"); return true; }
     std::vector<int> binding_owners; for (const auto& [owner,batch] : binding_batches_) if (batch.context == id) binding_owners.push_back(owner);
     for (const int owner : binding_owners) CancelContextBinding(owner,"Native browser context closed",true);
     if (!context.closing) { context.closing = true; context.close_reason = params->GetString("reason").ToString(); }
@@ -537,7 +531,7 @@ bool SuiteCutContextControls::Handle(const std::string& action, Dict params, Rep
   if (action == "exposeBinding") { RegisterContextBinding(id, params->GetInt("internalOwner"), params, std::move(reply)); return true; }
   if (action == "removeBinding") {
     std::string name;
-    if (!suitecut::InboundString(params,"name",name,256) || params->GetType("entryId") != VTYPE_INT) { reply(false,nullptr,"Invalid native context binding disposal"); return true; }
+    if (!suitecut::InboundString(params,"name",name) || params->GetType("entryId") != VTYPE_INT) { reply(false,nullptr,"Invalid native context binding disposal"); return true; }
     const auto entry = context.bindings.Find(name);
     if (!entry || entry->id != params->GetInt("entryId")) { reply(true,Result(id),""); return true; }
     const int entry_id = entry->id; const auto bridge = entry->bridge;
@@ -564,7 +558,7 @@ bool SuiteCutContextControls::Handle(const std::string& action, Dict params, Rep
       for (const auto& [page_id, page] : pages_) if (page.context == id) { reply(false, nullptr, "Native owned page requires an unused context"); return true; }
     }
     const int page_id = ReservePage(id, 0, 0);
-    if (!page_id) { reply(false, nullptr, "Native page capacity exceeded"); return true; }
+    if (!page_id) { reply(false, nullptr, "Native page reservation failed"); return true; }
     if (params->GetBool("owned")) context.owned_page = page_id;
     pages_.at(page_id).created_reply = std::move(reply);
     pages_.at(page_id).creation_deadline=hooks_.operation_deadline?hooks_.operation_deadline(params->GetInt("internalOwner")):0;
@@ -587,7 +581,7 @@ bool SuiteCutContextControls::Handle(const std::string& action, Dict params, Rep
     std::string origin = "*";
     if (params->HasKey("origin")) { origin = Origin(params->GetString("origin").ToString()); if (origin.empty()) { reply(false, nullptr, "Permission origin must be HTTP(S)"); return true; } }
     const auto list = params->GetList("permissions");
-    if (!list || list->GetSize() > 32) { reply(false, nullptr, "Permissions must be an array of at most 32 names"); return true; }
+    if (!list) { reply(false, nullptr, "Permissions must be an array of names"); return true; }
     uint32_t permissions = 0, media = 0; bool clipboard_write = false;
     for (size_t index = 0; index < list->GetSize(); ++index) {
       const auto name = list->GetString(index).ToString(); const auto bit = Permission(name);
@@ -596,7 +590,6 @@ bool SuiteCutContextControls::Handle(const std::string& action, Dict params, Rep
       if (name == "camera") media |= CEF_MEDIA_PERMISSION_DEVICE_VIDEO_CAPTURE;
       if (name == "microphone") media |= CEF_MEDIA_PERMISSION_DEVICE_AUDIO_CAPTURE;
     }
-    if (!context.permissions.contains(origin) && context.permissions.size() >= 256) { reply(false, nullptr, "Native permission origin capacity exceeded"); return true; }
     context.permissions[origin] |= permissions; context.media_permissions[origin] |= media;
     for(size_t index=0;index<list->GetSize();++index)context.content_permissions[origin].insert(list->GetString(index).ToString());
     if (clipboard_write) context.clipboard_write_origins.insert(origin);
@@ -617,10 +610,10 @@ bool SuiteCutContextControls::Handle(const std::string& action, Dict params, Rep
   }
   if(cookies_&&(action=="cookies"||action=="addCookies"||action=="clearCookies")){
     if(action=="addCookies"){
-      const auto values=params->GetList("cookies");if(!values||values->GetSize()>(params->GetBool("storageInternal")?4096u:1024u)){reply(false,nullptr,"Cookies exceed native entry capacity");return true;}
+      const auto values=params->GetList("cookies");if(!values){reply(false,nullptr,"Cookies must be a list");return true;}
       for(size_t i=0;i<values->GetSize();++i){CookieInput input;std::string error;if(!ParseCookie(values->GetDictionary(i),input,error)){reply(false,nullptr,error);return true;}}
     }else{
-      if(params->HasKey("urls")){const auto values=params->GetList("urls");if(!values||values->GetSize()>128){reply(false,nullptr,"Cookie URL filters exceed native capacity");return true;}for(size_t i=0;i<values->GetSize();++i)if(values->GetType(i)!=VTYPE_STRING||Origin(values->GetString(i)).empty()){reply(false,nullptr,"Cookie filters require HTTP(S) URLs");return true;}}
+      if(params->HasKey("urls")){const auto values=params->GetList("urls");if(!values){reply(false,nullptr,"Cookie URL filters must be a list");return true;}for(size_t i=0;i<values->GetSize();++i)if(values->GetType(i)!=VTYPE_STRING||Origin(values->GetString(i)).empty()){reply(false,nullptr,"Cookie filters require HTTP(S) URLs");return true;}}
       bool regex=false;std::string error;if(!suitecut::ValidateCookieFilterParameters(params,action,regex,error)){reply(false,nullptr,error);return true;}
     }
     const int owner=params->GetInt("internalOwner");cookies_->Handle(owner,id,action,params,hooks_.cookie_deadline?hooks_.cookie_deadline(owner):0,std::move(reply));return true;
@@ -631,7 +624,7 @@ bool SuiteCutContextControls::Handle(const std::string& action, Dict params, Rep
     std::vector<std::string> urls;
     if (params->HasKey("urls")) {
       const auto input = params->GetList("urls");
-      if (!input || input->GetSize() > 128) { reply(false, nullptr, "Cookie URL filters exceed native capacity"); return true; }
+      if (!input) { reply(false, nullptr, "Cookie URL filters must be a list"); return true; }
       for (size_t index = 0; index < input->GetSize(); ++index) {
         const auto url = input->GetString(index).ToString(); if (Origin(url).empty()) { reply(false, nullptr, "Cookie filters require HTTP(S) URLs"); return true; } urls.push_back(url);
       }
@@ -646,7 +639,7 @@ bool SuiteCutContextControls::Handle(const std::string& action, Dict params, Rep
   }
   if (action == "addCookies") {
     const auto input = params->GetList("cookies");
-    if (!input || input->GetSize() > (params->GetBool("storageInternal") ? 4096u : 1024u)) { reply(false, nullptr, "Cookies exceed native entry capacity"); return true; }
+    if (!input) { reply(false, nullptr, "Cookies must be a list"); return true; }
     auto writer = std::make_shared<CookieWriter>(); writer->manager = manager; writer->reply = std::move(reply);
     for (size_t index = 0; index < input->GetSize(); ++index) {
       CookieInput item; std::string error;
@@ -679,25 +672,12 @@ bool SuiteCutContextControls::Matches(const EventWait& wait, Dict event) {
   return name == "context-closed" && event->GetInt("contextId") == wait.context && wait.context > 0;
 }
 
-bool SuiteCutContextControls::FailPermissionScopes(int id,const std::string&reason){
-  const auto found=contexts_.find(id);if(found==contexts_.end())return false;
-  if(!found->second.closing){
-    found->second.closing=true;found->second.close_reason=reason;found->second.origins_overflow=true;
-    const auto weak=weak_from_this();
-    // Return cancellation to CEF before physically closing its browser clients.
-    // During shutdown a rejected post leaves the context marked closing; normal
-    // engine teardown still owns every browser and request-context reference.
-    CefPostTask(TID_UI,new ContextPolicyCloseTask([weak,id]{if(const auto self=weak.lock()){auto params=CefDictionaryValue::Create();params->SetInt("contextId",id);self->Handle("close",params,[](bool,Dict,const std::string&){});}}));
-  }
-  return false;
-}
 bool SuiteCutContextControls::PageOriginObserved(int page,const std::string&url){
   const int id=ContextId(page);const auto context=contexts_.find(id);if(context==contexts_.end()||context->second.closing)return false;
   const auto origin=Origin(url);if(origin.empty())return true;
-  if(!context->second.origins.contains(origin)&&context->second.origins.size()>=1024)return FailPermissionScopes(id,"Native context permission origin capacity exceeded");
   const auto entry=pages_.find(page);
   const auto top=entry!=pages_.end()&&entry->second.browser?Origin(entry->second.browser->GetMainFrame()->GetURL().ToString()):std::string{};
-  if(!context->second.storage_permission_scopes.Observe(origin,top))return FailPermissionScopes(id,"Native context permission origin-pair capacity exceeded");
+  context->second.storage_permission_scopes.Observe(origin,top);
   context->second.origins.insert(origin);ApplySettings(context->second,origin);return true;
 }
 void SuiteCutContextControls::ApplySettings(Context& context, const std::string& origin) {

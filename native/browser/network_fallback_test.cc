@@ -81,7 +81,8 @@ int main() {
       auto request=CefDictionaryValue::Create();request->SetString("url","https://native.test/body");request->SetString("method","POST");request->SetString("postData",std::string(1000000,'x'));request->SetDictionary("headers",CefDictionaryValue::Create());data->SetDictionary("request",request);f.controller.Event("Network.requestWillBeSent",data,"");
       auto finished=CefDictionaryValue::Create();finished->SetString("requestId",std::to_string(index));f.controller.Event("Network.loadingFinished",finished,"");
     }
-    auto diagnostics=CefDictionaryValue::Create();f.controller.Diagnostics(diagnostics);assert(diagnostics->GetDouble("networkRequestMetadataBytes")<=33554432 && diagnostics->GetInt("networkRequests")<40 && f.errors.empty());
+    auto diagnostics=CefDictionaryValue::Create();f.controller.Diagnostics(diagnostics);// No request-row count or metadata byte budget: nothing is evicted.
+    assert(diagnostics->GetDouble("networkRequestMetadataBytes")>0 && diagnostics->GetInt("networkRequests")==40 && f.errors.empty());
     f.controller.Clear();f.controller.Diagnostics(diagnostics);assert(!diagnostics->GetDouble("networkRequestMetadataBytes"));
   }
 

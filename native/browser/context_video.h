@@ -64,7 +64,6 @@ class NativeContextVideo:public std::enable_shared_from_this<NativeContextVideo>
   Hooks hooks_;std::map<int,Prepared>configs_;std::map<uint64_t,Prepared>prepared_;
   std::map<std::string,std::shared_ptr<Record>>records_;std::map<int,std::string>pages_;
   std::map<int,std::string>errors_;
-  std::map<std::string,int>deleted_;std::deque<std::string>deleted_order_;
   std::map<Key,std::shared_ptr<Wait>>waits_;std::map<uint64_t,std::shared_ptr<Work>>work_;
   uint64_t serial_=0;bool cleared_=false,pumping_=false;
 };

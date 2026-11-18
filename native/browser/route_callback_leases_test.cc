@@ -14,9 +14,9 @@ int main() {
   const auto waiting=leases.Issue(*scope,"expired-queued");assert(waiting);leases.Revoke(*scope,"expired-queued");assert(!leases.Start(*waiting,*scope,"expired-queued"));assert(leases.Finish(*waiting,*scope,"expired-queued"));
   const auto executing=leases.Issue(*scope,"expired-running");assert(executing && leases.Start(*executing,*scope,"expired-running"));leases.Revoke(*scope,"expired-running");assert(leases.running()==1);assert(leases.Finish(*executing,*scope,"expired-running"));
   const auto other=leases.Scope();assert(other);std::vector<uint64_t> pending;
-  for(size_t i=0;i<leases.kCapacity;++i){const auto token=leases.Issue(*other,std::to_string(i));assert(token && leases.Start(*token,*other,std::to_string(i)));pending.push_back(*token);}
-  assert(!leases.Available() && !leases.Issue(*other,"overflow"));leases.Close(*other);assert(leases.size()==leases.kCapacity && leases.running()==leases.kCapacity);
-  for(size_t i=0;i<pending.size();++i)assert(leases.Finish(pending[i],*other,std::to_string(i)));
+  for(size_t i=0;i<1000;++i){const auto token=leases.Issue(*other,std::to_string(i)+std::string(200,'i'));assert(token && leases.Start(*token,*other,std::to_string(i)+std::string(200,'i')));pending.push_back(*token);}
+  assert(leases.Available());leases.Close(*other);assert(leases.size()==1000 && leases.running()==1000);
+  for(size_t i=0;i<pending.size();++i)assert(leases.Finish(pending[i],*other,std::to_string(i)+std::string(200,'i')));
   assert(!leases.size());
   for(size_t i=0;i<10000;++i){const auto next=leases.Scope();assert(next);const auto token=leases.Issue(*next,"turn");assert(token);leases.Close(*next);assert(leases.Finish(*token,*next,"turn"));}
   assert(!leases.size() && !leases.running());leases.Clear();

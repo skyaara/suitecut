@@ -23,7 +23,7 @@ describe('native navigation lifecycle', () => {
     expect(pendingNativeNavigationCount(owner)).toBe(0)
   })
 
-  it('bounds admission and retains pending operations until actual settlement', async () => {
+  it('admits navigations past the old 64 and retains pending operations until actual settlement', async () => {
     const owner = {}
     const rejectors: ((error: Error) => void)[] = []
     let issued = 0
@@ -35,13 +35,11 @@ describe('native navigation lifecycle', () => {
         })
       }),
     )
-    await expect(
-      runNativeNavigation(owner, () => {
-        ++issued
-        return Promise.resolve()
-      }),
-    ).rejects.toThrow('Too many pending native navigations')
-    expect(issued).toBe(64)
+    await runNativeNavigation(owner, () => {
+      ++issued
+      return Promise.resolve()
+    })
+    expect(issued).toBe(65)
     prepareNativeNavigationClose(owner)
     expect(pendingNativeNavigationCount(owner)).toBe(64)
     for (const reject of rejectors) reject(new Error('actual closure'))

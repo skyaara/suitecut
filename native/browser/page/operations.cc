@@ -136,11 +136,11 @@ auto Source::Complete(int id, bool ok, const std::string& error, const std::stri
     if (operation && cursor > network_->PublishedPublication()) {
       const auto admitted =
           network_publication_results_.Hold(id, operation->generation, cursor, json);
-      if (admitted != suitecut::NativeNetworkPublicationResults::Admission::Full) {
+      if (admitted != suitecut::NativeNetworkPublicationResults::Admission::Invalid) {
         WakeDeadlines();
         return;
       }
-      Complete(id, false, "Native deferred network-publication results exceed 64 owners or 16 MiB");
+      Complete(id, false, "Native deferred network-publication result owner is invalid");
       return;
     }
   }

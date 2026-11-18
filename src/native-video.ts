@@ -14,13 +14,12 @@ import { type UntrustedInput } from './untrusted.js'
 const pathSchema = z
   .string()
   .min(1)
-  .max(4096)
   .refine(
     (value) => !value.includes('\0') && !/[\uD800-\uDFFF]/u.test(value),
     'Native video paths require scalar Unicode without NUL',
   )
-const width = z.number().int().min(1).max(3840)
-const height = z.number().int().min(1).max(2160)
+const width = z.number().int().min(1)
+const height = z.number().int().min(1)
 /** Native VP9/WebM accepts integer canvases, including odd dimensions. Native selects the default fit. */
 export const NativeRecordVideoSchema = z.strictObject({
   dir: pathSchema,

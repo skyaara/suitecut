@@ -176,17 +176,21 @@ int main(int argc, char** argv) {
     std::ofstream report(directory / "native-stream-flv.json"); report << "{\"frames\":" << result.submitted_frames << ",\"audioFrames\":" << result.audio_submitted_frames << "}";
   }
   {
+    // Pending PCM past the old thirty-second queue bound, in packets larger
+    // than the old 4096-frame packet bound, is kept rather than failing.
     auto no_frame = options; no_frame.first_frame_deadline = Clock::time_point{};
     suitecut::StreamPipeline overflow(no_frame);
-    for (int packet = 0; packet < 400; ++packet) overflow.Audio(std::vector<uint8_t>(4096 * 4, 42), packet * 1000.0 / 12);
-    overflow.Join(); assert(overflow.Snapshot().failure.find("PCM queue exceeded") != std::string::npos); assert(overflow.Snapshot().physical_encoder_pid == 0);
+    for (int packet = 0; packet < 400; ++packet) overflow.Audio(std::vector<uint8_t>(8192 * 4, 42), packet * 1000.0 / 12);
+    assert(!overflow.Settled()); assert(overflow.Snapshot().audio_input_frames == 400u * 8192);
+    overflow.Cancel("Overflow proof complete"); overflow.Join();
+    assert(overflow.Snapshot().failure.find("PCM queue exceeded") == std::string::npos); assert(overflow.Snapshot().physical_encoder_pid == 0);
   }
   {
     auto unlimited = options; unlimited.first_frame_deadline = Clock::time_point{};
     std::vector<std::unique_ptr<suitecut::StreamPipeline>> pipelines;
-    // The completed primary object retains no capacity lease.
-    for (int index = 0; index < 4; ++index) pipelines.push_back(std::make_unique<suitecut::StreamPipeline>(unlimited));
-    bool rejected = false; try { suitecut::StreamPipeline extra(unlimited); } catch (const std::runtime_error&) { rejected = true; } assert(rejected);
+    // No suitecut concurrency cap: a fifth and sixth publisher are admitted.
+    for (int index = 0; index < 6; ++index) pipelines.push_back(std::make_unique<suitecut::StreamPipeline>(unlimited));
+    for (const auto& live : pipelines) assert(!live->Settled());
     for (auto& live : pipelines) { live->Cancel(); live->Join(); assert(live->Snapshot().physical_encoder_pid == 0); }
   }
   {

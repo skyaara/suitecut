@@ -43,13 +43,16 @@ int main(){
   assert(!desktop_metrics->GetBool("mobile")&&desktop_metrics->GetInt("screenWidth")==1280&&desktop_metrics->GetInt("height")==600);
   for(const auto&step:child){assert(step.method!="Emulation.setDeviceMetricsOverride");}
   assert(parsed.Media()->GetList("features")->GetSize()==4);
-  for(const auto&json:{R"({"locale":true})",R"({"timezoneId":""})",R"({"hasTouch":0})",R"({"viewport":{"width":320,"height":0}})",R"({"colorScheme":"null"})",R"({"contrast":"less"})",R"({"geolocation":{"latitude":91,"longitude":0}})",R"({"deviceScaleFactor":5})"}){Settings invalid;assert(!Settings::Parse(Parse(json),invalid,error));}
+  for(const auto&json:{R"({"locale":true})",R"({"timezoneId":""})",R"({"hasTouch":0})",R"({"viewport":{"width":320,"height":0}})",R"({"colorScheme":"null"})",R"({"contrast":"less"})",R"({"geolocation":{"latitude":91,"longitude":0}})",R"({"deviceScaleFactor":0})"}){Settings invalid;assert(!Settings::Parse(Parse(json),invalid,error));}
   Settings tls;assert(Settings::Parse(Parse(R"({"ignoreHTTPSErrors":true})"),tls,error));assert(tls.BootstrapRequired());const auto tls_plan=tls.Plan(true,320,240,1);assert(tls_plan.size()==1&&tls_plan[0].method=="Security.setIgnoreCertificateErrors"&&tls_plan[0].params->GetBool("ignore"));assert(tls.Plan(false,320,240,1).empty());
   Settings strict;assert(Settings::Parse(Parse(R"({"ignoreHTTPSErrors":false})"),strict,error));assert(strict.Plan(true,320,240,1).empty());
   Settings reset;assert(Settings::Parse(Parse(R"({"colorScheme":null,"viewport":null,"geolocation":null})"),reset,error));assert(reset.no_fixed_viewport);assert(reset.Media()->GetList("features")->GetDictionary(0)->GetString("value").empty());
   for(const auto&json:{R"({"viewport":null,"deviceScaleFactor":2})",R"({"viewport":null,"isMobile":true})",R"({"proxy":{"server":"socks5://localhost:1080","username":"u","password":"p"}})"}){Settings invalid;assert(!Settings::Parse(Parse(json),invalid,error));}
   Settings socks;assert(Settings::Parse(Parse(R"({"proxy":{"server":"socks5://localhost:1080"}})"),socks,error));assert(socks.proxy->host=="localhost"&&socks.proxy->port==1080&&socks.proxy->server=="socks5://localhost:1080");
-  Settings big;assert(Settings::Parse(Parse(R"({"viewport":{"width":2000,"height":1200},"deviceScaleFactor":2})"),big,error));assert(!big.CaptureDimensions(1280,720,1,error));
+  Settings big;assert(Settings::Parse(Parse(R"({"viewport":{"width":2000,"height":1200},"deviceScaleFactor":2})"),big,error));assert(big.CaptureDimensions(1280,720,1,error));
+  // No suitecut size caps: Chromium validates values past the former limits itself.
+  Settings huge;assert(Settings::Parse(Parse(R"({"viewport":{"width":8000,"height":6000},"deviceScaleFactor":5,"userAgent":")"+std::string(10000,'u')+R"("})"),huge,error));assert(huge.CaptureDimensions(1280,720,1,error)&&huge.user_agent->size()==10000);
+  {std::string many=R"({"httpCredentials":[)";for(int i=0;i<100;++i)many+=std::string(i?",":"")+R"({"username":")"+std::string(5000,'n')+R"(","password":"p"})";many+="]}";Settings credentials;assert(Settings::Parse(Parse(many),credentials,error)&&credentials.http_credentials_all.size()==100);}
   Settings authentication;assert(Settings::Parse(Parse(R"({"httpCredentials":[{"username":"fallback","password":"fallback-secret"},{"username":"specific","password":"specific-secret","origin":"http://example.test:80/path","send":"always"}]})"),authentication,error));
   assert(authentication.http_credentials_all.size()==2&&authentication.BootstrapRequired());
   assert(authentication.SelectHTTPCredential("http://example.test/actual")->username=="specific");
@@ -84,7 +87,7 @@ int main(){
   const auto proxy_snapshot=std::make_shared<suitecut::NativeContextAuthenticationSnapshot>(std::make_shared<const suitecut::NativeContextCredentials>());
   CefRefPtr<ObservedAuthenticationCallback>proxy_callback=new ObservedAuthenticationCallback;assert(suitecut::NativeContextAuthenticationCallback(std::make_shared<const Settings>(proxy_auth),proxy_snapshot,true,"http://example.test/",true,proxy_callback));assert(proxy_callback->continued==1&&proxy_callback->username=="proxy-user"&&proxy_callback->password=="proxy-secret");
   const auto proxy_provider=suitecut::NativeContextAuthentication(std::make_shared<const Settings>(proxy_auth),proxy_snapshot);challenge->GetDictionary("authChallenge")->SetString("source","Proxy");assert(proxy_provider(challenge)->GetString("username")=="proxy-user");proxy_snapshot->Set(nullptr);assert(proxy_provider(challenge)->GetString("response")=="CancelAuth");canceled(std::make_shared<const Settings>(proxy_auth),proxy_snapshot,true,true);
-  suitecut::ContextSettingsRegistry registry;for(int id=1;id<=32;++id)assert(registry.Seed(id,config,error));assert(!registry.Seed(33,config,error));assert(!registry.Seed(1,config,error));registry.Drop(1);assert(!registry.Get(1));assert(registry.Seed(33,config,error));
+  suitecut::ContextSettingsRegistry registry;for(int id=1;id<=40;++id)assert(registry.Seed(id,config,error));assert(registry.size()==40);assert(!registry.Seed(1,config,error));registry.Drop(1);assert(!registry.Get(1));assert(registry.Seed(41,config,error));
   struct Call{std::string session,method;suitecut::ContextSettingsPage::Result done;};std::deque<Call>calls;
   auto page=std::make_shared<suitecut::ContextSettingsPage>([&](const std::string&session,const std::string&method,Settings::Dict,suitecut::ContextSettingsPage::Result done){calls.push_back({session,method,std::move(done)});});
   bool ready=false,detached=false,second=false;page->Attach("",main,[&](bool ok,const std::string&){assert(ok);ready=true;});assert(page->physical()&&calls.size()==1&&!ready);
@@ -93,5 +96,5 @@ int main(){
   page->Attach("child-a",child,[&](bool ok,const std::string&){assert(!ok);detached=true;});page->Attach("child-b",child,[&](bool ok,const std::string&){assert(ok);second=true;});page->Detach("child-a");assert(detached&&page->physical()&&calls.size()==1&&!second);reply();for(size_t index=0;index<child.size();++index){assert(calls.front().session=="child-b");reply();}assert(second&&!page->physical());
   bool failure=false;page->Attach("child-c",child,[&](bool ok,const std::string&text){assert(!ok&&text=="Actual native override rejected");failure=true;});reply(false);assert(failure&&page->targets()==2);
   bool closed=false;page->Attach("child-d",child,[&](bool ok,const std::string&){assert(!ok);closed=true;});page->Clear();assert(closed&&page->targets()==0&&page->pending()==0&&!page->physical());reply();assert(calls.empty());
-  std::cout<<"context settings: real CEF value validation, immutable capacity, native command plan, main-only metrics, physical ACK fence, target detach and close passed\n";
+  std::cout<<"context settings: real CEF value validation, identity conflicts, native command plan, main-only metrics, physical ACK fence, target detach and close passed\n";
 }

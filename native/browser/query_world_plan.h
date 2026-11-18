@@ -61,7 +61,6 @@ class SuiteCutQueryWorldPlan : public std::enable_shared_from_this<SuiteCutQuery
   }
   void RawRequest(const std::string& method,Dict params,SuiteCutQueryNodeTransfer::Result done){
     if(!Valid())return;
-    if(++requests_>100000){Error("Native mixed-world selector work limit exceeded");return;}
     send_(method,params,std::move(done));
   }
   void Request(const std::string& method,Dict params,Response done){
@@ -91,7 +90,7 @@ class SuiteCutQueryWorldPlan : public std::enable_shared_from_this<SuiteCutQuery
   void Length(Nodes nodes,NumberDone done){
     auto self=shared_from_this();Call(nodes,"function(){return this.length;}",nullptr,true,[self,done=std::move(done)](Dict result)mutable{
       auto value=result->GetDictionary("result");
-      if(!value||value->GetType("value")!=VTYPE_INT||value->GetInt("value")<0||value->GetInt("value")>1000000){self->Error("Native mixed-world selector node limit exceeded");return;}
+      if(!value||value->GetType("value")!=VTYPE_INT||value->GetInt("value")<0){self->Error("Native mixed-world selector node count unavailable");return;}
       done(value->GetInt("value"));
     });
   }
@@ -105,7 +104,7 @@ class SuiteCutQueryWorldPlan : public std::enable_shared_from_this<SuiteCutQuery
   }
   void Sequence(List plan,Nodes scope,int depth,Done done){
     if(!Valid())return;
-    if(depth>64||!plan||plan->GetSize()>65){Error("Native locator query nesting limit exceeded");return;}
+    if(!plan){Error("Invalid native locator query");return;}
     auto work=std::make_shared<SequenceState>();work->plan=plan;work->scope=work->nodes=scope;work->depth=depth;work->done=std::move(done);Next(work);
   }
   void Next(const std::shared_ptr<SequenceState>& work){
@@ -166,20 +165,20 @@ class SuiteCutQueryWorldPlan : public std::enable_shared_from_this<SuiteCutQuery
     const int realm=engine=="custom"&&!isolated_(step->GetString("name").ToString())?main_:utility_;
     World(input,realm,[self,step,done=std::move(done)](Nodes nodes)mutable{
       auto list=CefListValue::Create();list->SetDictionary(0,step);
-      self->Array(nodes,"function(){const out=new Set();for(let i=0;i<this.length;i++){const matches=("+self->helper_+")("+Json(list)+",this[i],"+self->options_+");for(const node of matches){out.add(node);if(out.size>1000000)throw new Error('Native DOM query node limit exceeded');}}return [...out];}",nullptr,std::move(done));
+      self->Array(nodes,"function(){const out=new Set();for(let i=0;i<this.length;i++){const matches=("+self->helper_+")("+Json(list)+",this[i],"+self->options_+");for(const node of matches){out.add(node);}}return [...out];}",nullptr,std::move(done));
     });
   }
   void Combine(Nodes left,Nodes right,const std::string& mode,Done done){
     auto self=shared_from_this();World(right,left.context,[self,left,mode,done=std::move(done)](Nodes right)mutable{
       auto args=CefListValue::Create();auto argument=CefDictionaryValue::Create();argument->SetString("objectId",right.object);args->SetDictionary(0,argument);
       const auto body=mode=="and"?"const members=new Set(other);const out=[];for(const node of this)if(members.has(node))out[out.length]=node;":"const found=new Set(this);for(const node of other)found.add(node);const out=[...found];";
-      self->Array(left,"function(other){"+std::string(body)+"if(out.length>1000000)throw new Error('Native DOM query node limit exceeded');out.sort((a,b)=>a===b?0:a.compareDocumentPosition(b)&Node.DOCUMENT_POSITION_PRECEDING?1:-1);return out;}",args,std::move(done));
+      self->Array(left,"function(other){"+std::string(body)+"out.sort((a,b)=>a===b?0:a.compareDocumentPosition(b)&Node.DOCUMENT_POSITION_PRECEDING?1:-1);return out;}",args,std::move(done));
     });
   }
   void Append(Nodes output,Nodes input,Done done){
     auto self=shared_from_this();World(input,output.context,[self,output,done=std::move(done)](Nodes input)mutable{
       auto args=CefListValue::Create();auto argument=CefDictionaryValue::Create();argument->SetString("objectId",input.object);args->SetDictionary(0,argument);
-      self->Call(output,"function(other){const seen=new Set(this);for(const node of other)if(!seen.has(node)){seen.add(node);this[this.length]=node;if(this.length>1000000)throw new Error('Native DOM query node limit exceeded');}}",args,true,[output,done=std::move(done)](Dict)mutable{done(output);});
+      self->Call(output,"function(other){const seen=new Set(this);for(const node of other)if(!seen.has(node)){seen.add(node);this[this.length]=node;}}",args,true,[output,done=std::move(done)](Dict)mutable{done(output);});
     });
   }
   void PerRoot(Nodes input,List query,List descendants,int depth,std::string mode,Done done){
@@ -208,6 +207,6 @@ class SuiteCutQueryWorldPlan : public std::enable_shared_from_this<SuiteCutQuery
     });
   }
   Reference reference_;
-  Send send_;Current current_;Fail fail_;Isolated isolated_;int main_=0,utility_=0;size_t requests_=0;bool failed_=false,grouped_=false;
+  Send send_;Current current_;Fail fail_;Isolated isolated_;int main_=0,utility_=0;bool failed_=false,grouped_=false;
   std::string group_,helper_,options_;
 };

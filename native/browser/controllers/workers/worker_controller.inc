@@ -20,7 +20,6 @@ std::map<std::string,std::string> worker_sessions_;
 std::map<int,WorkerCall> worker_calls_;
 std::map<int,WorkerHandle> worker_handles_;
 std::map<int,WorkerWork> worker_work_;
-static constexpr size_t kWorkerTargets = 1024;
 uint64_t worker_generation_ = 0;
 size_t worker_physical_ = 0;
 bool worker_context_channel_ = false;
@@ -93,7 +92,6 @@ bool WorkerToolResult(int id, bool ok, const void* data, size_t size, const std:
   const bool expired=found->second.expired||Now()>=found->second.deadline;
   auto callback = std::exchange(found->second.callback, nullptr); worker_calls_.erase(found);
   if(expired)callback(false,"Native worker bootstrap original deadline expired");
-  else if (size > 1048576) callback(false,"Native worker bootstrap response exceeds limit");
   else callback(ok,size ? std::string(static_cast<const char*>(data),size) : "{}");
   WakeDeadlines(); // Real replies can retire physical ownership while idle.
   return true;
@@ -180,23 +178,23 @@ bool WorkerAttached(Dict data, const std::string& parent_session) {
   if (kind != "worker" && kind != "shared_worker" && kind != "service_worker") return false;
   const auto session = data->GetString("sessionId").ToString(), id = info->GetString("targetId").ToString();
   const auto url = info->GetString("url").ToString();
-  if (session.empty() || session.size() > 128 || id.empty() || id.size() > 128 || url.size() > 8192 ||
-      worker_targets_.size() >= kWorkerTargets || worker_targets_.contains(id) || worker_sessions_.contains(session) ||
+  if (session.empty() || id.empty() ||
+      worker_targets_.contains(id) || worker_sessions_.contains(session) ||
       worker_generation_ == std::numeric_limits<uint64_t>::max()) {
     if(worker_websocket_required_&&worker_websocket_required_()){
-      if(worker_websocket_failure_)worker_websocket_failure_("Native worker target identity or capacity invalid under WebSocket policy");
+      if(worker_websocket_failure_)worker_websocket_failure_("Native worker target identity invalid under WebSocket policy");
     }else if (!session.empty()) SendDevTools("Runtime.runIfWaitingForDebugger",nullptr,session);
     // The worker runs untracked; it was already resumed above.
-    Degraded("Native worker target identity or capacity invalid"); return true;
+    Degraded("Native worker target identity invalid"); return true;
   }
   if(!WorkerEventAvailable()){
-    if(worker_websocket_required_&&worker_websocket_required_()){if(worker_websocket_failure_)worker_websocket_failure_("Native worker event capacity exceeded under WebSocket policy");}
+    if(worker_websocket_required_&&worker_websocket_required_()){if(worker_websocket_failure_)worker_websocket_failure_("Native worker event sequence exhausted under WebSocket policy");}
     else SendDevTools("Runtime.runIfWaitingForDebugger",nullptr,session);
     return true;
   }
   const auto generation = ++worker_generation_;
   WorkerTarget target;target.id=id;target.session=session;target.parent_session=parent_session;target.url=url;target.kind=kind;target.generation=generation;target.deadline=Now()+30000;target.coverage_ready=!worker_coverage_attach_;
-  if(info->GetType("parentFrameId")==VTYPE_STRING&&info->GetString("parentFrameId").length()<=128)target.parent_frame=info->GetString("parentFrameId");
+  if(info->GetType("parentFrameId")==VTYPE_STRING)target.parent_frame=info->GetString("parentFrameId");
   if(target.parent_frame.empty()&&worker_sessions_.contains(parent_session))target.parent_frame=worker_targets_.at(worker_sessions_.at(parent_session)).parent_frame;
   target.websocket_ready=!worker_websocket_attach_;target.websocket_required=worker_websocket_required_&&worker_websocket_required_();
   worker_targets_.emplace(id,std::move(target));
@@ -333,7 +331,9 @@ void WorkerAttributeNetwork(const std::string& method, Dict data, const std::str
   target.observed=true;
   data->SetDictionary("suitecutWorkerInfo",WorkerInfo(target));
   const auto* actual=&target;bool context_owner=worker_context_channel_;
-  for(size_t depth=0;depth<1024&&!context_owner;++depth){if(actual->kind=="service_worker"||actual->kind=="shared_worker"){context_owner=true;break;}const auto parent=worker_sessions_.find(actual->parent_session);if(parent==worker_sessions_.end())break;const auto found=worker_targets_.find(parent->second);if(found==worker_targets_.end())break;actual=&found->second;}
+  // A parent chain can be no longer than the attached sessions; this only
+  // stops a cyclic chain, it is not a depth limit.
+  for(size_t depth=0;depth<=worker_sessions_.size()&&!context_owner;++depth){if(actual->kind=="service_worker"||actual->kind=="shared_worker"){context_owner=true;break;}const auto parent=worker_sessions_.find(actual->parent_session);if(parent==worker_sessions_.end())break;const auto found=worker_targets_.find(parent->second);if(found==worker_targets_.end())break;actual=&found->second;}
   data->SetBool("suitecutContextWorker",context_owner);
   if(target.kind=="service_worker")data->SetBool("suitecutServiceWorker",true);
   if(target.kind!="service_worker" && !target.parent_frame.empty()&&(data->GetType("frameId")!=VTYPE_STRING||data->GetString("frameId").empty()))data->SetString("frameId",target.parent_frame);
@@ -341,7 +341,7 @@ void WorkerAttributeNetwork(const std::string& method, Dict data, const std::str
 void WorkerUpdated(Dict data) {
   const auto info = data->GetDictionary("targetInfo"); if (!info) return;
   const auto found = worker_targets_.find(info->GetString("targetId")); if (found == worker_targets_.end()) return;
-  const auto url = info->GetString("url").ToString(); if (url.size() > 8192 || url == found->second.url) return;
+  const auto url = info->GetString("url").ToString(); if (url == found->second.url) return;
   if (!found->second.published&&!found->second.observed) {found->second.url=url;return;}
   const auto admitted=WorkerEventSequence();if(!admitted)return;
   found->second.url = url;
@@ -382,7 +382,7 @@ bool WorkerCurrent(int owner) const {
   return target != worker_targets_.end() && target->second.generation == work->second.target_generation && target->second.context == work->second.context;
 }
 bool WorkerArguments(int id, Dict message, Dict params, const WorkerTarget& target) {
-  auto ids = message->GetList("handles"); if (!ids || ids->GetSize() > 1024) { Complete(id,false,"Invalid native worker handle arguments"); return false; }
+  auto ids = message->GetList("handles"); if (!ids) { Complete(id,false,"Invalid native worker handle arguments"); return false; }
   auto arguments = CefListValue::Create();
   for (size_t i = 0; i < ids->GetSize(); ++i) {
     const auto found = ids->GetType(i) == VTYPE_INT ? worker_handles_.find(ids->GetInt(i)) : worker_handles_.end();
@@ -395,7 +395,6 @@ bool WorkerArguments(int id, Dict message, Dict params, const WorkerTarget& targ
 }
 void WorkerRequest(int id, const std::string& method, Dict params, DevToolsCallback callback, const std::string& session, bool lossless_scalars=false) {
   if (!WorkerCurrent(id)) return;
-  if (worker_physical_ >= 64) { Complete(id,false,"Native worker physical command capacity exceeded"); return; }
   const auto work = worker_work_.at(id); const auto group = work.group;
   ++worker_physical_; auto physical=std::make_shared<WorkerPhysical>(); physical->release=[this] { --worker_physical_; };
   DevTools(id,method,params,[this,id,session,group,generation=work.generation,physical,callback=std::move(callback)](bool ok,const std::string& json) mutable {
@@ -404,10 +403,10 @@ void WorkerRequest(int id, const std::string& method, Dict params, DevToolsCallb
     if (!ok) {
       auto parsed=CefParseJSON(json,JSON_PARSER_RFC);auto result=parsed?parsed->GetDictionary():nullptr;
       const auto error=result?result->GetString("message").ToString():json;
-      Complete(id,false,error.empty()?"Native worker command failed":error.substr(0,4096));return;
+      Complete(id,false,error.empty()?"Native worker command failed":error);return;
     }
     callback(true,json);
-  },session,true,16*1048576,lossless_scalars);
+  },session,true,std::numeric_limits<size_t>::max(),lossless_scalars);
 }
 void WorkerCreateResult(int id, int handle, const std::string& group, bool ok, const std::string& json) {
   if (!WorkerCurrent(id)) return;
@@ -434,7 +433,6 @@ void WorkerCreateResult(int id, int handle, const std::string& group, bool ok, c
       else preview = CefWriteJSON(value->GetValue("value"),JSON_WRITER_DEFAULT).ToString();
     }
     if (preview.empty()) preview = value->GetString("type");
-    if (preview.size() > 8192) preview.resize(8192);
     worker_handles_.emplace(handle,WorkerHandle{object,group,target.id,target.session,target.context,target.generation}); work.retained = true;
     auto response = CefDictionaryValue::Create(); response->SetInt("handle",handle); response->SetString("preview",preview);
     response->SetString("guid","suitecut-worker-" + handle_namespace_ + ":" + std::to_string(handle)); response->SetBool("node",false); response->SetString("worker",target.id);
@@ -447,7 +445,7 @@ bool WorkerValidateControl(int owner,Dict message) {
   const auto expected=message->GetType("workerControl")==VTYPE_DICTIONARY?message->GetDictionary("workerControl"):nullptr;
   const auto worker=message->GetType("worker")==VTYPE_STRING?message->GetString("worker").ToString():std::string();
   const auto target=worker_targets_.find(worker);
-  if(!expected||expected->GetSize()!=2||expected->GetType("owner")!=VTYPE_STRING||expected->GetString("owner").length()>128||
+  if(!expected||expected->GetSize()!=2||expected->GetType("owner")!=VTYPE_STRING||
       expected->GetType("generation")!=VTYPE_STRING||expected->GetString("generation").length()>20||
       target==worker_targets_.end()||expected->GetString("owner")!=handle_namespace_||
       expected->GetString("generation")!=std::to_string(target->second.generation)) {
@@ -484,7 +482,7 @@ void WorkerRun(int id, Dict message) {
   if (action == "waitClose") return;
   if (action != "evaluate" && action != "create" && action != "property") { Complete(id,false,"Unsupported native worker action"); return; }
   const bool create = action != "evaluate";
-  if (create && (worker_handles_.size()+worker_work_.size() >= 1024 || next_handle_ == std::numeric_limits<int>::max())) { Complete(id,false,"Native worker handle capacity exceeded"); return; }
+  if (create && next_handle_ == std::numeric_limits<int>::max()) { Complete(id,false,"Native worker handle identities exhausted"); return; }
   const int handle = create ? ++next_handle_ : 0;
   const auto group = create ? "suitecut-worker-handle-"+handle_namespace_+"-"+std::to_string(handle) : "suitecut-worker-evaluate-"+handle_namespace_+"-"+std::to_string(id)+"-"+std::to_string(operation->generation);
   worker_work_.at(id).group = group;
@@ -495,16 +493,15 @@ void WorkerRun(int id, Dict message) {
     params->SetString("objectId",receiver->second.object); method = "Runtime.callFunctionOn";
   }
   if (action == "property") {
-    if (message->GetType("name") != VTYPE_STRING || message->GetString("name").length() > 1048576) { Complete(id,false,"Invalid native worker property name"); return; }
+    if (message->GetType("name") != VTYPE_STRING) { Complete(id,false,"Invalid native worker property name"); return; }
     params->SetString("functionDeclaration","function(name){return {value:this.value[name]};}");
     auto arguments = CefListValue::Create(); auto name = CefDictionaryValue::Create(); name->SetString("value",message->GetString("name")); arguments->SetDictionary(0,name); params->SetList("arguments",arguments);
   } else if (message->GetType("function") == VTYPE_STRING) {
-    if (message->GetString("function").length() > 1048576) { Complete(id,false,"Native worker function exceeds source limit"); return; }
     method = "Runtime.callFunctionOn"; params->SetString("functionDeclaration",message->GetString("function"));
     if (!params->HasKey("objectId")) params->SetInt("executionContextId",target.context);
     if (!WorkerArguments(id,message,params,target)) return;
   } else if (message->GetType("expression") == VTYPE_STRING && !params->HasKey("objectId")) {
-    const auto expression = message->GetString("expression").ToString(); if (expression.size() > 1048576) { Complete(id,false,"Native worker expression exceeds source limit"); return; }
+    const auto expression = message->GetString("expression").ToString();
     params->SetString("expression",create ? "(async()=>({value:await("+expression+")}))()" : expression); params->SetInt("contextId",target.context);
   } else { Complete(id,false,"Worker evaluation requires a function or expression"); return; }
   params->SetBool("awaitPromise",true); params->SetBool("returnByValue",!create); params->SetString("objectGroup",group);

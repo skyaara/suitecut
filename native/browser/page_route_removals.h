@@ -11,7 +11,7 @@
 #include "page_route_callback_selection.h"
 #include "route_callback_waits.h"
 namespace suitecut {
-// UI-actor observer transactions. Apply owns the real bounded native control
+// UI-actor observer transactions. Apply owns the real native control
 // callback; queued reservation, logical cancellation and real ACK are distinct.
 class NativePageRouteRemovals {
  public:
@@ -23,12 +23,12 @@ class NativePageRouteRemovals {
   NativePageRouteRemovals(const NativePageRouteRemovals&)=delete;
   NativePageRouteRemovals&operator=(const NativePageRouteRemovals&)=delete;
   bool Remove(int operation,int context,uint64_t generation,NativePageRouteCallbackSelection selected,std::vector<std::string>ids,std::string mutation,bool wait,double deadline,std::function<void()>deactivate,Apply apply,Reply reply){
-    if(closed_||!scope_||operation<1||context<1||!generation||!reply||!apply||!deactivate||!emit_||!std::isfinite(deadline)||deadline<0||(deadline&&now_()>=deadline)||active_.contains(operation)||physical_->receipts.size()>=64||serial_==UINT64_MAX||selected.scope!=scope_||selected.tokens.size()!=selected.receipts.size()||selected.tokens.size()>128||ids.size()>256||mutation.empty()||mutation.size()>128||mutation.find('\0')!=std::string::npos)return false;
+    if(closed_||!scope_||operation<1||context<1||!generation||!reply||!apply||!deactivate||!emit_||!std::isfinite(deadline)||deadline<0||(deadline&&now_()>=deadline)||active_.contains(operation)||serial_==UINT64_MAX||selected.scope!=scope_||selected.tokens.size()!=selected.receipts.size()||mutation.empty()||mutation.find('\0')!=std::string::npos)return false;
     uint64_t previous=0;for(size_t index=0;index<selected.tokens.size();++index){if(selected.tokens[index]<=previous||!selected.receipts[index])return false;previous=selected.tokens[index];}
-    size_t wire=512+6*mutation.size()+128*24;std::set<std::string>unique;for(const auto&id:ids){if(id.empty()||id.size()>128||id.find('\0')!=std::string::npos||!unique.insert(id).second)return false;wire+=6*id.size()+4;}if(wire>65536)return false;
+    std::set<std::string>unique;for(const auto&id:ids){if(id.empty()||id.find('\0')!=std::string::npos||!unique.insert(id).second)return false;}
     auto snapshot=std::move(selected.receipts);
     auto task=std::make_shared<Task>();task->operation=operation;task->generation=generation;task->receipt=serial_+1;task->selected=std::move(selected);task->ids=std::move(ids);task->mutation=std::move(mutation);task->reply=std::move(reply);task->wait=wait;task->deadline=deadline;
-    if(!task->Admit())return false;
+    task->Admit();
     const auto weak=std::weak_ptr<bool>(alive_);
     if(wait&&!waits_.Reserve(operation,context,generation,std::move(snapshot),deadline,[this,weak,task](bool ok,const std::string&error){auto alive=weak.lock();if(alive&&*alive)Complete(task,ok,error);}))return false;
     ++serial_;physical_->receipts.insert(task->receipt);active_.emplace(operation,task);
@@ -73,7 +73,7 @@ class NativePageRouteRemovals {
     int operation=0;uint64_t generation=0,receipt=0;NativePageRouteCallbackSelection selected;std::vector<std::string>ids;std::string mutation;Reply reply;double deadline=0;bool wait=false,dispatched=false,canceled=false,charged=false;size_t bytes=0;
     static inline size_t count=0,total_bytes=0;
     size_t Bytes()const{size_t value=sizeof(Task)+selected.bytes()+ids.capacity()*sizeof(std::string)+mutation.capacity();for(const auto&id:ids)value+=id.capacity();return value;}
-    bool Admit(){bytes=Bytes();if(count>=128||bytes>4194304-total_bytes)return false;charged=true;++count;total_bytes+=bytes;return true;}
+    void Admit(){bytes=Bytes();charged=true;++count;total_bytes+=bytes;}
     void DropMetadata(){std::vector<std::string>().swap(ids);std::string().swap(mutation);std::vector<uint64_t>().swap(selected.tokens);NativeRouteCallbackSnapshot().swap(selected.receipts);if(charged){const auto current=Bytes();total_bytes-=bytes-current;bytes=current;}}
     ~Task(){if(charged){--count;total_bytes-=bytes;}}
   };

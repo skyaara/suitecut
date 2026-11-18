@@ -20,5 +20,7 @@ int main() {
   const std::string unicode="\xcf\x80";assert(suitecut::CaptureNativePostData(Request(unicode,{"z4A="})).kind==Kind::Text);
   assert(suitecut::CaptureNativePostData(Request("",{""})).kind==Kind::Text);
   auto missing=Request("partial",{});auto entries=CefListValue::Create();entries->SetDictionary(0,CefDictionaryValue::Create());missing->SetList("postDataEntries",entries);assert(suitecut::CaptureNativePostData(missing).kind==Kind::Unavailable);
-  assert(suitecut::CaptureNativePostData(Request("",{std::string(2796205,'A')})).kind==Kind::Unavailable);
+  // Only malformed base64 is unavailable; there is no size cap.
+  assert(suitecut::CaptureNativePostData(Request("",{"%%%%"})).kind==Kind::Unavailable);
+  const std::vector<uint8_t> whole(3*1048576+1,0);auto passed=suitecut::CaptureNativePostData(Request("",{CefBase64Encode(whole.data(),whole.size()).ToString()}));assert(passed.kind==Kind::Binary&&passed.bytes==whole);
 }

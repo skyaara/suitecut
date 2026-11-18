@@ -135,7 +135,7 @@ void ArtifactScrollElement(std::shared_ptr<ArtifactGeometryWork> work) {
       for (size_t i = 0; i < 8; ++i) {
         if (quad->GetType(i) != VTYPE_DOUBLE && quad->GetType(i) != VTYPE_INT) { work->done(false, "Invalid native screenshot element quad"); return; }
         const double value = quad->GetType(i) == VTYPE_INT ? quad->GetInt(i) : quad->GetDouble(i);
-        if (!std::isfinite(value) || std::abs(value)>100000000) { work->done(false, "Native screenshot element quad exceeds geometry bounds"); return; }
+        if (!std::isfinite(value)) { work->done(false, "Invalid native screenshot element quad"); return; }
         work->quad.push_back(value);
       }
       work->session_root = work->frame;

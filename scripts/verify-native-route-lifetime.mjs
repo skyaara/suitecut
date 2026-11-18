@@ -123,14 +123,15 @@ try {
   const probe = await held.context.newPage()
   await probe.goto(`${origin}/page`)
   let invoked = 0
-  await probe.route('**/hold/overflow', () => {
+  await probe.route('**/hold/overflow', (route) => {
     ++invoked
+    return route.fulfill({ body: 'ok' })
   })
-  assert.equal(await probe.evaluate(`fetch('/hold/overflow').then(()=>false,()=>true)`), true)
-  assert.equal(invoked, 0)
+  assert.equal(await probe.evaluate(`fetch('/hold/overflow').then(()=>false,()=>true)`), false)
+  assert.equal(invoked, 1)
   assert.ok(!wire.includes('/hold/overflow'))
   checks.push(
-    'native global callback capacity rejects the 129th real request before author invocation or origin',
+    'a 129th real request still reaches its author route callback while 128 callbacks are held',
   )
   held.held.forEach((resolve) => Resolve.parse(resolve)())
   await until(
@@ -175,17 +176,18 @@ try {
     'actual unresolved host callbacks remain counted across native helper process replacement',
   )
   let overflowInvoked = 0
-  await current.page.route('**/hold/restart-overflow', () => {
+  await current.page.route('**/hold/restart-overflow', (route) => {
     ++overflowInvoked
+    return route.fulfill({ body: 'ok' })
   })
   assert.equal(
     await current.page.evaluate(`fetch('/hold/restart-overflow').then(()=>false,()=>true)`),
-    true,
+    false,
   )
-  assert.equal(overflowInvoked, 0)
+  assert.equal(overflowInvoked, 1)
   assert.ok(!wire.includes('/hold/restart-overflow'))
   checks.push(
-    'host physical capacity remains 128 across old and new genuine native helper processes',
+    'held host callbacks across old and new native helper processes do not block a further route callback',
   )
   prior.held.forEach((resolve) => Resolve.parse(resolve)())
   current.held.forEach((resolve) => Resolve.parse(resolve)())

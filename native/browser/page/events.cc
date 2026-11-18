@@ -4,30 +4,13 @@ namespace suitecut::browser {
 auto Source::ToolEvent(const std::string& method, const void* params, size_t size,
                        const std::string& session) -> void {
   if (method == "Emulation.virtualTimeBudgetExpired") {
-    if (session.empty() && size <= 64 && native_virtual_time_)
+    if (session.empty() && native_virtual_time_)
       native_virtual_time_->BudgetExpired(Now());
     return;
   }
   // Chrome hands DevTools whole console messages, exceptions and paused
-  // requests; each subsystem below bounds what it keeps. This only rejects
-  // events no page can reasonably produce.
-  constexpr size_t kMaxEvent = 32 * 1048576;
-  if (size > kMaxEvent && method == "Fetch.requestPaused") {
-    auto parsed =
-        CefParseJSON(std::string(static_cast<const char*>(params), size), JSON_PARSER_RFC);
-    if (network_)
-      network_->RejectOversizedPause(parsed ? parsed->GetDictionary() : nullptr, session);
-    else
-      Error("Native interception controller unavailable");
-    return;
-  }
-  if (method == "Runtime.exceptionThrown" && size > kMaxEvent) {
-    // Like any other event over 32 MiB, an oversized exception is dropped.
-    Degraded("Native page error event limit exceeded");
-    return;
-  }
-  if (size > kMaxEvent ||
-      (method != "Page.frameAttached" && method != "Page.frameNavigated" &&
+  // requests; every one is passed on whole, whatever its size.
+  if (method != "Page.frameAttached" && method != "Page.frameNavigated" &&
        method != "Page.frameDetached" && method != "Page.navigatedWithinDocument" &&
        method != "Page.frameRequestedNavigation" && method != "Page.frameStartedNavigating" &&
        method != "Page.frameStoppedLoading" && method != "Runtime.executionContextCreated" &&
@@ -43,7 +26,7 @@ auto Source::ToolEvent(const std::string& method, const void* params, size_t siz
        method != "Network.responseReceived" && method != "Network.dataReceived" &&
        method != "Network.loadingFinished" && method != "Network.loadingFailed" &&
        method != "Network.requestWillBeSentExtraInfo" &&
-       method != "Network.responseReceivedExtraInfo" && method != "Fetch.requestPaused"))
+       method != "Network.responseReceivedExtraInfo" && method != "Fetch.requestPaused")
     return;
   if (std::getenv("SUITECUT_NATIVE_PROTOCOL_DIAGNOSTICS") && diagnostic_messages_++ < 2000)
     std::fprintf(stderr, "native event %s session=%s: %.*s\n", method.c_str(), session.c_str(),
@@ -169,7 +152,6 @@ auto Source::ToolEvent(const std::string& method, const void* params, size_t siz
       for (std::size_t index = 0; index < args->GetSize(); ++index) {
         if (index) text += " ";
         text += ConsolePreview(args->GetDictionary(index));
-        if (text.size() > 1000000) break;
       }
     auto stack = data->GetDictionary("stackTrace");
     auto calls = stack ? stack->GetList("callFrames") : nullptr;
@@ -193,7 +175,7 @@ auto Source::ToolEvent(const std::string& method, const void* params, size_t siz
   } else if (method == "Target.attachedToTarget") {
     auto info = data->GetDictionary("targetInfo");
     const auto child = data->GetString("sessionId").ToString();
-    if (!info || child.empty() || child.size() > 128) {
+    if (!info || child.empty()) {
       FailChildBootstrap("Invalid native child target identity");
       return;
     }
@@ -207,19 +189,14 @@ auto Source::ToolEvent(const std::string& method, const void* params, size_t siz
       DeferChildBootstrap(child, "", true);
       return;
     }
-    if (sessions_.size() >= 1024 && !sessions_.contains(child)) {
-      FailChildBootstrap("Native target session limit exceeded");
-      return;
-    }
     const auto frame_id = info->GetString("targetId").ToString();
-    if (frame_id.empty() || frame_id.size() > 256) {
+    if (frame_id.empty()) {
       FailChildBootstrap("Invalid native child frame identity");
       return;
     }
-    if (session.size() > 128 || child == session ||
-        (native_target_parents_.size() >= 1024 && !native_target_parents_.contains(child)) ||
+    if (child == session ||
         (native_target_parents_.contains(child) && native_target_parents_.at(child) != session)) {
-      FailChildBootstrap("Invalid native child target parent identity or parent-session limit");
+      FailChildBootstrap("Invalid native child target parent identity");
       return;
     }
     if (network_ && !network_->FrameSessionAttached(child, session, frame_id)) return;
@@ -266,19 +243,17 @@ auto Source::ToolEvent(const std::string& method, const void* params, size_t siz
     const auto found = frame_states_.find(data->GetString("frameId"));
     if (found != frame_states_.end()) {
       const auto url = data->GetString("url").ToString();
-      if (url.size() <= kMaxObservedURL) {
-        found->second.url = url;
-        ++found->second.navigation;
-        FrameEvent("framenavigated", found->second);
-        CheckNavigations();
-        if (found->first == main_frame_id_) {
-          if (navigation_) Complete(navigation_, true);
-          auto response = CefDictionaryValue::Create();
-          response->SetString("url", url);
-          response->SetInt("status", 0);
-          const auto waiters = navigation_waiters_;
-          for (const int id : waiters) Complete(id, true, "", Json(response));
-        }
+      found->second.url = url;
+      ++found->second.navigation;
+      FrameEvent("framenavigated", found->second);
+      CheckNavigations();
+      if (found->first == main_frame_id_) {
+        if (navigation_) Complete(navigation_, true);
+        auto response = CefDictionaryValue::Create();
+        response->SetString("url", url);
+        response->SetInt("status", 0);
+        const auto waiters = navigation_waiters_;
+        for (const int id : waiters) Complete(id, true, "", Json(response));
       }
     }
   } else if (method == "Page.frameDetached") {
@@ -301,12 +276,10 @@ auto Source::ToolEvent(const std::string& method, const void* params, size_t siz
     auto aux = context ? context->GetDictionary("auxData") : nullptr;
     if (aux && (aux->GetBool("isDefault") || context->GetString("name") == "__suitecut_dom__")) {
       const auto id = aux->GetString("frameId").ToString();
-      if (id.empty() || id.size() > 128 ||
-          (!frame_states_.contains(id) && frame_states_.size() >= 1024))
-        return;
+      if (id.empty()) return;
       const auto identity = context->GetString("uniqueId").ToString();
-      if (identity.empty() || identity.size() > 256) {
-        Error("Native execution context unique identity unavailable or too large");
+      if (identity.empty()) {
+        Error("Native execution context unique identity unavailable");
         return;
       }
       auto& frame = frame_states_[id];

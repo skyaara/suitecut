@@ -89,7 +89,8 @@ int main(){
   }
   {
     Fixture f;f.Install();f.Run();assert(f.Exception(1,31,true,std::string(65537,'x')));f.Ack(4);f.ReachTarget();f.Ack(10);
-    assert(!f.done.back().ok&&f.done.back().error.size()<200&&f.done.back().error.find("65536-byte")!=std::string::npos);
+    // No receipt byte cap: exception text past the old 65536 bytes is reported whole.
+    assert(!f.done.back().ok&&f.done.back().error.size()>65537&&f.done.back().error.ends_with(": "+std::string(65537,'x')));
   }
   {
     Fixture f;f.Install();assert(f.clock.Begin({2,2,Clock::Action::RunFor,120,10000,31},2));

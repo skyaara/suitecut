@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Included inside Source. Ordinary handle creation and cleanup have distinct
-// logical admission; real cleanup commands are capped independently of both.
+// logical admission and real cleanup commands.
 std::unique_ptr<suitecut::HandleDisposalControls> handle_disposals_;
 void DisposeNativeHandles(int id,Dict message){
   const auto operation=operations_.Get(id);if(!operation)return;
@@ -8,7 +8,7 @@ void DisposeNativeHandles(int id,Dict message){
   if(message->GetString("action")=="disposeMany"){
     if(message->GetType("handles")!=VTYPE_LIST){Complete(id,false,"Invalid native handle disposal batch");return;}
     const auto list=message->GetList("handles");
-    if(!list||!list->GetSize()||list->GetSize()>1024){Complete(id,false,"Invalid native handle disposal batch");return;}
+    if(!list||!list->GetSize()){Complete(id,false,"Invalid native handle disposal batch");return;}
     std::set<int> unique;
     for(size_t index=0;index<list->GetSize();++index){
       if(list->GetType(index)!=VTYPE_INT||list->GetInt(index)<=0||!unique.insert(list->GetInt(index)).second){Complete(id,false,"Invalid native handle disposal batch");return;}
@@ -38,6 +38,6 @@ void DisposeNativeHandles(int id,Dict message){
     [this](const auto& handle){const auto found=handles_.find(handle.id);if(found!=handles_.end()&&found->second.group==handle.group)handles_.erase(found);},
     [this](int owner,uint64_t generation,bool ok,const std::string& error){if(operations_.IsCurrent(owner,generation))Complete(owner,ok,error);},
     [this](const std::string& error){Degraded(error);});
-  if(!handle_disposals_->Begin(id,operation->generation,std::move(handles),Now())){Complete(id,false,"Native handle disposal capacity exceeded");return;}
+  if(!handle_disposals_->Begin(id,operation->generation,std::move(handles),Now())){Complete(id,false,"Native handle disposal is closed or already in progress for these handles");return;}
   WakeDeadlines();
 }

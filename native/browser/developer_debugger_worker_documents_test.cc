@@ -39,11 +39,12 @@ int main(){size_t groups=0;std::string error;
  {Documents docs(host);const auto attachment=Attached();assert(docs.Attached(attachment,"worker",error));
   assert(!docs.Attached(attachment,"worker",error));assert(!docs.Attached(Attached(2,"other-session"),"worker",error));
   assert(!docs.Attached(Attached(2,"other-session","other-target"),"service_worker",error)&&docs.Records()==1);++groups;}
- {Documents docs(host);Documents::Pin first;for(size_t i=0;i<Documents::kRecords;++i){const auto attachment=Attached(i+1,"session-"+std::to_string(i),"target-"+std::to_string(i));assert(docs.Attached(attachment,"worker",error)&&docs.ContextCreated(attachment,7,"unique-"+std::to_string(i),error));if(!i)assert(docs.Resolve(attachment,first));}
-  const auto bytes=docs.Payload();assert(!docs.Attached(Attached(1000,"over-capacity","new-target"),"worker",error)&&docs.Records()==Documents::kRecords&&docs.Payload()==bytes&&docs.Current(first));
-  assert(docs.Detached(first.attachment)&&docs.Attached(Attached(1000,"over-capacity","new-target"),"worker",error));++groups;}
+ {Documents docs(host);Documents::Pin first;for(size_t i=0;i<200;++i){const auto attachment=Attached(i+1,"session-"+std::to_string(i),"target-"+std::to_string(i));assert(docs.Attached(attachment,"worker",error)&&docs.ContextCreated(attachment,7,"unique-"+std::to_string(i),error));if(!i)assert(docs.Resolve(attachment,first));}
+  const auto bytes=docs.Payload();assert(docs.Attached(Attached(1000,"past-old-capacity","new-target"),"worker",error)&&docs.Records()==201&&docs.Payload()>bytes&&docs.Current(first));
+  assert(docs.Detached(first.attachment)&&docs.Records()==200);++groups;}
  {Documents docs(host);const auto attachment=Attached();Documents::Pin pin;assert(docs.Attached(attachment,"worker",error)&&docs.ContextCreated(attachment,7,"actual-runtime-unique",error)&&docs.Resolve(attachment,pin));
-  const auto payload=docs.Payload();assert(!docs.ContextCreated(attachment,7,std::string(257,'x'),error)&&docs.Current(pin)&&docs.Payload()==payload);
+  const auto payload=docs.Payload();assert(docs.ContextCreated(attachment,8,std::string(2*1048576,'x'),error)&&!docs.Current(pin)&&docs.Payload()==payload-pin.unique_context.size()+2*1048576);
+  assert(docs.Resolve(attachment,pin)&&pin.unique_context.size()==2*1048576);
   assert(!docs.ContextCreated(attachment,7,std::string("a\0b",3),error)&&docs.Current(pin));++groups;}
  {Documents docs(host);const auto attachment=Attached();Documents::Pin pin;assert(docs.Attached(attachment,"worker",error)&&docs.ContextCreated(attachment,7,"actual-runtime-unique",error)&&docs.Resolve(attachment,pin));
   docs.ObserverClosed({"foreign-source",host.observer});assert(docs.Current(pin));docs.ObserverClosed(host);

@@ -42,7 +42,8 @@ bool DamageTests() {
   if (!SuiteCutUpdateCapture(current, complete.data(), 32, 128, 32, 128, dirty) || current != complete) return false;
   const auto retained = current;
   return !SuiteCutUpdateCapture(current, nullptr, 32, 128, 32, 128, dirty) && current == retained &&
-      !SuiteCutUpdateCapture(current, complete.data(), INT_MAX, 128, 32, 128, dirty) && current == retained;
+      !SuiteCutUpdateCapture(current, complete.data(), 0, 128, 32, 128, dirty) && current == retained &&
+      !SuiteCutUpdateCapture(current, complete.data(), 32, -1, 32, 128, dirty) && current == retained;
 }
 
 // Freeze the previous fitting algorithm so changed alpha/letterbox pixels are
@@ -67,10 +68,23 @@ int main(int argc, char** argv) {
   for (int dimension : {INT_MIN, -1, 0, INT_MAX}) {
     if (SuiteCutFitCapture(invalid, dimension, 1, 1, 1) ||
         SuiteCutFitCapture(invalid, 1, dimension, 1, 1) ||
-        SuiteCutFitCapture(invalid, 1, 1, dimension, 1) ||
-        SuiteCutFitCapture(invalid, 1, 1, 1, dimension)) return 2;
+        SuiteCutFitCapture(invalid, 1, 1, dimension, 1)) return 2;
+    // No size cap: an INT_MAX-tall canvas is now admitted (and would allocate
+    // 8 GiB), so only the non-positive heights are checked here.
+    if (dimension != INT_MAX && SuiteCutFitCapture(invalid, 1, 1, 1, dimension)) return 2;
   }
   if (SuiteCutFitCapture(invalid, 2, 2, 1, 1) || invalid.size() != 4) return 3;
+  {
+    // No 3840x2160 cap: an 8K canvas and a paint wider than 3840 flow through.
+    SuiteCutCaptureRect rect;
+    if (!SuiteCutCaptureContentRect(7680, 4320, 7680, 4320, rect) || rect.width != 7680 || rect.height != 4320 ||
+        !SuiteCutCaptureContentRect(3840, 2160, 7680, 4320, rect) || rect.width != 7680 || rect.height != 4320) return 12;
+    struct Rect { int x, y, width, height; };
+    std::vector<uint8_t> wide(static_cast<size_t>(5000) * 3 * 4, 77), copied;
+    if (!SuiteCutUpdateCapture(copied, wide.data(), 5000, 3, 0, 0, std::vector<Rect>{}) || copied != wide) return 13;
+    std::vector<uint8_t> fitted;
+    if (!SuiteCutFitCapture(wide, 5000, 3, 5000, 4, fitted) || fitted.size() != static_cast<size_t>(5000) * 4 * 4) return 14;
+  }
   struct Case { int sw, sh, cw, ch, x, y, w, h; };
   const Case cases[] = {
     {1280, 720, 1280, 720, 0, 0, 1280, 720},

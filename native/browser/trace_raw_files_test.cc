@@ -12,7 +12,7 @@ std::string Read(const std::filesystem::path& path){std::ifstream file(path,std:
 int main(){
   using suitecut::TraceRawFiles;using suitecut::TraceArchive;std::string error;std::atomic_bool canceled=false;
   const auto directory=std::filesystem::temp_directory_path()/("suitecut-trace-raw-test-"+std::to_string(getpid()));std::filesystem::remove_all(directory);
-  assert(!TraceRawFiles::ValidName("../escape")&&!TraceRawFiles::ValidName("/")&&!TraceRawFiles::ValidName("..")&&!TraceRawFiles::ValidName(std::string(201,'x')));
+  assert(!TraceRawFiles::ValidName("../escape")&&!TraceRawFiles::ValidName("/")&&!TraceRawFiles::ValidName("..")&&TraceRawFiles::ValidName(std::string(201,'x')));
   TraceArchive archive;
   const std::string dom="{\"type\":\"frame-snapshot\",\"snapshot\":{\"html\":[\"HTML\",{\"\\ud800\":\"\\udfff\",\"__suitecutNativeUTF16Scalar\":\"literal\"},\"\\ud800\"],\"file\":\"resources/actual.png\"}}\n";
   assert(archive.AddText("trace.trace","{\"type\":\"context-options\"}\n"+dom+"{\"type\":\"screenshot\",\"file\":\"screenshots/call@1-before.png\"}\n{\"file\":\"aria/call@1-before.json\",\"type\":\"aria-snapshot\"}\n{\"type\":\"screencast-frame\",\"file\":\"resources/actual.jpeg\"}\n",error));
@@ -30,6 +30,11 @@ int main(){
   // IDs or WebSocket journal names are deliberately reused in another session.
   {TraceRawFiles writer;assert(writer.Prepare(archive,directory.string(),"second",canceled,error));assert(writer.Commit(error));}
   assert(Read(directory/"first.trace")==trace&&Read(directory/"second.trace")!=trace);assert(Read(directory/prefix/"resources/websocket-1.jsonl")==std::string("\0\1\xff\0",4));
+  // JSON nesting depth has no cap: the scanner is iterative, so a resource
+  // reference after very deep author data is still found and rewritten.
+  {TraceArchive deep;const std::string nested=std::string(200000,'[')+"{\"k\":[1,{}]}"+std::string(200000,']');
+   assert(deep.AddText("trace.trace","{\"type\":\"screenshot\",\"deep\":"+nested+",\"file\":\"resources/deep.png\"}\n",error)&&deep.AddText("trace.network","",error)&&deep.AddText("trace.stacks","{}",error)&&deep.Add("resources/deep.png",{1},error));
+   TraceRawFiles writer;assert(writer.Prepare(deep,directory.string(),"deep",canceled,error)&&writer.Commit(error));const auto text=Read(directory/"deep.trace");assert(text.find(nested)!=std::string::npos&&text.find("/resources/deep.png\"}")!=std::string::npos&&text.find("\"file\":\"resources/deep.png\"")==std::string::npos);}
   canceled=true;{TraceRawFiles writer;assert(!writer.Prepare(archive,directory.string(),"canceled",canceled,error));}assert(!std::filesystem::exists(directory/"canceled.trace"));
   for(const auto& entry:std::filesystem::directory_iterator(directory)){assert(!entry.path().filename().string().starts_with(".suitecut-trace-"));}canceled=false;
   {std::ofstream file(directory/"blocker");file<<"actual file";}

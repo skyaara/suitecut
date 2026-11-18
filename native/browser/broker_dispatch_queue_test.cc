@@ -11,6 +11,7 @@ int main(){using Queue=suitecut::BrokerDispatchQueue;Queue queue;assert(!queue.P
  // A reply enqueues follow-up work; this admission cannot synchronously consume
  // either the child or follow-up command from within the current observer.
  assert(queue.Push(9,"follow-up actual packet",Queue::Owner::Operation));auto child=queue.Pop();assert(child&&child->id==8&&child->json=="child exact session packet");auto follow=queue.Pop();assert(follow&&follow->id==9&&follow->owner==Queue::Owner::Operation);assert(!queue.Pop()&&!queue.Bytes());
- for(size_t i=0;i<Queue::kCount;++i){assert(queue.Push(int(i+1),"{}",Queue::Owner::None));}assert(!queue.Push(5000,"{}",Queue::Owner::None));queue.Clear();assert(!queue.Count()&&!queue.Bytes());
- assert(queue.Push(1,std::string(Queue::kBytes,'x'),Queue::Owner::Operation));assert(!queue.Push(2,"x",Queue::Owner::Control));queue.Clear();assert(queue.Empty());
+ // No count or byte cap: past the old 1024-job / 8 MiB bounds every job is kept whole.
+ for(size_t i=0;i<4096;++i){assert(queue.Push(int(i+1),"{}",Queue::Owner::None));}assert(queue.Count()==4096);queue.Clear();assert(!queue.Count()&&!queue.Bytes());
+ assert(queue.Push(1,std::string(9*1048576,'x'),Queue::Owner::Operation));assert(queue.Push(2,"x",Queue::Owner::Control));assert(queue.Bytes()==9*1048576+1);auto big=queue.Pop();assert(big&&big->json.size()==9*1048576);queue.Clear();assert(queue.Empty());
 }

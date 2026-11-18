@@ -133,7 +133,7 @@ void Engine::Route(const std::string& line) {
     auto operation = cleanup ? operations_.BeginControl(id, Now(), timeout)
                              : operations_.Begin(id, Now(), timeout);
     if (!operation) {
-      writer_.Reply(id, false, "Too many pending native context operations or duplicate ID");
+      writer_.Reply(id, false, "Invalid or duplicate native context operation ID");
       return;
     }
     if (locator_handler_deadline &&
@@ -144,7 +144,7 @@ void Engine::Route(const std::string& line) {
       return;
     }
     if (!TrackLocatorHandlerCommand(id, 0, operation->generation)) {
-      CompleteContext(id, false, nullptr, "Native locator handler command capacity exceeded");
+      CompleteContext(id, false, nullptr, "Duplicate native locator handler command ID");
       return;
     }
     operation = operations_.Get(id);
@@ -248,8 +248,8 @@ void Engine::Route(const std::string& line) {
                  pattern = params->HasKey("url") ? params->GetString("url").ToString() : "**",
                  not_found = params->HasKey("notFound") ? params->GetString("notFound").ToString()
                                                         : "abort";
-      if (registration.empty() || registration.size() > 128 || pattern.empty() ||
-          pattern.size() > 8192 || (not_found != "abort" && not_found != "fallback")) {
+      if (registration.empty() || pattern.empty() ||
+          (not_found != "abort" && not_found != "fallback")) {
         CompleteContext(id, false, nullptr, "Invalid native context HAR route");
         return;
       }
@@ -288,7 +288,7 @@ void Engine::Route(const std::string& line) {
                       if (*alive && operations_.IsCurrent(id, generation))
                         CompleteContext(id, ok, nullptr, reason);
                     }))
-              CompleteContext(id, false, nullptr, "Invalid or excessive native context HAR policy");
+              CompleteContext(id, false, nullptr, "Invalid or duplicate native context HAR policy");
           },
           not_found == "fallback");
       return;
@@ -304,7 +304,7 @@ void Engine::Route(const std::string& line) {
                                     CompleteContext(id, ok, nullptr, error);
                                 }))
         CompleteContext(id, false, nullptr,
-                        "Invalid native context HTTP headers or capacity exceeded");
+                        "Invalid native context HTTP headers or update pending");
       return;
     }
     if (action == "setHTTPCredentials") {
@@ -346,7 +346,7 @@ void Engine::Route(const std::string& line) {
                                   expired ? "Native context operation timed out" : error);
               }))
         CompleteContext(id, false, nullptr,
-                        "Native context HTTP credential update is pending or exceeds capacity");
+                        "Native context HTTP credential update is invalid or pending");
       WakeTrace();
       return;
     }
@@ -381,7 +381,7 @@ void Engine::Route(const std::string& line) {
                                 CompleteContext(id, ok, nullptr, error);
                             }))
         CompleteContext(id, false, nullptr,
-                        "Native geolocation update is pending or exceeds capacity");
+                        "Native geolocation update is invalid or pending");
       return;
     }
     if (action == "setOffline") {
@@ -395,7 +395,7 @@ void Engine::Route(const std::string& line) {
                                    CompleteContext(id, ok, nullptr, error);
                                }))
         CompleteContext(id, false, nullptr,
-                        "Invalid native context offline policy or capacity exceeded");
+                        "Invalid native context offline policy or update pending");
       return;
     }
     if (action == "workerNetworkBody") {
@@ -452,7 +452,7 @@ void Engine::Route(const std::string& line) {
                                       CompleteContext(id, ok, result, error);
                                   }))
         CompleteContext(id, false, nullptr,
-                        "Invalid native context network wait or capacity exceeded");
+                        "Invalid or duplicate native context network wait");
       return;
     }
     if (action == "trace") {
@@ -489,7 +489,7 @@ void Engine::Route(const std::string& line) {
                                       CompleteContext(id, ok, result, error, true);
                                   }))
         CompleteContext(id, false, nullptr,
-                        "Invalid native context console wait or capacity exceeded");
+                        "Invalid or duplicate native context console wait");
       return;
     }
     if (action == "close" && handler_native_origin.locator_handler_invocation &&

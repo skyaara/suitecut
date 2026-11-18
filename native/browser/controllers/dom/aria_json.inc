@@ -40,7 +40,7 @@ void AriaJSONAction(int id,uint64_t generation,Dict config){
   if(!operations_.IsCurrent(id,generation))return;
   if(operations_.IsExpired(id,generation,Now())){Complete(id,false,"ariaSnapshotJSON: Native operation timed out");return;}
   aria_json_operations_.insert(id);
-  if(!SelectorWaits().Admit(id,generation)){Complete(id,false,"Native structured accessibility physical capacity exceeded");return;}
+  if(!SelectorWaits().Admit(id,generation)){Complete(id,false,"Native structured accessibility snapshot could not be admitted");return;}
   if(config->HasKey("nativeHandle")){Complete(id,false,"Invalid native structured snapshot root");return;}
   if((config->HasKey("accessibilityBoxes")&&config->GetType("accessibilityBoxes")!=VTYPE_BOOL)||
      (config->HasKey("snapshotDepth")&&(config->GetType("snapshotDepth")!=VTYPE_INT||config->GetInt("snapshotDepth")<0))){Complete(id,false,"Invalid native structured accessibility options");return;}

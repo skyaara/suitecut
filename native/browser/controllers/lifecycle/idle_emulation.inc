@@ -8,7 +8,7 @@ void NativeIdleEnsure(){
   native_idle_=std::make_shared<suitecut::NativeIdleControls>(
     [this](int owner,const std::string&session,std::optional<suitecut::NativeIdleControls::State> state,suitecut::NativeIdleControls::Result done){
       if(!browser_||closing_page_){done(false,"Native idle page is closed");return;}
-      const int id=AllocateDevToolsId();if(!id){done(false,"Native idle command capacity exceeded");return;}
+      const int id=AllocateDevToolsId();if(!id){done(false,"Could not allocate native idle command");return;}
       auto params=CefDictionaryValue::Create();if(state){params->SetBool("isUserActive",state->user_active);params->SetBool("isScreenUnlocked",state->screen_unlocked);}
       auto receipt=std::make_shared<suitecut::NativeIdleControls::Receipt>(std::move(done));
       native_idle_dispatch_=id;
@@ -32,9 +32,9 @@ void NativeIdleBegin(int id,uint64_t generation,Dict input,double deadline){
     if(!operations_.IsCurrent(id,generation))return;
     if(operations_.IsExpired(id,generation,Now())){Complete(id,false,"Native idle original operation deadline expired");return;}
     Complete(id,ok,error,"{}");
-  }))Complete(id,false,"Native idle operation is invalid or native queue capacity exceeded");
+  }))Complete(id,false,"Native idle operation is invalid or the idle channel is closed");
 }
 void NativeIdleChild(const std::string&session,double deadline,suitecut::ContextSettingsPage::Result done){
   if(!native_idle_){done(true,"");return;}
-  auto failed=done;if(!native_idle_->Child(session,deadline,std::move(done)))failed(false,"Native idle child capacity or deadline is invalid");
+  auto failed=done;if(!native_idle_->Child(session,deadline,std::move(done)))failed(false,"Native idle child session or deadline is invalid");
 }

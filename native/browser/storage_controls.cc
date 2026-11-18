@@ -15,7 +15,6 @@
 #include "include/cef_task.h"
 namespace {
 using Dict = SuiteCutStorageControls::Dict;
-constexpr size_t kMaxState = 8 * 1048576, kBudget = 32 * 1048576, kMaxOrigin = 512 * 1024;
 std::string JSON(Dict value) { auto wrapper = CefValue::Create(); wrapper->SetDictionary(value); return CefWriteJSON(wrapper, JSON_WRITER_DEFAULT); }
 std::string StorageOrigin(const std::string& value) {
   CefURLParts parts; if (!CefParseURL(value, parts)) return {};
@@ -29,22 +28,22 @@ bool ValidateKeyPath(CefRefPtr<CefValue> value, bool nullable) {
   if (value->GetType() == VTYPE_NULL) return nullable;
   if (value->GetType() == VTYPE_STRING) return true;
   if (value->GetType() != VTYPE_LIST) return false;
-  const auto list = value->GetList(); if (!list || list->GetSize() > 128) return false;
+  const auto list = value->GetList(); if (!list) return false;
   for (size_t index = 0; index < list->GetSize(); ++index) if (list->GetType(index) != VTYPE_STRING) return false;
   return true;
 }
 bool ValidateOPFS(Dict value) {
   if (!value->HasKey("opfs")) return true;
-  const auto entries = value->GetList("opfs"); if (!entries || entries->GetSize() > 4096) return false;
+  const auto entries = value->GetList("opfs"); if (!entries) return false;
   std::map<std::string, bool> paths;
   for (size_t index = 0; index < entries->GetSize(); ++index) {
     const auto entry = entries->GetDictionary(index); if (!entry || entry->GetType("path") != VTYPE_STRING || entry->GetType("type") != VTYPE_STRING) return false;
     const auto path = entry->GetString("path").ToString(), type = entry->GetString("type").ToString();
-    if (path.empty() || path.size() > 4096 || path.find('\\') != std::string::npos || path.find('\0') != std::string::npos || (type != "file" && type != "directory") || !paths.emplace(path, type == "directory").second) return false;
-    size_t begin = 0, depth = 0;
+    if (path.empty() || path.find('\\') != std::string::npos || path.find('\0') != std::string::npos || (type != "file" && type != "directory") || !paths.emplace(path, type == "directory").second) return false;
+    size_t begin = 0;
     while (begin <= path.size()) {
       const auto end = path.find('/', begin); const auto part = path.substr(begin, end == std::string::npos ? end : end - begin);
-      if (part.empty() || part == "." || part == ".." || part.size() > 255 || ++depth > 64) return false;
+      if (part.empty() || part == "." || part == "..") return false;
       if (end == std::string::npos) break;
       begin = end + 1;
     }
@@ -66,35 +65,35 @@ bool ValidateOPFS(Dict value) {
 bool ValidateOrigin(Dict value, bool strict_names = true) {
   if (value && value->GetType("stateJSON") == VTYPE_STRING) {
     const auto text = value->GetString("stateJSON").ToString();
-    if (text.size() > kMaxOrigin || value->GetType("origin") != VTYPE_STRING) return false;
+    if (value->GetType("origin") != VTYPE_STRING) return false;
     const auto parsed = CefParseJSON(suitecut::StorageJSONValidationProjection(text), JSON_PARSER_RFC);
     const auto origin = parsed && parsed->GetType() == VTYPE_DICTIONARY ? parsed->GetDictionary() : nullptr;
     return origin && !origin->HasKey("stateJSON") && origin->GetString("origin") == value->GetString("origin") && ValidateOrigin(origin, false);
   }
   if (!value || value->GetType("origin") != VTYPE_STRING || StorageOrigin(value->GetString("origin").ToString()).empty()) return false;
-  const auto storage = value->GetList("localStorage"); if (!storage || storage->GetSize() > 4096) return false;
+  const auto storage = value->GetList("localStorage"); if (!storage) return false;
   std::set<std::string> names;
   for (size_t index = 0; index < storage->GetSize(); ++index) {
     const auto entry = storage->GetDictionary(index);
     if (!entry || entry->GetType("name") != VTYPE_STRING || entry->GetType("value") != VTYPE_STRING || (strict_names && !names.insert(entry->GetString("name").ToString()).second)) return false;
   }
-  if (JSON(value).size() > kMaxOrigin || !ValidateOPFS(value)) return false;
+  if (!ValidateOPFS(value)) return false;
   if (!value->HasKey("indexedDB")) return true;
-  const auto databases = value->GetList("indexedDB"); if (!databases || databases->GetSize() > 128) return false;
-  std::set<std::string> db_names; size_t records = 0;
+  const auto databases = value->GetList("indexedDB"); if (!databases) return false;
+  std::set<std::string> db_names;
   for (size_t index = 0; index < databases->GetSize(); ++index) {
     const auto db = databases->GetDictionary(index);
     if (!db || db->GetType("name") != VTYPE_STRING || (strict_names && !db_names.insert(db->GetString("name").ToString()).second) || (db->GetType("version") != VTYPE_INT && db->GetType("version") != VTYPE_DOUBLE)) return false;
     const double version = db->GetType("version") == VTYPE_INT ? db->GetInt("version") : db->GetDouble("version");
     if (!std::isfinite(version) || std::floor(version) != version || version < 1 || version > 9007199254740991.0) return false;
-    const auto stores = db->GetList("stores"); if (!stores || stores->GetSize() > 128) return false;
+    const auto stores = db->GetList("stores"); if (!stores) return false;
     std::set<std::string> store_names;
     for (size_t store_index = 0; store_index < stores->GetSize(); ++store_index) {
       const auto store = stores->GetDictionary(store_index); if (!store || store->GetType("name") != VTYPE_STRING || (strict_names && !store_names.insert(store->GetString("name").ToString()).second) || store->GetType("autoIncrement") != VTYPE_BOOL) return false;
       const auto key_path = store->GetType("keyPath"); if (!ValidateKeyPath(store->GetValue("keyPath"), true)) return false;
       const auto indexes = store->GetList("indexes"), entries = store->GetList("records");
-      if (!indexes || !entries || indexes->GetSize() > 128 || entries->GetSize() > 10000 - records) return false;
-      records += entries->GetSize(); std::set<std::string> index_names;
+      if (!indexes || !entries) return false;
+      std::set<std::string> index_names;
       for (size_t entry_index = 0; entry_index < entries->GetSize(); ++entry_index) {
         const auto entry = entries->GetDictionary(entry_index); if (!entry || entry->HasKey("value") == entry->HasKey("valueEncoded") || (key_path == VTYPE_NULL && entry->HasKey("key") == entry->HasKey("keyEncoded"))) return false;
       }
@@ -133,7 +132,7 @@ void SuiteCutStorageControls::Handle(int owner, const std::string& action, Dict 
   const int context = params->GetInt("contextId");
   if (stopping_ || owner <= 0 || !hooks_.context(context)) { reply(false, nullptr, "Native storage context is unavailable"); return; }
   if (action == "storageUploadBegin") {
-    if (uploads_.size() >= 8 || next_upload_ == std::numeric_limits<uint64_t>::max()) { reply(false, nullptr, "Native storage upload capacity exceeded"); return; }
+    if (next_upload_ == std::numeric_limits<uint64_t>::max()) { reply(false, nullptr, "Native storage upload identifiers exhausted"); return; }
     const auto id = std::to_string(++next_upload_); uploads_[id] = Upload{context, {}, Now()};
     auto output = CefDictionaryValue::Create(); output->SetString("uploadId", id); reply(true, output, ""); WakeUploads(); return;
   }
@@ -142,18 +141,16 @@ void SuiteCutStorageControls::Handle(int owner, const std::string& action, Dict 
     if (found == uploads_.end() || found->second.context != context) { reply(false, nullptr, "Native storage upload is unavailable"); return; }
     if (action == "storageUploadDiscard") { upload_bytes_ -= found->second.json.size(); uploads_.erase(found); reply(true, nullptr, ""); return; }
     const auto chunk = params->GetString("data").ToString();
-    if (params->GetType("data") != VTYPE_STRING || chunk.size() > 32768 || chunk.size() > kMaxState - found->second.json.size() || chunk.size() > kBudget - upload_bytes_) {
-      reply(false, nullptr, "Native storage upload bytes capacity exceeded"); return;
-    }
+    if (params->GetType("data") != VTYPE_STRING) { reply(false, nullptr, "Native storage upload data must be a string"); return; }
     found->second.json += chunk; found->second.updated = Now(); upload_bytes_ += chunk.size(); reply(true, nullptr, ""); return;
   }
   if (action != "storageState" && action != "setStorageState") { reply(false, nullptr, "Unknown native storage action"); return; }
-  if (active_.size() >= 64 || active_.contains(owner)) { reply(false, nullptr, "Invalid native storage operation or capacity exceeded"); return; }
+  if (active_.contains(owner)) { reply(false, nullptr, "Invalid native storage operation or owner is already active"); return; }
   auto work = std::make_shared<Work>(); work->owner = owner; work->context = context; work->restore = action == "setStorageState";
   work->include_credentials=params->GetBool("credentials");
   work->indexed_db = params->GetBool("indexedDB"); work->opfs = params->GetBool("opfs"); work->codec = suitecut::StoragePublicCodecSource(); work->reply = std::move(reply);
   work->output = CefDictionaryValue::Create(); work->output->SetList("origins", CefListValue::Create());
-  if (!hooks_.origins(context, work->origins)) { work->reply(false, nullptr, "Native storage origin tracking capacity exceeded"); return; }
+  if (!hooks_.origins(context, work->origins)) { work->reply(false, nullptr, "Native storage origin tracking is unavailable"); return; }
   Dict state;
   if (work->restore) {
     if (params->HasKey("uploadId")) {
@@ -164,9 +161,8 @@ void SuiteCutStorageControls::Handle(int owner, const std::string& action, Dict 
       upload_bytes_ -= found->second.json.size(); uploads_.erase(found);
     } else state = params->GetDictionary("state");
     const auto cookies = state ? state->GetList("cookies") : nullptr, origins = state ? state->GetList("origins") : nullptr;
-    if (!state || !cookies || !origins || cookies->GetSize() > 4096 || origins->GetSize() > 1024) { work->reply(false, nullptr, "Invalid native storage state"); return; }
+    if (!state || !cookies || !origins) { work->reply(false, nullptr, "Invalid native storage state"); return; }
     work->bytes = JSON(state).size();
-    if (work->bytes > kMaxState || work->bytes > kBudget - retained_bytes_) { work->reply(false, nullptr, "Native storage state retained bytes capacity exceeded"); return; }
     for (size_t index = 0; index < origins->GetSize(); ++index) {
       const auto origin = origins->GetDictionary(index);
       if (!ValidateOrigin(origin)) { work->reply(false, nullptr, "Invalid native origin storage state"); return; }
@@ -175,7 +171,6 @@ void SuiteCutStorageControls::Handle(int owner, const std::string& action, Dict 
       auto normalized = origin->Copy(false); normalized->SetString("origin", key); work->state[key] = normalized;
       if (std::find(work->origins.begin(), work->origins.end(), key) == work->origins.end()) work->origins.push_back(key);
     }
-    if (work->origins.size() > 1024) { work->reply(false, nullptr, "Native storage origin capacity exceeded"); return; }
     std::string cookie_error;
     if (hooks_.validate_credentials&&!hooks_.validate_credentials(state,cookie_error)){work->reply(false,nullptr,cookie_error);return;}
     if (!(hooks_.validate_context_cookies?hooks_.validate_context_cookies(owner,context,state,cookie_error):hooks_.validate_cookies(state, cookie_error))) { work->reply(false, nullptr, cookie_error); return; }
@@ -195,7 +190,6 @@ void SuiteCutStorageControls::Cookies(const std::shared_ptr<Work>&work){
     if (!ok) { self->Finish(work, false, error); return; }
     if (!work->restore) {
       const size_t bytes = JSON(output).size();
-      if (bytes > kMaxState - work->bytes || bytes > kBudget - self->retained_bytes_) { self->Finish(work, false, "Native captured cookie bytes capacity exceeded"); return; }
       work->bytes += bytes; self->retained_bytes_ += bytes;
       work->output->SetList("cookies", output->GetList("cookies")); self->Next(work); return;
     }
@@ -210,10 +204,7 @@ void SuiteCutStorageControls::Next(const std::shared_ptr<Work>& work) {
   if (!Current(work)) return;
   if (work->index >= work->origins.size()) {
     if(!work->restore&&work->include_credentials&&!work->captured_credentials&&hooks_.credentials){
-      work->captured_credentials=true;hooks_.credentials(work->owner,work->context,"capture",nullptr,[weak=weak_from_this(),work](bool ok,Dict output,const std::string&error){const auto self=weak.lock();if(!self||!self->Current(work))return;if(!ok||!output){self->Finish(work,false,error);return;}const size_t bytes=JSON(output).size();if(bytes>kMaxState-work->bytes||bytes>kBudget-self->retained_bytes_){self->Finish(work,false,"Native credential storage bytes capacity exceeded");return;}work->bytes+=bytes;self->retained_bytes_+=bytes;work->output->SetList("credentials",output->GetList("credentials"));self->Next(work);});return;
-    }
-    if (!work->restore && JSON(work->output).size() > kMaxState) {
-      Finish(work, false, "Native captured storage state exceeds 8 MiB"); return;
+      work->captured_credentials=true;hooks_.credentials(work->owner,work->context,"capture",nullptr,[weak=weak_from_this(),work](bool ok,Dict output,const std::string&error){const auto self=weak.lock();if(!self||!self->Current(work))return;if(!ok||!output){self->Finish(work,false,error);return;}const size_t bytes=JSON(output).size();work->bytes+=bytes;self->retained_bytes_+=bytes;work->output->SetList("credentials",output->GetList("credentials"));self->Next(work);});return;
     }
     Finish(work, true, ""); return;
   }
@@ -243,12 +234,11 @@ void SuiteCutStorageControls::ReadyOrigin(const std::shared_ptr<Work>& work, con
     if (!ok) { self->Finish(work, false, error); return; }
     if (!work->restore) {
       const auto remote = result->GetDictionary("result"); const auto origin = remote ? remote->GetDictionary("value") : nullptr;
-      if (!ValidateOrigin(origin)) { self->Finish(work, false, "Native captured origin storage exceeds schema or capacity"); return; }
+      if (!ValidateOrigin(origin)) { self->Finish(work, false, "Native captured origin storage does not match the schema"); return; }
       const bool empty = origin->HasKey("stateJSON") ? origin->GetBool("empty") : origin->GetList("localStorage")->GetSize() == 0 &&
         (!origin->HasKey("indexedDB") || origin->GetList("indexedDB")->GetSize() == 0) &&
         (!origin->HasKey("opfs") || origin->GetList("opfs")->GetSize() == 0);
       const size_t bytes = empty ? 0 : JSON(origin).size();
-      if (bytes > kMaxState - work->bytes || bytes > kBudget - self->retained_bytes_) { self->Finish(work, false, "Native captured storage bytes capacity exceeded"); return; }
       work->bytes += bytes; self->retained_bytes_ += bytes;
       const auto origins = work->output->GetList("origins"); if (!empty) origins->SetDictionary(origins->GetSize(), origin);
     }

@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 #pragma once
+#include <cstddef>
 #include <cstdint>
 #include <cstring>
 #include <vector>
@@ -11,7 +12,10 @@ template <class Rectangles>
 inline bool SuiteCutUpdateCapture(std::vector<uint8_t>& pixels, const void* buffer,
                                  int width, int height, int previous_width,
                                  int previous_height, const Rectangles& dirty) {
-  if (!buffer || width < 1 || height < 1 || width > 3840 || height > 2160) return false;
+  // No suitecut size cap: CEF's surface size flows through. The guard keeps the
+  // row stride and byte count representable before any copy.
+  if (!buffer || width < 1 || height < 1 ||
+      static_cast<size_t>(width) > SIZE_MAX / 4 / static_cast<size_t>(height)) return false;
   const auto* source = static_cast<const uint8_t*>(buffer);
   const size_t stride = static_cast<size_t>(width) * 4;
   const size_t bytes = stride * height;

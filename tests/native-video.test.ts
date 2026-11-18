@@ -91,10 +91,18 @@ describe('native context video projection', () => {
       { dir: 'a\0b' },
       { dir: 'a\ud800b' },
       { dir: 'a\udc00b' },
-      { dir: 'x', size: { width: 800, height: 2162 } },
+      { dir: 'x', size: { width: 800, height: 0 } },
     ])
       await expect(invalid.browser.newContext({ recordVideo })).rejects.toThrow()
     expect(invalid.runContext).not.toHaveBeenCalled()
+    const large = fixture()
+    large.runContext.mockResolvedValueOnce({ contextId: 3 })
+    await large.browser.newContext({
+      recordVideo: { dir: 'x'.repeat(4097), size: { width: 7680, height: 4320 } },
+    })
+    expect(large.runContext).toHaveBeenCalledExactlyOnceWith('create', {
+      recordVideo: { dir: resolve('x'.repeat(4097)), size: { width: 7680, height: 4320 } },
+    })
   })
   it('forwards odd video canvas sizes without rounding away the native geometry', async () => {
     const f = fixture()

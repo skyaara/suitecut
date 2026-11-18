@@ -47,9 +47,6 @@ import { toError, type UntrustedInput } from './untrusted.js'
 
 // Bodies of any size, as in Playwright; larger ones go up in chunks of this size.
 const ROUTE_BODY_CHUNK = 8 * 1024 * 1024
-// Finished requests are kept for request.postData() and friends up to this
-// many bytes, then the oldest go first: five of the largest bodies.
-const REQUEST_RETENTION_BYTES = 5 * 192 * 1024 * 1024
 interface NetworkWaitOptions {
   timeout?: number | undefined
   signal?: AbortSignal | undefined
@@ -57,15 +54,15 @@ interface NetworkWaitOptions {
 const HeaderSchema = NativeStringHeadersSchema
 const ContinueSchema = z.strictObject({
   url: z.url().optional(),
-  method: z.string().min(1).max(128).optional(),
+  method: z.string().min(1).optional(),
   headers: HeaderSchema.optional(),
   postData: z.union([z.string(), z.instanceof(Buffer)]).optional(),
 })
 export type NativeRouteContinueOptions = z.input<typeof ContinueSchema>
 const RouteFetchSchema = ContinueSchema.extend({
   timeout: z.number().int().min(0).max(2_147_483_647).optional(),
-  maxRedirects: z.number().int().min(0).max(100).optional(),
-  maxRetries: z.number().int().min(0).max(100).optional(),
+  maxRedirects: z.number().int().min(0).optional(),
+  maxRetries: z.number().int().min(0).optional(),
 })
 export type NativeRouteFetchOptions = z.input<typeof RouteFetchSchema>
 export interface NativeRouteFulfillOptions {
@@ -80,9 +77,9 @@ export interface NativeRouteFulfillOptions {
 }
 const FulfillSchema = z.strictObject({
   status: z.number().int().min(100).max(599).optional(),
-  statusText: z.string().max(1024).optional(),
+  statusText: z.string().optional(),
   headers: HeaderSchema.optional(),
-  contentType: z.string().max(1024).optional(),
+  contentType: z.string().optional(),
   body: z.union([z.string(), z.instanceof(Buffer)]).optional(),
   path: z.string().optional(),
   json: z.unknown().optional(),
@@ -152,28 +149,6 @@ export class NativeRequest {
     this.requestFrame = network.findFrame(info.frameId)
     this.requestServiceWorker = network.findServiceWorker(info)
     this.captureBody()
-  }
-  retainedMetadataBytes(
-    visited: Set<NativeRequest>,
-    measurements?: Map<NativeRequest, number>,
-  ): number {
-    const pending: NativeRequest[] = [this]
-    let total = 0
-    while (pending.length) {
-      const request = pending.pop()
-      if (!request) break
-      if (visited.has(request)) continue
-      visited.add(request)
-      const bytes = measurements?.get(request) ?? request.ownMetadataBytes()
-      measurements?.set(request, bytes)
-      total += bytes
-      if (request.previous) pending.push(request.previous)
-      if (request.next) pending.push(request.next)
-    }
-    return total
-  }
-  hasRedirectLinks(): boolean {
-    return this.previous !== undefined || this.next !== undefined
   }
   ownMetadataBytes(): number {
     // The body is measured by length: serializing it only to count it cost
@@ -272,10 +247,7 @@ export class NativeRequest {
     return this.postDataBuffer()?.toString('utf8') ?? null
   }
   postDataBuffer(): Buffer | null {
-    if (this.info.postDataUnavailable)
-      throw new Error(
-        'Native request body bytes are unavailable or exceed native publication capacity',
-      )
+    if (this.info.postDataUnavailable) throw new Error('Native request body bytes are unavailable')
     if (this.originalBody) return Buffer.from(this.originalBody)
     if (this.info.postDataBodyId)
       throw new Error('Native original request body bytes are no longer retained')
@@ -651,7 +623,9 @@ export class NativeRoute {
       status: parsed.status ?? parsed.response?.status() ?? 200,
       ...(parsed.statusText === undefined ? {} : { statusText: parsed.statusText }),
       headers: headerArray(headers),
-      ...(body.length <= ROUTE_BODY_CHUNK ? { body: body.toString('base64') } : { bodyUpload: true }),
+      ...(body.length <= ROUTE_BODY_CHUNK
+        ? { body: body.toString('base64') }
+        : { bodyUpload: true }),
     })
   }
   private async upload(body: Buffer, fetchOptions?: Record<string, UntrustedInput>): Promise<void> {
@@ -740,9 +714,6 @@ export class NativeNetwork {
   }
   private readonly requests = new Map<string, NativeRequest>()
   private readonly requestHistory = new Map<string, WeakRef<NativeRequest>>()
-  private readonly requestCosts = new Map<string, number>()
-  private requestBytes = 0
-  private linkedRequestBytes = 0
   private readonly listeners = new Map<
     NativeNetworkEventName,
     ((value: NativeRequest | NativeResponse) => void)[]
@@ -812,11 +783,8 @@ export class NativeNetwork {
       this.clearRouteHandlers()
       this.pageRemovals.close()
       this.requests.clear()
-      // Bounded weak identities preserve held Request objects when a native
-      // context reply arrives after its page-close announcement.
-      this.requestCosts.clear()
-      this.requestBytes = 0
-      this.linkedRequestBytes = 0
+      // Weak identities preserve held Request objects when a native context
+      // reply arrives after its page-close announcement.
     }
     const lifetime = this.transport.pageSignal ?? this.transport.signal
     lifetime.addEventListener('abort', closed, { once: true })
@@ -941,7 +909,7 @@ export class NativeNetwork {
   ): Promise<void> {
     const parsed = z
       .strictObject({
-        times: z.number().int().positive().max(1_000_000).optional(),
+        times: z.number().int().positive().optional(),
       })
       .parse(options)
     if (typeof handler !== 'function') throw new Error('Native route requires a handler')
@@ -1153,75 +1121,18 @@ export class NativeNetwork {
     cachedRequestBytes: number
     weakRequestIdentities: number
   } {
+    let cachedRequestBytes = 0
+    for (const request of this.requests.values()) cachedRequestBytes += request.ownMetadataBytes()
     return {
       cachedRequests: this.requests.size,
-      cachedRequestBytes: this.requestBytes + this.linkedRequestBytes,
+      cachedRequestBytes,
       weakRequestIdentities: this.requestHistory.size,
     }
   }
+  // Requests are kept until their page closes, as Playwright keeps them.
   private retainRequest(request: NativeRequest): void {
-    if (this.transport.signal.aborted) {
-      this.requestHistory.set(request.info.id, new WeakRef(request))
-      while (this.requestHistory.size > 8192) {
-        const oldest = this.requestHistory.keys().next().value
-        if (oldest === undefined) break
-        this.requestHistory.delete(oldest)
-      }
-      return
-    }
-    const cost = request.ownMetadataBytes()
-    this.requestBytes += cost - (this.requestCosts.get(request.info.id) ?? 0)
-    this.requestCosts.set(request.info.id, cost)
-    this.requests.set(request.info.id, request)
     this.requestHistory.set(request.info.id, new WeakRef(request))
-    while (this.requestHistory.size > 8192) {
-      const id = this.requestHistory.keys().next().value
-      if (id === undefined) break
-      this.requestHistory.delete(id)
-    }
-    if (
-      !request.hasRedirectLinks() &&
-      this.requestBytes + this.linkedRequestBytes <= REQUEST_RETENTION_BYTES &&
-      this.requests.size <= 4096
-    )
-      return
-    // Redirect links can keep evicted wrappers alive. Measure the shared graph
-    // under pressure instead of crediting a removal that did not free metadata.
-    // Only this synchronous admission shares byte measurements; each removal
-    // still recomputes reachability, and later observations measure afresh.
-    // Retained requests reuse the cost measured when they were last observed:
-    // measuring all 4096 again for every new request kept the host busy for
-    // tens of seconds on a news site, delaying every browser reply.
-    const measurements = new Map<NativeRequest, number>([[request, cost]])
-    for (const [id, item] of this.requests) {
-      const known = this.requestCosts.get(id)
-      if (known !== undefined && item !== request) measurements.set(item, known)
-    }
-    while (true) {
-      const visited = new Set<NativeRequest>()
-      let retained = 0
-      for (const item of this.requests.values())
-        retained += item.retainedMetadataBytes(visited, measurements)
-      if (retained <= REQUEST_RETENTION_BYTES && this.requests.size <= 4096) {
-        this.linkedRequestBytes = retained - this.requestBytes
-        break
-      }
-      let oldest: string | undefined
-      for (const [id, item] of this.requests)
-        if (id !== request.info.id && item.hasFinished()) {
-          oldest = id
-          break
-        }
-      // Requests still in flight are kept whatever their size; only finished
-      // ones are let go.
-      if (oldest === undefined) {
-        this.linkedRequestBytes = retained - this.requestBytes
-        break
-      }
-      this.requests.delete(oldest)
-      this.requestBytes -= this.requestCosts.get(oldest) ?? 0
-      this.requestCosts.delete(oldest)
-    }
+    if (!this.transport.signal.aborted) this.requests.set(request.info.id, request)
   }
   private receiveMatcher(
     event: Extract<NativeNetworkInfo, { event: 'routematch' }>,
@@ -1421,7 +1332,6 @@ export class NativeNetwork {
     for (const listener of [...(this.listeners.get(event.event) ?? [])]) listener(value)
   }
   private recordRouteError(error: UntrustedInput): void {
-    if (this.routeErrors.length >= 128) this.routeErrors.shift()
     this.routeErrors.push(toError(error))
   }
 }

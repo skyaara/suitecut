@@ -19,7 +19,6 @@
 #include <unistd.h>
 namespace suitecut {
 namespace {
-constexpr size_t kPNGBytes=2*1024*1024;
 struct Failure:std::runtime_error{int number;Failure(const std::string&step,int code):std::runtime_error("Native screenshot artifact "+step),number(code){}};
 struct FD {
   int value=-1;explicit FD(int fd=-1):value(fd){}
@@ -29,7 +28,7 @@ struct FD {
 };
 void System(const char*step){throw Failure(step,errno);}
 bool Same(const struct stat&a,const struct stat&b){return a.st_dev==b.st_dev&&a.st_ino==b.st_ino;}
-void PNG(const std::vector<uint8_t>&bytes){constexpr std::array<uint8_t,8>magic{137,80,78,71,13,10,26,10};if(bytes.size()<33||bytes.size()>kPNGBytes||!std::equal(magic.begin(),magic.end(),bytes.begin()))throw Failure("requires an admitted PNG of at most2MiB",0);}
+void PNG(const std::vector<uint8_t>&bytes){constexpr std::array<uint8_t,8>magic{137,80,78,71,13,10,26,10};if(bytes.size()<33||!std::equal(magic.begin(),magic.end(),bytes.begin()))throw Failure("requires an admitted PNG",0);}
 std::string Nonce(){std::array<unsigned char,12>bytes;
 #if defined(__APPLE__)
 arc4random_buf(bytes.data(),bytes.size());
@@ -61,12 +60,12 @@ ScreenshotArtifactPublication WriteScreenshotArtifacts(const std::string&root,co
     result.rollback=clean;result.cleanup_failed=!clean;if(!clean)result.cleanup_error="Native screenshot artifact rollback did not remove its exact owned directory/files";
   };
   try{
-    check();if(root.empty()||root.size()>32768||root.find('\0')!=std::string::npos||!std::filesystem::path(root).is_absolute())throw Failure("output path must be a bounded absolute path",0);
+    check();if(root.empty()||root.find('\0')!=std::string::npos||!std::filesystem::path(root).is_absolute())throw Failure("output path must be an absolute path",0);
     PNG(actual);if(!diff.empty())PNG(diff);
     std::error_code error;std::filesystem::create_directories(root,error);if(error)throw Failure("output parent creation failed",error.value());check();
     root_path=std::filesystem::canonical(root,error).string();if(error)throw Failure("output parent resolution failed",error.value());
     parent.value=::open(root_path.c_str(),O_RDONLY|O_DIRECTORY|O_CLOEXEC|O_NOFOLLOW);if(parent.value<0)System("output parent open failed");if(::fstat(parent.value,&parent_identity))System("output parent stat failed");root_current();
-    bool made=false;for(unsigned attempt=0;attempt<16&&!made;++attempt){const auto nonce=Nonce();staging=".screenshot-comparison-"+nonce;final="screenshot-comparison-"+nonce;if(::mkdirat(parent.value,staging.c_str(),0700)==0)made=true;else if(errno!=EEXIST)System("staging directory creation failed");}if(!made)throw Failure("unique directory capacity exceeded",EEXIST);
+    bool made=false;while(!made){const auto nonce=Nonce();staging=".screenshot-comparison-"+nonce;final="screenshot-comparison-"+nonce;if(::mkdirat(parent.value,staging.c_str(),0700)==0)made=true;else if(errno!=EEXIST)System("staging directory creation failed");}
     current=staging;directory_created=true;own.value=::openat(parent.value,staging.c_str(),O_RDONLY|O_DIRECTORY|O_CLOEXEC|O_NOFOLLOW);if(own.value<0)System("staging directory open failed");if(::fstat(own.value,&own_identity))System("staging directory stat failed");result.directory_device=uint64_t(own_identity.st_dev);result.directory_inode=uint64_t(own_identity.st_ino);
     const auto write=[&](File&file,const std::vector<uint8_t>&bytes){
       check();FD output(::openat(own.value,file.name,O_WRONLY|O_CREAT|O_EXCL|O_CLOEXEC|O_NOFOLLOW,0600));if(output.value<0)System("PNG create failed");if(::fstat(output.value,&file.identity))System("PNG initial stat failed");file.created=true;

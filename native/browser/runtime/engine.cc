@@ -41,8 +41,8 @@ Engine::Engine(Writer& writer, int width, int height, double scale, bool i420, i
     auto typed = CefValue::Create();
     typed->SetDictionary(info->Copy(false));
     std::string json;
-    if (!suitecut::DevToolsLosslessJSON(typed, json, 1048576)) {
-      Degraded("Native context console output limit exceeded");
+    if (!suitecut::DevToolsLosslessJSON(typed, json, std::numeric_limits<size_t>::max())) {
+      Degraded("Native context console output could not be encoded");
       return;
     }
     writer_.Send(Header("contextconsole"), std::vector<uint8_t>(json.begin(), json.end()));
@@ -147,14 +147,14 @@ Engine::Engine(Writer& writer, int width, int height, double scale, bool i420, i
       return false;
     }
     if (!network_policy_.Seed(context, params->GetBool("offline"))) {
-      error = "Native network context policy capacity exceeded";
+      error = "Native network context policy conflicts with an existing context";
       return false;
     }
     auto headers = params->HasKey("extraHTTPHeaders") ? params->GetDictionary("extraHTTPHeaders")
                                                       : CefDictionaryValue::Create();
     if (!network_headers_.Seed(context, headers)) {
       network_policy_.Closed(context);
-      error = "Invalid or excessive native context HTTP headers";
+      error = "Invalid or duplicate native context HTTP headers";
       return false;
     }
     if (!settings_.Seed(context, params, error)) {
@@ -164,7 +164,7 @@ Engine::Engine(Writer& writer, int width, int height, double scale, bool i420, i
     }
     const auto config = settings_.Get(context);
     if (!authentication_.Seed(context, config->http_credentials_all)) {
-      error = "Native context HTTP authentication capacity exceeded";
+      error = "Invalid or duplicate native context HTTP authentication";
       return false;
     }
     suitecut::NativeGeolocationValue geo;
@@ -174,16 +174,16 @@ Engine::Engine(Writer& writer, int width, int height, double scale, bool i420, i
           config->geolocation->latitude, config->geolocation->longitude,
           config->geolocation->accuracy};
     if (!geolocation_.Seed(context, std::move(geo))) {
-      error = "Native geolocation context capacity or value is invalid";
+      error = "Invalid or duplicate native geolocation context value";
       return false;
     }
     if (!config->CaptureDimensions(width_, height_, scale_, error)) return false;
     if (!context_routes_->Seed(context)) {
-      error = "Native context route policy capacity exceeded";
+      error = "Native context route policy is closed or already seeded";
       return false;
     }
     if (!context_har_->Seed(context)) {
-      error = "Native context HAR policy capacity exceeded";
+      error = "Native context HAR policy is closed or already seeded";
       return false;
     }
     if (params->HasKey("recordVideo")) {
@@ -571,8 +571,8 @@ Engine::Engine(Writer& writer, int width, int height, double scale, bool i420, i
     auto typed = CefValue::Create();
     typed->SetDictionary(record->Copy(false));
     std::string json;
-    if (!suitecut::DevToolsLosslessJSON(typed, json, 1048576)) {
-      Degraded("Native context console predicate output limit exceeded");
+    if (!suitecut::DevToolsLosslessJSON(typed, json, std::numeric_limits<size_t>::max())) {
+      Degraded("Native context console predicate output could not be encoded");
       return;
     }
     writer_.Send(Header("contextworkerpredicate"), std::vector<uint8_t>(json.begin(), json.end()));
@@ -796,7 +796,7 @@ Engine::Engine(Writer& writer, int width, int height, double scale, bool i420, i
   };
   trace_hooks.source = [this](suitecut::TraceJournal::Lease lease, const std::string& path) {
     if (!trace_sources_->Capture(lease, path))
-      traces_->CaptureError(lease, "Native trace source capture capacity exceeded");
+      traces_->CaptureError(lease, "Native trace source capture could not start");
   };
   trace_hooks.request_capture = [this](int context) {
     const auto lease = traces_->CaptureLease(context);
@@ -873,11 +873,9 @@ Engine::Engine(Writer& writer, int width, int height, double scale, bool i420, i
       Idle();
     }
   };
-  screenshot_hooks.available = [this, alive = alive_] {
-    return *alive &&
-           (!screenshot_inputs_ ||
-            screenshot_inputs_->AdmissionCount() + screenshot_comparisons_->LogicalCount() < 16);
-  };
+  // No owner count limit: any number of comparisons and inputs may be admitted.
+  // Only the physical codec lanes below pace work, by delaying it.
+  screenshot_hooks.available = [alive = alive_] { return *alive; };
   screenshot_hooks.physical_available = [this, alive = alive_] {
     return *alive &&
            (!screenshot_inputs_ ||
@@ -901,10 +899,7 @@ Engine::Engine(Writer& writer, int width, int height, double scale, bool i420, i
   input_hooks.settled = [this, alive = alive_](int context) {
     if (*alive) contexts_->ContinueCloseContext(context);
   };
-  input_hooks.available = [this, alive = alive_] {
-    return *alive &&
-           screenshot_inputs_->AdmissionCount() + screenshot_comparisons_->LogicalCount() < 16;
-  };
+  input_hooks.available = [alive = alive_] { return *alive; };
   input_hooks.physical_available = [this, alive = alive_] {
     return *alive &&
            screenshot_inputs_->PhysicalCount() + screenshot_comparisons_->PhysicalCount() < 2;
@@ -1131,7 +1126,7 @@ bool Engine::SelectStreamingSource(const std::string& stream, int page, std::str
     source->browser_->GetHost()->Invalidate(PET_VIEW);
     return true;
   } catch (const std::exception& failure) {
-    error = std::string(failure.what()).substr(0, 4096);
+    error = failure.what();
     return false;
   }
 }

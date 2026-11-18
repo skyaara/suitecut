@@ -62,11 +62,10 @@ class DownloadControls : public std::enable_shared_from_this<DownloadControls> {
     return result;
   }
   bool SDKSetDirectory(int context,const std::string& path,std::string& canonical,std::string& error) {
-    if(context<=0||closing_contexts_.contains(context)||clearing_||path.empty()||path.size()>4096||
+    if(context<=0||closing_contexts_.contains(context)||clearing_||path.empty()||
         path.find('\0')!=std::string::npos||!std::filesystem::path(path).is_absolute()) {
       error="Native download directory requires an open context and absolute path";return false;
     }
-    if(!directories_.contains(context)&&directories_.size()>=256) {error="Native download directory context capacity exceeded";return false;}
     try {
       std::filesystem::create_directories(path);
       canonical=std::filesystem::canonical(path).string();
@@ -88,7 +87,6 @@ class DownloadControls : public std::enable_shared_from_this<DownloadControls> {
   struct Record {
     int page=0,event_page=0,context=0;std::uint32_t native_id=0;
     std::string id,url,original_url,suggested,mime,failure;
-    bool unavailable_url=false,unavailable_original=false,unavailable_suggested=false,unavailable_mime=false;
     std::int64_t total=-1,received=0;
     bool finish_queued=false,emitted=false,accepted=false,settled=false,physical_settled=false,complete=false,cancel_requested=false,deleted=false,context_closed=false,browser_gone=false;
     std::shared_ptr<DownloadFiles> files;

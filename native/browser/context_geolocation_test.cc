@@ -2,6 +2,7 @@
 #include "context_geolocation.h"
 #include <cassert>
 #include <limits>
+#include <string>
 #include <vector>
 using suitecut::NativeContextGeolocation;using suitecut::NativeGeolocationValue;
 int main(){
@@ -22,4 +23,9 @@ int main(){
  assert(!registry.Set(7,1,Coordinates{91,0,0},0,[](bool,const auto&){}));assert(!registry.Set(7,1,Coordinates{0,0,std::numeric_limits<double>::infinity()},0,[](bool,const auto&){}));
  for(int i=0;i<100000;++i){bool complete=false;assert(registry.Set(100+i,1,Coordinates{double(i%180)-90,double(i%360)-180,0},0,[&](bool ok,const auto&){assert(ok);complete=true;}));wire.back()(true,"");assert(complete&&registry.pending()==0&&registry.inFlight()==0);wire.clear();values.clear();}
  registry.Closed(1);assert(registry.contexts()==0&&registry.targets()==0);
+ // No context, target, key-length or concurrent-update cap.
+ NativeContextGeolocation many;for(int context=1;context<=40;++context)assert(many.Seed(context,{}));
+ for(int i=0;i<3000;++i)assert(many.Attach(1+i%40,std::string(200,'k')+std::to_string(i),[](const auto&,double,Result){},[](bool ok,const auto&){assert(ok);}));
+ assert(many.contexts()==40&&many.targets()==3000);
+ for(int context=1;context<=40;++context)assert(many.Set(1000+context,context,Coordinates{1,2,3},0,[](bool,const auto&){}));assert(many.pending()==40);
 }

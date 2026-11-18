@@ -15,6 +15,7 @@
 #endif
 extern char** environ;
 #include <iostream>
+#include <limits>
 #include <mutex>
 #include <sys/stat.h>
 #include <sys/wait.h>
@@ -144,10 +145,24 @@ int main(int argc, char** argv) {
   assert(suitecut::MediaSlotCount(1000 / 120.0, 120) == 1);
   assert(suitecut::MediaSlotCount(1000, 59.94) == 60);
   assert(suitecut::MediaSlotCount(0, 120) == 0);
-  for (double rate : {0.0, -1.0, 120.1, static_cast<double>(INFINITY), static_cast<double>(NAN)}) {
+  // No frame-rate cap: only non-positive or non-finite rates are invalid.
+  assert(suitecut::MediaSlotCount(1000, 240) == 240);
+  for (double rate : {0.0, -1.0, static_cast<double>(INFINITY), static_cast<double>(NAN)}) {
     bool failed = false;
     try { suitecut::MediaSlotCount(1, rate); } catch (...) { failed = true; }
     assert(failed);
+  }
+  {
+    // No 3840x2160 canvas cap and no default disk quota: an 8K canvas past the
+    // former bound validates, and only odd/non-positive canvases are refused.
+    auto o = options("eight-k.webm"); assert(o.max_file_bytes == 0);
+    o.source_width = o.output_width = 7680; o.source_height = o.output_height = 4320;
+    suitecut::ValidateMediaPipelineOptions(o);
+    for (int bad : {0, 7681}) {
+      auto invalid = o; invalid.output_width = bad; bool failed = false;
+      try { suitecut::ValidateMediaPipelineOptions(invalid); } catch (...) { failed = true; }
+      assert(failed);
+    }
   }
   {
 #ifdef __APPLE__
@@ -409,8 +424,8 @@ int main(int argc, char** argv) {
     assert(result.coalesced_frames==0);
   }
   {
-    // Timing reconstruction must retain the sequence holes caused by bounded
-    // ingress overload, rather than presenting dropped input as full cadence.
+    // No ingress queue limit: a stalled encoder start loses no paint, so every
+    // input frame is encoded at its own cadence without holes to hold over.
     auto o=options("lookahead-queue-drop.webm");
     o.frames_per_second=o.capture_frames_per_second=120;
     Started started;
@@ -425,7 +440,7 @@ int main(int argc, char** argv) {
     {std::lock_guard lock(gate_mutex); release=true;} gate.notify_one();
     pipeline.Join(); const auto result=pipeline.Snapshot(); CheckSuccess(result);
     assert(result.input_frames==51 && result.output_frames==51);
-    assert(result.superseded_frames==26 && result.held_frames==26 && result.coalesced_frames==0);
+    assert(result.superseded_frames==0 && result.held_frames==0 && result.coalesced_frames==0);
     assert(DecodedFrames(argv[1],o.output_path)==51);
   }
   {
@@ -582,16 +597,21 @@ int main(int argc, char** argv) {
     assert(!std::filesystem::exists(o.output_path));
   }
   {
-    auto o = options("overflow.webm"); o.audio = true;
-    // No first frame: genuine pending audio is bounded, not silently discarded.
+    auto o = options("overflow.webm"); o.audio = true; o.first_frame_deadline = Clock::now() + std::chrono::seconds(2);
+    // No first frame: pending audio past the old 30 s queue bound is kept, not
+    // a failure; only the first-frame deadline ends this recording.
     MediaPipeline pipeline(o);
     for (int packet = 0; packet < 1600 && !pipeline.Settled(); ++packet)
       pipeline.Audio(std::vector<uint8_t>(4096 * 4), 100);
-    pipeline.Join(); assert(pipeline.Snapshot().failure.find("queue exceeded") != std::string::npos);
+    assert(!pipeline.Settled());
+    pipeline.Join(); const auto failure = pipeline.Snapshot().failure;
+    assert(failure.find("queue exceeded") == std::string::npos && failure.find("first native") != std::string::npos);
   }
   {
     auto o = options("invalid.webm");
-    MediaPipeline pipeline(o); pipeline.Frame(Frame(true), 1e100); pipeline.Join();
+    // No 24 h duration cap: a far-future time is a legal capture time now, so
+    // only a non-finite (or pre-start) timestamp is malformed.
+    MediaPipeline pipeline(o); pipeline.Frame(Frame(true), std::numeric_limits<double>::quiet_NaN()); pipeline.Join();
     assert(pipeline.Snapshot().failure.find("Malformed") != std::string::npos);
   }
   {

@@ -19,7 +19,7 @@ bool PrepareStableElementState(int id,uint64_t generation,Dict message){
   if(!frame->second.utility_context){WithFrame(id,frame->first,[this,id,generation,message](int){QueryEvaluate(id,generation,message);},true);return false;}
   const auto owner=operations_.Get(id);if(!owner||owner->generation!=generation)return false;
   if(!ElementStates().Admit(id,generation,frame->first,frame->second.utility_context,frame->second.session,owner->deadline_ms)){
-    Complete(id,false,"Native element-state capacity exceeded or context changed");return false;
+    Complete(id,false,"Native element-state context changed or identity exhausted");return false;
   }
   return true;
 }

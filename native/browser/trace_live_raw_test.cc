@@ -12,7 +12,7 @@ int main(){
   using namespace suitecut;
   const auto directory=std::filesystem::temp_directory_path()/("suitecut-live-raw-"+std::to_string(getpid()));std::filesystem::remove_all(directory);
   TraceJournal journal;TraceJournal::Options options;options.dom=true;std::string error;double now=0;std::deque<std::function<void()>> background,posted;size_t snapshots=0,failures=0,settled=0;
-  TraceLiveRaw::Hooks hooks;hooks.directory=directory.string();hooks.now=[&]{return now;};hooks.background=[&](auto work){background.push_back(std::move(work));return true;};hooks.post=[&](auto work){posted.push_back(std::move(work));return false;};hooks.wake=[]{};hooks.bytes=[&](auto lease){return journal.SnapshotBytes(lease);};hooks.snapshot=[&](auto lease,TraceArchive& archive,std::string& why){++snapshots;return journal.Snapshot(lease,archive,why);};hooks.error=[&](auto,const auto&){++failures;};hooks.settled=[&](int){++settled;};auto live=std::make_shared<TraceLiveRaw>(hooks);
+  TraceLiveRaw::Hooks hooks;hooks.directory=directory.string();hooks.now=[&]{return now;};hooks.background=[&](auto work){background.push_back(std::move(work));return true;};hooks.post=[&](auto work){posted.push_back(std::move(work));return false;};hooks.wake=[]{};hooks.snapshot=[&](auto lease,TraceArchive& archive,std::string& why){++snapshots;return journal.Snapshot(lease,archive,why);};hooks.error=[&](auto,const auto&){++failures;};hooks.settled=[&](int){++settled;};auto live=std::make_shared<TraceLiveRaw>(hooks);
   auto run=[&]{assert(!background.empty());auto work=std::move(background.front());background.pop_front();work();live->Tick(now);posted.clear();};
   assert(journal.Start(1,options,"{\"type\":\"context-options\"}",error));const auto first=journal.Current(1);live->Open(first,"actual");
   // First-dirty deadline does not slide under continuous events. Until the
@@ -36,10 +36,10 @@ int main(){
   // An actual path error is reported once; idle retries do not allocate an
   // unbounded stream of duplicate snapshots, and true completion settles it.
   {std::ofstream file(directory/"blocker");file<<"file";}hooks.directory=(directory/"blocker/nested").string();auto bad=std::make_shared<TraceLiveRaw>(hooks);bad->Open(second,"bad");now=30700;bad->Tick(now);assert(background.size()==1);auto work=std::move(background.front());background.pop_front();work();bad->Tick(now);assert(failures==2&&bad->PhysicalCount()==0);for(int i=0;i<100;++i){bad->Dirty(1);bad->Tick(now+i*100);}assert(background.empty()&&!bad->NeedsTick());
-  // Four physical snapshots total; a fifth owner retains only its dirty state.
+  // No suitecut writer concurrency or byte budget: every dirty owner gets its
+  // own physical snapshot (formerly four, with the fifth left waiting).
   auto limited=std::make_shared<TraceLiveRaw>(hooks);const auto old_snapshots=snapshots;
   for(int context=10;context<15;++context){assert(journal.Start(context,options,"{\"type\":\"context-options\"}",error));limited->Open(journal.Current(context),"bounded-"+std::to_string(context));}
-  now+=100;limited->Tick(now);assert(limited->PhysicalCount()==4&&background.size()==4&&snapshots==old_snapshots+4&&limited->Bytes()<=TraceLiveRaw::kBytes);limited->Clear();assert(limited->PhysicalCount()==4);while(!background.empty()){auto task=std::move(background.front());background.pop_front();task();}limited->Tick(now);assert(!limited->PhysicalCount());
-  hooks.budget=[](){return size_t(0);};auto starved=std::make_shared<TraceLiveRaw>(hooks);starved->Open(second,"no-budget");now+=100;const auto before_budget=snapshots;for(int i=0;i<100;++i)starved->Tick(now+i);assert(snapshots==before_budget&&background.empty()&&!starved->PhysicalCount());starved->Clear();
+  now+=100;limited->Tick(now);assert(limited->PhysicalCount()==5&&background.size()==5&&snapshots==old_snapshots+5);limited->Clear();assert(limited->PhysicalCount()==5);while(!background.empty()){auto task=std::move(background.front());background.pop_front();task();}limited->Tick(now);assert(!limited->PhysicalCount());
   assert(settled>=7);state.reset();live->Clear();bad->Clear();for(const auto& file:std::filesystem::directory_iterator(directory))assert(!file.path().filename().string().starts_with(".suitecut-trace-"));std::filesystem::remove_all(directory);std::cout<<"Native live raw idle coalescing, exact bytes, stable namespace, cancellation, timeout and actual errors passed\n";
 }

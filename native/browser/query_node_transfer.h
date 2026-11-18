@@ -53,7 +53,6 @@ class SuiteCutQueryNodeTransfer {
         const auto name=field->GetString("name").ToString();size_t index=0;
         const auto parsed=std::from_chars(name.data(),name.data()+name.size(),index);
         if(parsed.ec!=std::errc()||parsed.ptr!=name.data()+name.size())continue;
-        if(index>=100000){work->fail("Native query node transfer limit exceeded");return;}
         auto value=field->GetDictionary("value");
         if(!value||value->GetString("subtype")!="node"||value->GetType("objectId")!=VTYPE_STRING){work->fail("Native isolated selector did not return DOM nodes");return;}
         nodes[index]=value->GetString("objectId").ToString();
@@ -69,7 +68,7 @@ class SuiteCutQueryNodeTransfer {
       auto additional=CefDictionaryValue::Create();additional->SetInt("maxNodeDepth",0);options->SetDictionary("additionalParameters",additional);params->SetDictionary("serializationOptions",options);
       work->send("Runtime.callFunctionOn",params,[work](bool ok,const std::string& json){
         if(!Valid(work))return;
-        auto result=json.size()<=16*1048576?Parse(json):nullptr;auto remote=result?result->GetDictionary("result"):nullptr;
+        auto result=Parse(json);auto remote=result?result->GetDictionary("result"):nullptr;
         auto deep=remote&&remote->GetString("subtype")=="array"?remote->GetDictionary("deepSerializedValue"):nullptr;
         auto values=deep&&deep->GetString("type")=="array"?deep->GetList("value"):nullptr;
         if(ok&&result&&!result->HasKey("exceptionDetails")&&values&&values->GetSize()==work->nodes.size()){

@@ -16,16 +16,13 @@ class InitSnapshotPublications {
     ~Body(){if(charged){state->bytes.fetch_sub(text.size());state->bodies.fetch_sub(1);}}
   };
  public:
-  static constexpr size_t kContexts=32,kBodies=64,kBytes=8*InitSnapshotWire::kPayload;
   struct Snapshot {uint64_t version=0;std::shared_ptr<const std::string>bytes;};
   using Accept=std::function<bool(std::shared_ptr<const std::string>)>;
   bool Commit(int context,std::string text,const Accept&accept){
-    if(context<=0||text.empty()||text.size()>InitSnapshotWire::kPayload||!accept)return false;
+    if(context<=0||text.empty()||!accept)return false;
     auto found=current_.find(context);
     if(found!=current_.end()&&found->second.bytes&&*found->second.bytes==text)return true;
-    if((found==current_.end()&&current_.size()>=kContexts)||
-       (found!=current_.end()&&found->second.version==std::numeric_limits<uint64_t>::max())||
-       state_->bodies.load()>=kBodies||text.size()>kBytes-state_->bytes.load())return false;
+    if(found!=current_.end()&&found->second.version==std::numeric_limits<uint64_t>::max())return false;
     // Prepare every allocation before making the real native store acceptance
     // observable. The alias owns Body, so old native IO leases remain charged.
     auto body=std::make_shared<Body>();body->state=state_;body->text=std::move(text);

@@ -22,7 +22,7 @@ void FrameElementHandle(int id,Dict message) {
   if(found==frame_states_.end()){Complete(id,false,"Native frame detached or unavailable");return;}
   const auto parent=found->second.parent;
   if(parent.empty()){Complete(id,false,"Frame has been detached, or was the main frame");return;}
-  if(!SelectorWaits().Admit(id,operation->generation)){Complete(id,false,"Native frame owner preparation capacity exceeded");return;}
+  if(!SelectorWaits().Admit(id,operation->generation)){Complete(id,false,"Native frame owner preparation admission unavailable or channel closed");return;}
   WithFrame(id,parent,[this,id,generation=operation->generation,child,parent](int context){
     if(!operations_.IsCurrent(id,generation))return;
     const auto current=frame_states_.find(parent);if(current==frame_states_.end()){Complete(id,false,"Native frame owner context unavailable");return;}

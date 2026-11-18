@@ -307,7 +307,6 @@ try {
     'httpActive',
     'httpResponses',
     'httpRetainedBodyBytes',
-    'httpRetainedBodyCapacity',
     'httpActiveBodyBytes',
     'httpUploads',
     'httpUploadBytes',

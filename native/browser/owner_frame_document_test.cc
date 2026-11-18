@@ -23,6 +23,6 @@ int main(){
  {Harness h;h.Document();h.peer=false;h.Ack({true,{},{},41});assert(h.sent.back()==Read::Method::Release&&!h.done);h.read->ChannelClosed();assert(h.done==1&&!h.result.ok);h.Ack({true,{},{},0});assert(h.done==1);}
  {Harness h;h.Document();h.Ack({true,{},{},41});h.peer=false;h.Ack({true,{},{},0});assert(h.done==1&&!h.result.ok);}
  {Harness h;h.read->Start();h.Ack({false,{},{},0,"Actual native protocol error"});assert(h.done==1&&!h.result.ok&&h.result.error=="Actual native protocol error"&&!h.read->GroupOwned());}
- {Harness h;h.Isolate();h.Ack({false,{},{},0,std::string(4097,'x')});assert(!h.done&&h.read->GroupOwned());h.Ack({true,{},{},0});assert(h.done==1&&!h.result.ok&&h.result.error=="Native owner document protocol diagnostic limit exceeded");}
+ {Harness h;h.Isolate();h.Ack({false,{},{},0,std::string(4097,'x')});assert(!h.done&&h.read->GroupOwned());h.Ack({true,{},{},0});assert(h.done==1&&!h.result.ok&&h.result.error==std::string(4097,'x'));}
  std::cout<<"Native owner-document transaction: 12 physical ACK/cancellation/group ownership groups passed\n";
 }

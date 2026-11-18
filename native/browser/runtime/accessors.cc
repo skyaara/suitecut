@@ -88,7 +88,7 @@ auto Engine::screenshot_inputs() const -> std::shared_ptr<suitecut::ScreenshotIn
 }
 
 auto Engine::TraceClaim(bool dom) -> bool {
-  if (trace_physical_ >= 16) return false;
+  // Accounting only; there is no engine-wide cap on concurrent trace calls.
   ++trace_physical_;
   if (dom) ++trace_dom_physical_;
   return true;

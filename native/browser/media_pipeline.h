@@ -35,7 +35,8 @@ struct MediaPipelineOptions {
   bool capture_timestamps_exact = false;
   double start_timestamp_ms = 0;
   std::chrono::steady_clock::time_point first_frame_deadline{};
-  uint64_t max_file_bytes = 512ULL * 1024 * 1024;
+  // Optional caller-requested disk quota; zero (the default) means none.
+  uint64_t max_file_bytes = 0;
   // Context videos anchor fitted content at the viewport origin. Manual
   // recordings preserve their existing centered letterbox by default.
   bool top_left_padding = false;

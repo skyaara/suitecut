@@ -55,14 +55,9 @@ function viewportSize(size: BrowserViewport): void {
     !Number.isInteger(size.width) ||
     !Number.isInteger(size.height) ||
     size.width < 1 ||
-    size.height < 1 ||
-    size.width > 16384 ||
-    size.height > 16384 ||
-    size.width * size.height > 64 * 1024 * 1024
+    size.height < 1
   )
-    throw new Error(
-      'Browser viewport must use positive integer dimensions within 16384 and a 64-megapixel area',
-    )
+    throw new Error('Browser viewport must use positive integer dimensions')
 }
 
 function argumentSource(value: UntrustedInput): string {
@@ -359,8 +354,7 @@ export class ProtocolBrowserContext {
   }
   addCookies(cookies: BrowserCookie[]): Promise<void> {
     this.assertOpen()
-    if (!Array.isArray(cookies) || cookies.length > 2048)
-      throw new Error('Invalid browser cookie array')
+    if (!Array.isArray(cookies)) throw new Error('Invalid browser cookie array')
     for (const cookie of cookies) {
       if (
         typeof cookie.name !== 'string' ||
@@ -420,7 +414,6 @@ export class ProtocolPage implements DOMOwner {
   private closing: Promise<void> | undefined
   private timeoutMs = 30_000
   private actionTail: Promise<void> = Promise.resolve()
-  private queuedActions = 0
   private pointer = { x: 0, y: 0 }
   private viewport: BrowserViewport | null = null
   private preparing: Promise<void> | undefined
@@ -634,9 +627,6 @@ export class ProtocolPage implements DOMOwner {
    * @internal
    */
   perform<T>(action: () => Promise<T>): Promise<T> {
-    if (this.queuedActions >= 256)
-      return Promise.reject(new Error('Browser page action queue limit reached'))
-    this.queuedActions++
     const work = this.actionTail.then(async () => {
       this.assertOpen()
       await this.prepare()
@@ -644,12 +634,8 @@ export class ProtocolPage implements DOMOwner {
       return action()
     })
     this.actionTail = work.then(
-      () => {
-        this.queuedActions--
-      },
-      () => {
-        this.queuedActions--
-      },
+      () => undefined,
+      () => undefined,
     )
     return work
   }
@@ -1017,8 +1003,8 @@ export class ProtocolLocator {
   }
   dragTo(target: ProtocolLocator, options: { steps?: number } = {}): Promise<void> {
     const steps = options.steps ?? 10
-    if (!Number.isInteger(steps) || steps < 1 || steps > 1000)
-      return Promise.reject(new Error('Drag steps must be between 1 and 1000'))
+    if (!Number.isInteger(steps) || steps < 1)
+      return Promise.reject(new Error('Drag steps must be a positive integer'))
     if (this.page() !== target.page())
       return Promise.reject(new Error('Drag target belongs to another page'))
     return this.owner.perform(async () => {
@@ -1193,13 +1179,10 @@ async function endpointURL(options: ConnectBrowserOptions): Promise<string> {
   }
   const reader = response.body.getReader()
   const buffers: Uint8Array[] = []
-  let total = 0
   try {
     for (;;) {
       const next = await reader.read()
       if (next.done) break
-      total += next.value.byteLength
-      if (total > 64 * 1024) throw new Error('CDP endpoint discovery byte budget exceeded')
       buffers.push(next.value)
     }
   } finally {

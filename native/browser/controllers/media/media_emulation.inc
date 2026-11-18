@@ -3,21 +3,10 @@
 // outlive logical cancellation and retire only on reply or target destruction.
 Dict native_media_params_;
 size_t native_media_physical_=0;
+// Every media command is submitted at once; nothing is queued behind a
+// suitecut concurrency cap. The queue stays empty (status/drain reporting).
 struct NativeMediaQueued {int owner;std::string session;Dict params;DevToolsCallback callback;};
 std::deque<NativeMediaQueued> native_media_queue_;
-bool native_media_queue_task_=false;
-void NativeMediaWake(){
-  if(native_media_queue_task_||native_media_queue_.empty()||native_media_physical_>=64||closing_page_)return;
-  native_media_queue_task_=true;
-  CefPostTask(TID_UI,new Task([self=CefRefPtr<Source>(this)]{
-    self->native_media_queue_task_=false;
-    for(size_t count=0;count<64&&!self->native_media_queue_.empty()&&self->native_media_physical_<64&&!self->closing_page_;++count){
-      auto request=std::move(self->native_media_queue_.front());self->native_media_queue_.pop_front();
-      self->NativeMediaRequest(request.owner,request.session,request.params,std::exchange(request.callback, nullptr));
-    }
-    self->NativeMediaWake();
-  }));
-}
 struct NativeMediaLatch {
   bool settled=false;std::function<void()> release;
   void Settle(){if(!settled){settled=true;release();}}
@@ -25,14 +14,10 @@ struct NativeMediaLatch {
 };
 void NativeMediaRequest(int owner,const std::string& session,Dict params,DevToolsCallback callback){
   if(!browser_||closing_page_){callback(false,"Native media page is closed");return;}
-  if(native_media_physical_>=64){
-    if(native_media_queue_.size()>=1024){callback(false,"Native media command queue capacity exceeded");return;}
-    native_media_queue_.push_back({owner,session,params->Copy(false),std::move(callback)});return;
-  }
   const int id=AllocateDevToolsId();
-  if(!id){callback(false,"Native media physical command capacity exceeded");return;}
+  if(!id){callback(false,"Native media DevTools command id unavailable");return;}
   ++native_media_physical_;
-  auto latch=std::make_shared<NativeMediaLatch>();latch->release=[this]{--native_media_physical_;NativeMediaWake();};
+  auto latch=std::make_shared<NativeMediaLatch>();latch->release=[this]{--native_media_physical_;};
   devtools_.emplace(id,DevToolsCall{owner,[latch,callback=std::move(callback)](bool ok,const std::string& json)mutable{
     latch->Settle();callback(ok,json);
   },session,true,65536,true});

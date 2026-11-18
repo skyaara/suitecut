@@ -16,7 +16,9 @@
 namespace suitecut {
 // Trace jobs retain their own immutable leases, deadlines and owner completion.
 // CEF's best-effort file task runner may stop admitting execution during browser
-// closure; this bounded process-owned executor retires accepted work first.
+// closure; this process-owned executor retires accepted work first. Its thread
+// count is bounded; accepted work is never refused for being busy, it queues
+// until a worker is free.
 class TraceBackground final {
  public:
   TraceBackground():TraceBackground(AutomaticWorkerPolicy()){}
@@ -32,7 +34,7 @@ class TraceBackground final {
     task=BindNativeLocatorHandlerAsync(std::move(task));
     {
       std::lock_guard lock(mutex_);
-      if(closing_||physical_>=capacity_)return false;
+      if(closing_)return false;
       queue_.push_back(std::move(task));++physical_;
       // Existing workers remain available for reuse. Grow only when accepted
       // running/queued work needs another worker, within the automatic budget.
@@ -54,7 +56,7 @@ class TraceBackground final {
   size_t Failures()const{std::lock_guard lock(mutex_);return failures_;}
   size_t WorkerLimit()const noexcept{return worker_limit_;}
   size_t Capacity()const noexcept{return capacity_;}
-  bool Available()const{std::lock_guard lock(mutex_);return !closing_&&physical_<capacity_;}
+  bool Available()const{std::lock_guard lock(mutex_);return !closing_;}
   size_t WorkerCount()const{std::lock_guard lock(mutex_);return threads_.size();}
   size_t WorkerStartFailures()const{std::lock_guard lock(mutex_);return start_failures_;}
  private:

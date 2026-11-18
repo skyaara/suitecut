@@ -4,16 +4,15 @@ import * as z from 'zod'
 import { type NativeLocator } from './native-page.js'
 import { type UntrustedInput } from './untrusted.js'
 
-const text = { text: z.string().max(2048), exact: z.literal(true) }
+const text = { text: z.string(), exact: z.literal(true) }
 const step = z.discriminatedUnion('engine', [
-  z.strictObject({ engine: z.literal('css'), selector: z.string().min(1).max(16_384) }),
-  z.strictObject({ engine: z.literal('testId'), attribute: z.string().min(1).max(256), ...text }),
+  z.strictObject({ engine: z.literal('css'), selector: z.string().min(1) }),
+  z.strictObject({ engine: z.literal('testId'), attribute: z.string().min(1), ...text }),
   z.strictObject({
     engine: z.literal('role'),
     role: z
       .string()
       .min(1)
-      .max(128)
       .regex(/^[a-z-]+$/u),
     name: z.strictObject(text),
   }),
@@ -22,8 +21,8 @@ const step = z.discriminatedUnion('engine', [
 const recipe = z
   .strictObject({
     kind: z.enum(['testId', 'label', 'role', 'attribute', 'text', 'id', 'css', 'path']),
-    query: z.array(step).min(1).max(64),
-    code: z.string().min(1).max(65_536),
+    query: z.array(step).min(1),
+    code: z.string().min(1),
     matches: z.literal(1),
     sameNode: z.literal(true),
   })
@@ -40,23 +39,22 @@ const recipe = z
                 first?.engine === 'alt' ||
                 first?.engine === 'title'
               : first?.engine === value.kind)
-    if (!valid || new TextEncoder().encode(JSON.stringify(value.query)).byteLength > 16_384)
+    if (!valid)
       context.addIssue({
         code: 'custom',
-        message: 'Invalid native locator suggestion recipe shape or byte bound',
+        message: 'Invalid native locator suggestion recipe shape',
       })
   })
 const provenance = z.strictObject({
   source: z
     .string()
     .min(1)
-    .max(64)
     .regex(/^[A-Za-z0-9]+$/u),
-  frame: z.string().min(1).max(256),
-  session: z.string().max(256),
-  loader: z.string().max(256),
-  mainIdentity: z.string().min(1).max(512),
-  utilityIdentity: z.string().min(1).max(512),
+  frame: z.string().min(1),
+  session: z.string(),
+  loader: z.string(),
+  mainIdentity: z.string().min(1),
+  utilityIdentity: z.string().min(1),
   mainContext: z.number().int().positive().max(2_147_483_647),
   utilityContext: z.number().int().positive().max(2_147_483_647),
   documentGeneration: z.string().regex(/^(?:0|[1-9][0-9]{0,19})$/u),
@@ -64,24 +62,24 @@ const provenance = z.strictObject({
   retainedHandle: z.number().int().positive().optional(),
   point: z
     .strictObject({
-      x: z.number().int().min(0).max(1_000_000),
-      y: z.number().int().min(0).max(1_000_000),
-      inspectorX: z.number().int().min(0).max(1_000_000),
-      inspectorY: z.number().int().min(0).max(1_000_000),
-      inspectorRoot: z.string().min(1).max(256),
+      x: z.number().int().min(0),
+      y: z.number().int().min(0),
+      inspectorX: z.number().int().min(0),
+      inspectorY: z.number().int().min(0),
+      inspectorRoot: z.string().min(1),
     })
     .optional(),
 })
 const diagnostic = z.strictObject({
-  kind: z.string().max(32),
-  reason: z.string().max(256),
-  matches: z.number().int().nonnegative().max(1_000_000).optional(),
+  kind: z.string(),
+  reason: z.string(),
+  matches: z.number().int().nonnegative().optional(),
 })
 const packet = z
   .strictObject({
-    suggestions: z.array(recipe).min(1).max(5),
+    suggestions: z.array(recipe).min(1),
     provenance,
-    diagnostics: z.array(diagnostic).max(48),
+    diagnostics: z.array(diagnostic),
     pointPicking: z.boolean(),
   })
   .superRefine((value, context) => {

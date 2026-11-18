@@ -35,7 +35,7 @@ void DispatchEventResult(int id,uint64_t generation,bool ok,const std::string& j
     if(config&&!config->HasKey("nativeHandle")&&retry&&error=="Error: Element is not attached to the DOM"){
       context_retries_[id]=std::move(retry);locator_waits_[id]="element to be attached before dispatchEvent";RetryContext(id);return;
     }
-    Complete(id,false,"dispatchEvent: "+error.substr(0,1024));return;
+    Complete(id,false,"dispatchEvent: "+error);return;
   }
   auto remote=result->GetDictionary("result");auto state=remote?remote->GetDictionary("value"):nullptr;
   if(!state||!state->GetBool("ready")||state->GetType("dispatched")!=VTYPE_BOOL){Complete(id,false,"Native event dispatch result unavailable");return;}
@@ -85,7 +85,7 @@ void DispatchEventInvoke(int id,uint64_t generation,Dict config,const std::strin
   if(!DispatchEventCurrent(id,generation))return;
   auto packet=config->GetType("eventInitJSON")==VTYPE_STRING?CefParseJSON(config->GetString("eventInitJSON"),JSON_PARSER_RFC):nullptr;
   auto ids=config->GetList("handles");
-  if(!packet||packet->GetType()!=VTYPE_LIST||!ids||ids->GetSize()>32){Complete(id,false,"Invalid native dispatchEvent argument");return;}
+  if(!packet||packet->GetType()!=VTYPE_LIST||!ids){Complete(id,false,"Invalid native dispatchEvent argument");return;}
   auto work=std::make_shared<DispatchEventWork>();work->id=id;work->generation=generation;work->node=node;work->frame=FrameId(config);work->config=config;
   work->packet=config->GetString("eventInitJSON").ToString();
   for(size_t i=0;i<ids->GetSize();++i){
@@ -108,7 +108,7 @@ void DispatchEventInvoke(int id,uint64_t generation,Dict config,const std::strin
 void DispatchEventStrictResult(int id,uint64_t generation,const std::string& object) {
   if(!DispatchEventCurrent(id,generation))return;
   auto params=CefDictionaryValue::Create();params->SetString("objectId",object);
-  params->SetString("functionDeclaration","function(){const field=Object.getOwnPropertyDescriptor(this,'strictError');if(!field||typeof field.value!=='string'||field.value.length>16384)throw new Error('Invalid native dispatch strict diagnostic');return field.value;}");
+  params->SetString("functionDeclaration","function(){const field=Object.getOwnPropertyDescriptor(this,'strictError');if(!field||typeof field.value!=='string')throw new Error('Invalid native dispatch strict diagnostic');return field.value;}");
   params->SetBool("returnByValue",true);params->SetString("objectGroup","suitecut-automation-"+std::to_string(id));
   DevTools(id,"Runtime.callFunctionOn",params,[this,id,generation](bool ok,const std::string& json){
     if(!DispatchEventCurrent(id,generation))return;
@@ -118,15 +118,15 @@ void DispatchEventStrictResult(int id,uint64_t generation,const std::string& obj
       Complete(id,false,"Native dispatch strict diagnostic is unavailable");return;
     }
     const auto text=suitecut::DevToolsString(remote->GetValue("value"));
-    if(text.empty()||text.size()>65536){Complete(id,false,"Native dispatch strict diagnostic is invalid or exceeds its bound");return;}
+    if(text.empty()){Complete(id,false,"Native dispatch strict diagnostic is invalid");return;}
     if(DispatchEventCurrent(id,generation))Complete(id,false,"dispatchEvent: "+text);
   },std::nullopt,false,kMaxResponseBytes,true);
 }
 
 void DispatchEventAction(int id,uint64_t generation,Dict config) {
   if(!DispatchEventCurrent(id,generation)||!browser_)return;
-  if(config->GetType("eventInitJSON")!=VTYPE_STRING||config->GetString("eventInitJSON").ToString().size()>16384){Complete(id,false,"Native dispatchEvent argument exceeds 16 KiB or is invalid");return;}
-  if(!SelectorWaits().Admit(id,generation)){Complete(id,false,"Native dispatchEvent physical capacity exceeded");return;}
+  if(config->GetType("eventInitJSON")!=VTYPE_STRING){Complete(id,false,"Native dispatchEvent argument is invalid");return;}
+  if(!SelectorWaits().Admit(id,generation)){Complete(id,false,"Native dispatchEvent could not be admitted");return;}
   const auto path=config->GetList("framePath");
   if(path&&path->GetSize()){
     ResolveFramePath(id,generation,config,0,FrameId(config),[this,id,generation](Dict resolved){DispatchEventAction(id,generation,resolved);});return;

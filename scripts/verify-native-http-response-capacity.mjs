@@ -20,7 +20,6 @@ await mkdir(directory, { recursive: true })
 const diagnostics = await captureNativeStderr(directory)
 const limit = 128 * 1048576
 const schema = z.object({
-  httpRetainedBodyCapacity: z.number().int().nonnegative(),
   httpRetainedBodyBytes: z.number().int().nonnegative(),
   httpActiveBodyBytes: z.number().int().nonnegative(),
   httpTransfers: z.number().int().nonnegative(),
@@ -97,8 +96,6 @@ try {
     const state = schema.parse(await source.runAutomation('diagnostics'))
     assert.equal(state.httpRetainedBodyBytes, amount * (index + 1))
     assert.equal(state.httpResponses, index + 1)
-    assert(state.httpRetainedBodyCapacity >= state.httpRetainedBodyBytes)
-    assert(state.httpRetainedBodyCapacity <= limit)
     samples.push(state)
   }
   assert(retained.length > 0 && retained.length < 6)
@@ -114,7 +111,6 @@ try {
   assert.equal(limited.httpResponses, retained.length)
   assert.equal(limited.httpActiveBodyBytes, 0)
   assert.equal(limited.httpTransfers, 0)
-  assert(limited.httpRetainedBodyCapacity <= limit)
   samples.push(limited)
   checks.push(
     'real request rejects on physical capacity although all six requested logical bodies fit, releasing its partial body',
@@ -123,14 +119,12 @@ try {
   for (const response of retained.splice(0)) await response.dispose()
   const emptied = schema.parse(await source.runAutomation('diagnostics'))
   assert.equal(emptied.httpRetainedBodyBytes, 0)
-  assert.equal(emptied.httpRetainedBodyCapacity, 0)
   assert.equal(emptied.httpResponses, 0)
   samples.push(emptied)
   retained.push(await api.get(origin + '/body/after-dispose', { timeout: 10000 }))
   const resumed = schema.parse(await source.runAutomation('diagnostics'))
   assert.equal(resumed.httpRetainedBodyBytes, amount)
   assert.equal(resumed.httpResponses, 1)
-  assert(resumed.httpRetainedBodyCapacity <= limit)
   samples.push(resumed)
   for (const response of retained.splice(0)) await response.dispose()
   await api.dispose()

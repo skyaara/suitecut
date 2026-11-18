@@ -4,6 +4,7 @@
 #undef NDEBUG
 #endif
 #include <cassert>
+#include <algorithm>
 #include <random>
 
 int main() {
@@ -16,11 +17,13 @@ int main() {
   assert(!SuiteCutConsoleArrayIndex("4294967295") && !SuiteCutConsoleArrayIndex("01") && !SuiteCutConsoleArrayIndex("-1"));
   assert(!SuiteCutConsoleArrayLength("Array(999999999999999999999999)") && !SuiteCutConsoleArrayLength("Array(01)") && !SuiteCutConsoleArrayLength("Array(1x)"));
   assert(SuiteCutFormatConsoleArray("Array(2)",{{"1","b"},{"0","a"}},false)=="[b, a]");
-  assert(SuiteCutFormatConsoleArray("Array(1)",{{"0",std::string(1000000,'x')}},false).size()<=65536);
+  assert(SuiteCutFormatConsoleArray("Array(1)",{{"0",std::string(1000000,'x')}},false)=="["+std::string(1000000,'x')+"]");
+  {std::vector<SuiteCutConsoleArrayProperty> many;for(int i=0;i<40;++i)many.push_back({std::to_string(i),"v"});
+   const auto all=SuiteCutFormatConsoleArray("Array(40)",many,false);assert(all.find("…")==std::string::npos&&all.ends_with("v, v]")&&std::count(all.begin(),all.end(),'v')==40);}
   std::mt19937_64 random(0xc0750ae);
   for(int i=0;i<1000000;++i) {
     const auto first=random()%1000000, gap=random()%1000000;
     const auto result=SuiteCutFormatConsoleArray("Array("+std::to_string(first+gap+3)+")",{{std::to_string(first),"one"},{std::to_string(first+gap+1),"two"}},random()%2);
-    assert(result.size()<=65536 && result.front()=='[' && result.back()==']');
+    assert(result.front()=='[' && result.back()==']');
   }
 }

@@ -114,16 +114,16 @@ const PageId = ContextId.extend({
   video: NativeVideoDescriptorSchema.optional(),
 })
 const CookieSchema = z.strictObject({
-  name: z.string().max(4096),
-  value: z.string().max(4096),
+  name: z.string(),
+  value: z.string(),
   url: z.url().optional(),
-  domain: z.string().max(1024).optional(),
-  path: z.string().max(8192).optional(),
+  domain: z.string().optional(),
+  path: z.string().optional(),
   expires: z.number().finite().min(-1).max(253402300799).optional(),
   httpOnly: z.boolean().optional(),
   secure: z.boolean().optional(),
   sameSite: z.enum(['Strict', 'Lax', 'None']).optional(),
-  partitionKey: z.string().max(8192).optional(),
+  partitionKey: z.string().optional(),
   partitionKeyHasCrossSiteAncestor: z.boolean().optional(),
 })
 export type NativeCookieInput = z.input<typeof CookieSchema>
@@ -146,12 +146,12 @@ const ReturnedCookie = CookieSchema.omit({
 })
   .required()
   .extend({
-    partitionKey: z.string().max(8192).exactOptional(),
+    partitionKey: z.string().exactOptional(),
     partitionKeyHasCrossSiteAncestor: z.boolean().exactOptional(),
   })
 const ContextCredentialsSchema = z.strictObject({
-  username: z.string().max(4096),
-  password: z.string().max(4096),
+  username: z.string(),
+  password: z.string(),
   origin: z.url().optional(),
   send: z.enum(['always', 'unauthorized']).optional(),
 })
@@ -166,39 +166,39 @@ const ContextOptions = z.strictObject({
   extraHTTPHeaders: z.record(z.string(), z.string()).optional(),
   viewport: z
     .strictObject({
-      width: z.number().int().min(1).max(3840),
-      height: z.number().int().min(1).max(2160),
+      width: z.number().int().min(1),
+      height: z.number().int().min(1),
     })
     .nullable()
     .optional(),
   screen: z
     .strictObject({
-      width: z.number().int().min(1).max(3840),
-      height: z.number().int().min(1).max(2160),
+      width: z.number().int().min(1),
+      height: z.number().int().min(1),
     })
     .optional(),
-  deviceScaleFactor: z.number().finite().min(0.25).max(4).optional(),
+  deviceScaleFactor: z.number().finite().positive().optional(),
   hasTouch: z.boolean().optional(),
   isMobile: z.boolean().optional(),
-  locale: z.string().min(1).max(128).optional(),
-  timezoneId: z.string().min(1).max(256).optional(),
-  userAgent: z.string().min(1).max(4096).optional(),
+  locale: z.string().min(1).optional(),
+  timezoneId: z.string().min(1).optional(),
+  userAgent: z.string().min(1).optional(),
   colorScheme: z.enum(['light', 'dark', 'no-preference']).nullable().optional(),
   reducedMotion: z.enum(['reduce', 'no-preference']).nullable().optional(),
   forcedColors: z.enum(['active', 'none']).nullable().optional(),
   contrast: z.enum(['more', 'no-preference']).nullable().optional(),
   geolocation: NativeGeolocationSchema.optional(),
-  permissions: z.array(z.string()).max(32).optional(),
+  permissions: z.array(z.string()).optional(),
   httpCredentials: z
-    .union([ContextCredentialsSchema, z.array(ContextCredentialsSchema).max(64)])
+    .union([ContextCredentialsSchema, z.array(ContextCredentialsSchema)])
     .optional(),
   ignoreHTTPSErrors: z.boolean().optional(),
   proxy: z
     .strictObject({
-      server: z.string().min(1).max(4096),
-      bypass: z.string().max(4096).optional(),
-      username: z.string().max(4096).optional(),
-      password: z.string().max(4096).optional(),
+      server: z.string().min(1),
+      bypass: z.string().optional(),
+      username: z.string().optional(),
+      password: z.string().optional(),
     })
     .optional(),
 })
@@ -435,7 +435,7 @@ export class NativeBrowserContext {
     this.assertOpen()
     const config = withoutNativeRetryOperation(() =>
       z
-        .union([ContextCredentialsSchema, z.array(ContextCredentialsSchema).max(64)])
+        .union([ContextCredentialsSchema, z.array(ContextCredentialsSchema)])
         .nullable()
         .parse(credentials),
     )
@@ -776,7 +776,7 @@ export class NativeBrowserContext {
     const config = withoutNativeRetryOperation(() =>
       z
         .strictObject({
-          reason: z.string().max(4096).optional(),
+          reason: z.string().optional(),
           runBeforeUnload: z.boolean().optional(),
         })
         .parse(options),
@@ -795,10 +795,6 @@ export class NativeBrowserContext {
     if (!page) return
     this.pageObjects.delete(id)
     this.closedPages.set(id, new WeakRef(page))
-    if (this.closedPages.size > 1024) {
-      const first = this.closedPages.keys().next().value
-      if (first !== undefined) this.closedPages.delete(first)
-    }
     const entry = nativeContextPageBinding(page)
     entry.closed = true
     emitNativeContextPage(page, 'close', page)
@@ -837,7 +833,7 @@ export class NativeBrowserContext {
   }
   close(options: { reason?: string } = {}): Promise<void> {
     const config = withoutNativeRetryOperation(() =>
-      z.strictObject({ reason: z.string().max(4096).optional() }).parse(options),
+      z.strictObject({ reason: z.string().optional() }).parse(options),
     )
     if (this.closed) return Promise.resolve()
     prepareNativeDownloadContextClose(this)
@@ -855,19 +851,16 @@ export class NativeBrowserContext {
   async cookies(urls: string | string[] = []): Promise<NativeCookie[]> {
     this.assertOpen()
     const filters = withoutNativeRetryOperation(() =>
-      z
-        .array(z.url())
-        .max(128)
-        .parse(typeof urls === 'string' ? [urls] : urls),
+      z.array(z.url()).parse(typeof urls === 'string' ? [urls] : urls),
     )
     const result = z
-      .object({ cookies: z.array(ReturnedCookie).max(4096) })
+      .object({ cookies: z.array(ReturnedCookie) })
       .parse(await this.transport.runContext('cookies', { contextId: this.id, urls: filters }))
     return result.cookies
   }
   async addCookies(cookies: NativeCookieInput[]): Promise<void> {
     this.assertOpen()
-    const values = withoutNativeRetryOperation(() => z.array(CookieSchema).max(1024).parse(cookies))
+    const values = withoutNativeRetryOperation(() => z.array(CookieSchema).parse(cookies))
     await this.transport.runContext('addCookies', { contextId: this.id, cookies: values })
   }
   async clearCookies(options: NativeCookieFilter = {}): Promise<void> {
@@ -904,7 +897,7 @@ export class NativeBrowserContext {
   }
   async grantPermissions(permissions: string[], options: { origin?: string } = {}): Promise<void> {
     this.assertOpen()
-    const values = withoutNativeRetryOperation(() => z.array(z.string()).max(32).parse(permissions))
+    const values = withoutNativeRetryOperation(() => z.array(z.string()).parse(permissions))
     const config = withoutNativeRetryOperation(() =>
       z.strictObject({ origin: z.url().optional() }).parse(options),
     )
@@ -951,13 +944,11 @@ export class NativeBrowserContext {
     handle: boolean,
   ): Promise<NativeExposedBinding> {
     this.assertOpen()
-    withoutNativeRetryOperation(() => z.string().min(1).max(256).parse(name))
+    withoutNativeRetryOperation(() => z.string().min(1).parse(name))
     if (typeof callback !== 'function')
       throw new Error('Native binding callback must be a function')
     if (this.inheritedBindings.has(name))
       throw new Error(`Function "${name}" has been already registered`)
-    if (this.inheritedBindings.size >= 64)
-      throw new Error('Native context binding capacity exceeded')
     const entry = { callback, binding, handle, entryId: undefined as number | undefined }
     // Host ownership is ready before native registration can emit early calls
     // or announce a popup/new page. Native owns identity and actual installation.

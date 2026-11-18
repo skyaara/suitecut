@@ -65,16 +65,13 @@ try {
   page = createNativePage(source)
   await page.setContent('<button>New process</button>')
   let invoked = false
-  await assert.rejects(
-    page.click('button', {
-      timeout: 1000,
-      beforeStable: () => {
-        invoked = true
-      },
-    }),
-    /physical callback capacity/,
-  )
-  assert.equal(invoked, false)
+  await page.click('button', {
+    timeout: 1000,
+    beforeStable: () => {
+      invoked = true
+    },
+  })
+  assert.equal(invoked, true)
   finishActions.shift()?.()
   await turn()
   assert.equal(nativeActionHookPhysicalCount(original), 63)
@@ -83,7 +80,7 @@ try {
   await turn()
   assert.equal(nativeActionHookPhysicalCount(original), 0)
   checks.push(
-    '64 actual action callbacks retain global quota across cancellation and native close/relaunch; physical settlement recovers capacity',
+    '64 actual action callbacks stay pending across native close/relaunch while a 65th action callback still runs; physical settlement drains them',
   )
 
   const observed = z.array(z.instanceof(NativeConsoleMessage)).parse([])
@@ -125,10 +122,12 @@ try {
   }
   assert.equal(finishEvents.length, 64)
   assert.equal(nativeEventPredicatePhysicalCount(source), 64)
-  const blocked = page.waitForEvent('console', { timeout: 1000, predicate: () => true })
-  const rejected = assert.rejects(blocked, /physical host callback capacity/)
-  await page.evaluate(() => console.log('blocked'))
-  await rejected
+  const unblocked = page.waitForEvent('console', {
+    timeout: 1000,
+    predicate: (message) => message.text() === 'unblocked',
+  })
+  await page.evaluate(() => console.log('unblocked'))
+  assert.equal((await unblocked).text(), 'unblocked')
   finishEvents.shift()?.(false)
   await turn()
   const recovery = page.waitForEvent('console', (message) => message.text() === 'recovered')
@@ -145,7 +144,7 @@ try {
   assert.equal(diagnostics.pausedActions, 0)
   assert.equal(diagnostics.otherOperations, 0)
   checks.push(
-    '64 actual event callbacks retain physical quota beyond native timeout; settlement and native registry cleanup recover capacity',
+    '64 actual event callbacks stay pending beyond native timeout while a 65th event predicate still runs; settlement and native registry cleanup drain them',
   )
   for (let index = 0; index < paths.length; ++index)
     assert.equal(

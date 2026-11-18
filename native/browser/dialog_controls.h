@@ -26,10 +26,6 @@ class SuiteCutDialogControls {
             const std::string& message, const std::string& default_value,
             CefRefPtr<CefJSDialogCallback> callback, double now, Decision decision = {}) {
     if (!subscribed_) return false;
-    if (pending_.size() >= 64 || message.size() > 524288 || default_value.size() > 262144 || url.size() > 8192) {
-      if(decision)decision(false);
-      callback->Continue(false, CefString()); return true;
-    }
     const auto id = std::to_string(++sequence_);
     auto event = CefDictionaryValue::Create(); event->SetString("id", id);
     event->SetString("type", type); event->SetString("url", url);

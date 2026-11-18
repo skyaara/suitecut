@@ -17,7 +17,9 @@ int main(){
   options=Parse(R"({"apiContextId":7,"url":"https://native.test/b","method":"PUT","headers":[],"postData":"","maxRedirects":0,"maxRetries":2,"timeoutMs":0})");
   result=suitecut::NativeRouteFetchRequest(request,options,1,100,200,error);
   assert(result&&result->GetString("url")=="https://native.test/b"&&result->GetString("method")=="PUT"&&result->GetString("body").empty()&&result->GetList("headers")->GetSize()==0&&result->GetInt("timeoutMs")==0);
-  for(const char* bad:{R"({"maxRetries":101})",R"({"maxRedirects":-1})",R"({"timeoutMs":1.5})",R"({"timeoutMs":-1})",R"({"headers":{}})",R"({"postData":"!"})"})assert(!suitecut::NativeRouteFetchRequest(request,Parse(bad),1,100,200,error));
+  // No redirect/retry count caps: counts past the old 100 pass through.
+  {const auto many=suitecut::NativeRouteFetchRequest(request,Parse(R"({"maxRetries":101,"maxRedirects":500})"),1,100,200,error);assert(many&&many->GetInt("maxRetries")==101&&many->GetInt("maxRedirects")==500);}
+  for(const char* bad:{R"({"maxRetries":-1})",R"({"maxRedirects":-1})",R"({"timeoutMs":1.5})",R"({"timeoutMs":-1})",R"({"headers":{}})",R"({"postData":"!"})"})assert(!suitecut::NativeRouteFetchRequest(request,Parse(bad),1,100,200,error));
   assert(!suitecut::NativeRouteFetchRequest(request,options,100,100,200,error));
   auto unavailable=Parse(R"({"url":"https://native.test/a","method":"POST","postDataUnavailable":true})");
   assert(!suitecut::NativeRouteFetchRequest(unavailable,Parse("{}"),1,100,200,error));

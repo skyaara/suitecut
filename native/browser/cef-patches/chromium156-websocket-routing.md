@@ -12,6 +12,9 @@ Apply `chromium156-websocket-routing.patch` at Chromium `src`, using the pinned
 original and patched SHA-256 values for every source file, including the absence
 of the newly introduced header. The patch was checked against downloaded exact
 pinned source files; this is an applicability check, not a Chromium compilation.
+SuiteCut's own socket, message, byte and close-reason caps were later removed
+from the patch; the patched-file hashes are null until it is re-applied to the
+pinned source and recomputed.
 
 ## Actual native interception
 
@@ -38,7 +41,7 @@ direction. Invalid replacements or a backpressured destination reject before
 consuming that decision. Forwarded and injected transport writes retain an
 explicit queue tag across partial data-pipe writes: they cannot reenter routing
 or consume the original JS `bufferedAmount` twice. Original sends settle their
-native buffered-byte receipt when copied into the bounded interception queue.
+native buffered-byte receipt when copied into the interception queue.
 
 Author close waits for original outgoing route decisions and queued Blob/output
 work. An explicit controller close initiates the existing real transport closing
@@ -52,9 +55,8 @@ observation is kept separate from interception decisions.
 These are new experimental methods on the rebuilt renderer's Network domain,
 not commands provided by stock CEF:
 
-- `Network.suiteCutWebSocketConfigureV1({enabled})` returns revision `1`,
-  `maxSockets:128`, `maxPendingMessages:64`, and `maxPendingBytes:2097152`.
-  Enable Network first. Enabling applies only to subsequently created channels
+- `Network.suiteCutWebSocketConfigureV1({enabled})` returns revision `1`.
+  It advertises no socket, message or byte limits. Enable Network first. Enabling applies only to subsequently created channels
   in that exact target/session; disable aborts its owned routed channels.
 - `Network.suiteCutWebSocketCommandV1` takes all of `requestId`, `action`,
   `messageId`, `opcode`, `payloadBase64`, `code`, and `reason`. Unused fields are
@@ -75,7 +77,7 @@ Commands select the following native operations:
 | `drop` | Consume the held message without destination delivery. |
 | `client` | Inject supplied text/binary bytes into the native client. |
 | `server` | Send supplied text/binary bytes through the connected original server transport. |
-| `close` | Initiate native close with code 1000 or 3000–4999 and a reason of at most 123 UTF-8 bytes. |
+| `close` | Initiate native close with code 1000 or 3000–4999. SuiteCut does not check the reason length; Chromium's close path handles it. |
 | `abort` | Schedule native error/abnormal close and retire the channel. |
 
 A command ACK establishes native acceptance only. It does not assert remote
@@ -85,21 +87,21 @@ handshake. Initial connect decisions and held message decisions expire after
 them. A single scheduled timer per channel services those original deadlines,
 so rapid successfully resolved messages do not accumulate per-message timers.
 
-## Bounded ownership and remaining integration
+## Ownership and remaining integration
 
-Each agent owns at most 128 weak channel handles. Each channel retains at most
-64 pending decisions and 2 MiB of decision payload; the original Blob/output
-queue has its own 64-message/2 MiB admission, and routed receive reassembly is
-limited to 2 MiB. Injected output applies bounded admission before allocating
-another native output message. These are separate physical/logical queues,
-not a claim that total renderer RSS is 2 MiB. Existing Chromium connection-count
-limits also remain in force. Overflow, expired decisions, invalid ownership and
-closed channels fail explicitly.
+SuiteCut adds no count or byte caps of its own: an agent may own any number of
+weak channel handles, a channel may hold any number of pending decisions of any
+size, and routed receive reassembly uses Chromium's own `max_message_size_`.
+The command payload is still validated as canonical base64 and the close code
+as 1000 or 3000–4999. Injected server output is still refused while an original
+Blob read or close is queued, so it cannot overtake them. Existing Chromium
+connection-count and message-size limits remain in force. Expired decisions,
+invalid ownership and closed channels fail explicitly.
 
 The production `NativePage.webSocketRouting` adapter now probes this exact
 revision before enabling root-target control. It preserves page-local routing
-generations and exact socket/message identities and bounds queued event
-ownership and original deadlines. See
+generations and exact socket/message identities, queued event ownership and
+original deadlines. See
 [`docs/features/native-websocket-routing.md`](../../../docs/features/native-websocket-routing.md).
 Stock CEF rejects the probe; no source-file presence enables the feature.
 

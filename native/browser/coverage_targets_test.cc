@@ -24,6 +24,7 @@ struct Backend{
  void EndJS(const std::string& session){for(const char* method:{"Profiler.stopPreciseCoverage","Profiler.disable","Debugger.disable"})Ack(session,method);}
  void StartCSS(const std::string& session){for(const char* method:{"DOM.enable","CSS.enable","CSS.startRuleUsageTracking"})Ack(session,method);}
  void EndCSS(const std::string& session){Ack(session,"CSS.disable");Ack(session,"DOM.disable");}
+ void Drain(){for(int n=0;!calls.empty();++n){assert(n<100000);auto call=std::move(calls.front());calls.pop_front();call.reply(true,call.method=="Profiler.takePreciseCoverage"?Object(R"({"result":[]})"):CefDictionaryValue::Create(),"");}}
  void Child(){int ready=0;coverage->Attached("actual-child-session","actual-child-target",1000,[&](bool ok,const std::string&){assert(ok);++ready;});assert(ready==1&&calls.empty());}
  void Clean(){coverage->Tick(now);auto value=CefDictionaryValue::Create();coverage->Diagnostics(value);for(const char* key:{"nativeCoverageSharedPayloadBytes","nativeCoverageBackendPhysical","nativeCoverageRecordings","nativeCoveragePhysical","nativeCoverageQueuedSources","nativeCoverageSourceBytes"}){if(value->GetType(key)==VTYPE_INT)assert(value->GetInt(key)==0);else{assert(value->GetType(key)==VTYPE_DOUBLE);assert(value->GetDouble(key)==0);}}assert(calls.empty()&&!coverage->PhysicalCount()&&!coverage->NeedsTick()&&closed==0);}
 };
@@ -66,21 +67,25 @@ int main(){
   Backend b;b.Invoke("startJS");b.StartJS("");int positive=0,negative=0;b.coverage->Attached("actual-future-session","actual-future-target",800,[&](bool ok,const auto&){if(ok)++positive;else++negative;});b.coverage->Closed();assert(positive==0&&negative==1&&!b.coverage->PhysicalCount());for(auto& call:b.calls)call.reply(true,CefDictionaryValue::Create(),"");b.calls.clear();
  }
  {
-  Backend b;int ready=0;for(int i=0;i<40;++i)b.coverage->Attached("idle-session-"+std::to_string(i),"idle-target-"+std::to_string(i),1000,[&](bool ok,const auto&){assert(ok);++ready;});assert(ready==40&&b.calls.empty());b.Invoke("startJS");assert(!b.ok&&b.error.find("capacity")!=std::string::npos&&b.calls.empty());b.Clean();
+  Backend b;int ready=0;for(int i=0;i<40;++i)b.coverage->Attached("idle-session-"+std::to_string(i),"idle-target-"+std::to_string(i),1000,[&](bool ok,const auto&){assert(ok);++ready;});assert(ready==40&&b.calls.empty());
+  // Every eligible target is recorded; suitecut imposes no target count.
+  b.Invoke("startJS");b.Drain();assert(b.ok&&b.replies==1);b.Invoke("stopJS");b.Drain();assert(b.ok&&b.replies==2&&b.output=="[]");b.Clean();
  }
  {
   Backend b;b.Invoke("startJS");b.StartJS("");int ready=0;
-  auto drain=[&]{int calls=0;while(!b.calls.empty()){assert(++calls<1000);auto call=std::move(b.calls.front());b.calls.pop_front();call.reply(true,CefDictionaryValue::Create(),"");}};
+  auto drain=[&]{b.Drain();};
   for(int i=0;i<31;++i){b.coverage->Attached("active-session-"+std::to_string(i),"active-target-"+std::to_string(i),1000,[&](bool ok,const auto&){assert(ok);++ready;});drain();}assert(ready==31);
-  b.coverage->Attached("overflow-session","overflow-target",1000,[&](bool ok,const auto&){assert(ok);++ready;});assert(ready==32&&b.replies==1);drain();b.coverage->Tick(b.now);b.Invoke("stopJS");assert(!b.ok&&b.error.find("capacity")!=std::string::npos);b.Clean();
-  // The failed recording does not permanently cap otherwise valid page frames.
+  b.coverage->Attached("extra-session","extra-target",1000,[&](bool ok,const auto&){assert(ok);++ready;});drain();assert(ready==32&&b.replies==1&&b.ok);b.coverage->Tick(b.now);b.Invoke("stopJS");drain();assert(b.ok&&b.replies==2&&b.output=="[]");b.Clean();
+  // Later idle page frames are admitted after the recording.
   b.coverage->Attached("later-idle-session","later-idle-target",1000,[&](bool ok,const auto&){assert(ok);++ready;});assert(ready==33&&b.calls.empty());b.Clean();
  }
  {
   Backend b;b.Child();b.Invoke("startJS");b.StartJS("");b.StartJS("actual-child-session");b.coverage->Attached("actual-future-session","actual-future-target",1000,{});b.StartJS("actual-future-session");
   const std::vector<std::pair<std::string,int>> targets={{"",7},{"actual-child-session",9},{"actual-future-session",11}};
   for(const auto& [session,context]:targets){auto event=Object(R"({"scriptId":"actual","url":"http://actual/large.js"})");event->SetInt("executionContextId",context);b.coverage->Event("Debugger.scriptParsed",event,session);auto source=CefDictionaryValue::Create();source->SetString("scriptSource",std::string(800000,'x'));b.Ack(session,"Debugger.getScriptSource",source);}
-  b.Invoke("stopJS");for(const auto& [session,context]:targets)b.Ack(session,"Profiler.takePreciseCoverage",Object(R"({"result":[{"scriptId":"actual","functions":[]}]})"));for(const auto& [session,context]:targets)b.EndJS(session);assert(!b.ok&&b.error.find("exceeds 2 MiB")!=std::string::npos);b.Clean();
+  b.Invoke("stopJS");for(const auto& [session,context]:targets)b.Ack(session,"Profiler.takePreciseCoverage",Object(R"({"result":[{"scriptId":"actual","functions":[]}]})"));for(const auto& [session,context]:targets)b.EndJS(session);assert(b.ok);
+  // The combined result passes through whole; there is no suitecut byte cap.
+  const auto combined=CefParseJSON(b.output,JSON_PARSER_RFC);assert(combined&&combined->GetList()->GetSize()==3);for(size_t n=0;n<3;++n)assert(combined->GetList()->GetDictionary(n)->GetString("source").length()==800000);b.Clean();
  }
  {
   Backend b;b.Child();const int owner=b.Invoke("startJS",110);int resumed=0;b.coverage->Attached("actual-child-session","actual-child-target",800,[&](bool ok,const auto&){assert(ok);++resumed;});b.coverage->Cancel(owner);assert(!b.ok&&b.coverage->PhysicalCount()==2&&resumed==0);b.Ack("","Debugger.enable");b.Ack("actual-child-session","Debugger.enable");b.Ack("","Debugger.disable");b.Ack("actual-child-session","Debugger.disable");assert(!b.coverage->PhysicalCount()&&resumed==0);
@@ -91,13 +96,13 @@ int main(){
  {
   Backend b;int ready=0;b.coverage->WorkerAttached("actual-worker-session","actual-worker-target",1000,[&](bool ok,const auto&){assert(ok);++ready;});assert(ready==1&&b.calls.empty());
   // The default remains document-only; CSS never sends unsupported worker DOM
-  // commands, even when idle workers exceed the capture transaction capacity.
+  // commands, however many idle workers are attached.
   for(int i=0;i<40;++i)b.coverage->WorkerAttached("idle-worker-"+std::to_string(i),"idle-worker-target-"+std::to_string(i),1000,{});
   b.Invoke("startJS");b.StartJS("");assert(b.ok&&b.calls.empty());b.Invoke("stopJS");b.Ack("","Profiler.takePreciseCoverage",Object(R"({"result":[]})"));b.EndJS("");b.Clean();
   b.Invoke("startCSS");b.StartCSS("");assert(b.ok&&b.calls.empty());b.Invoke("stopCSS");b.Ack("","CSS.stopRuleUsageTracking",Object(R"({"ruleUsage":[]})"));b.EndCSS("");b.Clean();
   b.Invoke("startCSS",1000,Object(R"({"includeWorkers":true})"));assert(!b.ok&&b.error.find("worker CSS is unsupported")!=std::string::npos&&b.calls.empty());
   b.Invoke("startJS",1000,Object(R"({"includeWorkers":"true"})"));assert(!b.ok&&b.calls.empty());
-  b.Invoke("startJS",1000,Object(R"({"includeWorkers":true})"));assert(!b.ok&&b.error.find("capacity")!=std::string::npos&&b.calls.empty());b.Clean();
+  b.Invoke("startJS",1000,Object(R"({"includeWorkers":true})"));b.Drain();assert(b.ok);b.Invoke("stopJS");b.Drain();assert(b.ok&&b.output=="[]");b.Clean();
  }
  {
   Backend b;b.coverage->WorkerAttached("actual-worker-session","actual-worker-target",1000,{});b.Invoke("startJS",1000,Object(R"({"includeWorkers":true})"));b.StartJS("");assert(b.replies==0);b.StartJS("actual-worker-session");assert(b.ok&&b.replies==1);

@@ -23,10 +23,9 @@ class DOMDomainLeases : public std::enable_shared_from_this<DOMDomainLeases> {
   };
   explicit DOMDomainLeases(Hooks hooks):hooks_(std::move(hooks)){}
   void Acquire(const std::string& session,const std::string& owner,double deadline,Ready ready){
-    if(closed_||owner.empty()||owner.size()>256||session.size()>256||!std::isfinite(deadline)||deadline<0||(deadline&&hooks_.now()>=deadline)||owners_>=128){ready(false,"Native DOM domain lease admission rejected");return;}
+    if(closed_||owner.empty()||!std::isfinite(deadline)||deadline<0||(deadline&&hooks_.now()>=deadline)){ready(false,"Native DOM domain lease admission rejected");return;}
     auto found=sessions_.find(session);
     if(found==sessions_.end()){
-      if(sessions_.size()>=64){ready(false,"Native DOM domain session capacity exceeded");return;}
       auto state=std::make_shared<Session>();state->id=session;found=sessions_.emplace(session,state).first;
     }
     const auto state=found->second;
@@ -36,7 +35,6 @@ class DOMDomainLeases : public std::enable_shared_from_this<DOMDomainLeases> {
   void Release(const std::string& session,const std::string& owner,Ready ready){
     const auto found=sessions_.find(session);
     if(found==sessions_.end()||!found->second->owners.contains(owner)){ready(false,"Native DOM domain lease release has no actual owner");return;}
-    if(releases_>=128){ready(false,"Native DOM domain release waiter capacity exceeded");return;}
     const auto state=found->second;auto acquire=std::move(state->owners.at(owner).ready);
     state->owners.erase(owner);--owners_;
     // Reserve before any callback can reenter or destroy the actual channel.
@@ -46,7 +44,7 @@ class DOMDomainLeases : public std::enable_shared_from_this<DOMDomainLeases> {
     Pump(state);
   }
   void DisableUnused(const std::string& session,double deadline,Ready ready){
-    if(closed_||session.size()>256||!std::isfinite(deadline)||deadline<0||(deadline&&hooks_.now()>=deadline)||sessions_.contains(session)||sessions_.size()>=64||releases_>=128){ready(false,"Native DOM disable conflicts with actual domain ownership");return;}
+    if(closed_||!std::isfinite(deadline)||deadline<0||(deadline&&hooks_.now()>=deadline)||sessions_.contains(session)){ready(false,"Native DOM disable conflicts with actual domain ownership");return;}
     auto state=std::make_shared<Session>();state->id=session;state->force_disable=true;state->forced_deadline=deadline;state->releases.push_back(std::move(ready));++releases_;sessions_.emplace(session,state);Pump(state);
   }
   bool Owned(const std::string& session)const{return sessions_.contains(session);}

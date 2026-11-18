@@ -63,7 +63,8 @@ int main(){
   Fixture test;const auto token=test.Prepare(true,0,0);test.Config(token);test.Claim(token,path);test.now=1e12;test.inputs->Tick();assert(test.errors.empty()&&test.inputs->PhysicalCount()==1);test.CPU();test.UI();assert(test.results.size()==1&&test.deadlines[0]==0);test.Empty();
  }
  {
-  Fixture test;std::string error;assert(test.inputs->Prepare(test.owner,"invalid",false,2097153,2,50,error).token.empty());assert(test.budget->Used()==0);test.Empty();
+  // Past the former 2 MiB baseline cap: admitted whole.
+  Fixture test;std::string error;const auto ticket=test.inputs->Prepare(test.owner,"past-former-cap",false,2097153,2,50,error);assert(!ticket.token.empty()&&error.empty()&&test.budget->Used()>0);test.inputs->Discard(2,3,ticket.token);test.Empty();
  }
  {
   Fixture test;test.physical_available=false;const auto token=test.Prepare(true);test.Config(token);test.Claim(token,path);assert(test.cpu.empty()&&!test.inputs->PhysicalCount()&&test.inputs->LogicalCount()==1);test.now=49;test.inputs->Tick();assert(test.cpu.empty());test.physical_available=true;test.inputs->Tick();assert(test.inputs->PhysicalCount()==1);test.CPU();test.UI();assert(test.results.size()==1&&test.deadlines[0]==50);test.Empty();

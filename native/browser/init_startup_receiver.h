@@ -54,7 +54,6 @@ class InitStartupReceiver {
   bool Admit(const Peer&peer){
     if(!peer||!peer->Current())return false;
     auto found=peers_.find(Key(peer->Owner()));if(found!=peers_.end())return found->second==peer;
-    if(peers_.size()>=InitStartupSelections::kOwners)return false;
     auto position=peers_.emplace(Key(peer->Owner()),peer);
     try{if(!receiver_.Admit(peer->Owner())||!selections_.Admit(peer->Owner())){receiver_.Retire(peer->Owner());peers_.erase(position.first);return false;}}
     catch(...){receiver_.Retire(peer->Owner());peers_.erase(position.first);throw;}
@@ -71,7 +70,7 @@ class InitStartupReceiver {
       // operation is revalidated by its own registry upon actual receipt.
       auto installed=InitSnapshotMessage::Install(receiver_,message,expected,0,0);
       if(installed.status!=InitSnapshotReceiver::Status::Installed&&installed.status!=InitSnapshotReceiver::Status::Duplicate){
-        const auto status=installed.status==InitSnapshotReceiver::Status::Capacity?Status::Capacity:installed.status==InitSnapshotReceiver::Status::Stale?Status::Stale:Status::Conflict;
+        const auto status=installed.status==InitSnapshotReceiver::Status::Stale?Status::Stale:Status::Conflict;
         return {status,false,{}};
       }
       mapped=true;

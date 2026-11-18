@@ -71,7 +71,7 @@ describe('native HTTP host lookup callback ownership', () => {
     expect(f.controller.physicalCount()).toBe(0)
     f.process.abort()
   })
-  it('retains 128 physically unsettled callbacks after logical cancellation', async () => {
+  it('retains 128 physically unsettled callbacks after logical cancellation without blocking more lookups', async () => {
     const f = fixture()
     const settle: (() => void)[] = []
     let invoked = 0
@@ -98,31 +98,31 @@ describe('native HTTP host lookup callback ownership', () => {
     await f.controller.withLookup(
       () => {
         ++invoked
-        return []
+        return [{ address: '127.0.0.3', family: 4 }]
       },
       async (key) => {
         f.emit(key, 129)
         await drain()
       },
     )
-    expect(invoked).toBe(128)
+    expect(invoked).toBe(129)
     expect(f.replies).toHaveLength(1)
-    expect(f.replies[0]?.error).toContain('capacity')
+    expect(f.replies[0]?.error).toBe('')
     f.process.abort()
     expect(f.controller.physicalCount()).toBe(128)
     const restarted = fixture()
     await restarted.controller.withLookup(
       () => {
         ++invoked
-        return []
+        return [{ address: '127.0.0.3', family: 4 }]
       },
       async (key) => {
         restarted.emit(key, 1)
         await drain()
       },
     )
-    expect(invoked).toBe(128)
-    expect(restarted.replies[0]?.error).toContain('capacity')
+    expect(invoked).toBe(130)
+    expect(restarted.replies[0]?.error).toBe('')
     restarted.process.abort()
     for (const release of settle) release()
     await drain()

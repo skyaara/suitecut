@@ -16,39 +16,29 @@ import { toError, type UntrustedInput } from './untrusted.js'
 
 type InputTransport = Pick<NativeBrowser, 'pageId' | 'runContext'>
 const chunkBytes = 24 * 1024
-const owners = new Set<object>()
-let retainedPayloadBytes = 0
-const maxPayloadBytes = 64 * 1024 * 1024
-interface CleanupFailure {
-  source: WeakRef<InputTransport>
-  error: Error
-}
-const retainedFailures = new Set<CleanupFailure>()
-const cleanupFailures = new WeakMap<InputTransport, CleanupFailure[]>()
+const cleanupFailures = new WeakMap<InputTransport, Error[]>()
 const TicketSchema = z.strictObject({
-  token: z.string().min(1).max(128),
+  token: z.string().min(1),
   contextId: z.number().int().positive(),
   pageId: z.number().int().positive(),
 })
 const WatchSchema = z.strictObject({ committed: z.literal(true) })
 
-// Encode only native-produced screenshot configuration. Bound output before
+// Encode only native-produced screenshot configuration. Measure output before
 // allocation; author argument objects and their toJSON hooks are not accepted.
-function configurationEncoding(value: Record<string, UntrustedInput>, limit: number) {
+function configurationEncoding(value: Record<string, UntrustedInput>) {
   const output: { storage?: Buffer } = {}
   const ancestors = new Set<object>()
-  let used = 0,
-    work = 0
+  let used = 0
   const append = (text: string) => {
     const bytes = Buffer.byteLength(text)
-    if (bytes > (output.storage?.length ?? limit) - used)
-      throw new Error(`Native artifact configuration exceeds${limit / 1048576}MiB`)
-    if (output.storage) used += output.storage.write(text, used, bytes, 'utf8')
-    else used += bytes
+    if (output.storage) {
+      if (bytes > output.storage.length - used)
+        throw new Error('Native artifact configuration changed during encoding')
+      used += output.storage.write(text, used, bytes, 'utf8')
+    } else used += bytes
   }
   const string = (text: string) => {
-    if (text.length > limit - used - 2)
-      throw new Error(`Native artifact configuration exceeds${limit / 1048576}MiB`)
     let bytes = 2
     for (let i = 0; i < text.length; ++i) {
       const c = text.charCodeAt(i)
@@ -63,15 +53,11 @@ function configurationEncoding(value: Record<string, UntrustedInput>, limit: num
           ++i
         } else bytes += 6
       } else bytes += c >= 0xdc00 && c <= 0xdfff ? 6 : 3
-      if (bytes > limit - used)
-        throw new Error(`Native artifact configuration exceeds${limit / 1048576}MiB`)
     }
     if (output.storage) append(JSON.stringify(text))
     else used += bytes
   }
-  const encode = (item: UntrustedInput, depth: number) => {
-    if (++work > 100000 || depth > 256)
-      throw new Error('Native screenshot configuration nesting/work limit exceeded')
+  const encode = (item: UntrustedInput) => {
     if (item === null) {
       append('null')
       return
@@ -92,7 +78,7 @@ function configurationEncoding(value: Record<string, UntrustedInput>, limit: num
       append('[')
       for (let i = 0; i < values.length; ++i) {
         if (i) append(',')
-        encode(values[i] === undefined ? null : values[i], depth + 1)
+        encode(values[i] === undefined ? null : values[i])
       }
       append(']')
     } else {
@@ -108,22 +94,20 @@ function configurationEncoding(value: Record<string, UntrustedInput>, limit: num
         first = false
         string(key)
         append(':')
-        encode(field, depth + 1)
+        encode(field)
       }
       append('}')
     }
     ancestors.delete(item)
   }
-  encode(value, 0)
+  encode(value)
   const length = used
   return {
     length,
-    write(reserve: (bytes: number) => void) {
-      reserve(length)
+    write() {
       output.storage = Buffer.allocUnsafe(length)
       used = 0
-      work = 0
-      encode(value, 0)
+      encode(value)
       if (used !== length) throw new Error('Native artifact configuration changed during encoding')
       return output.storage
     },
@@ -160,7 +144,7 @@ export async function runNativeArtifactConfiguration(
     const kind = withoutNativeRetryOperation(() =>
       z.enum(['screenshot', 'pdf']).parse(config.action),
     )
-    const encoding = configurationEncoding(config, 16 * 1024 * 1024)
+    const encoding = configurationEncoding(config)
     if (encoding.length <= 16 * 1024) {
       const params = { ...config, timeoutMs: timeout }
       return kind === 'pdf' && signal === undefined ? run(params) : run(params, signal)
@@ -184,31 +168,13 @@ async function runNativePreparedInput(
   signal?.throwIfAborted()
   if (!source.runContext || !source.pageId || source.pageId < 1 || !Number.isInteger(source.pageId))
     throw new Error('Native screenshot input requires its actual page transport')
-  if (Buffer.isBuffer(baseline) && (baseline.length < 33 || baseline.length > 2 * 1024 * 1024))
-    throw new Error('Native screenshot PNG input must be between33bytes and2MiB')
+  if (Buffer.isBuffer(baseline) && baseline.length < 33)
+    throw new Error('Native screenshot PNG input must be at least 33 bytes')
   const control = source.runContext.bind(source)
-  for (const failure of retainedFailures)
-    if (!failure.source.deref()) retainedFailures.delete(failure)
   const previous = cleanupFailures.get(source)
   if (previous?.length) {
     cleanupFailures.delete(source)
-    for (const failure of previous) retainedFailures.delete(failure)
-    throw new AggregateError(
-      previous.map((failure) => failure.error),
-      'Earlier native screenshot input cleanup failed',
-    )
-  }
-  if (owners.size + retainedFailures.size >= 16)
-    throw new Error('Native screenshot input SDK staging capacity exceeded')
-  const admission = {}
-  owners.add(admission)
-  let payloadBytes = 0
-  const reservePayload = (configBytes: number) => {
-    const bytes = 3 * configBytes + (Buffer.isBuffer(baseline) ? baseline.length : 0)
-    if (bytes > maxPayloadBytes - retainedPayloadBytes)
-      throw new Error('Native artifact SDK64MiB staging byte budget exceeded')
-    retainedPayloadBytes += bytes
-    payloadBytes = bytes
+    throw new AggregateError(previous, 'Earlier native screenshot input cleanup failed')
   }
   const inputAbort = new AbortController()
   const operationSignal = signal ? AbortSignal.any([signal, inputAbort.signal]) : inputAbort.signal
@@ -237,9 +203,7 @@ async function runNativePreparedInput(
   // receipt. Caller failure never detaches an unbounded sequence of cleanups.
   const rememberCleanup = (error: Error): void => {
     const failures = cleanupFailures.get(source) ?? []
-    const failure = { source: new WeakRef(source), error }
-    failures.push(failure)
-    retainedFailures.add(failure)
+    failures.push(error)
     cleanupFailures.set(source, failures)
   }
   const task = (async (): Promise<void> => {
@@ -254,14 +218,11 @@ async function runNativePreparedInput(
     try {
       const encoding =
         preparedEncoding ??
-        configurationEncoding(
-          {
-            ...config,
-            ...(typeof baseline === 'string' ? { baselinePath: resolve(baseline) } : {}),
-          },
-          kind ? 16 * 1024 * 1024 : 1024 * 1024,
-        )
-      const body = encoding.write(reservePayload)
+        configurationEncoding({
+          ...config,
+          ...(typeof baseline === 'string' ? { baselinePath: resolve(baseline) } : {}),
+        })
+      const body = encoding.write()
       baselineInput = Buffer.isBuffer(baseline) ? Buffer.from(baseline) : baseline
       // Mark before admission: cleanup also covers a real prepared lease whose
       // reply was lost to caller cancellation before the SDK learned its token.
@@ -362,13 +323,8 @@ async function runNativePreparedInput(
   })()
   retainNativeRetryOperation(task)
   void task.then(
-    () => {
-      owners.delete(admission)
-      retainedPayloadBytes -= payloadBytes
-    },
+    () => undefined,
     (error: UntrustedInput) => {
-      owners.delete(admission)
-      retainedPayloadBytes -= payloadBytes
       if (settled) rememberCleanup(toError(error))
       else failPublic(error)
     },

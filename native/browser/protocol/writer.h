@@ -4,7 +4,6 @@
 #include "accepted_packet_receipt.h"
 #include "accepted_publication_audit.h"
 #include "command_credits.h"
-#include <array>
 #include <atomic>
 #include <condition_variable>
 #include <deque>
@@ -25,7 +24,8 @@ struct Packet {
 };
 
 // Never block a CEF callback on Node or an encoder. Pending frames are replaced
-// per page and served in arrival order within a 256 MiB aggregate budget.
+// per page and served in arrival order. No packet, reply or queue has a size
+// cap; TryEvent only delays producers while unread events are backed up.
 class Writer {
  public:
   explicit Writer(int output);
@@ -75,7 +75,7 @@ class Writer {
   suitecut::AcceptedPublicationAudit publication_audit_;
   std::shared_ptr<suitecut::AcceptedWriterWork> publication_ =
       std::make_shared<suitecut::AcceptedWriterWork>();
-  std::array<std::optional<WorkWatermark>, 8> watermarks_{};
+  std::vector<std::optional<WorkWatermark>> watermarks_;
   std::exception_ptr watermark_failure_;
   int output_;
   std::condition_variable cv_;
@@ -83,10 +83,11 @@ class Writer {
   std::map<int, Packet> frames_;
   std::deque<int> frame_order_;
   std::map<int, uint64_t> dropped_;
-  size_t frame_bytes_ = 0;
-  static constexpr size_t kEventBacklog = 65536, kEventBacklogBytes = 64 * 1048576;
-  size_t event_count_ = 0, event_bytes_ = 0, reply_bytes_ = 0;
-  bool event_failed_ = false;
+  // Backpressure thresholds only: past them TryEvent asks its producer to retry
+  // later. Nothing is dropped or failed, and an event is always accepted once
+  // the unread backlog has drained, whatever its size.
+  static constexpr size_t kEventBackpressure = 65536, kEventBackpressureBytes = 64 * 1048576;
+  size_t event_count_ = 0, event_bytes_ = 0;
   std::atomic<bool> stopping_{false};
   SuiteCutCommandCredits reply_credits_{128};
   std::thread thread_;

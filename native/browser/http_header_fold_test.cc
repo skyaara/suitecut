@@ -37,15 +37,14 @@ int main(){
   const auto deadline=std::chrono::steady_clock::now()+std::chrono::seconds(5);while(!done&&std::chrono::steady_clock::now()<deadline){transport.Tick();std::this_thread::yield();}
   if(round==3){
    // Newer libcurl joins folded lines before the header callback. Either way,
-   // 1024 continuation lines never become separately retained fields.
+   // 1024 continuation lines fold into one field, with no header line limit.
    assert(done&&response.set_cookies.empty()&&transport.size()==0);
-   if(response.error.empty())assert(response.error_code==CURLE_OK&&response.headers.size()<=2&&response.headers[0].first=="X-Long"&&response.headers[0].second.starts_with("start a a"));
-   else assert(response.error=="Native HTTP response header count exceeded"&&response.error_code==CURLE_WRITE_ERROR);
+   assert(response.error.empty()&&response.error_code==CURLE_OK&&response.headers.size()<=2&&response.headers[0].first=="X-Long"&&response.headers[0].second.starts_with("start a a"));
    continue;}
   if(!done||!response.error.empty()||body!="hello"){std::cerr<<round<<" error="<<response.error<<" body="<<body<<'\n';assert(false);}assert(response.error_code==CURLE_OK&&transport.size()==0);
   if(round==0){assert(callbacks>=2&&response.set_cookies.empty());assert(response.headers[0].first=="X-Trace"&&response.headers[0].second=="start Set-Cookie: forged=yes Content-Encoding: gzip Content-Length: 1");}
   if(round==1){assert(response.set_cookies.empty());assert(response.headers[0].first=="Content-Encoding"&&response.headers[0].second=="gzip");}
   if(round==2){assert(response.set_cookies.size()==1&&response.set_cookies[0]=="real=yes; Path=/; HttpOnly");}
  }
- origin.join();assert(close(listener)==0);std::cout<<"PASS4 actual folded fields: no invented cookie/coding/length, real first-body receipt barrier, folded genuine gzip and Set-Cookie complete values, physical continuation-line admission bound\n";
+ origin.join();assert(close(listener)==0);std::cout<<"PASS4 actual folded fields: no invented cookie/coding/length, real first-body receipt barrier, folded genuine gzip and Set-Cookie complete values, unbounded continuation lines\n";
 }

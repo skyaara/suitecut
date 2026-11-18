@@ -23,7 +23,7 @@ struct StreamAttemptResult {
   bool child_reaped = false, child_exit_observed = false;
   uint64_t submitted_frames = 0, encoded_frames = 0, audio_submitted_frames = 0, muxed_bytes = 0;
   std::string failure, diagnostics;
-  bool diagnostic_truncated = false;
+  bool diagnostic_truncated = false;  // Wire field; failure and diagnostics are never clipped.
 };
 struct StreamPipelineOptions {
   std::string launcher_path;
@@ -50,7 +50,7 @@ struct StreamPipelineOptions {
 };
 struct StreamPipelineResult {
   // Existing output counters and media origin describe the current attempt.
-  // Cumulative output and bounded real attempt records are explicit.
+  // Cumulative output and every real attempt record are explicit.
   uint64_t attempt_number = 0, reconnect_attempts = 0;
   bool reconnecting = false;
   uint64_t cumulative_submitted_frames = 0, cumulative_encoded_frames = 0;

@@ -13,7 +13,7 @@ export const NativeScreenshotReceiptSchema = z.strictObject({
     .string()
     .regex(/^[1-9][0-9]{0,19}$/u)
     .refine((value) => BigInt(value) <= 18446744073709551615n),
-  inputToken: z.string().min(1).max(128),
+  inputToken: z.string().min(1),
   deadlineMs: z.number().finite().nonnegative(),
   outcome: z.enum(['passed', 'observedMismatch']),
   observed: z.literal(true),

@@ -17,7 +17,7 @@ void NativeCoverageScripts(){
 }
 bool NativeCoverageDocumentWorker(const std::string& id)const{
   const auto found=worker_targets_.find(id);if(found==worker_targets_.end()||found->second.kind!="worker"||found->second.context_destroyed)return false;
-  const auto* target=&found->second;for(size_t depth=0;depth<1024;++depth){
+  const auto* target=&found->second;std::set<const void*> seen;while(seen.insert(target).second){
     if(target->kind!="worker")return false;
     if(target->parent_session.empty()||sessions_.contains(target->parent_session))return true;
     const auto parent=worker_sessions_.find(target->parent_session);if(parent==worker_sessions_.end())return false;
@@ -40,7 +40,7 @@ void NativeCoverageEnsure(){
   hooks.close_channel=[this](const std::string&,const std::string& cause){NetworkFatal(cause);};
   hooks.send=[this](const std::string& session,const std::string& method,Dict params,double deadline,suitecut::CoverageControls::ProtocolReply reply){
     if(method=="DOM.enable"||method=="DOM.disable")return NativeCoverageDOM(session,method,deadline,std::move(reply));
-    if(!browser_||closing_page_||native_coverage_calls_.size()>=32)return false;
+    if(!browser_||closing_page_)return false;
     const int assigned=AllocateDevToolsId();if(!assigned)return false;
     native_coverage_calls_.insert(assigned);
     const auto callback=[this,assigned,session,reply=std::move(reply)](bool ok,const std::string& json){
@@ -53,7 +53,7 @@ void NativeCoverageEnsure(){
     };
     // owner0 denotes an actual controller-owned command. Retained=true keeps it
     // registered across public operation cancellation; only ACK/close retires it.
-    devtools_.emplace(assigned,DevToolsCall{0,callback,session,true,8*1048576,true,true});
+    devtools_.emplace(assigned,DevToolsCall{0,callback,session,true,kMaxResponseBytes,true,true});
     if(!SubmitDevTools(assigned,method,params,session)){
       const auto found=devtools_.find(assigned);if(found!=devtools_.end()){auto done=std::exchange(found->second.callback, nullptr);devtools_.erase(found);done(false,"{\"message\":\"Actual native coverage dispatch failed\"}");}
     }
@@ -70,7 +70,7 @@ void NativeCoverageEnsure(){
 }
 void NativeCoverageCommand(int owner,Dict params){
   if(params->HasKey("frameId")){Complete(owner,false,"Native coverage belongs to an actual page, not a frame facade");return;}
-  const auto action=params->GetString("action").ToString();if((action=="startJS"||action=="startCSS")&&sessions_.size()>=32){Complete(owner,false,"Native coverage target capacity exceeded (root plus31 actual iframe targets)");return;}
+  const auto action=params->GetString("action").ToString();
   NativeCoverageEnsure();NativeCoverageScripts();const auto operation=operations_.Get(owner);if(!operation){return;}
   // A worker observed before lazy controller creation may still be waiting
   // for Runtime/Network setup. Install its coverage gate before any ACK can

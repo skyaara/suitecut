@@ -29,24 +29,17 @@ void LexicalBoundaries(){
  assert(state.AddValidated(origin,text,clock_now,error));std::pmr::string output(state.Resource());assert(state.Project(0,false,true,clock_now,output,error));assert(output.find("op\\u0066s")!=std::string::npos);assert(output.find("ignored")==std::string::npos);assert(state.Project(0,false,false,clock_now,output,error));assert(output.find("op\\u0066s")==std::string::npos);
  for(const std::string invalid:{"{}",R"({"origin":"x","localStorage":[],"opfs":[],"op\u0066s":[]})",R"({"origin":"x","localStorage":[})",R"({"origin":"x","localStorage":[]},0)",R"({"origin":"x","localStorage":[],})",R"({"origin":"x","localStorage":[],"indexedDB":01})",R"({"origin":"x","localStorage":[],"indexedDB":1e})",R"({"origin":"x","localStorage":[],"indexedDB":"\x20"})"}){APIOriginsSnapshot candidate(budget);assert(!candidate.AddValidated(origin,invalid,clock_now,error));assert(candidate.Size()==0);}
 }
-void AllocationBounds(){
- Tracking tracking;auto budget=std::make_shared<APIOriginsBudget>(1800,&tracking);std::string error;
- {APIOriginsSnapshot first(budget),second(budget);assert(first.AddValidated(origin,raw,clock_now,error));const size_t before=budget->Bytes();assert(before==tracking.current);const std::string big=R"({"origin":"https://second.test","localStorage":[],"extra":")"+std::string(2000,'x')+"\"}";assert(!second.AddValidated("https://second.test",big,clock_now,error));assert(second.Size()==0&&budget->Bytes()==before&&tracking.current==before);std::pmr::string output(first.Resource());assert(first.Project(0,true,true,clock_now,output,error));assert(budget->Bytes()==tracking.current);assert(budget->Peak()==tracking.peak);}
+void AllocationAccounting(){
+ Tracking tracking;auto budget=std::make_shared<APIOriginsBudget>(&tracking);std::string error;
+ {APIOriginsSnapshot first(budget),second(budget);assert(first.AddValidated(origin,raw,clock_now,error));assert(budget->Bytes()==tracking.current);const std::string big=R"({"origin":"https://second.test","localStorage":[],"extra":")"+std::string(2000,'x')+"\"}";assert(second.AddValidated("https://second.test",big,clock_now,error));assert(second.Size()==1&&budget->Bytes()==tracking.current);std::pmr::string output(first.Resource());assert(first.Project(0,true,true,clock_now,output,error));assert(budget->Bytes()==tracking.current);assert(budget->Peak()==tracking.peak);}
  assert(budget->Bytes()==0&&tracking.current==0&&tracking.allocations.empty());
 }
-void SharedRetainedBudget(){
- std::string error;
- // Allocation sizes differ between standard libraries: size the shared budget
- // from two measured snapshots, leaving one byte less than a third needs.
- size_t two=0;
- {Tracking probe_tracking;auto probe=std::make_shared<APIOriginsBudget>(1<<20,&probe_tracking);APIOriginsSnapshot a(probe),b(probe);
-  assert(a.AddValidated(origin,raw,clock_now,error)&&b.AddValidated(origin,raw,clock_now,error));two=probe->Bytes();}
- Tracking tracking;auto budget=std::make_shared<APIOriginsBudget>(two+two/2-1,&tracking);
+void SharedAccounting(){
+ std::string error;Tracking tracking;auto budget=std::make_shared<APIOriginsBudget>(&tracking);
  auto first=std::make_unique<APIOriginsSnapshot>(budget),second=std::make_unique<APIOriginsSnapshot>(budget);APIOriginsSnapshot third(budget);
- assert(first->AddValidated(origin,raw,clock_now,error));assert(second->AddValidated(origin,raw,clock_now,error));const size_t retained=budget->Bytes();assert(retained==tracking.current);
- assert(!third.AddValidated(origin,raw,clock_now,error));assert(third.Size()==0&&budget->Bytes()==retained);
- std::pmr::string output(first->Resource());output.assign(150,'k');const auto publication_before=budget->Bytes();assert(!first->Project(0,true,true,clock_now,output,error));assert(std::string_view(output)==std::string(150,'k')&&budget->Bytes()==publication_before);
- first.reset();assert(third.AddValidated(origin,raw,clock_now,error));assert(third.Size()==1);assert(budget->Bytes()==tracking.current);second.reset();
+ assert(first->AddValidated(origin,raw,clock_now,error));assert(second->AddValidated(origin,raw,clock_now,error));assert(third.AddValidated(origin,raw,clock_now,error));assert(budget->Bytes()==tracking.current);
+ std::pmr::string output(first->Resource());assert(first->Project(0,true,true,clock_now,output,error));assert(std::string_view(output)==raw);
+ first.reset();second.reset();assert(third.Size()==1);assert(budget->Bytes()==tracking.current);
 }
 void OriginalDeadline(){
  auto budget=std::make_shared<APIOriginsBudget>();APIOriginsSnapshot state(budget);std::string error;
@@ -54,12 +47,16 @@ void OriginalDeadline(){
  size_t calls=0;APIOriginsSnapshot::Clock expires{[&]{return ++calls==1?10.0:20.0;},20};assert(!state.AddValidated(origin,raw,expires,error));assert(state.Size()==0&&budget->Bytes()==0);
  assert(state.AddValidated(origin,raw,clock_now,error));std::pmr::string output(state.Resource());calls=0;assert(!state.Project(0,true,true,expires,output,error));assert(output.empty());assert(state.Size()==1);
 }
-void CountAndSize(){
+void NoCountOrSizeCap(){
+ // Former 1024-origin, 8192-byte origin, 512 KiB per-origin and 8 MiB total
+ // caps are gone: every value passes through whole.
  auto budget=std::make_shared<APIOriginsBudget>();APIOriginsSnapshot state(budget);std::string error;
- for(int i=0;i<1024;++i){const std::string name="https://"+std::to_string(i)+".example";const std::string value="{\"origin\":\""+name+"\",\"localStorage\":[]}";assert(state.AddValidated(name,value,clock_now,error));}
- assert(state.Size()==1024);assert(!state.AddValidated("https://extra.example",raw,clock_now,error));assert(state.Size()==1024);
- APIOriginsSnapshot extra(budget);assert(!extra.AddValidated(origin,std::string(524289,'x'),clock_now,error));assert(extra.Size()==0);
- for(int i=0;i<16;++i){const std::string name="https://large-"+std::to_string(i)+".example";const std::string value="{\"origin\":\""+name+"\",\"localStorage\":[{\"name\":\"key\",\"value\":\""+std::string(524000,'x')+"\"}]}";assert(extra.AddValidated(name,value,clock_now,error));}
- const size_t retained=budget->Bytes();const std::string overflow="{\"origin\":\"https://overflow.example\",\"localStorage\":[{\"name\":\"key\",\"value\":\""+std::string(524000,'x')+"\"}]}";assert(!extra.AddValidated("https://overflow.example",overflow,clock_now,error));assert(extra.Size()==16&&budget->Bytes()==retained);
+ for(int i=0;i<1100;++i){const std::string name="https://"+std::to_string(i)+".example";const std::string value="{\"origin\":\""+name+"\",\"localStorage\":[]}";assert(state.AddValidated(name,value,clock_now,error));}
+ assert(state.Size()==1100);
+ const std::string long_origin="https://"+std::string(9000,'a')+".example";assert(state.AddValidated(long_origin,"{\"origin\":\""+long_origin+"\",\"localStorage\":[]}",clock_now,error));
+ APIOriginsSnapshot extra(budget);assert(!extra.AddValidated("",raw,clock_now,error));
+ for(int i=0;i<20;++i){const std::string name="https://large-"+std::to_string(i)+".example";const std::string value="{\"origin\":\""+name+"\",\"localStorage\":[{\"name\":\"key\",\"value\":\""+std::string(600000,'x')+"\"}]}";assert(extra.AddValidated(name,value,clock_now,error));}
+ assert(extra.Size()==20);std::pmr::string output(extra.Resource());assert(extra.Project(19,false,false,clock_now,output,error));assert(output.size()>600000);
+ std::string members="{\"origin\":\"x\",\"localStorage\":[]";for(int i=0;i<300;++i)members+=",\""+std::string(200,'k')+std::to_string(i)+"\":"+std::to_string(i);members+="}";assert(extra.AddValidated("https://members.example",members,clock_now,error));
 }
-int main(){Projection();LexicalBoundaries();AllocationBounds();SharedRetainedBudget();OriginalDeadline();CountAndSize();std::cout<<"Native API constructor origin snapshot: 6 groups passed\n";}
+int main(){Projection();LexicalBoundaries();AllocationAccounting();SharedAccounting();OriginalDeadline();NoCountOrSizeCap();std::cout<<"Native API constructor origin snapshot: 6 groups passed\n";}

@@ -3,7 +3,8 @@
 // independently checks this exact CEF/context pair against the current registry.
 bool WorkerRouteFetchSessionOwned(const std::string& interception,const std::string& request)const{
   const auto* session=&request;
-  for(size_t depth=0;depth<kWorkerTargets;++depth){
+  // Each hop moves to a distinct parent session; the table size bounds a cycle.
+  for(size_t depth=0;depth<=worker_sessions_.size();++depth){
     const auto mapped=worker_sessions_.find(*session);if(mapped==worker_sessions_.end())return false;
     const auto target=worker_targets_.find(mapped->second);if(target==worker_targets_.end()||target->second.session!=*session||target->second.context_destroyed)return false;
     if(*session==interception)return true;

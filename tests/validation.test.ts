@@ -61,7 +61,6 @@ describe('SuiteCut fixture input validation', () => {
     [{ size: { width: 0, height: 2160 } }, ['size', 'width'], 'too_small'],
     [{ size: { width: 3839, height: 2160 } }, ['size', 'width'], 'not_multiple_of'],
     [{ framesPerSecond: 0 }, ['framesPerSecond'], 'too_small'],
-    [{ framesPerSecond: 121 }, ['framesPerSecond'], 'too_big'],
     [{ framesPerSecond: 0.5 }, ['framesPerSecond'], 'too_small'],
     [{ mode: 'legacy' }, [], 'unrecognized_keys'],
     [{ narrationTailMs: -1 }, ['narrationTailMs'], 'too_small'],

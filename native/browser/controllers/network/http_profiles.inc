@@ -3,7 +3,7 @@
 // actual cookie/broker/utility ownership; closure waits their native ACKs.
 void SuiteCutHTTPControls::ScopeCommandStart(int owner,int context_id,const std::string&action,Dict params,Reply reply,bool initialize,double deadline){
   const auto found=contexts_.find(context_id);
-  if(owner<1||found==contexts_.end()||found->second.closing||scope_commands_.contains(owner)||scope_commands_.size()>=64||!hooks_.context_command){reply(false,nullptr,"Native HTTP context command is unavailable or at capacity");return;}
+  if(owner<1||found==contexts_.end()||found->second.closing||scope_commands_.contains(owner)||!hooks_.context_command){reply(false,nullptr,"Native HTTP context command is unavailable");return;}
   const bool snapshot_export=found->second.owned&&action=="storageState";
   if(snapshot_export){
     for(const char*flag:{"indexedDB","opfs","credentials"})if(params->HasKey(flag)&&params->GetType(flag)!=VTYPE_BOOL){reply(false,nullptr,"Invalid native API storage export option");return;}
@@ -43,7 +43,7 @@ void SuiteCutHTTPControls::ScopeCommandStart(int owner,int context_id,const std:
 }
 void SuiteCutHTTPControls::BeginDispose(int context_id,Reply reply,int owner){
   const auto found=contexts_.find(context_id);if(found==contexts_.end()){if(reply)reply(true,CefDictionaryValue::Create(),"");return;}
-  if(reply){if(found->second.dispose_replies.size()>=64){reply(false,nullptr,"Native HTTP disposal waiter capacity exceeded");return;}found->second.dispose_replies.emplace_back(owner,std::move(reply));}
+  if(reply){found->second.dispose_replies.emplace_back(owner,std::move(reply));}
   const bool first=!found->second.closing;found->second.closing=true;found->second.initializing=false;
   if(first){
     std::vector<int>active;for(const auto&[id,state]:active_)if(state->context==context_id)active.push_back(id);for(const int id:active)Stop(id,"Target page, context or browser has been closed (API request context disposed)");
@@ -87,12 +87,11 @@ void SuiteCutHTTPControls::ProfileTick(double now){
 void SuiteCutHTTPControls::OrderCookies(int context_id,CefRefPtr<CefListValue>cookies,std::function<void(CefRefPtr<CefListValue>,const std::string&)>done,size_t retained_bytes){
   const auto found=contexts_.find(context_id);if(found==contexts_.end()||found->second.closing||!cookies){done(nullptr,"Native HTTP cookie context is closed");return;}
   if(!found->second.owned||found->second.jar){done(cookies,"");return;}
-  if(pending_cookie_visits_>=128){done(nullptr,"Native HTTP creation visitor capacity exceeded");return;}
   auto reservation=std::make_shared<suitecut::HTTPCookieResultReservation>(metadata_bytes_);
   auto value=CefValue::Create();value->SetList(cookies->Copy());const size_t cookie_bytes=CefWriteJSON(value,JSON_WRITER_DEFAULT).ToString().size();
   // The caller's result and the visitor's detached cookie list can both remain
   // alive after logical cancellation. Charge both until the actual callback.
-  if(cookie_bytes>33554432||retained_bytes>33554432-cookie_bytes||!reservation->Reserve(retained_bytes+cookie_bytes)){done(nullptr,"Native HTTP physical cookie metadata budget exceeded");return;}
+  reservation->Reserve(retained_bytes+cookie_bytes);
   cookies=cookies->Copy();
   ++pending_cookie_visits_;++found->second.physical_visits;hooks_.wake();const auto weak=weak_from_this();
   CefRefPtr<suitecut::HTTPCookieCreationVisitor>visitor=new suitecut::HTTPCookieCreationVisitor([](std::function<void()>task){CefPostTask(TID_UI,new HTTPTask(std::move(task)));},[weak,context_id,cookies,reservation,done=std::move(done)](suitecut::HTTPCookieCreationVisitor::Times times,const std::string&error)mutable{

@@ -59,7 +59,6 @@ export function createCDPFileControls(
     assertOpen()
     const existing = contexts.get(contextId)
     if (existing) return existing
-    if (contexts.size >= 1024) throw new Error('Browser download context limit reached')
     const pending: Promise<void> = Promise.resolve().then(async () => {
       const downloadPath = await storage()
       assertOpen()
@@ -111,10 +110,6 @@ export function createCDPFileControls(
     const pageId = typeof event.frameId === 'string' ? hooks.pageForFrame(event.frameId) : undefined
     const page = pageId ? hooks.pageInfo(pageId) : undefined
     if (!page || !pageId || !directoryPath || !listeners.get(pageId)?.size) return
-    if (active.size >= 1024) {
-      void cancel(guid, page.contextId).catch(() => undefined)
-      return
-    }
     const download = new ProtocolDownload(
       typeof event.url === 'string' ? event.url : '',
       typeof event.suggestedFilename === 'string' ? basename(event.suggestedFilename) : 'download',
@@ -169,7 +164,7 @@ export function createCDPFileControls(
       frameId?: string,
     ): Promise<void> {
       assertOpen()
-      if (!Array.isArray(files) || files.length > 4096) throw new Error('Invalid upload file list')
+      if (!Array.isArray(files)) throw new Error('Invalid upload file list')
       // Validate sequentially to bound filesystem requests without buffering any file bytes.
       for (const file of files) {
         if (typeof file !== 'string' || !isAbsolute(file) || file.includes('\0'))

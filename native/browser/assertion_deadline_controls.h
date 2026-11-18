@@ -12,7 +12,6 @@ namespace suitecut {
 // remains held until the actual Source query/group owner is physically ready.
 class AssertionDeadlineControls {
  public:
-  static constexpr size_t kCapacity=64;
   enum class Verdict { Hold, Deadline, HardFailure };
   struct Entry {int owner=0;uint64_t generation=0;double deadline=0,cleanup_deadline=0;std::string matcher,error;bool frozen=false,validated=false,watchdog=false,admitted=false;};
   static bool Supported(std::string_view name){
@@ -20,7 +19,7 @@ class AssertionDeadlineControls {
     return false;
   }
   bool Admit(int owner,uint64_t generation,double deadline,std::string matcher){
-    if(owner<=0||!generation||!std::isfinite(deadline)||deadline<=0||!Supported(matcher)||entries_.size()>=kCapacity||entries_.contains(owner))return false;
+    if(owner<=0||!generation||!std::isfinite(deadline)||deadline<=0||!Supported(matcher)||entries_.contains(owner))return false;
     entries_.emplace(owner,Entry{owner,generation,deadline,0,std::move(matcher),{},false,false,false,false});return true;
   }
   bool Contains(int owner)const{return entries_.contains(owner);}
@@ -32,7 +31,7 @@ class AssertionDeadlineControls {
   }
   bool Fail(int owner,uint64_t generation,const std::string& error,double now){
     auto* entry=Find(owner,generation);if(!entry||!std::isfinite(now)||error.empty())return false;
-    if(entry->error.empty())entry->error=error.substr(0,4096);
+    if(entry->error.empty())entry->error=error;
     if(!entry->frozen){entry->frozen=true;entry->cleanup_deadline=now+1000;}return true;
   }
   bool Validated(int owner,uint64_t generation){auto* entry=Find(owner,generation);if(!entry)return false;entry->validated=true;return true;}

@@ -10,17 +10,14 @@ namespace suitecut {
 // separately acknowledged native leases; this registry never fabricates them.
 class CredentialStore {
  public:
-  static constexpr size_t kMaxCredentials = 128, kMaxBytes = 1048576;
   static size_t Bytes(const VirtualCredential& item) { return item.id.size()+item.rp_id.size()+item.user_handle.size()+item.private_key.size()+item.public_key.size()+sizeof(item.sign_count); }
   bool Add(VirtualCredential item,std::string& error) {
     if (!ValidateVirtualCredential(item,error)) return false;
     if (entries_.contains(item.id)) { error = "WebAuthn credential id is already registered"; return false; }
     const size_t bytes = Bytes(item);
-    if (entries_.size() >= kMaxCredentials || bytes > kMaxBytes-bytes_) { error = "Native WebAuthn credential capacity exceeded"; return false; }
     bytes_ += bytes; const auto id = item.id; entries_.emplace(id,std::move(item)); return true;
   }
   bool Replace(const std::vector<VirtualCredential>& items,std::string& error) {
-    if (items.size() > kMaxCredentials) { error = "Native WebAuthn credential capacity exceeded"; return false; }
     CredentialStore proposed;
     for (const auto& item : items) if (!proposed.Add(item,error)) return false;
     *this = std::move(proposed); return true;

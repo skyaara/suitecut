@@ -16,7 +16,7 @@ int main(){
   assert(store.Replace({},error));assert(store.Size()==0 && store.Bytes()==0);
   for(int index=0;index<10000;++index){assert(store.Add(first,error));assert(store.Remove(first.id));assert(store.Size()==0 && store.Bytes()==0);}
   std::vector<suitecut::VirtualCredential> many;
-  for(size_t index=0;index<suitecut::CredentialStore::kMaxCredentials;++index){auto item=first;unsigned char bytes[2]={static_cast<unsigned char>(index>>8),static_cast<unsigned char>(index)};item.id=suitecut::CredentialBase64URL(bytes,2);many.push_back(item);}
-  assert(store.Replace(many,error));assert(store.Size()==suitecut::CredentialStore::kMaxCredentials);assert(!store.Add(second,error));assert(store.Replace({},error));
-  std::cout<<"native credential store: validated atomic replacement, duplicate/capacity rejection, actual counter monotonicity,10000 cleanup cycles passed\n";
+  for(size_t index=0;index<129;++index){auto item=first;unsigned char bytes[2]={static_cast<unsigned char>(index>>8),static_cast<unsigned char>(index)};item.id=suitecut::CredentialBase64URL(bytes,2);many.push_back(item);}
+  assert(store.Replace(many,error));assert(store.Size()==129);assert(store.Add(second,error)&&store.Size()==130);assert(store.Replace({},error));
+  std::cout<<"native credential store: validated atomic replacement, duplicate rejection, no count cap, actual counter monotonicity,10000 cleanup cycles passed\n";
 }

@@ -30,7 +30,7 @@ class NativeRouteRegistry {
   };
   bool Register(std::string id,std::string pattern,int times,bool context=false,bool host_matcher=false,NativeRouteRegistrationOrder order={}) {
     Prune();std::vector<std::string> alternatives;
-    if(id.empty() || id.size()>128 || pattern.empty() || pattern.size()>8192 || times<0 || serial_==std::numeric_limits<uint64_t>::max() || registrations_.size()>=256 ||
+    if(id.empty() || pattern.empty() || times<0 || serial_==std::numeric_limits<uint64_t>::max() ||
        (host_matcher&&pattern!="**/*") || !NativeURLGlobExpand(pattern,alternatives) || std::any_of(registrations_.begin(),registrations_.end(),[&](const Registration& route){return route.ID()==id;}))return false;
     if(!order){const auto reserved=NativeRouteRegistrationOrder::Reserve();if(!reserved)return false;order=*reserved;}
     if(std::any_of(registrations_.begin(),registrations_.end(),[&](const Registration&route){return route.order==order;}))return false;
@@ -38,7 +38,7 @@ class NativeRouteRegistry {
   }
   bool RegisterContext(std::shared_ptr<NativeContextRouteRegistration> policy) {
     Prune();
-    if(!policy||!policy->available()||serial_==std::numeric_limits<uint64_t>::max()||registrations_.size()>=256||std::any_of(registrations_.begin(),registrations_.end(),[&](const Registration&route){return route.ID()==policy->id()||route.order==policy->order();}))return false;
+    if(!policy||!policy->available()||serial_==std::numeric_limits<uint64_t>::max()||std::any_of(registrations_.begin(),registrations_.end(),[&](const Registration&route){return route.ID()==policy->id()||route.order==policy->order();}))return false;
     const auto order=policy->order();Insert({{}, {},0,true,++serial_,std::move(policy),false,order});return true;
   }
   void Remove(const std::string& id) {

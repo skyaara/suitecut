@@ -19,15 +19,11 @@
         const auto current = frame_states_.find(frame);
         if (current == frame_states_.end()) { Complete(id, false, "Native frame detached"); return; }
         if (current->second.context != context || current->second.loader != loader) {
-          auto& log = locator_logs_[id];
-          if (log.size() < 4096) {
-            log += "\n - element was detached from the DOM, retrying";
-            if (log.size() > 4096) log.resize(4096);
-          }
+          locator_logs_[id] += "\n - element was detached from the DOM, retrying";
         }
         LocatorAction(id,generation,selector,action,text,resumed);
       });
-    if (!token) { Complete(id, false, "Native action pause capacity or identity is invalid"); return; }
+    if (!token) { Complete(id, false, "Native action pause identity is invalid"); return; }
     auto header = Header("actionstage");
     header->SetInt("id", id);
     header->SetDouble("generation", static_cast<double>(generation));

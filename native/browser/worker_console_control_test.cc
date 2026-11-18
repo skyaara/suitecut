@@ -82,7 +82,7 @@ class Source : public CefBaseRefCounted {
     return SubmitDevTools(++next_call,method,params,session)?next_call:0;
   }
   void DevTools(int owner,const std::string& method,Dict params,DevToolsCallback callback,std::optional<std::string> session=std::nullopt,bool retained=false,size_t limit=16*1048576,bool lossless_scalars=false) {
-    assert(operations_.Contains(owner)&&limit<=16*1048576);
+    (void)limit;assert(operations_.Contains(owner));
     assert(!lossless_scalars||method=="Runtime.getProperties");
     devtools_.emplace(++next_call,DevToolsCall{owner,std::move(callback),session.value_or(operation_sessions_[owner]),method,params,retained});
   }
@@ -233,10 +233,11 @@ int main() {
   }
   {
     auto source=CefRefPtr<Source>(new Source());Attach(source);
+    // No physical command limit: the 65th command past the old bound is sent.
     for(int i=1;i<=64;++i){source->Admit(i);auto request=Request("evaluate");request->SetString("expression","new Promise(()=>{})");source->WorkerRun(i,request);source->Complete(i,false,"cancel");}
     assert(source->worker_physical_==64);
     source->Admit(65);auto request=Request("evaluate");request->SetString("expression","1");source->WorkerRun(65,request);
-    assert(!source->completions.back().ok&&source->worker_physical_==64);
+    assert(source->worker_physical_==65);
     assert(source->WorkerDetached("worker-session-A"));assert(source->worker_physical_==0&&source->devtools_.empty()&&source->worker_handles_.empty());
   }
   {

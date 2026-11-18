@@ -16,11 +16,9 @@ int main(){int groups=0;
  {Publications p;std::shared_ptr<const std::string>store;auto accept=[&](auto text){store=std::move(text);return true;};assert(p.Commit(1,"old",accept));auto old=store;
   assert(p.Commit(1,"replacement",accept)&&p.Current(1).version==2&&p.Bodies()==2&&p.Bytes()==14);p.Drop(1);assert(p.Contexts()==0&&p.Bytes()==14);
   store.reset();assert(p.Bytes()==3);old.reset();assert(p.Bytes()==0&&p.Bodies()==0);++groups;}
- {Publications p;for(int i=1;i<=32;++i)assert(p.Commit(i,"x",[](auto){return true;}));assert(!p.Commit(33,"x",[](auto){return true;})&&p.Contexts()==32);p.Drop(1);assert(p.Commit(33,"x",[](auto){return true;}));++groups;}
- {Publications p;std::vector<std::shared_ptr<const std::string>>readers;for(size_t i=0;i<64;++i){assert(p.Commit(1,std::to_string(i),[](auto){return true;}));readers.push_back(p.Current(1).bytes);}
-  assert(p.Bodies()==64&&!p.Commit(1,"capacity",[](auto){return true;}));readers.front().reset();assert(p.Commit(1,"readmitted",[](auto){return true;}));++groups;}
- {Publications p;const std::string body(suitecut::InitSnapshotWire::kPayload,'x');for(int i=1;i<=8;++i)assert(p.Commit(i,body,[](auto){return true;}));
-  assert(p.Bytes()==Publications::kBytes&&!p.Commit(9,"x",[](auto){return true;}));p.Drop(1);assert(p.Commit(9,"x",[](auto){return true;}));++groups;}
+ {Publications p;for(int i=1;i<=33;++i)assert(p.Commit(i,"x",[](auto){return true;}));assert(p.Contexts()==33);++groups;} // past the former 32-context cap
+ {Publications p;std::vector<std::shared_ptr<const std::string>>readers;for(size_t i=0;i<65;++i){assert(p.Commit(1,std::to_string(i),[](auto){return true;}));readers.push_back(p.Current(1).bytes);}
+  assert(p.Bodies()==65&&p.Commit(1,"past the former 64-body cap",[](auto){return true;}));++groups;}
  {Publications p;auto accept=[](auto){return true;};assert(p.Commit(1,"scripts1/binding9/credentials4",accept));assert(p.Commit(1,"scripts2/binding9/credentials4",accept));assert(p.Commit(1,"scripts2/binding10/credentials3",accept));
   assert(p.Current(1).version==3&&*p.Current(1).bytes=="scripts2/binding10/credentials3");++groups;}
  {Publications p;assert(p.Commit(1,"actual IO lease",[](auto){return true;}));auto lease=p.Current(1).bytes;p.Drop(1);assert(p.Bytes()==15);

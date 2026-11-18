@@ -6,7 +6,7 @@ import { type NativeBrowser } from '../src/native-browser.js'
 import { recordNative } from '../src/native-recording.js'
 
 describe('native recording options', () => {
-  it.each([0, 0.5, 121, Number.NaN, Number.POSITIVE_INFINITY])(
+  it.each([0, 0.5, Number.NaN, Number.POSITIVE_INFINITY])(
     'rejects invalid resampling FPS %s',
     async (framesPerSecond) => {
       await expect(

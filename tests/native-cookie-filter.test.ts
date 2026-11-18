@@ -23,7 +23,10 @@ it('keeps isolated UTF16 pattern units in the dedicated source JSON field', () =
   })
 })
 
-it('rejects native regex and literal metadata capacity before sending control work', () => {
-  expect(() => nativeCookieFilter({ name: new RegExp('a'.repeat(32769)) })).toThrow(/capacity/)
-  expect(() => nativeCookieFilter({ name: 'a'.repeat(8193) })).toThrow()
+it('passes regex and literal metadata past the old size caps whole', () => {
+  const source = 'a'.repeat(32769)
+  expect(nativeCookieFilter({ name: new RegExp(source) })).toEqual({
+    name: { sourceJSON: JSON.stringify(source), flags: '' },
+  })
+  expect(nativeCookieFilter({ name: 'a'.repeat(8193) })).toEqual({ name: 'a'.repeat(8193) })
 })

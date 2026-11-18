@@ -3,9 +3,9 @@ import * as z from 'zod'
 
 import { type UntrustedInput } from './untrusted.js'
 
-const Staged = z.strictObject({ payloadToken: z.string().min(1).max(128) })
+const Staged = z.strictObject({ payloadToken: z.string().min(1) })
 type Command = (params: Record<string, UntrustedInput>) => Promise<UntrustedInput>
-/** Preserve the bounded 64 KiB command transport; commit invokes native send once. */
+/** Send a large payload in chunks; commit invokes native send once. */
 export async function runNativeWebSocketPayload(
   run: Command,
   params: Record<string, UntrustedInput>,
@@ -18,10 +18,9 @@ export async function runNativeWebSocketPayload(
   }
   const bytes =
     (payload.length / 4) * 3 - (payload.endsWith('==') ? 2 : payload.endsWith('=') ? 1 : 0)
-  if (payload.length % 4 || bytes > 2_097_152)
-    throw new Error('Invalid native WebSocket staged payload')
-  // The native bounded append validates canonical base64 before retaining each
-  // chunk. Avoid decoding/re-encoding the whole 2 MiB message in the SDK.
+  if (payload.length % 4) throw new Error('Invalid native WebSocket staged payload')
+  // The native append validates canonical base64 before retaining each chunk.
+  // Avoid decoding/re-encoding the whole message in the SDK.
   const identity = { ...params }
   delete identity.payloadBase64
   delete identity.action

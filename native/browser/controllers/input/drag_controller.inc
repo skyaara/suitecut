@@ -16,7 +16,7 @@ bool NativeDragCurrent(const std::shared_ptr<NativeDragWork>&work){
 }
 bool NativeDragReply(const std::shared_ptr<NativeDragWork>&work,bool ok,const std::string&json,const char*method){
   if(!NativeDragCurrent(work))return false;
-  if(!ok){Complete(work->owner,false,std::string("Native drag ")+method+" failed"+(json.empty()?"":": "+json.substr(0,4096)));return false;}
+  if(!ok){Complete(work->owner,false,std::string("Native drag ")+method+" failed"+(json.empty()?"":": "+json));return false;}
   return true;
 }
 void NativeDragCancel(int id) {
@@ -90,8 +90,8 @@ void NativeDragEvent(Dict data) {
     NetworkFatal("Native intercepted drag arrived while a completion is physically owned"); return;
   }
   const auto drag = data->GetDictionary("data");
-  if (!drag || Json(drag).size() > 1048576 || !drag->GetList("items") || drag->GetList("items")->GetSize() > 1024) {
-    if (!drag_work_.empty()) Complete(drag_work_.begin()->first, false, "Native drag data exceeds its bounded capacity");
+  if (!drag || !drag->GetList("items")) {
+    if (!drag_work_.empty()) Complete(drag_work_.begin()->first, false, "Native drag data is invalid");
     else { SendDevTools("Input.cancelDragging", nullptr); manual_drag_ = nullptr; }
     return;
   }
@@ -110,7 +110,7 @@ void NativeDragStart(int id, uint64_t generation, Dict message) {
   if (!suitecut::InboundString(message,"selector",source_selector) || !target || !suitecut::InboundString(target,"selector",target_selector) ||
       (message->HasKey("force") && message->GetType("force") != VTYPE_BOOL) ||
       (message->HasKey("trial") && message->GetType("trial") != VTYPE_BOOL) ||
-      (message->HasKey("steps") && (message->GetType("steps") != VTYPE_INT || message->GetInt("steps") < 1 || message->GetInt("steps") > 10000))) {
+      (message->HasKey("steps") && (message->GetType("steps") != VTYPE_INT || message->GetInt("steps") < 1))) {
     Complete(id, false, "Invalid native drag action"); return;
   }
   for (const char* name : {"sourcePosition", "targetPosition"}) if (message->HasKey(name)) {
@@ -167,7 +167,7 @@ bool NativeManualCurrent(const std::shared_ptr<InputWork>&work){
 }
 bool NativeManualReply(const std::shared_ptr<InputWork>&work,bool ok,const std::string&json,const char*method){
   if(!NativeManualCurrent(work))return false;
-  if(!ok){Complete(work->owner,false,std::string("Native intercepted input ")+method+" failed"+(json.empty()?"":": "+json.substr(0,4096)));return false;}
+  if(!ok){Complete(work->owner,false,std::string("Native intercepted input ")+method+" failed"+(json.empty()?"":": "+json));return false;}
   return true;
 }
 bool NativeManualInput(std::shared_ptr<InputWork> work, const std::string& method, Dict params, std::function<void()> done) {

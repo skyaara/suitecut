@@ -48,14 +48,14 @@ void WorkerConsoleEvicted() {
 Dict WorkerConsoleRetain(Dict value,const std::string& session,int context) {
   const auto mapped=worker_sessions_.find(session);if(mapped==worker_sessions_.end()||!value)return nullptr;
   const auto& target=worker_targets_.at(mapped->second);
-  if(target.context!=context||context<=0||worker_handles_.size()+handles_.size()+pending_handle_groups_.size()>=1024||next_handle_==std::numeric_limits<int>::max())return nullptr;
-  const auto bytes=Json(value).size();if(bytes>1048576||worker_console_bytes_+console_argument_bytes_+bytes>4*1048576)return nullptr;
+  if(target.context!=context||context<=0||next_handle_==std::numeric_limits<int>::max())return nullptr;
+  const auto bytes=Json(value).size();
   const int handle=++next_handle_;const auto group="suitecut-worker-console-"+handle_namespace_+"-"+std::to_string(handle);
   worker_handles_.emplace(handle,WorkerHandle{"",group,target.id,session,context,target.generation});
   worker_console_arguments_.emplace(handle,WorkerConsoleRaw{value->Copy(false),target.id,session,context,target.generation,event_sequence_+1,bytes,false,false});worker_console_bytes_+=bytes;
   auto result=CefDictionaryValue::Create();result->SetInt("handle",handle);result->SetString("worker",target.id);result->SetBool("node",false);
   result->SetDictionary("workerControl",WorkerControlInfo(target));
-  result->SetString("guid","suitecut-worker-"+handle_namespace_+":"+std::to_string(handle));suitecut::DevToolsSetString(result,"preview",suitecut::DevToolsTruncateWTF8(ConsolePreview(value),8192));
+  result->SetString("guid","suitecut-worker-"+handle_namespace_+":"+std::to_string(handle));suitecut::DevToolsSetString(result,"preview",ConsolePreview(value));
   return result;
 }
 void WorkerConsoleMetadata(Dict info,const std::string& session) {

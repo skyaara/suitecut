@@ -103,31 +103,26 @@ describe('purpose-owned native artifact configuration upload', () => {
     ).rejects.toThrow()
     expect(fixture.actions).toHaveLength(0)
   })
-  it('rejects oversized aggregate configuration before native dispatch', async () => {
+  it('uploads aggregate configuration past the old 16 MiB cap whole', async () => {
     const fixture = new ConfigurationFixture()
-    await expect(
-      runNativeArtifactConfiguration(fixture.configRun, fixture.source, {
-        action: 'pdf',
-        headerTemplate: 'x'.repeat(16 * 1024 * 1024),
-      }),
-    ).rejects.toThrow(/configuration exceeds16MiB/)
-    expect(fixture.actions).toHaveLength(0)
+    const headerTemplate = 'x'.repeat(16 * 1024 * 1024)
+    await runNativeArtifactConfiguration(fixture.configRun, fixture.source, {
+      action: 'pdf',
+      headerTemplate,
+    })
+    expect(fixture.actions.some((action) => action.action === 'capturePrepare')).toBe(true)
+    expect((fixture.config() as { headerTemplate: string }).headerTemplate).toBe(headerTemplate)
   })
-  it('bounds actual retained SDK bytes across concurrent artifact kinds', async () => {
+  it('admits concurrent artifact kinds past the old 64 MiB SDK staging budget', async () => {
     const text = '\u4e2d'.repeat(1024 * 1024)
     const config = { action: 'pdf', headerTemplate: text, footerTemplate: text }
     const completions: ((value: UntrustedInput) => void)[] = []
     const pending: Promise<UntrustedInput>[] = []
-    for (let i = 0; i < 3; ++i) {
+    for (let i = 0; i < 4; ++i) {
       const completion = new Promise<UntrustedInput>((resolve) => completions.push(resolve))
       const fixture = new ConfigurationFixture(() => completion)
       pending.push(runNativeArtifactConfiguration(fixture.configRun, fixture.source, config, 0))
     }
-    const fourth = new ConfigurationFixture()
-    await expect(
-      runNativeArtifactConfiguration(fourth.configRun, fourth.source, config, 0),
-    ).rejects.toThrow(/64MiB staging byte budget/)
-    expect(fourth.actions).toHaveLength(0)
     for (const complete of completions) complete({ unitBoundary: true })
     await Promise.all(pending)
   })

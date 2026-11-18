@@ -21,11 +21,11 @@ bool SDKBrowserNumber(Dict message,const char* name,double& output,bool optional
   if(message->GetType(name)!=VTYPE_INT&&message->GetType(name)!=VTYPE_DOUBLE)return false;
   output=Number(message,name);return std::isfinite(output);
 }
-bool SDKBrowserText(Dict message,const char* name,size_t limit,bool required=true) {
+bool SDKBrowserText(Dict message,const char* name,bool required=true) {
   if(!message->HasKey(name))return !required;
   if(message->GetType(name)!=VTYPE_STRING)return false;
   const auto text=message->GetString(name).ToString();
-  return text.size()<=limit&&std::none_of(text.begin(),text.end(),[](unsigned char c){return c<0x20||c==0x7f;});
+  return std::none_of(text.begin(),text.end(),[](unsigned char c){return c<0x20||c==0x7f;});
 }
 Dict SDKBrowserDownloadInfo(Dict input) {
   auto result=input->Copy(false);result->SetString("downloadId",result->GetString("id"));
@@ -74,8 +74,7 @@ void SDKBrowserHARWait(int id,uint64_t generation) {
   }
   auto limits=CefDictionaryValue::Create();limits->SetString("scope","page");limits->SetString("content",sdk_har_content_);
   limits->SetString("admissionScope","context");limits->SetBool("oneCapturePerContext",true);
-  limits->SetInt("responseBodyLimitBytes",192*1048576);limits->SetInt("retainedResponseBodyBudgetBytes",1024*1048576);
-  limits->SetString("budgetScope","engine");result->SetDictionary("_suitecut",limits);
+  result->SetDictionary("_suitecut",limits);
   Complete(id,true,"",Json(result));
 }
 void SDKBrowserControlClosed() {
@@ -125,7 +124,7 @@ bool SDKBrowserControl(int id,uint64_t generation,Dict message,const std::string
         if(!sdk_har_sealed_) {Complete(id,false,"Stop the existing native HAR capture before restarting");return true;}
         engine_.network_archive().Stop(context);sdk_har_owned_=false;
       }
-      if(!engine_.network_archive().Start(context)) {Complete(id,false,"Native HAR context already has an owner or exceeds capture capacity");return true;}
+      if(!engine_.network_archive().Start(context)) {Complete(id,false,"Native HAR context already has an owner or capture is closed");return true;}
       sdk_har_owned_=true;sdk_har_sealed_=false;sdk_har_content_=content;Complete(id,true,"","{}");return true;
     }
     if(!sdk_har_owned_) {Complete(id,false,"Start native HAR capture before exporting it");return true;}
@@ -152,11 +151,11 @@ bool SDKBrowserControl(int id,uint64_t generation,Dict message,const std::string
     method="Emulation.clearGeolocationOverride";
   } else if(action=="timezone") {
     if(!SDKBrowserFields(id,message,{"timezoneId"}))return true;
-    if(!SDKBrowserText(message,"timezoneId",256)) {Complete(id,false,"Invalid native emulated timezone");return true;}
+    if(!SDKBrowserText(message,"timezoneId")) {Complete(id,false,"Invalid native emulated timezone");return true;}
     params->SetString("timezoneId",message->GetString("timezoneId"));method="Emulation.setTimezoneOverride";
   } else if(action=="userAgent") {
     if(!SDKBrowserFields(id,message,{"userAgent","acceptLanguage","platform"}))return true;
-    if(!SDKBrowserText(message,"userAgent",4096)||!SDKBrowserText(message,"acceptLanguage",4096,false)||!SDKBrowserText(message,"platform",256,false)) {
+    if(!SDKBrowserText(message,"userAgent")||!SDKBrowserText(message,"acceptLanguage",false)||!SDKBrowserText(message,"platform",false)) {
       Complete(id,false,"Invalid native emulated user agent");return true;
     }
     for(const char* key:{"userAgent","acceptLanguage","platform"})if(message->HasKey(key))params->SetString(key,message->GetString(key));

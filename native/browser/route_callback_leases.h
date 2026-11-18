@@ -20,11 +20,10 @@ class NativeRouteCallbackLeases {
   NativeRouteCallbackLeases(const NativeRouteCallbackLeases&)=delete;
   NativeRouteCallbackLeases& operator=(const NativeRouteCallbackLeases&)=delete;
   ~NativeRouteCallbackLeases(){Clear();}
-  static constexpr size_t kCapacity=128,kCompletedCapacity=256;
   enum class Stage {Issued,Running};
   std::optional<uint64_t> Scope() {if(scope_serial_==UINT64_MAX)return std::nullopt;return ++scope_serial_;}
   std::optional<uint64_t> Issue(uint64_t scope,const std::string& invocation,std::shared_ptr<NativeContextRouteRegistration>policy={}) {
-    if(!scope || scope>scope_serial_ || invocation.empty() || invocation.size()>128 || entries_.size()>=kCapacity || serial_==UINT64_MAX)return std::nullopt;
+    if(!scope || scope>scope_serial_ || invocation.empty() || serial_==UINT64_MAX)return std::nullopt;
     const auto token=++serial_;entries_.emplace(token,Entry{scope,invocation,Stage::Issued,false,std::move(policy),std::make_shared<NativeRouteCallbackReceipt>()});return token;
   }
   bool Start(uint64_t token,uint64_t scope,const std::string& invocation) {
@@ -54,7 +53,8 @@ class NativeRouteCallbackLeases {
     const auto found=entries_.find(token);
     return found!=entries_.end()&&Matches(found->second,scope,invocation)?found->second.receipt:nullptr;
   }
-  bool Available() const {return entries_.size()<kCapacity;}
+  // No lease count cap; only an exhausted token serial refuses a new lease.
+  bool Available() const {return serial_!=UINT64_MAX;}
   size_t size() const {return entries_.size();}
   size_t running() const {size_t count=0;for(const auto& [token,entry]:entries_)if(entry.stage==Stage::Running)++count;return count;}
   size_t SizeForScope(uint64_t scope) const {size_t count=0;for(const auto& [token,entry]:entries_)if(entry.scope==scope)++count;return count;}
@@ -71,12 +71,12 @@ class NativeRouteCallbackLeases {
     for(const auto&[token,entry]:entries_)if(entry.scope==scope&&!entry.policy){result.tokens.push_back(token);result.receipts.push_back(entry.receipt);}
     return result;
   }
-  void Clear() {for(auto&[token,entry]:entries_)entry.receipt->unavailable_=true;entries_.clear();completed_.clear();order_.clear();}
+  void Clear() {for(auto&[token,entry]:entries_)entry.receipt->unavailable_=true;entries_.clear();completed_.clear();}
  private:
   struct Entry {uint64_t scope;std::string invocation;Stage stage;bool closed;std::shared_ptr<NativeContextRouteRegistration>policy;std::shared_ptr<NativeRouteCallbackReceipt>receipt;};
   static bool Matches(const Entry& entry,uint64_t scope,const std::string& invocation) {return entry.scope==scope && entry.invocation==invocation;}
-  void Complete(uint64_t token,const Entry& entry) {entry.receipt->settled_=true;auto completed=entry;completed.policy.reset();completed.receipt.reset();completed_.emplace(token,std::move(completed));order_.push_back(token);while(order_.size()>kCompletedCapacity){completed_.erase(order_.front());order_.pop_front();}}
-  std::map<uint64_t,Entry> entries_,completed_;std::deque<uint64_t> order_;uint64_t serial_=0,scope_serial_=0;
+  void Complete(uint64_t token,const Entry& entry) {entry.receipt->settled_=true;auto completed=entry;completed.policy.reset();completed.receipt.reset();completed_.emplace(token,std::move(completed));}
+  std::map<uint64_t,Entry> entries_,completed_;uint64_t serial_=0,scope_serial_=0;
 };
 inline NativeRouteCallbackLeases& GlobalRouteCallbackLeases() {static NativeRouteCallbackLeases leases;return leases;}
 }  // namespace suitecut

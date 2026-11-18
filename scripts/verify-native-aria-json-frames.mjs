@@ -250,13 +250,18 @@ try {
     document.body.appendChild(frame)
   }, cross + '/big')
   await page.frameLocator('#excessive').getByRole('button').first().waitFor()
-  await assert.rejects(
-    page.ariaSnapshotJSON({ mode: 'ai', timeout: 5000 }),
-    /node limit|capacity|exceeds|limit exceeded/u,
-  )
-  assert.equal(await page.getByRef(previous.ref).textContent(), 'Preserved old publication')
+  const whole = await page.ariaSnapshotJSON({ mode: 'ai', timeout: 5000 })
+  const preserved = find(whole, (node) => node.name === 'Preserved old publication')
+  assert(preserved?.ref)
+  assert.equal(await page.getByRef(preserved.ref).textContent(), 'Preserved old publication')
+  let children = 0
+  find(whole, (node) => {
+    if (node.name === 'Actual excessive child') children++
+    return false
+  })
+  assert.equal(children, 5000)
   checks.push(
-    'an actual excessive child capture fails before commit and preserves the previous connected main-frame publication',
+    'a 5000-button child frame is captured whole with no node limit and the main-frame publication stays connected',
   )
 
   await page.goto(main)

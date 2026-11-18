@@ -31,7 +31,7 @@ inline CefRefPtr<CefDictionaryValue> NativeRouteFetchRequest(
   const int redirects=options->HasKey("maxRedirects")?options->GetInt("maxRedirects"):20;
   const int retries=options->HasKey("maxRetries")?options->GetInt("maxRetries"):0;
   const int timeout=options->HasKey("timeoutMs")?options->GetInt("timeoutMs"):30000;
-  if(redirects<0||redirects>100||retries<0||retries>100||timeout<0)return fail("Invalid native route fetch limits");
+  if(redirects<0||retries<0||timeout<0)return fail("Invalid native route fetch limits");
   for(const char* field:{"url","method","postData"})if(options->HasKey(field)&&options->GetType(field)!=VTYPE_STRING)return fail("Invalid native route fetch override");
   if(options->HasKey("headers")&&options->GetType("headers")!=VTYPE_LIST)return fail("Invalid native route fetch headers");
   auto result=CefDictionaryValue::Create();result->SetString("action","fetch");
@@ -45,7 +45,7 @@ inline CefRefPtr<CefDictionaryValue> NativeRouteFetchRequest(
   }
   if(options->HasKey("postData")){
     auto exact=CefDictionaryValue::Create();exact->SetString("postDataBase64",options->GetString("postData"));
-    if(CaptureNativePostData(exact).kind==NativePostData::Kind::Unavailable)return fail("Invalid or oversized native route fetch postData");
+    if(CaptureNativePostData(exact).kind==NativePostData::Kind::Unavailable)return fail("Invalid native route fetch postData encoding");
     result->SetString("body",options->GetString("postData"));
   }
   else {

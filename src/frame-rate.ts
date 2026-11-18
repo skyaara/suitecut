@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: MIT
 import * as z from 'zod'
 
+/** Sizes the live-stream recovery buffer; it is not a cap on requested rates. */
 export const MAX_FRAMES_PER_SECOND = 120
-/** CEF OSR capture request: its supported ceiling is an integer. */
-export const CaptureFrameRateSchema = z.number().int().min(1).max(MAX_FRAMES_PER_SECOND)
+/** CEF OSR capture request; CEF applies its own ceiling. */
+export const CaptureFrameRateSchema = z.number().int().min(1)
 /** Constant encoded output cadence; native resampling supports finite fractions. */
-export const OutputFrameRateSchema = z.number().finite().min(1).max(MAX_FRAMES_PER_SECOND)
+export const OutputFrameRateSchema = z.number().finite().min(1)
 
 /** Converts elapsed time to output slots, snapping only floating-point roundoff at boundaries. */
 export function videoFramePosition(

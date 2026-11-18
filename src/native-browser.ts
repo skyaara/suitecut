@@ -125,69 +125,58 @@ const ContextWorkerPredicatePayloadSchema = z.strictObject({
   generation: z.number().int().positive(),
   token: z.number().int().positive(),
   sequence: z.number().int().positive(),
-  clientToken: z.string().min(1).max(128),
+  clientToken: z.string().min(1),
   event: z.literal('console'),
   value: NativeConsoleInfoSchema,
 })
 
-const LaunchSchema = z
-  .strictObject({
-    executablePath: z
-      .string()
-      .refine(
-        (value) => isAbsolute(value) && !value.includes('\0'),
-        'must be an absolute executable path without null bytes',
-      ),
-    width: z.number().int().min(2).max(3840).default(1920),
-    height: z.number().int().min(2).max(2160).default(1080),
-    deviceScaleFactor: z.union([z.literal(1), z.literal(2)]).default(1),
-    framesPerSecond: CaptureFrameRateSchema.default(60),
-    pixelFormat: z.enum(['bgra', 'i420']).default('bgra'),
-    frameTransport: z.enum(['always', 'on-demand']).default('always'),
-    headless: z.boolean().default(false),
-    windowMode: z.enum(['offscreen', 'chrome']).default('offscreen'),
-    newPages: z.enum(['tabs', 'windows']).default('tabs'),
-    backForwardCache: z.boolean().optional(),
-    recordVideo: NativeRecordVideoSchema.optional(),
-    startupTimeoutMs: z.number().int().min(100).max(120_000).default(30_000),
-    userDataDir: z
-      .string()
-      .min(1)
-      .max(4096)
-      .refine(
-        (value) => isAbsolute(value) && !value.includes('\0'),
-        'must be an absolute profile directory without null bytes',
-      )
-      .optional(),
-    downloadsPath: z
-      .string()
-      .min(1)
-      .max(4096)
-      .refine((value) => !value.includes('\0'))
-      .optional(),
-    tracesDir: z
-      .string()
-      .min(1)
-      .max(4096)
-      .refine((value) => !value.includes('\0'))
-      .optional(),
-    artifactsDir: z
-      .string()
-      .min(1)
-      .max(4096)
-      .refine((value) => !value.includes('\0'))
-      .optional(),
-    signal: z.instanceof(AbortSignal).optional(),
-    onDiagnostic: z
-      .custom<(message: string) => void>((value) => typeof value === 'function')
-      .optional(),
-  })
-  .refine(
-    (v) =>
-      Math.round(v.width * v.deviceScaleFactor) <= 3840 &&
-      Math.round(v.height * v.deviceScaleFactor) <= 2160,
-    'physical frame size must not exceed 3840x2160',
-  )
+const LaunchSchema = z.strictObject({
+  executablePath: z
+    .string()
+    .refine(
+      (value) => isAbsolute(value) && !value.includes('\0'),
+      'must be an absolute executable path without null bytes',
+    ),
+  width: z.number().int().min(2).default(1920),
+  height: z.number().int().min(2).default(1080),
+  deviceScaleFactor: z.number().finite().positive().default(1),
+  framesPerSecond: CaptureFrameRateSchema.default(60),
+  pixelFormat: z.enum(['bgra', 'i420']).default('bgra'),
+  frameTransport: z.enum(['always', 'on-demand']).default('always'),
+  headless: z.boolean().default(false),
+  windowMode: z.enum(['offscreen', 'chrome']).default('offscreen'),
+  newPages: z.enum(['tabs', 'windows']).default('tabs'),
+  backForwardCache: z.boolean().optional(),
+  recordVideo: NativeRecordVideoSchema.optional(),
+  startupTimeoutMs: z.number().int().min(100).max(120_000).default(30_000),
+  userDataDir: z
+    .string()
+    .min(1)
+    .refine(
+      (value) => isAbsolute(value) && !value.includes('\0'),
+      'must be an absolute profile directory without null bytes',
+    )
+    .optional(),
+  downloadsPath: z
+    .string()
+    .min(1)
+    .refine((value) => !value.includes('\0'))
+    .optional(),
+  tracesDir: z
+    .string()
+    .min(1)
+    .refine((value) => !value.includes('\0'))
+    .optional(),
+  artifactsDir: z
+    .string()
+    .min(1)
+    .refine((value) => !value.includes('\0'))
+    .optional(),
+  signal: z.instanceof(AbortSignal).optional(),
+  onDiagnostic: z
+    .custom<(message: string) => void>((value) => typeof value === 'function')
+    .optional(),
+})
 
 export type NativePixelFormat = 'bgra' | 'i420'
 export type NativeBrowserState = 'running' | 'closing' | 'closed' | 'failed'
@@ -197,7 +186,7 @@ export interface NativeBrowserOptions {
   executablePath: string
   width?: number
   height?: number
-  deviceScaleFactor?: 1 | 2
+  deviceScaleFactor?: number
   /** Requested CEF capture rate, any integer from 1 through 120; actual delivery can be lower. */
   framesPerSecond?: number
   /** BGRA8 for exact pixels; planar BT.709 limited-range I420 for lower-bandwidth streaming. */
@@ -604,7 +593,6 @@ export async function launchNativeBrowser(options: NativeBrowserOptions): Promis
   const pageState = (id: number) => {
     const existing = pages.get(id)
     if (existing) return existing
-    if (pages.size >= 128) throw new Error('Native page registry capacity exceeded')
     let resolvePageClosed: () => void = () => undefined
     let resolvePageReady: () => void = () => undefined
     let rejectPageFailure: (error: Error) => void = () => undefined
@@ -712,11 +700,6 @@ export async function launchNativeBrowser(options: NativeBrowserOptions): Promis
     page.resolveClosed()
     if (id !== 1) {
       if (page.source) closedPageSources.set(id, new WeakRef(page.source))
-      while (closedPageSources.size > 1024) {
-        const oldest = closedPageSources.keys().next().value
-        if (oldest === undefined) break
-        closedPageSources.delete(oldest)
-      }
       pages.delete(id)
     }
     for (const [requestId, item] of pending)
@@ -941,8 +924,6 @@ export async function launchNativeBrowser(options: NativeBrowserOptions): Promis
       if (state && state.context !== header.contextId)
         throw new Error('Native worker body belongs to a different context')
       if (!state) {
-        if (contextNetworkBodies.size >= 192)
-          throw new Error('Native worker body owner capacity exceeded')
         const context = header.contextId,
           owner = header.owner
         state = {
@@ -1034,8 +1015,6 @@ export async function launchNativeBrowser(options: NativeBrowserOptions): Promis
       }
       if (event.event === 'page-created' && event.pageId !== undefined) pageState(event.pageId)
       if (event.event === 'context-closed') {
-        if (closedNetworkContexts.size >= 65536 && !closedNetworkContexts.has(event.contextId))
-          throw new Error('Native worker network closed-context capacity exceeded')
         closedNetworkContexts.add(event.contextId)
         for (const [owner, state] of contextNetworkBodies)
           if (state.context === event.contextId) {
@@ -1305,8 +1284,6 @@ export async function launchNativeBrowser(options: NativeBrowserOptions): Promis
       if (event.event === 'close' || event.event === 'channelclosed')
         page.workerInfos.delete(event.worker.id)
       else if (event.event === 'worker' || page.workerInfos.has(event.worker.id)) {
-        if (!page.workerInfos.has(event.worker.id) && page.workerInfos.size >= 1024)
-          throw new Error('Native worker registry capacity exceeded')
         page.workerInfos.set(event.worker.id, event.worker)
       }
       for (const listener of [...page.workerMessages]) listener(event)
@@ -1324,8 +1301,6 @@ export async function launchNativeBrowser(options: NativeBrowserOptions): Promis
       if (header.event === 'framenavigated' && !header.frame.parentId) page.url = header.frame.url
       if (header.event === 'framedetached') page.frameInfos.delete(header.frame.id)
       else {
-        if (!page.frameInfos.has(header.frame.id) && page.frameInfos.size >= 1024)
-          throw new Error('Native frame registry capacity exceeded')
         page.frameInfos.set(header.frame.id, header.frame)
       }
       for (const listener of [...page.automationEvents])
@@ -1502,9 +1477,8 @@ export async function launchNativeBrowser(options: NativeBrowserOptions): Promis
         // A command larger than the pipe's soft budget still goes once the pipe
         // has drained, as Playwright's transport writes any message whole.
         if (
-          pending.size >= 128 ||
-          (child.stdin.writableLength > 0 &&
-            child.stdin.writableLength + job.bytes > 4 * 1024 * 1024)
+          child.stdin.writableLength > 0 &&
+          child.stdin.writableLength + job.bytes > 4 * 1024 * 1024
         )
           break
         removeControl(job)
@@ -1631,16 +1605,9 @@ export async function launchNativeBrowser(options: NativeBrowserOptions): Promis
     }
     if (
       !controlQueue.length &&
-      pending.size < 128 &&
       (!child.stdin.writableLength || child.stdin.writableLength + bytes < 4 * 1024 * 1024)
     )
       return dispatchRequest(command, fields, signal, pageId, retry)
-    if (controlQueue.length >= 128)
-      return Promise.reject(
-        new Error(
-          'Native control sender queue capacity exceeded: 128 commands are already waiting for the browser to read its input pipe',
-        ),
-      )
     // Only queued controls need a detached snapshot. The serialized envelope is
     // already a JSON object; validating/cloning it again adds no wire safety.
     const snapshot = JSON.parse(serialized) as Record<string, UntrustedInput>
@@ -1769,39 +1736,6 @@ export async function launchNativeBrowser(options: NativeBrowserOptions): Promis
     }
     if (terminal || stopping || exited)
       return Promise.reject(terminal ?? new Error('Native browser is closed'))
-    const bindingControl =
-      command === 'bindings' &&
-      (fields.action === 'resolve' || fields.action === 'argument' || fields.action === 'stage')
-    const capacity =
-      nativeLocatorHandlerControl(command) ||
-      command === 'frameSubscription' ||
-      command === 'nativeWorkBarrier' ||
-      (command === 'debugger' && nativeDebuggerControl(fields)) ||
-      (command === 'context' &&
-        (fields.action === 'close' ||
-          fields.action === 'closePage' ||
-          fields.action === 'workerNetworkBody' ||
-          fields.action === 'screenshotInput')) ||
-      command === 'continueAction' ||
-      command === 'continueURLPredicate' ||
-      command === 'continueEventPredicate' ||
-      command === 'routeCallback' ||
-      command === 'networkBody' ||
-      (command === 'handle' && (fields.action === 'dispose' || fields.action === 'disposeMany')) ||
-      (command === 'highlight' && (fields.action === 'hide' || fields.action === 'claim')) ||
-      ((command === 'recording' || command === 'streaming') &&
-        (fields.action === 'stop' || fields.action === 'cancel')) ||
-      command === 'claimConsoleArguments' ||
-      command === 'acknowledgeConsole' ||
-      bindingControl
-        ? 128
-        : 64
-    if (pending.size >= capacity)
-      return Promise.reject(
-        new Error(
-          `Too many pending native commands: ${pending.size} are awaiting a reply and suitecut allows ${capacity} at once`,
-        ),
-      )
     const id = ++nextId
     const message =
       withoutNativeRetryOperation(() =>

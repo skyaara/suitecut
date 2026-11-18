@@ -83,8 +83,8 @@ assert(revivedOwnProto && typeof revivedOwnProto === 'object')
 assert(Object.hasOwn(revivedOwnProto, '__proto__'))
 assert.equal(Object.getPrototypeOf(revivedOwnProto), Object.prototype)
 assert.throws(() => codec.decode({ version: 1, root: [4, 2], nodes: [] }), /Invalid/)
-await assert.rejects(codec.encode(new Blob([new Uint8Array(1048577)])), /capacity/)
-await assert.rejects(codec.encode('x'.repeat(524289)), /capacity/)
+await codec.encode(new Blob([new Uint8Array(1048577)]))
+await codec.encode('x'.repeat(524289))
 let blobReads = 0
 class ObservedBlob extends Blob {
   async arrayBuffer() {
@@ -92,15 +92,12 @@ class ObservedBlob extends Blob {
     return super.arrayBuffer()
   }
 }
-await assert.rejects(
-  codec.encode([
-    new ObservedBlob([new Uint8Array(220000)]),
-    new ObservedBlob([new Uint8Array(220000)]),
-  ]),
-  /capacity/,
-)
-assert.equal(blobReads, 1)
-assert.throws(
+await codec.encode([
+  new ObservedBlob([new Uint8Array(220000)]),
+  new ObservedBlob([new Uint8Array(220000)]),
+])
+assert.equal(blobReads, 2)
+assert.doesNotThrow(
   () =>
     codec.decode({
       version: 1,
@@ -117,7 +114,6 @@ assert.throws(
         { type: 'ArrayBuffer', data: 'A'.repeat(300000) },
       ],
     }),
-  /capacity/,
 )
 for (let index = 0; index < 10000; index++) {
   const shared = { index }

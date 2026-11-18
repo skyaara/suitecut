@@ -9,7 +9,7 @@
 #include <vector>
 #include "developer_debugger_evaluation_projection.h"
 namespace suitecut {
-namespace {std::atomic<size_t>process_evaluations{0};constexpr size_t kSession=8,kProcess=64;constexpr double kCleanup=30000;}
+namespace {std::atomic<size_t>process_evaluations{0};constexpr double kCleanup=30000;}
 class DeveloperDebuggerEvaluations::Impl:public std::enable_shared_from_this<Impl>{
  public:
   struct Record{
@@ -53,14 +53,13 @@ class DeveloperDebuggerEvaluations::Impl:public std::enable_shared_from_this<Imp
     if(!reply)return;
     if(std::isfinite(deadline)&&Expired(deadline)){reply(false,"","Native paused evaluation original deadline expired before admission");return;}
     std::u16string expression;
-    if(closed_||closing_||close_requested_||owner<1||!std::isfinite(deadline)||deadline<0||pause.empty()||pause.size()>512||frame.empty()||frame.size()>512||
-       expression_json.size()>49154||!DevToolsStringUnits(expression_json,expression)||expression.empty()||expression.size()>8192||DevToolsHasIsolated(expression)||
-       !hooks_.current(pause,frame)||records_.size()>=kSession||serial_==9007199254740991ULL){
-      reply(false,"","Native paused evaluation requires bounded source and an exact current pause/frame; isolated source units require JavaScript Unicode escapes");return;
+    if(closed_||closing_||close_requested_||owner<1||!std::isfinite(deadline)||deadline<0||pause.empty()||frame.empty()||
+       !DevToolsStringUnits(expression_json,expression)||expression.empty()||DevToolsHasIsolated(expression)||
+       !hooks_.current(pause,frame)||serial_==9007199254740991ULL){
+      reply(false,"","Native paused evaluation requires non-empty source and an exact current pause/frame; isolated source units require JavaScript Unicode escapes");return;
     }
     if(Expired(deadline)){reply(false,"","Native paused evaluation original deadline expired during admission");return;}
-    size_t count=process_evaluations.load();while(count<kProcess&&!process_evaluations.compare_exchange_weak(count,count+1)){}
-    if(count>=kProcess){reply(false,"","Native paused evaluation process group capacity exceeded");return;}
+    ++process_evaluations;
     auto record=std::make_shared<Record>();record->serial=++serial_;record->owner=owner;record->deadline=deadline;record->pause=pause;record->frame=frame;
     record->group=hooks_.session+":evaluation:"+std::to_string(record->serial);record->reply=std::move(reply);records_.emplace(record->serial,record);physical_self_=shared_from_this();
     auto params=CefDictionaryValue::Create();params->SetString("callFrameId",frame);params->SetString("expression",CefString(expression));params->SetString("objectGroup",record->group);

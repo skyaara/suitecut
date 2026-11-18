@@ -15,16 +15,16 @@ describe('native capture ceiling and encoded output cadence', () => {
       expect(() => CaptureFrameRateSchema.parse(rate)).toThrow()
     },
   )
-  it.each([Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY, 0, 0.5, 120.001])(
+  it.each([Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY, 0, 0.5])(
     'rejects out-of-range/nonfinite rate %s in both clocks',
     (rate) => {
       expect(() => OutputFrameRateSchema.parse(rate)).toThrow()
       expect(() => CaptureFrameRateSchema.parse(rate)).toThrow()
     },
   )
-  it('preserves the integer 120 FPS capture ceiling and output limit', () => {
-    expect(CaptureFrameRateSchema.parse(120)).toBe(120)
-    expect(OutputFrameRateSchema.parse(120)).toBe(120)
+  it('leaves the frame-rate ceiling to CEF and the encoder', () => {
+    expect(CaptureFrameRateSchema.parse(240)).toBe(240)
+    expect(OutputFrameRateSchema.parse(120.001)).toBe(120.001)
   })
   it('partitions 48kHz PCM across fractional slots without cumulative sample drift', () => {
     const samples = Array.from({ length: 300 }, (_, index) =>

@@ -40,7 +40,7 @@ class DownloadResponseBudgets : public std::enable_shared_from_this<DownloadResp
  public:
   DownloadResponseBudgets(std::shared_ptr<DownloadQuota> quota,std::function<double()> now):quota_(std::move(quota)),now_(std::move(now)){}
   std::shared_ptr<DownloadResponseStream> Create(int page,const std::string& url){
-    std::lock_guard lock(mutex_);if(streams_.size()>=512)return nullptr;
+    std::lock_guard lock(mutex_);
     auto stream=std::make_shared<DownloadResponseStream>();stream->page=page;stream->url=url;stream->created=now_();stream->quota=std::make_shared<DownloadQuotaLease>(quota_);streams_.push_back(stream);return stream;
   }
   void Collect(){std::lock_guard lock(mutex_);std::erase_if(streams_,[](const auto& stream){return stream->ended.load();});}
@@ -50,12 +50,6 @@ class DownloadResponseBudgets : public std::enable_shared_from_this<DownloadResp
  private:std::shared_ptr<DownloadQuota> quota_;std::function<double()> now_;mutable std::mutex mutex_;std::vector<std::shared_ptr<DownloadResponseStream>> streams_;
 };
 namespace {
-class DownloadDeniedFilter : public CefResponseFilter {
- public:
-  bool InitFilter()override{return true;}
-  FilterStatus Filter(void*,size_t,size_t& input_read,void*,size_t,size_t& output_written)override{input_read=output_written=0;return RESPONSE_FILTER_ERROR;}
- private:IMPLEMENT_REFCOUNTING(DownloadDeniedFilter);
-};
 class DownloadResponseFilter : public CefResponseFilter {
  public:explicit DownloadResponseFilter(std::shared_ptr<DownloadResponseStream> stream):stream_(std::move(stream)){}
   ~DownloadResponseFilter()override{stream_->quota->ReduceTo(0);stream_->ended=true;}
@@ -84,7 +78,6 @@ class DownloadResourceHandler : public CefResourceRequestHandler {
     const bool candidate=Observe(request,response);
     if(!candidate)return nullptr;
     stream_=budgets_->Create(page_,request->GetURL());
-    if(!stream_)return new DownloadDeniedFilter();
     return new DownloadResponseFilter(stream_);
   }
   void OnResourceLoadComplete(CefRefPtr<CefBrowser> browser,CefRefPtr<CefFrame> frame,CefRefPtr<CefRequest> request,CefRefPtr<CefResponse> response,URLRequestStatus status,int64_t received)override{
@@ -119,45 +112,29 @@ DownloadControls::DownloadControls(Hooks hooks):hooks_(std::move(hooks)){
 }
 DownloadControls::~DownloadControls(){Clear();}
 bool DownloadControls::CanDownload(int page)const{
-  if(clearing_||closing_pages_.contains(page)||!hooks_.policy(page).context)return false;
-  if(records_.size()<256)return true;
-  for(const auto& [id,record]:records_)if(record->physical_settled&&!record->files)return true;
-  return false;
+  return !clearing_&&!closing_pages_.contains(page)&&hooks_.policy(page).context;
 }
 std::shared_ptr<DownloadControls::Record> DownloadControls::Ensure(int page,CefRefPtr<CefDownloadItem> item){
   const auto key=std::make_pair(page,item->GetId());
   if(const auto found=native_ids_.find(key);found!=native_ids_.end())return records_.at(found->second);
-  if(records_.size()>=256){
-    for(auto it=records_.begin();it!=records_.end();++it)if(it->second->physical_settled&&!it->second->files){native_ids_.erase({it->second->page,it->second->native_id});records_.erase(it);break;}
-  }
-  if(records_.size()>=256||next_id_==std::numeric_limits<std::uint64_t>::max())return nullptr;
+  if(next_id_==std::numeric_limits<std::uint64_t>::max())return nullptr;
   const auto policy=hooks_.policy(page);if(policy.context<=0)return nullptr;
   auto record=std::make_shared<Record>();record->page=page;record->native_id=item->GetId();record->id="download-"+namespace_+"-"+std::to_string(++next_id_);
   record->context=policy.context;record->accepted=policy.accepted;record->event_page=policy.event_page>0?policy.event_page:page;
   Snapshot(*record,item);native_ids_[key]=record->id;records_[record->id]=record;return record;
 }
 void DownloadControls::Snapshot(Record& record,CefRefPtr<CefDownloadItem> item){
-  const auto metadata=[&record](std::string& field,bool& unavailable,const std::string& value,size_t limit,const char* name){
-    unavailable=unavailable||value.size()>limit;
-    if(unavailable){field.clear();if(record.failure.empty())record.failure=std::string("Native download metadata capacity exceeded: ")+name+" unavailable";}
-    else field=value;
-  };
-  metadata(record.url,record.unavailable_url,item->GetURL(),8192,"URL");
-  metadata(record.original_url,record.unavailable_original,item->GetOriginalUrl(),8192,"original URL");
-  metadata(record.mime,record.unavailable_mime,item->GetMimeType(),1024,"MIME type");
+  record.url=item->GetURL();record.original_url=item->GetOriginalUrl();record.mime=item->GetMimeType();
   record.total=item->GetTotalBytes();record.received=std::max<std::int64_t>(0,item->GetReceivedBytes());
-  if(record.total>9007199254740991ll&&record.failure.empty())record.failure="Native download metadata capacity exceeded: totalBytes unavailable outside precise numeric range";
-  if(record.suggested.empty()&&!record.unavailable_suggested)metadata(record.suggested,record.unavailable_suggested,item->GetSuggestedFileName(),4096,"suggested filename");
+  if(record.suggested.empty())record.suggested=item->GetSuggestedFileName();
   if(item->IsComplete()){record.complete=true;record.settled=true;}
   else if(item->IsCanceled()){record.settled=true;if(record.failure.empty())record.failure="canceled";}
   else if(item->IsInterrupted()){record.settled=true;if(record.failure.empty())record.failure=DownloadReason(item->GetInterruptReason());}
 }
 DownloadControls::Dict DownloadControls::Info(const Record& record,const char* event)const{
   auto result=CefDictionaryValue::Create();result->SetString("event",event);result->SetString("id",record.id);result->SetInt("pageId",record.event_page);result->SetInt("contextId",record.context);
-  if(record.unavailable_url)result->SetNull("url");else result->SetString("url",record.url);
-  if(record.unavailable_original)result->SetNull("originalURL");else result->SetString("originalURL",record.original_url);
-  if(record.unavailable_suggested)result->SetNull("suggestedFilename");else result->SetString("suggestedFilename",record.suggested);
-  if(record.unavailable_mime)result->SetNull("mimeType");else result->SetString("mimeType",record.mime);
+  result->SetString("url",record.url);result->SetString("originalURL",record.original_url);
+  result->SetString("suggestedFilename",record.suggested);result->SetString("mimeType",record.mime);
   if(record.total>9007199254740991ll)result->SetNull("totalBytes");else result->SetDouble("totalBytes",static_cast<double>(record.total));
   result->SetDouble("receivedBytes",static_cast<double>(record.received));result->SetBool("accepted",record.accepted);
   result->SetString("state",record.physical_settled?(record.complete&&record.failure.empty()?"complete":"failed"):"inProgress");
@@ -167,23 +144,19 @@ DownloadControls::Dict DownloadControls::Info(const Record& record,const char* e
 bool DownloadControls::Before(int page,CefRefPtr<CefDownloadItem> item,const std::string& suggested,CefRefPtr<CefBeforeDownloadCallback> callback){
   if(!item||!item->IsValid())return true;
   auto record=Ensure(page,item);if(!record)return true;
-  record->unavailable_suggested=record->unavailable_suggested||suggested.size()>4096;
-  if(record->unavailable_suggested){record->suggested.clear();if(record->failure.empty())record->failure="Native download metadata capacity exceeded: suggested filename unavailable";}
-  else record->suggested=suggested;
+  record->suggested=suggested;
   if(record->emitted)return true;
   record->emitted=true;
   const auto policy=hooks_.policy(page);record->event_page=policy.event_page>0?policy.event_page:page;
   const bool closing=clearing_||(closing_pages_.contains(page)||closing_pages_.contains(record->event_page))||closing_contexts_.contains(record->context);
   if(closing)record->failure="Target page, context or browser has been closed";
   else if(!record->accepted)record->failure="Pass { acceptDownloads: true } when you are creating your browser context";
-  else if(record->url.size()>8192||record->original_url.size()>8192||record->suggested.size()>4096)record->failure="Native download metadata capacity exceeded";
-  else if(record->total>static_cast<std::int64_t>(DownloadQuota::kFileLimit))record->failure="Native download exceeds the 256 MiB file limit";
   if(record->failure.empty()){
     record->quota=std::make_shared<DownloadQuotaLease>(quota_);
     // CEF and response callbacks need not arrive in matching URL order. File
     // reservations never borrow an unrelated response stream's identity.
-    const auto reserve=record->total>0?static_cast<std::uint64_t>(record->total):DownloadQuota::kFileLimit;
-    if(!record->quota->Add(reserve))record->failure="Native download disk capacity exceeded (1 GiB)";
+    const auto reserve=record->total>0?static_cast<std::uint64_t>(record->total):0;
+    if(!record->quota->Add(reserve))record->failure="Native download byte accounting overflowed";
     if(record->failure.empty())try{record->files=std::make_shared<DownloadFiles>(DirectoryForContext(record->context));}catch(const std::exception& error){record->failure=error.what();}
   }
   hooks_.event(record->event_page,Info(*record,"created"));
@@ -198,7 +171,6 @@ void DownloadControls::Updated(int page,CefRefPtr<CefDownloadItem> item,CefRefPt
   auto record=Ensure(page,item);if(!record){callback->Cancel();return;}
   if(record->physical_settled)return;
   record->callback=callback;Snapshot(*record,item);
-  if(record->received>static_cast<std::int64_t>(DownloadQuota::kFileLimit))RequestCancel(*record,"Native download disk capacity exceeded");
   if(record->files&&record->complete)try{record->files->Adopt(item->GetFullPath());}catch(const std::exception& error){record->failure=error.what();}
   if(clearing_||(closing_pages_.contains(page)||closing_pages_.contains(record->event_page))||closing_contexts_.contains(record->context))RequestCancel(*record,"Target page, context or browser has been closed");
   if(record->cancel_requested&&!record->settled)callback->Cancel();
@@ -230,7 +202,9 @@ void DownloadControls::Finish(std::shared_ptr<Record> record){
   if(record->files&&record->files->HasOpenDescriptor())return;
   if(record->complete&&record->failure.empty()&&record->files)try{
     const auto size=record->files->Complete();
-    if(!record->quota||size>record->quota->Bytes()){record->failure="Native completed download exceeded its reserved disk budget";record->complete=false;}
+    // Accounting follows the actual completed size; there is no byte limit.
+    if(!record->quota){record->failure="Native completed download lost its byte accounting";record->complete=false;}
+    else if(const auto held=record->quota->Bytes();size>held)(void)record->quota->Add(size-held);
     else record->quota->ReduceTo(size);
     record->received=static_cast<std::int64_t>(size);
   }catch(const std::exception& error){record->failure=error.what();record->complete=false;}
@@ -249,7 +223,7 @@ void DownloadControls::Handle(int owner,Dict params,double deadline,Reply reply)
   auto record=found->second;
   if(action=="status"){reply(true,Info(*record),"");return;}
   if(action!="path"&&action!="failure"&&action!="saveAs"&&action!="delete"&&action!="cancel"){reply(false,nullptr,"Unsupported native download action");return;}
-  if(waits_.size()+copies_.size()>=128||waits_.contains(owner)||copies_.contains(owner)){reply(false,nullptr,"Native download operation capacity exceeded");return;}
+  if(waits_.contains(owner)||copies_.contains(owner)){reply(false,nullptr,"Native download operation owner is already active");return;}
   Wait wait;wait.owner=owner;wait.id=id;wait.action=action;wait.deadline=deadline;wait.reply=std::move(reply);
   if(action=="saveAs"){
     if(params->GetType("path")!=VTYPE_STRING){wait.reply(false,nullptr,"Native download saveAs requires a destination path");return;}
@@ -282,13 +256,12 @@ void DownloadControls::CompleteWait(int owner){
 }
 void DownloadControls::StartCopy(Wait wait,std::shared_ptr<Record> record){
   const NativeWorkOriginFrame handler_origin(wait.origin.Origin());
-  if(copies_.size()>=4){wait.reply(false,nullptr,"Native download saveAs copy capacity exceeded");return;}
   auto lease=std::make_shared<DownloadQuotaLease>(quota_);
-  if(!lease->Add(static_cast<std::uint64_t>(record->received))){wait.reply(false,nullptr,"Native download saveAs disk capacity exceeded (1 GiB)");return;}
+  if(!lease->Add(static_cast<std::uint64_t>(record->received))){wait.reply(false,nullptr,"Native download saveAs byte accounting overflowed");return;}
   auto copy=std::make_shared<Copy>();copy->owner=wait.owner;copy->id=record->id;copy->deadline=wait.deadline;copy->reply=std::exchange(wait.reply, nullptr);copy->files=record->files;copy->quota=lease;copies_[copy->owner]=copy;
   const auto weak=weak_from_this();const auto now=hooks_.now;const auto path=wait.path;
   copy->thread=std::thread([copy,weak,now,path]{
-    copy->result=CopyDownloadFile(copy->files->path(),path,copy->canceled,copy->deadline,now,copy->quota->Bytes());
+    copy->result=CopyDownloadFile(copy->files->path(),path,copy->canceled,copy->deadline,now);
     CefPostTask(TID_UI,new DownloadTask([weak,owner=copy->owner]{if(const auto self=weak.lock())self->CopyFinished(owner);}));
   });
 }

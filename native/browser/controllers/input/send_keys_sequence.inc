@@ -115,7 +115,6 @@ void SendKeysSequenceStep(const std::shared_ptr<InputWork>& work) {
     InputCall(work,"Input.insertText",params,[this,work,delay]{ContinueInput(work,delay);});return;
   }
   if(token.kind!=Kind::Key){Complete(work->owner,false,"Invalid native send-keys token");return;}
-  if(work->send_keys_held.size()>=12){Complete(work->owner,false,"Native send-keys held-key capacity exceeded");return;}
   if(modifier){
     if(token.key.code=="ShiftLeft")work->send_keys_auto_shift=false;
     if(!pressed_keys_.contains(token.key.code))work->send_keys_held.push_back(token.key);

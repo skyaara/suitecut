@@ -5,7 +5,7 @@ struct ArtifactMaskWork {
   int owner = 0; uint64_t generation = 0;
   Dict config; ArtifactGeometryDone done;
   CefRefPtr<CefListValue> targets, boxes;
-  size_t target = 0, node = 0, total = 0;
+  size_t target = 0, node = 0;
   std::string frame;
   std::vector<std::string> nodes;
   std::vector<double> local, mapped;
@@ -16,7 +16,6 @@ void ArtifactMasks(int id, Dict config, ArtifactGeometryDone done) {
   if(config->HasKey("masks")&&config->GetType("masks")!=VTYPE_LIST){done(false,"Invalid native screenshot mask list");return;}
   auto targets = config->GetList("masks");
   if (!targets || !targets->GetSize()) { done(true, ""); return; }
-  if (targets->GetSize() > 1024) { done(false, "Screenshot mask locator limit exceeded"); return; }
   auto work = std::make_shared<ArtifactMaskWork>(); work->owner=id;work->generation=operation->generation;
   work->config=config;work->done=std::move(done);work->targets=targets->Copy();work->boxes=CefListValue::Create();
   ArtifactMaskTarget(work);
@@ -32,7 +31,7 @@ void ArtifactMaskTarget(std::shared_ptr<ArtifactMaskWork> work) {
     work->frame=FrameId(resolved);
     WithFrame(work->owner,work->frame,[this,work,resolved](int context){
       auto params=CefDictionaryValue::Create();params->SetInt("contextId",context);
-      params->SetString("expression","(()=>{const a="+QueryExpression(resolved)+";if(a.length>1024)throw new Error('Screenshot mask node limit exceeded');return a})()");
+      params->SetString("expression","(()=>{const a="+QueryExpression(resolved)+";return a})()");
       params->SetString("objectGroup","suitecut-automation-"+std::to_string(work->owner));
       evaluation_groups_[work->owner].insert(operation_sessions_[work->owner]);
       auto callback=[this,work](bool ok,const std::string& json){
@@ -45,20 +44,19 @@ void ArtifactMaskTarget(std::shared_ptr<ArtifactMaskWork> work) {
           if(!operations_.IsCurrent(work->owner,work->generation))return;
           auto parsed=CefParseJSON(json,JSON_PARSER_RFC);auto result=parsed?parsed->GetDictionary():nullptr;
           auto properties=result?result->GetList("result"):nullptr;
-          if(!valid||!properties||properties->GetSize()>1026){work->done(false,"Native screenshot mask result limit exceeded");return;}
+          if(!valid||!properties){work->done(false,"Native screenshot mask result unavailable");return;}
           for(size_t i=0;i<properties->GetSize();++i){
             auto property=properties->GetDictionary(i);if(!property)continue;
             const auto name=property->GetString("name").ToString();
             if(name.empty()||!std::all_of(name.begin(),name.end(),[](unsigned char c){return c>='0'&&c<='9';}))continue;
             auto node=property->GetDictionary("value");
             if(!node||node->GetString("subtype")!="node"||node->GetType("objectId")!=VTYPE_STRING){work->done(false,"Screenshot mask query returned a non-element");return;}
-            if(++work->total>1024){work->done(false,"Screenshot mask node limit exceeded");return;}
             work->nodes.push_back(node->GetString("objectId"));
           }
           ArtifactMaskNode(work);
         },std::nullopt,false,kMaxResponseBytes,true);
       };
-      if(QueryUsesMultipleWorlds(resolved))QueryInspect(work->owner,resolved,"if(nodes.length>1024)throw new Error('Screenshot mask node limit exceeded');return nodes;",true,false,std::move(callback));
+      if(QueryUsesMultipleWorlds(resolved))QueryInspect(work->owner,resolved,"return nodes;",true,false,std::move(callback));
       else DevTools(work->owner,"Runtime.evaluate",params,std::move(callback));
     },!QueryNeedsMainWorld(resolved));
   });
@@ -94,7 +92,7 @@ void ArtifactMaskNode(std::shared_ptr<ArtifactMaskWork> work) {
           for(size_t i=0;i<6;++i){
             if(rect->GetType(i)!=VTYPE_DOUBLE&&rect->GetType(i)!=VTYPE_INT){work->done(false,"Invalid native screenshot mask coordinates");return;}
             const double value=rect->GetType(i)==VTYPE_INT?rect->GetInt(i):rect->GetDouble(i);
-            if(!std::isfinite(value)||std::abs(value)>100000000){work->done(false,"Screenshot mask coordinates exceed geometry bounds");return;}
+            if(!std::isfinite(value)){work->done(false,"Screenshot mask coordinates are not finite");return;}
             work->local.push_back(value);
           }
           work->viewport_width=work->local[4];work->viewport_height=work->local[5];
@@ -121,7 +119,7 @@ void ArtifactMapMaskCorner(std::shared_ptr<ArtifactMaskWork> work,size_t corner)
 }
 void ArtifactInstallMasks(std::shared_ptr<ArtifactMaskWork> work) {
   auto value=CefValue::Create();value->SetList(work->boxes);const auto boxes=CefWriteJSON(value,JSON_WRITER_DEFAULT).ToString();
-  if(work->config->HasKey("maskColor")&&(work->config->GetType("maskColor")!=VTYPE_STRING||work->config->GetString("maskColor").length()>4096)){work->done(false,"Invalid native screenshot mask color");return;}
+  if(work->config->HasKey("maskColor")&&work->config->GetType("maskColor")!=VTYPE_STRING){work->done(false,"Invalid native screenshot mask color");return;}
   auto color=CefValue::Create();color->SetString(work->config->HasKey("maskColor")?work->config->GetString("maskColor"):CefString("#FF00FF"));const auto quoted=CefWriteJSON(color,JSON_WRITER_DEFAULT).ToString();
   Evaluate(work->owner,"(async()=>{const color="+quoted+";if(!CSS.supports('color',color))throw new Error('Invalid screenshot maskColor');"
     "const m=globalThis.__suitecutArtifactStyles,resources=m?.get("+std::to_string(work->owner)+");if(!resources)throw new Error('Screenshot mask resources unavailable');"

@@ -234,8 +234,7 @@ export class NativeLocatorHandlers {
       }
       return
     }
-    if (prior || this.invocations.size >= 64)
-      throw new Error('Native locator handler overlapping/replayed callback')
+    if (prior) throw new Error('Native locator handler overlapping/replayed callback')
     const send = bindNativeRetryContinuation(
       (
         command: Parameters<NativeBrowser['runAutomation']>[0],

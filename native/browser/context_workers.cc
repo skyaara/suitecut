@@ -76,7 +76,7 @@ class SuiteCutContextWorkers::Client : public CefClient, public CefLifeSpanHandl
     worker_websocket_detach_=[this](const std::string&session){if(auto owner=owner_.lock();owner&&owner->hooks_.detach_websocket)owner->hooks_.detach_websocket(network_policy_target_+"/ws:"+session);};
     worker_event_available_=[this](bool actual_retirement){return suitecut::NativeContextWorkerCursors::CanNext(event_sequence_,actual_retirement);};
     worker_event_failure_=[this]{
-      EventCursorFailed("Native context worker event cursor capacity exceeded");
+      EventCursorFailed("Native context worker event sequence exhausted");
     };
   }
   void EventCursorFailed(const std::string&error){if(network_fatal_){network_fatal_->Fail(error);WakeDeadlines();}else{Error(error.c_str());Close();}}
@@ -113,11 +113,11 @@ class SuiteCutContextWorkers::Client : public CefClient, public CefLifeSpanHandl
       if(!owner->hooks_.network_owner(context_,network_policy_target_,
         [self=CefRefPtr<Client>(this)](int owner,Dict command,double deadline,Reply reply){self->PublicNetworkCommand(owner,command,deadline,std::move(reply));},
         [self=CefRefPtr<Client>(this)](const std::string&session,const std::string&request,double deadline,std::function<void(bool,std::vector<uint8_t>,const std::string&)>reply){self->NativeReadResponseBody(session,request,deadline,std::move(reply));},
-        [self=CefRefPtr<Client>(this)](int owner){if(self->network_)self->network_->Cancel(owner);})){network_fatal_->Fail("Native context worker network owner capacity exceeded");WakeDeadlines();return;}
+        [self=CefRefPtr<Client>(this)](int owner){if(self->network_)self->network_->Cancel(owner);})){network_fatal_->Fail("Native context worker network owner registration failed");WakeDeadlines();return;}
     }
     if(auto owner=owner_.lock();owner&&owner->hooks_.resource_owner){
       if(!owner->hooks_.resource_owner(context_,network_policy_target_,[self=CefRefPtr<Client>(this)](const std::string&session,const std::string&request,double deadline,std::function<void(bool,std::vector<uint8_t>,const std::string&)>reply){self->NativeReadResponseBody(session,request,deadline,std::move(reply));})){
-        Error("Native broker network archive owner capacity exceeded");suitecut::browser::CloseBrowser(browser, true);return;
+        Error("Native broker network archive owner registration failed");suitecut::browser::CloseBrowser(browser, true);return;
       }
       network_->SetObserver([this](Dict event){if(auto owner=owner_.lock();owner&&owner->hooks_.resource_event)owner->hooks_.resource_event(context_,network_policy_target_,event);});
     }
@@ -136,7 +136,7 @@ class SuiteCutContextWorkers::Client : public CefClient, public CefLifeSpanHandl
           auto params=CefDictionaryValue::Create();params->SetString("action","setOffline");params->SetBool("offline",offline);
           self->network_->Command(0,params,[done=std::move(done)](bool ok,const std::string& error,const std::string&){done(ok,error);});
         },std::move(initialize));
-      if(!attached){Error("Native broker network policy capacity exceeded");suitecut::browser::CloseBrowser(browser, true);}
+      if(!attached){Error("Native broker network policy registration failed");suitecut::browser::CloseBrowser(browser, true);}
     }else initialize(true,"");
   }
   void AuthenticateAndDiscover() {
@@ -155,7 +155,7 @@ class SuiteCutContextWorkers::Client : public CefClient, public CefLifeSpanHandl
         if(self->closing_page_||!self->network_){done(false,"Native broker HTTP headers target is closed");return;}
         auto params=CefDictionaryValue::Create();params->SetString("action","setContextExtraHTTPHeaders");params->SetDictionary("headers",headers->Copy(false));
         self->network_->Command(0,params,[done=std::move(done)](bool ok,const std::string&error,const std::string&){done(ok,error);});
-      },std::move(discover))){network_fatal_->Fail("Native broker HTTP headers target capacity exceeded");WakeDeadlines();}
+      },std::move(discover))){network_fatal_->Fail("Native broker HTTP headers target registration failed");WakeDeadlines();}
     }else discover(true,"");
   }
   void InstallContextHAR(){
@@ -165,7 +165,7 @@ class SuiteCutContextWorkers::Client : public CefClient, public CefLifeSpanHandl
         if(self->closing_page_||!self->network_){done(false,"Actual broker HAR policy target is closed");return;}
         if(mutation==suitecut::NativeContextHARRoutes::Mutation::Install)self->network_->BindReplayPolicy(route.id,route.pattern,route.policy,std::move(done),deadline,true);
         else self->network_->UnbindReplayPolicy(route.id,route.policy,std::move(done),deadline);
-      },std::move(ready))){network_fatal_->Fail("Native broker HAR policy capacity exceeded");WakeDeadlines();}
+      },std::move(ready))){network_fatal_->Fail("Native broker HAR policy registration failed");WakeDeadlines();}
     }else ready(true,"");
   }
   void InstallContextRoutes(){
@@ -175,7 +175,7 @@ class SuiteCutContextWorkers::Client : public CefClient, public CefLifeSpanHandl
         if(self->closing_page_||!self->network_){done(false,"Actual broker context route owner is closed");return;}
         if(mutation==suitecut::NativeContextRoutes::Mutation::Install)self->network_->BindContextRoute(std::move(route),std::move(done),deadline);
         else self->network_->UnbindContextRoutePolicy(route,std::move(done),deadline);
-      },std::move(ready))){network_fatal_->Fail("Native broker context route capacity exceeded");WakeDeadlines();}
+      },std::move(ready))){network_fatal_->Fail("Native broker context route registration failed");WakeDeadlines();}
     }else ready(true,"");
   }
   bool websocket_root_ready_=false;
@@ -183,7 +183,6 @@ class SuiteCutContextWorkers::Client : public CefClient, public CefLifeSpanHandl
   void WebSocketPolicyReady(NetworkResult done){
     if(closing_page_){done(false,"Actual native WebSocket broker is closed");return;}
     if(websocket_root_ready_){done(true,"");return;}
-    if(websocket_readiness_.size()>=32){done(false,"Native WebSocket broker readiness capacity exceeded");return;}
     websocket_readiness_.push_back(std::move(done));
   }
   void AttachWebSocketTarget(const std::string&session,NetworkResult done){
@@ -193,7 +192,7 @@ class SuiteCutContextWorkers::Client : public CefClient, public CefLifeSpanHandl
       [self=CefRefPtr<Client>(this),session](const std::string&method,Dict params,double deadline,NetworkResult reply){
         if(self->closing_page_||!self->browser_){reply(false,"Actual WebSocket broker target is closed");return;}
         self->ControlSend(method,params,session,std::move(reply),deadline);
-      },[self=CefRefPtr<Client>(this)](const std::string&error){self->network_fatal_->Fail(error);self->WakeDeadlines();},std::move(done))){network_fatal_->Fail("Native WebSocket broker target capacity exceeded");WakeDeadlines();}
+      },[self=CefRefPtr<Client>(this)](const std::string&error){self->network_fatal_->Fail(error);self->WakeDeadlines();},std::move(done))){network_fatal_->Fail("Native WebSocket broker target registration failed");WakeDeadlines();}
   }
   void InstallContextWebSockets(){
     ControlSend("Network.enable",nullptr,"",[self=CefRefPtr<Client>(this)](bool ok,const std::string&error){
@@ -213,9 +212,9 @@ class SuiteCutContextWorkers::Client : public CefClient, public CefLifeSpanHandl
   void DiscoverContext() {
     ControlSend("Target.getTargetInfo",nullptr,"",[this](bool ok,const std::string& json){
       auto parsed=CefParseJSON(json,JSON_PARSER_RFC);auto result=parsed?parsed->GetDictionary():nullptr;auto info=result?result->GetDictionary("targetInfo"):nullptr;
-      if(!ok||!info||info->GetType("browserContextId")!=VTYPE_STRING||info->GetString("browserContextId").empty()||info->GetString("browserContextId").length()>128){Error("Could not establish actual worker Chromium context identity");return;}
+      if(!ok||!info||info->GetType("browserContextId")!=VTYPE_STRING||info->GetString("browserContextId").empty()){Error("Could not establish actual worker Chromium context identity");return;}
       chromium_context_=info->GetString("browserContextId");
-      if(info->GetType("targetId")==VTYPE_STRING&&!info->GetString("targetId").empty()&&info->GetString("targetId").length()<=128)root_target_id_=info->GetString("targetId");
+      if(info->GetType("targetId")==VTYPE_STRING&&!info->GetString("targetId").empty())root_target_id_=info->GetString("targetId");
       auto discover=CefDictionaryValue::Create();discover->SetBool("discover",true);
       ControlSend("Target.setDiscoverTargets",discover,"",[this](bool discovered,const std::string& error){
         if(!discovered){Error(error.c_str());return;}
@@ -253,7 +252,7 @@ class SuiteCutContextWorkers::Client : public CefClient, public CefLifeSpanHandl
     if(!response_reads_)response_reads_=std::make_unique<suitecut::NativeResponseBodyReads>(
       [this](const std::string& target,const std::string& request,double original,suitecut::NativeResponseBodyReads::Result done){
         if(closing_page_||!browser_){done(false,"Actual native broker response-body owner is closed");return;}
-        const int id=AllocateDevToolsId();if(!id||controls_.size()>=128){done(false,"Native broker response-body command capacity exceeded");return;}
+        const int id=AllocateDevToolsId();if(!id){done(false,"Native broker response-body command ID exhausted");return;}
         controls_.emplace(id,Control{target,original?original:Now()+30000,[this,target,request,done=std::move(done)](bool ok,const std::string&json){const auto result=image_streams_?image_streams_->Resolve(target,request,ok,json):std::pair<bool,std::string>{ok,json};done(result.first,result.second);}});WakeDeadlines();
         auto params=CefDictionaryValue::Create();params->SetString("requestId",request);
         if(!SubmitDevTools(id,"Network.getResponseBody",params,target)){
@@ -269,7 +268,7 @@ class SuiteCutContextWorkers::Client : public CefClient, public CefLifeSpanHandl
     if(!request_reads_)request_reads_=std::make_unique<suitecut::NativeRequestBodyReads>(
       [this](const std::string&session,const std::string&request,double original,suitecut::NativeRequestBodyReads::Result done){
         if(closing_page_||!browser_){done(false,"Actual native broker request-body owner is closed");return;}
-        const int id=AllocateDevToolsId();if(!id||controls_.size()>=128){done(false,"Native broker request-body command capacity exceeded");return;}
+        const int id=AllocateDevToolsId();if(!id){done(false,"Native broker request-body command ID exhausted");return;}
         controls_.emplace(id,Control{session,original?original:Now()+30000,std::move(done)});WakeDeadlines();auto params=CefDictionaryValue::Create();params->SetString("requestId",request);
         if(!SubmitDevTools(id,"Network.getRequestPostData",params,session)){const auto found=controls_.find(id);if(found!=controls_.end()){auto done=std::exchange(found->second.callback, nullptr);controls_.erase(found);done(false,"CEF rejected actual broker request-body read");}}
       },[this]{return Now();},[this]{WakeDeadlines();});
@@ -302,7 +301,6 @@ class SuiteCutContextWorkers::Client : public CefClient, public CefLifeSpanHandl
   bool OnDevToolsMessage(CefRefPtr<CefBrowser>,const void* message,size_t size) override {
     const auto native_inspector_callback=NativeInspectorCallback();
     if(std::getenv("SUITECUT_NATIVE_PROTOCOL_DIAGNOSTICS")&&diagnostic_messages_++<2000)std::fprintf(stderr,"native context worker received context=%d: %.*s\n",context_,int(std::min(size,size_t(65536))),static_cast<const char*>(message));
-    if(size>16*1048576){Error("Context worker DevTools response exceeds limit");return true;}
     auto parsed=CefParseJSON(std::string(static_cast<const char*>(message),size),JSON_PARSER_RFC);auto data=parsed?parsed->GetDictionary():nullptr;
     if(!data){
       // Recover only the actual reply envelope from a separate validation
@@ -351,7 +349,7 @@ class SuiteCutContextWorkers::Client : public CefClient, public CefLifeSpanHandl
     if(method=="Target.detachedFromTarget") {
       for(const auto& closed:WorkerSessionClosures(params->GetString("sessionId").ToString())){
         const auto mapped=worker_sessions_.find(closed);
-        if(mapped!=worker_sessions_.end()){const auto& target=worker_targets_.at(mapped->second);if((target.published||target.observed)&&!target.context_destroyed){if(detached_targets_.size()<kWorkerTargets)detached_targets_[target.id]=target;else Degraded("Native context worker detached target capacity exceeded");}}
+        if(mapped!=worker_sessions_.end()){const auto& target=worker_targets_.at(mapped->second);if((target.published||target.observed)&&!target.context_destroyed)detached_targets_[target.id]=target;}
         WorkerConsoleSessionRemoved(closed);WorkerDetached(closed);
         // Chrome never answers what this session was sent; end those rows too.
         NativeInspectorSessionDetached(closed);
@@ -370,7 +368,6 @@ class SuiteCutContextWorkers::Client : public CefClient, public CefLifeSpanHandl
       // Chromium reports SharedWorkerGlobalScope.close() as an actual inspector
       // target crash before removing its global discovery metadata.
       auto& target=worker_targets_.at(worker_sessions_.at(session));
-      if(finished_targets_.size()>=1024){Error("Native context worker terminated target capacity exceeded");return true;}
       finished_targets_.insert(target.id);target.context_destroyed=true;target.context=0;
       WorkerConsoleSessionRemoved(session);WorkerDetached(session);return true;
     }
@@ -401,7 +398,7 @@ class SuiteCutContextWorkers::Client : public CefClient, public CefLifeSpanHandl
   void Handle(int owner,Dict params,double deadline,Reply reply) {
     const double now=Now();
     if(closing_page_||(network_fatal_&&network_fatal_->pending())||(!deadline?false:deadline<=now)){reply(false,nullptr,closing_page_?"Native context worker channel closed":"Native context worker original deadline expired");return;}
-    const auto operation=operations_.Begin(owner,now,deadline?deadline-now:0);if(!operation){reply(false,nullptr,"Native context worker operation capacity exceeded");return;}
+    const auto operation=operations_.Begin(owner,now,deadline?deadline-now:0);if(!operation){reply(false,nullptr,"Native context worker operation id is invalid or already active");return;}
     const auto action=params->GetString("action");if(action=="evaluate"||action=="create"||action=="property")publication_eligible_.insert(owner);
     waiting_.emplace(owner,Waiting{params->Copy(false),std::move(reply)});WakeDeadlines();if(ready_)Run(owner);
   }
@@ -409,8 +406,7 @@ class SuiteCutContextWorkers::Client : public CefClient, public CefLifeSpanHandl
     const auto name=suitecut::NativeCookieMethodName(method);
     if(!name||owner<1||!reply||!params||params->HasKey("browserContextId")||params->HasKey("sessionId")||!std::isfinite(deadline)||deadline<0||closing_page_||(network_fatal_&&network_fatal_->pending())){if(reply)reply(false,nullptr,"Invalid or closed native cookie channel");return;}
     if(deadline&&deadline<=Now()){reply(false,nullptr,"Native cookie original deadline expired before dispatch");return;}
-    auto value=CefValue::Create();value->SetDictionary(params->Copy(false));
-    if(CefWriteJSON(value,JSON_WRITER_DEFAULT).length()>1048576||cookie_owners_.size()>=64||cookie_owners_.contains(owner)) {reply(false,nullptr,"Native cookie channel capacity exceeded");return;}
+    if(cookie_owners_.contains(owner)) {reply(false,nullptr,"Native cookie channel owner is already active");return;}
     cookie_owners_.insert(owner);cookie_waiting_.emplace(owner,CookieWaiting{method,params->Copy(false),deadline,std::move(reply)});WakeDeadlines();if(ready_)DispatchCookie(owner);
   }
   void DispatchCookie(int owner) {
@@ -451,7 +447,6 @@ class SuiteCutContextWorkers::Client : public CefClient, public CefLifeSpanHandl
       const auto kind=request->second.params->GetString("kind").ToString();const auto cursor=suitecut::NativeContextWorkerAfterSequence(request->second.params,event_sequence_);
       if((kind!="service_worker"&&kind!="shared_worker")||!cursor){Complete(owner,false,"Invalid native context worker event wait");return;}
       const auto after=*cursor;
-      if(!journal_.empty()&&after<double(journal_.front().sequence)-1){Complete(owner,false,"Native context worker event journal capacity exceeded");return;}
       for(const auto& record:journal_)if(record.sequence>after&&record.event=="worker"){
         auto parsed=CefParseJSON(record.json,JSON_PARSER_RFC);auto info=parsed?parsed->GetDictionary():nullptr;
         if(info&&info->GetDictionary("worker")->GetString("type")==kind){Complete(owner,true,"",record.json);return;}
@@ -469,8 +464,7 @@ class SuiteCutContextWorkers::Client : public CefClient, public CefLifeSpanHandl
   void Discover(Dict info) {
     if(!ready_||!Matches(info)||closing_page_)return;
     const auto id=info->GetString("targetId").ToString();
-    if(id.empty()||id.size()>128||worker_targets_.contains(id)||attaching_.contains(id)||finished_targets_.contains(id))return;
-    if(attaching_.size()+worker_targets_.size()>=1024){Error("Context worker target capacity exceeded");return;}
+    if(id.empty()||worker_targets_.contains(id)||attaching_.contains(id)||finished_targets_.contains(id))return;
     attaching_.insert(id);auto params=CefDictionaryValue::Create();params->SetString("targetId",id);params->SetBool("flatten",true);
     ControlSend("Target.attachToTarget",params,"",[this,id](bool ok,const std::string& error){attaching_.erase(id);if(!ok)Error(("Actual context worker attach failed: "+error).c_str());});
   }
@@ -514,7 +508,7 @@ class SuiteCutContextWorkers::Client : public CefClient, public CefLifeSpanHandl
       NativeInspectorNeverDispatched(id);
       // A rejected resume/bootstrap must not leave an author target paused.
       // Closing this actual private debugger channel releases its attachment.
-      if(!dispatch_close_task_){dispatch_close_task_=true;CefPostTask(TID_UI,new Task([self=CefRefPtr<Client>(this)]{self->Error("Native context worker dispatch queue capacity exceeded");self->Close();}));}
+      if(!dispatch_close_task_){dispatch_close_task_=true;CefPostTask(TID_UI,new Task([self=CefRefPtr<Client>(this)]{self->Error("Native context worker dispatch queue refused an invalid command");self->Close();}));}
       return false;
     }
     WakeDispatch();return true;
@@ -522,14 +516,14 @@ class SuiteCutContextWorkers::Client : public CefClient, public CefLifeSpanHandl
   #include "controllers/work/accepted_inspector_owner.inc"
   int SendDevTools(const std::string& method,Dict params=nullptr,const std::string& session="") {const int id=AllocateDevToolsId();return id&&SubmitDevTools(id,method,params,session)?id:0;}
   int ControlSend(const std::string& method,Dict params,const std::string& session,DevToolsCallback callback,double original_deadline=0){
-    const int id=AllocateDevToolsId();if(!id||controls_.size()>=128){callback(false,"Native context worker control capacity exceeded");return 0;}
+    const int id=AllocateDevToolsId();if(!id){callback(false,"Native context worker control ID exhausted");return 0;}
     controls_.emplace(id,Control{session,original_deadline?original_deadline:Now()+30000,suitecut::BindNativeLocatorHandlerAsync(std::move(callback))});WakeDeadlines();
     if(!SubmitDevTools(id,method,params,session)){auto call=std::move(controls_.at(id));controls_.erase(id);call.callback(false,"CEF rejected native context worker command");return 0;}
     return id;
   }
   void AutoAttach(const std::string& session){auto params=CefDictionaryValue::Create();params->SetBool("autoAttach",true);params->SetBool("waitForDebuggerOnStart",true);params->SetBool("flatten",true);SendDevTools("Target.setAutoAttach",params,session);}
-  void DevTools(int owner,const std::string& method,Dict params,DevToolsCallback callback,std::optional<std::string> session=std::nullopt,bool retained=false,size_t limit=16*1048576,bool lossless_scalars=false){
-    if(limit>16*1048576||!operations_.Contains(owner))return;
+  void DevTools(int owner,const std::string& method,Dict params,DevToolsCallback callback,std::optional<std::string> session=std::nullopt,bool retained=false,size_t /*former reply limit, unused*/=0,bool lossless_scalars=false){
+    if(!operations_.Contains(owner))return;
     const auto handler=waiting_.find(owner);auto actual=suitecut::CurrentNativeWorkOrigin();actual.locator_handler_invocation=0;
     const suitecut::NativeWorkOriginFrame handler_origin(handler==waiting_.end()?actual:handler->second.origin.Origin());
     callback=suitecut::BindNativeLocatorHandlerAsync(std::move(callback));
@@ -544,8 +538,8 @@ class SuiteCutContextWorkers::Client : public CefClient, public CefLifeSpanHandl
     if(ok&&!closing_page_&&network_&&publication_eligible_.contains(owner)){
       const auto operation=operations_.Get(owner);const auto cursor=network_->QueuedPublication();
       if(operation&&cursor>network_->PublishedPublication()){
-        if(publication_results_.Hold(owner,operation->generation,cursor,json)!=suitecut::NativeNetworkPublicationResults::Admission::Full){WakeDeadlines();return;}
-        Complete(owner,false,"Native worker deferred network-publication results exceed 64 owners or 16 MiB");return;
+        if(publication_results_.Hold(owner,operation->generation,cursor,json)!=suitecut::NativeNetworkPublicationResults::Admission::Invalid){WakeDeadlines();return;}
+        Complete(owner,false,"Native worker deferred network-publication result has no valid owner, generation or cursor");return;
       }
     }
     publication_results_.Cancel(owner);publication_eligible_.erase(owner);
@@ -563,8 +557,6 @@ class SuiteCutContextWorkers::Client : public CefClient, public CefLifeSpanHandl
     auto parsed=CefParseJSON(std::string(payload.begin(),payload.end()),JSON_PARSER_RFC);auto event=parsed?parsed->GetDictionary():nullptr;if(event)if(auto owner=owner_.lock())owner->hooks_.event(context_,event);
   }
   void JournalEvent(uint64_t sequence,const std::string& event,const std::string& json){
-    while(!journal_.empty()&&(journal_.size()>=128||journal_bytes_+json.size()>4*1048576)){journal_bytes_-=journal_.front().json.size();journal_.pop_front();}
-    if(json.size()>1048576){Error("Native context worker journal payload exceeds limit");return;}
     journal_.push_back({sequence,event,json});journal_bytes_+=json.size();
     for(const auto scope:event_predicates_.Active())PollContextPredicate(scope.owner,scope.generation);
     if(event=="worker"){
@@ -576,7 +568,7 @@ class SuiteCutContextWorkers::Client : public CefClient, public CefLifeSpanHandl
   void Error(const char* message){if(auto owner=owner_.lock())owner->hooks_.error(context_,message);for(int id:operations_.Ids())Complete(id,false,message);}
   // As in Source: a bookkeeping anomaly the broker survives is counted, not fatal.
   std::map<std::string,uint64_t> degraded_;
-  void Degraded(const std::string& message){const auto key=message.substr(0,256);if(degraded_.size()<256||degraded_.contains(key))++degraded_[key];}
+  void Degraded(const std::string& message){++degraded_[message];}
   void WakeDeadlines(){if(timer_||closing_page_)return;timer_=true;CefPostDelayedTask(TID_UI,new Task([self=CefRefPtr<Client>(this)]{self->Tick();}),10);}
   void Tick(){timer_=false;if(closing_page_)return;CookieTick();for(int id:operations_.Expired(Now()))Complete(id,false,"Native context worker original deadline expired");WorkerTick();if(request_reads_)request_reads_->Tick(Now());if(image_streams_)image_streams_->Tick(Now());if(network_)network_->Tick(Now());
     if(network_){auto ready=publication_results_.Ready(network_->PublishedPublication(),[this](int owner,uint64_t generation){return operations_.IsCurrent(owner,generation)&&!operations_.IsExpired(owner,generation,Now());});for(auto& result:ready){publication_eligible_.erase(result.owner);Complete(result.owner,true,"",result.json);}}
@@ -618,7 +610,6 @@ class SuiteCutContextWorkers::Client : public CefClient, public CefLifeSpanHandl
   std::map<int,Control> controls_;std::set<std::string> attaching_,finished_targets_;
   std::deque<Record> journal_;size_t journal_bytes_=0;
   #include "controllers/workers/worker_controller.inc"
-  static_assert(suitecut::NativeContextWorkerCursors::kTargets==kWorkerTargets);
   std::map<std::string,WorkerTarget> detached_targets_;
   #include "controllers/workers/context_worker_console_refs.inc"
   #include "controllers/workers/context_worker_console.inc"
@@ -627,12 +618,12 @@ class SuiteCutContextWorkers::Client : public CefClient, public CefLifeSpanHandl
 };
 SuiteCutContextWorkers::SuiteCutContextWorkers(Hooks hooks):hooks_(std::move(hooks)){}
 SuiteCutContextWorkers::~SuiteCutContextWorkers(){Clear();}
-void SuiteCutContextWorkers::Ensure(int context){if(closing_||clients_.contains(context))return;const auto request=hooks_.context(context);if(!request)return;const auto cursor=cursors_.Acquire(context);if(!cursor){hooks_.error(context,"Native context worker cursor history capacity exceeded or physical owner remains active");return;}auto client=CefRefPtr<Client>(new Client(weak_from_this(),context,request,*cursor));clients_.emplace(context,client);if(!client->Create()){cursors_.Uncreated(*cursor);clients_.erase(context);hooks_.error(context,"CEF rejected private context worker browser");}}
+void SuiteCutContextWorkers::Ensure(int context){if(closing_||clients_.contains(context))return;const auto request=hooks_.context(context);if(!request)return;const auto cursor=cursors_.Acquire(context);if(!cursor){hooks_.error(context,"Native context worker cursor is exhausted or its physical owner remains active");return;}auto client=CefRefPtr<Client>(new Client(weak_from_this(),context,request,*cursor));clients_.emplace(context,client);if(!client->Create()){cursors_.Uncreated(*cursor);clients_.erase(context);hooks_.error(context,"CEF rejected private context worker browser");}}
 void SuiteCutContextWorkers::Handle(int owner,int context,Dict params,double deadline,Reply reply){
   if(params&&params->GetString("action")=="waitOwnerClosed"){
     // Observing closure must never create or replace the owner being observed.
     const auto found=clients_.find(context);
-    if(closing_||found==clients_.end()||params->GetType("controlOwner")!=VTYPE_STRING||params->GetString("controlOwner").length()>256||params->GetString("controlOwner")!=found->second->control_owner()){
+    if(closing_||found==clients_.end()||params->GetType("controlOwner")!=VTYPE_STRING||params->GetString("controlOwner")!=found->second->control_owner()){
       reply(false,nullptr,"Exact active native worker control owner is unavailable");return;
     }
     const auto control=found->second->control_owner();
@@ -641,7 +632,7 @@ void SuiteCutContextWorkers::Handle(int owner,int context,Dict params,double dea
         auto result=CefDictionaryValue::Create();
         if(ok){result->SetInt("contextId",context);result->SetString("controlOwner",control);result->SetString("finalEventCursor",std::to_string(cursor));}
         reply(ok,ok?result:nullptr,error);
-      }))reply(false,nullptr,"Native worker owner-close wait expired or exceeds capacity");
+      }))reply(false,nullptr,"Native worker owner-close wait was not admitted (expired, duplicate or invalid)");
     return;
   }
   Ensure(context);const auto found=clients_.find(context);if(found==clients_.end()){reply(false,nullptr,"Native worker context is closed or unavailable");return;}found->second->Handle(owner,params,deadline,std::move(reply));

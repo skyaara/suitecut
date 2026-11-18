@@ -125,8 +125,8 @@ describe('effective native page lifetime throughout screenshot matcher input', (
     },
   )
 
-  it('retains all16 constructor-aborted upload slots until actual canonical cleanup receipts', async () => {
-    const fixtures = Array.from({ length: 16 }, () => new LifetimeFixture())
+  it('admits uploads past the old 16 slots while every constructor-aborted cleanup is still pending', async () => {
+    const fixtures = Array.from({ length: 17 }, () => new LifetimeFixture())
     const reasons = fixtures.map((_, index) => new Error(`projection ${index} canceled`))
     const pending = fixtures.map((fixture) =>
       fixture.capture('page').catch((error: UntrustedInput) => error),
@@ -135,21 +135,17 @@ describe('effective native page lifetime throughout screenshot matcher input', (
     fixtures.forEach((fixture, index) => fixture.controller.abort(reasons[index]))
     expect(await Promise.all(pending)).toEqual(reasons)
     await turn()
-    const blocked = new LifetimeFixture()
-    await expect(blocked.capture('page')).rejects.toThrow('staging capacity')
-    expect(blocked.calls).toEqual([])
-    for (const fixture of fixtures) {
+    const extra = new LifetimeFixture()
+    const admitted = extra.capture('page').catch((error: UntrustedInput) => error)
+    await extra.appendReady
+    const reason = new Error('clean final admitted projection')
+    extra.controller.abort(reason)
+    expect(await admitted).toBe(reason)
+    await turn()
+    for (const fixture of [...fixtures, extra]) {
       expect(fixture.discardSignals).toEqual([undefined])
       fixture.releaseCleanup!()
     }
-    await turn()
-    const admitted = blocked.capture('page').catch((error: UntrustedInput) => error)
-    await blocked.appendReady
-    const reason = new Error('clean final admitted projection')
-    blocked.controller.abort(reason)
-    expect(await admitted).toBe(reason)
-    await turn()
-    blocked.releaseCleanup!()
     await turn()
   })
 

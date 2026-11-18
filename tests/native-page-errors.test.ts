@@ -16,7 +16,7 @@ describe('native page error metadata', () => {
     expect(error.message).toBe(source.message)
     expect(error.stack).toBe(source.stack)
   })
-  it('preserves bounded genuine source identity without shortening complete names', () => {
+  it('preserves genuine source identity without shortening complete names of any length', () => {
     const frame = {
       id: 'genuine-frame',
       parentId: '',
@@ -27,8 +27,8 @@ describe('native page error metadata', () => {
     const result = NativePageErrorInfoSchema.parse(source)
     expect(result.frame).toEqual(frame)
     expect(createNativePageError(result).name).toHaveLength(1024)
-    expect(() =>
-      NativePageErrorInfoSchema.parse({ ...source, name: 'K'.repeat(8_388_609) }),
-    ).toThrow()
+    expect(
+      NativePageErrorInfoSchema.parse({ ...source, name: 'K'.repeat(8_388_609) }).name,
+    ).toHaveLength(8_388_609)
   })
 })

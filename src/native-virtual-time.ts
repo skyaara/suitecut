@@ -17,7 +17,7 @@ const InfoSchema = z.object({
   pendingPhysicalCommand: z.boolean(),
   activeOwner: z.boolean(),
   closing: z.boolean(),
-  queued: z.number().int().min(0).max(64),
+  queued: z.number().int().min(0),
   /** Ownership scope differs from Chromium's process-wide native wall clock. */
   scope: z
     .object({

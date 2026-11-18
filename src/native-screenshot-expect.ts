@@ -22,20 +22,13 @@ import { nativeSoftOperationOptions } from './native-soft-assertions.js'
 import { encodeNativeStringFields } from './native-string-wire.js'
 import { type UntrustedInput } from './untrusted.js'
 
-const maxPNGBytes = 2 * 1024 * 1024
 const PathSchema = z
   .string()
   .min(1)
-  .max(32768)
   .refine((path) => !path.includes('\0') && Buffer.from(path).toString('utf8') === path)
 const OptionsSchema = NativeScreenshotAssertionCaptureSchema.extend({
   threshold: z.number().finite().min(0).max(1).default(0.2),
-  maxDiffPixels: z
-    .number()
-    .int()
-    .nonnegative()
-    .max(2 * 1024 * 1024)
-    .optional(),
+  maxDiffPixels: z.number().int().nonnegative().optional(),
   maxDiffPixelRatio: z.number().finite().min(0).max(1).optional(),
   artifactsDir: PathSchema.optional(),
   timeout: z.number().int().min(0).max(120000).default(5000),
@@ -61,38 +54,21 @@ const ResultSchema = z.strictObject({
   attempts: z.number().int().nonnegative(),
   threshold: z.number().finite().min(0).max(1),
   dimensionsMatch: z.boolean().optional(),
-  differentPixels: z
-    .number()
-    .int()
-    .nonnegative()
-    .max(4 * 1024 * 1024)
-    .optional(),
-  totalPixels: z
-    .number()
-    .int()
-    .positive()
-    .max(4 * 1024 * 1024)
-    .optional(),
-  expectedWidth: z.number().int().positive().max(16384).optional(),
-  expectedHeight: z.number().int().positive().max(16384).optional(),
-  actualWidth: z.number().int().positive().max(16384).optional(),
-  actualHeight: z.number().int().positive().max(16384).optional(),
-  actual: z
-    .string()
-    .max(Math.ceil(maxPNGBytes / 3) * 4)
-    .optional(),
-  diff: z
-    .string()
-    .max(Math.ceil(maxPNGBytes / 3) * 4)
-    .optional(),
+  differentPixels: z.number().int().nonnegative().optional(),
+  totalPixels: z.number().int().positive().optional(),
+  expectedWidth: z.number().int().positive().optional(),
+  expectedHeight: z.number().int().positive().optional(),
+  actualWidth: z.number().int().positive().optional(),
+  actualHeight: z.number().int().positive().optional(),
+  actual: z.string().optional(),
+  diff: z.string().optional(),
 })
 function png(bytes: Buffer): Buffer {
   if (
     bytes.length < 33 ||
-    bytes.length > maxPNGBytes ||
     !bytes.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]))
   )
-    throw new Error('Native screenshot assertions require a PNG baseline of at most2MiB')
+    throw new Error('Native screenshot assertions require a PNG baseline')
   return bytes
 }
 function outputPNG(encoded: string): Buffer {

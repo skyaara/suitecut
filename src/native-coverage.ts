@@ -17,33 +17,31 @@ const jsRange = z.strictObject({
   count: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
 })
 const retainedIdentity = {
-  agentId: z.string().min(1).max(256).optional(),
-  captureId: z.string().min(1).max(256).optional(),
-  sessionId: z.string().max(128).optional(),
-  targetId: z.string().min(1).max(256).optional(),
+  agentId: z.string().min(1).optional(),
+  captureId: z.string().min(1).optional(),
+  sessionId: z.string().optional(),
+  targetId: z.string().min(1).optional(),
 }
 const jsEntry = z.strictObject({
   ...retainedIdentity,
-  scriptId: z.string().min(1).max(256),
+  scriptId: z.string().min(1),
   executionContextId: z.number().int().positive().max(2_147_483_647).optional(),
   url: z.string(),
   source: z.string(),
-  functions: z
-    .array(
-      z.strictObject({
-        functionName: z.string(),
-        isBlockCoverage: z.boolean(),
-        ranges: z.array(jsRange).max(16_384),
-      }),
-    )
-    .max(16_384),
+  functions: z.array(
+    z.strictObject({
+      functionName: z.string(),
+      isBlockCoverage: z.boolean(),
+      ranges: z.array(jsRange),
+    }),
+  ),
 })
 const cssEntry = z.strictObject({
   ...retainedIdentity,
-  styleSheetId: z.string().min(1).max(256).optional(),
+  styleSheetId: z.string().min(1).optional(),
   url: z.string(),
   text: z.string(),
-  ranges: z.array(z.strictObject({ start: offset, end: offset })).max(16_384),
+  ranges: z.array(z.strictObject({ start: offset, end: offset })),
 })
 export type NativeJSCoverageOptions = z.input<typeof jsOptions>
 export type NativeCSSCoverageOptions = z.input<typeof resetOptions>
@@ -72,18 +70,12 @@ export class NativeCoverage {
     await this.run('startJS', jsOptions.parse(options))
   }
   async stopJSCoverage(): Promise<NativeJSCoverageEntry[]> {
-    return z
-      .array(jsEntry)
-      .max(2048)
-      .parse(await this.run('stopJS'))
+    return z.array(jsEntry).parse(await this.run('stopJS'))
   }
   async startCSSCoverage(options: NativeCSSCoverageOptions = {}): Promise<void> {
     await this.run('startCSS', resetOptions.parse(options))
   }
   async stopCSSCoverage(): Promise<NativeCSSCoverageEntry[]> {
-    return z
-      .array(cssEntry)
-      .max(2048)
-      .parse(await this.run('stopCSS'))
+    return z.array(cssEntry).parse(await this.run('stopCSS'))
   }
 }

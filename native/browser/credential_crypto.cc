@@ -17,7 +17,7 @@ struct Secret {
   ~Secret() { if (!bytes.empty()) OPENSSL_cleanse(bytes.data(),bytes.size()); }
 };
 bool RelyingParty(const std::string& input) {
-  if (input.empty() || input.size() > 1024) return false;
+  if (input.empty()) return false;
   for (const unsigned char byte : input) if (byte <= 32 || byte >= 127 || byte == '/' || byte == ':' || byte == '\\' || byte == '@') return false;
   return true;
 }
@@ -28,7 +28,7 @@ bool Supported(EVP_PKEY* key) {
 }
 Key Private(const std::string& encoded) {
   Secret data;
-  if (!CredentialDecodeBase64URL(encoded,16384,data.bytes)) return Key(nullptr,EVP_PKEY_free);
+  if (!CredentialDecodeBase64URL(encoded,data.bytes)) return Key(nullptr,EVP_PKEY_free);
   const unsigned char* cursor = data.bytes.data();
   PKCS8 info(d2i_PKCS8_PRIV_KEY_INFO(nullptr,&cursor,static_cast<long>(data.bytes.size())),PKCS8_PRIV_KEY_INFO_free);
   if (!info || cursor != data.bytes.data()+data.bytes.size()) return Key(nullptr,EVP_PKEY_free);
@@ -37,7 +37,7 @@ Key Private(const std::string& encoded) {
   return key;
 }
 bool Public(EVP_PKEY* key,std::string& output) {
-  const int length = i2d_PUBKEY(key,nullptr); if (length <= 0 || length > 16384) return false;
+  const int length = i2d_PUBKEY(key,nullptr); if (length <= 0) return false;
   std::vector<unsigned char> data(static_cast<size_t>(length)); unsigned char* cursor = data.data();
   if (i2d_PUBKEY(key,&cursor) != length) return false;
   output = CredentialBase64URL(data.data(),data.size()); return true;
@@ -50,14 +50,14 @@ std::string CredentialBase64URL(const unsigned char* data,size_t length) {
   if (count) output += alphabet[(bits<<(6-count))&63];
   return output;
 }
-bool CredentialDecodeBase64URL(const std::string& text,size_t maximum,std::vector<unsigned char>& output) {
-  output.clear(); if (text.empty() || text.size() > (maximum*4+2)/3 || text.size()%4 == 1) return false;
+bool CredentialDecodeBase64URL(const std::string& text,std::vector<unsigned char>& output) {
+  output.clear(); if (text.empty() || text.size()%4 == 1) return false;
   output.reserve(text.size()*3/4); uint32_t bits = 0; unsigned count = 0;
   for (const unsigned char byte : text) {
     int value = byte >= 'A' && byte <= 'Z' ? byte-'A' : byte >= 'a' && byte <= 'z' ? byte-'a'+26 : byte >= '0' && byte <= '9' ? byte-'0'+52 : byte == '-' ? 62 : byte == '_' ? 63 : -1;
     if (value < 0) { output.clear(); return false; }
     bits = (bits<<6)|static_cast<unsigned>(value); count += 6;
-    if (count >= 8) { count -= 8; output.push_back(static_cast<unsigned char>((bits>>count)&255)); if (output.size() > maximum) { output.clear(); return false; } }
+    if (count >= 8) { count -= 8; output.push_back(static_cast<unsigned char>((bits>>count)&255)); }
   }
   if ((count && (bits&((1u<<count)-1))) || output.empty()) { output.clear(); return false; }
   return true;
@@ -68,7 +68,7 @@ bool GenerateVirtualCredential(const std::string& rp_id,uint32_t sign_count,Virt
   if (!context || EVP_PKEY_keygen_init(context.get()) <= 0 || EVP_PKEY_CTX_set_group_name(context.get(),"prime256v1") <= 0 || EVP_PKEY_generate(context.get(),&generated) <= 0) { error = "Native WebAuthn ECDSA key generation failed"; return false; }
   Key key(generated,EVP_PKEY_free); PKCS8 info(EVP_PKEY2PKCS8(key.get()),PKCS8_PRIV_KEY_INFO_free);
   const int length = info ? i2d_PKCS8_PRIV_KEY_INFO(info.get(),nullptr) : 0;
-  if (length <= 0 || length > 16384) { error = "Native WebAuthn private key encoding failed"; return false; }
+  if (length <= 0) { error = "Native WebAuthn private key encoding failed"; return false; }
   Secret secret; secret.bytes.resize(static_cast<size_t>(length)); unsigned char* cursor = secret.bytes.data();
   if (i2d_PKCS8_PRIV_KEY_INFO(info.get(),&cursor) != length) { error = "Native WebAuthn private key encoding failed"; return false; }
   unsigned char random[32] = {};
@@ -82,9 +82,9 @@ bool GenerateVirtualCredential(const std::string& rp_id,uint32_t sign_count,Virt
 bool ValidateVirtualCredential(const VirtualCredential& input,std::string& error) {
   if (!RelyingParty(input.rp_id)) { error = "Invalid WebAuthn relying party id"; return false; }
   std::vector<unsigned char> decoded;
-  if (!CredentialDecodeBase64URL(input.id,1024,decoded) || !CredentialDecodeBase64URL(input.user_handle,64,decoded)) { error = "Invalid WebAuthn credential id or user handle"; return false; }
+  if (!CredentialDecodeBase64URL(input.id,decoded) || !CredentialDecodeBase64URL(input.user_handle,decoded)) { error = "Invalid WebAuthn credential id or user handle"; return false; }
   const auto key = Private(input.private_key);
-  if (!key || !CredentialDecodeBase64URL(input.public_key,16384,decoded)) { error = "Invalid WebAuthn ECDSA P-256 PKCS8/SPKI key encoding"; return false; }
+  if (!key || !CredentialDecodeBase64URL(input.public_key,decoded)) { error = "Invalid WebAuthn ECDSA P-256 PKCS8/SPKI key encoding"; return false; }
   const unsigned char* cursor = decoded.data(); Key public_key(d2i_PUBKEY(nullptr,&cursor,static_cast<long>(decoded.size())),EVP_PKEY_free);
   if (!Supported(public_key.get()) || cursor != decoded.data()+decoded.size() || EVP_PKEY_eq(key.get(),public_key.get()) != 1) { error = "WebAuthn private and public keys do not match"; return false; }
   return true;

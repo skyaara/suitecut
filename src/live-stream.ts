@@ -459,7 +459,9 @@ export function createLiveStreamAttempt(
           frames.length > 1 &&
           (frames.length >
             Math.ceil(
-              (MAX_FRAMES_PER_SECOND * (LIVE_RECOVERY_WINDOW_MS + LIVE_AUDIO_DELAY_MS)) / 1000,
+              (Math.max(MAX_FRAMES_PER_SECOND, framesPerSecond) *
+                (LIVE_RECOVERY_WINDOW_MS + LIVE_AUDIO_DELAY_MS)) /
+                1000,
             ) +
               3 ||
             frameBytes > frameBufferBytes ||

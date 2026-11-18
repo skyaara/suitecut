@@ -5,56 +5,56 @@ import { toError, type UntrustedInput } from './untrusted.js'
 
 const offset = z.number().int().min(0).max(2_147_483_647)
 const location = z.strictObject({
-  scriptId: z.string().min(1).max(128),
+  scriptId: z.string().min(1),
   lineNumber: offset,
   columnNumber: offset.optional(),
 })
 const remote = z.strictObject({
-  type: z.string().max(64),
-  subtype: z.string().max(128).optional(),
-  className: z.string().max(8192).optional(),
-  description: z.string().max(8192).optional(),
-  objectId: z.string().max(512).optional(),
+  type: z.string(),
+  subtype: z.string().optional(),
+  className: z.string().optional(),
+  description: z.string().optional(),
+  objectId: z.string().optional(),
 })
 const scope = z.strictObject({
-  type: z.string().max(64),
-  name: z.string().max(8192).optional(),
+  type: z.string(),
+  name: z.string().optional(),
   object: remote,
   startLocation: location.optional(),
   endLocation: location.optional(),
 })
 const frame = z.strictObject({
-  callFrameId: z.string().min(1).max(512),
-  functionName: z.string().max(8192),
-  url: z.string().max(8192).optional(),
+  callFrameId: z.string().min(1),
+  functionName: z.string(),
+  url: z.string().optional(),
   location,
   functionLocation: location.optional(),
-  scopeChain: z.array(scope).max(64),
+  scopeChain: z.array(scope),
   this: remote.optional(),
 })
 const pauseResult = z.strictObject({
-  session: z.string().min(1).max(256),
-  pause: z.string().min(1).max(512),
-  reason: z.string().max(1024),
-  callFrames: z.array(frame).min(1).max(64),
-  hitBreakpoints: z.array(z.string().max(512)).max(64),
+  session: z.string().min(1),
+  pause: z.string().min(1),
+  reason: z.string(),
+  callFrames: z.array(frame).min(1),
+  hitBreakpoints: z.array(z.string()),
 })
 const scriptMetadata = z.strictObject({
-  scriptId: z.string().min(1).max(256),
-  url: z.string().max(32768),
-  hash: z.string().max(32768).optional(),
-  scriptLanguage: z.string().max(32768).optional(),
+  scriptId: z.string().min(1),
+  url: z.string(),
+  hash: z.string().optional(),
+  scriptLanguage: z.string().optional(),
   hasSourceURL: z.boolean().optional(),
   attestedNative: z.boolean(),
 })
 const scriptPage = z.strictObject({
-  scripts: z.array(scriptMetadata).max(64),
-  next: z.string().min(1).max(512).optional(),
+  scripts: z.array(scriptMetadata),
+  next: z.string().min(1).optional(),
 })
 const evaluationPrimitive = z.discriminatedUnion('type', [
   z.strictObject({ type: z.literal('undefined') }),
   z.strictObject({ type: z.literal('null') }),
-  z.strictObject({ type: z.literal('string'), value: z.string().max(8192) }),
+  z.strictObject({ type: z.literal('string'), value: z.string() }),
   z.strictObject({ type: z.literal('boolean'), value: z.boolean() }),
   z.strictObject({ type: z.literal('number'), value: z.number().finite() }),
   z.strictObject({
@@ -66,7 +66,6 @@ const evaluationPrimitive = z.discriminatedUnion('type', [
     value: z
       .string()
       .min(1)
-      .max(1025)
       .regex(/^-?(?:0|[1-9][0-9]*)$/u),
   }),
 ])
@@ -75,11 +74,11 @@ const evaluationResult = z.discriminatedUnion('kind', [
   z.strictObject({
     kind: z.literal('exception'),
     exception: z.strictObject({
-      text: z.string().max(4096),
+      text: z.string(),
       lineNumber: offset,
       columnNumber: offset,
-      scriptId: z.string().max(128).optional(),
-      description: z.string().max(4096).optional(),
+      scriptId: z.string().optional(),
+      description: z.string().optional(),
       thrown: evaluationPrimitive.optional(),
     }),
   }),
@@ -87,7 +86,6 @@ const evaluationResult = z.discriminatedUnion('kind', [
 const evaluationExpression = z
   .string()
   .min(1)
-  .max(8192)
   .refine((text) => {
     for (let index = 0; index < text.length; ++index) {
       const unit = text.charCodeAt(index)
@@ -188,7 +186,6 @@ function reserveCleanup(owner: object): CleanupReservation {
     }
   }
   if (failures.length) throw new AggregateError(failures, 'Previous native debugger cleanup failed')
-  if (cleanupReservations.size >= 16) throw new Error('Too many retained native debugger cleanups')
   const ticket = { owner: new WeakRef(owner) }
   cleanupReservations.add(ticket)
   return ticket
@@ -285,7 +282,7 @@ export class NativeDebuggerSession {
     let session: NativeDebuggerSession | undefined
     try {
       const result = z
-        .strictObject({ session: z.string().min(1).max(256) })
+        .strictObject({ session: z.string().min(1) })
         .parse(
           await transport.runDebugger(
             { action: 'open', timeoutMs: parsed.timeout ?? transport.defaultTimeout() },
@@ -340,8 +337,6 @@ export class NativeDebuggerSession {
     const parsed = pauseResult.parse(input)
     if (parsed.session !== this.session)
       throw new Error('Native debugger pause belongs to another session')
-    if (parsed.callFrames.reduce((count, item) => count + item.scopeChain.length, 0) > 64)
-      throw new Error('Native debugger pause exceeds its scope metadata bound')
     const pause: NativeDebuggerPause = Object.freeze({
       reason: parsed.reason,
       callFrames: parsed.callFrames,
@@ -428,9 +423,9 @@ export class NativeDebuggerSession {
   }
 
   async scriptSource(scriptId: string, options: NativeDebuggerOptions = {}): Promise<string> {
-    const id = z.string().min(1).max(128).parse(scriptId)
+    const id = z.string().min(1).parse(scriptId)
     return z
-      .strictObject({ source: z.string().max(262_144) })
+      .strictObject({ source: z.string() })
       .parse(await this.run('scriptSource', options, { scriptId: id })).source
   }
 
@@ -481,7 +476,7 @@ export class NativeDebuggerSession {
   ): Promise<NativeDebuggerBreakpoint> {
     const selected = location.parse(requested)
     const result = z
-      .strictObject({ breakpoint: z.string().min(1).max(512), location })
+      .strictObject({ breakpoint: z.string().min(1), location })
       .parse(await this.run('setBreakpoint', options, { location: selected }))
     if (result.location.scriptId !== selected.scriptId)
       throw new Error('Native debugger breakpoint resolved into another script')

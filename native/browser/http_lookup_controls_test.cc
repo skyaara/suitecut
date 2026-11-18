@@ -6,6 +6,8 @@
 #include <cassert>
 #include <iostream>
 #include <limits>
+#include <string>
+#include <vector>
 int main(){
   using Lookup=suitecut::HTTPLookupControls;std::vector<Lookup::Event>events;Lookup controls([&](const auto&event){events.push_back(event);});size_t completed=0;
   assert(controls.Begin(1,7,"original","one.example",443,100,[&](auto addresses,const auto&error){assert(error.empty());assert(addresses.size()==2);++completed;}));
@@ -22,8 +24,10 @@ int main(){
   assert(controls.Begin(2,7,"invalid","actual.example",80,300,[&](auto addresses,const auto&error){assert(addresses.empty());assert(error.find("invalid IP")!=std::string::npos);++completed;}));assert(controls.Resolve(2,7,events.back().generation,250,{{"127.0.0.1:80",4}},""));assert(completed==3);
   assert(controls.Begin(4,9,"infinite","actual.example",80,0,[&](auto addresses,const auto&error){assert(error.empty()&&addresses.size()==1);++completed;}));assert(controls.Resolve(4,9,events.back().generation,1000000000,{{"127.0.0.1",4}},""));
   for(int cycle=0;cycle<100000;++cycle){assert(controls.Begin(3,9,"cancel","actual.example",80,300,[&](auto addresses,const auto&error){assert(addresses.empty());assert(error=="original canceled");++completed;}));const auto generation=events.back().generation;controls.Cancel(3,"original canceled");assert(!controls.Resolve(3,9,generation,1,{{"127.0.0.1",4}},""));events.clear();}
-  for(int owner=1;owner<=64;++owner)assert(controls.Begin(owner,9,"capacity","actual.example",80,300,[](auto,const auto&error){assert(error=="closed");}));
-  assert(!controls.Begin(65,9,"capacity","actual.example",80,300,[](auto,const auto&){}));controls.Clear("closed");assert(controls.Size()==0);
+  // No owner, key, hostname or address-count cap.
+  for(int owner=1;owner<=100;++owner)assert(controls.Begin(owner,9,std::string(200,'k'),std::string(2000,'h')+".example",80,300,[](auto,const auto&error){assert(error=="closed");}));
+  assert(controls.Size()==100);controls.Clear("closed");assert(controls.Size()==0);
+  {std::vector<Lookup::Address>many;for(int i=0;i<300;++i)many.push_back({"127.0.0."+std::to_string(i%250+1),4});assert(Lookup::Validate(many));}
   assert(!Lookup::Validate({{"127.0.0.1",6}}));assert(!Lookup::Validate({{"::1",4}}));assert(!Lookup::Validate({{"domain.example",4}}));assert(!Lookup::Validate({}));
-  std::cout<<"Native HTTP lookup ownership: exact identity, original deadline, malformed addresses,64 capacity and100000 canceled late answers passed\n";
+  std::cout<<"Native HTTP lookup ownership: exact identity, original deadline, malformed addresses, no capacity cap and 100000 canceled late answers passed\n";
 }

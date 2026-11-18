@@ -59,12 +59,12 @@ auto Source::OnFrameCreated(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> f
   if (settings_bootstrap_ && !settings_committed_ && frame->IsMain()) {
     if (!engine_.contexts()->CredentialReadyStore()->RegisterBootstrap(
             browser->GetIdentifier(), browser->GetHost()->GetRequestContext())) {
-      SettingsFail("Native initial document identity capacity exceeded");
+      SettingsFail("Native initial document request context does not match its browser");
       return;
     }
   }
   if (!engine_.contexts()->InitScriptFrameCreated(page_id_, frame))
-    Degraded("Native context init script IPC sent untracked past its capacity");
+    Degraded("Native context init script IPC sent untracked: acknowledgement serial exhausted");
 }
 
 auto Source::OnFrameDestroyed(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame) -> void {
@@ -174,10 +174,6 @@ auto Source::OnAddressChange(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> 
   if (auto tab = AdoptedTab(browser)) return tab->OnAddressChange(browser, frame, address);
   if (!ready_ || !frame->IsMain()) return;
   const auto url = address.ToString();
-  if (url.size() > kMaxObservedURL) {
-    Error("Native address exceeds 2 MiB");
-    return;
-  }
   auto header = Header("navigation");
   header->SetString("url", url);
   SendPacket(header);
@@ -459,7 +455,7 @@ auto Source::OnAfterCreated(CefRefPtr<CefBrowser> browser) -> void {
                                            suitecut::NativeHARCapture::BodyReply reply) {
             self->NativeReadResponseBody(session, request, deadline, std::move(reply));
           })) {
-    Error("Native network archive owner capacity exceeded");
+    Error("Native network archive owner is already attached or the archive is closed");
     suitecut::browser::CloseBrowser(browser, true);
     return;
   }
@@ -468,7 +464,7 @@ auto Source::OnAfterCreated(CefRefPtr<CefBrowser> browser) -> void {
           std::chrono::duration<double, std::milli>(
               std::chrono::system_clock::now().time_since_epoch())
               .count())) {
-    NetworkFatal("Native HAR actual page metadata capacity exceeded");
+    NetworkFatal("Native HAR page metadata is invalid or already registered");
     return;
   }
   if (!engine_.worker_network().Attach(
@@ -499,7 +495,7 @@ auto Source::OnAfterCreated(CefRefPtr<CefBrowser> browser) -> void {
           [self = CefRefPtr<Source>(this)](int owner) {
             if (self->network_) self->network_->Cancel(owner);
           })) {
-    NetworkFatal("Native page worker network observer capacity exceeded");
+    NetworkFatal("Native page worker network observer is already attached or closed");
     return;
   }
   network_->SetObserver(
@@ -531,8 +527,9 @@ auto Source::OnAfterCreated(CefRefPtr<CefBrowser> browser) -> void {
       [this](const std::string& session, const std::string& method, Dict params,
              suitecut::BindingControls::Result callback) {
         const int id = AllocateDevToolsId();
-        if (!id || binding_calls_.size() >= 1024 || closing_page_) {
-          callback(false, "Native binding command capacity exceeded or page closed");
+        if (!id || closing_page_) {
+          // binding_controls.h matches this exact text; reword both together.
+          callback(false, "Could not allocate native binding command or page closed");
           return;
         }
         binding_calls_.emplace(
@@ -672,7 +669,7 @@ auto Source::OnAfterCreated(CefRefPtr<CefBrowser> browser) -> void {
             }
             self->NativeStartContextHeaders();
           })) {
-    Error("Native network policy target capacity exceeded");
+    Error("Native network policy target is already attached or its context is unknown");
     suitecut::browser::CloseBrowser(browser, true);
     return;
   }

@@ -58,7 +58,6 @@ bool RetainKeyboardCall(int owner,const std::string& method,Dict params,std::fun
   const auto input=input_work_.find(owner);
   if(input==input_work_.end())return false;
   const auto generation=input->second->generation;
-  if(send_keys_physical_count_>=64){Complete(owner,false,"Native send-keys physical preparation capacity exceeded");return false;}
   ++send_keys_physical_[owner];++send_keys_physical_count_;
   callback=[this,owner,generation,method,params,original=std::move(callback)](bool ok,const std::string& json) mutable {
     SendKeysSequenceAcknowledged(owner,method,params,ok);

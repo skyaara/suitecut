@@ -20,12 +20,12 @@ int main(int argc,char**){
  for(const std::string& json:std::vector<std::string>{"",R"(null)",R"("unterminated)",R"("bad\x")",R"("bad\u123")",R"("bad\uXX12")",R"("a"junk)",R"("a"b")",std::string("\"raw\nnewline\"")})assert(!suitecut::CookiePatternJSONString(json));
  bool regex=false;
  for(const auto*json:{R"({"unknown":"x"})",R"({"name":{"sourceJSON":"\"x\"","flags":"ii"}})",R"({"name":{"sourceJSON":"\"x\"","flags":"uv"}})",R"({"name":{"sourceJSON":"12","flags":""}})",R"({"name":{"sourceJSON":"\"x\"","flags":"q"}})",R"({"name":{"sourceJSON":"\"x\"","flags":"","expression":"bad"}})"}){assert(!suitecut::ValidateCookieFilter(Parse(json),regex,error));}
- auto large=Parse(R"({"name":"x"})");large->SetString("name",std::string(8193,'x'));assert(!suitecut::ValidateCookieFilter(large,regex,error));assert(suitecut::ValidateCookieFilter(Parse(R"({"name":{"sourceJSON":"\"\\ud800\"","flags":"u"}})"),regex,error)&&regex);
+ auto large=Parse(R"({"name":"x"})");large->SetString("name",std::string(20000,'x'));assert(suitecut::ValidateCookieFilter(large,regex,error)&&!regex);assert(suitecut::ValidateCookieFilter(Parse(R"({"name":{"sourceJSON":"\"\\ud800\"","flags":"u"}})"),regex,error)&&regex);
  input->GetDictionary("filter")->GetDictionary("domain")->SetString("sourceJSON",R"("a\"),globalThis.INJECTED=true,RegExp(\"")");assert(suitecut::BuildCookieFilterEvaluation(input,0,0,output,error)&&output->GetDouble("timeout")==30000);
  // Manager and coordinator both admit exactly this typed parameter envelope.
  for(const auto*json:{R"({})",R"({"filter":{}})",R"({"filter":{"name":""}})",R"({"filter":{"name":{"sourceJSON":"\"^sess\"","flags":"gy"},"domain":"localhost"}})"})assert(suitecut::ValidateCookieFilterParameters(Parse(json),"clearCookies",regex,error));
  for(const auto*json:{R"({"filter":null})",R"({"filter":42})",R"({"filter":[]})",R"({"filter":{"unknown":"x"}})",R"({"filter":{"name":true}})",R"({"filter":{"name":{"sourceJSON":"\"x\"","flags":"ii"}}})",R"({"filter":{"name":{"sourceJSON":"\"x\"","flags":"uv"}}})",R"({"filter":{"name":{"sourceJSON":"\"x\""}}})"})assert(!suitecut::ValidateCookieFilterParameters(Parse(json),"clearCookies",regex,error));
  assert(!suitecut::ValidateCookieFilterParameters(nullptr,"clearCookies",regex,error));
  assert(!suitecut::ValidateCookieFilterParameters(Parse(R"({"filter":{"name":{"sourceJSON":"\"x\"","flags":"g"}}})"),"cookies",regex,error));
- std::cout<<"Native cookie regex ingress/capacity/real-deadline request construction passed\n";
+ std::cout<<"Native cookie regex ingress/uncapped input/real-deadline request construction passed\n";
 }

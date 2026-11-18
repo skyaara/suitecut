@@ -46,19 +46,13 @@ class SnapshotReferences {
   using Current=std::function<bool(int,uint64_t,const Document&)>;
   using Release=std::function<void(const Group&,std::function<void(bool,const std::string&)>)>;
   using Fatal=std::function<void(const std::string&)>;
-  // Blink allows 1000 frames per page (Page::kMaxNumberOfFrames); one AI snapshot
-  // holds a group per frame, so groups are sized from that.
-  static constexpr size_t kFrames=1001;
-  static constexpr size_t kActiveNodes=1048576,kResidentNodes=2097152,kActiveGroups=2*kFrames,kResidentGroups=4*kFrames,kPhysicalReleases=32,kBorrows=64,kBytes=1024ULL*1024*1024;
-  static constexpr size_t kGlobalNodes=4194304,kGlobalGroups=8*kFrames,kGlobalInstalls=128,kGlobalReleases=64,kGlobalBorrows=128,kGlobalBytes=4096ULL*1024*1024;
   SnapshotReferences(std::string name_space,Current current,Release release,Fatal fatal)
     :namespace_(std::move(name_space)),current_(std::move(current)),release_(std::move(release)),fatal_(std::move(fatal)){}
   ~SnapshotReferences(){Destroyed();life_->alive=false;}
   uint64_t Begin(int owner,uint64_t generation,Document document,std::vector<Node> nodes,double deadline,double now){
-    if(closed_||failed_||owner<=0||!generation||!ValidNamespace()||!Valid(document)||nodes.size()>kActiveNodes||groups_.size()>=kResidentGroups||GlobalState().groups>=kGlobalGroups||nodes.size()>kGlobalNodes-GlobalState().nodes||nodes.size()>kResidentNodes-resident_nodes_||sequence_==std::numeric_limits<uint64_t>::max()||!std::isfinite(now)||!std::isfinite(deadline)||(deadline&&deadline<=now))return 0;
+    if(closed_||failed_||owner<=0||!generation||!ValidNamespace()||!Valid(document)||sequence_==std::numeric_limits<uint64_t>::max()||!std::isfinite(now)||!std::isfinite(deadline)||(deadline&&deadline<=now))return 0;
     std::set<int>unique;for(const auto&node:nodes)if(node.backend<=0||node.type!=1||!unique.insert(node.backend).second)return 0;
     const size_t bytes=document.frame.size()+document.session.size()+document.loader.size()+document.main_unique.size()+document.utility_unique.size()+namespace_.size()+2048+nodes.size()*(sizeof(Node)+sizeof(std::string)+704);
-    if(bytes>kBytes-resident_bytes_||bytes>kGlobalBytes-GlobalState().bytes)return 0;
     auto group=std::make_shared<Group>();group->ticket=++GlobalState().sequence;group->generation=generation;group->owner=owner;group->document=std::move(document);group->nodes=std::move(nodes);group->deadline=deadline;group->bytes=bytes;group->name="suitecut-snapshot-"+namespace_+"-"+std::to_string(group->ticket);
     // Only reuse identities in the currently published exact document. No
     // historical backend map survives omission/navigation, bounding ownership
@@ -72,7 +66,7 @@ class SnapshotReferences {
     resident_bytes_+=bytes;resident_nodes_+=group->nodes.size();GlobalState().bytes+=bytes;GlobalState().nodes+=group->nodes.size();++GlobalState().groups;groups_.emplace(group->ticket,group);return group->ticket;
   }
   // Source calls immediately before the genuine group-install command dispatch.
-  bool Dispatched(uint64_t ticket){auto group=Find(ticket);if(!group||group->dispatched||group->retiring||InstallPhysical()>=64||GlobalState().installs>=kGlobalInstalls)return false;group->dispatched=true;++GlobalState().installs;return true;}
+  bool Dispatched(uint64_t ticket){auto group=Find(ticket);if(!group||group->dispatched||group->retiring)return false;group->dispatched=true;++GlobalState().installs;return true;}
   // Explicit submission rejection is not an ACK and cannot have created a
   // remote group. Roll back only an uninstalled reservation, even after cancel.
   void Rejected(uint64_t ticket){
@@ -84,7 +78,7 @@ class SnapshotReferences {
   // have created remote values, so its real group is released before retirement.
   bool Installed(uint64_t ticket,bool success,std::string array,double now){
     auto group=Find(ticket);if(!group||!group->dispatched||group->installed)return false;group->installed=true;--GlobalState().installs;
-    if(success&&!array.empty()&&array.size()<=512)group->array=std::move(array);else Retire(group,now);
+    if(success&&!array.empty())group->array=std::move(array);else Retire(group,now);
     if(group->retiring){Pump();return false;}return true;
   }
   bool Commit(uint64_t ticket,double now){
@@ -93,9 +87,6 @@ class SnapshotReferences {
     if(!std::isfinite(now)||(group->deadline&&now>=group->deadline)||!current_(group->owner,group->generation,group->document)||(old!=latest_.end()&&old->second>=ticket)){
       Retire(group,now);Pump();return false;
     }
-    size_t old_nodes=0,old_groups=0;
-    for(const auto&[id,other]:groups_)if(other->active&&other->document.frame==group->document.frame){old_nodes+=other->nodes.size();++old_groups;}
-    if(group->nodes.size()>kActiveNodes-(active_nodes_-old_nodes)||(!group->nodes.empty()&&old_groups==0&&active_groups_>=kActiveGroups)){Retire(group,now);Pump();return false;}
     std::vector<std::shared_ptr<Group>> previous;for(const auto&[id,other]:groups_)if(other->ticket<ticket&&other->document.frame==group->document.frame)previous.push_back(other);
     for(const auto&other:previous)Retire(other,now);
     latest_[group->document.frame]=ticket;
@@ -103,11 +94,11 @@ class SnapshotReferences {
     Pump();return true;
   }
   // A multi-frame snapshot becomes public as one native UI-thread transaction.
-  // Preflight every installed group/document and the final aggregate quotas
+  // Preflight every installed group/document
   // before retiring any previously successful publication. Physical borrows and
   // old-group release receipts remain independently owned after that switch.
   bool CommitBatch(const std::vector<uint64_t>& tickets,double now){
-    if(closed_||failed_||tickets.empty()||tickets.size()>kFrames)return false;
+    if(closed_||failed_||tickets.empty())return false;
     std::vector<std::shared_ptr<Group>> batch;std::set<uint64_t> seen;
     std::map<std::string,std::shared_ptr<Group>> frames;bool valid=std::isfinite(now);
     for(const auto ticket:tickets){
@@ -123,25 +114,20 @@ class SnapshotReferences {
     };
     if(!valid||batch.empty())return reject();
     const auto owner=batch.front()->owner;const auto generation=batch.front()->generation;
-    const auto deadline=batch.front()->deadline;size_t incoming_nodes=0,incoming_groups=0;
+    const auto deadline=batch.front()->deadline;
     for(const auto& group:batch){
       const auto latest=latest_.find(group->document.frame);
       if(!group->installed||group->array.empty()||group->retiring||group->active||
          group->owner!=owner||group->generation!=generation||group->deadline!=deadline||
          (group->deadline&&now>=group->deadline)||!current_(group->owner,group->generation,group->document)||
          (latest!=latest_.end()&&latest->second>=group->ticket))return reject();
-      incoming_nodes+=group->nodes.size();if(!group->nodes.empty())++incoming_groups;
     }
-    size_t outgoing_nodes=0,outgoing_groups=0;
     std::vector<std::shared_ptr<Group>> previous;
     for(const auto&[id,group]:groups_){
       const auto replacement=frames.find(group->document.frame);
       if(replacement==frames.end()||group->ticket>=replacement->second->ticket)continue;
       previous.push_back(group);
-      if(group->active){outgoing_nodes+=group->nodes.size();++outgoing_groups;}
     }
-    if(incoming_nodes>kActiveNodes-(active_nodes_-outgoing_nodes)||
-       incoming_groups>kActiveGroups-(active_groups_-outgoing_groups))return reject();
     // Quota swaps must not depend on parent/child activation order. Retire every
     // affected old publication first, then publish every validated new group.
     for(const auto& group:previous)Retire(group,now);
@@ -157,9 +143,9 @@ class SnapshotReferences {
   std::string Reference(uint64_t ticket,size_t index)const{const auto found=groups_.find(ticket);return found!=groups_.end()&&found->second->active&&index<found->second->nodes.size()?Token(*found->second,index):std::string();}
   std::shared_ptr<const Group> GroupFor(uint64_t ticket)const{const auto found=groups_.find(ticket);return found==groups_.end()?nullptr:found->second;}
   bool NeedsTick()const{if(closed_||failed_)return false;for(const auto&[id,group]:groups_)if(group->retiring)return true;return false;}
-  bool DocumentFor(const std::string& token,Document& document)const{if(closed_||failed_||token.empty()||token.size()>192)return false;const auto found=tokens_.find(token);if(found==tokens_.end())return false;const auto group=groups_.find(found->second.first);if(group==groups_.end()||!group->second->active)return false;document=group->second->document;return true;}
+  bool DocumentFor(const std::string& token,Document& document)const{if(closed_||failed_||token.empty())return false;const auto found=tokens_.find(token);if(found==tokens_.end())return false;const auto group=groups_.find(found->second.first);if(group==groups_.end()||!group->second->active)return false;document=group->second->document;return true;}
   Borrow Lookup(const std::string& token,const Document&document){
-    if(closed_||failed_||token.empty()||token.size()>192||borrows_>=kBorrows||GlobalState().borrows>=kGlobalBorrows)return{};
+    if(closed_||failed_||token.empty())return{};
     const auto found=tokens_.find(token);if(found==tokens_.end())return{};auto group=Find(found->second.first);
     if(!group||!group->active||group->document!=document)return{};
     auto lease=Use(group->ticket);if(!lease)return{};
@@ -169,7 +155,7 @@ class SnapshotReferences {
   // lease outlives logical cancellation and is released by the actual sender.
   std::shared_ptr<void> Use(uint64_t ticket){
     const auto group=Find(ticket);
-    if(closed_||failed_||!group||!group->installed||group->array.empty()||group->retiring||group->channel_dead||borrows_>=kBorrows||GlobalState().borrows>=kGlobalBorrows)return{};
+    if(closed_||failed_||!group||!group->installed||group->array.empty()||group->retiring||group->channel_dead)return{};
     ++borrows_;++group->borrows;++GlobalState().borrows;const auto life=life_;
     return std::shared_ptr<void>(new uint64_t(group->ticket),[this,life,group](void*value){delete static_cast<uint64_t*>(value);if(!life->alive||closed_||group->channel_dead)return;--borrows_;--group->borrows;--GlobalState().borrows;Pump();});
   }
@@ -201,8 +187,8 @@ class SnapshotReferences {
   struct Global{size_t nodes=0,groups=0,bytes=0,installs=0,releases=0,borrows=0;uint64_t sequence=0;};
   static Global& GlobalState(){static Global state;return state;}
   struct Life{bool alive=true;};
-  bool ValidNamespace()const{return !namespace_.empty()&&namespace_.size()<=64&&std::all_of(namespace_.begin(),namespace_.end(),[](unsigned char c){return(c>='a'&&c<='z')||(c>='A'&&c<='Z')||(c>='0'&&c<='9');});}
-  static bool Valid(const Document&doc){return !doc.frame.empty()&&doc.frame.size()<=256&&doc.session.size()<=256&&doc.loader.size()<=256&&doc.main>0&&doc.utility>0&&!doc.main_unique.empty()&&doc.main_unique.size()<=256&&!doc.utility_unique.empty()&&doc.utility_unique.size()<=256;}
+  bool ValidNamespace()const{return !namespace_.empty()&&std::all_of(namespace_.begin(),namespace_.end(),[](unsigned char c){return(c>='a'&&c<='z')||(c>='A'&&c<='Z')||(c>='0'&&c<='9');});}
+  static bool Valid(const Document&doc){return !doc.frame.empty()&&doc.main>0&&doc.utility>0&&!doc.main_unique.empty()&&!doc.utility_unique.empty();}
   std::shared_ptr<Group> Find(uint64_t ticket){const auto found=groups_.find(ticket);return found==groups_.end()?nullptr:found->second;}
   std::string Token(const Group&group,size_t index)const{return group.references[index];}
   void EraseToken(const Group&group,size_t index){
@@ -230,7 +216,7 @@ class SnapshotReferences {
     if(closed_||failed_||pumping_)return;
     pumping_=true;
     for(auto it=groups_.begin();it!=groups_.end();){auto group=it->second;++it;if(group->retiring&&group->document_dead&&!group->late_install&&group->installed&&!group->borrows&&!group->pending_release)Remove(group);}
-    while(physical_<kPhysicalReleases&&GlobalState().releases<kGlobalReleases){
+    for(;;){
       std::shared_ptr<Group> next;for(const auto&[id,group]:groups_)if(group->retiring&&group->installed&&!group->pending_release&&!group->release_failed&&!group->borrows){next=group;break;}
       if(!next)break;
       next->pending_release=true;++physical_;++GlobalState().releases;const auto life=life_;

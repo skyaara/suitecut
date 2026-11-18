@@ -24,8 +24,12 @@ int main(){
     assert(visitor->Visit(cookie,0,1,remove));cancellation->canceled.store(true);assert(!visitor->Visit(cookie,0,1,remove));
   }
   assert(budget->load() && pending.size()==1);pending.front()();assert(!budget->load());pending.clear();
+  // No entry or byte cap: cookies past the former 4096 entries / 1 MiB / 16 MiB pass whole.
   {
-    budget->store(Visitor::kBudget);CefRefPtr<Visitor> visitor=new Visitor(control,budget,[](std::function<void()> callback){callback();},[](Visitor::Dict,const std::string& error){assert(error.find("budget")!=std::string::npos);});assert(!visitor->Visit(cookie,0,1,remove));
+    budget->store(size_t{1}<<30);size_t count=0;CefString(&cookie.value)=std::string(4096,'v');
+    {CefRefPtr<Visitor> visitor=new Visitor(control,budget,[](std::function<void()> callback){callback();},[&](Visitor::Dict state,const std::string& error){assert(error.empty());count=state->GetList("cookies")->GetSize();});
+     for(int i=0;i<5000;++i)assert(visitor->Visit(cookie,i,5000,remove));assert(budget->load()>(size_t{1}<<30)+16*1048576);}
+    assert(count==5000&&budget->load()==(size_t{1}<<30));
   }
-  assert(budget->load()==Visitor::kBudget);budget->store(0);
+  budget->store(0);
 }

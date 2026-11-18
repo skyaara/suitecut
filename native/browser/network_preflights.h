@@ -31,22 +31,18 @@ class NativeNetworkPreflights {
     state_->wake=std::move(wake);state_->now=std::move(now);state_->settled=std::move(settled);
   }
   ~NativeNetworkPreflights(){Clear();}
-  // Admission owns a detached bounded copy. On rejection the caller still owns
-  // the actual Fetch pause and must abort it or close the native channel.
-  static std::optional<size_t> RetainedBytes(Dict data){size_t bytes=256,nodes=0;if(!MeasureDictionary(data,bytes,nodes,0))return {};return bytes;}
+  // Admission owns a detached copy. On rejection the caller still owns the
+  // actual Fetch pause and must abort it or close the native channel.
+  static std::optional<size_t> RetainedBytes(Dict data){size_t bytes=256;if(!MeasureDictionary(data,bytes))return {};return bytes;}
   bool Hold(Dict data,const std::string&session,NativeRouteRegistry::Plan plan,double deadline) {
     auto state=state_;if(state->closed||state->failed||!data)return false;
     const auto fetch=data->GetString("requestId").ToString(),network=data->GetString("networkId").ToString();
-    if(fetch.empty()||fetch.size()>256||network.empty()||network.size()>256||session.size()>128||!std::isfinite(deadline)||deadline<=state->now())return false;
+    if(fetch.empty()||network.empty()||!std::isfinite(deadline)||deadline<=state->now())return false;
     const auto key=session+"\n"+fetch;if(state->entries.contains(key))return false;
-    size_t bytes=256+key.size()+network.size()+session.size();size_t nodes=0;
-    if(!MeasureDictionary(data,bytes,nodes,0))return false;
-    if(plan.candidates.size()>256)return false;
-    for(const auto&id:plan.candidates)if(id.size()>128)return false;
-    if(plan.bytes()>kEntryBytes-bytes)return false;
+    size_t bytes=256+key.size()+network.size()+session.size();
+    if(!MeasureDictionary(data,bytes))return false;
     bytes+=plan.bytes();
     auto budget=state->budget;
-    if(budget->entries>=kEntries||global_entries_>=kGlobalEntries||bytes>kBytes-budget->bytes||bytes>kGlobalBytes-global_bytes_)return false;
     auto entry=std::make_shared<Entry>();entry->budget=budget;entry->bytes=bytes;
     ++budget->entries;budget->bytes+=bytes;++global_entries_;global_bytes_+=bytes;
     entry->fetch=fetch;entry->network=network;entry->session=session;entry->plan=std::move(plan);entry->deadline=deadline;entry->data=data->Copy(false);
@@ -105,7 +101,7 @@ class NativeNetworkPreflights {
   static size_t global_pending(){return global_entries_;}
   static size_t global_bytes(){return global_bytes_;}
  private:
-  static constexpr size_t kEntryBytes=1048576,kBytes=2097152,kGlobalBytes=8388608,kEntries=64,kGlobalEntries=128;
+  // Accounting only (diagnostics); nothing is refused for size or count.
   struct Budget{size_t entries=0,bytes=0;};
   struct Entry {
     std::shared_ptr<Budget>budget;size_t bytes=0;Dict data;std::string fetch,network,session;
@@ -119,21 +115,21 @@ class NativeNetworkPreflights {
   static inline size_t global_entries_=0,global_bytes_=0;
   std::shared_ptr<State>state_;
   static void Fail(const std::shared_ptr<State>&state,const std::string&error){if(state->closed||state->failed)return;state->failed=true;auto failure=state->failure;if(failure)failure(error);}
-  static bool Charge(size_t count,size_t&bytes){if(count>kEntryBytes-bytes)return false;bytes+=count;return true;}
-  static bool MeasureValue(CefRefPtr<CefValue>value,size_t&bytes,size_t&nodes,size_t depth){
-    if(!value||++nodes>8192||depth>16||!Charge(64,bytes))return false;
+  static bool MeasureValue(CefRefPtr<CefValue>value,size_t&bytes){
+    if(!value)return false;
+    bytes+=64;
     switch(value->GetType()){
-      case VTYPE_DICTIONARY:return MeasureDictionary(value->GetDictionary(),bytes,nodes,depth+1);
-      case VTYPE_LIST:{auto list=value->GetList();if(!list||list->GetSize()>8192)return false;for(size_t i=0;i<list->GetSize();++i)if(!MeasureValue(list->GetValue(i),bytes,nodes,depth+1))return false;return true;}
-      case VTYPE_STRING:{const auto text=value->GetString();return text.length()<=kEntryBytes/3&&Charge(text.length()*3,bytes);}
+      case VTYPE_DICTIONARY:return MeasureDictionary(value->GetDictionary(),bytes);
+      case VTYPE_LIST:{auto list=value->GetList();if(!list)return false;for(size_t i=0;i<list->GetSize();++i)if(!MeasureValue(list->GetValue(i),bytes))return false;return true;}
+      case VTYPE_STRING:bytes+=value->GetString().length()*3;return true;
       case VTYPE_BINARY:return false;
       default:return true;
     }
   }
-  static bool MeasureDictionary(Dict data,size_t&bytes,size_t&nodes,size_t depth){
-    if(!data||depth>16||data->GetSize()>8192)return false;
-    CefDictionaryValue::KeyList keys;data->GetKeys(keys);if(keys.size()>8192)return false;
-    for(const auto&key:keys)if(key.length()>kEntryBytes/3||!Charge(key.length()*3+64,bytes)||!MeasureValue(data->GetValue(key),bytes,nodes,depth+1))return false;
+  static bool MeasureDictionary(Dict data,size_t&bytes){
+    if(!data)return false;
+    CefDictionaryValue::KeyList keys;data->GetKeys(keys);
+    for(const auto&key:keys){bytes+=key.length()*3+64;if(!MeasureValue(data->GetValue(key),bytes))return false;}
     return true;
   }
   static std::string Header(Dict headers,const std::string&name){
@@ -141,11 +137,11 @@ class NativeNetworkPreflights {
     CefDictionaryValue::KeyList keys;headers->GetKeys(keys);
     for(const auto&key:keys){auto normalized=key.ToString();for(auto&c:normalized)if(c>='A'&&c<='Z')c=char(c-'A'+'a');if(normalized==name&&headers->GetType(key)==VTYPE_STRING)return headers->GetString(key).ToString();}return {};
   }
-  static bool Field(const std::string&value,size_t bound){return !value.empty()&&value.size()<=bound&&value.find_first_of("\r\n\0",0,3)==std::string::npos;}
+  static bool Field(const std::string&value){return !value.empty()&&value.find_first_of("\r\n\0",0,3)==std::string::npos;}
   static Dict Response(Dict data,const std::string&method){
     auto request=data->GetDictionary("request");if(!request||request->GetString("method")!="OPTIONS")return nullptr;auto headers=request->GetDictionary("headers");
     const auto origin=Header(headers,"origin"),requested=Header(headers,"access-control-request-headers");
-    if(!Field(origin,8192)||!Field(method,128)||(!requested.empty()&&!Field(requested,65536)))return nullptr;
+    if(!Field(origin)||!Field(method)||(!requested.empty()&&!Field(requested)))return nullptr;
     auto result=CefDictionaryValue::Create();result->SetInt("responseCode",204);result->SetString("body","");auto output=CefListValue::Create();
     const auto append=[&](const std::string&name,const std::string&value){auto pair=CefDictionaryValue::Create();pair->SetString("name",name);pair->SetString("value",value);output->SetDictionary(output->GetSize(),pair);};
     append("Access-Control-Allow-Origin",origin);append("Access-Control-Allow-Methods",method);append("Access-Control-Allow-Credentials","true");

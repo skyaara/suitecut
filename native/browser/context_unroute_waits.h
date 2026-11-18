@@ -16,14 +16,11 @@ class NativeContextUnrouteWaits {
  public:
   using Reply=std::function<void(bool,const std::string&)>;
   enum class Family {Handler,HAR};
-  static constexpr size_t kCapacity=32,kSnapshotCapacity=256,kBytes=131072;
   explicit NativeContextUnrouteWaits(std::function<double()>now):now_(std::move(now)){}
   ~NativeContextUnrouteWaits(){Clear();}
   bool Reserve(int operation,int context,uint64_t generation,bool wait,NativeRouteCallbackSnapshot handlers,NativeHARWorkSnapshot har,double deadline,Reply reply){
-    if(closed_||operation<1||context<1||!generation||!reply||!std::isfinite(deadline)||deadline<0||(deadline&&now_()>=deadline)||entries_.contains(operation)||entries_.size()>=kCapacity||handlers.size()+har.size()>kSnapshotCapacity)return false;
-    if(handlers.capacity()>kBytes/sizeof(NativeRouteCallbackSnapshot::value_type)||har.capacity()>kBytes/sizeof(NativeHARWorkSnapshot::value_type))return false;
+    if(closed_||operation<1||context<1||!generation||!reply||!std::isfinite(deadline)||deadline<0||(deadline&&now_()>=deadline)||entries_.contains(operation))return false;
     const size_t bytes=handlers.capacity()*sizeof(NativeRouteCallbackSnapshot::value_type)+har.capacity()*sizeof(NativeHARWorkSnapshot::value_type);
-    if(bytes>kBytes-bytes_)return false;
     for(const auto&receipt:handlers)if(!receipt)return false;
     for(const auto&receipt:har)if(!receipt)return false;
     entries_.emplace(operation,Entry{context,generation,wait,std::move(handlers),std::move(har),deadline,bytes,std::move(reply),false,false});bytes_+=bytes;return true;

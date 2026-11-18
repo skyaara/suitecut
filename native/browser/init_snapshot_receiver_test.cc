@@ -45,18 +45,13 @@ int main(){int groups=0;
   assert(r.Install(Region(pin,"{}",destroyed),pin,1,1).status==Status::Expired&&r.Physical()==0);
   assert(r.Install(Region(pin,"{}",destroyed),pin,0,std::numeric_limits<double>::quiet_NaN()).status==Status::Expired);++groups;}
  {int destroyed=0;Receiver r;std::vector<std::shared_ptr<const Receiver::Lease>>readers;auto owner=Actual();assert(r.Admit(owner));
-  for(size_t i=0;i<suitecut::InitSnapshotReceipts::kTransfers;++i){Pin pin{owner,i+1,i+1};auto result=r.Install(Region(pin,"{}",destroyed),pin,0,1);assert(result.status==Status::Installed);readers.push_back(result.lease);}
-  constexpr auto limit=suitecut::InitSnapshotReceipts::kTransfers;Pin next{owner,limit+1,limit+1};assert(r.Install(Region(next,"{}",destroyed),next,0,1).status==Status::Capacity);
-  readers.front().reset();assert(r.Physical()==limit&&r.Install(Region(next,"{}",destroyed),next,0,1).status==Status::Capacity);
-  assert(r.TakeReleased().size()==1&&r.Install(Region(next,"{}",destroyed),next,0,1).status==Status::Installed);
-  readers.clear();r.Closed();assert(r.TakeReleased().size()==limit&&r.Bytes()==0);++groups;}
- {int destroyed=0;Receiver r;auto owner=Actual();assert(r.Admit(owner));std::vector<std::shared_ptr<const Receiver::Lease>>readers;
-  const std::string text(suitecut::InitSnapshotWire::kPayload,'x');
-  for(size_t i=0;i<7;++i){Pin pin{owner,i+1,i+1};auto result=r.Install(Region(pin,text,destroyed),pin,0,1);assert(result.status==Status::Installed);readers.push_back(result.lease);}
-  Pin next{owner,8,8};assert(r.Install(Region(next,text,destroyed),next,0,1).status==Status::Capacity&&r.Bytes()<suitecut::InitSnapshotReceipts::kBytes);
-  readers.clear();r.Closed();assert(r.TakeReleased().size()==7&&r.Bytes()==0);++groups;}
- {Receiver r;constexpr auto limit=suitecut::InitSnapshotReceipts::kTransfers;for(size_t i=0;i<limit;++i){auto owner=Actual();owner.frame+=std::to_string(i);assert(r.Admit(owner));}
-  auto owner=Actual();assert(!r.Admit(owner)&&r.Owners()==limit);owner.context=0;assert(!r.Admit(owner));r.Closed();assert(r.Owners()==0);++groups;}
+  constexpr size_t past=257; // past the former 256-transfer slot table: slots grow, released slots are reused
+  for(size_t i=0;i<past;++i){Pin pin{owner,i+1,i+1};auto result=r.Install(Region(pin,"{}",destroyed),pin,0,1);assert(result.status==Status::Installed);readers.push_back(result.lease);}
+  assert(r.Physical()==past);readers.front().reset();assert(r.TakeReleased().size()==1&&r.Physical()==past-1);
+  Pin next{owner,past+1,past+1};auto reused=r.Install(Region(next,"{}",destroyed),next,0,1);assert(reused.status==Status::Installed&&r.Physical()==past);readers.push_back(reused.lease);
+  readers.clear();reused.lease.reset();r.Closed();assert(r.TakeReleased().size()==past&&r.Bytes()==0);++groups;}
+ {Receiver r;constexpr size_t past=257;for(size_t i=0;i<past;++i){auto owner=Actual();owner.frame+=std::to_string(i);assert(r.Admit(owner));}
+  assert(r.Owners()==past);auto owner=Actual();owner.context=0;assert(!r.Admit(owner));r.Closed();assert(r.Owners()==0);++groups;}
  {int destroyed=0;Receiver r;Pin pin{Actual(),1,1};assert(r.Admit(pin.owner));auto result=r.Install(Region(pin,"{}",destroyed),pin,0,1);
   auto wrong=pin;++wrong.transfer;assert(!r.Read(wrong));assert(r.Retire(pin.owner)&&!r.Retire(pin.owner));
   assert(r.Install(Region(pin,"{}",destroyed),pin,0,1).status==Status::NotAdmitted);

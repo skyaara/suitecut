@@ -17,18 +17,18 @@ import { type UntrustedInput } from './untrusted.js'
 
 export const NativeDownloadInfoSchema = z.strictObject({
   event: z.enum(['created', 'state']),
-  id: z.string().min(1).max(128),
+  id: z.string().min(1),
   pageId: z.number().int().positive(),
   contextId: z.number().int().positive(),
-  url: z.string().max(8192).nullable(),
-  originalURL: z.string().max(8192).nullable(),
-  suggestedFilename: z.string().max(4096).nullable(),
-  mimeType: z.string().max(1024).nullable(),
+  url: z.string().nullable(),
+  originalURL: z.string().nullable(),
+  suggestedFilename: z.string().nullable(),
+  mimeType: z.string().nullable(),
   totalBytes: z.number().int().min(-1).max(Number.MAX_SAFE_INTEGER).nullable(),
   receivedBytes: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
   accepted: z.boolean(),
   state: z.enum(['inProgress', 'complete', 'failed']),
-  failure: z.string().max(4096).nullable(),
+  failure: z.string().nullable(),
 })
 export type NativeDownloadInfo = z.infer<typeof NativeDownloadInfoSchema>
 
@@ -110,7 +110,6 @@ export class NativeDownload {
     const destination = z
       .string()
       .min(1)
-      .max(4096)
       .refine((value) => !value.includes('\0'))
       .parse(path)
     await this.dispatch('saveAs', { path: resolve(destination) })
@@ -185,10 +184,6 @@ export class NativeDownloadEvents {
       return existing
     }
     const download = new NativeDownload(this.page, info)
-    if (this.downloads.size >= 256) {
-      const first = this.downloads.keys().next().value
-      if (first !== undefined) this.downloads.delete(first)
-    }
     this.downloads.set(info.id, download)
     return download
   }

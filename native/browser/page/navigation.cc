@@ -65,7 +65,7 @@ auto Source::OnTitleChange(CefRefPtr<CefBrowser> browser, const CefString& title
   if (!closing_page_ && network_ &&
       !engine_.network_archive().PageTitle(network_context_id_, "page:" + std::to_string(page_id_),
                                            title.ToString()))
-    NetworkFatal("Native HAR actual page title capacity exceeded");
+    Degraded("Native HAR page title was not recorded");
 }
 
 auto Source::OnLoadStart(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame,
@@ -293,7 +293,7 @@ auto Source::BeginNavigation(int id, Dict message, const std::string& command, i
     return;
   }
   nav.url = message->GetString("url").ToString();
-  if (nav.url.empty() || nav.url.size() > 8192 || nav.url.find('\0') != std::string::npos) {
+  if (nav.url.empty() || nav.url.find('\0') != std::string::npos) {
     Complete(id, false, "Invalid native navigation URL");
     return;
   }

@@ -58,22 +58,6 @@ function named(yaml, name) {
   assert.equal(tokens.length, 1)
   return z.string().parse(tokens[0]?.[1])
 }
-/**
- * Finds a genuine named record beneath the actual JSON root containers.
- * @param {import('../src/native-aria.js').NativeAriaJSONNode[]} forest
- * @param {string} name
- */
-function actualButton(forest, name) {
-  const pending = [...forest]
-  while (pending.length) {
-    const node = pending.pop()
-    if (!node) break
-    if (node.role === 'button' && node.name === name) return node
-    if (node.children)
-      for (const child of node.children) if (typeof child !== 'string') pending.push(child)
-  }
-  return undefined
-}
 async function retired() {
   const deadline = performance.now() + 3000
   let state = ownership.parse(await source.runAutomation('diagnostics'))
@@ -224,17 +208,11 @@ try {
         parent.appendChild(button)
       }
     })
-  const json = await page.ariaSnapshotJSON({ mode: 'ai' })
-  assert(new TextEncoder().encode(JSON.stringify(json)).byteLength <= 65536)
-  const parent = actualButton(json, 'Actual parent')
-  assert(parent?.ref)
-  await assert.rejects(
-    page.ariaSnapshot({ mode: 'ai', timeout: 5000 }),
-    /ARIA snapshot exceeds 64 KiB/u,
-  )
-  assert.equal(await page.getByRef(parent.ref).textContent(), 'Actual parent')
+  yaml = await page.ariaSnapshot({ mode: 'ai', timeout: 5000 })
+  const ref = named(yaml, 'Actual parent')
+  assert.equal(await page.getByRef(ref).textContent(), 'Actual parent')
   checks.push(
-    'a YAML-specific formatting bound fails before publication and preserves the previous connected main reference',
+    'a deeply nested YAML snapshot is published whole with no byte limit and its references stay connected',
   )
 
   await page.goto('about:blank')

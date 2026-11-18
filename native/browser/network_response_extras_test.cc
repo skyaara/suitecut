@@ -32,15 +32,13 @@ int main(){
  assert(extras.Move("\nno-extra","child\nno-extra",100));extras.Complete("child\nno-extra");assert(extras.bytes()==0);
  assert(extras.Move("\nclose-alias","child\nclose-alias",100));extras.SessionClosed("child");assert(extras.bytes()==0);
  assert(extras.Move("\nexpired-alias","child\nexpired-alias",100));extras.Tick(100);assert(extras.bytes()==0);
- // A full budget forgets the oldest alias instead of failing the page.
+ // No alias, chain, receipt or byte cap: nothing is evicted or dropped.
  std::vector<std::string>degraded;extras.degraded=[&](const auto&error){degraded.push_back(error);};
- for(int i=0;i<4096;++i){assert(extras.Move("old\n"+std::to_string(i),"new\n"+std::to_string(i),100));}
- assert(extras.Move("old\nover","new\nover",100));assert(extras.aliases()==4096&&failures.empty()&&!degraded.empty());extras.Tick(100);assert(extras.bytes()==0&&extras.aliases()==0);degraded.clear();
- // A full byte budget forgets the oldest chain, reporting its headers missing.
- auto large=Headers(std::string(1048563,'a'));for(int i=0;i<7;++i)assert(extras.Receive("\nlarge"+std::to_string(i),large,100));
- const auto retained=extras.bytes();assert(extras.Receive("\nlarge8",large,200));assert(extras.bytes()<=retained&&extras.receipts()==7&&failures.empty()&&!degraded.empty());
- // Header blocks Chromium itself could never send are dropped, not fatal.
- degraded.clear();assert(extras.Receive("\nhuge",Headers(std::string(1048577,'a')),100));assert(extras.receipts()==7&&degraded.size()==1);extras.Clear();assert(extras.bytes()==0);
+ for(int i=0;i<5000;++i){assert(extras.Move("old\n"+std::to_string(i),"new\n"+std::to_string(i),100));}
+ assert(extras.Move("old\nover","new\nover",100));assert(extras.aliases()==5001&&failures.empty()&&degraded.empty());extras.Tick(100);assert(extras.bytes()==0&&extras.aliases()==0);
+ auto large=Headers(std::string(1048563,'a'));for(int i=0;i<9;++i)assert(extras.Receive("\nlarge"+std::to_string(i),large,100));
+ assert(extras.receipts()==9&&extras.bytes()>9*1048563&&failures.empty()&&degraded.empty());
+ assert(extras.Receive("\nhuge",Headers(std::string(1048577,'a')),100));assert(extras.receipts()==10&&degraded.empty());extras.Clear();assert(extras.bytes()==0);
  // A callback may clear its native owner while several receipts are pending.
  Extras* owner=nullptr;int applied=0;Extras reentrant([&](const auto&,Dict){++applied;owner->Clear();},[](const auto&,const auto&){assert(false);},[](const auto&){assert(false);});owner=&reentrant;assert(reentrant.Receive("\nreentrant",Headers("one"),100));assert(reentrant.Receive("\nreentrant",Headers("two"),100));assert(reentrant.Expect("\nreentrant","one",true,100));assert(applied==1&&reentrant.bytes()==0);
 }

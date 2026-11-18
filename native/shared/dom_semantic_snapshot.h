@@ -25,7 +25,7 @@ inline constexpr char kSuiteCutDOMSemanticSnapshot[] = R"JS(function(scope,query
   const owners=new WeakMap(),owned=new WeakMap();const indexed=new Set(),index=[scope.ownerDocument.documentElement];
   while(index.length){tick();const e=index.pop();if(!e||indexed.has(e))continue;indexed.add(e);if(e.nodeType!==1)continue;
     if(options.ai===true&&e instanceof HTMLInputElement&&e.type==='password')passwordControls.add(e);
-    const targets=[];for(const id of (e.getAttribute('aria-owns')||'').trim().split(/\s+/).filter(Boolean)){tick();const target=tools.byId(e,id);if(!target||owners.has(target)||target===e||target.contains(e))continue;let cyclic=false,steps=0;for(let p=e;p;p=owners.get(p)||parent(p)){tick();if(++steps>1024)throw new Error('Native semantic ownership depth limit exceeded');if(p===target){cyclic=true;break;}}if(!cyclic){owners.set(target,e);targets.push(target);}}
+    const targets=[];for(const id of (e.getAttribute('aria-owns')||'').trim().split(/\s+/).filter(Boolean)){tick();const target=tools.byId(e,id);if(!target||owners.has(target)||target===e||target.contains(e))continue;let cyclic=false;for(let p=e;p;p=owners.get(p)||parent(p)){tick();if(p===target){cyclic=true;break;}}if(!cyclic){owners.set(target,e);targets.push(target);}}
     owned.set(e,targets);const nested=physical(e);for(let i=nested.length-1;i>=0;--i)index.push(nested[i]);
   }
   // Password values must not enter AI names through embedded textboxes in a
@@ -42,8 +42,8 @@ inline constexpr char kSuiteCutDOMSemanticSnapshot[] = R"JS(function(scope,query
   const supports={checked:['checkbox','menuitemcheckbox','menuitemradio','radio','switch'],pressed:['button'],selected:['gridcell','option','row','tab','rowheader','columnheader','treeitem'],expanded:['application','button','checkbox','combobox','gridcell','link','listbox','menuitem','row','rowheader','tab','treeitem'],level:['heading','listitem','row','treeitem']};
   const stack=[{element:scope,entered:false,next:0,result:[],depth:0}],active=new Set(),emitted=new Set();let forest=[];
   while(stack.length){tick();const frame=stack.at(-1),e=frame.element;
-    if(!frame.entered){if(frame.depth>512)throw new Error('Native semantic snapshot depth limit exceeded');if(active.has(e))throw new Error('Native semantic snapshot ownership cycle');if(emitted.has(e)){stack.pop();continue;}emitted.add(e);active.add(e);frame.entered=true;
-      if(e.nodeType===3){text(frame.result,e.nodeValue||'',e);frame.children=[];}else if(e.nodeType!==1||['script','style','noscript'].includes(e.localName)||hidden(e)){frame.excluded=true;frame.children=[];}else{if(options.collectNativeControls&&e instanceof HTMLInputElement&&e.type==='file'){if(fileControls.length>=128)throw new Error('Native UA control capacity exceeded');fileControls.push(e);}frame.role=role(e);frame.children=children(e);text(frame.result,pseudo(e,'::before'),e);}
+    if(!frame.entered){if(active.has(e))throw new Error('Native semantic snapshot ownership cycle');if(emitted.has(e)){stack.pop();continue;}emitted.add(e);active.add(e);frame.entered=true;
+      if(e.nodeType===3){text(frame.result,e.nodeValue||'',e);frame.children=[];}else if(e.nodeType!==1||['script','style','noscript'].includes(e.localName)||hidden(e)){frame.excluded=true;frame.children=[];}else{if(options.collectNativeControls&&e instanceof HTMLInputElement&&e.type==='file')fileControls.push(e);frame.role=role(e);frame.children=children(e);text(frame.result,pseudo(e,'::before'),e);}
     }
     if(frame.next<frame.children.length){const child=frame.children[frame.next++];stack.push({element:child,entered:false,next:0,result:[],depth:frame.depth+1});continue;}
     let result=frame.result;
@@ -91,5 +91,5 @@ inline constexpr char kSuiteCutDOMSemanticSnapshot[] = R"JS(function(scope,query
   }
   if(options.collectNativeControls)return fileControls;
   const lists=[forest];while(lists.length){tick();const list=lists.pop();for(let i=0;i<list.length;){const node=list[i];if(node.role==='text'){node.text=tools.normalize(node.text);if(!node.text){list.splice(i,1);continue;}}if(node.children)lists.push(node.children);++i;}}
-  if(options.captureReferences){const elements=[],entries=[],elementIndexes=new Map(),pending=[...forest].reverse();while(pending.length){tick();const node=pending.pop(),element=referenceNodes.get(node);if(element){let index=elementIndexes.get(element);if(index===undefined){if(elements.length>=1000000)throw new Error('Native semantic reference limit exceeded');index=elements.length;elementIndexes.set(element,index);elements.push(element);}entries.push([node,index]);}if(node.children)for(let i=node.children.length-1;i>=0;--i)pending.push(node.children[i]);}return {forest,elements,entries};}return forest;
+  if(options.captureReferences){const elements=[],entries=[],elementIndexes=new Map(),pending=[...forest].reverse();while(pending.length){tick();const node=pending.pop(),element=referenceNodes.get(node);if(element){let index=elementIndexes.get(element);if(index===undefined){index=elements.length;elementIndexes.set(element,index);elements.push(element);}entries.push([node,index]);}if(node.children)for(let i=node.children.length-1;i>=0;--i)pending.push(node.children[i]);}return {forest,elements,entries};}return forest;
 })JS";

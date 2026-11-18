@@ -56,8 +56,10 @@ int main(){
  }
  {
   Routes routes([](const auto&,const auto&){assert(false);},[&]{return now;});assert(routes.Seed(1));std::vector<Routes::Route>policies;
-  for(int i=0;i<128;++i){auto p=Policy::Create(std::to_string(i)+std::string(125,'\1'),"**/*",0);assert(p);assert(routes.Install(i+1,1,p,100,[](bool ok,const auto&){assert(ok);}));policies.push_back(p);}
-  assert(!routes.RemoveAllObserved(200,1,1,true,100,[](bool,const auto&){assert(false);},[](bool,const auto&){assert(false);}));assert(routes.pending()==0);for(const auto&p:policies)assert(p->available());
+  for(int i=0;i<400;++i){auto p=Policy::Create(std::to_string(i)+std::string(300,'\1'),"**/*",0);assert(p);assert(routes.Install(i+1,1,p,100,[](bool ok,const auto&){assert(ok);}));policies.push_back(p);}
+  // No id-count or wire-size cap on the unrouteAll snapshot.
+  size_t selected=0;int done=0;assert(routes.RemoveAllObserved(500,1,1,true,100,[&](bool applied,const auto&ids){if(applied)selected=ids.size();},[&](bool ok,const auto&){assert(ok);++done;}));
+  assert(done==1&&selected==400&&routes.pending()==0);for(const auto&p:policies)assert(!p->available());
  }
  assert(leases.size()==0&&Policy::retained_count()==0);
  std::cout<<"Native context route removal waits: 7 actual-receipt/admission/owner/deadline groups passed\n";

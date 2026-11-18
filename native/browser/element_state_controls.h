@@ -28,7 +28,7 @@ class ElementStateControls {
   ~ElementStateControls(){life_->alive=false;}
   bool Admit(int owner,uint64_t generation,std::string frame,int context,std::string session,double deadline){
     const auto found=states_.find(owner);if(found!=states_.end())return found->second->generation==generation&&!found->second->canceled&&found->second->context==context&&found->second->frame==frame&&found->second->session==session;
-    if(states_.size()>=64||serial_==std::numeric_limits<uint64_t>::max())return false;
+    if(serial_==std::numeric_limits<uint64_t>::max())return false;
     auto state=std::make_shared<State>();state->owner=owner;state->generation=generation;state->serial=++serial_;state->frame=std::move(frame);state->context=context;state->session=std::move(session);state->deadline=deadline;state->token=std::to_string(owner)+":"+std::to_string(generation)+":"+std::to_string(state->serial);states_.emplace(owner,state);return true;
   }
   std::string Expression(int owner,const std::string& observer){
@@ -37,7 +37,7 @@ class ElementStateControls {
     return "("+std::string(kSuiteCutElementStateSampler)+")(nodes[0],"+observer+","+Quote(key_)+","+Quote(state->token)+","+std::to_string(ttl)+")";
   }
   std::shared_ptr<Physical> Begin(int owner){
-    const auto found=states_.find(owner);if(found==states_.end()||found->second->canceled||life_->physical>=64)return nullptr;
+    const auto found=states_.find(owner);if(found==states_.end()||found->second->canceled)return nullptr;
     auto state=found->second;auto life=life_;++state->physical;++life->physical;auto physical=std::make_shared<Physical>();
     physical->release=[this,state,life]{--state->physical;--life->physical;if(life->alive&&state->canceled&&!state->gone&&!state->physical)Cleanup(state);};return physical;
   }
@@ -47,7 +47,7 @@ class ElementStateControls {
     const auto found=calls_.find(id);if(found==calls_.end())return false;auto state=found->second;
     if(state->session!=session&&(ok||!session.empty())){fail_("Native element-state cleanup session mismatch");return true;}calls_.erase(found);
     if(state->gone)return true;
-    auto parsed=json.size()<=65536?CefParseJSON(json,JSON_PARSER_RFC):nullptr;auto result=parsed?parsed->GetDictionary():nullptr;auto value=result?result->GetDictionary("result"):nullptr;
+    auto parsed=CefParseJSON(json,JSON_PARSER_RFC);auto result=parsed?parsed->GetDictionary():nullptr;auto value=result?result->GetDictionary("result"):nullptr;
     if(!ok||!result||result->HasKey("exceptionDetails")||!value||value->GetType("value")!=VTYPE_BOOL||!value->GetBool("value")){Retire(state);fail_("Native element-state renderer cleanup failed");return true;}
     Retire(state);return true;
   }
@@ -77,7 +77,7 @@ class ElementStateControls {
   void Retire(const std::shared_ptr<State>& state){const auto found=states_.find(state->owner);if(found!=states_.end()&&found->second==state)states_.erase(found);}
   void Cleanup(const std::shared_ptr<State>& state){
     if(state->gone){Retire(state);return;}if(state->releasing)return;state->releasing=true;
-    if(calls_.size()>=64){Retire(state);fail_("Native element-state cleanup capacity exceeded");return;}const int id=allocate_();if(!id){Retire(state);fail_("Native element-state command identity exhausted");return;}
+    const int id=allocate_();if(!id){Retire(state);fail_("Native element-state command identity exhausted");return;}
     auto params=CefDictionaryValue::Create();params->SetInt("contextId",state->context);params->SetBool("returnByValue",true);
     params->SetString("expression","("+std::string(kSuiteCutElementStateSampler)+")(null,null,"+Quote(key_)+","+Quote(state->token)+",0,true)");
     calls_.emplace(id,state);

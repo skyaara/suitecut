@@ -188,9 +188,8 @@ describe('native broadcast binary ownership', () => {
     await broadcast.stop()
     for (const reconnect of [
       { maxAttempts: 0 },
-      { maxAttempts: 9 },
-      { initialDelayMs: 5001 },
-      { maxDelayMs: 30001 },
+      { initialDelayMs: -1 },
+      { initialDelayMs: 1000, maxDelayMs: 999 },
     ]) {
       const rejected = fixture()
       await expect(

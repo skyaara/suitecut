@@ -3,6 +3,7 @@
 #undef NDEBUG
 #endif
 #include <cassert>
+#include <cmath>
 #include <limits>
 #include "include/cef_api_hash.h"
 #include "har_capture.h"
@@ -15,9 +16,11 @@ void PureWire(){
  auto a=good();a.Data(100,25);a.Terminal(true);assert(a.Encoded(100)==25);assert(!a.Encoded(99));a.CoverageLost();assert(a.Encoded(100)==25);
  auto b=good();b.Terminal(true);assert(!b.Encoded(0));
  auto c=good();c.Data(100,0);c.Terminal(true);assert(!c.Encoded(100));
- for(double bad:{-1.,0.5,std::numeric_limits<double>::infinity(),std::numeric_limits<double>::quiet_NaN(),double(Wire::kBytes)+1}){auto wire=good();wire.Data(100,bad);wire.Terminal(true);assert(!wire.Encoded(100));}
- auto overflow=good();overflow.Data(Wire::kBytes,1);overflow.Data(1,1);overflow.Terminal(true);assert(!overflow.Encoded(Wire::kBytes));
- auto many=good();for(size_t i=0;i<=Wire::kChunks;++i)many.Data(1,1);many.Terminal(true);assert(!many.Encoded(Wire::kChunks+1));
+ for(double bad:{-1.,0.5,std::numeric_limits<double>::infinity(),std::numeric_limits<double>::quiet_NaN(),std::ldexp(1.,64)}){auto wire=good();wire.Data(100,bad);wire.Terminal(true);assert(!wire.Encoded(100));}
+ // No suitecut byte or chunk cap: a large, long-streamed response is counted whole.
+ auto large=good();large.Data(64.*1048576,16.*1048576+1);large.Data(1,1);large.Terminal(true);assert(large.Encoded(64*1048576+1)==16*1048576+2);
+ auto overflow=good();overflow.Data(std::ldexp(1.,63),1);overflow.Data(std::ldexp(1.,63),1);overflow.Terminal(true);assert(!overflow.Encoded(0));
+ auto many=good();for(size_t i=0;i<=4096;++i)many.Data(1,1);many.Terminal(true);assert(many.Encoded(4097)==4097);
  auto late=good();late.Data(100,25);late.Terminal(true);late.Data(0,1);assert(!late.Encoded(100));
  auto failed=good();failed.Data(100,25);failed.Terminal(false);assert(!failed.Encoded(100));
  Wire early;early.Begin(true);early.Data(100,25);early.Response(true);early.Terminal(true);assert(!early.Encoded(100));

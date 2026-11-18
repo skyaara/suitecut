@@ -18,8 +18,7 @@ class Engine {
   // Counts a journal or archive record the engine drops instead of failing
   // the browser; reported as engineDegraded in page diagnostics.
   void Degraded(const std::string& message) {
-    const auto key = message.substr(0, 256);
-    if (degraded_.size() < 256 || degraded_.contains(key)) ++degraded_[key];
+    ++degraded_[message];
   }
   Dict VideoMetadata(int page) const;
   bool CreatePage(int page, int context, CefRefPtr<CefRequestContext> request_context);

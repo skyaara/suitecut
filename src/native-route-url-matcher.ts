@@ -16,9 +16,6 @@ export interface NativeRouteMatcherRegistration {
 const IntrinsicPromise = Promise,
   intrinsicPromiseThen = Reflect.get(Promise.prototype, 'then')
 
-let retained = 0,
-  bytes = 0
-
 /** Immutable registration policy, executed only for a genuine native candidate. */
 export class NativeRouteURLMatcherPolicy {
   readonly host: boolean
@@ -26,28 +23,21 @@ export class NativeRouteURLMatcherPolicy {
   private original: NativeRouteURLMatcher | undefined
   private source: string
   private flags: string
-  private cost: number
   private expression: RegExp | undefined
   constructor(url: NativeRouteURLMatcher) {
     if (typeof url !== 'string' && typeof url !== 'function' && !(url instanceof RegExp))
       throw new Error('Native route requires a URL glob, RegExp or synchronous URL predicate')
     const source = url instanceof RegExp ? url.source : typeof url === 'string' ? url : ''
     const flags = url instanceof RegExp ? url.flags : ''
-    if (source.length > 8192 || source.includes('\0') || (typeof url === 'string' && !source))
-      throw new Error('Native route URL matcher exceeds its metadata bounds')
+    if (source.includes('\0') || (typeof url === 'string' && !source))
+      throw new Error('Native route URL matcher is empty or contains NUL')
     const host = typeof url !== 'string'
-    const cost = host ? Buffer.byteLength(source) + Buffer.byteLength(flags) : 0
-    if (host && (retained >= 1024 || cost > 4 * 1024 * 1024 - bytes))
-      throw new Error('Native route URL matcher registration capacity exceeded')
     this.host = host
     this.nativePattern = this.host ? '**/*' : source
     this.original = url
     this.source = source
     this.flags = flags
     this.expression = url instanceof RegExp ? new RegExp(source, flags) : undefined
-    this.cost = cost
-    if (host) ++retained
-    bytes += cost
   }
 
   matchesRegistration(url: NativeRouteURLMatcher): boolean {
@@ -125,8 +115,5 @@ export class NativeRouteURLMatcherPolicy {
     this.source = ''
     this.flags = ''
     this.expression = undefined
-    if (this.host) --retained
-    bytes -= this.cost
-    this.cost = 0
   }
 }

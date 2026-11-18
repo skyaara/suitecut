@@ -29,7 +29,6 @@ void NativeWebSocketPolicyAttach(const std::string&session,suitecut::NativeWebSo
   if(found!=native_websocket_policy_scopes_.end()){
     if(found->second.ready){ready(true,"");return;}
     if(found->second.failed){ready(false,found->second.error);return;}
-    if(found->second.waiting.size()>=64){ready(false,"Native WebSocket target readiness capacity exceeded");return;}
     found->second.waiting.push_back(std::move(ready));return;
   }
   auto&scope=native_websocket_policy_scopes_[session];scope.serial=++native_websocket_policy_serial_;scope.native_frame=session.empty()?NativeWebSocketPolicyFrame():std::string{};const auto serial=scope.serial;scope.waiting.push_back(std::move(ready));
@@ -42,12 +41,12 @@ void NativeWebSocketPolicyAttach(const std::string&session,suitecut::NativeWebSo
     },[self=CefRefPtr<Source>(this)](const std::string&error){self->NetworkFatal(error);},
     [self=CefRefPtr<Source>(this),session,serial](bool ok,const std::string&error){
       const auto actual=self->native_websocket_policy_scopes_.find(session);if(actual==self->native_websocket_policy_scopes_.end()||actual->second.serial!=serial)return;
-      auto waiting=std::move(actual->second.waiting);actual->second.ready=ok;actual->second.failed=!ok;actual->second.error=error.substr(0,1024);
+      auto waiting=std::move(actual->second.waiting);actual->second.ready=ok;actual->second.failed=!ok;actual->second.error=error;
       if(session.empty())self->native_websocket_policy_root_ready_=ok;
       for(auto&done:waiting)done(ok,error);
       if(session.empty()&&ok){self->SettingsCommit();self->MaybeReady();}
     });
-  if(!accepted){auto waiting=std::move(scope.waiting);native_websocket_policy_scopes_.erase(session);for(auto&done:waiting)done(false,"Native WebSocket target attachment capacity exceeded");}
+  if(!accepted){auto waiting=std::move(scope.waiting);native_websocket_policy_scopes_.erase(session);for(auto&done:waiting)done(false,"Native WebSocket target attachment rejected (duplicate owner or serial exhausted)");}
 }
 void NativeWebSocketPolicyDetach(const std::string&session){
   engine_.websocket_routes().Detach(NativeWebSocketPolicyOwner(session));

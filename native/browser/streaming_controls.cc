@@ -11,26 +11,17 @@ StreamingControls::StreamingControls(Hooks hooks) : hooks_(std::move(hooks)) {
 }
 StreamingControls::~StreamingControls() { CloseAll(); }
 std::string StreamingControls::Start(int owner, int page, int context, StreamPipelineOptions options, Reply ready, std::string client_token) {
-  if (client_token.size() > 128 || !std::all_of(client_token.begin(), client_token.end(), [](char c) { return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '-' || c == '_'; }))
+  if (!std::all_of(client_token.begin(), client_token.end(), [](char c) { return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '-' || c == '_'; }))
     throw std::invalid_argument("Invalid native stream correlation token");
   options.ffmpeg_path = ResolveMediaExecutable(options.ffmpeg_path);
   ValidateStreamPipelineOptions(options);
   if (owner <= 0 || page <= 0 || context <= 0 || !ready || weak_from_this().expired()) throw std::invalid_argument("Native publisher owner is invalid");
   std::lock_guard lock(mutex_);
   if (closing_ || closing_pages_.contains(page) || failed_pages_.contains(page) || closing_contexts_.contains(context)) throw std::runtime_error("Native streaming owner is closing or closed");
-  size_t waiters = 0;
   for (const auto& [id, record] : records_) {
     if (!client_token.empty() && record.client_token == client_token) throw std::runtime_error("Native stream correlation token is already retained");
     if (record.ready.contains(owner) || record.stopped.contains(owner)) throw std::runtime_error("Duplicate native stream command");
     if (record.pipeline && record.destination == options.destination) throw std::runtime_error("Native stream destination already has an active publisher");
-    waiters += record.ready.size() + record.stopped.size();
-  }
-  if (waiters >= 128) throw std::runtime_error("Native stream wait capacity exceeded");
-  while (records_.size() >= 256) {
-    auto removable = records_.end();
-    for (auto it = records_.begin(); it != records_.end(); ++it) if (!it->second.pipeline) { removable = it; break; }
-    if (removable == records_.end()) throw std::runtime_error("Native stream registry capacity exceeded");
-    records_.erase(removable);
   }
   if (sequence_ == std::numeric_limits<uint64_t>::max()) throw std::runtime_error("Native stream identity exhausted");
   const auto id = "stream-" + std::to_string(++sequence_);
@@ -105,11 +96,8 @@ void StreamingControls::Finished(const std::string& id, const StreamPipelineResu
 void StreamingControls::Stop(int owner, const std::string& id, std::chrono::steady_clock::time_point deadline, Reply reply) {
   std::shared_ptr<StreamPipeline> pipeline; StreamPipelineResult result;
   { std::lock_guard lock(mutex_); const auto found = records_.find(id); if (found == records_.end() || owner <= 0 || !reply) throw std::invalid_argument("Invalid native stream stop");
-    size_t waiters = 0; for (const auto& [name, live] : records_) {
+    for (const auto& [name, live] : records_)
       if (live.ready.contains(owner) || live.stopped.contains(owner)) throw std::runtime_error("Duplicate native stream command");
-      waiters += live.ready.size() + live.stopped.size();
-    }
-    if (waiters >= 128) throw std::runtime_error("Native stream wait capacity exceeded");
     pipeline = found->second.pipeline; result = found->second.result;
     if (pipeline) {found->second.phase = "stopping";found->second.stopped.emplace(owner, BindNativeLocatorHandlerAsync(std::move(reply)));if(auto receipt=RetainNativeLocatorHandlerAsync())found->second.handler_stopped.emplace(owner,std::move(receipt)); }
   }

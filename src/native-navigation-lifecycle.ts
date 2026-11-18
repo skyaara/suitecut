@@ -11,7 +11,6 @@ const pending = new WeakMap<object, Set<NativeNavigationRecord>>()
 
 export function runNativeNavigation<T>(owner: object, action: () => Promise<T>): Promise<T> {
   const active = pending.get(owner) ?? new Set<NativeNavigationRecord>()
-  if (active.size >= 64) return Promise.reject(new Error('Too many pending native navigations'))
   pending.set(owner, active)
   let resolve!: (value: T) => void
   let reject!: (reason: UntrustedInput) => void

@@ -128,11 +128,6 @@ function runNativeRetryOperationActual<T>(callback: () => T): T {
   if (prior?.live && prior.invocation === actual) return callback()
   currentNativeRetryInvocation(actual.owner)
   actual.sourceIntent = true
-  if (actual.operations.size >= 128) {
-    const error = new Error('Native Source operation continuation capacity exceeded')
-    nativeRetryInfrastructureFailure(error, actual)
-    throw error
-  }
   const admitted: Operation = { invocation: actual, live: true, references: 1 }
   actual.operations.add(admitted)
   const finish = (): void => {

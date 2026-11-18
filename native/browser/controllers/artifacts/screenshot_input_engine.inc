@@ -6,7 +6,7 @@ void Engine::ScreenshotInputControl(int id,Dict params,uint64_t generation){
   const auto action=params->GetString("action").ToString();
   if(page_type!=VTYPE_INT||page<=0){CompleteContext(id,false,nullptr,"Invalid native screenshot input page");return;}
   if(action=="discard"){
-    if(params->GetType("clientToken")!=VTYPE_STRING||params->GetString("clientToken").empty()||params->GetString("clientToken").length()>128){CompleteContext(id,false,nullptr,"Invalid native screenshot input cleanup token");return;}
+    if(params->GetType("clientToken")!=VTYPE_STRING||params->GetString("clientToken").empty()){CompleteContext(id,false,nullptr,"Invalid native screenshot input cleanup token");return;}
     screenshot_inputs_->DiscardClient(page,params->GetString("clientToken"));CompleteContext(id,true);return;
   }
   const auto source=sources_.find(page);
@@ -18,9 +18,9 @@ void Engine::ScreenshotInputControl(int id,Dict params,uint64_t generation){
   }
   if(action!="append"||params->GetType("section")!=VTYPE_STRING||(params->GetString("section")!="config"&&params->GetString("section")!="png")||params->GetType("offset")!=VTYPE_INT||params->GetInt("offset")<0||params->GetType("data")!=VTYPE_STRING){CompleteContext(id,false,nullptr,"Invalid native screenshot input chunk");return;}
   const auto text=params->GetString("data").ToString();
-  if(text.empty()||text.size()>32768||text.size()%4){CompleteContext(id,false,nullptr,"Native screenshot input chunk exceeds24KiB");return;}
+  if(text.empty()||text.size()%4){CompleteContext(id,false,nullptr,"Invalid native screenshot input chunk length");return;}
   const auto binary=CefBase64Decode(text);
-  if(!binary||!binary->GetSize()||binary->GetSize()>24576){CompleteContext(id,false,nullptr,"Invalid native screenshot input chunk encoding");return;}
+  if(!binary||!binary->GetSize()){CompleteContext(id,false,nullptr,"Invalid native screenshot input chunk encoding");return;}
   std::vector<uint8_t>bytes(binary->GetSize());
   if(binary->GetData(bytes.data(),bytes.size(),0)!=bytes.size()||CefBase64Encode(bytes.data(),bytes.size()).ToString()!=text){CompleteContext(id,false,nullptr,"Noncanonical native screenshot input chunk encoding");return;}
   const bool accepted=screenshot_inputs_->Append(owner,token,params->GetString("section")=="config",size_t(params->GetInt("offset")),bytes,error);CompleteContext(id,accepted,nullptr,error);

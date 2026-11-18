@@ -15,7 +15,7 @@ void FormStart(int id,uint64_t generation,Dict message) {
   if(action=="setChecked"&&message->GetType("checked")!=VTYPE_BOOL){Complete(id,false,"Native checked state must be a boolean");return;}
   if(action=="selectOption"){
     const auto choices=message->GetList("options");
-    if(!choices||choices->GetSize()>10000){Complete(id,false,"Invalid native select options");return;}
+    if(!choices){Complete(id,false,"Invalid native select options");return;}
     for(size_t i=0;i<choices->GetSize();++i){
       const auto choice=choices->GetDictionary(i);
       if(!choice||(!choice->HasKey("value")&&!choice->HasKey("label")&&!choice->HasKey("index")&&!choice->HasKey("handle")&&!choice->HasKey("valueOrLabel"))||
@@ -34,7 +34,7 @@ void FormStart(int id,uint64_t generation,Dict message) {
       auto& upload=pending_uploads_.at(message->GetString("uploadToken"));upload.active_owner=id;upload.active_generation=generation;
     }else{
     const auto files=message->GetList("files");
-    if(!files||files->GetSize()>1000){Complete(id,false,"Invalid native upload files");return;}
+    if(!files){Complete(id,false,"Invalid native upload files");return;}
     for(size_t i=0;i<files->GetSize();++i){
       const auto file=files->GetDictionary(i);
       if(!file||file->GetType("path")!=VTYPE_STRING){
@@ -51,7 +51,7 @@ void FormStart(int id,uint64_t generation,Dict message) {
     if(handle->second.node_id.empty()){Complete(id,false,"Native handle is not a DOM node");return;}
     config->SetString("frame",handle->second.frame_id);
   }
-  locator_logs_[id]=action+" action\n - resolving "+suitecut::InboundDisplay(suitecut::InboundString(config,"selector")).substr(0,1024);
+  locator_logs_[id]=action+" action\n - resolving "+suitecut::InboundDisplay(suitecut::InboundString(config,"selector"));
   context_retries_[id]=[this,id,generation,config]{FormAction(id,generation,config);};
   FormAction(id,generation,config);
 }
@@ -299,13 +299,12 @@ void FormUpload(int id,uint64_t generation,Dict config) {
           paths->SetString(i,path);
         }
       }
-      if(memory&&!upload_store_.CanReplace(key,bytes))throw std::invalid_argument("Native temporary upload capacity exceeded (128 MiB / 1024 inputs)");
     }catch(const std::exception& error){Complete(id,false,error.what());return;}
     form_uploads_[id]=staged;
     auto params=CefDictionaryValue::Create();params->SetList("files",paths);params->SetInt("backendNodeId",node->GetInt("backendNodeId"));
     context_retries_.erase(id);
     FormFileMutation(id,generation,"DOM.setFileInputFiles",params,[this,id,generation,config,key,bytes,memory,staged,token](bool ok,const std::string& json){
-      if(!ok){Complete(id,false,"Native file upload command failed: "+json.substr(0,1024));return;}
+      if(!ok){Complete(id,false,"Native file upload command failed: "+json);return;}
       if(!operations_.IsCurrent(id,generation))return;
       upload_store_.Replace(key,FrameId(config),bytes,memory?staged:nullptr);
       if(!token.empty())DropPendingUpload(token);
@@ -326,7 +325,6 @@ void PumpFormUploads() {
   for(const auto& token:expired){
     const auto found=pending_uploads_.find(token);if(found==pending_uploads_.end())continue;
     const auto owner=found->second.active_owner;const auto generation=found->second.active_generation;
-    if(expired_upload_tokens_.size()>=128)expired_upload_tokens_.erase(expired_upload_tokens_.begin());
     expired_upload_tokens_[token]=now+60000;
     if(operations_.IsCurrent(owner,generation))Complete(owner,false,"Timeout exceeded: native upload exceeded its original action or idle deadline");
     DropPendingUpload(token);
@@ -337,34 +335,32 @@ void FormStageCommand(int id,Dict message) {
   if(action!="uploadAbort"&&message->GetType("uploadToken")==VTYPE_STRING&&expired_upload_tokens_.contains(message->GetString("uploadToken"))){Complete(id,false,"Timeout exceeded: native upload exceeded its original action or idle deadline");return;}
   if(action=="uploadBegin"){
     const auto metadata=message->GetList("files");
-    if(!metadata||metadata->GetSize()==0||metadata->GetSize()>1000||pending_uploads_.size()>=64){Complete(id,false,"Invalid native upload metadata or staging group capacity exceeded");return;}
+    if(!metadata||metadata->GetSize()==0){Complete(id,false,"Invalid native upload metadata");return;}
     SuiteCutPendingUpload upload;upload.files=std::make_shared<SuiteCutUploadFiles>();
     if(const auto entry=operations_.Get(id))upload.deadline=entry->deadline_ms;
     try{
       for(size_t i=0;i<metadata->GetSize();++i){
         const auto file=metadata->GetDictionary(i);
-        if(!file||file->GetType("name")!=VTYPE_STRING||file->GetType("mimeType")!=VTYPE_STRING||file->GetString("mimeType").length()>255||file->GetType("size")!=VTYPE_INT||file->GetInt("size")<0)throw std::invalid_argument("Invalid native upload metadata");
+        if(!file||file->GetType("name")!=VTYPE_STRING||file->GetType("mimeType")!=VTYPE_STRING||file->GetType("size")!=VTYPE_INT||file->GetInt("size")<0)throw std::invalid_argument("Invalid native upload metadata");
         const auto size=static_cast<size_t>(file->GetInt("size"));
-        if(size>128*1048576-upload.bytes)throw std::invalid_argument("Native upload staging exceeds 128 MiB");
         upload.bytes+=size;upload.expected.push_back(size);upload.received.push_back(0);
         upload.names.push_back(file->GetString("name"));upload.mime_types.push_back(file->GetString("mimeType"));
         upload.paths.push_back(upload.files->Stage(file->GetString("name"),""));
       }
-      if(upload.bytes>128*1048576-upload_store_.Bytes()-pending_upload_bytes_)throw std::invalid_argument("Native upload staging capacity exceeded (128 MiB)");
       if(upload.deadline&&Now()>=upload.deadline)throw std::invalid_argument("Timeout exceeded: native upload exceeded its original action deadline");
     }catch(const std::exception& error){Complete(id,false,error.what());return;}
     upload.expires=Now()+60000;const auto token=HandleNamespace();pending_upload_bytes_+=upload.bytes;
     pending_uploads_.emplace(token,std::move(upload));Complete(id,true,"",Literal(token));return;
   }
-  if(message->GetType("uploadToken")!=VTYPE_STRING||message->GetString("uploadToken").length()>128){Complete(id,false,"Invalid native upload token");return;}
+  if(message->GetType("uploadToken")!=VTYPE_STRING){Complete(id,false,"Invalid native upload token");return;}
   const auto token=message->GetString("uploadToken").ToString();
   if(action=="uploadAbort"){DropPendingUpload(token);Complete(id,true);return;}
   const auto found=pending_uploads_.find(token);
   if(found==pending_uploads_.end()){Complete(id,false,"Native upload token is missing or expired");return;}
-  if(message->GetType("fileIndex")!=VTYPE_INT||message->GetInt("fileIndex")<0||static_cast<size_t>(message->GetInt("fileIndex"))>=found->second.paths.size()||message->GetType("base64")!=VTYPE_STRING||message->GetString("base64").length()>32768){Complete(id,false,"Invalid native upload chunk");return;}
+  if(message->GetType("fileIndex")!=VTYPE_INT||message->GetInt("fileIndex")<0||static_cast<size_t>(message->GetInt("fileIndex"))>=found->second.paths.size()||message->GetType("base64")!=VTYPE_STRING){Complete(id,false,"Invalid native upload chunk");return;}
   const auto data=CefBase64Decode(message->GetString("base64"));
   const auto index=static_cast<size_t>(message->GetInt("fileIndex"));
-  if(!data||data->GetSize()>24576||data->GetSize()>found->second.expected[index]-found->second.received[index]){Complete(id,false,"Native upload chunk exceeds declared file size");return;}
+  if(!data||data->GetSize()>found->second.expected[index]-found->second.received[index]){Complete(id,false,"Native upload chunk exceeds declared file size");return;}
   std::string contents(data->GetSize(),'\0');if(!contents.empty())data->GetData(contents.data(),contents.size(),0);
   try{found->second.files->Append(found->second.paths[index],contents);}catch(const std::exception& error){DropPendingUpload(token);Complete(id,false,error.what());return;}
   found->second.received[index]+=contents.size();found->second.expires=Now()+60000;Complete(id,true);
@@ -467,7 +463,7 @@ bool FormFileDialog(cef_file_dialog_mode_t mode,CefRefPtr<CefFileDialogCallback>
 // for accepted native enumeration completion.
 void FormNativeControl(std::shared_ptr<FormNativeSelectionWork> work,const std::string& method,Dict params,DevToolsCallback callback) {
   const int wire=AllocateDevToolsId();
-  if(!wire||devtools_.size()>=1024){callback(false,"Native file-selection control capacity exceeded");return;}
+  if(!wire){callback(false,"Native file-selection control id exhausted");return;}
   devtools_.emplace(wire,DevToolsCall{work->owner,suitecut::BindNativeLocatorHandlerAsync(std::move(callback)),work->session,true,65536,true});
   if(!SubmitDevTools(wire,method,params,work->session)){
     const auto found=devtools_.find(wire);if(found!=devtools_.end()){auto done=std::exchange(found->second.callback, nullptr);devtools_.erase(found);done(false,"Native file-selection control dispatch was refused");}
@@ -595,7 +591,7 @@ void FormNativeSelection(int id,uint64_t generation,Dict config,bool directory) 
       if(work->directory)paths->SetString(0,work->config->GetList("files")->GetDictionary(0)->GetString("path"));
       params->SetList("files",paths);work->submitted=true;
       FormNativeControl(work,"DOM.setFileInputFiles",params,[this,work](bool ok,const std::string& json){
-        if(!ok){FormNativeFail(work,"Native file selection command failed: "+json.substr(0,1024));return;}
+        if(!ok){FormNativeFail(work,"Native file selection command failed: "+json);return;}
         // Continue to the real native terminal event even after logical cancel.
         FormNativeObserve(work);
       });

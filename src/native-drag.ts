@@ -14,7 +14,7 @@ export interface NativeDragOptions {
 const position = z.strictObject({ x: z.number().finite(), y: z.number().finite() })
 const optionsSchema = z.strictObject({
   timeout: z.number().int().min(0).max(120_000).optional(),
-  steps: z.number().int().min(1).max(10_000).optional(),
+  steps: z.number().int().min(1).optional(),
   force: z.boolean().optional(),
   trial: z.boolean().optional(),
   sourcePosition: position.optional(),

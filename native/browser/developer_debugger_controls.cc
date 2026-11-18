@@ -13,10 +13,9 @@
 namespace suitecut {
 namespace {
 std::atomic<size_t> developer_sessions{0};
-constexpr size_t kSessions = 16, kOperations = 32, kCalls = 32;
 constexpr double kCleanup = 30000;
 bool DocumentValid(const DeveloperDebuggerControls::Document& doc) {
-  return doc.epoch && doc.context > 0 && !doc.unique_context.empty() && doc.unique_context.size() <= 256;
+  return doc.epoch && doc.context > 0 && !doc.unique_context.empty();
 }
 std::string Quote(const std::string& text) { return DevToolsQuoteUnits(CefString(text).ToString16()); }
 }
@@ -108,12 +107,10 @@ class DeveloperDebuggerControls::Impl : public std::enable_shared_from_this<Impl
     return action == "pause" || action == "resume" || action == "stepOver" || action == "stepInto" || action == "stepOut";
   }
   std::shared_ptr<Operation> Admit(int owner, const std::string& action, double deadline, Reply reply) {
-    // One reserved cleanup observer remains available with32 pending readers;
-    // beginning close removes those logical readers before invoking callbacks.
     if(std::isfinite(deadline)&&Expired(deadline)){reply(false,"","Native debugger original deadline expired before admission");return {};}
-    if (closed_ || owner < 1 || operations_.contains(owner) || operations_.size() >= kOperations + (action == "close" ? 1 : 0) ||
+    if (closed_ || owner < 1 || operations_.contains(owner) ||
         !std::isfinite(deadline) || deadline < 0) {
-      reply(false, "", "Native debugger owner, capacity or invalid budget rejected");
+      reply(false, "", "Native debugger owner or invalid budget rejected");
       return {};
     }
     auto op = std::make_shared<Operation>();
@@ -188,7 +185,7 @@ class DeveloperDebuggerControls::Impl : public std::enable_shared_from_this<Impl
   }
   bool Send(const std::shared_ptr<State>& state, const std::string& method, Dict params,
             double deadline, DebuggerDomains::Reply done) {
-    if (!Current(state) || !state->acquired || calls_.size() >= kCalls || Expired(deadline) ||
+    if (!Current(state) || !state->acquired || Expired(deadline) ||
         next_call_ == 9007199254740991ULL) return false;
     const auto id = next_call_+1;
     auto self = shared_from_this();
@@ -275,7 +272,7 @@ class DeveloperDebuggerControls::Impl : public std::enable_shared_from_this<Impl
     std::string json;
     if (!OwnerCurrent(state) || !hooks_.owns_pause(packet, state->document) ||
         !DebuggerPauseProjection::Build(packet, state->token, token, json)) {
-      BeginClose(state, "Native debugger supports only bounded actual current document pauses"); return;
+      BeginClose(state, "Native debugger supports only actual current document pauses"); return;
     }
     std::vector<std::string>frames;
     const auto actual_frames=packet->GetList("callFrames");
@@ -290,19 +287,17 @@ class DeveloperDebuggerControls::Impl : public std::enable_shared_from_this<Impl
        (hooks_.pause_eligibility&&!hooks_.scopes)||
        (!hooks_.agent_controls&&(!hooks_.scopes||!hooks_.pause_eligibility)&&!hooks_.target_pause_eligibility)||
        (hooks_.target_pause_eligibility&&(hooks_.scopes||hooks_.inspector_session.empty()))||
-       hooks_.inspector_session.size()>128||hooks_.inspector_session.find('\0')!=std::string::npos){
+       hooks_.inspector_session.find('\0')!=std::string::npos){
       Finish(op,false,"","Native debugger exact channel/scope adapter is incomplete");return;
     }
     FrameDebuggerScopes::Pin pin;
     if(hooks_.scopes&&(!DocumentValid(document)||!hooks_.scope_pin(document,pin))){opening_=op;Wake();return;}
     if(hooks_.scopes&&pin.channel.session!=hooks_.inspector_session){Finish(op,false,"","Native debugger scope belongs to another actual Inspector channel");return;}
-    if (!DocumentValid(document) || hooks_.owner_namespace.empty() || hooks_.owner_namespace.size() > 128) {
+    if (!DocumentValid(document) || hooks_.owner_namespace.empty()) {
       Finish(op, false, "", "Actual current native root document is unavailable"); return;
     }
     auto state = std::make_shared<State>();
-    size_t count = developer_sessions.load();
-    while (count < kSessions && !developer_sessions.compare_exchange_weak(count, count + 1)) {}
-    if (count >= kSessions) { Finish(op, false, "", "Native debugger process session capacity exceeded"); return; }
+    ++developer_sessions;
     state->counted=true;
     state->document = document; state->inspector_session=hooks_.inspector_session; state->lease = hooks_.lease();
     state->token = hooks_.owner_namespace + ":developer:" + std::to_string(state->lease);
@@ -391,7 +386,7 @@ class DeveloperDebuggerControls::Impl : public std::enable_shared_from_this<Impl
     if (PauseCurrent(state)) { Finish(op, true, state->pause->json, ""); return; }
     if (state->intent) { Finish(op, false, "", "A native next-statement pause request already owns this session"); return; }
     const auto intent = hooks_.domains->Hold(state->lease);
-    if (!intent) { Finish(op, false, "", "Native debugger pause-intent capacity exceeded"); return; }
+    if (!intent) { Finish(op, false, "", "Native debugger pause intent was not admitted"); return; }
     state->intent = Intent{intent, op->deadline, 0, false};
     auto self = shared_from_this();
     if (!Send(state, "Debugger.pause", CefDictionaryValue::Create(), op->deadline,
@@ -438,7 +433,6 @@ class DeveloperDebuggerControls::Impl : public std::enable_shared_from_this<Impl
   }
   void Source(const std::shared_ptr<State>& state, const std::shared_ptr<Operation>& op, Dict params) {
     if (params->GetType("scriptId") != VTYPE_STRING || params->GetString("scriptId").empty() ||
-        params->GetString("scriptId").length() > 128 ||
         !hooks_.owns_script(params->GetString("scriptId").ToString(), state->document)) {
       Finish(op, false, "", "Native debugger source requires an actual current root-document script identity"); return;
     }
@@ -453,7 +447,6 @@ class DeveloperDebuggerControls::Impl : public std::enable_shared_from_this<Impl
         const auto value = result->GetValue("scriptSource");
         if (value->GetType() == VTYPE_STRING) units = value->GetString().ToString16();
         else if (!DevToolsReadTag(value, units)) { self->Finish(op, false, "", "Actual native debugger source is not text"); return; }
-        if (units.size() > 262144) { self->Finish(op, false, "", "Native debugger source exceeds 262144 UTF-16 units"); return; }
         self->Finish(op, true, "{\"source\":" + DevToolsQuoteUnits(units) + "}", "");
       })) Finish(op, false, "", "Native debugger source dispatch was not admitted");
   }
@@ -490,8 +483,8 @@ class DeveloperDebuggerControls::Impl : public std::enable_shared_from_this<Impl
     else if (action == "waitForPause") Deliver(state);
     else if (action == "scriptSource") Source(state, op, params);
     else if(action=="scripts"){
-      if(params->HasKey("cursor")&&(params->GetType("cursor")!=VTYPE_STRING||params->GetString("cursor").empty()||params->GetString("cursor").length()>512)){
-        Finish(op,false,"","Native debugger script cursor must be an opaque bounded token");return;
+      if(params->HasKey("cursor")&&(params->GetType("cursor")!=VTYPE_STRING||params->GetString("cursor").empty())){
+        Finish(op,false,"","Native debugger script cursor must be an opaque token");return;
       }
       std::string json,error;
       const bool ok=state->scripts->Read(params->HasKey("cursor")?params->GetString("cursor").ToString():"",deadline,json,error);
@@ -506,8 +499,8 @@ class DeveloperDebuggerControls::Impl : public std::enable_shared_from_this<Impl
       auto self=shared_from_this();
       const auto reply=[self,op](bool ok,const std::string&json,const std::string&error){return self->Finish(op,ok,json,error);};
       if(action=="setBreakpoint")state->breakpoints->Set(owner,params->GetType("location")==VTYPE_DICTIONARY?params->GetDictionary("location"):nullptr,deadline,reply);
-      else if(params->GetType("breakpoint")==VTYPE_STRING&&params->GetString("breakpoint").length()<=512)state->breakpoints->Remove(owner,params->GetString("breakpoint").ToString(),deadline,reply);
-      else Finish(op,false,"","Native debugger breakpoint token is absent or oversized");
+      else if(params->GetType("breakpoint")==VTYPE_STRING)state->breakpoints->Remove(owner,params->GetString("breakpoint").ToString(),deadline,reply);
+      else Finish(op,false,"","Native debugger breakpoint token is absent");
     }
     else Continue(state, op, params);
     Wake();

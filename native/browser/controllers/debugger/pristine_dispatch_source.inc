@@ -124,8 +124,8 @@ void NativePristineCapture(uint64_t ticket,const NativePristineKey&key,double de
       // Coverage records keep this exact attestation for already-collected as
       // well as future script data; actual realm/group lifetime is independent.
       if(!NativeCoverageMarkNativeScript(key.session,key.context,*script)){
-        native_pristine_factories_->Invalidate(key,"Native pristine function provenance capacity or identity unavailable");
-        ready(false,"Native pristine function provenance capacity or identity unavailable");return;
+        native_pristine_factories_->Invalidate(key,"Native pristine function provenance identity unavailable");
+        ready(false,"Native pristine function provenance identity unavailable");return;
       }
       // Registration is an honest native-script attestation even if its
       // bounded work crosses the caller deadline; capability publication is not.
@@ -145,7 +145,7 @@ void NativePristineSessionReady(const std::string&session,uint64_t lease,bool ok
   found->second.arming=false;
   found->second.armed=ok;
   found->second.failed=!ok;
-  found->second.error=error.substr(0,1024);
+  found->second.error=error;
   auto waiting=std::move(found->second.waiting);
   found->second.waiting.clear();
   if(ok){
@@ -153,7 +153,7 @@ void NativePristineSessionReady(const std::string&session,uint64_t lease,bool ok
     for(auto&[identity,record]:native_pristine_contexts_)if(record.key.session==session)NativePristineAuthorizeChild(record);
   }
   if(!ok)for(auto&[identity,record]:native_pristine_contexts_)if(record.key.session==session&&!record.readable){
-    record.unavailable=error.empty()?"Native pristine bootstrap admission unavailable":error.substr(0,1024);
+    record.unavailable=error.empty()?"Native pristine bootstrap admission unavailable":error;
     if(native_pristine_factories_)native_pristine_factories_->Invalidate(record.key,record.unavailable);
   }
   for(auto&done:waiting)done(ok,error);
@@ -167,14 +167,10 @@ void NativePristineEnsureSession(const std::string&session,double deadline,std::
   }if(existing->second.failed){ready(false,existing->second.error);
   return;
   }
-    if(existing->second.waiting.size()>=64){ready(false,"Native pristine session waiter capacity exceeded");
-  return;
-  }existing->second.waiting.push_back(std::move(ready));
+    existing->second.waiting.push_back(std::move(ready));
   return;
   }
-  if(native_pristine_sessions_.size()>=1024){ready(false,"Native pristine session capacity exceeded");
-  return;
-  }const auto lease=NativeDebuggerLease();
+  const auto lease=NativeDebuggerLease();
   if(!lease){ready(false,"Native pristine lease identity exhausted");
   return;
   }
@@ -216,7 +212,7 @@ void NativePristineContextCreated(const std::string&frame){
   const auto existing=native_pristine_contexts_.find(identity);
   if(existing!=native_pristine_contexts_.end()&&existing->second.key==*owner)return;
   const auto observation=native_pristine_seen_.Observe(owner->session_epoch,owner->identity);
-  if(observation==suitecut::PristineCreationIdentities::Observation::Capacity)return;
+  if(observation==suitecut::PristineCreationIdentities::Observation::Invalid)return;
   const bool seen=observation==suitecut::PristineCreationIdentities::Observation::Known;
   // An initial frame-tree reply may fill a loader after Runtime supplied its
   // unique context. Replace only metadata; no later snapshot becomes fresh.
@@ -224,7 +220,6 @@ void NativePristineContextCreated(const std::string&frame){
     const auto old=existing->second.key;
     NativePristineRetireContext(old,"Actual native context loader binding changed");
   }
-  if(native_pristine_contexts_.size()>=1024)return;
   NativePristineContext record;
   record.key=*owner;
   record.fresh_creation=!seen;
@@ -242,7 +237,7 @@ void NativePristineContextCreated(const std::string&frame){
 }
 void NativePristineNavigationStarted(const std::string&session,const std::string&frame){
   const auto owner=native_pristine_sessions_.find(session);
-  if(!ready_||owner==native_pristine_sessions_.end()||!owner->second.armed||native_pristine_navigations_.size()>=1024)return;
+  if(!ready_||owner==native_pristine_sessions_.end()||!owner->second.armed)return;
   native_pristine_navigations_[frame]=NativePristineNavigation{session,"",owner->second.lease,Now()+30000,false};
 }
 void NativePristineCommitted(const std::string&session,const std::string&frame,bool restored){
@@ -255,7 +250,7 @@ void NativePristineCommitted(const std::string&session,const std::string&frame,b
   nav->second.committed=true;
 }
 void NativePristineChildStart(const std::string&session,const std::string&frame,bool actually_waiting,double deadline,std::function<void(bool,const std::string&)>ready){
-  if(native_pristine_children_.size()<1024)native_pristine_children_[session]={frame,deadline,actually_waiting,suitecut::PristineChildCreation(actually_waiting,frame,deadline)};
+  native_pristine_children_[session]={frame,deadline,actually_waiting,suitecut::PristineChildCreation(actually_waiting,frame,deadline)};
   NativePristineEnsureSession(session,deadline,[ready=std::move(ready)](bool,const std::string&){ready(true,"");});
   const auto child=native_pristine_children_.find(session);
   const auto state=native_pristine_sessions_.find(session);
@@ -290,7 +285,7 @@ bool NativePristineInitialGate(){
   record->unavailable.clear();
   record->ticket=NativePristineFactories().Expect(*owner,suitecut::PristineDispatchFactories::Barrier::InitialSettingsHold,record->deadline);
   NativePristineCapture(record->ticket,*owner,record->deadline,[this,key=*owner](bool ok,const std::string&error){
-    auto*current=NativePristineRecord(key);if(current){current->readable=ok&&NativePristineCurrent(key);current->unavailable=ok?"":error.substr(0,1024);}native_pristine_initial_settled_=true;SettingsCommit();
+    auto*current=NativePristineRecord(key);if(current){current->readable=ok&&NativePristineCurrent(key);current->unavailable=ok?"":error;}native_pristine_initial_settled_=true;SettingsCommit();
   });
   return native_pristine_initial_settled_;
 }
@@ -315,7 +310,7 @@ void NativePristineObserveDebugger(const std::string&method,Dict params,const st
      params->GetString("embedderName")!=suitecut::kNativeSnapshotScript.name))return;
   if(params->GetString("hash")!=suitecut::CoverageControls::SourceHash(local_child?suitecut::kNativeLocalChildSnapshotScript.source:suitecut::kNativeSnapshotScript.source))return;
   const auto script=params->GetString("scriptId").ToString();
-  if(script.empty()||script.size()>128||native_pristine_scripts_.size()>=1024)return;
+  if(script.empty())return;
   for(auto&[identity,record]:native_pristine_contexts_){
     if(record.key.session==session&&record.key.context==params->GetInt("executionContextId")&&NativePristineCurrent(record.key)){
       if(local_child){
@@ -347,7 +342,7 @@ void NativePristinePauseExpired(uint64_t lease,Dict pause,const std::string&erro
     // A refused replay must never invalidate an already valid factory.
     if(record&&record->ticket&&!record->readable&&record->unavailable.empty()){
       record->capture_started=true;
-  record->unavailable=error.substr(0,1024);
+  record->unavailable=error;
       if(native_pristine_factories_)native_pristine_factories_->Invalidate(*owner,error);
     }
     return;
@@ -372,7 +367,7 @@ void NativePausedSnapshot(const NativePristineKey&key,const std::string&call_fra
         const bool accepted=delivered&&result&&!result->HasKey("exceptionDetails")&&NativePristineCurrent(key)&&Now()<budget;
         if(!accepted){if(fatal())NetworkFatal("Native paused init snapshot delivery failed");finish(false,failure.empty()?"Native paused init snapshot delivery failed":failure);return;}
         finish(true,"");
-      })){if(fatal())NetworkFatal("Native paused init snapshot delivery capacity exceeded");finish(false,"Native paused init snapshot delivery capacity exceeded");}
+      })){if(fatal())NetworkFatal("Native paused init snapshot delivery was not accepted");finish(false,"Native paused init snapshot delivery was not accepted");}
 }
 void NativePristinePaused(const std::string&session,Dict pause,double deadline,suitecut::DebuggerDomains::Resume resume){
   auto original_resume=std::move(resume);
@@ -415,10 +410,10 @@ void NativePristinePaused(const std::string&session,Dict pause,double deadline,s
   auto actual_resume=std::make_shared<suitecut::DebuggerDomains::Resume>(std::move(resume));
   auto finish=[this,key,actual_resume](bool ok,const std::string&error){
     auto*current=NativePristineRecord(key);
-  if(current&&!ok)current->unavailable=error.substr(0,1024);
+  if(current&&!ok)current->unavailable=error;
     auto once=std::move(*actual_resume);
   if(!once)return;
-  once([this,key,ok](bool resumed,const std::string&error){auto*current=NativePristineRecord(key);if(current){current->readable=ok&&resumed&&NativePristineCurrent(key)&&native_pristine_factories_&&native_pristine_factories_->Find(key).has_value();if(!current->readable)current->unavailable=error.substr(0,1024);}});
+  once([this,key,ok](bool resumed,const std::string&error){auto*current=NativePristineRecord(key);if(current){current->readable=ok&&resumed&&NativePristineCurrent(key)&&native_pristine_factories_&&native_pristine_factories_->Find(key).has_value();if(!current->readable)current->unavailable=error;}});
   };
   const auto call_frame=first?first->GetString("callFrameId").ToString():"";
   int local_scope=-1;const auto scopes=first?first->GetList("scopeChain"):nullptr;
@@ -430,7 +425,7 @@ void NativePristinePaused(const std::string&session,Dict pause,double deadline,s
       if(!ok){finish(false,error);return;}
       NativePausedSnapshot(key,call_frame,local_scope,budget,finish);
     });
-  }))finish(false,"Native pristine source inspection capacity exceeded");
+  }))finish(false,"Native pristine source inspection was not accepted");
 }
 void NativePristineStart(){
   native_pristine_initial_deadline_=Now()+30000;

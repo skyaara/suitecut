@@ -15,13 +15,11 @@ inline constexpr char kSuiteCutDomQuery[] = R"JS(function(steps,start=document,o
   const nativeNodeType=node=>nativeQueryIntrinsics?nativeQueryIntrinsics.nodeType(node):node.nodeType;
   const nativeOwnerDocument=node=>nativeQueryIntrinsics?nativeQueryIntrinsics.ownerDocument(node):node.ownerDocument;
 
-  if(!Array.isArray(steps)||steps.length>64)throw new Error('Invalid native locator query');
-  let wireWork=0;
+  if(!Array.isArray(steps))throw new Error('Invalid native locator query');
   const wireStrings=['selector','text','pattern','flags','attribute','role','name','message'];
   const wireLists=['query','has','hasNot','descendants'];
   const wirePatterns=['name','description','hasText','hasNotText'];
   const wire=(value,encode=false,depth=0)=>{
-    if(++wireWork>100000||depth>256)throw new Error('Native query wire limit exceeded');
     if(Array.isArray(value))return value.map(item=>wire(item,encode,depth+1));
     if(!value||typeof value!=='object')throw new Error('Invalid native query wire value');
     const result={...value};
@@ -29,7 +27,7 @@ inline constexpr char kSuiteCutDomQuery[] = R"JS(function(steps,start=document,o
       const encoded=key+'JSON';
       if(encode){if(typeof value[key]==='string'&&!value[key].isWellFormed()){result[encoded]=JSON.stringify(value[key]);delete result[key];}}
       else if(Object.hasOwn(value,encoded)){
-        if(Object.hasOwn(value,key)||typeof value[encoded]!=='string'||value[encoded].length>393218)throw new Error('Invalid native query string wire field');
+        if(Object.hasOwn(value,key)||typeof value[encoded]!=='string')throw new Error('Invalid native query string wire field');
         const decoded=JSON.parse(value[encoded]);if(typeof decoded!=='string')throw new Error('Invalid native query string wire field');
         result[key]=decoded;delete result[encoded];
       }
@@ -39,18 +37,14 @@ inline constexpr char kSuiteCutDomQuery[] = R"JS(function(steps,start=document,o
     return result;
   };
   steps=wire(steps);
-  let work=0;
-  // Native diagnostics shares this private budget across candidate alias queries.
-  // It is constructed in the utility world, never read from selector IPC data.
-  const diagnosticBudget=options.nativeDiagnosticsBudget;
-  if(diagnosticBudget!==undefined&&(!diagnosticBudget||!Number.isSafeInteger(diagnosticBudget.remaining)||diagnosticBudget.remaining<0||diagnosticBudget.remaining>50000))throw new Error('Invalid native diagnostic query budget');
-  const tick=()=>{if(++work>200000000||(diagnosticBudget!==undefined&&diagnosticBudget.remaining===0))throw new Error('Native DOM query work limit exceeded');if(diagnosticBudget!==undefined)--diagnosticBudget.remaining;};
+  // Work is not counted or capped: Chromium bounds script execution itself.
+  const tick=()=>{};
   const validating=options.validateOnly===true,validationElement=validating?document.createElement('div'):null;
   const parent=e=>{tick();return e.parentElement||((e.parentNode?.nodeType===11&&e.parentNode.host)||null);};
   const children=(root,light=false)=>{tick();return [...(root.children||[]),...(!light&&root.shadowRoot?root.shadowRoot.children:[])];};
   const enumerate=(root,light=false)=>{
     const out=[],stack=children(root,light).reverse();
-    while(stack.length){tick();const e=stack.pop();out.push(e);if(out.length>1000000)throw new Error('Native DOM query node limit exceeded');const nested=children(e,light);for(let i=nested.length-1;i>=0;i--)stack.push(nested[i]);}
+    while(stack.length){tick();const e=stack.pop();out.push(e);const nested=children(e,light);for(let i=nested.length-1;i>=0;i--)stack.push(nested[i]);}
     return out;
   };
   const split=(text,commas)=>{
@@ -78,9 +72,8 @@ inline constexpr char kSuiteCutDomQuery[] = R"JS(function(steps,start=document,o
       if(!depth&&nativeRegexTest(/\s/,c)){emit();if(!pending)pending=' ';continue;}
       if(!depth&&['>','+','~'].includes(c)){emit();pending=c;continue;}part+=c;
     }
-    emit();if(out.length>257)throw new Error('Native CSS selector nesting limit exceeded');if(!out.length||pending.trim())throw new Error('Invalid native CSS selector');return out;
+    emit();if(!out.length||pending.trim())throw new Error('Invalid native CSS selector');return out;
   };
-  let cssDepth=0,simpleDepth=0;
   const cssCache=new Map();
   const layoutQueries=new WeakMap();
   const layoutRects=new WeakMap();
@@ -115,7 +108,6 @@ inline constexpr char kSuiteCutDomQuery[] = R"JS(function(steps,start=document,o
 
   const scopeEligibilityMemo=new Map();
   const scopeEligible=(value,depth=0)=>{
-    if(depth>64)throw new Error('Native CSS selector nesting limit exceeded');
     if(scopeEligibilityMemo.has(value))return scopeEligibilityMemo.get(value);
     let result=topScope(value);
     if(!result){
@@ -139,8 +131,6 @@ inline constexpr char kSuiteCutDomQuery[] = R"JS(function(steps,start=document,o
   };
 
   const css=(root,selector,light=false)=>{
-    if(++cssDepth>64){cssDepth--;throw new Error('Native CSS selector nesting limit exceeded');}
-    try{
     if(selector.startsWith('id='))selector='#'+CSS.escape(selector.slice(3));
     if(selector.startsWith('css='))selector=selector.slice(4);
     const scope=validating?validationElement:nativeNodeType(root)===9?root.documentElement:root;
@@ -160,8 +150,6 @@ inline constexpr char kSuiteCutDomQuery[] = R"JS(function(steps,start=document,o
     let rootLayoutQueries=layoutQueries.get(root);if(!rootLayoutQueries){rootLayoutQueries=new Map();layoutQueries.set(root,rootLayoutQueries);}
     const layoutScores=new Map();let usesLayout=false;
     const simple=(e,s)=>{
-      if(++simpleDepth>64){simpleDepth--;throw new Error('Native CSS selector nesting limit exceeded');}
-      try{
         let native='',position=0,score=0;const conditions=[];
         for(let i=0;i<s.length;i++){
           if(validating)tick();
@@ -194,7 +182,6 @@ inline constexpr char kSuiteCutDomQuery[] = R"JS(function(steps,start=document,o
           }
         }
         native+=s.slice(position);if(validating){validationElement.matches(native.trim()||'*');return true;}const matched=e.matches(native.trim()||'*')&&conditions.every(condition=>condition());if(matched){let scores=layoutScores.get(e);if(!scores){scores=new Map();layoutScores.set(e,scores);}scores.set(s,score);}return matched;
-      }finally{simpleDepth--;}
     };
     // Cache each actual element/selector-prefix result for this synchronous
     // query. Descendant and general-sibling backtracking otherwise revisits
@@ -224,7 +211,6 @@ inline constexpr char kSuiteCutDomQuery[] = R"JS(function(steps,start=document,o
     const result=all.filter(e=>parsed.some(t=>matches(e,t,t.length-1)));
     if(usesLayout){const score=e=>Math.min(...parsed.filter(t=>matches(e,t,t.length-1)).map(t=>layoutScores.get(e)?.get(t.at(-1))||0));result.sort((a,b)=>score(a)-score(b));}
     return result;
-    }finally{cssDepth--;}
   };
   const normalize=text=>nativeRegexReplace(nativeRegexReplace(String(text),/[\u200b\u00ad]/g,''),/\s+/g,' ').trim();
   // Selector text includes both light and open shadow descendants.
@@ -242,11 +228,10 @@ inline constexpr char kSuiteCutDomQuery[] = R"JS(function(steps,start=document,o
   const selectorText=(node,light=false)=>{
     const memo=selectorTextMemo[light?1:0];
     if(memo.has(node))return memo.get(node);
-    const stack=[[node,false]];let visits=0;
+    const stack=[[node,false]];
     const save=(entry,full,chunks=[],skip=false)=>{memo.set(entry,{full,chunks,skip});};
     while(stack.length){
       tick();const [entry,finished]=stack.pop();if(memo.has(entry))continue;
-      if(++visits>3000000)throw new Error('Native DOM text node limit exceeded');
       if(nativeNodeType(entry)===3){save(entry,entry.nodeValue||'');continue;}
       if(nativeNodeType(entry)!==1&&nativeNodeType(entry)!==11){save(entry,'',[],true);continue;}
       if(nativeNodeType(entry)===1&&selectorTextSkipped(entry)){save(entry,'',[],true);continue;}
@@ -320,15 +305,15 @@ inline constexpr char kSuiteCutDomQuery[] = R"JS(function(steps,start=document,o
   };
   const visible=(node,geometry=false)=>{
     if(!(node instanceof Element)||!node.isConnected)return geometry?null:false;
-    const stack=[node],seen=new Set(),boxes=[];let nodes=0;
+    const stack=[node],seen=new Set(),boxes=[];
     const measure=box=>{if(box.width<=0||box.height<=0)return false;if(!geometry)return true;boxes.push([box.x,box.y,box.right,box.bottom]);return false;};
     const flatParent=entry=>entry.assignedSlot||entry.parentElement||(entry.parentNode?.nodeType===11&&entry.parentNode.host)||null;
     const check=entry=>typeof Element.prototype.checkVisibility!=='function'||Element.prototype.checkVisibility.call(entry,{visibilityProperty:true});
     while(stack.length){
-      tick();const entry=stack.pop();if(seen.has(entry))continue;seen.add(entry);if(++nodes>1000000)throw new Error('Native visibility node limit exceeded');
+      tick();const entry=stack.pop();if(seen.has(entry))continue;seen.add(entry);
       if(nativeNodeType(entry)===3){
-        let ancestor=flatParent(entry),style=null,depth=0;
-        while(ancestor){tick();if(++depth>256)throw new Error('Native visibility ancestor limit exceeded');style=getComputedStyle(ancestor);if(style.visibility==='hidden'||style.visibility==='collapse')break;if(style.display!=='contents')break;ancestor=flatParent(ancestor);}
+        let ancestor=flatParent(entry),style=null;
+        while(ancestor){tick();style=getComputedStyle(ancestor);if(style.visibility==='hidden'||style.visibility==='collapse')break;if(style.display!=='contents')break;ancestor=flatParent(ancestor);}
         if(!ancestor||style.visibility==='hidden'||style.visibility==='collapse'||style.contentVisibility==='hidden'||!check(ancestor))continue;
         const range=nativeOwnerDocument(entry).createRange();range.selectNodeContents(entry);const box=range.getBoundingClientRect();range.detach();if(measure(box))return true;continue;
       }
@@ -336,7 +321,7 @@ inline constexpr char kSuiteCutDomQuery[] = R"JS(function(steps,start=document,o
       if(style.display==='contents'){
         const assigned=entry instanceof HTMLSlotElement?entry.assignedNodes({flatten:true}):null;
         const nested=assigned&&assigned.length?assigned:entry.shadowRoot?entry.shadowRoot.childNodes:entry.childNodes;
-        for(const child of nested){tick();if(stack.length>=1000000)throw new Error('Native visibility pending node limit exceeded');stack.push(child);}continue;
+        for(const child of nested){tick();stack.push(child);}continue;
       }
       if(style.visibility==='hidden'||style.visibility==='collapse'||!check(entry))continue;const box=entry.getBoundingClientRect();if(measure(box))return true;
     }
@@ -367,7 +352,7 @@ inline constexpr char kSuiteCutDomQuery[] = R"JS(function(steps,start=document,o
   // from separate label/content sources still permit a real title description.
   const nameTitle=(node,titleSource)=>{const value=node.getAttribute('title')||'';if(value&&titleSource)titleSource.used=true;return value;};
   const computeName=(node,context={referenced:false,embedded:false},seen=new Set(),depth=0,titleSource)=>{
-    tick();if(depth>512)throw new Error('Native accessible-name depth limit exceeded');
+    tick();
     if(nativeNodeType(node)===3)return node.nodeValue||'';
     if(nativeNodeType(node)!==1||seen.has(node))return '';
     if(!context.referenced&&hidden(node))return '';
@@ -488,16 +473,13 @@ inline constexpr char kSuiteCutDomQuery[] = R"JS(function(steps,start=document,o
   };
   let customEngines;
   if(!validating&&typeof options.registryKey==='string'){
-    if(!options.registryKey.length||options.registryKey.length>192)throw new Error('Native selector context registry key is invalid');
+    if(!options.registryKey.length)throw new Error('Native selector context registry key is invalid');
     customEngines=Reflect.get(globalThis,options.registryKey);
     if(customEngines===undefined){customEngines=new Map();Object.defineProperty(globalThis,options.registryKey,{value:customEngines});}
     if(!(customEngines instanceof Map))throw new Error('Native selector context registry is invalid');
   }else customEngines=new Map();
   const captured=part=>nativeRegexTest(/^\*[A-Za-z0-9_:-]+\s*=/,part);
-  let parseDepth=0;
   const parseSelector=selector=>{
-    if(++parseDepth>64){parseDepth--;throw new Error('Native selector parsing nesting limit exceeded');}
-    try{
     const parts=selectorParts(selector).map(part=>nativeRegexReplace(part,/^(\*?[A-Za-z0-9_:-]+)\s*=/,'$1=')),capture=parts.findIndex(captured);
     if(capture>=0){
       if(parts.filter(captured).length>1)throw new Error('Only one selector capture is allowed');
@@ -530,10 +512,9 @@ inline constexpr char kSuiteCutDomQuery[] = R"JS(function(steps,start=document,o
     if(custom&&!['css','id'].includes(custom[1]))throw new Error('Unknown engine '+JSON.stringify(custom[1])+' while parsing selector '+selector);
     return {engine:'css',selector:part};
     });
-    }finally{parseDepth--;}
   };
   const normalizePlan=(query,depth=0)=>{
-    if(depth>64||!Array.isArray(query)||query.length>64)throw new Error('Native locator query nesting limit exceeded');
+    if(!Array.isArray(query))throw new Error('Invalid native locator query');
     if(query.some(step=>step.engine==='nth')&&query.some(step=>step.engine==='css'&&selectorParts(step.selector).some(captured)))throw new Error("Can't query n-th element in a captured selector");
     const out=[];
     for(const original of query){
@@ -546,14 +527,14 @@ inline constexpr char kSuiteCutDomQuery[] = R"JS(function(steps,start=document,o
       }
       for(const raw of stage){
         const step={...raw};
-        if(step.engine==='reference'&&(typeof step.ref!=='string'||step.ref.length>192||!nativeRegexTest(/^s[1-9][0-9]*e(?:0|[1-9][0-9]*)$/,step.ref)))throw new Error('Invalid native snapshot reference token');
+        if(step.engine==='reference'&&(typeof step.ref!=='string'||!nativeRegexTest(/^s[1-9][0-9]*e(?:0|[1-9][0-9]*)$/,step.ref)))throw new Error('Invalid native snapshot reference token');
         if(['and','or','chain','capture'].includes(step.engine))step.query=normalizePlan(step.query,depth+1);
         if(step.engine==='capture')step.descendants=normalizePlan(step.descendants,depth+1);
         if(step.engine==='filter'){
           if(step.has!==undefined)step.has=normalizePlan(step.has,depth+1);
           if(step.hasNot!==undefined)step.hasNot=normalizePlan(step.hasNot,depth+1);
         }
-        out.push(step);if(out.length>64)throw new Error('Native locator query nesting limit exceeded');
+        out.push(step);
       }
     }
     return out;
@@ -561,7 +542,6 @@ inline constexpr char kSuiteCutDomQuery[] = R"JS(function(steps,start=document,o
   if(validating){
     const checkPattern=value=>{if(value&&typeof value==='object'&&value.pattern!==undefined)nativeRegexCreate(value.pattern,value.flags||'');};
     const validate=(query,depth=0)=>{
-      if(depth>64)throw new Error('Native locator query nesting limit exceeded');
       for(const step of query){
         tick();
         if(['css','css-light'].includes(step.engine)){
@@ -592,7 +572,7 @@ inline constexpr char kSuiteCutDomQuery[] = R"JS(function(steps,start=document,o
   }
   if(options.planOnly)return wire(normalizePlan(steps),true);
   const run=(steps,start,depth=0)=>{
-  if(depth>64||!Array.isArray(steps)||steps.length>64)throw new Error('Native locator query nesting limit exceeded');
+  if(!Array.isArray(steps))throw new Error('Invalid native locator query');
   if(steps.some(step=>step.engine==='nth')&&steps.some(step=>step.engine==='css'&&selectorParts(step.selector).some(captured)))throw new Error("Can't query n-th element in a captured selector");
   let roots=[start];
   for(const step of steps){
@@ -605,7 +585,7 @@ inline constexpr char kSuiteCutDomQuery[] = R"JS(function(steps,start=document,o
     }else if(step.engine==='custom'){
       clearCaches();
       if(!customEngines.has(step.name)){const registration=options.engines?.[step.name];if(!options.engines||!Object.hasOwn(options.engines,step.name)||!registration||typeof registration.source!=='string')throw new Error('Unknown native selector engine: '+step.name);const factory=(0,eval)('('+registration.source+')');const engine=typeof factory==='function'?factory():factory;if(!engine||typeof engine.query!=='function'||typeof engine.queryAll!=='function')throw new Error('Native selector engine must define query and queryAll');customEngines.set(step.name,engine);}
-      const engine=customEngines.get(step.name),found=new Set();for(const root of roots){const nodes=engine.queryAll(root,step.selector);if(!nodes||typeof nodes[Symbol.iterator]!=='function')throw new Error('Native selector queryAll must return an iterable of elements');for(const node of nodes){tick();if(nativeQueryIntrinsics)nativeQueryIntrinsics.validateCustomNode(node,root);else if(!(node instanceof Element)||nativeOwnerDocument(node)!==(nativeNodeType(root)===9?root:nativeOwnerDocument(root)))throw new Error('Native selector returned an element outside its frame');found.add(node);if(found.size>1000000)throw new Error('Native DOM query node limit exceeded');}}roots=[...found];
+      const engine=customEngines.get(step.name),found=new Set();for(const root of roots){const nodes=engine.queryAll(root,step.selector);if(!nodes||typeof nodes[Symbol.iterator]!=='function')throw new Error('Native selector queryAll must return an iterable of elements');for(const node of nodes){tick();if(nativeQueryIntrinsics)nativeQueryIntrinsics.validateCustomNode(node,root);else if(!(node instanceof Element)||nativeOwnerDocument(node)!==(nativeNodeType(root)===9?root:nativeOwnerDocument(root)))throw new Error('Native selector returned an element outside its frame');found.add(node);}}roots=[...found];
       clearCaches();
     }else if(step.engine==='xpath'){
       const found=new Set();for(const root of roots){const expression=nativeNodeType(root)!==9&&step.selector.startsWith('/')?'.'+step.selector:step.selector;let result;try{result=document.evaluate(expression,root,null,XPathResult.ORDERED_NODE_ITERATOR_TYPE);}catch(cause){const original=nativeRegexReplace(nativeRegexReplace(step.selector,/\\/g,'\\\\'),/'/g,"\\'");throw new Error("Invalid XPath selector '"+original+"'",{cause});}let node;while((node=result.iterateNext()))if(nativeNodeType(node)===1)found.add(node);}roots=[...found];

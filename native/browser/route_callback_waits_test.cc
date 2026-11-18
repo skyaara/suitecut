@@ -62,11 +62,10 @@ int main(){
     assert(waits.Applied(8,11));assert(delivered==1&&waits.pending()==0);
   }
   {
-    Waits waits([&]{return now;});suitecut::NativeRouteCallbackSnapshot excessive;excessive.reserve(8193);
-    assert(!waits.Reserve(9,1,1,std::move(excessive),0,[](bool,const auto&){assert(false);}));assert(waits.bytes()==0&&waits.pending()==0);
-    for(int operation=1;operation<=64;++operation)assert(waits.Reserve(operation,1,1,{},0,[](bool ok,const auto&){assert(ok);}));
-    assert(!waits.Reserve(65,1,1,{},0,[](bool,const auto&){assert(false);}));
-    for(int operation=1;operation<=64;++operation)assert(waits.Applied(operation,1));
+    Waits waits([&]{return now;});suitecut::NativeRouteCallbackSnapshot large;large.reserve(8193);
+    assert(waits.Reserve(1000,1,1,std::move(large),0,[](bool ok,const auto&){assert(ok);}));assert(waits.bytes()>0&&waits.pending()==1);assert(waits.Applied(1000,1));
+    for(int operation=1;operation<=200;++operation)assert(waits.Reserve(operation,1,1,{},0,[](bool ok,const auto&){assert(ok);}));
+    for(int operation=1;operation<=200;++operation)assert(waits.Applied(operation,1));
     assert(waits.pending()==0&&waits.bytes()==0);
   }
   std::cout<<"Native route callback waits: 7 exact-receipt/deadline/lifetime/capacity groups passed\n";

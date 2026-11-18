@@ -29,7 +29,7 @@ int main(){assert(cef_api_hash(CEF_API_VERSION,0));size_t groups=0;
  {Harness h;h.Script("same",8);h.current=false;assert(h.Classify(Packet({"same"}))==D::Unsupported);++groups;}
  {Harness h("actual-child-session");h.Script("same",7);h.Script("same",8,"actual-child-session");assert(h.Classify(Packet({"same"}))==D::Owned);h.inventory.Detached("actual-child-session");assert(h.Classify(Packet({"same"}))==D::Unsupported);++groups;}
  {Harness h;h.Script("attested",8,"","identical-author-metadata");h.Script("author",8,"","identical-author-metadata");assert(h.inventory.MarkNative("",8,"attested"));assert(h.Classify(Packet({"author"}))==D::Owned&&h.Classify(Packet({"attested"}))==D::Unsupported);++groups;}
- {Harness h;h.Script("child",8);assert(h.Classify(nullptr)==D::Unsupported&&h.Classify(Packet({}))==D::Unsupported);auto packet=Packet({"child"});packet->GetList("callFrames")->GetDictionary(0)->SetString("callFrameId","");assert(h.Classify(packet)==D::Unsupported);assert(h.Classify(Packet(std::vector<std::string>(65,"child")))==D::Unsupported);++groups;}
+ {Harness h;h.Script("child",8);assert(h.Classify(nullptr)==D::Unsupported&&h.Classify(Packet({}))==D::Unsupported);auto packet=Packet({"child"});packet->GetList("callFrames")->GetDictionary(0)->SetString("callFrameId","");assert(h.Classify(packet)==D::Unsupported);assert(h.Classify(Packet(std::vector<std::string>(65,"child")))==D::Owned);++groups;}
  {Harness h("",false);h.Script("child",8);assert(!h.book->Current(h.token)&&h.book->ObservedCurrent(h.token)&&h.Classify(Packet({"child"}))==D::Owned);assert(h.book->Ready(h.token,true)&&h.book->Current(h.token));++groups;}
  std::cout<<"native frame debugger pause classifier "<<groups<<" groups passed\n";
 }

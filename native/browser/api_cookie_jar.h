@@ -39,13 +39,10 @@ class NativeAPICookieJar {
     double wall,deadline;
     bool canceled=false;
   };
-  struct Limits {
-    size_t entries=4096,allocated_bytes=1048576,header_bytes=65536;
-  };
   class Budget {
    public:
-    explicit Budget(size_t limit=16*1048576,
-                    std::pmr::memory_resource* upstream=std::pmr::get_default_resource());
+    // Accounting only: no byte limit; the upstream allocator decides.
+    explicit Budget(std::pmr::memory_resource* upstream=std::pmr::get_default_resource());
     ~Budget();
     size_t Bytes() const;
     size_t Peak() const;
@@ -55,12 +52,11 @@ class NativeAPICookieJar {
     friend class NativeAPICookieJar;
   };
   explicit NativeAPICookieJar(std::shared_ptr<Budget> budget);
-  NativeAPICookieJar(std::shared_ptr<Budget> budget,Limits limits);
   ~NativeAPICookieJar();
   NativeAPICookieJar(const NativeAPICookieJar&)=delete;
   NativeAPICookieJar& operator=(const NativeAPICookieJar&)=delete;
   // Mutations are transactional, including input validation and native
-  // allocator admission. Expired entries may be reclaimed during any access.
+  // allocation failure. Expired entries may be reclaimed during any access.
   bool Import(std::span<const Input> input,const Clock& clock,std::string& error);
   bool Reset(std::span<const Input> input,const Clock& clock,std::string& error);
   bool ValidateReplacement(std::span<const Input> input,const Clock& clock,std::string& error);

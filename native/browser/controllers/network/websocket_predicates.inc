@@ -38,9 +38,9 @@
         if(operations_.IsExpired(id,generation,Now())){Complete(id,false,"Native WebSocket predicate Timeout exceeded");return;}
         auto result=CefDictionaryValue::Create();result->SetDictionary("info",info->Copy(false));result->SetString("payloadBase64",CefBase64Encode(bytes.data(),bytes.size()));
         const auto status=event_predicates_.Offer(id,generation,static_cast<std::uint64_t>(info->GetDouble("sequence")),current->second.public_event,Json(result));
-        if(status!=SuiteCutEventPredicateController::Status::CandidateReady){Complete(id,false,"Native WebSocket predicate candidate ownership or payload capacity exceeded");return;}
+        if(status!=SuiteCutEventPredicateController::Status::CandidateReady){Complete(id,false,"Native WebSocket predicate candidate ownership changed or its payload is invalid");return;}
         EmitWebSocketPredicate(id,generation);
-      }))Complete(id,false,"Invalid native WebSocket predicate wait or capacity exceeded");
+      }))Complete(id,false,"Invalid or duplicate native WebSocket predicate wait");
   }
   void PumpWebSocketPredicates() {
     std::vector<std::pair<int,std::uint64_t>> scopes;
@@ -52,7 +52,7 @@
     if(!sockets_||config->GetType("socketId")!=VTYPE_STRING||(socket.empty()?event!="websocket":event!="framesent"&&event!="framereceived"&&event!="socketerror"&&event!="close")){Complete(id,false,"Invalid native WebSocket predicate event");return;}
     const double cursor=suitecut::DictionaryNumber(config,"afterSequence");
     if(!std::isfinite(cursor)||cursor<0||std::floor(cursor)!=cursor||cursor>static_cast<double>(sockets_->sequence())||config->GetType("clientToken")!=VTYPE_STRING||
-       !event_predicates_.Start(id,generation,config->GetString("clientToken"),event,static_cast<std::uint64_t>(cursor),SuiteCutEventPredicateController::kWebSocketPayload)){Complete(id,false,"Invalid native WebSocket predicate cursor, identity or capacity");return;}
+       !event_predicates_.Start(id,generation,config->GetString("clientToken"),event,static_cast<std::uint64_t>(cursor))){Complete(id,false,"Invalid or duplicate native WebSocket predicate cursor or identity");return;}
     websocket_predicates_.emplace(id,WebSocketPredicateWait{generation,socket,event=="websocket"?"created":event,event});
     PollWebSocketPredicate(id,generation);
   }

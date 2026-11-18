@@ -5,10 +5,8 @@
   SuiteCutArtifactController::Callback artifact_view_ready_;
   void ArtifactAcquireView(int id, int width, int height, SuiteCutArtifactController::Callback ready) {
     const auto operation = operations_.Get(id); if (!operation) return;
-    if (!browser_ || artifact_view_owner_ || width <= 0 || height <= 0 ||
-        width * scale_ > 32768 || height * scale_ > 32768 ||
-        std::ceil(width * scale_) * std::ceil(height * scale_) > 64 * 1024 * 1024) {
-      ready(false, "Native physical screenshot lease is unavailable or exceeds surface bounds"); return;
+    if (!browser_ || artifact_view_owner_ || width <= 0 || height <= 0) {
+      ready(false, "Native physical screenshot lease is unavailable"); return;
     }
     if(!ScreenshotAssertionOwns(id))writer_.PublicationAudit().ScreenshotAdmitted();
     artifact_view_owner_ = id; artifact_view_generation_ = operation->generation;

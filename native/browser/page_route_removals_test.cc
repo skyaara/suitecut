@@ -49,14 +49,15 @@ int main(){
   auto apply=[&](double,auto){++sends;};auto done=[&](bool,const auto&){++replies;};auto wrong=book.CapturePage(scope);++wrong.scope;
   assert(!controls.Remove(1,7,1,std::move(wrong),{},"wrong-owner",true,100,[]{},apply,done));assert(!controls.Remove(1,0,1,book.CapturePage(scope),{},"no-context",true,100,[]{},apply,done));
   assert(!controls.Remove(1,7,1,book.CapturePage(scope),{"reused","reused"},"duplicate-policy",true,100,[]{},apply,done));
-  std::vector<std::string>oversized;for(int i=0;i<128;++i)oversized.push_back(std::to_string(i)+std::string(125,'\1'));assert(!controls.Remove(1,7,1,book.CapturePage(scope),std::move(oversized),"real-wire-bound",true,100,[]{},apply,done));assert(replies==0&&sends==0&&controls.pending()==0);
+  std::vector<std::string>large;for(int i=0;i<400;++i)large.push_back(std::to_string(i)+std::string(300,'\1'));assert(controls.Remove(1,7,1,book.CapturePage(scope),std::move(large),"no-wire-bound"+std::string(300,'m'),true,100,[]{},apply,done));assert(replies==0&&sends==1&&controls.pending()==1);
  }
  {
   suitecut::NativeRouteCallbackLeases book;std::vector<std::unique_ptr<Control>>owners;Sender sender;int replies=0,mutations=0;
-  for(int owner=0;owner<2;++owner){const auto scope=*book.Scope();owners.push_back(std::make_unique<Control>(scope,[&]{return now;},[](bool,const auto&,const auto&,const auto&){}));for(int op=1;op<=64;++op)assert(owners.back()->Remove(op,7,1,book.CapturePage(scope),{},"bounded",false,0,[&]{++mutations;},sender.send(),[&](bool ok,const auto&){assert(!ok);++replies;}));}
-  const auto scope=*book.Scope();owners.push_back(std::make_unique<Control>(scope,[&]{return now;},[](bool,const auto&,const auto&,const auto&){}));assert(!owners.back()->Remove(1,7,1,book.CapturePage(scope),{},"overflow",false,0,[&]{++mutations;},sender.send(),[](bool,const auto&){assert(false);}));assert(mutations==128&&Control::retained_tasks()==128&&Control::retained_payload()<=4194304);
+  // No per-owner apply cap and no global task count/byte budget.
+  for(int owner=0;owner<3;++owner){const auto scope=*book.Scope();owners.push_back(std::make_unique<Control>(scope,[&]{return now;},[](bool,const auto&,const auto&,const auto&){}));for(int op=1;op<=100;++op)assert(owners.back()->Remove(op,7,1,book.CapturePage(scope),{},"unbounded",false,0,[&]{++mutations;},sender.send(),[&](bool ok,const auto&){assert(!ok);++replies;}));}
+  assert(mutations==300&&Control::retained_tasks()==300);
   for(auto&owner:owners)owner->Clear();
-  assert(replies==128&&Control::retained_tasks()==128);while(!sender.pending.empty())sender.Ack();assert(Control::retained_tasks()==0&&Control::retained_payload()==0);
+  assert(replies==300&&Control::retained_tasks()==300);while(!sender.pending.empty())sender.Ack();assert(Control::retained_tasks()==0&&Control::retained_payload()==0);
  }
  {
   suitecut::NativeRouteCallbackLeases book;const auto scope=*book.Scope();Sender sender;int replies=0,applied=0;Control controls(scope,[&]{return now;},[&](bool ack,const auto&,const auto&,const auto&){applied+=ack;});

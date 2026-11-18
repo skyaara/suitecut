@@ -50,9 +50,10 @@ int main(){
   }
   {
     Controls controls(send,resume,failure,[]{},[&]{return now;});auto huge=Pause();huge->GetDictionary("request")->SetString("postData",std::string(524288,'x'));
-    assert(!controls.Hold(huge,"real-session",plan,100)&&Controls::global_pending()==0);
+    // No per-entry, per-page or browser-wide hold cap.
+    assert(controls.Hold(huge,"real-session",plan,100)&&Controls::global_pending()==1);
     for(size_t i=0;i<64;++i){const auto id=std::to_string(i);assert(controls.Hold(Pause(id.c_str(),id.c_str()),"real-session",plan,100));}
-    assert(!controls.Hold(Pause("over","over"),"real-session",plan,100)&&controls.pending()==64);controls.SessionClosed("unrelated");assert(controls.pending()==64);controls.SessionClosed("real-session");assert(controls.pending()==0&&Controls::global_pending()==0&&Controls::global_bytes()==0);
+    assert(controls.Hold(Pause("over","over"),"real-session",plan,100)&&controls.pending()==66);controls.SessionClosed("unrelated");assert(controls.pending()==66);controls.SessionClosed("real-session");assert(controls.pending()==0&&Controls::global_pending()==0&&Controls::global_bytes()==0);
   }
   {
     Controls controls(send,resume,failure,[]{},[&]{return now;});assert(controls.Hold(Pause(),"real-session",plan,100));

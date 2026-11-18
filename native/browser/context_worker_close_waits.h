@@ -14,13 +14,12 @@ namespace suitecut {
 class NativeContextWorkerCloseWaits {
  public:
   using Reply = std::function<void(bool, uint64_t, const std::string&)>;
-  static constexpr size_t kWaits = 64;
   bool Admit(int owner, int context, uint64_t token, double deadline,
              double now, Reply reply) {
     if (owner < 1 || context < 1 || !token || !std::isfinite(deadline) ||
         !std::isfinite(now) || deadline < 0 ||
         (deadline != 0 && deadline <= now) || !reply ||
-        waits_.contains(owner) || waits_.size() >= kWaits) return false;
+        waits_.contains(owner)) return false;
     waits_.emplace(owner, Wait{context, token, deadline, std::move(reply)});
     return true;
   }

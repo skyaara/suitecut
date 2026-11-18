@@ -76,5 +76,9 @@ int main(){
   Controls missing_clock(nullptr);assert(missing_clock.Seed(1,initial));
   assert(!missing_clock.Set(1,1,latest,100,[](auto){assert(false);},[](bool,const auto&){assert(false);}));
   assert(missing_clock.Get(1)->Get()->at(0).username=="old"&&missing_clock.physical()==0&&missing_clock.pending()==0);
+  {Controls many([]{return 1.0;});Credentials big(100,Credentials::value_type{std::string(10000,'u'),std::string(10000,'p'),"http://"+std::string(10000,'o'),false});
+    for(int context=1;context<=64;++context)assert(many.Seed(context,context==1?big:initial));
+    for(int page=0;page<400;++page)assert(many.Attach(1+page%64,"page:"+std::to_string(page)+std::string(200,'k'),[](auto,auto done){done(true,"");},[](bool ok,const auto&){assert(ok);}));
+    assert(many.targets()==400);many.Clear();}
   std::cout<<"Context credentials genuine receipt ledger: initial race, future broker, timeout/cancel physical hold, target generation, IO/UI snapshots, explicit matching clock, 10000 updates passed\n";
 }

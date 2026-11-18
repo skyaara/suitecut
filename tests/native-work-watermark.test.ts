@@ -110,28 +110,24 @@ describe('private original stdout watermark receipts (no Engine idle proof)', ()
     for (const key of ['barrier', 'readerInstance', 'readerCut', 'writerInstance', 'writerCut'])
       expect(NativeWorkWatermarkSchema.safeParse({ ...packet(), [key]: '0' }).success).toBe(false)
   })
-  it('retains all eight existing requests at inflight capacity refusal', () => {
+  it('admits inflight requests past the old eight', () => {
     const inbox = new NativeWorkWatermarkInbox('4')
     for (let n = 1; n <= 8; ++n) inbox.expect('4', packet(String(n)))
-    expect(() => inbox.observe(packet('9'))).toThrow()
-    expect(inbox.physical).toBe(8)
+    inbox.observe(packet('9'))
+    expect(inbox.physical).toBe(9)
     expect(inbox.observationSettled).toBe(false)
   })
-  it('fails closed at bounded terminal history without resetting live-PID state', () => {
+  it('keeps terminal history past the old 64 receipts and still rejects replay', () => {
     const inbox = new NativeWorkWatermarkInbox('4')
-    for (let n = 1; n <= 64; ++n) {
+    for (let n = 1; n <= 65; ++n) {
       const value = packet(String(n))
       inbox.expect('4', value)
       inbox.observe(value)
       inbox.take(value.barrier)
       inbox.acknowledge('4', value)
     }
-    const value = packet('65')
-    inbox.expect('4', value)
-    inbox.observe(value)
-    inbox.take('65')
-    expect(() => inbox.acknowledge('4', value)).toThrow()
-    expect(inbox.physical).toBe(1)
-    expect(inbox.observationSettled).toBe(false)
+    expect(inbox.physical).toBe(0)
+    expect(inbox.observationSettled).toBe(true)
+    expect(() => inbox.observe(packet('1'))).toThrow('Stale')
   })
 })

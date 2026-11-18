@@ -21,9 +21,7 @@ std::string ResponseError(CURLcode result,const NativeCurlTransport::Headers& he
   for(const auto& [name,value]:headers){
     auto lower=name;for(auto& c:lower)c=static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
     if(lower!="content-encoding")continue;
-    // Preserve the actual header chain without allowing an arbitrary response
-    // header to turn a bounded transport diagnostic into an unbounded error.
-    if(value.size()>256||encoding.size()+value.size()+2>256)return diagnostic;
+    // Preserve the actual header chain, whatever its length.
     if(!encoding.empty())encoding+=", ";
     encoding+=value;
   }
@@ -34,7 +32,7 @@ struct NativeCurlTransport::Transfer {
   int owner=0;CURL* handle=nullptr;curl_slist* outgoing=nullptr;curl_slist* resolved=nullptr;CURLSH* private_dns=nullptr;
   Request request;Response response;Data data;Done done;
   size_t cookie_receipts=0;bool discarded_auth_body=false;
-  bool head_upload_complete=false;int header_status=0;double start_time=0;size_t header_bytes=0;std::array<char,CURL_ERROR_SIZE> diagnostic{};
+  bool head_upload_complete=false;int header_status=0;double start_time=0;std::array<char,CURL_ERROR_SIZE> diagnostic{};
   bool IntermediateAuthentication()const{
     if(!request.authoritative_cookies)return false;
     const bool server=header_status==401&&request.credentials&&!request.preemptive_credentials;
@@ -44,7 +42,7 @@ struct NativeCurlTransport::Transfer {
   }
   NativeHTTP1SurplusPrefix surplus;
   bool http1=false,framing_prepared=false,folded_headers=false,header_field=false;
-  size_t committed_headers=0,header_lines=0;
+  size_t committed_headers=0;
   void CommitHeaderMetadata(){
     // Commit only complete, unfolded field values. Preserve real cookies from
     // earlier authentication responses without treating continuations as fields.
@@ -94,7 +92,6 @@ struct NativeCurlTransport::Transfer {
     for(const auto&[name,value]:response.headers){
       auto lower=name;for(auto&c:lower)c=static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
       if(lower=="content-encoding"){
-        if(value.size()>256||encoding.size()+value.size()+2>256){response.error="Native HTTP content encoding header exceeds 256 bytes";return false;}
         if(!encoding.empty())encoding+=",";
         encoding+=value;
       }
@@ -106,7 +103,7 @@ struct NativeCurlTransport::Transfer {
     }
     curl_off_t actual=-1;
     if(!chunked&&length&&curl_easy_getinfo(handle,CURLINFO_CONTENT_LENGTH_DOWNLOAD_T,&actual)==CURLE_OK&&actual>=0&&static_cast<uint64_t>(actual)==*length)content_length=length;
-    decoder=std::make_unique<NativeHTTPContentDecoder>([this](auto bytes){return data(bytes.data(),bytes.size());},NativeHTTPContentDecoder::kPerCodecBytes,[this]{return Current();});
+    decoder=std::make_unique<NativeHTTPContentDecoder>([this](auto bytes){return data(bytes.data(),bytes.size());},[this]{return Current();});
     if(!decoder->Configure(encoding))return DecodeFailure();
     // HTTP representation emptiness is established by actual transfer
     // completion, never solely by a declared Content-Length value.
@@ -127,17 +124,16 @@ struct NativeCurlTransport::Transfer {
 };
 NativeCurlTransport::NativeCurlTransport() {
   initialized_=curl_global_init(CURL_GLOBAL_DEFAULT)==CURLE_OK;if(initialized_)multi_=curl_multi_init();
-  if(multi_){curl_multi_setopt(multi_,CURLMOPT_MAX_TOTAL_CONNECTIONS,64L);curl_multi_setopt(multi_,CURLMOPT_MAXCONNECTS,64L);}
 }
 NativeCurlTransport::~NativeCurlTransport(){Clear();if(multi_)curl_multi_cleanup(multi_);if(initialized_)curl_global_cleanup();}
 bool NativeCurlTransport::Start(int owner,Request request,Data data,Done done,std::string& error) {
-  if(!multi_ || active_.size()>=64 || active_.contains(owner)){error="Native HTTP transport is unavailable or at capacity";return false;}
+  if(!multi_ || active_.contains(owner)){error="Native HTTP transport is unavailable";return false;}
   if(request.authoritative_cookies){if(!request.cookies.empty()||!request.refresh_cookie_header||!request.receive_cookies){error="Native authoritative cookie hooks are required without a curl cookie jar";return false;}if(!request.refresh_cookie_header(request.headers,error))return false;}
   auto transfer=std::make_shared<Transfer>();transfer->owner=owner;transfer->request=std::move(request);transfer->data=std::move(data);transfer->done=std::move(done);
   transfer->handle=curl_easy_init();if(!transfer->handle){error="Could not create native HTTP transport";return false;}
   auto handle=transfer->handle;
   if(const auto&lookup=transfer->request.lookup){
-    if(lookup->hostname.empty()||lookup->hostname.size()>253||lookup->hostname.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_.-")!=std::string::npos||lookup->port<1||lookup->port>65535||!HTTPLookupControls::Validate(lookup->addresses)){error="Invalid native HTTP lookup destination";return false;}
+    if(lookup->hostname.empty()||lookup->hostname.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_.-")!=std::string::npos||lookup->port<1||lookup->port>65535||!HTTPLookupControls::Validate(lookup->addresses)){error="Invalid native HTTP lookup destination";return false;}
     std::string entry=lookup->hostname+":"+std::to_string(lookup->port)+":";
     for(const auto&address:lookup->addresses){if(entry.back()!=':')entry+=",";entry+=address.family==6?"["+address.address+"]":address.address;}
     transfer->resolved=curl_slist_append(nullptr,entry.c_str());transfer->private_dns=curl_share_init();
@@ -212,16 +208,10 @@ int NativeCurlTransport::Observe(CURL*,curl_infotype type,char*bytes,size_t size
 }
 size_t NativeCurlTransport::Header(char* bytes,size_t size,size_t count,void* state) {
   auto& transfer=*static_cast<Transfer*>(state);if(size && count>std::numeric_limits<size_t>::max()/size)return 0;const size_t length=size*count;
-  if(length>262144-transfer.header_bytes){transfer.response.error="Native HTTP response headers exceed 256 KiB";return 0;}transfer.header_bytes+=length;
   if(!transfer.Current())return 0;
   const bool continuation=length&&(bytes[0]==' '||bytes[0]=='\t');
   if(continuation)transfer.folded_headers=true;
   const std::string line=Trim(std::string(bytes,length));
-  // Folding must not bypass the previous parser-work ceiling by turning
-  // thousands of physical field lines into one retained dictionary field.
-  if(continuation||(!line.empty()&&!line.starts_with("HTTP/"))){
-    if(++transfer.header_lines>1024){transfer.response.error="Native HTTP response header count exceeded";return 0;}
-  }
   if(const auto security=CaptureHTTPSecurity(transfer.handle))transfer.response.security=security;
   if(continuation){
     if(!transfer.header_field||transfer.response.headers.empty()){transfer.response.error="Native HTTP header continuation has no preceding field";return 0;}
@@ -237,7 +227,7 @@ size_t NativeCurlTransport::Header(char* bytes,size_t size,size_t count,void* st
   if(line.empty()&&transfer.request.method=="HEAD"&&!transfer.request.body.empty()&&transfer.header_status>=200){transfer.head_upload_complete=true;return 0;}
   if(line.empty()&&transfer.header_status>=200)transfer.PrepareFraming();
   if(line.starts_with("HTTP/")) {
-    transfer.surplus.Reset();transfer.framing_prepared=false;transfer.folded_headers=false;transfer.header_field=false;transfer.committed_headers=0;transfer.header_lines=0;
+    transfer.surplus.Reset();transfer.framing_prepared=false;transfer.folded_headers=false;transfer.header_field=false;transfer.committed_headers=0;
     transfer.http1=line.starts_with("HTTP/1.0 ")||line.starts_with("HTTP/1.1 ");
     transfer.discarded_auth_body=false;transfer.decoder.reset();transfer.decoder_prepared=false;transfer.body_forbidden=false;
     transfer.encoded_bytes=0;transfer.content_length.reset();
@@ -249,7 +239,6 @@ size_t NativeCurlTransport::Header(char* bytes,size_t size,size_t count,void* st
   } else {
     const auto separator=line.find(':');
     if(separator!=std::string::npos) {
-      if(transfer.response.headers.size()>=1024){transfer.response.error="Native HTTP response header count exceeded";return 0;}
       auto name=line.substr(0,separator),value=Trim(line.substr(separator+1));
       transfer.response.headers.emplace_back(std::move(name),std::move(value));transfer.header_field=true;
     }
@@ -323,5 +312,5 @@ void NativeCurlTransport::Tick() {
   int queued=0;while(auto message=curl_multi_info_read(multi_,&queued))if(message->msg==CURLMSG_DONE)Finish(message->easy_handle,message->data.result);
 }
 void NativeCurlTransport::Clear(){while(!active_.empty())Cancel(active_.begin()->first);}
-void NativeCurlTransport::ResetIdle(){if(!active_.empty())return;if(multi_)curl_multi_cleanup(multi_);multi_=curl_multi_init();if(multi_){curl_multi_setopt(multi_,CURLMOPT_MAX_TOTAL_CONNECTIONS,64L);curl_multi_setopt(multi_,CURLMOPT_MAXCONNECTS,64L);}}
+void NativeCurlTransport::ResetIdle(){if(!active_.empty())return;if(multi_)curl_multi_cleanup(multi_);multi_=curl_multi_init();}
 }  // namespace suitecut

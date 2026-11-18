@@ -11,8 +11,6 @@
 // from completing a new operation after its client ID has been reused.
 class SuiteCutOperationRegistry {
  public:
-  static constexpr std::size_t kCapacity = 64;
-  static constexpr std::size_t kControlCapacity = 64, kTotalCapacity = kCapacity + kControlCapacity;
   struct Entry { std::uint64_t generation; double deadline_ms; bool control = false; };
   std::optional<Entry> Begin(int id, double now_ms, double timeout_ms) {
     return BeginOwned(id,now_ms,timeout_ms,false);
@@ -65,8 +63,7 @@ class SuiteCutOperationRegistry {
   std::optional<Entry> BeginOwned(int id, double now_ms, double timeout_ms, bool control) {
     if(!std::isfinite(now_ms) || now_ms < 0 || !std::isfinite(timeout_ms) || timeout_ms < 0 ||
        (timeout_ms != 0 && !std::isfinite(now_ms + timeout_ms)) ||
-       id < 1 || operations_.contains(id) || operations_.size() >= kTotalCapacity ||
-       (control ? controls_ >= kControlCapacity : ordinary_ >= kCapacity)) return std::nullopt;
+       id < 1 || operations_.contains(id)) return std::nullopt;
     const Entry entry{++generation_,timeout_ms == 0 ? 0 : now_ms + timeout_ms,control};
     operations_.emplace(id,entry); if(control) ++controls_; else ++ordinary_; return entry;
   }

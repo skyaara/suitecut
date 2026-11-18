@@ -444,23 +444,24 @@ try {
     document.body.style.display = 'none'
     document.body.replaceChildren(document.createTextNode('x'.repeat(20 * 1024 * 1024)))
   })
-  const limited =
+  const large =
     mode === 'source-helper'
       ? page.evaluate(
           `(${helper})([{engine:'css',selector:'body'},{engine:'filter',hasText:{text:'missing'}}])`,
         )
-      : new NativeLocator(page, '<text budget>', [
+      : new NativeLocator(page, '<large text>', [
           { engine: 'css', selector: 'body' },
           { engine: 'filter', hasText: { text: 'missing' } },
         ]).count()
-  await assert.rejects(limited, /Native DOM text byte limit exceeded/u)
+  const matched = await large
+  assert.equal(Array.isArray(matched) ? matched.length : matched, 0)
   await page.setContent('<p>recovered</p>')
   await query(
-    'query recovers after text byte budget error',
+    'query after a 20 MiB text node',
     [{ engine: 'css', selector: 'p' }],
     [''],
   )
-  results.push('text byte budget controlled error')
+  results.push('20 MiB text node filtered whole without a byte limit')
   await page.setContent('<main><div id="branch-root"></div></main>')
   await page.evaluate(() => {
     let current = [document.querySelector('#branch-root')]

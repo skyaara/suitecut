@@ -50,10 +50,6 @@ auto Source::ChildBootstrapFinished(const std::string& session, const std::strin
 auto Source::DeferChildBootstrap(const std::string& session, const std::string& frame, bool ignored)
     -> void {
   if (closing_page_ || child_bootstrap_failed_ || !browser_) return;
-  if (pending_child_bootstraps_.size() >= 1024 && !pending_child_bootstraps_.contains(session)) {
-    FailChildBootstrap("Native child target initialization capacity exceeded");
-    return;
-  }
   pending_child_bootstraps_.try_emplace(
       session, ChildBootstrap{frame, ignored, ignored ? 2 : 0, 8, Now() + 30000});
   WakeChildBootstraps();
@@ -97,7 +93,7 @@ auto Source::WakeChildBootstraps() -> void {
           found->second.phase = 1;
           const int tree = self->AllocateDevToolsId();
           if (!tree) {
-            self->FailChildBootstrap("Native child frame bootstrap command capacity exceeded");
+            self->FailChildBootstrap("Native child frame bootstrap DevTools command id unavailable");
             break;
           }
           if (!found->second.ignored && !self->NativeFrameDebuggerTreePrepare(tree, session)) break;
@@ -173,11 +169,7 @@ auto Source::InitSnapshotTraffic(const std::string& method, Dict data, const std
     params->SetString("requestId", data->GetString("requestId"));
     // CEF synchronously notifies DevTools observers. Continuing here can
     // re-enter Chromium's observer list while its original notification is
-    // active. One bounded UI task continues after that notification returns.
-    if (init_snapshot_continuation_count_ >= 64) {
-      Error("Native init snapshot continuation capacity exceeded");
-      return true;
-    }
+    // active. One UI task continues after that notification returns.
     init_snapshot_continuations_.emplace_back(params, session);
     ++init_snapshot_continuation_count_;
     WakeInitSnapshotContinuations();
@@ -186,12 +178,7 @@ auto Source::InitSnapshotTraffic(const std::string& method, Dict data, const std
   if (!method.starts_with("Network.")) return false;
   const auto key = session + "\n" + data->GetString("requestId").ToString();
   if (method == "Network.requestWillBeSent" && private_request) {
-    // The set only filters suitecut's own init traffic out of the page's;
-    // a full set forgets its entries rather than closing the page.
-    if (init_snapshot_requests_.size() >= 1024) {
-      init_snapshot_requests_.clear();
-      Degraded("Native init snapshot request tracking capacity exceeded");
-    }
+    // The set only filters suitecut's own init traffic out of the page's.
     init_snapshot_requests_.insert(key);
     return true;
   }

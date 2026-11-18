@@ -20,7 +20,7 @@ void ScreenshotAssertionSubmit(suitecut::ScreenshotAssertionRetirement::Identity
     if(entry->original_deadline&&Now()>=entry->original_deadline){ScreenshotAssertionOriginalDeadline(identity);if(stage==SuiteCutArtifactController::ResponseStage::PNG)reject();return;}
     if(!operations_.IsCurrent(identity.owner,identity.generation)){screenshot_assertion_retirement_.Cancel(identity,"Native screenshot logical owner ended",Now());reject();return;}
   }
-  const int tool=AllocateDevToolsId();if(!tool){screenshot_assertion_retirement_.Fail(identity,"Native screenshot command capacity unavailable",Now());reject();return;}
+  const int tool=AllocateDevToolsId();if(!tool){screenshot_assertion_retirement_.Fail(identity,"Native screenshot DevTools command id unavailable",Now());reject();return;}
   auto ticket=screenshot_assertion_retirement_.Begin(identity,cleanup?Policy::Work::Restoration:Policy::Work::Renderer,tool,session,Now());
   if(!ticket){screenshot_assertion_retirement_.Fail(identity,"Native screenshot physical admission unavailable",Now());reject();return;}
   std::shared_ptr<suitecut::SelectorWaitControls::Physical> selector;

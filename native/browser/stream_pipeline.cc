@@ -12,6 +12,7 @@
 #include <deque>
 #include <fcntl.h>
 #include <iomanip>
+#include <limits>
 #include <mutex>
 #include <optional>
 #include <poll.h>
@@ -31,11 +32,6 @@ extern char** environ;
 namespace suitecut {
 namespace {
 using Clock = std::chrono::steady_clock;
-constexpr size_t kAudioBytes = 48000 * 4 * 30;
-std::atomic<unsigned> stream_count{0};
-std::atomic<size_t> stream_frame_bytes{0};
-constexpr size_t kPublisherFrameBytes = 256u * 1024 * 1024;
-constexpr size_t kEngineFrameBytes = 1024u * 1024 * 1024;
 struct StreamPicture {
   std::vector<uint8_t> data;
   std::shared_ptr<std::atomic<size_t>> owner;
@@ -44,17 +40,11 @@ struct StreamPicture {
   ~StreamPicture() {
     // Release the actual allocation before making its byte reservation reusable.
     std::vector<uint8_t>().swap(data);
-    if (reserved) { owner->fetch_sub(reserved); stream_frame_bytes.fetch_sub(reserved); }
+    if (reserved) owner->fetch_sub(reserved);
   }
   static std::shared_ptr<StreamPicture> Capture(const std::vector<uint8_t>& data, const std::shared_ptr<std::atomic<size_t>>& owner) {
     auto picture = std::make_shared<StreamPicture>();
-    size_t bytes = owner->load();
-    do { if (data.size() > kPublisherFrameBytes - bytes) throw std::runtime_error("Native publisher captured-image quota exceeded"); }
-    while (!owner->compare_exchange_weak(bytes, bytes + data.size()));
-    bytes = stream_frame_bytes.load();
-    do { if (data.size() > kEngineFrameBytes - bytes) { owner->fetch_sub(data.size()); throw std::runtime_error("Native Engine captured-image quota exceeded"); } }
-    while (!stream_frame_bytes.compare_exchange_weak(bytes, bytes + data.size()));
-    picture->owner = owner; picture->reserved = data.size(); picture->data = data;
+    picture->data = data; owner->fetch_add(data.size()); picture->owner = owner; picture->reserved = data.size();
     return picture;
   }
 };
@@ -176,7 +166,7 @@ struct StreamChild {
     error |= posix_spawnattr_setpgroup(&attributes, 0);
     const std::string filter = "scale=" + std::to_string(options.output_width) + ":" + std::to_string(options.output_height) +
       ":force_original_aspect_ratio=decrease,pad=" + std::to_string(options.output_width) + ":" + std::to_string(options.output_height) + ":(ow-iw)/2:(oh-ih)/2:black,setsar=1";
-    std::vector<std::string> args{options.launcher_path, "--suitecut-media-encoder", std::to_string(getpid()), "1073741824", options.ffmpeg_path,
+    std::vector<std::string> args{options.launcher_path, "--suitecut-media-encoder", std::to_string(getpid()), "0", options.ffmpeg_path,
       "-hide_banner", "-loglevel", "error", "-xerror", "-nostdin", "-stats_period", "0.1", "-progress", "pipe:4",
       "-thread_queue_size", "2", "-f", "rawvideo", "-pixel_format", options.i420 ? "yuv420p" : "bgra", "-video_size",
       std::to_string(options.source_width) + "x" + std::to_string(options.source_height), "-framerate", StreamDecimal(options.frames_per_second),
@@ -219,10 +209,9 @@ struct StreamChild {
   }
   void Read(StreamPipelineResult& result) {
     char data[4096]; ssize_t bytes;
-    while ((bytes = read(diagnostics.Get(), data, sizeof(data))) > 0) { text.append(data, static_cast<size_t>(bytes)); if (text.size() > 8192) text.erase(0, text.size() - 8192); }
+    while ((bytes = read(diagnostics.Get(), data, sizeof(data))) > 0) { text.append(data, static_cast<size_t>(bytes)); }
     while ((bytes = read(progress.Get(), data, sizeof(data))) > 0) {
       progress_buffer.append(data, static_cast<size_t>(bytes));
-      if (progress_buffer.size() > 16384) throw std::runtime_error("Native publisher progress exceeded its bound");
       for (;;) {
         const auto newline = progress_buffer.find('\n'); if (newline == std::string::npos) break;
         const auto line = progress_buffer.substr(0, newline); progress_buffer.erase(0, newline + 1);
@@ -238,27 +227,27 @@ struct StreamChild {
 };
 }
 void ValidateStreamPipelineOptions(const StreamPipelineOptions& o) {
-  if (o.launcher_path.empty() || o.launcher_path.front() != '/' || o.launcher_path.size() > 4096 || o.launcher_path.find('\0') != std::string::npos ||
-      o.ffmpeg_path.empty() || o.ffmpeg_path.front() != '/' || o.ffmpeg_path.size() > 4096 || o.ffmpeg_path.find('\0') != std::string::npos)
+  if (o.launcher_path.empty() || o.launcher_path.front() != '/' || o.launcher_path.find('\0') != std::string::npos ||
+      o.ffmpeg_path.empty() || o.ffmpeg_path.front() != '/' || o.ffmpeg_path.find('\0') != std::string::npos)
     throw std::invalid_argument("Native publisher requires absolute executable paths");
   if (o.source_width <= 0 || o.source_height <= 0 || o.output_width <= 0 || o.output_height <= 0 ||
       o.source_width % 2 || o.source_height % 2 || o.output_width % 2 || o.output_height % 2 ||
-      static_cast<uint64_t>(o.source_width) * o.source_height > 16777216 || static_cast<uint64_t>(o.output_width) * o.output_height > 16777216)
-    throw std::invalid_argument("Native publisher dimensions are invalid or exceed the pixel bound");
-  if (!std::isfinite(o.frames_per_second) || o.frames_per_second <= 0 || o.frames_per_second > 120 ||
-      !std::isfinite(o.start_timestamp_ms) || o.start_timestamp_ms < 0 || o.bitrate_kbps < 100 || o.bitrate_kbps > 50000 ||
-      o.capture_latency.count() < 20 || o.capture_latency.count() > 1000 || o.max_write_lag.count() < 1 || o.max_write_lag.count() > 30000 || o.tcp_send_buffer_bytes < 0 || o.tcp_send_buffer_bytes > 4194304)
-    throw std::invalid_argument("Native publisher rate, clock, bitrate or lag bound is invalid");
-  if (o.reconnect && (o.reconnect->max_attempts < 1 || o.reconnect->max_attempts > 8 ||
-      o.reconnect->initial_delay.count() < 0 || o.reconnect->initial_delay.count() > 5000 ||
-      o.reconnect->max_delay < o.reconnect->initial_delay || o.reconnect->max_delay.count() > 30000 ||
-      o.reconnect->timeout.count() < 1 || o.reconnect->timeout.count() > 120000))
-    throw std::invalid_argument("Native publisher reconnect policy exceeds its bounded scope");
+      // Overflow guard only: one source frame's byte size must fit size_t.
+      static_cast<uint64_t>(o.source_width) * o.source_height > std::numeric_limits<size_t>::max() / 8)
+    throw std::invalid_argument("Native publisher dimensions are invalid");
+  // Overflow guard only: the encoder GOP (2 seconds of frames) is passed as an int.
+  if (!std::isfinite(o.frames_per_second) || o.frames_per_second <= 0 || o.frames_per_second * 2 >= std::numeric_limits<int>::max() ||
+      !std::isfinite(o.start_timestamp_ms) || o.start_timestamp_ms < 0 || o.bitrate_kbps <= 0 ||
+      o.capture_latency.count() < 0 || o.max_write_lag.count() < 1 || o.tcp_send_buffer_bytes < 0)
+    throw std::invalid_argument("Native publisher rate, clock, bitrate or lag is invalid");
+  if (o.reconnect && (o.reconnect->max_attempts < 1 || o.reconnect->initial_delay.count() < 0 ||
+      o.reconnect->max_delay < o.reconnect->initial_delay || o.reconnect->timeout.count() < 1))
+    throw std::invalid_argument("Native publisher reconnect policy is invalid");
   const bool flv = o.video_codec == "h264" && o.container == "flv" && (!o.audio || o.audio_codec == "aac");
   const bool webm = o.video_codec == "vp9" && o.container == "webm" && (!o.audio || o.audio_codec == "opus");
   if (!flv && !webm) throw std::invalid_argument("Native publisher codec/container pair is unsupported");
   const auto scheme = o.destination.find("://");
-  if (scheme == std::string::npos || o.destination.size() > 4096 || o.destination.find_first_of("\r\n\t ") != std::string::npos ||
+  if (scheme == std::string::npos || o.destination.find_first_of("\r\n\t ") != std::string::npos ||
       o.destination.find('\0') != std::string::npos)
     throw std::invalid_argument("Native publisher destination is malformed");
   const auto protocol = o.destination.substr(0, scheme);
@@ -283,7 +272,6 @@ struct StreamPipeline::Impl {
   std::mutex join_mutex;
   std::array<StreamFD, 2> wake = StreamPipe();
   std::deque<Sample> packets;
-  size_t packet_bytes = 0;
   bool paused = false, stopping = false, encoder_acknowledged = false;
   Clock::time_point stop_deadline{};
   std::atomic<bool> canceled{false}, settled{false};
@@ -298,20 +286,16 @@ struct StreamPipeline::Impl {
   std::string last_attempt_failure;
   double attempt_not_before_ms = -1;
   std::thread worker;
-  bool lease = false;
   Impl(StreamPipelineOptions value, Completion done, Completion started) : options(std::move(value)), completed(std::move(done)), ready(std::move(started)) {
     if (!options.ffmpeg_path.empty() && options.ffmpeg_path.front() != '/') options.ffmpeg_path = ResolveMediaExecutable(options.ffmpeg_path);
     ValidateStreamPipelineOptions(options); StreamNonblocking(wake[0].Get()); StreamNonblocking(wake[1].Get());
-    unsigned count = stream_count.load();
-    do { if (count >= 4) throw std::runtime_error("Native publisher capacity exceeded"); } while (!stream_count.compare_exchange_weak(count, count + 1));
-    lease = true; controls.push_back({options.start_timestamp_ms, false, 0});
-    try { worker = std::thread([this] { Run(); }); }
-    catch (...) { stream_count.fetch_sub(1); lease = false; throw; }
+    controls.push_back({options.start_timestamp_ms, false, 0});
+    worker = std::thread([this] { Run(); });
   }
-  ~Impl() { Cancel("Native publisher owner closed"); if (worker.joinable()) worker.join(); if (lease) stream_count.fetch_sub(1); }
+  ~Impl() { Cancel("Native publisher owner closed"); if (worker.joinable()) worker.join(); }
   void Wake() { const uint8_t byte = 1; const auto wrote = write(wake[1].Get(), &byte, 1); (void)wrote; }
   void DrainWake() { uint8_t bytes[256]; while (read(wake[0].Get(), bytes, sizeof(bytes)) > 0) {} }
-  void Cancel(const std::string& reason) { { std::lock_guard lock(mutex); if (settled || canceled) return; cancel_reason = reason.substr(0, 8192); canceled = true; } Wake(); }
+  void Cancel(const std::string& reason) { { std::lock_guard lock(mutex); if (settled || canceled) return; cancel_reason = reason; canceled = true; } Wake(); }
   void Check(Clock::time_point deadline) {
     std::lock_guard lock(mutex);
     if (canceled) throw std::runtime_error(cancel_reason);
@@ -379,7 +363,7 @@ struct StreamPipeline::Impl {
         std::memcpy(data.data() + target * 4, packet.data.data() + packet.offset + i * 4, 4); covered[target] = 1;
       }
       packet.offset += take * 4;
-      if (packet.offset == packet.data.size()) { packet_bytes -= packet.data.size(); packets.pop_front(); }
+      if (packet.offset == packet.data.size()) packets.pop_front();
       else break;
     }
     for (size_t i = 0; i < count; ++i) if (!covered[i] && !paused_samples[i]) ++state.audio_gap_frames;
@@ -506,9 +490,7 @@ struct StreamPipeline::Impl {
     attempt.child_reaped = child.reaped; attempt.child_exit_observed = child.exit_observed;
     attempt.submitted_frames = state.submitted_frames; attempt.encoded_frames = state.encoded_frames;
     attempt.audio_submitted_frames = state.audio_submitted_frames; attempt.muxed_bytes = state.muxed_bytes;
-    attempt.diagnostic_truncated = state.failure.size() > 1024 || state.diagnostics.size() > 1024;
-    attempt.failure = state.failure.substr(0,1024); attempt.diagnostics = state.diagnostics.substr(state.diagnostics.size() > 1024 ? state.diagnostics.size()-1024 : 0);
-    if (attempts.size() == 8) attempts.erase(attempts.begin());
+    attempt.failure = state.failure; attempt.diagnostics = state.diagnostics;
     attempts.push_back(std::move(attempt));
     if (!state.failure.empty()) last_attempt_failure = state.failure;
     Publish(state);
@@ -523,7 +505,7 @@ struct StreamPipeline::Impl {
     frames.clear();
     if (latest_frame) frames.push_back(*latest_frame);
     for (const auto& packet : packets) result.disconnected_audio_frames += (packet.data.size()-packet.offset)/4;
-    packets.clear(); packet_bytes = 0;
+    packets.clear();
   }
   void WaitRetry(Clock::time_point until) {
     for (;;) {
@@ -548,7 +530,8 @@ struct StreamPipeline::Impl {
       if (outage_deadline == Clock::time_point{}) { outage_deadline = attempt_failure_at + policy.timeout; outage_retries = 0; }
       EnterOffline();
       const auto multiplier = uint64_t{1} << std::min(outage_retries, unsigned{8});
-      const auto delay = std::chrono::milliseconds(std::min<int64_t>(policy.max_delay.count(),policy.initial_delay.count()*static_cast<int64_t>(multiplier)));
+      // Saturate at max_delay instead of overflowing initial_delay * multiplier.
+      const auto delay = policy.initial_delay.count() > policy.max_delay.count()/static_cast<int64_t>(multiplier) ? policy.max_delay : std::chrono::milliseconds(policy.initial_delay.count()*static_cast<int64_t>(multiplier));
       try { WaitRetry(Clock::now()+delay); }
       catch (const std::exception& error) { state.failure = error.what(); break; }
       ++outage_retries; ++reconnect_attempts;
@@ -559,8 +542,8 @@ struct StreamPipeline::Impl {
     state.reconnecting = false; state.physical_encoder_pid = 0; Publish(state);
     { std::lock_guard lock(mutex);
       result.stopped_video_frames += frames.size(); for (const auto& packet : packets) result.stopped_audio_frames += (packet.data.size()-packet.offset)/4;
-      frames.clear(); latest_frame.reset(); packets.clear(); packet_bytes = 0; result.captured_frame_bytes = frame_bytes->load();
-      state = result; settled = true; if (lease) { stream_count.fetch_sub(1); lease = false; }
+      frames.clear(); latest_frame.reset(); packets.clear(); result.captured_frame_bytes = frame_bytes->load();
+      state = result; settled = true;
     }
     if (completed) { try { completed(state); } catch (...) {} }
   }
@@ -592,29 +575,25 @@ void StreamPipeline::Frame(const std::vector<uint8_t>& data, double timestamp) {
 }
 void StreamPipeline::Audio(std::vector<uint8_t> data, double timestamp) {
   if (!impl_->options.audio) return;
-  if (data.empty() || data.size() % 4 || data.size() > 4096 * 4 || !std::isfinite(timestamp) || timestamp < 0) { impl_->Cancel("Malformed native publisher PCM"); return; }
-  bool overflow = false;
+  if (data.empty() || data.size() % 4 || !std::isfinite(timestamp) || timestamp < 0) { impl_->Cancel("Malformed native publisher PCM"); return; }
   { std::lock_guard lock(impl_->mutex); if (impl_->settled || impl_->canceled || timestamp < impl_->options.start_timestamp_ms || (impl_->stopping && timestamp > impl_->stop_at_ms)) return;
     if (impl_->offline) { impl_->result.audio_input_frames += data.size()/4; impl_->result.disconnected_audio_frames += data.size()/4; }
-    else if (impl_->packet_bytes + data.size() > kAudioBytes) overflow = true;
-    else { impl_->result.audio_input_frames += data.size() / 4; impl_->packet_bytes += data.size(); auto position = std::upper_bound(impl_->packets.begin(), impl_->packets.end(), timestamp, [](double time, const auto& packet) { return time < packet.timestamp; }); impl_->packets.insert(position, Impl::Sample{std::move(data), timestamp, 0, impl_->generation}); } }
-  if (overflow) impl_->Cancel("Native publisher PCM queue exceeded its thirty-second bound"); else impl_->Wake();
+    else { impl_->result.audio_input_frames += data.size() / 4; auto position = std::upper_bound(impl_->packets.begin(), impl_->packets.end(), timestamp, [](double time, const auto& packet) { return time < packet.timestamp; }); impl_->packets.insert(position, Impl::Sample{std::move(data), timestamp, 0, impl_->generation}); } }
+  impl_->Wake();
 }
 void StreamPipeline::Pause(bool paused) {
-  bool exhausted = false;
   { std::lock_guard lock(impl_->mutex); if (impl_->paused == paused || impl_->settled || impl_->stopping) return;
-    if (impl_->controls.size() >= 1024) exhausted = true;
-    else { impl_->paused = paused; impl_->controls.push_back({impl_->NativeNow(), paused, impl_->generation}); }
+    impl_->paused = paused; impl_->controls.push_back({impl_->NativeNow(), paused, impl_->generation});
   }
-  if (exhausted) impl_->Cancel("Native publisher timeline control bound exceeded"); else impl_->Wake();
+  impl_->Wake();
 }
 void StreamPipeline::SwitchSource() {
   bool exhausted = false;
   { std::lock_guard lock(impl_->mutex); if (impl_->settled || impl_->stopping) return;
-    if (impl_->controls.size() >= 1024 || impl_->generation == UINT64_MAX) exhausted = true;
+    if (impl_->generation == UINT64_MAX) exhausted = true;
     else { ++impl_->generation; impl_->controls.push_back({impl_->NativeNow(), impl_->paused, impl_->generation}); }
   }
-  if (exhausted) impl_->Cancel("Native publisher source timeline bound exceeded"); else impl_->Wake();
+  if (exhausted) impl_->Cancel("Native publisher source generation counter exhausted"); else impl_->Wake();
 }
 void StreamPipeline::Stop(Clock::time_point deadline) {
   {

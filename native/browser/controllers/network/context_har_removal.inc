@@ -22,7 +22,7 @@ class NativeContextHARRoutes::RemovalReservation {
 inline std::unique_ptr<NativeContextHARRoutes::RemovalReservation> NativeContextHARRoutes::PrepareRemoveAll(int owner,int context,double deadline,Result done){
   const auto state=states_.find(context);
   if(closed_||serial_>=9007199254740991ULL||owner<1||!done||!std::isfinite(deadline)||deadline<0||
-     (deadline&&now_&&now_()>=deadline)||state==states_.end()||state->second.owner||batches_.size()+removals_.size()>=32||batches_.contains(owner)||removals_.contains(owner))return {};
+     (deadline&&now_&&now_()>=deadline)||state==states_.end()||state->second.owner||batches_.contains(owner)||removals_.contains(owner))return {};
   try{
     auto prepared=std::unique_ptr<RemovalReservation>(new RemovalReservation);
     prepared->manager=this;prepared->alive=alive_;prepared->operation=owner;prepared->context=context;
@@ -34,7 +34,6 @@ inline std::unique_ptr<NativeContextHARRoutes::RemovalReservation> NativeContext
       change.queue=target.queue;change.claims=target.claims;change.before=target.removals;change.after=target.removals;
       for(const auto&id:prepared->order){const auto&route=prepared->routes.at(id);const auto claim=target.claims.find(id);
         if(claim==target.claims.end()||claim->second!=route.policy)continue;
-        if(change.after.size()>=128)return {};
         change.after.push_back({route,owner,prepared->generation,deadline});batch.pending.insert({name,id});
       }
       if(change.after.size()!=change.before.size())prepared->owners.push_back(name);
@@ -45,7 +44,7 @@ inline std::unique_ptr<NativeContextHARRoutes::RemovalReservation> NativeContext
 }
 inline bool NativeContextHARRoutes::RemovalCurrent(const RemovalReservation&prepared)const{
   if(prepared.manager!=this||prepared.alive!=alive_||!*alive_||closed_||prepared.committed||prepared.serial!=serial_||
-     (prepared.deadline&&now_&&now_()>=prepared.deadline)||batches_.size()+removals_.size()>=32||batches_.contains(prepared.operation)||removals_.contains(prepared.operation))return false;
+     (prepared.deadline&&now_&&now_()>=prepared.deadline)||batches_.contains(prepared.operation)||removals_.contains(prepared.operation))return false;
   const auto state=states_.find(prepared.context);
   if(state==states_.end()||state->second.policy_owner!=prepared.policy_owner||state->second.owner||state->second.order!=prepared.order||state->second.bytes!=prepared.bytes||state->second.routes.size()!=prepared.routes.size())return false;
   for(const auto&[id,route]:prepared.routes){const auto found=state->second.routes.find(id);if(found==state->second.routes.end()||found->second.policy!=route.policy)return false;}

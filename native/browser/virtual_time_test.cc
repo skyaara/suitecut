@@ -56,7 +56,8 @@ int main(){
  assert(!f.clock.State().active&&f.clock.State().paused);
  }
  {
- Fixture f;f.Install();assert(!f.clock.Begin({2,8,Clock::Action::Advance,90000000,10000},2));
+ {Fixture g;g.Install();assert(g.clock.Begin({2,8,Clock::Action::Advance,90000000,10000},2));g.clock.Closed();}
+ Fixture f;f.Install();assert(!f.clock.Begin({2,8,Clock::Action::Advance,static_cast<double>(((uint64_t{1}<<50)-1)/1000)+1,10000},2));
  assert(f.clock.Begin({2,8,Clock::Action::RunFor,90000000,10000,31},2));
  f.Ack(true,1000,3);assert(f.wire.back().kind==Clock::Kind::Advance&&f.wire.back().budget==90000000);
  f.Ack(true,std::nullopt,4);f.clock.BudgetExpired(5);f.Ack(true,90001000,6);
@@ -145,7 +146,7 @@ int main(){
  Fixture f;f.Install();assert(f.clock.Begin({2,8,Clock::Action::Advance,100,10000},2));f.clock.Cancel(2,3);f.clock.Tick(1004);assert(f.closed.size()==1&&f.clock.State().physical);f.clock.Closed();assert(!f.clock.State().physical);
  }
  {
- Fixture f;f.Install();assert(f.clock.Begin({100,100,Clock::Action::Advance,100,10000},2));for(int i=2;i<=64;++i)assert(f.clock.Begin({i,static_cast<uint64_t>(i),Clock::Action::Pause,0,10000},2));assert(!f.clock.Begin({65,65,Clock::Action::Pause,0,10000},2));f.clock.Closed();assert(f.clock.State().queued==0);
+ Fixture f;f.Install();assert(f.clock.Begin({100,100,Clock::Action::Advance,100,10000},2));for(int i=101;i<=300;++i)assert(f.clock.Begin({i,static_cast<uint64_t>(i),Clock::Action::Pause,0,10000},2));assert(f.clock.State().queued==200);f.clock.Closed();assert(f.clock.State().queued==0);
  }
  {
  Fixture f;assert(!f.clock.Begin({1,1,Clock::Action::InstallPaused,0,100},std::numeric_limits<double>::quiet_NaN()));assert(!f.clock.OwnsTarget()&&f.wire.empty()&&f.done.empty());assert(!f.clock.Begin({1,1,Clock::Action::Advance,std::numeric_limits<double>::infinity(),100},0));assert(!f.clock.Begin({1,1,Clock::Action::Advance,0,100},0));assert(!f.clock.Begin({1,1,Clock::Action::InstallPaused,0,std::numeric_limits<double>::infinity()},0));assert(f.clock.Begin({1,1,Clock::Action::Pause,0,100},0));assert(f.wire.empty()&&f.done.size()==1&&!f.done.back().ok);

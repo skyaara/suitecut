@@ -338,7 +338,7 @@ describe('actual request service-worker target identity', () => {
     expect(f.workers.allTargets()).toEqual([])
     f.close()
   })
-  it('rejects an unidentifiable old native ready record after retirement history loss', () => {
+  it('keeps every retirement past the old 1024 history cap and still identifies old ready records', () => {
     const f = fixture()
     for (let index = 0; index < 1025; ++index)
       f.emit({
@@ -346,9 +346,14 @@ describe('actual request service-worker target identity', () => {
         worker: { ...actualWorker, id: `retired:${index}` },
         sequence: index + 1,
       })
-    expect(() =>
-      f.workers.fromRecord({ event: 'worker', worker: actualWorker, sequence: 1 }),
-    ).toThrow('retirement history capacity exceeded')
+    expect(
+      f.workers.fromRecord({ event: 'worker', worker: actualWorker, sequence: 1 }).isClosed(),
+    ).toBe(false)
+    expect(
+      f.workers
+        .fromRecord({ event: 'worker', worker: { ...actualWorker, id: 'retired:0' }, sequence: 1 })
+        .isClosed(),
+    ).toBe(true)
     f.close()
   })
   it('uses genuine close and channel receipts before the first observed object exists', () => {
@@ -371,7 +376,7 @@ describe('actual request service-worker target identity', () => {
     expect(f.discovered).not.toHaveBeenCalled()
     f.close()
   })
-  it('rejects late unknown identity after bounded real receipt history is lost', () => {
+  it('keeps every real receipt past the old 1024 history cap and admits a late unknown identity', () => {
     const f = fixture()
     const retained = request(f).serviceWorker()
     f.emit({ event: 'channelclosed', worker: actualWorker, sequence: 1 })
@@ -381,9 +386,13 @@ describe('actual request service-worker target identity', () => {
       expect(request(f, actual.id, actual).serviceWorker()?.isClosed()).toBe(true)
     }
     expect(request(f, 'retained').serviceWorker()).toBe(retained)
-    expect(() => request(f, 'late', { ...actualWorker, id: 'unavailable-old-target' })).toThrow(
-      'retirement history capacity exceeded',
-    )
+    const firstClosed = { ...actualWorker, id: 'actually-closed:0' }
+    expect(request(f, 'first-again', firstClosed).serviceWorker()?.isClosed()).toBe(true)
+    expect(
+      request(f, 'late', { ...actualWorker, id: 'unknown-late-target' })
+        .serviceWorker()
+        ?.isClosed(),
+    ).toBe(false)
     f.emit({ event: 'close', worker: actualWorker, sequence: 1027 })
     expect(retained?.isClosed()).toBe(true)
     f.close()
@@ -500,14 +509,14 @@ describe('actual request service-worker target identity', () => {
     expect(f.resolve).not.toHaveBeenCalled()
     f.close()
   })
-  it('bounds unannounced identities without evicting retained lifecycle observers', () => {
+  it('admits unannounced identities past the old 1024 cap without evicting retained lifecycle observers', () => {
     const f = fixture()
     const retained = Array.from({ length: 1024 }, (_, index) =>
       request(f, `request:${index}`, { ...actualWorker, id: `observed:${index}` }),
     )
-    expect(() => request(f, 'overflow', { ...actualWorker, id: 'observed:overflow' })).toThrow(
-      'identity capacity exceeded',
-    )
+    expect(
+      request(f, 'overflow', { ...actualWorker, id: 'observed:overflow' }).serviceWorker(),
+    ).not.toBeNull()
     const first = retained[0]
     expect(first).toBeDefined()
     f.emit({ event: 'close', worker: { ...actualWorker, id: 'observed:0' }, sequence: 1 })
@@ -736,7 +745,7 @@ describe('worker channel error provenance', () => {
 })
 
 describe('retained canonical worker lifecycle ordering', () => {
-  it('keeps retained receipt ordering after the bounded shared journal rolls over', () => {
+  it('keeps retained receipt ordering and old history past the old 1024-record journal', () => {
     const f = fixture()
     f.emit({ event: 'worker', worker: actualWorker, sequence: 10 })
     const retained = request(f).serviceWorker()
@@ -756,13 +765,20 @@ describe('retained canonical worker lifecycle ordering', () => {
     ).toBe(retained)
     expect(retained?.isClosed()).toBe(false)
     expect(() => retained?.assertUsable()).not.toThrow()
-    expect(() =>
-      f.workers.fromRecord({
-        event: 'worker',
-        worker: { ...actualWorker, id: 'unknown:old' },
-        sequence: 1,
-      }),
-    ).toThrow('history capacity exceeded')
+    expect(
+      f.workers
+        .fromRecord({ event: 'worker', worker: { ...actualWorker, id: 'history:0' }, sequence: 13 })
+        .isClosed(),
+    ).toBe(true)
+    expect(
+      f.workers
+        .fromRecord({
+          event: 'worker',
+          worker: { ...actualWorker, id: 'unknown:old' },
+          sequence: 1,
+        })
+        .isClosed(),
+    ).toBe(false)
     f.close()
   })
 })

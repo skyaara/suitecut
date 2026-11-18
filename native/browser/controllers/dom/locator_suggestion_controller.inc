@@ -45,8 +45,8 @@ void LocatorSuggestionVerify(const std::shared_ptr<LocatorSuggestionWork>&work){
     auto suggestions=CefListValue::Create();auto diagnostics=work->omitted?work->omitted->Copy():CefListValue::Create();
     for(size_t i=0;i<results->GetSize();++i){
       const auto checked=results->GetDictionary(i);const auto&candidate=work->candidates[i];
-      if(!checked||checked->GetSize()!=2||checked->GetType("matches")!=VTYPE_INT||checked->GetInt("matches")<0||checked->GetInt("matches")>1000000||checked->GetType("same")!=VTYPE_BOOL||(checked->GetBool("same")&&checked->GetInt("matches")!=1)){Complete(work->owner,false,"Invalid native locator suggestion identity receipt");return;}
-      if(checked->GetBool("same")&&suggestions->GetSize()<suitecut::LocatorSuggestionPlan::kResults){
+      if(!checked||checked->GetSize()!=2||checked->GetType("matches")!=VTYPE_INT||checked->GetInt("matches")<0||checked->GetType("same")!=VTYPE_BOOL||(checked->GetBool("same")&&checked->GetInt("matches")!=1)){Complete(work->owner,false,"Invalid native locator suggestion identity receipt");return;}
+      if(checked->GetBool("same")){
         auto row=CefDictionaryValue::Create();row->SetString("kind",candidate.kind);row->SetList("query",candidate.query->Copy());row->SetString("code",candidate.code);row->SetInt("matches",1);row->SetBool("sameNode",true);suggestions->SetDictionary(suggestions->GetSize(),row);
       }else if(!checked->GetBool("same")){
         auto row=CefDictionaryValue::Create();row->SetString("kind",candidate.kind);row->SetInt("matches",checked->GetInt("matches"));row->SetString("reason",checked->GetInt("matches")==1?"Unique query selected a different node":"Query is not unique for the selected node");diagnostics->SetDictionary(diagnostics->GetSize(),row);
@@ -58,8 +58,7 @@ void LocatorSuggestionVerify(const std::shared_ptr<LocatorSuggestionWork>&work){
     if(work->handle_id)provenance->SetInt("retainedHandle",work->handle_id);
     if(work->pick)provenance->SetDictionary("point",work->pick->Copy(false));
     auto response=CefDictionaryValue::Create();response->SetDictionary("provenance",provenance);response->SetList("suggestions",suggestions);response->SetList("diagnostics",diagnostics);response->SetBool("pointPicking",bool(work->pick));
-    const auto encoded=Json(response);if(encoded.size()>131072){Complete(work->owner,false,"Native locator suggestion reply exceeds byte bounds");return;}
-    if(LocatorSuggestionCurrent(work))Complete(work->owner,true,"",encoded);
+    if(LocatorSuggestionCurrent(work))Complete(work->owner,true,"",Json(response));
   });
 }
 void LocatorSuggestionObserve(const std::shared_ptr<LocatorSuggestionWork>&work){
@@ -68,8 +67,8 @@ void LocatorSuggestionObserve(const std::shared_ptr<LocatorSuggestionWork>&work)
     const auto parsed=CefParseJSON(json,JSON_PARSER_RFC);Dict observation;std::string error;
     if(!ok||!suitecut::LocatorSuggestionPlan::Capture(parsed?parsed->GetDictionary():nullptr,work->backend,observation,error)||!suitecut::LocatorSuggestionPlan::Read(observation,work->candidates,error)){Complete(work->owner,false,error.empty()?"Native locator suggestion observation failed":error);return;}
     if(work->picked_backend&&work->backend!=work->picked_backend){Complete(work->owner,false,"Native picked backend changed before suggestion observation");return;}
-    const auto omitted=observation->GetList("omitted");work->omitted=omitted?omitted->Copy():nullptr;if(!work->omitted||work->omitted->GetSize()>24){Complete(work->owner,false,"Native locator suggestion diagnostic capacity exceeded");return;}
-    for(size_t i=0;i<work->omitted->GetSize();++i){const auto row=work->omitted->GetDictionary(i);if(!row||row->GetSize()!=2||row->GetType("kind")!=VTYPE_STRING||row->GetString("kind").length()>32||row->GetType("reason")!=VTYPE_STRING||row->GetString("reason").length()>256){Complete(work->owner,false,"Invalid native locator suggestion omission diagnostic");return;}}
+    const auto omitted=observation->GetList("omitted");work->omitted=omitted?omitted->Copy():nullptr;if(!work->omitted){Complete(work->owner,false,"Invalid native locator suggestion omission diagnostic");return;}
+    for(size_t i=0;i<work->omitted->GetSize();++i){const auto row=work->omitted->GetDictionary(i);if(!row||row->GetSize()!=2||row->GetType("kind")!=VTYPE_STRING||row->GetType("reason")!=VTYPE_STRING){Complete(work->owner,false,"Invalid native locator suggestion omission diagnostic");return;}}
     LocatorSuggestionVerify(work);
   });
 }
@@ -77,7 +76,7 @@ void BeginLocatorSuggestion(int owner,Dict message){
   const auto operation=operations_.Get(owner);if(!operation)return;
   if(operations_.IsExpired(owner,operation->generation,Now())){Complete(owner,false,"Native locator suggestion original deadline expired");return;}
   for(const char*key:{"nativeQueryNodes","nativeRootHandle","nativeSelectorWaitState","nativeAccessibilitySnapshot","nativeSemanticSnapshotJson","formNode","point"})if(message->HasKey(key)){Complete(owner,false,"Unsupported native locator suggestion target field");return;}
-  if(!SelectorWaits().Admit(owner,operation->generation)){Complete(owner,false,"Native locator suggestion physical capacity exceeded");return;}
+  if(!SelectorWaits().Admit(owner,operation->generation)){Complete(owner,false,"Native locator suggestion admission unavailable or channel closed");return;}
   if(const auto path=message->GetList("framePath");path&&path->GetSize()){
     if(message->HasKey("nativeHandle")){Complete(owner,false,"Retained locator suggestions cannot borrow a frame path");return;}
     ResolveFramePath(owner,operation->generation,message,0,FrameId(message),[this,owner](Dict resolved){BeginLocatorSuggestion(owner,resolved);});return;

@@ -26,7 +26,7 @@ suitecut::SelectorWaitControls& SelectorWaits(){
 // Chromium. Accept only the exact denied selector-cleanup receipt, never a
 // successful/other-session response or a generic author/protocol error.
 bool SelectorWaitRejectedSession(int id,bool success,const void* result,size_t size,const std::string& actual){
-  if(success||!actual.empty()||!size||size>512)return false;
+  if(success||!actual.empty()||!size)return false;
   const auto found=devtools_.find(id);
   if(found==devtools_.end()||!found->second.selector_group_release||!found->second.retained_control||found->second.session.empty())return false;
   const auto json=std::string(static_cast<const char*>(result),size);

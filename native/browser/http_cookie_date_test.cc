@@ -25,5 +25,6 @@ int main(){
     const auto independent=(date+hours{17}+minutes{42}+seconds{5}).time_since_epoch().count();const auto text=std::to_string(day)+" "+months[month-1]+" "+std::to_string(year)+" 17:42:05 GMT";
     assert(suitecut::HTTPCookieDate(text)==static_cast<double>(independent));
   }
+  {const auto long_line=suitecut::ParseNativeHTTPCookie("big="+std::string(8000,'v')+"; Path=/"+std::string(4000,'p'),"example.test","/",1000);assert(long_line&&long_line->value.size()==8000&&long_line->path.size()==4001);}
   std::cout<<"Native API cookie dates: valid year1000 expires instead of becoming session; Gregorian leap/day/time validation and Max-Age precedence passed\n";
 }

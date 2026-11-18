@@ -115,7 +115,7 @@ describe('native context lifecycle projection', () => {
     expect(closed).toHaveBeenCalledOnce()
   })
 
-  it('forwards bounded origin-scoped credential arrays and send modes to the real native context', async () => {
+  it('forwards origin-scoped credential arrays of any length and send modes to the real native context', async () => {
     const f = fixture()
     f.runContext.mockResolvedValueOnce({ contextId: 2 })
     const credentials = [
@@ -132,13 +132,11 @@ describe('native context lifecycle projection', () => {
     expect(() => context.request).not.toThrow()
     f.emit({ event: 'context-closed', contextId: 2 })
     await expect(context.request.get('https://example.test')).rejects.toThrow('closed')
-    const invalid = fixture()
-    await expect(
-      invalid.browser.newContext({
-        httpCredentials: Array.from({ length: 65 }, () => credentials[0]!),
-      }),
-    ).rejects.toThrow()
-    expect(invalid.runContext).not.toHaveBeenCalled()
+    const many = fixture(),
+      manyCredentials = Array.from({ length: 65 }, () => credentials[0]!)
+    many.runContext.mockResolvedValueOnce({ contextId: 3 })
+    await many.browser.newContext({ httpCredentials: manyCredentials })
+    expect(many.runContext).toHaveBeenCalledWith('create', { httpCredentials: manyCredentials })
   })
 
   it('updates native credentials without replacing the canonical API controller', async () => {

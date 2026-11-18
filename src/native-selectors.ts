@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-import { readFile, stat } from 'node:fs/promises'
+import { readFile } from 'node:fs/promises'
 
 import * as z from 'zod'
 
@@ -22,7 +22,6 @@ export class NativeSelectors {
   ): Promise<void> {
     z.string()
       .min(1)
-      .max(64)
       .regex(/^[A-Za-z0-9_-]+$/u)
       .parse(name)
     const config = z.strictObject({ contentScript: z.boolean().optional() }).parse(options)
@@ -36,13 +35,10 @@ export class NativeSelectors {
       if ((input.path !== undefined) === (input.content !== undefined))
         throw new Error('A native selector registration requires exactly one of path or content')
       if (input.path !== undefined) {
-        if ((await stat(input.path)).size > 1024 * 1024)
-          throw new Error('Native selector source exceeds 1 MiB')
         source = await readFile(input.path, 'utf8')
       } else source = input.content ?? ''
     }
-    if (!source || Buffer.byteLength(source, 'utf8') > 1024 * 1024)
-      throw new Error('Native selector source must contain 1 byte to 1 MiB')
+    if (!source) throw new Error('Native selector source must not be empty')
     if (source.includes('[native code]'))
       throw new Error('Native selector factories must have serializable JavaScript source')
     if (!/^async\s+function\b/u.test(source) && /^async\s+[\p{L}\p{N}_$]+\s*\(/u.test(source))

@@ -260,19 +260,19 @@ describe('CDP upload and download ownership', () => {
     expect(test.wire.stats().eventListeners).toBe(0)
   })
 
-  it('bounds active downloads and accepts new work after completion', async () => {
+  it('admits active downloads past the old 1024 cap without canceling any', async () => {
     const test = await fixture()
     const seen: ProtocolDownload[] = []
     await test.controls.subscribeDownloads('page', (download) => seen.push(download))
     for (let index = 0; index < 1025; index++)
       test.emit('Browser.downloadWillBegin', { guid: `download-${index}`, frameId: 'frame' })
-    expect(seen).toHaveLength(1024)
+    expect(seen).toHaveLength(1025)
     expect(
       test.socket.commands.filter((packet) => packet.method === 'Browser.cancelDownload'),
-    ).toHaveLength(1)
+    ).toHaveLength(0)
     test.emit('Browser.downloadProgress', { guid: 'download-0', state: 'completed' })
     test.emit('Browser.downloadWillBegin', { guid: 'accepted-again', frameId: 'frame' })
-    expect(seen).toHaveLength(1025)
+    expect(seen).toHaveLength(1026)
     await test.controls.dispose()
     expect(await seen.at(-1)!.failure()).toMatch(/closed/u)
   })

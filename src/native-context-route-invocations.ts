@@ -73,8 +73,6 @@ export class NativeContextRouteInvocations {
   }
 
   private begin(registration: string): Invocation {
-    if (this.active.size >= 128)
-      throw new Error('Native context route invocation observation capacity exceeded')
     const state: Invocation = {
       registration,
       suppressed: false,
@@ -117,8 +115,6 @@ export class NativeContextRouteInvocations {
   armIgnore(outcome: Promise<boolean>): (registrations: ReadonlySet<string>) => void {
     const scope = this.createScope(undefined, outcome)
     return (registrations) => {
-      if (registrations.size > 256)
-        throw new Error('Native route exception selection capacity exceeded')
       if (scope.completed) return
       scope.selected = new Set(registrations)
       for (const state of scope.members) {
@@ -143,10 +139,6 @@ export class NativeContextRouteInvocations {
     selected: ReadonlySet<string> | undefined,
     outcome: Promise<boolean>,
   ): IgnoreScope {
-    if (this.ignores.size >= 64)
-      throw new Error('Native context route exception-policy observation capacity exceeded')
-    if (selected && selected.size > 256)
-      throw new Error('Native route exception selection capacity exceeded')
     const scope: IgnoreScope = {
       selected: selected ? new Set(selected) : undefined,
       members: new Set(),
@@ -183,7 +175,6 @@ export class NativeContextRouteInvocations {
 
   /** Reserve observer quota before any actual native policy mutation. */
   reserveWait(): NativeRouteInvocationWaitReservation {
-    if (this.waits.size >= 64) throw new Error('Native context route host wait capacity exceeded')
     let resolve = () => undefined as void
     const settled = new Promise<void>((done) => {
       resolve = done

@@ -21,7 +21,8 @@ class SuiteCutCaptureClock {
       // 120 Hz). Restore only exact multiples of that known period; otherwise
       // a long continuous stream eventually loses a CFR slot to rounding drift.
       // Non-quantized source intervals and genuine missing intervals survive.
-      if(capture_fps>0&&capture_fps<=120){
+      // Any rate applies; only a sub-microsecond period has nothing to restore.
+      if(capture_fps>0&&std::floor(1000000/capture_fps)>=1){
         const double period=std::floor(1000000/capture_fps);
         const double count=std::round(delta*1000/period);
         if(count>0&&std::abs(delta*1000-count*period)<.01)delta=count*1000/capture_fps;

@@ -23,7 +23,7 @@ inline bool SnapshotReferenceForests(const std::string& original,
   if(groups.empty())return fail("Native snapshot reference publication has no groups");
   std::unordered_set<std::string_view> allowed,used;
   for(const auto& group:groups)for(const auto& token:group)
-    if(token.empty()||token.size()>192||!allowed.insert(token).second)
+    if(token.empty()||!allowed.insert(token).second)
       return fail("Native snapshot reference ownership is invalid");
   if(original.empty()||original.front()!='['||original.back()!=']')
     return fail("Native snapshot reference forest is invalid");

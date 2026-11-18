@@ -10,7 +10,7 @@ import { type UntrustedInput } from './untrusted.js'
 const sdkRoot = dirname(fileURLToPath(import.meta.url))
 const SourceMapSchema = z.object({
   sourceRoot: z.string().optional(),
-  sources: z.array(z.string()).max(4096),
+  sources: z.array(z.string()),
 })
 let mappedSources: Set<string> | undefined
 function mappedSDKSources(): Set<string> {
@@ -28,7 +28,6 @@ function mappedSDKSources(): Set<string> {
     if (!/^native(?:-[a-z0-9-]+)?\.js\.map$/u.test(name)) continue
     try {
       const bytes = readFileSync(resolve(sdkRoot, name))
-      if (bytes.length > 4 * 1024 * 1024) continue
       const parsed = JSON.parse(bytes.toString('utf8')) as UntrustedInput
       const map = SourceMapSchema.parse(parsed)
       const mapURL = pathToFileURL(resolve(sdkRoot, name))

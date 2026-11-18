@@ -17,13 +17,13 @@ std::map<int,std::shared_ptr<ScreenshotAssertionWork>>screenshot_assertion_work_
 std::map<uint64_t,ScreenshotAssertionFileWork>screenshot_assertion_files_;
 bool ScreenshotAssertionOwns(int owner)const{return screenshot_assertion_work_.contains(owner);}
 bool ScreenshotAssertionStart(int owner,uint64_t generation,double deadline,const std::string&input_token,Dict config){
-  if(input_token.empty()||input_token.size()>128||!config||screenshot_assertion_work_.contains(owner))return false;
+  if(input_token.empty()||!config||screenshot_assertion_work_.contains(owner))return false;
   const auto root=config->GetType("artifactsDir");
   if(root!=VTYPE_INVALID&&root!=VTYPE_STRING)return false;
   const auto screenshot=config->GetDictionary("screenshot");
   if(!screenshot||screenshot->HasKey("beforeScreenshot")||screenshot->HasKey("__testHookBeforeScreenshot")||screenshot->HasKey("clientToken"))return false;
   const auto path=config->GetString("artifactsDir").ToString();
-  if(path.size()>32768||(!path.empty()&&(path[0]!='/'||path.find('\0')!=std::string::npos)))return false;
+  if(!path.empty()&&(path[0]!='/'||path.find('\0')!=std::string::npos))return false;
   try{
     auto work=std::make_shared<ScreenshotAssertionWork>();work->identity={page_id_,owner,generation};work->input_token=input_token;work->artifact_root=path;
     screenshot_assertion_work_.emplace(owner,std::move(work));
@@ -89,7 +89,7 @@ void ScreenshotAssertionFreeze(suitecut::ScreenshotAssertionRetirement::Identity
       const auto actual=result->GetString("actual").ToString(),diff=result->GetString("diff").ToString();
       const size_t retained=6*(actual.size()+diff.size())+65536;
       try{work->bytes=engine_.screenshot_comparisons()->Budget()->Reserve(retained);}catch(const std::bad_alloc&){}
-      if(!work->bytes)screenshot_assertion_retirement_.Fail(identity,"Native screenshot final publication byte budget exceeded",Now());
+      if(!work->bytes)screenshot_assertion_retirement_.Fail(identity,"Native screenshot final publication byte accounting overflowed",Now());
       else work->result=result;
     }
     if(!ok)screenshot_assertion_retirement_.Fail(identity,error.empty()?"Native screenshot comparison failed":error,Now());

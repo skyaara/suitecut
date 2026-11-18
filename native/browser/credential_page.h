@@ -22,7 +22,6 @@ class CredentialPage:public std::enable_shared_from_this<CredentialPage>{
   CredentialPage(Send send,std::function<void(bool)>ready):send_(std::move(send)),ready_(std::move(ready)){}
   void Apply(int owner,std::shared_ptr<const Config>config,Result done){
     if(closed_||!config){done(false,"Native credential page is closed");return;}
-    if(queue_.size()>=64){done(false,"Native credential page operation capacity exceeded");return;}
     desired_=std::move(config);ready_(false);auto job=std::make_shared<Job>();job->owner=owner;job->config=desired_;job->done=std::move(done);
     for(const auto&[id,session]:sessions_)if(session->active)job->targets.push_back(session);
     queue_.push_back(job);Pump();
@@ -30,7 +29,6 @@ class CredentialPage:public std::enable_shared_from_this<CredentialPage>{
   void SessionAttached(const std::string&session,std::shared_ptr<const Config>config,Result done){
     if(closed_||!config){done(false,"Native credential page is closed");return;}
     if(!session.empty()){done(false,"Native credentials use the actual main-frame authenticator inherited by descendants");return;}
-    if(queue_.size()>=64||(!sessions_.contains(session)&&sessions_.size()>=1)){done(false,"Native credential target capacity exceeded");return;}
     if(!desired_||config->version>desired_->version)desired_=std::move(config);
     auto&state=sessions_[session];if(!state){state=std::make_shared<Session>();state->id=session;}
     auto job=std::make_shared<Job>();job->bootstrap=true;job->config=desired_;job->targets.push_back(state);job->done=std::move(done);queue_.push_back(job);ready_(false);Pump();
@@ -58,7 +56,6 @@ class CredentialPage:public std::enable_shared_from_this<CredentialPage>{
   void WhenReady(Result done){
     if(closed_){done(false,"Native credential page is closed");return;}
     if(Ready()){done(true,"");return;}
-    if(ready_waiters_.size()>=64){done(false,"Native credential readiness waiter capacity exceeded");return;}
     ready_waiters_.push_back(std::move(done));
   }
   void SessionDetached(const std::string&id){const auto found=sessions_.find(id);if(found==sessions_.end())return;found->second->active=false;sessions_.erase(found);}
@@ -70,7 +67,7 @@ class CredentialPage:public std::enable_shared_from_this<CredentialPage>{
   struct Session{std::string id,authenticator;uint64_t version=0;bool active=true,enabled=false;std::shared_ptr<const Config>importing;size_t import_index=0;};
   struct Job{int owner=0;bool bootstrap=false,canceled=false;size_t target=0,credential=0;std::shared_ptr<const Config>config;std::vector<std::shared_ptr<Session>>targets;Result done;};
   static Dict Parse(const std::string&json){const auto value=CefParseJSON(json,JSON_PARSER_RFC);return value&&value->GetType()==VTYPE_DICTIONARY?value->GetDictionary():nullptr;}
-  static std::string Standard(const std::string&value,size_t limit){std::vector<unsigned char>decoded;if(!CredentialDecodeBase64URL(value,limit,decoded))return "";return CefBase64Encode(decoded.data(),decoded.size());}
+  static std::string Standard(const std::string&value){std::vector<unsigned char>decoded;if(!CredentialDecodeBase64URL(value,decoded))return "";return CefBase64Encode(decoded.data(),decoded.size());}
   bool Current(const std::shared_ptr<Job>&job)const{return !closed_&&active_==job;}
   void Pump(){if(closed_||active_||queue_.empty())return;active_=queue_.front();Next(active_);}
   void Next(std::shared_ptr<Job>job){
@@ -121,7 +118,7 @@ class CredentialPage:public std::enable_shared_from_this<CredentialPage>{
     if(job->canceled||job->config!=desired_||!session->active){Next(job);return;}
     if(job->credential>=job->config->credentials.size()){session->version=job->config->version;++job->target;Next(job);return;}
     session->importing=job->config;session->import_index=job->credential;
-    const auto&item=job->config->credentials[job->credential++];auto credential=CefDictionaryValue::Create();credential->SetString("credentialId",Standard(item.id,1024));credential->SetString("privateKey",Standard(item.private_key,16384));credential->SetString("userHandle",Standard(item.user_handle,64));credential->SetString("rpId",item.rp_id);credential->SetBool("isResidentCredential",true);credential->SetDouble("signCount",item.sign_count);
+    const auto&item=job->config->credentials[job->credential++];auto credential=CefDictionaryValue::Create();credential->SetString("credentialId",Standard(item.id));credential->SetString("privateKey",Standard(item.private_key));credential->SetString("userHandle",Standard(item.user_handle));credential->SetString("rpId",item.rp_id);credential->SetBool("isResidentCredential",true);credential->SetDouble("signCount",item.sign_count);
     auto params=CefDictionaryValue::Create();params->SetString("authenticatorId",session->authenticator);params->SetDictionary("credential",credential);
     send_(session->id,"WebAuthn.addCredential",params,[weak=weak_from_this(),job,session](bool ok,const std::string&error){session->importing.reset();const auto self=weak.lock();if(!self||!self->Current(job))return;if(!session->active){self->Next(job);return;}if(!ok){self->Finish(job,false,error);return;}self->Import(job,session);});
   }

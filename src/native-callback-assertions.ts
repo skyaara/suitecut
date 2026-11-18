@@ -18,7 +18,7 @@ export interface NativeToPassOptions {
 const duration = z.number().int().min(0).max(Number.MAX_SAFE_INTEGER)
 export const NativeToPassOptionsSchema = z.strictObject({
   timeout: duration.optional(),
-  intervals: z.array(duration).min(1).max(64).optional(),
+  intervals: z.array(duration).min(1).optional(),
 })
 type Bridge = (
   callback: NativeRetryCallback,

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 import { describe, expect, it } from 'vitest'
 
-import { MAX_NATIVE_RESPONSE_PAYLOAD, NativePacketDecoder } from '../src/native-protocol.js'
+import { NativePacketDecoder } from '../src/native-protocol.js'
 
 function packet(id: number, payload = Buffer.alloc(0)): Buffer {
   const json = Buffer.from(
@@ -51,12 +51,16 @@ describe('SDK packet parser reentrancy and terminal errors', () => {
     expect(received).toEqual([1, 2, 3])
   })
 
-  it('bounds synchronous receiver-fed input and fails closed on overflow', () => {
-    const decoder = new NativePacketDecoder(() => {
-      for (let index = 0; index < 4097; index++) decoder.push(Buffer.from([0]))
+  it('queues any amount of synchronous receiver-fed input in order', () => {
+    const received: number[] = []
+    const decoder = new NativePacketDecoder((header) => {
+      if (header.type !== 'response') throw new Error('Wrong packet type')
+      received.push(header.id)
+      if (header.id === 1) for (let id = 2; id <= 5000; id++) decoder.push(packet(id))
     })
-    expect(() => decoder.push(packet(1))).toThrow('queue limit')
-    expect(() => decoder.push(packet(2))).toThrow('disposed')
+    decoder.push(packet(1))
+    decoder.end()
+    expect(received).toEqual(Array.from({ length: 5000 }, (_, index) => index + 1))
   })
 
   it('drains a long receiver-fed chain in order without retaining consumed reads', () => {
@@ -107,16 +111,16 @@ describe('SDK packet parser reentrancy and terminal errors', () => {
     const decoder = new NativePacketDecoder(() => {
       throw new Error('Unexpected packet')
     })
-    expect(() => decoder.push(Buffer.from([255, 255, 255, 255]))).toThrow('header length')
+    expect(() => decoder.push(Buffer.from([1, 0, 0, 0]))).toThrow('header length')
     expect(() => decoder.push(packet(1))).toThrow('disposed')
     expect(() => decoder.end()).not.toThrow()
   })
 
-  it('releases an incomplete maximum response when EOF is reported', () => {
+  it('releases an incomplete large response when EOF is reported', () => {
     const json = Buffer.from(
       JSON.stringify({
         version: 1,
-        bytes: MAX_NATIVE_RESPONSE_PAYLOAD,
+        bytes: 192 * 1024 * 1024,
         type: 'response',
         id: 1,
         ok: true,

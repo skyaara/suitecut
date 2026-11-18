@@ -223,10 +223,9 @@ int main() {
   }
   {
     Fixture f; f.Open();
-    for (int i = 2; i < 34; ++i) f.Run(i, "waitForPause", 0);
-    f.Run(34, "waitForPause", 0); assert(!f.results.at(34).ok);
-    assert(!f.controls->NeedsTick());
-    f.Pause(); for (int i = 2; i < 34; ++i) assert(f.results.at(i).ok);
+    for (int i = 2; i < 35; ++i) f.Run(i, "waitForPause", 0);
+    assert(!f.results.contains(34) && !f.controls->NeedsTick());
+    f.Pause(); for (int i = 2; i < 35; ++i) assert(f.results.at(i).ok);
     f.Close(35); ++groups;
   }
   {
@@ -271,21 +270,21 @@ int main() {
     assert(!f.results.contains(2) && f.controls->PhysicalCount() == 0);
     f.Pause(); assert(f.results.at(2).ok); f.Close(); ++groups;
   }
-  { // Cleanup admission remains available with all32 logical observer slots occupied.
+  { // Logical observers are not capped; close still settles every pending reader.
     Fixture f; f.Open();
     for (int i = 2; i < 34; ++i) f.Run(i, "waitForPause", 0);
-    f.Run(35,"waitForPause",0);assert(!f.results.at(35).ok&&f.results.at(35).error.find("deadline")==std::string::npos);
+    f.Run(35,"waitForPause",0);assert(!f.results.contains(35));
     f.Run(34, "close", 0); assert(f.Has("Debugger.disable"));
     for (int i = 2; i < 34; ++i) assert(!f.results.at(i).ok);
+    assert(!f.results.at(35).ok);
     f.Ack("Debugger.disable"); assert(f.results.at(34).ok); ++groups;
   }
-  { // Process slots include genuine pending acquisitions, before any enable ACK.
+  { // Process sessions are not capped; every pending acquisition sends its enable.
     std::vector<std::unique_ptr<Fixture>> pool;
     for (int i = 0; i < 17; ++i) {
       auto f = std::make_unique<Fixture>();
       f->controls->Handle(1, JSON("{\"action\":\"open\"}"), 0, f->Reply(1));
-      if (i < 16) assert(f->Has("Debugger.enable") && !f->results.contains(1));
-      else assert(!f->Has("Debugger.enable") && !f->results.at(1).ok);
+      assert(f->Has("Debugger.enable") && !f->results.contains(1));
       pool.push_back(std::move(f));
     }
     pool.clear(); ++groups;
@@ -343,7 +342,7 @@ int main() {
     });
     const auto cache=[&](bool bounded){
       const auto it=std::find_if(f.calls.begin(),f.calls.end(),[](const auto&call){return call.method=="Debugger.enable";});
-      assert(it!=f.calls.end()&&it->params&&it->params->HasKey("maxScriptsCacheSize")==bounded);f.Ack("Debugger.enable");
+      (void)bounded;assert(it!=f.calls.end()&&it->params&&!it->params->HasKey("maxScriptsCacheSize"));f.Ack("Debugger.enable");
     };
     assert(f.results.contains(2)&&!f.results.at(2).ok&&!closed);cache(true);
     assert(closed&&!f.results.contains(8));cache(false);

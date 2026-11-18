@@ -4,25 +4,16 @@
 #include "inbound_string.h"
 
 namespace suitecut {
-inline constexpr size_t kNativeFrameNameUnits=1024;
-// Longest name decoded at all; DevTools messages are bounded well below this.
-inline constexpr size_t kNativeFrameNameInputUnits=1048576;
 // Only Chromium's native Page.Frame.name field is accepted here. Author object
 // dictionaries are never passed to this decoder or recursively interpreted.
-// Ad frames often carry kilobytes of JSON in their names, so a longer name keeps
-// its first kNativeFrameNameUnits units (never splitting a surrogate pair) instead
-// of failing the page.
+// The whole name is kept, however long, as Chromium reports it.
 inline bool ReadInspectorFrameName(CefRefPtr<CefDictionaryValue> frame,std::string& name){
  name.clear();if(!frame)return false;if(!frame->HasKey("name"))return true;
  const auto value=frame->GetValue("name");std::u16string units;
  if(value&&value->GetType()==VTYPE_STRING)units=value->GetString().ToString16();
  else{
   const auto scalar=value&&value->GetType()==VTYPE_DICTIONARY?value->GetDictionary():nullptr;
-  if(!scalar||scalar->GetSize()!=1||scalar->GetType(kDevToolsUTF16Tag)!=VTYPE_STRING||scalar->GetString(kDevToolsUTF16Tag).length()>kNativeFrameNameInputUnits*4||!DevToolsReadTag(value,units))return false;
- }
- if(units.size()>kNativeFrameNameUnits){
-  const bool split=(units[kNativeFrameNameUnits-1]&0xfc00)==0xd800&&(units[kNativeFrameNameUnits]&0xfc00)==0xdc00;
-  units.resize(kNativeFrameNameUnits-(split?1:0));
+  if(!scalar||scalar->GetSize()!=1||scalar->GetType(kDevToolsUTF16Tag)!=VTYPE_STRING||!DevToolsReadTag(value,units))return false;
  }
  name=DevToolsUnitsWTF8(units);return true;
 }
@@ -30,10 +21,10 @@ inline bool ReadInspectorFrameName(CefRefPtr<CefDictionaryValue> frame,std::stri
 // Public Page.getFrameTree contains native schema objects, not author values.
 // Only Page.Frame.name may consume the private scalar transport representation.
 // Everything else is emitted by CEF's ordinary JSON writer without decoding
-// arbitrary dictionaries. Counts/depth/output are bounded independently.
+// arbitrary dictionaries. Chromium bounds the frame count; nothing is capped here.
 inline bool InspectorFrameTreeJSON(CefRefPtr<CefDictionaryValue> reply,std::string& json){
- json.clear();size_t nodes=0;constexpr size_t limit=1048576;
- const auto append=[&json](const std::string& part){if(part.size()>limit-json.size())return false;json+=part;return true;};
+ json.clear();
+ const auto append=[&json](const std::string& part){json+=part;return true;};
  const auto ordinary=[&append](CefRefPtr<CefValue> value){return value&&append(CefWriteJSON(value,JSON_WRITER_DEFAULT).ToString());};
  const auto key_json=[](const CefString& key){auto value=CefValue::Create();value->SetString(key);return CefWriteJSON(value,JSON_WRITER_DEFAULT).ToString();};
  const auto frame_json=[&](CefRefPtr<CefDictionaryValue> frame){
@@ -49,14 +40,14 @@ inline bool InspectorFrameTreeJSON(CefRefPtr<CefDictionaryValue> reply,std::stri
   }
   return append("}");
  };
- const auto tree_json=[&](auto&& self,CefRefPtr<CefDictionaryValue> tree,size_t depth)->bool{
-  if(!tree||depth>64||++nodes>4096||tree->GetType("frame")!=VTYPE_DICTIONARY||!append("{"))return false;
+ const auto tree_json=[&](auto&& self,CefRefPtr<CefDictionaryValue> tree)->bool{
+  if(!tree||tree->GetType("frame")!=VTYPE_DICTIONARY||!append("{"))return false;
   bool first=true;CefDictionaryValue::KeyList keys;tree->GetKeys(keys);
   for(const auto& key:keys){if(!first&&!append(","))return false;first=false;if(!append(key_json(key))||!append(":"))return false;
    if(key=="frame"){if(!frame_json(tree->GetDictionary(key)))return false;}
    else if(key=="childFrames"){
-    const auto children=tree->GetList(key);if(!children||children->GetSize()>4096||!append("["))return false;
-    for(size_t index=0;index<children->GetSize();++index){if(index&&!append(","))return false;if(children->GetType(index)!=VTYPE_DICTIONARY||!self(self,children->GetDictionary(index),depth+1))return false;}
+    const auto children=tree->GetList(key);if(!children||!append("["))return false;
+    for(size_t index=0;index<children->GetSize();++index){if(index&&!append(","))return false;if(children->GetType(index)!=VTYPE_DICTIONARY||!self(self,children->GetDictionary(index)))return false;}
     if(!append("]"))return false;
    }else if(!ordinary(tree->GetValue(key)))return false;
   }
@@ -65,7 +56,7 @@ inline bool InspectorFrameTreeJSON(CefRefPtr<CefDictionaryValue> reply,std::stri
  if(!reply||reply->GetType("frameTree")!=VTYPE_DICTIONARY||!append("{"))return false;
  bool first=true;CefDictionaryValue::KeyList keys;reply->GetKeys(keys);
  for(const auto& key:keys){if(!first&&!append(","))return false;first=false;if(!append(key_json(key))||!append(":"))return false;
-  if(key=="frameTree"){if(!tree_json(tree_json,reply->GetDictionary(key),0))return false;}
+  if(key=="frameTree"){if(!tree_json(tree_json,reply->GetDictionary(key)))return false;}
   else if(!ordinary(reply->GetValue(key)))return false;
  }
  return append("}");

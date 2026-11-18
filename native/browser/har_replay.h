@@ -20,15 +20,14 @@ namespace suitecut {
 class NativeHARReplay {
  public:
   using Dict=CefRefPtr<CefDictionaryValue>;
-  static constexpr size_t kBodyBytes=192*1048576;
   struct Match {int status=0;std::string status_text;std::vector<std::pair<std::string,std::string>>headers;std::vector<uint8_t>body;};
   bool Load(Dict archive,std::string&error) {
     auto log=archive?archive->GetDictionary("log"):nullptr;auto entries=log?log->GetList("entries"):nullptr;
-    if(!entries||entries->GetSize()>4096){error="Invalid or excessive native HAR entries";return false;}
+    if(!entries){error="Invalid native HAR entries";return false;}
     std::vector<Entry> parsed;size_t cost=0;
     for(size_t i=0;i<entries->GetSize();++i){
       auto object=entries->GetDictionary(i);auto request=object?object->GetDictionary("request"):nullptr;auto response=object?object->GetDictionary("response"):nullptr;
-      if(!request||!response||request->GetString("url").length()>8192||request->GetString("method").empty()||request->GetString("method").length()>64){error="Invalid native HAR request or response";return false;}
+      if(!request||!response||request->GetString("method").empty()){error="Invalid native HAR request or response";return false;}
       Entry entry;entry.url=request->GetString("url");entry.method=request->GetString("method");entry.match.status=response->GetInt("status");entry.match.status_text=response->GetString("statusText");
       if(entry.match.status<100||entry.match.status>599){continue;} // Failed network entries cannot fulfill a response.
       if(!Headers(request->GetList("headers"),entry.headers,error)||!Headers(response->GetList("headers"),entry.match.headers,error))return false;
@@ -48,7 +47,7 @@ class NativeHARReplay {
       cost+=entry.url.size()+entry.method.size()+entry.post.size()+entry.match.body.size()+entry.match.status_text.size();
       for(const auto&[name,value]:entry.headers)cost+=name.size()+value.size();
       for(const auto&[name,value]:entry.match.headers)cost+=name.size()+value.size();
-      if(cost>512*1048576){error="Native HAR replay retained-byte limit exceeded";return false;}parsed.push_back(std::move(entry));
+      parsed.push_back(std::move(entry));
     }
     // Index existing entries rather than duplicating URLs, methods or bodies.
     // Original entry order is the final key, preserving first-match score ties.
@@ -111,18 +110,18 @@ class NativeHARReplay {
   static bool Bytes(Dict object,const char*encoding,std::vector<uint8_t>&bytes,std::string&error){
     if(object->GetType("text")!=VTYPE_STRING){error="Native HAR body text is absent";return false;}
     const auto text=object->GetString("text").ToString();const auto format=object->GetString(encoding).ToString();
-    if(format.empty()){if(text.size()>kBodyBytes){error="Native HAR body exceeds 192 MiB, the largest response body Chromium returns to suitecut";return false;}bytes.assign(text.begin(),text.end());return true;}
-    if(format!="base64"||text.size()>(kBodyBytes+2)/3*4){error="Unsupported or excessive native HAR body encoding";return false;}
+    if(format.empty()){bytes.assign(text.begin(),text.end());return true;}
+    if(format!="base64"){error="Unsupported native HAR body encoding";return false;}
     if(text.empty())return true;
-    const auto decoded=CefBase64Decode(text);if(!decoded||decoded->GetSize()>kBodyBytes){error="Invalid native HAR base64 body";return false;}
+    const auto decoded=CefBase64Decode(text);if(!decoded){error="Invalid native HAR base64 body";return false;}
     bytes.resize(decoded->GetSize());decoded->GetData(bytes.data(),bytes.size(),0);
     if(CefBase64Encode(bytes.data(),bytes.size())!=text){error="Invalid native HAR base64 body";return false;}return true;
   }
   static bool Headers(CefRefPtr<CefListValue>input,std::vector<std::pair<std::string,std::string>>&headers,std::string&error){
-    if(!input||input->GetSize()>512){error="Invalid or excessive native HAR headers";return false;}
-    size_t cost=0;for(size_t i=0;i<input->GetSize();++i){auto pair=input->GetDictionary(i);if(!pair||pair->GetType("name")!=VTYPE_STRING||pair->GetType("value")!=VTYPE_STRING){error="Invalid native HAR header";return false;}
-      const auto name=pair->GetString("name").ToString(),value=pair->GetString("value").ToString();cost+=name.size()+value.size();
-      if(name.empty()||name.find_first_of("\r\n")!=std::string::npos||value.find_first_of("\r\n")!=std::string::npos||name.find('\0')!=std::string::npos||value.find('\0')!=std::string::npos||cost>65536){error="Invalid or excessive native HAR header";return false;}
+    if(!input){error="Invalid native HAR headers";return false;}
+    for(size_t i=0;i<input->GetSize();++i){auto pair=input->GetDictionary(i);if(!pair||pair->GetType("name")!=VTYPE_STRING||pair->GetType("value")!=VTYPE_STRING){error="Invalid native HAR header";return false;}
+      const auto name=pair->GetString("name").ToString(),value=pair->GetString("value").ToString();
+      if(name.empty()||name.find_first_of("\r\n")!=std::string::npos||value.find_first_of("\r\n")!=std::string::npos||name.find('\0')!=std::string::npos||value.find('\0')!=std::string::npos){error="Invalid native HAR header";return false;}
       headers.emplace_back(name,value);
     }return true;
   }

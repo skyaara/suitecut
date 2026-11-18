@@ -88,7 +88,9 @@ describe('explicit native inbound string wire', () => {
     )
     expect(() => decodeNativeBindingName({ name: 'a', nameJSON: '"b"' })).toThrow()
     expect(() => decodeNativeBindingName({ nameJSON: '{}' })).toThrow()
-    expect(() => decodeNativeBindingName({ nameJSON: JSON.stringify('x'.repeat(257)) })).toThrow()
+    expect(decodeNativeBindingName({ nameJSON: JSON.stringify('x'.repeat(257)) })).toBe(
+      'x'.repeat(257),
+    )
     const author = { __suitecutNativeUTF16Scalar: 'd800' }
     const event = NativeBindingEventSchema.parse({
       event: 'call',
@@ -103,10 +105,13 @@ describe('explicit native inbound string wire', () => {
       expect(event.args).toBe(author)
     }
   })
-  it('bounds composed wire traversal and does not serialize unrelated argument trees', () => {
+  it('rejects cyclic composed wire traversal and does not serialize unrelated argument trees', () => {
     const cycle: { query?: object[] } = {}
     cycle.query = [cycle]
-    expect(() => encodeNativeStringFields('query', cycle)).toThrow('limit')
+    expect(() => encodeNativeStringFields('query', cycle)).toThrow('cyclic')
+    let deep: { query: object[] } = { query: [] }
+    for (let depth = 0; depth < 300; ++depth) deep = { query: [deep] }
+    expect(encodeNativeStringFields('query', deep).query).toHaveLength(1)
     const args: { self?: object } = {}
     args.self = args
     expect(encodeNativeStringFields('evaluate', { args }).args).toBe(args)

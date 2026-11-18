@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 #include <algorithm>
+#include <climits>
+#include <cstddef>
 #include <cmath>
 #include <cstdint>
 #include <vector>
@@ -14,7 +16,12 @@ struct SuiteCutCaptureRect {
 inline bool SuiteCutCaptureContentRect(int source_width, int source_height,
                                       int canvas_width, int canvas_height,
                                       SuiteCutCaptureRect& rect) {
-  const auto valid = [](int width, int height) { return width >= 1 && height >= 1 && width <= 3840 && height <= 2160; };
+  // No suitecut size cap. libyuv takes an int stride, so a row of BGRA must fit
+  // an int and the whole image must fit size_t.
+  const auto valid = [](int width, int height) {
+    return width >= 1 && height >= 1 && width <= INT_MAX / 4 &&
+        static_cast<size_t>(width) * 4 <= SIZE_MAX / static_cast<size_t>(height);
+  };
   if (!valid(source_width, source_height) || !valid(canvas_width, canvas_height)) return false;
   const double fit = std::min(static_cast<double>(canvas_width) / source_width,
                               static_cast<double>(canvas_height) / source_height);

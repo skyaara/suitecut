@@ -102,7 +102,7 @@ auto Source::HandleArguments(int id, Dict message, Dict params, bool destination
           }))
     return;
   auto ids = message->GetList("handles");
-  if (!ids || ids->GetSize() > 1024) {
+  if (!ids) {
     Complete(id, false, "Invalid native handle arguments");
     return;
   }
@@ -229,9 +229,8 @@ auto Source::Handle(int id, Dict message, bool frame_ready) -> void {
     return;
   }
   if (action == "create" || action == "property") {
-    if (handles_.size() + pending_handle_groups_.size() >= 1024 ||
-        next_handle_ == std::numeric_limits<int>::max()) {
-      Complete(id, false, "Native object handle limit exceeded");
+    if (next_handle_ == std::numeric_limits<int>::max()) {
+      Complete(id, false, "Native object handle identity exhausted");
       return;
     }
     if (action == "create" && message->GetType("expression") != VTYPE_STRING &&
@@ -425,7 +424,6 @@ auto Source::Handle(int id, Dict message, bool frame_ready) -> void {
                            "Native handle context destroyed by navigation or detachment");
                   return;
                 }
-                preview = suitecut::DevToolsTruncateWTF8(preview, 8192);
                 auto response = CefDictionaryValue::Create();
                 response->SetInt("handle", handle_id);
                 response->SetString("guid", HandleGuid(handle_id));
@@ -436,8 +434,8 @@ auto Source::Handle(int id, Dict message, bool frame_ready) -> void {
                 auto typed = CefValue::Create();
                 typed->SetDictionary(response->Copy(false));
                 std::string json;
-                if (!suitecut::DevToolsLosslessJSON(typed, json, 65536)) {
-                  Complete(id, false, "Native handle metadata limit exceeded");
+                if (!suitecut::DevToolsLosslessJSON(typed, json)) {
+                  Complete(id, false, "Native handle metadata could not be serialized");
                   return;
                 }
                 const auto delivery_owner = operations_.Get(id);

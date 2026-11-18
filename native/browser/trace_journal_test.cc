@@ -38,11 +38,13 @@ int main(int argc,char** argv){
     assert(text.find("/rejected")==std::string::npos);
     std::vector<Journal::StackFrame> frames;
     for(size_t first=3;first<4095;first+=32){frames.clear();for(size_t i=first;i<4095&&i<first+32;++i)frames.push_back({"/file-"+std::to_string(i),"",0,0});assert(stacks.Stack(lease,first+10,frames,error));}
-    const auto at_limit=stacks.Bytes();
-    assert(!stacks.Stack(lease,5000,{{"/last","",0,0},{"/too-many","",0,0}},error));
-    assert(stacks.Bytes()==at_limit);
-    assert(stacks.Stack(lease,5001,{{"/last","",0,0},{"/last","",0,0}},error));
-    assert(!stacks.Stack(lease,5002,{{"/too-many","",0,0}},error));
+    // No suitecut file, frame, name or byte cap: files past the former 4096
+    // limit, 64-frame stacks and long names are all recorded whole.
+    assert(stacks.Stack(lease,5000,{{"/last","",0,0},{"/too-many","",0,0}},error));
+    frames.clear();for(size_t i=0;i<64;++i)frames.push_back({"/deep/"+std::string(5000,'f'),std::string(1000,'n'),int(i),0});assert(stacks.Stack(lease,5001,frames,error));
     assert(stacks.Stack(lease,5003,{{"/a","still valid",0,0}},error));
+    const std::string large="{\"type\":\"console\",\"text\":\""+std::string(2*1048576,'x')+"\"}";assert(stacks.Event(lease,large,error));
+    for(uint64_t call=6000;call<10200;++call)assert(stacks.Before(lease,call,"{}",error));
   }
+  {Journal many;for(int context=1;context<=200;++context)assert(many.Start(context,{},"{}",error));assert(many.Contexts()==200);}
 }

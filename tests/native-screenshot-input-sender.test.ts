@@ -14,10 +14,10 @@ vi.mock('node:child_process', async (original) => ({
   spawn: vi.fn(),
 }))
 
-// Real public SDK sender/parser and its128-entry control lane over private
-// streams. This controlled transport component does not claim CEF execution.
-describe('screenshot abort while the real SDK control lane is full', () => {
-  it('publishes the original abort before queued discard, then retains and sends actual nonce cleanup', async () => {
+// Real public SDK sender/parser over private streams with 128 controls held.
+// This controlled transport component does not claim CEF execution.
+describe('screenshot abort while many real SDK controls are pending', () => {
+  it('publishes the original abort and sends actual nonce cleanup without waiting for held controls', async () => {
     const child = new ChildProcess(),
       input = new PassThrough(),
       output = new PassThrough()
@@ -95,14 +95,11 @@ describe('screenshot abort while the real SDK control lane is full', () => {
       controller.abort(reason)
       expect(await result).toBe(reason)
       await new Promise((resolve) => setImmediate(resolve))
-      expect(commands.some((command) => command.action === 'discard')).toBe(false)
-      emit({ type: 'response', id: controlCommands[0]!.id, ok: true }, {})
-      await new Promise((resolve) => setImmediate(resolve))
       const discard = commands.find((command) => command.action === 'discard')!
       expect(discard).toBeDefined()
       expect(discard.clientToken).toBe(prepare.clientToken)
       emit({ type: 'response', id: discard.id, ok: true }, {})
-      for (const command of controlCommands.slice(1))
+      for (const command of controlCommands)
         emit({ type: 'response', id: command.id, ok: true }, {})
       await Promise.all(held)
       await new Promise((resolve) => setImmediate(resolve))

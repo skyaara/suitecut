@@ -46,7 +46,7 @@ class InitStartupReadiness {
   std::shared_ptr<CredentialLease>ResetCredentials(const Peer&peer,const Operation&operation,uint64_t reset_generation,int credential_version){
     if(!peer||!peer->Current()||!Current(operation)||!reset_generation||credential_version<0)return {};
     const auto key=Key(peer->Owner());auto old=credentials_.find(key);
-    if((old==credentials_.end()&&credentials_.size()>=64)||(old!=credentials_.end()&&(old->second->peer_!=peer||old->second->generation_>=reset_generation)))return {};
+    if((old!=credentials_.end()&&(old->second->peer_!=peer||old->second->generation_>=reset_generation)))return {};
     auto lease=std::shared_ptr<CredentialLease>(new CredentialLease(peer,operation,reset_generation,credential_version));
     if(old==credentials_.end())credentials_.emplace(key,lease);else old->second=lease;return lease;
   }
@@ -60,7 +60,7 @@ class InitStartupReadiness {
     lease->ready_=true;return true;
   }
   std::shared_ptr<Ticket>Reserve(const Peer&peer,const Operation&operation,const InitSnapshotPin&expected,uint64_t reset_generation,int credential_version,bool credentials_installed){
-    if(!peer||!peer->Current()||!Current(operation)||expected.owner!=peer->Owner()||!InitSnapshotWire::Size(expected,1)||pending_.size()>=64||next_==UINT64_MAX)return {};
+    if(!peer||!peer->Current()||!Current(operation)||expected.owner!=peer->Owner()||!InitSnapshotWire::Size(expected,1)||next_==UINT64_MAX)return {};
     auto credential=credentials_.find(Key(peer->Owner()));
     if(credential==credentials_.end()||credential->second->peer_!=peer||credential->second->generation_!=reset_generation||credential->second->version_!=credential_version)return {};
     for(const auto&[id,ticket]:pending_)if(ticket->pin_==expected)return {};

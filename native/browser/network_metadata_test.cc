@@ -10,12 +10,13 @@
 #include SUITECUT_NETWORK_CONTROL_HEADER
 
 namespace {
-void JournalBounds(size_t payload){
+// No journal window: every event stays retained until the page clears it, so a
+// wait from any earlier cursor still matches instead of failing.
+void JournalRetention(size_t payload){
   using Controls=suitecut::NetworkControls;using Dict=Controls::Dict;
-  std::deque<std::pair<Dict,size_t>> expected;size_t bytes=0;
+  std::vector<Dict> expected;
   Controls controls([](const std::string&,const std::string&,Dict,Controls::Result done){done(true,"");},[&](Dict value){
-    const auto size=Controls::Json(value).size();expected.push_back({value->Copy(false),size});bytes+=size;
-    while(expected.size()>256||bytes>4194304){bytes-=expected.front().second;expected.pop_front();}
+    expected.push_back(value->Copy(false));
     // The public consumer must not be able to change a retained journal entry.
     value->SetString("consumerMutation",std::string(16384,'m'));
   },[](const std::string&){assert(false);},[]{},[]{return 0;});
@@ -24,13 +25,10 @@ void JournalBounds(size_t payload){
     auto request=CefDictionaryValue::Create();request->SetString("url","https://native.test/journal");request->SetString("method","GET");auto headers=CefDictionaryValue::Create();headers->SetString("large",std::string(payload,'h'));request->SetDictionary("headers",headers);data->SetDictionary("request",request);
     controls.Event("Network.requestWillBeSent",data,"");controls.Event("Network.loadingFinished",data,"");
   }
-  auto diagnostics=CefDictionaryValue::Create();controls.Diagnostics(diagnostics);assert(size_t(diagnostics->GetInt("networkJournal"))==expected.size());
-  assert(!expected.empty());const auto first=expected.front().first->GetDouble("sequence");assert(first>2);
-  auto query=CefDictionaryValue::Create();query->SetString("action","waitEvent");query->SetString("event","request");query->SetDouble("afterSequence",first-2);
-  bool rejected=false;controls.Command(900,query,[&](bool ok,const std::string&error,const std::string&){assert(!ok&&error.find("journal capacity")!=std::string::npos);rejected=true;});assert(rejected);
-  query->SetDouble("afterSequence",first-1);bool found=false;
-  const auto match=std::find_if(expected.begin(),expected.end(),[](const auto&entry){return entry.first->GetString("event")=="request";});assert(match!=expected.end());
-  controls.Command(901,query,[&](bool ok,const std::string&,const std::string&json){assert(ok&&json==Controls::Json(match->first));found=true;});assert(found);
+  auto diagnostics=CefDictionaryValue::Create();controls.Diagnostics(diagnostics);assert(expected.size()==600&&size_t(diagnostics->GetInt("networkJournal"))==expected.size());
+  assert(expected.front()->GetString("event")=="request"&&expected.front()->GetDouble("sequence")==1);
+  auto query=CefDictionaryValue::Create();query->SetString("action","waitEvent");query->SetString("event","request");query->SetDouble("afterSequence",0);bool found=false;
+  controls.Command(901,query,[&](bool ok,const std::string&,const std::string&json){assert(ok&&json==Controls::Json(expected.front()));found=true;});assert(found);
   controls.Clear();diagnostics=CefDictionaryValue::Create();controls.Diagnostics(diagnostics);assert(diagnostics->GetInt("networkJournal")==0);
 }
 }
@@ -51,5 +49,5 @@ int main() {
   data->SetString("requestId","genuine-inspector-abort");controls.Event("Network.requestWillBeSent",data,"");data->SetString("blockedReason","inspector");data->SetString("errorText","net::ERR_BLOCKED_BY_CLIENT");controls.Event("Network.loadingFailed",data,"");assert(events.back()->GetString("errorText")=="net::ERR_BLOCKED_BY_CLIENT");assert(events.back()->GetDictionary("request")->GetString("blockedReason")=="inspector");
   // A header wait is genuinely cancelable without consuming a later field event.
   data->SetString("requestId","cancel-real-request");data->SetString("type","Fetch");controls.Event("Network.requestWillBeSent",data,"");query->SetString("requestId",events.back()->GetDictionary("request")->GetString("id"));query->SetString("action","requestHeaders");controls.Command(3,query,[](bool,const std::string&,const std::string&){assert(false);});controls.Cancel(3);extra->SetString("requestId","cancel-real-request");controls.Event("Network.requestWillBeSentExtraInfo",extra,"");
-  JournalBounds(64);JournalBounds(30720);
+  JournalRetention(64);JournalRetention(30720);
 }

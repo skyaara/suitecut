@@ -12,7 +12,7 @@ if (command == "routeCallback") {
   uint64_t scope=0,token=0;
   const auto invocation=message->GetString("invocation").ToString();
   const auto action=message->GetString("action").ToString();
-  if(!parse_nonce("scope",scope) || !parse_nonce("token",token) || invocation.empty() || invocation.size()>128 || (action!="start" && action!="finish")) {
+  if(!parse_nonce("scope",scope) || !parse_nonce("token",token) || invocation.empty() || (action!="start" && action!="finish")) {
     writer_.Reply(id,false,"Invalid native route callback lease acknowledgment");return;
   }
   auto& leases=suitecut::GlobalRouteCallbackLeases();

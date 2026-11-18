@@ -32,7 +32,7 @@ class NativeWebSocketRoutes {
   ~NativeWebSocketRoutes(){*alive_=false;for(auto&[key,r]:registrations_)GlobalRouteCallbackLeases().Close(r->scope);}
   bool HasPolicy(int context,int page)const{for(const auto&[key,r]:registrations_)if(r->active&&r->context==context&&(r->page==0||r->page==page))return true;return false;}
   bool Attach(int context,int page,const std::string&owner,Send send,Fatal fatal,Result ready){
-    if(context<1||page<0||owner.empty()||owner.size()>256||targets_.contains(owner)||targets_.size()>=2048||serial_==UINT64_MAX||!send||!fatal||!ready)return false;
+    if(context<1||page<0||owner.empty()||targets_.contains(owner)||serial_==UINT64_MAX||!send||!fatal||!ready)return false;
     auto target=std::make_shared<Target>();target->context=context;target->page=page;target->owner=owner;target->token=std::to_string(++serial_);target->send=std::move(send);target->fatal=std::move(fatal);
     targets_[owner]=target;tokens_[target->token]=target;target->waiters.push_back(std::move(ready));Reconcile(target);return true;
   }
@@ -53,7 +53,7 @@ class NativeWebSocketRoutes {
     for(auto it=registrations_.begin();it!=registrations_.end();)if(it->second->context==context&&it->second->page==page){it->second->active=false;GlobalRouteCallbackLeases().Close(it->second->scope);it=registrations_.erase(it);}else ++it;
   }
   size_t Physical()const{return physical_;}
-  bool NeedsTick()const{return !mutations_.empty()||!removals_.empty()||payloads_.Pending();}
+  bool NeedsTick()const{return !mutations_.empty()||!removals_.empty()||!pending_.empty()||payloads_.Pending();}
   bool Owns(const std::string&owner)const{const auto it=targets_.find(owner);return it!=targets_.end()&&(it->second->enabled||it->second->configuring);}
   void Cancel(int id){
     const auto found=mutations_.find(id);if(found!=mutations_.end()){
@@ -62,7 +62,7 @@ class NativeWebSocketRoutes {
     removals_.erase(id);
   }
   void Tick(){
-    payloads_.Tick();
+    Flush();payloads_.Tick();
     std::vector<int>expired;for(const auto&[id,r]:mutations_)if(r->deadline&&now_()>=r->deadline)expired.push_back(id);
     for(const auto id:expired)Cancel(id);
     std::vector<std::pair<int,bool>>done;
@@ -104,10 +104,10 @@ class NativeWebSocketRoutes {
     const auto found=targets_.find(owner);if(found==targets_.end()||!event)return false;auto target=found->second;
     if(!target->enabled&&!target->configuring)return false;
     const auto request=event->GetString("requestId").ToString(),stage=event->GetString("stage").ToString();
-    if(request.empty()||request.size()>128||(stage!="created"&&stage!="message"&&stage!="closed")){Fail(target,"Invalid native routed WebSocket identity");return true;}
+    if(request.empty()||(stage!="created"&&stage!="message"&&stage!="closed")){Fail(target,"Invalid native routed WebSocket identity");return true;}
     if(stage=="created"){
       const auto url=event->GetString("url").ToString();
-      if(target->sockets.size()>=128||target->sockets.contains(request)||url.size()>8192||!(url.starts_with("ws://")||url.starts_with("wss://"))){Fail(target,"Native WebSocket channel ownership capacity or URL rejected");return true;}
+      if(target->sockets.contains(request)||!(url.starts_with("ws://")||url.starts_with("wss://"))){Fail(target,"Native WebSocket channel identity or URL rejected");return true;}
       Socket socket;socket.request=request;socket.url=url;socket.deadline=now_()+30000;
       for(const auto&[key,r]:registrations_)if(r->active&&r->context==target->context&&(r->page==0||r->page==target->page)&&(r->host||NativeURLGlobMatches(r->pattern,url)))socket.candidates.push_back(r);
       std::sort(socket.candidates.begin(),socket.candidates.end(),[](const auto&a,const auto&b){return a->page!=b->page?a->page>b->page:a->order>b->order;});
@@ -116,8 +116,8 @@ class NativeWebSocketRoutes {
     const auto item=target->sockets.find(request);if(item==target->sockets.end())return true;auto&socket=item->second;
     if(stage=="message"){
       if(!socket.selected){Fail(target,"Native WebSocket message arrived before route selection");return true;}
-      const auto payload=event->GetString("payloadBase64").ToString(),message=event->GetString("messageId").ToString();const int opcode=event->GetInt("opcode");
-      if(message.empty()||message.size()>32||payload.size()>2796204||(opcode!=1&&opcode!=2)||event->GetType("outgoing")!=VTYPE_BOOL){Fail(target,"Invalid native WebSocket routed message");return true;}
+      const auto message=event->GetString("messageId").ToString();const int opcode=event->GetInt("opcode");
+      if(message.empty()||(opcode!=1&&opcode!=2)||event->GetType("outgoing")!=VTYPE_BOOL){Fail(target,"Invalid native WebSocket routed message");return true;}
       Publish(target,socket,"message",event);return true;
     }
     if(socket.registration){for(const auto&entry:socket.invocations)GlobalRouteCallbackLeases().Revoke(std::get<2>(entry),std::get<0>(entry));socket.invocations.clear();}
@@ -136,7 +136,9 @@ class NativeWebSocketRoutes {
     return found!=target->sockets.end()&&found->second.selected&&found->second.registration&&found->second.registration->active&&found->second.registration->page==page&&found->second.registration->id==input->GetString("registrationId").ToString();
   }
   static std::string Key(int context,int page,const std::string&id){return std::to_string(context)+":"+std::to_string(page)+":"+id;}
-  static bool Revision(Dict r){return r&&r->GetInt("revision")==1&&r->GetInt("maxSockets")==128&&r->GetInt("maxPendingMessages")==64&&r->GetInt("maxPendingBytes")==2097152;}
+  // The extension's own socket/message/byte bounds are its to enforce; only
+  // the protocol revision is checked here.
+  static bool Revision(Dict r){return r&&r->GetInt("revision")==1;}
   bool Wants(const std::shared_ptr<Target>&target)const{return HasPolicy(target->context,target->page)||!target->sockets.empty();}
   void Fail(const std::shared_ptr<Target>&target,const std::string&error){if(!target->live||target->retiring)return;target->retiring=true;auto waiting=std::move(target->waiters);for(auto&done:waiting)done(false,error);target->fatal(error);}
   void Reconcile(const std::shared_ptr<Target>&target){
@@ -152,7 +154,7 @@ class NativeWebSocketRoutes {
         const bool unsupported=!ok&&r&&r->GetInt("code")==-32601;
         auto waiting=std::move(target->waiters);
         for(auto&done:waiting)done(false,unsupported?"Native WebSocket routing requires the verified SuiteCut Network extension revision 1 in a custom CEF build":"Native WebSocket target configuration failed");
-        const bool not_dispatched=!ok&&(json=="Explicit WebSocket control and URL policy cannot own the same root target"||json=="Native network command capacity exceeded"||json=="Native network original command deadline exceeded"||json=="Native network command dispatch failed"||json=="Native context worker control capacity exceeded"||json=="CEF rejected native context worker command");
+        const bool not_dispatched=!ok&&(json=="Explicit WebSocket control and URL policy cannot own the same root target"||json=="Native network command unavailable (page closed or DevTools id exhausted)"||json=="Native network original command deadline exceeded"||json=="Native network command dispatch failed"||json=="Native context worker control ID exhausted"||json=="CEF rejected native context worker command");
         if(!wanted||(!unsupported&&ok)){Fail(target,"Native WebSocket configuration or cleanup could not be confirmed");return;}
         // An actual method-not-found receipt proves stock CEF did not enable.
         if(!unsupported&&!not_dispatched)Fail(target,"Native WebSocket configuration transport state is uncertain");
@@ -188,7 +190,7 @@ class NativeWebSocketRoutes {
   void Install(int id,int context,int page,Dict input,double deadline,Reply reply){
     const auto registration=input->GetString("registrationId").ToString(),authored_pattern=input->GetString("url").ToString();
     const auto pattern=ResolvePattern(authored_pattern,input->GetString("baseURL").ToString());const bool host=input->GetBool("hostMatcher");std::vector<std::string>expanded;
-    if(input->GetType("registrationId")!=VTYPE_STRING||input->GetType("url")!=VTYPE_STRING||(input->HasKey("hostMatcher")&&input->GetType("hostMatcher")!=VTYPE_BOOL)||pattern.empty()||registration.empty()||registration.size()>128||registration.find('\0')!=std::string::npos||pattern.size()>8192||pattern.find('\0')!=std::string::npos||!NativeURLGlobExpand(pattern,expanded)||(host&&pattern!="**/*")||registrations_.size()>=4096||registrations_.contains(Key(context,page,registration))||mutations_.size()>=32||mutations_.contains(id)||serial_==UINT64_MAX){reply(false,nullptr,"Invalid or excessive native WebSocket registration");return;}
+    if(input->GetType("registrationId")!=VTYPE_STRING||input->GetType("url")!=VTYPE_STRING||(input->HasKey("hostMatcher")&&input->GetType("hostMatcher")!=VTYPE_BOOL)||pattern.empty()||registration.empty()||registration.find('\0')!=std::string::npos||pattern.find('\0')!=std::string::npos||!NativeURLGlobExpand(pattern,expanded)||(host&&pattern!="**/*")||registrations_.contains(Key(context,page,registration))||mutations_.contains(id)||serial_==UINT64_MAX){reply(false,nullptr,"Invalid or duplicate native WebSocket registration");return;}
     const auto scope=GlobalRouteCallbackLeases().Scope();if(!scope){reply(false,nullptr,"Native WebSocket callback scope exhausted");return;}
     auto r=std::make_shared<Registration>();r->id=registration;r->pattern=pattern;r->context=context;r->page=page;r->host=host;r->scope=*scope;r->order=++serial_;r->deadline=deadline;
     registrations_[Key(context,page,registration)]=r;mutations_[id]=r;
@@ -215,9 +217,9 @@ class NativeWebSocketRoutes {
     SendDecision(target,request,operation,nullptr,deadline,[this,target,request](bool ok,Dict,const std::string&error){if(!ok&&target->live&&target->sockets.contains(request))Fail(target,"Native WebSocket automatic decision failed: "+error);});
   }
   void Remove(int id,int context,int page,Dict input,double deadline,Reply reply){
-    if(removals_.size()>=32||removals_.contains(id)||serial_==UINT64_MAX){reply(false,nullptr,"Native WebSocket removal capacity exceeded");return;}
+    if(removals_.contains(id)||serial_==UINT64_MAX){reply(false,nullptr,"Native WebSocket removal identity is in use or exhausted");return;}
     auto ids=input->GetList("registrationIds");std::set<std::string>selected;
-    if(ids){if(ids->GetSize()>128){reply(false,nullptr,"Native WebSocket removal exceeds capacity");return;}for(size_t i=0;i<ids->GetSize();++i){if(ids->GetType(i)!=VTYPE_STRING){reply(false,nullptr,"Invalid native WebSocket removal identity");return;}selected.insert(ids->GetString(i));}}
+    if(ids){for(size_t i=0;i<ids->GetSize();++i){if(ids->GetType(i)!=VTYPE_STRING){reply(false,nullptr,"Invalid native WebSocket removal identity");return;}selected.insert(ids->GetString(i));}}
     else if(input->HasKey("registrationId"))selected.insert(input->GetString("registrationId"));
     else if(input->GetString("action")!="routeUnregisterAll"){reply(false,nullptr,"Native WebSocket removal requires explicit registration identities");return;}
     const auto behavior=input->GetString("behavior").ToString();if(!behavior.empty()&&behavior!="default"&&behavior!="wait"&&behavior!="ignoreErrors"){reply(false,nullptr,"Invalid native WebSocket removal behavior");return;}
@@ -263,28 +265,36 @@ class NativeWebSocketRoutes {
     if(event_serial_==UINT64_MAX){Fail(target,"Native WebSocket callback identity exhausted");return;}
     const auto invocation="websocket:"+target->token+":"+std::to_string(++event_serial_);
     const auto lease=GlobalRouteCallbackLeases().Issue(socket.registration->scope,invocation);
-    if(!lease){Fail(target,"Native WebSocket physical host callback capacity exceeded");return;}
+    if(!lease){Fail(target,"Native WebSocket host callback lease unavailable (scope closed or serial exhausted)");return;}
     auto event=CefDictionaryValue::Create();event->SetString("scope",socket.registration->page?"page":"context");event->SetInt("contextId",target->context);event->SetInt("pageId",target->page);event->SetString("targetId",target->owner);
     event->SetString("registrationId",socket.registration->id);event->SetString("routingToken",target->token);event->SetString("requestId",socket.request);event->SetString("stage",stage);event->SetString("url",socket.url);
     event->SetString("messageId",actual?actual->GetString("messageId"):CefString(""));event->SetBool("outgoing",actual&&actual->GetBool("outgoing"));event->SetInt("opcode",actual?actual->GetInt("opcode"):0);std::vector<uint8_t>payload;
     const auto encoded=actual?actual->GetString("payloadBase64").ToString():std::string{};
     if(!encoded.empty()){
       auto binary=CefBase64Decode(encoded);
-      if(!binary||binary->GetSize()>2097152){GlobalRouteCallbackLeases().Revoke(socket.registration->scope,invocation);Fail(target,"Invalid native WebSocket payload encoding");return;}
+      if(!binary){GlobalRouteCallbackLeases().Revoke(socket.registration->scope,invocation);Fail(target,"Invalid native WebSocket payload encoding");return;}
       payload.resize(binary->GetSize());binary->GetData(payload.data(),payload.size(),0);
       if(CefBase64Encode(payload.data(),payload.size())!=encoded){GlobalRouteCallbackLeases().Revoke(socket.registration->scope,invocation);Fail(target,"Noncanonical native WebSocket payload encoding");return;}
     }
     auto callback=CefDictionaryValue::Create();callback->SetString("invocation",invocation);callback->SetString("token",std::to_string(*lease));callback->SetString("scope",std::to_string(socket.registration->scope));event->SetDictionary("callback",callback);
-    if(!emit_(event,std::move(payload))){GlobalRouteCallbackLeases().Revoke(socket.registration->scope,invocation);Fail(target,"Native WebSocket callback publication capacity exceeded");return;}
-    // Retained identities are bounded by the global outstanding callback cap;
-    // settled callback IDs need not accumulate for a long-lived socket.
+    // Settled callback IDs need not accumulate for a long-lived socket.
     std::erase_if(socket.invocations,[&](const auto&entry){return !GlobalRouteCallbackLeases().Receipt(std::get<1>(entry),std::get<2>(entry),std::get<0>(entry));});
     socket.invocations.push_back({invocation,*lease,socket.registration->scope});
+    pending_.push_back({target,event,std::move(payload)});Flush();
+  }
+  // Writer refusal is backpressure only: keep the event (in order) and retry on
+  // the next Tick. Events of a target that has detached are dropped, as its
+  // callback leases were revoked with it.
+  void Flush(){
+    while(!pending_.empty()){
+      auto&front=pending_.front();const auto target=front.target.lock();
+      if(target&&target->live&&!emit_(front.event,front.payload)){wake_();return;}
+      pending_.pop_front();
+    }
   }
   void SendDecision(const std::shared_ptr<Target>&target,const std::string&request,const std::string&operation,Dict input,double deadline,Reply reply){
     if(operation!="continue"&&operation!="connect"&&operation!="mock"&&operation!="forward"&&operation!="replace"&&operation!="drop"&&operation!="client"&&operation!="server"&&operation!="close"&&operation!="abort"){reply(false,nullptr,"Invalid native WebSocket channel operation");return;}
     const auto message=input?input->GetString("messageId").ToString():"",payload=input?input->GetString("payloadBase64").ToString():"",reason=input?input->GetString("reason").ToString():"";
-    if(message.size()>32||payload.size()>2796204||reason.size()>123){reply(false,nullptr,"Native WebSocket channel command exceeds limits");return;}
     auto params=CefDictionaryValue::Create();params->SetString("requestId",request);params->SetString("action",operation);params->SetString("messageId",message);params->SetString("payloadBase64",payload);params->SetInt("opcode",input?input->GetInt("opcode"):0);params->SetInt("code",input?input->GetInt("code"):0);params->SetString("reason",reason);++physical_;wake_();auto alive=alive_;
     target->send("Network.suiteCutWebSocketCommandV1",params,deadline?deadline:now_()+30000,[this,alive,target,request,operation,deadline,reply=std::move(reply)](bool ok,const std::string&json){
       if(!*alive)return;
@@ -297,6 +307,8 @@ class NativeWebSocketRoutes {
   }
   std::function<double()>now_;std::function<void()>wake_;Emit emit_;std::shared_ptr<bool>alive_=std::make_shared<bool>(true);
   NativeWebSocketPayloads payloads_;
+  struct PendingEvent {std::weak_ptr<Target>target;Dict event;std::vector<uint8_t>payload;};
+  std::deque<PendingEvent> pending_;
   uint64_t serial_=0,event_serial_=0;size_t physical_=0;
   std::map<std::string,std::shared_ptr<Registration>>registrations_;std::map<int,std::shared_ptr<Registration>>mutations_;std::map<int,Removal>removals_;
   std::map<std::string,std::shared_ptr<Target>>targets_;std::map<std::string,std::weak_ptr<Target>>tokens_;

@@ -376,21 +376,16 @@ try {
   await redirectPage.setContent(
     `<a id="metadata" download="metadata.txt" href="data:text/plain,${'x'.repeat(9000)}">Metadata</a>`,
   )
-  const [oversizedMetadata] = await Promise.all([
+  const [longMetadata] = await Promise.all([
     redirectPage.waitForEvent('download'),
     redirectPage.click('#metadata'),
   ])
-  assert.match(z.string().parse(await oversizedMetadata.failure()), /metadata capacity/u)
-  const bounded = await oversizedMetadata.status()
-  assert.equal(bounded.url, null)
-  assert.equal(bounded.originalURL, null)
-  assert.throws(() => oversizedMetadata.url(), /unavailable/u)
-  assert.throws(() => oversizedMetadata.originalURL(), /unavailable/u)
-  await assert.rejects(oversizedMetadata.path(), /metadata capacity/u)
+  // A 9000-character URL is kept whole; suitecut no longer caps download metadata.
+  assert.equal(await longMetadata.failure(), null)
+  assert.equal(longMetadata.url(), `data:text/plain,${'x'.repeat(9000)}`)
   const impreciseLength = await trigger(redirectPage, '/declared-over-numeric-range')
-  assert.match(z.string().parse(await impreciseLength.failure()), /limit|metadata/u)
+  // A length past 2^53 is reported as unknown instead of failing the download.
   assert.equal((await impreciseLength.status()).totalBytes, null)
-  await assert.rejects(impreciseLength.path(), /limit|metadata/u)
   assert.equal(source.signal.aborted, false)
   checks.push('native-metadata-unavailable-projection-terminal-sticky-no-transport-failure')
 

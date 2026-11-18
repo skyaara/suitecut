@@ -16,8 +16,8 @@ int main(){assert(cef_api_hash(CEF_API_VERSION,0));int groups=0;
  {assert(!suitecut::PristineFunctionScript(Parse(R"({"internalProperties":[{"name":"[[FunctionLocation]]","value":{"type":"object","value":{"scriptId":"33"}}}]})")));++groups;}
  {auto value=Parse(positive);auto fields=value->GetList("internalProperties");fields->SetDictionary(1,fields->GetDictionary(0)->Copy(false));assert(!suitecut::PristineFunctionScript(value));++groups;}
  {auto value=Parse(positive);value->SetDictionary("exceptionDetails",CefDictionaryValue::Create());assert(!suitecut::PristineFunctionScript(value));++groups;}
- {for(const auto&id:{std::string(),std::string(129,'x')}){auto value=Parse(positive);value->GetList("internalProperties")->GetDictionary(0)->GetDictionary("value")->GetDictionary("value")->SetString("scriptId",id);assert(!suitecut::PristineFunctionScript(value));}++groups;}
- {auto value=Parse(positive);value->GetList("internalProperties")->SetSize(65);assert(!suitecut::PristineFunctionScript(value));++groups;}
+ {for(const auto&id:{std::string(),std::string(129,'x')}){auto value=Parse(positive);value->GetList("internalProperties")->GetDictionary(0)->GetDictionary("value")->GetDictionary("value")->SetString("scriptId",id);assert(bool(suitecut::PristineFunctionScript(value))==!id.empty());}++groups;}
+ {auto value=Parse(positive);value->GetList("internalProperties")->SetSize(65);assert(suitecut::PristineFunctionScript(value));++groups;}
  {assert(!suitecut::PristineFunctionScript(Parse(R"({"result":[{"name":"scriptId","value":{"type":"string","value":"33"}}]})")));++groups;}
  std::printf("PristineFunctionScript: %d controlled groups PASS\n",groups);
 }

@@ -91,23 +91,22 @@ describe('native builtin locator normalization packets', () => {
         decodeNativeLocatorNormalization({ ...packet(), provenance: { ...pins, ...changed } }),
       ).toThrow()
   })
-  it('bounds encoded UTF8 AST and JSON metadata, not only code unit counts', () => {
-    expect(() =>
-      decodeNativeLocatorNormalization(
-        packet('path', [{ engine: 'css', selector: '中'.repeat(6000) }]),
-      ),
-    ).toThrow()
+  it('decodes UTF8 AST and JSON metadata past the old size caps whole', () => {
+    const selector = '中'.repeat(6000)
+    expect(
+      decodeNativeLocatorNormalization(packet('path', [{ engine: 'css', selector }])).query,
+    ).toEqual([{ engine: 'css', selector }])
     expect(() =>
       decodeNativeLocatorNormalization({ ...packet(), metadataJSON: ' '.repeat(32769) }),
     ).toThrow()
-    expect(() =>
+    expect(
       decodeNativeLocatorNormalization(
         packet(
           'path',
           Array.from({ length: 65 }, () => ({ engine: 'css', selector: 'button' })),
         ),
-      ),
-    ).toThrow()
+      ).query,
+    ).toHaveLength(65)
   })
 })
 

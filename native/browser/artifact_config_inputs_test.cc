@@ -31,22 +31,25 @@ int main(){
   auto data=fixture.Claim(token,Purpose::PDF);data.reset();fixture.Empty();
  }
  {
-  Fixture fixture;std::string error;assert(fixture.inputs->Prepare(fixture.owner,"invalid",false,0,2,50,error).token.empty());error.clear();assert(fixture.inputs->Prepare(fixture.owner,"invalid",true,0,2,50,error,Purpose::PDF).token.empty());error.clear();assert(fixture.inputs->Prepare(fixture.owner,"invalid",false,33,2,50,error,Purpose::Screenshot).token.empty());error.clear();assert(fixture.inputs->Prepare(fixture.owner,"invalid",false,0,16*1048576+1,50,error,Purpose::PDF).token.empty());fixture.Empty();
+  Fixture fixture;std::string error;assert(fixture.inputs->Prepare(fixture.owner,"invalid",false,0,2,50,error).token.empty());error.clear();assert(fixture.inputs->Prepare(fixture.owner,"invalid",true,0,2,50,error,Purpose::PDF).token.empty());error.clear();assert(fixture.inputs->Prepare(fixture.owner,"invalid",false,33,2,50,error,Purpose::Screenshot).token.empty());error.clear();
+  // No configuration byte cap: a declared size past the old 16 MiB is admitted (nothing is allocated until chunks arrive).
+  assert(!fixture.inputs->Prepare(fixture.owner,"large",false,0,16*1048576+1,50,error,Purpose::PDF).token.empty()&&error.empty());fixture.inputs->Clear();fixture.Empty();
  }
  {
   Fixture fixture;const auto token=fixture.Prepare();std::string error;assert(!fixture.inputs->Append(fixture.owner,token,false,0,{1},error));fixture.inputs->PageClosed(7);fixture.Empty();
  }
  {
-  Fixture fixture;const auto token=fixture.Prepare();fixture.Upload(token,"{}");auto retained=fixture.Claim(token);for(unsigned i=0;i<15;++i)fixture.Prepare();std::string error;assert(fixture.inputs->Prepare(fixture.owner,"overflow",false,0,2,50,error,Purpose::Screenshot).token.empty());assert(fixture.inputs->AdmissionCount()==16);retained.reset();assert(fixture.inputs->AdmissionCount()==15);fixture.Prepare();fixture.inputs->Clear();fixture.Empty();
+  Fixture fixture;const auto token=fixture.Prepare();fixture.Upload(token,"{}");auto retained=fixture.Claim(token);for(unsigned i=0;i<15;++i)fixture.Prepare();std::string error;assert(!fixture.inputs->Prepare(fixture.owner,"overflow",false,0,2,50,error,Purpose::Screenshot).token.empty());assert(fixture.inputs->AdmissionCount()==17);retained.reset();assert(fixture.inputs->AdmissionCount()==16);fixture.Prepare();fixture.inputs->Clear();fixture.Empty();
  }
  {
-  Fixture fixture;const auto token=fixture.Prepare(Purpose::PDF,9*1048576);std::string error;assert(fixture.inputs->Prepare(fixture.owner,"overflow",false,0,9*1048576,50,error,Purpose::PDF).token.empty());assert(error.find("64MiB")!=std::string::npos);fixture.inputs->PageClosed(7);fixture.Empty();
+  Fixture fixture;const auto token=fixture.Prepare(Purpose::PDF,9*1048576);std::string error;// No shared 64 MiB budget: a second 9 MiB PDF configuration (72 MiB booked) is admitted.
+  assert(!fixture.inputs->Prepare(fixture.owner,"second",false,0,9*1048576,50,error,Purpose::PDF).token.empty()&&error.empty()&&fixture.budget->Used()==size_t(72)*1048576);fixture.inputs->PageClosed(7);fixture.Empty();
  }
  {
   Fixture fixture;const auto token=fixture.Prepare();fixture.Upload(token,"{}");fixture.now=50;std::string error,json;assert(!fixture.inputs->Inspect(fixture.owner,token,json,error,Purpose::Screenshot));assert(error.find("original deadline")!=std::string::npos);fixture.Empty();
  }
  {
-  Fixture fixture;std::string structure="{\"action\":\"pdf\",\"many\":[";for(size_t i=0;i<250001;++i){if(i)structure+=',';structure+="null";}structure+="]}";const auto token=fixture.Prepare(Purpose::PDF,structure.size());fixture.Upload(token,structure);std::string error,json;assert(!fixture.inputs->Inspect(fixture.owner,token,json,error,Purpose::PDF));assert(error.find("work budget")!=std::string::npos);fixture.inputs->Clear();fixture.Empty();
+  Fixture fixture;std::string structure="{\"action\":\"pdf\",\"many\":[";for(size_t i=0;i<250001;++i){if(i)structure+=',';structure+="null";}structure+="]}";const auto token=fixture.Prepare(Purpose::PDF,structure.size());fixture.Upload(token,structure);std::string error,json;assert(fixture.inputs->Inspect(fixture.owner,token,json,error,Purpose::PDF)&&json==structure);fixture.inputs->Clear();fixture.Empty();
  }
  {
   SuiteCutOperationRegistry registry;const auto commit=registry.Begin(1,20,0);assert(commit);assert(registry.BindOriginalDeadline(1,commit->generation,50));assert(!registry.IsExpired(1,commit->generation,49));assert(registry.IsExpired(1,commit->generation,50));
@@ -59,10 +62,10 @@ int main(){
  }
 
  {
-  Fixture fixture;std::string text="{\"action\":\"pdf\",\"extra\":[";for(size_t i=0;i<100001;++i){if(i)text+=',';text+='0';}text+="]}";const auto token=fixture.Prepare(Purpose::PDF,text.size());fixture.Upload(token,text);std::string json,error;assert(!fixture.inputs->Inspect(fixture.owner,token,json,error,Purpose::PDF));assert(error.find("node/entry")!=std::string::npos);fixture.inputs->Clear();fixture.Empty();
+  Fixture fixture;std::string text="{\"action\":\"pdf\",\"extra\":[";for(size_t i=0;i<100001;++i){if(i)text+=',';text+='0';}text+="]}";const auto token=fixture.Prepare(Purpose::PDF,text.size());fixture.Upload(token,text);std::string json,error;assert(fixture.inputs->Inspect(fixture.owner,token,json,error,Purpose::PDF)&&json==text);fixture.inputs->Clear();fixture.Empty();
  }
  {
-  Fixture fixture;const auto text=std::string(257,'[')+"0"+std::string(257,']');const auto token=fixture.Prepare(Purpose::PDF,text.size());fixture.Upload(token,text);std::string json,error;assert(!fixture.inputs->Inspect(fixture.owner,token,json,error,Purpose::PDF));assert(error.find("nesting levels")!=std::string::npos);fixture.inputs->Clear();fixture.Empty();
+  Fixture fixture;const auto text=std::string(257,'[')+"0"+std::string(257,']');const auto token=fixture.Prepare(Purpose::PDF,text.size());fixture.Upload(token,text);std::string json,error;assert(fixture.inputs->Inspect(fixture.owner,token,json,error,Purpose::PDF)&&json==text);fixture.inputs->Clear();fixture.Empty();
  }
  {
   Fixture fixture;std::string text="{\"action\":\"pdf\",\"headerTemplate\":\"<div title=\\\"real\\\">\\n";for(size_t i=0;i<850000;++i)text+="\\u4e2d";text+="</div>\"}";assert(text.size()>5*1048576-200000&&850025<1048576);const auto token=fixture.Prepare(Purpose::PDF,text.size());fixture.Upload(token,text);std::string json,error;assert(fixture.inputs->Inspect(fixture.owner,token,json,error,Purpose::PDF)&&json==text);fixture.inputs->Clear();fixture.Empty();

@@ -51,13 +51,7 @@ namespace suitecut {
 namespace {
 using Clock = std::chrono::steady_clock;
 std::atomic<unsigned> active_pipelines{0};
-std::atomic<uint64_t> reserved_disk_bytes{0};
-constexpr uint64_t kGlobalDiskBytes = 1024ULL * 1024 * 1024;
-constexpr size_t kAudioQueueBytes = 48000 * 4 * 30;
-constexpr size_t kVideoQueueBytes = 64ULL * 1024 * 1024;
-constexpr size_t kLookaheadBytes = 64ULL * 1024 * 1024;
 constexpr auto kCaptureLookahead = std::chrono::milliseconds(100);
-constexpr uint64_t kMaxDurationMs = 24ULL * 60 * 60 * 1000;
 std::string Decimal(double value) {
   std::ostringstream out;
   out.imbue(std::locale::classic());
@@ -134,6 +128,7 @@ struct Child {
   FD input;
   FD diagnostics;
   std::string text;
+  size_t scanned = 0;  // Start of the first line not yet parsed for progress.
   int status = -1;
   bool reaped = false;
   uint64_t encoded_frames = 0;
@@ -144,22 +139,39 @@ struct Child {
       while (waitpid(pid, &status, 0) < 0 && errno == EINTR) {}
     }
   }
+  // FFmpeg's -progress keys. Their lines are parsed, then not retained: the
+  // diagnostic text keeps every other line whole for the whole recording.
+  static bool ProgressKey(std::string_view key) {
+    constexpr std::array<std::string_view, 12> keys{"frame", "fps", "stream_0_0_q", "bitrate", "total_size",
+      "out_time_us", "out_time_ms", "out_time", "dup_frames", "drop_frames", "speed", "progress"};
+    return std::find(keys.begin(), keys.end(), key) != keys.end();
+  }
   void Read() {
     char bytes[4096];
     for (;;) {
       const auto count = read(diagnostics.Get(), bytes, sizeof(bytes));
       if (count <= 0) break;
       text.append(bytes, static_cast<size_t>(count));
-      if (text.size() > 8192) text.erase(0, text.size() - 8192);
-      for (size_t pos = 0; (pos = text.find("frame=", pos)) != std::string::npos; pos += 6) {
-        if (pos && text[pos - 1] != '\n') continue;
+      // Only lines completed since the last read are examined.
+      size_t pos = scanned;
+      for (;;) {
         const auto end = text.find('\n', pos);
         if (end == std::string::npos) break;
-        uint64_t frames = 0;
-        const auto parsed = std::from_chars(text.data() + pos + 6, text.data() + end, frames);
-        if (parsed.ec == std::errc() && parsed.ptr == text.data() + end)
-          encoded_frames = std::max(encoded_frames, frames);
+        const std::string_view line(text.data() + pos, end - pos);
+        const auto equals = line.find('=');
+        if (equals != std::string_view::npos && ProgressKey(line.substr(0, equals))) {
+          if (line.substr(0, equals) == "frame") {
+            uint64_t frames = 0;
+            const auto parsed = std::from_chars(line.data() + equals + 1, line.data() + line.size(), frames);
+            if (parsed.ec == std::errc() && parsed.ptr == line.data() + line.size())
+              encoded_frames = std::max(encoded_frames, frames);
+          }
+          text.erase(pos, end - pos + 1);
+          continue;
+        }
+        pos = end + 1;
       }
+      scanned = pos;
     }
   }
   bool Reap() {
@@ -169,21 +181,8 @@ struct Child {
     if (result < 0 && errno != EINTR) throw std::runtime_error("Could not settle native encoder process");
     return false;
   }
-  std::string Messages() const {
-    if (text.find("progress=") == std::string::npos) return text;
-    constexpr std::array<std::string_view, 12> keys{"frame", "fps", "stream_0_0_q", "bitrate", "total_size",
-      "out_time_us", "out_time_ms", "out_time", "dup_frames", "drop_frames", "speed", "progress"};
-    std::istringstream input(text); std::string line, messages;
-    bool truncated = text.size() == 8192;
-    while (std::getline(input, line)) {
-      if (truncated) { truncated = false; continue; }
-      const auto equals = line.find('=');
-      if (equals != std::string::npos && std::find(keys.begin(), keys.end(),
-          std::string_view(line).substr(0, equals)) != keys.end()) continue;
-      messages += line + '\n';
-    }
-    return messages;
-  }
+  // Progress lines were already consumed by Read; the rest is kept whole.
+  std::string Messages() const { return text; }
   void Spawn(const std::string& launcher, const std::string& executable, const std::vector<std::string>& args,
       bool video, const std::array<int, 3>& files, uint64_t file_limit) {
     auto in = video ? VideoPipe() : Pipe();
@@ -284,7 +283,8 @@ struct PrivateFiles {
   std::array<int, 3> ChildFiles() const { return {files[0].Get(), files[1].Get(), files[2].Get()}; }
   void Commit(int fd) {
     static std::atomic<uint64_t> sequence{0};
-    for (int attempt = 0; attempt < 256; ++attempt) {
+    // Each attempt takes a fresh sequence name, so EEXIST retries until one is free.
+    for (;;) {
       const auto name = ".suitecut-media-commit-" + std::to_string(getpid()) + "-" + std::to_string(++sequence);
 #ifdef __linux__
       int result = linkat(fd, "", parent.Get(), name.c_str(), AT_EMPTY_PATH);
@@ -329,7 +329,6 @@ struct PrivateFiles {
       commit_name.clear(); return;
 #endif
     }
-    throw std::runtime_error("Native recording commit name capacity exceeded");
   }
 };
 }  // namespace
@@ -346,7 +345,7 @@ int MediaEncoderHelperMain(int argc, char** argv) {
   const auto parsed_parent = std::from_chars(parent_text.data(), parent_text.data() + parent_text.size(), parent);
   const auto parsed_limit = std::from_chars(limit_text.data(), limit_text.data() + limit_text.size(), limit);
   if (parsed_parent.ec != std::errc() || parsed_parent.ptr != parent_text.data() + parent_text.size() || parent <= 1 ||
-      parsed_limit.ec != std::errc() || parsed_limit.ptr != limit_text.data() + limit_text.size() || limit < 1 || limit > kGlobalDiskBytes)
+      parsed_limit.ec != std::errc() || parsed_limit.ptr != limit_text.data() + limit_text.size())
     return fail("Invalid native encoder helper ownership or quota\n");
 #ifdef __linux__
   if (prctl(PR_SET_PDEATHSIG, SIGKILL) != 0 || getppid() != parent)
@@ -356,8 +355,9 @@ int MediaEncoderHelperMain(int argc, char** argv) {
 #else
   return fail("Native encoder parent-death ownership requires Linux\n");
 #endif
+  // Zero means no caller-requested quota: the encoder writes as much as it needs.
   const rlimit file_limit{static_cast<rlim_t>(limit), static_cast<rlim_t>(limit)};
-  if (setrlimit(RLIMIT_FSIZE, &file_limit) != 0) return fail("Could not enforce native encoder disk quota\n");
+  if (limit && setrlimit(RLIMIT_FSIZE, &file_limit) != 0) return fail("Could not enforce native encoder disk quota\n");
   sigset_t mask; sigemptyset(&mask);
   if (pthread_sigmask(SIG_SETMASK, &mask, nullptr) != 0) return fail("Could not reset native encoder signal mask\n");
   for (int signal : {SIGPIPE, SIGTERM, SIGINT, SIGXFSZ}) {
@@ -400,17 +400,19 @@ int MediaEncoderHelperMain(int argc, char** argv) {
 }
 
 uint64_t MediaSlotCount(double duration_ms, double fps) {
-  if (!std::isfinite(duration_ms) || duration_ms < 0 || duration_ms > kMaxDurationMs ||
-      !std::isfinite(fps) || fps <= 0 || fps > 120)
+  if (!std::isfinite(duration_ms) || duration_ms < 0 ||
+      !std::isfinite(fps) || fps <= 0)
     throw std::runtime_error("Invalid native recording cadence");
   const long double slots = static_cast<long double>(duration_ms) * fps / 1000;
+  // Overflow guard only: the slot count must fit the integer it is returned in.
+  if (!(slots < 1.8e19L)) throw std::runtime_error("Invalid native recording cadence");
   const long double rounded = std::round(slots);
   // The tolerance covers only floating representation error, not a real slot.
   const long double tolerance = std::numeric_limits<double>::epsilon() * std::max(1.L, slots) * 16;
   return static_cast<uint64_t>(std::ceil(std::abs(slots - rounded) <= tolerance ? rounded : slots));
 }
 std::string ResolveMediaExecutable(const std::string& executable) {
-  if (executable.empty() || executable.size() > 4096 || executable.find('\0') != std::string::npos)
+  if (executable.empty() || executable.find('\0') != std::string::npos)
     throw std::runtime_error("Invalid native encoder executable");
   auto usable = [](const std::filesystem::path& path) -> std::string {
     std::error_code error;
@@ -443,18 +445,20 @@ void ValidateMediaPipelineOptions(const MediaPipelineOptions& o) {
     if (std::filesystem::path(o.output_path).extension() != ".mp4")
       throw std::runtime_error("Hardware H.264 recording requires MP4 output");
   }
-  if (o.launcher_path.empty() || o.launcher_path.front() != '/' || o.launcher_path.size() > 4096 ||
-      o.launcher_path.find('\0') != std::string::npos || o.ffmpeg_path.empty() || o.ffmpeg_path.front() != '/' || o.ffmpeg_path.size() > 4096 ||
+  if (o.launcher_path.empty() || o.launcher_path.front() != '/' ||
+      o.launcher_path.find('\0') != std::string::npos || o.ffmpeg_path.empty() || o.ffmpeg_path.front() != '/' ||
       o.ffmpeg_path.find('\0') != std::string::npos || o.output_path.empty() || o.output_path.front() != '/' ||
-      o.output_path.size() > 4096 || o.output_path.find('\0') != std::string::npos)
+      o.output_path.find('\0') != std::string::npos)
     throw std::runtime_error("Native encoder and output paths must be absolute paths");
   if (std::filesystem::path(o.output_path).filename().empty() ||
       std::filesystem::path(o.output_path).filename() == "." || std::filesystem::path(o.output_path).filename() == "..")
     throw std::runtime_error("Invalid native recording output filename");
+  // No suitecut canvas size cap; FFmpeg/VideoToolbox enforce their own. libyuv
+  // takes int strides, so a BGRA row must stay representable.
   for (int value : {o.source_width, o.source_height, o.output_width, o.output_height})
-    if (value < (o.dynamic_viewport ? 1 : 2) || value > 3840) throw std::runtime_error("Invalid native recording canvas");
-  if (o.source_height > 2160 || o.output_height > 2160 ||
-      (!o.dynamic_viewport && (o.output_width % 2 || o.output_height % 2)) ||
+    if (value < (o.dynamic_viewport ? 1 : 2) || value > std::numeric_limits<int>::max() / 4)
+      throw std::runtime_error("Invalid native recording canvas");
+  if ((!o.dynamic_viewport && (o.output_width % 2 || o.output_height % 2)) ||
       (o.i420 && (o.source_width % 2 || o.source_height % 2)))
     throw std::runtime_error("Native recording requires an even encoder canvas");
   if (o.dynamic_viewport && (o.i420 || o.source_width != o.output_width ||
@@ -468,11 +472,11 @@ void ValidateMediaPipelineOptions(const MediaPipelineOptions& o) {
        o.max_content_width > o.output_width || o.max_content_height > o.output_height))
     throw std::runtime_error("Native recording content bounds must fit the encoder canvas");
   MediaSlotCount(0, o.frames_per_second);
-  if (!std::isfinite(o.capture_frames_per_second) || o.capture_frames_per_second < 0 ||
-      o.capture_frames_per_second > 120)
+  if (!std::isfinite(o.capture_frames_per_second) || o.capture_frames_per_second < 0)
     throw std::runtime_error("Invalid native capture cadence");
-  if (!std::isfinite(o.start_timestamp_ms) || o.start_timestamp_ms < 0 || o.max_file_bytes < 1024 ||
-      o.max_file_bytes > 1024ULL * 1024 * 1024)
+  // max_file_bytes is only a quota the caller asked for; zero means none.
+  if (!std::isfinite(o.start_timestamp_ms) || o.start_timestamp_ms < 0 ||
+      (o.max_file_bytes && o.max_file_bytes < 1024))
     throw std::runtime_error("Invalid native recording resource bounds");
 }
 
@@ -517,7 +521,6 @@ struct MediaPipeline::Impl {
   std::string cancel_reason;
   MediaPipelineResult result;
   bool lease = false;
-  bool disk_lease = false;
   bool committed = false;
   bool stop_requested=false,encoder_prepared=false,audio_seen=false,video_admitted=false,audio_gate_notified=false;
   Clock::time_point audio_wait_until{};
@@ -547,15 +550,8 @@ struct MediaPipeline::Impl {
   }
   void Enqueue(Sample sample) {
     sample.arrived = Clock::now();
-    // Absorb up to 200 ms of encoder scheduling jitter, without growing an
-    // unbounded raw-pixel backlog. On sustained overload retire oldest input;
-    // never block CEF's paint thread or silently reset the capture clock.
-    const size_t capacity = static_cast<size_t>(std::ceil(options.frames_per_second / 5));
-    while (!pending.empty() && (pending.size() >= capacity ||
-           pending_bytes + sample.Bytes() > kVideoQueueBytes)) {
-      pending_bytes -= pending.front().Bytes(); pending.pop_front();
-      ++result.superseded_frames;
-    }
+    // Every paint is kept until the encoder takes it, however far the encoder
+    // falls behind; never block CEF's paint thread or reset the capture clock.
     pending_bytes += sample.Bytes();
     pending.push_back(std::move(sample));
   }
@@ -573,25 +569,14 @@ struct MediaPipeline::Impl {
     if(options.worker_nv12)PrepareMacCapture();
 #endif
     Nonblocking(wake[0].Get()); Nonblocking(wake[1].Get());
-    unsigned count = active_pipelines.load();
-    do {
-      if (count >= 16) throw std::runtime_error("Native recording pipeline capacity exceeded");
-    } while (!active_pipelines.compare_exchange_weak(count, count + 1));
+    // Counted only to share encoder threads; any number of recordings may run.
+    active_pipelines.fetch_add(1);
     lease = true;
-    uint64_t bytes = reserved_disk_bytes.load();
-    do {
-      if (bytes > kGlobalDiskBytes - options.max_file_bytes) {
-        active_pipelines.fetch_sub(1); lease = false;
-        throw std::runtime_error("Native recording global disk reservation exceeded");
-      }
-    } while (!reserved_disk_bytes.compare_exchange_weak(bytes, bytes + options.max_file_bytes));
-    disk_lease = true;
     result.output_path = options.output_path;
     result.frames_per_second = options.frames_per_second;
     try { worker = std::thread([this] { Run(); }); }
     catch (...) {
       active_pipelines.fetch_sub(1); lease = false;
-      reserved_disk_bytes.fetch_sub(options.max_file_bytes); disk_lease = false;
       throw;
     }
   }
@@ -599,13 +584,12 @@ struct MediaPipeline::Impl {
     Cancel("Native recording owner closed");
     if (worker.joinable()) worker.join();
     if (lease) active_pipelines.fetch_sub(1);
-    if (disk_lease) reserved_disk_bytes.fetch_sub(options.max_file_bytes);
   }
   void Cancel(const std::string& reason) {
     {
       std::lock_guard lock(mutex);
       if (settled || canceled || committed) return;
-      cancel_reason = reason.substr(0, 8192);
+      cancel_reason = reason;
       canceled = true;
       const uint8_t signal = 1;
       const auto signaled = write(wake[1].Get(), &signal, 1);
@@ -680,15 +664,17 @@ struct MediaPipeline::Impl {
         bytes += static_cast<uint64_t>(stat.st_size);
       } else if (errno != ENOENT) throw std::runtime_error("Could not inspect native encoder files");
     }
-    if (bytes > options.max_file_bytes) throw std::runtime_error("Native recording disk quota exceeded");
+    if (options.max_file_bytes && bytes > options.max_file_bytes) throw std::runtime_error("Native recording disk quota exceeded");
   }
   void AudioWrite(int fd, const uint8_t* data, size_t length, const PrivateFiles& files) {
     while (length) {
       Check();
       struct stat stat{};
       const uint64_t audio_limit = options.max_file_bytes / 3;
-      if (fstat(fd, &stat) != 0 || stat.st_size < 0 || static_cast<uint64_t>(stat.st_size) > audio_limit ||
-          length > audio_limit - static_cast<uint64_t>(stat.st_size))
+      if (fstat(fd, &stat) != 0 || stat.st_size < 0)
+        throw std::runtime_error("Could not inspect native audio spool");
+      if (options.max_file_bytes && (static_cast<uint64_t>(stat.st_size) > audio_limit ||
+          length > audio_limit - static_cast<uint64_t>(stat.st_size)))
         throw std::runtime_error("Native recording PCM disk quota exceeded");
       const auto count = write(fd, data, length);
       if (count > 0) { data += count; length -= static_cast<size_t>(count); }
@@ -698,9 +684,12 @@ struct MediaPipeline::Impl {
     DiskBound(files);
   }
   void Silence(int fd, uint64_t count, const PrivateFiles& files) {
-    const std::array<uint8_t, 3840> zero{};
+    // A fixed 960-frame (20 ms) stereo s16 chunk of PCM silence; it only splits
+    // the write and is unrelated to any video dimension.
+    constexpr size_t kSilenceFrames = 960;
+    const std::array<uint8_t, kSilenceFrames * 4> zero{};
     while (count) {
-      const size_t chunk = static_cast<size_t>(std::min<uint64_t>(count, 960));
+      const size_t chunk = static_cast<size_t>(std::min<uint64_t>(count, kSilenceFrames));
       AudioWrite(fd, zero.data(), chunk * 4, files);
       count -= chunk;
     }
@@ -796,12 +785,9 @@ struct MediaPipeline::Impl {
               if (progress) progress(finished);  // One preparation receipt requests a fresh static-page paint.
       };
       std::deque<Sample> lookahead;
-      size_t lookahead_bytes = 0;
       const size_t lookahead_count = clocked ? static_cast<size_t>(std::ceil(options.capture_frames_per_second / 10)) + 1 : 1;
-      const size_t normalized_bytes = static_cast<size_t>(options.source_width) * options.source_height * (encoded_i420 ? 3 : 8) / 2;
       auto ready = [&](bool no_pending, bool ending) {
         return !lookahead.empty() && (lookahead.size() >= lookahead_count ||
-            lookahead_bytes + normalized_bytes > kLookaheadBytes ||
             (no_pending && (ending || Clock::now() >= lookahead.front().arrived + kCaptureLookahead)));
       };
       for (;;) {
@@ -886,7 +872,7 @@ struct MediaPipeline::Impl {
             input->painted(std::move(painted_pixels));input->painted={};
           }
           if (!clocked || (options.hardware_h264 && !encoder_spawned)) frame = std::move(input);
-          else { lookahead_bytes += input->data.size(); lookahead.push_back(std::move(*input)); }
+          else lookahead.push_back(std::move(*input));
         }
         if (!frame && ready(no_pending, stop)) {
           auto& front = lookahead.front();
@@ -901,7 +887,7 @@ struct MediaPipeline::Impl {
           finished.max_timestamp_correction_ms = std::max(finished.max_timestamp_correction_ms,
               front.timestamp-timestamp);
           front.timestamp = timestamp;
-          lookahead_bytes -= front.data.size(); frame = std::move(front); lookahead.pop_front();
+          frame = std::move(front); lookahead.pop_front();
         }
         stop = stop && no_pending && lookahead.empty();
         {
@@ -931,7 +917,7 @@ struct MediaPipeline::Impl {
           if (first < 0) {
 #ifdef __APPLE__
             if(!encoder_spawned&&native_direct){
-              native_encoder=std::make_unique<MacNativeEncoder>(files.Get("video.webm"),options.source_width,options.source_height,options.frames_per_second,options.audio?options.max_file_bytes/3:options.max_file_bytes,[this]{Check();});
+              native_encoder=std::make_unique<MacNativeEncoder>(files.Get("video.webm"),options.source_width,options.source_height,options.frames_per_second,!options.max_file_bytes?std::numeric_limits<uint64_t>::max():options.audio?options.max_file_bytes/3:options.max_file_bytes,[this]{Check();});
               native_encoder->Write(frame->surface,frame->data,true);native_encoder->Drain();
               preparation_packets=1;encoder_spawned=true;prepared();continue;
             }
@@ -1167,11 +1153,9 @@ struct MediaPipeline::Impl {
       finished.gpu_nv12_frames = result.gpu_nv12_frames;
       finished.superseded_frames = result.superseded_frames;
       finished.audio_input_frames = result.audio_input_frames;
-      if (finished.diagnostics.size() > 8192) finished.diagnostics.erase(0, finished.diagnostics.size() - 8192);
       result = finished;
       pending.clear(); pending_bytes = 0; audio.clear(); audio_bytes = 0;
       if (lease) { active_pipelines.fetch_sub(1); lease = false; }
-      if (disk_lease) { reserved_disk_bytes.fetch_sub(options.max_file_bytes); disk_lease = false; }
       settled = true;
     }
     // The callback observes physical child settlement and private-file cleanup.
@@ -1193,8 +1177,7 @@ void MediaPipeline::Frame(std::vector<uint8_t> data, double timestamp) {
     impl_->Cancel("Native viewport recording requires genuine viewport paints"); return;
   }
   const size_t expected = static_cast<size_t>(impl_->options.source_width) * impl_->options.source_height * (impl_->options.i420 ? 3 : 8) / 2;
-  if (data.size() != expected || !std::isfinite(timestamp) || timestamp < impl_->options.start_timestamp_ms ||
-      timestamp - impl_->options.start_timestamp_ms > kMaxDurationMs) {
+  if (data.size() != expected || !std::isfinite(timestamp) || timestamp < impl_->options.start_timestamp_ms) {
     impl_->Cancel("Malformed native recording frame or capture timestamp"); return;
   }
   {
@@ -1220,7 +1203,7 @@ bool MediaPipeline::NativeCanvasFrame(std::shared_ptr<MacCaptureFrame> surface,d
 #ifdef __APPLE__
   if(!surface || !impl_->options.worker_canvas_fit)return false;
   if(std::isfinite(timestamp)&&timestamp>=0&&timestamp<impl_->options.start_timestamp_ms)return false;
-  if(!std::isfinite(timestamp)||timestamp<0||timestamp-impl_->options.start_timestamp_ms>kMaxDurationMs){impl_->Cancel("Invalid native GPU capture time");return false;}
+  if(!std::isfinite(timestamp)||timestamp<0){impl_->Cancel("Invalid native GPU capture time");return false;}
   Impl::Sample sample;sample.width=surface->width;sample.height=surface->height;sample.nv12=surface->nv12;
   sample.surface=std::move(surface);sample.painted=std::move(painted);
   {
@@ -1250,10 +1233,9 @@ void MediaPipeline::CanvasFrame(const std::vector<uint8_t>& bgra, int width, int
     double timestamp, uint64_t capture_sequence) {
   if (std::isfinite(timestamp) && timestamp>=0 && timestamp<impl_->options.start_timestamp_ms) return;
   if (!impl_->options.worker_canvas_fit) return;
-  if (width < 1 || width > 3840 || height < 1 || height > 2160 ||
+  if (width < 1 || height < 1 || width > std::numeric_limits<int>::max() / 4 ||
       bgra.size() != static_cast<size_t>(width) * height * 4 ||
-      !std::isfinite(timestamp) || timestamp < impl_->options.start_timestamp_ms ||
-      timestamp - impl_->options.start_timestamp_ms > kMaxDurationMs) {
+      !std::isfinite(timestamp) || timestamp < impl_->options.start_timestamp_ms) {
     impl_->Cancel("Malformed native BGRA canvas paint or capture timestamp"); return;
   }
   // The CEF buffer is temporary. Own its snapshot before returning, but do
@@ -1281,14 +1263,11 @@ void MediaPipeline::ViewportFrame(const std::vector<uint8_t>& bgra, int width, i
     double css_width, double css_height, double timestamp) {
   if (std::isfinite(timestamp) && timestamp>=0 && timestamp<impl_->options.start_timestamp_ms) return;
   if (!impl_->options.dynamic_viewport) return;
-  if (width < 1 || width > 3840 || height < 1 || height > 2160 ||
+  if (width < 1 || height < 1 || width > std::numeric_limits<int>::max() / 4 ||
       !std::isfinite(css_width) || !std::isfinite(css_height) ||
-      // Native viewports permit DPR down to 0.25. CSS bounds therefore exceed
-      // the independently checked physical paint/canvas bounds.
-      css_width < 1 || css_width > 15360 || css_height < 1 || css_height > 8640 ||
+      css_width < 1 || css_height < 1 ||
       bgra.size() != static_cast<size_t>(width) * height * 4 ||
-      !std::isfinite(timestamp) || timestamp < impl_->options.start_timestamp_ms ||
-      timestamp - impl_->options.start_timestamp_ms > kMaxDurationMs) {
+      !std::isfinite(timestamp) || timestamp < impl_->options.start_timestamp_ms) {
     impl_->Cancel("Malformed native viewport recording paint or capture timestamp"); return;
   }
   {
@@ -1307,11 +1286,10 @@ void MediaPipeline::ViewportFrame(const std::vector<uint8_t>& bgra, int width, i
 }
 void MediaPipeline::Audio(std::vector<uint8_t> bytes, double timestamp) {
   if (!impl_->options.audio) return;
-  if (bytes.empty() || bytes.size() % 4 || bytes.size() > 4096 * 4 || !std::isfinite(timestamp) || timestamp < 0 ||
-      timestamp - impl_->options.start_timestamp_ms > kMaxDurationMs) {
+  if (bytes.empty() || bytes.size() % 4 || !std::isfinite(timestamp) || timestamp < 0) {
     impl_->Cancel("Malformed native stereo PCM or capture timestamp"); return;
   }
-  bool overflow = false,request_audio_paint=false;
+  bool request_audio_paint=false;
   MediaPipelineResult notice;
   {
     std::lock_guard lock(impl_->mutex);
@@ -1336,18 +1314,14 @@ void MediaPipeline::Audio(std::vector<uint8_t> bytes, double timestamp) {
         chunk.data.insert(chunk.data.end(),bytes.data()+i*4,bytes.data()+i*4+4);previous=mapped;
       }
       if(!chunk.data.empty())chunks.push_back(std::move(chunk));
-      size_t total=0;for(const auto& item:chunks)total+=item.data.size();
-      if(impl_->audio_bytes+total>kAudioQueueBytes)overflow=true;
-      else for(auto& item:chunks){impl_->result.audio_input_frames+=item.data.size()/4;impl_->audio_bytes+=item.data.size();impl_->audio.push_back(std::move(item));}
+      for(auto& item:chunks){impl_->result.audio_input_frames+=item.data.size()/4;impl_->audio_bytes+=item.data.size();impl_->audio.push_back(std::move(item));}
     }else{
       timestamp-=impl_->excluded;
-      if(impl_->audio_bytes+bytes.size()>kAudioQueueBytes)overflow=true;
-      else{impl_->result.audio_input_frames+=bytes.size()/4;impl_->audio_bytes+=bytes.size();impl_->audio.push_back(Impl::Sample{std::move(bytes),timestamp});}
+      impl_->result.audio_input_frames+=bytes.size()/4;impl_->audio_bytes+=bytes.size();impl_->audio.push_back(Impl::Sample{std::move(bytes),timestamp});
     }
   }
   if(request_audio_paint&&impl_->progress)impl_->progress(notice);
-  if (overflow) impl_->Cancel("Native recording audio queue exceeded 30 seconds");
-  else impl_->changed.notify_one();
+  impl_->changed.notify_one();
 }
 void MediaPipeline::Pause(double timestamp) {
   if (!std::isfinite(timestamp)) { impl_->Cancel("Invalid native recording pause clock"); return; }
@@ -1368,15 +1342,14 @@ void MediaPipeline::Resume(double timestamp) {
     impl_->cancel_reason = "Native recording resume clock moved backwards"; impl_->canceled = true; impl_->changed.notify_one(); return;
   }
   if(impl_->options.capture_timestamps_exact){
-    impl_->PruneNative();if(impl_->native_pauses.size()>=256)throw std::runtime_error("Too many native pause transitions awaiting capture");
+    impl_->PruneNative();
     impl_->native_pauses.push_back({impl_->paused_at,timestamp});impl_->capture_cutoff_ms=std::numeric_limits<double>::infinity();
   }
   impl_->excluded += timestamp - impl_->paused_at; impl_->paused = false;
   impl_->changed.notify_one();
 }
 void MediaPipeline::Stop(double timestamp, Clock::time_point deadline) {
-  if (!std::isfinite(timestamp) || timestamp < impl_->options.start_timestamp_ms ||
-      timestamp - impl_->options.start_timestamp_ms > kMaxDurationMs) {
+  if (!std::isfinite(timestamp) || timestamp < impl_->options.start_timestamp_ms) {
     impl_->Cancel("Invalid native recording stop clock"); return;
   }
   {

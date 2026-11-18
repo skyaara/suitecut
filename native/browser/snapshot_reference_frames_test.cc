@@ -62,7 +62,7 @@ class Harness final:public CefBaseRefCounted {
  void ReferenceRequest(const std::shared_ptr<SnapshotReferenceCapture>&work,const std::string&method,Dict params,std::function<void(Dict)>done){
   if(!ReferenceCurrent(work))return;
   if(work->before_request&&!work->before_request())return;
-  assert(++work->requests<=work->request_limit);auto borrow=refs.Use(work->ticket);if(work->ticket)assert(borrow);
+  auto borrow=refs.Use(work->ticket);if(work->ticket)assert(borrow);
   calls.push_back({work,method,params,std::move(done),std::move(borrow)});
  }
  bool ReferenceTemporaryGroups(int){return true;}

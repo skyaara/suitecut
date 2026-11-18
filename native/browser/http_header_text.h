@@ -24,7 +24,7 @@ inline bool HTTPValidUTF8(std::string_view bytes){
 // actual wire octets and reject controls or scalars outside that byte range.
 // This is deliberately distinct from UTF-8 URL and body encoding.
 inline bool HTTPEncodeHeaderValue(std::u16string_view text,std::string&bytes){
-  bytes.clear();if(text.size()>65536)return false;bytes.reserve(text.size());
+  bytes.clear();bytes.reserve(text.size());
   for(const char16_t unit:text){if((unit<32&&unit!=9)||unit==127||unit>255){bytes.clear();return false;}bytes+=static_cast<char>(unit);}
   return true;
 }

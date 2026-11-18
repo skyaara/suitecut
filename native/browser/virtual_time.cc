@@ -67,10 +67,9 @@ bool NativeVirtualTime::IsSynchronousException(std::string_view text){
 bool NativeVirtualTime::Begin(Request request,double now){
   if(closing_||request.id<=0||request.generation==0||!std::isfinite(now)||!std::isfinite(request.deadline)||request.deadline<=now||!std::isfinite(request.value))return false;
   if((request.action==Action::Advance||request.action==Action::RunFor)&&
-     (request.value<1||request.value>(request.action==Action::RunFor?kMaximumRunForMilliseconds:86400000.)||std::floor(request.value)!=request.value))return false;
+     (request.value<1||request.value>kMaximumRunForMilliseconds||std::floor(request.value)!=request.value))return false;
   if(request.action==Action::RunFor&&request.context<=0)return false;
   if(request.action==Action::InstallPaused&&std::abs(request.value)>8640000000000000.)return false;
-  if(queue_.size()+(active_?1:0)>=64)return false;
   if((active_&&active_->request.id==request.id)||std::any_of(queue_.begin(),queue_.end(),[&](const Request& item){return item.id==request.id;}))return false;
   queue_.push_back(request);Start(now);return true;
 }
@@ -187,10 +186,7 @@ bool NativeVirtualTime::Exception(const ExceptionReceipt& receipt){
   // This policy concerns an observed current-document exception. Inspector
   // supplies no timer-operation token; do not infer timer-exclusive ownership.
   work.exception="Native runFor observed a synchronous uncaught current-document exception";
-  if(!receipt.error.empty()){
-    if(receipt.error.size()<=65536)work.exception+=": "+receipt.error;
-    else work.exception+=" (actual exception text exceeds the 65536-byte receipt limit)";
-  }
+  if(!receipt.error.empty())work.exception+=": "+receipt.error;
   return true;
 }
 void NativeVirtualTime::BudgetExpired(double now){

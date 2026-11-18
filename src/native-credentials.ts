@@ -5,11 +5,11 @@ import * as z from 'zod'
 import type { NativeStorageTransport } from './native-storage-state.js'
 
 export const NativeVirtualCredentialSchema = z.strictObject({
-  id: z.string().min(1).max(1366),
-  rpId: z.string().min(1).max(253),
-  userHandle: z.string().min(1).max(86),
-  privateKey: z.string().min(1).max(21846),
-  publicKey: z.string().min(1).max(21846),
+  id: z.string().min(1),
+  rpId: z.string().min(1),
+  userHandle: z.string().min(1),
+  privateKey: z.string().min(1),
+  publicKey: z.string().min(1),
   signCount: z
     .number()
     .refine((value) => Number.isInteger(value) && value >= 0 && value <= 4294967295, {
@@ -28,8 +28,8 @@ export interface NativeCredentialOptions {
 }
 const Options = NativeVirtualCredentialSchema.partial()
 const Filter = z.strictObject({
-  rpId: z.string().max(253).optional(),
-  id: z.string().max(1366).optional(),
+  rpId: z.string().optional(),
+  id: z.string().optional(),
 })
 
 /** Commands genuine browser-owned key storage and CEF virtual authenticators. */
@@ -50,14 +50,14 @@ export class NativeCredentials {
     return NativeVirtualCredentialSchema.parse(
       await this.transport.runContext('credentialsCreate', {
         ...config,
-        rpId: z.string().min(1).max(253).parse(rpId),
+        rpId: z.string().min(1).parse(rpId),
         contextId: this.contextId,
       }),
     )
   }
   async get(filter: { rpId?: string; id?: string } = {}): Promise<NativeVirtualCredential[]> {
     this.assertOpen()
-    const value = z.object({ credentials: z.array(NativeVirtualCredentialSchema).max(128) }).parse(
+    const value = z.object({ credentials: z.array(NativeVirtualCredentialSchema) }).parse(
       await this.transport.runContext('credentialsGet', {
         ...Filter.parse(filter),
         contextId: this.contextId,
@@ -69,7 +69,7 @@ export class NativeCredentials {
     this.assertOpen()
     await this.transport.runContext('credentialsDelete', {
       contextId: this.contextId,
-      id: z.string().min(1).max(1366).parse(id),
+      id: z.string().min(1).parse(id),
     })
   }
   async install(): Promise<void> {

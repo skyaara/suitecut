@@ -3,6 +3,7 @@
 #undef NDEBUG
 #endif
 #include <cassert>
+#include <string>
 #include "include/cef_api_hash.h"
 #include "har_pages.h"
 int main(){
@@ -16,5 +17,7 @@ int main(){
  assert(pages.Lifecycle(1,"page:123","init",200,1700000000200,"actual-loader-2"));assert(pages.Lifecycle(1,"page:123","load",220,1700000000220,"actual-loader-2"));assert(pages.Title(1,"page:123","latest actual title"));auto frozen=pages.Export(1,date)->GetDictionary(0)->Copy(false);assert(frozen->GetDictionary("pageTimings")->GetDouble("onLoad")==40&&frozen->GetString("title")=="latest actual title");
  const auto capacity_before=pages.title_capacity();assert(pages.Title(1,"page:123",std::string(8192,'x')));const auto capacity_large=pages.title_capacity();assert(capacity_large>=16384);assert(pages.Title(1,"page:123","latest actual title"));assert(pages.title_capacity()<capacity_large&&pages.title_capacity()<=capacity_before+128);
  pages.Seal(1);assert(pages.Title(1,"page:123","after seal"));assert(pages.Export(1,date)->GetDictionary(0)->GetString("title")=="latest actual title");pages.Stop(1);assert(pages.Start(1));auto current=pages.Export(1,date)->GetDictionary(0)->Copy(false);assert(current->GetDictionary("pageTimings")->GetDouble("onLoad")==20&&current->GetString("title")=="after seal");
- const auto before=pages.bytes();assert(!pages.Title(1,"page:123",std::string(8193,'x'))&&pages.bytes()==before);pages.Detach("page:123");assert(pages.Reference(1,"page:123")=="page@123");pages.Stop(1);assert(pages.bytes()==0);assert(pages.Start(2));assert(pages.Created(2,"page:456","page@456",1700000000300));assert(pages.Reference(1,"page:456").empty());pages.Clear();assert(pages.bytes()==0);
+ // No suitecut title, page-count, capture-count or byte cap: values pass through whole.
+ const auto before=pages.bytes();assert(pages.Title(1,"page:123",std::string(65536,'x'))&&pages.bytes()==before+2*(65536-std::string("after seal").size()));assert(pages.Export(1,date)->GetDictionary(0)->GetString("title").ToString()==std::string(65536,'x'));pages.Detach("page:123");assert(pages.Reference(1,"page:123")=="page@123");pages.Stop(1);assert(pages.bytes()==0);assert(pages.Start(2));assert(pages.Created(2,"page:456","page@456",1700000000300));assert(pages.Reference(1,"page:456").empty());pages.Clear();assert(pages.bytes()==0);
+ {suitecut::NativeHARPages many;for(int context=1;context<=64;++context)assert(many.Start(context));for(int i=0;i<4096;++i)assert(many.Created(1,"page:"+std::to_string(i)+std::string(256,'o'),std::string(256,'i'),1700000000000));assert(many.Export(1,date)->GetSize()==4096);many.Clear();assert(many.bytes()==0);}
 }

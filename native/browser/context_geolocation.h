@@ -26,16 +26,15 @@ class NativeContextGeolocation {
  public:
   using Result=std::function<void(bool,const std::string&)>;
   using Apply=std::function<void(const NativeGeolocationValue&,double,Result)>;
-  static constexpr size_t kContexts=32,kTargets=2048,kUpdates=64;
   ~NativeContextGeolocation(){Clear();}
   bool Seed(int context,NativeGeolocationValue value){
-    if(context<1||states_.contains(context)||states_.size()>=kContexts||!NativeGeolocationValue::Valid(value.coordinates)||(!value.configured&&value.coordinates))return false;
+    if(context<1||states_.contains(context)||!NativeGeolocationValue::Valid(value.coordinates)||(!value.configured&&value.coordinates))return false;
     states_.emplace(context,State{std::move(value)});return true;
   }
   std::optional<NativeGeolocationValue> Get(int context)const{const auto row=states_.find(context);return row==states_.end()?std::nullopt:std::optional(row->second.value);}
   bool Attach(int context,const std::string&key,Apply apply,Result ready){
     const auto state=states_.find(context);
-    if(state==states_.end()||state->second.closing||key.empty()||key.size()>128||!apply||!ready||targets_.contains(key)||targets_.size()>=kTargets||serial_==std::numeric_limits<uint64_t>::max())return false;
+    if(state==states_.end()||state->second.closing||key.empty()||!apply||!ready||targets_.contains(key)||serial_==std::numeric_limits<uint64_t>::max())return false;
     targets_.emplace(key,Target{context,++serial_,std::move(apply),std::move(ready)});
     if(!state->second.value.configured){auto callback=std::move(targets_.at(key).ready);callback(true,"");return true;}
     const int owner=state->second.owner;const auto update=updates_.find(owner);const int joined=update!=updates_.end()&&!update->second.logical_done?owner:0;if(joined)update->second.pending.insert(key);
@@ -43,7 +42,7 @@ class NativeContextGeolocation {
   }
   bool Set(int owner,int context,std::optional<NativeGeolocationValue::Coordinates>value,double deadline,Result done){
     const auto state=states_.find(context);
-    if(owner<1||state==states_.end()||state->second.closing||state->second.owner||!done||updates_.contains(owner)||updates_.size()>=kUpdates||!std::isfinite(deadline)||deadline<0||!NativeGeolocationValue::Valid(value))return false;
+    if(owner<1||state==states_.end()||state->second.closing||state->second.owner||!done||updates_.contains(owner)||!std::isfinite(deadline)||deadline<0||!NativeGeolocationValue::Valid(value))return false;
     if(state->second.revision==std::numeric_limits<uint64_t>::max())return false;
     for(const auto&[key,target]:targets_)if(target.context==context&&target.revision==std::numeric_limits<uint64_t>::max())return false;
     state->second.value={true,std::move(value)};++state->second.revision;state->second.owner=owner;
@@ -103,7 +102,7 @@ class NativeContextGeolocation {
       const int current_owner=owner?owner:state->second.owner;
       auto ready=std::exchange(target->second.ready, nullptr);if(ready)ready(ok,error);
       const auto update=updates_.find(current_owner);if(update!=updates_.end()){
-        update->second.pending.erase(key);if(!ok){update->second.success=false;if(update->second.error.empty())update->second.error=error.substr(0,4096);}
+        update->second.pending.erase(key);if(!ok){update->second.success=false;if(update->second.error.empty())update->second.error=error;}
         if(update->second.pending.empty())Finish(current_owner);
       }
     });

@@ -24,7 +24,7 @@ class InitSnapshotMessage {
   static std::shared_ptr<const Lease>Read(CefRefPtr<CefProcessMessage>message,const InitSnapshotPin&expected){
     if(!message||!message->IsValid()||message->GetName()!=std::string(InitSnapshotWire::kMessage))return nullptr;
     auto region=message->GetSharedMemoryRegion();
-    if(!region||!region->IsValid()||region->Size()>InitSnapshotWire::kHeader+InitSnapshotWire::kFrame+InitSnapshotWire::kPayload||!region->Memory())return nullptr;
+    if(!region||!region->IsValid()||!region->Memory())return nullptr;
     auto view=InitSnapshotWire::Decode({static_cast<const uint8_t*>(region->Memory()),region->Size()});
     if(!view||view->pin!=expected)return nullptr;
     return std::make_shared<const Lease>(Lease{region,std::move(*view)});

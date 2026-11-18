@@ -132,16 +132,12 @@ describe('native publisher control adapter', () => {
     await single.stop()
   })
 
-  it('rejects invalid or unbounded native retry policies before admitting a native job', async () => {
+  it('rejects invalid native retry policies before admitting a native job', async () => {
     for (const reconnect of [
       { maxAttempts: 0 },
-      { maxAttempts: 9 },
       { initialDelayMs: -1 },
-      { initialDelayMs: 5001 },
       { initialDelayMs: 1000, maxDelayMs: 999 },
-      { maxDelayMs: 30001 },
       { timeoutMs: 0 },
-      { timeoutMs: 120001 },
     ]) {
       const f = fixture()
       await expect(
@@ -185,7 +181,7 @@ describe('native publisher control adapter', () => {
     expect((await publisher.status()).failure).toBe(terminal.failure)
   })
 
-  it('admits an explicit native capture buffer and rejects unbounded timing values before start', async () => {
+  it('admits an explicit native capture buffer and rejects invalid timing values before start', async () => {
     const f = fixture()
     const publisher = await createNativePublisher({
       ...config,
@@ -197,7 +193,7 @@ describe('native publisher control adapter', () => {
       captureLatencyMs: 180,
     })
     await publisher.stop()
-    for (const captureLatencyMs of [0, 19, 1001, Infinity]) {
+    for (const captureLatencyMs of [-1, 0.5, Infinity]) {
       const invalid = fixture()
       await expect(
         createNativePublisher({

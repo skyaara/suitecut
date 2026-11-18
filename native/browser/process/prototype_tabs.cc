@@ -236,7 +236,7 @@ class AudioTap {
     streams_.erase(browser);
   }
   void Packet(int browser, const float** data, int frames, int64_t pts) {
-    if (frames < 1 || frames > 4096) return;
+    if (frames < 1) return;
     std::shared_ptr<suitecut::MediaPipeline> pipeline;
     std::shared_ptr<suitecut::AudioMonitor> monitor;
     double timestamp = 0;

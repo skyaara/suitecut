@@ -44,7 +44,6 @@ void ArtifactDocuments(int id, const std::string& expression, SuiteCutArtifactCo
   const auto operation = operations_.Get(id);
   if (!operation || !artifact_attempts_.contains(id)) return;
   if (artifact_document_work_.contains(id)) { done(false,"Native screenshot document preparation is already active"); return; }
-  if (artifact_document_work_.size() >= 64) { done(false,"Native screenshot document preparation capacity exceeded"); return; }
   auto work = std::make_shared<ArtifactDocumentWork>(); work->owner = id; work->generation = operation->generation;
   work->attempt = artifact_attempts_.at(id); work->expression = expression; work->done = std::move(done);
   artifact_document_work_[id] = work; ArtifactDocumentsNext(work);
@@ -65,10 +64,9 @@ void ArtifactDocumentsWait(const std::shared_ptr<ArtifactDocumentWork>& work) {
 void ArtifactDocumentsNext(const std::shared_ptr<ArtifactDocumentWork>& work) {
   if (!ArtifactDocumentsCurrent(work)) return;
   // Reconcile genuine newly attached children before finishing the native tree
-  // preparation. One attempt remains bounded even if the page creates frames.
+  // preparation, however many frames the page creates.
   for (const auto& [id, frame] : frame_states_) {
     if (id == main_frame_id_ || !Descendant(id,main_frame_id_) || work->seen.contains(id)) continue;
-    if (work->frames.size() >= 1024) { ArtifactDocumentsFinish(work,false,"Screenshot document limit exceeded"); return; }
     work->seen.insert(id); work->frames.push_back(id);
   }
   if (work->index == work->frames.size()) { ArtifactDocumentsFinish(work,true,""); return; }
@@ -88,9 +86,6 @@ void ArtifactDocumentsNext(const std::shared_ptr<ArtifactDocumentWork>& work) {
   // Record ownership before dispatch. Even an already canceled Runtime result
   // cannot leave its actual DOM effects without a cleanup request in that realm.
   if (!work->expression.empty()) {
-    if (work->expression.size() > 64 * 1048576 / (work->resources.size() + 1)) {
-      ArtifactDocumentsFinish(work,false,"Screenshot document preparation exceeds the 64 MiB script budget"); return;
-    }
     const auto same = [&resource](const ArtifactDocumentResource& prior) {
       return prior.frame == resource.frame && prior.session == resource.session &&
           prior.loader == resource.loader && prior.context == resource.context;

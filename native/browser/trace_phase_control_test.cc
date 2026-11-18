@@ -18,5 +18,6 @@ int main(){
   assert(submit(30));++session;queue->Tick();assert(completed==3&&errors==1);physical[2](true,{{7,8,9},{}},"");assert(captured==1);
   synchronous=true;assert(submit(30));assert(completed==4&&captured==2&&queue->Size()==0);
   synchronous=false;assert(submit(30));now=31;physical.back()(true,{{1,2,3},{}},"");assert(errors==2&&captured==2&&completed==5);
-  now=32;busy=true;for(int i=0;i<32;++i)assert(submit(50));assert(!submit(50));assert(queue->Size()==32);queue->Clear();assert(completed==37&&queue->Size()==0&&!submit(50));
+  // No suitecut job cap: submissions past the former 32-job limit all queue.
+  now=32;busy=true;for(int i=0;i<64;++i)assert(submit(50));assert(queue->Size()==64);queue->Clear();assert(completed==69&&queue->Size()==0&&!submit(50));
 }

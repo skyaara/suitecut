@@ -21,7 +21,8 @@ class MacCaptureFrame {
   struct Impl; std::unique_ptr<Impl> impl_;
   MacCaptureFrame(); friend class MacCapturePool;
 };
-// Owns at most |max_bytes| (at least 64 MiB) of reusable surfaces. Copy
+// Caches at most |max_bytes| (at least 64 MiB) of idle reusable surfaces; frames
+// in use are not limited by it. Copy
 // completes on the GPU before CEF's borrowed texture expires. Readback runs on
 // the existing media worker.
 class MacCapturePool {

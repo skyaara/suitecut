@@ -42,15 +42,10 @@ class DownloadNavigationRequests {
     Classification classification=Classification::pending;
     std::uint64_t generation=0,native_id=0;
   };
-  static constexpr size_t kCapacity=512,kRedirectCapacity=32;
   std::shared_ptr<Entry> Begin(int page,std::uint64_t native_id,const std::string& frame,bool main,const std::string& method,const std::string& url){
     std::lock_guard lock(mutex_);
-    if(entries_.size()>=kCapacity){
-      const auto old=std::find_if(entries_.begin(),entries_.end(),[](const auto& entry){return entry.second->terminal;});
-      if(old==entries_.end())return nullptr;
-      entries_.erase(old);
-    }
-    if(next_==UINT64_MAX||frame.size()>128||method.size()>32)return nullptr;
+    // No retention cap: entries are released when their page closes.
+    if(next_==UINT64_MAX)return nullptr;
     auto entry=std::make_shared<Entry>();entry->generation=++next_;entry->native_id=native_id;entry->page=page;entry->frame=frame;entry->main=main;entry->method=method;
     AddURL(*entry,url);entries_[entry->generation]=entry;return entry;
   }
@@ -82,7 +77,7 @@ class DownloadNavigationRequests {
   size_t Size()const{std::lock_guard lock(mutex_);return entries_.size();}
  private:
   static void AddURL(Entry& entry,const std::string& url){
-    if(url.empty()||url.size()>8192||entry.urls.size()>=kRedirectCapacity||std::find(entry.urls.begin(),entry.urls.end(),url)!=entry.urls.end())return;
+    if(url.empty()||std::find(entry.urls.begin(),entry.urls.end(),url)!=entry.urls.end())return;
     entry.urls.push_back(url);
   }
   mutable std::mutex mutex_;

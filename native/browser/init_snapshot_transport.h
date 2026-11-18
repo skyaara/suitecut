@@ -29,19 +29,20 @@ struct InitSnapshotPin {
 class InitSnapshotWire {
  public:
   // One snapshot rides in one shared-memory region announced by one Chromium
-  // IPC message. Chromium refuses IPC messages over 128 MiB, so a payload
-  // stays under the same bound.
-  static constexpr size_t kHeader=64,kFrame=256,kPayload=128*1048576;
+  // IPC message. The header stores frame and payload lengths in 4 bytes each;
+  // that encoding is the only size bound here.
+  static constexpr size_t kHeader=64;
+  static constexpr uint64_t kField=std::numeric_limits<uint32_t>::max();
   static constexpr std::string_view kMessage="suitecutInitSnapshotRegionV1";
   struct View {InitSnapshotPin pin;std::string_view payload;};
   static bool ValidOwner(const InitSnapshotOwner&owner){
     return owner.context>0&&owner.context<=std::numeric_limits<int>::max()&&
       owner.browser>0&&owner.browser<=std::numeric_limits<int>::max()&&
-      owner.renderer_epoch>0&&!owner.frame.empty()&&owner.frame.size()<=kFrame&&
+      owner.renderer_epoch>0&&!owner.frame.empty()&&owner.frame.size()<=kField&&
       owner.frame.find('\0')==std::string::npos;
   }
   static size_t Size(const InitSnapshotPin&pin,size_t payload){
-    return ValidOwner(pin.owner)&&pin.version&&pin.transfer&&payload&&payload<=kPayload?
+    return ValidOwner(pin.owner)&&pin.version&&pin.transfer&&payload&&payload<=kField?
       kHeader+pin.owner.frame.size()+payload:0;
   }
   static bool Encode(std::span<uint8_t>bytes,const InitSnapshotPin&pin,std::string_view payload){
@@ -59,7 +60,7 @@ class InitSnapshotWire {
     if(bytes.size()<kHeader||!std::equal(kMagic.begin(),kMagic.end(),bytes.begin())||
        Get(bytes,8,4)!=1||Get(bytes,12,4)!=kHeader)return std::nullopt;
     const auto frame=Get(bytes,56,4),payload=Get(bytes,60,4);
-    if(!frame||frame>kFrame||!payload||payload>kPayload||bytes.size()!=kHeader+frame+payload)return std::nullopt;
+    if(!frame||!payload||bytes.size()!=kHeader+frame+payload)return std::nullopt;
     View view{{{Get(bytes,16),Get(bytes,24),Get(bytes,32),
       std::string(reinterpret_cast<const char*>(bytes.data()+kHeader),frame)},Get(bytes,40),Get(bytes,48)},
       std::string_view(reinterpret_cast<const char*>(bytes.data()+kHeader+frame),payload)};
@@ -83,18 +84,14 @@ class InitSnapshotWire {
 // requests teardown; it never fabricates either physical receipt.
 class InitSnapshotReceipts {
  public:
-  // Every page keeps its installed region and may have one replacement in
-  // flight, so this is twice the browser's 128-page limit. A lower bound let
-  // long-lived popups exhaust it and close every page opened afterwards.
-  // Room for eight full payloads in flight; pages share one snapshot's bytes.
-  static constexpr size_t kTransfers=256,kBytes=8*InitSnapshotWire::kPayload;
+  // Nothing here caps transfers or bytes.
   static constexpr double kRetirementGrace=30;
   enum class Status {Accepted,Rejected,Canceled,Expired,CloseRequired,RendererGone};
   struct Event {InitSnapshotPin pin;Status status;bool public_reply=false,region_installed=false;};
   std::optional<InitSnapshotPin>Reserve(InitSnapshotOwner owner,uint64_t version,size_t payload,double deadline,double now){
     InitSnapshotPin pin{std::move(owner),version,next_+1};const auto bytes=InitSnapshotWire::Size(pin,payload);
     if(!std::isfinite(now)||now<0||!std::isfinite(deadline)||deadline<0||(deadline&&now>=deadline)||
-       next_==std::numeric_limits<uint64_t>::max()||!bytes||receipts_.size()>=kTransfers||bytes>kBytes-bytes_)return std::nullopt;
+       next_==std::numeric_limits<uint64_t>::max()||!bytes)return std::nullopt;
     Receipt receipt;receipt.pin=pin;receipt.bytes=bytes;receipt.deadline=deadline;
     ++next_;bytes_+=bytes;receipts_.emplace(pin.transfer,std::move(receipt));return pin;
   }

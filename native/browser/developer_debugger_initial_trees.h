@@ -11,9 +11,7 @@ namespace suitecut {
 // Source keeps its existing actual command registry and closure policy.
 class FrameDebuggerInitialTrees {
  public:
-  struct Limits{size_t trees=1024,frames=1024,bytes=1048576;};
-  FrameDebuggerInitialTrees():FrameDebuggerInitialTrees(Limits{}){}
-  explicit FrameDebuggerInitialTrees(Limits limits):limits_(limits){unavailable_=!limits_.trees||!limits_.frames||!limits_.bytes;}
+  FrameDebuggerInitialTrees()=default;
   FrameDebuggerInitialTrees(const FrameDebuggerInitialTrees&)=delete;
   FrameDebuggerInitialTrees&operator=(const FrameDebuggerInitialTrees&)=delete;
   bool Prepare(int actual_command,const std::string&session,uint64_t actual_attachment,std::string&error){
@@ -24,12 +22,11 @@ class FrameDebuggerInitialTrees {
       if(old->second.session!=session||old->second.attachment!=actual_attachment)return Reject(error,"Native debugger initial-tree command identity was reused");
       observation.Complete();return true;
     }
-    if(actual_command<=last_command_||trees_.size()>=limits_.trees||channels_.contains(session))return Reject(error,"Native debugger initial-tree command order or channel capacity rejected");
+    if(actual_command<=last_command_||channels_.contains(session))return Reject(error,"Native debugger initial-tree command order or channel reuse rejected");
     std::map<int,Tree>staged_trees;std::map<std::string,int>staged_channels;
     staged_trees.emplace(actual_command,Tree{session,actual_attachment,false,false,0,{}});staged_channels.emplace(session,actual_command);
     auto&tree=staged_trees.begin()->second;
     tree.bytes=sizeof(Tree)+tree.session.capacity()+staged_channels.begin()->first.capacity();
-    if(!Fits(tree.bytes))return Reject(error,"Native debugger initial-tree metadata storage exhausted");
     const auto charge=tree.bytes;
     trees_.insert(staged_trees.extract(staged_trees.begin()));channels_.insert(staged_channels.extract(staged_channels.begin()));
     bytes_+=charge;last_command_=actual_command;observation.Complete();return true;
@@ -48,22 +45,22 @@ class FrameDebuggerInitialTrees {
   }
   bool DefaultObserved(const std::string&session,uint64_t actual_attachment,const std::string&frame,uint64_t observed_document,std::string&error){
     Observation observation(*this);
-    if(!Available()||!Identity(frame,256)||!observed_document)return Reject(error,"Native debugger initial-tree default observation is invalid");
+    if(!Available()||!Identity(frame)||!observed_document)return Reject(error,"Native debugger initial-tree default observation is invalid");
     auto*tree=Find(session,actual_attachment);if(!tree||tree->cleared){observation.Complete();return true;}
     auto found=tree->frames.find(frame);
     if(found==tree->frames.end()){
-      if(!Insert(*tree,frame,Initial{observed_document,false},error))return false;
+      Insert(*tree,frame,Initial{observed_document,false});
     }else if(!tree->dispatched)found->second={observed_document,false};
     else if(found->second.document!=observed_document)found->second.blocked=true;
     observation.Complete();return true;
   }
   bool FrameInvalidated(const std::string&session,uint64_t actual_attachment,const std::string&frame,std::string&error){
     Observation observation(*this);
-    if(!Available()||!Identity(frame,256))return Reject(error,"Native debugger initial-tree frame invalidation is invalid");
+    if(!Available()||!Identity(frame))return Reject(error,"Native debugger initial-tree frame invalidation is invalid");
     auto*tree=Find(session,actual_attachment);if(!tree||tree->cleared){observation.Complete();return true;}
     auto found=tree->frames.find(frame);
     if(!tree->dispatched){if(found!=tree->frames.end())Erase(*tree,found);}
-    else if(found==tree->frames.end()){if(!Insert(*tree,frame,Initial{0,true},error))return false;}
+    else if(found==tree->frames.end()){Insert(*tree,frame,Initial{0,true});}
     else found->second.blocked=true;
     observation.Complete();return true;
   }
@@ -99,20 +96,17 @@ class FrameDebuggerInitialTrees {
   struct Initial{uint64_t document=0;bool blocked=false;};
   struct Tree{std::string session;uint64_t attachment=0;bool dispatched=false,cleared=false;size_t bytes=0;std::map<std::string,Initial>frames;};
   class Observation{public:explicit Observation(FrameDebuggerInitialTrees&owner):owner_(owner){}~Observation(){if(!complete_)owner_.Unavailable();}void Complete()noexcept{complete_=true;}private:FrameDebuggerInitialTrees&owner_;bool complete_=false;};
-  static bool Identity(const std::string&text,size_t maximum){return !text.empty()&&text.size()<=maximum&&text.find('\0')==std::string::npos;}
-  static bool Channel(const std::string&session){return session.empty()||Identity(session,128);}
+  static bool Identity(const std::string&text){return !text.empty()&&text.find('\0')==std::string::npos;}
+  static bool Channel(const std::string&session){return session.empty()||Identity(session);}
   static bool Matches(const Tree&tree,const std::string&session,uint64_t attachment){return tree.session==session&&tree.attachment==attachment;}
   static size_t Bytes(const std::pair<const std::string,Initial>&entry){return sizeof(Initial)+entry.first.capacity();}
   static bool Reject(std::string&error,const char*text){error=text;return false;}
-  bool Fits(size_t incoming)const{return incoming<=limits_.bytes&&bytes_<=limits_.bytes-incoming;}
   Tree*Find(const std::string&session,uint64_t attachment){const auto found=channels_.find(session);if(found==channels_.end())return nullptr;auto&tree=trees_.at(found->second);return tree.attachment==attachment?&tree:nullptr;}
-  bool Insert(Tree&tree,const std::string&frame,Initial value,std::string&error){
-    if(frames_>=limits_.frames)return Reject(error,"Native debugger initial-tree frame observation capacity exhausted");
+  void Insert(Tree&tree,const std::string&frame,Initial value){
     std::map<std::string,Initial>staged;staged.emplace(frame,value);const auto charge=Bytes(*staged.begin());
-    if(!Fits(charge))return Reject(error,"Native debugger initial-tree frame identity storage exhausted");
-    tree.frames.insert(staged.extract(staged.begin()));bytes_+=charge;++frames_;return true;
+    tree.frames.insert(staged.extract(staged.begin()));bytes_+=charge;++frames_;
   }
   void Erase(Tree&tree,std::map<std::string,Initial>::iterator entry){bytes_-=Bytes(*entry);--frames_;tree.frames.erase(entry);}
-  Limits limits_;std::map<int,Tree>trees_;std::map<std::string,int>channels_;int last_command_=0;size_t frames_=0,bytes_=0;bool unavailable_=false;
+  std::map<int,Tree>trees_;std::map<std::string,int>channels_;int last_command_=0;size_t frames_=0,bytes_=0;bool unavailable_=false;
 };
 }

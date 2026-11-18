@@ -13,13 +13,12 @@ namespace suitecut {
 // This controller neither acknowledges crash events nor releases Inspector work.
 class NativeVirtualTimeCloseFence {
  public:
-  static constexpr size_t kCapacity=64;
   static constexpr double kUnboundedPhysicalGraceMs=5000;
   struct Owner {int id;uint64_t generation;double original_deadline;};
   bool RendererTerminated(const std::vector<Owner>& owners,double now){
     if(closed_||dispatched_)return false;
     if(captured_)return true; // Never restart grace or admit later observers.
-    if(!std::isfinite(now)||!std::isfinite(now+kUnboundedPhysicalGraceMs)||owners.size()>kCapacity)return false;
+    if(!std::isfinite(now)||!std::isfinite(now+kUnboundedPhysicalGraceMs))return false;
     std::map<int,Owner> captured;
     for(const auto& owner:owners){
       if(owner.id<1||owner.generation==0||!std::isfinite(owner.original_deadline)||owner.original_deadline<0||!captured.emplace(owner.id,owner).second)return false;

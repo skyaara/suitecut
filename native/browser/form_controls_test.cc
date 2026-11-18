@@ -32,10 +32,8 @@ int main() {
   SuiteCutUploadStore store;
   auto retained=std::make_shared<SuiteCutUploadFiles>();
   first=retained->Stage("retained.txt","bytes");
-  assert(store.CanReplace("first",128*1048576));
   store.Replace("first","frame-a",128*1048576,retained);retained.reset();
   assert(store.Inputs()==1&&store.Bytes()==128*1048576&&std::filesystem::exists(first));
-  assert(!store.CanReplace("second",1));assert(store.CanReplace("first",4));
   store.DropFrame("other");assert(std::filesystem::exists(first));
   store.DropFrame("frame-a");assert(store.Bytes()==0&&store.Inputs()==0&&!std::filesystem::exists(first));
   for(int index=0;index<10000;++index){

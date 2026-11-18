@@ -8,20 +8,17 @@
 #include "network_body_transfers.h"
 
 namespace suitecut {
-// Native FIFO publication. Byte reservations mirror the receiver's capacity
-// until it consumes a body; transport backpressure applies explicitly. A body
-// read or transfer that cannot finish in time costs that body, never the page.
-// In-flight bodies across all pages share the host's 1 GiB transfer budget.
+// Native FIFO publication. Byte reservations are tracked until the receiver
+// consumes a body; transport backpressure applies explicitly. A body read or
+// transfer that cannot finish in time costs that body, never the page.
+// Browser-wide in-flight accounting only; nothing is refused.
 struct NativeNetworkBodyQuota {
-  static constexpr size_t kBytes=1024*1048576;
   size_t bytes=0,owners=0,preparations=0;
-  bool Reserve(size_t count) {if(owners>=128 || count>kBytes-bytes)return false;++owners;bytes+=count;return true;}
+  void Reserve(size_t count) {++owners;bytes+=count;}
   void Release(size_t count) {--owners;bytes-=count;}
 };
 inline NativeNetworkBodyQuota& GlobalNetworkBodyQuota(){static NativeNetworkBodyQuota quota;return quota;}
 class NativeNetworkBodyPublication {
-  // An event is as large as the host takes; the queue holds a few of them.
-  static constexpr size_t kEventBytes=192*1048576,kQueueBytes=1024*1048576;
  public:
   std::function<void(const std::string&)> degraded;
   using Dict=CefRefPtr<CefDictionaryValue>;
@@ -34,8 +31,7 @@ class NativeNetworkBodyPublication {
        transfers_([this](uint64_t id,size_t offset,size_t total,std::span<const uint8_t> bytes){return emit_(id,offset,total,bytes,false);}){}
   ~NativeNetworkBodyPublication(){Clear();}
   std::optional<uint64_t> Begin(std::vector<uint8_t> bytes,double deadline) {
-    if(reservations_.size()>=NativeNetworkBodyTransfers::kOwnerLimit || bytes.size()>NativeNetworkBodyTransfers::kByteBudget-reserved_bytes_)return std::nullopt;
-    const auto count=bytes.size();if(!GlobalNetworkBodyQuota().Reserve(count))return std::nullopt;const auto id=transfers_.Begin(std::move(bytes),deadline,[this](uint64_t owner,bool ok,const std::string&){
+    const auto count=bytes.size();GlobalNetworkBodyQuota().Reserve(count);const auto id=transfers_.Begin(std::move(bytes),deadline,[this](uint64_t owner,bool ok,const std::string&){
       auto found=reservations_.find(owner);if(found==reservations_.end())return;
       if(ok){found->second.ready=true;CompleteWaiters(owner,false,true,"");Pump();return;}
       for(auto& event:events_)if(BodyId(event.value)==owner){auto request=event.value->GetDictionary("request");request->Remove("postDataBodyId");request->SetBool("postDataUnavailable",true);}
@@ -56,8 +52,7 @@ class NativeNetworkBodyPublication {
     if(found==reservations_.end())return taken_.contains(id)||transfers_.Issued(id);
     if(!found->second.ready)return false;
     GlobalNetworkBodyQuota().Release(found->second.bytes);reserved_bytes_-=found->second.bytes;reservations_.erase(found);
-    taken_.insert(id);taken_order_.push_back(id);
-    while(taken_order_.size()>4096){taken_.erase(taken_order_.front());taken_order_.pop_front();}
+    taken_.insert(id);
     CompleteWaiters(id,true,true,"");return true;
   }
   // Command replies and host-predicate packets use their original native owner
@@ -68,7 +63,6 @@ class NativeNetworkBodyPublication {
     const auto found=reservations_.find(body);
     if(found==reservations_.end()){done(false,"Native request body publication is no longer retained");return true;}
     if(found->second.ready && !consumed){done(true,"");return true;}
-    if(waiters_.size()>=128)return false;
     waiters_.emplace(owner,Waiter{body,deadline,consumed,std::move(done)});return true;
   }
   void CancelWait(int owner) {waiters_.erase(owner);}
@@ -77,7 +71,7 @@ class NativeNetworkBodyPublication {
   // cursor is queued. Its physical callback is owned separately by the native
   // reader; resolving this gate never claims that receipt has been retired.
   std::optional<uint64_t> Prepare(double deadline) {
-    if(!std::isfinite(deadline)||deadline<0||preparations_.size()>=64||GlobalNetworkBodyQuota().preparations>=128||preparation_serial_>=9007199254740991ULL)return std::nullopt;
+    if(!std::isfinite(deadline)||deadline<0||preparation_serial_>=9007199254740991ULL)return std::nullopt;
     const auto id=++preparation_serial_;preparations_.emplace(id,deadline);++GlobalNetworkBodyQuota().preparations;return id;
   }
   bool Prepared(uint64_t id,Dict fields) {
@@ -89,14 +83,7 @@ class NativeNetworkBodyPublication {
         for(const char*name:{"postData","postDataBase64","postDataBodyId","postDataUnavailable"}){
           request->Remove(name);if(fields&&fields->HasKey(name))request->SetValue(name,fields->GetValue(name)->Copy());
         }
-        auto wrapper=CefValue::Create();wrapper->SetDictionary(event.value->Copy(false));auto bytes=CefWriteJSON(wrapper,JSON_WRITER_DEFAULT).ToString().size();
-        if(bytes>kEventBytes||bytes>kQueueBytes-(event_bytes_-event.bytes)){
-          // Publish the request without its inline body rather than failing the page.
-          for(const char*name:{"postData","postDataBase64","postDataEntries"})request->Remove(name);
-          if(!request->HasKey("postDataBodyId"))request->SetBool("postDataUnavailable",true);
-          if(degraded)degraded("Native prepared request metadata exceeds publication capacity");
-          wrapper->SetDictionary(event.value->Copy(false));bytes=CefWriteJSON(wrapper,JSON_WRITER_DEFAULT).ToString().size();
-        }
+        auto wrapper=CefValue::Create();wrapper->SetDictionary(event.value->Copy(false));const auto bytes=CefWriteJSON(wrapper,JSON_WRITER_DEFAULT).ToString().size();
         event_bytes_=event_bytes_-event.bytes+bytes;event.bytes=bytes;
       }
       event.preparation=0;
@@ -105,12 +92,7 @@ class NativeNetworkBodyPublication {
   }
   bool Queue(Dict event,uint64_t preparation=0) {
     auto wrapped=CefValue::Create();wrapped->SetDictionary(event);const auto bytes=CefWriteJSON(wrapped,JSON_WRITER_DEFAULT).ToString().size();
-    if(queued_serial_>=9007199254740991ULL){Fail("Native network metadata publication capacity exceeded");return false;}
-    if(bytes>kEventBytes){if(degraded)degraded("Native network metadata event exceeds 192 MiB, the largest message the host takes");return true;}
-    // A slow POST read or body transfer at the head must not hold every later
-    // event hostage. Like Playwright, publish it without its body instead.
-    while(!events_.empty() && (events_.size()>=256 || bytes>kQueueBytes-event_bytes_) && Unblock()){}
-    if(events_.size()>=256 || bytes>kQueueBytes-event_bytes_){if(degraded)degraded("Native network metadata publication capacity exceeded");return true;}
+    if(queued_serial_>=9007199254740991ULL){Fail("Native network metadata publication serial exhausted");return false;}
     const auto owner=BodyId(event);
     if(owner && !reservations_.contains(owner) && !taken_.contains(owner)){auto request=event->GetDictionary("request");request->Remove("postDataBodyId");request->SetBool("postDataUnavailable",true);}
     events_.push_back({event->Copy(false),bytes,++queued_serial_,preparation});event_bytes_+=bytes;Pump();return true;
@@ -138,7 +120,7 @@ class NativeNetworkBodyPublication {
     }
     Pump();
   }
-  void Clear() {GlobalNetworkBodyQuota().preparations-=preparations_.size();preparations_.clear();transfers_.Clear();for(const auto& [id,reservation]:reservations_)GlobalNetworkBodyQuota().Release(reservation.bytes);reservations_.clear();events_.clear();canceled_.clear();waiters_.clear();taken_.clear();taken_order_.clear();reserved_bytes_=event_bytes_=0;failed_=false;}
+  void Clear() {GlobalNetworkBodyQuota().preparations-=preparations_.size();preparations_.clear();transfers_.Clear();for(const auto& [id,reservation]:reservations_)GlobalNetworkBodyQuota().Release(reservation.bytes);reservations_.clear();events_.clear();canceled_.clear();waiters_.clear();taken_.clear();reserved_bytes_=event_bytes_=0;failed_=false;}
   uint64_t QueuedCursor() const{return queued_serial_;}
   uint64_t PublishedCursor() const{return published_serial_;}
   size_t preparations() const {return preparations_.size();}
@@ -174,21 +156,13 @@ class NativeNetworkBodyPublication {
     }
     pumping_=false;
   }
-  // Gives up the body blocking the head; false when nothing blocks it.
-  bool Unblock() {
-    if(events_.empty() || pumping_)return false;
-    const auto& head=events_.front();
-    if(preparations_.contains(head.preparation)){auto unavailable=CefDictionaryValue::Create();unavailable->SetBool("postDataUnavailable",true);Prepared(head.preparation,unavailable);return true;}
-    const auto owner=BodyId(head.value);const auto found=reservations_.find(owner);
-    return found!=reservations_.end() && !found->second.ready && Cancel(owner);
-  }
   void Retire(uint64_t id) {
     for(const auto& event:events_)if(BodyId(event.value)==id){Cancel(id);return;}
     Taken(id);
   }
   uint64_t queued_serial_=0,published_serial_=0,preparation_serial_=0;std::map<uint64_t,double>preparations_;
   bool failed_=false,pumping_=false;Emit emit_;Publish publish_;Failure failure_;NativeNetworkBodyTransfers transfers_;
-  std::map<int,Waiter> waiters_;std::set<uint64_t> taken_;std::deque<uint64_t> taken_order_;
+  std::map<int,Waiter> waiters_;std::set<uint64_t> taken_;
   std::map<uint64_t,Reservation> reservations_;std::map<uint64_t,double> canceled_;std::deque<Event> events_;size_t reserved_bytes_=0,event_bytes_=0;
 };
 }  // namespace suitecut

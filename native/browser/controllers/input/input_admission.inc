@@ -28,14 +28,14 @@
       if (((work->action == "move" || work->action == "click" || work->action=="tap") && (!message->HasKey("x") || !message->HasKey("y"))) ||
           (work->action == "wheel" && (!message->HasKey("deltaX") || !message->HasKey("deltaY")))) { Complete(id, false, "Missing native pointer coordinates"); return; }
       for (const char* field : {"x", "y", "deltaX", "deltaY"}) if (message->HasKey(field) &&
-          ((message->GetType(field) != VTYPE_INT && message->GetType(field) != VTYPE_DOUBLE) || !std::isfinite(Number(message, field)) || std::abs(Number(message, field)) > 1000000)) { Complete(id, false, "Invalid native pointer coordinate"); return; }
+          ((message->GetType(field) != VTYPE_INT && message->GetType(field) != VTYPE_DOUBLE) || !std::isfinite(Number(message, field)))) { Complete(id, false, "Invalid native pointer coordinate"); return; }
       const auto button = message->GetString("button").ToString();
       if (!button.empty() && button != "left" && button != "right" && button != "middle") { Complete(id, false, "Invalid native pointer button"); return; }
-      if ((message->HasKey("steps") && (message->GetType("steps") != VTYPE_INT || message->GetInt("steps") < 1 || message->GetInt("steps") > 10000)) ||
-          (message->HasKey("clickCount") && (message->GetType("clickCount") != VTYPE_INT || message->GetInt("clickCount") < 1 || message->GetInt("clickCount") > 1000))) { Complete(id, false, "Invalid native pointer count"); return; }
+      if ((message->HasKey("steps") && (message->GetType("steps") != VTYPE_INT || message->GetInt("steps") < 1)) ||
+          (message->HasKey("clickCount") && (message->GetType("clickCount") != VTYPE_INT || message->GetInt("clickCount") < 1))) { Complete(id, false, "Invalid native pointer count"); return; }
     } else if (work->kind == "keyboard") {
       if (work->action != "down" && work->action != "up" && work->action != "press" && work->action != "type" && work->action != "insertText") { Complete(id, false, "Invalid native keyboard action"); return; }
-      if (((work->action == "down" || work->action == "up" || work->action == "press") && (message->GetType("key") != VTYPE_STRING || work->key.empty() || work->key.size() > 128)) ||
+      if (((work->action == "down" || work->action == "up" || work->action == "press") && (message->GetType("key") != VTYPE_STRING || work->key.empty())) ||
           ((work->action == "type" || work->action == "insertText") && message->GetType("text") != VTYPE_STRING)) { Complete(id, false, "Invalid native keyboard payload"); return; }
       if (work->action == "press") {
         auto chord = work->key;

@@ -24,8 +24,7 @@ struct DOMSemanticControls {
 void DOMSemanticFinish(const std::shared_ptr<DOMSemanticControls>& state){
   const auto work=state->capture;if(!AXCurrent(work))return;
   auto forest_value=CefValue::Create();forest_value->SetList(state->forests->Copy());std::string native;
-  if(!suitecut::DevToolsLosslessJSON(forest_value,native)){AXError(work,"Native UA control metadata exceeds 64 KiB");return;}
-  if(native.size()>65536){AXError(work,"Native UA control metadata exceeds 64 KiB");return;}
+  if(!suitecut::DevToolsLosslessJSON(forest_value,native)){AXError(work,"Native UA control metadata could not be serialized");return;}
   auto params=CefDictionaryValue::Create();params->SetString("objectId",work->array);params->SetBool("returnByValue",true);params->SetString("objectGroup","suitecut-automation-"+std::to_string(work->owner));
   params->SetString("functionDeclaration","function(files,probe){"+std::string(kDOMSemanticFileProbe)+"const nativeControls=new WeakMap(),forests=JSON.parse("+DOMSemanticQuote(native)+");for(let i=0;i<files.length;i++)nativeControls.set(files[i],forests[i]);return JSON.stringify(this.length?("+std::string(kSuiteCutDOMSemanticSnapshot)+")(this[0],("+std::string(kSuiteCutDomQuery)+"),{boxes:"+(state->message->GetBool("accessibilityBoxes")?"true":"false")+",nativeControls}):[]);}");
   if(state->reference_done){
@@ -78,14 +77,14 @@ void DOMSemanticCollectFileControls(const std::shared_ptr<DOMSemanticControls>& 
     const auto files=result->GetDictionary("result");if(!files||files->GetString("subtype")!="array"||files->GetType("objectId")!=VTYPE_STRING){AXError(work,"Native UA control array unavailable");return;}state->files=files->GetString("objectId").ToString();
     auto params=CefDictionaryValue::Create();params->SetString("objectId",state->files);params->SetBool("ownProperties",true);
     AXRequest(work,"Runtime.getProperties",params,[this,state,work](Dict result){
-      auto descriptors=result->GetList("result");if(!descriptors||descriptors->GetSize()>129){AXError(work,"Invalid native UA control array properties");return;}
+      auto descriptors=result->GetList("result");if(!descriptors){AXError(work,"Invalid native UA control array properties");return;}
       int length=-1;std::map<size_t,std::string> members;
       for(size_t i=0;i<descriptors->GetSize();++i){auto descriptor=descriptors->GetDictionary(i);auto value=descriptor?descriptor->GetDictionary("value"):nullptr;if(!descriptor||!value){AXError(work,"Invalid native UA control array descriptor");return;}
         const auto key=descriptor->GetString("name").ToString();if(key=="length"){if(value->GetType("value")!=VTYPE_INT){AXError(work,"Invalid native UA control array length");return;}length=value->GetInt("value");continue;}
-        if(key.empty()||key.size()>3){AXError(work,"Invalid native UA control array index");return;}size_t index=0;for(const char digit:key){if(digit<'0'||digit>'9'){AXError(work,"Invalid native UA control array index");return;}index=index*10+static_cast<size_t>(digit-'0');}
-        if(index>=128||value->GetType("objectId")!=VTYPE_STRING||value->GetString("subtype")!="node"||members.contains(index)){AXError(work,"Invalid native UA control node identity");return;}members[index]=value->GetString("objectId").ToString();
+        if(key.empty()){AXError(work,"Invalid native UA control array index");return;}size_t index=0;for(const char digit:key){if(digit<'0'||digit>'9'||index>(std::numeric_limits<size_t>::max()-9)/10){AXError(work,"Invalid native UA control array index");return;}index=index*10+static_cast<size_t>(digit-'0');}
+        if(value->GetType("objectId")!=VTYPE_STRING||value->GetString("subtype")!="node"||members.contains(index)){AXError(work,"Invalid native UA control node identity");return;}members[index]=value->GetString("objectId").ToString();
       }
-      if(length<0||length>128||members.size()!=static_cast<size_t>(length)){AXError(work,"Invalid native UA control array cardinality");return;}
+      if(length<0||members.size()!=static_cast<size_t>(length)){AXError(work,"Invalid native UA control array cardinality");return;}
       for(int i=0;i<length;++i){const auto member=members.find(static_cast<size_t>(i));if(member==members.end()){AXError(work,"Native UA control array has missing node");return;}state->nodes.push_back(member->second);}
       if(state->nodes.empty()){DOMSemanticFinish(state);return;}
       AXRequest(work,"Accessibility.enable",CefDictionaryValue::Create(),[this,state](Dict){DOMSemanticReadControl(state);});
@@ -96,7 +95,6 @@ void DOMSemanticCollectFileControls(const std::shared_ptr<DOMSemanticControls>& 
 // capture; the authored DOM forest enriches only genuine opaque UA controls.
 void CaptureDOMSemantic(int id,Dict message,std::function<void(const std::string&,const std::string&)> done,std::function<void(const std::string&)> reference_done={}){
   const auto operation=operations_.Get(id);if(!operation)return;
-  if(ax_captures_.size()>=64&&!ax_captures_.contains(id)){Complete(id,false,"Native accessibility capture capacity exceeded");return;}
   if(ax_capture_sequence_==std::numeric_limits<uint64_t>::max()){Complete(id,false,"Native accessibility capture sequence exhausted");return;}
   auto work=std::make_shared<AXCapture>();work->owner=id;work->generation=operation->generation;work->token=++ax_capture_sequence_;work->frame=FrameId(message);work->release=[this](size_t bytes){ax_capture_bytes_-=bytes;};ax_captures_[id]=work->token;
   auto state=std::make_shared<DOMSemanticControls>();state->capture=work;state->message=message;state->done=std::move(done);state->reference_done=std::move(reference_done);

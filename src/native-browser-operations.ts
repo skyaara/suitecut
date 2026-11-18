@@ -99,8 +99,6 @@ export function runNativeBrowserOperation<T>(callback: () => T): T {
   if (!actual) return callback()
   const prior = currentOperation()
   if (prior) return callback()
-  if (actual.operations.size >= 128)
-    throw new Error('Native locator handler operation capacity exceeded')
   const token = runNativeBrowserCallbackControl(() => actual.begin())
   const admitted: Operation = { scope: actual, token, live: true, references: 1 }
   actual.operations.add(admitted)

@@ -6,11 +6,6 @@ import {
   NativePacketDecoder,
   NativeNetworkRequestSchema,
   NativeNetworkResponseSchema,
-  MAX_NATIVE_EVENT_PAYLOAD,
-  MAX_NATIVE_RESPONSE_PAYLOAD,
-  MAX_NATIVE_SOCKET_PREDICATE_PAYLOAD,
-  MAX_OBSERVED_DATA_URL,
-  MAX_OBSERVED_URL,
   type NativePacket,
 } from '../src/native-protocol.js'
 
@@ -22,7 +17,7 @@ function packet(header: object, data = Buffer.alloc(0)): Buffer {
 }
 
 describe('native IPC boundary', () => {
-  it('preserves bounded inline resource URLs in observed requests and responses', () => {
+  it('preserves inline resource and long URLs whole in observed requests and responses', () => {
     const url = `data:image/svg+xml;base64,${'A'.repeat(32_768)}`
     const request = {
       id: 'inline-1',
@@ -47,29 +42,13 @@ describe('native IPC boundary', () => {
     }
     expect(NativeNetworkRequestSchema.parse(request).url).toBe(url)
     expect(NativeNetworkResponseSchema.parse(response).url).toBe(url)
-    // A long GET form submission is an ordinary Chrome request and stays whole.
-    const long = `https://example.test/?q=${'a'.repeat(MAX_OBSERVED_DATA_URL + 10)}`
+    // Long GET form submissions and large inline resources stay whole.
+    const long = `https://example.test/?q=${'a'.repeat(2_097_152 + 10)}`
     expect(NativeNetworkRequestSchema.parse({ ...request, url: long }).url).toBe(long)
     expect(NativeNetworkResponseSchema.parse({ ...response, url: long }).url).toBe(long)
-    const rejected = `https://example.test/${'a'.repeat(MAX_OBSERVED_URL)}`
-    expect(NativeNetworkRequestSchema.safeParse({ ...request, url: rejected }).success).toBe(false)
-    expect(NativeNetworkResponseSchema.safeParse({ ...response, url: rejected }).success).toBe(
-      false,
-    )
-    // An oversized inline resource degrades to a bounded prefix instead of failing the session.
-    const oversized = `data:image/png;base64,${'A'.repeat(MAX_OBSERVED_DATA_URL)}`
-    for (const parsed of [
-      NativeNetworkRequestSchema.parse({ ...request, url: oversized }).url,
-      NativeNetworkResponseSchema.parse({ ...response, url: oversized }).url,
-    ]) {
-      expect(parsed).toHaveLength(MAX_OBSERVED_DATA_URL)
-      expect(oversized.startsWith(parsed)).toBe(true)
-    }
-    // The cut never leaves half of a surrogate pair.
-    const astral = `data:text/plain,${'x'.repeat(MAX_OBSERVED_DATA_URL - 17)}\u{1F600}tail`
-    const cut = NativeNetworkRequestSchema.parse({ ...request, url: astral }).url
-    expect(cut).toHaveLength(MAX_OBSERVED_DATA_URL - 1)
-    expect(cut.endsWith('x')).toBe(true)
+    const inline = `data:image/png;base64,${'A'.repeat(1_048_576 + 10)}`
+    expect(NativeNetworkRequestSchema.parse({ ...request, url: inline }).url).toBe(inline)
+    expect(NativeNetworkResponseSchema.parse({ ...response, url: inline }).url).toBe(inline)
   })
   it('preserves proven viewport geometry and null resize paints alongside legacy frame packets', () => {
     const headers: NativePacket[] = []
@@ -156,9 +135,9 @@ describe('native IPC boundary', () => {
     expect(received[1]?.data).toEqual(data)
   })
 
-  it('rejects oversized headers before allocating them', () => {
+  it('rejects header lengths too short for a JSON object', () => {
     const size = Buffer.alloc(4)
-    size.writeUInt32LE(0xffffffff)
+    size.writeUInt32LE(1)
     expect(() => new NativePacketDecoder(() => undefined).push(size)).toThrow('header length')
   })
 
@@ -188,7 +167,6 @@ describe('native IPC boundary', () => {
     { type: 'audio', timestampMs: 1, frames: 960 },
     { type: 'frame', timestampMs: -1, width: 1, height: 1, dropped: 0 },
     { type: 'response', id: 0, ok: true },
-    { type: 'response', id: 1, ok: true, bytes: MAX_NATIVE_RESPONSE_PAYLOAD + 1 },
   ])('rejects malformed metadata %j', (header) => {
     expect(() => new NativePacketDecoder(() => undefined).push(packet(header))).toThrow()
   })
@@ -263,7 +241,7 @@ describe('native PCM reblocking', () => {
   })
 })
 
-it('permits whole WebSocket frames in predicate snapshots up to the event payload limit', () => {
+it('permits whole WebSocket frames in predicate snapshots', () => {
   const header = {
     type: 'eventpredicate',
     pageId: 2,
@@ -279,17 +257,4 @@ it('permits whole WebSocket frames in predicate snapshots up to the event payloa
   decoder.push(packet({ ...header, event: 'framereceived' }, bytes))
   decoder.end()
   expect(received[0]?.equals(bytes)).toBe(true)
-  expect(() =>
-    new NativePacketDecoder(() => undefined).push(
-      packet({ ...header, event: 'console' }, Buffer.alloc(MAX_NATIVE_EVENT_PAYLOAD + 1)),
-    ),
-  ).toThrow()
-  expect(() =>
-    new NativePacketDecoder(() => undefined).push(
-      packet(
-        { ...header, event: 'framereceived' },
-        Buffer.alloc(MAX_NATIVE_SOCKET_PREDICATE_PAYLOAD + 1),
-      ),
-    ),
-  ).toThrow()
 })

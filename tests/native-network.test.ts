@@ -294,7 +294,7 @@ describe('native network ownership and transport', () => {
     request.observe({ ...f.info, postData: 'actual replacement' }, 1)
     expect(request.postData()).toBe('actual replacement')
     request.observe({ ...f.info, postDataUnavailable: true }, 2)
-    expect(() => request.postDataBuffer()).toThrow('capacity')
+    expect(() => request.postDataBuffer()).toThrow('unavailable')
   })
   it('falls back through the native frozen match plan if a queued handler was removed', async () => {
     const f = fixture()
@@ -545,29 +545,21 @@ describe('native network ownership and transport', () => {
       errorReason: 'Failed',
     })
   })
-  it('keeps admission past the record limit from remeasuring every retained request', () => {
+  it('keeps every finished request past the old record limit', () => {
     const f = fixture()
-    for (let index = 0; index < 4096; index++) {
+    for (let index = 0; index < 4196; index++) {
       const info = { ...f.info, id: String(index) }
       f.emit({ event: 'requestfinished', sequence: index + 1, request: info })
     }
-    const measure = vi.spyOn(NativeRequest.prototype, 'ownMetadataBytes')
-    for (let index = 4096; index < 4196; index++) {
-      const info = { ...f.info, id: String(index) }
-      f.emit({ event: 'requestfinished', sequence: index + 1, request: info })
-    }
-    expect(f.network.metadataDiagnostics().cachedRequests).toBe(4096)
-    // One measurement per admitted request, not one per retained request.
-    expect(measure.mock.calls.length).toBeLessThan(1000)
-    measure.mockRestore()
+    expect(f.network.metadataDiagnostics().cachedRequests).toBe(4196)
   })
-  it('evicts completed binding metadata by bytes while preserving externally held identity', () => {
+  it('keeps large request metadata past the old byte limit and preserves held identity', () => {
     const f = fixture()
     let first: NativeRequest | undefined
     f.network.on('request', (request) => {
       first ??= request
     })
-    // One shared string: the retention limit counts bytes, not allocations.
+    // One shared string: 130 x 8 MiB is past the old 960 MiB retention limit.
     const postData = 'x'.repeat(8 * 1024 * 1024)
     for (let index = 0; index < 130; index++) {
       const info = { ...f.info, id: String(index), postData }
@@ -578,10 +570,7 @@ describe('native network ownership and transport', () => {
         request: info,
       })
     }
-    expect(f.network.metadataDiagnostics().cachedRequests).toBeLessThan(130)
-    expect(f.network.metadataDiagnostics().cachedRequestBytes).toBeLessThanOrEqual(
-      5 * 192 * 1024 * 1024,
-    )
+    expect(f.network.metadataDiagnostics().cachedRequests).toBe(130)
     let replay: NativeRequest | undefined
     f.network.on('request', (request) => {
       replay = request
@@ -593,20 +582,6 @@ describe('native network ownership and transport', () => {
     })
     expect(replay).toBe(first)
     expect(replay!.postData()).toBe('actual')
-  })
-  it('measures long redirect metadata iteratively without duplicating shared graphs', () => {
-    const f = fixture()
-    const requests = Array.from(
-      { length: 12000 },
-      (_, index) => new NativeRequest(f.network, { ...f.info, id: String(index) }),
-    )
-    for (let index = 1; index < requests.length; index++)
-      requests[index]!.update(undefined, undefined, requests[index - 1])
-    const seen = new Set<NativeRequest>()
-    const bytes = requests[0]!.retainedMetadataBytes(seen)
-    expect(seen.size).toBe(12000)
-    expect(bytes).toBe(requests.reduce((total, item) => total + item.ownMetadataBytes(), 0))
-    expect(requests.at(-1)!.retainedMetadataBytes(seen)).toBe(0)
   })
   it('accounts for response metadata grown by a native wait without changing wrapper identity', () => {
     const f = fixture()

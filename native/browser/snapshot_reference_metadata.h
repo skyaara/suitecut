@@ -20,8 +20,8 @@ inline bool SnapshotReferenceNodes(CefRefPtr<CefDictionaryValue> result,
   const auto deep = remote && remote->GetString("subtype") == "array"
     ? remote->GetDictionary("deepSerializedValue") : nullptr;
   const auto nodes = deep && deep->GetString("type") == "array" ? deep->GetList("value") : nullptr;
-  if (!nodes || nodes->GetSize() > SnapshotReferences::kActiveNodes)
-    return fail("Native snapshot reference node metadata exceeds capacity or has invalid shape");
+  if (!nodes)
+    return fail("Native snapshot reference node metadata has invalid shape");
   std::set<int> identities;
   std::vector<SnapshotReferences::Node> validated;
   validated.reserve(nodes->GetSize());

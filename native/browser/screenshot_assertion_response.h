@@ -20,7 +20,7 @@ inline ScreenshotResponseObservation ObserveScreenshotResponse(SuiteCutArtifactC
   if(stage==Stage::Boolean){const auto remote=result->GetDictionary("result");if(!remote||remote->GetString("type")!="boolean"||remote->GetType("value")!=VTYPE_BOOL||!remote->GetBool("value"))return fail("Invalid native screenshot boolean readiness response");}
   else if(stage==Stage::Viewport){const auto remote=result->GetDictionary("result"),value=remote?remote->GetDictionary("value"):nullptr;double width=0,height=0;if(!remote||remote->GetString("type")!="object"||!number(value,"width",width)||!number(value,"height",height)||width<=0||height<=0)return fail("Invalid native screenshot viewport readiness response");}
   else if(stage==Stage::Layout){const auto viewport=result->GetDictionary("cssVisualViewport"),content=result->GetDictionary("cssContentSize");double x=0,y=0,cx=0,cy=0,width=0,height=0;if(!number(viewport,"pageX",x)||!number(viewport,"pageY",y)||!number(content,"x",cx)||!number(content,"y",cy)||!number(content,"width",width)||!number(content,"height",height)||width<=0||height<=0)return fail("Invalid native screenshot layout response");}
-  else if(stage==Stage::PNG){if(result->GetType("data")!=VTYPE_STRING||result->GetString("data").empty()||result->GetString("data").length()>((2*1024*1024+2)/3)*4)return fail("Invalid or excessive native screenshot PNG response");}
+  else if(stage==Stage::PNG){if(result->GetType("data")!=VTYPE_STRING||result->GetString("data").empty())return fail("Invalid native screenshot PNG response");}
   else if(stage==Stage::PDF)return fail("PDF is not a native screenshot assertion stage");
   observation.valid=true;return observation;
 }

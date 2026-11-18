@@ -49,7 +49,8 @@ int main(int argc,char** argv) {
   assert(NativeURLGlobMatches("a\\?b","a?b"));
   assert(NativeURLGlobMatches("**",""));
   std::vector<std::string> alternatives;
-  assert(!suitecut::NativeURLGlobExpand("{a,b}{a,b}{a,b}{a,b}{a,b}{a,b}{a,b}{a,b}{a,b}",alternatives));
+  assert(suitecut::NativeURLGlobExpand("{a,b}{a,b}{a,b}{a,b}{a,b}{a,b}{a,b}{a,b}{a,b}",alternatives) && alternatives.size()==512);
+  const std::string long_pattern(65536,'x');assert(NativeURLGlobMatches(long_pattern+"{a,b}",long_pattern+"b"));
   const uint64_t iterations=argc>1?std::strtoull(argv[1],nullptr,10):100000;
   uint64_t seed=0x72993a47cd61ULL;
   const std::string alphabet="ab/*?\\";

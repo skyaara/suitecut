@@ -109,16 +109,16 @@ try {
     },
     { timeout: 2000 },
   )
-  const excessRejected = assert.rejects(excess, /physical host callback capacity/u)
   await page.evaluate(async () => await (await fetch('/excess')).text())
-  await excessRejected
-  assert.equal(excessCalls, 0)
+  await excess
+  assert.ok(excessCalls >= 1)
+  await drainMicrotasks()
   assert.equal(nativeEventPredicatePhysicalCount(page.source), 64)
   state = State.parse(await browser.runAutomation('diagnostics'))
   assert.equal(state.pendingEventPredicates, 0)
   assert.equal(state.otherOperations, 0)
   checks.push(
-    '65th actual host callback rejected at capacity without releasing unresolved closures',
+    '65th actual host callback still runs and matches while 64 unresolved closures stay pending',
   )
 
   for (const release of releases) release(false)

@@ -29,15 +29,11 @@ inline bool NativeURLGlobSimple(const std::string& pattern, const std::string& u
   }
   return previous.back();
 }
-// Bounded brace alternatives allow common **/*.{png,jpg} route patterns.
-// Expansion is validated at route registration to avoid an exponential request
-// callback. At most 256 flattened alternatives are accepted.
+// Brace alternatives allow common **/*.{png,jpg} route patterns.
 inline bool NativeURLGlobExpand(const std::string& input, std::vector<std::string>& output) {
   std::vector<std::string> pending{input};
-  size_t examined = 0;
   while (!pending.empty()) {
     auto pattern = std::move(pending.back()); pending.pop_back();
-    if (++examined > 1024 || pattern.size() > 8192) return false;
     bool expanded = false;
     for (size_t begin = 0; begin < pattern.size(); ++begin) {
       if (pattern[begin] == '\\') { if (begin + 1 < pattern.size()) ++begin; continue; }
@@ -56,15 +52,11 @@ inline bool NativeURLGlobExpand(const std::string& input, std::vector<std::strin
       }
       if (end == pattern.size() || choices.empty()) continue;
       choices.push_back(pattern.substr(start, end - start));
-      if (choices.size() + pending.size() + output.size() > 256) return false;
       for (const auto& choice : choices)
         pending.push_back(pattern.substr(0, begin) + choice + pattern.substr(end + 1));
       expanded = true; break;
     }
-    if (!expanded) {
-      output.push_back(std::move(pattern));
-      if (output.size() > 256) return false;
-    }
+    if (!expanded) output.push_back(std::move(pattern));
   }
   return true;
 }

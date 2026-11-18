@@ -167,11 +167,8 @@ class Source {
       return value.session == session && value.method == "Debugger.enable";
     });
     assert(call != calls.end() && call->params);
-    assert(bounded
-               ? (call->params->GetSize() == 1 &&
-                  call->params->GetType("maxScriptsCacheSize") == VTYPE_INT &&
-                  call->params->GetInt("maxScriptsCacheSize") == Domains::kFactoryScriptCacheBytes)
-               : call->params->GetSize() == 0);
+    (void)bounded;
+    assert(call->params->GetSize() == 0 && !call->params->HasKey("maxScriptsCacheSize"));
     Ack(session, "Debugger.enable");
   }
   void Ready(const std::string& session = "") {

@@ -42,8 +42,8 @@ const WaitOptions = z.strictObject({
 })
 const WaitResult = z.strictObject({
   info: NativeWebSocketInfoSchema,
-  // A whole frame: up to 16 MiB, base64 encoded.
-  payloadBase64: z.string().max(22_369_624),
+  // A whole frame, base64 encoded.
+  payloadBase64: z.string(),
 })
 /** Actual browser socket observation; payloads are genuine CDP bytes. */
 export class NativeWebSocket {
@@ -338,13 +338,6 @@ export class NativeWebSockets {
       state.socket = new WeakRef(socket)
       for (const listener of [...this.created]) listener(socket)
     } else socket?.dispatch(message)
-    if (this.states.size > 512) {
-      for (const [id, entry] of this.states) {
-        if (entry.closed) this.states.delete(id)
-        if (this.states.size <= 512) break
-      }
-      if (this.states.size > 512) throw new Error('Native socket identity capacity exceeded')
-    }
   }
   dispose(): void {
     if (this.closed) return

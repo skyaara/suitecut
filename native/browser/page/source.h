@@ -33,10 +33,7 @@ class Source : public CefClient,
   void Error(const char* message);
   // Counts a bookkeeping anomaly that Chromium itself survives (a reply that
   // never came, an event out of order, a full table) without closing the page.
-  void Degraded(const std::string& message) {
-    const auto key = message.substr(0, 256);
-    if (degraded_.size() < 256 || degraded_.contains(key)) ++degraded_[key];
-  }
+  void Degraded(const std::string& message) { ++degraded_[message]; }
   CefRefPtr<CefFrameHandler> GetFrameHandler() override;
   void OnFrameCreated(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame) override;
   void OnFrameDestroyed(CefRefPtr<CefBrowser>, CefRefPtr<CefFrame> frame) override;

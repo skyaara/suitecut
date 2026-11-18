@@ -11,7 +11,7 @@
 
 namespace suitecut {
 // Cross-page read-only CDP calls cannot borrow the remote page's public request
-// IDs. Their process cap survives cancellation/closure of the originating page;
+// IDs. Their process count survives cancellation/closure of the originating page;
 // only the actual remote ACK, submission failure or remote channel death retires
 // a call. A remote renderer that hasn't answered in 30 s gives the call's slot
 // back and is reported; a late answer then settles nothing.
@@ -22,7 +22,7 @@ class OwnerFrameControls {
   OwnerFrameControls(Clock now,Fail fail):now_(std::move(now)),fail_(std::move(fail)){}
   ~OwnerFrameControls(){Close();}
   std::shared_ptr<Physical> Begin(){
-    if(life_->closed||life_->failed||process_physical_>=64||life_->entries.size()>=64||life_->sequence==std::numeric_limits<uint64_t>::max())return nullptr;
+    if(life_->closed||life_->failed||life_->sequence==std::numeric_limits<uint64_t>::max())return nullptr;
     const auto token=++life_->sequence;life_->entries.emplace(token,now_()+30000);++process_physical_;
     const auto life=life_;auto result=std::make_shared<Physical>();result->release=[life,token]{if(life->entries.erase(token))--process_physical_;};return result;
   }

@@ -12,11 +12,11 @@ const Counter = z
 export const NativePageRouteMutationSchema = z.strictObject({
   event: z.literal('routemutation'),
   sequence: z.number().int().positive().max(Number.MAX_SAFE_INTEGER),
-  mutationId: z.string().min(1).max(128),
+  mutationId: z.string().min(1),
   phase: z.enum(['admitted', 'applied']),
-  registrationIds: z.array(z.string().min(1).max(128)).max(256),
+  registrationIds: z.array(z.string().min(1)),
   callbackScope: Counter,
-  callbackTokens: z.array(Counter).max(128),
+  callbackTokens: z.array(Counter),
 })
 export type NativePageRouteMutation = z.infer<typeof NativePageRouteMutationSchema>
 /** Compare only the genuine native pair; no part is parsed as a worker/Page ID. */

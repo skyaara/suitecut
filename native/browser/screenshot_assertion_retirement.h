@@ -15,7 +15,6 @@ namespace suitecut {
 // Source supplies actual channel death explicitly, not renderer navigation.
 class ScreenshotAssertionRetirement {
  public:
-  static constexpr size_t kOwners=16,kPhysical=128;
   enum class Work {Renderer,Restoration,Groups,Pixels,Files,Cleanup,View,Validation};
   enum class Outcome {Pending,Passed,ObservedFailure,Deadline,HardFailure,Canceled};
   struct Identity {int page=0,owner=0;uint64_t generation=0;bool operator==(const Identity&)const=default;};
@@ -26,13 +25,13 @@ class ScreenshotAssertionRetirement {
   };
   struct Ticket {uint64_t serial=0;Identity identity;Work kind=Work::Renderer;int command=0;std::string session;bool operator==(const Ticket&)const=default;};
   bool Admit(Identity identity,double original_deadline){
-    if(identity.page<1||identity.owner<1||!identity.generation||!std::isfinite(original_deadline)||original_deadline<0||entries_.size()>=kOwners||entries_.contains(identity.owner))return false;
+    if(identity.page<1||identity.owner<1||!identity.generation||!std::isfinite(original_deadline)||original_deadline<0||entries_.contains(identity.owner))return false;
     try{Entry entry;entry.identity=identity;entry.original_deadline=original_deadline;entry.error.reserve(4096);entries_.emplace(identity.owner,std::move(entry));return true;}catch(const std::bad_alloc&){return false;}
   }
   const Entry* Get(Identity identity)const{const auto found=entries_.find(identity.owner);return found!=entries_.end()&&found->second.identity==identity?&found->second:nullptr;}
   bool Contains(int owner)const{return entries_.contains(owner);}
   std::optional<Ticket> Begin(Identity identity,Work kind,int command,const std::string&session,double now){
-    auto*entry=Find(identity);if(!entry||entry->cleanup_closed||!std::isfinite(now)||command<0||session.size()>128||tickets_.size()>=kPhysical||serial_==UINT64_MAX||
+    auto*entry=Find(identity);if(!entry||entry->cleanup_closed||!std::isfinite(now)||command<0||serial_==UINT64_MAX||
        (entry->frozen&&(kind==Work::Renderer||kind==Work::Pixels))||
        (entry->frozen&&now>=entry->cleanup_deadline)||
        (!entry->frozen&&entry->original_deadline&&now>=entry->original_deadline))return {};
@@ -73,7 +72,7 @@ class ScreenshotAssertionRetirement {
   }
   bool Fail(Identity identity,const std::string&error,double now){
     auto*entry=Find(identity);if(!entry||error.empty()||!std::isfinite(now))return false;
-    if(entry->error.empty())entry->error.assign(error.data(),std::min<size_t>(4096,error.size()));
+    if(entry->error.empty())entry->error=error;
     if(!entry->frozen){entry->frozen=true;entry->cleanup_deadline=now+2000;}
     entry->requested=Outcome::HardFailure;return true;
   }

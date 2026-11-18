@@ -11,9 +11,9 @@ std::map<int,ScreenshotAssertionViewRestore>screenshot_assertion_views_;
 void ScreenshotAssertionRestoreView(suitecut::ScreenshotAssertionRetirement::Identity identity,SuiteCutArtifactController::Callback done){
   using Policy=suitecut::ScreenshotAssertionRetirement;
   if(!browser_||artifact_view_owner_!=identity.owner||!ScreenshotAssertionPinsCurrent(identity)||screenshot_assertion_views_.contains(identity.owner)||
-     !std::isfinite(scale_)||scale_<=0||width_<=0||height_<=0||width_*scale_>32768||height_*scale_>32768){done(false,"Native screenshot physical view ownership changed");return;}
+     !std::isfinite(scale_)||scale_<=0||width_<=0||height_<=0){done(false,"Native screenshot physical view ownership changed");return;}
   auto ticket=screenshot_assertion_retirement_.Begin(identity,Policy::Work::View,0,"",Now());
-  if(!ticket){done(false,"Native screenshot physical view restoration capacity unavailable");return;}
+  if(!ticket){done(false,"Native screenshot physical view restoration could not begin (closed, expired or serial exhausted)");return;}
   try{
     const auto [position,inserted]=screenshot_assertion_views_.emplace(identity.owner,ScreenshotAssertionViewRestore{identity,*ticket,std::move(done),int(std::round(width_*scale_)),int(std::round(height_*scale_)),false});
     if(!inserted){screenshot_assertion_retirement_.WithdrawUnsubmitted(*ticket);return;}

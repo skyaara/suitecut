@@ -2,7 +2,7 @@
 // Exact active callback capabilities survive page removal, without making page
 // close wait on a user function which may itself be awaiting that close.
 uint64_t Engine::RetainLocatorHandler(int page,CefRefPtr<Source> source) {
-  if(!source||locator_handler_leases_.size()>=64||locator_handler_leases_.contains(page)||locator_handler_invocation_==SuiteCutActionPauseRegistry::kMaxWireInteger)return 0;
+  if(!source||locator_handler_leases_.contains(page)||locator_handler_invocation_==SuiteCutActionPauseRegistry::kMaxWireInteger)return 0;
   const auto token=suitecut::NextNativeLocatorHandlerInvocation(SuiteCutActionPauseRegistry::kMaxWireInteger);if(!token)return 0;
   locator_handler_leases_.emplace(page,std::move(source));locator_handler_invocation_=token;WakeLocatorHandlers();return token;
 }
@@ -64,7 +64,6 @@ void Engine::LocatorHandlerChannelClosed() {
 bool Engine::TrackLocatorHandlerCommand(int id,int page,uint64_t generation) {
   const auto origin=suitecut::CurrentNativeWorkOrigin();
   if(!origin.locator_handler_invocation)return true;
-  if(locator_handler_commands_.size()>=suitecut::AcceptedTaskWork::kPending)return false;
   return locator_handler_commands_.emplace(id,LocatorHandlerCommand{origin,page,generation}).second;
 }
 void Engine::ForgetLocatorHandlerCommand(int id){locator_handler_commands_.erase(id);}

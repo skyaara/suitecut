@@ -10,7 +10,7 @@ import { InputFixture } from './native-screenshot-input-fixture.js'
 const turn = () => new Promise((resolve) => setImmediate(resolve))
 
 describe('public screenshot failure with physically owned cleanup', () => {
-  it('returns all16 original abort reasons while retaining every cleanup slot through real receipts', async () => {
+  it('returns all16 original abort reasons and admits more work while every cleanup awaits its real receipt', async () => {
     const fixtures = Array.from({ length: 16 }, () => new InputFixture())
     const controllers = fixtures.map(() => new AbortController())
     const releases: (() => void)[] = []
@@ -47,14 +47,11 @@ describe('public screenshot failure with physically owned cleanup', () => {
     expect(await Promise.all(pending)).toEqual(reasons)
     await turn()
     expect(releases).toHaveLength(16)
-    const overflow = new InputFixture()
-    await expect(
-      runNativeScreenshotInput(overflow.run, overflow.source, Buffer.alloc(33), {}, 0),
-    ).rejects.toThrow('staging capacity')
-    expect(overflow.actions).toHaveLength(0)
+    const extra = new InputFixture()
+    await runNativeScreenshotInput(extra.run, extra.source, Buffer.alloc(33), {}, 0)
+    expect(extra.actions.length).toBeGreaterThan(0)
     for (const release of releases) release()
     await turn()
-    await runNativeScreenshotInput(overflow.run, overflow.source, Buffer.alloc(33), {}, 0)
   })
 
   it('publishes a genuine native deadline failure while discard remains pending', async () => {
@@ -82,7 +79,7 @@ describe('public screenshot failure with physically owned cleanup', () => {
     await turn()
   })
 
-  it('bounds unreported late cleanup failures in the same16-slot budget and consumes them only on their source', async () => {
+  it('reports late cleanup failures only on their own source without blocking unrelated work', async () => {
     const fixtures = Array.from({ length: 16 }, () => new InputFixture())
     const failures = fixtures.map((fixture, i) => {
       fixture.source.runContext = () => Promise.reject(new Error(`late cleanup ${i}`))
@@ -97,10 +94,7 @@ describe('public screenshot failure with physically owned cleanup', () => {
     await Promise.all(failures)
     await turn()
     const unrelated = new InputFixture()
-    await expect(
-      runNativeScreenshotInput(unrelated.run, unrelated.source, Buffer.alloc(33), {}, 0),
-    ).rejects.toThrow('staging capacity')
-    expect(unrelated.actions).toHaveLength(0)
+    await runNativeScreenshotInput(unrelated.run, unrelated.source, Buffer.alloc(33), {}, 0)
     for (const fixture of fixtures) {
       await expect(
         runNativeScreenshotInput(fixture.run, fixture.source, Buffer.alloc(33), {}, 0),

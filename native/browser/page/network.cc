@@ -29,7 +29,7 @@ auto Source::NativeStartContextHeaders() -> void {
             }
             self->NativeStartContextHAR();
           })) {
-    Error("Native context HTTP headers target capacity exceeded");
+    Error("Native context HTTP headers target is already attached or its context is unknown");
     suitecut::browser::CloseBrowser(browser_, true);
   }
 }
@@ -60,7 +60,7 @@ auto Source::NativeStartContextHAR() -> void {
             }
             self->NativeStartContextRoutes();
           }))
-    NetworkFatal("Native Source context HAR policy capacity exceeded");
+    NetworkFatal("Native Source context HAR policy target is already attached, closed or its context is unknown");
 }
 
 auto Source::ContextWorkerNetworkEvent(Dict event) -> bool {
@@ -86,17 +86,17 @@ auto Source::NativeStartPrivateResponseSession() -> void {
   if (!private_response_->Start(Now() + 30000, [this](bool ok, const std::string& error) {
         if (closing_page_) return;
         private_response_ready_ = true;
-        if (!ok) private_response_error_ = error.substr(0, 512);
+        if (!ok) private_response_error_ = error;
         MaybeReady();
       })) {
     private_response_.reset();
     private_response_ready_ = true;
-    private_response_error_ = "Private body session reservation capacity exceeded";
+    private_response_error_ = "Private body session could not start";
   }
 }
 
 auto Source::NativePrivateBodyFallback(bool actual_ok, const std::string& actual_json) -> bool {
-  if (!actual_ok) return actual_json.size() <= 65536;
+  if (!actual_ok) return true;
   const auto parsed = CefParseJSON(actual_json, JSON_PARSER_RFC);
   const auto value = parsed ? parsed->GetDictionary() : nullptr;
   return value && value->GetType("body") == VTYPE_STRING &&
@@ -150,8 +150,8 @@ auto Source::NativeReadResponseBody(const std::string& session, const std::strin
             return;
           }
           const int id = AllocateDevToolsId();
-          if (!id || network_calls_.size() >= 1024) {
-            done(false, "Native response-body command capacity exceeded");
+          if (!id) {
+            done(false, "Native response-body command id unavailable");
             return;
           }
           const double physical_deadline = original ? original : Now() + 30000;
@@ -244,8 +244,10 @@ auto Source::NativeNetworkSend(const std::string& session, const std::string& me
                                suitecut::NetworkControls::Result callback, double deadline)
     -> void {
   const int id = AllocateDevToolsId();
-  if (!id || network_calls_.size() >= 1024) {
-    callback(false, "Native network command capacity exceeded");
+  if (!id) {
+    // Only a missing browser or exhausted DevTools id reaches this; the text is
+    // matched by websocket_routes.h and websocket_routing.inc.
+    callback(false, "Native network command unavailable (page closed or DevTools id exhausted)");
     return;
   }
   if (deadline && Now() >= deadline) {
@@ -284,8 +286,6 @@ auto Source::NativeFrameRequestSession(const std::string& request, const std::st
     document.mapped().session = session;
     documents_.insert(std::move(document));
   }
-  for (auto& key : document_order_)
-    if (key == old_key) key = new_key;
   auto active = active_requests_.extract(old_key);
   if (!active.empty()) {
     if (active_requests_.contains(new_key)) {
@@ -313,8 +313,6 @@ auto Source::NativeWorkerInitialRequestSession(const std::string& target, const 
   document.key() = new_key;
   document.mapped().session = child;
   documents_.insert(std::move(document));
-  for (auto& key : document_order_)
-    if (key == old_key) key = new_key;
   auto active = active_requests_.extract(old_key);
   if (!active.empty()) {
     if (active_requests_.contains(new_key)) {
@@ -337,29 +335,15 @@ auto Source::AttributeInitialPopupRequest(Dict data) -> void {
 auto Source::NetworkEvent(const std::string& method, Dict data, const std::string& session)
     -> void {
   const auto request = data->GetString("requestId").ToString();
-  if (request.empty() || request.size() > 256) return;
+  if (request.empty()) return;
   const auto key = session + "\n" + request;
   if (method == "Network.requestWillBeSent") {
     const auto frame = data->GetString("frameId").ToString();
-    if (active_requests_.size() >= 8192 && !active_requests_.contains(key)) {
-      // A full table forgets its oldest request, as Chromium would have long
-      // finished or abandoned it, instead of closing the page.
-      auto oldest = active_requests_.begin();
-      for (auto it = active_requests_.begin(); it != active_requests_.end(); ++it)
-        if (it->second.started < oldest->second.started) oldest = it;
-      const auto evicted = oldest->second.frame;
-      active_requests_.erase(oldest);
-      Degraded("Native active network request limit exceeded");
-      NetworkActivity(evicted);
-    }
     active_requests_[key] = {frame, Now()};
     NetworkActivity(frame);
     {
       auto info = data->GetDictionary("request");
       if (!info) return;
-      if (!documents_.contains(key) && documents_.size() >= 1024)
-        suitecut::EvictDocument(documents_, document_order_);
-      if (!documents_.contains(key)) document_order_.push_back(key);
       documents_[key] = {frame,
                          request,
                          session,

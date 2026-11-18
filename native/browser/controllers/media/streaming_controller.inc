@@ -71,7 +71,7 @@
     try {
       auto controls = engine_.streaming();
       if (action == "start") {
-        if (message->GetType("clientToken") != VTYPE_STRING || message->GetString("clientToken").ToString().empty() || message->GetString("clientToken").ToString().size() > 128 ||
+        if (message->GetType("clientToken") != VTYPE_STRING || message->GetString("clientToken").ToString().empty() ||
             message->GetType("ffmpegPath") != VTYPE_STRING || message->GetType("destination") != VTYPE_STRING ||
             message->GetType("width") != VTYPE_INT || message->GetType("height") != VTYPE_INT || message->GetType("audio") != VTYPE_BOOL ||
             (message->GetType("framesPerSecond") != VTYPE_INT && message->GetType("framesPerSecond") != VTYPE_DOUBLE) ||
@@ -98,7 +98,7 @@
           CefDictionaryValue::KeyList fields;policy->GetKeys(fields);const std::set<std::string> allowed{"maxAttempts","initialDelayMs","maxDelayMs","timeoutMs"};
           for(const auto&field:fields)if(!allowed.contains(field.ToString())||policy->GetType(field)!=VTYPE_INT){Complete(id,false,"Invalid native reconnect policy field");return;}
           suitecut::StreamReconnectOptions bounded;
-          if(policy->HasKey("maxAttempts"))bounded.max_attempts=static_cast<unsigned>(policy->GetInt("maxAttempts"));
+          if(policy->HasKey("maxAttempts")){if(policy->GetInt("maxAttempts")<1){Complete(id,false,"Invalid native reconnect policy");return;}bounded.max_attempts=static_cast<unsigned>(policy->GetInt("maxAttempts"));}
           if(policy->HasKey("initialDelayMs"))bounded.initial_delay=std::chrono::milliseconds(policy->GetInt("initialDelayMs"));
           if(policy->HasKey("maxDelayMs"))bounded.max_delay=std::chrono::milliseconds(policy->GetInt("maxDelayMs"));
           if(policy->HasKey("timeoutMs"))bounded.timeout=std::chrono::milliseconds(policy->GetInt("timeoutMs"));
@@ -107,7 +107,7 @@
         const auto stream=controls->Start(id, page_id_, engine_.contexts()->ContextId(page_id_), std::move(options),
           [self = CefRefPtr<Source>(this), id, generation](const std::string& stream, const suitecut::StreamPipelineResult& result) {
             if (!self->operations_.IsCurrent(id, generation)) return;
-            if (!result.failure.empty()) self->Complete(id, false, result.failure.substr(0, 4096));
+            if (!result.failure.empty()) self->Complete(id, false, result.failure);
             else self->Complete(id, true, "", Json(StreamingResult(stream, result, "streaming", self->engine_.streaming()->ClientToken(stream))));
           }, message->GetString("clientToken").ToString());
         // This is the Engine's actual allocated identity, before encoded ACK.
@@ -117,7 +117,7 @@
         auto packet=Header("streaming");SendPacket(packet,std::vector<uint8_t>(starting.begin(),starting.end()));
         EmitFrame(); browser_->GetHost()->Invalidate(PET_VIEW); return;
       }
-      if (message->GetType("streamId") != VTYPE_STRING || message->GetString("streamId").ToString().size() > 128 ||
+      if (message->GetType("streamId") != VTYPE_STRING ||
           !controls->Owns(message->GetString("streamId"), page_id_)) {
         Complete(id, false, "Unknown native stream for this page"); return;
       }
@@ -127,7 +127,7 @@
         controls->Stop(id, stream, deadline,
           [self = CefRefPtr<Source>(this), id, generation, action](const std::string& name, const suitecut::StreamPipelineResult& result) {
             if (!self->operations_.IsCurrent(id, generation)) return;
-            if (!result.failure.empty() && action != "cancel") self->Complete(id, false, result.failure.substr(0, 4096));
+            if (!result.failure.empty() && action != "cancel") self->Complete(id, false, result.failure);
             else self->Complete(id, true, "", Json(StreamingResult(name, result, result.failure.empty() ? "complete" : "failed", self->engine_.streaming()->ClientToken(name))));
           }); return;
       }
@@ -142,7 +142,7 @@
       result->SetInt("selectedPageId", controls->SelectedPage(stream));
       result->SetDouble("framesPerSecond", controls->FramesPerSecond(stream));
       result->SetDouble("timestampMs", Now()); Complete(id, true, "", Json(result));
-    } catch (const std::exception& error) { Complete(id, false, std::string(error.what()).substr(0, 4096)); }
+    } catch (const std::exception& error) { Complete(id, false, error.what()); }
   }
 #else
   void StreamingCommand(int id, uint64_t, Dict) { Complete(id, false, "Native streaming subprocess ownership currently requires Linux glibc"); }

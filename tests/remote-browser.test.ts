@@ -306,20 +306,20 @@ describe('cross-browser facade lifecycle and bounded actions', () => {
     await browser.close()
   })
 
-  it('bounds pending page actions at 256 and admits work again after the backlog drains', async () => {
+  it('queues page actions past the old 256 cap and runs every one in order', async () => {
     const { driver } = fakeDriver()
     const browser = new ProtocolBrowser(driver)
     const page = await browser.newPage()
     const blocked = gate()
     driver.insertText.mockImplementationOnce(() => blocked.promise)
-    const accepted = Array.from({ length: 256 }, (_, i) => page.keyboard.type(`item-${i}`))
-    await expect(page.keyboard.type('overflow')).rejects.toThrow('action queue limit reached')
+    const accepted = Array.from({ length: 300 }, (_, i) => page.keyboard.type(`item-${i}`))
     await vi.waitFor(() => expect(driver.insertText).toHaveBeenCalledTimes(1))
     blocked.release()
     await Promise.all(accepted)
-    expect(driver.insertText).toHaveBeenCalledTimes(256)
-    await expect(page.keyboard.type('after drain')).resolves.toBeUndefined()
-    expect(driver.insertText).toHaveBeenCalledTimes(257)
+    expect(driver.insertText).toHaveBeenCalledTimes(300)
+    expect(driver.insertText.mock.calls.map((call) => call.at(-1))).toEqual(
+      Array.from({ length: 300 }, (_, i) => `item-${i}`),
+    )
     await browser.close()
   })
 

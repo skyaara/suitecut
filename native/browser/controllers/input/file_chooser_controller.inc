@@ -33,8 +33,8 @@ void FileChooserElement(int id, Dict message) {
   if (message->GetType("backendNodeId") != VTYPE_INT || message->GetInt("backendNodeId") <= 0) {
     Complete(id, false, "Invalid native file chooser node"); return;
   }
-  if (handles_.size() + pending_handle_groups_.size() >= 1024 || next_handle_ == std::numeric_limits<int>::max()) {
-    Complete(id, false, "Native object handle limit exceeded"); return;
+  if (next_handle_ == std::numeric_limits<int>::max()) {
+    Complete(id, false, "Native object handle identity exhausted"); return;
   }
   WithFrame(id, FrameId(message), [this, id, message](int context) {
     const auto frame_id = FrameId(message); const auto frame = frame_states_.find(frame_id);

@@ -95,24 +95,17 @@ export function createCDPDriver(wire: BrowserWire): BrowserProtocolDriver {
   let initialization: Promise<void> | undefined
   let discovering = true
   let inputTail: Promise<void> = Promise.resolve()
-  let queuedInputs = 0
 
   // Chromium shares focus across targets. Keep activation and each complete native
   // gesture together; document evaluation and locator waits remain independent.
   function input<T>(id: string, action: () => Promise<T>): Promise<T> {
-    if (queuedInputs >= 256) return Promise.reject(new Error('Browser input queue limit reached'))
-    queuedInputs++
     const work = inputTail.then(async () => {
       await request(id, 'Page.bringToFront')
       return action()
     })
     inputTail = work.then(
-      () => {
-        queuedInputs--
-      },
-      () => {
-        queuedInputs--
-      },
+      () => undefined,
+      () => undefined,
     )
     return work
   }

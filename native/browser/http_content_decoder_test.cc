@@ -4,6 +4,8 @@
 #endif
 #include <cassert>
 #include <iostream>
+#include <memory>
+#include <string>
 #include <random>
 #include <vector>
 #include <brotli/encode.h>
@@ -22,18 +24,20 @@ int main(){
  for(size_t count=0;count<br.size();++count){actual.clear();assert(!Read("br",Bytes(br.begin(),br.begin()+count),actual));assert(Decoder::GlobalBytes()==0);}
  auto corrupt=gzip;corrupt.back()^=1;actual.clear();assert(!Read("gzip",corrupt,actual));
  auto extra=br;extra.push_back(0);actual.clear();assert(!Read("br",extra,actual));
- for(const std::string value:{"gzip,","gzip,,br","unsupported","gzip,gzip,gzip,gzip,gzip"}){Decoder decoder([](auto){assert(false);return true;});assert(!decoder.Configure(value));}
- {Decoder decoder([](auto){return true;},32);assert(!decoder.Configure("gzip"));assert(decoder.bytes()==0);}
- {bool current=true;Decoder decoder([](auto){return true;},Decoder::kPerCodecBytes,[&]{return current;});assert(decoder.Configure("gzip"));assert(decoder.Push(std::span(gzip).first(2)));const auto live=decoder.bytes();current=false;assert(!decoder.Push(std::span(gzip).subspan(2)));assert(decoder.bytes()==live);decoder.Cancel();assert(Decoder::GlobalBytes()==0);}
+ for(const std::string value:{"gzip,","gzip,,br","unsupported"}){Decoder decoder([](auto){assert(false);return true;});assert(!decoder.Configure(value));}
+ // No chain-length or header-length cap: five gzip stages behind a >256-byte header decode whole.
+ {Bytes nested=hello;for(int i=0;i<5;++i)nested=Z(nested,MAX_WBITS+16);std::string header;for(int i=0;i<60;++i)header+="identity, ";header+="gzip,gzip,gzip,gzip,gzip";assert(header.size()>256);actual.clear();assert(Read(header,nested,actual,7));assert(actual==hello);assert(Decoder::GlobalBytes()==0);}
+ {bool current=true;Decoder decoder([](auto){return true;},[&]{return current;});assert(decoder.Configure("gzip"));assert(decoder.Push(std::span(gzip).first(2)));const auto live=decoder.bytes();current=false;assert(!decoder.Push(std::span(gzip).subspan(2)));assert(decoder.bytes()==live);decoder.Cancel();assert(Decoder::GlobalBytes()==0);}
  {std::unique_ptr<Decoder>decoder;decoder=std::make_unique<Decoder>([&](auto){assert(Decoder::GlobalBytes()>0);decoder.reset();assert(Decoder::GlobalBytes()>0);return true;});assert(decoder->Configure("gzip"));auto*inflight=decoder.get();assert(!inflight->Push(gzip));assert(!decoder&&Decoder::GlobalBytes()==0);}
  Bytes large(1024*1024);std::mt19937 random(7);for(auto&byte:large)byte=random();const auto compressed=B(large);
- {Decoder decoder([](auto){return true;},65536);assert(decoder.Configure("br"));assert(!decoder.Push(compressed));assert(decoder.bytes()<=65536);decoder.Cancel();assert(Decoder::GlobalBytes()==0);}
+ {Decoder decoder([](auto){return true;});assert(decoder.Configure("br"));assert(decoder.Push(compressed));assert(decoder.Finish());assert(decoder.peak()>65536);decoder.Cancel();assert(Decoder::GlobalBytes()==0);}
  actual.clear();assert(Read("br",compressed,actual,4096));assert(actual==large);assert(Decoder::GlobalBytes()==0);
  {Decoder decoder([](auto){return true;});assert(decoder.Configure("gzip"));assert(decoder.Push(gzip));assert(decoder.Finish());assert(decoder.Finish());assert(!decoder.Push(gzip));}
- {std::vector<std::unique_ptr<Decoder>> held;for(int i=0;i<64;++i){held.push_back(std::make_unique<Decoder>([](auto){return true;}));assert(held.back()->Configure(""));}assert(Decoder::Instances()==64);Decoder rejected([](auto){return true;});assert(!rejected.Configure(""));held.pop_back();assert(Decoder::Instances()==63);Decoder admitted([](auto){return true;});assert(admitted.Configure(""));}
- {std::vector<std::unique_ptr<Decoder>> held;bool full=false;for(int i=0;i<64;++i){auto decoder=std::make_unique<Decoder>([](auto){return true;});assert(decoder->Configure("br"));const bool accepted=decoder->Push(compressed);assert(Decoder::GlobalBytes()<=Decoder::kGlobalCodecBytes);held.push_back(std::move(decoder));if(!accepted){full=true;break;}}assert(full);assert(Decoder::GlobalBytes()>0);held.clear();assert(Decoder::GlobalBytes()==0);}
+ // No instance cap (former 64) and no global memory budget (former 64 MiB).
+ {std::vector<std::unique_ptr<Decoder>> held;for(int i=0;i<100;++i){held.push_back(std::make_unique<Decoder>([](auto){return true;}));assert(held.back()->Configure(""));}assert(Decoder::Instances()==100);}
+ {std::vector<std::unique_ptr<Decoder>> held;for(int i=0;i<6;++i){auto decoder=std::make_unique<Decoder>([](auto){return true;});assert(decoder->Configure("br"));assert(decoder->Push(compressed));held.push_back(std::move(decoder));}assert(Decoder::GlobalBytes()>0);held.clear();assert(Decoder::GlobalBytes()==0);}
  {int calls=0;Decoder decoder([&](auto){++calls;return false;});assert(decoder.Configure(""));assert(decoder.Push({}));assert(calls==0);assert(!decoder.Push(hello));assert(decoder.sink_rejected());assert(!decoder.error().empty());}
  {Decoder decoder([](auto){return false;});assert(decoder.Configure("gzip"));assert(!decoder.Push(gzip));assert(decoder.sink_rejected());}
  assert(Decoder::Instances()==0&&Decoder::GlobalBytes()==0);
- std::cout<<"PASS: gzip/deflate/raw/br streams, chains/members, real finalization, allocation limits, original checkpoint, reentrant cancellation\n";
+ std::cout<<"PASS: gzip/deflate/raw/br streams, chains/members, real finalization, unbounded chains/allocations, original checkpoint, reentrant cancellation\n";
 }

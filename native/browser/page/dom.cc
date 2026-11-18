@@ -28,8 +28,7 @@ auto Source::QueryNeedsSelectorWorld(Dict message, bool isolated) -> bool {
           std::find(names.begin(), names.end(), name) != names.end())
         return true;
   }
-  size_t visited = 0;
-  while (!pending.empty() && ++visited <= 100000) {
+  while (!pending.empty()) {
     const auto value = pending.back();
     pending.pop_back();
     if (value->GetType() == VTYPE_LIST) {
@@ -84,7 +83,7 @@ auto Source::QueryNodesInWorld(int id, Dict message, bool to_utility,
   const auto entry = operations_.Get(id);
   if (!entry) return;
   if (!SelectorWaits().Admit(id, entry->generation)) {
-    Complete(id, false, "Native selected-node physical preparation capacity exceeded");
+    Complete(id, false, "Native selected-node preparation could not be admitted");
     return;
   }
   if (QueryBuiltinNodesInWorld(id, message, to_utility, done)) return;
@@ -193,7 +192,7 @@ auto Source::QueryNodesInWorld(int id, Dict message, bool to_utility,
                                         SuiteCutQueryNodeTransfer::Result result) {
                       const bool metadata = params && params->HasKey("serializationOptions");
                       DevTools(id, method, params, std::move(result), session, false,
-                               metadata ? 16 * 1048576 : kMaxResponseBytes,
+                               kMaxResponseBytes,
                                metadata || method == "Runtime.getProperties");
                     },
                     current,
@@ -230,7 +229,7 @@ auto Source::QueryNodesInWorld(int id, Dict message, bool to_utility,
                                               SuiteCutQueryNodeTransfer::Result result) {
                             const bool metadata = params && params->HasKey("serializationOptions");
                             DevTools(id, method, params, std::move(result), session, false,
-                                     metadata ? 16 * 1048576 : kMaxResponseBytes,
+                                     kMaxResponseBytes,
                                      metadata || method == "Runtime.getProperties");
                           },
                           current,
@@ -258,9 +257,7 @@ auto Source::QueryNodesInWorld(int id, Dict message, bool to_utility,
           DevTools(id, "Runtime.evaluate", params,
                    [this, plan_key = std::move(plan_key), planned = std::move(planned)](
                        bool ok, const std::string& json) mutable {
-                     if (ok && json.size() <= 65536 &&
-                         json.find("\"exceptionDetails\"") == std::string::npos) {
-                       if (query_plans_.size() >= 512) query_plans_.clear();
+                     if (ok && json.find("\"exceptionDetails\"") == std::string::npos) {
                        query_plans_.emplace(plan_key, json);
                      }
                      planned(ok, json);
@@ -322,8 +319,7 @@ auto Source::QueryOptionsExpression(bool metadata) -> std::string {
 }
 
 auto Source::QueryDiagnosticExpression(Dict message, const std::string& nodes) -> std::string {
-  const auto expression = message->GetType("diagnosticExpressionJSON") == VTYPE_STRING &&
-                                  message->GetString("diagnosticExpressionJSON").length() <= 16384
+  const auto expression = message->GetType("diagnosticExpressionJSON") == VTYPE_STRING
                               ? message->GetString("diagnosticExpressionJSON").ToString()
                               : std::string("\"\"");
   auto query = message->GetList("query");
@@ -332,12 +328,10 @@ auto Source::QueryDiagnosticExpression(Dict message, const std::string& nodes) -
   value->SetList(query->Copy());
   const auto original = CefWriteJSON(value, JSON_WRITER_DEFAULT).ToString();
   return "(()=>{const query=(" + std::string(kSuiteCutDomQuery) +
-         "),budget={remaining:40000},options={nativeDiagnosticsBudget:budget},tools=query([],"
-         "document,{...options,accessibilityTools:true});return (" +
+         "),tools=query([],document,{accessibilityTools:true});return (" +
          std::string(kSuiteCutQueryDiagnostics) + ")(" + nodes + ",JSON.parse(" +
          Literal(expression) + "),{originalQuery:JSON.parse(" + Literal(original) +
-         "),query:steps=>query(steps,document,options),role:tools.role,name:tools.name,remaining:()"
-         "=>budget.remaining});})()";
+         "),query:steps=>query(steps,document),role:tools.role,name:tools.name});})()";
 }
 
 auto Source::QueryExpression(Dict message, const std::string& native_query_intrinsics)
@@ -490,7 +484,7 @@ auto Source::LocatorAction(int id, std::uint64_t generation, const std::string& 
       return;
     }
     if (!SelectorWaits().Admit(id, generation)) {
-      Complete(id, false, "Native editable action physical capacity exceeded");
+      Complete(id, false, "Native editable action could not be admitted");
       return;
     }
   }
@@ -500,7 +494,7 @@ auto Source::LocatorAction(int id, std::uint64_t generation, const std::string& 
       return;
     }
     if (!SelectorWaits().Admit(id, generation)) {
-      Complete(id, false, "Native action diagnostic physical capacity exceeded");
+      Complete(id, false, "Native action diagnostic could not be admitted");
       return;
     }
   }
@@ -774,7 +768,7 @@ auto Source::LocatorAction(int id, std::uint64_t generation, const std::string& 
                  const auto result = parsed ? parsed->GetDictionary() : nullptr;
                  if (!success || !result || result->HasKey("error")) {
                    Complete(id, false,
-                            "Native text-node pointer scrolling failed: " + json.substr(0, 1024));
+                            "Native text-node pointer scrolling failed: " + json);
                    return;
                  }
                  auto release = CefDictionaryValue::Create();
@@ -803,7 +797,7 @@ auto Source::LocatorAction(int id, std::uint64_t generation, const std::string& 
     }
     if (!state->GetBool("ready")) {
       locator_waits_[id] = state->GetType("reason") == VTYPE_STRING
-                               ? state->GetString("reason").ToString().substr(0, 1024)
+                               ? state->GetString("reason").ToString()
                                : "element actionability";
       // The host clicks with element.click() instead, as browser-use does,
       // once the element has stayed covered, off-screen, hidden or moving.
@@ -997,10 +991,6 @@ auto Source::ValidateVisibilitySelectors(int id, uint64_t generation, Dict messa
   }
   queries->SetList(0, query->Copy());
   if (const auto path = message->GetList("framePath")) {
-    if (path->GetSize() > 32) {
-      Complete(id, false, "Invalid native frame locator path");
-      return;
-    }
     for (size_t index = 0; index < path->GetSize(); ++index) {
       if (path->GetType(index) != VTYPE_LIST) {
         Complete(id, false, "Invalid native frame locator path");
@@ -1083,7 +1073,7 @@ auto Source::QueryEvaluate(int id, uint64_t generation, Dict message) -> void {
       return;
     }
     if (!SelectorWaits().Admit(id, generation)) {
-      Complete(id, false, "Native DOM observation physical capacity exceeded");
+      Complete(id, false, "Native DOM observation could not be admitted");
       return;
     }
   }
@@ -1173,7 +1163,7 @@ auto Source::QueryEvaluate(int id, uint64_t generation, Dict message) -> void {
     value->SetList(message->GetList("nativeAccessibilitySnapshot")->Copy());
     std::string native_json;
     if (!suitecut::DevToolsLosslessJSON(value, native_json)) {
-      Complete(id, false, "Native accessibility snapshot exceeds 64 KiB");
+      Complete(id, false, "Native accessibility snapshot could not be serialized");
       return;
     }
     accessibility_snapshot = (accessibility.empty() ? ",undefined," : ",") + native_json;
@@ -1266,14 +1256,6 @@ auto Source::QueryEvaluate(int id, uint64_t generation, Dict message) -> void {
       }
       if (observation->GetBool("matches") == message->GetBool("isNot")) {
         auto snapshot = Json(result);
-        if (snapshot.size() > 65536) {
-          auto abbreviated = CefListValue::Create();
-          abbreviated->SetString(0, "primitive");
-          abbreviated->SetString(1, "<actual snapshot exceeds 64 KiB>");
-          observation->SetList("actual", abbreviated);
-          observation->SetBool("truncated", true);
-          snapshot = Json(result);
-        }
         if (AssertionDeadlineExpire(id, generation)) return;
         expect_results_[id] = std::move(snapshot);
         if (selector_waits_ && selector_waits_->Contains(id)) {

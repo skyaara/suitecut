@@ -66,7 +66,7 @@ class FrameDebuggerScopes : public std::enable_shared_from_this<FrameDebuggerSco
   };
   static std::shared_ptr<Budget>ProcessBudget(){static const auto budget=std::make_shared<Budget>();return budget;}
   static std::shared_ptr<FrameDebuggerScopes>Create(Host host,Hooks hooks,std::shared_ptr<Budget>budget=ProcessBudget()){
-    if(!Identity(host.source,128)||!host.observer||!budget||budget->books==UINT64_MAX||!hooks.now||!hooks.current||!hooks.lease_present||!hooks.cleanup||!hooks.close_channel||!hooks.wake)return {};
+    if(!Identity(host.source)||!host.observer||!budget||budget->books==UINT64_MAX||!hooks.now||!hooks.current||!hooks.lease_present||!hooks.cleanup||!hooks.close_channel||!hooks.wake)return {};
     auto result=std::shared_ptr<FrameDebuggerScopes>(new FrameDebuggerScopes(std::move(host),std::move(hooks),std::move(budget)));
     result->instance_=++result->budget_->books;return result;
   }
@@ -78,14 +78,13 @@ class FrameDebuggerScopes : public std::enable_shared_from_this<FrameDebuggerSco
     }
     // Exclude the actual host/session even if an old attachment with the same
     // session string is closing. Logical release cannot lend its old pause.
-    if(closed_||budget_->channels.contains(pin.channel)||budget_->channels.size()>=16){error="Native debugger channel is already owned/cleaning up or scope capacity is full";return {};}
+    if(closed_||budget_->channels.contains(pin.channel)){error="Native debugger channel is already owned or cleaning up";return {};}
     auto record=std::make_shared<Record>();record->pin=std::move(pin);record->token={instance_,actual_native_lease};record->deadline=deadline;
     record->bytes=Bytes(record->pin);
     std::map<uint64_t,std::shared_ptr<Record>>staged_records;
     std::map<Channel,Token>staged_channels;
     staged_records.emplace(actual_native_lease,record);staged_channels.emplace(record->pin.channel,record->token);
     record->bytes+=Bytes(staged_channels.begin()->first);
-    if(record->bytes>4096||record->bytes>65536-budget_->bytes){error="Native frame debugger scope identity payload exceeds its bound";return {};}
     // Fallible allocations are complete before quota/graph publication.
     records_.insert(staged_records.extract(staged_records.begin()));
     budget_->channels.insert(staged_channels.extract(staged_channels.begin()));
@@ -115,7 +114,7 @@ class FrameDebuggerScopes : public std::enable_shared_from_this<FrameDebuggerSco
   Receipt Hold(Token token){
     const auto record=Find(token);
     if(record&&!record->closing&&!hooks_.current(record->pin)){Close(token);return {};}
-    if(!record||!record->issued||(!record->ready&&!record->closing)||!hooks_.lease_present(token.lease)||record->calls>=32||budget_->calls>=128||budget_->receipts==UINT64_MAX)return {};
+    if(!record||!record->issued||(!record->ready&&!record->closing)||!hooks_.lease_present(token.lease)||budget_->receipts==UINT64_MAX)return {};
     const uint64_t id=budget_->receipts+1;
     calls_.emplace(id,record);budget_->receipts=id;++record->calls;++budget_->calls;
     return {instance_,id};
@@ -171,8 +170,8 @@ class FrameDebuggerScopes : public std::enable_shared_from_this<FrameDebuggerSco
  private:
   struct Record{Pin pin;Token token;double deadline=0,cleanup=0;size_t calls=0,bytes=0;bool issued=false,dispatching=false,ready=false,closing=false,close_requested=false;};
   FrameDebuggerScopes(Host host,Hooks hooks,std::shared_ptr<Budget>budget):host_(std::move(host)),hooks_(std::move(hooks)),budget_(std::move(budget)){}
-  static bool Identity(const std::string&text,size_t maximum){return !text.empty()&&text.size()<=maximum&&text.find('\0')==std::string::npos;}
-  bool Valid(const Pin&pin)const{return pin.channel.host==host_&&pin.channel.session.size()<=128&&pin.channel.session.find('\0')==std::string::npos&&pin.attachment&&pin.document&&Identity(pin.frame,256)&&pin.loader.size()<=256&&pin.loader.find('\0')==std::string::npos&&pin.context>0&&Identity(pin.unique_context,256)&&(!pin.root||pin.channel.session.empty());}
+  static bool Identity(const std::string&text){return !text.empty()&&text.find('\0')==std::string::npos;}
+  bool Valid(const Pin&pin)const{return pin.channel.host==host_&&pin.channel.session.find('\0')==std::string::npos&&pin.attachment&&pin.document&&Identity(pin.frame)&&pin.loader.find('\0')==std::string::npos&&pin.context>0&&Identity(pin.unique_context)&&(!pin.root||pin.channel.session.empty());}
   static size_t Bytes(const Channel&channel){return sizeof(Channel)+channel.host.source.capacity()+channel.session.capacity();}
   static size_t Bytes(const Pin&pin){return sizeof(Pin)+pin.channel.host.source.capacity()+pin.channel.session.capacity()+pin.frame.capacity()+pin.loader.capacity()+pin.unique_context.capacity();}
   bool Expired(double deadline)const{return deadline>0&&hooks_.now()>=deadline;}

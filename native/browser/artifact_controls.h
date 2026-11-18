@@ -97,11 +97,8 @@ class SuiteCutArtifactController {
         !std::isfinite(device_scale) || device_scale <= 0) {
       finish_(owner, false, "Invalid native artifact operation", ""); return;
     }
-    if (jobs_.size() >= 64) {
-      finish_(owner, false, "Native artifact queue capacity exceeded", ""); return;
-    }
     if (next_token_ == std::numeric_limits<uint64_t>::max()) {
-      finish_(owner, false, "Native artifact generation capacity exhausted", ""); return;
+      finish_(owner, false, "Native artifact generation identity exhausted", ""); return;
     }
     auto job = Job{assertion_owns_&&assertion_owns_(owner)?config:config->Copy(false), context, device_scale}; job.token = ++next_token_; job.input = std::move(input);
     // Source supplies its native policy; keep a private admission-time snapshot
@@ -312,7 +309,7 @@ class SuiteCutArtifactController {
         (animations != "allow" && animations != "disabled") ||
         (config->HasKey("quality") && (config->GetType("quality") != VTYPE_INT ||
          config->GetInt("quality") < 0 || config->GetInt("quality") > 100 || format == "png")) ||
-        (config->HasKey("style") && (config->GetType("style") != VTYPE_STRING || config->GetString("style").length() > 1048576)) ||
+        (config->HasKey("style") && config->GetType("style") != VTYPE_STRING) ||
         config->GetType("fullPage") != VTYPE_BOOL || config->GetType("omitBackground") != VTYPE_BOOL) {
       Fail(owner, "Invalid native screenshot options"); return;
     }
@@ -333,17 +330,17 @@ class SuiteCutArtifactController {
         "const caretOnly=" + std::string(config->GetString("style").empty() && caret == "hide" ? "true" : "false") + ","
         "focused=()=>{if(document.designMode==='on')return true;let e=document.activeElement;while(e?.shadowRoot?.activeElement)e=e.shadowRoot.activeElement;"
         "return !!e&&(e.isContentEditable||e instanceof HTMLTextAreaElement||(e instanceof HTMLInputElement&&!['button','submit','reset','checkbox','radio','file','image','color','range','hidden'].includes(e.type)));};"
-        "const css=caretOnly&&!focused()?'':" + Quote(css) + ";const roots=[document];let visited=0;"
+        "const css=caretOnly&&!focused()?'':" + Quote(css) + ";const roots=[document];"
         "if(css||" + std::string(animations == "disabled" ? "true" : "false") + "){"
         "for(let i=0;i<roots.length;i++){const root=roots[i];const walker=document.createTreeWalker(root,NodeFilter.SHOW_ELEMENT);"
-        "let node;while(node=walker.nextNode()){if(++visited>100000)throw new Error('Screenshot DOM traversal limit exceeded');"
-        "if(node.shadowRoot)roots.push(node.shadowRoot);}if(css){const e=document.createElement('style');e.textContent=css;"
+        "let node;while(node=walker.nextNode()){if(node.shadowRoot)roots.push(node.shadowRoot);}"
+        "if(css){const e=document.createElement('style');e.textContent=css;"
         "resources.styles.push(e);(root===document?document.documentElement:root).append(e);}}}"
         "if(" + std::string(caret == "hide" ? "true" : "false") + "){for(const root of roots){const e=root.activeElement;"
         "if(e?.style){resources.carets.push({element:e,hadStyle:e.hasAttribute('style'),value:e.style.getPropertyValue('caret-color'),"
         "priority:e.style.getPropertyPriority('caret-color')});e.style.setProperty('caret-color','transparent','important');}}}"
         "if(" + std::string(animations == "disabled" ? "true" : "false") + "){const active=[...new Set(roots.flatMap(root=>root.getAnimations?.()??[]))];"
-        "if(active.length>10000)throw new Error('Screenshot animation limit exceeded');for(const animation of active){"
+        "for(const animation of active){"
         "const timing=animation.effect?.getComputedTiming();if(!timing||animation.playbackRate===0)continue;"
         "if(Number.isFinite(timing.endTime)&&animation.playbackRate!==0){try{animation.finish();}catch{}}"
         "else if(animation.playState==='running'||animation.playState==='paused'){resources.animations.push({animation,"
@@ -465,10 +462,9 @@ class SuiteCutArtifactController {
         x += left; y += top; width = right - left; height = bottom - top;
       }
       const double pixel_scale = config->GetString("scale") == "css" ? 1 : job.scale;
-      if (width <= 0 || height <= 0 || width * pixel_scale > 32768 || height * pixel_scale > 32768 ||
-          std::ceil(width * pixel_scale) * std::ceil(height * pixel_scale) > 64 * 1024 * 1024 ||
-          std::abs(x) > 100000000 || std::abs(y) > 100000000) {
-        Fail(owner, "Native screenshot dimensions exceed the 64 megapixel capture limit"); return;
+      if (width <= 0 || height <= 0 || !std::isfinite(width * pixel_scale) || !std::isfinite(height * pixel_scale) ||
+          !std::isfinite(x) || !std::isfinite(y)) {
+        Fail(owner, "Invalid native screenshot dimensions"); return;
       }
       auto clip = CefDictionaryValue::Create(); clip->SetDouble("x", x); clip->SetDouble("y", y);
       clip->SetDouble("width", width); clip->SetDouble("height", height);
@@ -499,10 +495,6 @@ class SuiteCutArtifactController {
           Fail(owner, "Native screenshot rasterization bounds unavailable"); return;
         }
         render_width = std::max(render_width, job.viewport_width); render_height = std::max(render_height, job.viewport_height);
-        if (render_width * job.scale > 32768 || render_height * job.scale > 32768 ||
-            std::ceil(render_width * job.scale) * std::ceil(render_height * job.scale) > 64 * 1024 * 1024) {
-          Fail(owner, "Native screenshot rasterization exceeds the 64 megapixel surface limit"); return;
-        }
         auto viewport = CefDictionaryValue::Create(); viewport->SetDouble("x", 0); viewport->SetDouble("y", 0);
         viewport->SetDouble("width", render_width); viewport->SetDouble("height", render_height); viewport->SetDouble("scale", 1);
         auto metrics = ViewportMetrics(job); metrics->SetDictionary("viewport", viewport);
@@ -534,9 +526,8 @@ class SuiteCutArtifactController {
     auto params = CefDictionaryValue::Create();
     for (const char* key : {"paperWidth", "paperHeight", "marginTop", "marginBottom", "marginLeft", "marginRight", "scale"}) {
       double value = 0;
-      if (!Number(config, key, value) || value < 0 || value > 200 ||
-          ((std::string(key) == "paperWidth" || std::string(key) == "paperHeight") && value == 0) ||
-          (std::string(key) == "scale" && (value < 0.1 || value > 2))) {
+      if (!Number(config, key, value) || value < 0 ||
+          ((std::string(key) == "paperWidth" || std::string(key) == "paperHeight") && value == 0)) {
         Fail(owner, "Invalid native PDF dimensions"); return;
       }
       params->SetDouble(key, value);
@@ -548,7 +539,7 @@ class SuiteCutArtifactController {
       params->SetBool(name, config->GetBool(key));
     }
     for (const char* key : {"headerTemplate", "footerTemplate", "pageRanges"}) {
-      if (config->GetType(key) != VTYPE_STRING || config->GetString(key).length() > (std::string(key) == "pageRanges" ? 4096 : 1048576)) {
+      if (config->GetType(key) != VTYPE_STRING) {
         Fail(owner, "Invalid native PDF template or page ranges"); return;
       }
       params->SetString(key, config->GetString(key));
@@ -611,7 +602,6 @@ class SuiteCutArtifactController {
     // than encoding it.
     constexpr std::string_view prefix = "{\"data\":\"";
     if (ok && json.size() > prefix.size() + 2 && json.starts_with(prefix) && json.ends_with("\"}") &&
-        json.size() - prefix.size() - 2 <= ((128 * 1048576 + 2) / 3) * 4 &&
         json.find_first_not_of("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=", prefix.size()) == json.size() - 2) {
       finish_(owner, true, "", json); return;
     }
@@ -623,9 +613,8 @@ class SuiteCutArtifactController {
       Fail(owner, error);
       return;
     }
-    if (!ok || !result || result->GetType("data") != VTYPE_STRING ||
-        result->GetString("data").length() > ((128 * 1048576 + 2) / 3) * 4) {
-      Fail(owner, "Native encoded artifact exceeds 128 MiB or is unavailable"); return;
+    if (!ok || !result || result->GetType("data") != VTYPE_STRING) {
+      Fail(owner, "Native encoded artifact is unavailable"); return;
     }
     auto response = CefDictionaryValue::Create(); response->SetString("data", result->GetString("data"));
     finish_(owner, true, "", JSON(response));

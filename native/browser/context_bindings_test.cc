@@ -16,15 +16,15 @@ int main() {
   assert(!registry.Remove(entry.name, entry.id + 1));
   assert(registry.Remove(entry.name, entry.id) && registry.Bytes() == 0 && registry.Size() == 0);
   assert(!registry.Add("native_1", "", "function(){}", "function(){}", false, second, error));
-  assert(!registry.Add("native_1", "x", std::string(1048576, 'x'), "x", false, second, error));
-  assert(!registry.Add("native_1",std::string(257,'a'),"function(){}","function(){}",false,second,error));
+  assert(registry.Add("native_1", "x", std::string(4194305, 'x'), "x", false, second, error)); assert(registry.SetBootstrap(second.name, second.id, std::string(4194305, 'y'))); assert(registry.Remove(second.name, second.id) && registry.Bytes() == 0);
+  assert(registry.Add("native_1",std::string(257,'a'),"function(){}","function(){}",false,second,error));assert(registry.Remove(second.name,second.id));
   std::string unit_name;for(int i=0;i<256;++i)unit_name+="\xed\xa0\x80";
   assert(SuiteCutBindingNameUnits(unit_name)==256);assert(registry.Add("native_1",unit_name,"function(){}","function(){}",false,second,error));assert(registry.Remove(second.name,second.id));
-  assert(!registry.Add("native_1",unit_name+"a","function(){}","function(){}",false,second,error));
+  assert(registry.Add("native_1",unit_name+"a","function(){}","function(){}",false,second,error));assert(registry.Remove(second.name,second.id));
   assert(registry.Add("native_1",std::string(1,'\0'),"function(){}","function(){}",false,second,error));assert(registry.Remove(second.name,second.id));
   assert(!registry.Add("native_1",std::string("\xc0\x80",2),"function(){}","function(){}",false,second,error));
   for (int index = 0; index < 64; ++index) assert(registry.Add("native_1", "callback" + std::to_string(index), "function(){}", "function(){}", false, second, error));
-  assert(!registry.Add("native_1", "overflow", "function(){}", "function(){}", false, second, error));
+  assert(registry.Add("native_1", "overflow", "function(){}", "function(){}", false, second, error) && registry.Size() == 65);
   while (registry.Size()) { const auto item = registry.All().begin()->second; assert(registry.Remove(item.name, item.id)); }
   for (int index = 0; index < 100000; ++index) {
     assert(registry.Add("native_1", "callback", "function(){}", "function(){}", false, second, error));
@@ -33,5 +33,5 @@ int main() {
     assert(!registry.Remove(second.name, entry.id));
     assert(registry.Remove(second.name, second.id)); assert(registry.Bytes() == 0 && registry.Size() == 0);
   }
-  std::cout << "context binding registry: native identities, stale removal, capacity, 100000 ownership cycles passed\n";
+  std::cout << "context binding registry: native identities, stale removal, no count/byte cap, 100000 ownership cycles passed\n";
 }

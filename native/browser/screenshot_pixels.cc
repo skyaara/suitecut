@@ -4,8 +4,9 @@
 #include <array>
 #include <cmath>
 #include <cstring>
+#include <limits>
 namespace suitecut {
-bool ScreenshotRasterValid(const ScreenshotRaster& raster){return raster.width>0&&raster.height>0&&raster.width<=16384&&raster.height<=16384&&size_t(raster.width)*raster.height<=kScreenshotComparisonPixels&&raster.rgba.size()==size_t(raster.width)*raster.height*4;}
+bool ScreenshotRasterValid(const ScreenshotRaster& raster){return raster.width>0&&raster.height>0&&raster.rgba.size()==size_t(raster.width)*raster.height*4;}
 namespace {
 uint32_t BigEndian(const uint8_t* value){return uint32_t(value[0])<<24|uint32_t(value[1])<<16|uint32_t(value[2])<<8|value[3];}
 std::array<double,3> Lab(const uint8_t* rgba){
@@ -28,11 +29,11 @@ const uint8_t* Pixel(const ScreenshotRaster& image,int x,int y){return x<image.w
 }
 bool ScreenshotPNGDimensions(const std::vector<uint8_t>& bytes,int& width,int& height,std::string& error){
   static const uint8_t signature[]={137,80,78,71,13,10,26,10};
-  if(bytes.size()<33||bytes.size()>kScreenshotComparisonPNGBytes||std::memcmp(bytes.data(),signature,8)||BigEndian(bytes.data()+8)!=13||std::memcmp(bytes.data()+12,"IHDR",4)){
-    error="Screenshot comparison requires a genuine PNG of at most2MiB with a valid IHDR";return false;
+  if(bytes.size()<33||std::memcmp(bytes.data(),signature,8)||BigEndian(bytes.data()+8)!=13||std::memcmp(bytes.data()+12,"IHDR",4)){
+    error="Screenshot comparison requires a genuine PNG with a valid IHDR";return false;
   }
   const auto w=BigEndian(bytes.data()+16),h=BigEndian(bytes.data()+20);
-  if(!w||!h||w>16384||h>16384||uint64_t(w)*h>kScreenshotComparisonPixels){error="Screenshot comparison PNG dimensions exceed16384 or2M pixels";return false;}
+  if(!w||!h||w>uint32_t(std::numeric_limits<int>::max())||h>uint32_t(std::numeric_limits<int>::max())){error="Screenshot comparison PNG dimensions are invalid";return false;}
   // Reject invalid IHDR methods before any decoder can allocate.
   // The native decoder independently validates the encoded image data.
   if(bytes[26]!=0||bytes[27]!=0||bytes[28]>1){error="Screenshot comparison PNG IHDR encoding is invalid";return false;}
@@ -40,7 +41,9 @@ bool ScreenshotPNGDimensions(const std::vector<uint8_t>& bytes,int& width,int& h
 }
 std::shared_ptr<ScreenshotByteBudget::Lease> ReserveScreenshotPNG(const std::vector<uint8_t>& bytes,const std::shared_ptr<ScreenshotByteBudget>& budget,int& width,int& height,std::string& error){
   if(!ScreenshotPNGDimensions(bytes,width,height,error))return {};
-  auto lease=budget->Reserve(size_t(width)*height*12);if(!lease)error="Native screenshot comparison64MiB byte budget exceeded";return lease;
+  // Overflow guard only: 12 bytes per pixel must fit in size_t.
+  if(size_t(width)*size_t(height)>std::numeric_limits<size_t>::max()/12){error="Screenshot comparison PNG dimensions overflow the byte count";return {};}
+  auto lease=budget->Reserve(size_t(width)*height*12);if(!lease)error="Native screenshot comparison byte accounting overflowed";return lease;
 }
 bool ScreenshotPixelsEqual(const ScreenshotRaster& left,const ScreenshotRaster& right){return ScreenshotRasterValid(left)&&ScreenshotRasterValid(right)&&left.width==right.width&&left.height==right.height&&left.rgba==right.rgba;}
 ScreenshotPixelDelta CompareScreenshotPixels(const ScreenshotRaster& expected,const ScreenshotRaster& actual,double threshold){
@@ -48,7 +51,7 @@ ScreenshotPixelDelta CompareScreenshotPixels(const ScreenshotRaster& expected,co
   const int width=std::min(expected.width,actual.width),height=std::min(expected.height,actual.height);const size_t overlap=size_t(width)*height;
   const size_t left=size_t(expected.width)*expected.height,right=size_t(actual.width)*actual.height;
   result.dimensions_match=expected.width==actual.width&&expected.height==actual.height;result.total=left+right-overlap;result.different=left+right-2*overlap;
-  // Walk only the true overlap, bounded by2M pixels. Extreme opposite aspect
+  // Walk only the true overlap. Extreme opposite aspect
   // ratios never expand comparison work to the much larger bounding canvas.
   for(int y=0;y<height;++y)for(int x=0;x<width;++x)if(Different(Pixel(expected,x,y),Pixel(actual,x,y),threshold))++result.different;
   return result;
@@ -56,8 +59,8 @@ ScreenshotPixelDelta CompareScreenshotPixels(const ScreenshotRaster& expected,co
 std::shared_ptr<ScreenshotRaster> ScreenshotDifferenceImage(const ScreenshotRaster& expected,const ScreenshotRaster& actual,double threshold,const std::shared_ptr<ScreenshotByteBudget>& budget,std::string& error){
   if(!ScreenshotRasterValid(expected)||!ScreenshotRasterValid(actual)||!std::isfinite(threshold)||threshold<0||threshold>1){error="Native screenshot difference requires valid bounded rasters and threshold";return {};}
   const int width=std::max(expected.width,actual.width),height=std::max(expected.height,actual.height);
-  if(size_t(width)*height>kScreenshotComparisonPixels){error="Native screenshot difference canvas exceeds2M pixels";return {};}
-  auto lease=budget->Reserve(size_t(width)*height*4);if(!lease){error="Native screenshot comparison64MiB byte budget exceeded";return {};}
+  if(size_t(width)>std::numeric_limits<size_t>::max()/4/size_t(height)){error="Native screenshot difference canvas size overflows";return {};}
+  auto lease=budget->Reserve(size_t(width)*height*4);if(!lease){error="Native screenshot comparison byte ledger would overflow";return {};}
   auto raster=std::make_shared<ScreenshotRaster>();raster->width=width;raster->height=height;raster->reservation=std::move(lease);raster->rgba.resize(size_t(width)*height*4);
   for(int y=0;y<height;++y)for(int x=0;x<width;++x){const auto a=Pixel(expected,x,y),b=Pixel(actual,x,y);auto* pixel=raster->rgba.data()+(size_t(y)*width+x)*4;
     if((a&&!b)||(!a&&b)||(a&&b&&Different(a,b,threshold))){pixel[0]=a?255:0;pixel[1]=0;pixel[2]=b?0:255;}else{const int gray=b?(int(b[0])*2126+int(b[1])*7152+int(b[2])*722)/10000:255;pixel[0]=pixel[1]=pixel[2]=uint8_t(128+gray/2);}pixel[3]=255;}

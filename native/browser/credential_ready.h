@@ -19,7 +19,7 @@ class CredentialReadiness:public std::enable_shared_from_this<CredentialReadines
   bool AcceptedWorkReady()const{std::lock_guard<std::mutex> lock(mutex_);return pending_.empty()&&!callback_stacks_->load();}
   struct Lease { std::atomic<int> status{0}; uint64_t token=0; std::weak_ptr<CredentialReadiness> store; void Cancel(){if(token)if(const auto owner=store.lock())owner->Cancel(token);}~Lease(){Cancel();} };
   bool Register(int browser,CefRefPtr<CefRequestContext> actual){
-    std::lock_guard<std::mutex> lock(mutex_);if(browser<=0||!actual||(!browsers_.contains(browser)&&browsers_.size()>=128))return false;
+    std::lock_guard<std::mutex> lock(mutex_);if(browser<=0||!actual)return false;
     const auto found=browsers_.find(browser);if(found!=browsers_.end()){if(!found->second.context->IsSame(actual))return false;found->second.status=0;return true;}
     browsers_.emplace(browser,Browser{actual,0});return true;
   }
@@ -28,11 +28,11 @@ class CredentialReadiness:public std::enable_shared_from_this<CredentialReadines
     if(found==browsers_.end()||!actual||!found->second.context->IsSame(actual))return nullptr;
     auto lease=std::make_shared<Lease>();lease->store=weak_from_this();lease->status=found->second.status;
     if(found->second.status)return lease;
-    if(!callback||pending_.size()>=64||next_==std::numeric_limits<uint64_t>::max()){lease->status=503;return lease;}
+    if(!callback||next_==std::numeric_limits<uint64_t>::max()){lease->status=503;return lease;}
     lease->token=++next_;pending_.emplace(lease->token,Pending{browser,lease,callback});return lease;
   }
   bool RegisterBootstrap(int browser,CefRefPtr<CefRequestContext>actual){
-    std::lock_guard<std::mutex>lock(mutex_);if(browser<=0||!actual||(!browsers_.contains(browser)&&browsers_.size()>=128))return false;
+    std::lock_guard<std::mutex>lock(mutex_);if(browser<=0||!actual)return false;
     const auto found=browsers_.find(browser);if(found!=browsers_.end()){if(!found->second.context->IsSame(actual))return false;found->second.bootstrap=true;return true;}
     browsers_.emplace(browser,Browser{actual,0,true});return true;
   }

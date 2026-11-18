@@ -34,10 +34,13 @@ int main(){cef_api_hash(CEF_API_VERSION,0);const auto cookies=CefParseJSON(R"([{
   assert(asynchronousCookies->IsValid()&&asynchronousCookies->GetSize()==2);
   auto publication=CefDictionaryValue::Create();publication->SetList("cookies",paths->Copy());auto owned=publication->GetList("cookies");assert(owned->IsOwned());publication->SetList("cookies",suitecut::HTTPPublicationCookies(owned));assert(publication->GetList("cookies")->GetSize()==2);
   auto budget=std::make_shared<std::atomic_size_t>(0);
-  {suitecut::HTTPCookieResultReservation a(budget),b(budget);assert(a.Reserve(16777216));assert(!a.Reserve(1));assert(b.Reserve(16777216));suitecut::HTTPCookieResultReservation denied(budget);assert(!denied.Reserve(1));assert(budget->load()==33554432);}
+  {suitecut::HTTPCookieResultReservation a(budget),b(budget),c(budget);assert(a.Reserve(16777216));assert(!a.Reserve(1));assert(b.Reserve(16777216));assert(c.Reserve(64*1048576));assert(budget->load()==96*1048576);}
   assert(budget->load()==0);
   bool completed=false;suitecut::HTTPCookieCreationVisitor::Times observed;
   {CefRefPtr<suitecut::HTTPCookieCreationVisitor> visitor=new suitecut::HTTPCookieCreationVisitor([](std::function<void()>done){done();},[&](auto entries,const auto&error){assert(error.empty());observed=std::move(entries);completed=true;});CefCookie cookie{};CefString(&cookie.name)="actual";CefString(&cookie.value)="value";CefString(&cookie.domain)="localhost";CefString(&cookie.path)="/";cookie.creation.val=123456;bool remove=false;assert(visitor->Visit(cookie,0,1,remove));assert(!completed);assert(visitor->Visit(cookie,1,2,remove));assert(!remove);cef_string_clear(&cookie.name);cef_string_clear(&cookie.value);cef_string_clear(&cookie.domain);cef_string_clear(&cookie.path);}
   assert(completed&&observed.size()==1&&!observed.begin()->second.has_value());
+  {bool done=false;size_t seen=0;{CefRefPtr<suitecut::HTTPCookieCreationVisitor> visitor=new suitecut::HTTPCookieCreationVisitor([](std::function<void()>task){task();},[&](auto entries,const auto&error){assert(error.empty());seen=entries.size();done=true;});CefCookie cookie{};bool remove=false;
+    for(int i=0;i<5000;++i){CefString(&cookie.name)="c"+std::to_string(i);CefString(&cookie.value)=std::string(300,'v');CefString(&cookie.domain)="localhost";CefString(&cookie.path)="/";assert(visitor->Visit(cookie,i,5000,remove));}
+    cef_string_clear(&cookie.name);cef_string_clear(&cookie.value);cef_string_clear(&cookie.domain);cef_string_clear(&cookie.path);}assert(done&&seen==5000);}
   std::cout<<"Native HTTP cookie projection: actual profile order, domain/path/expiry/loopback and partition isolation, actual creation metadata, ambiguity and retained-budget lifetime passed\n";
 }

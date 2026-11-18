@@ -13,9 +13,8 @@ class NativeHARRouteRegistration {
  public:
   using Policy=std::shared_ptr<const NativeHARRouteRegistration>;
   static Policy Create(std::shared_ptr<const NativeHARReplay>archive,bool fallback,NativeRouteRegistrationOrder order={}){
-    if(!archive||policies_>=4096)return {};
+    if(!archive)return {};
     const auto found=archives_.find(archive.get());const auto bytes=archive->bytes();
-    if(found==archives_.end()&&(archives_.size()>=4096||bytes>kBytes-retained_))return {};
     if(!order){const auto reserved=NativeRouteRegistrationOrder::Reserve();if(!reserved)return {};order=*reserved;}
     if(found==archives_.end()){archives_.emplace(archive.get(),Use{bytes,1});retained_+=bytes;}else ++found->second.references;
     ++policies_;
@@ -43,8 +42,6 @@ class NativeHARRouteRegistration {
  private:
   struct Use{size_t bytes,references;};
   NativeHARRouteRegistration(std::shared_ptr<const NativeHARReplay>archive,bool fallback,NativeRouteRegistrationOrder order):archive_(std::move(archive)),fallback_(fallback),order_(order){}
-  // Archives held by HAR routes, browser-wide: as large as one HAR file suitecut reads.
-  static constexpr size_t kBytes=1024*1048576;
   inline static std::map<const NativeHARReplay*,Use>archives_;
   inline static size_t retained_=0,policies_=0;
   mutable std::weak_ptr<bool>manager_;mutable int context_=0;mutable bool bound_=false;

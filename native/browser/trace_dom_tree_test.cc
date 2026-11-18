@@ -22,5 +22,10 @@ int main(int argc,char** argv){
   assert(exact.find("\"\\ud800\":\"\\udc00\"")!=std::string::npos);
   assert(exact.find(",\"\\ud800\"]")!=std::string::npos);
   assert(exact.find("\"style\"")==exact.rfind("\"style\""));
+  // Suitecut applies no node, string, document or depth cap of its own: a DOM
+  // chain deeper than the former 512 recursion limit materializes whole.
+  {constexpr size_t kDepth=5000;std::string types="[9",names="[2",values="[4",parents="[-1",attrs="[[]";for(size_t i=1;i<kDepth;++i){types+=",1";names+=",3";values+=",4";parents+=","+std::to_string(i-1);attrs+=",[]";}
+   auto deep=CefParseJSON(R"({"strings":["frame-a","https://example.test/","#document","DIV",""],"documents":[{"frameId":0,"documentURL":1,"nodes":{"nodeType":)"+types+"],\"nodeName\":"+names+"],\"nodeValue\":"+values+"],\"parentIndex\":"+parents+"],\"attributes\":"+attrs+"]}}]}",JSON_PARSER_RFC);
+   assert(deep&&tree.Convert(deep->GetDictionary(),{},docs,error));size_t divs=0;for(size_t at=docs[0].html_json.find("\"DIV\"");at!=std::string::npos;at=docs[0].html_json.find("\"DIV\"",at+1))++divs;assert(divs==kDepth-1);}
 
 }

@@ -7,7 +7,7 @@ export interface NativeCookieFilter {
   path?: string | RegExp | undefined
 }
 
-const value = z.union([z.string().max(8192), z.instanceof(RegExp)])
+const value = z.union([z.string(), z.instanceof(RegExp)])
 const schema = z.strictObject({
   name: value.optional(),
   domain: value.optional(),
@@ -25,8 +25,6 @@ export function nativeCookieFilter(
     if (typeof filter === 'string') result[field] = filter
     else {
       const sourceJSON = JSON.stringify(filter.source)
-      if (new TextEncoder().encode(sourceJSON).length > 32768)
-        throw new Error('Native cookie regular expression capacity exceeded')
       result[field] = { sourceJSON, flags: filter.flags }
     }
   }

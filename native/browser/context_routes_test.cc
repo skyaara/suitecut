@@ -93,7 +93,11 @@ int main(){
   }
   // Aggregate metadata remains charged until the last physical observer drops
   // its exact shared policy, including after manager cancellation/destruction.
-  {std::vector<std::shared_ptr<Route>>held;while(auto route=Route::Create(std::to_string(held.size()),std::string(8192,'*'),0))held.push_back(std::move(route));assert(!held.empty()&&held.size()<1024&&Route::retained_bytes()<=4194304);}
+  {std::vector<std::shared_ptr<Route>>held;for(int i=0;i<5000;++i){auto route=Route::Create(std::to_string(i)+std::string(200,'i'),"**/*",2000000);assert(route);held.push_back(std::move(route));}auto wide=Route::Create(std::string(300,'w'),"https://native.test/"+std::string(8000,'p'),0);assert(wide);held.push_back(wide);assert(Route::retained_count()==5001);
+    // No per-context route, operation, or target cap: 300 routes and 400 targets on one context, 64 contexts.
+    Routes routes([&](const auto&,const auto&){++failures;},[&]{return now;});for(int context=1;context<=64;++context)assert(routes.Seed(context));
+    for(int page=0;page<400;++page)assert(routes.Attach(1,"page:"+std::to_string(page)+std::string(200,'k'),[](auto,auto,double,auto reply){reply(true,"");},[](bool ok,const auto&){assert(ok);}));
+    for(int i=0;i<300;++i)assert(routes.Install(1000+i,1,held[i],0,[](bool ok,const auto&){assert(ok);}));assert(routes.targets()==400&&routes.pending()==0);routes.Clear();}
   assert(Route::retained_count()==0&&Route::retained_bytes()==0);
   std::cout<<"Native context routes: 9 shared-policy/physical-lifecycle groups passed\n";
 }

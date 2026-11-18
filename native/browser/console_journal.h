@@ -8,14 +8,8 @@
 
 class SuiteCutConsoleJournal {
  public:
-  static constexpr std::size_t kEntries = 100;
-  static constexpr std::size_t kPayload = 1048576;
-  static constexpr std::size_t kBytes = 4194304;
   bool Push(std::uint64_t sequence, std::string json) {
-    if (!sequence || json.empty() || json.size() > kPayload) return false;
-    while (!entries_.empty() && (entries_.size() >= kEntries || bytes_ + json.size() > kBytes)) {
-      bytes_ -= entries_.front().json.size(); entries_.pop_front();
-    }
+    if (!sequence || json.empty()) return false;
     bytes_ += json.size(); entries_.push_back({sequence, std::move(json)}); return true;
   }
   void Navigation(std::uint64_t sequence) { navigation_ = sequence; }

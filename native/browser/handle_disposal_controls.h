@@ -11,7 +11,7 @@
 #include <vector>
 namespace suitecut {
 // Actual retained handle groups stay owned until release ACK or channel death.
-// Logical cancellation never cancels this bounded physical cleanup queue. A
+// Logical cancellation never cancels this physical cleanup queue. A
 // release Chromium hasn't acknowledged in 30 s is reported, not fatal.
 class HandleDisposalControls {
  public:
@@ -24,9 +24,9 @@ class HandleDisposalControls {
   HandleDisposalControls(Release release,Retire retire,Done done,Fail fail):release_(std::move(release)),retire_(std::move(retire)),done_(std::move(done)),fail_(std::move(fail)){}
   ~HandleDisposalControls(){life_->alive=false;}
   bool Begin(int owner,uint64_t generation,std::vector<Handle> handles,double now){
-    if(closed_||owner<=0||!generation||handles.empty()||handles.size()>1024||jobs_.size()>=64||owned_.size()+handles.size()>1024||jobs_.contains(generation))return false;
+    if(closed_||owner<=0||!generation||handles.empty()||jobs_.contains(generation))return false;
     std::set<int> unique;
-    for(const auto& handle:handles)if(handle.id<=0||handle.group.empty()||handle.group.size()>256||handle.session.size()>256||owned_.contains(handle.id)||!unique.insert(handle.id).second)return false;
+    for(const auto& handle:handles)if(handle.id<=0||handle.group.empty()||owned_.contains(handle.id)||!unique.insert(handle.id).second)return false;
     auto job=std::make_shared<Job>();job->owner=owner;job->generation=generation;job->handles=std::move(handles);job->deadline=now+30000;
     owned_.insert(unique.begin(),unique.end());jobs_.emplace(generation,job);Next(job);return true;
   }
@@ -48,7 +48,7 @@ class HandleDisposalControls {
       if(!life->alive||closed_||!job->pending)return;
       job->pending=false;--physical_;owned_.erase(handle.id);++job->next;
       if(ok||destroyed)retire_(handle);
-      else{++failures_;if(job->error.empty())job->error=error.empty()?"Native handle disposal failed":error.substr(0,1024);}
+      else{++failures_;if(job->error.empty())job->error=error.empty()?"Native handle disposal failed":error;}
       Next(job);
     });
   }

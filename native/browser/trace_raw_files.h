@@ -38,7 +38,7 @@ class TraceRawFiles {
     live_=std::move(live);if(!live_){error="Native live trace writer has no chunk owner";return false;}
     return Prepare(archive,requested,name,canceled,error);
   }
-  static bool ValidName(const std::string& name){return !name.empty()&&name.size()<=200&&name!="."&&name!=".."&&name.find('/')==std::string::npos&&name.find('\0')==std::string::npos;}
+  static bool ValidName(const std::string& name){return !name.empty()&&name!="."&&name!=".."&&name.find('/')==std::string::npos&&name.find('\0')==std::string::npos;}
   bool Prepare(const TraceArchive& archive,const std::string& requested,const std::string& name,const std::atomic_bool& canceled,std::string& error){
     if(!ValidName(name)){error="Invalid native raw trace name";return false;}
     std::error_code code;
@@ -87,10 +87,29 @@ class TraceRawFiles {
   // UTF-16 escapes and literal private-tag-shaped dictionaries remain verbatim.
   static void Space(std::string_view text,size_t& i){while(i<text.size()&&(text[i]==' '||text[i]=='\t'||text[i]=='\r'||text[i]=='\n'))++i;}
   static bool String(std::string_view text,size_t& i){if(i>=text.size()||text[i++]!='"')return false;while(i<text.size()){const char c=text[i++];if(c=='"')return true;if(c=='\\'){if(i==text.size())return false;++i;}else if(static_cast<unsigned char>(c)<32)return false;}return false;}
-  static bool Value(std::string_view text,size_t& i,unsigned depth=0){
-    if(depth>128){return false;}Space(text,i);if(i>=text.size())return false;if(text[i]=='"')return String(text,i);
-    if(text[i]=='{'||text[i]=='['){const char end=text[i++]=='{'?'}':']';Space(text,i);if(i<text.size()&&text[i]==end){++i;return true;}for(;;){if(end=='}'){Space(text,i);if(!String(text,i))return false;Space(text,i);if(i>=text.size()||text[i++]!=':')return false;}if(!Value(text,i,depth+1))return false;Space(text,i);if(i>=text.size())return false;if(text[i]==end){++i;return true;}if(text[i++]!=',')return false;}}
-    const auto start=i;while(i<text.size()&&text[i]!=','&&text[i]!='}'&&text[i]!=']'&&text[i]!=' '&&text[i]!='\t'&&text[i]!='\r'&&text[i]!='\n')++i;return i>start;
+  static bool Key(std::string_view text,size_t& i){Space(text,i);if(!String(text,i))return false;Space(text,i);return i<text.size()&&text[i++]==':';}
+  // Skip one JSON value. Iterative with an explicit closer stack, so nesting
+  // depth is bounded only by memory, never by the C++ call stack.
+  static bool Value(std::string_view text,size_t& i){
+    std::string closers;
+    for(;;){
+      Space(text,i);if(i>=text.size())return false;
+      if(text[i]=='"'){if(!String(text,i))return false;}
+      else if(text[i]=='{'||text[i]=='['){
+        const char end=text[i++]=='{'?'}':']';Space(text,i);
+        if(i<text.size()&&text[i]==end)++i;
+        else{closers.push_back(end);if(end=='}'&&!Key(text,i))return false;continue;}
+      }else{const auto start=i;while(i<text.size()&&text[i]!=','&&text[i]!='}'&&text[i]!=']'&&text[i]!=' '&&text[i]!='\t'&&text[i]!='\r'&&text[i]!='\n')++i;if(i==start)return false;}
+      // One value is complete: close finished containers, or start the next member.
+      for(;;){
+        if(closers.empty())return true;
+        Space(text,i);if(i>=text.size())return false;
+        if(text[i]==closers.back()){++i;closers.pop_back();continue;}
+        if(text[i++]!=',')return false;
+        if(closers.back()=='}'&&!Key(text,i))return false;
+        break;
+      }
+    }
   }
   static bool Property(std::string_view text,Span object,std::string_view key,Span& output){
     size_t i=object.begin;Space(text,i);if(i>=object.end||text[i++]!='{')return false;for(;;){Space(text,i);if(i>=object.end||text[i]=='}')return false;const size_t start=i;if(!String(text,i))return false;const auto match=text.substr(start,i-start)==key;Space(text,i);if(i>=object.end||text[i++]!=':')return false;Space(text,i);const size_t begin=i;if(!Value(text,i))return false;if(match){output={begin,i};return true;}Space(text,i);if(i>=object.end||text[i++]!=',')return false;}

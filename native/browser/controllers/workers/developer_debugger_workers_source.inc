@@ -20,7 +20,7 @@ std::unique_ptr<suitecut::DeveloperDebuggerControls>NativeDeveloperWorkerControl
   };
   hooks.owns_pause=[this,pin,owner](Dict packet,const auto&actual){
     if(actual!=owner||!NativeWorkerDebuggerPinCurrent(pin)||!packet||packet->GetType("callFrames")!=VTYPE_LIST)return false;
-    const auto frames=packet->GetList("callFrames");if(!frames->GetSize()||frames->GetSize()>64)return false;
+    const auto frames=packet->GetList("callFrames");if(!frames->GetSize())return false;
     for(size_t i=0;i<frames->GetSize();++i){
       if(frames->GetType(i)!=VTYPE_DICTIONARY)return false;
       const auto frame=frames->GetDictionary(i);if(frame->GetType("location")!=VTYPE_DICTIONARY)return false;
@@ -63,7 +63,7 @@ void NativeDeveloperWorkersEnsure(){
 void NativeDeveloperWorkerCommand(int owner,Dict params){
   const auto operation=operations_.Get(owner);if(!operation)return;
   const auto generation=operation->generation;const auto deadline=operation->deadline_ms;
-  if(params->GetType("action")!=VTYPE_STRING||params->GetType("worker")!=VTYPE_STRING||params->GetString("worker").empty()||params->GetString("worker").length()>128||params->HasKey("frame")||params->HasKey("frameId")||params->HasKey("framePath")){
+  if(params->GetType("action")!=VTYPE_STRING||params->GetType("worker")!=VTYPE_STRING||params->GetString("worker").empty()||params->HasKey("frame")||params->HasKey("frameId")||params->HasKey("framePath")){
     Complete(owner,false,"Native worker debugger requires one actual dedicated-worker target");return;
   }
   const auto control=params->GetType("workerControl")==VTYPE_DICTIONARY?params->GetDictionary("workerControl"):nullptr;

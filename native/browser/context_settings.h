@@ -3,6 +3,7 @@
 #include "context_permissions.h"
 #include "context_authentication_controls.h"
 #include <cmath>
+#include <limits>
 #include <deque>
 #include <functional>
 #include <map>
@@ -56,7 +57,10 @@ struct ContextSettings {
   }
   bool CaptureDimensions(int width,int height,double scale,std::string&error) const {
     const auto size=viewport.value_or(Size{width,height});const double ratio=device_scale.value_or(scale);
-    if(size.width<1||size.height<1||!std::isfinite(ratio)||ratio<=0||std::ceil(size.width*ratio)>3840||std::ceil(size.height*ratio)>2160){error="Native context physical capture dimensions exceed 3840x2160";return false;}return true;
+    if(size.width<1||size.height<1||!std::isfinite(ratio)||ratio<=0){error="Invalid native context physical capture dimensions";return false;}
+    // Physical pixels feed int strides (width*4) in CEF, libyuv and the encoder.
+    constexpr double kStride=double(std::numeric_limits<int>::max()/4-1);
+    if(std::ceil(size.width*ratio)>kStride||std::ceil(size.height*ratio)>kStride){error="Native context physical capture dimensions overflow an int stride";return false;}return true;
   }
   Dict Media() const {
     if(!color_scheme&&!reduced_motion&&!forced_colors&&!contrast)return nullptr;
@@ -97,26 +101,25 @@ struct ContextSettings {
   }
   static bool Parse(Dict input,ContextSettings&output,std::string&error){
     if(!input){error="Native context settings must be a dictionary";return false;}
-    auto wrapped=CefValue::Create();wrapped->SetDictionary(input);const auto encoded=CefWriteJSON(wrapped,JSON_WRITER_DEFAULT);if(encoded.size()>65536){error="Native context settings exceed 64 KiB";return false;}
     ContextSettings parsed;
     parsed.no_fixed_viewport=input->HasKey("viewport")&&input->GetType("viewport")==VTYPE_NULL;
-    auto text=[&](const char*key,std::optional<std::string>&target,size_t limit,bool nullable=false){
+    auto text=[&](const char*key,std::optional<std::string>&target,bool nullable=false){
       if(!input->HasKey(key))return true;
       if(nullable&&input->GetType(key)==VTYPE_NULL){target="";return true;}
       if(input->GetType(key)!=VTYPE_STRING){error=std::string("Native context ")+key+" must be a string";return false;}
-      const auto value=input->GetString(key).ToString();if(value.empty()||value.size()>limit||value.find('\0')!=std::string::npos||value.find('\r')!=std::string::npos||value.find('\n')!=std::string::npos){error=std::string("Invalid native context ")+key;return false;}
+      const auto value=input->GetString(key).ToString();if(value.empty()||value.find('\0')!=std::string::npos||value.find('\r')!=std::string::npos||value.find('\n')!=std::string::npos){error=std::string("Invalid native context ")+key;return false;}
       target=value;return true;
     };
     auto flag=[&](const char*key,std::optional<bool>&target){if(!input->HasKey(key))return true;if(input->GetType(key)!=VTYPE_BOOL){error=std::string("Native context ")+key+" must be boolean";return false;}target=input->GetBool(key);return true;};
     auto size=[&](const char*key,std::optional<Size>&target,bool nullable){
       if(!input->HasKey(key)||(nullable&&input->GetType(key)==VTYPE_NULL))return true;
       const auto value=input->GetDictionary(key);if(!value||value->GetType("width")!=VTYPE_INT||value->GetType("height")!=VTYPE_INT||value->GetSize()!=2){error=std::string("Invalid native context ")+key;return false;}
-      const int width=value->GetInt("width"),height=value->GetInt("height");if(width<1||width>3840||height<1||height>2160){error=std::string("Native context ")+key+" exceeds capture dimensions 3840x2160";return false;}target=Size{width,height};return true;
+      const int width=value->GetInt("width"),height=value->GetInt("height");if(width<1||height<1){error=std::string("Invalid native context ")+key;return false;}target=Size{width,height};return true;
     };
-    if(!text("locale",parsed.locale,128)||!text("timezoneId",parsed.timezone,256)||!text("userAgent",parsed.user_agent,4096)||!text("colorScheme",parsed.color_scheme,32,true)||!text("reducedMotion",parsed.reduced_motion,32,true)||!text("forcedColors",parsed.forced_colors,32,true)||!text("contrast",parsed.contrast,32,true)||!flag("hasTouch",parsed.has_touch)||!flag("isMobile",parsed.is_mobile)||!flag("ignoreHTTPSErrors",parsed.ignore_https_errors)||!size("viewport",parsed.viewport,true)||!size("screen",parsed.screen,false))return false;
+    if(!text("locale",parsed.locale)||!text("timezoneId",parsed.timezone)||!text("userAgent",parsed.user_agent)||!text("colorScheme",parsed.color_scheme,true)||!text("reducedMotion",parsed.reduced_motion,true)||!text("forcedColors",parsed.forced_colors,true)||!text("contrast",parsed.contrast,true)||!flag("hasTouch",parsed.has_touch)||!flag("isMobile",parsed.is_mobile)||!flag("ignoreHTTPSErrors",parsed.ignore_https_errors)||!size("viewport",parsed.viewport,true)||!size("screen",parsed.screen,false))return false;
     const auto enum_value=[&](const char*key,const std::optional<std::string>&value,const std::vector<std::string>&allowed){if(!value)return true;for(const auto&item:allowed)if(item==*value)return true;error=std::string("Invalid native context ")+key;return false;};
     if(!enum_value("colorScheme",parsed.color_scheme,{"light","dark","no-preference",""})||!enum_value("reducedMotion",parsed.reduced_motion,{"reduce","no-preference",""})||!enum_value("forcedColors",parsed.forced_colors,{"active","none",""})||!enum_value("contrast",parsed.contrast,{"more","no-preference",""}))return false;
-    if(input->HasKey("deviceScaleFactor")){const auto type=input->GetType("deviceScaleFactor");const double scale=type==VTYPE_INT?input->GetInt("deviceScaleFactor"):input->GetDouble("deviceScaleFactor");if((type!=VTYPE_INT&&type!=VTYPE_DOUBLE)||!std::isfinite(scale)||scale<0.25||scale>4){error="Native context deviceScaleFactor must be finite in [0.25,4]";return false;}parsed.device_scale=scale;}
+    if(input->HasKey("deviceScaleFactor")){const auto type=input->GetType("deviceScaleFactor");const double scale=type==VTYPE_INT?input->GetInt("deviceScaleFactor"):input->GetDouble("deviceScaleFactor");if((type!=VTYPE_INT&&type!=VTYPE_DOUBLE)||!std::isfinite(scale)||scale<=0){error="Native context deviceScaleFactor must be a finite positive number";return false;}parsed.device_scale=scale;}
     if(input->HasKey("geolocation")&&input->GetType("geolocation")!=VTYPE_NULL){
       const auto value=input->GetDictionary("geolocation");if(!value){error="Native context geolocation must be a dictionary or null";return false;}
       const auto number=[&](const char*key,double&target,bool required){
@@ -132,24 +135,24 @@ struct ContextSettings {
     }
     if(parsed.no_fixed_viewport&&(parsed.device_scale||parsed.is_mobile.value_or(false))){error="Native deviceScaleFactor/isMobile requires a fixed viewport";return false;}
     if(input->HasKey("permissions")){
-      const auto list=input->GetList("permissions");if(!list||list->GetSize()>32){error="Native context permissions require at most32 names";return false;}
+      const auto list=input->GetList("permissions");if(!list){error="Native context permissions must be a list";return false;}
       for(size_t i=0;i<list->GetSize();++i){if(list->GetType(i)!=VTYPE_STRING){error="Native context permissions must be strings";return false;}const auto name=list->GetString(i).ToString();if(auto invalid=NativePermissionError(name);!invalid.empty()){error=std::move(invalid);return false;}parsed.permissions.push_back(name);}
     }
     if(input->HasKey("httpCredentials")){
       const auto add=[&](Dict value){
         if(!value||value->GetType("username")!=VTYPE_STRING||value->GetType("password")!=VTYPE_STRING){error="Native context HTTP credentials require username and password";return false;}
-        Auth auth;auth.username=value->GetString("username").ToString();auth.password=value->GetString("password").ToString();if(auth.username.size()>4096||auth.password.size()>4096||auth.username.find('\0')!=std::string::npos||auth.password.find('\0')!=std::string::npos){error="Native context HTTP credentials exceed capacity";return false;}
+        Auth auth;auth.username=value->GetString("username").ToString();auth.password=value->GetString("password").ToString();if(auth.username.find('\0')!=std::string::npos||auth.password.find('\0')!=std::string::npos){error="Native context HTTP credentials contain NUL";return false;}
         if(value->HasKey("origin")){if(value->GetType("origin")!=VTYPE_STRING||(auth.origin=CanonicalOrigin(value->GetString("origin"))).empty()){error="Native context HTTP credential origin must be HTTP(S)";return false;}}
         if(value->HasKey("send")){const auto mode=value->GetString("send").ToString();if(value->GetType("send")!=VTYPE_STRING||(mode!="always"&&mode!="unauthorized")){error="Native context HTTP credential send must be always or unauthorized";return false;}auth.always=mode=="always";}
         parsed.http_credentials_all.push_back(std::move(auth));return true;
       };
-      if(input->GetType("httpCredentials")==VTYPE_LIST){const auto rows=input->GetList("httpCredentials");if(rows->GetSize()>64){error="Native context HTTP credentials exceed 64 entries";return false;}for(size_t i=0;i<rows->GetSize();++i)if(!add(rows->GetDictionary(i)))return false;}
+      if(input->GetType("httpCredentials")==VTYPE_LIST){const auto rows=input->GetList("httpCredentials");for(size_t i=0;i<rows->GetSize();++i)if(!add(rows->GetDictionary(i)))return false;}
       else if(!add(input->GetDictionary("httpCredentials")))return false;
       if(!parsed.http_credentials_all.empty())parsed.http_credentials=parsed.http_credentials_all.front();
     }
     if(input->HasKey("proxy")){
       const auto value=input->GetDictionary("proxy");if(!value||value->GetType("server")!=VTYPE_STRING){error="Native context proxy requires a server";return false;}
-      Proxy proxy;proxy.server=value->GetString("server").ToString();if(proxy.server.empty()||proxy.server.size()>4096||proxy.server.find_first_of("\r\n")!=std::string::npos||proxy.server.find('\0')!=std::string::npos){error="Invalid native context proxy server";return false;}
+      Proxy proxy;proxy.server=value->GetString("server").ToString();if(proxy.server.empty()||proxy.server.find_first_of("\r\n")!=std::string::npos||proxy.server.find('\0')!=std::string::npos){error="Invalid native context proxy server";return false;}
       const auto uri=proxy.server.find("://")==std::string::npos?"http://"+proxy.server:proxy.server;CefURLParts parts;
       const auto separator=uri.find("://");const auto requested_scheme=uri.substr(0,separator);const auto parsed_uri=(requested_scheme=="socks4"||requested_scheme=="socks5")?"http"+uri.substr(separator):uri;
       if(!CefParseURL(parsed_uri,parts)){error="Invalid native context proxy URL";return false;}
@@ -157,8 +160,8 @@ struct ContextSettings {
       if((scheme!="http"&&scheme!="https"&&scheme!="socks4"&&scheme!="socks5")||proxy.host.empty()||!CefString(&parts.username).empty()||!CefString(&parts.password).empty()){error="Unsupported native context proxy URL";return false;}
       if(port.empty())proxy.port=scheme=="https"?443:(scheme=="http"?80:1080);else{int parsed_port=0;for(char digit:port){if(digit<'0'||digit>'9'||parsed_port>65535){error="Invalid native proxy port";return false;}parsed_port=parsed_port*10+(digit-'0');}if(parsed_port<1||parsed_port>65535){error="Invalid native proxy port";return false;}proxy.port=parsed_port;}
       proxy.server=scheme+"://"+proxy.host+":"+std::to_string(proxy.port);proxy.bypass="<-loopback>";
-      if(value->HasKey("bypass")){if(value->GetType("bypass")!=VTYPE_STRING){error="Native proxy bypass must be a string";return false;}auto bypass=value->GetString("bypass").ToString();if(bypass.size()>4096||bypass.find_first_of("\r\n")!=std::string::npos||bypass.find('\0')!=std::string::npos){error="Native proxy bypass exceeds capacity";return false;}for(char&item:bypass)if(item==',')item=';';proxy.bypass+=";"+bypass;}
-      for(const char*key:{"username","password"})if(value->HasKey(key)){if(value->GetType(key)!=VTYPE_STRING){error="Native proxy credentials must be strings";return false;}auto entry=value->GetString(key).ToString();if(entry.size()>4096||entry.find('\0')!=std::string::npos){error="Native proxy credentials exceed capacity";return false;}if(std::string(key)=="username")proxy.username=entry;else proxy.password=entry;proxy.authentication=true;}
+      if(value->HasKey("bypass")){if(value->GetType("bypass")!=VTYPE_STRING){error="Native proxy bypass must be a string";return false;}auto bypass=value->GetString("bypass").ToString();if(bypass.find_first_of("\r\n")!=std::string::npos||bypass.find('\0')!=std::string::npos){error="Native proxy bypass contains a line break or NUL";return false;}for(char&item:bypass)if(item==',')item=';';proxy.bypass+=";"+bypass;}
+      for(const char*key:{"username","password"})if(value->HasKey(key)){if(value->GetType(key)!=VTYPE_STRING){error="Native proxy credentials must be strings";return false;}auto entry=value->GetString(key).ToString();if(entry.find('\0')!=std::string::npos){error="Native proxy credentials contain NUL";return false;}if(std::string(key)=="username")proxy.username=entry;else proxy.password=entry;proxy.authentication=true;}
       if((scheme=="socks4"||scheme=="socks5")&&proxy.authentication){error="Native Chromium SOCKS proxy authentication is unsupported";return false;}
       parsed.proxy=std::move(proxy);
     }
@@ -169,7 +172,7 @@ struct ContextSettings {
 class ContextSettingsRegistry {
  public:
   bool Seed(int context,CefRefPtr<CefDictionaryValue>input,std::string&error){
-    if(context<1||states_.contains(context)||states_.size()>=32){error="Native context settings capacity or identity conflict";return false;}
+    if(context<1||states_.contains(context)){error="Native context settings identity conflict";return false;}
     ContextSettings parsed;
     parsed.no_fixed_viewport=input->HasKey("viewport")&&input->GetType("viewport")==VTYPE_NULL;if(!ContextSettings::Parse(input,parsed,error))return false;
     states_.emplace(context,std::make_shared<const ContextSettings>(std::move(parsed)));return true;
@@ -191,7 +194,7 @@ class ContextSettingsPage:public std::enable_shared_from_this<ContextSettingsPag
   using Send=std::function<void(const std::string&,const std::string&,ContextSettings::Dict,Result)>;
   explicit ContextSettingsPage(Send send):send_(std::move(send)){}
   void Attach(const std::string&session,std::vector<ContextSettings::Step>steps,Result done){
-    if(closed_||session.size()>128||!done||states_.contains(session)||states_.size()>=1024||queue_.size()>=64){if(done)done(false,"Native context settings target capacity or identity conflict");return;}
+    if(closed_||!done||states_.contains(session)){if(done)done(false,"Native context settings target identity conflict or page closed");return;}
     auto work=std::make_shared<Work>();work->session=session;work->steps=std::move(steps);work->done=std::move(done);states_.emplace(session,work);queue_.push_back(work);Pump();
   }
   void Detach(const std::string&session){const auto found=states_.find(session);if(found==states_.end())return;auto work=found->second;states_.erase(found);work->detached=true;auto done=std::exchange(work->done, nullptr);if(done)done(false,"Native context settings target detached");if(!physical_)Pump();}

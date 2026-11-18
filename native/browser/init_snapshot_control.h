@@ -23,7 +23,7 @@ struct InitSnapshotControl {
   static bool Admission(CefRefPtr<CefProcessMessage>message,int&context,uint64_t&epoch,uint64_t&request,std::string&frame){
     auto args=message?message->GetArgumentList():nullptr;
     if(!args||args->GetSize()!=4||args->GetType(0)!=VTYPE_INT||args->GetType(1)!=VTYPE_STRING||args->GetType(2)!=VTYPE_STRING||args->GetType(3)!=VTYPE_STRING)return false;
-    context=args->GetInt(0);frame=args->GetString(3);return context>0&&!frame.empty()&&frame.size()<=InitSnapshotWire::kFrame&&frame.find('\0')==std::string::npos&&UInt(args->GetString(1),epoch)&&UInt(args->GetString(2),request);
+    context=args->GetInt(0);frame=args->GetString(3);return context>0&&!frame.empty()&&frame.find('\0')==std::string::npos&&UInt(args->GetString(1),epoch)&&UInt(args->GetString(2),request);
   }
   static CefRefPtr<CefProcessMessage>Receipt(const char*kind,const InitSnapshotPin&pin,bool installed=false){
     auto message=CefProcessMessage::Create(kind);auto args=message->GetArgumentList();

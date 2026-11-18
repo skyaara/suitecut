@@ -28,10 +28,10 @@ class NativeContextRoutes {
   using Failure=std::function<void(const std::string&,const std::string&)>;
   explicit NativeContextRoutes(Failure failure,std::function<double()>now):failure_(std::move(failure)),now_(std::move(now)),waits_(now_){}
   ~NativeContextRoutes(){Clear();}
-  bool Seed(int context){return !closed_&&context>0&&states_.size()<32&&states_.emplace(context,State{}).second;}
+  bool Seed(int context){return !closed_&&context>0&&states_.emplace(context,State{}).second;}
   bool Attach(int context,std::string owner,Apply apply,Result ready){
     auto state=states_.find(context);
-    if(closed_||state==states_.end()||owner.empty()||owner.size()>128||owner.find('\0')!=std::string::npos||!apply||!ready||targets_.size()>=192||targets_.contains(owner)||serial_==UINT64_MAX)return false;
+    if(closed_||state==states_.end()||owner.empty()||owner.find('\0')!=std::string::npos||!apply||!ready||targets_.contains(owner)||serial_==UINT64_MAX)return false;
     Prune(state->second);
     Target target;target.context=context;target.generation=++serial_;target.apply=std::move(apply);target.ready=std::move(ready);
     for(const auto&id:state->second.order){const auto&route=state->second.routes.at(id);int batch=0;
@@ -45,7 +45,7 @@ class NativeContextRoutes {
     auto state=states_.find(context);
     if(!Admit(operation,state,deadline,reply)||!route||!route->available())return false;
     Prune(state->second);
-    if(state->second.routes.size()>=128||state->second.routes.contains(route->id())||route->bytes()>1048576-state->second.bytes||!Room(context,1)||!route->Claim(state->second.policy_owner,context))return false;
+    if(state->second.routes.contains(route->id())||!route->Claim(state->second.policy_owner,context))return false;
     state->second.bytes+=route->bytes();state->second.routes.emplace(route->id(),route);state->second.order.push_back(route->id());state->second.operation=operation;
     Batch batch;batch.generation=++serial_;batch.context=context;batch.mutation=Mutation::Install;batch.deadline=deadline;batch.reply=std::move(reply);batch.ids.insert(route->id());
     std::vector<std::string>owners;
@@ -55,11 +55,11 @@ class NativeContextRoutes {
   // Empty IDs means this family's routes only; Page/HAR registrations are never
   // part of this book. Already admitted callback leases remain independently owned.
   bool Remove(int operation,int context,const std::vector<std::string>&ids,double deadline,Result reply,std::function<void()>admitted={},std::function<bool()>prepare={}){
-    auto state=states_.find(context);if(!Admit(operation,state,deadline,reply)||ids.size()>128)return false;
+    auto state=states_.find(context);if(!Admit(operation,state,deadline,reply))return false;
     std::vector<Route>selected;
     if(ids.empty()){for(const auto&id:state->second.order)selected.push_back(state->second.routes.at(id));}
-    else{std::set<std::string>unique;for(const auto&id:ids){if(id.empty()||id.size()>128||!unique.insert(id).second)return false;auto found=state->second.routes.find(id);if(found!=state->second.routes.end())selected.push_back(found->second);}}
-    if(!Room(context,selected.size())||(prepare&&!prepare()))return false;
+    else{std::set<std::string>unique;for(const auto&id:ids){if(id.empty()||!unique.insert(id).second)return false;auto found=state->second.routes.find(id);if(found!=state->second.routes.end())selected.push_back(found->second);}}
+    if(prepare&&!prepare())return false;
     Batch batch;batch.generation=++serial_;batch.context=context;batch.mutation=Mutation::Remove;batch.deadline=deadline;batch.reply=std::move(reply);
     for(const auto&route:selected){batch.ids.insert(route->id());Erase(state->second,route);}
     state->second.operation=operation;std::vector<std::string>owners;
@@ -72,9 +72,7 @@ class NativeContextRoutes {
     auto state=states_.find(context);if(!generation||!receipt||!Admit(operation,state,deadline,reply))return false;
     std::set<std::string>ids;for(const auto&[id,route]:state->second.routes)ids.insert(id);
     auto snapshot=GlobalRouteCallbackLeases().Capture([&](const NativeContextRouteRegistration&policy){if(!policy.ClaimedBy(state->second.policy_owner,context))return false;ids.insert(policy.id());return true;});
-    auto selected=std::make_shared<std::vector<std::string>>(ids.begin(),ids.end());size_t bytes=selected->capacity()*sizeof(std::string),wire=512;for(const auto&id:*selected){bytes+=id.capacity();wire+=6*id.size()+4;}
-    // Reserve for worst-case actual JSON escaping before deactivating policy.
-    if(selected->size()>256||bytes>65536||wire>65536)return false;
+    auto selected=std::make_shared<std::vector<std::string>>(ids.begin(),ids.end());
     auto alive=alive_;
     std::function<bool()>prepare;
     if(wait)prepare=[this,operation,context,generation,snapshot=std::move(snapshot),deadline,reply=std::move(reply)]()mutable{return waits_.Reserve(operation,context,generation,std::move(snapshot),deadline,std::move(reply));};
@@ -143,9 +141,8 @@ class NativeContextRoutes {
   struct Batch{uint64_t generation=0;int context=0;Mutation mutation=Mutation::Install;double deadline=0;std::set<std::string>ids;std::set<std::pair<std::string,std::string>>pending;Result reply;};
   struct Physical{uint64_t serial=0;std::set<uint64_t>receipts;};
   bool Admit(int operation,const std::map<int,State>::iterator&state,double deadline,const Result&reply)const{
-    return !closed_&&serial_!=UINT64_MAX&&operation>0&&reply&&std::isfinite(deadline)&&deadline>=0&&(!deadline||now_()<deadline)&&state!=states_.end()&&!state->second.operation&&batches_.size()<32&&!batches_.contains(operation)&&!waits_.Contains(operation);
+    return !closed_&&serial_!=UINT64_MAX&&operation>0&&reply&&std::isfinite(deadline)&&deadline>=0&&(!deadline||now_()<deadline)&&state!=states_.end()&&!state->second.operation&&!batches_.contains(operation)&&!waits_.Contains(operation);
   }
-  bool Room(int context,size_t count)const{for(const auto&[owner,target]:targets_)if(target.context==context&&(target.queue.size()>128||count>128-target.queue.size()))return false;return true;}
   static void PruneClaims(Target&target){std::erase_if(target.claims,[](const auto&entry){return !entry.second->available();});}
   static bool Claims(const Target&target,const Route&route){return target.claims.contains(route->id())||std::any_of(target.queue.begin(),target.queue.end(),[&](const Task&task){return task.mutation==Mutation::Install&&task.route==route;});}
   static void Erase(State&state,Route route){route->Remove();state.bytes-=route->bytes();state.routes.erase(route->id());std::erase(state.order,route->id());}
@@ -157,10 +154,9 @@ class NativeContextRoutes {
   void Rollback(int context,const std::set<std::string>&ids){
     auto state=states_.find(context);if(state==states_.end())return;std::vector<Route>removed;
     for(const auto&id:ids){auto found=state->second.routes.find(id);if(found!=state->second.routes.end()){removed.push_back(found->second);Erase(state->second,found->second);}}
-    std::vector<std::string>owners;std::vector<std::string>overflow;
-    for(auto&[owner,target]:targets_)if(target.context==context){bool queued=false;for(const auto&route:removed)if(Claims(target,route)){if(target.queue.size()>=256){overflow.push_back(owner);break;}target.queue.push_back({Mutation::Remove,route,0,0,0});queued=true;}if(queued)owners.push_back(owner);}
-    auto alive=alive_;auto failure=failure_;for(const auto&owner:overflow){if(!*alive)return;failure(owner,"Native context route rollback queue exceeded capacity; actual channel must close");}
-    for(const auto&owner:owners){if(!*alive)return;Pump(owner);}
+    std::vector<std::string>owners;
+    for(auto&[owner,target]:targets_)if(target.context==context){bool queued=false;for(const auto&route:removed)if(Claims(target,route)){target.queue.push_back({Mutation::Remove,route,0,0,0});queued=true;}if(queued)owners.push_back(owner);}
+    auto alive=alive_;for(const auto&owner:owners){if(!*alive)return;Pump(owner);}
   }
   void Finish(int operation,bool success,const std::string&error,uint64_t expected=0){
     auto found=batches_.find(operation);if(found==batches_.end()||(expected&&found->second.generation!=expected))return;auto batch=std::move(found->second);batches_.erase(found);
@@ -178,7 +174,7 @@ class NativeContextRoutes {
     }
     if(target.queue.empty()){auto ready=std::exchange(target.ready, nullptr);if(ready)ready(true,"");return;}
     auto task=std::move(target.queue.front());target.queue.pop_front();const auto generation=target.generation;
-    if(physical_->receipts.size()>=1024||physical_->serial==UINT64_MAX){auto failure=failure_;auto alive=alive_;failure(owner,"Native context route physical receipt capacity exceeded; actual channel must close");if(*alive&&task.batch)Finish(task.batch,false,"Native context route physical receipt capacity exceeded",task.generation);return;}
+    if(physical_->serial==UINT64_MAX){auto failure=failure_;auto alive=alive_;failure(owner,"Native context route physical receipt serial exhausted; actual channel must close");if(*alive&&task.batch)Finish(task.batch,false,"Native context route physical receipt serial exhausted",task.generation);return;}
     target.busy=true;if(task.mutation==Mutation::Install)target.claims[task.route->id()]=task.route;
     const auto token=++physical_->serial;physical_->receipts.insert(token);auto physical=physical_;auto apply=target.apply;
     apply(task.mutation,task.route,task.deadline,[this,alive=alive_,physical,token,owner,generation,task](bool ok,const std::string&error){

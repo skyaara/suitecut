@@ -54,7 +54,7 @@
             message->GetType("width") != VTYPE_INT || message->GetType("height") != VTYPE_INT ||
             (message->GetType("framesPerSecond") != VTYPE_INT && message->GetType("framesPerSecond") != VTYPE_DOUBLE) ||
             message->GetType("audio") != VTYPE_BOOL ||
-            (message->HasKey("maxFileBytes") && message->GetType("maxFileBytes") != VTYPE_INT)) {
+            (message->HasKey("maxFileBytes") && message->GetType("maxFileBytes") != VTYPE_INT && message->GetType("maxFileBytes") != VTYPE_DOUBLE)) {
           Complete(id, false, "Invalid native recording start options"); return;
         }
         suitecut::MediaPipelineOptions options;
@@ -79,11 +79,17 @@
 #if defined(__APPLE__)
         native_zero_copy_recording_=options.hardware_h264&&options.worker_nv12&&options.capture_timestamps_exact&&options.source_width==options.output_width&&options.source_height==options.output_height;
 #endif
-        if (message->HasKey("maxFileBytes")) options.max_file_bytes = static_cast<uint64_t>(message->GetInt("maxFileBytes"));
+        if (message->HasKey("maxFileBytes")) {
+          // A caller quota of any size: a non-negative integer up to 2^53 (exact in JSON); zero means no quota.
+          const auto kind = message->GetType("maxFileBytes");
+          const double quota = kind == VTYPE_INT ? message->GetInt("maxFileBytes") : kind == VTYPE_DOUBLE ? message->GetDouble("maxFileBytes") : -1;
+          if (!std::isfinite(quota) || quota < 0 || quota > 9007199254740992.0 || std::floor(quota) != quota) { Complete(id, false, "Invalid native recording maxFileBytes"); return; }
+          options.max_file_bytes = static_cast<uint64_t>(quota);
+        }
         controls->Start(id, page_id_, engine_.contexts()->ContextId(page_id_), std::move(options),
           [self = CefRefPtr<Source>(this), id, generation](const std::string& recording, const suitecut::MediaPipelineResult& result) {
             if (!self->operations_.IsCurrent(id, generation)) return;
-            if (!result.failure.empty()) self->Complete(id, false, result.failure.substr(0, 4096));
+            if (!result.failure.empty()) self->Complete(id, false, result.failure);
             else self->Complete(id, true, "", Json(RecordingResult(recording, result, "recording")));
           });
         // The existing fitted view is a genuine held capture; a fresh OSR paint
@@ -91,7 +97,7 @@
         EmitFrame(); browser_->GetHost()->Invalidate(PET_VIEW);
         return;
       }
-      if (message->GetType("recordingId") != VTYPE_STRING || message->GetString("recordingId").ToString().size() > 128 ||
+      if (message->GetType("recordingId") != VTYPE_STRING ||
           !controls->Owns(message->GetString("recordingId"), page_id_)) {
         Complete(id, false, "Unknown native recording for this page"); return;
       }
@@ -101,7 +107,7 @@
         controls->Stop(id, recording, Now(), deadline,
           [self = CefRefPtr<Source>(this), id, generation, action](const std::string& name, const suitecut::MediaPipelineResult& result) {
             if (!self->operations_.IsCurrent(id, generation)) return;
-            if (!result.failure.empty() && action != "cancel") self->Complete(id, false, result.failure.substr(0, 4096));
+            if (!result.failure.empty() && action != "cancel") self->Complete(id, false, result.failure);
             else self->Complete(id, true, "", Json(RecordingResult(name, result, result.failure.empty() ? "complete" : "failed")));
           });
         return;
@@ -111,5 +117,5 @@
       else if (action != "status") { Complete(id, false, "Unknown native recording action"); return; }
       auto result = RecordingResult(recording, controls->Status(recording), controls->Phase(recording));
       result->SetDouble("timestampMs", Now()); Complete(id, true, "", Json(result));
-    } catch (const std::exception& error) { Complete(id, false, std::string(error.what()).substr(0, 4096)); }
+    } catch (const std::exception& error) { Complete(id, false, error.what()); }
   }

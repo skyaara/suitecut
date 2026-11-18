@@ -159,7 +159,7 @@ describe('native action-stage bridge', () => {
     hook.dispose()
   })
 
-  it('retains a global physical quota through cancellation, close, and fresh sources until raw settlement', async () => {
+  it('retains physical counts through cancellation and close without capping fresh sources', async () => {
     const live = fixture()
     const finish: (() => void)[] = []
     const hooks = Array.from({ length: 64 }, (_, index) => {
@@ -185,31 +185,17 @@ describe('native action-stage bridge', () => {
     const fresh = fixture(),
       action = new AbortController(),
       callback = vi.fn()
-    const blocked = subscribeNativeActionHook(fresh.source, callback, action)
+    const recovered = subscribeNativeActionHook(fresh.source, callback, action)
     fresh.emit({
-      clientToken: blocked.clientToken,
+      clientToken: recovered.clientToken,
       id: 90,
       generation: 1,
       token: 90,
       stage: 'beforeStable',
     })
-    await vi.waitFor(() => expect(action.signal.aborted).toBe(true))
-    expect(action.signal.reason).toEqual(
-      new Error('Native action hook physical callback capacity exceeded'),
-    )
-    expect(callback).not.toHaveBeenCalled()
-    blocked.dispose()
-    finish.shift()?.()
-    await vi.waitFor(() => expect(nativeActionHookPhysicalCount(live.source)).toBe(63))
-    const recovered = subscribeNativeActionHook(fresh.source, callback, new AbortController())
-    fresh.emit({
-      clientToken: recovered.clientToken,
-      id: 91,
-      generation: 1,
-      token: 91,
-      stage: 'beforeStable',
-    })
     await vi.waitFor(() => expect(callback).toHaveBeenCalledTimes(1))
+    expect(action.signal.aborted).toBe(false)
+    expect(nativeActionHookPhysicalCount(live.source)).toBe(64)
     recovered.dispose()
     for (const settle of finish) settle()
     await vi.waitFor(() => expect(nativeActionHookPhysicalCount(live.source)).toBe(0))

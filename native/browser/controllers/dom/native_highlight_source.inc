@@ -9,7 +9,7 @@ std::set<std::string> native_raw_overlay_sessions_;
 bool native_highlight_closing_=false;
 static size_t& NativeHighlightProcessPhysical(){static size_t value=0;return value;}
 bool NativeHighlightSend(const std::string&session,const std::string&method,Dict params,double deadline,suitecut::DOMDomainLeases::Ready reply){
-  if(!browser_||closing_page_||native_highlight_closing_||!reply||!std::isfinite(deadline)||deadline<0||(deadline&&Now()>=deadline)||native_highlight_calls_.size()>=64||NativeHighlightProcessPhysical()>=128||(!session.empty()&&!sessions_.contains(session)))return false;
+  if(!browser_||closing_page_||native_highlight_closing_||!reply||!std::isfinite(deadline)||deadline<0||(deadline&&Now()>=deadline)||(!session.empty()&&!sessions_.contains(session)))return false;
   const auto tool=AllocateDevToolsId();if(!tool)return false;
   native_highlight_calls_.emplace(tool,NativeHighlightPhysical{session,(deadline?deadline:Now())+30000,false});++NativeHighlightProcessPhysical();
   auto callback=[this,tool,session,reply=std::move(reply)](bool ok,const std::string&json){
@@ -22,7 +22,7 @@ bool NativeHighlightSend(const std::string&session,const std::string&method,Dict
   };
   // Actual late ACKs survive caller cancel/retry/expiry; channel teardown below
   // is the only alternative retirement boundary. No author by-value projection.
-  devtools_.emplace(tool,DevToolsCall{0,std::move(callback),session,true,65536,true,false});
+  devtools_.emplace(tool,DevToolsCall{0,std::move(callback),session,true,kMaxResponseBytes,true,false});
   if(!SubmitDevTools(tool,method,params,session)){
     const auto found=devtools_.find(tool);if(found!=devtools_.end()){auto actual=std::exchange(found->second.callback, nullptr);devtools_.erase(found);actual(false,"{\"message\":\"Native highlight submission was not accepted\"}");}
   }
@@ -56,14 +56,14 @@ void NativeHighlightCommand(int owner,Dict message){
   if(action!="show"&&action!="hide"&&action!="claim"){Complete(owner,false,"Invalid native highlight action");return;}
   if(message->HasKey("token")){
     if((action!="hide"&&action!="claim")||message->GetType("token")!=VTYPE_STRING){Complete(owner,false,"Invalid native highlight disposal identity");return;}
-    const auto token=message->GetString("token").ToString();const auto split=token.rfind('_');if(token.size()>90||token.size()<4||token.front()!='h'||split==std::string::npos||split<2||split+1==token.size()||token[split+1]=='0'||!std::all_of(token.begin()+1,token.begin()+split,[](char c){return(c>='0'&&c<='9')||(c>='A'&&c<='Z')||(c>='a'&&c<='z');})||!std::all_of(token.begin()+split+1,token.end(),[](char c){return c>='0'&&c<='9';})){Complete(owner,false,"Invalid native highlight disposal identity");return;}
+    const auto token=message->GetString("token").ToString();const auto split=token.rfind('_');if(token.size()<4||token.front()!='h'||split==std::string::npos||split<2||split+1==token.size()||token[split+1]=='0'||!std::all_of(token.begin()+1,token.begin()+split,[](char c){return(c>='0'&&c<='9')||(c>='A'&&c<='Z')||(c>='a'&&c<='z');})||!std::all_of(token.begin()+split+1,token.end(),[](char c){return c>='0'&&c<='9';})){Complete(owner,false,"Invalid native highlight disposal identity");return;}
     // A token disposer follows its actual Source-owned session, rather than
     // reacquiring a locator/frame that may now refer to a different document.
     auto controls=NativeHighlights();auto reply=[this,owner,generation=operation->generation](bool ok,const std::string&error,const std::string&json){if(!operations_.IsCurrent(owner,generation))return;if(operations_.IsExpired(owner,generation,Now())){Complete(owner,false,"Native operation timed out");return;}Complete(owner,ok,error,json);};
     if(action=="claim")controls->Claim(token,std::move(reply));else controls->Hide(controls->SessionForToken(token),token,operation->deadline_ms,std::move(reply));return;
   }
   if(action=="claim"){Complete(owner,false,"Native highlight claim requires its actual token");return;}
-  if(!SelectorWaits().Admit(owner,operation->generation)){Complete(owner,false,"Native highlight selector physical capacity exceeded");return;}
+  if(!SelectorWaits().Admit(owner,operation->generation)){Complete(owner,false,"Native highlight selector could not be admitted");return;}
   if(const auto path=message->GetList("framePath");path&&path->GetSize()){ResolveFramePath(owner,operation->generation,message,0,FrameId(message),[this,owner](Dict resolved){NativeHighlightCommand(owner,resolved);});return;}
   const auto frame=FrameId(message);
   WithFrame(owner,frame,[this,owner,generation=operation->generation,message,frame](int){
@@ -76,7 +76,7 @@ void NativeHighlightCommand(int owner,Dict message){
       [this,owner,generation,document=*document,reply=std::move(reply)](bool ok,const std::string&json)mutable{
       if(!NativeHighlightCurrent(owner,generation,document))return;
       const auto parsed=CefParseJSON(json,JSON_PARSER_RFC);const auto result=parsed?parsed->GetDictionary():nullptr;const auto remote=result?result->GetDictionary("result"):nullptr;
-      if(!ok||!result||result->HasKey("exceptionDetails")||!remote){const auto details=result?result->GetDictionary("exceptionDetails"):nullptr;const auto exception=details?details->GetDictionary("exception"):nullptr;const auto error=exception?suitecut::DevToolsString(exception->GetValue("description")):"Native highlight selection failed";Complete(owner,false,error.substr(0,4096));return;}
+      if(!ok||!result||result->HasKey("exceptionDetails")||!remote){const auto details=result?result->GetDictionary("exceptionDetails"):nullptr;const auto exception=details?details->GetDictionary("exception"):nullptr;const auto error=exception?suitecut::DevToolsString(exception->GetValue("description")):"Native highlight selection failed";Complete(owner,false,error);return;}
       const auto operation=operations_.Get(owner);if(!operation)return;
       if(remote->GetString("type")=="undefined"){NativeHighlights()->Empty(document.session,operation->deadline_ms,std::move(reply));return;}
       if(remote->GetString("subtype")!="node"||remote->GetType("objectId")!=VTYPE_STRING){Complete(owner,false,"Native highlight selected value is not an Element");return;}
@@ -87,7 +87,7 @@ void NativeHighlightCommand(int owner,Dict message){
         const auto parsed=CefParseJSON(json,JSON_PARSER_RFC);const auto result=parsed?parsed->GetDictionary():nullptr;const auto node=result?result->GetDictionary("node"):nullptr;
         if(!ok||!node||node->GetType("backendNodeId")!=VTYPE_INT||node->GetInt("backendNodeId")<1||node->GetInt("nodeType")!=1){Complete(owner,false,"Native highlight actual Element backend identity unavailable");return;}
         const auto operation=operations_.Get(owner);if(!operation)return;NativeHighlights()->Show(owner,generation,document,node->GetInt("backendNodeId"),operation->deadline_ms,std::move(reply));
-      },document.session,false,262144,true);
+      },document.session,false,kMaxResponseBytes,true);
     });
   },true);
 }

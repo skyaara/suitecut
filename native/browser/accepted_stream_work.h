@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 #pragma once
-#include <array>
 #include <atomic>
 #include <cstddef>
 #include <cstdint>
 #include <mutex>
 #include <optional>
+#include <vector>
 
 namespace suitecut {
 // These cuts describe accepted native work, not renderer/JavaScript quiet.
@@ -27,14 +27,14 @@ inline uint64_t NextNativeStreamInstance()noexcept{
 }
 class AcceptedReaderWork {
  public:
-  static constexpr size_t kPending=128;
   struct Snapshot {size_t pending,waiting_post,executing;uint64_t admitted,posted,returned,not_posted,unwound;bool poisoned;};
   AcceptedReaderWork():instance_(NextNativeStreamInstance()){if(!instance_)poisoned_=true;}
   std::optional<NativeStreamTicket> Admit()noexcept{
     std::lock_guard lock(mutex_);
     if(next_==UINT64_MAX){poisoned_=true;return std::nullopt;}
-    for(auto& row:rows_)if(!row.active){row={};row.active=true;row.ticket={instance_,++next_};return row.ticket;}
-    poisoned_=true;return std::nullopt;
+    Row created{};created.active=true;created.ticket={instance_,++next_};
+    for(auto& row:rows_)if(!row.active){row=created;return row.ticket;}
+    rows_.push_back(created);return created.ticket;
   }
   // The UI task may genuinely enter/return before CefPostTask's caller resumes.
   bool PostingReturned(NativeStreamTicket ticket,bool accepted)noexcept{
@@ -69,8 +69,9 @@ class AcceptedReaderWork {
   }
   NativeStreamCut Cut()noexcept{
     std::lock_guard lock(mutex_);if(cut_sequence_==UINT64_MAX){poisoned_=true;return {};}
-    for(auto& cut:cuts_)if(!cut.nonce){cut={instance_,next_,++cut_sequence_};return cut;}
-    poisoned_=true;return {};
+    const NativeStreamCut created{instance_,next_,++cut_sequence_};
+    for(auto& cut:cuts_)if(!cut.nonce){cut=created;return cut;}
+    cuts_.push_back(created);return created;
   }
   bool KnownCut(NativeStreamCut cut)const noexcept{std::lock_guard lock(mutex_);return ValidCut(cut);}
   bool Through(NativeStreamCut cut)const noexcept{
@@ -94,20 +95,20 @@ class AcceptedReaderWork {
   static void Retire(Row& row)noexcept{
     if(row.post_returned&&((!row.post_accepted&&!row.post_uncertain&&!row.entered)||row.returned))row.active=false;
   }
-  mutable std::mutex mutex_;const uint64_t instance_;uint64_t next_=0,cut_sequence_=0,posted_=0,returned_=0,not_posted_=0,unwound_=0;bool poisoned_=false;std::array<Row,kPending> rows_{};std::array<NativeStreamCut,64> cuts_{};
+  mutable std::mutex mutex_;const uint64_t instance_;uint64_t next_=0,cut_sequence_=0,posted_=0,returned_=0,not_posted_=0,unwound_=0;bool poisoned_=false;std::vector<Row> rows_;std::vector<NativeStreamCut> cuts_;
 };
 class AcceptedWriterWork {
  public:
-  static constexpr size_t kPending=8192;
   enum class Kind {Control,Event,Frame,Audio,Watermark};
-  enum class Discard {FrameReplaced,FrameBudget,PageDropped,AudioBudget};
+  enum class Discard {FrameReplaced,PageDropped};
   struct Snapshot {size_t queued,writing;uint64_t admitted,full_written,discarded,actual_bytes;bool poisoned;};
   AcceptedWriterWork():instance_(NextNativeStreamInstance()){if(!instance_)poisoned_=true;}
   std::optional<NativeStreamTicket> Admit(Kind kind,size_t exact_packet_bytes)noexcept{
     std::lock_guard lock(mutex_);
     if(exact_packet_bytes<4||next_==UINT64_MAX){poisoned_=true;return std::nullopt;}
-    for(auto& row:rows_)if(!row.active){row={};row.active=true;row.ticket={instance_,++next_};row.kind=kind;row.bytes=exact_packet_bytes;return row.ticket;}
-    poisoned_=true;return std::nullopt;
+    Row created{};created.active=true;created.ticket={instance_,++next_};created.kind=kind;created.bytes=exact_packet_bytes;
+    for(auto& row:rows_)if(!row.active){row=created;return row.ticket;}
+    rows_.push_back(created);return created.ticket;
   }
   bool Dequeue(NativeStreamTicket ticket)noexcept{
     std::lock_guard lock(mutex_);auto* row=Find(ticket);
@@ -144,8 +145,9 @@ class AcceptedWriterWork {
   void Unsupported()noexcept{std::lock_guard lock(mutex_);poisoned_=true;}
   NativeStreamCut Cut()noexcept{
     std::lock_guard lock(mutex_);if(cut_sequence_==UINT64_MAX){poisoned_=true;return {};}
-    for(auto& cut:cuts_)if(!cut.nonce){cut={instance_,next_,++cut_sequence_};return cut;}
-    poisoned_=true;return {};
+    const NativeStreamCut created{instance_,next_,++cut_sequence_};
+    for(auto& cut:cuts_)if(!cut.nonce){cut=created;return cut;}
+    cuts_.push_back(created);return created;
   }
   bool KnownCut(NativeStreamCut cut)const noexcept{std::lock_guard lock(mutex_);return ValidCut(cut);}
   bool Through(NativeStreamCut cut)const noexcept{
@@ -161,10 +163,10 @@ class AcceptedWriterWork {
  private:
   bool ValidCut(NativeStreamCut cut)const noexcept{for(const auto& value:cuts_)if(value==cut&&cut.nonce)return true;return false;}
   static bool DropAllowed(Kind kind,Discard reason)noexcept{
-    return kind==Kind::Frame?(reason==Discard::FrameReplaced||reason==Discard::FrameBudget||reason==Discard::PageDropped):kind==Kind::Audio&&(reason==Discard::AudioBudget||reason==Discard::PageDropped);
+    return kind==Kind::Frame?(reason==Discard::FrameReplaced||reason==Discard::PageDropped):kind==Kind::Audio&&reason==Discard::PageDropped;
   }
   struct Row {NativeStreamTicket ticket;Kind kind=Kind::Control;size_t bytes=0,written=0;bool active=false,writing=false;};
   Row* Find(NativeStreamTicket ticket)noexcept{for(auto& row:rows_)if(row.active&&row.ticket==ticket)return &row;return nullptr;}
-  mutable std::mutex mutex_;const uint64_t instance_;uint64_t next_=0,cut_sequence_=0,full_written_=0,discarded_=0,actual_bytes_=0;bool poisoned_=false;std::array<Row,kPending> rows_{};std::array<NativeStreamCut,64> cuts_{};
+  mutable std::mutex mutex_;const uint64_t instance_;uint64_t next_=0,cut_sequence_=0,full_written_=0,discarded_=0,actual_bytes_=0;bool poisoned_=false;std::vector<Row> rows_;std::vector<NativeStreamCut> cuts_;
 };
 } // namespace suitecut

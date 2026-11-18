@@ -146,7 +146,7 @@ it('preserves the original abort cause while a host predicate remains physically
   await Promise.resolve()
 })
 
-it('bounds unresolved physical callbacks across closed native waits and other browser sources', async () => {
+it('runs host callbacks past the old 64 unresolved physical callbacks across browser sources', async () => {
   const { source } = fixture('timeout')
   const finish: ((value: boolean) => void)[] = []
   const callback = () =>
@@ -161,8 +161,8 @@ it('bounds unresolved physical callbacks across closed native waits and other br
   const second = fixture('timeout')
   await expect(
     waitNativeEventPredicate(second.source, 'console', (value) => value, callback, { timeout: 1 }),
-  ).rejects.toThrow('physical host callback capacity')
-  expect(finish).toHaveLength(64)
+  ).rejects.toThrow('Timeout')
+  expect(finish).toHaveLength(65)
   for (const resolve of finish) resolve(false)
   await Promise.resolve()
   await Promise.resolve()

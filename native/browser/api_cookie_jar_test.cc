@@ -103,28 +103,37 @@ void OriginalClockAndCancellation(){
   const Jar::Clock unlimited{[]{return 100.0;},kNow,0,false};CHECK(jar.Clear(unlimited,error));CHECK(jar.Size()==0);CHECK(jar.AllocatedBytes()==0);
   Add(jar,{Domain("kept","v","one.com")});size_t calls=0;const Jar::Clock expires_before_commit{[&]{return ++calls==1?100.0:200.0;},kNow,200,false};const std::vector<Jar::Input> late{Domain("late","v","one.com")};const auto retained=jar.AllocatedBytes();CHECK(!jar.Import(late,expires_before_commit,error));CHECK(jar.Size()==1);CHECK(jar.AllocatedBytes()==retained);CHECK(Header(jar,"http://one.com/")=="kept=v");
 }
-void ActualAllocationBounds(){
-  TrackingResource upstream;auto budget=std::make_shared<Jar::Budget>(24000,&upstream);
+void ActualAllocationAccounting(){
+  TrackingResource upstream;auto budget=std::make_shared<Jar::Budget>(&upstream);
   {
-    Jar first(budget,Jar::Limits{8,14000,65536}),second(budget,Jar::Limits{8,14000,65536});
+    Jar first(budget),second(budget);
     std::string error;auto large=Domain("a",std::string(4000,'v'),"one.com",std::string("/")+std::string(4000,'p'));Add(first,{large});CHECK(first.AllocatedBytes()==budget->Bytes());CHECK(upstream.current==budget->Bytes());
     auto second_large=large;second_large.name="b";const std::vector<Jar::Input> two{second_large};CHECK(second.Import(two,clock_now,error));CHECK(upstream.current==first.AllocatedBytes()+second.AllocatedBytes());
     // A transactional replacement retains the old actual allocations until the
-    // new list commits. It cannot borrow uncharged temporary capacity.
-    const auto old=Cookies(first);const auto bytes=first.AllocatedBytes();Receive(first,"http://one.com/",{"wrong=v; Domain=other.com","invalid"});CHECK(first.AllocatedBytes()==bytes);CHECK(Cookies(first)[0].value==old[0].value);large.value=std::string(3999,'w');const std::vector<Jar::Input> replacement{large};CHECK(!first.Import(replacement,clock_now,error));CHECK(error.find("allocation budget")!=std::string::npos);CHECK(first.AllocatedBytes()==bytes);CHECK(Cookies(first)[0].value==old[0].value);CHECK(budget->Bytes()==upstream.current);CHECK(budget->Peak()==upstream.peak);CHECK(budget->Peak()<=24000);
+    // new list commits; a rejected wire update changes nothing.
+    const auto old=Cookies(first);const auto bytes=first.AllocatedBytes();Receive(first,"http://one.com/",{"wrong=v; Domain=other.com","invalid"});CHECK(first.AllocatedBytes()==bytes);CHECK(Cookies(first)[0].value==old[0].value);
+    // No allocation budget: a replacement of any size commits.
+    large.value=std::string(100000,'w');const std::vector<Jar::Input> replacement{large};CHECK(first.Import(replacement,clock_now,error));CHECK(Cookies(first)[0].value.size()==100000);CHECK(budget->Bytes()==upstream.current);CHECK(budget->Peak()==upstream.peak);
     CHECK(first.Clear(clock_now,error));CHECK(second.Clear(clock_now,error));CHECK(upstream.current==0);CHECK(budget->Bytes()==0);
   }
   CHECK(upstream.current==0);
-  auto cycles=std::make_shared<Jar::Budget>(65536,&upstream);
-  {Jar jar(cycles,Jar::Limits{8,32768,65536});std::string error;for(size_t i=0;i<20000;++i){auto entry=Domain("name",i%2?"small":std::string(4000,'v'),"one.com");const std::vector<Jar::Input> input{entry};CHECK(jar.Import(input,clock_now,error));CHECK(jar.AllocatedBytes()==upstream.current);CHECK(cycles->Bytes()==upstream.current);if(i%2)CHECK(jar.AllocatedBytes()<1024);}CHECK(jar.Clear(clock_now,error));CHECK(jar.AllocatedBytes()==0);CHECK(upstream.current==0);CHECK(cycles->Peak()<=32768);CHECK(upstream.allocations>20000);}
+  auto cycles=std::make_shared<Jar::Budget>(&upstream);
+  {Jar jar(cycles);std::string error;for(size_t i=0;i<20000;++i){auto entry=Domain("name",i%2?"small":std::string(4000,'v'),"one.com");const std::vector<Jar::Input> input{entry};CHECK(jar.Import(input,clock_now,error));CHECK(jar.AllocatedBytes()==upstream.current);CHECK(cycles->Bytes()==upstream.current);if(i%2)CHECK(jar.AllocatedBytes()<1024);}CHECK(jar.Clear(clock_now,error));CHECK(jar.AllocatedBytes()==0);CHECK(upstream.current==0);CHECK(upstream.allocations>20000);}
   CHECK(cycles->Bytes()==0);CHECK(upstream.current==0);
 }
-void EntryAndWireAdmission(){
-  Jar jar(std::make_shared<Jar::Budget>(),Jar::Limits{2,65536,8});Add(jar,{Domain("a","b","one.com"),Domain("c","d","one.com")});CHECK(Header(jar,"http://one.com/")=="a=b; c=d");std::string error,output;
-  const std::vector<Jar::Input> extra{Domain("e","f","one.com")};CHECK(!jar.Import(extra,clock_now,error));CHECK(error.find("entry capacity")!=std::string::npos);CHECK(jar.Size()==2);
-  const std::vector<Jar::Input> bigger{Domain("a","bbb","one.com")};CHECK(jar.Import(bigger,clock_now,error));CHECK(!jar.Header("http://one.com/",clock_now,output,error));CHECK(output.empty());CHECK(jar.Size()==2);
-  const std::vector<Jar::Input> invalid{URL("x","v","data:text/plain,test")};CHECK(!jar.Import(invalid,clock_now,error));CHECK(jar.Size()==2);
-  for(const int field:{0,1,2,3}){auto entry=Domain("x","v","one.com");if(field==0)entry.domain=std::string(255,'x');else if(field==1)entry.path="/"+std::string(8192,'x');else if(field==2)entry.partition_key=std::string(8193,'x');else{entry.domain.reset();entry.path.reset();entry.url=std::string(8193,'x');}const std::vector<Jar::Input> overflow{entry};const auto before=jar.AllocatedBytes();CHECK(!jar.Import(overflow,clock_now,error));CHECK(error=="Native API cookie field capacity exceeded");CHECK(jar.AllocatedBytes()==before);CHECK(jar.Size()==2);}
+void NoEntryOrWireCaps(){
+  Jar jar(std::make_shared<Jar::Budget>());std::string error,output;
+  // Past every former cap: 5000 entries, a > 64 KiB Cookie header, > 1 MiB of Set-Cookie bytes, > 4096 headers.
+  std::vector<Jar::Input> many;for(int i=0;i<5000;++i)many.push_back(Domain("n"+std::to_string(i),std::string(20,'v'),"one.com"));CHECK(jar.Import(many,clock_now,error));CHECK(jar.Size()==5000);
+  CHECK(jar.Header("http://one.com/",clock_now,output,error));CHECK(output.size()>65536);
+  std::vector<std::string> headers;for(int i=0;i<5000;++i)headers.push_back("w"+std::to_string(i)+"="+std::string(300,'x'));Receive(jar,"http://one.com/",headers);CHECK(jar.Size()==10000);
+  const std::vector<Jar::Input> invalid{URL("x","v","data:text/plain,test")};CHECK(!jar.Import(invalid,clock_now,error));CHECK(jar.Size()==10000);
+  // Long fields and a > 4096-byte name+value are stored whole.
+  std::string host;for(int i=0;i<30;++i)host+="abcdefghij.";host+="one.com";
+  auto wide=Domain("wide",std::string(10000,'v'),host,"/"+std::string(10000,'p'));auto at=URL("url","v","http://one.com/"+std::string(10000,'u'));
+  const std::vector<Jar::Input> fields{wide,at};CHECK(jar.Import(fields,clock_now,error));CHECK(jar.Size()==10002);
+  CHECK(Header(jar,"http://"+host+"/"+std::string(10000,'p')).find(std::string(10000,'v'))!=std::string::npos);
+  Receive(jar,"http://one.com/",{"long="+std::string(9000,'L')});CHECK(Header(jar,"http://one.com/x").find(std::string(9000,'L'))!=std::string::npos);
 }
 } // namespace
-int main(){CHECK(curl_global_init(CURL_GLOBAL_DEFAULT)==CURLE_OK);ImportedScopeAndOrder();WireScopePSLAndExpiry();ExportImportWireProvenance();ReplacementAndExactSnapshot();SecureLoopbackPrefixesAndPartitions();OriginalClockAndCancellation();ActualAllocationBounds();EntryAndWireAdmission();curl_global_cleanup();std::cout<<"native API cookie jar: 8 groups passed; actual allocator balanced after 20000 replacement cycles\n";}
+int main(){CHECK(curl_global_init(CURL_GLOBAL_DEFAULT)==CURLE_OK);ImportedScopeAndOrder();WireScopePSLAndExpiry();ExportImportWireProvenance();ReplacementAndExactSnapshot();SecureLoopbackPrefixesAndPartitions();OriginalClockAndCancellation();ActualAllocationAccounting();NoEntryOrWireCaps();curl_global_cleanup();std::cout<<"native API cookie jar: 8 groups passed; actual allocator balanced after 20000 replacement cycles\n";}

@@ -13,7 +13,7 @@ struct Field {std::string name,bytes;bool file=false;};
 std::string Body(const std::string&boundary,const std::vector<Field>&fields){
   std::vector<unsigned char>input,output;std::vector<suitecut::NativeHTTPMultipartPart>parts;std::string error;
   for(const auto&field:fields){parts.push_back({field.name,field.file?"actual.bin":"",field.file?"application/octet-stream":"",input.size(),field.bytes.size(),field.file});input.insert(input.end(),field.bytes.begin(),field.bytes.end());}
-  assert(suitecut::EncodeNativeHTTPMultipart(input,parts,boundary,2097152,output,error));return {output.begin(),output.end()};
+  assert(suitecut::EncodeNativeHTTPMultipart(input,parts,boundary,output,error));return {output.begin(),output.end()};
 }
 int main(){
   const std::string a="recordedBoundary0123456789",b="actualBoundary9876543210";

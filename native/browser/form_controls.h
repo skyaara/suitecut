@@ -80,7 +80,7 @@ class SuiteCutUploadFiles {
   SuiteCutUploadFiles& operator=(const SuiteCutUploadFiles&)=delete;
   ~SuiteCutUploadFiles() { if(!directory_.empty()){std::error_code error;std::filesystem::remove_all(directory_,error);} }
   std::string Stage(const std::string& name,std::string_view bytes) {
-    if(name.empty()||name=="."||name==".."||name.size()>255||name.find('/')!=std::string::npos||name.find('\\')!=std::string::npos||name.find('\0')!=std::string::npos)
+    if(name.empty()||name=="."||name==".."||name.find('/')!=std::string::npos||name.find('\\')!=std::string::npos||name.find('\0')!=std::string::npos)
       throw std::invalid_argument("Upload file name must be a basename");
     if(directory_.empty()){
       std::string pattern=(std::filesystem::temp_directory_path()/"suitecut-upload-XXXXXX").string();
@@ -127,10 +127,6 @@ class SuiteCutUploadFiles {
 // command. Retain it until input replacement, frame destruction or source exit.
 class SuiteCutUploadStore {
  public:
-  bool CanReplace(const std::string& key,size_t bytes) const {
-    const auto found=files_.find(key);
-    return (found!=files_.end()||files_.size()<1024)&&bytes<=kCapacity&&bytes<=kCapacity-(bytes_-(found==files_.end()?0:found->second.bytes));
-  }
   void Replace(const std::string& key,const std::string& frame,size_t bytes,std::shared_ptr<SuiteCutUploadFiles> files) {
     const auto found=files_.find(key);if(found!=files_.end()){bytes_-=found->second.bytes;files_.erase(found);}
     if(files){files_.emplace(key,Entry{frame,bytes,std::move(files)});bytes_+=bytes;}
@@ -143,7 +139,6 @@ class SuiteCutUploadStore {
   size_t Inputs() const{return files_.size();}
  private:
   struct Entry { std::string frame;size_t bytes;std::shared_ptr<SuiteCutUploadFiles> files; };
-  static constexpr size_t kCapacity=128*1048576;
   std::map<std::string,Entry> files_;
   size_t bytes_=0;
 };

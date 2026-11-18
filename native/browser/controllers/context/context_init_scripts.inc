@@ -51,10 +51,9 @@ bool SuiteCutContextControls::InitScriptFrameCreated(int page_id, CefRefPtr<CefF
   if (!snapshot || (!snapshot->GetInt("version") && !snapshot->GetInt("bindingVersion"))) return true;
   auto value = CefValue::Create(); value->SetDictionary(snapshot);
   const size_t bytes = CefWriteJSON(value, JSON_WRITER_DEFAULT).length() + 256;
-  // Nothing waits on a new frame's ack; it only bounds retained bytes. Past
-  // that bound the frame still gets its scripts, untracked, and the caller
-  // reports it.
-  if (script_acks_.size() >= 1024 || bytes > 64 * 1024 * 1024 - pending_script_bytes_ || next_script_ack_ == std::numeric_limits<uint64_t>::max()) {
+  // Nothing waits on a new frame's ack. Only an exhausted ack serial sends the
+  // frame its scripts untracked; the caller reports it.
+  if (next_script_ack_ == std::numeric_limits<uint64_t>::max()) {
     auto message = CefProcessMessage::Create("suitecutInitScripts");
     message->GetArgumentList()->SetString(0, "untracked"); message->GetArgumentList()->SetDictionary(1, snapshot);
     frame->SendProcessMessage(PID_RENDERER, message); return false;
@@ -66,8 +65,8 @@ bool SuiteCutContextControls::InitScriptFrameCreated(int page_id, CefRefPtr<CefF
   frame->SendProcessMessage(PID_RENDERER, message); WakeInitScriptDeadlines(); return true;
 }
 void SuiteCutContextControls::RegisterInitScript(int context_id, int owner, const std::string& source, Reply reply) {
-  if (owner <= 0 || script_batches_.contains(owner) || script_batches_.size() >= 64) {
-    reply(false, nullptr, "Native init script registration capacity exceeded"); return;
+  if (owner <= 0 || script_batches_.contains(owner)) {
+    reply(false, nullptr, "Native init script registration owner is invalid or already active"); return;
   }
   auto& scripts = contexts_.at(context_id).init_scripts;
   // Validate before committing the registration or queuing renderer work.
@@ -80,12 +79,10 @@ void SuiteCutContextControls::RegisterInitScript(int context_id, int owner, cons
     for (const auto& id : ids) {
       auto frame = page.browser->GetFrameByIdentifier(id);
       if (frame && frame->IsValid()) targets.push_back({page_id, frame});
-      if (targets.size() > 1024) { reply(false, nullptr, "addInitScript: more than 1024 frames are open in this context; suitecut installs a new init script in at most 1024 live frames at once. Close some pages or frames, or add the script before opening them"); return; }
     }
   }
-  // Each frame gets a full immutable snapshot in one Chromium IPC message.
-  // Check Chromium's 128 MiB message limit, including JSON escaping, before
-  // making any mutation or send observable.
+  // Each frame gets a full immutable snapshot in one Chromium IPC message;
+  // Chromium enforces its own message limit.
   auto budget_value = InitScriptSnapshot(context_id); auto budget_list = CefListValue::Create();
   for (const auto& entry : proposed.Entries()) {
     auto value = CefDictionaryValue::Create(); value->SetString("source", entry.source); value->SetInt("id", entry.id);
@@ -94,15 +91,8 @@ void SuiteCutContextControls::RegisterInitScript(int context_id, int owner, cons
   budget_value->SetList("scripts", budget_list); budget_value->SetInt("contextId", context_id); budget_value->SetInt("version", proposed.Version());
   auto serialized = CefValue::Create(); serialized->SetDictionary(budget_value);
   const size_t message_bytes = CefWriteJSON(serialized, JSON_WRITER_DEFAULT).length() + 256;
-  constexpr size_t max_bytes = 128 * 1024 * 1024;
-  if (message_bytes > max_bytes) {
-    reply(false, nullptr, "addInitScript: this context's init scripts come to " + std::to_string(message_bytes >> 20) +
-          " MiB as JSON; Chromium carries at most 128 MiB to a frame in one IPC message. Use fewer or smaller init scripts"); return;
-  }
-  if (targets.size() > 1024 - script_acks_.size() ||
-      targets.size() > std::numeric_limits<uint64_t>::max() - next_script_ack_) {
-    reply(false, nullptr, "addInitScript: " + std::to_string(script_acks_.size()) + " frames have not yet confirmed an earlier init script and " +
-          std::to_string(targets.size()) + " more would pass suitecut's 1024 in-flight frames. Await the earlier addInitScript calls first"); return;
+  if (targets.size() > std::numeric_limits<uint64_t>::max() - next_script_ack_) {
+    reply(false, nullptr, "addInitScript: native init-script acknowledgement serials are exhausted"); return;
   }
   if (!contexts_.at(context_id).init_scheme_registered) {
     reply(false, nullptr, "addInitScript: this context's init-script channel is not registered yet (the context is starting or closing)"); return;

@@ -10,7 +10,7 @@
 #include <vector>
 #include "include/cef_parser.h"
 namespace suitecut {
-// One bounded, genuine secondary Inspector session per admitted Page target.
+// One genuine secondary Inspector session per admitted Page target.
 // No command changes the primary Network agent. This collector admits only
 // exact-ID Other/Image resources observed independently by both actual agents.
 class NativePrivateResponseSession {
@@ -26,7 +26,7 @@ class NativePrivateResponseSession {
     *alive_=false;ActualClose();
   }
   bool Start(double deadline,Ready ready){
-    if(started_||closed_||!std::isfinite(deadline)||deadline<=now_()||global_sessions_>=8)return false;
+    if(started_||closed_||!std::isfinite(deadline)||deadline<=now_())return false;
     started_=true;++global_sessions_;deadline_=deadline;ready_=std::move(ready);
     const auto alive=alive_;auto send=send_;
     send("Target.getTargetInfo",CefDictionaryValue::Create(),deadline,[this,alive](bool ok,const std::string&json){
@@ -46,7 +46,7 @@ class NativePrivateResponseSession {
         }
         const auto result=Parse(ok,json);
         std::string attached;
-        if(!result||!Identity(result,"sessionId",attached,128)){Fail("Private body Inspector attachment failed");return;}
+        if(!result||!Identity(result,"sessionId",attached)){Fail("Private body Inspector attachment failed");return;}
         if(!session_.empty()&&session_!=attached){Fail("Private body Inspector attachment identity mismatch");return;}
         session_=std::move(attached);attaching_=false;
         if(detaching_||now_()>=deadline_){Detach("Private body initialization deadline exceeded");return;}
@@ -56,7 +56,7 @@ class NativePrivateResponseSession {
           if(!*alive||closed_)return;
           if(!ok||now_()>=deadline_){Detach("Private body Network enable failed or expired");return;}
           enabled_=true;auto ready=std::move(ready_);if(ready)ready(true,"");
-        }))Detach("Private body command capacity exceeded");
+        }))Detach("Private body Network enable could not be sent");
       });
     });
     if(*alive&&!closed_)wake_();
@@ -70,7 +70,7 @@ class NativePrivateResponseSession {
     if(closed_||!params)return false;
     if(method=="Target.attachedToTarget"&&attaching_){
       const auto info=params->GetDictionary("targetInfo");std::string observed;
-      if(info&&info->GetString("targetId")==target_&&info->GetString("type")=="page"&&Identity(params,"sessionId",observed,128)){
+      if(info&&info->GetString("targetId")==target_&&info->GetString("type")=="page"&&Identity(params,"sessionId",observed)){
         if(!session_.empty()&&session_!=observed){Fail("Conflicting private Inspector attachment event");return true;}
         session_=std::move(observed);if(detaching_)Detach(detach_error_);return true;
       }
@@ -82,7 +82,6 @@ class NativePrivateResponseSession {
     if(method!="Target.receivedMessageFromTarget"||params->GetString("sessionId")!=session_)return false;
     if(params->GetString("targetId")!=target_||params->GetType("message")!=VTYPE_STRING){Detach("Private body nested target mismatch");return true;}
     const auto message=params->GetString("message").ToString();
-    if(message.size()>2798300){Detach("Private body nested message bound exceeded");return true;}
     const auto value=Parse(true,message);if(!value){Detach("Private body nested message malformed");return true;}
     if(value->GetType("id")==VTYPE_INT){
       const auto found=pending_.find(value->GetInt("id"));if(found==pending_.end())return true;
@@ -104,7 +103,7 @@ class NativePrivateResponseSession {
     const auto found=records_.find(request);
     if(found==records_.end()||!found->second.primary.seen||found->second.redirected||found->second.failed||!found->second.primary_finished)return false;
     if(found->second.other.seen&&!Match(found->second))return false;
-    if(pending_.size()+waiting_.size()>=8||global_receipts_+global_waiting_>=32||next_wait_==2147483647)return false;
+    if(next_wait_==2147483647)return false;
     if(Match(found->second)&&found->second.private_finished){
       auto params=CefDictionaryValue::Create();params->SetString("requestId",request);
       return Inner("Network.getResponseBody",params,deadline,std::move(reply));
@@ -145,21 +144,19 @@ class NativePrivateResponseSession {
   struct Record{Side primary,other;double deadline=0;bool redirected=false,failed=false,primary_finished=false,private_finished=false;};
   struct Wait{std::string request;double deadline;Reply reply;};
   struct Call{Reply reply;double deadline;bool expired=false,body=false;};
-  static bool Identity(Dict value,const std::string&key,std::string&out,size_t max=256){
+  static bool Identity(Dict value,const std::string&key,std::string&out){
     if(!value||value->GetType(key)!=VTYPE_STRING)return false;
-    auto text=value->GetString(key).ToString();if(text.empty()||text.size()>max)return false;out=std::move(text);return true;
+    auto text=value->GetString(key).ToString();if(text.empty())return false;out=std::move(text);return true;
   }
   static Dict Parse(bool ok,const std::string&text){if(!ok)return nullptr;const auto value=CefParseJSON(text,JSON_PARSER_RFC);return value?value->GetDictionary():nullptr;}
   static std::string JSON(Dict value){if(!value)return "{}";auto wrapper=CefValue::Create();wrapper->SetDictionary(value->Copy(false));return CefWriteJSON(wrapper,JSON_WRITER_DEFAULT).ToString();}
-  // A DevTools response carries at most 192 MiB, the host transport maximum.
-  static constexpr size_t kBodyBytes=192*1048576;
   static bool ValidBody(Dict value){
     if(value->GetType("body")!=VTYPE_STRING||value->GetType("base64Encoded")!=VTYPE_BOOL)return false;
     const auto body=value->GetString("body").ToString();
-    if(!value->GetBool("base64Encoded"))return body.size()<=kBodyBytes;
-    if(body.size()>(kBodyBytes+2)/3*4||body.size()%4)return false;
+    if(!value->GetBool("base64Encoded"))return true;
+    if(body.size()%4)return false;
     if(body.empty())return true;
-    const auto decoded=CefBase64Decode(body);if(!decoded||decoded->GetSize()>kBodyBytes)return false;
+    const auto decoded=CefBase64Decode(body);if(!decoded)return false;
     std::vector<unsigned char>bytes(decoded->GetSize());decoded->GetData(bytes.data(),bytes.size(),0);
     return CefBase64Encode(bytes.data(),bytes.size()).ToString()==body;
   }
@@ -180,7 +177,6 @@ class NativePrivateResponseSession {
       const auto type=params->GetString("type").ToString();if(type!="Other"&&type!="Image")return;
       std::string loader,frame;if(!Identity(params,"loaderId",loader)||!Identity(params,"frameId",frame))return;
       if(found==records_.end()){
-        if(records_.size()>=128||global_records_>=512)return;
         Record record;record.deadline=now_()+30000;found=records_.emplace(request,std::move(record)).first;++global_records_;
       }
       auto&record=found->second;auto&side=other?record.other:record.primary;
@@ -212,7 +208,7 @@ class NativePrivateResponseSession {
     }
   }
   bool Inner(const std::string&method,Dict params,double deadline,Reply reply){
-    if(closed_||session_.empty()||detaching_||pending_.size()+waiting_.size()>=8||global_receipts_+global_waiting_>=32||next_==2147483647)return false;
+    if(closed_||session_.empty()||detaching_||next_==2147483647)return false;
     const int id=++next_;auto message=CefDictionaryValue::Create();message->SetInt("id",id);message->SetString("method",method);message->SetDictionary("params",params->Copy(false));
     auto envelope=CefDictionaryValue::Create();envelope->SetString("sessionId",session_);envelope->SetString("message",JSON(message));
     pending_.emplace(id,Call{std::move(reply),deadline,false,method=="Network.getResponseBody"});++global_receipts_;
@@ -234,7 +230,7 @@ class NativePrivateResponseSession {
   void Fail(const std::string&error){if(session_.empty())ActualClose(error);else Detach(error);}
   void Detach(const std::string&error){
     if(closed_)return;
-    if(!detaching_){detaching_=true;detach_error_=error.substr(0,512);}
+    if(!detaching_){detaching_=true;detach_error_=error;}
     auto ready=std::move(ready_);const auto alive=alive_;const auto reason=detach_error_;
     if(session_.empty()){
       // A timed-out attach can have been accepted even when Source's deadline

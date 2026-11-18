@@ -31,8 +31,9 @@ int main(){
  assert(anchors->Install(ctx.get())&&count()==prior+1&&anchors->Install(ctx.get()));
  assert(!anchors->Install(nullptr));
  for(const auto&bad:{std::string(),std::string(" \r\n\t"),pem+"junk",pem+std::string(1,'\0'),std::string(32769,'x'),std::string("-----BEGIN CERTIFICATE-----\ninvalid\n-----END CERTIFICATE-----")})assert(!NativeHTTPExtraCA::Parse({bad},error));
- assert(!NativeHTTPExtraCA::Parse(std::vector<std::string>(17,pem),error));
- std::string bundle;for(int i=0;i<16;++i)bundle+=pem;assert(NativeHTTPExtraCA::Parse({bundle},error));bundle+=pem;assert(!NativeHTTPExtraCA::Parse({bundle},error));
+ // No certificate count or input byte cap: 40 certificates and >32 KiB bundles parse.
+ assert(NativeHTTPExtraCA::Parse(std::vector<std::string>(40,pem),error)->size()==40);
+ std::string bundle;size_t copies=0;while(bundle.size()<=32*1024){bundle+=pem;++copies;}assert(NativeHTTPExtraCA::Parse({bundle},error)->size()==copies);
  assert(NativeHTTPExtraCA::Parse({},error)->size()==0);
- std::cout<<"PASS immutable native extra CA: real PEM decoding, existing default store, exact duplicate anchors, invalid/NUL/trailing/empty/count/input bounds\n";
+ std::cout<<"PASS immutable native extra CA: real PEM decoding, existing default store, exact duplicate anchors, invalid/NUL/trailing/empty input, no count/byte cap\n";
 }

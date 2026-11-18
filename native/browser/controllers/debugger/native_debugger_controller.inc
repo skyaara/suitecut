@@ -13,7 +13,7 @@ std::function<void(const std::string&,Dict,const std::string&)> native_debugger_
 std::function<void(uint64_t,Dict,const std::string&)> native_debugger_pause_expired_;
 uint64_t NativeDebuggerLease(){return native_debugger_next_lease_>=9007199254740991ULL?0:++native_debugger_next_lease_;}
 bool NativeDebuggerSend(const std::string& session,const std::string& method,Dict params,double deadline,suitecut::DebuggerDomains::Reply reply){
-  if(!browser_||closing_page_||native_debugger_closing_requested_||native_debugger_calls_.size()>=64||!reply||!std::isfinite(deadline)||deadline<0||(deadline>0&&Now()>=deadline))return false;
+  if(!browser_||closing_page_||native_debugger_closing_requested_||!reply||!std::isfinite(deadline)||deadline<0||(deadline>0&&Now()>=deadline))return false;
   const int assigned=AllocateDevToolsId();if(!assigned)return false;
   native_debugger_calls_.emplace(assigned,NativeDebuggerPhysicalCall{session,(deadline>0?deadline:Now()+30000)+30000,false});
   auto callback=[this,assigned,session,reply=std::move(reply)](bool ok,const std::string& json){
@@ -25,7 +25,7 @@ bool NativeDebuggerSend(const std::string& session,const std::string& method,Dic
   };
   // These actual retained callbacks survive canceled bootstrap/public owners.
   // Typed scalar projection applies only to genuine protocol-owned metadata.
-  devtools_.emplace(assigned,DevToolsCall{0,callback,session,true,8*1048576,true,true});
+  devtools_.emplace(assigned,DevToolsCall{0,callback,session,true,kMaxResponseBytes,true,true});
   if(!SubmitDevTools(assigned,method,params,session)){
     const auto found=devtools_.find(assigned);if(found!=devtools_.end()){auto done=std::exchange(found->second.callback, nullptr);devtools_.erase(found);done(false,"{\"message\":\"Native shared Debugger dispatch was not accepted\"}");}
   }

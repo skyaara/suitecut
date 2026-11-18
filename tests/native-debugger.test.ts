@@ -113,7 +113,7 @@ describe('explicit native debugger SDK projection', () => {
     await expect(second.scripts({ position: 0 })).rejects.toThrow('another enumeration/session')
     expect(b.calls).toHaveLength(before)
   })
-  it('preserves native stale-inventory failures and validates bounded actual page records', async () => {
+  it('preserves native stale-inventory failures and validates actual page records of any size', async () => {
     const f = fixture(),
       session = await NativeDebuggerSession.create(f.transport)
     f.reply({
@@ -123,6 +123,8 @@ describe('explicit native debugger SDK projection', () => {
         attestedNative: false,
       })),
     })
+    expect((await session.scripts()).scripts).toHaveLength(65)
+    f.reply({ scripts: [{ scriptId: '', url: '', attestedNative: false }] })
     await expect(session.scripts()).rejects.toThrow()
     f.transport.runDebugger = () =>
       Promise.reject(new Error('inventory changed; restart enumeration'))
@@ -397,7 +399,7 @@ describe('explicit native debugger SDK projection', () => {
     f.transport.cleanupDebugger = () => Promise.resolve({})
   })
 
-  it('bounds retained cleanup subscriptions and pending native cleanup receipts to sixteen', async () => {
+  it('admits sessions past the old 16 retained cleanups while native cleanup receipts are pending', async () => {
     const fixtures = Array.from({ length: 16 }, fixture)
     const sessions = await Promise.all(
       fixtures.map((f) => NativeDebuggerSession.create(f.transport)),
@@ -412,12 +414,11 @@ describe('explicit native debugger SDK projection', () => {
     }
     await Promise.resolve()
     const extra = fixture()
-    await expect(NativeDebuggerSession.create(extra.transport)).rejects.toThrow('Too many retained')
-    expect(extra.calls).toHaveLength(0)
+    const admitted = await NativeDebuggerSession.create(extra.transport)
+    expect(extra.calls).toHaveLength(1)
     expect(receipts).toHaveLength(16)
     for (const receipt of receipts) receipt()
     await Promise.all(sessions.map((session) => session.close()))
-    const admitted = await NativeDebuggerSession.create(extra.transport)
     extra.reply({})
     await admitted.close()
   })
@@ -771,7 +772,7 @@ describe('explicit native debugger SDK projection', () => {
     await expect(
       session.evaluateOnCallFrame(pause, frame, '1', { signal: caller.signal }),
     ).rejects.toBe(reason)
-    for (const invalid of ['', 'x'.repeat(8193), "'\ud800'"])
+    for (const invalid of ['', "'\ud800'"])
       await expect(session.evaluateOnCallFrame(pause, frame, invalid)).rejects.toThrow()
     expect(f.calls).toHaveLength(count)
     f.reply({ kind: 'value', value: { type: 'number', value: 1 } })
@@ -797,7 +798,7 @@ describe('explicit native debugger SDK projection', () => {
     await expect(session.evaluateOnCallFrame(pause, frame, '1n')).rejects.toThrow()
   })
 
-  it('rejects invalid options and oversized source before any extra native command', async () => {
+  it('rejects invalid options before any extra native command and returns large source whole', async () => {
     const f = fixture()
     const session = await NativeDebuggerSession.create(f.transport)
     const count = f.calls.length
@@ -805,6 +806,6 @@ describe('explicit native debugger SDK projection', () => {
     await expect(session.scriptSource('')).rejects.toThrow()
     expect(f.calls).toHaveLength(count)
     f.reply({ source: 'x'.repeat(262_145) })
-    await expect(session.scriptSource('actual-script')).rejects.toThrow()
+    await expect(session.scriptSource('actual-script')).resolves.toBe('x'.repeat(262_145))
   })
 })

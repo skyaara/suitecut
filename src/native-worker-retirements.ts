@@ -29,14 +29,6 @@ export class NativeWorkerRetirements {
     for (const record of snapshot.records) this.store('', record)
     for (const record of snapshot.ready ?? []) this.storeReady('', record)
   }
-  private trim<T>(records: Map<string, T>): void {
-    while (records.size > 1024) {
-      const first = records.keys().next().value
-      if (first === undefined) break
-      records.delete(first)
-      this.lostHistory = true
-    }
-  }
   private store(scope: string, record: NativeWorkerRetirement): boolean {
     const key = `${scope}\n${record.id}`
     const prior = this.records.get(key)?.record
@@ -46,7 +38,6 @@ export class NativeWorkerRetirements {
     if (prior?.event === 'close' && record.event === 'channelclosed') return false
     this.records.set(key, { scope, record: { ...record } })
     this.ready.delete(key)
-    this.trim(this.records)
     return true
   }
   private storeReady(scope: string, record: NativeWorkerReadyReceipt): boolean {
@@ -61,7 +52,6 @@ export class NativeWorkerRetirements {
       return false
     this.records.delete(key)
     this.ready.set(key, { scope, record: { ...record } })
-    this.trim(this.ready)
     return true
   }
   observe(scope: string, event: NativeWorkerEvent): boolean {

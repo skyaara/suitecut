@@ -37,11 +37,10 @@ int main() {
   assert(!waits.Admit(1, 2, 1, -1, 1, success));
   assert(!waits.Admit(1, 2, 1, std::numeric_limits<double>::infinity(), 1, success));
   assert(!waits.Admit(1, 2, 1, 1, 1, success));
-  for (int owner = 1; owner <= int(Waits::kWaits); ++owner)
+  for (int owner = 1; owner <= 200; ++owner)
     assert(waits.Admit(owner, 2, 7, 100, 1, [](bool ok, uint64_t, const std::string& error) {
       assert(!ok && error.find("disposed") != std::string::npos);
     }));
-  assert(!waits.Admit(65, 2, 7, 100, 1, success));
   assert(!waits.Admit(1, 2, 7, 100, 1, success));
   waits.Clear(); assert(waits.size() == 0);
 

@@ -30,22 +30,22 @@ class NativeContextWorkerNetwork {
   explicit NativeContextWorkerNetwork(Emit emit):emit_(std::move(emit)){}
   ~NativeContextWorkerNetwork(){Clear();*alive_=false;}
   bool Attach(int context,const std::string& owner,bool broker,Command command,Body body,Cancel cancel){
-    if(closed_||context<1||owner.empty()||owner.size()>128||owners_.contains(owner)||owners_.size()>=192||!command||!body||!cancel)return false;
+    if(closed_||context<1||owner.empty()||owners_.contains(owner)||!command||!body||!cancel)return false;
     owners_.emplace(owner,Owner{context,broker,std::move(command),std::move(body),std::move(cancel)});return true;
   }
   bool Observe(int context,const std::string& owner,Dict worker,Dict network){
     if(closed_||!worker||!network)return false;
     const auto source=owners_.find(owner);const auto target=worker->GetString("id").ToString(),kind=worker->GetString("type").ToString();
-    if(source==owners_.end()||source->second.context!=context||target.empty()||target.size()>128||(kind!="worker"&&kind!="shared_worker"&&kind!="service_worker"))return false;
+    if(source==owners_.end()||source->second.context!=context||target.empty()||(kind!="worker"&&kind!="shared_worker"&&kind!="service_worker"))return false;
     const auto event=network->GetString("event").ToString();
     if(event=="routematch"){
-      auto matcher=network->GetDictionary("matcher");if(!route_emit_||!matcher||matcher->GetString("id").empty()||matcher->GetString("id").length()>128||matcher->GetString("registrationId").empty()||matcher->GetString("registrationId").length()>128||matcher->GetString("url").empty()||matcher->GetString("url").length()>8192||matcher->GetString("callbackScope").empty()||matcher->GetString("callbackScope").length()>20||matcher->GetString("callbackToken").empty()||matcher->GetString("callbackToken").length()>20||sequence_>=9007199254740991ULL)return false;
+      auto matcher=network->GetDictionary("matcher");if(!route_emit_||!matcher||matcher->GetString("id").empty()||matcher->GetString("registrationId").empty()||matcher->GetString("url").empty()||matcher->GetString("callbackScope").empty()||matcher->GetString("callbackToken").empty()||sequence_>=9007199254740991ULL)return false;
       auto projected=network->Copy(false);projected->SetDouble("sequence",double(++sequence_));route_emit_(context,owner,worker->Copy(false),projected);return true;
     }
     const unsigned bit=Bit(event);if(!bit&&event!="requestupdated"&&event!="route")return true;
     auto request=network->GetDictionary("request");if(!request)return false;
     const auto native=request->GetString("requestId").ToString(),local=request->GetString("id").ToString(),session=request->GetString("session").ToString();
-    if(native.empty()||native.size()>256||local.empty()||local.size()>256||session.size()>128)return false;
+    if(native.empty()||local.empty())return false;
     const auto alias_key=AliasKey(owner,local);auto alias=aliases_.find(alias_key);std::shared_ptr<Entry> entry;
     if(alias!=aliases_.end()){const auto found=entries_.find(alias->second);if(found!=entries_.end())entry=found->second;}
     if(!entry){
@@ -63,11 +63,10 @@ class NativeContextWorkerNetwork {
         // A real Fetch invocation may precede its Network creation packet.
         // This reserves canonical identity only; it emits no request event.
         if(event!="request"&&event!="route")return true;
-        if(serial_>=9007199254740991ULL||!Reserve(0))return false;
+        if(serial_>=9007199254740991ULL)return false;
         entry=std::make_shared<Entry>();entry->context=context;entry->id="worker-request:"+std::to_string(++serial_);entry->key=key;entry->worker=worker->Copy(false);entry->redirect=redirect;entry->previous=previous;
-        entries_.emplace(entry->id,entry);keys_[key]=entry->id;order_.push_back(entry->id);
+        entries_.emplace(entry->id,entry);keys_[key]=entry->id;
       }
-      if(aliases_.size()>=16384)return false;
       aliases_[alias_key]=entry->id;
     }
     if(entry->context!=context||entry->worker->GetString("id")!=target)return false;
@@ -81,11 +80,10 @@ class NativeContextWorkerNetwork {
     if(event=="route"){
       auto actual=network->GetDictionary("route");if(!actual)return false;
       const auto scope=actual->GetString("callbackScope").ToString(),invocation=actual->GetString("id").ToString();
-      if(scope.empty()||scope.size()>20||invocation.empty()||invocation.size()>128)return false;
+      if(scope.empty()||invocation.empty())return false;
       route_owner=std::make_shared<RouteOwner>(RouteOwner{owner,scope,invocation});
     }
     const auto cost=JSON(projected).size()+JSON(worker).size()+512+(route_owner?route_owner->bytes():0);
-    if(cost>33554432||!Reserve(cost>entry->cost?cost-entry->cost:0,entry->id))return false;
     bytes_=bytes_-entry->cost+cost;entry->cost=cost;entry->latest=projected;entry->route_owner=std::move(route_owner);
     if(event=="requestfinished"||event=="requestfailed")entry->finished=true;
     if(event=="route"){
@@ -115,10 +113,10 @@ class NativeContextWorkerNetwork {
     uint64_t value=0;const auto parsed=std::from_chars(text.data(),text.data()+text.size(),value);return parsed.ec==std::errc{}&&parsed.ptr==text.data()+text.size()?value:0;
   }
   bool HandleRoute(int operation,int context,const std::string&actual,Dict params,double deadline,Reply reply){
-    const auto source=owners_.find(actual);if(closed_||operation<1||!params||!reply||!std::isfinite(deadline)||deadline<0||source==owners_.end()||source->second.context!=context||pending_.contains(operation)||pending_.size()>=128||operation_serial_==UINT64_MAX)return false;
+    const auto source=owners_.find(actual);if(closed_||operation<1||!params||!reply||!std::isfinite(deadline)||deadline<0||source==owners_.end()||source->second.context!=context||pending_.contains(operation)||operation_serial_==UINT64_MAX)return false;
     const auto action=params->GetString("action").ToString();
     if(action!="fetch"&&action!="matchRoute"&&action!="continue"&&action!="fallback"&&action!="abort"&&action!="fulfill"&&action!="resetBody"&&action!="bodyChunk")return false;
-    if(params->GetType("callbackScope")!=VTYPE_STRING||params->GetString("callbackScope").empty()||params->GetString("callbackScope").length()>20||params->GetType("routeId")!=VTYPE_STRING||params->GetString("routeId").empty()||params->GetString("routeId").length()>128)return false;
+    if(params->GetType("callbackScope")!=VTYPE_STRING||params->GetString("callbackScope").empty()||params->GetType("routeId")!=VTYPE_STRING||params->GetString("routeId").empty())return false;
     const auto generation=++operation_serial_;pending_.emplace(operation,Pending{context,actual,false,std::move(reply),generation});auto command=source->second.command;
     const auto scope=params->GetString("callbackScope").ToString(),invocation=params->GetString("routeId").ToString();const bool terminal=action!="fetch"&&action!="bodyChunk"&&action!="resetBody"&&action!="matchRoute";
     auto forwarded=params->Copy(false);forwarded->SetString("suitecutRouteOperation",std::to_string(generation));
@@ -130,7 +128,7 @@ class NativeContextWorkerNetwork {
     });return true;
   }
   bool Handle(int owner,int context,const std::string& id,Dict params,double deadline,Reply reply){
-    if(closed_||owner<1||!params||!reply||!std::isfinite(deadline)||deadline<0||pending_.contains(owner)||pending_.size()>=128||operation_serial_==UINT64_MAX)return false;
+    if(closed_||owner<1||!params||!reply||!std::isfinite(deadline)||deadline<0||pending_.contains(owner)||operation_serial_==UINT64_MAX)return false;
     const auto found=entries_.find(id);if(found==entries_.end()||found->second->context!=context)return false;
     const auto action=params->GetString("action").ToString();const bool body=action=="body";
     if(!body&&action!="requestHeaders"&&action!="responseHeaders"&&action!="response"&&action!="finished")return false;
@@ -172,7 +170,7 @@ class NativeContextWorkerNetwork {
     closed_=true;std::vector<int> canceled;for(const auto&[id,pending]:pending_)canceled.push_back(id);for(int id:canceled)CancelOwner(id);
     // Logical disposal cannot retire an unacknowledged physical body read.
     // Source/broker real close (or actual ACK) invokes its retained callback.
-    owners_.clear();entries_.clear();aliases_.clear();keys_.clear();order_.clear();bytes_=0;
+    owners_.clear();entries_.clear();aliases_.clear();keys_.clear();bytes_=0;
   }
   size_t physical()const{size_t result=0;for(const auto&[id,pending]:pending_)result+=pending.body;return result;}
   size_t retained_bytes()const{return bytes_;}size_t records()const{return entries_.size();}size_t aliases()const{return aliases_.size();}
@@ -189,11 +187,8 @@ class NativeContextWorkerNetwork {
     if(owned_headers&&entry.route_owner&&owners_.contains(entry.route_owner->owner)&&entry.aliases.contains(entry.route_owner->owner))return entry.route_owner->owner;
     std::string chosen;for(const auto&[id,alias]:entry.aliases){const auto found=owners_.find(id);if(found==owners_.end())continue;if(chosen.empty()||found->second.broker)chosen=id;if(found->second.broker)break;}return chosen;
   }
-  bool Reserve(size_t additional,const std::string&keep={}){
-    while((keep.empty()&&entries_.size()>=4096)||additional>33554432-bytes_){const auto old=std::find_if(order_.begin(),order_.end(),[&](const std::string&id){const auto found=entries_.find(id);return found==entries_.end()||(id!=keep&&found->second->finished);});if(old==order_.end())return false;const auto id=*old;order_.erase(old);Erase(id);}return true;
-  }
-  void Erase(const std::string&id){const auto found=entries_.find(id);if(found==entries_.end())return;keys_.erase(found->second->key);bytes_-=found->second->cost;entries_.erase(found);for(auto it=aliases_.begin();it!=aliases_.end();)if(it->second==id)it=aliases_.erase(it);else ++it;order_.erase(std::remove(order_.begin(),order_.end(),id),order_.end());}
+  void Erase(const std::string&id){const auto found=entries_.find(id);if(found==entries_.end())return;keys_.erase(found->second->key);bytes_-=found->second->cost;entries_.erase(found);for(auto it=aliases_.begin();it!=aliases_.end();)if(it->second==id)it=aliases_.erase(it);else ++it;}
   Emit emit_;RouteEmit route_emit_;bool closed_=false;uint64_t serial_=0,sequence_=0,operation_serial_=0;size_t bytes_=0;std::shared_ptr<bool>alive_=std::make_shared<bool>(true);
-  std::map<std::string,Owner>owners_;std::map<std::string,std::shared_ptr<Entry>>entries_;std::map<std::string,std::string>keys_,aliases_;std::deque<std::string>order_;std::map<int,Pending>pending_;
+  std::map<std::string,Owner>owners_;std::map<std::string,std::shared_ptr<Entry>>entries_;std::map<std::string,std::string>keys_,aliases_;std::map<int,Pending>pending_;
 };
 } // namespace suitecut

@@ -69,7 +69,7 @@ int main(int argc,char**argv){
   bool replay=false;assert(ordered.Wait(4,"1","framereceived",cursor,100,[&](bool ok,Dict,const Controls::Bytes&bytes,const std::string&){assert(ok&&bytes==expected);replay=true;}));assert(replay);
  }
  // Session detachment supplies an actual close. Closed identity knowledge is
- // bounded by the issued serial/live table even after journal eviction.
+ // bounded by the issued serial/live table.
  {Controls detached([](Dict,const Controls::Bytes&){return true;},[]{},[](const std::string&){assert(false);});
   detached.Event("Network.webSocketCreated",created,"child",1);bool rejected=false;
   assert(detached.Wait(1,"1","framereceived",detached.sequence(),100,[&](bool ok,Dict,const Controls::Bytes&,const std::string&error){assert(!ok&&error=="WebSocket closed");rejected=true;}));
@@ -77,6 +77,22 @@ int main(int argc,char**argv){
   detached.Event("Network.webSocketCreated",created,"",3);
   for(int i=0;i<520;++i)detached.Event("Network.webSocketFrameReceived",params,"",4+i);
   bool evicted=false;assert(detached.Wait(2,"1","framereceived",detached.sequence(),1000,[&](bool ok,Dict,const Controls::Bytes&,const std::string&error){assert(!ok&&error=="WebSocket closed");evicted=true;}));assert(evicted);
+ }
+ // Socket counts, identity/URL/error sizes, frame sizes and journal depth are
+ // not bounded here: everything passes through whole and nothing is evicted.
+ {std::vector<std::pair<Dict,Controls::Bytes>> whole;std::vector<std::string> degraded;
+  Controls unbounded([&](Dict event,const Controls::Bytes&bytes){whole.emplace_back(event->Copy(false),bytes);return true;},[]{},[](const std::string&){assert(false);});
+  unbounded.degraded=[&](const std::string&error){degraded.push_back(error);};
+  const std::string long_url="wss://127.0.0.1/"+std::string(9000,'u');
+  for(int i=0;i<600;++i){auto socket=CefDictionaryValue::Create();socket->SetString("requestId",std::to_string(i)+std::string(200,'r'));socket->SetString("url",long_url);unbounded.Event("Network.webSocketCreated",socket,std::string(200,'s'),i);}
+  assert(unbounded.sockets()==600&&whole.size()==600&&whole.back().first->GetString("url").ToString()==long_url);
+  auto text=CefDictionaryValue::Create();text->SetInt("opcode",1);text->SetString("payloadData",std::string(16*1048576+3,'t'));
+  auto sent=CefDictionaryValue::Create();sent->SetString("requestId","0"+std::string(200,'r'));sent->SetDictionary("response",text);unbounded.Event("Network.webSocketFrameSent",sent,std::string(200,'s'),600);
+  assert(whole.back().second.size()==size_t(16*1048576+3)&&!whole.back().first->HasKey("truncated"));
+  auto error=CefDictionaryValue::Create();error->SetString("requestId","0"+std::string(200,'r'));error->SetString("errorMessage",std::string(9000,'e'));unbounded.Event("Network.webSocketFrameError",error,std::string(200,'s'),601);
+  assert(whole.back().first->GetString("error").ToString().size()==9000&&degraded.empty());
+  bool first=false;assert(unbounded.Wait(1,"1","created",0,1000,[&](bool ok,Dict event,const Controls::Bytes&,const std::string&){assert(ok&&event->GetDouble("sequence")==1);first=true;}));assert(first);
+  for(int owner=2;owner<300;++owner)assert(unbounded.Wait(owner,"1","close",unbounded.sequence(),1000,[](bool,Dict,const Controls::Bytes&,const std::string&){}));
  }
  if(argc>1){
   std::ifstream input(argv[1]);const std::string bytes((std::istreambuf_iterator<char>(input)),{});auto parsed=CefParseJSON(bytes,JSON_PARSER_RFC);auto records=parsed?parsed->GetList():nullptr;assert(records&&records->GetSize()>=8);int sent=0,received=0,closed=0;

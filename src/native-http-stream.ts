@@ -54,7 +54,6 @@ export class NativeMultipartStreamJob {
     const entries: [string, Value][] = []
     if (value instanceof FormData) value.forEach((item, name) => entries.push([name, item]))
     else entries.push(...Object.entries(value))
-    if (entries.length > 1024) throw new Error('Native multipart supports at most 1024 parts')
     const streams = entries
       .filter((pair): pair is [string, ReadStream] => pair[1] instanceof ReadStream)
       .map((pair) => pair[1])
@@ -75,21 +74,6 @@ export class NativeMultipartStreamJob {
       throw new Error(
         'Native multipart requires distinct available binary ReadStreams with a path and original destruction hook',
       )
-    if (physicalJobs.size >= 16 || streams.length > 128 - physicalStreams.size)
-      throw new Error('Native multipart host physical stream capacity exceeded')
-    let known = 0
-    for (const [name, item] of entries) {
-      if (Buffer.byteLength(name) > 8192)
-        throw new Error('Native multipart field name exceeds 8192 bytes')
-      if (item instanceof ReadStream) continue
-      const bytes =
-        item instanceof Blob
-          ? item.size
-          : typeof item === 'object'
-            ? item.buffer.length
-            : Buffer.byteLength(String(item))
-      known += bytes
-    }
     const zeroIdentities = new Map<ReadStream, Identity>()
     for (const stream of streams) {
       const descriptor = Reflect.get(stream, 'fd') as UntrustedInput

@@ -16,7 +16,8 @@ int main(){cef_api_hash(CEF_API_VERSION,0);
  assert(!suitecut::DevToolsLosslessProjection(R"({"id":37,"value":"\ud800",]})",projected,error));
  const std::string pair=R"({"value":"\ud83d\ude00"})";assert(suitecut::DevToolsLosslessProjection(pair,projected,error));assert(pair==projected);
  auto author=CefValue::Create();author->SetString("{\"__suitecutNativeUTF16Scalar\":\"d800\"}");json.clear();assert(suitecut::DevToolsLosslessJSON(author,json));assert(json==CefWriteJSON(author,JSON_WRITER_DEFAULT).ToString());
- assert(!suitecut::DevToolsLosslessProjection("{\"value\":\""+std::string(1048577,'a')+"\\ud800\"}",projected,error));
+ {const std::string big="{\"value\":\""+std::string(1048577,'a')+"\\ud800\"}";assert(suitecut::DevToolsLosslessProjection(big,projected,error));std::u16string whole;assert(suitecut::DevToolsReadTag(CefParseJSON(projected,JSON_PARSER_RFC)->GetDictionary()->GetValue("value"),whole));assert(whole.size()==1048578&&whole.back()==0xd800);}
+ {auto deep=CefValue::Create();deep->SetString(std::string(70000,'q'));for(int i=0;i<80;++i){auto list=CefListValue::Create();list->SetValue(0,deep);deep=CefValue::Create();deep->SetList(list);}json.clear();assert(suitecut::DevToolsLosslessJSON(deep,json,16));assert(json.size()>70000);}
  const std::string ax=R"({"nodes":[{"nodeId":"1","backendDOMNodeId":9,"role":{"type":"role","value":"heading"},"name":{"type":"string","value":"  \ud800\u00a0name  "},"childIds":["2"]},{"nodeId":"2","role":{"type":"role","value":"StaticText"},"name":{"type":"string","value":"  \ud800\u00a0name  "}}]})";
  assert(suitecut::DevToolsLosslessProjection(ax,projected,error));auto ax_parse=CefParseJSON(projected,JSON_PARSER_RFC);SuiteCutAXForest projector;CefRefPtr<CefListValue> output;std::vector<SuiteCutAXForest::Link> links;assert(projector.Project(ax_parse->GetDictionary()->GetList("nodes"),9,output,links,error));
  auto ax_out=CefValue::Create();ax_out->SetList(output->Copy());json.clear();assert(suitecut::DevToolsLosslessJSON(ax_out,json));assert(json.find("\\ud800")!=std::string::npos);assert(json.find(suitecut::kDevToolsUTF16Tag)==std::string::npos);assert(output->GetDictionary(0)->GetList("children")->GetSize()==0);
@@ -59,5 +60,5 @@ int main(){cef_api_hash(CEF_API_VERSION,0);
  DevToolsSetString(output_text,"ordinary",ordinary_text);assert(output_text->GetType("ordinary")==VTYPE_STRING&&output_text->GetString("ordinary").ToString()==ordinary_text);
  DevToolsSetString(output_text,"paired",DevToolsUnitsWTF8({0xd83d,0xde00}));assert(output_text->GetType("paired")==VTYPE_STRING&&output_text->GetString("paired").ToString()==DevToolsUnitsWTF8({0xd83d,0xde00}));
  DevToolsSetString(output_text,"isolated",DevToolsUnitsWTF8({0xdfff}));assert(DevToolsReadTag(output_text->GetValue("isolated"),actual)&&actual==std::u16string({0xdfff}));
- std::cout<<"PASS actual CEF lossless private scalar sidecar: exact isolated/pair/NUL/backslash/quote units, no opaque caption tokens, malformed/key/budget errors, ordinary pair/string collision unchanged\n";
+ std::cout<<"PASS actual CEF lossless private scalar sidecar: exact isolated/pair/NUL/backslash/quote units, no opaque caption tokens, malformed/key errors, no size budget, ordinary pair/string collision unchanged\n";
 }

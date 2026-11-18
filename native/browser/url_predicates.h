@@ -12,14 +12,12 @@
 // resuming the native scheduler; stale identity never consumes another pause.
 class SuiteCutURLPredicateRegistry {
  public:
-  static constexpr std::size_t kCapacity = 64;
   static constexpr std::uint64_t kMaxWireInteger = 9007199254740991ULL;
   using Continuation = std::function<void(bool)>;
   std::optional<std::uint64_t> Pause(int owner, std::uint64_t generation,
       std::string client_token, Continuation continuation) {
     if (owner < 1 || generation == 0 || generation > kMaxWireInteger ||
-        client_token.empty() || client_token.size() > 128 || !continuation ||
-        entries_.contains(owner) || entries_.size() >= kCapacity ||
+        client_token.empty() || !continuation || entries_.contains(owner) ||
         next_token_ >= kMaxWireInteger) return std::nullopt;
     const auto token = ++next_token_;
     entries_.emplace(owner, Entry{generation, token, std::move(client_token), std::move(continuation)});

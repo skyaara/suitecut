@@ -14,7 +14,8 @@ double MacNativeTimeTicksMs() {
 bool CopyMacSurface(void* handle, int x, int y, int width, int height,
                     std::vector<uint8_t>& bgra) {
   auto surface = static_cast<IOSurfaceRef>(handle);
-  if (!surface || x < 0 || y < 0 || width < 1 || height < 1 || width > 3840 || height > 2160 ||
+  // The surface's own extent bounds the copy; suitecut adds no size cap.
+  if (!surface || x < 0 || y < 0 || width < 1 || height < 1 ||
       static_cast<size_t>(x) + width > IOSurfaceGetWidth(surface) ||
       static_cast<size_t>(y) + height > IOSurfaceGetHeight(surface) ||
       IOSurfaceGetPlaneCount(surface) > 1 || IOSurfaceGetBytesPerElement(surface) != 4)
@@ -86,7 +87,9 @@ kernel void nv12_capture(texture2d<float,access::read> source[[texture(0)]],text
   size_t bytes=0;
   ~Impl(){for(auto buffer:free)CVPixelBufferRelease(buffer);}
   static size_t Bytes(CVPixelBufferRef buffer){return IOSurfaceGetAllocSize(CVPixelBufferGetIOSurface(buffer));}
-  void Release(CVPixelBufferRef buffer){std::lock_guard lock(mutex);if(free.size()<32)free.push_back(buffer);else{bytes-=Bytes(buffer);CVPixelBufferRelease(buffer);}}
+  // max_bytes sizes only the cache of idle surfaces. Frames in use are never
+  // refused for it: CoreVideo alone decides whether a surface can be created.
+  void Release(CVPixelBufferRef buffer){std::lock_guard lock(mutex);if(free.size()<32&&bytes<=max_bytes)free.push_back(buffer);else{bytes-=Bytes(buffer);CVPixelBufferRelease(buffer);}}
   CVPixelBufferRef Acquire(int width,int height,bool nv12){
     const OSType format=nv12?kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange:kCVPixelFormatType_32BGRA;
     std::lock_guard lock(mutex);
@@ -99,7 +102,6 @@ kernel void nv12_capture(texture2d<float,access::read> source[[texture(0)]],text
       auto buffer=free.back();free.pop_back();
       bytes-=Bytes(buffer);CVPixelBufferRelease(buffer);
     }
-    if(bytes+needed>max_bytes)return nullptr;
     CVPixelBufferRef buffer=nullptr;
     NSDictionary* attributes=@{(id)kCVPixelBufferIOSurfacePropertiesKey:@{},(id)kCVPixelBufferMetalCompatibilityKey:@YES};
     if(CVPixelBufferCreate(kCFAllocatorDefault,width,height,format,(__bridge CFDictionaryRef)attributes,&buffer)!=kCVReturnSuccess)return nullptr;
@@ -107,7 +109,6 @@ kernel void nv12_capture(texture2d<float,access::read> source[[texture(0)]],text
     while(bytes+actual>max_bytes&&!free.empty()){
       auto old=free.back();free.pop_back();bytes-=Bytes(old);CVPixelBufferRelease(old);
     }
-    if(bytes+actual>max_bytes){CVPixelBufferRelease(buffer);return nullptr;}
     bytes+=actual;return buffer;
   }
 };
@@ -138,8 +139,8 @@ void PrepareMacCapture(){MacCapturePool prepared;}
 std::shared_ptr<MacCaptureFrame> MacCapturePool::Copy(void* handle,int x,int y,int width,int height,bool nv12){
  @autoreleasepool {
   auto surface=static_cast<IOSurfaceRef>(handle);
-  if(!impl_->queue||!surface||width<1||height<1||width>3840||height>2160||x<0||y<0||
-     size_t(x+width)>IOSurfaceGetWidth(surface)||size_t(y+height)>IOSurfaceGetHeight(surface)||
+  if(!impl_->queue||!surface||width<1||height<1||x<0||y<0||
+     size_t(x)+size_t(width)>IOSurfaceGetWidth(surface)||size_t(y)+size_t(height)>IOSurfaceGetHeight(surface)||
      IOSurfaceGetPixelFormat(surface)!=0x42475241)return {};
   if(nv12&&(!impl_->converter||width%2||height%2))return {};
   auto buffer=impl_->Acquire(width,height,nv12);if(!buffer)return {};

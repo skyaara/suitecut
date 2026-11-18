@@ -20,27 +20,31 @@ int main() {
   auto malformed = first; malformed.private_key += "A";
   assert(!suitecut::ValidateVirtualCredential(malformed,error));
   malformed = first; malformed.id = "A"; assert(!suitecut::ValidateVirtualCredential(malformed,error));
+  // No suitecut length caps: a user handle past the old 64-byte bound and a
+  // credential id past the old 1024-byte bound validate; Chromium judges them.
   malformed = first; malformed.user_handle = suitecut::CredentialBase64URL(reinterpret_cast<const unsigned char*>(std::string(65,'x').data()),65);
-  assert(!suitecut::ValidateVirtualCredential(malformed,error));
+  assert(suitecut::ValidateVirtualCredential(malformed,error));
+  malformed = first; malformed.id = suitecut::CredentialBase64URL(reinterpret_cast<const unsigned char*>(std::string(4096,'y').data()),4096);
+  assert(suitecut::ValidateVirtualCredential(malformed,error));
+  assert(suitecut::GenerateVirtualCredential(std::string(2048,'a')+".example",0,malformed,error));
   assert(!suitecut::GenerateVirtualCredential("https://localhost",0,malformed,error));
   std::vector<unsigned char> data,decoded;
   for (size_t length = 1; length < 1025; ++length) {
     data.push_back(static_cast<unsigned char>(length&255));const auto encoded = suitecut::CredentialBase64URL(data.data(),data.size());
-    assert(suitecut::CredentialDecodeBase64URL(encoded,1024,decoded) && decoded == data);
-    assert(!suitecut::CredentialDecodeBase64URL(encoded, length-1,decoded));
+    assert(suitecut::CredentialDecodeBase64URL(encoded,decoded) && decoded == data);
   }
-  assert(!suitecut::CredentialDecodeBase64URL("Zh",1,decoded));
-  assert(!suitecut::CredentialDecodeBase64URL("Zg=",1,decoded));
+  assert(!suitecut::CredentialDecodeBase64URL("Zh",decoded));
+  assert(!suitecut::CredentialDecodeBase64URL("Zg=",decoded));
   std::set<std::string> ids,handles;
   for (int index = 0; index < 1000; ++index) {
     suitecut::VirtualCredential credential; assert(suitecut::GenerateVirtualCredential("native.example",static_cast<uint32_t>(index),credential,error));
     assert(ids.insert(credential.id).second && handles.insert(credential.user_handle).second);
     assert(suitecut::ValidateVirtualCredential(credential,error));
   }
-  assert(suitecut::CredentialDecodeBase64URL(first.private_key,16384,decoded));const unsigned char* cursor = decoded.data();
+  assert(suitecut::CredentialDecodeBase64URL(first.private_key,decoded));const unsigned char* cursor = decoded.data();
   PKCS8_PRIV_KEY_INFO* info = d2i_PKCS8_PRIV_KEY_INFO(nullptr,&cursor,static_cast<long>(decoded.size()));assert(info);
   EVP_PKEY* private_key = EVP_PKCS82PKEY(info); assert(private_key);PKCS8_PRIV_KEY_INFO_free(info);
-  assert(suitecut::CredentialDecodeBase64URL(first.public_key,16384,data));cursor=data.data();EVP_PKEY* verifying = d2i_PUBKEY(nullptr,&cursor,static_cast<long>(data.size()));assert(verifying);
+  assert(suitecut::CredentialDecodeBase64URL(first.public_key,data));cursor=data.data();EVP_PKEY* verifying = d2i_PUBKEY(nullptr,&cursor,static_cast<long>(data.size()));assert(verifying);
   EVP_MD_CTX* signing = EVP_MD_CTX_new();assert(signing);assert(EVP_DigestSignInit(signing,nullptr,EVP_sha256(),nullptr,private_key)==1);
   const unsigned char message[] = "native WebAuthn authentication data and hashed client data";
   size_t size=0;assert(EVP_DigestSign(signing,nullptr,&size,message,sizeof(message))==1);std::vector<unsigned char> signature(size);

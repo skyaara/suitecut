@@ -38,14 +38,14 @@ bool ScreenshotAssertionCleanupBegin(int owner,SuiteCutArtifactController::Asser
   // the gaps between sequential actual ACKs.
   auto physical=screenshot_assertion_retirement_.Begin(identity,Policy::Work::Cleanup,0,"",Now());
   if(!physical||!screenshot_assertion_retirement_.EnterSubmission(*physical)){
-    screenshot_assertion_retirement_.Fail(identity,"Native screenshot cleanup physical capacity unavailable",Now());NetworkFatal("Native screenshot cleanup physical capacity unavailable");return true;
+    screenshot_assertion_retirement_.Fail(identity,"Native screenshot cleanup could not begin (closed, expired or serial exhausted)",Now());NetworkFatal("Native screenshot cleanup could not begin (closed, expired or serial exhausted)");return true;
   }
   try{
     auto work=std::make_shared<ScreenshotAssertionCleanupWork>();work->identity=identity;work->physical=*physical;work->done=std::move(done);work->view=plan.physical_view;
     const auto child=artifact_document_work_.find(owner);
     const size_t children=child==artifact_document_work_.end()?0:child->second->resources.size();
-    if(plan.root.size()>3||children>1024||(child!=artifact_document_work_.end()&&child->second->generation!=identity.generation)){
-      screenshot_assertion_retirement_.Fail(identity,"Native screenshot cleanup resource identity/capacity changed",Now());NetworkFatal("Native screenshot cleanup resource identity/capacity changed");return true;
+    if(plan.root.size()>3||(child!=artifact_document_work_.end()&&child->second->generation!=identity.generation)){
+      screenshot_assertion_retirement_.Fail(identity,"Native screenshot cleanup resource identity changed",Now());NetworkFatal("Native screenshot cleanup resource identity changed");return true;
     }
     work->commands.reserve(children+plan.root.size());
     if(child!=artifact_document_work_.end()){

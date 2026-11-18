@@ -233,8 +233,8 @@ void Engine::CompleteContext(int id, bool ok, Dict result, const std::string& er
     auto typed = CefValue::Create();
     typed->SetDictionary(result->Copy(false));
     json.clear();
-    if (!suitecut::DevToolsLosslessJSON(typed, json, kMaxResponseBytes)) {
-      writer_.Reply(id, false, "Native context console output limit exceeded");
+    if (!suitecut::DevToolsLosslessJSON(typed, json)) {
+      writer_.Reply(id, false, "Native context console output could not be serialized");
       return;
     }
   }

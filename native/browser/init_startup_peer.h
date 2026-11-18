@@ -52,7 +52,7 @@ class InitStartupDocument {
     return document->Current()?document:nullptr;
   }
   bool Current()const{
-    if(frame_id_.empty()||frame_id_.size()>InitSnapshotWire::kFrame||frame_id_.find('\0')!=std::string::npos||!peer_->Owns(frame_)||frame_->GetIdentifier()!=frame_id_||!context_->IsValid())return false;
+    if(frame_id_.empty()||frame_id_.find('\0')!=std::string::npos||!peer_->Owns(frame_)||frame_->GetIdentifier()!=frame_id_||!context_->IsValid())return false;
     auto actual=frame_->GetV8Context();
     if(!actual||!actual->IsValid()||!actual->IsSame(context_))return false;
     auto owner=context_->GetFrame();auto browser=context_->GetBrowser(),actual_browser=frame_->GetBrowser();

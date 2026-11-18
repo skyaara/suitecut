@@ -4,6 +4,7 @@
 #include <atomic>
 #include <cmath>
 #include <cstring>
+#include <limits>
 #include <string>
 #include <utility>
 #include "include/cef_image.h"
@@ -16,10 +17,8 @@ struct TracePreview::Pending {
   std::atomic_bool complete=false;bool canceled=false;
 };
 bool TracePreview::Paint(TraceJournal::Lease lease,int page,int css_width,int css_height,double now,const void* bgra,int width,int height){
-  if(!lease.context||!page||!bgra||css_width<1||css_height<1||width<1||height<1||width>16384||height>16384||uint64_t(width)*height>67108864||!std::isfinite(now)||now<0||generation_>=9007199254740991ULL)return false;
-  // A maximum two native encoders bounds copied paint bytes and backpressure.
+  if(!lease.context||!page||!bgra||css_width<1||css_height<1||width<1||height<1||uint64_t(width)*uint64_t(height)>std::numeric_limits<size_t>::max()/4||!std::isfinite(now)||now<0||generation_>=9007199254740991ULL)return false;
   // Sampling never changes engine capture FPS or the real author viewport.
-  if(pending_.size()>=2)return false;
   const auto last=last_.find(page);if(last!=last_.end()&&last->second.session==lease.session&&last->second.chunk==lease.chunk&&now-last->second.time<100)return false;
   auto pending=std::make_shared<Pending>();pending->lease=lease;pending->page=page;pending->css_width=css_width;pending->css_height=css_height;pending->width=width;pending->height=height;pending->time=now;pending->id=++generation_;
   pending->bgra.resize(size_t(width)*height*4);std::memcpy(pending->bgra.data(),bgra,pending->bgra.size());pending_[pending->id]=pending;last_[page]={lease.session,lease.chunk,now};
@@ -31,7 +30,7 @@ bool TracePreview::Paint(TraceJournal::Lease lease,int page,int css_width,int cs
       const bool scaled=libyuv::ARGBScale(pending->bgra.data(),pending->width*4,pending->width,pending->height,pixels.data(),width*4,width,height,libyuv::kFilterBox)==0;
       auto image=CefImage::CreateImage();
       if(!scaled||!image||!image->AddBitmap(1,width,height,CEF_COLOR_TYPE_BGRA_8888,CEF_ALPHA_TYPE_PREMULTIPLIED,pixels.data(),pixels.size()))pending->error="Native trace preview bitmap encoding failed";
-      else{int actual_width=0,actual_height=0;auto jpeg=image->GetAsJPEG(1,90,actual_width,actual_height);if(!jpeg||actual_width!=width||actual_height!=height||jpeg->GetSize()>8*1024*1024)pending->error="Native trace preview JPEG encoding failed";else{pending->jpeg.resize(jpeg->GetSize());if(jpeg->GetData(pending->jpeg.data(),pending->jpeg.size(),0)!=pending->jpeg.size())pending->error="Native trace preview bytes unavailable";}}
+      else{int actual_width=0,actual_height=0;auto jpeg=image->GetAsJPEG(1,90,actual_width,actual_height);if(!jpeg||actual_width!=width||actual_height!=height)pending->error="Native trace preview JPEG encoding failed";else{pending->jpeg.resize(jpeg->GetSize());if(jpeg->GetData(pending->jpeg.data(),pending->jpeg.size(),0)!=pending->jpeg.size())pending->error="Native trace preview bytes unavailable";}}
     }catch(...){pending->error="Native trace preview encoding failed";}
     pending->bgra.clear();pending->complete.store(true,std::memory_order_release);
     try{post([weak,id=pending->id]{if(const auto self=weak.lock())self->Finish(id);});}catch(...){/* Native owner Tick drains a failed completion post. */}

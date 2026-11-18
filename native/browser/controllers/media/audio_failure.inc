@@ -3,7 +3,7 @@
 auto Source::OnAudioStreamError(CefRefPtr<CefBrowser> browser, const CefString& message) -> void {
   if (auto tab = AdoptedTab(browser)) return tab->OnAudioStreamError(browser, message);
   audio_valid_ = false;
-  const auto detail = suitecut::DevToolsTruncateWTF8(message.ToString(), 2048);
+  const auto detail = message.ToString();
   auto report = [self = CefRefPtr<Source>(this), alive = engine_.Alive(), detail] {
     if (!*alive || self->closing_page_ || self->stopped_) return;
     const auto contexts = self->engine_.contexts();

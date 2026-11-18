@@ -20,7 +20,7 @@ struct Harness {
   Harness(){Domain::Hooks hooks;hooks.now=[this](){return now;};hooks.wake=[this](){++wakes;};hooks.send=[this](const std::string& session,const std::string& method,Dict params,double deadline,Domain::Reply reply){commands.push_back({session,method,params?params->Copy(false):nullptr,deadline,std::move(reply)});return true;};hooks.pause_deadline=[this](const std::string&,Dict){return pause_deadline;};hooks.pause_expired=[this](uint64_t,Dict original,const std::string&){assert(original);expired_markers.push_back(original->GetString("actualFrameMarker").ToString());++expired;if(on_expired)on_expired();};hooks.close_channel=[this](const std::string& session,const std::string&){closes.push_back(session);};domains=std::make_shared<Domain>(std::move(hooks));}
   Command Take(const std::string& method){assert(!commands.empty());auto c=std::move(commands.front());commands.pop_front();if(c.method!=method)std::cerr<<"Expected "<<method<<" but got "<<c.method<<"\n";assert(c.method==method);return c;}
   void Ack(const std::string& method,bool ok=true,Dict data=nullptr){auto c=Take(method);c.reply(ok,data,ok?"":"actual test protocol error");}
-  void Cache(bool bounded){assert(!commands.empty()&&commands.front().method=="Debugger.enable"&&commands.front().params);auto p=commands.front().params;assert(bounded?(p->GetSize()==1&&p->GetType("maxScriptsCacheSize")==VTYPE_INT&&p->GetInt("maxScriptsCacheSize")==Domain::kFactoryScriptCacheBytes):p->GetSize()==0);Ack("Debugger.enable");}
+  void Cache(bool bounded){assert(!commands.empty()&&commands.front().method=="Debugger.enable"&&commands.front().params);auto p=commands.front().params;(void)bounded;assert(p->GetSize()==0&&!p->HasKey("maxScriptsCacheSize"));Ack("Debugger.enable");}
   void Skip(bool skip){assert(!commands.empty()&&commands.front().params->GetBool("skip")==skip);Ack("Debugger.setSkipAllPauses");}
   void Acquire(uint64_t id,Domain::Kind kind,size_t& successes,const std::string& session="",double deadline=100){domains->Acquire(session,id,kind,deadline,[&successes](bool ok,const std::string&){if(ok)++successes;});}
   static Dict Breakpoint(){auto p=CefDictionaryValue::Create();p->SetString("url","suitecut:init-snapshot");p->SetInt("lineNumber",0);p->SetInt("columnNumber",0);return p;}
@@ -92,17 +92,17 @@ int main(){
     Harness h;size_t ready=0;h.Acquire(1,Domain::Kind::Coverage,ready);h.Ack("Debugger.enable");h.Skip(true);
     h.domains->Event("Debugger.paused",Harness::Pause(false),"");assert(h.domains->PhysicalCount()==2);auto late=h.Take("Debugger.resume");h.domains->Detached("");assert(h.domains->PhysicalCount()==0&&!h.domains->Conflicts("","Debugger.enable"));late.reply(true,nullptr,"");assert(h.commands.empty());++groups;
   }
-  { // Physical command cap queues admission; timeout never clears pending ACKs.
+  { // No suitecut physical command cap; timeout never clears pending ACKs.
     Harness h;size_t failures=0;
     for(uint64_t i=1;i<=65;++i)h.domains->Acquire(std::to_string(i),i,Domain::Kind::Coverage,10,[&](bool ok,const std::string&){assert(!ok);++failures;});
-    assert(h.domains->PhysicalCount()==64&&h.commands.size()==64);
-    h.now=11;h.domains->Tick(h.now);assert(failures==65&&h.domains->PhysicalCount()==64);
-    h.now=30011;h.domains->Tick(h.now);assert(h.closes.size()==64&&h.domains->PhysicalCount()==64&&!h.domains->NeedsTick());
+    assert(h.domains->PhysicalCount()==65&&h.commands.size()==65);
+    h.now=11;h.domains->Tick(h.now);assert(failures==65&&h.domains->PhysicalCount()==65);
+    h.now=30011;h.domains->Tick(h.now);assert(h.closes.size()==65&&h.domains->PhysicalCount()==65&&!h.domains->NeedsTick());
     h.domains->Closed();assert(h.domains->PhysicalCount()==0);++groups;
   }
-  { // Bounded capture receipts include logical-release cleanup chaining.
+  { // Capture receipts are not capped and include logical-release cleanup chaining.
     Harness h;size_t ready=0;h.Acquire(1,Domain::Kind::Factory,ready);h.Ack("Debugger.enable");h.Skip(false);
-    std::vector<uint64_t> holds;for(size_t i=0;i<128;++i){auto receipt=h.domains->Hold(1);assert(receipt);holds.push_back(receipt);}assert(!h.domains->Hold(1));
+    std::vector<uint64_t> holds;for(size_t i=0;i<129;++i){auto receipt=h.domains->Hold(1);assert(receipt);holds.push_back(receipt);}
     h.domains->Release(1,200,[](bool ok,const std::string&){assert(ok);});h.domains->Retire(holds.back());holds.pop_back();auto followup=h.domains->Hold(1);assert(followup);for(auto receipt:holds)h.domains->Retire(receipt);assert(h.commands.empty());h.domains->Retire(followup);h.Ack("Debugger.disable");assert(h.domains->PhysicalCount()==0);++groups;
   }
   { // New lease during accepted disable waits ACK and genuine re-enable.
@@ -179,8 +179,8 @@ int main(){
   { // Raw logical timeout leaves physical receipt until actual channel closure.
     Harness h;auto raw=h.domains->BeginRaw("raw","Debugger.enable",10);assert(raw);h.now=11;h.domains->Tick(h.now);assert(h.domains->PhysicalCount()==1&&h.closes.empty());h.now=30011;h.domains->Tick(h.now);assert(h.domains->PhysicalCount()==1&&h.closes.size()==1&&!h.domains->NeedsTick());h.domains->Detached("raw");assert(h.domains->PhysicalCount()==0);h.domains->EndRaw(raw,true);assert(h.domains->PhysicalCount()==0);++groups;
   }
-  { // Raw and internal native commands share the same64 physical command cap.
-    Harness h;std::vector<uint64_t> receipts;for(size_t i=0;i<64;++i){auto raw=h.domains->BeginRaw("raw"+std::to_string(i),"Debugger.enable",100);assert(raw);receipts.push_back(raw);}size_t ready=0;h.Acquire(1,Domain::Kind::Coverage,ready,"native");assert(h.commands.empty()&&h.domains->PhysicalCount()==64);assert(!h.domains->BeginRaw("overflow","Debugger.enable",100));h.domains->EndRaw(receipts.back(),false,false);receipts.pop_back();assert(h.commands.size()==1&&h.domains->PhysicalCount()==64);h.domains->Closed();assert(h.domains->PhysicalCount()==0);++groups;
+  { // Raw and internal native commands have no suitecut physical command cap.
+    Harness h;std::vector<uint64_t> receipts;for(size_t i=0;i<64;++i){auto raw=h.domains->BeginRaw("raw"+std::to_string(i),"Debugger.enable",100);assert(raw);receipts.push_back(raw);}size_t ready=0;h.Acquire(1,Domain::Kind::Coverage,ready,"native");assert(h.commands.size()==1&&h.domains->PhysicalCount()==65);assert(h.domains->BeginRaw("overflow","Debugger.enable",100)&&h.domains->PhysicalCount()==66);h.domains->Closed();assert(h.domains->PhysicalCount()==0);++groups;
   }
   { // Real resumed notification may precede resume ACK and the next realm pause.
     Harness h;size_t ready=0,captured=0,resumed=0;Domain::Resume resume;
@@ -190,10 +190,10 @@ int main(){
   { // Unexpected genuine resume invalidates the capture ticket, not its accepted eval receipt.
     Harness h;size_t ready=0;Domain::Resume stale;h.Acquire(1,Domain::Kind::Factory,ready);h.Ack("Debugger.enable");h.Skip(false);h.domains->Arm(1,Harness::Breakpoint(),[&](Dict,double,Domain::Resume once){stale=std::move(once);},[](bool ok,const std::string&){assert(ok);});h.Ack("Debugger.setBreakpointByUrl",true,Harness::BreakpointReply());h.domains->Event("Debugger.paused",Harness::Pause(),"");auto hold=h.domains->Hold(1);assert(hold);h.domains->Event("Debugger.resumed",CefDictionaryValue::Create(),"");assert(h.expired==1&&h.domains->PhysicalCount()==1);stale([](bool ok,const std::string&){assert(!ok);});h.domains->Release(1,200,[](bool ok,const std::string&){assert(ok);});assert(h.commands.empty());h.domains->Retire(hold);h.Ack("Debugger.removeBreakpoint");h.Ack("Debugger.disable");++groups;
   }
-  { // Oversized actual paused metadata is rejected before owned deep copy.
-    Harness h;size_t ready=0,captured=0;h.Acquire(1,Domain::Kind::Factory,ready);h.Ack("Debugger.enable");h.Skip(false);h.domains->Arm(1,Harness::Breakpoint(),[&](Dict,double,Domain::Resume){++captured;},[](bool ok,const std::string&){assert(ok);});h.Ack("Debugger.setBreakpointByUrl",true,Harness::BreakpointReply());
-    auto actual=Harness::Pause();actual->SetString("largeDescription",std::string(131073,'x'));h.domains->Event("Debugger.paused",actual,"");assert(captured==0&&h.expired==1);auto stats=CefDictionaryValue::Create();h.domains->Diagnostics(stats);assert(stats->GetInt("nativeDebuggerPausePackets")==0);h.Ack("Debugger.resume");
-    actual=Harness::Pause();auto frames=CefListValue::Create();for(size_t i=0;i<4097;++i)frames->SetNull(i);actual->SetList("callFrames",frames);h.domains->Event("Debugger.paused",actual,"");assert(captured==0&&h.expired==2);h.Ack("Debugger.resume");h.domains->Release(1,200,[](bool ok,const std::string&){assert(ok);});h.Ack("Debugger.removeBreakpoint");h.Ack("Debugger.disable");++groups;
+  { // Large actual paused metadata is copied whole; suitecut does not cap it.
+    Harness h;size_t ready=0,captured=0;Domain::Resume resume;h.Acquire(1,Domain::Kind::Factory,ready);h.Ack("Debugger.enable");h.Skip(false);h.domains->Arm(1,Harness::Breakpoint(),[&](Dict actual,double,Domain::Resume once){assert(actual->GetString("largeDescription").length()==131073&&actual->GetList("callFrames")->GetSize()==4097);++captured;resume=std::move(once);},[](bool ok,const std::string&){assert(ok);});h.Ack("Debugger.setBreakpointByUrl",true,Harness::BreakpointReply());
+    auto actual=Harness::Pause();actual->SetString("largeDescription",std::string(131073,'x'));auto frames=CefListValue::Create();for(size_t i=0;i<4097;++i)frames->SetNull(i);actual->SetList("callFrames",frames);h.domains->Event("Debugger.paused",actual,"");assert(captured==1&&h.expired==0);auto stats=CefDictionaryValue::Create();h.domains->Diagnostics(stats);assert(stats->GetInt("nativeDebuggerPausePackets")==1);
+    resume([](bool ok,const std::string&){assert(ok);});h.Ack("Debugger.resume");h.domains->Release(1,200,[](bool ok,const std::string&){assert(ok);});h.Ack("Debugger.removeBreakpoint");h.Ack("Debugger.disable");++groups;
   }
   { // Deferred and current pause expiry retain their exact original packet.
     Harness h;size_t ready=0;h.Acquire(1,Domain::Kind::Factory,ready);h.Ack("Debugger.enable");h.Skip(false);
@@ -205,10 +205,10 @@ int main(){
     h.domains->Arm(1,Harness::Breakpoint(),[](Dict,double,Domain::Resume){assert(false);},[](bool ok,const std::string&){assert(!ok);});
     h.pause_deadline=10;h.domains->Event("Debugger.paused",Harness::Pause(),"");auto accepted=h.Take("Debugger.setBreakpointByUrl");h.on_expired=[&](){h.domains->Detached("");};h.now=11;h.domains->Tick(h.now);assert(h.expired==1&&h.domains->PhysicalCount()==0);accepted.reply(true,Harness::BreakpointReply(),"");assert(h.commands.empty());auto stats=CefDictionaryValue::Create();h.domains->Diagnostics(stats);assert(stats->GetInt("nativeDebuggerPausePackets")==0);++groups;
   }
-  { // Owned pause packets share a global cap; excess real pauses resume without copying.
+  { // Owned pause packets have no suitecut count cap; every real pause is captured.
     Harness h;size_t ready=0,captured=0;std::vector<Domain::Resume> resumes;
     for(uint64_t i=1;i<=65;++i){const auto session=std::to_string(i);h.Acquire(i,Domain::Kind::Factory,ready,session);h.Ack("Debugger.enable");h.Skip(false);h.domains->Arm(i,Harness::Breakpoint(),[&](Dict,double,Domain::Resume once){++captured;resumes.push_back(std::move(once));},[](bool ok,const std::string&){assert(ok);});h.Ack("Debugger.setBreakpointByUrl",true,Harness::BreakpointReply());h.domains->Event("Debugger.paused",Harness::Pause(),session);}
-    auto stats=CefDictionaryValue::Create();h.domains->Diagnostics(stats);assert(captured==64&&h.expired==1&&stats->GetInt("nativeDebuggerPausePackets")==64);h.Ack("Debugger.resume");h.domains->Closed();h.domains->Diagnostics(stats);assert(h.domains->PhysicalCount()==0&&stats->GetInt("nativeDebuggerPausePackets")==0);for(auto& resume:resumes)resume([](bool ok,const std::string&){assert(!ok);});++groups;
+    auto stats=CefDictionaryValue::Create();h.domains->Diagnostics(stats);assert(captured==65&&h.expired==0&&stats->GetInt("nativeDebuggerPausePackets")==65&&h.commands.empty());h.domains->Closed();h.domains->Diagnostics(stats);assert(h.domains->PhysicalCount()==0&&stats->GetInt("nativeDebuggerPausePackets")==0);for(auto& resume:resumes)resume([](bool ok,const std::string&){assert(!ok);});++groups;
   }
   { // An actual protocol error cannot prove raw domain state is unchanged.
     Harness h;auto raw=h.domains->BeginRaw("actual","Debugger.enable",100);assert(raw);h.domains->EndRaw(raw,false);size_t failures=0;h.domains->Acquire("actual",1,Domain::Kind::Coverage,100,[&](bool ok,const std::string&){assert(!ok);++failures;});assert(failures==1);auto disable=h.domains->BeginRaw("actual","Debugger.disable",100);assert(disable);h.domains->EndRaw(disable,true);size_t ready=0;h.Acquire(2,Domain::Kind::Coverage,ready,"actual");h.Ack("Debugger.enable");h.Skip(true);assert(ready==1);h.domains->Closed();++groups;

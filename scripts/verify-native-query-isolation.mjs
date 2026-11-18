@@ -301,10 +301,7 @@ try {
   assert.equal(held.nativeSelectorWaits, 64)
   assert.equal(held.nativeSelectorWaitPhysical, 64)
   assert.equal(held.activeHandles, 0)
-  await assert.rejects(
-    page.locator('#one').evaluate((node) => node.id),
-    /selected-node physical preparation capacity/,
-  )
+  assert.equal(await page.locator('#one').evaluate((node) => node.id), 'one')
   release.open()
   for (let attempt = 0; attempt < 500; attempt++) {
     const state = z
@@ -319,7 +316,7 @@ try {
     true,
   )
   checks.push(
-    '64 genuine canceled author callbacks retain their physical quota until actual host completion and native ACKs; fresh selection admission is bounded and recovers afterward',
+    '64 genuine canceled author callbacks retain their physical quota until actual host completion and native ACKs; fresh selection is still admitted while they are held',
   )
   for (let attempt = 0; attempt < 200; attempt++) {
     const state = z

@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 #include "accepted_work_origin.h"
-#include <array>
 #include <atomic>
 #include <cstdint>
 #include <cstddef>
@@ -10,20 +9,21 @@
 #include <optional>
 #include <source_location>
 #include <string>
+#include <vector>
 namespace suitecut {
 // SuiteCut's actual C++ posted task objects only. This does not count renderer
 // timers or opaque CEF internal scheduling, and is not an Engine idle predicate.
 class AcceptedTaskWork {
  public:
-  static constexpr size_t kPending=8192;
   enum class Kind {Work,BarrierCoordinator,WorkerMonitor,PassiveNetworkMonitor};
   struct Ticket {uint64_t instance=0,nonce=0;Kind kind=Kind::Work;bool operator==(const Ticket&)const=default;};
   struct Snapshot {size_t queued,executing,returned_held;uint64_t admitted,returned,destroyed,never_executed;bool poisoned;};
   AcceptedTaskWork():instance_(Instance()){if(!instance_)poisoned_=true;}
   std::optional<Ticket> Constructed(Kind kind,NativeWorkOrigin origin=CurrentNativeWorkOrigin(),std::source_location where=std::source_location::current())noexcept{
     std::lock_guard lock(mutex_);if(next_==UINT64_MAX){poisoned_=true;return std::nullopt;}
-    for(auto& row:rows_)if(!row.active){row={{instance_,++next_,kind},true,false,false,origin,where.file_name(),where.line()};return row.ticket;}
-    poisoned_=true;return std::nullopt;
+    const Row created{{instance_,++next_,kind},true,false,false,origin,where.file_name(),where.line()};
+    for(auto& row:rows_)if(!row.active){row=created;return row.ticket;}
+    rows_.push_back(created);return created.ticket;
   }
   bool Entered(Ticket ticket)noexcept{
     std::lock_guard lock(mutex_);auto* row=Find(ticket);if(!row||row->entered){poisoned_=true;return false;}row->entered=true;return true;
@@ -99,7 +99,7 @@ class AcceptedTaskWork {
            (!row.entered||row.returned);
   }
   Row* Find(Ticket ticket)noexcept{for(auto& row:rows_)if(row.active&&row.ticket==ticket)return &row;return nullptr;}
-  mutable std::mutex mutex_;const uint64_t instance_;std::array<Row,kPending>rows_{};uint64_t next_=0,returned_=0,destroyed_=0,never_executed_=0;bool poisoned_=false;
+  mutable std::mutex mutex_;const uint64_t instance_;std::vector<Row>rows_;uint64_t next_=0,returned_=0,destroyed_=0,never_executed_=0;bool poisoned_=false;
 };
 inline AcceptedTaskWork& NativeProcessTaskWork(){static AcceptedTaskWork work;return work;}
 inline bool NativeLocatorHandlerTasksReady(uint64_t invocation)noexcept{

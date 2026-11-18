@@ -10,12 +10,12 @@ void GeolocationAttach(const std::string&session,suitecut::NativeContextGeolocat
       if(self->closing_page_||!self->browser_||(!session.empty()&&!self->sessions_.contains(session))){done(false,"Native geolocation target is closed");return;}
       const double now=Now(),deadline=requested_deadline>0?std::min(requested_deadline,now+30000):now+30000;
       if(deadline<=now){done(false,"Native operation timed out before geolocation submission");return;}
-      const int id=self->AllocateDevToolsId();if(!id||self->network_calls_.size()>=1024){done(false,"Native geolocation command capacity exceeded");return;}
+      const int id=self->AllocateDevToolsId();if(!id){done(false,"Native geolocation command id unavailable");return;}
       auto params=CefDictionaryValue::Create();if(value.coordinates){params->SetDouble("latitude",value.coordinates->latitude);params->SetDouble("longitude",value.coordinates->longitude);params->SetDouble("accuracy",value.coordinates->accuracy);}
       self->network_calls_.emplace(id,NetworkCall{session,std::move(done),deadline});self->WakeDeadlines();
       if(!self->SubmitDevTools(id,"Emulation.setGeolocationOverride",params,session)){const auto row=self->network_calls_.find(id);if(row!=self->network_calls_.end()){auto done=std::exchange(row->second.callback, nullptr);self->network_calls_.erase(row);done(false,"Native geolocation command submission failed");}}
     },ready);
-  if(!accepted){geolocation_sessions_.erase(session);ready(false,"Native geolocation target capacity exceeded");}
+  if(!accepted){geolocation_sessions_.erase(session);ready(false,"Native geolocation target registration failed");}
 }
 void GeolocationStart(){
   if(geolocation_started_||closing_page_)return;

@@ -151,17 +151,16 @@ try {
     'actual large binary multipart source traverses native upload chunks and is framed in C++ with exact bytes',
   )
   const before = received.length
-  await assert.rejects(
-    api.post(origin + '/over-wire-limit', {
-      multipart: {
-        file: { name: 'large.bin', buffer: Buffer.alloc(8 * 1024 * 1024) },
-      },
-    }),
-    /Native multipart wire body exceeds 8 MiB/u,
-  )
-  assert.equal(received.length, before)
+  const overEight = Buffer.alloc(8 * 1024 * 1024, 7)
+  response = await api.post(origin + '/over-wire-limit', {
+    multipart: { file: { name: 'large.bin', buffer: overEight } },
+  })
+  assert.equal(await response.text(), 'actual native multipart')
+  await response.dispose()
+  assert.equal(received.length, before + 1)
+  checkWire([{ name: 'file', body: overEight, filename: 'large.bin' }])
   report.phases.push(
-    'native final encoded-wire limit rejects a raw 8MiB source plus framing before any origin request',
+    'raw 8MiB source plus framing has no native wire cap and reaches the origin with exact bytes',
   )
   await assert.rejects(
     api.post(origin + '/mime-injection', {

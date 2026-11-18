@@ -8,13 +8,12 @@
 #include <string>
 #include <vector>
 namespace suitecut {
-// Retained includes the old vector capacity. Any replacement is reserved
-// against simultaneous old+new capacity before allocation or byte mutation.
+// Bodies of any size: memory is the only bound. A failed fill leaves the
+// original bytes and capacity untouched (growth goes to a fresh vector).
 template<class Fill>
-inline bool AppendNativeHTTPUpload(std::vector<uint8_t>&bytes,size_t amount,
-    size_t retained,size_t per_upload,size_t budget,Fill fill,std::string&error){
+inline bool AppendNativeHTTPUpload(std::vector<uint8_t>&bytes,size_t amount,Fill fill,std::string&error){
   const auto fail=[&](const char*message){error=message;return false;};
-  if(bytes.capacity()>per_upload||bytes.size()>per_upload||amount>per_upload-bytes.size()||retained<bytes.capacity()||retained>budget)return fail("Native API simultaneous upload capacity exceeded");
+  if(amount>bytes.max_size()-bytes.size())return fail("Native API body size overflows");
   if(!amount){error.clear();return true;}
   const size_t old_size=bytes.size(),next_size=old_size+amount;
   if(next_size<=bytes.capacity()){
@@ -22,12 +21,7 @@ inline bool AppendNativeHTTPUpload(std::vector<uint8_t>&bytes,size_t amount,
     if(!fill(bytes.data()+old_size,amount)){bytes.resize(old_size);return fail("Native API source bytes were not fully copied");}
     error.clear();return true;
   }
-  const size_t available=budget-retained;
-  if(next_size>available)return fail("Native API simultaneous upload capacity exceeded");
-  size_t capacity=std::max(next_size,bytes.capacity()>per_upload/2?per_upload:bytes.capacity()*2);
-  if(capacity>available)capacity=next_size;
-  std::vector<uint8_t>next(capacity);next.resize(next_size);
-  if(next.capacity()>available)return fail("Native API simultaneous upload capacity exceeded");
+  std::vector<uint8_t>next;next.reserve(bytes.capacity()>bytes.max_size()/2?next_size:std::max(next_size,bytes.capacity()*2));next.resize(next_size);
   std::copy(bytes.begin(),bytes.end(),next.begin());
   if(!fill(next.data()+old_size,amount))return fail("Native API source bytes were not fully copied");
   bytes.swap(next);error.clear();return true;
@@ -38,7 +32,7 @@ class NativeHTTPUploadPreparations {
  public:
   struct Entry {int owner,context;uint64_t generation;double deadline;};
   bool Reserve(const std::string&token,Entry entry,double now){
-    if(token.empty()||token.size()>128||token.find('\0')!=std::string::npos||entry.owner<1||entry.context<1||!entry.generation||!std::isfinite(now)||!std::isfinite(entry.deadline)||entry.deadline<0||(entry.deadline&&now>=entry.deadline)||entries_.size()>=16||entries_.contains(token))return false;
+    if(token.empty()||token.find('\0')!=std::string::npos||entry.owner<1||entry.context<1||!entry.generation||!std::isfinite(now)||!std::isfinite(entry.deadline)||entry.deadline<0||(entry.deadline&&now>=entry.deadline)||entries_.contains(token))return false;
     for(const auto&[key,item]:entries_)if(item.owner==entry.owner)return false;
     entries_.emplace(token,entry);return true;
   }

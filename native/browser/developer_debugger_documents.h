@@ -17,12 +17,12 @@ class FrameDebuggerDocuments {
     int context=0;
     bool operator==(const Snapshot&)const=default;
   };
-  struct Limits { size_t documents=1024,attachments=1024,bytes=4*1048576;uint64_t generations=UINT64_MAX; };
+  struct Limits { uint64_t generations=UINT64_MAX; };
   explicit FrameDebuggerDocuments(Scopes::Host actual_host)
       :FrameDebuggerDocuments(std::move(actual_host),Limits{}){}
   FrameDebuggerDocuments(Scopes::Host actual_host,Limits limits)
       :host_(std::move(actual_host)),limits_(limits){
-    unavailable_=!Identity(host_.source,128)||!host_.observer||!limits_.documents||!limits_.attachments||!limits_.generations||bytes_>limits_.bytes;
+    unavailable_=!Identity(host_.source)||!host_.observer||!limits_.generations;
   }
   FrameDebuggerDocuments(const FrameDebuggerDocuments&)=delete;
   FrameDebuggerDocuments&operator=(const FrameDebuggerDocuments&)=delete;
@@ -32,14 +32,14 @@ class FrameDebuggerDocuments {
   // attachment after Detached receives another checked native stamp.
   bool Attached(const std::string&session,const std::string&parent,const std::string&frame,std::string&error){
     Observation observation(*this);
-    if(!Available()||!Identity(session,128)||!ChannelText(parent)||session==parent||!Identity(frame,256)||!AttachmentFor(parent))return Reject(error,"Native frame debugger attachment has no accepted exact parent/channel identity");
+    if(!Available()||!Identity(session)||!ChannelText(parent)||session==parent||!Identity(frame)||!AttachmentFor(parent))return Reject(error,"Native frame debugger attachment has no accepted exact parent/channel identity");
     const auto parent_attachment=AttachmentFor(parent);
     const auto old=attachments_.find(session);
     if(old!=attachments_.end()){
       if(old->second.parent!=parent||old->second.frame!=frame||old->second.parent_attachment!=parent_attachment)return Reject(error,"Native frame debugger live attachment identity changed without actual detach");
       observation.Complete();return true;
     }
-    if(attachments_.size()>=limits_.attachments||attachment_serial_>=limits_.generations)return Reject(error,"Native frame debugger attachment capacity or generation exhausted");
+    if(attachment_serial_>=limits_.generations)return Reject(error,"Native frame debugger attachment generation exhausted");
     // Validate ancestry from the actual accepted parent graph. Nothing follows
     // frame/target ID spelling, URL or the separate network migration graph.
     auto ancestor=parent;
@@ -53,7 +53,6 @@ class FrameDebuggerDocuments {
     std::map<std::string,Attachment>staged;
     staged.emplace(session,std::move(value));
     auto&entry=*staged.begin();entry.second.bytes=sizeof(Attachment)+entry.first.capacity()+entry.second.parent.capacity()+entry.second.frame.capacity();
-    if(!Fits(entry.second.bytes,0))return Reject(error,"Native frame debugger attachment identity storage exhausted");
     const auto charge=entry.second.bytes;
     attachments_.insert(staged.extract(staged.begin()));
     bytes_+=charge;++attachment_serial_;observation.Complete();return true;
@@ -61,9 +60,8 @@ class FrameDebuggerDocuments {
   // Actual root identity observation, not a request-supplied frame selection.
   bool MainFrame(const std::string&actual_frame,std::string&error){
     Observation observation(*this);
-    if(!Available()||!Identity(actual_frame,256))return Reject(error,"Native frame debugger main frame identity unavailable");
+    if(!Available()||!Identity(actual_frame))return Reject(error,"Native frame debugger main frame identity unavailable");
     std::string staged(actual_frame);
-    if(!Fits(staged.capacity(),main_.capacity()))return Reject(error,"Native frame debugger root identity storage exhausted");
     bytes_=bytes_-main_.capacity()+staged.capacity();main_.swap(staged);observation.Complete();return true;
   }
   // Only a genuine default-context creation, or an explicitly restored actual
@@ -76,12 +74,11 @@ class FrameDebuggerDocuments {
     if(!attachment)return Reject(error,"Native frame debugger default context has no accepted channel attachment");
     const auto old=documents_.find(actual.frame);
     if(old!=documents_.end()&&old->second.snapshot==actual&&old->second.attachment==attachment){observation.Complete();return true;}
-    if((old==documents_.end()&&documents_.size()>=limits_.documents)||document_serial_>=limits_.generations)return Reject(error,"Native frame debugger default document capacity or generation exhausted");
+    if(document_serial_>=limits_.generations)return Reject(error,"Native frame debugger default document generation exhausted");
     Document value{actual,attachment,document_serial_+1,0};
     std::map<std::string,Document>staged;
     staged.emplace(actual.frame,std::move(value));
     auto&entry=*staged.begin();entry.second.bytes=sizeof(Document)+entry.first.capacity()+Bytes(entry.second.snapshot);
-    if(entry.second.bytes>4096||!Fits(entry.second.bytes,old==documents_.end()?0:old->second.bytes))return Reject(error,"Native frame debugger document identity storage exhausted");
     const auto old_bytes=old==documents_.end()?0:old->second.bytes;
     const auto charge=entry.second.bytes;
     if(old==documents_.end())documents_.insert(staged.extract(staged.begin()));
@@ -174,11 +171,10 @@ class FrameDebuggerDocuments {
   struct Attachment{std::string parent,frame;uint64_t serial=0,parent_attachment=0;size_t bytes=0;};
   struct Document{Snapshot snapshot;uint64_t attachment=0,serial=0;size_t bytes=0;};
   using DocumentsMap=std::map<std::string,Document>;
-  static bool Identity(const std::string&value,size_t max){return !value.empty()&&value.size()<=max&&value.find('\0')==std::string::npos;}
-  static bool ChannelText(const std::string&value){return value.empty()||Identity(value,128);}
-  static bool Valid(const Snapshot&value){return ChannelText(value.session)&&Identity(value.frame,256)&&value.loader.size()<=256&&value.loader.find('\0')==std::string::npos&&value.context>0&&Identity(value.unique_context,256);}
+  static bool Identity(const std::string&value){return !value.empty()&&value.find('\0')==std::string::npos;}
+  static bool ChannelText(const std::string&value){return value.empty()||Identity(value);}
+  static bool Valid(const Snapshot&value){return ChannelText(value.session)&&Identity(value.frame)&&value.loader.find('\0')==std::string::npos&&value.context>0&&Identity(value.unique_context);}
   static size_t Bytes(const Snapshot&value){return value.session.capacity()+value.frame.capacity()+value.loader.capacity()+value.unique_context.capacity();}
-  bool Fits(size_t incoming,size_t outgoing)const{return outgoing<=bytes_&&incoming<=limits_.bytes&&bytes_-outgoing<=limits_.bytes-incoming;}
   static bool Reject(std::string&error,const char*text){error=text;return false;}
   DocumentsMap::iterator Erase(DocumentsMap::iterator it){bytes_-=it->second.bytes;return documents_.erase(it);}
   Scopes::Host host_;Limits limits_;std::string main_;

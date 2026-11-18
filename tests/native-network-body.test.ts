@@ -3,11 +3,7 @@ import { Buffer } from 'node:buffer'
 
 import { describe, expect, it, vi } from 'vitest'
 
-import {
-  NATIVE_NETWORK_BODY_LIMITS as Limits,
-  NativeNetworkBodyReceiver,
-  NativeNetworkBodyArchive,
-} from '../src/native-network-body.js'
+import { NativeNetworkBodyReceiver, NativeNetworkBodyArchive } from '../src/native-network-body.js'
 
 describe('native request-body byte publications', () => {
   it('keeps exact binary bytes until consumption and acknowledges each stage once', () => {
@@ -17,7 +13,7 @@ describe('native request-body byte publications', () => {
     expect(() => receiver.take('1')).toThrow('incomplete')
     receiver.receive({ bodyId: '1', offset: 2, totalBytes: 4 }, Buffer.from([13, 10]))
     expect(acknowledge.mock.calls).toEqual([['1', 'received']])
-    expect(receiver.diagnostics()).toEqual({ owners: 1, retainedBytes: 4, droppedBodies: 0 })
+    expect(receiver.diagnostics()).toEqual({ owners: 1, retainedBytes: 4 })
     const body = receiver.take('1')
     expect(body).toEqual(Buffer.from([0, 255, 13, 10]))
     expect(receiver.take('1')).toBe(body)
@@ -25,41 +21,9 @@ describe('native request-body byte publications', () => {
       ['1', 'received'],
       ['1', 'taken'],
     ])
-    expect(receiver.diagnostics()).toEqual({ owners: 0, retainedBytes: 0, droppedBodies: 0 })
+    expect(receiver.diagnostics()).toEqual({ owners: 0, retainedBytes: 0 })
   })
-  it('drops a body past the page budget, still acknowledges it, and reads it as unavailable', () => {
-    const acknowledge = vi.fn(() => Promise.resolve())
-    const receiver = new NativeNetworkBodyReceiver(acknowledge, () => undefined)
-    const fill = Limits.retained / Limits.body
-    for (let id = 1; id <= fill; id++)
-      receiver.receive(
-        { bodyId: String(id), offset: 0, totalBytes: Limits.body },
-        Buffer.from([id]),
-      )
-    expect(receiver.diagnostics()).toEqual({
-      owners: fill,
-      retainedBytes: Limits.retained,
-      droppedBodies: 0,
-    })
-    const dropped = String(fill + 1)
-    receiver.receive({ bodyId: dropped, offset: 0, totalBytes: 2 }, Buffer.from([1]))
-    expect(() =>
-      receiver.receive({ bodyId: dropped, offset: 0, totalBytes: 2 }, Buffer.from([1])),
-    ).toThrow('mismatch')
-    receiver.receive({ bodyId: dropped, offset: 1, totalBytes: 2 }, Buffer.from([2]))
-    expect(acknowledge.mock.calls).toEqual([[dropped, 'received']])
-    expect(() => receiver.take(dropped)).toThrow('unavailable')
-    expect(receiver.diagnostics()).toEqual({
-      owners: fill,
-      retainedBytes: Limits.retained,
-      droppedBodies: 1,
-    })
-    receiver.receive({ bodyId: '1', offset: 0, totalBytes: 0, canceled: true }, Buffer.alloc(0))
-    receiver.receive({ bodyId: String(fill + 2), offset: 0, totalBytes: 1 }, Buffer.from([0]))
-    receiver.close()
-    expect(receiver.diagnostics()).toEqual({ owners: 0, retainedBytes: 0, droppedBodies: 1 })
-  })
-  it('cancels partial publications and rejects duplicate, reordered, or oversized bytes', () => {
+  it('cancels partial publications, rejects duplicate or reordered bytes, and takes any chunk size', () => {
     const receiver = new NativeNetworkBodyReceiver(
       () => Promise.resolve(),
       () => undefined,
@@ -69,19 +33,18 @@ describe('native request-body byte publications', () => {
       receiver.receive({ bodyId: '1', offset: 0, totalBytes: 3 }, Buffer.from([2])),
     ).toThrow('mismatch')
     receiver.receive({ bodyId: '1', offset: 0, totalBytes: 0, canceled: true }, Buffer.alloc(0))
-    expect(receiver.diagnostics()).toEqual({ owners: 0, retainedBytes: 0, droppedBodies: 0 })
+    expect(receiver.diagnostics()).toEqual({ owners: 0, retainedBytes: 0 })
     expect(() => receiver.take('1')).toThrow('unavailable')
     expect(() =>
       receiver.receive({ bodyId: '2', offset: 1, totalBytes: 3 }, Buffer.from([1])),
     ).toThrow('offset')
-    expect(() =>
-      receiver.receive(
-        { bodyId: '3', offset: 0, totalBytes: 8 * 1024 * 1024 + 1 },
-        Buffer.alloc(8 * 1024 * 1024 + 1),
-      ),
-    ).toThrow('8 MiB')
+    receiver.receive(
+      { bodyId: '3', offset: 0, totalBytes: 8 * 1024 * 1024 + 1 },
+      Buffer.alloc(8 * 1024 * 1024 + 1),
+    )
+    expect(receiver.take('3')).toHaveLength(8 * 1024 * 1024 + 1)
   })
-  it('bounds replay entries independently from pending delivery and preserves held byte identity', () => {
+  it('keeps every replay entry until close and preserves held byte identity', () => {
     const receiver = new NativeNetworkBodyReceiver(
       () => Promise.resolve(),
       () => undefined,
@@ -93,40 +56,13 @@ describe('native request-body byte publications', () => {
       const actual = receiver.take(String(id))
       if (id === count) held = actual
     }
-    expect(receiver.archiveDiagnostics()).toEqual({
-      bodies: count - 1,
-      retainedBytes: 2 * (count - 1),
-    })
-    expect(() => receiver.take('1')).toThrow('unavailable')
+    expect(receiver.archiveDiagnostics()).toEqual({ bodies: count, retainedBytes: 2 * count })
+    expect(receiver.take('1')).toEqual(Buffer.from([1, 1]))
     expect(receiver.take(String(count))).toBe(held)
     receiver.close()
     expect(receiver.archiveDiagnostics()).toEqual({ bodies: 0, retainedBytes: 0 })
   })
-  it('shares owner quotas across pages and releases a closed page reservation', () => {
-    const archive = new NativeNetworkBodyArchive()
-    const receivers = Array.from(
-      { length: Limits.processOwners / Limits.owners + 1 },
-      () =>
-        new NativeNetworkBodyReceiver(
-          () => Promise.resolve(),
-          () => undefined,
-          archive,
-        ),
-    )
-    const [first, ...others] = receivers
-    const last = others.pop()
-    if (!first || !last) throw new Error('receivers')
-    for (const receiver of [first, ...others])
-      for (let id = 1; id <= Limits.owners; ++id)
-        receiver.receive({ bodyId: String(id), offset: 0, totalBytes: 2 }, Buffer.from([id]))
-    last.receive({ bodyId: '1', offset: 0, totalBytes: 1 }, Buffer.from([9]))
-    expect(last.diagnostics()).toEqual({ owners: 0, retainedBytes: 0, droppedBodies: 1 })
-    first.close()
-    last.receive({ bodyId: '2', offset: 0, totalBytes: 1 }, Buffer.from([9]))
-    expect(last.take('2')).toEqual(Buffer.from([9]))
-    for (const receiver of receivers) receiver.close()
-  })
-  it('rejects invalid first chunks without reserving shared pending bytes or owners', () => {
+  it('rejects invalid first chunks without retaining bytes or owners', () => {
     const archive = new NativeNetworkBodyArchive()
     const acknowledge = vi.fn(() => Promise.resolve())
     const first = new NativeNetworkBodyReceiver(acknowledge, () => undefined, archive)
@@ -142,7 +78,7 @@ describe('native request-body byte publications', () => {
         first.receive({ bodyId: String(id), offset: 0, totalBytes: 1 }, Buffer.from([1, 2])),
       ).toThrow('mismatch')
     }
-    expect(first.diagnostics()).toEqual({ owners: 0, retainedBytes: 0, droppedBodies: 0 })
+    expect(first.diagnostics()).toEqual({ owners: 0, retainedBytes: 0 })
     expect(first.archiveDiagnostics()).toEqual({ bodies: 0, retainedBytes: 0 })
     expect(acknowledge).not.toHaveBeenCalled()
     for (let id = 1; id <= 8; id++)
@@ -150,11 +86,7 @@ describe('native request-body byte publications', () => {
         { bodyId: String(id), offset: 0, totalBytes: 2 * 1024 * 1024 },
         Buffer.from([id]),
       )
-    expect(second.diagnostics()).toEqual({
-      owners: 8,
-      retainedBytes: 16 * 1024 * 1024,
-      droppedBodies: 0,
-    })
+    expect(second.diagnostics()).toEqual({ owners: 8, retainedBytes: 16 * 1024 * 1024 })
     first.close()
     second.close()
   })
@@ -167,7 +99,7 @@ describe('native request-body byte publications', () => {
     receiver.receive({ bodyId: '1', offset: 0, totalBytes: 0 }, Buffer.alloc(0))
     await Promise.resolve()
     expect(failure).toHaveBeenCalledOnce()
-    expect(receiver.diagnostics()).toEqual({ owners: 0, retainedBytes: 0, droppedBodies: 0 })
+    expect(receiver.diagnostics()).toEqual({ owners: 0, retainedBytes: 0 })
     expect(() => receiver.take('1')).toThrow('closed')
   })
 })

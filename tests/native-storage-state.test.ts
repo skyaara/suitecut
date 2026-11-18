@@ -99,12 +99,20 @@ describe('bounded native storage-state transport', () => {
     ])
   })
 
-  it('rejects oversized file input before parsing its content', async () => {
+  it('reads file input past the old 32 MiB cap whole', async () => {
     const directory = await mkdtemp(join(tmpdir(), 'suitecut-storage-state-'))
     try {
-      const path = join(directory, 'oversized.json')
-      await writeFile(path, ' '.repeat(32 * 1024 * 1024 + 1))
-      await expect(readNativeStorageState(path)).rejects.toThrow('exceeds 32 MiB')
+      const path = join(directory, 'large.json')
+      const value = 'v'.repeat(32 * 1024 * 1024 + 1)
+      await writeFile(
+        path,
+        JSON.stringify({
+          cookies: [],
+          origins: [{ origin: 'https://large.test', localStorage: [{ name: 'k', value }] }],
+        }),
+      )
+      const state = await readNativeStorageState(path)
+      expect(state.origins[0]?.localStorage[0]?.value).toHaveLength(value.length)
     } finally {
       await rm(directory, { recursive: true, force: true })
     }

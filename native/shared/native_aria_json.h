@@ -72,7 +72,7 @@ inline constexpr char kSuiteCutNativeAriaJSON[] = R"JS(function formatNativeAria
                 };
             }
             if (options.mode === 'ai' && actual.ref !== undefined) {
-                if (!/^s[1-9][0-9]*e(?:0|[1-9][0-9]*)$/u.test(actual.ref) || actual.ref.length > 192)
+                if (!/^s[1-9][0-9]*e(?:0|[1-9][0-9]*)$/u.test(actual.ref))
                     throw new Error('Invalid native ARIA JSON reference token');
                 node.ref = actual.ref;
             }

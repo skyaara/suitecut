@@ -72,9 +72,9 @@ int main(){
   selections.CancelOwner("actual-owner");assert(owner_done&&owner_failure==NativeRouteMatcherSelections::Failure::OwnerClosed&&leases.running()==1);
   assert(!selections.Result(ticket,true,1));assert(leases.Finish(ticket.token,scope,ticket.id));
   assert(!selections.Select(registry.Match("https://real.test/a"),"https://real.test/a",100,0,SIZE_MAX,complete));
-  // Global admission bounds logical snapshots, separately from physical leases.
-  for(size_t i=0;i<128;++i)assert(selections.Select(registry.Match("https://real.test/a"),"https://real.test/a",100,0,0,complete));
-  assert(!selections.Select(registry.Match("https://real.test/a"),"https://real.test/a",100,0,0,complete));assert(leases.size()==128);selections.Clear();assert(leases.size()==0);
+  // No global admission cap on logical snapshots or physical leases; only overflow (SIZE_MAX payload) is refused.
+  for(size_t i=0;i<300;++i)assert(selections.Select(registry.Match("https://real.test/a"),"https://real.test/a",100,0,0,complete));
+  const std::string long_url="https://real.test/"+std::string(20000,'a');assert(selections.Select(registry.Match(long_url),long_url,100,0,8*1048576,complete,{},std::string(300,'o')));assert(leases.size()==301);selections.Clear();assert(leases.size()==0);
   assert(!NativeRouteMatcherSelections::retained_count()&&!NativeRouteMatcherSelections::retained_bytes());
   // Completion may synchronously close the owner without iterating freed state.
   auto reentrant=std::make_unique<NativeRouteMatcherSelections>(registry,leases,scope,[&](const auto&ticket){tickets.push_back(ticket);});

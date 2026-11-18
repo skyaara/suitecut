@@ -30,7 +30,8 @@ int main(){
   controls.Tap(7,std::numeric_limits<double>::quiet_NaN(),0);assert(completed.back()==std::make_pair(7,false));
   controls.Configure(8,true);ack(true);
   controls.Tap(9,0,0);for(int i=10;i<73;++i)controls.Tap(i,0,0);
-  controls.Tap(73,0,0);assert(completed.back()==std::make_pair(73,false)&&controls.queued()==63);
+  // No queue cap: the 65th tap queues behind the active one instead of failing.
+  controls.Tap(73,0,0);assert(completed.back().first!=73&&controls.queued()==64);
   controls.Close();assert(controls.queued()==0&&controls.physical()==1);
   ack(true);assert(pending.front().first.kind==C::Kind::Cancel);ack(true);
   assert(controls.physical()==0&&!controls.held());

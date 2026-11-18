@@ -51,8 +51,8 @@ int main(int argc,char**argv){
       if(iteration%113==0)timeout=std::numeric_limits<double>::quiet_NaN();
       if(iteration%127==0)timeout=-1;
       if(iteration%131==0)admitted=std::numeric_limits<double>::infinity();
-      size_t controls=0;for(const auto&[unused,e]:model)controls+=e.control;
-      const bool expected=std::isfinite(admitted)&&std::isfinite(timeout)&&timeout>=0&&!model.contains(id)&&model.size()<128&&(control?controls<64:model.size()-controls<64);
+      // No operation count limit: only identity and finite clocks decide admission.
+      const bool expected=std::isfinite(admitted)&&std::isfinite(timeout)&&timeout>=0&&!model.contains(id);
       const auto result=control?operations.BeginControl(id,admitted,timeout):operations.Begin(id,admitted,timeout);assert(bool(result)==expected);
       if(result){assert(result->generation>last_generation);last_generation=result->generation;assert(result->control==control&&result->deadline_ms==(timeout==0?0:admitted+timeout));model[id]=*result;}
     }else if(action<8){assert(operations.Finish(id)==bool(model.erase(id)));}

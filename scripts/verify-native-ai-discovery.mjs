@@ -119,10 +119,9 @@ try {
       const nativeControls=new Map([...document.querySelectorAll('input[type=file]')].map(e=>[e,[{role:'button',name:'SECRET-native-AX-fallback-'+e.id,children:[]}]]));
       const nativeSnapshot=snapshot(document.body,query,{ai:true,captureReferences:true,nativeControls});
       const nativeFiles=nativeSnapshot.entries.filter(([,index])=>nativeSnapshot.elements[index].type==='file').map(([node,index])=>({id:nativeSnapshot.elements[index].id,role:node.role,name:node.name}));
-      let bounded=false;
       document.body.innerHTML='<div tabindex=0></div>'.repeat(4200);
-      try{snapshot(document.body,query,{ai:true,captureReferences:true})}catch(error){bounded=/limit exceeded/.test(String(error))}
-      return {ai:ai.forest,plain,entries,nativeFiles,nativeForest:nativeSnapshot.forest,standardPasswordMatches,bounded};
+      const large=snapshot(document.body,query,{ai:true,captureReferences:true}).entries.length;
+      return {ai:ai.forest,plain,entries,nativeFiles,nativeForest:nativeSnapshot.forest,standardPasswordMatches,large};
     })()`,
     },
     sessionId,
@@ -139,7 +138,7 @@ try {
       ai: z.unknown(),
       plain: z.unknown(),
       standardPasswordMatches: z.number(),
-      bounded: z.boolean(),
+      large: z.number(),
       nativeForest: z.unknown(),
       nativeFiles: z.array(z.object({ id: z.string(), role: z.string(), name: z.string() })),
       entries: z.array(
@@ -188,7 +187,7 @@ try {
     !JSON.stringify(data.nativeForest).includes('SECRET'),
     'native AX fallback and embedded password values excluded from AI names',
   )
-  assert.equal(data.bounded, true, 'discovery remains bounded')
+  assert(data.large >= 4200, 'discovery of 4200 focusable elements succeeds whole')
   console.log(
     JSON.stringify({
       passed: true,

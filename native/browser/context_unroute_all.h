@@ -8,7 +8,7 @@
 #include "context_unroute_waits.h"
 namespace suitecut {
 // One UI-actor transaction. Preparation allocates complete candidate queues,
-// batch map nodes, bounded immutable observations and the language receipt.
+// batch map nodes, immutable observations and the language receipt.
 // Both real policy books change before either can invoke an installer/reply.
 class NativeContextUnrouteAll {
  public:
@@ -18,7 +18,7 @@ class NativeContextUnrouteAll {
       :handlers_(handlers),har_(har),waits_(std::move(now)){}
   ~NativeContextUnrouteAll(){Clear();}
   bool Remove(int operation,int context,uint64_t generation,bool wait,double deadline,Receipt receipt,Reply reply){
-    if(closed_||operation<1||!generation||!reply||entries_.contains(operation)||entries_.size()>=32)return false;
+    if(closed_||operation<1||!generation||!reply||entries_.contains(operation))return false;
     const auto state=handlers_.states_.find(context);if(state==handlers_.states_.end())return false;
     bool committed=false;
     try{
@@ -28,9 +28,6 @@ class NativeContextUnrouteAll {
         ids.insert(policy.id());return true;
       });
       auto selected=std::make_shared<std::vector<std::string>>(ids.begin(),ids.end());
-      size_t bytes=selected->capacity()*sizeof(std::string),wire=512;
-      for(const auto&id:*selected){bytes+=id.capacity();wire+=6*id.size()+4;}
-      if(selected->size()>256||bytes>65536||wire>65536)return false;
       auto work=wait?GlobalHARWorkLeases().Capture([&](const auto&policy){return har_.OwnsPolicy(context,policy);}):std::optional<NativeHARWorkSnapshot>{NativeHARWorkSnapshot{}};
       if(!work)return false;
       if(!wait)callbacks.clear();

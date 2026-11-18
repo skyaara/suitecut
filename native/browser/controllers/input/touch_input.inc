@@ -21,11 +21,11 @@ void TouchDispatch(SuiteCutTouchControls::Packet packet,SuiteCutTouchControls::R
     params->SetList("touchPoints",points);params->SetInt("modifiers",key_modifiers_);
   }
   const int assigned=AllocateDevToolsId();
-  if(!assigned){reply(false,"Native touch physical command capacity exceeded");return;}
+  if(!assigned){reply(false,"Could not allocate native touch command");return;}
   // Owner zero plus retained-control semantics keeps the physical contact
   // cleanup alive after its originating command has timed out or canceled.
   devtools_.emplace(assigned,DevToolsCall{0,[reply=std::move(reply)](bool ok,const std::string& json){
-    reply(ok,ok?"":"Native touch dispatch failed: "+json.substr(0,1024));
+    reply(ok,ok?"":"Native touch dispatch failed: "+json);
   },"",true,65536,true});
   if(!SubmitDevTools(assigned,method,params,"")){
     auto found=devtools_.find(assigned);

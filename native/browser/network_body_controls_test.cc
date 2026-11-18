@@ -22,6 +22,6 @@ int main() {
   assert(controls.PrepareOverride(override,100)==Prepared::Transferred);const auto large_id=std::stoull(override->GetString("postDataBodyId").ToString());
   for(size_t i=0;i<8;++i){controls.publication().Tick(1);}
   assert(wire==large);assert(controls.publication().Received(large_id));assert(controls.publication().Taken(large_id));
-  auto unavailable=CefDictionaryValue::Create();unavailable->SetString("postDataBase64",std::string(2796205,'A'));assert(controls.PrepareOverride(unavailable,100)==Prepared::Unavailable);assert(unavailable->GetBool("postDataUnavailable"));
+  auto unavailable=CefDictionaryValue::Create();unavailable->SetString("postDataBase64","%%%%");assert(controls.PrepareOverride(unavailable,100)==Prepared::Unavailable);assert(unavailable->GetBool("postDataUnavailable"));
   auto file=CefDictionaryValue::Create();entries=CefListValue::Create();entries->SetDictionary(0,CefDictionaryValue::Create());file->SetList("postDataEntries",entries);assert(controls.Prepare(file,100,true)==Prepared::Unavailable);
 }

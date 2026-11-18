@@ -33,9 +33,9 @@ class DragCompletions : public std::enable_shared_from_this<DragCompletions> {
   enum class Outcome { Acknowledged, Error, Refused };
   using Payload = std::shared_ptr<void>;
   using Reply = std::function<void(Outcome, const std::string&)>;
+  // Process-wide accounting only; nothing is refused on its account.
   struct Budget {
     size_t records = 0, bytes = 0;
-    size_t max_records = 64, max_bytes = 16 * 1048576;
   };
   struct Hooks {
     std::function<double()> now;
@@ -63,17 +63,15 @@ class DragCompletions : public std::enable_shared_from_this<DragCompletions> {
              Payload payload) {
     const double now = hooks_.now();
     if (closed_ || !records_.empty() || !scope.channel || !scope.incarnation ||
-        scope.owner < 1 || !scope.generation || !payload || bytes > 1048576 ||
+        scope.owner < 1 || !scope.generation || !payload ||
         !std::isfinite(now) || !std::isfinite(deadline) || deadline < 0 ||
-        (deadline > 0 && (now >= deadline || !std::isfinite(deadline + kGrace))) ||
-        budget_->records >= budget_->max_records ||
-        bytes > budget_->max_bytes - std::min(budget_->bytes, budget_->max_bytes))
+        (deadline > 0 && (now >= deadline || !std::isfinite(deadline + kGrace))))
       return false;
     auto record = std::make_shared<Record>();
     record->scope = scope; record->kind = kind; record->bytes = bytes;
     record->deadline = deadline; record->payload = std::move(payload);
     // Insert before reserving counters: an allocation exception cannot leave a
-    // capacity ghost or claim any native command was admitted.
+    // counter ghost or claim any native command was admitted.
     records_.emplace(scope.incarnation, record);
     ++budget_->records; budget_->bytes += bytes; record->reserved = true;
     Dispatch(record, Stage::Drop);
@@ -155,7 +153,7 @@ class DragCompletions : public std::enable_shared_from_this<DragCompletions> {
     record->logical = false;
     ArmRetirement(record);
     if (hooks_.operation_current(record->scope))
-      hooks_.logical(record->scope, record->payload, false, error.substr(0,4096));
+      hooks_.logical(record->scope, record->payload, false, error);
   }
   void Expire(const std::shared_ptr<Record>& record) {
     if (!record->logical) return;
@@ -232,7 +230,7 @@ class DragCompletions : public std::enable_shared_from_this<DragCompletions> {
       // Refusal proves this command did not run; it does not identify the
       // original press widget for a replacement cleanup mouse-up. Keep the
       // ownership reservation until actual owning-channel closure.
-      Close(record, "Native drag physical command failed: " + error.substr(0,4096));
+      Close(record, "Native drag physical command failed: " + error);
       return;
     }
     // A canceled helper cannot send an old final mouse-up through a current

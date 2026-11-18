@@ -166,20 +166,18 @@ describe('Page removal original callback identities', () => {
     expect(f.book.pending()).toBe(0)
   })
 
-  it('reserves host observer capacity before any native command or policy mutation', async () => {
+  it('sends a removal while 64 host observer reservations are already held', async () => {
     const f = fixture(),
       reservations = Array.from({ length: 64 }, () => f.book.reserveWait())
-    await expect(f.page.remove('wait')).rejects.toThrow('capacity')
-    expect(f.command).not.toHaveBeenCalled()
-    expect(f.removed).not.toHaveBeenCalled()
-    for (const reservation of reservations) reservation.cancel()
     const held = deferred<UntrustedInput>()
     f.command.mockReturnValueOnce(held.promise)
     const removal = f.page.remove('wait')
+    expect(f.command).toHaveBeenCalledTimes(1)
     f.publish('admitted', [])
     f.publish('applied', [])
     held.resolve(undefined)
     await removal
+    for (const reservation of reservations) reservation.cancel()
   })
 
   it('rejects rounded/overflow/duplicate identities without interpreting IDs as another owner', async () => {

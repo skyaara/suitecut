@@ -10,7 +10,7 @@ int main(){
   auto policy=suitecut::NativeContextRouteRegistration::Create("context","**/*",0);assert(policy);
   const auto queued=*book.Issue(page,"actual-page-queued"),running=*book.Issue(page,"actual-page-running"),context=*book.Issue(page,"actual-context",policy),elsewhere=*book.Issue(other,"other-page");
   assert(book.Start(running,page,"actual-page-running"));
-  const auto selected=book.CapturePage(page);assert(selected.scope==page&&selected.tokens==std::vector<uint64_t>({queued,running})&&selected.receipts.size()==2&&selected.bytes()<=Book::kCapacity*(sizeof(uint64_t)+sizeof(suitecut::NativeRouteCallbackSnapshot::value_type))*2);
+  const auto selected=book.CapturePage(page);assert(selected.scope==page&&selected.tokens==std::vector<uint64_t>({queued,running})&&selected.receipts.size()==2&&selected.bytes()>=2*(sizeof(uint64_t)+sizeof(suitecut::NativeRouteCallbackSnapshot::value_type)));
   assert(book.CapturePage(0).scope==0&&book.CapturePage(other+1).scope==0);
   const auto future=*book.Issue(page,"actual-future");book.Close(page);assert(selected.receipts[0]->settled()&&!selected.receipts[1]->settled());
   assert(book.Finish(running,page,"actual-page-running"));assert(selected.receipts[1]->settled());assert(book.CapturePage(page).receipts.empty());

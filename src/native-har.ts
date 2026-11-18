@@ -9,7 +9,6 @@ import { type NativeBrowser } from './native-browser.js'
 const HARPathSchema = z
   .string()
   .min(1)
-  .max(4096)
   .refine((path) => !path.includes('\0'))
   .transform((path) => resolve(path))
 export const NativeRecordHARSchema = z
@@ -18,7 +17,7 @@ export const NativeRecordHARSchema = z
     content: z.enum(['embed', 'attach', 'omit']).optional(),
     omitContent: z.boolean().optional(),
     mode: z.enum(['full', 'minimal']).optional(),
-    urlFilter: z.string().min(1).max(8192).optional(),
+    urlFilter: z.string().min(1).optional(),
   })
   .transform(({ omitContent, content, ...config }) => ({
     ...config,
@@ -32,7 +31,7 @@ const ReplayOptions = z.strictObject({
   update: z.boolean().optional(),
   updateContent: z.enum(['embed', 'attach']).optional(),
   updateMode: z.enum(['full', 'minimal']).optional(),
-  url: z.string().min(1).max(8192).optional(),
+  url: z.string().min(1).optional(),
 })
 export type NativeRouteFromHAROptions = z.input<typeof ReplayOptions>
 export async function routeNativeFromHAR(

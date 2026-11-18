@@ -24,26 +24,24 @@ class NativeResponseBodyReads {
   ~NativeResponseBodyReads(){Close();}
   void Read(const std::string&session,const std::string&request,double deadline,Reply reply){
     if(!reply)return;
-    if(closed_||session.size()>128||request.empty()||request.size()>256||!std::isfinite(deadline)||deadline<0||(deadline&&now_()>=deadline)){
+    if(closed_||request.empty()||!std::isfinite(deadline)||deadline<0||(deadline&&now_()>=deadline)){
       reply(false,{},closed_?"Native response-body owner is closed":"Invalid or expired native response-body owner");return;
     }
-    if(reads_.size()>=64||global_>=128||serial_>=9007199254740991ULL){reply(false,{},"Native physical response-body reader capacity exceeded");return;}
-    const auto id=++serial_;reads_.emplace(id,ReadState{deadline,std::move(reply)});++global_;
+    if(serial_>=9007199254740991ULL){reply(false,{},"Native physical response-body reader serial exhausted");return;}
+    const auto id=++serial_;reads_.emplace(id,ReadState{deadline,std::move(reply)});
     send_(session,request,deadline,[this,alive=alive_,id](bool ok,const std::string&json){
       if(!*alive)return;
       const auto found=reads_.find(id);if(found==reads_.end())return;
-      auto reply=std::exchange(found->second.reply, nullptr);const auto deadline=found->second.deadline;reads_.erase(found);--global_;
+      auto reply=std::exchange(found->second.reply, nullptr);const auto deadline=found->second.deadline;reads_.erase(found);
       if(!reply)return;
       if(deadline&&now_()>=deadline){reply(false,{},"Native original response-body deadline exceeded");return;}
-      if(!ok){reply(false,{},json.empty()?"Actual native response body is unavailable":json.substr(0,8192));return;}
-      if(json.size()>96*1048576){reply(false,{},"Native response body metadata exceeds limit");return;}
+      if(!ok){reply(false,{},json.empty()?"Actual native response body is unavailable":json);return;}
       const auto parsed=CefParseJSON(json,JSON_PARSER_RFC);const auto body=parsed?parsed->GetDictionary():nullptr;
       if(!body||body->GetType("body")!=VTYPE_STRING||body->GetType("base64Encoded")!=VTYPE_BOOL){reply(false,{},"Invalid actual response-body metadata");return;}
       const auto text=body->GetString("body").ToString();Bytes bytes;
       if(body->GetBool("base64Encoded")){
-        if(text.size()>(64*1048576+2)/3*4){reply(false,{},"Actual response body exceeds 64 MiB");return;}
-        if(!text.empty()){const auto decoded=CefBase64Decode(text);if(!decoded||decoded->GetSize()>64*1048576){reply(false,{},"Invalid or excessive actual response-body bytes");return;}bytes.resize(decoded->GetSize());decoded->GetData(bytes.data(),bytes.size(),0);}
-      }else{if(text.size()>64*1048576){reply(false,{},"Actual response body exceeds 64 MiB");return;}bytes.assign(text.begin(),text.end());}
+        if(!text.empty()){const auto decoded=CefBase64Decode(text);if(!decoded){reply(false,{},"Invalid actual response-body bytes");return;}bytes.resize(decoded->GetSize());decoded->GetData(bytes.data(),bytes.size(),0);}
+      }else bytes.assign(text.begin(),text.end());
       reply(true,std::move(bytes),"");
     });
     if(!closed_&&!reads_.empty())wake_();
@@ -55,14 +53,14 @@ class NativeResponseBodyReads {
   }
   void Close(){
     if(closed_)return;
-    closed_=true;*alive_=false;auto reads=std::move(reads_);reads_.clear();global_-=reads.size();
+    closed_=true;*alive_=false;auto reads=std::move(reads_);reads_.clear();
     for(auto&[id,read]:reads)if(read.reply)read.reply(false,{},"Actual native response-body owner closed");
   }
   size_t physical()const{return reads_.size();}
   bool NeedsTick()const{for(const auto&[id,read]:reads_)if(read.reply&&read.deadline)return true;return false;}
  private:
   struct ReadState{double deadline;Reply reply;};
-  inline static size_t global_=0;uint64_t serial_=0;bool closed_=false;
+  uint64_t serial_=0;bool closed_=false;
   Send send_;std::function<double()>now_;std::function<void()>wake_;
   std::map<uint64_t,ReadState>reads_;std::shared_ptr<bool>alive_=std::make_shared<bool>(true);
 };

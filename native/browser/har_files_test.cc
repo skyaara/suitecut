@@ -43,10 +43,16 @@ int main(){
   {std::ofstream file(empty);file<<R"({"log":{}})";}
   canceled=true;error.clear();assert(!Files::Read(empty,action,loaded,error,true));canceled=false;
   now=100;error.clear();assert(!Files::Read(empty,action,loaded,error,true));now=2;
-  // Every decoded ZIP member consumes budget, even if no HAR entry references it.
+  // No suitecut byte or count cap on HAR files: unreferenced ZIP members, bodies
+  // past the old 2 MiB bound and more entries than ZIP32 holds load whole.
   suitecut::TraceArchive zip;assert(zip.AddText("har.har",R"({"log":{"entries":[]}})",error));
-  for(size_t i=0;i<=Files::kJSONBytes/Files::kBodyBytes;++i)assert(zip.Add("resources/unused-"+std::to_string(i)+".dat",std::vector<uint8_t>(Files::kBodyBytes,0),error));
-  std::vector<uint8_t> oversized;assert(zip.Encode(oversized,error));const auto large=(directory/"decoded-overflow.zip").string();{std::ofstream file(large,std::ios::binary);file.write(reinterpret_cast<const char*>(oversized.data()),oversized.size());}
-  error.clear();assert(!Files::Read(large,action,loaded,error)&&error=="Native HAR ZIP decoded-byte capacity exceeded");
+  for(size_t i=0;i<4;++i)assert(zip.Add("resources/unused-"+std::to_string(i)+".dat",std::vector<uint8_t>(8*1048576,0),error));
+  std::vector<uint8_t> encoded;assert(zip.Encode(encoded,error));const auto large=(directory/"unused-members.zip").string();{std::ofstream file(large,std::ios::binary);file.write(reinterpret_cast<const char*>(encoded.data()),encoded.size());}
+  error.clear();assert(Files::Read(large,action,loaded,error)&&error.empty());
+  {auto many=CefDictionaryValue::Create();auto log=CefDictionaryValue::Create();auto entries=CefListValue::Create();
+   for(size_t i=0;i<66000;++i){auto entry=CefDictionaryValue::Create();auto response=CefDictionaryValue::Create();auto content=CefDictionaryValue::Create();if(!i)content->SetString("text",std::string(3*1048576,'b'));response->SetDictionary("content",content);entry->SetDictionary("response",response);entries->SetDictionary(i,entry);}
+   log->SetList("entries",entries);many->SetDictionary("log",log);const auto path=(directory/"many.har").string();error.clear();assert(Files::Write(path,many,Files::Content::Attach,false,action,error));
+   Dict reread;assert(Files::Read(path,action,reread,error)&&reread->GetDictionary("log")->GetList("entries")->GetSize()==66000);
+   assert(reread->GetDictionary("log")->GetList("entries")->GetDictionary(0)->GetDictionary("response")->GetDictionary("content")->GetString("text").ToString().size()==4*1048576);}
   std::filesystem::remove_all(directory);
 }

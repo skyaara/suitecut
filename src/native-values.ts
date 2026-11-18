@@ -6,8 +6,6 @@ export function createNativeValueCodec() {
   // The tagged transport adds nesting of its own. Bound source graph depth
   // before Chromium's return-by-value serializer reaches its nesting limit.
   const maxDepth = 100
-  const maxNodes = 100_000
-  const maxUTF16Units = 48 * 1024 * 1024 - 1024
   // WindowProxy values from a different realm do not inherit this realm's
   // Window.prototype. The platform getter checks the actual native receiver;
   // an author-provided Symbol.toStringTag or `window` property cannot pass it.
@@ -42,8 +40,6 @@ export function createNativeValueCodec() {
       break
     }
     if (!isolatedUTF16) return value
-    if (value.length > maxUTF16Units)
-      throw new Error('Native UTF-16 string exceeds its transport byte limit')
     // Most evaluations create a codec for a few short values. Build the lookup
     // only when at least four code units amortize each of its 256 entries.
     const hexBytes =
@@ -87,11 +83,9 @@ export function createNativeValueCodec() {
     handleIndex?: (value: UntrustedInput) => number | undefined,
   ): object {
     const seen = new Map<object, number>()
-    let visited = 0
     const visit = (value: UntrustedInput, depth: number, nested: boolean, path: string): object => {
       if (depth > maxDepth)
         throw new Error('Cannot serialize result: object reference chain is too long.')
-      if (++visited > maxNodes) throw new Error('Native value exceeds its node limit')
       const handle = handleIndex?.(value)
       if (handle !== undefined) return ['handle', handle]
       if (value === undefined || typeof value === 'symbol') return ['undefined']
@@ -132,7 +126,6 @@ export function createNativeValueCodec() {
           value instanceof ArrayBuffer
             ? new Uint8Array(value)
             : new Uint8Array(value.buffer, value.byteOffset, value.byteLength)
-        if (bytes.length > maxNodes) throw new Error('Native byte value exceeds its length limit')
         return [
           'bytes',
           value instanceof ArrayBuffer ? 'ArrayBuffer' : value.constructor.name,
@@ -189,13 +182,11 @@ export function createNativeValueCodec() {
   }
   function decode(input: UntrustedInput, handles: UntrustedInput[] = []): UntrustedInput {
     const objects = new Map<number, object>()
-    let visited = 0
     const fail = (): never => {
       throw new Error('Invalid native serialized value')
     }
     const utf16 = (value: UntrustedInput): string => {
-      if (typeof value !== 'string' || value.length % 4 || value.length > maxUTF16Units * 4)
-        return fail()
+      if (typeof value !== 'string' || value.length % 4) return fail()
       const digit = (index: number): number => {
         const code = value.charCodeAt(index)
         if (code >= 0x30 && code <= 0x39) return code - 0x30
@@ -224,7 +215,7 @@ export function createNativeValueCodec() {
       return fail()
     }
     const visit = (value: UntrustedInput, depth: number): UntrustedInput => {
-      if (depth > maxDepth || ++visited > maxNodes || !Array.isArray(value)) return fail()
+      if (depth > maxDepth || !Array.isArray(value)) return fail()
       const node = value as UntrustedInput[]
       const tag = typeof node[0] === 'string' ? node[0] : fail()
       switch (tag) {
@@ -287,7 +278,7 @@ export function createNativeValueCodec() {
         }
         case 'bytes': {
           const name = text(node[1])
-          if (!Array.isArray(node[2]) || node[2].length > maxNodes) return fail()
+          if (!Array.isArray(node[2])) return fail()
           const bytes = new Uint8Array(node[2].length)
           for (let i = 0; i < bytes.length; i++) {
             const byte = node[2][i] as UntrustedInput

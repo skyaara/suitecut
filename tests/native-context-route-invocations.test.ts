@@ -188,10 +188,9 @@ describe('context route invocation receipts and exception policy', () => {
       expect(book.waitObservationEdges()).toBe(0)
     }
     expect(originalThen).not.toHaveBeenCalled()
-    const maximum = Array.from({ length: 64 }, () => book.snapshot(new Set(['selected'])))
-    expect(() => book.snapshot(new Set(['selected']))).toThrow('capacity')
-    expect(book.waitObservationEdges()).toBe(64)
-    for (const waiting of maximum) waiting.cancel()
+    const many = Array.from({ length: 65 }, () => book.snapshot(new Set(['selected'])))
+    expect(book.waitObservationEdges()).toBe(65)
+    for (const waiting of many) waiting.cancel()
     expect(book.waitObservationEdges()).toBe(0)
     const final = book.snapshot(new Set(['selected']))
     let completed = false

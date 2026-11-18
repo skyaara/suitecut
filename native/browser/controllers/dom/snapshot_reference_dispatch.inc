@@ -11,7 +11,6 @@ void ReferenceSubmit(int owner,uint64_t generation,const std::string& session,
      operations_.IsExpired(owner,generation,Now())||
      (!session.empty()&&!sessions_.contains(session))){reject();return;}
   auto physical=reference_dispatch_.Begin();
-  if(!physical){reject();return;}
   const int tool=AllocateDevToolsId();
   if(!tool){reject();return;}
   struct Settlement {

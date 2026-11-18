@@ -72,7 +72,7 @@ class NativeWidgetMouse : public std::enable_shared_from_this<NativeWidgetMouse>
     // pending flag/closure until its real transport callback is retired.
     if(!pending_){DispatchDone(false,"Native widget channel closed");FinishDone(false,"Native widget channel closed");}}
  private:
-  static Dict Parse(const std::string&json){if(json.size()>65536)return nullptr;const auto value=CefParseJSON(json,JSON_PARSER_RFC);return value&&value->GetType()==VTYPE_DICTIONARY?value->GetDictionary():nullptr;}
+  static Dict Parse(const std::string&json){const auto value=CefParseJSON(json,JSON_PARSER_RFC);return value&&value->GetType()==VTYPE_DICTIONARY?value->GetDictionary():nullptr;}
   static bool Keys(Dict value,std::initializer_list<const char*>names){if(!value||value->GetSize()!=names.size())return false;for(const auto*name:names)if(!value->HasKey(name))return false;return true;}
   void Fail(const std::string&error){available_=false;if(!closed_)hooks_.fatal(error);}
   void Lost(const std::string&error){lease_.clear();document_.clear();sequence_=0;buttons_=0;if(!closed_&&hooks_.degraded)hooks_.degraded(error);}
@@ -86,7 +86,7 @@ class NativeWidgetMouse : public std::enable_shared_from_this<NativeWidgetMouse>
       self->pending_=false;if(self->closed_){self->DispatchDone(false,"Native widget channel closed");self->FinishDone(false,"Native widget channel closed");return;}
       const auto value=Parse(json);
       if(!ok||!Keys(value,{"lease","documentToken"})||value->GetType("lease")!=VTYPE_STRING||value->GetType("documentToken")!=VTYPE_STRING||
-         value->GetString("lease").empty()||value->GetString("lease").length()>128||value->GetString("documentToken").empty()||value->GetString("documentToken").length()>128){
+         value->GetString("lease").empty()||value->GetString("documentToken").empty()){
         self->Lost("Native widget lease acquisition failed or returned malformed identity");self->DispatchDone(false,"Native widget lease acquisition failed");if(self->finishing_)self->PumpFinish();return;}
       self->lease_=value->GetString("lease");self->document_=value->GetString("documentToken");self->sequence_=0;
       if(self->finishing_){self->DispatchDone(false,"Native widget operation canceled");self->PumpFinish();return;}

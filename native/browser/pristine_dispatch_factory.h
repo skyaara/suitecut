@@ -52,16 +52,16 @@ inline constexpr char kSuiteCutPristineDispatchFactory[]=R"SCFACTORY((()=>{
     },
   });
   const dispatch=function(element,packet,handles){
-  let visited=0;const references=new Map();
+  const references=new Map();
   const fail=()=>{throw new Error('Invalid native dispatchEvent argument');};
   const text=value=>{
     if(typeof value==='string')return value;
     if(!Array.isArray(value)||value.length!==2||value[0]!=='utf16'||
-       typeof value[1]!=='string'||value[1].length>65536||value[1].length%4||!regexTest(/^[0-9a-f]*$/,value[1]))return fail();
+       typeof value[1]!=='string'||value[1].length%4||!regexTest(/^[0-9a-f]*$/,value[1]))return fail();
     let out='';for(let i=0;i<value[1].length;i+=4)out+=String.fromCharCode(parseInt(stringSlice(value[1],i,i+4),16));return out;
   };
-  const decode=(node,depth=0)=>{
-    if(depth>100||++visited>10000||!Array.isArray(node))return fail();
+  const decode=node=>{
+    if(!Array.isArray(node))return fail();
     switch(node[0]){
       case 'undefined':return undefined;
       case 'null':return null;
@@ -78,7 +78,7 @@ inline constexpr char kSuiteCutPristineDispatchFactory[]=R"SCFACTORY((()=>{
       case 'empty':return {};
       case 'bytes':{
         const constructors={Int8Array,Uint8Array,Uint8ClampedArray,Int16Array,Uint16Array,Int32Array,Uint32Array,Float32Array,Float64Array,BigInt64Array,BigUint64Array,DataView};
-        const name=text(node[1]);if(!Array.isArray(node[2])||node[2].length>16384||arraySome(node[2],x=>!Number.isInteger(x)||x<0||x>255))return fail();
+        const name=text(node[1]);if(!Array.isArray(node[2])||arraySome(node[2],x=>!Number.isInteger(x)||x<0||x>255))return fail();
         const bytes=new Uint8Array(node[2].length);for(let i=0;i<node[2].length;++i)bytes[i]=node[2][i];const buffer=apply(typedBuffer,bytes,[]);if(name==='ArrayBuffer')return buffer;
         if(!Object.hasOwn(constructors,name))return fail();return new constructors[name](buffer);
       }
@@ -87,14 +87,14 @@ inline constexpr char kSuiteCutPristineDispatchFactory[]=R"SCFACTORY((()=>{
         const out=node[0]==='array'?[]:{};references.set(id,out);
         for(let i=0;i<fields.length;++i){const field=fields[i];let key,value;
           if(node[0]==='array'){key=i;value=field;}else{if(!Array.isArray(field)||field.length!==2)return fail();key=text(field[0]);value=field[1];}
-          Object.defineProperty(out,key,{value:decode(value,depth+1),enumerable:true,writable:true,configurable:true});
+          Object.defineProperty(out,key,{value:decode(value),enumerable:true,writable:true,configurable:true});
         }return out;
       }
       default:return fail();
     }
   };
   const data=decode(packet),type=data?.type,init=data?.eventInit;
-  if(typeof type!=='string'||!type.length||type.length>256||!init||typeof init!=='object'||Array.isArray(init))return fail();
+  if(typeof type!=='string'||!type.length||!init||typeof init!=='object'||Array.isArray(init))return fail();
   if(!element)return {ready:false,detached:true};
   const actualType=apply(nodeType,element,[]);if(!Number.isInteger(actualType)||actualType<1||actualType>12)throw new Error('Target is not a DOM node');
   if(actualType===9?element!==actualDocument:apply(ownerDocument,element,[])!==actualDocument)throw new Error('Native main dispatch target belongs to another document');
@@ -130,12 +130,12 @@ inline constexpr char kSuiteCutPristineDispatchFactory[]=R"SCFACTORY((()=>{
   return {ready:true,dispatched:apply(nativeDispatch,element,[event])};
 };
   return function(mode,element,packet,handles,query,strict,wrappedMask=0){
-    if(!Array.isArray(handles)||handles.length>32||!Number.isInteger(wrappedMask)||wrappedMask<0||wrappedMask>4294967295||(handles.length<32&&(wrappedMask>>>handles.length)!==0))throw new Error('Invalid native main dispatch handles');
-    if(wrappedMask){const actual=[];for(let i=0;i<handles.length;++i){let value=handles[i];if((wrappedMask>>>i)&1){const field=descriptors(value,'value');if(!field||!Object.hasOwn(field,'value'))throw new Error('Native opaque handle wrapper is unavailable');value=field.value;}Object.defineProperty(actual,i,{value,enumerable:true,configurable:true,writable:true});}handles=actual;}
+    if(!Array.isArray(handles)||!Number.isInteger(wrappedMask)||wrappedMask<0||wrappedMask>4294967295||(handles.length<32&&(wrappedMask>>>handles.length)!==0))throw new Error('Invalid native main dispatch handles');
+    if(wrappedMask){const actual=[];for(let i=0;i<handles.length;++i){let value=handles[i];if(i<32&&((wrappedMask>>>i)&1)){const field=descriptors(value,'value');if(!field||!Object.hasOwn(field,'value'))throw new Error('Native opaque handle wrapper is unavailable');value=field.value;}Object.defineProperty(actual,i,{value,enumerable:true,configurable:true,writable:true});}handles=actual;}
     if(mode==='dispatch')return dispatch(element,packet,handles);
     if(mode!=='select'||typeof query!=='function')throw new Error('Invalid native main dispatch operation');
     const nodes=apply(query,undefined,[queryIntrinsics]);
-    if(!Array.isArray(nodes)||nodes.length>10000)throw new Error('Invalid native main selector result');
+    if(!Array.isArray(nodes))throw new Error('Invalid native main selector result');
     if(nodes.length>1&&strict)return {strictNodes:nodes};
     if(!nodes.length)return {ready:false};
     return dispatch(nodes[0],packet,handles);

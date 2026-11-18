@@ -9,8 +9,8 @@ const backend = z.enum(['devtools', 'cef', 'widget']).optional()
 
 const delay = z.number().int().min(0).max(120_000).optional()
 const button = z.enum(['left', 'middle', 'right']).optional()
-const clickCount = z.number().int().min(1).max(1000).optional()
-const point = z.number().finite().min(-1_000_000).max(1_000_000)
+const clickCount = z.number().int().min(1).optional()
+const point = z.number().finite()
 
 /** Genuine Chromium touch input; configuration completes after its native acknowledgment. */
 export class NativeTouchscreen {
@@ -37,7 +37,7 @@ export class NativeMouse {
     options: { steps?: number; backend?: NativeMouseBackend } = {},
   ): Promise<void> {
     const config = z
-      .strictObject({ steps: z.number().int().min(1).max(10_000).optional(), backend })
+      .strictObject({ steps: z.number().int().min(1).optional(), backend })
       .parse(options)
     await this.dispatch({
       kind: 'mouse',
@@ -130,14 +130,14 @@ export class NativeKeyboard {
     await this.dispatch({
       kind: 'keyboard',
       action: 'down',
-      key: z.string().min(1).max(128).parse(key),
+      key: z.string().min(1).parse(key),
     })
   }
   async up(key: string): Promise<void> {
     await this.dispatch({
       kind: 'keyboard',
       action: 'up',
-      key: z.string().min(1).max(128).parse(key),
+      key: z.string().min(1).parse(key),
     })
   }
   async press(key: string, options: { delay?: number } = {}): Promise<void> {
@@ -145,7 +145,7 @@ export class NativeKeyboard {
     await this.dispatch({
       kind: 'keyboard',
       action: 'press',
-      key: z.string().min(1).max(128).parse(key),
+      key: z.string().min(1).parse(key),
       delay: config.delay ?? 0,
     })
   }

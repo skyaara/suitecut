@@ -528,17 +528,20 @@ describe('native API explicit extra CA marshaling', () => {
     await api.dispose()
   })
 
-  it('rejects certificate count and UTF8 byte budgets before native admission', () => {
+  it('forwards certificate lists past the old count and UTF8 byte budgets for native validation', async () => {
     const f = sourceFixture()
-    expect(
-      () =>
-        new NativeAPIRequestContext(f.source, {
-          extraCACertificates: Array.from({ length: 17 }, () => 'pem'),
-        }),
-    ).toThrow()
-    expect(
-      () => new NativeAPIRequestContext(f.source, { extraCACertificates: ['é'.repeat(17 * 1024)] }),
-    ).toThrow()
-    expect(f.calls).toHaveLength(0)
+    const many = Array.from({ length: 17 }, () => 'pem')
+    const first = await NativeAPIRequestContext.create(f.source, { extraCACertificates: many })
+    expect(f.calls.find((call) => call.action === 'create')).toMatchObject({
+      extraCACertificates: many,
+    })
+    await first.dispose()
+    const large = ['é'.repeat(17 * 1024)]
+    const second = await NativeAPIRequestContext.create(f.source, { extraCACertificates: large })
+    expect(f.calls.findLast((call) => call.action === 'create')).toMatchObject({
+      extraCACertificates: large,
+    })
+    await second.dispose()
+    expect(() => new NativeAPIRequestContext(f.source, { extraCACertificates: [''] })).toThrow()
   })
 })

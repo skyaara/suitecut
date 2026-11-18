@@ -259,11 +259,8 @@ export function parseNativeAriaTemplate(template: string): NativeAriaPattern {
   document.toJS({ maxAliasCount: 0 })
   if (!isSeq(document.contents))
     throw new Error('Aria snapshot must be a YAML sequence, elements starting with " -"')
-  let nodes = 0
-  const populate = (parent: NativeAriaPattern, entries: YAML.YAMLSeq, depth: number): void => {
-    if (depth > 64) throw new Error('Native ARIA template nesting exceeds 64 levels')
+  const populate = (parent: NativeAriaPattern, entries: YAML.YAMLSeq): void => {
     for (const entry of entries.items) {
-      if (++nodes > 4096) throw new Error('Native ARIA template exceeds 4096 entries')
       if (isScalar(entry) && typeof entry.value === 'string') {
         parent.children.push(ariaKey(entry.value))
         continue
@@ -294,7 +291,7 @@ export function parseNativeAriaTemplate(template: string): NativeAriaPattern {
         continue
       }
       const child = ariaKey(key)
-      if (isSeq(pair.value)) populate(child, pair.value, depth + 1)
+      if (isSeq(pair.value)) populate(child, pair.value)
       else if (scalar && value !== null) child.text = ariaText(value, scalar.type !== 'PLAIN')
       else if (pair.value !== null && !(scalar && value === null))
         throw new Error('Native ARIA role children must be a YAML sequence or scalar text')
@@ -302,7 +299,7 @@ export function parseNativeAriaTemplate(template: string): NativeAriaPattern {
     }
   }
   const root: NativeAriaPattern = { role: '', states: {}, properties: {}, children: [] }
-  populate(root, document.contents, 0)
+  populate(root, document.contents)
   return root
 }
 
@@ -311,13 +308,8 @@ export function matchNativeAriaTree(
   actual: NativeAriaNode[],
   expected: NativeAriaPattern,
 ): boolean {
-  let work = 0
   const regexes = new Map<NativeAriaText, RegExp>()
-  const tick = () => {
-    if (++work > 100000) throw new Error('Native ARIA comparison work limit exceeded')
-  }
   const textMatches = (actualText: string, wanted: NativeAriaText): boolean => {
-    tick()
     if (wanted.pattern !== undefined) {
       if (wanted.text !== undefined && actualText === wanted.text) return true
       let regex = regexes.get(wanted)
@@ -336,8 +328,6 @@ export function matchNativeAriaTree(
     mode: 'contain' | 'equal' | 'deep-equal',
     depth: number,
   ): boolean => {
-    tick()
-    if (depth > 64) throw new Error('Native ARIA comparison nesting exceeds 64 levels')
     if (mode !== 'contain' && received.length !== wanted.length) return false
     let index = 0
     for (const pattern of wanted) {
@@ -360,7 +350,6 @@ export function matchNativeAriaTree(
     deepEqual: boolean,
     depth: number,
   ): boolean => {
-    tick()
     if (node.role !== pattern.role) return false
     if (pattern.name && !textMatches(node.name ?? '', pattern.name)) return false
     for (const [key, value] of Object.entries(pattern.states)) {
@@ -397,14 +386,12 @@ export function matchNativeAriaTree(
   const mode = expected.childMode ?? 'contain'
   const queue: { nodes: NativeAriaNode[]; depth: number }[] = [{ nodes: actual, depth: 0 }]
   while (queue.length) {
-    tick()
     const scope = queue.pop()
     if (!scope) break
     if (forest(scope.nodes, expected.children, mode, scope.depth)) return true
     if (mode !== 'contain') continue
     for (const node of scope.nodes) {
       if (node.children?.length) queue.push({ nodes: node.children, depth: scope.depth + 1 })
-      if (queue.length > 1_000_000) throw new Error('Native ARIA comparison scope limit exceeded')
     }
   }
   return false
@@ -503,7 +490,7 @@ export function formatNativeAriaTree(
       line += ` [box=${node.box.join(',')}]`
     }
     if (options.mode === 'ai' && node.ref !== undefined) {
-      if (!/^s[1-9][0-9]*e(?:0|[1-9][0-9]*)$/u.test(node.ref) || node.ref.length > 192)
+      if (!/^s[1-9][0-9]*e(?:0|[1-9][0-9]*)$/u.test(node.ref))
         throw new Error('Invalid native ARIA reference token')
       line += ` [ref=${node.ref}]`
     }
@@ -592,7 +579,7 @@ export function formatNativeAriaJSON(
         }
       }
       if (options.mode === 'ai' && actual.ref !== undefined) {
-        if (!/^s[1-9][0-9]*e(?:0|[1-9][0-9]*)$/u.test(actual.ref) || actual.ref.length > 192)
+        if (!/^s[1-9][0-9]*e(?:0|[1-9][0-9]*)$/u.test(actual.ref))
           throw new Error('Invalid native ARIA JSON reference token')
         node.ref = actual.ref
       }
@@ -814,7 +801,7 @@ const AriaResult = z.object({
       exception: z.object({ description: z.string().optional() }).optional(),
     })
     .optional(),
-  closedReason: z.string().max(8192).optional(),
+  closedReason: z.string().optional(),
 })
 
 /** One native scheduler invocation owns every actual accessibility observation. */
@@ -870,19 +857,15 @@ export async function observeNativeAria(
 export function parseNativeReferenceForest(serialized: string): NativeAriaNode[] {
   z.string().parse(serialized)
   const header = z.strictObject({
-    role: z
-      .string()
-      .max(128)
-      .regex(/^[a-z][a-z0-9-]*$/u),
+    role: z.string().regex(/^[a-z][a-z0-9-]*$/u),
     name: z.string().optional(),
     text: z.string().optional(),
     ref: z
       .string()
-      .max(192)
       .regex(/^s[1-9][0-9]*e(?:0|[1-9][0-9]*)$/u)
       .optional(),
     cursor: z.literal('pointer').optional(),
-    inputType: z.string().max(128).optional(),
+    inputType: z.string().optional(),
     readOnly: z.boolean().optional(),
     editable: z.boolean().optional(),
     states: z
@@ -941,10 +924,7 @@ export function parseNativeReferenceForest(serialized: string): NativeAriaNode[]
 export function parseNativeAriaJSON(serialized: string): NativeAriaJSONNode[] {
   z.string().parse(serialized)
   const header = z.strictObject({
-    role: z
-      .string()
-      .max(128)
-      .regex(/^[a-z][a-z0-9-]*$/u),
+    role: z.string().regex(/^[a-z][a-z0-9-]*$/u),
     name: z.string().optional(),
     text: z.string().optional(),
     checked: z.union([z.boolean(), z.literal('mixed')]).optional(),
@@ -952,18 +932,17 @@ export function parseNativeAriaJSON(serialized: string): NativeAriaJSONNode[] {
     expanded: z.boolean().optional(),
     active: z.boolean().optional(),
     invalid: z.union([z.boolean(), z.enum(['grammar', 'spelling'])]).optional(),
-    level: z.number().int().min(1).max(100000).optional(),
+    level: z.number().int().min(1).optional(),
     pressed: z.union([z.boolean(), z.literal('mixed')]).optional(),
     selected: z.boolean().optional(),
     url: z.string().optional(),
     placeholder: z.string().optional(),
     ref: z
       .string()
-      .max(192)
       .regex(/^s[1-9][0-9]*e(?:0|[1-9][0-9]*)$/u)
       .optional(),
     cursor: z.literal('pointer').optional(),
-    inputType: z.string().max(128).optional(),
+    inputType: z.string().optional(),
     readOnly: z.boolean().optional(),
     editable: z.boolean().optional(),
     box: z

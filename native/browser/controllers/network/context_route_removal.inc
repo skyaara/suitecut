@@ -25,7 +25,7 @@ class NativeContextRoutes::RemovalReservation {
 };
 inline std::unique_ptr<NativeContextRoutes::RemovalReservation> NativeContextRoutes::PrepareRemoveAll(int operation,int context,double deadline,Result reply){
   const auto state=states_.find(context);
-  if(!Admit(operation,state,deadline,reply)||!Room(context,state->second.routes.size()))return {};
+  if(!Admit(operation,state,deadline,reply))return {};
   try{
     auto prepared=std::unique_ptr<RemovalReservation>(new RemovalReservation);
     prepared->manager=this;prepared->alive=alive_;prepared->operation=operation;prepared->context=context;
@@ -48,7 +48,7 @@ inline std::unique_ptr<NativeContextRoutes::RemovalReservation> NativeContextRou
 }
 inline bool NativeContextRoutes::RemovalCurrent(const RemovalReservation&prepared)const{
   if(prepared.manager!=this||prepared.alive!=alive_||!*alive_||closed_||prepared.committed||prepared.serial!=serial_||
-     (prepared.deadline&&now_()>=prepared.deadline)||batches_.size()>=32||batches_.contains(prepared.operation)||waits_.Contains(prepared.operation))return false;
+     (prepared.deadline&&now_()>=prepared.deadline)||batches_.contains(prepared.operation)||waits_.Contains(prepared.operation))return false;
   const auto state=states_.find(prepared.context);
   if(state==states_.end()||state->second.policy_owner!=prepared.policy_owner||state->second.operation||state->second.routes!=prepared.routes||state->second.order!=prepared.order||state->second.bytes!=prepared.bytes)return false;
   size_t count=0;

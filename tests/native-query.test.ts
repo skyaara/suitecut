@@ -6,6 +6,7 @@ import {
   nativeQueryDescription,
   nativeTextPattern,
   nativeTestIdQuery,
+  type NativeQueryStep,
   setNativeTestIdAttribute,
 } from '../src/native-query.js'
 
@@ -73,5 +74,12 @@ describe('native query encoding', () => {
         [[{ engine: 'css', selector: 'iframe' }]],
       ),
     ).toBe("locator('iframe').contentFrame().locator('span')")
+  })
+  it('describes nesting past the old 64 levels whole', () => {
+    let query: NativeQueryStep[] = [{ engine: 'css', selector: 'leaf' }]
+    for (let depth = 0; depth < 70; ++depth) query = [{ engine: 'chain', query }]
+    const description = nativeQueryDescription(query)
+    expect(description).not.toContain('nesting limit')
+    expect(description).toBe('locator('.repeat(70) + "locator('leaf')" + ')'.repeat(70))
   })
 })

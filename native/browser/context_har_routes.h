@@ -26,10 +26,10 @@ class NativeContextHARRoutes {
   using Failure=std::function<void(const std::string&,const std::string&)>;
   explicit NativeContextHARRoutes(Failure failure,std::function<double()> now={}):failure_(std::move(failure)),now_(std::move(now)){}
   ~NativeContextHARRoutes(){Clear();}
-  bool Seed(int context){return !closed_&&context>0&&states_.size()<32&&states_.emplace(context,State{}).second;}
+  bool Seed(int context){return !closed_&&context>0&&states_.emplace(context,State{}).second;}
   bool Attach(int context,const std::string&owner,Apply apply,Result ready){
     const auto state=states_.find(context);
-    if(closed_||serial_>=9007199254740991ULL||state==states_.end()||owner.empty()||owner.find('\0')!=std::string::npos||owner.size()>128||!apply||!ready||targets_.size()>=192||targets_.contains(owner))return false;
+    if(closed_||serial_>=9007199254740991ULL||state==states_.end()||owner.empty()||owner.find('\0')!=std::string::npos||!apply||!ready||targets_.contains(owner))return false;
     Target target;target.context=context;target.generation=++serial_;target.apply=std::move(apply);target.ready=std::move(ready);target.queue={state->second.order.begin(),state->second.order.end()};
     targets_.emplace(owner,std::move(target));
     if(state->second.owner&&batches_.contains(state->second.owner))batches_.at(state->second.owner).pending.insert(owner);
@@ -37,9 +37,8 @@ class NativeContextHARRoutes {
   }
   bool Install(int owner,int context,Route route,double deadline,Result done){
     const auto state=states_.find(context);std::vector<std::string>patterns;
-    if(closed_||serial_>=9007199254740991ULL||owner<1||!done||!std::isfinite(deadline)||deadline<0||state==states_.end()||state->second.owner||batches_.size()+removals_.size()>=32||batches_.contains(owner)||removals_.contains(owner)||state->second.routes.size()>=16||route.id.empty()||route.id.find('\0')!=std::string::npos||route.id.size()>128||route.pattern.size()>8192||!route.archive||!NativeURLGlobExpand(route.pattern,patterns)||state->second.routes.contains(route.id))return false;
+    if(closed_||serial_>=9007199254740991ULL||owner<1||!done||!std::isfinite(deadline)||deadline<0||state==states_.end()||state->second.owner||batches_.contains(owner)||removals_.contains(owner)||route.id.empty()||route.id.find('\0')!=std::string::npos||!route.archive||!NativeURLGlobExpand(route.pattern,patterns)||state->second.routes.contains(route.id))return false;
     const auto bytes=route.archive->bytes();const auto archive=route.archive.get();
-    if(bytes>67108864-state->second.bytes||(!archives_.contains(archive)&&bytes>67108864-policy_bytes_))return false;
     if(!route.policy)route.policy=NativeHARRouteRegistration::Create(route.archive,route.fallback,route.order);
     if(!route.policy||route.policy->archive()!=route.archive||route.policy->fallback()!=route.fallback||(route.order&&route.order!=route.policy->order())||!route.policy->Claim(state->second.policy_owner,context))return false;
     route.order=route.policy->order();
@@ -107,7 +106,7 @@ class NativeContextHARRoutes {
   struct RemovalBatch {uint64_t generation=0;int context=0;double deadline=0;std::set<std::pair<std::string,std::string>>pending;Result reply;};
   struct Physical {uint64_t serial=0;std::map<uint64_t,int>leases;};
   void Call(const std::string&owner,int context,Apply apply,Mutation mutation,const Route&route,double deadline,Result reply){
-    if(physical_->serial>=9007199254740991ULL||physical_->leases.size()>=1024){auto failure=failure_;reply(false,"Native context HAR physical callback capacity exceeded");failure(owner,"Native context HAR physical callback capacity exceeded");return;}
+    if(physical_->serial>=9007199254740991ULL){auto failure=failure_;reply(false,"Native context HAR physical callback serial exhausted");failure(owner,"Native context HAR physical callback serial exhausted");return;}
     const auto token=++physical_->serial;physical_->leases.emplace(token,context);auto physical=physical_;
     apply(mutation,route,deadline,[physical,token,policy=route.policy,reply=std::move(reply)](bool ok,const std::string&error)mutable{if(physical->leases.erase(token)){policy.reset();auto actual=std::move(reply);actual(ok,error);}});
   }

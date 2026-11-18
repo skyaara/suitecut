@@ -61,7 +61,7 @@ static int RunSuiteCutBrowserMain(
     close(output);
     return 1;
   };
-  if (profile.empty() || profile.front() != '/' || profile.size() > 4096)
+  if (profile.empty() || profile.front() != '/')
     return startup_error("Native profile path must be an absolute directory");
   const bool persistent = command->GetSwitchValue("suitecut-persistent-profile") == "1";
   if (command->HasSwitch("suitecut-persistent-profile") &&
@@ -90,7 +90,7 @@ static int RunSuiteCutBrowserMain(
 #endif
   if (command->HasSwitch("suitecut-downloads-path")) {
     const auto path = command->GetSwitchValue("suitecut-downloads-path").ToString();
-    if (path.empty() || path.size() > 4096 || path.front() != '/') return 1;
+    if (path.empty() || path.front() != '/') return 1;
     std::error_code error;
     std::filesystem::create_directories(path, error);
     if (error || !std::filesystem::is_directory(path, error) || error) return 1;

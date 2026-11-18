@@ -12,7 +12,7 @@ inline bool ParseLaunchVideoOptions(const std::string& json,
                                     const std::string& timeout,
                                     CefRefPtr<CefDictionaryValue>& options,
                                     int& timeout_ms,std::string& error) {
-  if(json.empty()||json.size()>32768){error="Invalid native launch recordVideo configuration";return false;}
+  if(json.empty()){error="Invalid native launch recordVideo configuration";return false;}
   const auto value=CefParseJSON(json,JSON_PARSER_RFC);
   options=value?value->GetDictionary():nullptr;
   if(!options){error="Native launch recordVideo requires an object";return false;}

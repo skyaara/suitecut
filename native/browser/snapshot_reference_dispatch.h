@@ -7,9 +7,7 @@ namespace suitecut {
 // belongs to a real submitted callback, never to a logical operation lifetime.
 class SnapshotReferenceDispatch {
  public:
-  static constexpr size_t kLocal=128,kGlobal=256;
   std::shared_ptr<void> Begin(){
-    if(state_->pending>=kLocal||Global()>=kGlobal)return{};
     ++state_->pending;++Global();const auto state=state_;
     return std::shared_ptr<void>(new unsigned char(0),[state](void* pointer){delete static_cast<unsigned char*>(pointer);--state->pending;--Global();});
   }

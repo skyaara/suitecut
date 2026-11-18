@@ -24,9 +24,9 @@ class ContextVideoDirectory{
  public:
   static std::shared_ptr<ContextVideoDirectory>Create(const std::string&directory,const std::atomic<bool>&canceled,double deadline,const std::function<double()>&now){
     ContextVideoActive(canceled,deadline,now);
-    if(directory.empty()||directory.size()>4096||directory.find('\0')!=std::string::npos||!std::filesystem::path(directory).is_absolute())throw std::runtime_error("Native recordVideo.dir must be an absolute path within 4096 bytes");
+    if(directory.empty()||directory.find('\0')!=std::string::npos||!std::filesystem::path(directory).is_absolute())throw std::runtime_error("Native recordVideo.dir must be an absolute path");
     std::filesystem::create_directories(directory);const auto parent=std::filesystem::canonical(directory);
-    std::string pattern=(parent/".suitecut-video-XXXXXX").string();if(pattern.size()>4000)throw std::runtime_error("Native video directory leaves no bounded artifact filename");
+    std::string pattern=(parent/".suitecut-video-XXXXXX").string();
     std::vector<char>bytes(pattern.begin(),pattern.end());bytes.push_back('\0');ContextVideoActive(canceled,deadline,now);
     const auto created=mkdtemp(bytes.data());if(!created)throw std::runtime_error("Cannot create private native video directory");
     const int fd=open(created,O_RDONLY|O_DIRECTORY|O_NOFOLLOW|O_CLOEXEC);
@@ -49,9 +49,8 @@ class ContextVideoDirectory{
 };
 class ContextVideoFile{
  public:
-  static constexpr uint64_t kMaxBytes=512ull*1024*1024;
   static std::shared_ptr<ContextVideoFile>Seal(std::shared_ptr<ContextVideoDirectory>directory,const std::string&name,uint64_t expected){
-    directory->Check();if(name.empty()||name.find('/')!=std::string::npos||name=="."||name==".."||!expected||expected>kMaxBytes)throw std::runtime_error("Invalid completed native video file metadata");
+    directory->Check();if(name.empty()||name.find('/')!=std::string::npos||name=="."||name==".."||!expected)throw std::runtime_error("Invalid completed native video file metadata");
     const int fd=openat(directory->FD(),name.c_str(),O_RDONLY|O_NOFOLLOW|O_CLOEXEC);if(fd<0)throw std::runtime_error("Completed native video file is unavailable");
     struct stat metadata{};if(fstat(fd,&metadata)||!S_ISREG(metadata.st_mode)||metadata.st_size<0||static_cast<uint64_t>(metadata.st_size)!=expected){close(fd);throw std::runtime_error("Completed native video file does not match actual encoder bytes");}
     return std::shared_ptr<ContextVideoFile>(new ContextVideoFile(std::move(directory),name,fd,metadata));
@@ -60,14 +59,14 @@ class ContextVideoFile{
   std::string Path()const{CheckPath();return (std::filesystem::path(directory_->Path())/name_).string();}
   void Copy(const std::string&destination,const std::atomic<bool>&canceled,double deadline,const std::function<double()>&now)const{
     ContextVideoActive(canceled,deadline,now);CheckHeld();
-    if(destination.empty()||destination.size()>4096||destination.find('\0')!=std::string::npos||!std::filesystem::path(destination).is_absolute()||std::filesystem::path(destination).filename().empty()||std::filesystem::path(destination).filename()=="."||std::filesystem::path(destination).filename()=="..")throw std::runtime_error("Native video saveAs requires a bounded absolute file path");
+    if(destination.empty()||destination.find('\0')!=std::string::npos||!std::filesystem::path(destination).is_absolute()||std::filesystem::path(destination).filename().empty()||std::filesystem::path(destination).filename()=="."||std::filesystem::path(destination).filename()=="..")throw std::runtime_error("Native video saveAs requires an absolute file path");
     const auto target=std::filesystem::path(destination);std::filesystem::create_directories(target.parent_path());const auto parent=std::filesystem::canonical(target.parent_path());
     const int parent_fd=open(parent.c_str(),O_RDONLY|O_DIRECTORY|O_NOFOLLOW|O_CLOEXEC);if(parent_fd<0)throw std::runtime_error("Cannot retain native video saveAs destination directory");
     int output=-1;std::string temporary;bool committed=false;
     try{
       struct stat existing{};if(fstatat(parent_fd,target.filename().c_str(),&existing,AT_SYMLINK_NOFOLLOW)==0&&existing.st_dev==metadata_.st_dev&&existing.st_ino==metadata_.st_ino){ContextVideoActive(canceled,deadline,now);close(parent_fd);return;}
       static std::atomic<uint64_t>sequence{0};
-      for(unsigned attempt=0;attempt<32&&output<0;++attempt){temporary=".suitecut-video-save-"+std::to_string(getpid())+"-"+std::to_string(++sequence);output=openat(parent_fd,temporary.c_str(),O_WRONLY|O_CREAT|O_EXCL|O_NOFOLLOW|O_CLOEXEC,0600);if(output<0&&errno!=EEXIST)break;}
+      while(output<0){temporary=".suitecut-video-save-"+std::to_string(getpid())+"-"+std::to_string(++sequence);output=openat(parent_fd,temporary.c_str(),O_WRONLY|O_CREAT|O_EXCL|O_NOFOLLOW|O_CLOEXEC,0600);if(output<0&&errno!=EEXIST)break;}
       if(output<0)throw std::runtime_error("Cannot create native video saveAs staging file");
       std::vector<char>buffer(65536);uint64_t position=0;
       while(position<static_cast<uint64_t>(metadata_.st_size)){

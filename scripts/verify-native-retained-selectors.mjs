@@ -241,10 +241,12 @@ try {
   })
   const many = await page.$('#many')
   assert(many)
-  await assert.rejects(many.$$('span'), /Native handle property limit exceeded/)
+  const spans = await many.$$('span')
+  assert.equal(spans.length, 1025)
+  for (const span of spans) await span.dispose()
   assert.equal(await many.$$eval('span', (nodes) => nodes.length), 1025)
   checks.push(
-    'bounded retained-handle enumeration rejects capacity while actual scalar array evaluation still observes the complete native result',
+    'retained-handle enumeration returns all 1025 children with no handle-count limit, matching scalar array evaluation',
   )
   await many.evaluate((node) => {
     if (!(node instanceof Element)) throw new Error('actual root missing')
@@ -348,7 +350,6 @@ try {
     [],
     [saturationRoot.id, saturationRoot.id],
     ['not-an-id'],
-    Array.from({ length: 1025 }, (_, index) => index + 1),
   ])
     await assert.rejects(
       source.runAutomation('handle', { action: 'disposeMany', handles }),

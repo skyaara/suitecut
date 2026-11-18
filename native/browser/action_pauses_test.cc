@@ -23,10 +23,9 @@ int main(int argc, char** argv) {
   Check(!pauses.Pause(0,1,"invalid",[]{}));
   Check(!pauses.Pause(1,0,"invalid",[]{}));
   Check(!pauses.Pause(1,1,"",[]{}));
-  Check(!pauses.Pause(1,1,std::string(129,'x'),[]{}));
-  for (int id=1;id<=64;++id) Check(pauses.Pause(id,id,"capacity",[]{}).has_value());
-  Check(!pauses.Pause(65,65,"capacity",[]{}));
-  pauses.Cancel(1); Check(pauses.Pause(65,65,"recovery",[]{}).has_value());
+  { const std::string long_token(4096,'x'); const auto token=pauses.Pause(1,1,long_token,[]{}); Check(token.has_value()&&pauses.Take(1,1,*token,long_token).has_value()); }
+  for (int id=1;id<=500;++id) Check(pauses.Pause(id,id,"no-capacity",[]{}).has_value());
+  Check(pauses.Size()==500&&!pauses.Pause(1,501,"duplicate",[]{}));
   pauses.Clear(); Check(pauses.Size()==0);
   auto owner = std::make_shared<int>(1); std::weak_ptr<int> weak = owner;
   Check(pauses.Pause(1,1,"lifetime",[owner] {}).has_value());

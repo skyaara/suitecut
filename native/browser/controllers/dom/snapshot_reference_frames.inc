@@ -7,7 +7,7 @@
 struct SnapshotReferenceFrameBatch {
   struct Frame {std::shared_ptr<SnapshotReferenceCapture> work;std::string forest;size_t parent=0;std::string owner_ref;bool dropped=false,merged=false;};
   struct Edge {size_t parent=0,index=0;};
-  int owner=0;uint64_t generation=0;size_t next=0,requests=0,nodes=0,merge=0;
+  int owner=0;uint64_t generation=0;size_t next=0,merge=0;
   // The one child edge being captured: its parent, its frame once known, and a
   // sequence that retires every late callback of an abandoned edge.
   bool active_edge=false,merging=false;size_t active_parent=0,active=0;uint64_t edge_seq=0;
@@ -78,9 +78,7 @@ bool PublishReferenceFrameBatch(int owner){
 void ReferenceFramesAttach(const std::shared_ptr<SnapshotReferenceFrameBatch>& batch,const std::shared_ptr<SnapshotReferenceCapture>& work,size_t index){
   const std::weak_ptr<SnapshotReferenceFrameBatch> weak=batch;
   work->all_current=[this,weak,index]{const auto batch=weak.lock();return batch&&ReferenceFrameLive(batch,index);};
-  work->request_limit=8192;
-  work->before_request=[this,weak]{const auto batch=weak.lock();if(!batch||!ReferenceFramesCurrent(batch))return false;
-    if(++batch->requests>8192){Complete(batch->owner,false,"Native aggregate snapshot command limit exceeded");return false;}return true;};
+  work->before_request=[this,weak]{const auto batch=weak.lock();return batch&&ReferenceFramesCurrent(batch);};
 }
 void ReferenceFramesFinish(const std::shared_ptr<SnapshotReferenceFrameBatch>& batch){
   if(!ReferenceFramesCurrent(batch))return;
@@ -137,8 +135,8 @@ void ReferenceFramesMerge(const std::shared_ptr<SnapshotReferenceFrameBatch>& ba
 void ReferenceFramesPrepared(const std::shared_ptr<SnapshotReferenceFrameBatch>& batch,size_t index){
   if(!ReferenceFrameLive(batch,index))return;
   const auto work=batch->frames[index].work;const auto group=SnapshotReferences().GroupFor(work->ticket);
-  if(!group||group->nodes.size()>suitecut::SnapshotReferences::kActiveNodes-batch->nodes){Complete(batch->owner,false,"Native aggregate snapshot node capacity exceeded");return;}
-  batch->nodes+=group->nodes.size();const auto references=group->references;
+  if(!group){Complete(batch->owner,false,"Native aggregate snapshot group unavailable");return;}
+  const auto references=group->references;
   auto params=CefDictionaryValue::Create();params->SetString("objectId",group->array);params->SetString("objectGroup",group->name);params->SetBool("returnByValue",true);
   params->SetString("functionDeclaration",kSuiteCutSnapshotReferencePublish);auto args=CefListValue::Create();auto arg=CefDictionaryValue::Create();auto tokens=CefListValue::Create();for(size_t i=0;i<references.size();++i)tokens->SetString(i,references[i]);arg->SetList("value",tokens);args->SetDictionary(0,arg);params->SetList("arguments",args);
   ReferenceRequest(work,"Runtime.callFunctionOn",params,[this,batch,index,references](Dict result){
@@ -147,7 +145,6 @@ void ReferenceFramesPrepared(const std::shared_ptr<SnapshotReferenceFrameBatch>&
     if(!value||value->GetType("value")!=VTYPE_STRING){Complete(batch->owner,false,"Native aggregate snapshot prepared forest unavailable");return;}
     const auto forest=value->GetString("value").ToString();std::vector<size_t> frames;std::string error;
     if(!suitecut::SnapshotReferenceFrameIndices(forest,references,frames,error)){Complete(batch->owner,false,error);return;}
-    if(frames.size()>suitecut::SnapshotReferences::kFrames-1-batch->edges.size()){Complete(batch->owner,false,"AI snapshot covers at most "+std::to_string(suitecut::SnapshotReferences::kFrames-1)+" iframes, Chromium's own frames-per-page limit; this page has more");return;}
     batch->frames[index].forest=forest;for(const auto node:frames)batch->edges.push_back({index,node});
     if(index){batch->active_edge=false;batch->active=0;}
     ReferenceFramesNext(batch);
@@ -166,7 +163,6 @@ void ReferenceFramesCapture(const std::shared_ptr<SnapshotReferenceFrameBatch>& 
   const auto document=ReferenceDocument(child);
   if(!document){const std::weak_ptr<SnapshotReferenceFrameBatch> weak=batch;
     CefPostDelayedTask(TID_UI,new Task([self=CefRefPtr<Source>(this),weak,seq,parent_index,node_index,child,attached]{if(const auto batch=weak.lock())self->ReferenceFramesCapture(batch,seq,parent_index,node_index,child,attached);}),10);return;}
-  if(batch->frames.size()>=suitecut::SnapshotReferences::kFrames){Complete(batch->owner,false,"AI snapshot covers at most "+std::to_string(suitecut::SnapshotReferences::kFrames-1)+" iframes, Chromium's own frames-per-page limit; this page has more");return;}
   if(!batch->seen.insert(child).second){Complete(batch->owner,false,"Native aggregate snapshot frame cycle");return;}
   auto work=std::make_shared<SnapshotReferenceCapture>();work->owner=batch->owner;work->generation=batch->generation;work->document=*document;
   const auto root=batch->frames.front().work;work->json=root->json;work->boxes=root->boxes;work->depth=root->depth;

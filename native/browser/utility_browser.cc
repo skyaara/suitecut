@@ -159,7 +159,7 @@ class SuiteCutUtilityBrowsers::Client : public CefClient, public CefLifeSpanHand
         auto output = parsed && parsed->GetType() == VTYPE_DICTIONARY ? parsed->GetDictionary() : nullptr;
         if (!response.success || !output) { callback(false, nullptr, "Native utility evaluation failed"); continue; }
         const auto exception = output->GetDictionary("exceptionDetails");
-        if (exception) { callback(false, nullptr, CefWriteJSON(parsed, JSON_WRITER_DEFAULT).ToString().substr(0, 4096)); continue; }
+        if (exception) { callback(false, nullptr, CefWriteJSON(parsed, JSON_WRITER_DEFAULT).ToString()); continue; }
         callback(true, output, "");
       }
       self->completion_task_ = false; self->WakeCompletions();
@@ -171,9 +171,7 @@ class SuiteCutUtilityBrowsers::Client : public CefClient, public CefLifeSpanHand
     if (closing_ || !calls_.contains(id) || completed_.contains(id)) return;
     const auto owner = owner_.lock(); if (!owner) return;
     DeferredResult output{success, {}, {}};
-    if (size > 4 * 1048576) output.error = "Native utility evaluation response exceeds 4 MiB";
-    else if (size > 32 * 1048576 - owner->deferred_result_bytes_) output.error = "Native utility deferred result bytes capacity exceeded";
-    else { output.json.assign(static_cast<const char*>(result), size); owner->deferred_result_bytes_ += size; }
+    output.json.assign(static_cast<const char*>(result), size); owner->deferred_result_bytes_ += size;
     completed_.emplace(id, std::move(output)); WakeCompletions();
   }
   #include "controllers/work/accepted_inspector_owner.inc"
@@ -209,18 +207,18 @@ bool SuiteCutUtilityBrowsers::OriginURL(const std::string& origin) {
   CefURLParts parts; if (!CefParseURL(origin, parts)) return false;
   const auto scheme = CefString(&parts.scheme).ToString();
   return (scheme == "http" || scheme == "https") && !CefString(&parts.host).empty() &&
-      CefString(&parts.username).empty() && CefString(&parts.password).empty() && origin.size() <= 8192;
+      CefString(&parts.username).empty() && CefString(&parts.password).empty();
 }
 int SuiteCutUtilityBrowsers::Acquire(CefRefPtr<CefRequestContext> context, const std::string& origin, Ready ready, int timeout_ms) {
   ready=suitecut::BindNativeLocatorHandlerAsync(std::move(ready));
-  if (stopping_ || !context || leases_.size() >= 128 || next_lease_ == std::numeric_limits<int>::max() || !OriginURL(origin) || timeout_ms < 1 || timeout_ms > 120000) {
-    ready(nullptr, "Invalid native utility browser acquisition or capacity exceeded"); return 0;
+  if (stopping_ || !context || next_lease_ == std::numeric_limits<int>::max() || !OriginURL(origin) || timeout_ms < 1 || timeout_ms > 120000) {
+    ready(nullptr, "Invalid native utility browser acquisition"); return 0;
   }
   CefRefPtr<Client> client;
   if (origin == "about:blank") for (const auto& [id, candidate] : clients_) if (!candidate->closing_ && candidate->origin_ == origin && candidate->context_->IsSame(context)) { client = candidate; break; }
   bool create = !client;
   if (create) {
-    if (clients_.size() >= 32 || next_client_ == std::numeric_limits<int>::max()) { ready(nullptr, "Native utility browser capacity exceeded"); return 0; }
+    if (next_client_ == std::numeric_limits<int>::max()) { ready(nullptr, "Native utility browser identities exhausted"); return 0; }
     client = new Client(weak_from_this(), ++next_client_, context, origin, observer_); clients_[client->id_] = client;
   }
   const int id = ++next_lease_; auto lease = std::make_shared<Lease>(); lease->client = client; lease->deadline = Now() + timeout_ms;
@@ -254,9 +252,9 @@ void SuiteCutUtilityBrowsers::Navigate(int id, const std::string& origin, Ready 
 void SuiteCutUtilityBrowsers::Evaluate(int lease_id, const std::string& expression, Result result, int timeout_ms) {
   result=suitecut::BindNativeLocatorHandlerAsync(std::move(result));
   const auto found = leases_.find(lease_id);
-  if (found == leases_.end() || expression.size() > 1048576 || timeout_ms < 1 || timeout_ms > 120000) { result(false, nullptr, "Invalid native utility evaluation"); return; }
+  if (found == leases_.end() || timeout_ms < 1 || timeout_ms > 120000) { result(false, nullptr, "Invalid native utility evaluation"); return; }
   const auto client = found->second->client;
-  if (!client->ready_ || client->closing_ || !client->browser_ || client->calls_.size() >= 16 || client->next_call_ == std::numeric_limits<int>::max()) { result(false, nullptr, "Native utility evaluation capacity exceeded or browser unavailable"); return; }
+  if (!client->ready_ || client->closing_ || !client->browser_ || client->next_call_ == std::numeric_limits<int>::max()) { result(false, nullptr, "Native utility evaluation identities exhausted or browser unavailable"); return; }
   auto params = CefDictionaryValue::Create(); params->SetString("expression", expression); params->SetBool("awaitPromise", true); params->SetBool("returnByValue", true);
   params->SetDouble("timeout", timeout_ms); const int id = ++client->next_call_;
   client->calls_.emplace(id, Client::Call{lease_id, Now() + timeout_ms, std::move(result)});

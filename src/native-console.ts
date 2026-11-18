@@ -99,16 +99,12 @@ export function nativeConsoleArguments<T>(
   if (!info.arguments) throw new Error('Native console argument metadata is unavailable')
   const state = claimState(source)
   if (state.error) throw state.error
-  for (const argument of info.arguments) {
-    if (!state.pending.has(argument.handle) && state.pending.size >= 1024)
-      throw new Error('Native console claim capacity exceeded')
-    state.pending.add(argument.handle)
-  }
+  for (const argument of info.arguments) state.pending.add(argument.handle)
   scheduleClaims(source, state)
   return info.arguments.map(create)
 }
 
-/** Read the bounded native journal; no SDK duplicate journal or clock is maintained. */
+/** Read the native journal; no SDK duplicate journal or clock is maintained. */
 export async function readNativeConsoleMessages(
   page: NativePage,
   options: { filter?: 'all' | 'since-navigation' } = {},
@@ -128,10 +124,10 @@ export async function clearNativeConsoleMessages(page: NativePage): Promise<void
 }
 
 export const NativePageErrorInfoSchema = z.object({
-  name: z.string().max(8_388_608),
+  name: z.string(),
   frame: NativeFrameInfoSchema.optional(),
-  message: z.string().max(8_388_608),
-  stack: z.string().max(8_388_608),
+  message: z.string(),
+  stack: z.string(),
 })
 export type NativePageErrorInfo = z.infer<typeof NativePageErrorInfoSchema>
 export function createNativePageError(record: NativePageErrorInfo): Error {

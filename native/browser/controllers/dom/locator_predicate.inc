@@ -122,14 +122,14 @@ void LocatorPredicateAction(int id,uint64_t generation,Dict config){
   if(!operations_.IsCurrent(id,generation))return;
   if(operations_.IsExpired(id,generation,Now())){Complete(id,false,"waitForFunction: Native operation timed out");return;}
   locator_predicate_operations_.insert(id);
-  if(!SelectorWaits().Admit(id,generation)){Complete(id,false,"Native locator predicate physical capacity exceeded");return;}
-  if(config->GetType("function")!=VTYPE_STRING||config->GetString("function").length()>49152||config->HasKey("nativeHandle")){Complete(id,false,"Invalid native locator predicate function or query root");return;}
+  if(!SelectorWaits().Admit(id,generation)){Complete(id,false,"Native locator predicate admission unavailable or channel closed");return;}
+  if(config->GetType("function")!=VTYPE_STRING||config->HasKey("nativeHandle")){Complete(id,false,"Invalid native locator predicate function or query root");return;}
   if(!PrepareSnapshotReferenceScope(id,config))return;
   if(const auto path=config->GetList("framePath");path&&path->GetSize()){
     ResolveFramePath(id,generation,config,0,FrameId(config),[this,id,generation](Dict resolved){LocatorPredicateAction(id,generation,resolved);});return;
   }
   if(MaterializeConsoleArguments(id,config,[this,id,generation,config]{LocatorPredicateAction(id,generation,config);}))return;
-  const auto ids=config->GetList("handles");if(!ids||ids->GetSize()>1024){Complete(id,false,"Invalid native locator predicate arguments");return;}
+  const auto ids=config->GetList("handles");if(!ids){Complete(id,false,"Invalid native locator predicate arguments");return;}
   auto work=std::make_shared<LocatorPredicateWork>();work->owner=id;work->generation=generation;work->config=config;work->frame=FrameId(config);
   locator_predicate_work_[id]=work;
   WithFrame(id,work->frame,[this,work,ids](int){
@@ -143,7 +143,6 @@ void LocatorPredicateAction(int id,uint64_t generation,Dict config){
       if(handle==handles_.end()){Complete(work->owner,false,MissingHandle(ids->GetInt(i)));return;}
       const auto source=ReferenceDocument(handle->second.frame_id);
       if(!source||source->main!=handle->second.context||source->session!=handle->second.session||source->main_unique!=handle->second.context_identity||handle->second.renderer_epoch!=native_pristine_renderer_epoch_){Complete(work->owner,false,"waitForFunction: Argument creation context unavailable");return;}
-      if(!work->documents.contains(handle->second.frame_id)&&work->documents.size()>=64){Complete(work->owner,false,"Native locator predicate argument-document limit exceeded");return;}
       work->documents.emplace(handle->second.frame_id,*source);work->handles.push_back(handle->second);
     }
     LocatorPredicateSelect(work);

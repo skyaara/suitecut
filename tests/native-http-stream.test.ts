@@ -131,7 +131,7 @@ it('rejects text-decoded streams before adopting caller-owned host I/O', async (
   }
 })
 
-it('bounds host jobs and rejects duplicate stream ownership without adopting excess streams', async () => {
+it('takes any number of host jobs and rejects duplicate stream ownership', async () => {
   const directory = await mkdtemp(join(tmpdir(), 'suitecut-stream-capacity-'))
   const path = join(directory, 'capacity.bin')
   await writeFile(path, 'actual native host I/O')
@@ -143,20 +143,11 @@ it('bounds host jobs and rejects duplicate stream ownership without adopting exc
     expect(() => new NativeMultipartStreamJob({ stream: streams[0]! })).toThrow(
       'distinct available',
     )
-    expect(() => new NativeMultipartStreamJob({ stream: streams[16]! })).toThrow(
-      'physical stream capacity',
-    )
-    expect(streams[16]!.destroyed).toBe(false)
-    expect(NativeMultipartStreamJob.physical()).toEqual({ jobs: 16, streams: 16 })
+    jobs.push(new NativeMultipartStreamJob({ stream: streams[16]! }))
+    expect(NativeMultipartStreamJob.physical()).toEqual({ jobs: 17, streams: 17 })
   } finally {
     for (const job of jobs) job.stop(new Error('actual capacity cleanup'))
     await Promise.all(jobs.map((job) => job.closed))
-    const excess = streams[16]!
-    if (!excess.closed) {
-      const closed = new Promise<void>((resolve) => excess.once('close', resolve))
-      excess.destroy()
-      await closed
-    }
     expect(NativeMultipartStreamJob.physical()).toEqual({ jobs: 0, streams: 0 })
     await rm(directory, { recursive: true, force: true })
   }

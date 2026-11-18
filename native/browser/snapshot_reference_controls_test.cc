@@ -25,10 +25,10 @@ int main(){
     Harness h;const auto first=h.Active();auto lease=h.refs.Lookup(h.refs.Reference(first,0),Harness::Doc());assert(lease&&lease.group->nodes[lease.index].backend==41);h.Active();assert(h.ack.empty()&&h.refs.Borrows()==1&&h.refs.Resident()==2);lease={};assert(h.refs.Borrows()==0&&h.refs.Physical()==1);h.AckAt(0);h.refs.ChannelDestroyed("actualSession");h.Empty();
   }
   {
-    Harness h;for(int i=0;i<64;++i)h.Active(Harness::Doc(i),i+1,i+1);for(int i=0;i<64;++i)h.refs.InvalidateFrame(Harness::Doc(i).frame,2);assert(h.refs.Physical()==32&&h.ack.size()==32&&h.refs.Resident()==64);for(size_t i=0;i<64;++i)h.AckAt(i);assert(h.ack.size()==64);h.Empty();
+    Harness h;for(int i=0;i<64;++i)h.Active(Harness::Doc(i),i+1,i+1);for(int i=0;i<64;++i)h.refs.InvalidateFrame(Harness::Doc(i).frame,2);assert(h.refs.Physical()==64&&h.ack.size()==64&&h.refs.Resident()==64);for(size_t i=0;i<64;++i)h.AckAt(i);assert(h.ack.size()==64);h.Empty();
   }
   {
-    Harness h;std::vector<uint64_t>ids;for(int i=0;i<64;++i){ids.push_back(h.Begin(Harness::Doc(i),i+1,i+1));assert(h.refs.Dispatched(ids.back()));h.refs.Cancel(i+1,i+1,1);}assert(h.refs.InstallPhysical()==64);const auto denied=h.Begin(Harness::Doc(65),65,65);assert(denied&&!h.refs.Dispatched(denied));h.refs.Cancel(65,65,1);assert(h.refs.InstallPhysical()==64&&h.refs.Resident()==64);h.refs.ChannelDestroyed("actualSession");h.Empty();assert(!h.refs.Installed(ids[0],true,"late-channel-array",3));
+    Harness h;std::vector<uint64_t>ids;for(int i=0;i<64;++i){ids.push_back(h.Begin(Harness::Doc(i),i+1,i+1));assert(h.refs.Dispatched(ids.back()));h.refs.Cancel(i+1,i+1,1);}assert(h.refs.InstallPhysical()==64);const auto extra=h.Begin(Harness::Doc(65),65,65);assert(extra&&h.refs.Dispatched(extra));h.refs.Cancel(65,65,1);assert(h.refs.InstallPhysical()==65&&h.refs.Resident()==65);h.refs.ChannelDestroyed("actualSession");h.Empty();assert(!h.refs.Installed(ids[0],true,"late-channel-array",3));
   }
   {
     Harness h;const auto id=h.Begin();assert(h.refs.Dispatched(id));h.refs.DocumentDestroyed(Harness::Doc(),1);assert(h.refs.InstallPhysical()==1&&h.refs.Resident()==1&&h.ack.empty());assert(!h.refs.Installed(id,true,"after-real-context-death",2));assert(h.refs.Physical()==1);h.AckAt(0);h.Empty();
@@ -55,9 +55,8 @@ int main(){
     Harness first,second,third;
     for(int i=0;i<64;++i){const auto a=first.Begin(Harness::Doc(i),i+1,i+1),b=second.Begin(Harness::Doc(i),i+1,i+1);assert(first.refs.Dispatched(a)&&second.refs.Dispatched(b));first.refs.Cancel(i+1,i+1,0);second.refs.Cancel(i+1,i+1,0);}
     assert(Registry::GlobalInstallPhysical()==128&&Registry::GlobalResident()==128);
-    const auto denied=third.Begin();assert(denied&&!third.refs.Dispatched(denied));third.refs.Cancel(1,1,0);
-    first.refs.ChannelDestroyed("actualSession");assert(Registry::GlobalInstallPhysical()==64);
-    const auto accepted=third.Begin();assert(accepted&&third.refs.Dispatched(accepted));third.refs.Cancel(1,1,0);assert(Registry::GlobalInstallPhysical()==65);
+    const auto extra=third.Begin();assert(extra&&third.refs.Dispatched(extra));third.refs.Cancel(1,1,0);assert(Registry::GlobalInstallPhysical()==129);
+    first.refs.ChannelDestroyed("actualSession");assert(Registry::GlobalInstallPhysical()==65);
     second.refs.ChannelDestroyed("actualSession");third.refs.ChannelDestroyed("actualSession");first.Empty();second.Empty();third.Empty();assert(Registry::GlobalInstallPhysical()==0&&Registry::GlobalResident()==0);
   }
   {
@@ -65,8 +64,8 @@ int main(){
     for(int i=0;i<32;++i){first.Active(Harness::Doc(i),i+1,i+1);second.Active(Harness::Doc(i),i+1,i+1);}
     third.Active();
     for(int i=0;i<32;++i){first.refs.InvalidateFrame(Harness::Doc(i).frame,1);second.refs.InvalidateFrame(Harness::Doc(i).frame,1);}
-    third.refs.InvalidateFrame(Harness::Doc().frame,1);assert(Registry::GlobalReleasePhysical()==64&&third.ack.empty()&&third.refs.Resident()==1);
-    first.AckAt(0);third.refs.Tick(2);assert(third.ack.size()==1&&Registry::GlobalReleasePhysical()==64);
+    third.refs.InvalidateFrame(Harness::Doc().frame,1);assert(Registry::GlobalReleasePhysical()==65&&third.ack.size()==1&&third.refs.Resident()==1);
+    first.AckAt(0);assert(Registry::GlobalReleasePhysical()==64);
     first.refs.ChannelDestroyed("actualSession");second.refs.ChannelDestroyed("actualSession");third.AckAt(0);first.Empty();second.Empty();third.Empty();assert(Registry::GlobalReleasePhysical()==0&&Registry::GlobalResident()==0);
   }
   {
@@ -84,7 +83,7 @@ int main(){
     Harness h;const auto ticket=h.Begin();assert(h.refs.Dispatched(ticket)&&h.refs.Installed(ticket,true,"actual-staging-read",1));auto read=h.refs.Use(ticket);assert(read&&h.refs.Borrows()==1);h.refs.Cancel(1,1,2);assert(h.ack.empty()&&h.refs.Resident()==1&&!h.refs.Use(ticket));read.reset();assert(h.refs.Physical()==1&&h.ack.size()==1);h.AckAt(0);h.Empty();
   }
   {
-    Harness h;const auto ticket=h.Active();std::vector<std::shared_ptr<void>> leases;for(size_t i=0;i<Registry::kBorrows;++i){leases.push_back(h.refs.Use(ticket));assert(leases.back());}assert(!h.refs.Use(ticket));h.refs.ChannelDestroyed("actualSession");h.Empty();leases.clear();h.Empty();
+    Harness h;const auto ticket=h.Active();std::vector<std::shared_ptr<void>> leases;for(size_t i=0;i<65;++i){leases.push_back(h.refs.Use(ticket));assert(leases.back());}h.refs.ChannelDestroyed("actualSession");h.Empty();leases.clear();h.Empty();
   }
   {
     Harness h;auto main=Harness::Doc(1);main.session="";const auto main_ticket=h.Active(main,1,1);auto main_borrow=h.refs.Lookup(h.refs.Reference(main_ticket,0),main);auto child=Harness::Doc(2);const auto child_ticket=h.Active(child,2,2);auto child_borrow=h.refs.Lookup(h.refs.Reference(child_ticket,0),child);auto child_pending=Harness::Doc(3);const auto pending=h.Begin(child_pending,3,3);assert(h.refs.Dispatched(pending));

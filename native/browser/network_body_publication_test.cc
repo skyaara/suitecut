@@ -70,20 +70,21 @@ int main() {
     const auto exact=prepare.Begin({0,255,13,10},100);assert(exact);auto fields=CefDictionaryValue::Create();fields->SetString("postDataBodyId",std::to_string(*exact));assert(prepare.Prepared(*pending,fields));assert(prepare.preparations()==0);assert(actual.size()==2&&actual.front()->GetDictionary("request")->GetString("postDataBodyId")==std::to_string(*exact)&&!actual.front()->GetDictionary("request")->HasKey("postDataUnavailable"));assert(prepare.PublishedCursor()>=cursor);assert(prepare.Taken(*exact));prepare.Clear();
     const auto expired=prepare.Prepare(10);assert(expired);auto second=Event(42);second->SetDictionary("request",CefDictionaryValue::Create());assert(prepare.Queue(second,*expired));prepare.Tick(10);assert(actual.back()->GetDictionary("request")->GetBool("postDataUnavailable")&&prepare.preparations()==0);assert(!prepare.Prepared(*expired,fields));
   }
-  // Admission is independently bounded across genuine native page channels;
-  // clear refunds only preparation slots, not another channel's bytes/owners.
+  // No per-page or browser-wide preparation cap; clear refunds only that
+  // channel's preparation accounting.
   {Publication one([](uint64_t,size_t,size_t,std::span<const uint8_t>,bool){return true;},[](Publication::Dict){},[](const std::string&){assert(false);});Publication two([](uint64_t,size_t,size_t,std::span<const uint8_t>,bool){return true;},[](Publication::Dict){},[](const std::string&){assert(false);});Publication three([](uint64_t,size_t,size_t,std::span<const uint8_t>,bool){return true;},[](Publication::Dict){},[](const std::string&){assert(false);});
-    for(int i=0;i<64;++i){assert(one.Prepare(100));assert(two.Prepare(100));}assert(!one.Prepare(100)&&!three.Prepare(100));one.Clear();assert(three.Prepare(100));two.Clear();three.Clear();assert(suitecut::GlobalNetworkBodyQuota().preparations==0);
+    for(int i=0;i<200;++i){assert(one.Prepare(100));assert(two.Prepare(100));}assert(one.Prepare(100)&&three.Prepare(100));assert(suitecut::GlobalNetworkBodyQuota().preparations==402);one.Clear();assert(three.Prepare(100));two.Clear();three.Clear();assert(suitecut::GlobalNetworkBodyQuota().preparations==0);
   }
 
-  // A slow POST read or a stalled body at the head never holds later metadata
-  // hostage past capacity; that one request is published without its body.
-  {std::vector<Publication::Dict> actual;bool open=false;std::vector<uint64_t> canceled;Publication bounded([&](uint64_t id,size_t,size_t,std::span<const uint8_t>,bool cancel){if(cancel)canceled.push_back(id);return open||cancel;},[&](Publication::Dict event){actual.push_back(event->Copy(false));},[](const std::string&){assert(false);});
-    const auto slow=bounded.Prepare(100);assert(slow);auto head=Event(1);head->SetDictionary("request",CefDictionaryValue::Create());assert(bounded.Queue(head,*slow));
-    for(int i=2;i<=256;++i)assert(bounded.Queue(Event(i)));assert(actual.empty());
-    assert(bounded.Queue(Event(257)));assert(actual.size()==257&&actual.front()->GetDictionary("request")->GetBool("postDataUnavailable")&&bounded.preparations()==0);
-    const auto stalled=bounded.Begin({7,7},100);assert(stalled&&bounded.Queue(Event(300,*stalled)));for(int i=301;i<556;++i)assert(bounded.Queue(Event(i)));assert(actual.size()==257);
-    assert(bounded.Queue(Event(556)));bounded.Tick(1);assert(actual.size()==514&&actual[257]->GetDictionary("request")->GetBool("postDataUnavailable")&&canceled==std::vector<uint64_t>({*stalled})&&bounded.bytes()==0);
-    open=true;const auto late=bounded.Begin({1},100);assert(late&&bounded.Queue(Event(557,*late))&&actual.back()->GetDictionary("request")->GetString("postDataBodyId")==std::to_string(*late));bounded.Clear();
+  // No queue count or byte cap: a slow POST read or a stalled body at the head
+  // holds later metadata only until its own deadline, then that one request is
+  // published without its body.
+  {std::vector<Publication::Dict> actual;bool open=false;std::vector<uint64_t> canceled;Publication queued([&](uint64_t id,size_t,size_t,std::span<const uint8_t>,bool cancel){if(cancel)canceled.push_back(id);return open||cancel;},[&](Publication::Dict event){actual.push_back(event->Copy(false));},[](const std::string&){assert(false);});
+    const auto slow=queued.Prepare(100);assert(slow);auto head=Event(1);head->SetDictionary("request",CefDictionaryValue::Create());assert(queued.Queue(head,*slow));
+    for(int i=2;i<=600;++i)assert(queued.Queue(Event(i)));assert(actual.empty()&&queued.preparations()==1);
+    queued.Tick(100);assert(actual.size()==600&&actual.front()->GetDictionary("request")->GetBool("postDataUnavailable")&&queued.preparations()==0);
+    const auto stalled=queued.Begin({7,7},200);assert(stalled&&queued.Queue(Event(700,*stalled)));for(int i=701;i<1300;++i)assert(queued.Queue(Event(i)));assert(actual.size()==600);
+    queued.Tick(200);assert(actual.size()==1200&&actual[600]->GetDictionary("request")->GetBool("postDataUnavailable")&&canceled==std::vector<uint64_t>({*stalled})&&queued.bytes()==0);
+    open=true;const auto late=queued.Begin({1},300);assert(late&&queued.Queue(Event(1300,*late))&&actual.back()->GetDictionary("request")->GetString("postDataBodyId")==std::to_string(*late));queued.Clear();
   }
 }

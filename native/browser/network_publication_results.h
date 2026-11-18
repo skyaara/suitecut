@@ -13,10 +13,10 @@ namespace suitecut {
 class NativeNetworkPublicationResults {
  public:
   struct Result{int owner;uint64_t generation,cursor;std::string json;};
-  enum class Admission{Queued,Duplicate,Full};
+  enum class Admission{Queued,Duplicate,Invalid};
   Admission Hold(int owner,uint64_t generation,uint64_t cursor,const std::string&json){
     if(pending_.contains(owner))return Admission::Duplicate;
-    if(owner<1||!generation||!cursor||pending_.size()>=64||json.size()>16777216-bytes_)return Admission::Full;
+    if(owner<1||!generation||!cursor)return Admission::Invalid;
     pending_.emplace(owner,Result{owner,generation,cursor,json});bytes_+=json.size();return Admission::Queued;
   }
   std::vector<Result> Ready(uint64_t published,const std::function<bool(int,uint64_t)>& current){

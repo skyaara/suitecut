@@ -53,7 +53,8 @@ int main(int argc,char**argv) {
   auto o=options();o.source_width=o.source_height=o.output_width=o.output_height=4096;o.capture_latency=1000ms;o.first_frame_deadline=Clock::now()+5s;suitecut::StreamPipeline stream(o);
   std::vector<uint8_t> frame(4096u*4096*4);for(int i=0;i<6&&!stream.Settled();++i)stream.Frame(frame,i);stream.Join();const auto result=stream.Snapshot();
   std::ofstream(directory/"quota.json")<<"{\"peakPictureBytes\":"<<result.peak_captured_frame_bytes<<",\"pictureBytes\":"<<result.captured_frame_bytes<<",\"physicalPid\":"<<result.physical_encoder_pid<<"}\n";
-  std::cerr<<"quota="<<result.failure<<" peak="<<result.peak_captured_frame_bytes<<" end="<<result.captured_frame_bytes<<"\n";assert(result.failure.find("captured-image quota")!=std::string::npos&&result.peak_captured_frame_bytes==256u*1024*1024&&result.captured_frame_bytes==0&&result.physical_encoder_pid==0);
+  std::cerr<<"quota="<<result.failure<<" peak="<<result.peak_captured_frame_bytes<<" end="<<result.captured_frame_bytes<<"\n";// No captured-image quota: images past the old 256 MiB bound are all retained; a held encoder's timeout ends it.
+  assert(result.failure.find("captured-image quota")==std::string::npos&&result.failure.find("Timeout:")!=std::string::npos&&result.peak_captured_frame_bytes>256u*1024*1024&&result.captured_frame_bytes==0&&result.physical_encoder_pid==0);
  }
  int status;assert(waitpid(-1,&status,WNOHANG)==-1&&errno==ECHILD);
 }

@@ -24,7 +24,6 @@
       return;
     }
     const auto url = frame->GetURL().ToString();
-    if (url.size() > 8192) { Complete(id,false,"Native URL exceeds 8192 bytes"); return; }
     // Native URL observation already exists even while a host callback is in
     // flight. Its first acknowledgement gets the bounded transport watchdog.
     expect_results_[id] = URLPredicateSnapshot(config->GetBool("isNot"),url);
@@ -41,7 +40,7 @@
           self->PollURLPredicate(id,generation,config);
         }),20);
       });
-    if (!token) { Complete(id,false,"Native URL predicate capacity or identity is invalid"); return; }
+    if (!token) { Complete(id,false,"Native URL predicate identity is invalid"); return; }
     auto header = Header("urlpredicate"); header->SetInt("id",id);
     header->SetDouble("generation",static_cast<double>(generation));
     header->SetDouble("token",static_cast<double>(*token));
@@ -77,7 +76,6 @@
     const auto url=frame->second.url;const auto navigation=frame->second.navigation;
     // Attached frames can precede a committed document URL.
     if(url.empty()){ScheduleURLWait(id,generation,config);return;}
-    if(url.size()>8192){Complete(id,false,"Native frame URL exceeds 8192 bytes");return;}
     if(wait.observed&&wait.url==url&&wait.navigation==navigation){
       if(wait.matches&&URLWaitLoaded(wait,frame->second)){Complete(id,true,"",URLPredicateSnapshot(true,url));return;}
       ScheduleURLWait(id,generation,config);return;
@@ -91,7 +89,7 @@
         if(frame!=frame_states_.end()&&frame->second.url==url&&frame->second.navigation==navigation)entry->second.matches=matches;
         PollURLWait(id,generation,config);
       });
-    if(!token){Complete(id,false,"Native URL wait predicate capacity or identity is invalid");return;}
+    if(!token){Complete(id,false,"Native URL wait predicate identity is invalid");return;}
     auto header=Header("urlpredicate");header->SetInt("id",id);header->SetDouble("generation",static_cast<double>(generation));header->SetDouble("token",static_cast<double>(*token));header->SetString("clientToken",config->GetString("clientToken"));header->SetString("url",url);SendPacket(header);
   }
   void StartURLWait(int id,uint64_t generation,Dict config){
@@ -104,7 +102,7 @@
   }
   void StartURLPredicate(int id,std::uint64_t generation,Dict config) {
     if (config->GetType("clientToken") != VTYPE_STRING || config->GetString("clientToken").length() == 0 ||
-        config->GetString("clientToken").length() > 128 || config->GetType("isNot") != VTYPE_BOOL) {
+        config->GetType("isNot") != VTYPE_BOOL) {
       Complete(id,false,"Invalid native URL predicate request"); return;
     }
     if(config->GetBool("waitForURL")){StartURLWait(id,generation,config->Copy(false));return;}

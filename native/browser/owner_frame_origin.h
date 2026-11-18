@@ -43,11 +43,10 @@ class OwnerFrameOrigin:public std::enable_shared_from_this<OwnerFrameOrigin>{
      Call(Method::UtilityAfter,{});return;
     }
     if(reply.error.empty())reply.error="Native element owner protocol validation failed";
-    if(reply.error.size()>4096)reply.error="Native element owner protocol diagnostic limit exceeded";
     Finish({false,false,{},std::move(reply.error)});return;
    }
    if(method==Method::UtilityBefore||method==Method::UtilityAfter||method==Method::Resolve){
-    if(!reply.node||reply.object.empty()||reply.object.size()>4096){Finish({false,false,{},"Native element owner actual DOM wrapper unavailable"});return;}
+    if(!reply.node||reply.object.empty()){Finish({false,false,{},"Native element owner actual DOM wrapper unavailable"});return;}
     if(method==Method::Resolve){Finish({true,false,std::move(reply.object),{}});return;}
     Call(method==Method::UtilityBefore?Method::DescribeBefore:Method::DescribeAfter,reply.object);return;
    }
