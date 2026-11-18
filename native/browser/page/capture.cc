@@ -94,6 +94,16 @@ auto Source::OnAcceleratedPaint(CefRefPtr<CefBrowser> browser, PaintElementType 
   const auto trace_config = engine_.traces()->Configuration(network_context_id_);
   const bool trace_pixels = trace_config && trace_config->screenshots &&
                             engine_.traces()->CaptureLease(network_context_id_).context;
+  if (surface_output_) {
+    SurfaceOutputPaint(type, info);
+    // With only the embedding viewer watching, nothing reads this paint's
+    // pixels on the CPU: skip the readback, as zero-copy recording does.
+    if (!frame_transport_enabled_ && !trace_pixels && !engine_.streaming()->NeedsFrame(page_id_) &&
+        !engine_.recordings()->NeedsFrame(page_id_)) {
+      if (type == PET_VIEW) native_view_stale_ = true;
+      return;
+    }
+  }
   if (type == PET_VIEW && native_zero_copy_recording_ && !show_popup_ &&
       !frame_transport_enabled_ && !trace_pixels && width == capture_width_ &&
       height == capture_height_ && !engine_.streaming()->NeedsFrame(page_id_) &&
@@ -124,9 +134,38 @@ auto Source::OnAcceleratedPaint(CefRefPtr<CefBrowser> browser, PaintElementType 
 }
 #endif
 
+#if defined(__APPLE__)
+auto Source::SurfaceOutputPaint(PaintElementType type, const CefAcceleratedPaintInfo& info)
+    -> void {
+  const auto& visible = info.extra.visible_rect;
+  const suitecut::SurfaceOutput::Rect rect{
+      visible.x, visible.y, visible.width > 0 ? visible.width : info.extra.coded_size.width,
+      visible.height > 0 ? visible.height : info.extra.coded_size.height};
+  if (type == PET_POPUP) {
+    // The popup's rectangle is in the view's CSS pixels; the view paints at
+    // the page's scale.
+    const suitecut::SurfaceOutput::Rect at{static_cast<int>(std::lround(popup_rect_.x * scale_)),
+                                           static_cast<int>(std::lround(popup_rect_.y * scale_)),
+                                           0, 0};
+    surface_output_->SetPopup(info.shared_texture_io_surface, rect, at);
+    if (browser_) browser_->GetHost()->Invalidate(PET_VIEW);
+    return;
+  }
+  if (surface_output_->Send(info.shared_texture_io_surface, rect) ==
+      suitecut::SurfaceOutput::Sent::closed)
+    surface_output_.reset();
+}
+#endif
+
 auto Source::OnPopupShow(CefRefPtr<CefBrowser> browser, bool show) -> void {
   if (auto tab = AdoptedTab(browser)) return tab->OnPopupShow(browser, show);
   show_popup_ = show;
+#if defined(__APPLE__)
+  if (!show && surface_output_) {
+    surface_output_->SetPopup(nullptr, {}, {});
+    if (browser_) browser_->GetHost()->Invalidate(PET_VIEW);
+  }
+#endif
   if (show && native_view_stale_ && browser_) browser_->GetHost()->Invalidate(PET_VIEW);
   if (!show) {
     popup_.clear();

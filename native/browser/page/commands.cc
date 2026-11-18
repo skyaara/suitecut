@@ -24,6 +24,7 @@ auto Source::Command(const std::string& line) -> void {
   const bool failed_owner_control =
       (command == "debugger" && failed_action == "close") || command == "diagnostics" ||
       command == "recoverPage" || command == "frameSubscription" ||
+      command == "surfaceOutput" ||
       command == "continueEventPredicate" ||
       ((command == "waitEventPredicate" || command == "waitEvent") &&
        message->GetString("event") == "crash") ||
@@ -76,6 +77,35 @@ auto Source::Command(const std::string& line) -> void {
     }
     return;
   }
+#if defined(__APPLE__)
+  // An embedding app draws this page from IOSurfaces it receives on a Mach
+  // port it checked in; `port: null` stops. Frames go only while the page
+  // paints, so a static page costs nothing.
+  if (command == "surfaceOutput") {
+    if (message->GetType("port") == VTYPE_NULL) {
+      surface_output_.reset();
+      writer_.Reply(id, true);
+      return;
+    }
+    if (message->GetType("port") != VTYPE_STRING) {
+      writer_.Reply(id, false, "Invalid native surface output");
+      return;
+    }
+    std::string error;
+    auto output = suitecut::SurfaceOutput::Open(message->GetString("port").ToString(), error);
+    if (!output) {
+      writer_.Reply(id, false, error);
+      return;
+    }
+    surface_output_ = std::move(output);
+    writer_.Reply(id, true);
+    // A static page paints nothing by itself; ask for one so the viewer
+    // starts with a picture.
+    browser_->GetHost()->Invalidate(PET_VIEW);
+    if (show_popup_) browser_->GetHost()->Invalidate(PET_POPUP);
+    return;
+  }
+#endif
   if (command == "locatorHandlerRegister") {
     LocatorHandlerRegister(id, message);
     return;
