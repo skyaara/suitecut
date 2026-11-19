@@ -98,7 +98,7 @@ void SuiteCutContextControls::RegisterInitScript(int context_id, int owner, cons
     reply(false, nullptr, "addInitScript: this context's init-script channel is not registered yet (the context is starting or closing)"); return;
   }
   if (!CommitInitSnapshot(context_id,CefWriteJSON(serialized, JSON_WRITER_DEFAULT),owner)) {
-    reply(false, nullptr, "addInitScript: suitecut could not publish the init scripts. More than 32 contexts with init scripts, 64 snapshot versions or 1 GiB of snapshots are held browser-wide; close unused contexts"); return;
+    reply(false, nullptr, "addInitScript: suitecut could not publish the init-script snapshot: the context is closing or its snapshot version counter is exhausted"); return;
   }
   scripts = std::move(proposed);
   if (targets.empty()) { reply(true, Result(context_id), ""); return; }

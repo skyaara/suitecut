@@ -134,6 +134,9 @@ void NoEntryOrWireCaps(){
   const std::vector<Jar::Input> fields{wide,at};CHECK(jar.Import(fields,clock_now,error));CHECK(jar.Size()==10002);
   CHECK(Header(jar,"http://"+host+"/"+std::string(10000,'p')).find(std::string(10000,'v'))!=std::string::npos);
   Receive(jar,"http://one.com/",{"long="+std::string(9000,'L')});CHECK(Header(jar,"http://one.com/x").find(std::string(9000,'L'))!=std::string::npos);
+  // Same expiry rule as context storageState: any finite timestamp past year 9999 loads; only non-finite or negative (except -1) is invalid.
+  Jar future(std::make_shared<Jar::Budget>());auto far=Domain("far","v","one.com");far.expires=1e15;Add(future,{far});CHECK(Header(future,"http://one.com/")=="far=v");CHECK(Cookies(future)[0].expires==1e15);
+  for(double bad:{std::numeric_limits<double>::infinity(),std::numeric_limits<double>::quiet_NaN(),-2.0}){auto item=Domain("bad","v","one.com");item.expires=bad;const std::vector<Jar::Input> one{item};CHECK(!future.Import(one,clock_now,error));}CHECK(future.Size()==1);
 }
 } // namespace
 int main(){CHECK(curl_global_init(CURL_GLOBAL_DEFAULT)==CURLE_OK);ImportedScopeAndOrder();WireScopePSLAndExpiry();ExportImportWireProvenance();ReplacementAndExactSnapshot();SecureLoopbackPrefixesAndPartitions();OriginalClockAndCancellation();ActualAllocationAccounting();NoEntryOrWireCaps();curl_global_cleanup();std::cout<<"native API cookie jar: 8 groups passed; actual allocator balanced after 20000 replacement cycles\n";}

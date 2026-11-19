@@ -14,8 +14,8 @@ bool NativeHARRecording::Configure(int context,Dict options,std::string&error){
   const auto content=options->HasKey("content")?options->GetString("content").ToString():"embed";
   if(content=="attach")config.content=NativeHARFiles::Content::Attach;else if(content=="omit")config.content=NativeHARFiles::Content::Omit;else if(content!="embed"){error="Invalid native HAR content option";return false;}
   if(options->HasKey("mode")){const auto mode=options->GetString("mode").ToString();if(mode!="full"&&mode!="minimal"){error="Invalid native HAR recording mode";return false;}config.minimal=mode=="minimal";}
-  const auto filter=options->HasKey("urlFilter")?options->GetString("urlFilter").ToString():"**";std::vector<std::string>expanded;
-  if(filter.empty()||!NativeURLGlobExpand(filter,expanded)){error="Invalid native HAR URL filter";return false;}
+  const auto filter=options->HasKey("urlFilter")?options->GetString("urlFilter").ToString():"**";
+  if(filter.empty()){error="Invalid native HAR URL filter";return false;}
   if(generation_>=9007199254740991ULL){error="Native HAR generation exhausted";return false;}config.generation=++generation_;
   config.zipped=config.path.ends_with(".zip");if(!archives_.Start(context,filter)){error="Native HAR capture owner unavailable";return false;}configs_.emplace(context,std::move(config));return true;
 }

@@ -21,8 +21,7 @@ patches and all 40 touched source paths, including the exact V8 dependency.
 
 Each adjacent manifest records exact source/output hashes and limitations.
 SuiteCut's own size, count and length caps were later removed from every patch;
-output hashes for the files those changes touched are null until the patches are
-re-applied to the pinned sources and recomputed. The
+the affected patches were re-applied to the pinned sources on 2026-11-19 (their base hashes verified) and the patched hashes recomputed. The
 unapplied MIDI adapter is separate from the vendor bundle and is never enabled
 by the stock build. The production native coverage controller requires `suitecut.coverage.final-lifecycle.v1`, JS
 revision 2 and CSS revision 3. The older isolated JS/CSS producer candidates in
@@ -32,7 +31,8 @@ context/agent lifecycle producer support remains backend work.
 The integrated original-widget mouse controller consumes the real lease API
 only after its exact read-only revision probe succeeds. The probe supplement
 must follow the widget receipt patch; its three source postimages belong in
-the bundle's final hashes (null until recomputed). Stock CEF keeps this capability false. See
+the bundle's final hashes. Its reply is `schemaVersion` 2 (no lease or pending
+capacities); the host refuses the capped schema 1. Stock CEF keeps this capability false. See
 [`docs/features/native-widget-mouse.md`](../../../docs/features/native-widget-mouse.md) for raw
 root-widget/attached-OOPIF scope, physical cancellation and remaining backend
 receipt families. These candidates do not constitute complete browser parity.

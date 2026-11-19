@@ -31,6 +31,7 @@ class DeveloperDebuggerWorkerTargets {
     for(const auto&[id,record]:records_)if(record->pin.attachment.target==actual.attachment.target&&record->control->Retained()){
       reply(false,"","Native worker debugger previous owner is still physically retained");return;
     }
+    Prune(&actual.attachment.target);
     std::map<uint64_t,std::shared_ptr<Record>>staged;
     auto control=hooks_.create(actual);
     if(!control){reply(false,"","Native worker debugger controller construction failed");return;}
@@ -52,10 +53,10 @@ class DeveloperDebuggerWorkerTargets {
     reply(false,"","Native worker debugger session token is unknown or stale");
   }
   void Cancel(int owner){ForEach([&](const std::shared_ptr<Record>&record){record->control->Cancel(owner);});}
-  void Changed(const Pin&pin){ForEach([&](const std::shared_ptr<Record>&record){if(record->pin==pin)record->control->Changed();});}
-  void Tick(double now){ForEach([&](const std::shared_ptr<Record>&record){record->control->Tick(now);});}
+  void Changed(const Pin&pin){ForEach([&](const std::shared_ptr<Record>&record){if(record->pin==pin)record->control->Changed();});Prune();}
+  void Tick(double now){ForEach([&](const std::shared_ptr<Record>&record){record->control->Tick(now);});Prune();}
   bool NeedsTick()const{for(const auto&[id,record]:records_)if(record->control->NeedsTick())return true;return false;}
-  void Changed(){ForEach([&](const std::shared_ptr<Record>&record){if(!hooks_.current(record->pin))record->control->Changed();});}
+  void Changed(){ForEach([&](const std::shared_ptr<Record>&record){if(!hooks_.current(record->pin))record->control->Changed();});Prune();}
   // Only after the exact worker arbiter and retained callbacks have drained.
   void ChannelClosed(const std::string&source,uint64_t observer,const std::string&session,uint64_t generation){
     ForEach([&](const std::shared_ptr<Record>&record){const auto&a=record->pin.attachment;if(a.host.source==source&&a.host.observer==observer&&a.session==session&&a.generation==generation)record->control->Closed();});
@@ -79,6 +80,11 @@ class DeveloperDebuggerWorkerTargets {
   }
  private:
   struct Record{Pin pin;std::unique_ptr<Controls>control;};
+  // A completed controller ends with its document: once it is no longer
+  // retained, its record is released when its pin stops being current or its
+  // target reopens. Retained controllers are never touched.
+  void Prune(const std::string*reopened=nullptr){std::erase_if(records_,[&](const auto&entry){const auto&record=*entry.second;return !record.control->Retained()&&((reopened&&record.pin.attachment.target==*reopened)||!hooks_.current(record.pin));});}
+
   // Visits the records admitted before the fanout began (serials are
   // monotonic), re-finding each by key so callbacks may admit new records.
   // All record nodes already exist: the fanout allocates nothing.

@@ -41,8 +41,9 @@ describe('selected native frame name wire contract', () => {
     expect(
       NativeFrameInfoSchema.parse({ ...frame, nameJSON: JSON.stringify('x'.repeat(100_000)) }).name,
     ).toBe('x'.repeat(100_000))
-    expect(NativeFrameInfoSchema.safeParse({ ...frame, nameJSON: ' '.repeat(6147) }).success).toBe(
-      false,
-    )
+    const padded = `${' '.repeat(100_000)}${JSON.stringify('padded')}${' '.repeat(100_000)}`
+    expect(NativeFrameInfoSchema.parse({ ...frame, nameJSON: padded }).name).toBe('padded')
+    for (const nameJSON of [' ', '"unterminated', '"a" "b"'])
+      expect(NativeFrameInfoSchema.safeParse({ ...frame, nameJSON }).success).toBe(false)
   })
 })

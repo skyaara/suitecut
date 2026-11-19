@@ -21,7 +21,7 @@
     {
       "path": "content/browser/devtools/protocol/input_handler.cc",
       "original_sha256": "5008fb8d8eb67bb584c99e304eb8f2456c1d8c07b6afeed8214e215df77671f7",
-      "patched_sha256": null
+      "patched_sha256": "68d4e822a6350497e423300f6ff13ac7caee0b4115efe5e0136e65d3ad6f441d"
     },
     {
       "path": "content/browser/renderer_host/render_widget_host_impl.h",
@@ -50,6 +50,6 @@
     "Raw original-widget mouse dispatch only; legacy synthetic drag controller, wheel, keyboard and touch are not added to this receipt API",
     "Cross-process frames require their own attached target session; this API intentionally performs no hit-testing or fallback to another widget",
     "No E2E, fuzz or actual renderer-ack runtime acceptance claimed",
-    "SuiteCut's 64-lease, 64-pending, |x|/|y| 1e6 and clickCount 1000 caps were removed from the patch after the applicability check; patched_sha256 for input_handler.cc must be recomputed against the pinned source (null until then)"
+    "SuiteCut's 64-lease, 64-pending, |x|/|y| 1e6 and clickCount 1000 caps were removed from the patch; the input_handler.cc patched_sha256 was recomputed 2026-11-19 by applying the bundle in order to the pinned sources (base hashes verified)"
   ]
 }

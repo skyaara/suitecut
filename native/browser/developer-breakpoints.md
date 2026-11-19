@@ -18,7 +18,7 @@ attest native ownership and remain eligible. Renderer script tuples alone do
 not authorize denying a mutation. Ownership is never inferred from a script
 ID's spelling.
 
-Each session retains at most 16 records; the process retains at most 128, including
+Sessions and the process retain any number of records, including
 pending set replies, removed IDs whose actual removal ACK has not arrived, and
 successful replies with an unusable identity. Public deadlines remain original.
 A late successful installation is removed using its actual returned native ID

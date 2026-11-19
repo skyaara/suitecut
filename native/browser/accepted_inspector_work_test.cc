@@ -6,6 +6,16 @@
 #include <memory>
 #include <stdexcept>
 #include <string>
+#include <cstdlib>
+#include <new>
+// Failing growth must poison the ledger, never std::terminate through noexcept.
+static bool deny_new=false;
+[[gnu::noinline]] void* operator new(std::size_t size){if(deny_new)throw std::bad_alloc();if(void*p=std::malloc(size?size:1))return p;throw std::bad_alloc();}
+[[gnu::noinline]] void operator delete(void*p)noexcept{std::free(p);}
+[[gnu::noinline]] void operator delete(void*p,std::size_t)noexcept{std::free(p);}
+[[gnu::noinline]] void* operator new[](std::size_t size){return ::operator new(size);}
+[[gnu::noinline]] void operator delete[](void*p)noexcept{::operator delete(p);}
+[[gnu::noinline]] void operator delete[](void*p,std::size_t)noexcept{::operator delete(p);}
 using Work=suitecut::AcceptedInspectorWork;
 struct Owner {
 #include "controllers/work/accepted_inspector_owner.inc"
@@ -100,5 +110,8 @@ int main(){
   const auto agent=*resident->Reserve(channel,2,"worker");assert(resident->Dispatch(agent,"worker")&&resident->SendReturned(agent,true));
   assert(!resident->ViewerReceiptLaneReady(never));
   assert(resident->ActualReply(channel,2,"worker")==Work::Reply::Observed&&resident->ActualReply(channel,1,"worker")==Work::Reply::Observed&&resident->ReceiptLaneReady());}++controls;
- assert(controls==45);std::cout<<"Accepted Inspector work: "<<controls<<" controlled policy/owner-reentrancy cases passed; no actual CEF/backend/Engine-idle proof\n";
+ {auto starved=std::make_shared<Work>();const auto channel=*starved->Open(201,Work::Kind::Page);deny_new=true;
+  const auto denied_channel=starved->Open(202,Work::Kind::Page);const auto denied_ticket=starved->Reserve(channel,1,"session");const auto denied_callback=starved->BeginCallback(channel);const auto detached=starved->ActualSessionDetached(channel,"child-session-long-enough-to-allocate");deny_new=false;
+  const auto state=starved->Inspect();assert(!denied_channel&&!denied_ticket&&!denied_callback&&!detached&&state.poisoned&&state.channels==1&&!state.queued&&!state.callbacks&&!starved->ReceiptLaneReady());}++controls;
+ assert(controls==46);std::cout<<"Accepted Inspector work: "<<controls<<" controlled policy/owner-reentrancy cases passed; no actual CEF/backend/Engine-idle proof\n";
 }

@@ -116,10 +116,13 @@ int main(){
     for(int i=0;i<12;++i){h.Close(20+i,pins[i],h.Token(1+i));}
     assert(!h.targets->Live());++groups;
   }
-  { // Completed records are never evicted; an old token still closes idempotently.
-    Host h;std::string first;Scopes::Pin pin;
-    for(int i=0;i<34;++i){pin=h.Observe("child","actual-session",8,uint64_t(i+1));const int owner=10+i*2;h.Open(owner,pin);h.Ready(pin.channel.session);if(!i)first=h.Token(owner);h.Close(owner+1,pin,h.Token(owner));assert(h.targets->Records()==size_t(i+1));}
-    h.Run(1000,pin.frame,first,"close",0);assert(h.results.at(1000).ok&&h.calls.empty());++groups;
+  { // A completed record lives while its document is current, so its token
+    // still closes idempotently; reopening or navigating the frame releases it.
+    Host h;std::string first,last;Scopes::Pin pin;
+    for(int i=0;i<34;++i){pin=h.Observe("child","actual-session",8,uint64_t(i+1));const int owner=10+i*2;h.Open(owner,pin);h.Ready(pin.channel.session);last=h.Token(owner);if(!i)first=last;h.Close(owner+1,pin,last);assert(h.targets->Records()==1&&!h.targets->Live());}
+    h.Run(1000,pin.frame,last,"close",0);assert(h.results.at(1000).ok&&h.calls.empty());
+    h.Run(1001,pin.frame,first,"close",0);assert(!h.results.at(1001).ok&&h.results.at(1001).error.find("unknown or stale")!=std::string::npos);
+    h.current.erase(pin.frame);h.targets->Tick(h.now);assert(!h.targets->Records());++groups;
   }
   { // The real controlled channel boundary has already drained its domain
     // callbacks. Manager fanout then needs no heap, even under actual new denial.

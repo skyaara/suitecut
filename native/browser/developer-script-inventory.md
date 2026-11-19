@@ -14,8 +14,8 @@ call without a cursor. Identical repeated receipts and unrelated contexts do not
 change that revision. Starting another enumeration invalidates the preceding
 one. Ordering follows the actual script IDs bytewise, rather than their URLs.
 
-Cursor positions retain only native identity strings. The process permits 256
-positions across at most 16 explicit sessions. Replaying a cursor reuses its
+Cursor positions retain only native identity strings. suitecut does not limit
+the number of positions or explicit sessions. Replaying a cursor reuses its
 existing successor. Closing or invalidating the exact session frees these
 logical positions without claiming that an Inspector receipt retired. Original
 operation deadlines apply throughout record projection and publication.

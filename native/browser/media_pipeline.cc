@@ -52,6 +52,14 @@ namespace {
 using Clock = std::chrono::steady_clock;
 std::atomic<unsigned> active_pipelines{0};
 constexpr auto kCaptureLookahead = std::chrono::milliseconds(100);
+// llround is undefined outside long long. An extreme frames_per_second (or a
+// non-finite clock) fails this recording instead of converting garbage; this
+// is an overflow guard on the integer width, not a rate cap.
+long long RoundedClock(double value) {
+  if (!std::isfinite(value) || std::fabs(value) >= 9223372036854775808.0)
+    throw std::runtime_error("Native media clock position is not representable");
+  return std::llround(value);
+}
 std::string Decimal(double value) {
   std::ostringstream out;
   out.imbue(std::locale::classic());
@@ -991,14 +999,14 @@ struct MediaPipeline::Impl {
           // Assign paints to the nearest slot; only the terminal duration uses
           // ceil, because a partially occupied final slot must be retained.
           const double slot = std::max(0.0, frame->timestamp - first) * options.frames_per_second / 1000;
-          uint64_t before = static_cast<uint64_t>(std::llround(slot));
+          uint64_t before = static_cast<uint64_t>(RoundedClock(slot));
           // Native matching-rate captures have a quantized microsecond clock.
           // Round each genuine interval, retaining bounded sub-slot phase
           // ambiguity instead of accumulating it until a distinct paint is
           // coalesced. Use the interval's slot count so a real missing capture
           // still inserts its CFR hold; faster-than-output inputs still merge.
           if(options.capture_timestamps_exact&&options.capture_frames_per_second==options.frames_per_second&&last_frame_timestamp>=0){
-            const auto advance=static_cast<uint64_t>(std::llround(std::max(0.0,frame->timestamp-last_frame_timestamp)*options.frames_per_second/1000));
+            const auto advance=static_cast<uint64_t>(RoundedClock(std::max(0.0,frame->timestamp-last_frame_timestamp)*options.frames_per_second/1000));
             const auto candidate=last_frame_slot+advance;
             if(std::abs(slot-static_cast<double>(candidate))<1-1e-7)before=candidate;
           }
@@ -1042,7 +1050,7 @@ struct MediaPipeline::Impl {
         }
         for (const auto& packet : packets) {
           if (first < 0) throw std::runtime_error("Native audio has no video clock");
-          const int64_t packet_start = static_cast<int64_t>(std::llround((packet.timestamp - first) * 48));
+          const int64_t packet_start = static_cast<int64_t>(RoundedClock((packet.timestamp - first) * 48));
           const uint64_t frames = packet.data.size() / 4;
           const uint64_t overlap = packet_start < static_cast<int64_t>(audio_frame) ?
               static_cast<uint64_t>(static_cast<int64_t>(audio_frame) - packet_start) : 0;

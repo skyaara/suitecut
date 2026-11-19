@@ -17,9 +17,11 @@
 #include <filesystem>
 #include <fstream>
 #include <mutex>
+#include <optional>
 #include <set>
 #include <stdexcept>
 #include <thread>
+#include <vector>
 #ifndef _WIN32
 #include <fcntl.h>
 #include <poll.h>
@@ -32,6 +34,41 @@ extern char** environ;
 
 namespace suitecut::detail {
 namespace {
+Json bidi_leaf(const Json& remote,const std::string& type){
+  if(type=="undefined"||type=="null")return Json{};
+  if(type=="string"||type=="boolean")return remote.at("value");
+  if(type=="number"){if(!remote.at("value").is_number())throw std::runtime_error("Nonfinite BiDi number is not JSON-compatible");return remote.at("value");}
+  throw std::runtime_error("BiDi value has no JSON representation: "+type);
+}
+}
+// Open arrays/objects live on an explicit stack: a remote value's nesting depth is bounded by memory, not the stack.
+Json bidi_remote_value(const Json& root){
+  struct Frame{const Json::array* items;std::size_t index;Json value;std::string key;};
+  std::vector<Frame> stack;const Json* next=&root;std::optional<Json> ready;
+  for(;;){
+    if(next){
+      const auto& remote=*next;next=nullptr;const auto type=remote.at("type").as_string();
+      if(type=="array"||type=="set")stack.push_back({&remote.at("value").as_array(),0,Json::array{},{}});
+      else if(type=="object"||type=="map")stack.push_back({&remote.at("value").as_array(),0,Json::object{},{}});
+      else ready=bidi_leaf(remote,type);
+    }
+    if(ready){
+      if(stack.empty())return std::move(*ready);
+      auto& parent=stack.back();
+      if(parent.value.is_array())parent.value.as_array().push_back(std::move(*ready));
+      else if(!parent.value.as_object().emplace(std::move(parent.key),std::move(*ready)).second)throw std::runtime_error("Duplicate BiDi object key");
+      ready.reset();
+    }
+    auto& top=stack.back();
+    if(top.index==top.items->size()){ready=std::move(top.value);stack.pop_back();continue;}
+    const auto& item=(*top.items)[top.index++];
+    if(top.value.is_array()){next=&item;continue;}
+    const auto& key=item.at(0);
+    top.key=key.is_string()?key.as_string():bidi_leaf(key,key.at("type").as_string()).as_string();
+    next=&item.at(1);
+  }
+}
+namespace {
 using Clock=std::chrono::steady_clock;
 thread_local const std::atomic<bool>* canceled=nullptr;
 thread_local unsigned cleanup_depth=0;
@@ -40,18 +77,9 @@ bool flag(const Json& j,const char* key,bool fallback=false){return j.contains(k
 void duration(std::chrono::milliseconds timeout,bool zero=false){if(timeout.count()<(zero?0:1)||timeout>std::chrono::hours(24))throw std::invalid_argument("BiDi timeout must be positive and at most24 hours");}
 int integer(const Json& j,const char* key,int fallback=0){if(!j.contains(key))return fallback;const auto n=j.at(key).as_int();if(n<0||n>INT_MAX)throw std::invalid_argument(std::string("Invalid BiDi ")+key);return static_cast<int>(n);}
 Packet pack(Json header,const Json& body,std::size_t budget){const auto data=body.is_null()?std::string{}:body.dump(JsonLimits{.max_bytes=budget,.max_string_bytes=budget});header["version"]=1;header["bytes"]=data.size();Packet p{header.dump(),{}};p.payload.assign(data.begin(),data.end());return p;}
-Json decode(const Json& remote){
-  const auto type=remote.at("type").as_string();
-  if(type=="undefined"||type=="null")return Json{};
-  if(type=="string"||type=="boolean")return remote.at("value");
-  if(type=="number"){if(!remote.at("value").is_number())throw std::runtime_error("Nonfinite BiDi number is not JSON-compatible");return remote.at("value");}
-  if(type=="array"||type=="set") {Json::array values;for(const auto& value:remote.at("value").as_array())values.push_back(decode(value));return values;}
-  if(type=="object"||type=="map") {Json::object values;for(const auto& pair:remote.at("value").as_array()){const auto key=pair.at(0).is_string()?pair.at(0).as_string():decode(pair.at(0)).as_string();if(!values.emplace(key,decode(pair.at(1))).second)throw std::runtime_error("Duplicate BiDi object key");}return values;}
-  throw std::runtime_error("BiDi value has no JSON representation: "+type);
-}
 Json normalized(const Json& remote){
   Json result{{"type",remote.at("type")}};
-  try {result["value"]=decode(remote);}
+  try {result["value"]=bidi_remote_value(remote);}
   catch(const std::exception&){result["unserializableValue"]=remote.dump();}
   if(remote.contains("sharedId"))result["sharedId"]=remote.at("sharedId");
   if(remote.contains("handle"))result["handle"]=remote.at("handle");

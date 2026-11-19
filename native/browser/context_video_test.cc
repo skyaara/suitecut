@@ -14,6 +14,8 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <string>
+#include <vector>
 using suitecut::NativeContextVideo;
 using Dict=CefRefPtr<CefDictionaryValue>;
 namespace fs=std::filesystem;
@@ -21,6 +23,7 @@ namespace {
 Dict Options(const fs::path&dir){auto d=CefDictionaryValue::Create();d->SetString("dir",dir.string());return d;}
 Dict Action(const std::string&id,const std::string&action,const fs::path&path={}){auto d=CefDictionaryValue::Create();d->SetString("videoId",id);d->SetString("action",action);if(!path.empty())d->SetString("path",path.string());return d;}
 std::string Read(const fs::path&p){std::ifstream f(p,std::ios::binary);return {std::istreambuf_iterator<char>(f),{}};}
+size_t OpenFDs(){size_t count=0;for(const auto&entry:fs::directory_iterator("/dev/fd")){(void)entry;++count;}return count;}
 void Write(const fs::path&p,const std::string&bytes){std::ofstream f(p,std::ios::binary);f<<bytes;f.close();assert(f);}
 struct Result{int calls=0;bool ok=false;std::string path,error;NativeContextVideo::Reply Callback(){return [this](bool yes,const std::string&p,const std::string&e){++calls;ok=yes;path=p;error=e;};}};
 struct Fixture{
@@ -78,8 +81,12 @@ int main(int argc,char**argv){
   {Fixture f;f.Configure(root/"fail");auto id=f.Page();suitecut::MediaPipelineResult r;r.output_path=f.started[0].output_path;r.failure="actual encoder failed";f.video->Observe(1,id,"failed",r);Result out;f.video->Handle(20,1,1,Action(id,"path"),0,out.Callback());assert(out.calls==1&&!out.ok&&f.video->Error(1)==r.failure);std::optional<NativeContextVideo::Descriptor>d;std::string e;assert(!f.video->PageCreated(1,1,{},d,e));assert(f.video->Error(1)==r.failure);++controls;}
   // Encoder terminal byte identity must describe a real regular owned output file.
   {Fixture f;f.Configure(root/"wrong-bytes");const auto id=f.Page();Write(f.started[0].output_path,"three");suitecut::MediaPipelineResult r;r.output_path=f.started[0].output_path;r.output_bytes=99;f.video->Observe(1,id,"complete",r);f.Drain();assert(!f.video->Error(1).empty());++controls;}
-  // FD copy never reads a replacement pathname; path/delete reject foreign inode.
-  {Fixture f;f.Configure(root/"replace");const auto id=f.Page();f.Complete(1,id,"original-retained");f.Drain();const fs::path path=f.started[0].output_path;fs::rename(path,path.string()+".old");Write(path,"foreign");Result get,copy,del;f.video->Handle(20,1,1,Action(id,"path"),0,get.Callback());f.video->Handle(21,1,1,Action(id,"saveAs",root/"retained.webm"),0,copy.Callback());f.video->Handle(22,1,1,Action(id,"delete"),0,del.Callback());f.Drain();assert(!get.ok&&copy.ok&&!del.ok&&Read(root/"retained.webm")=="original-retained"&&Read(path)=="foreign");++controls;}
+  // Reopened artifacts never read a replacement pathname; path/saveAs/delete reject a foreign inode.
+  {Fixture f;f.Configure(root/"replace");const auto id=f.Page();f.Complete(1,id,"original-retained");f.Drain();const fs::path path=f.started[0].output_path;fs::rename(path,path.string()+".old");Write(path,"foreign");Result get,copy,del;f.video->Handle(20,1,1,Action(id,"path"),0,get.Callback());f.video->Handle(21,1,1,Action(id,"saveAs",root/"retained.webm"),0,copy.Callback());f.video->Handle(22,1,1,Action(id,"delete"),0,del.Callback());f.Drain();assert(!get.ok&&!copy.ok&&!del.ok&&!fs::exists(root/"retained.webm")&&Read(path)=="foreign");++controls;}
+  // Same-inode bytes rewritten after sealing are rejected rather than copied.
+  {Fixture f;f.Configure(root/"rewrite");const auto id=f.Page();f.Complete(1,id,"sealed-bytes");f.Drain();Write(f.started[0].output_path,"rewritten-bytes-longer");Result copy;f.video->Handle(20,1,1,Action(id,"saveAs",root/"rewritten.webm"),0,copy.Callback());f.Drain();assert(copy.calls==1&&!copy.ok&&!fs::exists(root/"rewritten.webm"));++controls;}
+  // Sealed videos retain identity, not descriptors: many sealed records hold no fd and stay usable after context close.
+  {const size_t before=OpenFDs();Fixture f;f.Configure(root/"descriptors");std::vector<std::string>ids;for(int page=1;page<=200;++page)ids.push_back(f.Page(page));for(int page=1;page<=200;++page)f.Complete(page,ids[static_cast<size_t>(page-1)],"bytes-"+std::to_string(page));f.Drain();assert(OpenFDs()<=before);f.video->Removed(1);Result copy,path;const auto target=root/"descriptor-copy.webm";f.video->Handle(20,1,1,Action(ids.back(),"saveAs",target),0,copy.Callback());f.video->Handle(21,1,1,Action(ids.front(),"path"),0,path.Callback());f.Drain();assert(copy.ok&&Read(target)=="bytes-200"&&path.ok&&Read(path.path)=="bytes-1"&&OpenFDs()<=before&&!f.video->NeedsTick());++controls;}
   // Clear cancels logical waits while retaining final file reconciliation.
   {Fixture f;f.Configure(root/"clear");const auto id=f.Page();Result r;f.video->Handle(20,1,1,Action(id,"path"),0,r.Callback());f.video->Clear();assert(r.calls==1&&!r.ok);f.Complete(1,id);assert(f.video->Physical());f.Drain();assert(!f.video->Physical()&&f.video->ContextReady(1));++controls;}
   // Unique retained canonical directories prevent previous-run artifact overwrite.

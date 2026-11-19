@@ -7,7 +7,7 @@ Use `createNativePage(source).video()` or the default context's page object for
 the stable native `NativeVideo` handle. Explicit new contexts keep their own
 independent `recordVideo` option.
 
-The SDK validates scalar paths and forwards one bounded native launch option.
+The SDK validates scalar paths and forwards one native launch option.
 The existing native background owner prepares a private directory and resolves
 FFmpeg before the initial CEF page is created. A dedicated startup operation
 retains its real generation and original deadline through page readiness. The
@@ -34,4 +34,4 @@ matching browser SDK is emitted and installed. Actual launch recording,
 persistence, startup-failure combinations and video output await the deferred
 integration/E2E pass.
 See `context_video.md` for the existing recorder geometry, retention and file IO
-limits; this feature does not alter them.
+behavior; this feature does not alter it.

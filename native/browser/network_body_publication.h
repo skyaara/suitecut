@@ -20,6 +20,11 @@ struct NativeNetworkBodyQuota {
 inline NativeNetworkBodyQuota& GlobalNetworkBodyQuota(){static NativeNetworkBodyQuota quota;return quota;}
 class NativeNetworkBodyPublication {
  public:
+  // A body still preparing or transferring at the head holds the events
+  // queued behind it for at most this long; then, like Playwright's immediate
+  // request events, that one request is published without its body. A head
+  // with nothing queued behind it keeps its body until its own deadline.
+  static constexpr double kHeadOfLineMs=1000;
   std::function<void(const std::string&)> degraded;
   using Dict=CefRefPtr<CefDictionaryValue>;
   using Emit=std::function<bool(uint64_t,size_t,size_t,std::span<const uint8_t>,bool)>;
@@ -95,7 +100,7 @@ class NativeNetworkBodyPublication {
     if(queued_serial_>=9007199254740991ULL){Fail("Native network metadata publication serial exhausted");return false;}
     const auto owner=BodyId(event);
     if(owner && !reservations_.contains(owner) && !taken_.contains(owner)){auto request=event->GetDictionary("request");request->Remove("postDataBodyId");request->SetBool("postDataUnavailable",true);}
-    events_.push_back({event->Copy(false),bytes,++queued_serial_,preparation});event_bytes_+=bytes;Pump();return true;
+    events_.push_back({event->Copy(false),bytes,++queued_serial_,preparation,-1.0});event_bytes_+=bytes;Pump();return true;
   }
   void Tick(double now) {
     std::vector<int> expired;for(const auto& [owner,waiter]:waiters_)if(waiter.deadline>0 && now>=waiter.deadline)expired.push_back(owner);
@@ -109,6 +114,7 @@ class NativeNetworkBodyPublication {
     // never comes retires the reservation instead of failing the page.
     std::vector<uint64_t> stale;for(const auto& entry:reservations_)if(entry.second.ready && now>=entry.second.deadline)stale.push_back(entry.first);
     for(const auto id:stale)Retire(id);
+    ReleaseHead(now);
     const std::vector<std::pair<uint64_t,double>> canceled(canceled_.begin(),canceled_.end());
     for(const auto& [id,deadline]:canceled) {
       if(!canceled_.erase(id))continue;
@@ -139,7 +145,7 @@ class NativeNetworkBodyPublication {
     for(auto& done:ready)done(ok,error);
   }
   struct Reservation {size_t bytes;double deadline;bool ready;};
-  struct Event {Dict value;size_t bytes;uint64_t serial,preparation=0;};
+  struct Event {Dict value;size_t bytes;uint64_t serial,preparation=0;double seen=-1;};
   static uint64_t BodyId(Dict event) {
     auto request=event->GetDictionary("request");if(!request)return 0;const auto text=request->GetString("postDataBodyId").ToString();
     uint64_t id=0;const auto parsed=std::from_chars(text.data(),text.data()+text.size(),id);return parsed.ec==std::errc{} && parsed.ptr==text.data()+text.size()?id:0;
@@ -155,6 +161,20 @@ class NativeNetworkBodyPublication {
       auto event=std::move(events_.front());events_.pop_front();event_bytes_-=event.bytes;publish_(event.value);published_serial_=std::max(published_serial_,event.serial);
     }
     pumping_=false;
+  }
+  // Gives up the body blocking the head; false when nothing blocks it.
+  bool Unblock() {
+    if(events_.empty() || pumping_)return false;
+    const auto& head=events_.front();
+    if(preparations_.contains(head.preparation)){auto unavailable=CefDictionaryValue::Create();unavailable->SetBool("postDataUnavailable",true);Prepared(head.preparation,unavailable);return true;}
+    const auto owner=BodyId(head.value);const auto found=reservations_.find(owner);
+    return found!=reservations_.end() && !found->second.ready && Cancel(owner);
+  }
+  // Stamps each event when a tick first sees it waiting; a blocked head is
+  // released once the event right behind it has waited kHeadOfLineMs.
+  void ReleaseHead(double now) {
+    for(auto event=events_.rbegin();event!=events_.rend()&&event->seen<0;++event)event->seen=now;
+    while(events_.size()>1 && now-events_[1].seen>=kHeadOfLineMs && Unblock())Pump();
   }
   void Retire(uint64_t id) {
     for(const auto& event:events_)if(BodyId(event.value)==id){Cancel(id);return;}

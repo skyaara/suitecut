@@ -464,10 +464,17 @@ export const NativePacketSchema = z.discriminatedUnion('type', [
 ])
 export type NativePacket = z.infer<typeof NativePacketSchema>
 
-/** Incrementally decodes length-prefixed packets with no quadratic concatenation. */
+const EMPTY = Buffer.alloc(0)
+
+/**
+ * Incrementally decodes length-prefixed packets with no quadratic concatenation.
+ * Header and payload storage grows geometrically with the bytes that actually
+ * arrive, so a corrupt length never allocates memory for data that is not there.
+ */
 export class NativePacketDecoder {
   private readonly length = Buffer.allocUnsafe(4)
   private target: Buffer = this.length
+  private expected = 4
   private offset = 0
   private phase: 'length' | 'header' | 'payload' = 'length'
   private header: NativePacket | undefined
@@ -493,11 +500,12 @@ export class NativePacketDecoder {
       for (;;) {
         let cursor = 0
         while (cursor < input.length && !this.disposed) {
-          const count = Math.min(this.target.length - this.offset, input.length - cursor)
+          const count = Math.min(this.expected - this.offset, input.length - cursor)
+          if (this.offset + count > this.target.length) this.grow(this.offset + count)
           input.copy(this.target, this.offset, cursor, cursor + count)
           cursor += count
           this.offset += count
-          if (this.offset !== this.target.length) continue
+          if (this.offset !== this.expected) continue
           this.offset = 0
           if (this.phase === 'length') {
             const size = this.length.readUInt32LE()
@@ -508,7 +516,7 @@ export class NativePacketDecoder {
               cursor += size
               this.readHeader(json)
             } else {
-              this.target = Buffer.allocUnsafe(size)
+              this.expect(size)
               this.phase = 'header'
             }
           } else if (this.phase === 'header') {
@@ -593,7 +601,7 @@ export class NativePacketDecoder {
       this.receive(header, Buffer.alloc(0))
     } else {
       this.header = header
-      this.target = Buffer.allocUnsafe(header.bytes)
+      this.expect(header.bytes)
       this.phase = 'payload'
     }
   }
@@ -618,8 +626,24 @@ export class NativePacketDecoder {
     this.pendingIndex = 0
   }
 
+  /** Starts a header or payload of `size` bytes without allocating before they arrive. */
+  private expect(size: number): void {
+    this.target = EMPTY
+    this.expected = size
+  }
+
+  /** Doubles storage up to the expected size; amortized copying stays linear. */
+  private grow(required: number): void {
+    const next = Buffer.allocUnsafe(
+      Math.min(this.expected, Math.max(required, this.target.length * 2)),
+    )
+    this.target.copy(next, 0, 0, this.offset)
+    this.target = next
+  }
+
   private reset(): void {
     this.target = this.length
+    this.expected = 4
     this.offset = 0
     this.header = undefined
     this.phase = 'length'

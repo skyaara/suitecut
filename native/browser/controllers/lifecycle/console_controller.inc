@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Included inside Source. Arguments retain their original Runtime identities.
   SuiteCutConsoleJournal console_journal_, page_error_journal_;
-  struct ConsoleRawArgument { Dict value; std::string frame,session; int context=0; std::size_t bytes=0; bool claimed=false; std::uint64_t sequence=0; bool delivered=false; };
+  struct ConsoleRawArgument { Dict value; std::string frame,session; int context=0; std::size_t bytes=0; bool claimed=false; std::uint64_t sequence=0; };
   std::map<int,ConsoleRawArgument> console_arguments_;
   std::map<int,std::set<int>> console_materializations_;
   std::size_t console_argument_bytes_=0;
@@ -72,12 +72,9 @@
     }
     for(const int handle:removed)DropConsoleArgument(handle,false);
   }
-  void ReleaseEvictedConsoleArguments() {
-    WorkerConsoleEvicted();
-    const auto oldest=console_journal_.Oldest();std::vector<int> removed;
-    for(const auto& [handle,argument]:console_arguments_)if(!argument.claimed&&argument.delivered&&(!oldest||argument.sequence<oldest))removed.push_back(handle);
-    for(const int handle:removed){DropConsoleArgument(handle);handles_.erase(handle);}
-  }
+  // Unclaimed arguments live as long as their document, as in Playwright:
+  // consoleMessages() can hand out any journal record, so delivery alone never
+  // releases them. Clear, navigation/frame removal and close do.
   void ConsoleFrameRemoved(const std::string& frame) {
     std::vector<int> removed;for(const auto& [handle,argument]:console_arguments_)if(argument.frame==frame)removed.push_back(handle);
     for(const auto handle:removed)DropConsoleArgument(handle);
@@ -100,7 +97,7 @@
     const int handle=++next_handle_;const std::string group="suitecut-handle-"+std::to_string(handle);
     const bool node=argument->GetString("subtype")=="node";
     handles_.emplace(handle,ObjectHandle{"",group,frame->first,context,session,node?argument->GetString("objectId").ToString():"",frame->second.context==context?frame->second.context_identity:frame->second.utility_identity,native_pristine_renderer_epoch_});
-    console_arguments_.emplace(handle,ConsoleRawArgument{argument->Copy(false),frame->first,session,context,bytes,false,event_sequence_+1,false});console_argument_bytes_+=bytes;
+    console_arguments_.emplace(handle,ConsoleRawArgument{argument->Copy(false),frame->first,session,context,bytes,false,event_sequence_+1});console_argument_bytes_+=bytes;
     auto metadata=CefDictionaryValue::Create();metadata->SetInt("handle",handle);metadata->SetString("guid",HandleGuid(handle));
     suitecut::DevToolsSetString(metadata,"preview",ConsolePreview(argument));metadata->SetBool("node",node);metadata->SetString("frame",frame->first);return metadata;
   }
@@ -169,7 +166,7 @@
     info->SetList("arguments",metadata);const auto retained_json=Json(info);auto typed=CefValue::Create();typed->SetDictionary(info->Copy(false));std::string json;
     if(!suitecut::DevToolsLosslessJSON(typed,json)){for(const int handle:retained){DropConsoleArgument(handle);handles_.erase(handle);}Degraded("Native console payload could not be serialized");return;}
     NativeTraceConsole(info,arguments);
-    const auto sequence=++event_sequence_;console_journal_.Push(sequence,retained_json);ReleaseEvictedConsoleArguments();
+    const auto sequence=++event_sequence_;console_journal_.Push(sequence,retained_json);
     auto header=Header("console");header->SetDouble("sequence",static_cast<double>(sequence));JournalEvent(sequence,"console",retained_json);
     SendPacket(header,std::vector<uint8_t>(json.begin(),json.end()));
     engine_.ContextConsole(page_id_,info);
@@ -194,8 +191,7 @@
     const auto type=message->GetType("sequence");const auto sequence=type==VTYPE_INT?double(message->GetInt("sequence")):message->GetDouble("sequence");
     if((type!=VTYPE_INT&&type!=VTYPE_DOUBLE)||!std::isfinite(sequence)||sequence<1||sequence>double(event_sequence_)||std::floor(sequence)!=sequence){writer_.Reply(reply_id,false,"Invalid native console delivery cursor");return;}
     console_delivered_=std::max(console_delivered_,std::uint64_t(sequence));
-    for(auto& [handle,argument]:console_arguments_)if(argument.sequence<=console_delivered_)argument.delivered=true;
-    WorkerConsoleDelivered(console_delivered_);ReleaseEvictedConsoleArguments();writer_.Reply(reply_id,true);
+    writer_.Reply(reply_id,true);
   }
   void ConsoleCommand(int owner,Dict message) {
     const auto action=message->GetString("action").ToString();

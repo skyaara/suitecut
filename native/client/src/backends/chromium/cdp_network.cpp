@@ -105,9 +105,20 @@ struct CdpNetwork::Impl {
   };
   std::map<int,Settings> settings;
   std::map<std::string,Page> pages;
-  Ring browser;
+  // Browser.download* and Input.dragIntercepted events by sequence. Consumers read past their own cursor and release
+  // what reached its natural end: a download once its owning page consumed its final state or closed, drag
+  // interceptions once their drag finished or their session went away. Each download keeps only its latest
+  // progress event: progress carries cumulative state, so a newer one supersedes the older ones.
+  std::map<std::uint64_t,Json> browser;
+  std::map<std::string,std::uint64_t> download_begins,download_progress;
   int next_route=0,next_script=0;
   std::uint64_t event_sequence=0;
+  void release_download(const std::string& guid) {
+    for(auto* index:{&download_begins,&download_progress}) {
+      const auto found=index->find(guid);
+      if(found!=index->end()){browser.erase(found->second);index->erase(found);}
+    }
+  }
   explicit Impl(std::function<void(CdpAutomatic)> value):enqueue(std::move(value)){}
   static std::string current(const Page& page,const std::string& id) {
     const auto found=page.har_current.find(id);return found==page.har_current.end()?std::string{}:found->second;
@@ -172,7 +183,14 @@ void CdpNetwork::observe(const Json& event) {
   {
     std::lock_guard lock(impl_->mutex);
     if(method.starts_with("Browser.download")||method=="Input.dragIntercepted") {
-      auto copy=event;copy["_suitecutEventSequence"]=++impl_->event_sequence;impl_->browser.add(std::move(copy));return;
+      const auto sequence=++impl_->event_sequence;
+      auto copy=event;copy["_suitecutEventSequence"]=sequence;
+      if(method.starts_with("Browser.download")&&params.contains("guid")&&params.at("guid").is_string()) {
+        auto& index=method=="Browser.downloadProgress"?impl_->download_progress:impl_->download_begins;
+        const auto [slot,fresh]=index.try_emplace(params.at("guid").as_string(),sequence);
+        if(!fresh){impl_->browser.erase(slot->second);slot->second=sequence;}
+      }
+      impl_->browser.emplace(sequence,std::move(copy));return;
     }
     const auto found=impl_->pages.find(session);if(found==impl_->pages.end())return;
     auto& page=found->second;auto& settings=impl_->settings[page.context];
@@ -286,15 +304,34 @@ void CdpNetwork::setup(CdpRuntime& runtime,CdpPage& page,Deadline deadline) {
     std::lock_guard lock(impl_->mutex);impl_->pages.at(page.session).script_ids[id]=result.at("identifier").as_string();
   }
 }
-void CdpNetwork::forget(const std::string& session){std::lock_guard lock(impl_->mutex);impl_->pages.erase(session);}
+void CdpNetwork::forget(const std::string& session){
+  std::lock_guard lock(impl_->mutex);impl_->pages.erase(session);
+  std::erase_if(impl_->browser,[&](const auto& entry){return text(entry.second,"method")=="Input.dragIntercepted"&&text(entry.second,"sessionId")==session;});
+}
 void CdpNetwork::forget_context(int context){std::lock_guard lock(impl_->mutex);impl_->settings.erase(context);}
 bool CdpNetwork::idle(const std::string& session,std::chrono::milliseconds quiet)const {
   std::lock_guard lock(impl_->mutex);const auto page=impl_->pages.find(session);
   return page==impl_->pages.end()||(page->second.inflight.empty()&&Clock::now()-page->second.activity>=quiet);
 }
-Json CdpNetwork::events(const std::string& method,std::uint64_t after)const {
+Json CdpNetwork::events(const std::string& prefix,std::uint64_t after)const {
   std::lock_guard lock(impl_->mutex);Json::array out;
-  for(const auto& event:impl_->browser.values){if(text(event,"method")==method&&event.contains("_suitecutEventSequence")&&event.at("_suitecutEventSequence").as_int()>static_cast<std::int64_t>(after))out.push_back(event);}return out;
+  for(auto at=impl_->browser.upper_bound(after);at!=impl_->browser.end();++at)if(text(at->second,"method").starts_with(prefix))out.push_back(at->second);
+  return out;
+}
+std::uint64_t CdpNetwork::sequence()const{std::lock_guard lock(impl_->mutex);return impl_->event_sequence;}
+void CdpNetwork::release_drags(const std::string& session,std::uint64_t through) {
+  std::lock_guard lock(impl_->mutex);
+  for(auto at=impl_->browser.begin();at!=impl_->browser.end()&&at->first<=through;)
+    if(text(at->second,"method")=="Input.dragIntercepted"&&text(at->second,"sessionId")==session)at=impl_->browser.erase(at);else ++at;
+}
+void CdpNetwork::release_downloads(const std::vector<std::string>& guids,const std::string& frame) {
+  std::lock_guard lock(impl_->mutex);
+  for(const auto& guid:guids)impl_->release_download(guid);
+  if(frame.empty())return;
+  std::vector<std::string> owned;
+  for(const auto& [guid,sequence]:impl_->download_begins)
+    if(text(impl_->browser.at(sequence).at("params"),"frameId")==frame)owned.push_back(guid);
+  for(const auto& guid:owned)impl_->release_download(guid);
 }
 int CdpNetwork::execution_context(const std::string& session,const std::string& frame)const {
   std::lock_guard lock(impl_->mutex);const auto page=impl_->pages.find(session);

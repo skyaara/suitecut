@@ -7,7 +7,7 @@ struct WorkerConsoleRaw {
   int context = 0;
   uint64_t generation = 0, sequence = 0;
   size_t bytes = 0;
-  bool claimed = false, delivered = false;
+  bool claimed = false;
 };
 std::map<int,WorkerConsoleRaw> worker_console_arguments_;
 size_t worker_console_bytes_ = 0;
@@ -37,14 +37,9 @@ void WorkerConsoleSessionRemoved(const std::string& session) {
 void WorkerConsoleClaim(int handle) {
   const auto found=worker_console_arguments_.find(handle);if(found!=worker_console_arguments_.end())found->second.claimed=true;
 }
-void WorkerConsoleDelivered(uint64_t sequence) {
-  for(auto& [handle,argument]:worker_console_arguments_)if(argument.sequence<=sequence)argument.delivered=true;
-}
-void WorkerConsoleEvicted() {
-  const auto oldest=console_journal_.Oldest();std::vector<int> removed;
-  for(const auto& [handle,argument]:worker_console_arguments_)if(!argument.claimed&&argument.delivered&&(!oldest||argument.sequence<oldest))removed.push_back(handle);
-  for(const auto handle:removed)WorkerConsoleDrop(handle);
-}
+// Unclaimed arguments live as long as their worker document, as in Playwright:
+// consoleMessages() can hand out any journal record, so delivery alone never
+// releases them. Clear, worker close and frame removal do.
 Dict WorkerConsoleRetain(Dict value,const std::string& session,int context) {
   const auto mapped=worker_sessions_.find(session);if(mapped==worker_sessions_.end()||!value)return nullptr;
   const auto& target=worker_targets_.at(mapped->second);
@@ -52,7 +47,7 @@ Dict WorkerConsoleRetain(Dict value,const std::string& session,int context) {
   const auto bytes=Json(value).size();
   const int handle=++next_handle_;const auto group="suitecut-worker-console-"+handle_namespace_+"-"+std::to_string(handle);
   worker_handles_.emplace(handle,WorkerHandle{"",group,target.id,session,context,target.generation});
-  worker_console_arguments_.emplace(handle,WorkerConsoleRaw{value->Copy(false),target.id,session,context,target.generation,event_sequence_+1,bytes,false,false});worker_console_bytes_+=bytes;
+  worker_console_arguments_.emplace(handle,WorkerConsoleRaw{value->Copy(false),target.id,session,context,target.generation,event_sequence_+1,bytes,false});worker_console_bytes_+=bytes;
   auto result=CefDictionaryValue::Create();result->SetInt("handle",handle);result->SetString("worker",target.id);result->SetBool("node",false);
   result->SetDictionary("workerControl",WorkerControlInfo(target));
   result->SetString("guid","suitecut-worker-"+handle_namespace_+":"+std::to_string(handle));suitecut::DevToolsSetString(result,"preview",ConsolePreview(value));

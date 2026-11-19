@@ -5,7 +5,7 @@
   "cef_revision": "47dbc1df023e99f006fb9e850a8d83cc19b4fdd9",
   "cef_version": "156.0.7+g47dbc1d+chromium-156.0.8078.17",
   "patch": "chromium156-websocket-routing.patch",
-  "patch_sha256": "e2b4648cb81eaab40ee7d8f7858c4fc11b6120c8e35d2a5cbe3420da776b5623",
+  "patch_sha256": "b67186e1d0a4d5b1029945887e2f1c1f14c707e8c0e03b8896574730f3c82cc0",
   "status": "isolated-candidate-source-patch-custom-cef-build-required",
   "compiled": false,
   "runtime_verified": false,
@@ -16,7 +16,7 @@
     {
       "path": "third_party/blink/public/devtools_protocol/domains/Network.pdl",
       "original_sha256": "2e757d8ef2e09101a42dc9d5a7bbd3cef26c8db74fbdb991dd9d3336ab122d7b",
-      "patched_sha256": null
+      "patched_sha256": "a2e12871d175430fc0f47a93b7d34b59ed649f059cd2196cc7da183c65b44a9d"
     },
     {
       "path": "third_party/blink/renderer/core/inspector/build.gni",
@@ -26,17 +26,17 @@
     {
       "path": "third_party/blink/renderer/core/inspector/inspector_network_agent.cc",
       "original_sha256": "2ea4d7a5dde70311ce758f41544097f2e0359042873e406e1723abf790588981",
-      "patched_sha256": null
+      "patched_sha256": "e36b386d6748da6fe9fa28dcf08f0a98af6305c614d25af532d2eb38e30f098b"
     },
     {
       "path": "third_party/blink/renderer/core/inspector/inspector_network_agent.h",
       "original_sha256": "4225dc4054eaf1d72f698e0a94ac69342b50461572a69c1e9fc1e567b6cfe636",
-      "patched_sha256": null
+      "patched_sha256": "a25d8e0f78ebaf02ff072ec9a568aeccbce45065b4e9dec043c4bbb356e0ec1b"
     },
     {
       "path": "third_party/blink/renderer/core/inspector/suitecut_websocket_route.h",
       "original_sha256": null,
-      "patched_sha256": "0de7f302dcad93b0ddfab803134e9c7d2331dbecf4748e44fb1119b7a29ca1a0"
+      "patched_sha256": "17f6a7be3c18f9c0389f7c90dcb8cb4786942a98fb5cff03d4cce7f63761f006"
     },
     {
       "path": "third_party/blink/renderer/core/probe/core_probes.json5",
@@ -51,12 +51,12 @@
     {
       "path": "third_party/blink/renderer/modules/websockets/websocket_channel_impl.cc",
       "original_sha256": "3c8eba45790259972a9c5eb813e83c4c0b4777fb14ac67b72fcbe6ab7d0e417d",
-      "patched_sha256": null
+      "patched_sha256": "482fb070d71eab76b2775ce0ac1b081b7fa06b93d3b3f96228bbed175cce6983"
     },
     {
       "path": "third_party/blink/renderer/modules/websockets/websocket_channel_impl.h",
       "original_sha256": "e9b7af337a1856dd89fd56834576a358d576fa86d04a0b5da11bdebed5c22641",
-      "patched_sha256": null
+      "patched_sha256": "a298ff617be455758441c1d5b9e282c3c0b2ffaa5c26c70b8b99abdf98d33c44"
     }
   ],
   "limits": [
@@ -65,7 +65,7 @@
     "Page/context URL registrations, callback dispatch and popup/OOPIF/worker inheritance remain pending",
     "Independent server-close interception/policy not added; original Chromium close propagation preserved",
     "No E2E or fuzz acceptance claimed",
-    "SuiteCut socket/message/byte/reason caps were removed from the patch after the applicability check; patched_sha256 values for the five modified files must be recomputed against the pinned source (null until then)"
+    "SuiteCut socket/message/byte caps were removed; the RFC 6455 123-byte UTF-8 close-reason rule stays on the route close command, which bypasses DOMWebSocket::close. Configure reports revision 2 (no capacity fields). patched_sha256 values recomputed 2026-11-19 by applying the bundle in order to the pinned sources (base hashes verified)"
   ],
   "production_sdk_scope": "version-probed-root-page-target-explicit-controller"
 }

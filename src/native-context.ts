@@ -50,6 +50,7 @@ import {
 } from './native-har.js'
 import { NativeAPIRequestContext } from './native-http.js'
 import { nativeInitScriptSource, type NativeInitScript } from './native-init-script.js'
+import { nativeInt32 } from './native-int32.js'
 import { prepareNativeNavigationClose } from './native-navigation-lifecycle.js'
 import {
   type NativeRequest,
@@ -119,7 +120,7 @@ const CookieSchema = z.strictObject({
   url: z.url().optional(),
   domain: z.string().optional(),
   path: z.string().optional(),
-  expires: z.number().finite().min(-1).max(253402300799).optional(),
+  expires: z.number().finite().min(-1).optional(),
   httpOnly: z.boolean().optional(),
   secure: z.boolean().optional(),
   sameSite: z.enum(['Strict', 'Lax', 'None']).optional(),
@@ -166,15 +167,15 @@ const ContextOptions = z.strictObject({
   extraHTTPHeaders: z.record(z.string(), z.string()).optional(),
   viewport: z
     .strictObject({
-      width: z.number().int().min(1),
-      height: z.number().int().min(1),
+      width: nativeInt32('width').min(1),
+      height: nativeInt32('height').min(1),
     })
     .nullable()
     .optional(),
   screen: z
     .strictObject({
-      width: z.number().int().min(1),
-      height: z.number().int().min(1),
+      width: nativeInt32('width').min(1),
+      height: nativeInt32('height').min(1),
     })
     .optional(),
   deviceScaleFactor: z.number().finite().positive().optional(),

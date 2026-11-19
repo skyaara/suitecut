@@ -270,6 +270,13 @@ describe('native browser lifecycle', () => {
     },
   )
 
+  it('rejects a viewport wider than the native int32 width field before spawning', async () => {
+    await expect(launchNativeBrowser({ executablePath: path, width: 2 ** 31 })).rejects.toThrow(
+      'int32',
+    )
+    expect(spawn).not.toHaveBeenCalled()
+  })
+
   it.each([undefined, true, false])(
     'preserves or explicitly disables native BackForwardCache with option %s',
     async (backForwardCache) => {
@@ -403,6 +410,39 @@ describe('native browser lifecycle', () => {
     )
     await closing
     expect(closed).toBe(true)
+    await browser.close()
+  })
+  it('releases worker retirement receipts when their page or context closes', async () => {
+    const browser = await launch()
+    emit(
+      { type: 'context' },
+      Buffer.from(JSON.stringify({ event: 'page-created', contextId: 2, pageId: 2, sequence: 1 })),
+    )
+    const second = browser.pageSource!(2)
+    const worker = { id: 'w', type: 'worker', url: 'https://example.test/w.js' }
+    emit(
+      { type: 'worker', pageId: 2, sequence: 1 },
+      Buffer.from(JSON.stringify({ event: 'close', sequence: 1, worker })),
+    )
+    emit(
+      { type: 'contextworker' },
+      Buffer.from(
+        JSON.stringify({ contextId: 2, workerEvent: { event: 'close', sequence: 2, worker } }),
+      ),
+    )
+    expect(second.workerRetirements!().records).toHaveLength(1)
+    expect(browser.contextWorkerRetirements!(2).records).toHaveLength(1)
+    emit(
+      { type: 'context' },
+      Buffer.from(JSON.stringify({ event: 'page-closed', contextId: 2, pageId: 2, sequence: 2 })),
+    )
+    expect(second.workerRetirements!().records).toEqual([])
+    expect(browser.contextWorkerRetirements!(2).records).toHaveLength(1)
+    emit(
+      { type: 'context' },
+      Buffer.from(JSON.stringify({ event: 'context-closed', contextId: 2, sequence: 3 })),
+    )
+    expect(browser.contextWorkerRetirements!(2).records).toEqual([])
     await browser.close()
   })
   it('creates a fresh renderer epoch only on a genuine native readiness packet while old failure stays rejected', async () => {

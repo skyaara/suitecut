@@ -13,11 +13,11 @@
     "v8/include/js_protocol.pdl": "784d67464dc055f26cf59798cfdcf2989fad2fdd5dd6f4d027dcd322f79fad82"
   },
   "output": {
-    "v8/src/inspector/v8-profiler-agent-impl.cc": null,
-    "v8/src/inspector/v8-profiler-agent-impl.h": null,
+    "v8/src/inspector/v8-profiler-agent-impl.cc": "81714f84f4f2132bc525bbdaba9fd95b76230f4720c8985dfed9b6959bf10081",
+    "v8/src/inspector/v8-profiler-agent-impl.h": "edf21adad80b024c2d51c530064e831d67d1a942201ebc775c93fafa97670ae3",
     "v8/src/inspector/v8-inspector-impl.cc": "5a739f36a7070620b25eae45e89887cbbc8080ed2c4b321fe7105ca648ae8f6a",
     "v8/src/inspector/v8-inspector-impl.h": "379920e88d14c313c35b86ae96f704f398e3d6e28a678807597eb58ceab3dcb8",
-    "v8/include/js_protocol.pdl": null
+    "v8/include/js_protocol.pdl": "365e6aba7a42c24a4b930de430f2c48ec0ba6ec51a4aa881aa7f031db874346f"
   },
   "patchSHA256": "a94363831bc5260acc5d7b5db77c59d09f822ae8fe64c7e1c6cf7eda365a3cf4",
   "nativeActivation": "NONE; stock resetOnNavigation:false remains unsupported; no production Source/SDK activation",
@@ -32,7 +32,7 @@
     "git apply --check against every exact pinned base file PASS",
     "Pinned Chromium PDL parser accepts candidate domain syntax; local extension references checked",
     "No generated protocol C++ compile, Chromium/V8 compile, rebuilt libcef, or candidate runtime proof",
-    "SuiteCut chunk/script/range/source-unit and 8192-unit URL/function-name caps were removed after the applicability check; output hashes for the three modified files must be recomputed against the pinned source (null until then)"
+    "SuiteCut chunk/script/range/source-unit and 8192-unit URL/function-name caps were removed after the applicability check; output hashes were recomputed 2026-11-19 by applying the bundle in order to the pinned sources (base hashes verified)"
   ],
   "sourceComponent": "v8",
   "patchRoot": "chromium",
@@ -44,10 +44,10 @@
     "include/js_protocol.pdl": "784d67464dc055f26cf59798cfdcf2989fad2fdd5dd6f4d027dcd322f79fad82"
   },
   "componentOutput": {
-    "src/inspector/v8-profiler-agent-impl.cc": null,
-    "src/inspector/v8-profiler-agent-impl.h": null,
+    "src/inspector/v8-profiler-agent-impl.cc": "81714f84f4f2132bc525bbdaba9fd95b76230f4720c8985dfed9b6959bf10081",
+    "src/inspector/v8-profiler-agent-impl.h": "edf21adad80b024c2d51c530064e831d67d1a942201ebc775c93fafa97670ae3",
     "src/inspector/v8-inspector-impl.cc": "5a739f36a7070620b25eae45e89887cbbc8080ed2c4b321fe7105ca648ae8f6a",
     "src/inspector/v8-inspector-impl.h": "379920e88d14c313c35b86ae96f704f398e3d6e28a678807597eb58ceab3dcb8",
-    "include/js_protocol.pdl": null
+    "include/js_protocol.pdl": "365e6aba7a42c24a4b930de430f2c48ec0ba6ec51a4aa881aa7f031db874346f"
   }
 }

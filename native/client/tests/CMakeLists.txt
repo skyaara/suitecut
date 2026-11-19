@@ -19,7 +19,9 @@ endif()
 set(client_unit_sources
   unit/agent_test.cpp
   unit/bidi_har_test.cpp
+  unit/bidi_value_test.cpp
   unit/browser_facade_test.cpp
+  unit/cdp_browser_events_test.cpp
   unit/control_cli_test.cpp
   unit/credentials_test.cpp
   unit/decoder_test.cpp

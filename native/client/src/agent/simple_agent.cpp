@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cctype>
-#include <functional>
+#include <vector>
 #include <limits>
 #include <set>
 #include <stdexcept>
@@ -35,12 +35,19 @@ Clock::time_point reserve_observation(Clock::time_point deadline) {
   const auto left = remaining(deadline);
   return deadline - std::min(Timeout{500},Timeout{left.count()/5});
 }
-Json strip_refs(Json value) {
-  if (value.is_array()) for (auto& child : value.as_array()) child = strip_refs(std::move(child));
-  if (value.is_object()) {
-    value.as_object().erase("ref");
-    for (auto& [key,child] : value.as_object()) { (void)key; child = strip_refs(std::move(child)); }
+// Visits every value of a tree, parents before children and children in order, with an explicit stack so
+// snapshot nesting depth is bounded by memory rather than the thread stack. visit may edit the value in place
+// (but not add or remove its children) before its children are visited.
+template<class J,class F> void preorder(J& root,F&& visit) {
+  std::vector<J*> stack{&root};
+  while(!stack.empty()) {
+    J& node=*stack.back();stack.pop_back();visit(node);
+    if(node.is_array())for(auto at=node.as_array().rbegin();at!=node.as_array().rend();++at)stack.push_back(&*at);
+    else if(node.is_object())for(auto at=node.as_object().rbegin();at!=node.as_object().rend();++at)stack.push_back(&at->second);
   }
+}
+Json strip_refs(Json value) {
+  preorder(value,[](Json& node){if(node.is_object())node.as_object().erase("ref");});
   return value;
 }
 Json failure(const std::string& code, const std::string& message) {
@@ -183,32 +190,24 @@ Json SimpleAgent::observe(const Json& args,Deadline deadline) {
   baseline_scope_=fields;
   refs_.clear();
   Json::array controls;
-  std::function<Json(Json)> rewrite=[&](Json node)->Json {
-    if(node.is_array()) {
-      for(auto& child:node.as_array()) child=rewrite(std::move(child));
-    } else if(node.is_object()) {
-      if(node.contains("ref")&&node.at("ref").is_string()) {
-        if(next_alias_==std::numeric_limits<std::uint64_t>::max()) throw std::runtime_error("Short-ref counter exhausted");
-        const auto alias="e"+std::to_string(next_alias_++);
-        Json target{{"kind","ref"},{"value",node.at("ref")}};
-        for(const auto* name:{"frame","framePath"}) if(args.contains(name)) target[name]=args.at(name);
-        refs_.emplace(alias,std::move(target)); node["ref"]=alias;
-        auto actions=actions_for(node,true);
-        const bool candidate=!actions.as_array().empty();
-        if(flag(node,"disabled"))actions=Json::array{};
-        if(candidate && !flag(node,"hidden")) {
-          Json control{{"ref",alias}};
-          for(const auto* name:{"role","name","checked","disabled","editable","inputType","readOnly","box","bounds","cursor"})
-            if(node.contains(name)) control[name]=node.at(name);
-          control["actions"]=actions;
-          controls.push_back(std::move(control));
-        }
-      }
-      for(auto& [key,child]:node.as_object()) if(key!="ref") child=rewrite(std::move(child));
+  preorder(tree,[&](Json& node) {
+    if(!node.is_object()||!node.contains("ref")||!node.at("ref").is_string())return;
+    if(next_alias_==std::numeric_limits<std::uint64_t>::max()) throw std::runtime_error("Short-ref counter exhausted");
+    const auto alias="e"+std::to_string(next_alias_++);
+    Json target{{"kind","ref"},{"value",node.at("ref")}};
+    for(const auto* name:{"frame","framePath"}) if(args.contains(name)) target[name]=args.at(name);
+    refs_.emplace(alias,std::move(target)); node["ref"]=alias;
+    auto actions=actions_for(node,true);
+    const bool candidate=!actions.as_array().empty();
+    if(flag(node,"disabled"))actions=Json::array{};
+    if(candidate && !flag(node,"hidden")) {
+      Json control{{"ref",alias}};
+      for(const auto* name:{"role","name","checked","disabled","editable","inputType","readOnly","box","bounds","cursor"})
+        if(node.contains(name)) control[name]=node.at(name);
+      control["actions"]=actions;
+      controls.push_back(std::move(control));
     }
-    return node;
-  };
-  tree=rewrite(std::move(tree));
+  });
   Json out{{"ok",true},{"snapshot",std::move(tree)},{"controls",std::move(controls)}};
   // Public document metadata only; no hidden task state or grader inspection.
   out["url"]=invoke("get",Json{{"kind","url"}},deadline);
@@ -252,13 +251,10 @@ bool SimpleAgent::condition(const Json& args,Deadline deadline) {
     const auto tree=invoke(framed?"frame_snapshot":"snapshot",baseline_scope_,deadline);
     const auto needle=args.at("text").as_string();
     bool found=false;
-    std::function<void(const Json&)> scan=[&](const Json& node) {
-      if(node.is_array())for(const auto& child:node.as_array())scan(child);
-      else if(node.is_object())for(const auto& [key,child]:node.as_object()) {
+    preorder(tree,[&](const Json& node) {
+      if(node.is_object())for(const auto& [key,child]:node.as_object())
         if((key=="name"||key=="text")&&child.is_string()&&child.as_string().find(needle)!=std::string::npos)found=true;
-        if(child.is_array()||child.is_object())scan(child);
-      }
-    };scan(tree);if(!found)return false;
+    });if(!found)return false;
   }
   if(args.contains("changed")&&args.at("changed").as_bool()) {
     require(!baseline_.is_null(),"Observe before waiting for a changed snapshot");
@@ -453,8 +449,39 @@ Json SimpleAgent::present(Json result,const Json& args) {
   auto scan_options=options;
   if(!query.empty()){scan_options.max_nodes=0;scan_options.max_text_bytes=0;}
   auto compact=compact_observation(result.at("snapshot"),scan_options);
-  Json::array controls;
+  Json::array controls,ancestors;
   std::size_t query_budget=options.max_text_bytes;
+  const bool bounded=!query.empty()&&options.max_text_bytes;
+  const auto bound=[&](Json& root) {
+    preorder(root,[&](Json& value) {
+      if(!value.is_string())return;
+      const auto& source=value.as_string();auto count=std::min(source.size(),query_budget);
+      while(count<source.size()&&count&&(static_cast<unsigned char>(source[count])&0xc0)==0x80)--count;
+      if(count<source.size())compact["truncated"]=true;
+      query_budget-=count;value=source.substr(0,count);
+    });
+  };
+  // Controls refer to their enclosing containers through one shared table; carry over only the chains they use.
+  constexpr auto none=std::numeric_limits<std::size_t>::max();
+  const auto& table=compact.at("ancestors").as_array();
+  std::vector<std::size_t> moved(table.size(),none);
+  const auto adopt=[&](Json& node) {
+    if(!node.contains("parent"))return;
+    const auto first=static_cast<std::size_t>(node.at("parent").as_int());
+    std::vector<std::size_t> chain;
+    for(auto at=first;moved.at(at)==none;) {
+      chain.push_back(at);
+      if(!table[at].contains("parent"))break;
+      at=static_cast<std::size_t>(table[at].at("parent").as_int());
+    }
+    for(auto at=chain.rbegin();at!=chain.rend();++at) {
+      Json entry=table[*at];
+      if(entry.contains("parent"))entry["parent"]=moved[static_cast<std::size_t>(entry.at("parent").as_int())];
+      if(bounded)for(auto& [key,value]:entry.as_object())if(key!="index"&&key!="parent")bound(value);
+      moved[*at]=ancestors.size();ancestors.push_back(std::move(entry));
+    }
+    node["parent"]=moved[first];
+  };
   for(auto node:compact.at("nodes").as_array()) {
     if(!node.contains("ref")||!node.contains("role"))continue;
     auto actions=actions_for(node);
@@ -463,25 +490,17 @@ Json SimpleAgent::present(Json result,const Json& args) {
     // Input values are unnecessary for control selection; passwords are also
     // redacted by the native snapshot and compact projection themselves.
     for(const auto* key:{"value","text","valueText"})node.as_object().erase(key);
-    if(!query.empty()&&options.max_text_bytes) {
+    if(bounded) {
       const auto identity_bytes=text(node,"role").size()+text(node,"ref").size();
       if(identity_bytes>query_budget){compact["truncated"]=true;break;}
       query_budget-=identity_bytes;
-      auto bound=[&](auto&& self,Json& value)->void {
-        if(value.is_string()) {
-          const auto& source=value.as_string();auto count=std::min(source.size(),query_budget);
-          while(count<source.size()&&count&&(static_cast<unsigned char>(source[count])&0xc0)==0x80)--count;
-          if(count<source.size())compact["truncated"]=true;
-          query_budget-=count;value=source.substr(0,count);
-        } else if(value.is_array())for(auto& child:value.as_array())self(self,child);
-        else if(value.is_object())for(auto& [key,child]:value.as_object()){(void)key;self(self,child);}
-      };
-      for(auto& [key,value]:node.as_object())if(key!="role"&&key!="ref")bound(bound,value);
+      for(auto& [key,value]:node.as_object())if(key!="role"&&key!="ref")bound(value);
     }
+    adopt(node);
     node["actions"]=std::move(actions);
     controls.push_back(std::move(node));
   }
-  compact["nodes"]=controls;
+  compact["nodes"]=controls;compact["ancestors"]=ancestors;
   ObservationOptions context_options;
   auto context_nodes=compact_observation(result.at("snapshot"),context_options);
   Json::array context;
@@ -505,7 +524,7 @@ Json SimpleAgent::present(Json result,const Json& args) {
     Json index=Json::object{};
     for(const auto& node:controls)index[node.at("ref").as_string()]=Json{{"role",node.at("role")},{"name",text(node,"name")}};
     out["refIndex"]=std::move(index);out["reset"]=false;
-  } else {out["controls"]=std::move(controls);out["reset"]=delta;}
+  } else {out["controls"]=std::move(controls);out["ancestors"]=std::move(ancestors);out["reset"]=delta;}
   compact_baseline_=std::move(compact);compact_scope_=scope;
   return out;
 }

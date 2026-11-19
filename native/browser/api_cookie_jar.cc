@@ -17,7 +17,6 @@
 
 namespace suitecut {
 namespace {
-constexpr double kMaximumExpiry=253402300799.0;
 struct Address {std::string host,path,scheme;};
 bool IP(const std::string& host){
   auto literal=host;
@@ -128,7 +127,7 @@ struct NativeAPICookieJar::Impl {
     if(has_url){if(!URL(*input.url,url)){error="Invalid native API cookie URL";return false;}scope=url.host;item.host_only=true;item.domain=url.host;item.path=input.path?*input.path:DefaultPath(url.path);}
     else{scope=Domain(*input.domain);if(!DomainSyntax(scope)||(!IP(scope)&&scope!="localhost"&&!scope.ends_with(".localhost")&&psl_is_public_suffix(psl_builtin(),scope.c_str()))){error="Invalid native API cookie domain or public suffix";return false;}item.domain=CookieLower(*input.domain);item.path=*input.path;item.host_only=IP(scope)||!input.domain->starts_with('.');}
     if(item.path.empty()||item.path.front()!='/'||std::any_of(item.path.begin(),item.path.end(),[](unsigned char c){return c<32||c==127;})){error="Invalid native API cookie path";return false;}
-    const double expiry=input.expires.value_or(-1);if(!std::isfinite(expiry)||(expiry!=-1&&expiry<0)||expiry>kMaximumExpiry){error="Invalid native API cookie expiration";return false;}
+    const double expiry=input.expires.value_or(-1);if(!std::isfinite(expiry)||(expiry!=-1&&expiry<0)){error="Invalid native API cookie expiration";return false;}
     if(input.same_site<1||input.same_site>3){error="Invalid native API cookie sameSite";return false;}
     item.scope=scope;item.name=input.name;item.value=input.value;item.expires=expiry;item.has_expiry=input.expires.has_value()&&expiry!=-1;item.secure=input.secure.value_or(has_url&&url.scheme=="https");item.http_only=input.http_only;item.same_site=input.same_site;
     if(input.name.starts_with("__Secure-")&&!item.secure){error="Invalid secure native API cookie prefix";return false;}

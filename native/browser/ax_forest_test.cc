@@ -59,6 +59,27 @@ int main(){
   for(int i=0;i<65;i++){auto node=CefDictionaryValue::Create();node->SetString("nodeId",std::to_string(i));if(!i)node->SetInt("backendDOMNodeId",1);auto role=CefDictionaryValue::Create();role->SetString("value","generic");node->SetDictionary("role",role);if(i<64){auto ids=CefListValue::Create();ids->SetString(0,std::to_string(i+1));node->SetList("childIds",ids);}deep->SetDictionary(i,node);}
   SuiteCutAXForest depth;CefRefPtr<CefListValue> unused;std::vector<SuiteCutAXForest::Link> unused_links;std::string depth_error;
   assert(depth.Project(deep,1,unused,unused_links,depth_error));
+  {
+    // 50,000 nested role=group nodes (a page's DOM depth; getFullAXTree is a
+    // flat list CEF parses without nesting). Projection, lossless serialization
+    // and teardown all use explicit stacks, so none recurses with this depth.
+    constexpr int kDepth=50000;auto nested=CefListValue::Create();
+    for(int i=0;i<kDepth;++i){auto node=CefDictionaryValue::Create();node->SetString("nodeId",std::to_string(i));if(!i)node->SetInt("backendDOMNodeId",1);auto role=CefDictionaryValue::Create();role->SetString("value","group");node->SetDictionary("role",role);
+      if(i+1<kDepth){auto ids=CefListValue::Create();ids->SetString(0,std::to_string(i+1));node->SetList("childIds",ids);}else{auto name=CefDictionaryValue::Create();name->SetString("value","leaf");node->SetDictionary("name",name);}nested->SetDictionary(i,node);}
+    SuiteCutAXForest projector;CefRefPtr<CefListValue> output;std::vector<SuiteCutAXForest::Link> targets;std::string reason;
+    assert(projector.Project(nested,1,output,targets,reason));nested=nullptr;assert(output->GetSize()==1);
+    std::string json;assert(suitecut::DevToolsLosslessListJSON(output,json));
+    size_t groups=0;for(size_t p=0;(p=json.find("\"role\":\"group\"",p))!=std::string::npos;++p)++groups;assert(groups==static_cast<size_t>(kDepth)&&json.find("\"leaf\"")!=std::string::npos);
+    SuiteCutAXForest::Release(output);assert(output->GetSize()==0);
+    // A failed deep projection releases its partial subtrees the same way.
+    // The cycle sits after a completed 50,000-deep sibling subtree.
+    auto cyclic=CefListValue::Create();
+    for(int i=0;i<kDepth;++i){auto node=CefDictionaryValue::Create();node->SetString("nodeId",std::to_string(i));if(!i)node->SetInt("backendDOMNodeId",1);auto role=CefDictionaryValue::Create();role->SetString("value","group");node->SetDictionary("role",role);
+      auto ids=CefListValue::Create();if(i+1<kDepth)ids->SetString(0,std::to_string(i+1));if(!i)ids->SetString(1,"cycle");node->SetList("childIds",ids);cyclic->SetDictionary(i,node);}
+    {auto node=CefDictionaryValue::Create();node->SetString("nodeId","cycle");auto role=CefDictionaryValue::Create();role->SetString("value","group");node->SetDictionary("role",role);auto ids=CefListValue::Create();ids->SetString(0,"0");node->SetList("childIds",ids);cyclic->SetDictionary(kDepth,node);}
+    SuiteCutAXForest failing;CefRefPtr<CefListValue> partial;std::vector<SuiteCutAXForest::Link> partial_links;std::string failure;
+    assert(!failing.Project(cyclic,1,partial,partial_links,failure));assert(failure.find("cycle")!=std::string::npos);
+  }
   assert(SuiteCutAXForest::Normalize(" a \xc2\xa0 b\xe2\x80\x8b ")=="a b");
   {
   const auto project=[](const std::string& json){auto raw=CefParseJSON(json,JSON_PARSER_RFC);SuiteCutAXForest projector;CefRefPtr<CefListValue> forest;std::vector<SuiteCutAXForest::Link> links;std::string error;assert(projector.Project(raw->GetList(),1,forest,links,error));return forest;};

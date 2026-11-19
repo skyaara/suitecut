@@ -30,6 +30,7 @@ class DeveloperDebuggerFrameTargets {
     for(const auto&[id,record]:records_)if(record->pin.frame==actual.frame&&record->control->Retained()){
       reply(false,"","Native frame debugger previous owner is still physically retained");return;
     }
+    Prune(&actual.frame);
     std::map<uint64_t,std::shared_ptr<Record>>staged;
     auto control=hooks_.create(actual);
     if(!control){reply(false,"","Native frame debugger controller construction failed");return;}
@@ -51,8 +52,8 @@ class DeveloperDebuggerFrameTargets {
     reply(false,"","Native frame debugger session token is unknown or stale");
   }
   void Cancel(int owner){ForEach([&](const std::shared_ptr<Record>&record){record->control->Cancel(owner);});}
-  void Changed(const Pin&pin){ForEach([&](const std::shared_ptr<Record>&record){if(record->pin==pin)record->control->Changed();});}
-  void Tick(double now){ForEach([&](const std::shared_ptr<Record>&record){record->control->Tick(now);});}
+  void Changed(const Pin&pin){ForEach([&](const std::shared_ptr<Record>&record){if(record->pin==pin)record->control->Changed();});Prune();}
+  void Tick(double now){ForEach([&](const std::shared_ptr<Record>&record){record->control->Tick(now);});Prune();}
   bool NeedsTick()const{for(const auto&[id,record]:records_)if(record->control->NeedsTick())return true;return false;}
   // The actual initial root renderer death also destroys its same-process
   // child realms. Independent actual OOPIF agent sessions are not included.
@@ -81,6 +82,11 @@ class DeveloperDebuggerFrameTargets {
   }
  private:
   struct Record{Pin pin;std::unique_ptr<Controls>control;};
+  // A completed controller ends with its document: once it is no longer
+  // retained, its record is released when its pin stops being current or its
+  // frame reopens. Retained controllers are never touched.
+  void Prune(const std::string*reopened=nullptr){std::erase_if(records_,[&](const auto&entry){const auto&record=*entry.second;return !record.control->Retained()&&((reopened&&record.pin.frame==*reopened)||!hooks_.current(record.pin));});}
+
   // Visits the records admitted before the fanout began (serials are
   // monotonic), re-finding each by key so callbacks may admit new records.
   // All record nodes already exist: the fanout allocates nothing.

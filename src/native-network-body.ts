@@ -19,34 +19,38 @@ interface BodyOwner {
   offset: number
   ready: boolean
 }
-/** A process transport shares body replay across pages. */
+/** A process transport shares body replay across pages, indexed by receiver scope. */
 export class NativeNetworkBodyArchive {
   private serial = 0
-  private readonly entries = new Map<string, Buffer>()
+  private readonly scopes = new Map<number, Map<string, Buffer>>()
   scope(): number {
     return ++this.serial
   }
   get(scope: number, id: string): Buffer | undefined {
-    return this.entries.get(`${scope}:${id}`)
+    return this.scopes.get(scope)?.get(id)
   }
   put(scope: number, id: string, bytes: Buffer): void {
-    this.entries.set(`${scope}:${id}`, bytes)
+    let entries = this.scopes.get(scope)
+    if (!entries) {
+      entries = new Map()
+      this.scopes.set(scope, entries)
+    }
+    entries.set(id, bytes)
   }
   remove(scope: number, id: string): void {
-    this.entries.delete(`${scope}:${id}`)
+    const entries = this.scopes.get(scope)
+    if (!entries) return
+    entries.delete(id)
+    if (!entries.size) this.scopes.delete(scope)
   }
   clear(scope: number): void {
-    for (const key of this.entries.keys()) if (key.startsWith(`${scope}:`)) this.entries.delete(key)
+    this.scopes.delete(scope)
   }
   diagnostics(scope: number): { bodies: number; retainedBytes: number } {
-    let bodies = 0,
-      retainedBytes = 0
-    for (const [key, bytes] of this.entries)
-      if (key.startsWith(`${scope}:`)) {
-        ++bodies
-        retainedBytes += bytes.length
-      }
-    return { bodies, retainedBytes }
+    const entries = this.scopes.get(scope)
+    let retainedBytes = 0
+    for (const bytes of entries?.values() ?? []) retainedBytes += bytes.length
+    return { bodies: entries?.size ?? 0, retainedBytes }
   }
 }
 /** Byte receiver for native-owned request-body publications. */

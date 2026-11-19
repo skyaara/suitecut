@@ -47,7 +47,7 @@ class NativeHARCapture {
   bool Start(int context,const std::string&filter="**"){
     if(disposed_||context<1||filter.empty()||captures_.contains(context))return false;
     if(!pages_.Start(context))return false;
-    captures_.emplace(context,Capture{filter});return true;
+    captures_.emplace(context,Capture{NativeURLGlob(filter),{},false});return true;
   }
   bool Active(int context)const{return !disposed_&&captures_.contains(context);}
   bool Attach(int context,const std::string&owner,BodyFetch fetch,OwnerKind kind=OwnerKind::Page){
@@ -93,7 +93,7 @@ class NativeHARCapture {
     if(disposed_||!captures_.contains(context)||captures_.at(context).sealed)return true;
     auto request=params?params->GetDictionary("request"):nullptr;const auto actor=owners_.find(owner);
     if(!request||actor==owners_.end()||actor->second.context!=context)return false;
-    if(!NativeURLGlobMatches(captures_.at(context).filter,request->GetString("url")))return true;
+    if(!captures_.at(context).filter.Matches(request->GetString("url")))return true;
     const auto key=owner+"\n"+session+"\n"+params->GetString("requestId").ToString();
     for(auto&[stored,record]:records_)if(record->owner==owner&&record->wire_id==params->GetString("requestId").ToString())record->wire.Invalidate();
     if(originals_.contains(key)){originals_.at(key).wire.Invalidate();return true;}
@@ -119,7 +119,7 @@ class NativeHARCapture {
     auto found=records_.find(key);
     if(found==records_.end()){
       if(captures_.at(context).sealed)return true;
-      if(kind!="request"||!NativeURLGlobMatches(captures_.at(context).filter,request->GetString("url")))return true;
+      if(kind!="request"||!captures_.at(context).filter.Matches(request->GetString("url")))return true;
       auto record=std::make_shared<Record>();record->context=context;record->observed_ms=now_();record->owner=owner;record->pageref=pages_.Reference(context,owner);record->frame_allowed=actor->second.kind==OwnerKind::Page;record->request=request->Copy(false);record->wall_ms=wall_ms;record->generation=++serial_;if(reserve_)record->publication=reserve_(context);
       auto original=originals_.find(owner+"\n"+request->GetString("session").ToString()+"\n"+request->GetString("requestId").ToString());
       if(original!=originals_.end()){
@@ -221,7 +221,7 @@ class NativeHARCapture {
   bool NeedsTick()const{return pending_||post_pending_||header_pending_||!originals_.empty();}
   size_t pending()const{return pending_+post_pending_+header_pending_;}size_t physical()const{return physical_->count;}size_t physical(int context)const{const auto found=physical_->contexts.find(context);return found==physical_->contexts.end()?0:found->second;}size_t pending(int context)const{size_t count=0;for(const auto&[key,record]:records_)if(record->context==context){if(record->fetching)++count;if(record->post_pending)++count;if(record->awaiting_headers)++count;}return count;}size_t retained_bytes()const{return pages_.bytes()+metadata_bytes_+body_bytes_+original_bytes_+original_wire_bytes_+post_bytes_;}
  private:
-  struct Physical{size_t count=0;std::map<int,size_t>contexts;};struct Owner{int context;BodyFetch fetch;OwnerKind kind;bool primary_ready=false;};struct Capture{std::string filter;std::vector<std::string>order;bool sealed=false;};
+  struct Physical{size_t count=0;std::map<int,size_t>contexts;};struct Owner{int context;BodyFetch fetch;OwnerKind kind;bool primary_ready=false;};struct Capture{NativeURLGlob filter;std::vector<std::string>order;bool sealed=false;};
   struct Original{int context=0;Bytes bytes;NativeHARResponseBytes wire;std::string wire_frame,wire_loader;size_t wire_cost=0;double wall_ms=-1,deadline=0,observed_ms=0;bool present=false,unavailable=false,text=false,absent=false;};
   struct Record{int context=0;std::string owner,pageref,error,body_error,header_error;Dict request,response;Publication publication;Bytes body,post;bool post_pending=false,post_available=false,post_unavailable=false,post_text=false,post_published=false,post_absent=false;double wall_ms=0,deadline=0,header_deadline=0,observed_ms=0,completed_ms=0;uint64_t generation=0;size_t cost=0;bool terminal=false,fetching=false,awaiting_headers=false,published=false,body_available=false,body_skipped=false,frame_allowed=false,header_receipt_taken=false,wire_coding_conflict=false;std::optional<double>header_wall_ms;NativeHARResponseBytes wire;std::string wire_id,wire_frame,wire_loader;std::optional<std::string>wire_coding;};
   static std::string Json(Dict dict){auto value=CefValue::Create();value->SetDictionary(dict->Copy(false));return CefWriteJSON(value,JSON_WRITER_DEFAULT);}

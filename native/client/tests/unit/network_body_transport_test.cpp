@@ -6,6 +6,7 @@
 #include <iostream>
 #include <map>
 #include <stdexcept>
+#include <tuple>
 using suitecut::Json;
 using namespace std::chrono_literals;
 void check(bool ok,const char* error){if(!ok)throw std::runtime_error(error);}
@@ -52,11 +53,19 @@ int main(int argc,char**argv){
    for(auto&[key,size]:sizes){(void)key;check(size==2097153,"Body past the old 2 MiB cap was clipped or rejected");}
    transport->close();options.arguments={};
   }
-  for(const char* mode:{"body-gap","body-identity","body-duplicate","body-size-change"}){
-   options.arguments={std::string("--transport-test-mode=")+mode};auto transport=suitecut::Transport::launch(options);bool rejected=false;
-   try{transport->call_json(Json{{"command","network-body"}},2s);}catch(const std::exception& error){rejected=std::string(error.what()).find("timed out")==std::string::npos;}
-   check(rejected,"Invalid body did not fail closed before the request deadline");transport->close();
+  // A bad body costs only that body: no events for an unidentifiable one, a
+  // canceled chunk for one that went wrong, and the transport stays usable.
+  for(auto [mode,chunks,cancels]:std::initializer_list<std::tuple<const char*,int,int>>{{"body-gap",0,3},{"body-identity",0,0},{"body-duplicate",3,3},{"body-size-change",3,3}}){
+   options.arguments={std::string("--transport-test-mode=")+mode};auto transport=suitecut::Transport::launch(options);bool timed=false;
+   try{transport->call_json(Json{{"command","network-body"}},500ms);}catch(const std::exception& error){timed=std::string(error.what()).find("timed out")!=std::string::npos;}
+   check(timed,"A dropped body's publication should only time out its own request");
+   auto echo=transport->call_json(Json{{"command","echo"}},2s);
+   check(Json::parse(echo.header).at("ok").as_bool(),"A bad body closed the shared transport");
+   int seen=0,canceled=0;
+   while(auto packet=transport->poll(100ms)){auto h=Json::parse(packet->header);if(h.contains("canceled")&&h.at("canceled").as_bool()){check(h.at("dropped").as_bool()&&packet->payload.empty(),"Drop notice is not an empty canceled chunk");++canceled;}else ++seen;}
+   check(seen==chunks&&canceled==cancels,"Unexpected events for a dropped body");
+   check(transport->stats().dropped_bodies>0,"Dropped body was not counted");transport->close();
   }
-  std::cout<<"Automatic page/worker body receipts, uncapped bodies, binary ownership and malformed packets passed\n";return 0;
+  std::cout<<"Automatic page/worker body receipts, uncapped bodies, binary ownership and bad bodies dropped alone passed\n";return 0;
  }catch(const std::exception& error){std::cerr<<error.what()<<'\n';return 1;}
 }

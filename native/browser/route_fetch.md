@@ -16,8 +16,9 @@ registry. Missing, closed, foreign or ownerless workers reject; they never borro
 a page or the root context. The native HTTP profile shares the actual browser
 context's cookies, proxy, TLS and credentials policy; it is not an SDK transport.
 Native HTTP owns redirects and connection-reset retry decisions. Defaults are
-20 redirects, zero retries and 30 seconds. Existing native HTTP bounds allow
-0–100 redirects/retries and a nonnegative signed-32-bit millisecond timeout.
+unlimited redirects (2,147,483,647), zero retries and 30 seconds. Redirect and
+retry counts and the millisecond timeout accept any nonnegative signed 32-bit
+value.
 Zero timeout remains bounded by the original Source operation and paused route.
 
 The original pause, Source operation and explicit fetch cap are intersected.
@@ -28,12 +29,10 @@ state and outstanding cookie callbacks until their actual retirement. Fetch
 does not create a successful browser response event or complete the intercepted
 request; only a genuine continue/fulfill/abort command can do that.
 
-Request/fulfillment bodies retain the existing 2 MiB limit. `postData` supports
-string or Buffer, not object serialization. Exact inherited transferred bodies
-are retained under the existing 16 MiB aggregate pause metadata budget. Response
-bytes use the existing native HTTP cache/body limits and require explicit
-`response.dispose()` when no longer needed. A response larger than the existing
-2 MiB fulfillment limit can be read but cannot be silently truncated to fulfill.
+Request, fulfillment and response bodies have no size limit of suitecut's own.
+`postData` supports string or Buffer, not object serialization. Exact inherited
+transferred bodies are retained whole. Response bytes require explicit
+`response.dispose()` when no longer needed.
 HTTP(S) only, context-wide HTTP policy and existing HTTP connection/cookie
 semantics remain the bounded contract; no general request replay/parity claim.
 

@@ -42,6 +42,27 @@ describe('bounded native storage-state transport', () => {
       await rm(directory, { recursive: true, force: true })
     }
   })
+  it('accepts cookie expiry past year 9999 and rejects non-finite or negative expiry', () => {
+    const cookie = {
+      name: 'session',
+      value: '1',
+      domain: 'storage.example.test',
+      path: '/',
+      httpOnly: false,
+      secure: true,
+      sameSite: 'Lax' as const,
+    }
+    for (const expires of [-1, 0, 253402300800, 1e15])
+      expect(
+        NativeStorageStateSchema.parse({ cookies: [{ ...cookie, expires }], origins: [] })
+          .cookies[0]?.expires,
+      ).toBe(expires)
+    for (const expires of [-2, Number.POSITIVE_INFINITY, Number.NaN])
+      expect(
+        NativeStorageStateSchema.safeParse({ cookies: [{ ...cookie, expires }], origins: [] })
+          .success,
+      ).toBe(false)
+  })
   it('round-trips pretty authentication files while enforcing the compact state budget', async () => {
     const large: NativeStorageState = {
       cookies: [],

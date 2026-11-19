@@ -17,20 +17,19 @@ string values preserve isolated UTF16 units. Non-null objects, functions,
 symbols, promise awaiting and remote result handles are explicitly unsupported.
 Arbitrary author value dictionaries are never reinterpreted as transport tags.
 
-Expression source is limited to 8192 UTF16 units. A JSON string token carries it
+Expression source has no length limit of suitecut's own. A JSON string token carries it
 to native validation without accidental ingress normalization. Raw isolated
 source units reject explicitly; source can use JavaScript Unicode escapes to
-produce or inspect isolated-unit values. The serialized result is at most
-65536 bytes, string values at most 8192 units, and exception text/description at
-most 4096 units each. These are serialization and retained-record bounds, not an
-absolute CEF/V8 heap bound.
+produce or inspect isolated-unit values. suitecut sets no
+size limit on the serialized result, string values or exception
+text/description; CEF and V8 apply their own.
 
 The Inspector returns primitives by value while object serialization and preview
 are disabled. Unsupported objects return only native temporary identities.
 Each evaluation creates a native object group, including throwing expressions
 and unsupported object results. The public result is published only after the
-actual Runtime.releaseObjectGroup ACK. Up to eight records per session and 64
-per process include pending evaluation replies, pending releases and failed
+actual Runtime.releaseObjectGroup ACK. Records, with no count limit per session
+or process, include pending evaluation replies, pending releases and failed
 cleanup. Original public deadlines remain authoritative. Closing/canceling an
 accepted expression cannot undo author side effects; the real reply and cleanup
 remain retained. A separate fixed 30-second cleanup watchdog requests posted

@@ -9,16 +9,15 @@ event and its waiter may reach its original timeout. The first actual native
 admission/encoder/final-file error is also retained for context close.
 
 The default canvas fits the initial actual CSS viewport within 800 by 800.
-An explicit VP9/WebM canvas accepts integer width 1..3840 and height 1..2160,
+An explicit VP9/WebM canvas accepts any positive integer width and height,
 including odd dimensions. Every genuine native BGRA paint carries its current
 physical and native `GetViewRect` CSS extents before the legacy fixed-capture fit.
 CSS dimensions are retained with the paint rather than reconstructed by dividing
 rounded physical pixels by DPR. Late paints whose dimensions do not match the
 current reported native view are excluded from video input. CEF does not expose
 a paint resize generation when distinct CSS sizes round to identical physical
-sizes, so that collision follows the current native reported view. CSS extents
-up to 15360 by 8640 accommodate accepted DPR0.25 viewports while actual paint
-memory remains bounded to 3840 by 2160 physical pixels. The recorder's
+sizes, so that collision follows the current native reported view. suitecut sets
+no limit on CSS extents or physical paint size. The recorder's
 worker fits that paint into the fixed video canvas, never enlarges CSS content,
 and anchors it at the top left with black padding. Later viewport resizes use
 the current paint geometry, so they no longer inherit the launch capture's
@@ -52,12 +51,10 @@ Deletion retains the actual unlink fact even if a later durability check fails.
 The first implementation is Linux/POSIX native file IO, not remote-browser
 artifact downloading.
 
-The registry retains up to 256 undeleted video identities across backend
-metadata eviction and page/context removal; it refuses new admission rather
-than evicting such handles. Completed, explicitly deleted rows can be reclaimed
-on new admission. The most recent 256 reclaimed deleted identities keep
-idempotent deletion; older deleted handles reject as unavailable. At most 64
-logical waiters and eight actual file jobs are retained. Video records remain
+The registry retains every undeleted video identity across backend metadata
+eviction and page/context removal, and keeps deleted identities so deletion stays
+idempotent. suitecut does not limit the number of identities, logical waiters
+or file jobs. Video records remain
 usable after page/context close while the original browser transport exists.
 The default disabled path starts no encoder or file job, emits no video
 metadata, and sends no additional command.

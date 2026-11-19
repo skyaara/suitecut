@@ -2,7 +2,8 @@
 
 Status: isolated CEF robustness candidate, **not compiled or activated**.
 
-The pinned CEF headers publicly declare `CEF_CONTENT_SETTING_TYPE_MIDI`.
+Checked against CEF 156.0.7, the pin this candidate targets: the CEF headers
+publicly declare `CEF_CONTENT_SETTING_TYPE_MIDI`.
 Its conversion to Chromium `ContentSettingsType::MIDI` succeeds, but the pinned
 Chromium registry only registers MIDI SysEx. A standalone CEF program calling
 `SetContentSetting` with the named ordinary MIDI enum and `BLOCK` reproduces

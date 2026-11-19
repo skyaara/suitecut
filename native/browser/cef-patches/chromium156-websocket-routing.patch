@@ -44,13 +44,14 @@
  ]
 --- a/third_party/blink/renderer/core/inspector/inspector_network_agent.cc
 +++ b/third_party/blink/renderer/core/inspector/inspector_network_agent.cc
-@@ -2029,6 +2029,72 @@
+@@ -2029,6 +2029,73 @@
    *devtools_throttling_token = devtools_throttling_token_;
  }
  
 +protocol::Response InspectorNetworkAgent::suiteCutWebSocketConfigureV1(
 +    bool enabled, int* revision) {
-+  *revision = 1;
++  // Revision 2: the reply carries only the revision; no SuiteCut capacities.
++  *revision = 2;
 +  if (enabled && !enabled_.Get())
 +    return protocol::Response::ServerError("Enable Network before native WebSocket routing");
 +  suitecut_websocket_enabled_ = enabled;
@@ -117,7 +118,7 @@
  void InspectorNetworkAgent::WillCreateWebSocket(
      ExecutionContext* execution_context,
      uint64_t identifier,
-@@ -2120,6 +2186,7 @@
+@@ -2120,6 +2187,7 @@
  
  void InspectorNetworkAgent::DidCloseWebSocket(ExecutionContext*,
                                                uint64_t identifier) {
@@ -125,7 +126,7 @@
    GetFrontend()->webSocketClosed(
        IdentifiersFactory::SubresourceRequestId(identifier),
        base::TimeTicks::Now().since_origin().InSecondsF());
-@@ -2423,6 +2490,8 @@
+@@ -2423,6 +2491,8 @@
  }
  
  protocol::Response InspectorNetworkAgent::disable() {
@@ -184,7 +185,7 @@
 +#include "third_party/blink/renderer/core/core_export.h"
 +#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 +namespace blink {
-+// Execution-context-thread-only native channel control, revision 1. Weak handles
++// Execution-context-thread-only native channel control, revision 2. Weak handles
 +// are invalidated on real channel disposal, never reconstructed by URL.
 +class CORE_EXPORT SuiteCutWebSocketRoute {
 + public:
@@ -253,7 +254,7 @@
  
    // If the connection needs to be filtered, asynchronously fail. Synchronous
    // failure blocks the worker thread which should be avoided. Note that
-@@ -363,21 +356,220 @@
+@@ -363,21 +356,225 @@
      return true;
    }
  
@@ -401,6 +402,11 @@
 +  if (action == "close") {
 +    if (!((code == 1000) || (code >= 3000 && code <= 4999)))
 +      return "Invalid native WebSocket close code";
++    // RFC 6455 5.5: a control frame carries at most 125 bytes, 2 of them the
++    // code. This route bypasses DOMWebSocket::close, which enforces it, and
++    // net would otherwise replace an oversized reason with a silent 1011.
++    if (reason.Utf8().length() > 123)
++      return "SyntaxError: The close reason must not be greater than 123 UTF-8 bytes.";
 +    base::AutoReset<bool> bypass(&suitecut_bypass_, true);
 +    if (suitecut_mock_open_) SuiteCutClose(code, reason, true);
 +    else Close(code, reason);
@@ -481,7 +487,7 @@
    handshake_client_receiver_.set_disconnect_with_reason_handler(
        blink::BindOnce(&WebSocketChannelImpl::OnConnectionError,
                        WrapWeakPersistent(this), FROM_HERE));
-@@ -396,7 +588,7 @@
+@@ -396,7 +593,7 @@
      // the WebSocket is no longer referenced, there's no point in keeping it
      // alive just to receive the throttling result.
      handshake_throttle_->ThrottleHandshake(
@@ -490,7 +496,7 @@
          isolated_security_origin ? WebSecurityOrigin(isolated_security_origin)
                                   : WebSecurityOrigin(),
          BindOnce(&WebSocketChannelImpl::OnCompletion,
-@@ -408,8 +600,7 @@
+@@ -408,8 +605,7 @@
  
    DEVTOOLS_TIMELINE_TRACE_EVENT_INSTANT(
        "WebSocketCreate", InspectorWebSocketCreateEvent::Data,
@@ -500,7 +506,7 @@
  }
  
  void WebSocketChannelImpl::Send(
-@@ -433,6 +624,10 @@
+@@ -433,6 +629,10 @@
             << blob_data_handle->GetType() << ", " << blob_data_handle->size()
             << ") "
             << "(BlobDataHandle argument)";
@@ -511,7 +517,7 @@
    // FIXME: We can't access the data here.
    // Since Binary data are not displayed in Inspector, this does not
    // affect actual behavior.
-@@ -465,6 +660,19 @@
+@@ -465,6 +665,19 @@
  }
  
  void WebSocketChannelImpl::Close(int code, const String& reason) {
@@ -531,7 +537,7 @@
    DCHECK_EQ(GetState(), State::kOpen);
    DCHECK(!execution_context_->IsContextDestroyed());
    DVLOG(1) << this << " Close(" << code << ", " << reason << ")";
-@@ -713,6 +921,8 @@
+@@ -713,6 +926,8 @@
      Message&&) = default;
  
  WebSocketChannelImpl::State WebSocketChannelImpl::GetState() const {
@@ -540,7 +546,7 @@
    if (!has_initiated_opening_handshake_) {
      return State::kConnecting;
    }
-@@ -793,6 +1003,27 @@
+@@ -793,6 +1008,27 @@
      MessageType type,
      base::span<const uint8_t> data,
      std::unique_ptr<SendCompletionWatcher> watcher) {
@@ -568,7 +574,7 @@
    bool did_attempt_to_send = false;
    if (messages_.empty() && !wait_for_writable_) {
      did_attempt_to_send = true;
-@@ -810,6 +1041,7 @@
+@@ -810,6 +1046,7 @@
    messages_.push_back(
        Message(type, execution_context_->GetIsolate(), data, std::move(watcher),
                Message::DidCallSendMessage(did_attempt_to_send)));
@@ -576,7 +582,7 @@
  
    // If MaybeSendSynchronously() was called and didn't manage to write the whole
    // message, we cannot do anything until we are notified the data pipe has
-@@ -848,6 +1080,21 @@
+@@ -848,6 +1085,21 @@
          [[fallthrough]];
        case kMessageTypeArrayBuffer: {
          base::span<const uint8_t> data_frame = message.PendingPayload();
@@ -598,7 +604,7 @@
          if (!message.GetDidCallSendMessage()) {
            websocket_->SendMessage(message_type, data_frame.size());
            message.SetDidCallSendMessage(Message::DidCallSendMessage(true));
-@@ -883,6 +1130,7 @@
+@@ -883,6 +1135,7 @@
        }
      }
    }
@@ -606,7 +612,7 @@
  }
  
  std::pair<bool, size_t> WebSocketChannelImpl::SendMessageData(
-@@ -890,7 +1138,7 @@
+@@ -890,7 +1143,7 @@
    size_t consumed_buffered_amount = 0;
    if (!data.empty()) {
      data = ProduceData(data, &consumed_buffered_amount);
@@ -615,7 +621,7 @@
        client_->DidConsumeBufferedAmount(consumed_buffered_amount);
      }
      if (!data.empty()) {
-@@ -909,7 +1157,7 @@
+@@ -909,7 +1162,7 @@
          // https://bugs.chromium.org/p/chromium/issues/detail?id=937790
          // The corresponding test case is
          // browser_tests WebRequestApiTest.WebSocketCleanClose.
@@ -624,7 +630,7 @@
            client_->DidConsumeBufferedAmount(data.size());
          }
        }
-@@ -1156,6 +1404,19 @@
+@@ -1156,6 +1409,19 @@
    DEVTOOLS_TIMELINE_TRACE_EVENT_INSTANT(
        "WebSocketReceive", InspectorWebSocketTransferEvent::Data,
        execution_context_.Get(), identifier_, data.size());
@@ -644,7 +650,7 @@
    if (receiving_message_type_is_text_) {
      // This checked_cast cannot fail as long as `max_message_size_` is less than
      // or equal to `wtf_size_t` max value, due to the check earlier in this
-@@ -1270,6 +1531,13 @@
+@@ -1270,6 +1536,13 @@
  }
  
  void WebSocketChannelImpl::Dispose() {

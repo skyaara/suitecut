@@ -16,6 +16,14 @@
 #include <string>
 #include <unistd.h>
 namespace suitecut {
+namespace {
+// llround is undefined outside long long: an extreme fps fails the encode with
+// a clear error. An overflow guard on CMTime's int64 value, not a rate cap.
+int64_t Microseconds(double value){
+  if(!std::isfinite(value)||std::fabs(value)>=9223372036854775808.0)throw std::runtime_error("Native H.264 timestamp is not representable");
+  return std::llround(value);
+}
+}
 struct MacNativeEncoder::Impl {
   struct Pending {std::shared_ptr<MacCaptureFrame> surface;bool preparation=false;};
   struct Packet {std::vector<uint8_t> data;};
@@ -85,6 +93,8 @@ struct MacNativeEncoder::Impl {
   void Write(const std::shared_ptr<MacCaptureFrame>& surface,const std::vector<uint8_t>& data,bool preparation){
     Health();
     {std::unique_lock lock(mutex);while(pending.size()+packets.size()>=4){lock.unlock();Health();lock.lock();changed.wait_for(lock,std::chrono::milliseconds(10));}}
+    // Convert before any buffer or pending entry exists, so a failure leaks neither.
+    const int64_t presentation=Microseconds(double(sequence)*1000000.0/fps),duration=Microseconds(1000000.0/fps);
     CVPixelBufferRef image=surface?static_cast<CVPixelBufferRef>(surface->PixelBuffer()):nullptr;
     CVPixelBufferRef copied=nullptr;
     if(!image){
@@ -98,7 +108,7 @@ struct MacNativeEncoder::Impl {
     {std::lock_guard lock(mutex);pending.emplace(index,Pending{surface,preparation});}
     NSDictionary* frame_options=(preparation||index==1)?@{(id)kVTEncodeFrameOptionKey_ForceKeyFrame:@YES}:nil;
     VTEncodeInfoFlags info=0;
-    auto status=VTCompressionSessionEncodeFrame(session,image,CMTimeMake(std::llround(index*1000000.0/fps),1000000),CMTimeMake(std::llround(1000000.0/fps),1000000),(__bridge CFDictionaryRef)frame_options,reinterpret_cast<void*>(uintptr_t(index+1)),&info);
+    auto status=VTCompressionSessionEncodeFrame(session,image,CMTimeMake(presentation,1000000),CMTimeMake(duration,1000000),(__bridge CFDictionaryRef)frame_options,reinterpret_cast<void*>(uintptr_t(index+1)),&info);
     if(copied)CVPixelBufferRelease(copied);
     if(status){std::lock_guard lock(mutex);pending.erase(index);CheckStatus(status,"Native H.264 submit failed");}
     if(info&kVTEncodeInfo_FrameDropped)throw std::runtime_error("Native H.264 rejected an admitted frame");

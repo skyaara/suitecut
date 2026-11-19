@@ -90,6 +90,19 @@ describe('native request-body byte publications', () => {
     first.close()
     second.close()
   })
+  it('clears one scope of a shared archive without touching the others', () => {
+    const archive = new NativeNetworkBodyArchive()
+    const scopes = Array.from({ length: 12 }, () => archive.scope())
+    for (const scope of scopes)
+      for (let id = 1; id <= 3; id++) archive.put(scope, String(id), Buffer.alloc(scope))
+    archive.clear(scopes[0]!)
+    expect(archive.diagnostics(scopes[0]!)).toEqual({ bodies: 0, retainedBytes: 0 })
+    expect(archive.get(scopes[0]!, '1')).toBeUndefined()
+    expect(archive.diagnostics(scopes[10]!)).toEqual({ bodies: 3, retainedBytes: 3 * scopes[10]! })
+    archive.remove(scopes[10]!, '2')
+    expect(archive.get(scopes[10]!, '1')?.length).toBe(scopes[10])
+    expect(archive.diagnostics(scopes[10]!).bodies).toBe(2)
+  })
   it('releases the receiver when a real acknowledgment fails after completion', async () => {
     const failure = vi.fn()
     const receiver = new NativeNetworkBodyReceiver(

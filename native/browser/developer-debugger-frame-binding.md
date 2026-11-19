@@ -44,13 +44,13 @@ session teardown calls frame channel closure only after its existing actual
 callback/arbiter drain. Cleanup watchdogs request posted Source teardown and do
 not retire physical work themselves.
 
-A Source admits at most eight live frame controllers and retains at most 32
-captured records including completed-close metadata. Record eviction removes
-only physically retired metadata. It never retires an accepted callback. A
+A Source admits any number of live frame controllers and keeps their captured
+records, including completed-close metadata, for its lifetime; records are not
+evicted. Nothing here retires an accepted callback. A
 completed-close token is retained only after the actual controller ownership
 retires; the first terminal close error, including its original deadline error,
 stays an error. Cancellation of a logical observer without a terminal failure
-can join the exact eventual physical retirement. Unknown or evicted tokens fail
+can join the exact eventual physical retirement. Unknown tokens fail
 explicitly. SDK canonical cleanup forwards the old frame ID and native token
 under the genuine page/Source lifetime, independently of constructor cancellation
 or a frame facade's local detached flag.

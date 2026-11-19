@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
 import { NativeAudioAssembler } from '../src/native-audio.js'
 import {
@@ -139,6 +139,38 @@ describe('native IPC boundary', () => {
     const size = Buffer.alloc(4)
     size.writeUInt32LE(1)
     expect(() => new NativePacketDecoder(() => undefined).push(size)).toThrow('header length')
+  })
+
+  it('allocates header and payload storage only as their bytes arrive', () => {
+    const allocations = vi.spyOn(Buffer, 'allocUnsafe')
+    try {
+      // A corrupt length word must not reserve 4 GiB before any header bytes exist.
+      const corrupt = Buffer.alloc(4)
+      corrupt.writeUInt32LE(0xffffffff)
+      const decoder = new NativePacketDecoder(() => undefined)
+      decoder.push(Buffer.concat([corrupt, Buffer.from('{"vers')]))
+      expect(Math.max(...allocations.mock.calls.map(([size]) => size))).toBeLessThan(64)
+      expect(() => decoder.end()).toThrow('Truncated')
+      // A large payload fragmented across irregular reads still arrives byte for byte.
+      allocations.mockClear()
+      const received: Buffer[] = []
+      const frames = new NativePacketDecoder((_, data) => received.push(data))
+      const data = Buffer.alloc(64 * 64 * 4)
+      for (let i = 0; i < data.length; i++) data[i] = (i * 31) % 251
+      const bytes = packet(
+        { type: 'frame', timestampMs: 1, width: 64, height: 64, dropped: 0 },
+        data,
+      )
+      const split = bytes.length - data.length + 100
+      frames.push(bytes.subarray(0, split))
+      expect(Math.max(...allocations.mock.calls.map(([size]) => size))).toBeLessThan(1024)
+      for (let i = split; i < bytes.length; i += 977) frames.push(bytes.subarray(i, i + 977))
+      frames.end()
+      expect(received).toHaveLength(1)
+      expect(received[0]?.equals(data)).toBe(true)
+    } finally {
+      allocations.mockRestore()
+    }
   })
 
   it('validates I420 plane sizes and even dimensions', () => {

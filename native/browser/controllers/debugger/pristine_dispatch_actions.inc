@@ -155,7 +155,9 @@ bool NativeMainDispatchAction(int id,uint64_t generation,Dict config){
   const auto packet_json=config->GetString("eventInitJSON").ToString();
   {
     const auto packet=CefParseJSON(packet_json,JSON_PARSER_RFC);
-    if(!packet||packet->GetType()!=VTYPE_LIST||ids->GetSize()>32){Complete(id,false,"Invalid native main dispatch packet");return true;}
+    if(!packet||packet->GetType()!=VTYPE_LIST){Complete(id,false,"Invalid native main dispatch packet");return true;}
+    // The pristine main-world packet marks wrapped handle arguments in a 32-bit mask.
+    if(ids->GetSize()>32){Complete(id,false,"main-world dispatchEvent supports at most 32 handle arguments (32-bit mask)");return true;}
   }
   auto w=std::make_shared<NativeMainDispatchWork>();
   w->id=id;

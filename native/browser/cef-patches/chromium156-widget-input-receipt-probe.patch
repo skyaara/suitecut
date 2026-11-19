@@ -13,7 +13,7 @@ diff --git a/content/browser/devtools/protocol/input_handler.h b/content/browser
 diff --git a/content/browser/devtools/protocol/input_handler.cc b/content/browser/devtools/protocol/input_handler.cc
 --- a/content/browser/devtools/protocol/input_handler.cc
 +++ b/content/browser/devtools/protocol/input_handler.cc
-@@ -1442,6 +1442,13 @@
+@@ -1442,6 +1442,14 @@
        text16, std::vector<ui::ImeTextSpan>(), replacement_range,
        selection_start, selection_end, blink::mojom::ImeState::kNone,
        /*target_dom_node_id=*/blink::DOMNodeIdType(), std::move(closure));
@@ -21,7 +21,8 @@ diff --git a/content/browser/devtools/protocol/input_handler.cc b/content/browse
 +
 +Response InputHandler::GetMouseWidgetReceiptCapabilities(
 +    int* schema_version, std::string* protocol) {
-+  *schema_version = 1;
++  // Schema 2: the reply names no SuiteCut lease or pending capacities.
++  *schema_version = 2;
 +  *protocol = "suitecut-widget-mouse-v1";
 +  return Response::Success();
  }

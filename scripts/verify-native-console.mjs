@@ -88,8 +88,9 @@ try {
   for (let index = 1; index < observed.length; ++index)
     assert(observed[index].timestamp() >= observed[index - 1].timestamp())
   const journal = await page.consoleMessages()
-  assert.equal(journal.length, 100)
-  assert.equal(journal[0].text(), 'message201')
+  // The native journal keeps every message; no suitecut window drops the oldest.
+  assert(journal.length >= 301)
+  assert.equal(journal.at(-301)?.text(), 'message0')
   assert.equal(journal.at(-1)?.text(), 'message300')
   await page.clearConsoleMessages()
   assert.equal((await page.consoleMessages()).length, 0)

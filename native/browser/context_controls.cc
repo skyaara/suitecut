@@ -412,7 +412,11 @@ bool SuiteCutContextControls::Handle(const std::string& action, Dict params, Rep
         !std::isfinite(after) || after < 0 || std::floor(after) != after || after > static_cast<double>(sequence_)) {
       reply(false, nullptr, "Invalid native context event wait"); return true;
     }
-    for (const auto& event : journal_) if (event->GetDouble("sequence") > after && Matches(wait, event)) { reply(true, event->Copy(false), ""); return true; }
+    Dict replay; for (const auto& event : journal_) if (event->GetDouble("sequence") > after && Matches(wait, event)) { replay = event->Copy(false); break; }
+    // The host's cursor only moves forward over one ordered channel, so events at or
+    // below it were delivered and no later wait can replay them: release them.
+    while (!journal_.empty() && journal_.front()->GetDouble("sequence") <= after) journal_.pop_front();
+    if (replay) { reply(true, replay, ""); return true; }
     wait.reply = std::move(reply); waits_[owner] = std::move(wait); return true;
   }
   if (action == "list") {

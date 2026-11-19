@@ -1,7 +1,8 @@
 # Preserved-viewport offscreen OOPIF raster candidate
 
 Status: **pinned vendor source candidate, uncompiled and unverified**. The stock
-CEF binary still has the preserved-viewport offscreen OOPIF screenshot limitation.
+CEF 156.0.7 binary this patch targets has the preserved-viewport offscreen OOPIF
+screenshot limitation; the 156.0.30 pin has not been rechecked.
 This patch does not change SuiteCut's production capture hooks or advertise a
 new capability. Build other native controls independently of this vendor work.
 

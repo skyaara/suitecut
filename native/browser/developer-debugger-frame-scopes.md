@@ -14,9 +14,8 @@ requires actual arbiter lease disappearance and accepted-call drain, or the
 exact actual channel/host boundary. Reused native lease IDs and stale receipts
 cannot affect a replacement scope.
 
-The process book permits 16 scopes, 128 actual-call reservations and 65536 charged
-identity bytes; each scope permits 32 calls and 4096 identity bytes. These are
-retained-record/string payload limits, not an absolute heap bound. Fallible
+The process book sets no scope, call or identity-byte limit of suitecut's own;
+it still accounts retained records and identity strings. Fallible
 record/channel-node allocations precede quota publication. Pending acquisition
 is bracketed separately from its logical Ready result. A fixed 30-second cleanup
 watchdog requests posted real host closure once and retains ownership until

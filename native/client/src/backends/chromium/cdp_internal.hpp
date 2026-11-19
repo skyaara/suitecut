@@ -9,6 +9,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <vector>
 
 namespace suitecut::detail {
 void cdp_check_active(Deadline);
@@ -23,6 +24,7 @@ struct CdpPage {
   std::string target, session, frame_id, isolated_loader, isolated_frame;
   std::string download_directory, download_frame;
   std::map<std::string, Json> downloads;
+  std::uint64_t download_cursor = 0; // Browser.download* events up to here are applied to downloads.
   std::map<std::string, std::string> frame_sessions;
   Json emulated_media = Json::object{};
   int isolated_context = 0;
@@ -45,7 +47,11 @@ struct CdpRuntime {
   Json evaluate(CdpPage&, const std::string&, Deadline, bool isolated = false);
   Json value(CdpPage&, const std::string&, Deadline, bool isolated = false);
   bool network_idle(CdpPage&, Deadline) const;
-  Json browser_events(const std::string& method, std::uint64_t after_sequence=0) const;
+  // Browser-level events (see CdpNetwork::events): method prefix, after a consumer's own cursor.
+  Json browser_events(const std::string& method_prefix, std::uint64_t after_sequence=0) const;
+  std::uint64_t browser_sequence() const;
+  void release_drags(const std::string& session, std::uint64_t through) const;
+  void release_downloads(const std::vector<std::string>& guids, const std::string& frame = {}) const;
 };
 Json cdp_dom_command(CdpRuntime&, CdpPage&, const Json&, Deadline);
 Json cdp_input_command(CdpRuntime&, CdpPage&, const Json&, Deadline);

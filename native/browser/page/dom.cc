@@ -903,6 +903,14 @@ auto Source::LocatorAction(int id, std::uint64_t generation, const std::string& 
                  Complete(id, success, success ? "" : "Native text input failed");
                });
     } else {
+      // clickCount and steps feed int input fields; a non-int value is an
+      // error, not a silent single click or single step.
+      for (const char* key : {"clickCount", "steps"}) {
+        if (config->HasKey(key) && (config->GetType(key) != VTYPE_INT || config->GetInt(key) < 1)) {
+          Complete(id, false, std::string("Native pointer ") + key + " must be a positive int");
+          return;
+        }
+      }
       if (config->GetBool("trial")) {
         Complete(id, true);
         return;
@@ -915,10 +923,9 @@ auto Source::LocatorAction(int id, std::uint64_t generation, const std::string& 
       input->SetString("button", config->GetType("button") == VTYPE_STRING
                                      ? config->GetString("button")
                                      : CefString("left"));
-      input->SetInt("clickCount",
-                    config->GetType("clickCount") == VTYPE_INT ? config->GetInt("clickCount") : 1);
+      input->SetInt("clickCount", config->HasKey("clickCount") ? config->GetInt("clickCount") : 1);
       input->SetInt("delay", config->GetInt("delay"));
-      input->SetInt("steps", config->GetType("steps") == VTYPE_INT ? config->GetInt("steps") : 1);
+      input->SetInt("steps", config->HasKey("steps") ? config->GetInt("steps") : 1);
       input->SetBool("waitForNavigation",
                      (action == "click" || action == "tap") && !config->GetBool("noWaitAfter"));
       MapFramePoint(
@@ -1107,7 +1114,8 @@ auto Source::QueryEvaluate(int id, uint64_t generation, Dict message) -> void {
         [this, id, generation, message](const std::string& array, CefRefPtr<CefListValue> forest) {
           auto config = message->Copy(false);
           config->SetString("nativeQueryNodes", array);
-          config->SetList("nativeAccessibilitySnapshot", forest->Copy());
+          // A fresh projected forest is adopted, not deep-copied.
+          config->SetList("nativeAccessibilitySnapshot", forest);
           QueryEvaluate(id, generation, config);
         });
     return;
@@ -1156,10 +1164,9 @@ auto Source::QueryEvaluate(int id, uint64_t generation, Dict message) -> void {
           : std::string("");
   std::string accessibility_snapshot;
   if (message->HasKey("nativeAccessibilitySnapshot")) {
-    auto value = CefValue::Create();
-    value->SetList(message->GetList("nativeAccessibilitySnapshot")->Copy());
     std::string native_json;
-    if (!suitecut::DevToolsLosslessJSON(value, native_json)) {
+    if (!suitecut::DevToolsLosslessListJSON(message->GetList("nativeAccessibilitySnapshot"),
+                                            native_json)) {
       Complete(id, false, "Native accessibility snapshot could not be serialized");
       return;
     }

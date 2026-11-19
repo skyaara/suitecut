@@ -23,8 +23,8 @@ struct DOMSemanticControls {
 };
 void DOMSemanticFinish(const std::shared_ptr<DOMSemanticControls>& state){
   const auto work=state->capture;if(!AXCurrent(work))return;
-  auto forest_value=CefValue::Create();forest_value->SetList(state->forests->Copy());std::string native;
-  if(!suitecut::DevToolsLosslessJSON(forest_value,native)){AXError(work,"Native UA control metadata could not be serialized");return;}
+  std::string native;
+  if(!suitecut::DevToolsLosslessListJSON(state->forests,native)){AXError(work,"Native UA control metadata could not be serialized");return;}
   auto params=CefDictionaryValue::Create();params->SetString("objectId",work->array);params->SetBool("returnByValue",true);params->SetString("objectGroup","suitecut-automation-"+std::to_string(work->owner));
   params->SetString("functionDeclaration","function(files,probe){"+std::string(kDOMSemanticFileProbe)+"const nativeControls=new WeakMap(),forests=JSON.parse("+DOMSemanticQuote(native)+");for(let i=0;i<files.length;i++)nativeControls.set(files[i],forests[i]);return JSON.stringify(this.length?("+std::string(kSuiteCutDOMSemanticSnapshot)+")(this[0],("+std::string(kSuiteCutDomQuery)+"),{boxes:"+(state->message->GetBool("accessibilityBoxes")?"true":"false")+",nativeControls}):[]);}");
   if(state->reference_done){
@@ -61,7 +61,8 @@ void DOMSemanticReadControl(const std::shared_ptr<DOMSemanticControls>& state){
       const auto borrowed=result->GetList("nodes");const auto nodes=borrowed?borrowed->Copy():nullptr;
       SuiteCutAXForest projector;CefRefPtr<CefListValue> forest;std::vector<SuiteCutAXForest::Link> links;std::string error;
       if(!projector.Project(nodes,backend,forest,links,error)){AXError(work,error);return;}
-      state->forests->SetList(index,forest->Copy());DOMSemanticReadControl(state);
+      // The projection is a fresh list: CEF adopts it without a deep copy.
+      state->forests->SetList(index,forest);DOMSemanticReadControl(state);
     });
   });
 }

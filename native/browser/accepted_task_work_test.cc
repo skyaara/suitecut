@@ -6,6 +6,16 @@
 #include <memory>
 #include <stdexcept>
 #include <vector>
+#include <cstdlib>
+#include <new>
+// Failing growth must poison the ledger, never std::terminate through noexcept.
+static bool deny_new=false;
+[[gnu::noinline]] void* operator new(std::size_t size){if(deny_new)throw std::bad_alloc();if(void*p=std::malloc(size?size:1))return p;throw std::bad_alloc();}
+[[gnu::noinline]] void operator delete(void*p)noexcept{std::free(p);}
+[[gnu::noinline]] void operator delete(void*p,std::size_t)noexcept{std::free(p);}
+[[gnu::noinline]] void* operator new[](std::size_t size){return ::operator new(size);}
+[[gnu::noinline]] void operator delete[](void*p)noexcept{::operator delete(p);}
+[[gnu::noinline]] void operator delete[](void*p,std::size_t)noexcept{::operator delete(p);}
 using Work=suitecut::AcceptedTaskWork;
 struct OwnedTask {
  suitecut::AcceptedTaskReceipt receipt; // Must outlive the captured callback.
@@ -117,5 +127,7 @@ int main(){
    assert(why.find("a task from accepted_task_work_test.cc:")==0&&why.find(" queued and 1 more")!=std::string::npos);}
   {suitecut::AcceptedTaskReceipt monitor(Work::Kind::PassiveNetworkMonitor);assert(suitecut::NativeTaskBarrierBlocker(0,true).empty()&&!suitecut::NativeTaskBarrierBlocker().empty());}
  }assert(suitecut::NativeTaskBarrierBlocker()=="not on a barrier task");++controls;
- assert(controls==38);std::cout<<"Accepted native task work: "<<controls<<" C++ ownership/stack/captured-state controls passed; no CEF/global Engine idle proof\n";
+ {auto starved=std::make_shared<Work>();deny_new=true;const auto ticket=starved->Constructed(Work::Kind::Work);deny_new=false;
+  const auto state=starved->Inspect();assert(!ticket&&state.poisoned&&!state.queued);}++controls;
+ assert(controls==39);std::cout<<"Accepted native task work: "<<controls<<" C++ ownership/stack/captured-state controls passed; no CEF/global Engine idle proof\n";
 }

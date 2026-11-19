@@ -25,13 +25,11 @@ accounts for every retained node before the selected canonical native JSON or YA
 formatted directly over the merged semantic forest; no YAML parsing, concatenation
 or reference alias rewriting is involved.
 
-Limits are 32 frames, 4096 aggregate retained nodes and forest records, 64 levels,
-64 KiB actual serialized forest UTF8, and 8192 native reference requests.
-JSON output retains its 64 KiB encoded limit. The canonical YAML formatter retains
-its existing 64 KiB UTF16-accounted output limit; its JSON string envelope retains
-the existing 393218-byte escaped transport bound. Failed formatting or encoding
-validation never prepares publication. Existing
-resident/install/borrow/release limits and real physical receipts remain in force.
+suitecut sets no limit on frames, retained nodes, forest records, depth,
+serialized forest size, reference requests, or JSON and YAML output size; Blink
+and Chromium apply their own. Failed formatting or encoding
+validation never prepares publication. Real physical install/borrow/release
+receipts remain in force.
 Only one child capture/request chain runs at a time. Temporary selection groups
 transfer to the ordinary physical selector owner; persistent captures retain their
 independent native install/use/release ownership after logical cancellation.
@@ -54,7 +52,7 @@ real spelling; stock test constants are not aliases.
 
 Repeated successful snapshots preserve a reference for the same genuine backend
 node in the exact same document, including reordered semantic output and iframe
-owners. Each staging group receives a bounded immutable token vector; publication
+owners. Each staging group receives an immutable token vector; publication
 and child-frame discovery validate that exact vector rather than interpreting an
 old ticket prefix as the new retained array index. Omitted nodes and changed
 loader/session/realm identities lose their old references; there is no unbounded

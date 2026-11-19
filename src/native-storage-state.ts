@@ -17,7 +17,7 @@ const Cookie = z.strictObject({
   value: z.string(),
   domain: z.string(),
   path: z.string(),
-  expires: z.number().finite().min(-1).max(253402300799),
+  expires: z.number().finite().min(-1),
   httpOnly: z.boolean(),
   secure: z.boolean(),
   sameSite: z.enum(['Strict', 'Lax', 'None']),

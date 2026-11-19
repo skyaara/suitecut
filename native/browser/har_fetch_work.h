@@ -13,7 +13,8 @@ class NativeHARFetchWork {
   bool Add(uint64_t scope,const std::string&session,Policy policy){
     if(completed_||!scope||!policy||(!entries_.empty()&&(scope!=scope_||session!=session_)))return false;
     for(const auto&entry:entries_)if(entry.policy==policy)return true;
-    auto selected_session=session;
+    // Allocate first: once Issue() hands out a lease, nothing below may throw and drop it un-ACKed.
+    auto selected_session=session;entries_.reserve(entries_.size()+1);
     auto admission=GlobalHARWorkLeases().Issue(scope,session,policy,NativeHARWorkLeases::Kind::ReplayFetch);if(!admission)return false;
     entries_.push_back({std::move(policy),std::move(*admission)});scope_=scope;session_.swap(selected_session);return true;
   }

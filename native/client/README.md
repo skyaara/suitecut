@@ -613,7 +613,8 @@ browser.close();
 
 `suitecut/observation.hpp` adds `compact_observation(page.observe(), options)`
 and stateless `observation_diff(previous, current)`. Compact output retains
-actionable references, states and ancestor context, with explicit truncation
+actionable references, states and ancestor context (each node's `parent`
+indexes a shared `ancestors` table, so output stays linear at any depth), with explicit truncation
 flags when a caller sets node, text or scan limits (`ObservationOptions` has no
 limit by default). Differences ignore reference-only
 changes; ambiguous duplicate controls remain explicit. These helpers run in the

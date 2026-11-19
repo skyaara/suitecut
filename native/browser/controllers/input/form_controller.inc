@@ -341,8 +341,12 @@ void FormStageCommand(int id,Dict message) {
     try{
       for(size_t i=0;i<metadata->GetSize();++i){
         const auto file=metadata->GetDictionary(i);
-        if(!file||file->GetType("name")!=VTYPE_STRING||file->GetType("mimeType")!=VTYPE_STRING||file->GetType("size")!=VTYPE_INT||file->GetInt("size")<0)throw std::invalid_argument("Invalid native upload metadata");
-        const auto size=static_cast<size_t>(file->GetInt("size"));
+        // JSON carries sizes past INT32 (2 GiB) as doubles: accept any non-negative
+        // integer up to 2^53, the largest exactly representable JSON size.
+        const auto kind=file?file->GetType("size"):VTYPE_INVALID;const double declared=kind==VTYPE_INT?file->GetInt("size"):kind==VTYPE_DOUBLE?file->GetDouble("size"):-1;
+        if(!file||file->GetType("name")!=VTYPE_STRING||file->GetType("mimeType")!=VTYPE_STRING||!std::isfinite(declared)||declared<0||declared>9007199254740992.0||declared>static_cast<double>(std::numeric_limits<size_t>::max())||std::floor(declared)!=declared)throw std::invalid_argument("Invalid native upload metadata");
+        const auto size=static_cast<size_t>(declared);
+        if(size>std::numeric_limits<size_t>::max()-upload.bytes)throw std::invalid_argument("Native upload total size overflows");
         upload.bytes+=size;upload.expected.push_back(size);upload.received.push_back(0);
         upload.names.push_back(file->GetString("name"));upload.mime_types.push_back(file->GetString("mimeType"));
         upload.paths.push_back(upload.files->Stage(file->GetString("name"),""));

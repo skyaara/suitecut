@@ -11,9 +11,9 @@
     "third_party/blink/public/devtools_protocol/domains/CSS.pdl": "be7724f102548c0bf5054d11e47a5663b1776e18012e887159222e09a0692e07"
   },
   "output": {
-    "third_party/blink/renderer/core/inspector/inspector_css_agent.cc": null,
-    "third_party/blink/renderer/core/inspector/inspector_css_agent.h": null,
-    "third_party/blink/public/devtools_protocol/domains/CSS.pdl": null
+    "third_party/blink/renderer/core/inspector/inspector_css_agent.cc": "495d8c8a0511a98f064ce44277317d8b1021251ff6dba9bf9d510a973b980c4c",
+    "third_party/blink/renderer/core/inspector/inspector_css_agent.h": "d7eec712dffb061babd18e57b8f20124158190dee1d915205323945c77402692",
+    "third_party/blink/public/devtools_protocol/domains/CSS.pdl": "e173b98d3e07cd3d6a3a8149e1f15f4ecf0cdabb29270d028e0234fb9caa35cc"
   },
   "patchSHA256": "2c042ab3ec7bb1f0b550edac77393eea9236bbd2780a4af7064efadc361934bc",
   "nativeActivation": "NONE; stock resetOnNavigation:false remains unsupported; no production Source/SDK activation",
@@ -26,7 +26,7 @@
     "git apply --check against every exact pinned base file PASS",
     "Pinned Chromium PDL parser accepts candidate domain syntax; local extension references checked",
     "No generated protocol C++ compile, Chromium/V8 compile, rebuilt libcef, or candidate runtime proof",
-    "SuiteCut usage-record, stylesheet-count, stylesheet-ID length, source-unit and header-metadata caps were removed after the applicability check; output hashes for the three modified files must be recomputed against the pinned source (null until then)"
+    "SuiteCut usage-record, stylesheet-count, stylesheet-ID length, source-unit and header-metadata caps were removed after the applicability check; output hashes were recomputed 2026-11-19 by applying the bundle in order to the pinned sources (base hashes verified)"
   ],
   "sourceComponent": "chromium",
   "patchRoot": "chromium",
@@ -36,8 +36,8 @@
     "third_party/blink/public/devtools_protocol/domains/CSS.pdl": "be7724f102548c0bf5054d11e47a5663b1776e18012e887159222e09a0692e07"
   },
   "componentOutput": {
-    "third_party/blink/renderer/core/inspector/inspector_css_agent.cc": null,
-    "third_party/blink/renderer/core/inspector/inspector_css_agent.h": null,
-    "third_party/blink/public/devtools_protocol/domains/CSS.pdl": null
+    "third_party/blink/renderer/core/inspector/inspector_css_agent.cc": "495d8c8a0511a98f064ce44277317d8b1021251ff6dba9bf9d510a973b980c4c",
+    "third_party/blink/renderer/core/inspector/inspector_css_agent.h": "d7eec712dffb061babd18e57b8f20124158190dee1d915205323945c77402692",
+    "third_party/blink/public/devtools_protocol/domains/CSS.pdl": "e173b98d3e07cd3d6a3a8149e1f15f4ecf0cdabb29270d028e0234fb9caa35cc"
   }
 }

@@ -32,7 +32,7 @@ class Parser {
   Parser(std::string_view text, JsonLimits limits) : text_(text), limits_(limits) {
     if (limits_.max_bytes && text_.size() > limits_.max_bytes) fail("input limit");
   }
-  Json run() { auto value = parse(0); whitespace(); if (at_ != text_.size()) fail("trailing input"); return value; }
+  Json run() { auto value = parse(); whitespace(); if (at_ != text_.size()) fail("trailing input"); return value; }
  private:
   std::string_view text_;
   JsonLimits limits_;
@@ -127,35 +127,52 @@ class Parser {
     if (result.ec != std::errc{} || result.ptr != token.data() + token.size() || !std::isfinite(value)) fail("floating point range");
     return value;
   }
-  Json parse(std::size_t depth) {
-    ++nodes_;
-    if ((limits_.max_depth && depth > limits_.max_depth) || (limits_.max_nodes && nodes_ > limits_.max_nodes)) fail("nesting or node limit");
-    whitespace(); if (at_ == text_.size()) fail("missing value");
-    switch (text_[at_]) {
-      case 'n': literal("null"); return nullptr;
-      case 't': literal("true"); return true;
-      case 'f': literal("false"); return false;
-      case '"': return string();
-      case '[': {
-        ++at_; whitespace(); Json::array values; if (take(']')) return values;
-        for (;;) { values.push_back(parse(depth + 1)); whitespace(); if (take(']')) return values; expect(','); }
-      }
-      case '{': {
-        ++at_; whitespace(); Json::object values; if (take('}')) return values;
-        for (;;) {
-          whitespace(); auto key = string(); whitespace(); expect(':'); auto value = parse(depth + 1);
-          if (!values.emplace(std::move(key), std::move(value)).second) fail("duplicate key");
-          whitespace(); if (take('}')) return values; expect(',');
+  // Containers under construction live on an explicit stack: nesting depth is bounded by memory, not the thread stack.
+  struct Frame { Json container; std::string key; };
+  Json parse() {
+    std::vector<Frame> stack; Json value;
+    for (;;) {
+      ++nodes_;
+      if ((limits_.max_depth && stack.size() > limits_.max_depth) || (limits_.max_nodes && nodes_ > limits_.max_nodes)) fail("nesting or node limit");
+      whitespace(); if (at_ == text_.size()) fail("missing value");
+      switch (text_[at_]) {
+        case 'n': literal("null"); value = nullptr; break;
+        case 't': literal("true"); value = true; break;
+        case 'f': literal("false"); value = false; break;
+        case '"': value = string(); break;
+        case '[': {
+          ++at_; whitespace();
+          if (take(']')) { value = Json::array{}; break; }
+          stack.push_back({Json::array{}, {}}); continue;
         }
+        case '{': {
+          ++at_; whitespace();
+          if (take('}')) { value = Json::object{}; break; }
+          auto key = string(); whitespace(); expect(':'); stack.push_back({Json::object{}, std::move(key)}); continue;
+        }
+        default: if (text_[at_] == '-' || (text_[at_] >= '0' && text_[at_] <= '9')) { value = number(); break; } fail("unexpected value");
       }
-      default: if (text_[at_] == '-' || (text_[at_] >= '0' && text_[at_] <= '9')) return number(); fail("unexpected value");
+      // A value is complete: attach it to its parent, closing every container that ends here.
+      for (;;) {
+        if (stack.empty()) return value;
+        auto& top = stack.back();
+        if (top.container.is_array()) {
+          top.container.as_array().push_back(std::move(value)); whitespace();
+          if (take(']')) { value = std::move(top.container); stack.pop_back(); continue; }
+          expect(','); break;
+        }
+        if (!top.container.as_object().emplace(std::move(top.key), std::move(value)).second) fail("duplicate key");
+        whitespace();
+        if (take('}')) { value = std::move(top.container); stack.pop_back(); continue; }
+        expect(','); whitespace(); top.key = string(); whitespace(); expect(':'); break;
+      }
     }
   }
 };
 class Dumper {
  public:
   explicit Dumper(JsonLimits limits) : limits_(limits) {}
-  std::string run(const Json& value) { dump(value, 0); return std::move(out_); }
+  std::string run(const Json& value) { dump(value); return std::move(out_); }
  private:
   JsonLimits limits_;
   std::size_t nodes_ = 0;
@@ -185,9 +202,7 @@ class Dumper {
     }
     append("\"");
   }
-  void dump(const Json& value, std::size_t depth) {
-    ++nodes_;
-    if ((limits_.max_depth && depth > limits_.max_depth) || (limits_.max_nodes && nodes_ > limits_.max_nodes)) throw std::runtime_error("JSON nesting or node limit exceeded");
+  void scalar(const Json& value) {
     if (value.is_null()) append("null");
     else if (value.is_bool()) append(value.as_bool() ? "true" : "false");
     else if (value.is_number()) {
@@ -196,15 +211,33 @@ class Dumper {
       if (converted.ec != std::errc{}) throw std::runtime_error("JSON number formatting failed");
       const std::string_view number(buffer, static_cast<std::size_t>(converted.ptr - buffer)); append(number);
       if (!value.is_integer() && number.find_first_of(".eE") == std::string_view::npos) append(".0");
-    } else if (value.is_string()) string(value.as_string());
-    else if (value.is_array()) {
-      append("["); bool first = true;
-      for (const auto& item : value.as_array()) { if (!first) append(","); first = false; dump(item, depth + 1); }
-      append("]");
-    } else {
-      append("{"); bool first = true;
-      for (const auto& [key, item] : value.as_object()) { if (!first) append(","); first = false; string(key); append(":"); dump(item, depth + 1); }
-      append("}");
+    } else string(value.as_string());
+  }
+  // Open containers live on an explicit stack: nesting depth is bounded by memory, not the thread stack.
+  struct Frame { const Json* value; std::size_t index; Json::object::const_iterator it; };
+  void dump(const Json& root) {
+    std::vector<Frame> stack; const Json* next = &root;
+    for (;;) {
+      if (next) {
+        ++nodes_;
+        if ((limits_.max_depth && stack.size() > limits_.max_depth) || (limits_.max_nodes && nodes_ > limits_.max_nodes)) throw std::runtime_error("JSON nesting or node limit exceeded");
+        const Json& value = *next; next = nullptr;
+        if (value.is_array()) { append("["); stack.push_back({&value, 0, {}}); }
+        else if (value.is_object()) { append("{"); stack.push_back({&value, 0, value.as_object().begin()}); }
+        else scalar(value);
+      }
+      if (stack.empty()) return;
+      auto& top = stack.back();
+      if (top.value->is_array()) {
+        const auto& items = top.value->as_array();
+        if (top.index == items.size()) { append("]"); stack.pop_back(); continue; }
+        if (top.index++) append(",");
+        next = &items[top.index - 1];
+      } else {
+        if (top.it == top.value->as_object().end()) { append("}"); stack.pop_back(); continue; }
+        if (top.index++) append(",");
+        string(top.it->first); append(":"); next = &top.it->second; ++top.it;
+      }
     }
   }
 };
@@ -213,6 +246,63 @@ Json::Json(double value) : value_(value) { if (!std::isfinite(value)) throw std:
 Json::Json(const char* value) { if (!value) throw std::invalid_argument("Null JSON string pointer"); value_ = std::string(value); }
 Json::Json(std::initializer_list<object::value_type> values) : value_(object{}) {
   for (const auto& value : values) if (!as_object().insert(value).second) throw std::invalid_argument("Duplicate JSON object initializer key");
+}
+// Copy builds the destination breadth-first from an explicit work list; container slots are sized before their
+// children are filled, so the destination pointers stay valid.
+Json::Json(const Json& other) {
+  std::vector<std::pair<const Json*, Json*>> work{{&other, this}};
+  while (!work.empty()) {
+    const auto [source, target] = work.back(); work.pop_back();
+    if (const auto* items = std::get_if<array>(&source->value_)) {
+      auto& copy = target->value_.emplace<array>(items->size());
+      for (std::size_t i = 0; i < items->size(); ++i) work.emplace_back(&(*items)[i], &copy[i]);
+    } else if (const auto* fields = std::get_if<object>(&source->value_)) {
+      auto& copy = target->value_.emplace<object>();
+      for (const auto& [key, item] : *fields) work.emplace_back(&item, &copy.emplace_hint(copy.end(), key, Json())->second);
+    } else target->value_ = source->value_;
+  }
+}
+Json& Json::operator=(const Json& other) { if (this != &other) { Json copy(other); *this = std::move(copy); } return *this; }
+// Destruction detaches children onto a flat list before each container dies, so no destructor recurses.
+Json::~Json() {
+  const auto container = [](const Json& value) {
+    if (const auto* items = std::get_if<array>(&value.value_)) return !items->empty();
+    if (const auto* fields = std::get_if<object>(&value.value_)) return !fields->empty();
+    return false;
+  };
+  if (!container(*this)) return;
+  std::vector<Json> pending;
+  const auto detach = [&](Json& value) {
+    if (auto* items = std::get_if<array>(&value.value_)) {
+      for (auto& item : *items) if (container(item)) pending.push_back(std::move(item));
+      items->clear();
+    } else if (auto* fields = std::get_if<object>(&value.value_)) {
+      for (auto& [key, item] : *fields) if (container(item)) pending.push_back(std::move(item));
+      fields->clear();
+    }
+  };
+  detach(*this);
+  while (!pending.empty()) { Json value = std::move(pending.back()); pending.pop_back(); detach(value); }
+}
+bool Json::operator==(const Json& other) const {
+  std::vector<std::pair<const Json*, const Json*>> work{{this, &other}};
+  while (!work.empty()) {
+    const auto [left, right] = work.back(); work.pop_back();
+    if (left->value_.index() != right->value_.index()) return false;
+    if (const auto* items = std::get_if<array>(&left->value_)) {
+      const auto& others = std::get<array>(right->value_);
+      if (items->size() != others.size()) return false;
+      for (std::size_t i = 0; i < items->size(); ++i) work.emplace_back(&(*items)[i], &others[i]);
+    } else if (const auto* fields = std::get_if<object>(&left->value_)) {
+      const auto& others = std::get<object>(right->value_);
+      if (fields->size() != others.size()) return false;
+      for (auto a = fields->begin(), b = others.begin(); a != fields->end(); ++a, ++b) {
+        if (a->first != b->first) return false;
+        work.emplace_back(&a->second, &b->second);
+      }
+    } else if (left->value_ != right->value_) return false;
+  }
+  return true;
 }
 Json Json::parse(std::string_view input, JsonLimits limits) { return Parser(input, limits).run(); }
 std::string Json::dump(JsonLimits limits) const { return Dumper(limits).run(*this); }

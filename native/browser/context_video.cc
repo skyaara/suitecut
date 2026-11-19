@@ -135,7 +135,7 @@ void NativeContextVideo::Observe(int page,const std::string&id,const std::string
   if(result.output_path!=record.path||result.physical_encoder_pid!=0||(phase=="complete"&&!result.failure.empty())||(phase=="failed"&&result.failure.empty()))record.error="Native video terminal recording receipt is inconsistent";
   else if(!result.failure.empty())record.error=result.failure;
   if(!record.error.empty())RememberError(record.context,record.error);
-  Tick();
+  pending_.insert(id);Tick();
 }
 void NativeContextVideo::Handle(int owner,uint64_t generation,int context,Dict params,double deadline,Reply reply){
   const auto reject=[&](const std::string&error){if(reply)reply(false,"",error);};
@@ -148,7 +148,7 @@ void NativeContextVideo::Handle(int owner,uint64_t generation,int context,Dict p
   if(record->second->context!=context){reject("Native video identity or action is unavailable for this context");return;}
   std::string destination;if(action=="saveAs"&&(params->GetType("path")!=VTYPE_STRING||!PathText(params->GetString("path"),destination))){reject("Native video saveAs requires an absolute scalar path");return;}
   auto wait=std::make_shared<Wait>();wait->key={owner,generation};wait->context=context;wait->record=record->second;wait->action=action;wait->path=std::move(destination);wait->deadline=deadline;wait->reply=std::move(reply);
-  waits_.emplace(wait->key,wait);record->second->waits.push_back(wait->key);Tick();
+  waits_.emplace(wait->key,wait);record->second->waits.push_back(wait->key);pending_.insert(id);Tick();
 }
 void NativeContextVideo::EndWait(Key key,bool ok,const std::string&path,const std::string&error){
   const auto found=waits_.find(key);if(found==waits_.end())return;auto wait=std::move(found->second);waits_.erase(found);std::erase(wait->record->waits,key);auto reply=std::exchange(wait->reply, nullptr);if(reply)reply(ok,path,error);
@@ -190,7 +190,8 @@ void NativeContextVideo::Finish(const std::shared_ptr<Work>&work){
   }
   const auto record=work->record;record->active_work=0;
   if(work->kind==Work::Kind::Seal){
-    record->sealed=true;if(work->ok&&work->file)record->file=work->file;else record->error=work->error.empty()?"Native video final artifact could not be sealed":work->error;
+    record->sealed=true;record->result={}; // Sealed identity replaces encoder diagnostics; no descriptor is retained.
+    if(work->ok&&work->file)record->file=work->file;else record->error=work->error.empty()?"Native video final artifact could not be sealed":work->error;
   }else{
     if(work->deleted){record->deleted=true;record->file.reset();}
     if(work->canceled.load())EndWait(work->key,false,"","Native video file operation canceled");
@@ -207,7 +208,14 @@ void NativeContextVideo::Tick(){
   for(const auto serial:completed){const auto found=work_.find(serial);if(found==work_.end())continue;auto work=std::move(found->second);work_.erase(found);Finish(work);}
   std::vector<Key>expired;for(const auto&[key,wait]:waits_)if(wait->deadline&&hooks_.now()>=wait->deadline)expired.push_back(key);
   for(const auto&key:expired){EndWait(key,false,"","Native video original request deadline expired");Cancel(key.first,key.second);}
-  for(const auto&[id,record]:records_)Pump(record);
+  // Only records with terminal work or queued waits are visited; quiescent
+  // sealed records stay addressable for later API calls without being walked.
+  const std::vector<std::string>pending(pending_.begin(),pending_.end());
+  for(const auto&id:pending){
+    const auto found=records_.find(id);if(found==records_.end()){pending_.erase(id);continue;}
+    const auto record=found->second;Pump(record);
+    if(!record->active_work&&(!record->terminal||((record->sealed||!record->error.empty())&&record->waits.empty())))pending_.erase(id);
+  }
   if(NeedsTick()&&hooks_.wake)hooks_.wake();
 }
 void NativeContextVideo::Cancel(int owner,uint64_t generation){
@@ -220,8 +228,8 @@ void NativeContextVideo::Clear(){
   std::vector<Key>keys;for(const auto&[key,wait]:waits_)keys.push_back(key);for(const auto&key:keys)EndWait(key,false,"","Native video browser is closing");prepared_.clear();
 }
 size_t NativeContextVideo::Physical()const{return work_.size();}
-bool NativeContextVideo::ContextReady(int context)const{for(const auto&[serial,work]:work_)if(work->context==context)return false;for(const auto&[id,record]:records_)if(record->context==context&&record->terminal&&!record->sealed&&record->error.empty())return false;return true;}
-bool NativeContextVideo::NeedsTick()const{if(!work_.empty())return true;for(const auto&[id,record]:records_)if(record->terminal&&((!record->sealed&&record->error.empty())||!record->waits.empty()))return true;return false;}
+bool NativeContextVideo::ContextReady(int context)const{for(const auto&[serial,work]:work_)if(work->context==context)return false;for(const auto&id:pending_){const auto found=records_.find(id);if(found!=records_.end()&&found->second->context==context&&found->second->terminal&&!found->second->sealed&&found->second->error.empty())return false;}return true;}
+bool NativeContextVideo::NeedsTick()const{if(!work_.empty())return true;for(const auto&id:pending_){const auto found=records_.find(id);if(found==records_.end())continue;const auto&record=found->second;if(record->terminal&&((!record->sealed&&record->error.empty())||!record->waits.empty()))return true;}return false;}
 void NativeContextVideo::RememberError(int context,const std::string&error){if(!error.empty())errors_.try_emplace(context,error);}
 std::string NativeContextVideo::Error(int context)const{const auto found=errors_.find(context);return found==errors_.end()?"":found->second;}
 }

@@ -20,6 +20,7 @@ import { nativeCookieFilter, type NativeCookieFilter } from './native-cookie-fil
 import { NativeHTTPLookups, type NativeHTTPLookup } from './native-http-lookup.js'
 import { isNativeHTTPRequest } from './native-http-request-input.js'
 import { hasNativeMultipartStream, NativeMultipartStreamJob } from './native-http-stream.js'
+import { nativeInt32 } from './native-int32.js'
 import { runNativeMatcherUserPromise } from './native-soft-assertions.js'
 import {
   captureNativeStorageState,
@@ -67,12 +68,10 @@ const HTTPContextOptionsSchema = z.strictObject({
     })
     .optional(),
   failOnStatusCode: z.boolean().optional(),
-  maxRedirects: z
-    .number()
-    .int()
+  maxRedirects: nativeInt32('maxRedirects')
     .min(0, "'maxRedirects' must be greater than or equal to '0'")
     .optional(),
-  maxRetries: z.number().int().min(0).optional(),
+  maxRetries: nativeInt32('maxRetries').min(0).optional(),
 })
 // Generic runner context defaults may accompany a request-context creation.
 // Validate recognized browser-only fields without claiming page emulation or
@@ -155,12 +154,10 @@ const OptionsSchema = z.strictObject({
     .optional(),
   timeout: z.number().int().min(0).max(120_000).optional(),
   failOnStatusCode: z.boolean().optional(),
-  maxRedirects: z
-    .number()
-    .int()
+  maxRedirects: nativeInt32('maxRedirects')
     .min(0, "'maxRedirects' must be greater than or equal to '0'")
     .optional(),
-  maxRetries: z.number().int().min(0).optional(),
+  maxRetries: nativeInt32('maxRetries').min(0).optional(),
   ignoreHTTPSErrors: z.boolean().optional(),
   signal: z.instanceof(AbortSignal).optional(),
 })

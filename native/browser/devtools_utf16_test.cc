@@ -17,7 +17,17 @@ int main(){cef_api_hash(CEF_API_VERSION,0);
  const std::string pair=R"({"value":"\ud83d\ude00"})";assert(suitecut::DevToolsLosslessProjection(pair,projected,error));assert(pair==projected);
  auto author=CefValue::Create();author->SetString("{\"__suitecutNativeUTF16Scalar\":\"d800\"}");json.clear();assert(suitecut::DevToolsLosslessJSON(author,json));assert(json==CefWriteJSON(author,JSON_WRITER_DEFAULT).ToString());
  {const std::string big="{\"value\":\""+std::string(1048577,'a')+"\\ud800\"}";assert(suitecut::DevToolsLosslessProjection(big,projected,error));std::u16string whole;assert(suitecut::DevToolsReadTag(CefParseJSON(projected,JSON_PARSER_RFC)->GetDictionary()->GetValue("value"),whole));assert(whole.size()==1048578&&whole.back()==0xd800);}
- {auto deep=CefValue::Create();deep->SetString(std::string(70000,'q'));for(int i=0;i<80;++i){auto list=CefListValue::Create();list->SetValue(0,deep);deep=CefValue::Create();deep->SetList(list);}json.clear();assert(suitecut::DevToolsLosslessJSON(deep,json,16));assert(json.size()>70000);}
+ {auto deep=CefValue::Create();deep->SetString(std::string(70000,'q'));for(int i=0;i<80;++i){auto list=CefListValue::Create();list->SetValue(0,deep);deep=CefValue::Create();deep->SetList(list);}json.clear();assert(suitecut::DevToolsLosslessJSON(deep,json));assert(json.size()>70000);}
+ // 100,000 nested lists, far past any CEF parser depth: serialization walks an
+ // explicit stack, and the chain is torn down leaf-first so no destructor recurses.
+ {constexpr size_t kDepth=100000;auto deep=CefListValue::Create();deep->SetString(0,"q");
+  for(size_t i=1;i<kDepth;++i){auto outer=CefListValue::Create();outer->SetList(0,deep);deep=outer;}
+  json.clear();assert(suitecut::DevToolsLosslessListJSON(deep,json));assert(json==std::string(kDepth,'[')+"\"q\""+std::string(kDepth,']'));
+  std::vector<CefRefPtr<CefListValue>> chain{deep};while(chain.back()->GetType(0)==VTYPE_LIST)chain.push_back(chain.back()->GetList(0));assert(chain.size()==kDepth);
+  json.clear();assert(suitecut::DevToolsLosslessJSON(chain.front()->GetValue(0),json));assert(json==std::string(kDepth-1,'[')+"\"q\""+std::string(kDepth-1,']'));
+  auto tagged=CefDictionaryValue::Create();suitecut::DevToolsSetString(tagged,"name",suitecut::DevToolsUnitsWTF8({0xd800}));chain.back()->SetDictionary(1,tagged);
+  json.clear();assert(suitecut::DevToolsLosslessListJSON(chain.back(),json));assert(json=="[\"q\",{\"name\":"+suitecut::DevToolsQuoteUnits({0xd800})+"}]");
+  for(size_t i=chain.size();i-->0;){while(chain[i]->GetSize())chain[i]->Remove(chain[i]->GetSize()-1);}chain.clear();assert(!deep->GetSize());}
  const std::string ax=R"({"nodes":[{"nodeId":"1","backendDOMNodeId":9,"role":{"type":"role","value":"heading"},"name":{"type":"string","value":"  \ud800\u00a0name  "},"childIds":["2"]},{"nodeId":"2","role":{"type":"role","value":"StaticText"},"name":{"type":"string","value":"  \ud800\u00a0name  "}}]})";
  assert(suitecut::DevToolsLosslessProjection(ax,projected,error));auto ax_parse=CefParseJSON(projected,JSON_PARSER_RFC);SuiteCutAXForest projector;CefRefPtr<CefListValue> output;std::vector<SuiteCutAXForest::Link> links;assert(projector.Project(ax_parse->GetDictionary()->GetList("nodes"),9,output,links,error));
  auto ax_out=CefValue::Create();ax_out->SetList(output->Copy());json.clear();assert(suitecut::DevToolsLosslessJSON(ax_out,json));assert(json.find("\\ud800")!=std::string::npos);assert(json.find(suitecut::kDevToolsUTF16Tag)==std::string::npos);assert(output->GetDictionary(0)->GetList("children")->GetSize()==0);

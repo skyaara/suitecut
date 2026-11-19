@@ -29,17 +29,17 @@ class NativeRouteRegistry {
     bool host_matcher=false;std::shared_ptr<NativeContextRouteRegistration>policy;
   };
   bool Register(std::string id,std::string pattern,int times,bool context=false,bool host_matcher=false,NativeRouteRegistrationOrder order={}) {
-    Prune();std::vector<std::string> alternatives;
+    Prune();
     if(id.empty() || pattern.empty() || times<0 || serial_==std::numeric_limits<uint64_t>::max() ||
-       (host_matcher&&pattern!="**/*") || !NativeURLGlobExpand(pattern,alternatives) || std::any_of(registrations_.begin(),registrations_.end(),[&](const Registration& route){return route.ID()==id;}))return false;
+       (host_matcher&&pattern!="**/*") || std::any_of(registrations_.begin(),registrations_.end(),[&](const Registration& route){return route.ID()==id;}))return false;
     if(!order){const auto reserved=NativeRouteRegistrationOrder::Reserve();if(!reserved)return false;order=*reserved;}
     if(std::any_of(registrations_.begin(),registrations_.end(),[&](const Registration&route){return route.order==order;}))return false;
-    Insert({std::move(id),std::move(pattern),times,context,++serial_,{},host_matcher,order});return true;
+    Insert({std::move(id),std::move(pattern),times,context,++serial_,{},host_matcher,order,{}});return true;
   }
   bool RegisterContext(std::shared_ptr<NativeContextRouteRegistration> policy) {
     Prune();
     if(!policy||!policy->available()||serial_==std::numeric_limits<uint64_t>::max()||std::any_of(registrations_.begin(),registrations_.end(),[&](const Registration&route){return route.ID()==policy->id()||route.order==policy->order();}))return false;
-    const auto order=policy->order();Insert({{}, {},0,true,++serial_,std::move(policy),false,order});return true;
+    const auto order=policy->order();Insert({{}, {},0,true,++serial_,std::move(policy),false,order,{}});return true;
   }
   void Remove(const std::string& id) {
     registrations_.erase(std::remove_if(registrations_.begin(),registrations_.end(),[&](const Registration& route){return id.empty() || route.ID()==id;}),registrations_.end());
@@ -55,12 +55,12 @@ class NativeRouteRegistry {
     // Public Page handlers always take precedence over context policy;
     // each scope independently retains reverse registration order.
     for(const bool context:{false,true})for(auto route=registrations_.rbegin();route!=registrations_.rend();++route)
-      if(route->context==context&&route->Available()&&(route->HostMatcher()||NativeURLGlobMatches(route->Pattern(),original_url))){plan.candidates.push_back(route->ID());plan.generations.push_back(route->generation);}
+      if(route->context==context&&route->Available()&&(route->HostMatcher()||route->glob.Matches(original_url))){plan.candidates.push_back(route->ID());plan.generations.push_back(route->generation);}
     return plan;
   }
   bool Allows(const Plan&plan,const std::string&actual_url)const {
     for(size_t index=plan.next;index<plan.candidates.size();++index)
-      for(const auto&route:registrations_)if(Matches(route,plan,index)&&!route.HostMatcher()&&NativeURLGlobMatches(route.Pattern(),actual_url))return true;
+      for(const auto&route:registrations_)if(Matches(route,plan,index)&&!route.HostMatcher()&&route.glob.Matches(actual_url))return true;
     return false;
   }
   bool HostPending(const Plan&plan)const{
@@ -112,12 +112,14 @@ class NativeRouteRegistry {
  private:
   struct Registration {
     std::string id,pattern;int remaining=0;bool context=false;uint64_t generation=0;std::shared_ptr<NativeContextRouteRegistration>shared;bool host_matcher=false;NativeRouteRegistrationOrder order;
+    NativeURLGlob glob;  // Compiled once at registration; requests never expand braces.
     const std::string& ID()const{return shared?shared->id():id;}
     const std::string& Pattern()const{return shared?shared->pattern():pattern;}
     bool Available()const{return !shared||shared->available();}
     bool HostMatcher()const{return shared?shared->host_matcher():host_matcher;}
   };
   void Insert(Registration route){
+    route.glob=NativeURLGlob(route.Pattern());
     const auto position=std::lower_bound(registrations_.begin(),registrations_.end(),route.order,[](const Registration&current,NativeRouteRegistrationOrder order){return current.order<order;});
     registrations_.insert(position,std::move(route));
   }

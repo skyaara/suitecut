@@ -169,6 +169,9 @@ bool CdpRuntime::network_idle(CdpPage& page,Deadline deadline)const {
   return true;
 }
 Json CdpRuntime::browser_events(const std::string& method,std::uint64_t after)const {return network?network->events(method,after):Json(Json::array{});}
+std::uint64_t CdpRuntime::browser_sequence()const{return network?network->sequence():0;}
+void CdpRuntime::release_drags(const std::string& session,std::uint64_t through)const{if(network)network->release_drags(session,through);}
+void CdpRuntime::release_downloads(const std::vector<std::string>& guids,const std::string& frame)const{if(network)network->release_downloads(guids,frame);}
 
 struct CdpBackend::Impl {
   CdpRuntime runtime;
@@ -291,6 +294,11 @@ struct CdpBackend::Impl {
     if(runtime.media)runtime.media->forget(page.session);
     if(runtime.network)runtime.network->forget(page.session);
     if(runtime.network)for(const auto&[frame,session]:page.frame_sessions){(void)frame;runtime.network->forget(session);}
+    // A closed page's downloads, consumed or not, are released; a page target's main frame id is its target id.
+    if(runtime.network) {
+      std::vector<std::string> guids;for(const auto&[guid,info]:page.downloads){(void)info;guids.push_back(guid);}
+      runtime.network->release_downloads(guids,page.download_frame.empty()?page.target:page.download_frame);
+    }
     runtime.pages.erase(found);
     std::lock_guard lock(mutex);
     page_ready.erase(id); session_pages.erase(page.session); page_sessions.erase(id); target_pages.erase(page.target);

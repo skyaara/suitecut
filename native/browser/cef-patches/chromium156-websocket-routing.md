@@ -12,9 +12,9 @@ Apply `chromium156-websocket-routing.patch` at Chromium `src`, using the pinned
 original and patched SHA-256 values for every source file, including the absence
 of the newly introduced header. The patch was checked against downloaded exact
 pinned source files; this is an applicability check, not a Chromium compilation.
-SuiteCut's own socket, message, byte and close-reason caps were later removed
-from the patch; the patched-file hashes are null until it is re-applied to the
-pinned source and recomputed.
+SuiteCut's own socket, message and byte caps were later removed from the
+patch, and the configure reply moved to revision 2; the patch was then
+re-applied to the pinned sources on 2026-11-19 (their base hashes verified) and the patched hashes recomputed.
 
 ## Actual native interception
 
@@ -55,8 +55,10 @@ observation is kept separate from interception decisions.
 These are new experimental methods on the rebuilt renderer's Network domain,
 not commands provided by stock CEF:
 
-- `Network.suiteCutWebSocketConfigureV1({enabled})` returns revision `1`.
-  It advertises no socket, message or byte limits. Enable Network first. Enabling applies only to subsequently created channels
+- `Network.suiteCutWebSocketConfigureV1({enabled})` returns revision `2`.
+  It advertises no socket, message or byte limits. Revision `1` was the earlier
+  capped patch (its reply also carried `maxSockets`, `maxPendingMessages` and
+  `maxPendingBytes`); the host refuses it. Enable Network first. Enabling applies only to subsequently created channels
   in that exact target/session; disable aborts its owned routed channels.
 - `Network.suiteCutWebSocketCommandV1` takes all of `requestId`, `action`,
   `messageId`, `opcode`, `payloadBase64`, `code`, and `reason`. Unused fields are
@@ -77,7 +79,7 @@ Commands select the following native operations:
 | `drop` | Consume the held message without destination delivery. |
 | `client` | Inject supplied text/binary bytes into the native client. |
 | `server` | Send supplied text/binary bytes through the connected original server transport. |
-| `close` | Initiate native close with code 1000 or 3000–4999. SuiteCut does not check the reason length; Chromium's close path handles it. |
+| `close` | Initiate native close with code 1000 or 3000–4999 and a reason of at most 123 UTF-8 bytes (RFC 6455 5.5: a 125-byte control frame less the 2-byte code). This route bypasses `DOMWebSocket::close`, which enforces that rule, and `net` would otherwise send 1011 with an empty reason, so a longer reason fails with DOMWebSocket's `SyntaxError` text. |
 | `abort` | Schedule native error/abnormal close and retire the channel. |
 
 A command ACK establishes native acceptance only. It does not assert remote
@@ -92,14 +94,14 @@ so rapid successfully resolved messages do not accumulate per-message timers.
 SuiteCut adds no count or byte caps of its own: an agent may own any number of
 weak channel handles, a channel may hold any number of pending decisions of any
 size, and routed receive reassembly uses Chromium's own `max_message_size_`.
-The command payload is still validated as canonical base64 and the close code
-as 1000 or 3000–4999. Injected server output is still refused while an original
+The command payload is still validated as canonical base64, the close code
+as 1000 or 3000–4999 and the close reason against RFC 6455's 123 UTF-8 bytes. Injected server output is still refused while an original
 Blob read or close is queued, so it cannot overtake them. Existing Chromium
 connection-count and message-size limits remain in force. Expired decisions,
 invalid ownership and closed channels fail explicitly.
 
 The production `NativePage.webSocketRouting` adapter now probes this exact
-revision before enabling root-target control. It preserves page-local routing
+revision (2) before enabling root-target control. It preserves page-local routing
 generations and exact socket/message identities, queued event ownership and
 original deadlines. See
 [`docs/features/native-websocket-routing.md`](../../../docs/features/native-websocket-routing.md).

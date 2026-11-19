@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 #pragma once
+#include "growth_guard.h"
 #include "accepted_work_origin.h"
 #include <cstdint>
 #include <cstddef>
@@ -25,16 +26,20 @@ class AcceptedInspectorWork {
   std::optional<Channel> Open(int actual_browser,Kind kind)noexcept{
     if(actual_browser<=0||next_channel_==UINT64_MAX)return PoisonChannel();
     for(const auto& value:channels_)if(value&&value->browser==actual_browser)return PoisonChannel();
-    const Channel created{++next_channel_,actual_browser,kind};++channel_count_;
-    for(auto& value:channels_)if(!value){value=created;return created;}
-    channels_.emplace_back(created);return created;
+    const Channel created{++next_channel_,actual_browser,kind};
+    for(auto& value:channels_)if(!value){value=created;++channel_count_;return created;}
+    // Growth failure poisons idle authority instead of terminating the process.
+    SUITECUT_GROWTH_TRY{channels_.emplace_back(created);}SUITECUT_GROWTH_CATCH{return PoisonChannel();}
+    ++channel_count_;return created;
   }
   std::optional<Ticket> Reserve(Channel channel,int command,std::string_view session,NativeWorkOrigin origin=CurrentNativeWorkOrigin())noexcept{
     if(!Current(channel)||command<=0||next_ticket_==UINT64_MAX)return PoisonTicket();
     for(const auto& row:pending_)if(row.active&&row.ticket.channel==channel&&row.ticket.command==command)return PoisonTicket();
-    Record created{};created.active=true;created.ticket={++next_ticket_,channel,command};created.origin=origin;created.session.assign(session);++queued_;
-    for(auto& row:pending_)if(!row.active){row=std::move(created);return row.ticket;}
-    pending_.push_back(std::move(created));return pending_.back().ticket;
+    SUITECUT_GROWTH_TRY{
+      Record created{};created.active=true;created.ticket={++next_ticket_,channel,command};created.origin=origin;created.session.assign(session);
+      for(auto& row:pending_)if(!row.active){row=std::move(created);++queued_;return row.ticket;}
+      pending_.push_back(std::move(created));++queued_;return pending_.back().ticket;
+    }SUITECUT_GROWTH_CATCH{return PoisonTicket();}
   }
   // Called immediately before the real CEF send, including deferred sends.
   // A synchronous/reentrant actual reply can safely observe Submitted already.
@@ -113,16 +118,17 @@ class AcceptedInspectorWork {
       row.closed=true;++session_detached_;
       if(row.returned){row.active=false;--submitted_;++retired;}
     }
-    if(!Detached(channel,session))detached_.push_back({channel,std::string(session)});
+    if(!Detached(channel,session)){SUITECUT_GROWTH_TRY{detached_.push_back({channel,std::string(session)});}SUITECUT_GROWTH_CATCH{poisoned_=true;}}
     return retired;
   }
   // Genuine CEF callback entry/stack return is a separate physical lane;
   // observing a reply cannot make its executing native callback idle.
   uint64_t BeginCallback(Channel channel)noexcept{
     if(!Current(channel)||next_callback_==UINT64_MAX){poisoned_=true;return 0;}
-    const uint64_t created=++next_callback_;++callback_count_;
-    for(auto& callback:callbacks_)if(!callback){callback=created;return created;}
-    callbacks_.push_back(created);return created;
+    const uint64_t created=++next_callback_;
+    for(auto& callback:callbacks_)if(!callback){callback=created;++callback_count_;return created;}
+    SUITECUT_GROWTH_TRY{callbacks_.push_back(created);}SUITECUT_GROWTH_CATCH{poisoned_=true;return 0;}
+    ++callback_count_;return created;
   }
   bool CallbackReturned(uint64_t receipt)noexcept{
     if(!receipt)return false;
@@ -160,7 +166,8 @@ class AcceptedInspectorWork {
   }
   void Label(const Ticket& ticket,std::string_view method)noexcept{
     auto* row=Find(ticket);if(!row)return;
-    row->method.assign(method);
+    // Diagnostic text only: a failed copy leaves the label empty, the ledger exact.
+    SUITECUT_GROWTH_TRY{row->method.assign(method);}SUITECUT_GROWTH_CATCH{row->method.clear();}
   }
   // Scoped observation only; it neither retires rows nor relaxes global idle.
   // Callback frames lack exact per-frame origins, so an executing real native

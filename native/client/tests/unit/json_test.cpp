@@ -62,6 +62,28 @@ int main() {
     check(Json::parse("0", {20, 257, 20, 20}) == Json(0), "Caller depth above the former 256 bound was rejected");
     std::string nested(1000, '['); nested += '0'; nested.append(1000, ']');
     check(Json::parse(nested).dump() == nested, "Nesting past the former default depth of 64 was rejected");
+    // Without a caller depth limit, nesting is bounded by memory, not the stack: parse, dump, compare, copy and
+    // destruction are iterative, so a remote endpoint's 10^6 brackets cannot overflow an I/O thread's stack.
+    {
+      constexpr std::size_t levels = 1000000;
+      std::string deep(levels, '['); deep += '0'; deep.append(levels, ']');
+      auto parsed = Json::parse(deep);
+      check(parsed.dump() == deep, "Million-level array nesting did not roundtrip");
+      Json copy(parsed); check(copy == parsed, "Million-level copy differed");
+      Json assigned; assigned = copy; check(assigned == parsed, "Million-level copy assignment differed");
+      const Json* leaf = &copy; for (std::size_t i = 0; i < levels; ++i) leaf = &leaf->at(0);
+      check(leaf->as_int() == 0, "Million-level copy lost its leaf");
+      copy.as_array()[0] = Json(1); check(!(copy == parsed), "Copy shared state with its source");
+      rejects([&] { (void)Json::parse(deep, {0, levels - 1, 0, 0}); });
+      rejects([&] { (void)parsed.dump({0, levels - 1, 0, 0}); });
+      check(Json::parse(deep, {0, levels, 0, 0}).dump({0, levels, 0, 0}) == deep, "Caller depth limit equal to the nesting was rejected");
+      std::string objects; for (std::size_t i = 0; i < levels; ++i) objects += "{\"k\":"; objects += "null"; objects.append(levels, '}');
+      const auto object = Json::parse(objects);
+      check(object.dump() == objects && Json(object) == object, "Million-level object nesting did not roundtrip");
+      Json built = 0; for (std::size_t i = 0; i < levels; ++i) { Json::array wrapper; wrapper.push_back(std::move(built)); built = Json(std::move(wrapper)); }
+      check(built == parsed, "Built million-level tree differed from the parsed one");
+      // parsed, copy, assigned, object and built are destroyed here at a million levels each.
+    }
     const std::string large(193 * 1024 * 1024, 'x');
     check(Json::parse(Json(large).dump()).as_string() == large, "JSON string past the former 192 MiB default was not passed through whole");
     Json::array many(2 * 1024 * 1024, Json(1));

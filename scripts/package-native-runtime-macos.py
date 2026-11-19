@@ -24,6 +24,18 @@ def digest(path):
         return hashlib.file_digest(stream, 'sha256').hexdigest()
 
 
+def cef_provenance(pin):
+    cef = {key: value for key, value in pin.items() if key in ['cefVersion', 'chromiumVersion', 'channel']}
+    build = pin.get('macosarm64')
+    if build:
+        # The macOS pin is a third-party build of the same CEF tag with
+        # proprietary codecs, not an official CEF distribution: say so.
+        cef.update({'build': 'third-party-codec', 'officialCefBuild': False,
+                    'url': build['url'], 'sha256': build['sha256'], 'size': build.get('size'),
+                    'codecs': build.get('codecs')})
+    return cef
+
+
 def clone(source, target):
     target.parent.mkdir(parents=True, exist_ok=True)
     subprocess.run(['/bin/cp', '-cR', str(source), str(target)], check=True)
@@ -204,8 +216,7 @@ exec "$bin/suitecut-native-control" --backend cef --browser "$bin/../libexec/sui
                 'signingIdentity': identity, 'signature': signature(app) if args.kind == 'runtime' else None,
                 'timestamped': identity != '-', 'notarized': False, 'published': False,
                 'minimumMacOSTested': platform.mac_ver()[0],
-                'cef': {key: value for key, value in json.loads((ROOT/'native/browser/cef-build.json').read_text()).items()
-                        if key in ['cefVersion', 'chromiumVersion', 'channel']} if args.kind == 'runtime' else None,
+                'cef': cef_provenance(json.loads((ROOT/'native/browser/cef-build.json').read_text())) if args.kind == 'runtime' else None,
                 'packagerSha256': digest(Path(__file__).resolve()),
                 'redistributionReady': False,
                 'publicationHold': 'Review bundled dependency licenses and supply corresponding source for GPL-enabled media before public redistribution.',

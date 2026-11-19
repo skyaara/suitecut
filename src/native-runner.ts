@@ -109,7 +109,7 @@ export interface NativeSuiteRunOptions extends NativeSuiteDiscoveryOptions {
   projects?: readonly string[]
   /** Ignore project dependencies, teardown inclusion and dependency failure gates. */
   noDeps?: boolean
-  /** Native worker pool, 1..8; explicit parallel regions split tests into native work groups. */
+  /** Native worker pool, any positive integer; explicit parallel regions split tests into native work groups. */
   workers?: number
   /** Refuse focused declarations before admitting callbacks or fixtures. */
   forbidOnly?: boolean

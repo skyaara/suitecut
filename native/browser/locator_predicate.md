@@ -20,8 +20,8 @@ object is reinterpreted as a private UTF16 tag. Function-source scalar transport
 explicitly rejects isolated units; typed argument values and selected native
 exception strings remain lossless.
 
-The active ordinary operation quota bounds jobs at64. Per-job arguments are
-bounded at1024 and distinct pinned documents at64. The original generation and
+suitecut sets no limit on active ordinary jobs, per-job arguments or distinct
+pinned documents. The original generation and
 deadline plus every frame/session/loader/numeric+unique context/native epoch pin
 are checked before dispatch, actual receipt and final successful Complete,
 including any native causal publication hold. No retry extends the deadline.

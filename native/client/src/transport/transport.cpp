@@ -137,7 +137,7 @@ struct Transport::Impl {
   // use. They run on the existing I/O thread outside the caller's max_pending.
   struct BodyReceipt { Clock::time_point deadline; std::string scope; };
   std::map<int, BodyReceipt> body_receipts;
-  struct Body { std::size_t total, offset; Clock::time_point deadline; };
+  struct Body { std::size_t total, offset; Clock::time_point deadline; bool dropped; Json identity; };
   std::map<std::string, Body> bodies;
   std::deque<Outgoing> outgoing;
   struct Event { Packet packet; bool disposable; };
@@ -240,61 +240,95 @@ struct Transport::Impl {
     for (auto it=body_receipts.begin();it!=body_receipts.end();)
       if(it->second.scope.starts_with(scope))it=body_receipts.erase(it);else ++it;
   }
-  std::optional<Json> receive_body(const Json& header, std::size_t length) {
-    const auto positive = [&](const char* field) {
+  void queue_event_locked(Packet packet, bool disposable) {
+    const std::size_t bytes = packet.header.size() + packet.payload.size();
+    // No suitecut queue cap. Only a caller-set max_event_bytes (0 = no limit)
+    // bounds the queue; then disposable media is lost before a dialog/binding/
+    // network event. Byte accounting includes the header.
+    const auto over = [&] { return options.max_event_bytes && bytes > options.max_event_bytes - counters.queued_event_bytes; };
+    while (over()) {
+      const auto old = std::find_if(events.begin(), events.end(), [](const Event& event) { return event.disposable; });
+      if (old == events.end()) break;
+      counters.queued_event_bytes -= old->packet.header.size() + old->packet.payload.size();
+      events.erase(old); ++counters.dropped_events;
+    }
+    if (over()) {
+      if (disposable) { ++counters.dropped_events; return; }
+      throw failure("Critical native event queue overflow; poll events before continuing");
+    }
+    events.push_back({std::move(packet), disposable}); counters.queued_event_bytes += bytes; changed.notify_all();
+  }
+  // A bad or unexpected body costs only that body. The client drops it, hands
+  // raw consumers a canceled chunk so they discard what they already hold, and
+  // ignores its later chunks; the engine's own reservation deadline releases
+  // its side. Only a garbled stream (framing, header JSON) closes the transport.
+  void drop_body_locked(const std::string& scope, Json identity) {
+    ++counters.dropped_bodies;
+    bodies.insert_or_assign(scope, Body{0,0,Clock::now()+std::chrono::seconds(30),true,Json()});
+    identity["version"]=1; identity["offset"]=0; identity["totalBytes"]=0; identity["bytes"]=0;
+    identity["canceled"]=true; identity["dropped"]=true;
+    queue_event_locked(Packet{identity.dump(),{}}, false);
+  }
+  std::optional<Json> receive_body(const Json& header, std::size_t length, bool& keep) {
+    keep = false;
+    const auto positive = [&](const char* field) -> std::int64_t {
       if (!header.contains(field) || !header.at(field).is_integer() ||
-          header.at(field).as_int() < 1 || header.at(field).as_int() > INT_MAX)
-        throw failure("Invalid native network body scope");
+          header.at(field).as_int() < 1 || header.at(field).as_int() > INT_MAX) return 0;
       return header.at(field).as_int();
     };
-    if (!header.contains("bodyId") || !header.at("bodyId").is_string())
-      throw failure("Invalid native network body identity");
+    // Without a valid identity there is no body to drop or acknowledge.
+    if (!header.contains("bodyId") || !header.at("bodyId").is_string()) { ++counters.dropped_bodies; return std::nullopt; }
     const auto& token = header.at("bodyId").as_string();
     std::uint64_t number = 0;
     const auto parsed = std::from_chars(token.data(), token.data() + token.size(), number);
     if (token.empty() || token.size() > 20 || token.front() == '0' || parsed.ec != std::errc{} ||
-        parsed.ptr != token.data() + token.size() || !number)
-      throw failure("Invalid native network body identity");
-    Json control; std::string scope;
+        parsed.ptr != token.data() + token.size() || !number) { ++counters.dropped_bodies; return std::nullopt; }
+    Json control, identity; std::string scope;
     if (header.at("type") == Json("contextnetworkbody")) {
       const auto context = positive("contextId");
-      if (!header.contains("owner") || !header.at("owner").is_string())
-        throw failure("Invalid native worker body owner");
-      const auto& owner = header.at("owner").as_string();
-      if (!owner.starts_with("broker:") || owner.size() < 8 ||
+      const bool owned = header.contains("owner") && header.at("owner").is_string();
+      const auto owner = owned ? header.at("owner").as_string() : std::string();
+      if (!context || !owner.starts_with("broker:") || owner.size() < 8 ||
           owner[7] < '1' || owner[7] > '9' ||
-          !std::all_of(owner.begin()+7, owner.end(), [](char c) { return c >= '0' && c <= '9'; }))
-        throw failure("Invalid native worker body owner");
+          !std::all_of(owner.begin()+7, owner.end(), [](char c) { return c >= '0' && c <= '9'; })) {
+        ++counters.dropped_bodies; return std::nullopt;
+      }
       scope = "context:" + std::to_string(context) + ":" + owner + ":" + token;
       control = Json{{"command","context"},{"pageId",1},{"action","workerNetworkBody"},
                      {"params",Json{{"contextId",context},{"owner",owner},{"bodyId",token}}}};
+      identity = Json{{"type","contextnetworkbody"},{"contextId",context},{"owner",owner},{"bodyId",token}};
     } else {
       const auto page = positive("pageId");
+      if (!page) { ++counters.dropped_bodies; return std::nullopt; }
       scope = "page:" + std::to_string(page) + ":" + token;
       control = Json{{"command","networkBody"},{"pageId",page},{"bodyId",token}};
+      identity = Json{{"type","networkbody"},{"pageId",page},{"bodyId",token}};
     }
-    for (const char* name : {"offset","totalBytes"})
-      if (!header.contains(name) || !header.at(name).is_integer() || header.at(name).as_int() < 0)
-        throw failure("Invalid native network body geometry");
-    if (header.contains("canceled") && !header.at("canceled").is_bool())
-      throw failure("Invalid native network body cancellation");
-    const auto offset = static_cast<std::size_t>(header.at("offset").as_int());
-    const auto total = static_cast<std::size_t>(header.at("totalBytes").as_int());
-    if (header.contains("canceled") && header.at("canceled").as_bool()) {
-      if (offset || total || length) throw failure("Invalid native network body cancellation");
-      bodies.erase(scope);
+    auto found = bodies.find(scope);
+    const auto integral = [&](const char* name) {
+      return header.contains(name) && header.at(name).is_integer() && header.at(name).as_int() >= 0;
+    };
+    const bool shaped = integral("offset") && integral("totalBytes") &&
+      (!header.contains("canceled") || header.at("canceled").is_bool());
+    const auto offset = shaped ? static_cast<std::size_t>(header.at("offset").as_int()) : 0;
+    const auto total = shaped ? static_cast<std::size_t>(header.at("totalBytes").as_int()) : 0;
+    const bool canceled = shaped && header.contains("canceled") && header.at("canceled").as_bool();
+    if (found != bodies.end() && found->second.dropped) {
+      // Later chunks of a dropped body; its last or canceled chunk retires it.
+      if (canceled || (shaped && offset <= total && length == total-offset)) bodies.erase(found);
       return std::nullopt;
     }
-    if (offset > total || length > total-offset || (!length && total))
-      throw failure("Invalid native network body chunk");
-    auto found = bodies.find(scope);
-    if (found == bodies.end()) {
-      if (offset) throw failure("Native network body chunk is out of sequence");
-      found = bodies.emplace(scope, Body{total,0,Clock::now()+std::chrono::seconds(30)}).first;
+    if (canceled && !offset && !total && !length) {
+      if (found != bodies.end()) bodies.erase(found);
+      keep = true; return std::nullopt;
     }
-    if (found->second.total != total || found->second.offset != offset)
-      throw failure("Native network body chunk is out of sequence");
-    found->second.offset += length;
+    if (!shaped || canceled || offset > total || length > total-offset || (!length && total) ||
+        (found == bodies.end() ? offset != 0 : found->second.total != total || found->second.offset != offset)) {
+      drop_body_locked(scope, std::move(identity)); return std::nullopt;
+    }
+    if (found == bodies.end())
+      found = bodies.emplace(scope, Body{total,0,Clock::now()+std::chrono::seconds(30),false,std::move(identity)}).first;
+    found->second.offset += length; keep = true;
     if (found->second.offset != total) return std::nullopt;
     bodies.erase(found); return control;
   }
@@ -309,7 +343,9 @@ struct Transport::Impl {
       if (number < 1 || number > next_id) throw failure("Invalid native response ID");
       ++counters.responses;
       if (body_receipts.erase(static_cast<int>(number))) {
-        if (!header.at("ok").as_bool()) throw failure("Native network body receipt rejected");
+        // The body was already delivered; a rejected receipt (a page that
+        // closed meanwhile) only means the engine released it itself.
+        if (!header.at("ok").as_bool()) ++counters.dropped_bodies;
         return;
       }
       const auto found = pending.find(static_cast<int>(number));
@@ -350,25 +386,12 @@ struct Transport::Impl {
     }
     if (closing) return;
     std::optional<Json> body_control;
-    if (type == "networkbody" || type == "contextnetworkbody")
-      body_control = receive_body(header, packet.payload.size());
-    const std::size_t bytes = packet.header.size() + packet.payload.size();
-    const bool disposable = type == "frame" || type == "audio";
-    // No suitecut queue cap. Only a caller-set max_event_bytes (0 = no limit)
-    // bounds the queue; then disposable media is lost before a dialog/binding/
-    // network event. Byte accounting includes the header.
-    const auto over = [&] { return options.max_event_bytes && bytes > options.max_event_bytes - counters.queued_event_bytes; };
-    while (over()) {
-      const auto old = std::find_if(events.begin(), events.end(), [](const Event& event) { return event.disposable; });
-      if (old == events.end()) break;
-      counters.queued_event_bytes -= old->packet.header.size() + old->packet.payload.size();
-      events.erase(old); ++counters.dropped_events;
+    if (type == "networkbody" || type == "contextnetworkbody") {
+      bool keep = false;
+      body_control = receive_body(header, packet.payload.size(), keep);
+      if (!keep) return;
     }
-    if (over()) {
-      if (disposable) { ++counters.dropped_events; return; }
-      throw failure("Critical native event queue overflow; poll events before continuing");
-    }
-    events.push_back({std::move(packet), disposable}); counters.queued_event_bytes += bytes; changed.notify_all();
+    queue_event_locked(std::move(packet), type == "frame" || type == "audio");
     if (body_control) {
       // All exact bytes now belong to the event queue (or have already
       // been returned by poll). Neither receipt waits for application polling.
@@ -503,14 +526,20 @@ struct Transport::Impl {
   void expire() {
     std::lock_guard lock(mutex);
     if (closing) return;
-    for (const auto& [id, receipt] : body_receipts) {
-      (void)id;
-      if (Clock::now() >= receipt.deadline) throw failure("Native network body receipt timed out");
+    // A late receipt or a body the engine never finished is that body's
+    // problem, not the connection's: forget the receipt, drop the body.
+    const auto now = Clock::now();
+    for (auto it = body_receipts.begin(); it != body_receipts.end();) {
+      if (now >= it->second.deadline) { it = body_receipts.erase(it); ++counters.dropped_bodies; }
+      else ++it;
     }
-    for (const auto& [scope, body] : bodies) {
-      (void)scope;
-      if (Clock::now() >= body.deadline) throw failure("Native network body delivery timed out");
+    std::vector<std::pair<std::string, Json>> stalled;
+    for (auto it = bodies.begin(); it != bodies.end();) {
+      if (now < it->second.deadline) { ++it; continue; }
+      if (!it->second.dropped) stalled.emplace_back(it->first, std::move(it->second.identity));
+      it = bodies.erase(it);
     }
+    for (auto& [scope, identity] : stalled) drop_body_locked(scope, std::move(identity));
     std::vector<int> expired;
     for (const auto& [id, item] : pending) if (Clock::now() >= item.deadline) expired.push_back(id);
     for (const int id : expired) cancel_locked(id, "Native request timed out");

@@ -209,23 +209,17 @@ export async function probeMedia(
   }
 }
 
-/** Probes an attempt's artifacts in order with at most four FFprobe processes at once. */
+/** Probes an attempt's artifacts concurrently and returns their media in input order. */
 export async function probeMediaBatch(
   inputs: readonly { artifact: SuiteCutArtifact; path: string }[],
 ): Promise<SuiteCutMedia[]> {
-  const media: SuiteCutMedia[] = []
+  const probed = await Promise.allSettled(
+    inputs.map((input) => probeMedia(input.artifact, input.path)),
+  )
 
-  for (let offset = 0; offset < inputs.length; offset += 4) {
-    const batch = await Promise.allSettled(
-      inputs.slice(offset, offset + 4).map((input) => probeMedia(input.artifact, input.path)),
-    )
-
-    // All children in this batch finish before rejection, so callers can clean up their files.
-    for (const probed of batch) {
-      if (probed.status === 'rejected') throw probed.reason
-      media.push(probed.value)
-    }
-  }
-
-  return media
+  // Every child finishes before rejection, so callers can clean up their files.
+  return probed.map((result) => {
+    if (result.status === 'rejected') throw result.reason
+    return result.value
+  })
 }

@@ -12,8 +12,7 @@ namespace suitecut {
 class NativeContextRouteRegistration {
  public:
   static std::shared_ptr<NativeContextRouteRegistration> Create(std::string id,std::string pattern,int times,bool host_matcher=false,NativeRouteRegistrationOrder order={}) {
-    std::vector<std::string> expanded;
-    if(id.empty()||id.find('\0')!=std::string::npos||pattern.empty()||pattern.find('\0')!=std::string::npos||times<0||(host_matcher&&pattern!="**/*")||!NativeURLGlobExpand(pattern,expanded))return {};
+    if(id.empty()||id.find('\0')!=std::string::npos||pattern.empty()||pattern.find('\0')!=std::string::npos||times<0||(host_matcher&&pattern!="**/*"))return {};
     const size_t bytes=sizeof(NativeContextRouteRegistration)+id.capacity()+pattern.capacity();
     if(!order){const auto reserved=NativeRouteRegistrationOrder::Reserve();if(!reserved)return {};order=*reserved;}
     auto result=std::shared_ptr<NativeContextRouteRegistration>(new NativeContextRouteRegistration(std::move(id),std::move(pattern),times,host_matcher,order));

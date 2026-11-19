@@ -207,6 +207,7 @@ describe('native network ownership and transport', () => {
     expect(route.isHandled()).toBe(false)
     await expect(route.fetch({ maxRetries: 101 })).rejects.toThrow()
     await expect(route.fetch({ timeout: -1 })).rejects.toThrow()
+    await expect(route.fetch({ maxRedirects: 2 ** 31 })).rejects.toThrow('int32')
   })
 
   it('exposes only observed server/TLS details and returns detached API values', async () => {

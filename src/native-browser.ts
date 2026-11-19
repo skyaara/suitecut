@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 /* eslint import-x/consistent-type-specifier-style: off -- Whole type imports erase lifecycle module edges. */
+import { constants as bufferConstants } from 'node:buffer'
 import { spawn, type ChildProcessWithoutNullStreams } from 'node:child_process'
 import { mkdir, mkdtemp, realpath, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
@@ -51,6 +52,7 @@ import {
   NativeHTTPLookupEventSchema,
   type NativeHTTPLookupEvent,
 } from './native-http-lookup-protocol.js'
+import { nativeInt32 } from './native-int32.js'
 import { NativeLocatorHandlerContexts } from './native-locator-handler-contexts.js'
 import { prepareNativeNavigationClose } from './native-navigation-lifecycle.js'
 import { NativeNetworkBodyReceiver, NativeNetworkBodyArchive } from './native-network-body.js'
@@ -72,6 +74,7 @@ import {
   type NativeConsoleInfo,
   type NativeFrameInfo,
   type NativeAutomationEvent,
+  type NativePacket,
 } from './native-protocol.js'
 import { NativeRecordingInfoSchema, type NativeRecordingInfo } from './native-recording-protocol.js'
 import {
@@ -137,8 +140,8 @@ const LaunchSchema = z.strictObject({
       (value) => isAbsolute(value) && !value.includes('\0'),
       'must be an absolute executable path without null bytes',
     ),
-  width: z.number().int().min(2).default(1920),
-  height: z.number().int().min(2).default(1080),
+  width: nativeInt32('width').min(2).default(1920),
+  height: nativeInt32('height').min(2).default(1080),
   deviceScaleFactor: z.number().finite().positive().default(1),
   framesPerSecond: CaptureFrameRateSchema.default(60),
   pixelFormat: z.enum(['bgra', 'i420']).default('bgra'),
@@ -179,6 +182,52 @@ const LaunchSchema = z.strictObject({
 })
 
 export type NativePixelFormat = 'bgra' | 'i420'
+
+/**
+ * One native event or command result whose JSON payload V8 cannot decode,
+ * such as a payload longer than V8's maximum string length. Only that event
+ * is dropped (or that command rejected); the protocol channel stays alive.
+ */
+export class NativeEventPayloadError extends Error {
+  override readonly name = 'NativeEventPayloadError'
+  constructor(
+    /** The native packet type whose payload was dropped. */
+    readonly eventType: string,
+    /** The payload's byte length. */
+    readonly bytes: number,
+    /** The page the event belonged to, when the packet named one. */
+    readonly pageId: number | undefined,
+    options?: ErrorOptions,
+  ) {
+    super(
+      bytes > bufferConstants.MAX_STRING_LENGTH
+        ? `Native ${eventType} payload of ${bytes} bytes exceeds V8's maximum string length (${bufferConstants.MAX_STRING_LENGTH}) and was dropped`
+        : `Native ${eventType} payload of ${bytes} bytes could not be decoded and was dropped`,
+      options,
+    )
+  }
+}
+/** Decodes one packet's JSON payload, isolating a V8 size failure to that packet. */
+function payloadJSON(header: NativePacket, payload: Buffer): UntrustedInput {
+  // Context-wide packets belong to no page; page packets default to the first page.
+  const pageId =
+    header.type.startsWith('context') || header.type === 'httplookup' || header.type === 'response'
+      ? undefined
+      : 'pageId' in header
+        ? (header.pageId ?? 1)
+        : 1
+  if (payload.length > bufferConstants.MAX_STRING_LENGTH)
+    throw new NativeEventPayloadError(header.type, payload.length, pageId)
+  try {
+    // SAFETY: every caller validates the decoded value with its packet schema.
+    return JSON.parse(payload.toString('utf8')) as UntrustedInput
+  } catch (cause) {
+    // SyntaxError is protocol corruption; RangeError is V8 running out of string or heap room.
+    if (cause instanceof RangeError)
+      throw new NativeEventPayloadError(header.type, payload.length, pageId, { cause })
+    throw cause
+  }
+}
 export type NativeBrowserState = 'running' | 'closing' | 'closed' | 'failed'
 
 export interface NativeBrowserOptions {
@@ -187,7 +236,10 @@ export interface NativeBrowserOptions {
   width?: number
   height?: number
   deviceScaleFactor?: number
-  /** Requested CEF capture rate, any integer from 1 through 120; actual delivery can be lower. */
+  /**
+   * Requested CEF capture rate: any positive integer that fits the native int32 field.
+   * CEF applies its own ceiling, so actual delivery can be lower.
+   */
   framesPerSecond?: number
   /** BGRA8 for exact pixels; planar BT.709 limited-range I420 for lower-bandwidth streaming. */
   pixelFormat?: NativePixelFormat
@@ -363,6 +415,12 @@ export interface NativeBrowser {
   onAutomationEvent?(listener: (event: NativeAutomationEvent) => void): () => void
   onPageErrorMessage?(listener: (message: NativePageErrorInfo) => void): () => void
   onConsoleMessage?(listener: (message: NativeConsoleInfo) => void): () => void
+  /**
+   * Events for this page, or browser-wide events, that were dropped because V8
+   * could not decode their payload (for example, longer than its maximum string
+   * length). Only that event is lost; the browser keeps running.
+   */
+  onEventPayloadError?(listener: (error: NativeEventPayloadError) => void): () => void
   onLocatorHandlerStage?(listener: (stage: NativeLocatorHandlerStage) => void): () => void
   onActionStage?(listener: (stage: NativeActionStage) => void): () => void
   onURLPredicate?(listener: (snapshot: NativeURLPredicate) => void): () => void
@@ -549,6 +607,7 @@ export async function launchNativeBrowser(options: NativeBrowserOptions): Promis
       crashes: Set<() => void>
       pageErrors: Set<(message: NativePageErrorInfo) => void>
       consoleMessages: Set<(message: NativeConsoleInfo) => void>
+      payloadErrors: Set<(error: NativeEventPayloadError) => void>
       actionStages: Set<(stage: NativeActionStage) => void>
       urlPredicates: Set<(snapshot: NativeURLPredicate) => void>
       eventPredicates: Set<(snapshot: NativeEventPredicateSnapshot) => void>
@@ -589,6 +648,10 @@ export async function launchNativeBrowser(options: NativeBrowserOptions): Promis
     }
   >()
   const closedPageSources = new Map<number, WeakRef<NativeBrowser>>()
+  // A closed page's source is cached only while something still references it.
+  const closedPageSourceRelease = new FinalizationRegistry<number>((id) => {
+    if (!closedPageSources.get(id)?.deref()) closedPageSources.delete(id)
+  })
   let highestPageId = 1
   const pageState = (id: number) => {
     const existing = pages.get(id)
@@ -615,6 +678,7 @@ export async function launchNativeBrowser(options: NativeBrowserOptions): Promis
       crashes: new Set<() => void>(),
       pageErrors: new Set<(message: NativePageErrorInfo) => void>(),
       consoleMessages: new Set<(message: NativeConsoleInfo) => void>(),
+      payloadErrors: new Set<(error: NativeEventPayloadError) => void>(),
       actionStages: new Set<(stage: NativeActionStage) => void>(),
       urlPredicates: new Set<(snapshot: NativeURLPredicate) => void>(),
       eventPredicates: new Set<(snapshot: NativeEventPredicateSnapshot) => void>(),
@@ -681,6 +745,7 @@ export async function launchNativeBrowser(options: NativeBrowserOptions): Promis
     page.automationEvents.clear()
     page.pageErrors.clear()
     page.consoleMessages.clear()
+    page.payloadErrors.clear()
     page.socketMessages.clear()
     page.networkMessages.clear()
     page.networkBodies.close()
@@ -699,7 +764,10 @@ export async function launchNativeBrowser(options: NativeBrowserOptions): Promis
     page.lastFrame = undefined
     page.resolveClosed()
     if (id !== 1) {
-      if (page.source) closedPageSources.set(id, new WeakRef(page.source))
+      if (page.source) {
+        closedPageSources.set(id, new WeakRef(page.source))
+        closedPageSourceRelease.register(page.source, id)
+      }
       pages.delete(id)
     }
     for (const [requestId, item] of pending)
@@ -712,6 +780,8 @@ export async function launchNativeBrowser(options: NativeBrowserOptions): Promis
         item.cleanup()
         item.reject(error)
       }
+    // Close listeners ran synchronously above; the closed page emits no further worker events.
+    workerRetirements.release(`page:${id}`)
     queueMicrotask(pumpControls)
   }
   const nativeLocatorHandlerControl = (command: string): boolean =>
@@ -883,7 +953,22 @@ export async function launchNativeBrowser(options: NativeBrowserOptions): Promis
     queueMicrotask(pumpControls)
     if (!exited) child.kill('SIGKILL')
   }
+  const dropEvent = (error: NativeEventPayloadError): void => {
+    const owners = error.pageId === undefined ? [...pages.values()] : [pages.get(error.pageId)]
+    for (const owner of owners)
+      for (const listener of [...(owner?.payloadErrors ?? [])]) listener(error)
+    options.onDiagnostic?.(`${error.message}\n`)
+  }
   const decoder = new NativePacketDecoder((header, payload) => {
+    try {
+      receivePacket(header, payload)
+    } catch (error) {
+      // One oversized event is dropped and reported; the channel keeps decoding.
+      if (!(error instanceof NativeEventPayloadError)) throw error
+      dropEvent(error)
+    }
+  })
+  function receivePacket(header: NativePacket, payload: Buffer): void {
     if (terminal) return
     if (header.type === 'workwatermark') {
       if (!sourceWork)
@@ -893,7 +978,7 @@ export async function launchNativeBrowser(options: NativeBrowserOptions): Promis
     }
     const pageId = header.pageId ?? 1
     if (header.type === 'contextworker') {
-      const info = ContextWorkerPayloadSchema.parse(JSON.parse(payload.toString('utf8')))
+      const info = ContextWorkerPayloadSchema.parse(payloadJSON(header, payload))
       let workers = contextWorkerInfos.get(info.contextId)
       if (!workers) {
         workers = new Map()
@@ -910,7 +995,7 @@ export async function launchNativeBrowser(options: NativeBrowserOptions): Promis
       return
     }
     if (header.type === 'contextworkerpredicate') {
-      const info = ContextWorkerPredicatePayloadSchema.parse(JSON.parse(payload.toString('utf8')))
+      const info = ContextWorkerPredicatePayloadSchema.parse(payloadJSON(header, payload))
       contextWorkerSequences.set(
         info.contextId,
         Math.max(contextWorkerSequences.get(info.contextId) ?? 0, info.sequence),
@@ -958,7 +1043,7 @@ export async function launchNativeBrowser(options: NativeBrowserOptions): Promis
       return
     }
     if (header.type === 'httplookup') {
-      const event = NativeHTTPLookupEventSchema.parse(JSON.parse(payload.toString('utf8')))
+      const event = NativeHTTPLookupEventSchema.parse(payloadJSON(header, payload))
       for (const listener of [...httpLookupMessages]) listener(event)
       return
     }
@@ -968,17 +1053,17 @@ export async function launchNativeBrowser(options: NativeBrowserOptions): Promis
       return
     }
     if (header.type === 'contextroutemutation') {
-      const info = NativeContextRouteMutationSchema.parse(JSON.parse(payload.toString('utf8')))
+      const info = NativeContextRouteMutationSchema.parse(payloadJSON(header, payload))
       for (const listener of [...contextRouteMutations]) listener(info)
       return
     }
     if (header.type === 'contextroute') {
-      const info = NativeContextRouteInfoSchema.parse(JSON.parse(payload.toString('utf8')))
+      const info = NativeContextRouteInfoSchema.parse(payloadJSON(header, payload))
       for (const listener of [...contextRouteEvents]) listener(info)
       return
     }
     if (header.type === 'contextnetwork') {
-      const info = NativeContextNetworkInfoSchema.parse(JSON.parse(payload.toString('utf8')))
+      const info = NativeContextNetworkInfoSchema.parse(payloadJSON(header, payload))
       contextNetworkSequence = info.sequence
       if ('request' in info.network && info.network.request.postDataBodyId)
         if ('pageId' in info)
@@ -996,7 +1081,7 @@ export async function launchNativeBrowser(options: NativeBrowserOptions): Promis
       return
     }
     if (header.type === 'contextconsole') {
-      const info = NativeContextConsoleInfoSchema.parse(JSON.parse(payload.toString('utf8')))
+      const info = NativeContextConsoleInfoSchema.parse(payloadJSON(header, payload))
       if (info.pageId === null)
         contextWorkerSequences.set(
           info.contextId,
@@ -1007,7 +1092,7 @@ export async function launchNativeBrowser(options: NativeBrowserOptions): Promis
       return
     }
     if (header.type === 'context') {
-      const event = NativeContextEventSchema.parse(JSON.parse(payload.toString('utf8')))
+      const event = NativeContextEventSchema.parse(payloadJSON(header, payload))
       contextSequence = event.sequence ?? contextSequence + 1
       if (event.event === 'context-closed') {
         contextWorkerInfos.delete(event.contextId)
@@ -1025,6 +1110,8 @@ export async function launchNativeBrowser(options: NativeBrowserOptions): Promis
       if (event.event === 'page-closed' && event.pageId !== undefined)
         finishPage(event.pageId, new Error(event.closedReason ?? 'Native page closed'))
       for (const listener of [...contextEvents]) listener(event)
+      // Context listeners have observed the close; release its worker receipts after them.
+      if (event.event === 'context-closed') workerRetirements.release(`context:${event.contextId}`)
       return
     }
     if (header.type === 'response') {
@@ -1038,33 +1125,37 @@ export async function launchNativeBrowser(options: NativeBrowserOptions): Promis
           if (!header.navigation.parentId) target.url = header.navigation.url
         }
       }
-      const result =
-        header.ok && payload.length
-          ? (JSON.parse(payload.toString('utf8')) as UntrustedInput)
-          : undefined
-      if (header.ok && request.screenshotInputToken && !request.screenshotAbortReason)
-        nativeScreenshotResult(result, { id: header.id, inputToken: request.screenshotInputToken })
-      const message = header.error ?? 'Native command failed'
-      const failure =
-        request.screenshotAbortReason ??
-        (header.ok
-          ? undefined
-          : request.command === 'http' && payload.length
-            ? nativeHTTPCommandError(
-                message,
-                JSON.parse(payload.toString('utf8')) as UntrustedInput,
-              )
-            : request.assertionDeadlineKind &&
-                payload.length &&
-                (!request.screenshotInputToken ||
-                  (JSON.parse(payload.toString('utf8')) as { type?: UntrustedInput }).type ===
-                    'native-assertion-deadline')
-              ? nativeAssertionDeadlineError(
-                  message,
-                  JSON.parse(payload.toString('utf8')) as UntrustedInput,
-                  { id: header.id, matcher: request.assertionDeadlineKind },
-                )
-              : nativeCommandError(message))
+      let result: UntrustedInput | undefined, failure: Error | undefined
+      try {
+        result = header.ok && payload.length ? payloadJSON(header, payload) : undefined
+        if (header.ok && request.screenshotInputToken && !request.screenshotAbortReason)
+          nativeScreenshotResult(result, {
+            id: header.id,
+            inputToken: request.screenshotInputToken,
+          })
+        const message = header.error ?? 'Native command failed'
+        failure =
+          request.screenshotAbortReason ??
+          (header.ok
+            ? undefined
+            : request.command === 'http' && payload.length
+              ? nativeHTTPCommandError(message, payloadJSON(header, payload))
+              : request.assertionDeadlineKind &&
+                  payload.length &&
+                  (!request.screenshotInputToken ||
+                    (payloadJSON(header, payload) as { type?: UntrustedInput }).type ===
+                      'native-assertion-deadline')
+                ? nativeAssertionDeadlineError(message, payloadJSON(header, payload), {
+                    id: header.id,
+                    matcher: request.assertionDeadlineKind,
+                  })
+                : nativeCommandError(message))
+      } catch (error) {
+        // A result too large for V8 fails only this command, not the shared channel.
+        if (!(error instanceof NativeEventPayloadError)) throw error
+        result = undefined
+        failure = request.screenshotAbortReason ?? error
+      }
       pending.delete(header.id)
       request.cleanup()
       if (request.command === 'frameSubscription') {
@@ -1171,7 +1262,7 @@ export async function launchNativeBrowser(options: NativeBrowserOptions): Promis
     }
     if (clockOffset === undefined) throw new Error('Native packet before handshake')
     if (header.type === 'eventpredicate') {
-      const value = z.unknown().parse(JSON.parse(payload.toString('utf8'))) as UntrustedInput
+      const value = z.unknown().parse(payloadJSON(header, payload)) as UntrustedInput
       for (const listener of [...page.eventPredicates])
         listener({
           id: header.id,
@@ -1196,30 +1287,30 @@ export async function launchNativeBrowser(options: NativeBrowserOptions): Promis
       return
     }
     if (header.type === 'streaming') {
-      const info = NativeStreamingInfoSchema.parse(JSON.parse(payload.toString('utf8')))
+      const info = NativeStreamingInfoSchema.parse(payloadJSON(header, payload))
       for (const listener of [...page.streaming]) listener(info)
       return
     }
     if (header.type === 'recording') {
-      const info = NativeRecordingInfoSchema.parse(JSON.parse(payload.toString('utf8')))
+      const info = NativeRecordingInfoSchema.parse(payloadJSON(header, payload))
       for (const listener of [...page.recordings]) listener(info)
       return
     }
     if (header.type === 'download') {
       page.eventSequence = Math.max(page.eventSequence, header.sequence)
-      const info = NativeDownloadInfoSchema.parse(JSON.parse(payload.toString('utf8')))
+      const info = NativeDownloadInfoSchema.parse(payloadJSON(header, payload))
       for (const listener of [...page.downloads]) listener(info)
       return
     }
     if (header.type === 'filechooser') {
       page.eventSequence = header.sequence
-      const chooser = NativeFileChooserInfoSchema.parse(JSON.parse(payload.toString('utf8')))
+      const chooser = NativeFileChooserInfoSchema.parse(payloadJSON(header, payload))
       for (const listener of [...page.fileChoosers]) listener(chooser)
       return
     }
     if (header.type === 'dialog') {
       page.eventSequence = header.sequence
-      const dialog = NativeDialogInfoSchema.parse(JSON.parse(payload.toString('utf8')))
+      const dialog = NativeDialogInfoSchema.parse(payloadJSON(header, payload))
       for (const listener of [...page.dialogs]) listener(dialog)
       return
     }
@@ -1238,7 +1329,7 @@ export async function launchNativeBrowser(options: NativeBrowserOptions): Promis
       return
     }
     if (header.type === 'binding') {
-      const event = NativeBindingEventSchema.parse(JSON.parse(payload.toString('utf8')))
+      const event = NativeBindingEventSchema.parse(payloadJSON(header, payload))
       if (event.event === 'call') page.frameInfos.set(event.frame.id, event.frame)
       for (const listener of [...page.bindingMessages]) listener(event)
       return
@@ -1261,7 +1352,7 @@ export async function launchNativeBrowser(options: NativeBrowserOptions): Promis
       return
     }
     if (header.type === 'network') {
-      const event = NativeNetworkInfoSchema.parse(JSON.parse(payload.toString('utf8')))
+      const event = NativeNetworkInfoSchema.parse(payloadJSON(header, payload))
       if ('request' in event && event.request.postDataBodyId)
         page.networkBodies.consume(event.request.postDataBodyId)
       page.networkSequence = event.sequence
@@ -1271,12 +1362,12 @@ export async function launchNativeBrowser(options: NativeBrowserOptions): Promis
     }
     if (header.type === 'pageerror') {
       page.eventSequence = header.sequence
-      const error = NativePageErrorInfoSchema.parse(JSON.parse(payload.toString('utf8')))
+      const error = NativePageErrorInfoSchema.parse(payloadJSON(header, payload))
       for (const listener of [...page.pageErrors]) listener(error)
       return
     }
     if (header.type === 'worker') {
-      const event = NativeWorkerEventSchema.parse(JSON.parse(payload.toString('utf8')))
+      const event = NativeWorkerEventSchema.parse(payloadJSON(header, payload))
       if (event.sequence !== header.sequence)
         throw new Error('Native worker event sequence mismatch')
       if (!workerRetirements.observe(`page:${pageId}`, event)) return
@@ -1291,7 +1382,15 @@ export async function launchNativeBrowser(options: NativeBrowserOptions): Promis
     }
     if (header.type === 'console') {
       page.eventSequence = header.sequence ?? page.eventSequence + 1
-      const message = NativeConsoleInfoSchema.parse(JSON.parse(payload.toString('utf8')))
+      let message: NativeConsoleInfo
+      try {
+        message = NativeConsoleInfoSchema.parse(payloadJSON(header, payload))
+      } catch (error) {
+        // A dropped message is still delivered, so native releases what it retained for it.
+        if (error instanceof NativeEventPayloadError)
+          acknowledgeNativeConsoleEvent(sourceForPage(pageId), page.eventSequence)
+        throw error
+      }
       for (const listener of [...page.consoleMessages]) listener(message)
       acknowledgeNativeConsoleEvent(sourceForPage(pageId), page.eventSequence)
       return
@@ -1344,7 +1443,7 @@ export async function launchNativeBrowser(options: NativeBrowserOptions): Promis
       }
       for (const listener of [...page.audio]) listener(packet)
     }
-  })
+  }
   child.stdout.on('data', (chunk: Buffer) => {
     if (terminal) return
     try {
@@ -2102,6 +2201,11 @@ export async function launchNativeBrowser(options: NativeBrowserOptions): Promis
         assertRunning()
         page.consoleMessages.add(listener)
         return () => page.consoleMessages.delete(listener)
+      },
+      onEventPayloadError: (listener) => {
+        assertRunning()
+        page.payloadErrors.add(listener)
+        return () => page.payloadErrors.delete(listener)
       },
       onLocatorHandlerStage: (listener) => {
         if (page.state === 'closed' || terminal || exited || stopping) assertRunning()

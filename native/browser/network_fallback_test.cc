@@ -5,6 +5,7 @@
 #include <cassert>
 #include <deque>
 #include <string>
+#include <utility>
 #include <vector>
 #include "include/cef_api_hash.h"
 #ifndef SUITECUT_NETWORK_CONTROL_HEADER
@@ -78,12 +79,34 @@ int main() {
     Fixture f;
     for(int index=0;index<40;++index) {
       auto data=CefDictionaryValue::Create();data->SetString("requestId",std::to_string(index));data->SetString("type","Fetch");
-      auto request=CefDictionaryValue::Create();request->SetString("url","https://native.test/body");request->SetString("method","POST");request->SetString("postData",std::string(1000000,'x'));request->SetDictionary("headers",CefDictionaryValue::Create());data->SetDictionary("request",request);f.controller.Event("Network.requestWillBeSent",data,"");
-      auto finished=CefDictionaryValue::Create();finished->SetString("requestId",std::to_string(index));f.controller.Event("Network.loadingFinished",finished,"");
+      auto request=CefDictionaryValue::Create();request->SetString("url","https://native.test/body");request->SetString("method","POST");request->SetString("postData",std::string(1000000,'x'));auto headers=CefDictionaryValue::Create();headers->SetString("x-index",std::to_string(index));request->SetDictionary("headers",headers);data->SetDictionary("request",request);f.controller.Event("Network.requestWillBeSent",data,"");
     }
-    auto diagnostics=CefDictionaryValue::Create();f.controller.Diagnostics(diagnostics);// No request-row count or metadata byte budget: nothing is evicted.
+    auto diagnostics=CefDictionaryValue::Create();f.controller.Diagnostics(diagnostics);// No request-row count or metadata byte budget: nothing in flight is evicted.
     assert(diagnostics->GetDouble("networkRequestMetadataBytes")>0 && diagnostics->GetInt("networkRequests")==40 && f.errors.empty());
-    f.controller.Clear();f.controller.Diagnostics(diagnostics);assert(!diagnostics->GetDouble("networkRequestMetadataBytes"));
+    // A finished request whose headers settled is released; late request-id
+    // commands still answer from its final state, other ids stay unknown.
+    for(int index=0;index<40;++index){auto finished=CefDictionaryValue::Create();finished->SetString("requestId",std::to_string(index));f.controller.Event("Network.loadingFinished",finished,"");}
+    f.controller.Diagnostics(diagnostics);
+    assert(!diagnostics->GetDouble("networkRequestMetadataBytes") && diagnostics->GetInt("networkRequests")==0 && diagnostics->GetInt("networkReleasedRequests")==40 && f.errors.empty());
+    const auto ask=[&](const std::string& action,const std::string& id){auto config=CefDictionaryValue::Create();config->SetString("action",action);config->SetString("requestId",id);std::pair<bool,std::string> result;f.controller.Command(7,config,[&](bool ok,const std::string& error,const std::string& json){result={ok,ok?json:error};});return result;};
+    const auto id=f.events.front()->GetDictionary("request")->GetString("id").ToString();
+    auto answer=ask("finished",id);assert(answer.first && answer.second.find("\"errorText\":null")!=std::string::npos);
+    answer=ask("requestHeaders",id);assert(answer.first && answer.second.find("x-index")!=std::string::npos);
+    answer=ask("response",id);assert(answer.first && answer.second=="null");
+    assert(ask("timing",id).first);
+    answer=ask("finished","no-such-request");assert(!answer.first && answer.second=="Native request is no longer retained");
+    f.controller.Diagnostics(diagnostics);assert(diagnostics->GetInt("networkWaiters")==0);
+    f.controller.Clear();f.controller.Diagnostics(diagnostics);assert(!diagnostics->GetDouble("networkRequestMetadataBytes") && diagnostics->GetInt("networkReleasedRequests")==0);
+    // A failed hop whose early ExtraInfo drains inside loadingFailed settles
+    // mid-handler; its release waits for the handler, then answers late commands.
+    Fixture g;auto data=CefDictionaryValue::Create();data->SetString("requestId","early");auto request=CefDictionaryValue::Create();request->SetString("url","https://native.test/early");request->SetString("method","GET");request->SetDictionary("headers",CefDictionaryValue::Create());data->SetDictionary("request",request);
+    g.controller.Event("Network.requestWillBeSent",data,"");const auto early=g.events.back()->GetDictionary("request")->GetString("id").ToString();
+    auto extra=CefDictionaryValue::Create();extra->SetString("requestId","early");auto wire=CefDictionaryValue::Create();wire->SetString("x-wire","1");extra->SetDictionary("headers",wire);g.controller.Event("Network.requestWillBeSentExtraInfo",extra,"");
+    auto failed=CefDictionaryValue::Create();failed->SetString("requestId","early");failed->SetString("errorText","net::ERR_FAILED");g.controller.Event("Network.loadingFailed",failed,"");
+    assert(g.events.back()->GetString("event")=="requestfailed" && g.errors.empty());g.controller.Diagnostics(diagnostics);assert(diagnostics->GetInt("networkRequests")==0 && diagnostics->GetInt("networkReleasedRequests")==1);
+    std::pair<bool,std::string> late;auto query=CefDictionaryValue::Create();query->SetString("action","requestHeaders");query->SetString("requestId",early);
+    g.controller.Command(8,query,[&](bool ok,const std::string& error,const std::string& json){late={ok,ok?json:error};});assert(late.first && late.second.find("x-wire")!=std::string::npos);
+    query->SetString("action","finished");g.controller.Command(9,query,[&](bool ok,const std::string& error,const std::string& json){late={ok,ok?json:error};});assert(late.first && late.second.find("net::ERR_FAILED")!=std::string::npos);
   }
 
 }

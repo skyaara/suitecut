@@ -14,10 +14,11 @@ queue. Reset clears current renderer overrides and future inheritance. A root
 ACK may have applied even if a later child fails or the caller is canceled; the
 controller retains this actual root state rather than claiming rollback.
 
-One CDP command remains physically outstanding at a time. The existing native
-64-operation/queue bound and native original operation deadline apply. Timeout
-zero remains unbounded locally; existing caller/global cancellation authority
-still applies. Pending queued work checks the original cap before dispatch.
+One CDP command remains physically outstanding at a time. The queue has no
+length limit of suitecut's own; the native original operation deadline applies.
+Timeout zero remains unbounded locally; existing caller/global cancellation
+authority still applies. Pending queued work checks the original deadline before
+dispatch.
 Cancel removes logical publication and undispatched descendants, retains any
 actual in-flight callback, and serializes the next override/clear after that
 callback's real ACK or actual target retirement. Deferred CEF observer submissions

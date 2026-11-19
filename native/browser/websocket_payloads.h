@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 #pragma once
+#include <algorithm>
 #include <cstdint>
 #include <functional>
 #include <map>
@@ -27,7 +28,7 @@ class NativeWebSocketPayloads {
       const auto operation=input->GetString("operation").ToString();const int bytes=input->GetInt("bytes"),opcode=input->GetInt("opcode");
       if(input->GetType("bytes")!=VTYPE_INT||bytes<1||(opcode!=1&&opcode!=2)||(operation!="replace"&&operation!="client"&&operation!="server")||!validate(input)||serial_==UINT64_MAX){reply(false,nullptr,"Invalid native WebSocket payload admission");return;}
       auto stage=std::make_shared<Stage>();stage->declared=size_t(bytes);
-      stage->context=context;stage->page=page;stage->deadline=deadline?deadline:now_()+30000;stage->metadata=input->Copy(false);stage->bytes.reserve(stage->declared);
+      stage->context=context;stage->page=page;stage->deadline=deadline?deadline:now_()+30000;stage->metadata=input->Copy(false);
       const auto token=std::to_string(++serial_);stages_[token]=stage;auto result=CefDictionaryValue::Create();result->SetString("payloadToken",token);reply(true,result,"");return;
     }
     const auto token=input->GetString("payloadToken").ToString();const auto found=stages_.find(token);
@@ -41,7 +42,10 @@ class NativeWebSocketPayloads {
       if(input->GetType("base64")!=VTYPE_STRING||encoded.empty()||!binary||binary->GetSize()>stage->declared-stage->bytes.size()){reply(false,nullptr,"Invalid native WebSocket payload chunk or declared length exceeded");return;}
       std::vector<uint8_t>decoded(binary->GetSize());binary->GetData(decoded.data(),decoded.size(),0);
       if(CefBase64Encode(decoded.data(),decoded.size())!=encoded){reply(false,nullptr,"Native WebSocket payload chunk is not canonical base64");return;}
-      stage->bytes.insert(stage->bytes.end(),decoded.begin(),decoded.end());reply(true,nullptr,"");return;
+      // Storage grows as chunks arrive, geometrically but never past the declared length.
+      auto&bytes=stage->bytes;const size_t needed=bytes.size()+decoded.size();
+      if(needed>bytes.capacity())bytes.reserve(std::min(stage->declared,std::max(needed,bytes.capacity()>stage->declared/2?stage->declared:bytes.capacity()*2)));
+      bytes.insert(bytes.end(),decoded.begin(),decoded.end());reply(true,nullptr,"");return;
     }
     if(action!="routePayloadCommit"||stage->bytes.size()!=stage->declared){reply(false,nullptr,"Native WebSocket staged payload is incomplete or operation invalid");return;}
     stages_.erase(found);auto metadata=stage->metadata->Copy(false);metadata->SetString("payloadBase64",CefBase64Encode(stage->bytes.data(),stage->bytes.size()));

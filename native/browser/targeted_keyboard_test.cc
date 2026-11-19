@@ -15,6 +15,7 @@
 #include <cstdio>
 #include <deque>
 #include <functional>
+#include <limits>
 #include <map>
 #include <memory>
 #include <set>
@@ -194,5 +195,24 @@ int main(int argc,char** argv){
     s->InputCall(work,"Input.dispatchKeyEvent",s->SendKeysPacket(key,false),[]{});
     assert(!work->send_keys_held.empty());s->Ack();assert(work->send_keys_held.empty());
     s->Complete(1,true);assert(s->calls.empty());Pump();++groups;}
+  // CefMouseEvent fields and wheel deltas are int: the cef backend rejects a
+  // value that would wrap (mouse.wheel(0,3e9) once scrolled up) instead of
+  // truncating it; the devtools backend's double fields have no such range.
+  const auto pointer=[](const char* field,double value,bool cef){
+    auto message=CefDictionaryValue::Create();message->SetString("kind","mouse");message->SetString("action",field[0]=='d'?"wheel":"move");
+    if(cef)message->SetString("backend","cef");
+    message->SetDouble("x",1);message->SetDouble("y",1);message->SetDouble("deltaX",0);message->SetDouble("deltaY",0);message->SetDouble(field,value);return message;
+  };
+  for(const char* field:{"x","y","deltaX","deltaY"})for(const double value:{3e9,-3e9,2147483647.5,-2147483648.5}){
+    auto s=CefRefPtr<Source>(new Source);const auto gen=s->Begin(1);s->BeginInput(1,gen,pointer(field,value,true));
+    assert(s->input_work_.empty()&&!s->results.back().ok&&s->results.back().error.find("int event range")!=std::string::npos);
+  }
+  ++groups;
+  for(const char* field:{"x","deltaY"})for(const bool cef:{true,false}){
+    auto s=CefRefPtr<Source>(new Source);const auto gen=s->Begin(1);
+    s->BeginInput(1,gen,pointer(field,cef?double(std::numeric_limits<int>::min()):3e9,cef));
+    assert(s->results.empty()&&s->input_work_.contains(1));s->Complete(1,true);Pump();
+  }
+  ++groups;
   assert(tasks.empty());std::printf("Native targeted keyboard queue/retirement: %d controlled groups PASS\n",groups);
 }

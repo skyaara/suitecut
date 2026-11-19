@@ -417,6 +417,9 @@ Json CdpMedia::command(CdpRuntime& runtime,CdpPage& page,const Json& fields,Dead
       if(::fstatat(r->destination->directory,sidecar.c_str(),&st,AT_SYMLINK_NOFOLLOW)==0||errno!=ENOENT)
         throw std::runtime_error("Recording metadata output already exists or cannot be inspected");
       const auto duration=integer(fields,"maxDurationMs",600000,1,600000);
+      // The output frame count (fps x seconds) must fit the cast and the JSON integer it is reported as.
+      if(!(std::ceil(fps*static_cast<double>(duration)/1000.0)<std::min(static_cast<double>(std::numeric_limits<std::size_t>::max()),9223372036854775808.0)))
+        throw std::invalid_argument("Recording fps times maxDurationMs exceeds the representable frame count");
       r->start=Clock::now();r->expires=Clock::time_point::max();
       Json params{{"format","jpeg"},{"quality",integer(fields,"quality",80,1,100)},{"everyNthFrame",1}};
       if(fields.contains("maxWidth"))params["maxWidth"]=integer(fields,"maxWidth",0,2,std::numeric_limits<int>::max());
@@ -456,7 +459,11 @@ Json CdpMedia::command(CdpRuntime& runtime,CdpPage& page,const Json& fields,Dead
       if(!r->error.empty())throw std::runtime_error("Recording failed: "+r->error);
       if(r->sources.empty())throw std::runtime_error("Chrome delivered no screencast frames");
       const double duration=std::min(seconds(stopped-r->start),seconds(r->expires-r->start));
-      const auto count=static_cast<std::size_t>(std::max(1.0,std::ceil(duration*r->fps)));
+      const double frames=std::max(1.0,std::ceil(duration*r->fps));
+      // Overflow guard for the cast and for the JSON integer the count is reported as; not a cap.
+      if(!std::isfinite(frames)||frames>=std::min(static_cast<double>(std::numeric_limits<std::size_t>::max()),9223372036854775808.0))
+        throw std::runtime_error("Recording fps times duration exceeds the representable frame count");
+      const auto count=static_cast<std::size_t>(frames);
       std::ofstream manifest(r->destination->spool/"frames.ffconcat",std::ios::binary);
       if(!manifest)throw std::runtime_error("Cannot create recording frame manifest");
       manifest<<"ffconcat version 1.0\n";

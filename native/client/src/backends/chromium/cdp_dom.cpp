@@ -202,9 +202,12 @@ Json drag(CdpRuntime& rt,CdpPage& page,CdpFrameScope& source_scope,const Json& r
   } restore{source_scope};
   if(page.mouse_buttons&1)throw std::runtime_error("Native drag cannot start with the left mouse button already held");
   const auto root_session=source_scope.root_session();
-  std::int64_t baseline=0;
-  const auto baseline_rows=rt.browser_events("Input.dragIntercepted");
-  for(const auto& event:baseline_rows.as_array())if(text(event,"sessionId")==root_session)baseline=std::max(baseline,drag_sequence(event));
+  // Only interceptions after this point belong to this drag; they are released when it ends, however it ends.
+  const auto baseline=static_cast<std::int64_t>(rt.browser_sequence());
+  struct Release {
+    CdpRuntime& rt;std::string session;
+    ~Release(){try{rt.release_drags(session,rt.browser_sequence());}catch(...){}}
+  } release{rt,root_session};
   const auto fresh_data=[&](){Json data;std::int64_t latest=baseline;
     const auto fresh_rows=rt.browser_events("Input.dragIntercepted",baseline);
     for(const auto& event:fresh_rows.as_array())if(text(event,"sessionId")==root_session&&drag_sequence(event)>latest){latest=drag_sequence(event);data=event.at("params").at("data");}

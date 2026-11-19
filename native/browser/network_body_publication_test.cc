@@ -77,8 +77,8 @@ int main() {
   }
 
   // No queue count or byte cap: a slow POST read or a stalled body at the head
-  // holds later metadata only until its own deadline, then that one request is
-  // published without its body.
+  // holds later metadata no longer than kHeadOfLineMs or its own deadline,
+  // then that one request is published without its body.
   {std::vector<Publication::Dict> actual;bool open=false;std::vector<uint64_t> canceled;Publication queued([&](uint64_t id,size_t,size_t,std::span<const uint8_t>,bool cancel){if(cancel)canceled.push_back(id);return open||cancel;},[&](Publication::Dict event){actual.push_back(event->Copy(false));},[](const std::string&){assert(false);});
     const auto slow=queued.Prepare(100);assert(slow);auto head=Event(1);head->SetDictionary("request",CefDictionaryValue::Create());assert(queued.Queue(head,*slow));
     for(int i=2;i<=600;++i)assert(queued.Queue(Event(i)));assert(actual.empty()&&queued.preparations()==1);
@@ -86,5 +86,21 @@ int main() {
     const auto stalled=queued.Begin({7,7},200);assert(stalled&&queued.Queue(Event(700,*stalled)));for(int i=701;i<1300;++i)assert(queued.Queue(Event(i)));assert(actual.size()==600);
     queued.Tick(200);assert(actual.size()==1200&&actual[600]->GetDictionary("request")->GetBool("postDataUnavailable")&&canceled==std::vector<uint64_t>({*stalled})&&queued.bytes()==0);
     open=true;const auto late=queued.Begin({1},300);assert(late&&queued.Queue(Event(1300,*late))&&actual.back()->GetDictionary("request")->GetString("postDataBodyId")==std::to_string(*late));queued.Clear();
+  }
+  // Head-of-line release is time-based: a slow POST read or a stalled body
+  // holds the events behind it for kHeadOfLineMs, not until its 30 s deadline;
+  // a head with nothing behind it keeps waiting for its body.
+  {std::vector<Publication::Dict> actual;bool open=false;std::vector<uint64_t> canceled;Publication timed([&](uint64_t id,size_t,size_t,std::span<const uint8_t>,bool cancel){if(cancel)canceled.push_back(id);return open||cancel;},[&](Publication::Dict event){actual.push_back(event->Copy(false));},[](const std::string&){assert(false);});
+    const double hold=Publication::kHeadOfLineMs;
+    const auto alone=timed.Prepare(30000);assert(alone);auto solo=Event(1);solo->SetDictionary("request",CefDictionaryValue::Create());assert(timed.Queue(solo,*alone));
+    timed.Tick(1);timed.Tick(1+5*hold);assert(actual.empty()&&timed.preparations()==1);
+    assert(timed.Queue(Event(2)));timed.Tick(2+5*hold);timed.Tick(1+6*hold);assert(actual.empty()&&timed.preparations()==1);
+    timed.Tick(2+6*hold);assert(actual.size()==2&&actual.front()->GetDictionary("request")->GetBool("postDataUnavailable")&&actual.back()->GetInt("sequence")==2&&timed.preparations()==0);
+    const double start=10*hold;const auto stalled=timed.Begin({7,7},start+30000);assert(stalled&&timed.Queue(Event(3,*stalled))&&timed.Queue(Event(4)));
+    timed.Tick(start);timed.Tick(start+hold-1);assert(actual.size()==2&&canceled.empty());
+    timed.Tick(start+hold);assert(actual.size()==4&&actual[2]->GetDictionary("request")->GetBool("postDataUnavailable")&&canceled==std::vector<uint64_t>({*stalled})&&timed.bytes()==0);
+    // Unrelated later traffic is never delayed past the hold either.
+    const auto upload=timed.Begin({9},start+60000);assert(upload&&timed.Queue(Event(5,*upload)));timed.Tick(start+2*hold);assert(timed.Queue(Event(6)));timed.Tick(start+2*hold+1);assert(actual.size()==4);
+    open=true;timed.Tick(start+2*hold+2);assert(actual.size()==6&&actual[4]->GetDictionary("request")->GetString("postDataBodyId")==std::to_string(*upload));timed.Clear();
   }
 }

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 import * as z from 'zod'
 
+import { nativeInt32 } from './native-int32.js'
 import { type UntrustedInput } from './untrusted.js'
 
 export interface NativeDragOptions {
@@ -14,7 +15,7 @@ export interface NativeDragOptions {
 const position = z.strictObject({ x: z.number().finite(), y: z.number().finite() })
 const optionsSchema = z.strictObject({
   timeout: z.number().int().min(0).max(120_000).optional(),
-  steps: z.number().int().min(1).optional(),
+  steps: nativeInt32('steps').min(1).optional(),
   force: z.boolean().optional(),
   trial: z.boolean().optional(),
   sourcePosition: position.optional(),

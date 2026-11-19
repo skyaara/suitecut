@@ -12,7 +12,7 @@ canonical TypeScript serializer generates the native C++ literal, with an exact
 identity test. Known native scalar JSON strings preserve isolated UTF16 without
 reinterpreting ordinary author tag-shaped objects or their text.
 
-Default captures use ordinary bounded admission and the existing SelectorWait
+Default captures use ordinary admission and the existing SelectorWait
 physical/group controller. A strong logical work record pins full actual
 ReferenceDocument identity through native dispatch, replies and final successful
 Complete, including causal publication holds. Generic evaluation groups transfer

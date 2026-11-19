@@ -5,6 +5,7 @@ import * as z from 'zod'
 
 import { OutputFrameRateSchema } from './frame-rate.js'
 import { type NativeBrowser } from './native-browser.js'
+import { nativeInt32 } from './native-int32.js'
 import { NativeStreamingInfoSchema, type NativeStreamingInfo } from './native-streaming-protocol.js'
 import { toError, type UntrustedInput } from './untrusted.js'
 
@@ -19,10 +20,10 @@ interface PublisherTransport {
 const NativeReconnectPolicySchema = z
   .strictObject({
     /** Replacement attempts per actual outage. */
-    maxAttempts: z.number().int().min(1).default(3),
-    initialDelayMs: z.number().int().min(0).default(250),
-    maxDelayMs: z.number().int().min(0).default(5000),
-    timeoutMs: z.number().int().min(1).default(30_000),
+    maxAttempts: nativeInt32('maxAttempts').min(1).default(3),
+    initialDelayMs: nativeInt32('initialDelayMs').min(0).default(250),
+    maxDelayMs: nativeInt32('maxDelayMs').min(0).default(5000),
+    timeoutMs: nativeInt32('timeoutMs').min(1).default(30_000),
   })
   .refine(
     (value) => value.maxDelayMs >= value.initialDelayMs,
@@ -36,13 +37,13 @@ const PublisherConfigSchema = z.strictObject({
   audioCodec: z.enum(['aac', 'opus']).default('aac'),
   container: z.enum(['flv', 'webm']).default('flv'),
   framesPerSecond: OutputFrameRateSchema.exactOptional(),
-  width: z.number().int().min(2).exactOptional(),
-  height: z.number().int().min(2).exactOptional(),
+  width: nativeInt32('width').min(2).exactOptional(),
+  height: nativeInt32('height').min(2).exactOptional(),
   audio: z.boolean().default(false),
-  bitrateKbps: z.number().int().min(1).default(4500),
-  captureLatencyMs: z.number().int().min(0).default(120),
-  maxWriteLagMs: z.number().int().min(1).default(2000),
-  tcpSendBufferBytes: z.number().int().min(0).default(0),
+  bitrateKbps: nativeInt32('bitrateKbps').min(1).default(4500),
+  captureLatencyMs: nativeInt32('captureLatencyMs').min(0).default(120),
+  maxWriteLagMs: nativeInt32('maxWriteLagMs').min(1).default(2000),
+  tcpSendBufferBytes: nativeInt32('tcpSendBufferBytes').min(0).default(0),
   timeoutMs: z.number().finite().min(0).max(2_147_483_647).default(30_000),
 })
 export type NativePublisherConfig = z.input<typeof PublisherConfigSchema>

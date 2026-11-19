@@ -23,7 +23,7 @@ void packet(Json head,const Json& value={}) {
 }
 int engine() {
   packet(Json{{"type","ready"},{"pageId",1},{"timestampMs",1},{"cefVersion","simple-test"}});
-  int mutations=0,snapshots=0;bool many=false;Json last;
+  int mutations=0,snapshots=0;bool many=false,deep=false;Json last;
   std::string line;
   while(std::getline(std::cin,line)) {
     const auto q=Json::parse(line);const auto command=q.at("command").as_string();
@@ -39,6 +39,15 @@ int engine() {
         nodes[0]["fixtureDepth"]=q.contains("referenceDepth")?q.at("referenceDepth"):Json(-1);
         nodes[0]["fixtureFrame"]=q.contains("frame")?q.at("frame"):Json("main");
       }
+      if(deep) {
+        // A page nested 200000 elements deep, with a control at the bottom and a named group at every level.
+        Json level=Json{{"role","button"},{"name","Deepest"},{"ref","native_deep"}};
+        for(int i=0;i<200000;++i) {
+          Json group{{"role","group"},{"name","Level"}};Json::array children;children.push_back(std::move(level));
+          group["children"]=Json(std::move(children));level=std::move(group);
+        }
+        nodes.clear();nodes.push_back(std::move(level));
+      }
       result=Json{{"snapshotJSON",Json(nodes).dump()}};
     } else if(command=="evaluate") {
       const auto expression=q.at("expression").as_string();
@@ -47,6 +56,7 @@ int engine() {
       else if(expression=="document.title")value="Fixture";
       else if(expression=="report")value=Json{{"mutations",mutations},{"snapshots",snapshots},{"last",last}};
       else if(expression=="many")many=true;
+      else if(expression=="deep")deep=true;
       result=Json{{"result",Json{{"value",value}}}};
     } else if(command=="queryEvaluate") {
       result=Json{{"result",Json{{"value",q.contains("elementState")?Json(q.at("state")!=Json("hidden")):Json("Visible text")}}}};
@@ -177,6 +187,19 @@ int main(int argc,char** argv) {
     check(!compact_whole.at("truncated").as_bool()&&compact_whole.at("controls").as_array().size()>=4199,"Default compact observation was limited");
     const auto compact_capped=simple.call("observe",Json{{"format","compact"},{"maxControls",5}});
     check(compact_capped.at("truncated").as_bool()&&compact_capped.at("controls").as_array().size()==5,"Caller maxControls was ignored");
+    driver.call("evaluate",Json{{"expression","deep"}});
+    // Alias rewriting, ref stripping, text search and the compact projection walk the tree without recursion.
+    const auto tall=simple.call("observe",Json{{"timeoutMs",30000}});
+    check(tall.at("ok").as_bool()&&tall.at("controls").as_array().size()==1&&tall.at("controls").at(0).at("name")==Json("Deepest"),"Deep snapshot control lost");
+    check(simple.call("wait",Json{{"text","Deepest"},{"timeoutMs",30000}}).at("ok").as_bool(),"Deep text search failed");
+    check(!simple.call("wait",Json{{"changed",true},{"timeoutMs",200}}).at("ok").as_bool(),"Deep unchanged snapshot reported a change");
+    const auto tall_compact=simple.call("observe",Json{{"format","compact"},{"timeoutMs",30000}});
+    const auto& tall_controls=tall_compact.at("controls").as_array();
+    check(tall_controls.size()==1&&tall_compact.at("ancestors").as_array().size()==200000&&
+      tall_compact.at("ancestors").at(static_cast<std::size_t>(tall_controls.at(0).at("parent").as_int())).at("name")==Json("Level"),
+      "Deep compact control lost its context");
+    const auto tall_query=simple.call("observe",Json{{"format","compact"},{"query","deepest"},{"maxTextBytes",64},{"timeoutMs",30000}});
+    check(tall_query.at("truncated").as_bool()&&tall_query.at("controls").as_array().size()==1,"Deep query ignored its text budget");
     std::cout<<"PASS simple aliases, validation, UI evidence, sequence, frame context and bounded deadline\n";
     return 0;
   } catch(const std::exception& error) {std::cerr<<error.what()<<'\n';return 1;}

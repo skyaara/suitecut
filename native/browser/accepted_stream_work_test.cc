@@ -6,6 +6,16 @@
 #include <iostream>
 #include <stdexcept>
 #include <string>
+#include <cstdlib>
+#include <new>
+// Failing growth must poison the ledger, never std::terminate through noexcept.
+static bool deny_new=false;
+[[gnu::noinline]] void* operator new(std::size_t size){if(deny_new)throw std::bad_alloc();if(void*p=std::malloc(size?size:1))return p;throw std::bad_alloc();}
+[[gnu::noinline]] void operator delete(void*p)noexcept{std::free(p);}
+[[gnu::noinline]] void operator delete(void*p,std::size_t)noexcept{std::free(p);}
+[[gnu::noinline]] void* operator new[](std::size_t size){return ::operator new(size);}
+[[gnu::noinline]] void operator delete[](void*p)noexcept{::operator delete(p);}
+[[gnu::noinline]] void operator delete[](void*p,std::size_t)noexcept{::operator delete(p);}
 #include <sys/socket.h>
 #include <unistd.h>
 #ifndef SOCK_CLOEXEC
@@ -54,5 +64,8 @@ int main(){
  assert(close(fds[0])==0&&close(fds[1])==0);++controls;
  // Closing the receiver is a real failed write, never a published watermark.
  signal(SIGPIPE,SIG_IGN);assert(socketpair(AF_UNIX,SOCK_STREAM|SOCK_CLOEXEC,0,fds)==0);assert(close(fds[1])==0);auto failed=std::make_shared<Writer>();{suitecut::AcceptedPacketReceipt lost(failed,Writer::Kind::Watermark,4);const auto failed_cut=failed->Cut();lost.Dequeued();errno=0;assert(write(fds[0],"mark",4)==-1&&errno==EPIPE);lost.Failed();assert(!failed->Through(failed_cut)&&failed->Inspect().actual_bytes==0);}assert(close(fds[0])==0);++controls;
- assert(controls==34);std::cout<<"Accepted stream work: "<<controls<<" controlled policy/owner/kernel-boundary cases passed; no actual Source/Engine idle proof\n";
+ {auto reader=std::make_shared<Reader>();auto writer=std::make_shared<Writer>();deny_new=true;
+  const auto read=reader->Admit();const auto read_cut=reader->Cut();const auto written=writer->Admit(Writer::Kind::Event,8);const auto write_cut=writer->Cut();deny_new=false;
+  assert(!read&&!read_cut.nonce&&!written&&!write_cut.nonce&&reader->Inspect().poisoned&&!reader->Inspect().pending&&writer->Inspect().poisoned&&!writer->Inspect().queued);}++controls;
+ assert(controls==35);std::cout<<"Accepted stream work: "<<controls<<" controlled policy/owner/kernel-boundary cases passed; no actual Source/Engine idle proof\n";
 }

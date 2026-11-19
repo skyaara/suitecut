@@ -17,38 +17,53 @@ export interface NativeWorkerRetirementSnapshot {
   records: NativeWorkerRetirement[]
   ready?: NativeWorkerReadyReceipt[] | undefined
 }
-/** Real owner-scoped lifecycle receipts; readiness never overrides target death. */
+interface NativeWorkerScope {
+  records: Map<string, NativeWorkerRetirement>
+  ready: Map<string, NativeWorkerReadyReceipt>
+}
+/**
+ * Real owner-scoped lifecycle receipts; readiness never overrides target death.
+ * Receipts are indexed by scope so a snapshot reads only its owner, and an
+ * owner's receipts are released when that page or context closes.
+ */
 export class NativeWorkerRetirements {
-  private readonly records = new Map<string, { scope: string; record: NativeWorkerRetirement }>()
-  private readonly ready = new Map<string, { scope: string; record: NativeWorkerReadyReceipt }>()
+  private readonly scopes = new Map<string, NativeWorkerScope>()
   restore(snapshot: NativeWorkerRetirementSnapshot | undefined): void {
     if (!snapshot) return
     for (const record of snapshot.records) this.store('', record)
     for (const record of snapshot.ready ?? []) this.storeReady('', record)
   }
+  private scope(scope: string): NativeWorkerScope {
+    let entry = this.scopes.get(scope)
+    if (!entry) {
+      entry = { records: new Map(), ready: new Map() }
+      this.scopes.set(scope, entry)
+    }
+    return entry
+  }
   private store(scope: string, record: NativeWorkerRetirement): boolean {
-    const key = `${scope}\n${record.id}`
-    const prior = this.records.get(key)?.record
-    const ready = this.ready.get(key)?.record
+    const entry = this.scope(scope)
+    const prior = entry.records.get(record.id)
+    const ready = entry.ready.get(record.id)
     if ((prior && prior.sequence > record.sequence) || (ready && ready.sequence > record.sequence))
       return false
     if (prior?.event === 'close' && record.event === 'channelclosed') return false
-    this.records.set(key, { scope, record: { ...record } })
-    this.ready.delete(key)
+    entry.records.set(record.id, { ...record })
+    entry.ready.delete(record.id)
     return true
   }
   private storeReady(scope: string, record: NativeWorkerReadyReceipt): boolean {
-    const key = `${scope}\n${record.id}`
-    const prior = this.records.get(key)?.record
-    const ready = this.ready.get(key)?.record
+    const entry = this.scope(scope)
+    const prior = entry.records.get(record.id)
+    const ready = entry.ready.get(record.id)
     if (
       prior?.event === 'close' ||
       (prior && prior.sequence >= record.sequence) ||
       (ready && ready.sequence > record.sequence)
     )
       return false
-    this.records.delete(key)
-    this.ready.set(key, { scope, record: { ...record } })
+    entry.records.delete(record.id)
+    entry.ready.set(record.id, { ...record })
     return true
   }
   observe(scope: string, event: NativeWorkerEvent): boolean {
@@ -69,26 +84,26 @@ export class NativeWorkerRetirements {
     return true
   }
   get(id: string): NativeWorkerRetirement | undefined {
-    return this.records.get(`\n${id}`)?.record
+    return this.scopes.get('')?.records.get(id)
   }
   readySequence(id: string): number | undefined {
-    return this.ready.get(`\n${id}`)?.record.sequence
+    return this.scopes.get('')?.ready.get(id)?.sequence
   }
   latestSequence(id: string): number | undefined {
     return this.get(id)?.sequence ?? this.readySequence(id)
   }
   snapshot(scope: string): NativeWorkerRetirementSnapshot {
+    const entry = this.scopes.get(scope)
     return {
-      records: [...this.records.values()]
-        .filter((item) => item.scope === scope)
-        .map((item) => ({ ...item.record })),
-      ready: [...this.ready.values()]
-        .filter((item) => item.scope === scope)
-        .map((item) => ({ ...item.record })),
+      records: [...(entry?.records.values() ?? [])].map((record) => ({ ...record })),
+      ready: [...(entry?.ready.values() ?? [])].map((record) => ({ ...record })),
     }
   }
+  /** Releases a closed owner's receipts once nothing can observe that owner again. */
+  release(scope: string): void {
+    this.scopes.delete(scope)
+  }
   clear(): void {
-    this.records.clear()
-    this.ready.clear()
+    this.scopes.clear()
   }
 }

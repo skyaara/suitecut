@@ -16,9 +16,10 @@
     native_routed_events_.clear();native_routed_sockets_.clear();
   }
   // The extension's own socket/message/byte bounds are its to enforce; only
-  // the protocol revision is checked here.
+  // the protocol revision is checked here. Revision 2 is the extension without
+  // SuiteCut capacities; revision 1 (capped, with max* reply fields) is refused.
   static bool NativeWebSocketRouteRevision(Dict result) {
-    return result&&result->GetType("revision")==VTYPE_INT&&result->GetInt("revision")==1;
+    return result&&result->GetType("revision")==VTYPE_INT&&result->GetInt("revision")==2;
   }
   void NativeWebSocketRouteSettle(uint64_t epoch) {
     if(epoch!=native_routed_epoch_||native_routed_retiring_)return;
@@ -127,7 +128,7 @@
           if((unsupported||not_dispatched)&&!native_routed_cleanup_requested_){native_routed_configuring_=false;}
           else NativeWebSocketRouteCleanup(epoch);
           NativeWebSocketRouteSettle(epoch);
-          if(operations_.IsCurrent(id,generation))Complete(id,false,unsupported?"Native WebSocket routing requires the verified SuiteCut Network extension revision 1 in a custom CEF build":!native_routed_failure_.empty()?native_routed_failure_:"Native WebSocket routing activation failed or its original deadline exceeded");
+          if(operations_.IsCurrent(id,generation))Complete(id,false,unsupported?"Native WebSocket routing requires the verified SuiteCut Network extension revision 2 in a custom CEF build":!native_routed_failure_.empty()?native_routed_failure_:"Native WebSocket routing activation failed or its original deadline exceeded");
           return;
         }
         native_routed_configuring_=false;native_routed_active_=true;

@@ -47,7 +47,7 @@ try {
   })
   if (values.help)
     console.log(
-      'suitecut-test --executable /absolute/suitecut-runner (--suite /absolute/tests.mjs | --test-dir /absolute/tests) --report /absolute/result.json [--reporter json|none] [--list] [--pass-with-no-tests] [--test-directory /absolute/root] [--grep REGEX] [--grep-invert REGEX] [--output-directory /absolute/output-root] [--preserve-output always|never|failures-only] [--junit /absolute/result.xml] [--html /absolute/result.html] [--test-id ID ...] [--project PATTERN ...] [--no-deps] [--workers N] [--shard CURRENT/TOTAL] [--forbid-only] [--fail-on-flaky-tests] [--repeat-each N] [--max-failures N] [--global-timeout MS]\n--list writes native declaration JSON without fixtures, hooks or test bodies; importing the module still executes its top-level code.\nNative workers are bounded to1..8; parallel regions use native project or suite-file work groups.',
+      'suitecut-test --executable /absolute/suitecut-runner (--suite /absolute/tests.mjs | --test-dir /absolute/tests) --report /absolute/result.json [--reporter json|none] [--list] [--pass-with-no-tests] [--test-directory /absolute/root] [--grep REGEX] [--grep-invert REGEX] [--output-directory /absolute/output-root] [--preserve-output always|never|failures-only] [--junit /absolute/result.xml] [--html /absolute/result.html] [--test-id ID ...] [--project PATTERN ...] [--no-deps] [--workers N] [--shard CURRENT/TOTAL] [--forbid-only] [--fail-on-flaky-tests] [--repeat-each N] [--max-failures N] [--global-timeout MS]\n--list writes native declaration JSON without fixtures, hooks or test bodies; importing the module still executes its top-level code.\n--workers accepts any positive integer; parallel regions use native project or suite-file work groups.',
     )
   else {
     const config = z
@@ -74,7 +74,7 @@ try {
         'no-deps': z.boolean().optional(),
         workers: z
           .string()
-          .regex(/^[1-8]$/)
+          .regex(/^[1-9]\d*$/u, '--workers must be a positive integer')
           .optional(),
         'forbid-only': z.boolean().optional(),
         'fail-on-flaky-tests': z.boolean().optional(),

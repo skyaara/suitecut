@@ -497,36 +497,47 @@ bool safe_download_id(const std::string& id) {
            (c >= '0' && c <= '9') || c == '-' || c == '_';
   });
 }
+// Applies only the Browser.download* events after this page's cursor, in order, then releases the events of
+// this page's downloads that reached a final state: their record here is all that is needed from then on.
 void sync_downloads(CdpRuntime& runtime, CdpPage& page, Deadline deadline) {
   download_scope(runtime, page, deadline);
-  const auto begins = runtime.browser_events("Browser.downloadWillBegin");
-  for (const auto& event : begins.as_array()) {
-    const auto& begin = event.at("params");
-    if (text(begin, "frameId") != page.download_frame) continue;
-    const auto guid = begin.at("guid").as_string();
-    if (!safe_download_id(guid)) throw std::runtime_error("Chromium returned an invalid download GUID");
-    if (page.downloads.contains(guid)) continue;
-    Json info{{"downloadId", guid}, {"guid", guid}, {"url", begin.at("url")},
-      {"suggestedFilename", begin.at("suggestedFilename")}, {"state", "inProgress"},
-      {"receivedBytes", 0}, {"totalBytes", 0}, {"path", Json{}}};
-    if (!page.download_directory.empty())
-      info["_localPath"] = (std::filesystem::path(page.download_directory) / guid).string();
-    page.downloads.emplace(guid, std::move(info));
-  }
-  const auto progresses = runtime.browser_events("Browser.downloadProgress");
-  for (const auto& event : progresses.as_array()) {
-    const auto& progress = event.at("params");
+  const auto events = runtime.browser_events("Browser.download", page.download_cursor);
+  std::vector<std::string> finished;
+  for (const auto& event : events.as_array()) {
+    page.download_cursor = std::max(page.download_cursor, static_cast<std::uint64_t>(event.at("_suitecutEventSequence").as_int()));
+    const auto& params = event.at("params");
+    if (text(event, "method") == "Browser.downloadWillBegin") {
+      const auto& begin = params;
+      if (text(begin, "frameId") != page.download_frame) continue;
+      const auto guid = begin.at("guid").as_string();
+      if (!safe_download_id(guid)) throw std::runtime_error("Chromium returned an invalid download GUID");
+      if (page.downloads.contains(guid)) continue;
+      Json info{{"downloadId", guid}, {"guid", guid}, {"url", begin.at("url")},
+        {"suggestedFilename", begin.at("suggestedFilename")}, {"state", "inProgress"},
+        {"receivedBytes", 0}, {"totalBytes", 0}, {"path", Json{}}};
+      if (!page.download_directory.empty())
+        info["_localPath"] = (std::filesystem::path(page.download_directory) / guid).string();
+      page.downloads.emplace(guid, std::move(info));
+      continue;
+    }
+    if (text(event, "method") != "Browser.downloadProgress") continue;
+    const auto& progress = params;
     const auto found = page.downloads.find(progress.at("guid").as_string());
     if (found == page.downloads.end()) continue;
     auto& info = found->second;
     info["state"] = progress.at("state");
     for (const auto* key : {"receivedBytes", "totalBytes"})
       if (progress.contains(key)) info[key] = progress.at(key);
-    if (text(info, "state") == "completed" && info.contains("_localPath")) {
-      std::error_code error;
-      if (std::filesystem::is_regular_file(info.at("_localPath").as_string(), error) && !error)
-        info["path"] = info.at("_localPath");
-    }
+    if (text(info, "state") == "completed" || text(info, "state") == "canceled") finished.push_back(found->first);
+  }
+  if (!finished.empty()) runtime.release_downloads(finished);
+  // A completed file can become visible after its final event was applied; look again until it is.
+  for (auto& [guid, info] : page.downloads) {
+    (void)guid;
+    if (text(info, "state") != "completed" || !info.contains("_localPath") || info.at("path").is_string()) continue;
+    std::error_code error;
+    if (std::filesystem::is_regular_file(info.at("_localPath").as_string(), error) && !error)
+      info["path"] = info.at("_localPath");
   }
 }
 Json public_download(const Json& record) {

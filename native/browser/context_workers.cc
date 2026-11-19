@@ -522,7 +522,7 @@ class SuiteCutContextWorkers::Client : public CefClient, public CefLifeSpanHandl
     return id;
   }
   void AutoAttach(const std::string& session){auto params=CefDictionaryValue::Create();params->SetBool("autoAttach",true);params->SetBool("waitForDebuggerOnStart",true);params->SetBool("flatten",true);SendDevTools("Target.setAutoAttach",params,session);}
-  void DevTools(int owner,const std::string& method,Dict params,DevToolsCallback callback,std::optional<std::string> session=std::nullopt,bool retained=false,size_t /*former reply limit, unused*/=0,bool lossless_scalars=false){
+  void DevTools(int owner,const std::string& method,Dict params,DevToolsCallback callback,std::optional<std::string> session=std::nullopt,bool retained=false,bool lossless_scalars=false){
     if(!operations_.Contains(owner))return;
     const auto handler=waiting_.find(owner);auto actual=suitecut::CurrentNativeWorkOrigin();actual.locator_handler_invocation=0;
     const suitecut::NativeWorkOriginFrame handler_origin(handler==waiting_.end()?actual:handler->second.origin.Origin());

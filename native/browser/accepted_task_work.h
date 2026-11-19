@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 #pragma once
+#include "growth_guard.h"
 #include "accepted_work_origin.h"
 #include <atomic>
 #include <cstdint>
@@ -23,7 +24,9 @@ class AcceptedTaskWork {
     std::lock_guard lock(mutex_);if(next_==UINT64_MAX){poisoned_=true;return std::nullopt;}
     const Row created{{instance_,++next_,kind},true,false,false,origin,where.file_name(),where.line()};
     for(auto& row:rows_)if(!row.active){row=created;return row.ticket;}
-    rows_.push_back(created);return created.ticket;
+    // Growth failure poisons barrier authority instead of terminating the process.
+    SUITECUT_GROWTH_TRY{rows_.push_back(created);}SUITECUT_GROWTH_CATCH{poisoned_=true;return std::nullopt;}
+    return created.ticket;
   }
   bool Entered(Ticket ticket)noexcept{
     std::lock_guard lock(mutex_);auto* row=Find(ticket);if(!row||row->entered){poisoned_=true;return false;}row->entered=true;return true;

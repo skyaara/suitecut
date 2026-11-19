@@ -18,15 +18,15 @@ numeric and unique main/utility context identities, and native context epoch.
 The original operation generation/deadline is checked before dispatch, after
 receipts and before publication. Bounded logical work stays strongly owned until
 final Complete, including any native causal network-publication barrier; the
-successful Complete boundary rechecks its original deadline and all documents. Native ordinary admission bounds logical jobs
-at64; the existing SelectorWait controller retains actual calls and temporary
+successful Complete boundary rechecks its original deadline and all documents. Native ordinary admission does not limit logical
+jobs; the existing SelectorWait controller retains actual calls and temporary
 groups through logical cancellation until real ACK or actual channel death.
 The duplicate generic evaluation tracker transfers into that selector owner
 before each actual submission, including the first selection; logical cancel
 cannot fire-and-forget release a group while its selection call remains held.
 Its bounded physical watchdog uses the existing posted fatal teardown. A missing
 locator can retry only under its original deadline and after old attempt groups
-retire. A fixed node cannot rematch. There is at most64 ancestral document pins.
+retire. A fixed node cannot rematch. Ancestral document pins have no count limit.
 
 Actual disconnected/hidden/zero-layout nodes return null. Only Chromium's exact
 `-32000 Could not compute box model.` response permits a second actual layout

@@ -9,6 +9,7 @@
 #include <map>
 #include <memory>
 #include <optional>
+#include <set>
 #include <string>
 
 namespace suitecut {
@@ -63,6 +64,7 @@ class NativeContextVideo:public std::enable_shared_from_this<NativeContextVideo>
   void RememberError(int context,const std::string&error);
   Hooks hooks_;std::map<int,Prepared>configs_;std::map<uint64_t,Prepared>prepared_;
   std::map<std::string,std::shared_ptr<Record>>records_;std::map<int,std::string>pages_;
+  std::set<std::string>pending_; // Records with terminal sealing or queued waits still to pump.
   std::map<int,std::string>errors_;
   std::map<Key,std::shared_ptr<Wait>>waits_;std::map<uint64_t,std::shared_ptr<Work>>work_;
   uint64_t serial_=0;bool cleared_=false,pumping_=false;

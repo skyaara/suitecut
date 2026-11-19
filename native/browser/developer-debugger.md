@@ -17,9 +17,9 @@ reject a forged or consumed pause before a command is sent.
 The first scope is one actual current root document. Child/worker targets,
 renderer replacement recovery, breakpoints, call-frame evaluation, live editing,
 and developer UI are outside this slice. Source reads require an exact observed
-`Debugger.scriptParsed` identity in that document. A source read is bounded to
-262144 UTF-16 units. Pause metadata selects at most64 actual frames/64 total
-scopes. It never projects arbitrary author `RemoteObject.value` dictionaries.
+`Debugger.scriptParsed` identity in that document. Source reads and pause
+metadata (call frames and scopes) have no size or count limit of suitecut's own.
+It never projects arbitrary author `RemoteObject.value` dictionaries.
 
 Factory breakpoint hits retain priority. Developer and factory leases require
 pauses enabled; coverage alone may skip pauses. Closing coverage or a developer
@@ -42,10 +42,9 @@ channel closure; only the actual channel boundary retires the retained intent.
 An actual factory pause is not guessed to have consumed that intent. Source reads
 and continuation ACKs likewise remain physically reserved after logical cancel.
 
-Process admission is16 sessions including pending acquisition/cleanup, with32
-public operations and32 actual Source commands per controller. One extra close
-observer is reserved so a full set of waiters cannot block cleanup. These are
-ownership/payload limits, not an absolute allocator heap bound.
+Process admission has no session, operation or Source-command limit of
+suitecut's own, including pending acquisition/cleanup. One extra close observer
+is reserved so waiters cannot block cleanup.
 
 ## Source composition
 
@@ -55,8 +54,8 @@ The controller and `controllers/debugger/developer_debugger_source.inc` remain s
 1. Include `developer_debugger_controls.h` with the native headers, then include
    `controllers/debugger/developer_debugger_source.inc` in Source after the debugger/coverage adapters.
 2. Classify only `debugger` actions `open`, `close`, `resume`, `stepOver`,
-   `stepInto`, and `stepOut` in the actual native control lane. Open is bounded to
-   one per Source/process16. Pause/wait/source retain ordinary admission and
+   `stepInto`, and `stepOut` in the actual native control lane. Open is limited to
+   one per Source. Pause/wait/source retain ordinary admission and
    cannot consume the cleanup reserve. Dispatch the command to
    `NativeDeveloperCommand(owner, message)`; its absolute budget comes directly
    from `operations_.Get(owner)->deadline_ms`. Permit only its `close` action as
@@ -102,7 +101,7 @@ canonical close for the exact returned native session. It retains that promise
 through actual native cleanup and lets public `close()` join it. It bypasses only
 the constructor caller signal, using the actual Source page lifetime; a Source
 close race waits for its actual closed promise. It never classifies error text
-or a composed user signal as a physical boundary. A bounded16-entry SDK ledger
+or a composed user signal as a physical boundary. An SDK ledger with no entry limit
 includes open subscriptions, pending cleanup and unreported cleanup failures;
 the next same-Source admission reports an actual prior cleanup failure.
 

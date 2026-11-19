@@ -4,7 +4,8 @@ The two accompanying patches are isolated candidate source changes. Neither is
 applied to the stock CEF library or activated in SuiteCut. Ordinary `midi` still
 returns an unsupported error; the stock binary never sends content-setting 27.
 
-Pinned Chromium `156.0.8078.17` registers MIDI_SYSEX, but not MIDI. In addition,
+Chromium `156.0.8078.17`, which these patches target (the 156.0.8078.96 pin has
+not been rechecked), registers MIDI_SYSEX, but not MIDI. In addition,
 `MidiPermissionContext` reads MIDI_SYSEX under `BlockMidiByDefault`, and Blink's
 `MIDIAccessInitializer` changes an ordinary access request into a SysEx permission
 request under the same feature. Merely registering MIDI, mapping it to SysEx,

@@ -165,7 +165,16 @@ export class NativeWebSocketRoutes {
   private receive(value: NativeWebSocketRouteInfo): void {
     const info = NativeWebSocketRouteInfoSchema.parse(value),
       entry = this.registrations.get(info.registrationId)
-    if (!entry || this.closed) return
+    if (this.closed) return
+    if (!entry) {
+      // The registration is gone; finish the lease so native releases it now
+      // instead of at scope close.
+      if (!this.transport.processSignal.aborted)
+        void this.acknowledge('finish', info.callback).catch((error: UntrustedInput) => {
+          this.record(error)
+        })
+      return
+    }
     const key = JSON.stringify([info.targetId, info.routingToken, info.requestId])
     const matcher =
       info.stage === 'match' && entry.policy.host ? entry.policy.callback() : undefined

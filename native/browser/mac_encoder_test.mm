@@ -5,6 +5,7 @@
 #import <IOSurface/IOSurface.h>
 #include <cassert>
 #include <filesystem>
+#include <stdexcept>
 #include <fcntl.h>
 #include <unistd.h>
 int main(int argc,char**argv){@autoreleasepool {
@@ -20,6 +21,13 @@ int main(int argc,char**argv){@autoreleasepool {
   encoder.Write(colors[0],{},true);encoder.Drain();assert(std::filesystem::file_size(path)==0);
   for(int i=0;i<12;++i)encoder.Write(colors[i%2],{});
   encoder.Drain();assert(std::filesystem::file_size(path)>100);
+ }
+ {
+  // An fps whose microsecond timestamps overflow int64 fails this encode cleanly
+  // (overflow guard, no rate cap) instead of passing an undefined llround to CMTime.
+  bool rejected=false;
+  try{suitecut::MacNativeEncoder tiny(fd,64,64,1e-300,8*1024*1024,[]{});tiny.Write(colors[0],{},true);}catch(const std::runtime_error&){rejected=true;}
+  assert(rejected);
  }
  close(fd);CFRelease(source);
 }}

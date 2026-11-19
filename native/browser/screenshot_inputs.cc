@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 #include "screenshot_inputs.h"
+#include <algorithm>
 #include <atomic>
 #include <cerrno>
 #include <cmath>
@@ -52,6 +53,11 @@ bool SameStat(const struct stat&a,const struct stat&b){
  return a.st_dev==b.st_dev&&a.st_ino==b.st_ino&&a.st_size==b.st_size&&a.st_mtim.tv_sec==b.st_mtim.tv_sec&&a.st_mtim.tv_nsec==b.st_mtim.tv_nsec&&a.st_ctim.tv_sec==b.st_ctim.tv_sec&&a.st_ctim.tv_nsec==b.st_ctim.tv_nsec;
 #endif
 }
+// Moves a fresh reservation into an existing lease so the ledger tracks what the buffer holds.
+bool GrowLease(const std::shared_ptr<ScreenshotByteBudget::Lease>&lease,size_t bytes){
+ if(!lease||!lease->owner)return false;auto more=lease->owner->Reserve(bytes);if(!more)return false;
+ more->bytes.store(0,std::memory_order_release);lease->bytes.fetch_add(bytes,std::memory_order_acq_rel);return true;
+}
 void Read(const std::string&path,std::shared_ptr<ScreenshotInputs::Data>data,const std::atomic_bool&canceled,std::string&error){
  if(canceled.load(std::memory_order_acquire))return;
  const int descriptor=open(path.c_str(),O_RDONLY|O_NONBLOCK|O_CLOEXEC);
@@ -59,7 +65,9 @@ void Read(const std::string&path,std::shared_ptr<ScreenshotInputs::Data>data,con
  struct FD{int value;~FD(){close(value);}}fd{descriptor};struct stat before{},after{};
  if(fstat(descriptor,&before)!=0){error=IO("stat",errno);return;}
  if(!S_ISREG(before.st_mode)||before.st_size<33){error="Native screenshot baseline must be a regular PNG file";return;}
- data->png.resize(size_t(before.st_size)+1);size_t count=0;
+ // The lease grows to the bytes this read holds; Begin checks it covers png.capacity().
+ const size_t held=size_t(before.st_size)+1;if(held>data->png.capacity()&&!GrowLease(data->reservation,held-data->png.capacity())){error="Native screenshot input byte ledger would overflow";return;}
+ data->png.reserve(held);data->png.resize(held);size_t count=0;
  while(count<data->png.size()){
   if(canceled.load(std::memory_order_acquire))return;
   const auto bytes=read(descriptor,data->png.data()+count,std::min(kChunkLimit,data->png.size()-count));
@@ -99,7 +107,12 @@ bool ScreenshotInputs::Append(Owner owner,const std::string&token,bool config,si
  if(record->claimed||bytes.empty()||(!config&&record->file)){error="Invalid native screenshot input chunk or already-claimed token";return false;}
  auto& received=config?record->config_received:record->png_received;const size_t total=config?record->config_size:record->png_size;
  if(offset!=received||bytes.size()>total-received){error="Native screenshot input chunk offset/length is duplicate, out of order or oversized";return false;}
- if(config)record->data->config.append(reinterpret_cast<const char*>(bytes.data()),bytes.size());else record->data->png.insert(record->data->png.end(),bytes.begin(),bytes.end());received+=bytes.size();return true;
+ if(config){record->data->config.append(reinterpret_cast<const char*>(bytes.data()),bytes.size());received+=bytes.size();return true;}
+ // Grow geometrically but never past the declared total that Prepare reserved, so
+ // png.capacity() stays inside the lease Begin checks.
+ auto&png=record->data->png;const size_t needed=png.size()+bytes.size();
+ if(needed>png.capacity())png.reserve(std::min(total,std::max(needed,png.capacity()>total/2?total:png.capacity()*2)));
+ png.insert(png.end(),bytes.begin(),bytes.end());received+=bytes.size();return true;
 }
 bool ScreenshotInputs::Inspect(Owner owner,const std::string&token,std::string&json,std::string&error,Purpose purpose,std::shared_ptr<Data>* retention){
  const auto record=Find(owner,token,error);if(!record)return false;

@@ -9,7 +9,7 @@ physical shutdown barrier across all its implementation modules.
 
 | Directory / object target                 | Responsibility                                                                                       |
 | ----------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| `protocol/` / `suitecut-browser-protocol` | Packet values, bounded output queues, reply credits, writer thread and publication receipts          |
+| `protocol/` / `suitecut-browser-protocol` | Packet values, output queues, reply credits, writer thread and publication receipts                  |
 | `runtime/` / `suitecut-browser-runtime`   | Engine ownership, contexts, startup, command routing, deadlines, accepted work and physical shutdown |
 | `page/` / `suitecut-browser-page`         | CEF page adapter, callbacks and page-scoped command implementations                                  |
 | `process/` / `suitecut-browser-process`   | CEF application configuration, platform-neutral process dispatch and shutdown sequence               |
@@ -41,7 +41,7 @@ parallel service registry or a second set of lifecycle state.
   task decides ownership on UI: active failures remain fatal, a cancelable
   beforeunload prompt is still active, and committed page close retires late
   capture errors. The engine lifetime guard precedes access to its state.
-- The writer owns its existing single I/O thread and bounded queues. Splitting
+- The writer owns its existing single I/O thread and output queues. Splitting
   files does not create workers or introduce per-command threads.
 - Consume stored one-shot callbacks before invocation, including through
   reentrant teardown. Use `std::exchange(callback, {})`; a moved-from small

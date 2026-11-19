@@ -418,8 +418,8 @@ auto Source::OnAfterCreated(CefRefPtr<CefBrowser> browser) -> void {
         auto header = Header("networkbody");
         header->SetInt("pageId", page_id_);
         header->SetString("bodyId", std::to_string(id));
-        header->SetInt("offset", static_cast<int>(offset));
-        header->SetInt("totalBytes", static_cast<int>(total));
+        header->SetDouble("offset", static_cast<double>(offset));
+        header->SetDouble("totalBytes", static_cast<double>(total));
         if (canceled) header->SetBool("canceled", true);
         return writer_.TryEvent(header, std::vector<uint8_t>(bytes.begin(), bytes.end()));
       });

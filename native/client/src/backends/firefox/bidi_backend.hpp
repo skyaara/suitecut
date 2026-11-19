@@ -3,6 +3,8 @@
 #include "suitecut/transport.hpp"
 #include "suitecut/json.hpp"
 namespace suitecut::detail {
+// Converts a WebDriver BiDi RemoteValue to JSON; throws for values JSON cannot represent. Any nesting depth.
+Json bidi_remote_value(const Json& remote);
 class BidiBackend {
  public:
   static std::unique_ptr<BidiBackend> launch(const LaunchOptions&);

@@ -1,6 +1,6 @@
 # Native posted task object receipts
 
-This bounded process-local C++ component covers SuiteCut-owned task objects. It
+This process-local C++ component covers SuiteCut-owned task objects. It
 is not installed into production CEF tasks in this commit and grants no Engine
 idle, child exit or browser reuse. It does not count renderer timers/listeners
 or opaque CEF scheduling as pending automation merely because they exist.
@@ -14,8 +14,8 @@ There is no cancellation/timeout method that can discharge a living task.
 
 A future barrier may exclude only its exact executing task of the explicit
 BarrierCoordinator kind. Ordinary work, queued/foreign/stale barrier tickets,
-other callbacks and returned-but-retained tasks do not qualify. Callback unwind,
-capacity exhaustion and unsupported bookkeeping deny authority. Exact instance
+other callbacks and returned-but-retained tasks do not qualify. Callback unwind
+and unsupported bookkeeping deny authority; pending work has no count limit. Exact instance
 and monotonic task identity prevent old tickets resolving a replacement owner.
 
 The 20 native controls prove C++ ownership/stack/captured-destructor policy under

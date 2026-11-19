@@ -2,6 +2,7 @@
 #include "screenshot_compare_control_test.h"
 #include "screenshot_compare.h"
 #include "screenshot_png_codec.h"
+#include <algorithm>
 #include <cassert>
 #include <deque>
 #include <thread>
@@ -138,6 +139,17 @@ void RunScreenshotComparisonControlTests(){
   for(size_t i=0;i<noise.rgba.size();++i){state^=state<<13;state^=state>>17;state^=state<<5;noise.rgba[i]=uint8_t(state);}
   const auto encoded=PNG(noise);assert(encoded.size()>65536);
   Fixture test;auto raw=test.Raw(encoded);assert(raw->png.size()>65536);test.StartPrepared(test.Config(""),std::move(raw));test.Sample(encoded);test.Sample(encoded);assert(test.replies.size()==1&&test.replies[0].ok&&test.replies[0].value->GetBool("passed"));test.Empty();
+  // Baselines prepared by ScreenshotInputs itself, a file and a stream of many
+  // 24 KiB chunks, reach Begin with a lease that covers what the buffer holds.
+  const auto png=test.Raw(encoded)->png;assert(png.size()>24*1024*2);char path[]="/tmp/suitecut-screenshot-prepared-XXXXXX";const int fd=mkstemp(path);assert(fd>=0);assert(write(fd,png.data(),png.size())==ssize_t(png.size()));assert(close(fd)==0);
+  Fixture inputs;inputs.AttachInputs();const suitecut::ScreenshotInputs::Owner owner{1,1,1};std::string error;std::shared_ptr<suitecut::ScreenshotInputs::Data> prepared;
+  const auto claim=[&](const std::string&token,const std::string&file,int command){assert(inputs.inputs->Claim(owner,token,file,command,[&](auto data,double deadline,const std::string&failure){assert(failure.empty()&&deadline==100&&data&&data->png==png);prepared=std::move(data);},error));};
+  const auto compare=[&](int page){assert(prepared&&prepared->reservation->bytes.load()>=prepared->png.capacity()+prepared->config.size());inputs.StartPrepared(inputs.Config(""),std::move(prepared),page,page);inputs.Capture(encoded,page,page);inputs.CPU();inputs.Owner();inputs.Capture(encoded,page,page);inputs.CPU();inputs.Owner();assert(inputs.replies.size()==size_t(page)&&inputs.replies.back().ok&&inputs.replies.back().value->GetBool("passed"));};
+  auto stream=inputs.inputs->Prepare(owner,"stream",false,png.size(),2,100,error).token;assert(!stream.empty()&&inputs.inputs->Append(owner,stream,true,0,{'{','}'},error));
+  for(size_t offset=0;offset<png.size();offset+=24*1024){const auto last=std::min(png.size(),offset+24*1024);assert(inputs.inputs->Append(owner,stream,false,offset,{png.begin()+offset,png.begin()+last},error));}
+  claim(stream,"",9);compare(1);
+  auto file=inputs.inputs->Prepare(owner,"file",true,0,2,100,error).token;assert(!file.empty()&&inputs.inputs->Append(owner,file,true,0,{'{','}'},error));
+  claim(file,path,10);inputs.CPU();inputs.Owner();compare(2);assert(unlink(path)==0&&error.empty());inputs.Empty();
  }
  {
   // One actual file job and one actual image job exhaust their JOINT cap.

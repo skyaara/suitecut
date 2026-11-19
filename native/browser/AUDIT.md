@@ -262,8 +262,8 @@ The current target is Linux x64 with CEF
 `156.0.30+g6028375+chromium-156.0.8078.96` stable (moved from
 `156.0.7+g47dbc1d+chromium-156.0.8078.17` beta on 2026-11-19; the evidence below
 was gathered on the earlier pin unless it says otherwise). The pinned archive's size,
-upstream SHA-1 and SHA-256 have been verified. The binary builds and runs with
-the sandbox enabled and explicit headless software rendering.
+upstream SHA-1 and SHA-256 have been verified. On 156.0.7 the Linux binary built
+and ran with the sandbox enabled and explicit headless software rendering.
 
 ## Current execution evidence
 
@@ -2148,7 +2148,8 @@ The unchanged pinned CEF parser/string tests pass **40/40** on Linux (31
 parser and 9 string tests), with no failures, disabled cases or skipped cases.
 The original Windows-only WideToUTF8 case is not compiled on this platform.
 Run: `.suitecut/cef-upstream/runs/2026-10-14T20-06-19.069858+00-00-699358`.
-`scripts/verify-cef-upstream.py` pins CEF commit 47dbc1d and GoogleTest 1.17.0,
+`scripts/verify-cef-upstream.py` pinned CEF commit 47dbc1d for this run (it now
+pins 6028375, whose pinned upstream files are byte-identical) and GoogleTest 1.17.0,
 checks exact original source hashes, preserves every assertion and license,
 and guards SDK bytes before/after. This direct vendor-library scope verifies
 URL, JSON and string behavior; it does not establish browser-action parity.

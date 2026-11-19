@@ -47,7 +47,7 @@ class RoutingLifecycle {
 #include "controllers/network/websocket_routing.inc"
   void Enable(int id){operations_.live[id]=1;auto input=CefDictionaryValue::Create();input->SetString("action","routeEnable");NativeWebSocketRouteCommand(id,1,input);}
   void Disable(int id){operations_.live[id]=1;auto input=CefDictionaryValue::Create();input->SetString("action","routeDisable");input->SetString("routingToken",std::to_string(native_routed_epoch_));NativeWebSocketRouteCommand(id,1,input);}
-  static std::string Supported(){return "{\"revision\":1}";}
+  static std::string Supported(){return "{\"revision\":2}";}
   void Routed(const std::string& request,const std::string& stage,const std::string& message="",const std::string& payload="",int opcode=0){
     auto e=CefDictionaryValue::Create();e->SetString("requestId",request);e->SetString("stage",stage);e->SetString("url",stage=="created"?"wss://example.test/"+request:"");
     e->SetString("messageId",message);e->SetBool("outgoing",false);e->SetInt("opcode",opcode);e->SetString("payloadBase64",payload);NativeWebSocketRouteEvent(e,"");
@@ -99,6 +99,14 @@ int main(){
   {
     RoutingLifecycle h;h.Enable(1);h.Ack(0,false,"{\"code\":-32601,\"message\":\"Method not found\"}");
     assert(!h.retired&&!h.native_routed_configuring_&&!h.results.at(1)&&h.calls.size()==1);
+  }
+  {
+    // Revision 1 is the capped extension; it is never activated, and its
+    // cleanup reply cannot confirm that the incompatible backend disabled.
+    RoutingLifecycle h;h.Enable(1);h.Ack(0,true,"{\"revision\":1,\"maxSockets\":128,\"maxPendingMessages\":64,\"maxPendingBytes\":2097152}");
+    assert(!h.results.at(1)&&!h.native_routed_active_&&h.calls.size()==2&&h.native_routed_configuring_);
+    h.Ack(1,true,"{\"revision\":1}");assert(h.retired&&!h.native_routed_active_);
+    RoutingLifecycle bare;bare.Enable(1);bare.Ack(0,true,"{\"revision\":1}");assert(!bare.results.at(1)&&!bare.native_routed_active_);
   }
   {
     // Socket counts, queue depth, id/URL/payload/reason sizes are not ours to bound.

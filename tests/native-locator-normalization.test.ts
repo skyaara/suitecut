@@ -96,9 +96,13 @@ describe('native builtin locator normalization packets', () => {
     expect(
       decodeNativeLocatorNormalization(packet('path', [{ engine: 'css', selector }])).query,
     ).toEqual([{ engine: 'css', selector }])
-    expect(() =>
-      decodeNativeLocatorNormalization({ ...packet(), metadataJSON: ' '.repeat(32769) }),
-    ).toThrow()
+    // Metadata far past the old 32 KiB cap, padded with insignificant JSON whitespace, decodes whole.
+    const padded = `${' '.repeat(100_000)}${packet().metadataJSON}${' '.repeat(100_000)}`
+    expect(decodeNativeLocatorNormalization({ ...packet(), metadataJSON: padded }).query).toEqual([
+      { engine: 'css', selector: '#actual' },
+    ])
+    for (const metadataJSON of [' ', '{"kind":"id"', 'not json', '{"kind":"id","query":[]} x'])
+      expect(() => decodeNativeLocatorNormalization({ ...packet(), metadataJSON })).toThrow()
     expect(
       decodeNativeLocatorNormalization(
         packet(

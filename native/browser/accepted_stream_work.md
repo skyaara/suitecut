@@ -1,6 +1,6 @@
 # Native reader and stdout publication receipts
 
-These bounded components account for actual native stream boundaries. They are
+These components account for actual native stream boundaries. They are
 not wired into production Source in this commit and grant no Engine idle or
 retained CEF-child reuse capability. Renderer timers/listeners/page state may
 remain resident under their actual worker owner; no JavaScript quiet is assumed.
@@ -26,7 +26,7 @@ No existing browser API/decoder or host protocol is changed by this commit.
 
 Native controls cover policies, C++ owner lifetime and genuine socket prefix,
 payload and EPIPE boundaries. SDK controls cover ordering, forged/stale cuts,
-foreign source tickets, exact uint64 validation and bounded in-flight/history.
+foreign source tickets, exact uint64 validation and in-flight/history bookkeeping.
 Actual Source Writer/reader hooks, full Engine physical/controller/task ownership,
 original marker through a real SDK/helper and known CEF cohort transfer remain
 separate following work; registered CEF children still require fresh hosts.

@@ -91,15 +91,51 @@ inline std::string DevToolsTruncateWTF8(const std::string& input,size_t limit){
   return input.substr(0,end);
 }
 // Only call for native-produced typed metadata, never arbitrary author objects.
-// The trailing size argument is accepted for source compatibility and ignored:
-// suitecut no longer caps the serialized size; nesting is bounded by CEF's parser.
+// Native trees such as the AX projection are as deep as the page's DOM, which no
+// CEF parser bounds, so containers are walked with an explicit stack.
+struct DevToolsLosslessFrame {CefRefPtr<CefDictionaryValue> dict;CefRefPtr<CefListValue> list;CefDictionaryValue::KeyList keys;size_t next=0;};
+inline void DevToolsLosslessOpen(std::vector<DevToolsLosslessFrame>& stack,CefRefPtr<CefDictionaryValue> dict,CefRefPtr<CefListValue> list,std::string& out){
+  DevToolsLosslessFrame frame;frame.dict=dict;frame.list=list;if(dict)dict->GetKeys(frame.keys);out+=dict?'{':'[';stack.push_back(std::move(frame));
+}
+inline bool DevToolsLosslessDrain(std::vector<DevToolsLosslessFrame>& stack,std::string& out){
+  // Child references are released innermost first, never by a parent
+  // teardown that would walk their dependents.
+  const auto fail=[&stack]{while(!stack.empty())stack.pop_back();return false;};
+  while(!stack.empty()){
+    auto& frame=stack.back();
+    const size_t size=frame.dict?frame.keys.size():frame.list->GetSize();
+    if(frame.next==size){out+=frame.dict?'}':']';stack.pop_back();continue;}
+    if(frame.next)out+=',';
+    CefRefPtr<CefValue> value;
+    if(frame.dict){const auto& key=frame.keys[frame.next];auto name=CefValue::Create();name->SetString(key);out+=CefWriteJSON(name,JSON_WRITER_DEFAULT).ToString();out+=':';value=frame.dict->GetValue(key);}
+    else value=frame.list->GetValue(frame.next);
+    ++frame.next; // |frame| is not used past this point: opening a child may reallocate |stack|.
+    if(!value)return fail();
+    std::u16string units;
+    if(DevToolsReadTag(value,units))out+=DevToolsQuoteUnits(units);
+    else if(value->GetType()==VTYPE_DICTIONARY)DevToolsLosslessOpen(stack,value->GetDictionary(),nullptr,out);
+    else if(value->GetType()==VTYPE_LIST)DevToolsLosslessOpen(stack,nullptr,value->GetList(),out);
+    else out+=CefWriteJSON(value,JSON_WRITER_DEFAULT).ToString();
+  }
+  return true;
+}
+// The trailing size argument is ignored; it remains only for callers that
+// still pass one. suitecut does not cap the serialized size.
 inline bool DevToolsLosslessJSON(CefRefPtr<CefValue> value,std::string& out,size_t=0){
   if(!value)return false;
   std::u16string units;
-  if(DevToolsReadTag(value,units))out+=DevToolsQuoteUnits(units);
-  else if(value->GetType()==VTYPE_DICTIONARY){auto dict=value->GetDictionary();CefDictionaryValue::KeyList keys;dict->GetKeys(keys);out+='{';bool first=true;for(const auto& key:keys){if(!first)out+=',';first=false;auto name=CefValue::Create();name->SetString(key);out+=CefWriteJSON(name,JSON_WRITER_DEFAULT).ToString();out+=':';if(!DevToolsLosslessJSON(dict->GetValue(key),out))return false;}out+='}';}
-  else if(value->GetType()==VTYPE_LIST){auto list=value->GetList();out+='[';for(size_t i=0;i<list->GetSize();++i){if(i)out+=',';if(!DevToolsLosslessJSON(list->GetValue(i),out))return false;}out+=']';}
-  else out+=CefWriteJSON(value,JSON_WRITER_DEFAULT).ToString();
-  return true;
+  if(DevToolsReadTag(value,units)){out+=DevToolsQuoteUnits(units);return true;}
+  std::vector<DevToolsLosslessFrame> stack;
+  if(value->GetType()==VTYPE_DICTIONARY)DevToolsLosslessOpen(stack,value->GetDictionary(),nullptr,out);
+  else if(value->GetType()==VTYPE_LIST)DevToolsLosslessOpen(stack,nullptr,value->GetList(),out);
+  else{out+=CefWriteJSON(value,JSON_WRITER_DEFAULT).ToString();return true;}
+  return DevToolsLosslessDrain(stack,out);
+}
+// Serializes a list in place, without the deep copy that wrapping an owned
+// list in a CefValue would need.
+inline bool DevToolsLosslessListJSON(CefRefPtr<CefListValue> list,std::string& out){
+  if(!list)return false;
+  std::vector<DevToolsLosslessFrame> stack;DevToolsLosslessOpen(stack,nullptr,list,out);
+  return DevToolsLosslessDrain(stack,out);
 }
 }

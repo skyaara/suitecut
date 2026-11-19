@@ -34,8 +34,8 @@ with `addSource` remain caller-owned. Recording audio is disabled by default; se
 native-default recorder with reusable settings. Its returned function accepts
 per-recording overrides. Native dimensions and capture FPS belong in `native`;
 recording `capture` accepts output `size`, output `framesPerSecond`,
-`narrationTailMs`, and the boolean `audio` flag. Capture and output FPS accept
-integers from 1 through 120. See
+`narrationTailMs`, and the boolean `audio` flag. Capture FPS accepts any integer
+from 1 and output FPS any finite number from 1; suitecut sets no upper limit. See
 [frame rates and resampling](README.md#frame-rates-and-resampling).
 
 Native callbacks receive `NativePage`. Strict main-document CSS locators and

@@ -8,7 +8,7 @@ inline constexpr char kSuiteCutLocatorSuggestionObserve[]=R"JS(function(query){
  const add=(kind,steps)=>{candidates.push({kind,query:steps});};
  const attribute=name=>{const text=target.getAttribute(name);if(text===null)return;if(!value(text)||text.includes('\0')){omitted.push({kind:'testId',reason:'Attribute text is not well-formed'});return;}add('testId',[{engine:'testId',attribute:name,text,exact:true}]);};
  for(const name of ['data-testid','data-test-id','data-test'])attribute(name);
- let data=0;for(let i=0;i<target.attributes.length;++i){const name=target.attributes.item(i)?.name;if(name&&/^data-[a-z0-9_-]+$/u.test(name)&&!['data-testid','data-test-id','data-test'].includes(name)&&data++<5)attribute(name);}
+ for(let i=0;i<target.attributes.length;++i){const name=target.attributes.item(i)?.name;if(name&&/^data-[a-z0-9_-]+$/u.test(name)&&!['data-testid','data-test-id','data-test'].includes(name))attribute(name);}
  const name=tools.name(target),role=tools.role(target);
  if(role&&value(name))add('role',[{engine:'role',role,name:{text:name,exact:true}}]);
  if(target.labels?.length||target.hasAttribute('aria-label')||target.hasAttribute('aria-labelledby')){const label=tools.name(target,{referenced:true});if(value(label)&&label)add('label',[{engine:'label',text:label,exact:true}]);}

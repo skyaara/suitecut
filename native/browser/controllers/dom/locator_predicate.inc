@@ -37,7 +37,7 @@ void LocatorPredicateFailure(const std::shared_ptr<LocatorPredicateWork>& work,D
   std::u16string units;
   if(error&&error->GetType()!=VTYPE_STRING&&!suitecut::DevToolsReadTag(error,units))error=nullptr;
   std::string quoted;
-  if(!error||!suitecut::DevToolsLosslessJSON(error,quoted,524288))quoted=suitecut::InboundQuote(fallback);
+  if(!error||!suitecut::DevToolsLosslessJSON(error,quoted))quoted=suitecut::InboundQuote(fallback);
   // This is an explicit native error-string field, never an author object or
   // a recursive reinterpretation of a user predicate's return value.
   auto output=CefDictionaryValue::Create();output->SetString("predicateErrorJSON",quoted);

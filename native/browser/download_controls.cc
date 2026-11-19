@@ -121,7 +121,7 @@ std::shared_ptr<DownloadControls::Record> DownloadControls::Ensure(int page,CefR
   const auto policy=hooks_.policy(page);if(policy.context<=0)return nullptr;
   auto record=std::make_shared<Record>();record->page=page;record->native_id=item->GetId();record->id="download-"+namespace_+"-"+std::to_string(++next_id_);
   record->context=policy.context;record->accepted=policy.accepted;record->event_page=policy.event_page>0?policy.event_page:page;
-  Snapshot(*record,item);native_ids_[key]=record->id;records_[record->id]=record;return record;
+  Snapshot(*record,item);native_ids_[key]=record->id;records_[record->id]=record;active_.insert(record->id);return record;
 }
 void DownloadControls::Snapshot(Record& record,CefRefPtr<CefDownloadItem> item){
   record.url=item->GetURL();record.original_url=item->GetOriginalUrl();record.mime=item->GetMimeType();
@@ -208,7 +208,7 @@ void DownloadControls::Finish(std::shared_ptr<Record> record){
     else record->quota->ReduceTo(size);
     record->received=static_cast<std::int64_t>(size);
   }catch(const std::exception& error){record->failure=error.what();record->complete=false;}
-  record->physical_settled=true;record->callback=nullptr;record->handler_cancellations.clear();
+  record->physical_settled=true;active_.erase(record->id);record->callback=nullptr;record->handler_cancellations.clear();
   if(record->emitted)hooks_.event(record->event_page,Info(*record));
   if(!record->failure.empty()||record->context_closed)Cleanup(record);
   std::vector<int> owners;for(const auto& [owner,wait]:waits_)if(wait.id==record->id)owners.push_back(owner);
@@ -284,7 +284,7 @@ void DownloadControls::Cleanup(std::shared_ptr<Record> record){
   record->files.reset();record->quota.reset();
 }
 bool DownloadControls::PageSettled(int page)const{
-  for(const auto& [id,record]:records_)if((record->page==page||record->event_page==page)&&!record->physical_settled)return false;
+  for(const auto& id:active_)if(const auto found=records_.find(id);found!=records_.end()&&(found->second->page==page||found->second->event_page==page))return false;
   for(const auto& [owner,copy]:copies_)if(const auto record=records_.find(copy->id);record!=records_.end()&&(record->second->page==page||record->second->event_page==page))return false;
   return true;
 }
@@ -305,7 +305,19 @@ void DownloadControls::PageGone(int page){
   for(const auto& [id,record]:records_)if(record->page==page||record->event_page==page){if(record->page==page)record->browser_gone=true;RequestCancel(*record,"Target page, context or browser has been closed");}
   closing_pages_.erase(page);response_budgets_->ClosedPage(page);hooks_.wake();
 }
-void DownloadControls::ContextGone(int context){closing_contexts_.erase(context);directories_.erase(context);}
+// The SDK reaches a download by id through its context for as long as that
+// context lives (including after its page closed), so records are released
+// with the context: every settled one whose files and copies are gone.
+void DownloadControls::ContextGone(int context){
+  closing_contexts_.erase(context);directories_.erase(context);
+  for(auto it=records_.begin();it!=records_.end();){
+    const auto& record=it->second;
+    const bool copying=std::any_of(copies_.begin(),copies_.end(),[&](const auto& copy){return copy.second->id==record->id;});
+    const bool waited=std::any_of(waits_.begin(),waits_.end(),[&](const auto& wait){return wait.second.id==record->id;});
+    if(record->context!=context||!record->physical_settled||record->files||copying||waited){++it;continue;}
+    native_ids_.erase({record->page,record->native_id});it=records_.erase(it);
+  }
+}
 bool DownloadControls::ContextCleanupReady(int context)const{
   for(const auto& [id,record]:records_)if(record->context==context&&(!record->physical_settled||record->files))return false;
   for(const auto& [owner,copy]:copies_)if(const auto record=records_.find(copy->id);record!=records_.end()&&record->second->context==context)return false;
@@ -319,7 +331,7 @@ void DownloadControls::CheckClosures(){
 }
 void DownloadControls::Tick(){
   response_budgets_->Collect();std::vector<std::shared_ptr<Record>> pending;
-  for(const auto& [id,record]:records_){
+  for(const auto& id:active_){const auto found=records_.find(id);if(found==records_.end())continue;const auto& record=found->second;
     // A page can close itself outside the context API. Its native cancellation
     // still owns the directory until the response stream and all local writers
     // have physically stopped, even if CEF cannot deliver another client event.
@@ -332,8 +344,7 @@ void DownloadControls::Tick(){
 bool DownloadControls::NeedsTick()const{
   if(response_budgets_->Pending())return true;
   if(!copies_.empty()||!page_closures_.empty())return true;
-  for(const auto& [id,record]:records_)if(!record->physical_settled)return true;
-  return false;
+  return !active_.empty();
 }
 void DownloadControls::Diagnostics(Dict result)const{
   int active=0,files=0;std::uint64_t disk=0;
@@ -347,6 +358,6 @@ void DownloadControls::Clear(){
   for(const auto& [owner,copy]:copies_)if(copy->thread.joinable())copy->thread.join();
   copies_.clear();
   for(const auto& [id,record]:records_)RequestCancel(*record,"Native browser has been closed");
-  records_.clear();native_ids_.clear();response_budgets_->Clear();navigation_requests_->Clear();page_closures_.clear();
+  records_.clear();native_ids_.clear();active_.clear();response_budgets_->Clear();navigation_requests_->Clear();page_closures_.clear();
 }
 } // namespace suitecut

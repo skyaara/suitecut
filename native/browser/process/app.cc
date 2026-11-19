@@ -1,7 +1,10 @@
 // SPDX-License-Identifier: MIT
 #include "process/app.h"
+#include <cerrno>
 #include <climits>
 #include <cmath>
+#include <cstdlib>
+#include <string>
 namespace suitecut::browser {
 App::App(Writer& writer) : writer_(writer), startup_started_(Now()) {}
 
@@ -79,8 +82,19 @@ auto App::OnBeforeCommandLineProcessing(const CefString&, CefRefPtr<CefCommandLi
 
 auto App::OnContextInitialized() -> void {
   auto command = CefCommandLine::GetGlobalCommandLine();
-  const int width = std::atoi(command->GetSwitchValue("suitecut-width").ToString().c_str());
-  const int height = std::atoi(command->GetSwitchValue("suitecut-height").ToString().c_str());
+  // CefRect width/height are int: parse strictly (atoi is undefined on
+  // overflow) and quit on a value that is not a representable int.
+  const auto extent = [](const std::string& text) -> int {
+    char* end = nullptr;
+    errno = 0;
+    const long value = std::strtol(text.c_str(), &end, 10);
+    if (text.empty() || errno == ERANGE || end != text.c_str() + text.size() || value < INT_MIN ||
+        value > INT_MAX)
+      return 0;
+    return static_cast<int>(value);
+  };
+  const int width = extent(command->GetSwitchValue("suitecut-width").ToString());
+  const int height = extent(command->GetSwitchValue("suitecut-height").ToString());
   const auto parsed_fps =
       ParseSuiteCutFrameRate(command->GetSwitchValue("suitecut-fps").ToString());
   if (!parsed_fps) {

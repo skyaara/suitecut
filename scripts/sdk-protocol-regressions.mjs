@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument -- Controlled fuzz/process-model harness selects emitted modules and deliberately malformed protocol values; production SDK validation is tested separately. */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access -- Controlled fuzz/process-model harness selects emitted modules and deliberately malformed protocol values; production SDK validation is tested separately. */
 import assert from 'node:assert/strict'
 import { Buffer } from 'node:buffer'
 import console from 'node:console'
@@ -9,6 +9,9 @@ import { pathToFileURL } from 'node:url'
 const [baselinePath, candidatePath, outputPath] = process.argv.slice(2)
 if (!baselinePath || !candidatePath || !outputPath || !globalThis.gc)
   throw new Error('Use node --expose-gc <script> <baseline.js> <candidate.js> <result.json>')
+// A declared response size well beyond the truncated bytes that follow it. suitecut sets no response
+// cap, so this is an explicit size: a decoder that allocates from the header alone retains all of it.
+const DECLARED_RESPONSE_BYTES = 64 * 1024 * 1024
 function packet(id, bytes = 0) {
   const json = Buffer.from(JSON.stringify({ version: 1, bytes, type: 'response', id, ok: true }))
   const length = Buffer.alloc(4)
@@ -26,9 +29,7 @@ for (const [label, path] of [
   ['baseline', baselinePath],
   ['candidate', candidatePath],
 ]) {
-  const { NativePacketDecoder, MAX_NATIVE_RESPONSE_PAYLOAD } = await import(
-    pathToFileURL(path).href
-  )
+  const { NativePacketDecoder } = await import(pathToFileURL(path).href)
   const received = []
   const decoder = new NativePacketDecoder((header) => {
     received.push(header.id)
@@ -46,7 +47,7 @@ for (const [label, path] of [
   const partial = new NativePacketDecoder(() => {
     throw new Error('Unexpected complete packet')
   })
-  partial.push(Buffer.concat([packet(1, MAX_NATIVE_RESPONSE_PAYLOAD), Buffer.from([1])]))
+  partial.push(Buffer.concat([packet(1, DECLARED_RESPONSE_BYTES), Buffer.from([1])]))
   try {
     partial.end()
   } catch {
@@ -63,7 +64,7 @@ for (const [label, path] of [
   results[label] = {
     received,
     error,
-    maxResponseBytes: MAX_NATIVE_RESPONSE_PAYLOAD,
+    declaredResponseBytes: DECLARED_RESPONSE_BYTES,
     before,
     afterTruncatedEnd,
     afterDispose,
@@ -74,7 +75,7 @@ assert.deepEqual(results.candidate.received, [1, 2, 3])
 assert.equal(results.candidate.error, undefined)
 const retained = (item) => item.afterTruncatedEnd.arrayBuffers - item.before.arrayBuffers
 assert(
-  retained(results.baseline) >= results.baseline.maxResponseBytes,
+  retained(results.baseline) >= results.baseline.declaredResponseBytes,
   'Baseline must retain its incomplete response',
 )
 assert(

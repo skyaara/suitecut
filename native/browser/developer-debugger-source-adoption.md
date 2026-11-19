@@ -22,9 +22,8 @@ debugger open. A successful observer registration supplies the checked native
 registration stamp and actual Source namespace. The empty root session names
 the actual observer's root channel. It is not a generated CDP session.
 
-The ledger admits at most 1024 default documents and 1024 iframe attachments,
-charging at most 4 MiB of retained identity storage. These are native metadata
-bounds, not an absolute heap bound. A default pin is at most 4096 identity bytes.
+The ledger admits any number of default documents and iframe attachments and
+sets no size limit on retained identity storage or on a default pin.
 Fallible copies/map nodes are staged before quota publication. Identity serials
 never wrap or derive from a URL, script ID, context ID or target ID. Overflow,
 invalid actual metadata or an untrackable accepted attachment makes admission
@@ -98,8 +97,8 @@ an exact `scope_pin(Document)` hook. The controller State retains its immutable
 native scope token and each actual call retains its book receipt alongside the
 existing arbiter Hold. This avoids a second mutable Source lease-to-token map
 and keeps late cleanup attached to the exact old owner. Controls without these
-hooks retain their existing exclusive fixture path. The binding retains at most
-the already admitted 16 developer owners and existing bounded calls;
+hooks retain their existing exclusive fixture path. The binding retains the already
+admitted developer owners and their calls;
 source-wide lease allocation remains shared with coverage and factories.
 
 An opt-in root open received before actual default metadata is available waits
@@ -129,8 +128,8 @@ From then on, a commit, default
 replacement or frame/context invalidation blocks association. A clear before
 the first default receipt blocks future associations too. Transport refusal
 releases only this metadata; the existing Source registry still owns all real
-command receipts. This guard is bounded to 1024 initial requests, 1024 frame
-observations and 1 MiB of charged metadata, separate from the document ledger.
+command receipts. This guard sets no count or size limit on initial requests, frame
+observations or their metadata, and is separate from the document ledger.
 
 On actual iframe detach, the existing observed descendant walk closes the same
 real session's arbiter and drains accepted Source callbacks. Only afterward may

@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: MIT
 import * as z from 'zod'
 
+import { nativeInt32 } from './native-int32.js'
+
 /** Sizes the live-stream recovery buffer; it is not a cap on requested rates. */
 export const MAX_FRAMES_PER_SECOND = 120
 /** CEF OSR capture request; CEF applies its own ceiling. */
-export const CaptureFrameRateSchema = z.number().int().min(1)
+export const CaptureFrameRateSchema = nativeInt32('framesPerSecond').min(1)
 /** Constant encoded output cadence; native resampling supports finite fractions. */
 export const OutputFrameRateSchema = z.number().finite().min(1)
 

@@ -10,6 +10,7 @@ import { NativeContextRouteInvocations } from './native-context-route-invocation
 import { waitNativeEventPredicate } from './native-event-predicate.js'
 import { registerNativeHTTPRequestClass } from './native-http-request-input.js'
 import { NativeAPIResponse, nativeRouteFetchResponse } from './native-http.js'
+import { nativeInt32 } from './native-int32.js'
 import {
   NativeObservedHeadersSchema,
   normalizeNativeObservedHeaders as normalizeHeaders,
@@ -61,8 +62,8 @@ const ContinueSchema = z.strictObject({
 export type NativeRouteContinueOptions = z.input<typeof ContinueSchema>
 const RouteFetchSchema = ContinueSchema.extend({
   timeout: z.number().int().min(0).max(2_147_483_647).optional(),
-  maxRedirects: z.number().int().min(0).optional(),
-  maxRetries: z.number().int().min(0).optional(),
+  maxRedirects: nativeInt32('maxRedirects').min(0).optional(),
+  maxRetries: nativeInt32('maxRetries').min(0).optional(),
 })
 export type NativeRouteFetchOptions = z.input<typeof RouteFetchSchema>
 export interface NativeRouteFulfillOptions {

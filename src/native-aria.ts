@@ -661,24 +661,55 @@ export function formatNativeAriaInteractive(
     'tree',
   ])
   const output: string[] = []
-  const textOf = (node: NativeAriaJSONNode | string): string => {
-    let text = ''
-    const pending: (NativeAriaJSONNode | string)[] = [node]
-    while (pending.length) {
-      const item = pending.pop()
-      if (item === undefined) break
-      if (typeof item === 'string') text += item
-      else if (item.role === 'text') text += item.text ?? item.name ?? ''
-      else {
-        if (item.text) text += item.text
-        for (let index = (item.children?.length ?? 0) - 1; index >= 0; --index) {
-          const child = item.children?.[index]
-          if (child !== undefined) pending.push(child)
-        }
-      }
-      text += ' '
+  // A node's text is its own text and its descendants' in document order, with
+  // whitespace collapsed. One walk splits the tree into those collapsed pieces
+  // and records each node's run of them, so a node's text is a slice of the run
+  // instead of a fresh walk of its subtree for every listed control.
+  const pieces: string[] = []
+  const spans = new Map<NativeAriaJSONNode, { start: number; end: number }>()
+  const piece = (value: string) => {
+    const text = value.replace(/\s+/gu, ' ').trim()
+    if (text) pieces.push(text)
+  }
+  const walk: { node: NativeAriaJSONNode; start: number; index: number }[] = []
+  // A text node's text is its own; its children are indexed as separate roots
+  // after the walk, outside every ancestor's run.
+  const detached: NativeAriaJSONNode[] = []
+  const open = (node: NativeAriaJSONNode) => {
+    const start = pieces.length
+    if (node.role === 'text') {
+      piece(node.text ?? node.name ?? '')
+      spans.set(node, { start, end: pieces.length })
+      for (const child of node.children ?? [])
+        if (typeof child !== 'string' && child !== undefined) detached.push(child)
+      return
     }
-    return text.replace(/\s+/gu, ' ').trim()
+    if (node.text) piece(node.text)
+    walk.push({ node, start, index: 0 })
+  }
+  const roots = [...nodes]
+  for (let next = 0; next < roots.length || detached.length; ++next) {
+    if (next >= roots.length) roots.push(...detached.splice(0))
+    const root = roots[next]
+    if (root === undefined) continue
+    open(root)
+    while (walk.length) {
+      const frame = walk.at(-1)
+      if (!frame) break
+      const children = frame.node.children ?? []
+      if (frame.index < children.length) {
+        const child = children[frame.index++]
+        if (typeof child === 'string') piece(child)
+        else if (child !== undefined) open(child)
+        continue
+      }
+      walk.pop()
+      spans.set(frame.node, { start: frame.start, end: pieces.length })
+    }
+  }
+  const textOf = (node: NativeAriaJSONNode): string => {
+    const span = spans.get(node)
+    return span ? pieces.slice(span.start, span.end).join(' ') : ''
   }
   const kept = (node: NativeAriaJSONNode) =>
     interactiveRoles.has(node.role) ||

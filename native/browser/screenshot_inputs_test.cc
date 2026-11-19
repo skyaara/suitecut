@@ -21,13 +21,15 @@ struct Fixture{
  void Claim(const std::string&token,const std::string&path=""){std::string error;assert(inputs->Claim(owner,token,path,8,[this](auto data,double deadline,const std::string&error){if(data)results.push_back(data);errors.push_back(error);deadlines.push_back(deadline);},error));assert(error.empty());}
  void CPU(){assert(!cpu.empty());auto work=std::move(cpu.front());cpu.pop_front();std::thread thread([&]{work();});thread.join();work={};}
  void UI(){assert(!ui.empty());auto work=std::move(ui.front());ui.pop_front();work();work={};}
+ // ScreenshotComparisons::Begin requires the lease to cover what the prepared buffers hold.
+ bool Covered(size_t index)const{const auto&data=results.at(index);return data->reservation&&data->reservation->owner==budget&&data->reservation->bytes.load()>=data->png.capacity()+data->config.size();}
  void Empty(){results.clear();assert(!inputs->LogicalCount()&&!inputs->PhysicalCount()&&!budget->Used()&&inputs->ContextReady(2));assert(cpu.empty()&&ui.empty());}
 };
 }
 int main(){
  const auto root=std::filesystem::temp_directory_path()/("suitecut-input-test-"+std::to_string(getpid()));std::filesystem::create_directories(root);const auto path=root/"actual-readonly.png";std::vector<uint8_t>bytes(131077);for(size_t i=0;i<bytes.size();++i)bytes[i]=uint8_t((i*73+19)%251);{std::ofstream stream(path,std::ios::binary);stream.write(reinterpret_cast<const char*>(bytes.data()),bytes.size());}chmod(path.c_str(),0444);
  {
-  Fixture test;auto token=test.Prepare();test.Config(token);test.Upload(token,bytes);test.Watch(token);std::string error,json;assert(test.inputs->Inspect(test.owner,token,json,error)&&json=="{}");test.now=17;test.Claim(token);assert(test.results.size()==1&&test.results[0]->png==bytes&&test.deadlines[0]==50&&test.watches==std::vector<std::string>{"committed"});test.Empty();
+  Fixture test;auto token=test.Prepare();test.Config(token);test.Upload(token,bytes);test.Watch(token);std::string error,json;assert(test.inputs->Inspect(test.owner,token,json,error)&&json=="{}");test.now=17;test.Claim(token);assert(test.results.size()==1&&test.results[0]->png==bytes&&test.deadlines[0]==50&&test.watches==std::vector<std::string>{"committed"});assert(test.Covered(0)&&test.results[0]->png.capacity()==bytes.size());test.Empty();
  }
  {
   Fixture test;const auto token=test.Prepare();test.Config(token);std::string error;assert(!test.inputs->Append(test.owner,token,true,0,{'x'},error));assert(error.find("duplicate")!=std::string::npos);error.clear();auto other=test.owner;++other.source;assert(!test.inputs->Append(other,token,false,0,{1},error));assert(error.find("another source")!=std::string::npos);test.inputs->Discard(2,999,token);assert(test.inputs->LogicalCount()==1);test.inputs->Discard(2,3,token);test.Empty();
@@ -36,7 +38,7 @@ int main(){
   Fixture test;const auto token=test.Prepare();test.Config(token);test.Watch(token);test.now=50;test.inputs->Tick();assert(test.watches.size()==1&&test.watches[0].find("original deadline")!=std::string::npos);std::string error;assert(!test.inputs->Append(test.owner,token,false,0,{1},error));test.Empty();
  }
  {
-  Fixture test;const auto token=test.Prepare(true);test.Config(token);test.Watch(token);test.Claim(token,path);assert(test.inputs->PhysicalCount()==1&&!test.inputs->ContextReady(2));test.CPU();assert(test.inputs->PhysicalCount()==1&&test.errors.empty());test.UI();assert(test.results.size()==1&&test.results[0]->png==bytes&&test.watches==std::vector<std::string>{"committed"});test.Empty();
+  Fixture test;const auto token=test.Prepare(true);test.Config(token);test.Watch(token);test.Claim(token,path);assert(test.inputs->PhysicalCount()==1&&!test.inputs->ContextReady(2));test.CPU();assert(test.inputs->PhysicalCount()==1&&test.errors.empty());test.UI();assert(test.results.size()==1&&test.results[0]->png==bytes&&test.watches==std::vector<std::string>{"committed"});assert(test.Covered(0));test.Empty();
  }
  {
   Fixture test;const auto token=test.Prepare(true);test.Config(token);test.Watch(token);test.Claim(token,path);test.inputs->CancelCommand(3,8);assert(test.inputs->LogicalCount()==0&&test.inputs->PhysicalCount()==1&&test.budget->Used()>0);test.CPU();assert(test.inputs->PhysicalCount()==1&&test.budget->Used()>0);test.UI();assert(test.errors.empty()&&test.watches.size()==1&&test.watches[0].find("canceled")!=std::string::npos);test.Empty();

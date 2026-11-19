@@ -31,8 +31,12 @@ int main() {
     auto full = compact_observation(forest);
     check(full.at("nodes").as_array().size() == 7, "Flattening lost or duplicated nodes");
     check(!full.at("truncated").as_bool(), "Ordinary forest was truncated");
-    check(full.at("nodes").at(2).at("path") == Json(Json::array{0, 1}), "Structural path is incorrect");
-    check(full.at("nodes").at(2).at("context").at(0).at("name").as_string() == "Checkout", "Named context lost");
+    check(full.at("nodes").at(2).at("index") == Json(1) && full.at("nodes").at(2).at("parent") == Json(0) &&
+          !full.at("nodes").at(0).contains("parent"), "Structural position is incorrect");
+    check(full.at("ancestors").at(0) == Json{{"index", 0}, {"role", "region"}, {"name", "Checkout"}}, "Named context lost");
+    check(full.at("nodes").at(4).at("parent") == Json(1) && full.at("ancestors").at(1) == Json{{"index", 2}, {"parent", 0}},
+          "Protected container exposed its context or lost its position");
+    check(full.at("ancestors").as_array().size() == 2, "Ancestor entries were repeated");
     check(full.dump().find("private-password") == std::string::npos &&
           full.dump().find("nested-password") == std::string::npos, "Password data leaked");
     check(full.at("nodes").at(3).at("name").as_string() == "Password", "Password label lost");
@@ -42,7 +46,8 @@ int main() {
     auto controls = compact_observation(forest, options);
     check(controls.at("nodes").as_array().size() == 3, "Interactive filtering incorrect");
     check(controls.at("nodes").at(0).at("ref").as_string() == "rFixture_1_0", "Reference lost");
-    check(controls.at("nodes").at(0).at("context").at(0).at("name").as_string() == "Checkout", "Filtering lost context");
+    check(controls.at("ancestors").at(static_cast<std::size_t>(controls.at("nodes").at(0).at("parent").as_int())).at("name").as_string() == "Checkout",
+          "Filtering lost context");
     const auto custom = compact_observation(Json::array{
       Json{{"role", "generic"}, {"ref", "rFixture_1_2"}, {"name", "Custom handle"},
            {"cursor", "pointer"}, {"box", Json::array{1, 2, 10, 20}}},
@@ -116,6 +121,65 @@ int main() {
     const auto deep_observation = compact_observation(deep);
     check(!deep_observation.at("truncated").as_bool() && deep_observation.at("nodes").as_array().size() == 71,
           "Deep forest was cut short");
+    {
+      // Every node refers to its chain by one index, so output stays linear at any depth (it used to copy every named
+      // ancestor into every node: nodes x depth).
+      constexpr std::size_t levels = 30000;
+      const auto tower = [&](const char* leaf, const char* group) {
+        Json level = Json::array{control(leaf)};
+        for (std::size_t i = 0; i < levels; ++i) {
+          Json::array children{control("Step")};
+          Json wrapper{{"role", "group"}, {"name", i + 1 == levels ? group : "Level"}};
+          wrapper["children"] = std::move(level); // A braced initializer would copy the subtree each level.
+          children.push_back(std::move(wrapper));
+          level = Json(std::move(children));
+        }
+        return level;
+      };
+      const auto tall = compact_observation(tower("Deepest", "Top"));
+      const auto& nodes = tall.at("nodes").as_array();
+      check(!tall.at("truncated").as_bool() && nodes.size() == 2 * levels + 1 && tall.at("ancestors").as_array().size() == levels,
+            "Deep forest lost nodes or repeated ancestors");
+      check(tall.dump().size() < 200 * nodes.size(), "Deep observation output is not linear");
+      std::size_t named = 0;
+      for (auto at = nodes.back().at("parent"); ; ) {
+        const auto& entry = tall.at("ancestors").at(static_cast<std::size_t>(at.as_int()));
+        named += entry.at("role") == Json("group");
+        if (!entry.contains("parent")) { check(entry.at("name") == Json("Top"), "Outermost context lost"); break; }
+        at = entry.at("parent");
+      }
+      check(nodes.back().at("name") == Json("Deepest") && named == levels, "Deepest node lost part of its context");
+      auto refreshed = tall;
+      for (auto& node : refreshed["nodes"].as_array()) node["ref"] = "fresh";
+      auto deep_diff = observation_diff(tall, refreshed);
+      check(deep_diff.at("changed").as_array().empty() && deep_diff.at("added").as_array().empty() &&
+            deep_diff.at("ancestors").as_array().empty(), "Deep ref refresh became a change");
+      deep_diff = observation_diff(tall, compact_observation(tower("Renamed", "Top")));
+      check(deep_diff.at("changed").as_array().size() == 1 && deep_diff.at("ancestors").as_array().size() == 2 * levels &&
+            deep_diff.at("changed").at(0).at("after").at("name") == Json("Renamed"), "Deep rename lost or carried no context");
+      // The same slot under a renamed outer group is a context change, found through the interned chains.
+      deep_diff = observation_diff(tall, compact_observation(tower("Deepest", "Moved")));
+      // Only the top-level step keeps its context; the renamed group and all it encloses changed.
+      check(deep_diff.at("changed").as_array().size() == 2 * levels, "Outer context change was not reported for its descendants");
+    }
+    {
+      // A slot keeps its identity only with the same context: a moved control is a change, not a match.
+      const auto in = [](const char* group) {
+        return compact_observation(Json::array{Json{{"role", "group"}, {"name", group}, {"children", Json::array{control("Save")}}}});
+      };
+      const auto moved = observation_diff(in("Billing"), in("Shipping"));
+      check(moved.at("changed").as_array().size() == 2 && moved.at("ancestors").as_array().size() == 2, "Context change lost");
+      for (const auto& change : moved.at("changed").as_array()) {
+        if (!change.at("after").contains("ref")) continue;
+        const auto& ancestors = moved.at("ancestors");
+        check(ancestors.at(static_cast<std::size_t>(change.at("before").at("parent").as_int())).at("name") == Json("Billing") &&
+              ancestors.at(static_cast<std::size_t>(change.at("after").at("parent").as_int())).at("name") == Json("Shipping"),
+              "Diff ancestors were not self-contained");
+      }
+      check(observation_diff(in("Billing"), in("Billing")).at("changed").as_array().empty(), "Equal context reported as changed");
+      rejects([&] { auto broken = in("Billing"); broken["nodes"].as_array()[1]["parent"] = 7; (void)observation_diff(broken, broken); });
+      rejects([&] { auto broken = in("Billing"); broken["ancestors"].as_array()[0]["parent"] = 0; (void)observation_diff(broken, broken); });
+    }
     Json::array long_text(5000, Json(std::string(512, 'x')));
     bounded = compact_observation(long_text);
     check(!bounded.at("truncated").as_bool() && bounded.at("nodes").as_array().size() == 5000 &&

@@ -8,8 +8,8 @@ host), the standalone C/C++ SDK (`native/client`), the native test runner
 (`native/runner`), and suitecut's own experimental Chromium/CEF patches
 (`cef-patches/`). This includes limits
 that only copied a Chromium number (192 MiB DevTools bodies, 1,000 frames per
-page, the 123-byte WebSocket close reason): Chromium, Blink, V8, CEF, FFmpeg
-and VideoToolbox now enforce their own limits and return their own errors.
+page): Chromium, Blink, V8, CEF, FFmpeg and VideoToolbox now enforce their own
+limits and return their own errors.
 
 What that means in practice:
 
@@ -38,7 +38,7 @@ What that means in practice:
 
 | Kind | Examples |
 | ---- | -------- |
-| Wire and file formats | 4-byte length fields in the init-snapshot transport; the 16-bit ZIP entry-name length; the 32-bit `wrappedMask` in pristine dispatch; multipart boundaries suitecut generates (16..70). |
+| Wire and file formats | 4-byte length fields in the init-snapshot transport; the 16-bit ZIP entry-name length; the 32-bit `wrappedMask` in pristine dispatch; multipart boundaries suitecut generates (16..70); RFC 6455's 123-byte (UTF-8) close reason in the WebSocket routing patch's `close` command, which bypasses `DOMWebSocket::close` (otherwise `net` sends 1011 with an empty reason). |
 | Overflow and precision guards | `width*height*4` must fit `size_t`; `ceil(dim*scale)` must fit an `int` stride (CEF, libyuv and encoders take int strides); 2^53 serials and `UINT64_MAX` exhaustion; 20-digit decimal uint64 parsing. |
 | Validity | Empty, NUL, scheme, base64-canonical, finite, non-negative, HTTP status and port ranges, cookie expiry ≤ year 9999, latitude/longitude. |
 | Backpressure that only waits | Host stdin `writableLength` 4 MiB; writer `TryEvent` backlog (65,536 events / 64 MiB, an empty backlog accepts any size, routes retry); `reply_credits_`; `queued_commands_<64`; VideoToolbox `pending+packets>=4`. None of these refuses or drops work. |

@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 #pragma once
+#include "growth_guard.h"
 #include <atomic>
 #include <cstddef>
 #include <cstdint>
@@ -34,7 +35,9 @@ class AcceptedReaderWork {
     if(next_==UINT64_MAX){poisoned_=true;return std::nullopt;}
     Row created{};created.active=true;created.ticket={instance_,++next_};
     for(auto& row:rows_)if(!row.active){row=created;return row.ticket;}
-    rows_.push_back(created);return created.ticket;
+    // Growth failure poisons barrier authority instead of terminating the process.
+    SUITECUT_GROWTH_TRY{rows_.push_back(created);}SUITECUT_GROWTH_CATCH{poisoned_=true;return std::nullopt;}
+    return created.ticket;
   }
   // The UI task may genuinely enter/return before CefPostTask's caller resumes.
   bool PostingReturned(NativeStreamTicket ticket,bool accepted)noexcept{
@@ -71,7 +74,8 @@ class AcceptedReaderWork {
     std::lock_guard lock(mutex_);if(cut_sequence_==UINT64_MAX){poisoned_=true;return {};}
     const NativeStreamCut created{instance_,next_,++cut_sequence_};
     for(auto& cut:cuts_)if(!cut.nonce){cut=created;return cut;}
-    cuts_.push_back(created);return created;
+    SUITECUT_GROWTH_TRY{cuts_.push_back(created);}SUITECUT_GROWTH_CATCH{poisoned_=true;return {};}
+    return created;
   }
   bool KnownCut(NativeStreamCut cut)const noexcept{std::lock_guard lock(mutex_);return ValidCut(cut);}
   bool Through(NativeStreamCut cut)const noexcept{
@@ -108,7 +112,8 @@ class AcceptedWriterWork {
     if(exact_packet_bytes<4||next_==UINT64_MAX){poisoned_=true;return std::nullopt;}
     Row created{};created.active=true;created.ticket={instance_,++next_};created.kind=kind;created.bytes=exact_packet_bytes;
     for(auto& row:rows_)if(!row.active){row=created;return row.ticket;}
-    rows_.push_back(created);return created.ticket;
+    SUITECUT_GROWTH_TRY{rows_.push_back(created);}SUITECUT_GROWTH_CATCH{poisoned_=true;return std::nullopt;}
+    return created.ticket;
   }
   bool Dequeue(NativeStreamTicket ticket)noexcept{
     std::lock_guard lock(mutex_);auto* row=Find(ticket);
@@ -147,7 +152,8 @@ class AcceptedWriterWork {
     std::lock_guard lock(mutex_);if(cut_sequence_==UINT64_MAX){poisoned_=true;return {};}
     const NativeStreamCut created{instance_,next_,++cut_sequence_};
     for(auto& cut:cuts_)if(!cut.nonce){cut=created;return cut;}
-    cuts_.push_back(created);return created;
+    SUITECUT_GROWTH_TRY{cuts_.push_back(created);}SUITECUT_GROWTH_CATCH{poisoned_=true;return {};}
+    return created;
   }
   bool KnownCut(NativeStreamCut cut)const noexcept{std::lock_guard lock(mutex_);return ValidCut(cut);}
   bool Through(NativeStreamCut cut)const noexcept{

@@ -263,6 +263,9 @@ describe('native API request serialization and response ownership', () => {
     await expect(
       api.get('https://api.test', { unknown: true } as UntrustedInput as Record<string, never>),
     ).rejects.toThrow()
+    // Counts travel in native int32 fields; a wider number would read back as 0.
+    await expect(api.get('https://api.test', { maxRedirects: 2 ** 31 })).rejects.toThrow('int32')
+    await expect(api.get('https://api.test', { maxRetries: 2 ** 31 })).rejects.toThrow('int32')
     expect(f.calls).toHaveLength(0)
     await api.dispose()
   })

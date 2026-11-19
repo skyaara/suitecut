@@ -29,6 +29,15 @@
           (work->action == "wheel" && (!message->HasKey("deltaX") || !message->HasKey("deltaY")))) { Complete(id, false, "Missing native pointer coordinates"); return; }
       for (const char* field : {"x", "y", "deltaX", "deltaY"}) if (message->HasKey(field) &&
           ((message->GetType(field) != VTYPE_INT && message->GetType(field) != VTYPE_DOUBLE) || !std::isfinite(Number(message, field)))) { Complete(id, false, "Invalid native pointer coordinate"); return; }
+      // CefMouseEvent x/y and SendMouseWheelEvent deltas are C++ int: reject a
+      // value whose rounding would wrap rather than move or scroll elsewhere.
+      if (message->GetString("backend") == "cef") {
+        for (const char* field : {"x", "y", "deltaX", "deltaY"}) {
+          if (!message->HasKey(field)) continue;
+          const double rounded = std::round(Number(message, field));
+          if (rounded < std::numeric_limits<int>::min() || rounded > std::numeric_limits<int>::max()) { Complete(id, false, std::string("Native pointer ") + field + " is outside the cef backend's int event range"); return; }
+        }
+      }
       const auto button = message->GetString("button").ToString();
       if (!button.empty() && button != "left" && button != "right" && button != "middle") { Complete(id, false, "Invalid native pointer button"); return; }
       if ((message->HasKey("steps") && (message->GetType("steps") != VTYPE_INT || message->GetInt("steps") < 1)) ||

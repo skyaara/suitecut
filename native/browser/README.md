@@ -183,9 +183,10 @@ byte length and SHA-256; verify the archive against that checksum before extract
 
 Keep SDKs and outputs outside source control (for example under `.suitecut/`).
 CMake rejects an SDK whose CEF version differs from this pin.
-Builds do not silently fetch or update Chromium. The 156 beta archive has been
-checksum-verified and builds/runs in this Linux workspace. See
-[the validation ledger](AUDIT.md) for exact scope, upstream failures, capture
+Builds do not silently fetch or update Chromium. Both 156.0.30 archives are
+checksum-verified, and the engine builds and runs against the macOS arm64 SDK.
+The Linux build and runtime evidence in [the validation ledger](AUDIT.md) was
+measured on the earlier 156.0.7 beta pin. See the ledger for exact scope, upstream failures, capture
 measurements, and the blocked whole-browser sanitizer experiment.
 Fetch the exact [libyuv Git commit](libyuv-build.json) into `.suitecut/libyuv`.
 Gitiles-generated source archives vary in metadata between requests, so their
@@ -261,9 +262,8 @@ Native HTTP content validation requires zlib and Brotli development libraries
 (`zlib1g-dev` and `libbrotli-dev` on Debian; `zlib` and `brotli` on macOS).
 CMake links these explicitly. Brotli's encoder is used only by the content
 validation component test; the browser uses its decoder. Native validation
-accounts codec allocation requests before allocation (20 MiB per transfer,
-64 MiB across transfers), bounds decoded output, and checks the owning HTTP
-operation's original deadline. Incomplete HTTP framing retains the actual
+sets no memory, decoded-size or encoding-chain limit of its own, and checks the
+owning HTTP operation's original deadline. Incomplete HTTP framing retains the actual
 libcurl/OS result; incomplete compressed representations produce a native
 validation diagnostic without inventing an observed curl error code. A genuinely
 successful HTTP transfer carrying zero representation octets remains empty when
@@ -395,21 +395,22 @@ for actual progress, supported options, and current native capability limits.
   connection while clearing previous audio. Graceful owner/selected page or context
   closure finalizes the publisher; crashes fail it. Automatic browser restart and
   game scheduling remain application responsibilities.
-- `deviceScaleFactor` (1 or 2) preserves CSS dimensions while increasing physical capture
-  dimensions, up to 3840×2160. Dimensions are immutable for each source. Broadcasts
+- `deviceScaleFactor` (any positive finite number) preserves CSS dimensions while
+  scaling physical capture dimensions; suitecut sets no maximum size, though
+  physical dimensions must fit an `int` stride. Dimensions are immutable for each source. Broadcasts
   require even physical dimensions. Use a replacement source to change layouts.
 
 ### Frame rates and resampling
 
-`framesPerSecond` accepts any integer from **1 through 120** (default 60).
-The pinned CEF revision accepts this range without a 60 FPS clamp. This sets its
+`framesPerSecond` accepts any integer from **1** (default 60); suitecut sets no
+upper limit and CEF applies its own. This sets CEF's
 maximum offscreen paint rate; actual callbacks depend on page activity and host
 capacity. Capture timestamps and native drop counts remain attached to frames.
 Do not interpret a 120 FPS file as proof of 120 distinct captured frames.
 
 Recording `capture.framesPerSecond` and native broadcast
 `stream.framesPerSecond` independently select the constant output rate, accepting
-any finite numeric value from 1–120, including 29.97 and 59.94. CEF capture
+any finite number from 1, including 29.97 and 59.94. CEF capture
 requests retain their genuine integer ceiling; output is resampled on the native
 recording clock. Omitted recording cadence uses each source's requested rate; omitted
 broadcast cadence uses the first source's rate and stays fixed across switches.
@@ -507,7 +508,7 @@ The callback receives `{ source, page, suitecut, signal, addSource }`:
   own clip and the renderer composes the selected intervals. Selection is explicit;
   this does not enable popup windows in CEF.
 - `capture.size` optionally scales recorded video while leaving CSS layout alone.
-  `capture.framesPerSecond` optionally resamples source clips to a chosen 1–120 FPS cadence.
+  `capture.framesPerSecond` optionally resamples source clips to a chosen cadence of 1 FPS or more.
   `capture.narrationTailMs` controls the pause after speech. Set CSS dimensions,
   device scale, and capture FPS when launching the source. Unsupported capture
   options are rejected instead of silently ignored.
@@ -545,18 +546,21 @@ repeatable tone that checks timing and mixing rather than speech-model quality.
 ## Memory and backpressure
 
 CEF callbacks never wait for pipe writes. The native writer retains one pending
-video frame, up to 100 audio packets, and up to 128 control packets. A stalled
-consumer causes video replacement and old audio eviction. Node retains only the
-latest source frame unless the caller retains more. Commands are capped at 64 KiB
-and 64 outstanding requests; results at 1 MiB; packet headers at 16 KiB.
+video frame per page, which a newer frame replaces, and queues audio and control
+packets whole; a stalled consumer causes video replacement but no audio or event
+eviction, so memory grows until the host reads. Node retains only the latest
+source frame unless the caller retains more. Commands, results and packet
+headers have no size limit of suitecut's own. Intake only waits: while 64
+commands are queued or 128 replies await the pipe, and while unread events exceed
+65,536 or 64 MiB (an empty backlog accepts any size).
 
-The native publisher retains a bounded queue of genuine timestamped pictures for
-causal selection, including held and in-flight images. Picture payloads are capped
-at 256 MiB per publisher and 1 GiB per Engine. Audio-enabled output defaults to a
+The native publisher retains a queue of genuine timestamped pictures for
+causal selection, including held and in-flight images. Picture payloads and
+queued PCM have no size limit of suitecut's own. Audio-enabled output defaults to a
 120 ms capture buffer and independent 20 ms PCM scheduling; complete video slots
-add their interval closure delay. PCM is capped at 30 seconds per publisher.
-Original startup/stop deadlines and bounded pipe lag limit stalled encoders, and
-overflow fails explicitly. At most four physical publishers are active. CEF
+add their interval closure delay. Original startup/stop deadlines and the
+`maxWriteLagMs` pipe lag limit stalled encoders. suitecut does not limit the
+number of active publishers. CEF
 surfaces, FFmpeg memory and separately retained SDK frames are additional.
 GPU texture sharing remains unimplemented.
 
@@ -571,8 +575,8 @@ Buffers; named runner baselines and update policies remain unfinished.
 Comparison uses SuiteCut's normalized Oklab distance with alpha composited over
 white, not an equivalence claim for another comparator's threshold or antialias
 policy. Both dimensions must agree. When both pixel and ratio limits are given,
-the stricter limit applies. Native image admission is bounded to2MiB encoded PNG,
-16384 per dimension,2×1024×1024 pixels and64MiB retained comparison reservations.
+the stricter limit applies. Native image admission sets no PNG size, dimension,
+pixel or memory limit of suitecut's own; byte sizes must not overflow.
 Negation uses the native loop; timeout0 disables ordinary logical expiration.
 
 A changing page can time out without two equal captures. Its diagnostics retain
@@ -580,16 +584,15 @@ the last fully admitted pre-deadline actual PNG and the difference from the
 explicit baseline, while reporting `stable:false`. Difference generation shares
 that capture's bounded native pixel job; timeout starts no additional capture or
 diagnostic job. Late CPU/UI completion cannot replace the published pair, and
-cancellation retains physical image ownership until the actual UI release. The
-existing oversized difference-canvas limit still applies.
+cancellation retains physical image ownership until the actual UI release. A
+difference canvas whose byte size would overflow is skipped.
 
-The d0def75c candidate accepts PNG Buffers through bounded24KiB chunks and
+The d0def75c candidate accepts PNG Buffers through 24KiB chunks and
 readonly native file paths. Native preparation owns the original assertion
 deadline across configuration, chunks, actual file I/O, capture and comparison;
-client nonces permit cleanup after a lost preparation reply. The64KiB wire-command
-limit is preserved. Logical staging is bounded16; actual file/image work shares
-a2-worker admission cap and64MiB retained-input/comparison budget. Path workers
-check a genuine regular file, size and identity before/after reading, using
+client nonces permit cleanup after a lost preparation reply. Logical staging,
+file/image work and retained input have no count or byte limit of suitecut's own.
+Path workers check a genuine regular file, size and identity before/after reading, using
 O_NONBLOCK and CLOEXEC. Caller cancellation retires logical work while any real
 file/capture callback retains physical ownership until it settles.
 
@@ -606,7 +609,7 @@ their documented gaps.
 
 ## IPC protocol v1
 
-The executable reads newline-delimited UTF-8 JSON on stdin (64 KiB per command).
+The executable reads newline-delimited UTF-8 JSON on stdin, with no per-command size limit.
 Every command has `version: 1`, a positive integer `id`, and `command`:
 
 ```json
@@ -686,7 +689,7 @@ activation remains explicit; see `docs/internals/native-browser-active-backlog.m
 `docs/internals/cef-issues/README.md`. Compilation is not full runtime parity.
 
 The controller completion adds page/context WebSocket URL callbacks and target
-inheritance, bounded 2 MiB message staging, production retained-coverage lifecycle
+inheritance, WebSocket message staging, production retained-coverage lifecycle
 coordination, explicit original-widget mouse receipts, exact clock-document
 ownership, deduplicated acknowledged credential synchronization, and handler-driven
 recovery of another failed child page. Each optional backend is enabled only by
@@ -727,9 +730,9 @@ Configured limits are sampled at pool construction; this is not a live resource
 pressure controller.
 
 Workers start only when jobs arrive and are reused across subsequent jobs.
-The admission bound is four jobs per worker, including running and queued work.
-Thus a four-CPU, 16-GiB environment still uses two workers and eight accepted
-jobs, while larger environments can scale beyond those numbers. Thread creation
+Accepted work is never refused for being busy; it queues until a worker is free.
+Thus a four-CPU, 16-GiB environment uses two workers, while larger environments
+can scale beyond that. Thread creation
 failure preserves accepted work on existing workers; failure to create even the
 first worker rejects admission. Diagnostics count thread-start failures.
 Shutdown drains accepted work and releases captured owners before retiring
@@ -737,9 +740,8 @@ physical reservations. Screenshot processing, HAR files, trace previews and
 sources, and context video preparation already submit through this shared pool.
 Dedicated transport, media, and Chromium threads retain their own lifetimes;
 the shared pool limit is not a cap on the complete Chromium process tree.
-The stack allowance does not bound task buffers or total browser RSS. Existing
-feature-specific byte budgets remain in force, and exhausted admission returns
-a capacity error rather than growing without a bound.
+The stack allowance does not bound task buffers or total browser RSS, and the
+queue of accepted jobs has no length limit.
 
 Diagnostics expose `nativeTraceBackgroundWorkerLimit` and
 `nativeTraceBackgroundWorkers`, plus `nativeTraceBackgroundCapacity` and

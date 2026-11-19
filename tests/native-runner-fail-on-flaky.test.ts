@@ -123,7 +123,25 @@ describe('native fail-on-flaky public CLI bridge', () => {
     process.argv = ['node', '/sdk/native-runner-cli.js', '--help']
     await import('../src/native-runner-cli.js')
     expect(console.log).toHaveBeenCalledWith(expect.stringContaining('[--fail-on-flaky-tests]'))
+    expect(console.log).toHaveBeenCalledWith(
+      expect.stringContaining('--workers accepts any positive integer'),
+    )
     expect(spawn).not.toHaveBeenCalled()
+  })
+  it('forwards any positive worker count and rejects zero', async () => {
+    process.argv = [...cliBase, '--workers', '64']
+    await import('../src/native-runner-cli.js')
+    expect(args().slice(args().indexOf('--workers'), args().indexOf('--workers') + 2)).toEqual([
+      '--workers',
+      '64',
+    ])
+    vi.clearAllMocks()
+    vi.resetModules()
+    process.exitCode = undefined
+    process.argv = [...cliBase, '--workers', '0']
+    await import('../src/native-runner-cli.js')
+    expect(spawn).not.toHaveBeenCalled()
+    expect(process.exitCode).toBe(2)
   })
   it('preserves actual native signal termination instead of declaring policy success', async () => {
     process.argv = [...cliBase, '--fail-on-flaky-tests']

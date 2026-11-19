@@ -1,10 +1,11 @@
 # Atomic publication of frame reference groups
 
-`SnapshotReferences::CommitBatch` publishes 1–32 installed frame captures as a
+`SnapshotReferences::CommitBatch` publishes one or more installed frame captures as a
 single serialized native transaction. Every ticket must be distinct, every frame
 must be distinct, and every group must have the same original owner, generation
 and deadline. Before changing existing references it validates every full native
-document pin, installer receipt, latest ticket and final active group/node quota.
+document pin, installer receipt and latest ticket; suitecut sets no group or
+node limit.
 
 Only after that preflight does it retire all affected old publications and then
 activate every new group. A valid parent/child quota swap therefore works in

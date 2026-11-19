@@ -10,9 +10,11 @@ actual renderer delivery.
 Target: Chromium `refs/tags/156.0.8078.17`, used by CEF
 `47dbc1df023e99f006fb9e850a8d83cc19b4fdd9`. The JSON beside this document pins
 all six original/patched files and the patch's SHA-256. SuiteCut's own lease,
-pending, coordinate and click-count caps were later removed; the
-`input_handler.cc` patched hash is null until it is re-applied to the pinned
-source and recomputed.
+pending, coordinate and click-count caps were later removed; the patch was then
+re-applied to the pinned sources on 2026-11-19 (their base hashes verified) and the patched hashes recomputed. The read-only probe supplement
+(`chromium156-widget-input-receipt-probe.patch`) now reports `schemaVersion` 2
+with only `schemaVersion` and `protocol`; schema 1 was the capped backend whose
+reply also named `maxLeases`/`maxPending`, and the host refuses it.
 
 ## Underlying gap
 

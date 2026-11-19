@@ -128,6 +128,7 @@ class DownloadControls : public std::enable_shared_from_this<DownloadControls> {
   std::shared_ptr<DownloadNavigationRequests> navigation_requests_=std::make_shared<DownloadNavigationRequests>();
   std::map<std::string,std::shared_ptr<Record>> records_;
   std::map<std::pair<int,std::uint32_t>,std::string> native_ids_;
+  std::set<std::string> active_;  // Records not yet physically settled; Tick/NeedsTick walk only these.
   std::map<int,Wait> waits_;
   std::map<int,std::shared_ptr<Copy>> copies_;
   std::map<int,std::string> directories_;

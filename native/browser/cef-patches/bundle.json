@@ -74,29 +74,29 @@
         "third_party/blink/renderer/modules/webmidi/midi_access_initializer.cc": "736320e1248e0b8249f9f6f8b77801ab33cae8d61f2d7c49f16b65a0585b7566",
         "third_party/blink/renderer/core/frame/local_frame_view.cc": "1b43bd086a52d499fa020aa1ee9bcdaa1081523da39f4e43edaba21e2dc42fc9",
         "third_party/blink/renderer/core/frame/remote_frame_view.cc": "f1701b70d99d735648087d9ec536dd269d0c653a44b3bee56d8000dac570648d",
-        "third_party/blink/renderer/core/inspector/inspector_css_agent.cc": null,
-        "third_party/blink/renderer/core/inspector/inspector_css_agent.h": null,
-        "third_party/blink/public/devtools_protocol/domains/CSS.pdl": null,
-        "v8/src/inspector/v8-profiler-agent-impl.cc": null,
-        "v8/src/inspector/v8-profiler-agent-impl.h": null,
+        "third_party/blink/renderer/core/inspector/inspector_css_agent.cc": "495d8c8a0511a98f064ce44277317d8b1021251ff6dba9bf9d510a973b980c4c",
+        "third_party/blink/renderer/core/inspector/inspector_css_agent.h": "d7eec712dffb061babd18e57b8f20124158190dee1d915205323945c77402692",
+        "third_party/blink/public/devtools_protocol/domains/CSS.pdl": "e173b98d3e07cd3d6a3a8149e1f15f4ecf0cdabb29270d028e0234fb9caa35cc",
+        "v8/src/inspector/v8-profiler-agent-impl.cc": "81714f84f4f2132bc525bbdaba9fd95b76230f4720c8985dfed9b6959bf10081",
+        "v8/src/inspector/v8-profiler-agent-impl.h": "edf21adad80b024c2d51c530064e831d67d1a942201ebc775c93fafa97670ae3",
         "v8/src/inspector/v8-inspector-impl.cc": "5a739f36a7070620b25eae45e89887cbbc8080ed2c4b321fe7105ca648ae8f6a",
         "v8/src/inspector/v8-inspector-impl.h": "379920e88d14c313c35b86ae96f704f398e3d6e28a678807597eb58ceab3dcb8",
-        "v8/include/js_protocol.pdl": null,
-        "third_party/blink/public/devtools_protocol/domains/Network.pdl": null,
+        "v8/include/js_protocol.pdl": "365e6aba7a42c24a4b930de430f2c48ec0ba6ec51a4aa881aa7f031db874346f",
+        "third_party/blink/public/devtools_protocol/domains/Network.pdl": "a2e12871d175430fc0f47a93b7d34b59ed649f059cd2196cc7da183c65b44a9d",
         "third_party/blink/renderer/core/inspector/build.gni": "ddba7deb414ad41805dd1a8e0fa690afa70477c1af3fae3ad9ce8448ee565425",
-        "third_party/blink/renderer/core/inspector/inspector_network_agent.cc": null,
-        "third_party/blink/renderer/core/inspector/inspector_network_agent.h": null,
-        "third_party/blink/renderer/core/inspector/suitecut_websocket_route.h": "0de7f302dcad93b0ddfab803134e9c7d2331dbecf4748e44fb1119b7a29ca1a0",
+        "third_party/blink/renderer/core/inspector/inspector_network_agent.cc": "e36b386d6748da6fe9fa28dcf08f0a98af6305c614d25af532d2eb38e30f098b",
+        "third_party/blink/renderer/core/inspector/inspector_network_agent.h": "a25d8e0f78ebaf02ff072ec9a568aeccbce45065b4e9dec043c4bbb356e0ec1b",
+        "third_party/blink/renderer/core/inspector/suitecut_websocket_route.h": "17f6a7be3c18f9c0389f7c90dcb8cb4786942a98fb5cff03d4cce7f63761f006",
         "third_party/blink/renderer/core/probe/core_probes.json5": "0ba7a234893fcce81eaa4364489bedcf8c64d377b763399f7cc53e5919c5c8e8",
         "third_party/blink/renderer/core/probe/core_probes.pidl": "7cca7c79dd24c04e08ac4f459595dc52e1edf72089729bb45131029ff11bcde4",
-        "third_party/blink/renderer/modules/websockets/websocket_channel_impl.cc": null,
-        "third_party/blink/renderer/modules/websockets/websocket_channel_impl.h": null,
-        "content/browser/devtools/protocol/input_handler.h": null,
-        "content/browser/devtools/protocol/input_handler.cc": null,
+        "third_party/blink/renderer/modules/websockets/websocket_channel_impl.cc": "482fb070d71eab76b2775ce0ac1b081b7fa06b93d3b3f96228bbed175cce6983",
+        "third_party/blink/renderer/modules/websockets/websocket_channel_impl.h": "a298ff617be455758441c1d5b9e282c3c0b2ffaa5c26c70b8b99abdf98d33c44",
+        "content/browser/devtools/protocol/input_handler.h": "c09beded5f5486ba9ed8a5718fe3bd74375b4fdc9441782432ae41d41f1cce2c",
+        "content/browser/devtools/protocol/input_handler.cc": "9189485d76656d937e8970d2f82aeed39c50f037aba8d2851b6a8d3b7deef4c1",
         "content/browser/renderer_host/render_widget_host_impl.h": "acf979fe61d96255b464cf442c50bd5d5ab766c76ed1c03cb6eb0f7bb7baac04",
         "content/browser/renderer_host/render_widget_host_impl.cc": "b67bdc611bb4a07ed3a616a18bc8594d47ec3b1f7b2a8c886aa2df03227259d5",
         "content/browser/devtools/protocol_config.json": "ba38fdaace7cd9d5441f9ad53c679abd780271a6b54a20df5567af6166b8a56f",
-        "third_party/blink/public/devtools_protocol/domains/Input.pdl": null
+        "third_party/blink/public/devtools_protocol/domains/Input.pdl": "09e9a5914b51eae586d3c0f17de80f30ee8700b1a48c1bbf93a5a4aa79bc8543"
       }
     }
   },
@@ -147,7 +147,7 @@
       "id": "chromium156-websocket-routing",
       "component": "chromium",
       "patch": "chromium156-websocket-routing.patch",
-      "sha256": "e2b4648cb81eaab40ee7d8f7858c4fc11b6120c8e35d2a5cbe3420da776b5623"
+      "sha256": "b67186e1d0a4d5b1029945887e2f1c1f14c707e8c0e03b8896574730f3c82cc0"
     },
     {
       "id": "cef156-content-setting-registry-guard",
@@ -165,7 +165,7 @@
       "id": "chromium156-widget-input-receipt-probe",
       "component": "chromium",
       "patch": "chromium156-widget-input-receipt-probe.patch",
-      "sha256": "b41fdcc927e57925d5c73e5659f70864dae85bd8a4576bff92e930fa34ac593d"
+      "sha256": "92948616184eac5ce028c15b300b54e2413aaeaa846eb57f25d1db632a3bdde9"
     }
   ],
   "vendorCompilation": "UNRUN",
@@ -183,6 +183,6 @@
     "Production coverage controller requires the final lifecycle contract (JS revision 2/CSS revision 3); the older isolated producers are rejected until that backend contract exists.",
     "Native WebSocket controller/SDK policy integration is being completed separately; vendor compilation and runtime verification remain unrun.",
     "Native directory and wall-time adapter activation remains manual and requires actual verified backend contracts.",
-    "Output hashes are null for files whose patches lost SuiteCut caps after the applicability check (JS/CSS coverage retention, WebSocket routing, widget receipts and probe); recompute them against the pinned sources."
+    "Output hashes for the JS/CSS coverage retention, WebSocket routing, widget receipt and probe files were recomputed 2026-11-19 by applying the bundle in order to the pinned sources (base hashes verified)."
   ]
 }

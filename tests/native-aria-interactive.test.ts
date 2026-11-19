@@ -77,3 +77,26 @@ it('keeps long names whole and keeps dialogs without a name', () => {
     `- dialog [ref=s1e1]\n  - button "${'x'.repeat(150)}" [ref=s1e2]`,
   )
 })
+
+it('names nested controls from their own subtree text, collapsing whitespace once', () => {
+  let node: NativeAriaJSONNode = { role: 'text', text: ' leaf  text ' }
+  for (let depth = 0; depth < 400; depth++)
+    node = { role: 'button', text: depth % 2 ? `b${depth}` : '', children: [node, ' '] }
+  const lines = formatNativeAriaInteractive([node]).split('\n')
+  expect(lines).toHaveLength(400)
+  expect(lines.at(-1)).toBe(`${'  '.repeat(399)}- button "leaf text"`)
+  expect(lines.at(-2)).toBe(`${'  '.repeat(398)}- button "b1 leaf text"`)
+  expect(lines[0]).toMatch(/^- button "b399 b397 .* b1 leaf text"$/u)
+  // A text node's own text names it; its children are named from their own text only.
+  expect(
+    formatNativeAriaInteractive([
+      {
+        role: 'text',
+        text: 'outer',
+        cursor: 'pointer',
+        ref: 'e1',
+        children: [{ role: 'button', children: ['inner ', { role: 'text', name: ' label ' }] }],
+      },
+    ]),
+  ).toBe('- text "outer" [ref=e1]\n  - button "inner label"')
+})

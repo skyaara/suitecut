@@ -15,9 +15,8 @@ are still required before retained navigation coverage can succeed.
 
 The [CSS manifest](cef156-css-navigation-retention.json) and
 [JavaScript manifest](cef156-js-navigation-retention.json) record every exact
-base/output source hash, upstream URL, and patch hash. Output hashes are null
-since SuiteCut's own capture caps were removed from both patches; they must be
-recomputed against the pinned sources. Both patches apply from
+base/output source hash, upstream URL, and patch hash. SuiteCut's own capture caps
+were removed from both patches, which were then re-applied to the pinned sources on 2026-11-19 (their base hashes verified) and the patched hashes recomputed. Both patches apply from
 the **Chromium source root**; the JavaScript paths include `v8/`. The patches
 must be applied to the original pinned files, rather than stacking the revised
 CSS candidate on top of its previous revision.
@@ -118,7 +117,10 @@ or `CSS.getNavigationCoverageCapabilities` revision **3**, a nonempty
 `agentId`, and the exact `lifecycleContract` string
 `suitecut.coverage.final-lifecycle.v1`. The isolated vendor candidates above
 currently advertise JS revision1 and CSS revision2 and **do not meet this
-contract**. Stock CEF does not expose these commands. Both cases fail explicitly;
+contract**. Their revisions were deliberately not bumped when SuiteCut's caps
+(and the capability reply's `max*` fields) came out: the next numbers are the
+final-lifecycle revisions above, and the host already refuses both the capped
+and the uncapped candidates for lacking `lifecycleContract`. Stock CEF does not expose these commands. Both cases fail explicitly;
 no production capability flag is enabled by patch presence.
 
 The required backend lifecycle contract is:

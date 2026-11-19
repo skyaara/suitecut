@@ -4,7 +4,7 @@
   "chromium_revision": "refs/tags/156.0.8078.17",
   "cef_revision": "47dbc1df023e99f006fb9e850a8d83cc19b4fdd9",
   "patch": "chromium156-widget-input-receipt-probe.patch",
-  "patch_sha256": "b41fdcc927e57925d5c73e5659f70864dae85bd8a4576bff92e930fa34ac593d",
+  "patch_sha256": "92948616184eac5ce028c15b300b54e2413aaeaa846eb57f25d1db632a3bdde9",
   "status": "isolated-candidate-source-patch-custom-cef-build-required",
   "requires_patch": "chromium156-widget-input-receipts.patch",
   "requires_patch_sha256": "b15c122bf173977d5efd4842f463d9175365d0e1ed9430d03a312192433eb854",
@@ -16,20 +16,20 @@
     {
       "path": "content/browser/devtools/protocol/input_handler.h",
       "original_sha256": "734336eb3a1a6670a945bbb7eb526f290daf8c14d5247dd03011e79390dd535e",
-      "patched_sha256": null
+      "patched_sha256": "c09beded5f5486ba9ed8a5718fe3bd74375b4fdc9441782432ae41d41f1cce2c"
     },
     {
       "path": "content/browser/devtools/protocol/input_handler.cc",
-      "original_sha256": null,
-      "patched_sha256": null
+      "original_sha256": "68d4e822a6350497e423300f6ff13ac7caee0b4115efe5e0136e65d3ad6f441d",
+      "patched_sha256": "9189485d76656d937e8970d2f82aeed39c50f037aba8d2851b6a8d3b7deef4c1"
     },
     {
       "path": "third_party/blink/public/devtools_protocol/domains/Input.pdl",
       "original_sha256": "c068724bb6c91a1dd5ce700451d6c6817addd0653a5efcdcf73ca235590ed915",
-      "patched_sha256": null
+      "patched_sha256": "09e9a5914b51eae586d3c0f17de80f30ee8700b1a48c1bbf93a5a4aa79bc8543"
     }
   ],
   "limits": [
-    "maxLeases/maxPending were removed from the capability reply and the receipts patch it stacks on lost its caps after the applicability check; the input_handler.cc base hash and all three patched_sha256 values must be recomputed against the pinned source plus the receipts patch (null until then)"
+    "The reply is schemaVersion 2 with only schemaVersion and protocol; schema 1 (capped, with maxLeases/maxPending) is refused by the host. original_sha256 values are the pinned source plus the receipts patch; original and patched hashes were recomputed 2026-11-19 by applying the bundle in order to the pinned sources (base hashes verified)"
   ]
 }

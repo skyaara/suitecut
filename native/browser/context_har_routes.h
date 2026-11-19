@@ -36,8 +36,8 @@ class NativeContextHARRoutes {
     Pump(owner);return true;
   }
   bool Install(int owner,int context,Route route,double deadline,Result done){
-    const auto state=states_.find(context);std::vector<std::string>patterns;
-    if(closed_||serial_>=9007199254740991ULL||owner<1||!done||!std::isfinite(deadline)||deadline<0||state==states_.end()||state->second.owner||batches_.contains(owner)||removals_.contains(owner)||route.id.empty()||route.id.find('\0')!=std::string::npos||!route.archive||!NativeURLGlobExpand(route.pattern,patterns)||state->second.routes.contains(route.id))return false;
+    const auto state=states_.find(context);
+    if(closed_||serial_>=9007199254740991ULL||owner<1||!done||!std::isfinite(deadline)||deadline<0||state==states_.end()||state->second.owner||batches_.contains(owner)||removals_.contains(owner)||route.id.empty()||route.id.find('\0')!=std::string::npos||!route.archive||state->second.routes.contains(route.id))return false;
     const auto bytes=route.archive->bytes();const auto archive=route.archive.get();
     if(!route.policy)route.policy=NativeHARRouteRegistration::Create(route.archive,route.fallback,route.order);
     if(!route.policy||route.policy->archive()!=route.archive||route.policy->fallback()!=route.fallback||(route.order&&route.order!=route.policy->order())||!route.policy->Claim(state->second.policy_owner,context))return false;

@@ -31,6 +31,13 @@ class Json {
   using array = std::vector<Json>;
   using object = std::map<std::string, Json, std::less<>>;
   Json() noexcept = default;
+  // Copy, comparison and destruction walk the tree iteratively, so nesting depth
+  // is bounded only by memory, never by the thread's stack.
+  Json(const Json& other);
+  Json(Json&&) noexcept = default;
+  Json& operator=(const Json& other);
+  Json& operator=(Json&&) noexcept = default;
+  ~Json();
   Json(std::nullptr_t) noexcept {}
   Json(bool value) : value_(value) {}
   template<std::integral T> requires (!std::same_as<T, bool>)
@@ -70,7 +77,7 @@ class Json {
   Json& at(std::size_t index);
   Json& operator[](std::string_view key);
   const Json& operator[](std::string_view key) const { return at(key); }
-  bool operator==(const Json&) const = default;
+  bool operator==(const Json& other) const;
  private:
   std::variant<std::monostate, bool, std::int64_t, double, std::string, array, object> value_;
 };

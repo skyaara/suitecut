@@ -89,6 +89,7 @@ import {
 import { NativeAPIRequestContext } from './native-http.js'
 import { emulateNativeIdleState, type NativeIdleState } from './native-idle.js'
 import { NativeMouse, NativeKeyboard, NativeTouchscreen } from './native-input.js'
+import { nativeInt32 } from './native-int32.js'
 import {
   NativeLocatorHandlers,
   type NativeLocatorHandler,
@@ -261,6 +262,13 @@ const consoleIdentities = new WeakMap<
   Pick<NativeBrowser, 'signal' | 'runAutomation'>,
   Map<number, WeakRef<NativeConsoleMessage>>
 >()
+// Drops a sequence's entry once its message is collected, so identities hold only live messages.
+const consoleIdentityRelease = new FinalizationRegistry<{
+  identities: Map<number, WeakRef<NativeConsoleMessage>>
+  sequence: number
+}>(({ identities, sequence }) => {
+  if (!identities.get(sequence)?.deref()) identities.delete(sequence)
+})
 
 /** A console message emitted by the native browser. */
 export class NativeConsoleMessage {
@@ -284,6 +292,7 @@ export class NativeConsoleMessage {
       const existing = identities.get(sequence)?.deref()
       if (existing) return existing
       identities.set(sequence, new WeakRef(this))
+      consoleIdentityRelease.register(this, { identities, sequence })
     }
     // Bind argument ownership at the actual console observation, so delayed
     // args() cannot adopt old opaque handles into a later control channel.
@@ -3118,9 +3127,9 @@ export interface NativeClickOptions {
 const PointerOptionsSchema = z.strictObject({
   timeout: z.number().int().min(0).max(120_000).optional(),
   button: z.enum(['left', 'middle', 'right']).optional(),
-  clickCount: z.number().int().min(1).optional(),
+  clickCount: nativeInt32('clickCount').min(1).optional(),
   delay: z.number().int().min(0).max(120_000).optional(),
-  steps: z.number().int().min(1).optional(),
+  steps: nativeInt32('steps').min(1).optional(),
   position: z.strictObject({ x: z.number().finite(), y: z.number().finite() }).optional(),
   modifiers: z.array(z.enum(['Alt', 'Control', 'ControlOrMeta', 'Meta', 'Shift'])).optional(),
   force: z.boolean().optional(),

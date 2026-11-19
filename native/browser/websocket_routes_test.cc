@@ -14,8 +14,8 @@ struct Fixture {
   Policies policies{[this]{return now;},[]{},[this](Dict e,std::vector<uint8_t>b){if(!accept)return false;events.push_back(e);payloads.push_back(b.size());return true;}};
   Fixture(){assert(policies.Attach(1,1,"actual-page-target",[this](const auto&m,Dict p,double,auto reply){calls.push_back({m,p,std::move(reply)});},[this](const auto&){failed=true;},[](bool ok,const auto&){assert(ok);}));}
   ~Fixture(){suitecut::GlobalRouteCallbackLeases().Clear();}
-  static std::string Supported(){return "{\"revision\":1}";}
-  void Ack(size_t n,bool ok=true){auto reply=std::move(calls.at(n).reply);assert(reply);reply(ok,Supported());}
+  static std::string Supported(){return "{\"revision\":2}";}
+  void Ack(size_t n,bool ok=true,const std::string&json=Supported()){auto reply=std::move(calls.at(n).reply);assert(reply);reply(ok,json);}
   void Install(int id,int page,const std::string&name,const std::string&url,bool host,Policies::Reply reply){auto input=CefDictionaryValue::Create();input->SetString("action","routeRegister");input->SetString("registrationId",name);input->SetString("url",url);input->SetBool("hostMatcher",host);input->SetString("baseURL","https://example.test/base/");policies.Command(id,1,page,input,30001,std::move(reply));}
   void Created(const std::string&id,const std::string&url){auto e=CefDictionaryValue::Create();e->SetString("requestId",id);e->SetString("stage","created");e->SetString("url",url);policies.Event("actual-page-target",e);}
   void Closed(const std::string&id){auto e=CefDictionaryValue::Create();e->SetString("requestId",id);e->SetString("stage","closed");policies.Event("actual-page-target",e);}
@@ -38,6 +38,13 @@ int main(){
     f.policies.Command(5,1,1,remove,30001,[&](bool ok,Dict,const auto&){assert(ok);removed=true;});assert(!removed&&f.calls.size()==2&&f.calls.back().params->GetString("action")=="abort");
     f.Ack(1);assert(!removed);assert(suitecut::GlobalRouteCallbackLeases().Finish(Fixture::Number(lease,"token"),Fixture::Number(lease,"scope"),lease->GetString("invocation")));f.policies.Tick();assert(removed);
     const auto count=f.events.size();f.Closed("socket-1");assert(f.events.size()==count&&!f.failed);
+  }
+  {
+    // The capped revision 1 extension (and a non-integer revision) never configures a target.
+    for(const std::string old:{"{\"revision\":1}","{\"revision\":1,\"maxSockets\":128,\"maxPendingMessages\":64,\"maxPendingBytes\":2097152}","{\"revision\":2.5}","{}"}){
+      Fixture f;bool done=false,installed=true;f.Install(1,1,"old","**/*",false,[&](bool ok,Dict,const auto&){done=true;installed=ok;});
+      f.Ack(0,true,old);assert(done&&!installed&&f.failed&&!f.policies.Owns("actual-page-target"));
+    }
   }
   {
     Fixture f;bool completed=false;f.Install(1,1,"cancel","**/*",false,[&](bool ok,Dict,const auto&){assert(!ok);completed=true;});

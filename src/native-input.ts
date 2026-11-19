@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 import * as z from 'zod'
 
+import { nativeInt32 } from './native-int32.js'
 import { type UntrustedInput } from './untrusted.js'
 
 type InputDispatch = (params: Record<string, UntrustedInput>) => Promise<UntrustedInput>
@@ -9,7 +10,7 @@ const backend = z.enum(['devtools', 'cef', 'widget']).optional()
 
 const delay = z.number().int().min(0).max(120_000).optional()
 const button = z.enum(['left', 'middle', 'right']).optional()
-const clickCount = z.number().int().min(1).optional()
+const clickCount = nativeInt32('clickCount').min(1).optional()
 const point = z.number().finite()
 
 /** Genuine Chromium touch input; configuration completes after its native acknowledgment. */
@@ -37,7 +38,7 @@ export class NativeMouse {
     options: { steps?: number; backend?: NativeMouseBackend } = {},
   ): Promise<void> {
     const config = z
-      .strictObject({ steps: z.number().int().min(1).optional(), backend })
+      .strictObject({ steps: nativeInt32('steps').min(1).optional(), backend })
       .parse(options)
     await this.dispatch({
       kind: 'mouse',

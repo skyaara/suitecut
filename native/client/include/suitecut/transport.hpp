@@ -47,6 +47,9 @@ struct Request {
 };
 struct ClientStats {
   std::uint64_t commands = 0, responses = 0, dropped_events = 0;
+  // Network bodies dropped on their own (bad, stalled or unacknowledged); the
+  // transport stays open.
+  std::uint64_t dropped_bodies = 0;
   std::size_t pending = 0, queued_event_bytes = 0;
 };
 // Thread-safe requests and event polling. No application callback runs on the

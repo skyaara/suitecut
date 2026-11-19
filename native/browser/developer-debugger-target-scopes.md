@@ -29,8 +29,7 @@ Future agent-wide methods need a separately documented contract and controls.
 
 ## Immutable native scope pins
 
-An admitted scope owns a bounded immutable record, at most 4096 retained identity
-bytes, containing:
+An admitted scope owns an immutable record containing:
 
 - The actual native host namespace/incarnation and actual Inspector session.
 - The accepted native attachment generation for that channel. A monotonic native
@@ -124,18 +123,16 @@ root factory closure or its script/context IDs. Primitive evaluation groups
 include unique native host/lease
 identities and keep their exact real session and context pins.
 
-Use the same global limits as root control: 16 live/physically closing developer
-sessions, 32 logical operations per session plus reserved close observation,
-16 breakpoints per session/128 per process, 8 evaluation records per session/64
-per process, and 256 script cursor positions per process. Host-wide retained
-sender/domain-call caps remain enforced across all scopes. Metadata manager
+Follow root control, which sets no limit of suitecut's own on developer
+sessions, logical operations per session (plus reserved close observation),
+breakpoints, evaluation records or script cursor positions. Metadata manager
 entries must be reserved within those admitted sessions, not in an unbounded
 pre-open table. Prepare fallible allocations before quota/graph commit, with
 rollback for uncommitted reservations.
 
 `open`, wait, script and evaluation operations retain their original owner and
 Engine generation/budget. Only genuinely classified close/resume cleanup uses
-reserved control admission;32 waiters cannot fill that lane. A nested worker
+reserved control admission; pending waiters cannot fill that lane. A nested worker
 command must preserve this distinction rather than marking all worker commands
 as controls.
 
