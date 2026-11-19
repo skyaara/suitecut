@@ -50,9 +50,13 @@ int main() {
     { const std::string header = R"({"version":1,"type":"ready","bytes":0,"padding":")" + std::string(70000, 'p') + R"("})";
       PacketDecoder decoder; std::size_t count = 0; decoder.feed(packet(header), [&](Packet&&) { ++count; }); decoder.finish();
       check(count == 1, "Header past the old 64 KiB cap was rejected"); }
+    // CEF writes doubles with a decimal point; an integral one is a valid count.
+    { PacketDecoder decoder; std::vector<Packet> got;
+      decoder.feed(packet(R"({"version":1,"type":"response","bytes":3.0,"id":9,"ok":true})", {1, 0, 255}), [&](Packet&& value) { got.push_back(std::move(value)); });
+      decoder.finish(); check(got.size() == 1 && got[0].payload == std::vector<std::uint8_t>({1,0,255}), "Integral double byte count was rejected"); }
     for (const auto header : {
       R"({"version":2,"type":"ready","bytes":0})", R"({"version":1.0,"type":"ready","bytes":0})", R"({"version":1,"type":null,"bytes":0})",
-      R"({"version":1,"type":"unknown","bytes":0})", R"({"version":1,"type":"ready","bytes":-1})", R"({"version":1,"type":"ready","bytes":0.0})",
+      R"({"version":1,"type":"unknown","bytes":0})", R"({"version":1,"type":"ready","bytes":-1})", R"({"version":1,"type":"ready","bytes":0.5})", R"({"version":1,"type":"ready","bytes":-1.0})",
       R"({"version":1,"type":"ready","bytes":1})", R"({"version":1,"type":"ready","bytes":0,"bytes":0})",
       R"({"version":1,"type":"response","bytes":0,"id":0,"ok":true})", R"({"version":1,"type":"response","bytes":0,"id":1,"ok":"yes"})",
       R"({"version":1,"type":"frame","bytes":16,"width":3841,"height":2})", R"({"version":1,"type":"frame","bytes":15,"width":2,"height":2})",

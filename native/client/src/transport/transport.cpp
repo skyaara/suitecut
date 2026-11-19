@@ -305,13 +305,14 @@ struct Transport::Impl {
       identity = Json{{"type","networkbody"},{"pageId",page},{"bodyId",token}};
     }
     auto found = bodies.find(scope);
-    const auto integral = [&](const char* name) {
-      return header.contains(name) && header.at(name).is_integer() && header.at(name).as_int() >= 0;
+    const auto count = [&](const char* name) -> std::optional<std::uint64_t> {
+      return header.contains(name) ? wire_count(header.at(name)) : std::nullopt;
     };
-    const bool shaped = integral("offset") && integral("totalBytes") &&
+    const auto offset_field = count("offset"), total_field = count("totalBytes");
+    const bool shaped = offset_field && total_field &&
       (!header.contains("canceled") || header.at("canceled").is_bool());
-    const auto offset = shaped ? static_cast<std::size_t>(header.at("offset").as_int()) : 0;
-    const auto total = shaped ? static_cast<std::size_t>(header.at("totalBytes").as_int()) : 0;
+    const auto offset = shaped ? static_cast<std::size_t>(*offset_field) : 0;
+    const auto total = shaped ? static_cast<std::size_t>(*total_field) : 0;
     const bool canceled = shaped && header.contains("canceled") && header.at("canceled").as_bool();
     if (found != bodies.end() && found->second.dropped) {
       // Later chunks of a dropped body; its last or canceled chunk retires it.
