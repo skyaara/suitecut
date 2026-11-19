@@ -423,7 +423,14 @@ try {
       launchError: null,
     }
     if (candidate.backend === 'cef')
-      backend.librarySHA256 = await hash(resolve(dirname(candidate.executablePath), 'libcef.so'))
+      backend.librarySHA256 = await hash(
+        process.platform === 'darwin'
+          ? resolve(
+              dirname(candidate.executablePath),
+              '../Frameworks/Chromium Embedded Framework.framework/Chromium Embedded Framework',
+            )
+          : resolve(dirname(candidate.executablePath), 'libcef.so'),
+      )
     if (candidate.backend === 'bidi')
       backend.librarySHA256 = await hash(resolve(dirname(candidate.executablePath), 'libxul.so'))
     try {

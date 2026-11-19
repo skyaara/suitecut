@@ -84,7 +84,14 @@ const sdkManifest = async () => {
 }
 const inputs = async () => ({
   executable: await identity(executable),
-  libcef: await identity(resolve(dirname(executable), 'libcef.so')),
+  libcef: await identity(
+    process.platform === 'darwin'
+      ? resolve(
+          dirname(executable),
+          '../Frameworks/Chromium Embedded Framework.framework/Chromium Embedded Framework',
+        )
+      : resolve(dirname(executable), 'libcef.so'),
+  ),
   sdk: await identity(sdk),
   sdkModules: await sdkManifest(),
   playbackVerifier: await identity(verifier),

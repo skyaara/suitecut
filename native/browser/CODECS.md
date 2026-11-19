@@ -40,7 +40,25 @@ node scripts/verify-browser-codec-runtime.mjs \
 
 The default `web` gate requires 14 real playback cases: H.264-only MP4, H.264/AAC MP4 and fragmented-MP4 MediaSource, AAC-only audio, VP8/VP9/AV1, VP9/Opus MediaSource and common audio samples. It checks trusted controls, pause/resume/seek as applicable, decoded audio bytes, decoded/rendered video frames, advancing time and completion. Missing encoders, skipped required fixtures, unsupported media, failed controls or runtime/SDK changes fail acceptance. Runtime and SDK hashes are captured before and after. HTML capability advertising alone cannot pass.
 
-Stock CEF was checked with this gate: **ten required open-codec cases passed; all four required H.264/AAC cases failed**, producing exit code 1 and `FAIL_CODEC_REQUIREMENTS`. This negative proof demonstrates the gate detects the current gap. A positive replacement-runtime proof remains pending.
+Stock CEF was checked with this gate: **ten required open-codec cases passed; all four required H.264/AAC cases failed**, producing exit code 1 and `FAIL_CODEC_REQUIREMENTS`. This negative proof demonstrates the gate detects the current gap. On Linux a positive replacement-runtime proof remains pending; macOS has one (below).
+
+## macOS arm64: third-party CEF 156.0.30 prebuilt
+
+On 2026-11-19 the [OpenArch `cef-156.0.30-codecs`](https://github.com/dpfaffenbauer/OpenArch/releases/tag/cef-156.0.30-codecs) minimal distribution was checked: `cef_binary_156.0.30+g6028375+chromium-156.0.8078.96_macosarm64_minimal.tar.bz2`, 135,597,207 bytes, SHA-256 `d9bcb24c64284be28dfd5ed99961fd2aa562308bad2d0ad79217fdec18542dcc`. It is built on GitHub Actions with `proprietary_codecs=true` and `ffmpeg_branding="Chrome"`; HEVC decodes through VideoToolbox. It is not an official CEF build and carries no codec patent licence.
+
+SuiteCut was built against it in a separate build directory (CMake's pin check was satisfied only for that configure; `cef-build.json` still pins 156.0.7) and run through `verify-browser-codec-runtime.mjs --profile web-hevc` beside the stock 156.0.7 build:
+
+| Case | Stock 156.0.7 | OpenArch 156.0.30 |
+| ---- | ------------- | ----------------- |
+| H.264-only MP4 | unsupported | plays |
+| H.264/AAC MP4 | unsupported | plays |
+| H.264/AAC MediaSource | unsupported | plays |
+| AAC-only | unsupported | plays |
+| HEVC-only MP4 | unsupported | plays |
+| VP8/Opus, VP9/Opus (file and MediaSource), MP3, WAV, Ogg/Opus, FLAC | play | play |
+| VP8/Vorbis, AV1/Opus, Ogg/Vorbis | not generated: local ffmpeg lacks the encoders | not generated |
+
+Every generated case passed on the codec build (12/12; stock 7/12). The gate still reports `FAIL_CODEC_REQUIREMENTS` on both builds only because of the three ungenerated fixtures. Adopting this build means moving the pin to 156.0.30 and re-running the native test suite against it; neither has been done.
 
 After a replacement passes, package it separately:
 
@@ -61,7 +79,7 @@ SUITECUT_TWITCH_OUTPUT=.suitecut/new-cef-twitch-proof \
 
 ## Prebuilt distributions and limits
 
-The official [CEF build index](https://cef-builds.spotifycdn.com/index.html) offers standard/minimal/client/tools variants, without a separate proprietary-codec selection. There is no runtime command that turns missing decoder code on. [Third-party codec-enabled prebuilts exist](https://github.com/ashwardy/loopy-cef-builds/releases), but the checked Linux artifacts use older CEF154/152 versions. No exact CEF156 codec-enabled artifact was identified in accessible sources. Some additional sources could not be inspected because they returned HTTP503. Changing the version or mixing libraries is not part of this build profile.
+The official [CEF build index](https://cef-builds.spotifycdn.com/index.html) offers standard/minimal/client/tools variants, without a separate proprietary-codec selection. There is no runtime command that turns missing decoder code on. [Third-party codec-enabled prebuilts exist](https://github.com/ashwardy/loopy-cef-builds/releases), but the checked Linux artifacts use older CEF154/152 versions. For macOS arm64, CEF156 codec-enabled prebuilts exist as of November 2026: OpenArch 156.0.30 (checked above) and amenophis/cef-codecs `cef-156.0.7-codecs`, which matches the current pin but was built on the maintainer's own machine without public logs (not checked). No CEF156 codec-enabled Linux or Windows artifact was found. Changing the version or mixing libraries is not part of this build profile.
 
 This is deliberately a **common web codec profile**, not “all codecs.” On this Chromium pin, the software FFmpeg video adapter and security allowlist accept H.264 only; VP8/VP9 and AV1 have separate implementations. HEVC, Dolby/DTS, ALAC and various legacy formats require additional adapter/demuxer/decoder integration or an actual platform decoder. Setting their platform flags can advertise support without supplying a working Linux decoder. `--profile web-hevc` makes the acceptance gate additionally require actual HEVC playback; it does not add a decoder.
 
