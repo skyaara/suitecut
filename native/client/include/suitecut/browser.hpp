@@ -314,6 +314,9 @@ class Browser {
   Browser& operator=(const Browser&) = delete;
   Page main_page() const;
   Page new_page(Timeout timeout = Timeout{30000}) const;
+  // An owning handle to a page the engine already opened, such as a popup a
+  // link opened. The ID comes from a `page-created` context event.
+  Page page(int page_id) const;
   Json pages(Timeout timeout = Timeout{30000}) const;
   Context new_context(Json options = Json::object{}, Timeout timeout = Timeout{30000}) const;
   Json ready() const;

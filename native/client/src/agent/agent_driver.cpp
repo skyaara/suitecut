@@ -256,7 +256,10 @@ Json AgentDriver::tools() {
     } else if (name == "dialog") {
       actions = {"list","handle"}; properties["accept"] = boolean; properties["promptText"] = str; properties["clear"] = boolean;
     } else if (name == "console") {
-      actions = {"messages","errors","clear"}; properties["clear"] = boolean;
+      // The engine's own console actions; filter picks the whole journal
+      // or only what came since the last navigation.
+      actions = {"list","errors","clear"};
+      properties["filter"] = Json{{"type","string"},{"enum",Json::array{"all","since-navigation"}}};
     } else if (name == "initScript") {
       actions = {"add","remove","list"}; properties["source"] = str; properties["identifier"] = str;
     } else if (name == "emulation") {
@@ -591,6 +594,15 @@ Json AgentDriver::call(const std::string& name, const Json& args) {
       if (context) contexts_.emplace(id,std::move(*context));
       pages_.emplace(id,std::move(created)); active_ = id;
       return Json{{"pageId",id},{"isolatedContext",attached_}};
+    }
+    if (action == "adopt") {
+      // A page the engine opened by itself (a popup) joins the driver's pages.
+      const auto requested = args.at("pageId").as_int();
+      if (requested < 2 || requested > std::numeric_limits<int>::max()) throw std::invalid_argument("Invalid page ID");
+      const int id = static_cast<int>(requested);
+      if (pages_.size() >= 128) throw std::runtime_error("Agent page capacity exceeded");
+      if (!pages_.contains(id)) pages_.emplace(id,browser_.page(id));
+      return Json{{"pageId",id}};
     }
     if (action == "switch" || action == "close") {
       const auto requested = args.at("pageId").as_int();

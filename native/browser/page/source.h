@@ -485,6 +485,9 @@ class Source : public CefClient,
 #if defined(__APPLE__)
   std::unique_ptr<suitecut::MacCapturePool> native_capture_pool_;
   std::shared_ptr<suitecut::MacCaptureFrame> native_capture_snapshot_;
+  // An embedding app's viewer: each view paint goes to it as an IOSurface.
+  std::unique_ptr<suitecut::SurfaceOutput> surface_output_;
+  auto SurfaceOutputPaint(PaintElementType type, const CefAcceleratedPaintInfo& info) -> void;
 #endif
 
   // Damage is relative to the previous CEF paint, including paints deliberately

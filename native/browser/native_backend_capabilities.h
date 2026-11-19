@@ -16,6 +16,11 @@ inline CefRefPtr<CefDictionaryValue> NativeBackendCapabilities() {
                           "originalWidgetInputReceipts"})
     result->SetBool(name, false);
   result->SetBool("frameSubscription", true);
+#if defined(__APPLE__)
+  result->SetBool("surfaceOutput", true);
+#else
+  result->SetBool("surfaceOutput", false);
+#endif
   return result;
 }
 }  // namespace suitecut

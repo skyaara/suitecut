@@ -2,8 +2,10 @@
 #include "control_session.hpp"
 #include <algorithm>
 #include <chrono>
+#include <condition_variable>
 #include <cstdint>
 #include <limits>
+#include <mutex>
 #include <stdexcept>
 #include <thread>
 #ifdef SUITECUT_CLI_SANITIZERS
@@ -268,8 +270,101 @@ void serve_session(const SessionOptions& options,int listener,int ready,
   }catch(...){if(!closed)try{close();}catch(...){}throw;}
   if(!closed)close();
 }
+void serve_shared_session(const SessionOptions& options,int listener,int ready,int connections,
+                          const std::function<Json(const Json&)>& call,const std::function<void()>& close,
+                          const std::function<bool()>& alive) {
+  // 0 means any number of connections; a positive value is the caller's own bound.
+  if(connections<0)throw std::invalid_argument("Shared session connections must not be negative");
+  // Connection threads are detached, so what they share outlives this frame
+  // until the last of them lets go of it.
+  struct Shared {
+    std::mutex mutex;std::condition_variable idle;
+    int active=0;bool closed=false,close_requested=false;Clock::time_point last=Clock::now();
+    std::function<Json(const Json&)> call;Json status;
+  };
+  auto shared=std::make_shared<Shared>();
+  shared->call=call;
+  shared->status=Json{{"running",true},{"pid",::getpid()},{"session",options.name},{"idleTimeoutMs",options.idle_ms}};
+  send_json(ready,Json{{"ok",true}},Clock::now()+std::chrono::seconds(1));
+  auto serve=[shared](int raw) {
+    {
+      Fd client(raw);
+      auto touch=[&]{std::lock_guard lock(shared->mutex);shared->last=Clock::now();};
+      try {
+        for(;;) {
+          // A client that keeps its connection idles between requests; only
+          // the whole session's idle clock retires the worker.
+          pollfd p{client.value,POLLIN,0};
+          const auto rc=::poll(&p,1,1000);
+          if(rc<0&&errno==EINTR)continue;
+          if(rc<0||stopping)break;
+          {std::lock_guard lock(shared->mutex);if(shared->closed)break;}
+          if(!rc)continue;
+          if(p.revents&(POLLHUP|POLLERR|POLLNVAL)&&!(p.revents&POLLIN))break;
+          const auto request=receive_json(client.value,Clock::now()+std::chrono::seconds(2));
+          touch();
+          Json result;
+          const auto tool=request.contains("request")&&request.at("request").contains("tool")?request.at("request").at("tool").as_string():std::string{};
+          if(tool=="_session_status")result=Json{{"ok",true},{"result",shared->status}};
+          else if(tool=="_session_close") {
+            {std::lock_guard lock(shared->mutex);shared->close_requested=true;}
+            result=Json{{"ok",true},{"result",Json{{"closed",true},{"session",shared->status.at("session")}}}};
+          } else {
+            try{result=shared->call(request);}
+            catch(const std::exception& error){result=Json{{"ok",false},{"error",Json{{"message",error.what()}}}};}
+          }
+          // A reply can be large (a screenshot); allow it time to drain.
+          send_json(client.value,result,Clock::now()+std::chrono::seconds(10));
+          touch();
+        }
+      } catch(...) {}
+    }
+    std::lock_guard lock(shared->mutex);--shared->active;shared->last=Clock::now();shared->idle.notify_all();
+  };
+  auto finish=[&] {
+    // Withdraw discovery first, so a new start launches a fresh worker, then
+    // let connection threads see the close and finish before the browser goes.
+    ::unlink((directory(options)+"/"+options.name+".sock").c_str());
+    std::unique_lock lock(shared->mutex);shared->closed=true;
+    shared->idle.wait(lock,[&]{return shared->active==0;});
+  };
+  try {
+    for(;;) {
+      {
+        std::lock_guard lock(shared->mutex);
+        // A held connection (a viewer) keeps the worker alive.
+        if(stopping||shared->close_requested||(alive&&!alive())||(shared->active==0&&Clock::now()-shared->last>=std::chrono::milliseconds(options.idle_ms)))break;
+      }
+      pollfd p{listener,POLLIN,0};const auto rc=::poll(&p,1,1000);
+      if(rc<0&&errno==EINTR)continue;
+      if(rc<0)fail("Session accept poll failed");
+      if(!rc)continue;
+      Fd client(::accept(listener,nullptr,nullptr));if(client.value<0){if(errno==EINTR)continue;fail("Session accept failed");}
+      ::fcntl(client.value,F_SETFD,FD_CLOEXEC);::fcntl(client.value,F_SETFL,::fcntl(client.value,F_GETFL)|O_NONBLOCK);
+      uid_t peer_uid=0;gid_t peer_gid=0;
+      if(::getpeereid(client.value,&peer_uid,&peer_gid)<0||peer_uid!=::getuid())continue;
+      {
+        std::lock_guard lock(shared->mutex);
+        if(connections&&shared->active>=connections) {
+          try{send_json(client.value,Json{{"ok",false},{"error",Json{{"message","Shared session is at its connection limit"},{"code","busy"}}}},Clock::now()+std::chrono::milliseconds(200));}catch(...){}
+          continue;
+        }
+        ++shared->active;
+      }
+      try {std::thread(serve,client.value).detach();client.value=-1;}
+      catch(...) {std::lock_guard lock(shared->mutex);--shared->active;}
+    }
+  } catch(...) {
+    finish();
+    try{close();}catch(...){}
+    throw;
+  }
+  finish();
+  close();
+}
 #else
 Json session_request(const SessionOptions&,const Json&,bool,const Worker&){throw std::runtime_error("Named CLI sessions require a POSIX platform");}
 void serve_session(const SessionOptions&,int,int,const std::function<Json(const Json&)>&,const std::function<void()>&){}
+void serve_shared_session(const SessionOptions&,int,int,int,const std::function<Json(const Json&)>&,const std::function<void()>&,const std::function<bool()>&){}
 #endif
 } // namespace suitecut::control

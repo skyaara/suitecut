@@ -887,6 +887,11 @@ Page Browser::new_page(Timeout timeout) const {
   live(transport_, 1);
   return Page(transport_, new_page_id(transport_, default_context(transport_), timeout), true);
 }
+Page Browser::page(int page_id) const {
+  if (page_id < 2) throw std::invalid_argument("Adopted page ID must name a page other than the main page");
+  live(transport_, 1);
+  return Page(transport_, page_id, true);
+}
 Json Browser::pages(Timeout timeout) const {
   const auto result = context_call(transport_, "pages", Json{{"contextId", default_context(transport_)}}, timeout);
   return result.contains("pages") ? result.at("pages") : result;
