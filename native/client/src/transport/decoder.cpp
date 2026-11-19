@@ -17,13 +17,13 @@ PacketDecoder::PacketDecoder(std::size_t max_header_bytes, std::size_t max_paylo
 void PacketDecoder::read_header() {
   const auto value = Json::parse(packet_.header);
   if (!value.is_object() || !value.at("version").is_integer() || value.at("version").as_int() != 1 ||
-      !value.at("type").is_string() || !value.at("bytes").is_integer())
+      !value.at("type").is_string() || !value.contains("bytes") || !wire_count(value.at("bytes")))
     throw std::runtime_error("Invalid native packet header");
   const auto& type = value.at("type").as_string();
   if (std::find(std::begin(kTypes), std::end(kTypes), type) == std::end(kTypes))
     throw std::runtime_error("Unknown native packet type");
-  const auto length = value.at("bytes").as_int();
-  if (length < 0 || (max_payload_ && static_cast<std::uint64_t>(length) > max_payload_))
+  const auto length = *wire_count(value.at("bytes"));
+  if (max_payload_ && length > max_payload_)
     throw std::runtime_error("Native packet payload exceeds the caller's limit");
   if (value.contains("pageId") && (!value.at("pageId").is_integer() || value.at("pageId").as_int() < 1 || value.at("pageId").as_int() > std::numeric_limits<int>::max()))
     throw std::runtime_error("Invalid native packet page ID");

@@ -147,7 +147,7 @@ auto Writer::DropPage(int page) -> void {
 }
 
 auto Writer::Send(Dict header, std::vector<uint8_t> data, bool reply_credit) -> void {
-  header->SetDouble("bytes", static_cast<double>(data.size()));
+  SetByteCount(header, "bytes", data.size());
   std::lock_guard lock(mutex_);
   if (stopping_) return;
   const auto type = header->GetString("type").ToString();
@@ -182,7 +182,7 @@ auto Writer::Send(Dict header, std::vector<uint8_t> data, bool reply_credit) -> 
 }
 
 auto Writer::TryEvent(Dict header, std::vector<uint8_t> data) -> bool {
-  header->SetDouble("bytes", static_cast<double>(data.size()));
+  SetByteCount(header, "bytes", data.size());
   const auto json = Json(header);
   std::lock_guard lock(mutex_);
   const auto bytes = json.size() + data.size();
